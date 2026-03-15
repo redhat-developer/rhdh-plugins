@@ -20,10 +20,10 @@ import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { convertLegacyAppOptions } from '@backstage/core-compat-api';
 import {
   scorecardTranslationsModule,
-  createScorecardCatalogModule,
+  scorecardCatalogModule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { signInModule } from './modules/signIn';
-
+import { navModule } from './modules/nav';
 /*
  * Legacy options: themes (RHDH light/dark)
  */
@@ -32,21 +32,16 @@ const legacyConvertedOptions = convertLegacyAppOptions({
 });
 
 /*
- * Scorecard: entity kinds that show the Scorecard tab on the catalog entity page.
- * Catalog module attaches to catalogPlugin for these kinds only.
- */
-const scorecardEntityKinds = ['component', 'service', 'template'];
-const scorecardCatalogModule = createScorecardCatalogModule({
-  entityKinds: scorecardEntityKinds,
-});
-
-const scorecard = [scorecardCatalogModule, scorecardTranslationsModule];
-
-/*
  * app: Backstage app using the New Frontend System (NFS).
  */
 const app = createApp({
-  features: [legacyConvertedOptions, ...scorecard, signInModule],
+  features: [
+    legacyConvertedOptions,
+    scorecardCatalogModule,
+    scorecardTranslationsModule,
+    signInModule,
+    navModule,
+  ],
 });
 
 export default app.createRoot();

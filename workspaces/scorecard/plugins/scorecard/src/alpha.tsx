@@ -22,12 +22,12 @@ import {
   fetchApiRef,
   ApiBlueprint,
 } from '@backstage/frontend-plugin-api';
-import type { ExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
 import { rootRouteRef } from './routes';
 import { ScorecardApiClient, scorecardApiRef } from './api';
 import { scorecardTranslations } from './translations';
+import { Entity } from '@backstage/catalog-model';
 
 /** Scorecard API extension */
 const scorecardApi = ApiBlueprint.make({
@@ -43,76 +43,90 @@ const scorecardApi = ApiBlueprint.make({
 });
 
 /**
- * Options for when to show the Scorecard tab on catalog entity pages.
- * Pass these from the app (e.g. app App.tsx) to control visibility.
- * @alpha
+ * Extension for Scorecard translations.
  */
-export interface ScorecardEntityContentOptions {
-  /**
-   * Entity kinds that show the Scorecard tab (e.g. ['component', 'service', 'template']).
-   * If omitted or empty, the tab is shown for all entity kinds.
-   */
-  entityKinds?: string[];
-}
-
-const defaultScorecardEntityContentParams = {
-  path: '/scorecard',
-  title: 'Scorecard',
-  routeRef: rootRouteRef,
-  loader: () =>
-    import('./components/Scorecard').then(m => <m.EntityScorecardContent />),
-};
-
-/**
- * Creates the Scorecard entity tab extension with optional filter..
- * @alpha
- */
-export function createScorecardEntityContent(
-  options?: ScorecardEntityContentOptions,
-): ExtensionDefinition {
-  const filter = options?.entityKinds?.length
-    ? `kind:${options.entityKinds.map(k => k.toLowerCase()).join(',')}`
-    : undefined;
-  return EntityContentBlueprint.make({
-    name: 'scorecard',
-    params: {
-      ...defaultScorecardEntityContentParams,
-      ...(filter ? { filter } : {}),
-    },
-  });
-}
-
-/** Scorecard translation resources */
 const scorecardTranslation = TranslationBlueprint.make({
   params: {
     resource: scorecardTranslations,
   },
 });
 
-/** Main Scorecard frontend plugin
+/**
+ * Extension for the Scorecard Tab on Entity pages.
+ * @alpha
+ */
+export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
+  name: 'entity-content-scorecard',
+  config: {
+    schema: {
+      // Allows flexible filtering: { kind: 'Component', type: 'service' }
+      // or just { type: 'service' } for all services.
+      allowedFilters: schema =>
+        schema
+          .array(
+            schema.object({
+              kind: schema.string().optional(),
+              type: schema.string().optional(),
+            }),
+          )
+          .optional(),
+    },
+  },
+  factory(original, { config }) {
+    return original({
+      path: '/scorecard',
+      title: 'Scorecard',
+      routeRef: rootRouteRef,
+      filter: (entity: Entity): boolean => {
+        const filters = config.allowedFilters;
+
+        // Default: If no config is provided, show the tab for everyone
+        if (!filters || filters.length === 0) return true;
+
+        return filters.some(f => {
+          const kindMatch =
+            !f.kind || f.kind.toLowerCase() === entity.kind.toLowerCase();
+          const typeMatch =
+            !f.type ||
+            f.type.toLowerCase() ===
+              (entity.spec?.type as string)?.toLowerCase();
+
+          return kindMatch && typeMatch;
+        });
+      },
+      loader: async () => {
+        const { EntityScorecardContent } = await import(
+          './components/Scorecard'
+        );
+        return <EntityScorecardContent />;
+      },
+    });
+  },
+});
+
+/**
+ * The primary Scorecard frontend plugin.
  * @alpha
  */
 export default createFrontendPlugin({
   pluginId: 'scorecard',
   extensions: [scorecardApi],
-  routes: { root: rootRouteRef },
+  routes: {
+    root: rootRouteRef,
+  },
 });
 
 /**
- * Creates a module that registers the Scorecard entity tab with the given options.
- * Pass entity kinds from the app (e.g. in app App.tsx) to control which entities show the tab.
+ * Catalog module that automatically injects the Scorecard tab into the Catalog.
  * @alpha
  */
-export function createScorecardCatalogModule(
-  options?: ScorecardEntityContentOptions,
-) {
-  return createFrontendModule({
-    pluginId: 'catalog',
-    extensions: [createScorecardEntityContent(options)],
-  });
-}
+export const scorecardCatalogModule = createFrontendModule({
+  pluginId: 'catalog',
+  extensions: [scorecardEntityContent],
+});
 
-/** Module registering Scorecard translations in app
+/**
+ * App module that automatically registers Scorecard translations.
  * @alpha
  */
 export const scorecardTranslationsModule = createFrontendModule({
@@ -120,4 +134,8 @@ export const scorecardTranslationsModule = createFrontendModule({
   extensions: [scorecardTranslation],
 });
 
+/**
+ * Re-exporting translations for external usage.
+ * @alpha
+ */
 export * from './translations';

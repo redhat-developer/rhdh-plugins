@@ -15,17 +15,17 @@ import { RouteRef } from '@backstage/core-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
-// @alpha
+// @public
 export function createScorecardCatalogModule(
   options?: ScorecardEntityContentOptions,
 ): FrontendModule;
 
-// @alpha
+// @public
 export function createScorecardEntityContent(
   options?: ScorecardEntityContentOptions,
 ): ExtensionDefinition;
 
-// @alpha
+// @public
 const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
@@ -53,12 +53,12 @@ const _default: OverridableFrontendPlugin<
 >;
 export default _default;
 
-// @alpha
+// @public
 export interface ScorecardEntityContentOptions {
   entityKinds?: string[];
 }
 
-// @alpha
+// @public
 export const scorecardTranslationRef: TranslationRef<
   'plugin.scorecard',
   {
@@ -95,10 +95,10 @@ export const scorecardTranslationRef: TranslationRef<
   }
 >;
 
-// @alpha
+// @public
 export const scorecardTranslations: TranslationResource<'plugin.scorecard'>;
 
-// @alpha
+// @public
 export const scorecardTranslationsModule: FrontendModule;
 
 // (No @packageDocumentation comment for this package)

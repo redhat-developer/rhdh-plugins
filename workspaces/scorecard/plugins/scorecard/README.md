@@ -35,21 +35,15 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
    ```tsx
    // In packages/app/src/App.tsx
    import { createApp } from '@backstage/frontend-defaults';
-   import scorecardPlugin, {
+   import {
      scorecardTranslationsModule,
-     createScorecardCatalogModule,
+     scorecardCatalogModule,
    } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
-
-   // Optional: limit which entity kinds show the Scorecard tab (default: all kinds)
-   const scorecardCatalogModule = createScorecardCatalogModule({
-     entityKinds: ['component', 'service', 'template'],
-   });
 
    const app = createApp({
      features: [
        scorecardCatalogModule,
        scorecardTranslationsModule,
-       scorecardPlugin,
        // ... other plugins
      ],
    });
@@ -57,7 +51,51 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
    export default app.createRoot();
    ```
 
-3. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml`:
+3. (Optional) Configure which entities show the Scorecard tab in `app-config.yaml` under `app.extensions`. If you do not add this extension config, the tab is shown for all entity kinds. To restrict by kind and optionally by type:
+
+   ```yaml
+   app:
+     extensions:
+       - entity-content:catalog/entity-content-scorecard:
+           config:
+             allowedFilters:
+               - kind: component
+               - kind: template
+               - kind: resource
+               - kind: location
+   ```
+
+   Each filter can include optional `kind` and/or `type`. An entity shows the tab if it matches at least one filter. You can restrict by **kind only**, by **type only**, or by **kind and type**:
+
+   **By kind only:**
+
+```yaml
+allowedFilters:
+  - kind: component
+  - kind: template
+```
+
+**By type only** (e.g. any entity with `spec.type` equal to `service` or `website`):
+
+```yaml
+allowedFilters:
+  - type: service
+  - type: website
+```
+
+**By kind and type** (e.g. only `component` with type `website` or type `service`):
+
+```yaml
+allowedFilters:
+  - kind: component
+    type: website
+  - kind: component
+    type: service
+```
+
+To align with the legacy EntityPage (Scorecard on component pages and default entity page, not on api/group/user/system/domain), use the first example (by kind only).
+
+4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml`:
 
    ```yaml
    discovery:
@@ -67,7 +105,7 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
            - scorecard
    ```
 
-4. Start the NFS app (e.g. `yarn start`), go to **Catalog**, open an entity. The **Scorecard** tab appears for the kinds you configured (or all kinds if none were specified).
+5. Start the NFS app (e.g. `yarn start`), go to **Catalog**, open an entity. The **Scorecard** tab appears for entities that match your `allowedFilters` (or all entities if the extension config is omitted or empty).
 
 ##### Modules and extensions (NFS)
 
@@ -75,15 +113,15 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 
 **Modules**
 
-| Module                                   | Description                                                                                                                                                                 |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createScorecardCatalogModule(options?)` | Registers the Scorecard entity tab with the catalog plugin. Add the returned module to your app's `features`. Optional `entityKinds` limit which entity kinds show the tab. |
-| `scorecardTranslationsModule`            | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                                |
+| Module                        | Description                                                                                                                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3). |
+| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                           |
 
 **Extensions**
 
 - `api:scorecard` — Scorecard API (provided by the plugin; auto-discovered when the plugin is installed).
-- `entity-content:catalog/scorecard` — Scorecard tab on catalog entity pages (provided by the catalog module).
+- `entity-content:catalog/entity-content-scorecard` — Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type.
 
 #### Legacy app
 
@@ -170,7 +208,7 @@ permission:
 
 ### Accessing the Plugin
 
-- **app (NFS):** Open your Backstage app, go to **Catalog**, open an entity (e.g. a component or service). The **Scorecard** tab appears on the entity page for the kinds you configured (or all kinds if none were specified).
+- **app (NFS):** Open your Backstage app, go to **Catalog**, open an entity. The **Scorecard** tab appears when the entity matches your `allowedFilters` in app-config (or for all entities if the extension config is omitted).
 - **app-legacy:** Open your Backstage app, go to the entity overview from the catalog, and open the **Scorecard** tab to view and analyze scorecard metrics.
 
 ## Adding Translations
