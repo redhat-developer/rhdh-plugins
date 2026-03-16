@@ -1,0 +1,55 @@
+{
+  "name": "@red-hat-developer-hub/backstage-plugin-augment-common",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "license": "Apache-2.0",
+  "description": "Common types and permissions for Augment plugin",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "common-library",
+    "pluginId": "augment",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-augment-common",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-augment",
+      "@red-hat-developer-hub/backstage-plugin-augment-backend",
+      "@red-hat-developer-hub/backstage-plugin-augment-common"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/augment/plugins/augment-common"
+  },
+  "keywords": [
+    "backstage",
+    "plugin",
+    "agentic",
+    "ai",
+    "chat"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "backstage-cli package build",
+    "clean": "backstage-cli package clean",
+    "lint": "backstage-cli package lint",
+    "postpack": "backstage-cli package postpack",
+    "prepack": "backstage-cli package prepack",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "tsc": "tsc"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@backstage/plugin-permission-common": "^0.9.2"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.34.5"
+  }
+}
