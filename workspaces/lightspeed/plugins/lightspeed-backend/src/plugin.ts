@@ -19,6 +19,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 
+import { createNotebooksRouter } from './service/notebooks';
 import { createRouter } from './service/router';
 
 /**
@@ -38,6 +39,7 @@ export const lightspeedPlugin = createBackendPlugin({
         permissions: coreServices.permissions,
       },
       async init({ logger, config, http, httpAuth, userInfo, permissions }) {
+        // Main lightspeed router
         http.use(
           await createRouter({
             config: config,
@@ -48,9 +50,28 @@ export const lightspeedPlugin = createBackendPlugin({
           }),
         );
 
-        // allow health endpoint to be unauthenticated accessible
+        const aiNotebooksEnabled =
+          config.getOptionalBoolean('lightspeed.aiNotebooks.enabled') ?? false;
+        if (aiNotebooksEnabled) {
+          http.use(
+            await createNotebooksRouter({
+              config: config,
+              logger: logger,
+              httpAuth: httpAuth,
+              userInfo: userInfo,
+              permissions,
+            }),
+          );
+          logger.info('AI Notebooks enabled');
+        }
+
+        // Configure authentication policies
         http.addAuthPolicy({
           path: '/health',
+          allow: 'unauthenticated',
+        });
+        http.addAuthPolicy({
+          path: '/ai-notebooks/health',
           allow: 'unauthenticated',
         });
       },

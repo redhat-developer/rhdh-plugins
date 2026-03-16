@@ -30,6 +30,7 @@ import {
 
 import { Readable } from 'node:stream';
 
+import { getUserRef } from './auth-helpers';
 import { userPermissionAuthorization } from './permission';
 import {
   DEFAULT_HISTORY_LENGTH,
@@ -81,16 +82,20 @@ export async function createRouter(
   // Middleware proxy to exclude rcs POST endpoints
   router.use('/', async (req, res, next) => {
     const passthroughPaths = ['/v1/query', '/v1/feedback'];
-    if (passthroughPaths.includes(req.path) || req.method === 'PUT') {
-      return next(); // This will skip proxying and go to POST endpoints
+    // Skip middleware for ai-notebooks routes and specific paths
+    if (
+      req.path.startsWith('/ai-notebooks') ||
+      passthroughPaths.includes(req.path) ||
+      req.method === 'PUT'
+    ) {
+      return next();
     }
     // TODO: parse server_id from req.body and get URL and token when multi-server is supported
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    const userEntity = user.userEntityRef;
+    const userEntity = await getUserRef(req, httpAuth, userInfo);
 
     logger.info(`receives call from user: ${userEntity}`);
     try {
+      const credentials = await httpAuth.credentials(req);
       if (req.method === 'GET') {
         await authorizer.authorizeUser(
           lightspeedChatReadPermission,
@@ -149,12 +154,11 @@ export async function createRouter(
 
   router.post('/v1/feedback', async (request, response) => {
     try {
-      const credentials = await httpAuth.credentials(request);
-      const userEntity = await userInfo.getUserInfo(credentials);
-      const user_id = userEntity.userEntityRef;
+      const user_id = await getUserRef(request, httpAuth, userInfo);
 
       logger.info(`/v1/feedback receives call from user: ${user_id}`);
 
+      const credentials = await httpAuth.credentials(request);
       await authorizer.authorizeUser(
         lightspeedChatCreatePermission,
         credentials,
@@ -203,12 +207,11 @@ export async function createRouter(
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
-        const credentials = await httpAuth.credentials(request);
-        const userEntity = await userInfo.getUserInfo(credentials);
-        const user_id = userEntity.userEntityRef;
+        const user_id = await getUserRef(request, httpAuth, userInfo);
 
         logger.info(`/v1/query receives call from user: ${user_id}`);
 
+        const credentials = await httpAuth.credentials(request);
         await authorizer.authorizeUser(
           lightspeedChatCreatePermission,
           credentials,
@@ -272,12 +275,11 @@ export async function createRouter(
     '/v2/conversations/:conversation_id',
     async (request, response) => {
       try {
-        const credentials = await httpAuth.credentials(request);
-        const userEntity = await userInfo.getUserInfo(credentials);
-        const user_id = userEntity.userEntityRef;
+        const user_id = await getUserRef(request, httpAuth, userInfo);
         const conversation_id = request.params.conversation_id;
 
         const requestBody = JSON.stringify(request.body);
+        const credentials = await httpAuth.credentials(request);
         await authorizer.authorizeUser(
           lightspeedChatCreatePermission,
           credentials,

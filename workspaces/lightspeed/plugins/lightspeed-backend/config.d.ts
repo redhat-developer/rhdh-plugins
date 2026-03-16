@@ -46,5 +46,76 @@ export interface Config {
        */
       token: string;
     }>;
+    /**
+     * Configuration for AI Notebooks (Developer Preview)
+     */
+    aiNotebooks?: {
+      /**
+       * Enable/disable AI Notebooks feature
+       * When enabled, exposes AI Notebooks REST API endpoints for document-based conversations with RAG.
+       * Requires Llama Stack service to be running (default: http://0.0.0.0:8321).
+       * @default true
+       * @visibility frontend
+       */
+      enabled?: boolean;
+      /**
+       * Llama Stack configuration
+       * @visibility backend
+       */
+      llamaStack?: {
+        /**
+         * Llama Stack API URL
+         * @visibility backend
+         */
+        url?: string;
+        /**
+         * Embedding model for vector database
+         * @visibility backend
+         */
+        embeddingModel?: string;
+        /**
+         * Embedding dimension
+         * @visibility backend
+         */
+        embeddingDimension?: number;
+        /**
+         * Vector IO configuration
+         * @visibility backend
+         */
+        vectorIo?: {
+          /**
+           * Vector store provider ID
+           * @visibility backend
+           */
+          providerId?: string;
+        };
+      };
+      /**
+       * File processing timeout in milliseconds
+       * @visibility backend
+       */
+      fileProcessingTimeoutMs?: number;
+      /**
+       * Chunking strategy configuration
+       * @visibility backend
+       */
+      chunkingStrategy?: {
+        /**
+         * Type of chunking strategy ('auto' or 'static')
+         * @visibility backend
+         */
+        type?: string;
+        /**
+         * Maximum chunk size in tokens (for static strategy)
+         * @visibility backend
+         */
+        maxChunkSizeTokens?: number;
+        /**
+         * Chunk overlap in tokens (for static strategy)
+         * @visibility backend
+         */
+        chunkOverlapTokens?: number;
+      };
+    };
   };
 }

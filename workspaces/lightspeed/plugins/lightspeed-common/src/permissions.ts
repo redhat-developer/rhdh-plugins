@@ -55,6 +55,17 @@ export const lightspeedChatUpdatePermission = createPermission({
     action: 'update',
   },
 });
+
+/** This permission is used to access AI Notebooks features
+ * @public
+ */
+export const lightspeedNotebooksUsePermission = createPermission({
+  name: 'lightspeed.notebooks.use',
+  attributes: {
+    action: 'update',
+  },
+});
+
 /**
  * List of all permissions on permission polices.
  *
@@ -65,4 +76,5 @@ export const lightspeedPermissions = [
   lightspeedChatCreatePermission,
   lightspeedChatDeletePermission,
   lightspeedChatUpdatePermission,
+  lightspeedNotebooksUsePermission,
 ];
