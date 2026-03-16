@@ -77,4 +77,9 @@ backend.add(
     '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf'
   ),
 );
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot'
+  ),
+);
 backend.start();
