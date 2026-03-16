@@ -47,6 +47,7 @@ export class CatalogPage {
 
   async openCatalog() {
     await this.page.getByRole('link', { name: 'Catalog', exact: true }).click();
+    await this.page.getByTestId('user-picker-all').getByText('All').click();
   }
 
   async openComponent(componentName: string) {
