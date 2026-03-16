@@ -414,10 +414,12 @@ export async function listAllRepositoriesForAuthenticatedUser(
     pagePromises.push(fetchListForAuthenticatedUser(i));
   }
   const pageResponses = await Promise.all(pagePromises);
+  pageResponses.unshift(firstPageResponse);
 
-  const allRepositories = firstPageResponse.data
-    .concat(pageResponses.flatMap(pageResponse => pageResponse.data))
-    .sort((a, b) => a.full_name.localeCompare(b.full_name));
+  const allRepositories = pageResponses.flatMap(
+    pageResponse => pageResponse.data,
+  );
+  // .sort((a, b) => a.name.localeCompare(b.name));
 
   return allRepositories;
 }
