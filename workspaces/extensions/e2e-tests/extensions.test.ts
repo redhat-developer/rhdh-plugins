@@ -25,6 +25,8 @@ import { ExtensionsMessages, getTranslations } from './utils/translations';
  */
 const LOCALE_DISPLAY_NAMES: Record<string, string> = {
   en: 'English',
+  de: 'Deutsch',
+  es: 'Español',
   fr: 'Français',
   it: 'Italiano',
   ja: '日本語',
@@ -120,7 +122,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify support type filters in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
+      );
       await extensions.selectDropdown(`${translations.search.supportType}`);
       await extensions.supportFilters();
       await extensions.emptyCategoryComboBox();
@@ -128,7 +135,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify certified badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
+      );
       await extensions.selectDropdown(`${translations.search.supportType}`);
       await extensions.toggleOption(translations.badges.certified);
       await sharedPage.keyboard.press(`Escape`);
@@ -157,7 +169,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify Generally available badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
+      );
       await extensions.selectSupportTypeFilter(
         translations.badges.generallyAvailable,
       );
@@ -189,7 +206,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify custom plugin badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
+      );
       await extensions.selectSupportTypeFilter(
         translations.badges.customPlugin,
       );
@@ -214,7 +236,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify tech preview badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
+      );
       await extensions.verifySupportTypeBadge({
         supportType: translations.badges.techPreview,
         pluginName: 'Bulk Import',
@@ -227,7 +254,14 @@ test.describe('Admin > Extensions', () => {
       });
     });
 
-    test('Verify dev preview badge in extensions', async () => {
+    test('Verify dev preview badge in extensions', async ({
+      browser: _browser,
+    }, testInfo) => {
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
+      );
       await extensions.selectSupportTypeFilter(translations.badges.devPreview);
       await extensionHelper.verifyHeading('Extensions');
 
@@ -244,7 +278,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify community plugin badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
+      );
       await extensions.selectSupportTypeFilter(
         translations.badges.communityPlugin,
       );
