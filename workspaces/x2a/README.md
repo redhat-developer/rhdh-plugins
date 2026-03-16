@@ -48,8 +48,12 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
 
    **GitLab OAuth:** When [creating a GitLab OAuth application](https://gitlab.com/-/user_settings/applications), request scopes per [official documentation](https://backstage.io/docs/auth/gitlab/provider/).
 
-   Cloud-based **Bitbucket.org OAuth:** When creating a Bitbucket OAuth consumer via `https://bitbucket.org/[YOUR_WORKSPACE]/workspace/settings/api`, request scopes per [official documentation](https://backstage.io/docs/auth/bitbucket/provider/).
+   Cloud-based **Bitbucket.org OAuth:** When creating a Bitbucket OAuth consumer via `https://bitbucket.org/[YOUR_WORKSPACE]/workspace/settings/api`, request scopes per [official documentation](https://backstage.io/docs/auth/bitbucket/provider/), which include:
+   - `account:read`
+   - `workspace membership:read`
+
    In addition, request the following scopes required by the Backstage Bitbucket scaffolder module for repository and pull-request operations:
+   - `project:read`
    - `snippet:write`
    - `issue:write`
    - `pullrequest:write`
