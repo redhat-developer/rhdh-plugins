@@ -30,6 +30,7 @@ import gitUrlParse from 'git-url-parse';
 import { logErrorIfNeeded } from '../../helpers';
 import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import {
+  AppInstallationRepositories,
   AuthenticatedUserRepositoryList,
   isGithubAppCredential,
   type ExtendedGithubCredentials,
@@ -419,4 +420,67 @@ export async function listAllRepositoriesForAuthenticatedUser(
     .sort((a, b) => a.full_name.localeCompare(b.full_name));
 
   return allRepositories;
+}
+
+export async function listAllRepositoriesAccessibleToInstallation(
+  deps: {
+    logger: LoggerService;
+  },
+  octokit: Octokit,
+  options?: {
+    pageSize?: number;
+  },
+): Promise<AppInstallationRepositories> {
+  const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
+  const PAGE_NUMBER_REGEX_MATCH_INDEX = 1;
+  const SECOND_PAGE_NUMBER = 2;
+
+  const fetchListReposAccessibleToInstallation = async (pageNumber: number) => {
+    return await octokit.rest.apps.listReposAccessibleToInstallation({
+      page: pageNumber,
+      per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
+    });
+  };
+
+  const firstPageResponse = await fetchListReposAccessibleToInstallation(1);
+
+  const lastPageNumberString = firstPageResponse?.headers?.link
+    ?.split(',')
+    ?.find(s => s.includes('rel="last"'))
+    ?.match(/page=(\d+)/)?.[PAGE_NUMBER_REGEX_MATCH_INDEX];
+
+  if (!lastPageNumberString) {
+    deps.logger.debug(
+      `Unable to extract page number from rel='last' link found in response headers from 'apps.listReposAccessibleToInstallation' GH endpoint => returning current page size`,
+    );
+    return firstPageResponse.data;
+  }
+
+  const lastPageNumber = Number.parseInt(lastPageNumberString, 10);
+
+  if (lastPageNumber < SECOND_PAGE_NUMBER) {
+    return firstPageResponse.data;
+  }
+
+  const pagePromises = [];
+  for (let i = SECOND_PAGE_NUMBER; i <= lastPageNumber; i++) {
+    pagePromises.push(fetchListReposAccessibleToInstallation(i));
+  }
+  const pageResponses = await Promise.all(pagePromises);
+  pageResponses.unshift(firstPageResponse);
+
+  const allRepositories = pageResponses.flatMap(
+    pageResponse => pageResponse.data.repositories,
+  );
+  // .sort((a, b) => a.name.localeCompare(b.name));
+
+  const total_count =
+    pageResponses?.[0]?.data.total_count ?? allRepositories.length;
+  const { repository_selection } = pageResponses?.[0]?.data;
+
+  return {
+    repositories: allRepositories,
+    total_count,
+    repository_selection,
+  };
 }
