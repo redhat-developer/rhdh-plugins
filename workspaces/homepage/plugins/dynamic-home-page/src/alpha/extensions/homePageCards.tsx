@@ -166,6 +166,7 @@ export const RecentlyVisitedWidget = HomePageWidgetBlueprint.make({
   name: 'recently-visited',
   params: {
     layout: defaultCardLayout,
+    name: 'Recently visited',
     components: () =>
       import('@backstage/plugin-home').then(m => ({
         Content: m.HomePageRecentlyVisited,
@@ -181,6 +182,7 @@ export const TopVisitedWidget = HomePageWidgetBlueprint.make({
   name: 'top-visited',
   params: {
     layout: defaultCardLayout,
+    name: 'Top visited',
     components: () =>
       import('@backstage/plugin-home').then(m => ({
         Content: () => <m.HomePageTopVisited />,
