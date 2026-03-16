@@ -136,49 +136,31 @@ export async function addGithubAppRepositories(
   const pageSize = reqParams?.pageSize ?? DefaultPageSize;
   let totalCount: number | undefined;
   try {
-    if (search) {
-      const repositoriesResponse =
-        await listAllRepositoriesAccessibleToInstallation(deps, octokit, {
-          pageSize,
-        });
-      const repos = repositoriesResponse?.repositories ?? repositoriesResponse;
-
-      const filteredRepositories = repos.filter(repo =>
-        repo.name.toLocaleLowerCase().includes(search),
-      );
-
-      filteredRepositories.forEach(repo =>
-        repositories.set(repo.full_name, {
-          name: repo.name,
-          full_name: repo.full_name,
-          url: repo.url,
-          html_url: repo.html_url,
-          default_branch: repo.default_branch,
-          updated_at: repo.updated_at,
-        }),
-      );
-
-      totalCount = filteredRepositories.length;
-    } else {
-      const repositoriesResponse =
-        await listAllRepositoriesAccessibleToInstallation(deps, octokit, {
-          pageSize,
-        });
-      const repos = repositoriesResponse?.repositories ?? repositoriesResponse;
-
-      repos?.forEach(repo => {
-        repositories.set(repo.full_name, {
-          name: repo.name,
-          full_name: repo.full_name,
-          url: repo.url,
-          html_url: repo.html_url,
-          default_branch: repo.default_branch,
-          updated_at: repo.updated_at,
-        });
+    const repositoriesResponse =
+      await listAllRepositoriesAccessibleToInstallation(deps, octokit, {
+        pageSize,
       });
+    const allRepositories =
+      repositoriesResponse?.repositories ?? repositoriesResponse;
 
-      totalCount = repositoriesResponse?.total_count;
-    }
+    const filteredRepositories = search
+      ? allRepositories.filter(repo =>
+          repo.name.toLocaleLowerCase().includes(search),
+        )
+      : allRepositories;
+
+    filteredRepositories.forEach(repo =>
+      repositories.set(repo.full_name, {
+        name: repo.name,
+        full_name: repo.full_name,
+        url: repo.url,
+        html_url: repo.html_url,
+        default_branch: repo.default_branch,
+        updated_at: repo.updated_at,
+      }),
+    );
+
+    totalCount = filteredRepositories.length;
   } catch (err: any) {
     logErrorIfNeeded(
       deps.logger,
