@@ -478,7 +478,7 @@ export async function listAllRepositoriesAccessibleToInstallation(
 
   const total_count =
     pageResponses?.[0]?.data.total_count ?? allRepositories.length;
-  const { repository_selection } = pageResponses?.[0]?.data;
+  const repository_selection = pageResponses?.[0]?.data?.repository_selection;
 
   return {
     repositories: allRepositories,
