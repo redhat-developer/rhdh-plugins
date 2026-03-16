@@ -132,16 +132,11 @@ export async function addGithubAppRepositories(
   },
 ): Promise<{ totalCount?: number }> {
   const search = reqParams?.search?.toLocaleLowerCase();
-  const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
-  const pageSize = reqParams?.pageSize ?? DefaultPageSize;
   let totalCount: number | undefined;
+
   try {
-    const repositoriesResponse =
-      await listAllRepositoriesAccessibleToInstallation(deps, octokit, {
-        pageSize,
-      });
-    const allRepositories =
-      repositoriesResponse?.repositories ?? repositoriesResponse;
+    const { repositories: allRepositories } =
+      await listAllRepositoriesAccessibleToInstallation(deps, octokit);
 
     const filteredRepositories = search
       ? allRepositories.filter(repo =>
