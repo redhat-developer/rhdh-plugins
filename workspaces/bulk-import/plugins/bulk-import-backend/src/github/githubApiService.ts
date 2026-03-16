@@ -249,7 +249,6 @@ export class GithubApiService {
               },
               octokit,
               credential,
-              ghConfig,
               repositories,
               dataFetchErrors,
               {
@@ -329,7 +328,6 @@ export class GithubApiService {
                 },
                 octokit,
                 credential,
-                ghConfig,
                 repositories,
                 dataFetchErrors,
                 {
