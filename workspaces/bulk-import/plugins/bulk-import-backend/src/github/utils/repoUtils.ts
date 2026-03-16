@@ -38,7 +38,6 @@ import type {
   GithubFetchError,
   GithubRepository,
 } from '../types';
-import { getAllAppOrgs } from './orgUtils';
 import {
   computeTotalCountFromGitHubToken,
   createCredentialError,
@@ -122,7 +121,6 @@ export async function addGithubAppRepositories(
   },
   octokit: Octokit,
   credential: GithubAppCredentials,
-  ghConfig: GithubIntegrationConfig,
   repositories: Map<string, GithubRepository>,
   errors: Map<number, GithubFetchError>,
   reqParams?: {
