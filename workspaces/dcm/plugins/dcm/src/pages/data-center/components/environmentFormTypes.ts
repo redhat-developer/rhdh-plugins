@@ -13,8 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { Router } from './Router';
-export { dcmPlugin, DcmPage } from './plugin';
-export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
-export { RhdhLogoFull } from './components/RhdhLogoFull';
-export { RhdhLogoIcon } from './components/RhdhLogoIcon';
+
+export type EnvironmentRegisterFormState = {
+  name: string;
+  type: string;
+  envLabel: string;
+  maxVcpus: string;
+  maxRamGb: string;
+};
+
+export const emptyEnvironmentRegisterForm =
+  (): EnvironmentRegisterFormState => ({
+    name: '',
+    type: '',
+    envLabel: '',
+    maxVcpus: '',
+    maxRamGb: '',
+  });

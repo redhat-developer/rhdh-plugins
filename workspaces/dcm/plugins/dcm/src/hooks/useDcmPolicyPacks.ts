@@ -13,8 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { Router } from './Router';
-export { dcmPlugin, DcmPage } from './plugin';
-export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
-export { RhdhLogoFull } from './components/RhdhLogoFull';
-export { RhdhLogoIcon } from './components/RhdhLogoIcon';
+
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+
+/**
+ * Policy pack ids from `app-config.yaml` (`dcm.policyPacks`).
+ * If unset, returns an empty array (no checkboxes).
+ */
+export function useDcmPolicyPacks(): string[] {
+  const config = useApi(configApiRef);
+  return config.getOptionalStringArray('dcm.policyPacks') ?? [];
+}

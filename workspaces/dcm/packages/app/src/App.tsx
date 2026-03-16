@@ -122,7 +122,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/dcm" element={<DcmPage />} />
+    <Route path="/dcm/*" element={<DcmPage />} />
     <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );

@@ -47,6 +47,7 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 import { useRhdhTheme } from '../../hooks/useRhdhTheme';
+import { usePatternFlyTheme } from '../../hooks/usePatternFlyTheme';
 
 /** Returns true when the theme palette is in dark mode (supports both MUI v4 type and v5 mode). */
 function isPaletteDark(palette: { type?: string; mode?: string }): boolean {
@@ -232,6 +233,7 @@ const SidebarLogo = () => {
 export const Root = ({ children }: PropsWithChildren<{}>) => {
   const classes = useSidebarItemStyles();
   const location = useLocation();
+  usePatternFlyTheme();
   const isDcmActive = location.pathname.startsWith('/dcm');
   const isRbacActive = location.pathname.startsWith('/rbac');
 

@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { Router } from './Router';
-export { dcmPlugin, DcmPage } from './plugin';
-export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
-export { RhdhLogoFull } from './components/RhdhLogoFull';
-export { RhdhLogoIcon } from './components/RhdhLogoIcon';
+
+export * from './dcm-mock-rows';
+export * from './environments';
+export * from './service-specs';

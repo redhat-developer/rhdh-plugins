@@ -25,3 +25,11 @@
 export const DCM_COMMON_PLUGIN_ID = 'dcm' as const;
 
 export { dcmPluginReadPermission, dcmPluginPermissions } from './permissions';
+export {
+  DCM_ENTITY_STATUS,
+  DCM_ENTITY_STATUS_VALUES,
+  displayDcmEntityStatus,
+  displayDcmEntityStatusLoose,
+  parseDcmEntityStatus,
+  type DcmEntityStatus,
+} from './entityStatus';
