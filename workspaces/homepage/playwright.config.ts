@@ -21,11 +21,8 @@ const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
 
-// Each app has its own e2e tests
-const testDir =
-  appMode === 'legacy'
-    ? 'packages/app-legacy/e2e-tests'
-    : 'packages/app/e2e-tests';
+// Single e2e test suite (packages/app/e2e-tests) runs for both legacy and nfs via APP_MODE
+const testDir = 'packages/app/e2e-tests';
 
 export default defineConfig({
   // E2E tests run full app + login + locale; beforeAll can take 30–60s
@@ -71,7 +68,6 @@ export default defineConfig({
     // de, es, fr, it, ja: run only Cards tests (locale-specific content)
     ...LOCALES.filter(locale => locale !== 'en').map(locale => ({
       name: locale,
-      testDir,
       grep: /Cards/,
       use: {
         channel: 'chrome' as const,
