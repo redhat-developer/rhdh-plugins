@@ -137,3 +137,6 @@ export interface ExtendedGithubCredentialsProvider extends GithubCredentialsProv
 
 export type AuthenticatedUserRepositoryList =
   RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response']['data'];
+
+export type AppInstallationRepositories =
+  RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response']['data'];
