@@ -43,6 +43,7 @@ import {
   computeTotalCountFromGitHubToken,
   createCredentialError,
   handleError,
+  listAllRepositoriesAccessibleToInstallation,
   listAllRepositoriesForAuthenticatedUser,
 } from './utils';
 
@@ -157,11 +158,12 @@ export async function addGithubAppRepositories(
         repositories.set(repo.full_name, repo),
       );
     } else {
-      const resp = await octokit.apps.listReposAccessibleToInstallation({
-        page: pageNumber,
-        per_page: pageSize,
-      });
-      const repos = resp?.data?.repositories ?? resp?.data;
+      const repositoriesResponse =
+        await listAllRepositoriesAccessibleToInstallation(deps, octokit, {
+          pageSize,
+        });
+      const repos = repositoriesResponse?.repositories ?? repositoriesResponse;
+
       repos?.forEach(repo => {
         repositories.set(repo.full_name, {
           name: repo.name,
@@ -172,7 +174,8 @@ export async function addGithubAppRepositories(
           updated_at: repo.updated_at,
         });
       });
-      totalCount = resp?.data?.total_count;
+
+      totalCount = repositoriesResponse?.total_count;
     }
   } catch (err: any) {
     logErrorIfNeeded(
