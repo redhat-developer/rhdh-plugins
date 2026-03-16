@@ -507,6 +507,50 @@ describe('KubeService', () => {
         }),
       );
     });
+
+    it('should return empty string when pod has no name', async () => {
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({
+        items: [{ metadata: {} }],
+      });
+
+      const result = await kubeService.getJobLogs(jobName);
+
+      expect(result).toBe('');
+      expect(mockCoreV1Api.readNamespacedPodLog).not.toHaveBeenCalled();
+    });
+
+    it('should return empty string when pod phase is Pending', async () => {
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({
+        items: [
+          {
+            metadata: { name: 'job-x2a-init-abc123-pod' },
+            status: { phase: 'Pending' },
+          },
+        ],
+      });
+
+      const result = await kubeService.getJobLogs(jobName);
+
+      expect(result).toBe('');
+      expect(mockCoreV1Api.readNamespacedPodLog).not.toHaveBeenCalled();
+    });
+
+    it('should throw on K8s API errors (e.g. pod not ready, network failure)', async () => {
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({
+        items: [{ metadata: { name: 'job-x2a-init-abc123-pod' } }],
+      });
+      const apiError = new Error('AnError');
+      mockCoreV1Api.readNamespacedPodLog.mockRejectedValue(apiError);
+
+      await expect(kubeService.getJobLogs(jobName)).rejects.toThrow(apiError);
+    });
+
+    it('should throw when listNamespacedPod fails', async () => {
+      const listError = new Error('Forbidden');
+      mockCoreV1Api.listNamespacedPod.mockRejectedValue(listError);
+
+      await expect(kubeService.getJobLogs(jobName)).rejects.toThrow(listError);
+    });
   });
 
   describe('deleteJob', () => {

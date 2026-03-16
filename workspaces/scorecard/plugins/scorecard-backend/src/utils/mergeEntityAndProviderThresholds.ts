@@ -16,7 +16,6 @@
 
 import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type {
-  MetricType,
   ThresholdConfig,
   ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -27,32 +26,24 @@ import {
 import { isError } from '@backstage/errors';
 import type { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
-function parseEntityOverrideThresholds(
+const thresholdRulesAnnotationPrefix = (providerId: string) =>
+  `scorecard.io/${providerId}.thresholds.rules.`;
+
+/**
+ * Extract threshold override rules from entity annotations for a given provider, doesn't validate rules.
+ */
+function parseEntityAnnotationThresholds(
   entity: Entity,
   providerId: string,
-  metricType: MetricType,
 ): ThresholdRule[] {
   const annotations = entity.metadata?.annotations || {};
-  const prefix = `scorecard.io/${providerId}.thresholds.rules.`;
+  const prefix = thresholdRulesAnnotationPrefix(providerId);
   const overrides: ThresholdRule[] = [];
 
   for (const [annotationKey, expression] of Object.entries(annotations)) {
     if (annotationKey.startsWith(prefix) && expression) {
       const key = annotationKey.substring(prefix.length);
-      const entityRule = { key, expression };
-      try {
-        validateThresholds({ rules: [entityRule] }, metricType);
-        overrides.push(entityRule);
-      } catch (e) {
-        if (isError(e)) {
-          throw new ThresholdConfigFormatError(
-            `Invalid threshold annotation '${annotationKey}: ${expression}' in entity '${stringifyEntityRef(
-              entity,
-            )}': ${e.message}`,
-          );
-        }
-        throw e;
-      }
+      overrides.push({ key, expression });
     }
   }
 
@@ -63,15 +54,16 @@ export function mergeEntityAndProviderThresholds(
   entity: Entity,
   provider: MetricProvider,
 ): ThresholdConfig {
+  const providerId = provider.getProviderId();
   const providerThresholds = provider.getMetricThresholds();
-  const entityOverrideThresholds = parseEntityOverrideThresholds(
+  const providerMetricType = provider.getMetricType();
+  const entityAnnotationThresholds = parseEntityAnnotationThresholds(
     entity,
-    provider.getProviderId(),
-    provider.getMetricType(),
+    providerId,
   );
 
   const mergedRules = [...providerThresholds.rules];
-  for (const override of entityOverrideThresholds) {
+  for (const override of entityAnnotationThresholds) {
     const foundKey = mergedRules.findIndex(rule => rule.key === override.key);
     if (foundKey === -1) {
       throw new ThresholdConfigFormatError(
@@ -79,13 +71,27 @@ export function mergeEntityAndProviderThresholds(
           entity,
         )} thresholds by ${JSON.stringify(
           override,
-        )}, metric provider ${provider.getProviderId()} does not support key ${
-          override.key
-        }`,
+        )}, metric provider ${providerId} does not support key ${override.key}`,
       );
     }
 
-    mergedRules[foundKey] = override;
+    const mergedRule: ThresholdRule = { ...mergedRules[foundKey], ...override };
+    try {
+      validateThresholds({ rules: [mergedRule] }, providerMetricType);
+    } catch (e) {
+      if (isError(e)) {
+        throw new ThresholdConfigFormatError(
+          `Invalid threshold annotation '${thresholdRulesAnnotationPrefix(
+            providerId,
+          )}${override.key}: ${
+            override.expression
+          }' in entity '${stringifyEntityRef(entity)}': ${e.message}`,
+        );
+      }
+      throw e;
+    }
+
+    mergedRules[foundKey] = mergedRule;
   }
 
   return {

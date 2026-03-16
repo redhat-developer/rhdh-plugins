@@ -56,7 +56,11 @@ import {
   X2APage,
   x2aPluginTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-x2a';
-import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import {
+  bitbucketAuthApiRef,
+  githubAuthApiRef,
+  gitlabAuthApiRef,
+} from '@backstage/core-plugin-api';
 
 const app = createApp({
   apis,
@@ -89,6 +93,18 @@ const app = createApp({
             title: 'GitHub',
             message: 'Sign in using GitHub',
             apiRef: githubAuthApiRef,
+          },
+          {
+            id: 'gitlab-auth-provider',
+            title: 'GitLab',
+            message: 'Sign in using GitLab',
+            apiRef: gitlabAuthApiRef,
+          },
+          {
+            id: 'bitbucket-auth-provider',
+            title: 'Bitbucket',
+            message: 'Sign in using Bitbucket',
+            apiRef: bitbucketAuthApiRef,
           },
         ]}
       />

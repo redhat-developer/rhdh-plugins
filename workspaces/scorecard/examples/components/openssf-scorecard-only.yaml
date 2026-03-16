@@ -1,0 +1,12 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: openssf-scorecard-only
+  annotations:
+    openssf/scorecard-location: https://api.securityscorecards.dev/projects/github.com/alizard0/rhdh-plugins
+    scorecard.io/disabled-metrics: openssf.maintained
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: experimental

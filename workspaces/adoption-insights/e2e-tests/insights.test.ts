@@ -32,6 +32,7 @@ import {
   switchToLocale,
 } from './utils/insightsHelpers';
 import { runAccessibilityTests } from './utils/accessibility.js';
+import { skipIfLocales } from './utils/localeSkip.js';
 import {
   InsightsMessages,
   getTranslations,
@@ -111,7 +112,12 @@ test('Select date range', async () => {
   await selectDateRange(page, translations.header.dateRange.today);
 });
 
-test('Active users panel shows 1 visitor', async () => {
+test('Active users panel shows 1 visitor', async ({}, testInfo) => {
+  skipIfLocales(
+    testInfo,
+    ['de', 'es'],
+    'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2791',
+  );
   const panel = getPanel(page, translations.activeUsers.title);
   await expect(panel.locator('.recharts-surface')).toBeVisible();
   const averageTextContent = replaceTemplate(
@@ -210,7 +216,12 @@ test.describe(() => {
     await selectDateRange(page, translations.header.dateRange.today);
   });
 
-  test('Visited component shows up in top catalog entities', async () => {
+  test('Visited component shows up in top catalog entities', async ({}, testInfo) => {
+    skipIfLocales(
+      testInfo,
+      ['de', 'es'],
+      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2791',
+    );
     const panel = getPanel(page, translations.catalogEntities.allTitle);
     await expect(panel).toContainText(translations.filter.selectKind);
     await panel.getByLabel(translations.filter.selectKind).click();
@@ -244,20 +255,12 @@ test.describe(() => {
     await page.keyboard.press('Escape');
   });
 
-  test('Visited TechDoc shows up in top TechDocs', async () => {
-    const panel = getPanel(page, translations.techDocs.allTitle);
-
-    await verifyPanelContainsTexts(panel, [
-      translations.table.headers.name,
-      translations.table.headers.entity,
-      translations.table.headers.lastUsed,
-      translations.table.headers.views,
-    ]);
-
-    await verifyTableEntries(panel, 1, 'docs');
-  });
-
-  test('New data shows in searches', async () => {
+  test('New data shows in searches', async ({}, testInfo) => {
+    skipIfLocales(
+      testInfo,
+      ['de', 'es'],
+      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2791',
+    );
     const panel = getPanel(
       page,
       replaceTemplate(translations.searches.totalCount, { count: '1' }),
@@ -273,6 +276,19 @@ test.describe(() => {
     );
     const averageText = `${translations.searches.averagePrefix} ${averageTextContent}${translations.searches.averageSuffix}`;
     await expect(panel).toContainText(averageText);
+  });
+
+  test('Visited TechDoc shows up in top TechDocs', async () => {
+    const panel = getPanel(page, translations.techDocs.allTitle);
+
+    await verifyPanelContainsTexts(panel, [
+      translations.table.headers.name,
+      translations.table.headers.entity,
+      translations.table.headers.lastUsed,
+      translations.table.headers.views,
+    ]);
+
+    await verifyTableEntries(panel, 1, 'docs');
   });
 
   test('New data shows in top templates', async ({

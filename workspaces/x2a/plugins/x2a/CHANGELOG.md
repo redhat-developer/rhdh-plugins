@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 1.0.2
+
+### Patch Changes
+
+- 4377735: Project status is aligned if module summary is empty (while Initializing)
+- 01999f1: Introducing projects by groups. Additional RBAC hardening.
+  - require x2a permissions to access the UI
+  - enforce better the x2a permissions on the endpoints
+  - projects can be optionally owned by a Backstage group, still defaults to the logged-in user
+
+- 0c598fb: Add GitLab support.
+- Updated dependencies [0c598fb]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes

@@ -5,6 +5,7 @@
 ```ts
 
 import { BasicPermission } from '@backstage/plugin-permission-common';
+import { Config } from '@backstage/config';
 
 // @public (undocumented)
 export interface AAPCredentials {
@@ -19,10 +20,12 @@ export interface AAPCredentials {
 export interface AgentMetrics {
     durationSeconds: number;
     endedAt?: Date;
+    inputTokens?: number;
     metrics?: {
         [key: string]: any;
     };
     name: string;
+    outputTokens?: number;
     startedAt?: Date;
     toolCalls?: {
         [key: string]: number;
@@ -38,7 +41,27 @@ export interface Artifact {
 }
 
 // @public (undocumented)
-export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata';
+export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata' | 'ansible_project';
+
+// @public
+export interface AuthToken {
+    provider: string;
+    token: string;
+}
+
+// @public
+export type AuthTokenDescriptor = {
+    provider: string;
+    customProviderApiId?: string;
+    scope?: string | string[];
+    tokenType?: 'openId' | 'oauth';
+};
+
+// @public
+export const bitbucketProvider: ScmProvider;
+
+// @public
+export function buildScmHostMap(config: Config): Map<string, ScmProviderName>;
 
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
@@ -67,6 +90,7 @@ export class DefaultApiClient {
     projectsProjectIdCollectArtifactsPost(request: ProjectsProjectIdCollectArtifactsPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdCollectArtifactsPost200Response>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdLogGet(request: ProjectsProjectIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
     projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
@@ -74,6 +98,12 @@ export class DefaultApiClient {
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
 }
+
+// @public
+export const githubProvider: ScmProvider;
+
+// @public
+export const gitlabProvider: ScmProvider;
 
 // @public (undocumented)
 export interface GitRepoAuth {
@@ -101,6 +131,9 @@ export interface Job {
 
 // @public (undocumented)
 export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error';
+
+// @public
+export const MAX_CONCURRENT_BULK_RUN = 3;
 
 // @public (undocumented)
 export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
@@ -148,6 +181,8 @@ export interface Project {
     createdBy: string;
     description?: string;
     id: string;
+    // (undocumented)
+    initJob?: Job;
     // (undocumented)
     migrationPlan?: Artifact;
     name: string;
@@ -202,6 +237,9 @@ export type ProjectsProjectIdCollectArtifactsPost = {
         moduleId?: string;
         phase: MigrationPhase;
     };
+    header: {
+        xCallbackSignature: string;
+    };
 };
 
 // @public (undocumented)
@@ -239,6 +277,16 @@ export interface ProjectsProjectIdDelete200Response {
 export type ProjectsProjectIdGet = {
     path: {
         projectId: string;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdLogGet = {
+    path: {
+        projectId: string;
+    };
+    query: {
+        streaming?: boolean;
     };
 };
 
@@ -348,6 +396,26 @@ export interface RequestOptions {
     // (undocumented)
     token?: string;
 }
+
+// @public
+export function resolveScmProvider(repoUrl: string, hostProviderMap?: Map<string, ScmProviderName>): ScmProvider;
+
+// @public
+export function resolveScmProviderByName(name: ScmProviderName): ScmProvider;
+
+// @public
+export interface ScmProvider {
+    augmentToken(token: string): string;
+    buildArtifactUrl(origin: string, path: string, encodedBranch: string, filePath: string): string;
+    buildBranchUrl(origin: string, path: string, encodedBranch: string): string;
+    getAuthTokenDescriptor(readOnly: boolean): AuthTokenDescriptor;
+    matches(repoUrl: string): boolean;
+    // (undocumented)
+    readonly name: ScmProviderName;
+}
+
+// @public
+export type ScmProviderName = 'github' | 'gitlab' | 'bitbucket';
 
 // @public
 export interface Telemetry {

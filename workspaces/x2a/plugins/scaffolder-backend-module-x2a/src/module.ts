@@ -33,9 +33,12 @@ export const scaffolderModule = createBackendModule({
       deps: {
         scaffolderActions: scaffolderActionsExtensionPoint,
         discoveryService: coreServices.discovery,
+        config: coreServices.rootConfig,
       },
-      async init({ scaffolderActions, discoveryService }) {
-        scaffolderActions.addActions(createProjectAction(discoveryService));
+      async init({ scaffolderActions, discoveryService, config }) {
+        scaffolderActions.addActions(
+          createProjectAction(discoveryService, config),
+        );
       },
     });
   },

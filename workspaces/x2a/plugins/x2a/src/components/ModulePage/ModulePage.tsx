@@ -23,25 +23,31 @@ import {
   Progress,
   ResponseErrorPanel,
 } from '@backstage/core-components';
-import { Grid } from '@material-ui/core';
-import { ModulePhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Box, Grid } from '@material-ui/core';
+import {
+  resolveScmProvider,
+  MigrationPhase,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
 
 import { moduleRouteRef } from '../../routes';
 import { useClientService } from '../../ClientService';
+import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
-import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
+import { useRepoAuthentication } from '../../repoAuth';
 import { ArtifactsCard } from './ArtifactsCard';
 import { ModuleDetailsCard } from './ModuleDetailsCard';
 import { PhasesCard } from './PhasesCard';
 import { ModulePageBreadcrumb } from './ModulePageBreadcrumb';
 
 export const ModulePage = () => {
+  const { t } = useTranslation();
   const { projectId, moduleId } = useRouteRefParams(moduleRouteRef);
+
   const clientService = useClientService();
   const repoAuthentication = useRepoAuthentication();
-  const { t } = useTranslation();
+  const hostMap = useScmHostMap();
   const [error, setError] = useState<string | undefined>();
   const [refresh, setRefresh] = useState(0);
 
@@ -68,8 +74,9 @@ export const ModulePage = () => {
   }, [moduleId, refresh]);
 
   const handleRunPhase = useCallback(
-    async (phase: ModulePhase) => {
-      if (!project) {
+    async (phase: MigrationPhase) => {
+      if (!project || phase === 'init') {
+        // The init phase belongs to the project's page
         return;
       }
       setError(undefined);
@@ -77,18 +84,18 @@ export const ModulePage = () => {
       try {
         const sourceRepoAuthToken = (
           await repoAuthentication.authenticate([
-            getAuthTokenDescriptor({
-              repoUrl: project.sourceRepoUrl,
-              readOnly: true,
-            }),
+            resolveScmProvider(
+              project.sourceRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(true),
           ])
         )[0].token;
         const targetRepoAuthToken = (
           await repoAuthentication.authenticate([
-            getAuthTokenDescriptor({
-              repoUrl: project.targetRepoUrl,
-              readOnly: false,
-            }),
+            resolveScmProvider(
+              project.targetRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(false),
           ])
         )[0].token;
 
@@ -114,7 +121,7 @@ export const ModulePage = () => {
         );
       }
     },
-    [clientService, projectId, moduleId, repoAuthentication, project],
+    [clientService, hostMap, projectId, moduleId, repoAuthentication, project],
   );
 
   const fetchError = projectError || moduleError;
@@ -133,11 +140,15 @@ export const ModulePage = () => {
 
   return (
     <Page themeId="tool">
-      <Header title={module?.name || t('modulePage.title')}>
-        <ModulePageBreadcrumb />
-      </Header>
+      <Header title={t('modulePage.title')} />
 
       <Content>
+        <Box mb={2}>
+          <ModulePageBreadcrumb
+            projectId={projectId}
+            projectName={project?.name || ''}
+          />
+        </Box>
         {error && (
           <Alert severity="error">
             <AlertTitle>{error}</AlertTitle>
@@ -145,8 +156,8 @@ export const ModulePage = () => {
         )}
         {isLoading && <Progress />}
         {!isLoading && (
-          <Grid container spacing={3} direction="column">
-            <Grid item>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
               <ArtifactsCard
                 module={module}
                 targetRepoUrl={project?.targetRepoUrl || ''}
@@ -154,10 +165,10 @@ export const ModulePage = () => {
                 migrationPlanArtifact={project?.migrationPlan}
               />
             </Grid>
-            <Grid item>
+            <Grid item xs={12} md={6}>
               <ModuleDetailsCard module={module} />
             </Grid>
-            <Grid item>
+            <Grid item xs={12}>
               <PhasesCard
                 module={module}
                 projectId={projectId}

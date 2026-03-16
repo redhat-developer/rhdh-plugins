@@ -22,7 +22,7 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
 
 ### Prerequisites
 
-- Node.js >20
+- Node.js >22
 - Yarn package manager
 - Kubernetes cluster access (optional, for Kubernetes features)
 
@@ -34,11 +34,41 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
    yarn install
    ```
 
-2. Start the development environment with just the plugin loaded:
+2. **Optional:** Update `app-config.yaml` based on your environment.
+   - **`auth:`**
+     - Configure authentication providers for sign-in and SCM access (GitHub, GitLab). See [Backstage auth docs](https://backstage.io/docs/auth/).
+     - Based on your options of auth-providers, mind updating the `conversion-project-template.yaml` for source and target repository URLs.
+   - **`integrations:`**
+     - Configure SCM integrations for custom-domain hosts (e.g. self-hosted GitHub Enterprise, GitLab, or Bitbucket). The plugin reads the `integrations:` section to detect which SCM provider owns a given repository URL. Only the `host` field is required for this purpose; access tokens in `integrations:` entries are **not** needed by the x2a plugin (authentication is handled via OAuth through the `auth:` providers above). See the [SCM Provider Detection](#scm-provider-detection) section below.
+   - **`x2a:`** - Provide LLM credentials, Ansible Automation Platform connection details, and Kubernetes resource limits. See [x2a-convertor technical details](https://github.com/x2ansible/x2a-convertor?tab=readme-ov-file#technical-details).
+
+3. Start the development environment with just the plugin loaded:
+
+   **GitHub OAuth**: [Create a GitHub OAuth application](https://github.com/settings/developers).
+
+   **GitLab OAuth:** When [creating a GitLab OAuth application](https://gitlab.com/-/user_settings/applications), request scopes per [official documentation](https://backstage.io/docs/auth/gitlab/provider/).
+
+   Cloud-based **Bitbucket.org OAuth:** When creating a Bitbucket OAuth consumer via `https://bitbucket.org/[YOUR_WORKSPACE]/workspace/settings/api`, request scopes per [official documentation](https://backstage.io/docs/auth/bitbucket/provider/), which include:
+   - `account:read`
+   - `workspace membership:read`
+
+   In addition, request the following scopes required by the Backstage Bitbucket scaffolder module for repository and pull-request operations:
+   - `project:read`
+   - `snippet:write`
+   - `issue:write`
+   - `pullrequest:write`
 
    ```sh
    export AUTH_GITHUB_CLIENT_ID=.... # Optional if "guest" user is not enough
    export AUTH_GITHUB_CLIENT_SECRET=... # Optional if "guest" user is not enough
+
+   # For GitLab auth (create app at https://gitlab.com/-/user_settings/applications):
+   export AUTH_GITLAB_CLIENT_ID=...
+   export AUTH_GITLAB_CLIENT_SECRET=...
+
+   # For Bitbucket:
+   export AUTH_BITBUCKET_CLIENT_ID=... # Bitbucket "key"
+   export AUTH_BITBUCKET_CLIENT_SECRET=...... # Bitbucket "secret"
 
    yarn dev
    ```
@@ -50,9 +80,41 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
    ```sh
    export AUTH_GITHUB_CLIENT_ID=.... # Optional if "guest" user is not enough
    export AUTH_GITHUB_CLIENT_SECRET=... # Optional if "guest" user is not enough
+   export AUTH_GITLAB_CLIENT_ID=...
+   export AUTH_GITLAB_CLIENT_SECRET=...
 
    yarn start
    ```
+
+## SCM Provider Detection
+
+The plugin needs to know which SCM provider (GitHub, GitLab, or Bitbucket) a repository URL belongs to so it can use the correct OAuth scopes, token formats, and web UI URL patterns.
+
+### How detection works
+
+1. **Config-based detection (recommended for custom domains):** The plugin reads the Backstage `integrations:` config section and builds a hostname-to-provider mapping. Any host listed under `integrations.github`, `integrations.gitlab`, or `integrations.bitbucketCloud` is automatically associated with the corresponding provider.
+
+2. **URL heuristic fallback:** When no matching host is found in the config, the plugin falls back to simple URL matching: URLs containing `github.com` resolve to GitHub, `bitbucket.org` to Bitbucket, and everything else defaults to GitLab.
+
+### Configuration
+
+To enable detection for SCM hosts on custom domains, add them to the `integrations:` section of `app-config.yaml`. Only the `host` field is required — access tokens are **not** needed for provider detection (the x2a plugin authenticates via OAuth through the `auth:` providers, not through integration tokens).
+
+```yaml
+integrations:
+  github:
+    - host: github.com
+    - host: github.mycompany.com # GitHub Enterprise on a custom domain
+      apiBaseUrl: https://github.mycompany.com/api/v3
+  gitlab:
+    - host: gitlab.com
+    - host: gitlab.internal.io # Self-hosted GitLab
+      apiBaseUrl: https://gitlab.internal.io/api/v4
+  bitbucketCloud:
+    - host: bitbucket.org
+```
+
+Without this configuration, only the well-known cloud hosts (`github.com`, `bitbucket.org`) are detected by URL; all other hosts fall back to GitLab behavior.
 
 ## Adding New API Endpoints
 
@@ -192,7 +254,7 @@ The plugin uses the Kubernetes client library to interact with Kubernetes cluste
 
 By default, it loads configuration from your local `~/.kube/config` file.
 
-Additional methods are planed to be implemented later.
+Additional methods are planned to be implemented later.
 
 ### Local Development Setup
 
@@ -224,7 +286,7 @@ Loaded Kubernetes configuration from ~/.kube/config
 
 - `yarn test` - Run tests
 - `yarn lint` - Run linter
-- `prettier:fix` - Fix by prettier
+- `yarn prettier:fix` - Fix code formatting
 - `yarn build:all` - Build all packages
 - `yarn clean` - Clean build artifacts
 

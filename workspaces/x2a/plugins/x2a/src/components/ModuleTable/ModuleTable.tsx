@@ -16,9 +16,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   Artifact,
-  MigrationPhase,
+  resolveScmProvider,
   Module,
-  ModulePhase,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Link, Table, TableColumn } from '@backstage/core-components';
@@ -28,41 +27,16 @@ import { MaterialTableProps } from '@material-table/core/types';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
 
+import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
-import { Artifacts } from './Artifacts';
-import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
-import { CurrentPhaseCell } from './CurrentPhaseCell';
-import { ModuleStatusCell } from './ModuleStatusCell';
+import { Artifacts } from '../Artifacts';
+import { useRepoAuthentication } from '../../repoAuth';
+import { CurrentPhaseCell } from '../CurrentPhaseCell';
+import { ModuleStatusCell } from '../ModuleStatusCell';
 import { TimingCell } from './TimingCell';
 import { moduleRouteRef } from '../../routes';
-
-const getLastJob = (rowData: Module) => {
-  const phases: ('publish' | 'migrate' | 'analyze')[] = [
-    'publish',
-    'migrate',
-    'analyze',
-  ];
-  for (const phase of phases) {
-    if (rowData[phase]?.phase) {
-      return rowData[phase];
-    }
-  }
-  return undefined;
-};
-
-export const getNextPhase = (module: Module): ModulePhase | undefined => {
-  const lastJob = getLastJob(module);
-  const lastPhase: MigrationPhase = lastJob?.phase || 'init';
-
-  const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
-    init: 'analyze',
-    analyze: 'migrate',
-    migrate: 'publish',
-    publish: undefined,
-  };
-  return nextPhases[lastPhase];
-};
+import { canRunNextPhase, getLastPhaseReached, getNextPhase } from '../tools';
 
 const useColumns = ({
   targetRepoUrl,
@@ -75,17 +49,12 @@ const useColumns = ({
   const modulePath = useRouteRef(moduleRouteRef);
 
   const currentPhaseCell = useCallback((rowData: Module) => {
-    const lastJob = getLastJob(rowData);
+    const lastJob = getLastPhaseReached(rowData);
     return <CurrentPhaseCell phase={lastJob?.phase} />;
   }, []);
 
   const statusCell = useCallback(
-    (rowData: Module) => (
-      <ModuleStatusCell
-        status={rowData.status}
-        errorDetails={rowData.errorDetails}
-      />
-    ),
+    (rowData: Module) => <ModuleStatusCell module={rowData} />,
     [],
   );
 
@@ -107,7 +76,7 @@ const useColumns = ({
   );
 
   const timingCell = useCallback((rowData: Module) => {
-    const lastJob = getLastJob(rowData);
+    const lastJob = getLastPhaseReached(rowData);
     return <TimingCell lastJob={lastJob} />;
   }, []);
 
@@ -139,21 +108,6 @@ const useColumns = ({
   }, [t, nameCell, currentPhaseCell, statusCell, artifactsCell, timingCell]);
 };
 
-const canRunNextPhase = ({ module }: { module: Module }) => {
-  const nextPhase = getNextPhase(module);
-  if (!nextPhase) {
-    return false;
-  }
-
-  // TODO: Consider check whether we have all artifacts instead of just checking the last job status
-  const lastJob = getLastJob(module);
-  if (!lastJob || lastJob.status === 'success') {
-    return true;
-  }
-
-  return false;
-};
-
 export const ModuleTable = ({
   modules,
   forceRefresh,
@@ -165,6 +119,7 @@ export const ModuleTable = ({
 }) => {
   const { t } = useTranslation();
   const repoAuthentication = useRepoAuthentication();
+  const hostMap = useScmHostMap();
 
   const columns = useColumns({
     targetRepoUrl: project.targetRepoUrl,
@@ -186,18 +141,18 @@ export const ModuleTable = ({
       // Authenticate the repositories
       const sourceRepoAuthToken = (
         await repoAuthentication.authenticate([
-          getAuthTokenDescriptor({
-            repoUrl: project.sourceRepoUrl,
-            readOnly: true,
-          }),
+          resolveScmProvider(
+            project.sourceRepoUrl,
+            hostMap,
+          ).getAuthTokenDescriptor(true),
         ])
       )[0].token;
       const targetRepoAuthToken = (
         await repoAuthentication.authenticate([
-          getAuthTokenDescriptor({
-            repoUrl: project.targetRepoUrl,
-            readOnly: false,
-          }),
+          resolveScmProvider(
+            project.targetRepoUrl,
+            hostMap,
+          ).getAuthTokenDescriptor(false),
         ])
       )[0].token;
 
@@ -227,6 +182,7 @@ export const ModuleTable = ({
     [
       clientService,
       forceRefresh,
+      hostMap,
       repoAuthentication,
       project.sourceRepoUrl,
       project.targetRepoUrl,
@@ -239,7 +195,7 @@ export const ModuleTable = ({
       icon: PlayArrowIcon,
       onClick: () => handleRunNext(rowData),
       tooltip: t('module.actions.runNextPhase'),
-      disabled: !canRunNextPhase({ module: rowData }),
+      disabled: !canRunNextPhase(rowData),
     }),
   ];
 

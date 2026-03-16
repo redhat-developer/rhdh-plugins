@@ -190,7 +190,7 @@ class GithubAppManager {
             );
             // The return type of the paginate method is incorrect.
             const repositories: RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response']['data']['repositories'] =
-              repos.repositories ?? repos;
+              (repos as any).repositories ?? repos;
 
             repositoryNames = repositories.map(repository => repository.name);
           }

@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 import { DiscoveryService } from '@backstage/backend-plugin-api';
+import { Config } from '@backstage/config';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import {
   DefaultApiClient,
   Project,
   ProjectsPost,
   ProjectsProjectIdRunPost200Response,
+  resolveScmProvider,
+  buildScmHostMap,
   normalizeRepoUrl,
+  ScmProviderName,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
@@ -30,6 +34,7 @@ import {
  */
 export type CreateProjectActionOptions = {
   fetchApi?: { fetch: typeof fetch };
+  hostProviderMap?: Map<string, ScmProviderName>;
 };
 
 /**
@@ -38,14 +43,17 @@ export type CreateProjectActionOptions = {
  * This action creates a new project in the x2a database.
  *
  * @param discoveryApi - Backstage discovery service
+ * @param config - Backstage root config (used to detect SCM providers from `integrations:` section)
  * @param options - Optional; use fetchApi to inject a custom fetch (e.g. in tests)
  * @public
  */
 export function createProjectAction(
   discoveryApi: DiscoveryService,
+  config: Config,
   options?: CreateProjectActionOptions,
 ) {
   const fetchApi = options?.fetchApi ?? { fetch };
+  const hostProviderMap = options?.hostProviderMap ?? buildScmHostMap(config);
 
   return createTemplateAction({
     id: 'x2a:project:create',
@@ -67,7 +75,7 @@ export function createProjectAction(
           z.string({ description: 'The URL of the source repository' }),
         sourceRepoBranch: z =>
           z.string({ description: 'The branch of the source repository' }),
-        areTargeAndSourceRepoShared: z =>
+        areTargetAndSourceRepoShared: z =>
           z.boolean({
             description:
               'Whether the target and source repositories are shared',
@@ -109,30 +117,38 @@ export function createProjectAction(
       });
 
       // Create the project in the x2a database
-      const targetRepoUrl = ctx.input.areTargeAndSourceRepoShared
-        ? ctx.input.sourceRepoUrl
+      const sourceRepoUrl = ctx.input.sourceRepoUrl;
+      const targetRepoUrl = ctx.input.areTargetAndSourceRepoShared
+        ? sourceRepoUrl
         : ctx.input.targetRepoUrl;
       if (!targetRepoUrl) {
         throw new Error('Target repository URL is required');
       }
 
-      const sourceRepoToken = ctx.secrets?.SRC_USER_OAUTH_TOKEN;
+      let sourceRepoToken = ctx.secrets?.SRC_USER_OAUTH_TOKEN;
       if (!sourceRepoToken) {
         throw new Error('Source repository token is required');
       }
-      const targetRepoToken = ctx.input.areTargeAndSourceRepoShared
+
+      let targetRepoToken = ctx.input.areTargetAndSourceRepoShared
         ? sourceRepoToken
         : ctx.secrets?.TGT_USER_OAUTH_TOKEN;
       if (!targetRepoToken) {
         throw new Error('Target repository token is required');
       }
 
+      const sourceProvider = resolveScmProvider(sourceRepoUrl, hostProviderMap);
+      sourceRepoToken = sourceProvider.augmentToken(sourceRepoToken);
+
+      const targetProvider = resolveScmProvider(targetRepoUrl, hostProviderMap);
+      targetRepoToken = targetProvider.augmentToken(targetRepoToken);
+
       const body: ProjectsPost['body'] = {
         name: ctx.input.name,
         description: ctx.input.description ?? '',
         abbreviation: ctx.input.abbreviation,
         ownedByGroup: ctx.input.ownedByGroup?.trim() ?? undefined,
-        sourceRepoUrl: normalizeRepoUrl(ctx.input.sourceRepoUrl),
+        sourceRepoUrl: normalizeRepoUrl(sourceRepoUrl),
         targetRepoUrl: normalizeRepoUrl(targetRepoUrl),
         sourceRepoBranch: ctx.input.sourceRepoBranch,
         targetRepoBranch: ctx.input.targetRepoBranch,
@@ -143,17 +159,19 @@ export function createProjectAction(
       try {
         const response = await api.projectsPost({ body }, { token: token });
         if (!response.ok) {
-          const error = (await response.json()) as any;
+          const error = (await response.json()) as { message?: string };
           ctx.logger.error(
             `Project creation response status: ${response.status}, error: ${JSON.stringify(error)}`,
           );
-          throw new Error(error);
+          const msg = error?.message ?? JSON.stringify(error);
+          throw new Error(msg);
         }
 
         project = await response.json();
       } catch (error) {
-        ctx.logger.error(`Error creating project: ${JSON.stringify(error)}`);
-        throw new Error(error as string);
+        const message = error instanceof Error ? error.message : String(error);
+        ctx.logger.error(`Error creating project: ${message}`);
+        throw error;
       }
 
       // The project is created, trigger the init-phase automatically
@@ -183,19 +201,19 @@ export function createProjectAction(
         );
 
         if (!initResponse.ok) {
-          const error = (await initResponse.json()) as any;
+          const error = (await initResponse.json()) as { message?: string };
           ctx.logger.error(
             `Init-phase response status: ${initResponse.status}, error: ${JSON.stringify(error)}`,
           );
-          throw new Error(error);
+          const msg = error?.message ?? JSON.stringify(error);
+          throw new Error(msg);
         }
 
         initResponseData = await initResponse.json();
       } catch (error) {
-        ctx.logger.error(
-          `Error triggering init-phase: ${JSON.stringify(error)}`,
-        );
-        throw new Error(error as string);
+        const message = error instanceof Error ? error.message : String(error);
+        ctx.logger.error(`Error triggering init-phase: ${message}`);
+        throw error;
       }
 
       ctx.logger.info(
@@ -205,7 +223,6 @@ export function createProjectAction(
       // Output the results
       ctx.output('projectId', project.id);
       ctx.output('initJobId', initResponseData.jobId);
-      // TODO: Build proper URL of project detail page once implemented
       ctx.output('nextUrl', `/x2a/projects/${project.id}`);
     },
   });

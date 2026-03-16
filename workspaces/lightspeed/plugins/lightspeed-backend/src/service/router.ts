@@ -54,13 +54,18 @@ export async function createRouter(
 
   const port = config.getOptionalNumber('lightspeed.servicePort') ?? 8080;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
-  // Only support one MCP server for now
-  const mcpServerName = config
-    .getOptionalConfigArray('lightspeed.mcpServers')?.[0]
-    ?.getString('name');
-  const mcpToken = config
-    .getOptionalConfigArray('lightspeed.mcpServers')?.[0]
-    ?.getString('token');
+
+  const mcpServersConfig = config.getOptionalConfigArray(
+    'lightspeed.mcpServers',
+  );
+  const mcpHeaders: Record<string, { Authorization: string }> = {};
+  if (mcpServersConfig) {
+    for (const mcpServer of mcpServersConfig) {
+      const name = mcpServer.getString('name');
+      const token = mcpServer.getString('token');
+      mcpHeaders[name] = { Authorization: `Bearer ${token}` };
+    }
+  }
 
   router.get('/health', (_, response) => {
     response.json({ status: 'ok' });
@@ -217,16 +222,15 @@ export async function createRouter(
         }
 
         const requestBody = JSON.stringify(request.body);
-        const mcpHeaders = mcpToken
-          ? `{"${mcpServerName}": {"Authorization": "Bearer ${mcpToken}"}}`
-          : '';
+        const mcpHeadersValue =
+          Object.keys(mcpHeaders).length > 0 ? JSON.stringify(mcpHeaders) : '';
         const fetchResponse = await fetch(
           `http://0.0.0.0:${port}/v1/streaming_query?${userQueryParam}`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'MCP-HEADERS': mcpHeaders,
+              'MCP-HEADERS': mcpHeadersValue,
             },
             body: requestBody,
           },

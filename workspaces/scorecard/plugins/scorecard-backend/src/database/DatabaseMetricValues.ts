@@ -21,6 +21,24 @@ import {
   DbAggregatedMetric,
 } from './types';
 
+type ReadEntityMetricsWithFiltersOptions = {
+  status?: string;
+  entityName?: string;
+  entityKind?: string;
+  entityNamespace?: string;
+  entityOwner?: string[];
+  sortBy?:
+    | 'entityName'
+    | 'owner'
+    | 'entityKind'
+    | 'timestamp'
+    | 'metricValue'
+    | 'namespace'
+    | 'status';
+  sortOrder?: 'asc' | 'desc';
+  pagination?: { limit: number; offset: number };
+};
+
 export class DatabaseMetricValues {
   private readonly tableName = 'metric_values';
 
@@ -75,58 +93,154 @@ export class DatabaseMetricValues {
       .max('id')
       .where('metric_id', metric_id)
       .whereIn('catalog_entity_ref', catalog_entity_refs)
-      .groupBy('metric_id', 'catalog_entity_ref');
+      .groupBy('catalog_entity_ref');
 
-    const [row] = await this.dbClient(this.tableName)
-      .select('metric_id')
-      .count('* as total')
+    const statusRows = await this.dbClient(this.tableName)
+      .select('status')
+      .count('* as count')
       .max('timestamp as max_timestamp')
-      .select(
-        this.dbClient.raw(
-          "SUM(CASE WHEN status = 'success' AND value IS NOT NULL THEN 1 ELSE 0 END) as success",
-        ),
-      )
-      .select(
-        this.dbClient.raw(
-          "SUM(CASE WHEN status = 'warning' AND value IS NOT NULL THEN 1 ELSE 0 END) as warning",
-        ),
-      )
-      .select(
-        this.dbClient.raw(
-          "SUM(CASE WHEN status = 'error' AND value IS NOT NULL THEN 1 ELSE 0 END) as error",
-        ),
-      )
       .whereIn('id', latestIdsSubquery)
       .whereNotNull('status')
       .whereNotNull('value')
-      .groupBy('metric_id');
+      .groupBy('status');
+
+    if (!statusRows || statusRows.length === 0) {
+      return undefined;
+    }
 
     // Normalize types for cross-database compatibility
     // PostgreSQL returns COUNT/SUM as strings, SQLite returns numbers
     // PostgreSQL returns MAX(timestamp) as Date, SQLite returns number (milliseconds)
-    if (row) {
-      let maxTimestamp: Date;
-      if (row.max_timestamp instanceof Date) {
-        maxTimestamp = row.max_timestamp;
+    const normalizeTimestamp = (timestamp: any): Date => {
+      if (timestamp instanceof Date) {
+        return timestamp;
       } else if (
-        typeof row.max_timestamp === 'number' ||
-        typeof row.max_timestamp === 'string'
+        typeof timestamp === 'number' ||
+        typeof timestamp === 'string'
       ) {
-        maxTimestamp = new Date(row.max_timestamp as string | number);
-      } else {
-        maxTimestamp = new Date();
+        return new Date(timestamp);
       }
+      return new Date();
+    };
 
-      return {
-        metric_id: row.metric_id,
-        total: Number(row.total),
-        max_timestamp: maxTimestamp,
-        success: Number(row.success),
-        warning: Number(row.warning),
-        error: Number(row.error),
-      };
+    let maxTimestamp = new Date(0);
+    let total = 0;
+    const statusCounts: Record<string, number> = {};
+    for (const row of statusRows) {
+      const rowTimestamp = normalizeTimestamp(row.max_timestamp);
+      if (rowTimestamp > maxTimestamp) {
+        maxTimestamp = rowTimestamp;
+      }
+      const name = row.status as string;
+      const count = Number(row.count);
+      statusCounts[name] = count;
+      total += count;
     }
 
-    return undefined;
+    return {
+      metric_id,
+      total,
+      max_timestamp: maxTimestamp,
+      statusCounts,
+    };
+  }
+
+  /**
+   * Fetch the latest entity metric values for a given metric, with optional filtering
+   * by status, name, kind, namespace, or owner, plus sorting and pagination.
+   */
+  async readEntityMetricsWithFilters(
+    metric_id: string,
+    options: ReadEntityMetricsWithFiltersOptions,
+  ): Promise<DbMetricValue[]> {
+    const clientName: string =
+      (this.dbClient as any).client?.config?.client ?? '';
+    const isPostgres = clientName === 'pg' || clientName.includes('postgres');
+
+    const latestIdsSubquery = this.dbClient(this.tableName)
+      .max('id')
+      .where('metric_id', metric_id)
+      .groupBy('catalog_entity_ref');
+
+    const query = this.dbClient(this.tableName)
+      .select('*')
+      .whereIn('id', latestIdsSubquery);
+
+    const sortColumnMap: Record<string, string> = {
+      entityName: 'catalog_entity_ref',
+      owner: 'entity_owner',
+      entityKind: 'entity_kind',
+      timestamp: 'timestamp',
+      metricValue: 'value',
+      namespace: 'entity_namespace',
+      status: 'status',
+    };
+
+    const column =
+      (options.sortBy && sortColumnMap[options.sortBy]) ?? 'timestamp';
+    const direction = options.sortOrder === 'asc' ? 'asc' : 'desc';
+
+    this.applySort(query, options.sortBy, column, direction, isPostgres);
+
+    if (options.status) {
+      query.where('status', options.status);
+    }
+
+    if (options.entityName) {
+      const escaped = options.entityName.replace(/[%_\\]/g, '\\$&');
+      query.whereRaw("catalog_entity_ref LIKE ? ESCAPE '\\'", [`%${escaped}%`]);
+    }
+
+    if (options.entityKind) {
+      query.where('entity_kind', options.entityKind);
+    }
+
+    if (options.entityNamespace) {
+      query.where('entity_namespace', options.entityNamespace);
+    }
+
+    if (options.entityOwner && options.entityOwner.length > 0) {
+      query.whereIn('entity_owner', options.entityOwner);
+    }
+
+    if (options.pagination) {
+      query.limit(options.pagination.limit).offset(options.pagination.offset);
+    }
+
+    return await query;
+  }
+
+  private applySort(
+    query: any,
+    sortBy: string | undefined,
+    column: string,
+    direction: string,
+    isPostgres: boolean,
+  ): void {
+    if (sortBy === 'metricValue') {
+      // value is JSON and nullable; cast for numeric sort with NULLs last
+      if (isPostgres) {
+        query.orderByRaw(
+          `CAST(value::text AS DOUBLE PRECISION) ${direction} NULLS LAST, id ASC`,
+        );
+      } else {
+        // SQLite: "value IS NULL" puts nulls last; double-cast handles JSON-stored values
+        query.orderByRaw(
+          `value IS NULL, CAST(CAST(value AS TEXT) AS REAL) ${direction}, id ASC`,
+        );
+      }
+    } else if (sortBy === 'status') {
+      // status is nullable; NULLs always sort last regardless of direction
+      if (isPostgres) {
+        query.orderByRaw(`status ${direction} NULLS LAST, id ASC`);
+      } else {
+        // SQLite: "status IS NULL" evaluates to 1 for NULLs, pushing them to the end
+        query.orderByRaw(`status IS NULL, status ${direction}, id ASC`);
+      }
+    } else {
+      query.orderBy(column, direction);
+      // Ensure a stable sort when two metrics share the same primary sort value
+      query.orderBy('id', 'asc');
+    }
   }
 }

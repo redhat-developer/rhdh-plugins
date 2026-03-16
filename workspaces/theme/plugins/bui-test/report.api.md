@@ -12,6 +12,9 @@ import { RouteRef } from '@backstage/core-plugin-api';
 export const BUITestPage: () => JSX_2.Element;
 
 // @public (undocumented)
+export const BUITestPageComponent: () => JSX_2.Element;
+
+// @public (undocumented)
 export const buiTestPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;

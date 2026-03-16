@@ -19,7 +19,7 @@ import type { TooltipProps } from 'recharts';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
-import type { PieData } from '../../utils/utils';
+import type { PieData } from '../types';
 import { useTranslation } from '../../hooks/useTranslation';
 
 type CustomTooltipPayload = {

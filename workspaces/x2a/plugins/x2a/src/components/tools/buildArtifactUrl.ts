@@ -13,15 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {
+  resolveScmProvider,
+  ScmProviderName,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+/**
+ * Builds a URL to a specific file (artifact) in a repository at a given branch.
+ */
 export const buildArtifactUrl = (
   value: string,
   targetRepoUrl: string,
   targetRepoBranch: string,
+  hostProviderMap?: Map<string, ScmProviderName>,
 ): string => {
-  // Remove .git suffix if present (repos normalized for cloning have .git)
   const baseUrl = targetRepoUrl.endsWith('.git')
     ? targetRepoUrl.slice(0, -4)
     : targetRepoUrl;
 
-  return `${baseUrl}/blob/${targetRepoBranch}/${value}`;
+  try {
+    const parsed = new URL(baseUrl);
+    const provider = resolveScmProvider(baseUrl, hostProviderMap);
+    const path = parsed.pathname.replace(/\/$/, '');
+    const encodedBranch = encodeURIComponent(targetRepoBranch);
+
+    return provider.buildArtifactUrl(parsed.origin, path, encodedBranch, value);
+  } catch {
+    return `${baseUrl}/blob/${targetRepoBranch}/${value}`;
+  }
 };

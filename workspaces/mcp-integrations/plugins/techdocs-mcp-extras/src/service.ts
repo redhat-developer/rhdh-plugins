@@ -17,8 +17,13 @@
 import { LoggerService, DiscoveryService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
-import { Entity } from '@backstage/catalog-model';
+import { Entity, parseEntityRef } from '@backstage/catalog-model';
 import TurndownService from 'turndown';
+
+const ENTITY_REF_BAD = /\.\.|\/\/|%|\\/;
+const ENTITY_REF_ERROR =
+  'entityRef must be a valid entity reference (e.g. kind:namespace/name)';
+const PAGE_PATH_ERROR = 'pagePath must be a valid documentation path';
 
 /**
  * TechDocsMetadata
@@ -240,13 +245,8 @@ export class TechDocsService {
     auth?: any,
     catalog?: CatalogService,
   ): Promise<TechDocsContentResult> {
-    const [kind, namespaceAndName] = entityRef.split(':');
-    const [namespace = 'default', name] = namespaceAndName?.split('/') || [];
-
-    // early return if name or kind are missing
-    if (!kind || !name) {
-      const errorMsg = `Invalid entity reference format: ${entityRef}. Expected format: kind:namespace/name`;
-      this.logger.error(errorMsg);
+    if (ENTITY_REF_BAD.test(entityRef)) {
+      this.logger.error(ENTITY_REF_ERROR);
       return {
         entityRef,
         name: '',
@@ -255,7 +255,29 @@ export class TechDocsService {
         namespace: '',
         content: '',
         contentType: 'text',
-        error: errorMsg,
+        error: ENTITY_REF_ERROR,
+      };
+    }
+
+    let kind: string;
+    let namespace: string;
+    let name: string;
+    try {
+      const parsed = parseEntityRef(entityRef, { defaultNamespace: 'default' });
+      kind = parsed.kind;
+      namespace = parsed.namespace ?? 'default';
+      name = parsed.name;
+    } catch {
+      this.logger.error(ENTITY_REF_ERROR);
+      return {
+        entityRef,
+        name: '',
+        title: '',
+        kind: '',
+        namespace: '',
+        content: '',
+        contentType: 'text',
+        error: ENTITY_REF_ERROR,
       };
     }
 
@@ -294,6 +316,19 @@ export class TechDocsService {
 
       // set target path to default if not specified
       const targetPath = pagePath || 'index.html';
+      if (ENTITY_REF_BAD.test(targetPath)) {
+        this.logger.error(PAGE_PATH_ERROR);
+        return {
+          entityRef,
+          name,
+          title: '',
+          kind,
+          namespace,
+          content: '',
+          contentType: 'text',
+          error: PAGE_PATH_ERROR,
+        };
+      }
 
       this.logger.info(
         `Fetching TechDocs content for ${entityRef} at path: ${targetPath}`,

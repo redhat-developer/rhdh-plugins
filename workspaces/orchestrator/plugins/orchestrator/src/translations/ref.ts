@@ -231,6 +231,12 @@ export const orchestratorMessages = {
   },
 };
 
+/**
+ * Translation reference for the Orchestrator plugin.
+ * Use with `useTranslationRef(orchestratorTranslationRef)` to get the `t` function for plugin messages.
+ *
+ * @public
+ */
 export const orchestratorTranslationRef = createTranslationRef({
   id: 'plugin.orchestrator',
   messages: orchestratorMessages,

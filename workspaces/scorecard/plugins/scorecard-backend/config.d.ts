@@ -21,6 +21,18 @@ export interface Config {
   scorecard?: {
     /** Number of days to retain metric data in the database. Older data will be automatically cleaned up. Default: 365 days */
     dataRetentionDays?: number;
+    /** List of metric IDs (e.g. openssf.packaging) that are disabled globally. Entity annotations cannot override this. */
+    disabledMetrics?: string[];
+    /** Control whether users can override behavior via entity annotations. */
+    entityAnnotations?: {
+      /** Whether entity scorecard.io/disabled-metrics annotation can override. Only affects annotations; global disabledMetrics is unchanged. */
+      disabledMetrics?: {
+        /** If true (default), entities can disable metrics that are not mentioned in `except` list via `scorecard.io/disabled-metrics` annotation; if false, the annotation has no effect */
+        enabled?: boolean;
+        /** When enabled is true: entity annotations cannot disable metric IDs listed here (these checks always run). */
+        except?: string[];
+      };
+    };
     /** Configuration for scorecard metric providers */
     plugins?: {
       /** Configuration for datasource */
@@ -32,9 +44,14 @@ export interface Config {
           /** Threshold configuration for the metric */
           thresholds?: {
             rules?: Array<{
-              key: 'error' | 'warning' | 'success';
+              key: string;
               /** Threshold expression - supports: >=, <=, >, <, ==, !=, - (range) */
               expression: string;
+              /**
+               * Color for this threshold rule. Can be a theme palette path (e.g., 'error.main')
+               * or a direct color value (e.g., '#ADD8E6', 'blue', 'rgb(255,255,0)')
+               */
+              color?: string;
             }>;
           };
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;

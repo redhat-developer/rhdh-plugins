@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a
 
+## 0.1.2
+
+### Patch Changes
+
+- 01999f1: Introducing projects by groups. Additional RBAC hardening.
+  - require x2a permissions to access the UI
+  - enforce better the x2a permissions on the endpoints
+  - projects can be optionally owned by a Backstage group, still defaults to the logged-in user
+
+- 0c598fb: Add GitLab support.
+- Updated dependencies [0c598fb]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.0.2
+
 ## 0.1.1
 
 ### Patch Changes
