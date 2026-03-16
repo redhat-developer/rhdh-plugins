@@ -1,0 +1,150 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { MockConfigApi, MockPermissionApi } from '@backstage/test-utils';
+
+import {
+  BulkImportAPI,
+  bulkImportApiRef,
+} from '../src/api/BulkImportBackendClient';
+import {
+  mockGetImportJobs,
+  mockGetOrganizations,
+  mockGetRepositories,
+} from '../src/mocks/mockData';
+import { mockEntities } from '../src/mocks/mockEntities';
+import {
+  APITypes,
+  CreateImportJobRepository,
+  ImportJobResponse,
+  ImportJobs,
+  ImportJobStatus,
+  OrgAndRepoResponse,
+  RepositoryStatus,
+} from '../src/types';
+
+export { bulkImportApiRef };
+
+export const mockCatalogApi = {
+  getEntities: async () => ({ items: mockEntities }),
+};
+
+export class MockBulkImportApi implements BulkImportAPI {
+  async dataFetcher(
+    page: number,
+    size: number,
+    searchString: string,
+    _approvalTool: string,
+    options?: APITypes,
+  ): Promise<OrgAndRepoResponse> {
+    if (options?.orgName) {
+      return {
+        ...mockGetRepositories,
+        repositories: mockGetRepositories.repositories
+          ?.filter(
+            r =>
+              r.id?.includes(options?.orgName as string) &&
+              r.repoName?.includes(searchString),
+          )
+          ?.slice((page - 1) * size, (page - 1) * size + size),
+        totalCount: mockGetRepositories.repositories?.filter(r =>
+          r.id?.includes(options.orgName as string),
+        ).length,
+      };
+    }
+    if (options?.fetchOrganizations) {
+      return {
+        ...mockGetOrganizations,
+        organizations: mockGetOrganizations.organizations
+          ?.filter(r => r.orgName?.includes(searchString))
+          ?.slice((page - 1) * size, (page - 1) * size + size),
+      };
+    }
+    return {
+      ...mockGetRepositories,
+      repositories: mockGetRepositories.repositories
+        ?.filter(r => r.repoName?.includes(searchString))
+        ?.slice((page - 1) * size, (page - 1) * size + size),
+    };
+  }
+
+  async getImportJobs(
+    _page: number,
+    _size: number,
+    searchString: string,
+  ): Promise<ImportJobs> {
+    if (searchString) {
+      return {
+        ...mockGetImportJobs,
+        imports: mockGetImportJobs.imports?.filter(r =>
+          r.repository.name?.includes(searchString),
+        ),
+      };
+    }
+    return mockGetImportJobs;
+  }
+
+  async createImportJobs(
+    _importRepositories: CreateImportJobRepository[],
+    _dryRun?: boolean,
+  ): Promise<ImportJobResponse[]> {
+    return [
+      {
+        errors: [],
+        status: RepositoryStatus.WAIT_PR_APPROVAL,
+        catalogEntityName: '',
+        repository: {
+          id: 'REPO',
+          url: 'das',
+          organization: 'dasa',
+          defaultBranch: 'main',
+          name: 'jhk',
+        },
+      },
+    ] as ImportJobResponse[];
+  }
+
+  async deleteImportAction(
+    _repo: string,
+    _defaultBranch: string,
+  ): Promise<ImportJobStatus | Response> {
+    return {} as Response;
+  }
+  async getImportAction(
+    repo: string,
+    _defaultBranch: string,
+  ): Promise<ImportJobStatus | Response> {
+    return mockGetImportJobs.imports.find(
+      i => i.repository.url === repo,
+    ) as ImportJobStatus;
+  }
+}
+
+export const mockBulkImportApi = new MockBulkImportApi();
+export const mockPermissionApi = new MockPermissionApi();
+
+export const mockConfigApi = new MockConfigApi({
+  permission: {
+    enabled: true,
+  },
+  app: {
+    baseUrl: 'https://base-url',
+  },
+  integrations: {
+    github: [{ host: 'github.com', token: 'mock-token' }],
+    gitlab: [{ host: 'gitlab.com', token: 'mock-token' }],
+  },
+});

@@ -16,8 +16,13 @@
 
 import { defineConfig } from '@playwright/test';
 
+// APP_MODE: 'legacy' (app-legacy) or 'nfs' (app with new frontend system)
+const appMode = process.env.APP_MODE || 'legacy';
+const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+
+// Config paths (absolute to work from any cwd)
 const baseConfig = `${__dirname}/app-config.yaml`;
-const testConfigDir = `${__dirname}/packages/app/e2e-tests/test_yamls`;
+const testConfigDir = `${__dirname}/e2e-tests/test_yamls`;
 
 const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 const FRONTEND_PORT_BASE = 3000;
@@ -25,17 +30,18 @@ const BACKEND_PORT_BASE = 7007;
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
-  fullyParallel: false,
 
   expect: {
-    timeout: 10000,
+    timeout: 5000,
   },
 
   webServer: process.env.PLAYWRIGHT_URL
     ? []
     : LOCALES.map((locale, i) => ({
-        command: `yarn start --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-${locale}.yaml`,
-        url: `http://localhost:${BACKEND_PORT_BASE + i}/.backstage/health/v1/readiness`,
+        command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-${locale}.yaml`,
+        url: `http://localhost:${
+          BACKEND_PORT_BASE + i
+        }/.backstage/health/v1/readiness`,
         timeout: 120000,
         reuseExistingServer: false,
         cwd: __dirname,
@@ -43,21 +49,22 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
+  ],
 
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
-    // Enable visual mode when HEADED environment variable is set
-    headless: process.env.HEADED !== 'true',
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
+
+  testDir: 'e2e-tests',
 
   projects: LOCALES.map((locale, i) => ({
     name: locale,
-    testDir: 'packages/app/e2e-tests',
     use: {
       channel: 'chrome' as const,
       locale,

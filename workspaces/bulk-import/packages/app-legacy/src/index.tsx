@@ -16,13 +16,7 @@
 
 import '@backstage/cli/asset-types';
 import ReactDOM from 'react-dom/client';
-import app from './App';
+import App from './App';
 import '@backstage/ui/css/styles.css';
 
-const root = document.getElementById('root');
-if (!root) {
-  throw new Error(
-    'Failed to find the root element. The app is not mounted in the DOM.',
-  );
-}
-ReactDOM.createRoot(root).render(app);
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
