@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import plugin from './alpha';
 
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+describe('orchestrator-form-widgets alpha', () => {
+  it('should export a valid frontend plugin', () => {
+    expect(plugin).toBeDefined();
+    expect(plugin.$$type).toBe('@backstage/FrontendPlugin');
+  });
 
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+  it('should have the correct plugin id', () => {
+    expect(plugin.id).toBe('orchestrator-form-widgets');
+  });
+});
