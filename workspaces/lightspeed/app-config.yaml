@@ -8,7 +8,7 @@ organization:
 # Disable AI Notebooks feature by default
 lightspeed:
   aiNotebooks:
-    enabled: true
+    enabled: false
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins

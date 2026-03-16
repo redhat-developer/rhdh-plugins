@@ -54,7 +54,7 @@ export interface Config {
        * Enable/disable AI Notebooks feature
        * When enabled, exposes AI Notebooks REST API endpoints for document-based conversations with RAG.
        * Requires Llama Stack service to be running (default: http://0.0.0.0:8321).
-       * @default true
+       * @default false
        * @visibility frontend
        */
       enabled?: boolean;
