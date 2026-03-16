@@ -137,26 +137,28 @@ export async function addGithubAppRepositories(
   let totalCount: number | undefined;
   try {
     if (search) {
-      const allOrgsMap = await getAllAppOrgs(
-        deps.githubCredentialsProvider,
-        ghConfig,
-        credential.accountLogin,
+      const repositoriesResponse =
+        await listAllRepositoriesAccessibleToInstallation(deps, octokit, {
+          pageSize,
+        });
+      const repos = repositoriesResponse?.repositories ?? repositoriesResponse;
+
+      const filteredRepositories = repos.filter(repo =>
+        repo.name.toLocaleLowerCase().includes(search),
       );
-      const orgSearch: string[] = [];
-      for (const [_orgUrl, ghOrg] of allOrgsMap) {
-        orgSearch.push(`org:${ghOrg.name}`);
-      }
-      const query = `${search} in:name ${orgSearch.join(' ')}`;
-      const searchResp = await searchRepos(
-        octokit,
-        query,
-        pageNumber,
-        pageSize,
+
+      filteredRepositories.forEach(repo =>
+        repositories.set(repo.full_name, {
+          name: repo.name,
+          full_name: repo.full_name,
+          url: repo.url,
+          html_url: repo.html_url,
+          default_branch: repo.default_branch,
+          updated_at: repo.updated_at,
+        }),
       );
-      totalCount = searchResp.totalCount;
-      searchResp.repositories.forEach(repo =>
-        repositories.set(repo.full_name, repo),
-      );
+
+      totalCount = filteredRepositories.length;
     } else {
       const repositoriesResponse =
         await listAllRepositoriesAccessibleToInstallation(deps, octokit, {
