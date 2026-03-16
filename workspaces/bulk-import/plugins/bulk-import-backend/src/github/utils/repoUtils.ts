@@ -131,7 +131,7 @@ export async function addGithubAppRepositories(
     pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
-  const search = reqParams?.search;
+  const search = reqParams?.search?.toLocaleLowerCase();
   const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
   const pageSize = reqParams?.pageSize ?? DefaultPageSize;
   let totalCount: number | undefined;
@@ -193,7 +193,7 @@ export async function addGithubTokenRepositories(
     pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
-  const search = reqParams?.search;
+  const search = reqParams?.search?.toLocaleLowerCase();
   let totalCount: number | undefined;
   try {
     const allRepositories = await listAllRepositoriesForAuthenticatedUser(
@@ -202,7 +202,9 @@ export async function addGithubTokenRepositories(
     );
 
     const filteredRepositories = search
-      ? allRepositories.filter(repo => repo.name.includes(search))
+      ? allRepositories.filter(repo =>
+          repo.name.toLocaleLowerCase().includes(search),
+        )
       : allRepositories;
 
     filteredRepositories.forEach(repo => {
