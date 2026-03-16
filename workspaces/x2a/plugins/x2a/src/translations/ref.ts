@@ -216,6 +216,7 @@ export const x2aPluginMessages = {
       pending: 'Pending',
       running: 'Running',
       error: 'Error',
+      cancelled: 'Cancelled',
       toReview_one: '{{count}} module with artifacts to review',
       toReview_other: '{{count}} modules with artifacts to review',
     },
@@ -238,6 +239,7 @@ export const x2aPluginMessages = {
       running: 'Running',
       success: 'Success',
       error: 'Error',
+      cancelled: 'Cancelled',
     },
   },
   artifact: {

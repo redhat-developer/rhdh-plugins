@@ -161,6 +161,7 @@ export type ModulePhase = 'analyze' | 'migrate' | 'publish';
 
 // @public (undocumented)
 export interface ModulesStatusSummary {
+    cancelled: number;
     error: number;
     finished: number;
     pending: number;
@@ -170,7 +171,7 @@ export interface ModulesStatusSummary {
 }
 
 // @public (undocumented)
-export type ModuleStatus = 'pending' | 'running' | 'success' | 'error';
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
 
 // @public
 export function normalizeRepoUrl(url: string): string;

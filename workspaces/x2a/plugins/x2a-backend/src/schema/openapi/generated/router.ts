@@ -939,12 +939,13 @@ export const spec = {
       },
       "ModuleStatus": {
         "type": "string",
-        "description": "Module status is the status of the last job of its last phase.\nIf a later retrigger for an earlier phase fails (e.g. when retrigger on analyze\nfails but a former migrate already passed), the modules status should not change (is still based on the last phase).\nThe pending state is used for modules that are scheduled for execution but not yet actually running. If a module\nis in pending state for long time, it can refer to an issue with the OCP setup.\n",
+        "description": "Module status is the status of the last job of its most-advanced phase.\nIf the most-advanced phase's job was cancelled, the module status is cancelled.\nIf a later retrigger for an earlier phase fails (e.g. when retrigger on analyze\nfails but a former migrate already passed), the modules status should not change (is still based on the last phase).\nThe pending state is used for modules that have no jobs yet. If a module\nis in pending state for long time, it can refer to an issue with the OCP setup.\n",
         "enum": [
           "pending",
           "running",
           "success",
-          "error"
+          "error",
+          "cancelled"
         ]
       },
       "ProjectStatusState": {
@@ -985,6 +986,10 @@ export const spec = {
           "error": {
             "type": "integer",
             "description": "Number of modules in error state (execution is over but failed)"
+          },
+          "cancelled": {
+            "type": "integer",
+            "description": "Number of modules in cancelled state (last job was cancelled by the user)"
           }
         },
         "required": [
@@ -993,7 +998,8 @@ export const spec = {
           "waiting",
           "pending",
           "running",
-          "error"
+          "error",
+          "cancelled"
         ]
       },
       "ProjectStatus": {

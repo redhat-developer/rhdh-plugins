@@ -999,8 +999,7 @@ describe('createRouter – modules', () => {
           .send();
         expect(moduleResponse.status).toBe(200);
         expect(moduleResponse.body.analyze.status).toBe('cancelled');
-        // Module status falls back to pending since the only phase job is cancelled
-        expect(moduleResponse.body.status).toBe('pending');
+        expect(moduleResponse.body.status).toBe('cancelled');
       },
       LONG_TEST_TIMEOUT,
     );
@@ -1035,8 +1034,7 @@ describe('createRouter – modules', () => {
           .send();
         expect(moduleResponse.status).toBe(200);
         expect(moduleResponse.body.migrate.status).toBe('cancelled');
-        // Module status falls back to pending since no previous phase has a non-cancelled job
-        expect(moduleResponse.body.status).toBe('pending');
+        expect(moduleResponse.body.status).toBe('cancelled');
       },
       LONG_TEST_TIMEOUT,
     );

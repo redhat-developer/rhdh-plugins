@@ -96,6 +96,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.summary.pending': 'En attente',
     'module.summary.running': 'En cours',
     'module.summary.error': 'Erreur',
+    'module.summary.cancelled': 'Annulé',
     'module.summary.toReview_one':
       '{{count}} module avec des artefacts à réviser',
     'module.summary.toReview_other':
@@ -120,6 +121,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.statuses.running': 'En cours',
     'module.statuses.success': 'Succès',
     'module.statuses.error': 'Erreur',
+    'module.statuses.cancelled': 'Annulé',
     'artifact.types.migrated_sources': 'Sources migrées',
     'artifact.types.project_metadata': 'Métadonnées du projet',
     'artifact.types.ansible_project': 'Projet AAP',

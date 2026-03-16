@@ -95,6 +95,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.summary.pending': 'Ausstehend',
     'module.summary.running': 'Läuft',
     'module.summary.error': 'Fehler',
+    'module.summary.cancelled': 'Abgebrochen',
     'module.summary.toReview_one':
       '{{count}} Modul mit zu überprüfenden Artefakten',
     'module.summary.toReview_other':
@@ -119,6 +120,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.statuses.running': 'Läuft',
     'module.statuses.success': 'Erfolg',
     'module.statuses.error': 'Fehler',
+    'module.statuses.cancelled': 'Abgebrochen',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
     'artifact.types.project_metadata': 'Projektmetadaten',
     'artifact.types.ansible_project': 'AAP-Projekt',
