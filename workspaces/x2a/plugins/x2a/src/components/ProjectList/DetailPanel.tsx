@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useState } from 'react';
-import useAsync from 'react-use/lib/useAsync';
+import { useEffect } from 'react';
 import { Grid, GridProps, makeStyles, Typography } from '@material-ui/core';
-import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  Project,
+  Module,
+  POLLING_INTERVAL_MS,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
+import { usePolledFetch } from '../../hooks/usePolledFetch';
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { ModuleTable } from '../ModuleTable';
 import { ItemField } from '../ItemField';
@@ -39,22 +43,75 @@ const gridItemProps: GridProps = {
   item: true,
 };
 
-export const DetailPanel = ({ project }: { project: Project }) => {
+// Limit the size of cache to avoid memory leaks. No-hit is not an issue - the DetailPanel just quickly shows the loading state.
+const MAX_CACHE_SIZE = 1000;
+// Prevents stale data on row expansion but still prevents flickering of the loading state for a quick collapse/expand.
+const CACHE_TTL_MS = 3 * POLLING_INTERVAL_MS;
+
+interface CacheEntry {
+  data: Module[];
+  timestamp: number;
+}
+
+const modulesCache = new Map<string, CacheEntry>();
+
+function getCache(key: string): Module[] | undefined {
+  const entry = modulesCache.get(key);
+  if (!entry) return undefined;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    modulesCache.delete(key);
+    return undefined;
+  }
+  return entry.data;
+}
+
+function setCache(key: string, value: Module[]): void {
+  modulesCache.delete(key);
+  if (modulesCache.size >= MAX_CACHE_SIZE) {
+    const oldest = modulesCache.keys().next().value;
+    if (oldest !== undefined) modulesCache.delete(oldest);
+  }
+  modulesCache.set(key, { data: value, timestamp: Date.now() });
+}
+
+/** Exposed for tests only. */
+export function clearModulesCache(): void {
+  modulesCache.clear();
+}
+
+export const DetailPanel = ({
+  project,
+  forceRefresh,
+}: {
+  project: Project;
+  forceRefresh: () => void;
+}) => {
   const { t } = useTranslation();
   const styles = useStyles();
   const clientService = useClientService();
 
-  const [refresh, setRefresh] = useState(0);
-  const forceRefresh = useCallback(() => {
-    setRefresh(refresh + 1);
-  }, [refresh]);
+  const cached = getCache(project.id);
 
-  const { value, loading, error } = useAsync(async () => {
-    const response = await clientService.projectsProjectIdModulesGet({
-      path: { projectId: project.id },
-    });
-    return await response.json();
-  }, [project.id, refresh]);
+  const {
+    data: value,
+    loading,
+    error,
+  } = usePolledFetch(
+    async () => {
+      const response = await clientService.projectsProjectIdModulesGet({
+        path: { projectId: project.id },
+      });
+      return (await response.json()) as Module[];
+    },
+    [project.id, clientService],
+    { initialData: cached },
+  );
+
+  useEffect(() => {
+    if (value) {
+      setCache(project.id, value);
+    }
+  }, [project.id, value]);
 
   return (
     <Grid container spacing={3} direction="row" className={styles.detailPanel}>

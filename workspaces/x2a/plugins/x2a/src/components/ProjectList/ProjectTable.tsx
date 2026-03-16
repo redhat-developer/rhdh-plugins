@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Table,
@@ -46,6 +52,23 @@ import { BulkRunConfirmDialog } from '../BulkRunConfirmDialog';
 import { extractResponseError, areEligibleModulesToRun } from '../tools';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { projectRouteRef } from '../../routes';
+
+/**
+ * @material-table/core doesn't export a type for the table instance exposed via
+ * tableRef. This interface covers the internal API surface we rely on so that
+ * call-sites stay type-safe and breakage from library upgrades is caught early.
+ */
+type MaterialTableRef<T extends object> = {
+  dataManager: {
+    sortedData: (T & { id?: string })[];
+    data: (T & {
+      tableData: { showDetailPanel?: (() => React.ReactNode) | undefined };
+    })[];
+    getRenderState: () => object;
+  };
+  onToggleDetailPanel: (path: number[], render: () => React.ReactNode) => void;
+  setState: (state: object) => void;
+};
 
 type ProjectTableProps = {
   forceRefresh: () => void;
@@ -256,11 +279,11 @@ export const ProjectTable = ({
 
   const [error, setError] = useState<Error | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
-  const tableRef = useRef<any>(null);
+  const tableRef = useRef<MaterialTableRef<Project>>(null);
 
   useEffect(() => {
     setAllExpanded(false);
-  }, [projects]);
+  }, [page, pageSize]);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -342,32 +365,38 @@ export const ProjectTable = ({
     setOrderDirection(od);
   };
 
-  const getDetailPanel = useCallback(
-    ({ rowData }: { rowData: Project }): React.ReactNode => (
-      <DetailPanel project={rowData} />
-    ),
-    [],
-  );
-
   const handleToggleRow = useCallback(
-    (rowData: any) => {
+    (
+      rowData: Project & {
+        tableData?: { showDetailPanel?: (() => React.ReactNode) | undefined };
+      },
+    ) => {
       const tableInstance = tableRef.current;
       if (!tableInstance) return;
 
       const { dataManager } = tableInstance;
       const index = dataManager.sortedData.findIndex(
-        (row: any) => row === rowData || row.id === rowData.id,
+        row => row === rowData || row.id === rowData.id,
       );
       if (index < 0) return;
 
-      tableInstance.onToggleDetailPanel([index], getDetailPanel);
+      tableInstance.onToggleDetailPanel([index], () => (
+        <DetailPanel project={rowData} forceRefresh={forceRefresh} />
+      ));
 
-      const allNowExpanded =
-        dataManager.data.length > 0 &&
-        dataManager.data.every((row: any) => !!row.tableData.showDetailPanel);
-      setAllExpanded(allNowExpanded);
+      const wasExpanded = !!rowData.tableData?.showDetailPanel;
+      if (wasExpanded) {
+        setAllExpanded(false);
+      } else {
+        const allNowExpanded =
+          dataManager.data.length > 0 &&
+          dataManager.data.every(
+            row => row === rowData || !!row.tableData.showDetailPanel,
+          );
+        setAllExpanded(allNowExpanded);
+      }
     },
-    [getDetailPanel],
+    [forceRefresh],
   );
 
   const handleToggleAllDetailPanels = useCallback(() => {
@@ -377,17 +406,19 @@ export const ProjectTable = ({
     const { dataManager } = tableInstance;
     const allCurrentlyExpanded =
       dataManager.data.length > 0 &&
-      dataManager.data.every((row: any) => !!row.tableData.showDetailPanel);
+      dataManager.data.every(row => !!row.tableData.showDetailPanel);
 
     const newExpanded = !allCurrentlyExpanded;
     setAllExpanded(newExpanded);
 
-    dataManager.data.forEach((row: any) => {
-      row.tableData.showDetailPanel = newExpanded ? getDetailPanel : undefined;
+    dataManager.data.forEach(row => {
+      row.tableData.showDetailPanel = newExpanded
+        ? () => <DetailPanel project={row} forceRefresh={forceRefresh} />
+        : undefined;
     });
 
     tableInstance.setState(dataManager.getRenderState());
-  }, [getDetailPanel]);
+  }, [forceRefresh]);
 
   const columns = useColumns(
     orderBy,
@@ -488,7 +519,9 @@ export const ProjectTable = ({
           columns={columns}
           data={data}
           actions={actions}
-          detailPanel={getDetailPanel}
+          detailPanel={({ rowData }: { rowData: Project }) => (
+            <DetailPanel project={rowData} forceRefresh={forceRefresh} />
+          )}
           tableRef={tableRef}
           onOrderChange={handleOrderChange}
           page={page}

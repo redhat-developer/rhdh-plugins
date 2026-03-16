@@ -176,6 +176,9 @@ export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancel
 // @public
 export function normalizeRepoUrl(url: string): string;
 
+// @public
+export const POLLING_INTERVAL_MS: number;
+
 // @public (undocumented)
 export interface Project {
     abbreviation: string;

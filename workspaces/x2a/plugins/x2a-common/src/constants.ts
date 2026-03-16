@@ -49,3 +49,10 @@ export const CREATE_CHEF_PROJECT_TEMPLATE_PATH =
  * @public
  */
 export const MAX_CONCURRENT_BULK_RUN = 3;
+
+/**
+ * Polling interval for refreshing data views.
+ *
+ * @public
+ */
+export const POLLING_INTERVAL_MS = 10 * 1000;
