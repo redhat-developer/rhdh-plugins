@@ -80,6 +80,8 @@ export async function findAllRepositories(
     return !alreadyImported;
   });
 
+  sortRepos(notImportedYetRepositories);
+
   const slicedRepositories = notImportedYetRepositories.slice(
     (pageNumber - 1) * pageSize,
     pageNumber * pageSize,
@@ -198,8 +200,6 @@ async function formatResponse(
       errors: errors,
     });
   }
-
-  sortRepos(repoList);
 
   return {
     statusCode: 200,
