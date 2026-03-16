@@ -21,6 +21,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -128,6 +129,27 @@ const useStyles = makeStyles(theme => ({
     padding: 0,
     margin: 0,
   },
+  // Outer content wrapper (library may override overflow; we rely on inner scroll wrapper).
+  chatbotContent: {
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+  },
+  // Inner scroll container we control: always scrollable so zoomed-in users see full content.
+  chatbotContentScroll: {
+    minHeight: 0,
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+  },
+  // When present, pushes welcome content to bottom (zoom out). Scroll up to see important box (zoom in).
+  chatbotContentSpacer: {
+    flex: 1,
+    minHeight: 0,
+  },
 }));
 
 type LightspeedChatProps = {
@@ -165,6 +187,7 @@ export const LightspeedChat = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
   const {
@@ -342,6 +365,10 @@ export const LightspeedChat = ({
         if (!isFullscreenMode) {
           setIsChatHistoryDrawerOpen(false);
         }
+      } else {
+        // Already on new chat: reset so scroll/layout works (e.g. after opening new chat again from another convo then back).
+        setMessages([]);
+        setNewChatCreated(true);
       }
     })();
   }, [
@@ -572,6 +599,17 @@ export const LightspeedChat = ({
         })
       : [];
 
+  // When opening a new chat (welcome content), scroll to bottom so content is next to send box.
+  useEffect(() => {
+    if (welcomePrompts.length === 0) return undefined;
+    const el = contentScrollRef.current;
+    if (!el) return undefined;
+    const timer = setTimeout(() => {
+      el.scrollTop = el.scrollHeight;
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [welcomePrompts.length]);
+
   const handleFilter = useCallback((value: string) => {
     setFilterValue(value);
   }, []);
@@ -752,7 +790,7 @@ export const LightspeedChat = ({
             style: isFullscreenMode ? undefined : { zIndex: 1300 },
           }}
           reverseButtonOrder
-          displayMode={ChatbotDisplayMode.embedded}
+          displayMode={displayMode}
           onDrawerToggle={onChatHistoryDrawerToggle}
           title=""
           navTitleIcon={null}
@@ -811,19 +849,27 @@ export const LightspeedChat = ({
                 </div>
               )}
 
-              <ChatbotContent>
-                <LightspeedChatBox
-                  userName={userName}
-                  messages={messages}
-                  profileLoading={profileLoading}
-                  announcement={announcement}
-                  ref={scrollToBottomRef}
-                  welcomePrompts={welcomePrompts}
-                  conversationId={conversationId}
-                  isStreaming={isSendButtonDisabled}
-                  topicRestrictionEnabled={topicRestrictionEnabled}
-                  displayMode={displayMode}
-                />
+              <ChatbotContent className={classes.chatbotContent}>
+                <div
+                  ref={contentScrollRef}
+                  className={classes.chatbotContentScroll}
+                >
+                  {welcomePrompts.length > 0 && (
+                    <div className={classes.chatbotContentSpacer} aria-hidden />
+                  )}
+                  <LightspeedChatBox
+                    userName={userName}
+                    messages={messages}
+                    profileLoading={profileLoading}
+                    announcement={announcement}
+                    ref={scrollToBottomRef}
+                    welcomePrompts={welcomePrompts}
+                    conversationId={conversationId}
+                    isStreaming={isSendButtonDisabled}
+                    topicRestrictionEnabled={topicRestrictionEnabled}
+                    displayMode={displayMode}
+                  />
+                </div>
               </ChatbotContent>
               <ChatbotFooter className={classes.footer}>
                 <FilePreview />
