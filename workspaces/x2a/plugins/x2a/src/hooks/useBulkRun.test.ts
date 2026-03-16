@@ -37,14 +37,18 @@ jest.mock('../components/tools', () => ({
   getNextPhase: jest.fn(),
 }));
 
+jest.mock('./useScmHostMap', () => ({
+  useScmHostMap: () => new Map(),
+}));
+
 jest.mock('@red-hat-developer-hub/backstage-plugin-x2a-common', () => ({
   ...jest.requireActual('@red-hat-developer-hub/backstage-plugin-x2a-common'),
-  getAuthTokenDescriptor: jest.fn(
-    ({ repoUrl, readOnly }: { repoUrl: string; readOnly: boolean }) => ({
-      repoUrl,
+  resolveScmProvider: jest.fn((_url: string) => ({
+    getAuthTokenDescriptor: (readOnly: boolean) => ({
+      repoUrl: _url,
       readOnly,
     }),
-  ),
+  })),
 }));
 
 import { renderHook } from '@testing-library/react';
@@ -170,6 +174,41 @@ describe('useBulkRun', () => {
       expect(mockAuthenticate).toHaveBeenCalledWith([
         { repoUrl: 'https://github.com/org/tgt', readOnly: false },
       ]);
+    });
+
+    it('authenticates cross-provider repos (Bitbucket source, GitHub target)', async () => {
+      const project = makeProject({
+        sourceRepoUrl: 'https://bitbucket.org/ws/src',
+        targetRepoUrl: 'https://github.com/org/tgt',
+      });
+
+      mockAuthenticate
+        .mockResolvedValueOnce([{ token: 'gh-target-tok' }])
+        .mockResolvedValueOnce([{ token: 'bb-source-tok' }]);
+      mockProjectsProjectIdModulesModuleIdRunPost.mockResolvedValue(
+        jsonResponse({ jobId: 'job-1' }),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      await result.current.runAllForProject(project, [makeModule()]);
+
+      expect(mockAuthenticate).toHaveBeenCalledTimes(2);
+      expect(mockAuthenticate).toHaveBeenCalledWith([
+        { repoUrl: 'https://bitbucket.org/ws/src', readOnly: true },
+      ]);
+      expect(mockAuthenticate).toHaveBeenCalledWith([
+        { repoUrl: 'https://github.com/org/tgt', readOnly: false },
+      ]);
+
+      expect(mockProjectsProjectIdModulesModuleIdRunPost).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            sourceRepoAuth: { token: 'bb-source-tok' },
+            targetRepoAuth: { token: 'gh-target-tok' },
+          }),
+        }),
+      );
     });
 
     it('sends correct phase and auth tokens in the run request', async () => {

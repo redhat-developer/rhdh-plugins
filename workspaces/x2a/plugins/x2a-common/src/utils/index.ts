@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-export * from './getScmProvider';
 export * from './normalizeRepoUrl';
 export * from './toSorted';
-export * from './getAuthTokenDescriptor';
 export * from './tokenDescriptorTypes';
-export * from './augmentRepoToken';

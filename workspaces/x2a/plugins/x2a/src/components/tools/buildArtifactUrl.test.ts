@@ -123,6 +123,38 @@ describe('buildArtifactUrl', () => {
     });
   });
 
+  describe('Bitbucket', () => {
+    it('builds src URL for a Bitbucket repo', () => {
+      expect(
+        buildArtifactUrl(
+          'path/to/file.txt',
+          'https://bitbucket.org/owner/repo',
+          'main',
+        ),
+      ).toBe('https://bitbucket.org/owner/repo/src/main/path/to/file.txt');
+    });
+
+    it('strips .git suffix for Bitbucket', () => {
+      expect(
+        buildArtifactUrl(
+          'README.md',
+          'https://bitbucket.org/owner/repo.git',
+          'main',
+        ),
+      ).toBe('https://bitbucket.org/owner/repo/src/main/README.md');
+    });
+
+    it('encodes branch names with special characters', () => {
+      expect(
+        buildArtifactUrl(
+          'file.txt',
+          'https://bitbucket.org/owner/repo',
+          'feature/foo-bar',
+        ),
+      ).toBe('https://bitbucket.org/owner/repo/src/feature%2Ffoo-bar/file.txt');
+    });
+  });
+
   describe('invalid URL', () => {
     it('falls back to simple concatenation for invalid URLs', () => {
       expect(buildArtifactUrl('file.txt', 'not-a-valid-url', 'main')).toBe(

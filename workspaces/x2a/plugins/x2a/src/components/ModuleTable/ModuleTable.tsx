@@ -16,7 +16,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   Artifact,
-  getAuthTokenDescriptor,
+  resolveScmProvider,
   Module,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -27,6 +27,7 @@ import { MaterialTableProps } from '@material-table/core/types';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
 
+import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Artifacts } from '../Artifacts';
@@ -118,6 +119,7 @@ export const ModuleTable = ({
 }) => {
   const { t } = useTranslation();
   const repoAuthentication = useRepoAuthentication();
+  const hostMap = useScmHostMap();
 
   const columns = useColumns({
     targetRepoUrl: project.targetRepoUrl,
@@ -139,18 +141,18 @@ export const ModuleTable = ({
       // Authenticate the repositories
       const sourceRepoAuthToken = (
         await repoAuthentication.authenticate([
-          getAuthTokenDescriptor({
-            repoUrl: project.sourceRepoUrl,
-            readOnly: true,
-          }),
+          resolveScmProvider(
+            project.sourceRepoUrl,
+            hostMap,
+          ).getAuthTokenDescriptor(true),
         ])
       )[0].token;
       const targetRepoAuthToken = (
         await repoAuthentication.authenticate([
-          getAuthTokenDescriptor({
-            repoUrl: project.targetRepoUrl,
-            readOnly: false,
-          }),
+          resolveScmProvider(
+            project.targetRepoUrl,
+            hostMap,
+          ).getAuthTokenDescriptor(false),
         ])
       )[0].token;
 
@@ -180,6 +182,7 @@ export const ModuleTable = ({
     [
       clientService,
       forceRefresh,
+      hostMap,
       repoAuthentication,
       project.sourceRepoUrl,
       project.targetRepoUrl,

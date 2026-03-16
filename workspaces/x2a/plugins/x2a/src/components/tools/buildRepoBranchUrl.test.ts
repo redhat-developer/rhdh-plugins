@@ -84,14 +84,30 @@ describe('buildRepoBranchUrl', () => {
     });
   });
 
-  describe('other SCMs (fallback to GitLab flow so far - to be updated when other SCMs are supported)', () => {
-    it('uses GitLab-style URL for Bitbucket', () => {
-      // When adding support for Bitbucket, the url is: https://bitbucket.org/owner/repo/branch/main
+  describe('Bitbucket', () => {
+    it('builds branch URL for Bitbucket repo', () => {
       expect(
         buildRepoBranchUrl('https://bitbucket.org/owner/repo', 'main'),
-      ).toBe('https://bitbucket.org/owner/repo/-/tree/main');
+      ).toBe('https://bitbucket.org/owner/repo/branch/main');
     });
 
+    it('strips .git suffix and builds Bitbucket branch URL', () => {
+      expect(
+        buildRepoBranchUrl('https://bitbucket.org/owner/repo.git', 'main'),
+      ).toBe('https://bitbucket.org/owner/repo/branch/main');
+    });
+
+    it('encodes branch names with special characters', () => {
+      expect(
+        buildRepoBranchUrl(
+          'https://bitbucket.org/owner/repo',
+          'feature/foo-bar',
+        ),
+      ).toBe('https://bitbucket.org/owner/repo/branch/feature%2Ffoo-bar');
+    });
+  });
+
+  describe('other SCMs (fallback to GitLab flow)', () => {
     it('uses GitLab-style URL for custom Git host', () => {
       expect(
         buildRepoBranchUrl(

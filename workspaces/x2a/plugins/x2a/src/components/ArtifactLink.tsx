@@ -18,6 +18,7 @@ import { makeStyles } from '@material-ui/core';
 import LaunchIcon from '@material-ui/icons/Launch';
 import { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
+import { useScmHostMap } from '../hooks/useScmHostMap';
 import { useTranslation } from '../hooks/useTranslation';
 import { buildArtifactUrl, humanizeArtifactType } from './tools';
 
@@ -44,6 +45,7 @@ export const ArtifactLink = ({
   targetRepoBranch: string;
 }) => {
   const classes = useStyles();
+  const hostMap = useScmHostMap();
   const { t } = useTranslation();
 
   if (!artifact) {
@@ -53,7 +55,12 @@ export const ArtifactLink = ({
   const url =
     artifact.type === 'ansible_project'
       ? artifact.value
-      : buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch);
+      : buildArtifactUrl(
+          artifact.value,
+          targetRepoUrl,
+          targetRepoBranch,
+          hostMap,
+        );
   return (
     <Link
       to={url}
