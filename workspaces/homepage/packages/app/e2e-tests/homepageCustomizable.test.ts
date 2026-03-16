@@ -47,7 +47,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
     await runAccessibilityTests(sharedPage, testInfo);
   });
 
-  // TODO: This test is skipped because the card resize isn't working as expected
+  // Skipping as of now; re-enable after https://github.com/backstage/backstage/issues/33317 is fixed
   test.skip('Verify All Cards Can Be Resized in Edit Mode', async ({
     browser: _browser,
   }, testInfo) => {
