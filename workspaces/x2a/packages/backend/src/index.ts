@@ -25,6 +25,8 @@ backend.add(import('@backstage/plugin-proxy-backend'));
 backend.add(import('@backstage/plugin-scaffolder-backend'));
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 backend.add(import('@backstage/plugin-scaffolder-backend-module-gitlab'));
+backend.add(import('@backstage/plugin-scaffolder-backend-module-bitbucket'));
+
 backend.add(
   import('@backstage/plugin-scaffolder-backend-module-notifications'),
 );
@@ -38,6 +40,7 @@ backend.add(import('@backstage/plugin-auth-backend'));
 backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
 backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
 backend.add(import('@backstage/plugin-auth-backend-module-gitlab-provider'));
+backend.add(import('@backstage/plugin-auth-backend-module-bitbucket-provider'));
 
 // See https://backstage.io/docs/auth/guest/provider
 

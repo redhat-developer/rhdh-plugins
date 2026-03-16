@@ -16,13 +16,14 @@
 import { useCallback } from 'react';
 
 import {
-  getAuthTokenDescriptor,
   MAX_CONCURRENT_BULK_RUN,
   Module,
   Project,
+  resolveScmProvider,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useClientService } from '../ClientService';
+import { useScmHostMap } from './useScmHostMap';
 import { useRepoAuthentication } from '../repoAuth';
 import { canRunNextPhase, getNextPhase } from '../components/tools';
 
@@ -35,6 +36,7 @@ export type BulkRunResult = {
 export const useBulkRun = () => {
   const clientService = useClientService();
   const repoAuth = useRepoAuthentication();
+  const hostMap = useScmHostMap();
 
   const runAllForProject = useCallback(
     async (
@@ -56,22 +58,21 @@ export const useBulkRun = () => {
 
       const targetRepoAuthToken = (
         await repoAuth.authenticate([
-          getAuthTokenDescriptor({
-            repoUrl: project.targetRepoUrl,
-            readOnly: false,
-          }),
+          resolveScmProvider(
+            project.targetRepoUrl,
+            hostMap,
+          ).getAuthTokenDescriptor(false),
         ])
       )[0].token;
 
       let sourceRepoAuthToken = targetRepoAuthToken;
       if (project.sourceRepoUrl !== project.targetRepoUrl) {
-        // optimization when the source and target are the same repos
         sourceRepoAuthToken = (
           await repoAuth.authenticate([
-            getAuthTokenDescriptor({
-              repoUrl: project.sourceRepoUrl,
-              readOnly: true,
-            }),
+            resolveScmProvider(
+              project.sourceRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(true),
           ])
         )[0].token;
       }
@@ -112,7 +113,7 @@ export const useBulkRun = () => {
 
       return { total: eligible.length, succeeded, failed };
     },
-    [clientService, repoAuth],
+    [clientService, repoAuth, hostMap],
   );
 
   const runAllGlobal = useCallback(

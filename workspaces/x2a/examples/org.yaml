@@ -28,6 +28,10 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: User
 metadata:
+  annotations:
+    # example for Bitbucket usernameMatchingUserEntityAnnotation resolver
+    # the Bitbucket adds "-admin" to my username (based on role)
+    bitbucket.org/username: mareklibra-admin
   name: mareklibra
 spec:
   profile:

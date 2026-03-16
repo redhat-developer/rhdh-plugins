@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-export * from './normalizeRepoUrl';
-export * from './toSorted';
-export * from './tokenDescriptorTypes';
+export { githubProvider } from './github';
+export { gitlabProvider } from './gitlab';
+export { bitbucketProvider } from './bitbucket';

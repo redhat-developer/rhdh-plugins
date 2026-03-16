@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ConfigReader } from '@backstage/config';
 import { createMockActionContext } from '@backstage/plugin-scaffolder-node-test-utils';
 import { createProjectAction } from './createProject';
 
@@ -23,6 +24,7 @@ describe('x2a:project:create', () => {
       .fn()
       .mockResolvedValue('http://backstage.example.com'),
   };
+  const mockConfig = new ConfigReader({});
 
   const mockFetch = jest.fn();
 
@@ -52,7 +54,7 @@ describe('x2a:project:create', () => {
         json: () => Promise.resolve({ status: 'pending', jobId: initJobId }),
       });
 
-    const action = createProjectAction(mockDiscoveryApi, {
+    const action = createProjectAction(mockDiscoveryApi, mockConfig, {
       fetchApi: { fetch: mockFetch },
     });
 
@@ -117,7 +119,7 @@ describe('x2a:project:create', () => {
       });
     });
 
-    const action = createProjectAction(mockDiscoveryApi, {
+    const action = createProjectAction(mockDiscoveryApi, mockConfig, {
       fetchApi: { fetch: mockFetch },
     });
     const mockContext = createMockActionContext({
@@ -185,7 +187,7 @@ describe('x2a:project:create', () => {
       });
     });
 
-    const action = createProjectAction(mockDiscoveryApi, {
+    const action = createProjectAction(mockDiscoveryApi, mockConfig, {
       fetchApi: { fetch: mockFetch },
     });
     const mockContext = createMockActionContext({
@@ -242,7 +244,7 @@ describe('x2a:project:create', () => {
       });
     });
 
-    const action = createProjectAction(mockDiscoveryApi, {
+    const action = createProjectAction(mockDiscoveryApi, mockConfig, {
       fetchApi: { fetch: mockFetch },
     });
     const mockContext = createMockActionContext({
@@ -295,7 +297,7 @@ describe('x2a:project:create', () => {
       });
     });
 
-    const action = createProjectAction(mockDiscoveryApi, {
+    const action = createProjectAction(mockDiscoveryApi, mockConfig, {
       fetchApi: { fetch: mockFetch },
     });
     const mockContext = createMockActionContext({
@@ -358,7 +360,7 @@ describe('x2a:project:create', () => {
       });
     });
 
-    const action = createProjectAction(mockDiscoveryApi, {
+    const action = createProjectAction(mockDiscoveryApi, mockConfig, {
       fetchApi: { fetch: mockFetch },
     });
     const mockContext = createMockActionContext({
@@ -414,7 +416,7 @@ describe('x2a:project:create', () => {
       });
     });
 
-    const action = createProjectAction(mockDiscoveryApi, {
+    const action = createProjectAction(mockDiscoveryApi, mockConfig, {
       fetchApi: { fetch: mockFetch },
     });
     const mockContext = createMockActionContext({
@@ -472,7 +474,7 @@ describe('x2a:project:create', () => {
           }),
       });
 
-    const action = createProjectAction(mockDiscoveryApi, {
+    const action = createProjectAction(mockDiscoveryApi, mockConfig, {
       fetchApi: { fetch: mockFetch },
     });
     const mockContext = createMockActionContext({
@@ -533,7 +535,7 @@ describe('x2a:project:create', () => {
         });
       });
 
-      const action = createProjectAction(mockDiscoveryApi, {
+      const action = createProjectAction(mockDiscoveryApi, mockConfig, {
         fetchApi: { fetch: mockFetch },
       });
       const mockContext = createMockActionContext({
@@ -579,7 +581,7 @@ describe('x2a:project:create', () => {
         });
       });
 
-      const action = createProjectAction(mockDiscoveryApi, {
+      const action = createProjectAction(mockDiscoveryApi, mockConfig, {
         fetchApi: { fetch: mockFetch },
       });
       const mockContext = createMockActionContext({
@@ -629,7 +631,7 @@ describe('x2a:project:create', () => {
         });
       });
 
-      const action = createProjectAction(mockDiscoveryApi, {
+      const action = createProjectAction(mockDiscoveryApi, mockConfig, {
         fetchApi: { fetch: mockFetch },
       });
       const mockContext = createMockActionContext({
@@ -677,7 +679,7 @@ describe('x2a:project:create', () => {
         });
       });
 
-      const action = createProjectAction(mockDiscoveryApi, {
+      const action = createProjectAction(mockDiscoveryApi, mockConfig, {
         fetchApi: { fetch: mockFetch },
       });
       const mockContext = createMockActionContext({
@@ -725,7 +727,7 @@ describe('x2a:project:create', () => {
         });
       });
 
-      const action = createProjectAction(mockDiscoveryApi, {
+      const action = createProjectAction(mockDiscoveryApi, mockConfig, {
         fetchApi: { fetch: mockFetch },
       });
       const mockContext = createMockActionContext({
@@ -751,11 +753,109 @@ describe('x2a:project:create', () => {
       );
       expect(runRequestBody.targetRepoAuth?.token).toBe('gh-target-token');
     });
+
+    it('should prefix tokens with x-token-auth: for Bitbucket URLs', async () => {
+      let runRequestBody: {
+        sourceRepoAuth?: { token: string };
+        targetRepoAuth?: { token: string };
+      } = {};
+      mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+        const body = options?.body ? JSON.parse(options.body as string) : {};
+        if (body.sourceRepoAuth && body.targetRepoAuth) {
+          runRequestBody = body;
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({ status: 'pending', jobId: 'init-job-augment' }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      });
+
+      const action = createProjectAction(mockDiscoveryApi, mockConfig, {
+        fetchApi: { fetch: mockFetch },
+      });
+      const mockContext = createMockActionContext({
+        input: {
+          name: 'Augment Project',
+          abbreviation: 'AUG',
+          sourceRepoUrl: 'https://bitbucket.org/ws/source-repo',
+          sourceRepoBranch: 'main',
+          areTargetAndSourceRepoShared: false,
+          targetRepoUrl: 'https://bitbucket.org/ws/target-repo',
+          targetRepoBranch: 'main',
+        },
+        secrets: {
+          SRC_USER_OAUTH_TOKEN: 'bb-source-token',
+          TGT_USER_OAUTH_TOKEN: 'bb-target-token',
+        },
+      });
+
+      await action.handler(mockContext);
+
+      expect(runRequestBody.sourceRepoAuth?.token).toBe(
+        'x-token-auth:bb-source-token',
+      );
+      expect(runRequestBody.targetRepoAuth?.token).toBe(
+        'x-token-auth:bb-target-token',
+      );
+    });
+
+    it('should use x-token-auth: for source (Bitbucket) and plain token for target (GitHub)', async () => {
+      let runRequestBody: {
+        sourceRepoAuth?: { token: string };
+        targetRepoAuth?: { token: string };
+      } = {};
+      mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+        const body = options?.body ? JSON.parse(options.body as string) : {};
+        if (body.sourceRepoAuth && body.targetRepoAuth) {
+          runRequestBody = body;
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({ status: 'pending', jobId: 'init-job-augment' }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      });
+
+      const action = createProjectAction(mockDiscoveryApi, mockConfig, {
+        fetchApi: { fetch: mockFetch },
+      });
+      const mockContext = createMockActionContext({
+        input: {
+          name: 'Augment Project',
+          abbreviation: 'AUG',
+          sourceRepoUrl: 'https://bitbucket.org/ws/source-repo',
+          sourceRepoBranch: 'main',
+          areTargetAndSourceRepoShared: false,
+          targetRepoUrl: 'https://github.com/org/target-repo',
+          targetRepoBranch: 'main',
+        },
+        secrets: {
+          SRC_USER_OAUTH_TOKEN: 'bb-source-token',
+          TGT_USER_OAUTH_TOKEN: 'gh-target-token',
+        },
+      });
+
+      await action.handler(mockContext);
+
+      expect(runRequestBody.sourceRepoAuth?.token).toBe(
+        'x-token-auth:bb-source-token',
+      );
+      expect(runRequestBody.targetRepoAuth?.token).toBe('gh-target-token');
+    });
   });
 
   describe('failing scenarios', () => {
     it('should throw when target repository URL is missing (not shared)', async () => {
-      const action = createProjectAction(mockDiscoveryApi);
+      const action = createProjectAction(mockDiscoveryApi, mockConfig);
       const mockContext = createMockActionContext({
         input: {
           name: 'Project',
@@ -778,7 +878,7 @@ describe('x2a:project:create', () => {
     });
 
     it('should throw when source repository token is missing', async () => {
-      const action = createProjectAction(mockDiscoveryApi);
+      const action = createProjectAction(mockDiscoveryApi, mockConfig);
       const mockContext = createMockActionContext({
         input: {
           name: 'Project',
@@ -801,7 +901,7 @@ describe('x2a:project:create', () => {
     });
 
     it('should throw when target repository token is missing (not shared)', async () => {
-      const action = createProjectAction(mockDiscoveryApi);
+      const action = createProjectAction(mockDiscoveryApi, mockConfig);
       const mockContext = createMockActionContext({
         input: {
           name: 'Project',
@@ -830,7 +930,7 @@ describe('x2a:project:create', () => {
         json: () => Promise.resolve({ message: 'Invalid request body' }),
       });
 
-      const action = createProjectAction(mockDiscoveryApi, {
+      const action = createProjectAction(mockDiscoveryApi, mockConfig, {
         fetchApi: { fetch: mockFetch },
       });
       const mockContext = createMockActionContext({
@@ -870,7 +970,7 @@ describe('x2a:project:create', () => {
           json: () => Promise.resolve({ message: 'Internal server error' }),
         });
 
-      const action = createProjectAction(mockDiscoveryApi, {
+      const action = createProjectAction(mockDiscoveryApi, mockConfig, {
         fetchApi: { fetch: mockFetch },
       });
       const mockContext = createMockActionContext({

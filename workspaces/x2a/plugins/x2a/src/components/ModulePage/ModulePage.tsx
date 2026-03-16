@@ -25,7 +25,7 @@ import {
 } from '@backstage/core-components';
 import { Box, Grid } from '@material-ui/core';
 import {
-  getAuthTokenDescriptor,
+  resolveScmProvider,
   MigrationPhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import Alert from '@material-ui/lab/Alert';
@@ -33,6 +33,7 @@ import AlertTitle from '@material-ui/lab/AlertTitle';
 
 import { moduleRouteRef } from '../../routes';
 import { useClientService } from '../../ClientService';
+import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useRepoAuthentication } from '../../repoAuth';
 import { ArtifactsCard } from './ArtifactsCard';
@@ -46,6 +47,7 @@ export const ModulePage = () => {
 
   const clientService = useClientService();
   const repoAuthentication = useRepoAuthentication();
+  const hostMap = useScmHostMap();
   const [error, setError] = useState<string | undefined>();
   const [refresh, setRefresh] = useState(0);
 
@@ -82,18 +84,18 @@ export const ModulePage = () => {
       try {
         const sourceRepoAuthToken = (
           await repoAuthentication.authenticate([
-            getAuthTokenDescriptor({
-              repoUrl: project.sourceRepoUrl,
-              readOnly: true,
-            }),
+            resolveScmProvider(
+              project.sourceRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(true),
           ])
         )[0].token;
         const targetRepoAuthToken = (
           await repoAuthentication.authenticate([
-            getAuthTokenDescriptor({
-              repoUrl: project.targetRepoUrl,
-              readOnly: false,
-            }),
+            resolveScmProvider(
+              project.targetRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(false),
           ])
         )[0].token;
 
@@ -119,7 +121,7 @@ export const ModulePage = () => {
         );
       }
     },
-    [clientService, projectId, moduleId, repoAuthentication, project],
+    [clientService, hostMap, projectId, moduleId, repoAuthentication, project],
   );
 
   const fetchError = projectError || moduleError;
