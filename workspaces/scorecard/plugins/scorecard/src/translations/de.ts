@@ -38,6 +38,15 @@ const scorecardTranslationDe = createTranslationMessages({
     'permissionRequired.button': 'Mehr erfahren',
     'permissionRequired.altText': 'Berechtigung erforderlich',
 
+    // Not found state
+    'notFound.title': '404 Diese Seite wurde nicht gefunden',
+    'notFound.description':
+      'Fügen Sie eine {{indexFile}}-Datei im Stammverzeichnis des docs-Ordners dieses Repositorys hinzu.',
+    'notFound.readMore': 'Mehr erfahren',
+    'notFound.goBack': 'Zurück',
+    'notFound.contactSupport': 'Support kontaktieren',
+    'notFound.altText': 'Seite nicht gefunden',
+
     // Error messages
     'errors.entityMissingProperties':
       'Für die Scorecard-Suche fehlen dem Element die erforderlichen Eigenschaften.',

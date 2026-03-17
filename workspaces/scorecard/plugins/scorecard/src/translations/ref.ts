@@ -31,6 +31,17 @@ export const scorecardMessages = {
     altText: 'No scorecards',
   },
 
+  // Not found state (404)
+  notFound: {
+    title: "404 We couldn't find that page",
+    description:
+      'Try adding an {{indexFile}} file in the root of the docs directory of this repository.',
+    readMore: 'Read more',
+    goBack: 'Go back',
+    contactSupport: 'Contact support',
+    altText: 'Page not found',
+  },
+
   // Permission required state
   permissionRequired: {
     title: 'Missing permission',

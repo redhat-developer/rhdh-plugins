@@ -32,13 +32,19 @@ export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
 export const scorecardTranslationRef: TranslationRef<
   'plugin.scorecard',
   {
-    readonly 'emptyState.button': string;
     readonly 'emptyState.title': string;
     readonly 'emptyState.description': string;
+    readonly 'emptyState.button': string;
     readonly 'emptyState.altText': string;
-    readonly 'permissionRequired.button': string;
+    readonly 'notFound.title': string;
+    readonly 'notFound.description': string;
+    readonly 'notFound.altText': string;
+    readonly 'notFound.readMore': string;
+    readonly 'notFound.goBack': string;
+    readonly 'notFound.contactSupport': string;
     readonly 'permissionRequired.title': string;
     readonly 'permissionRequired.description': string;
+    readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.invalidApiResponse': string;
@@ -61,8 +67,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.lastUpdated': string;
     readonly 'metric.someEntitiesNotReportingValues': string;
     readonly 'thresholds.success': string;
-    readonly 'thresholds.error': string;
     readonly 'thresholds.warning': string;
+    readonly 'thresholds.error': string;
     readonly 'thresholds.noEntities': string;
     readonly 'thresholds.entities_one': string;
     readonly 'thresholds.entities_other': string;
@@ -70,15 +76,15 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.noDataFound': string;
     readonly 'entitiesPage.unknownMetric': string;
     readonly 'entitiesPage.metricProviderNotRegistered': string;
+    readonly 'entitiesPage.entitiesTable.title': string;
+    readonly 'entitiesPage.entitiesTable.unavailable': string;
+    readonly 'entitiesPage.entitiesTable.titleWithCount': string;
     readonly 'entitiesPage.entitiesTable.header.owner': string;
     readonly 'entitiesPage.entitiesTable.header.metric': string;
     readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
     readonly 'entitiesPage.entitiesTable.header.value': string;
     readonly 'entitiesPage.entitiesTable.header.entity': string;
     readonly 'entitiesPage.entitiesTable.header.kind': string;
-    readonly 'entitiesPage.entitiesTable.title': string;
-    readonly 'entitiesPage.entitiesTable.unavailable': string;
-    readonly 'entitiesPage.entitiesTable.titleWithCount': string;
     readonly 'entitiesPage.entitiesTableFooter.of': string;
     readonly 'entitiesPage.entitiesTableFooter.allRows': string;
     readonly 'entitiesPage.entitiesTableFooter.rows_one': string;

@@ -23,6 +23,7 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 
 import { ScorecardHomepageCard } from '../ScorecardHomepageSection/ScorecardHomepageCard';
+import NotFoundState from '../Common/NotFoundState';
 import { useTranslation } from '../../hooks/useTranslation';
 
 import { EntitiesPageHeader } from './EntitiesPageHeader';
@@ -32,12 +33,23 @@ export const ScorecardEntitiesPage = () => {
   const { metricId } = useParams<{ metricId?: string }>();
 
   const [metricTitle, setMetricTitle] = useState<string>('');
+  const [metricNotFound, setMetricNotFound] = useState<boolean>(false);
 
   const { t } = useTranslation();
 
   const titleKey = `metric.${metricId}.title`;
   const title = t(titleKey as any, {});
   const finalTitle = title === titleKey ? metricTitle : title;
+
+  if (metricNotFound) {
+    return (
+      <Page themeId="home">
+        <Content>
+          <NotFoundState />
+        </Content>
+      </Page>
+    );
+  }
 
   return (
     <Page themeId="home">
@@ -59,6 +71,7 @@ export const ScorecardEntitiesPage = () => {
             <EntitiesTable
               metricId={metricId}
               setMetricTitle={setMetricTitle}
+              setMetricNotFound={setMetricNotFound}
             />
           </Box>
           <Box

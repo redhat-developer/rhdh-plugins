@@ -40,11 +40,13 @@ import { EntitiesRow } from './EntitiesRow';
 interface EntitiesTableProps {
   metricId?: string;
   setMetricTitle: (title: string) => void;
+  setMetricNotFound?: (notFound: boolean) => void;
 }
 
 export const EntitiesTable = ({
   metricId,
   setMetricTitle,
+  setMetricNotFound,
 }: EntitiesTableProps) => {
   const [page, setPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
@@ -74,6 +76,11 @@ export const EntitiesTable = ({
     orderBy,
     order,
   });
+
+  const isNotFound = entitiesError?.message?.includes('NotFoundError');
+  if (isNotFound) {
+    setMetricNotFound?.(true);
+  }
 
   useEffect(() => {
     setMetricTitle(aggregatedScorecardEntities?.metricMetadata?.title ?? '');

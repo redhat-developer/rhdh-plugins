@@ -38,6 +38,15 @@ const scorecardTranslationIt = createTranslationMessages({
     'permissionRequired.button': 'Per saperne di più',
     'permissionRequired.altText': 'Autorizzazione richiesta',
 
+    // Not found state
+    'notFound.title': '404 Pagina non trovata',
+    'notFound.description':
+      'Prova ad aggiungere un file {{indexFile}} nella root della directory docs di questo repository.',
+    'notFound.readMore': 'Scopri di più',
+    'notFound.goBack': 'Indietro',
+    'notFound.contactSupport': 'Contatta il supporto',
+    'notFound.altText': 'Pagina non trovata',
+
     // Error messages
     'errors.entityMissingProperties':
       'Entità priva delle proprietà richieste per la ricerca nella scheda punteggio',

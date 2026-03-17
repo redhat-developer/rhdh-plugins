@@ -45,6 +45,12 @@ jest.mock('../../../../hooks/useAggregatedScorecardEntities', () => ({
     mockUseAggregatedScorecardEntities(opts),
 }));
 
+const mockUseAggregatedScorecard = jest.fn();
+jest.mock('../../../../hooks/useAggregatedScorecard', () => ({
+  useAggregatedScorecard: (opts: { metricId: string }) =>
+    mockUseAggregatedScorecard(opts),
+}));
+
 const mockUseEntityMetadataMap = jest.fn();
 jest.mock('../../../../hooks/useEntityMetadataMap', () => ({
   useEntityMetadataMap: (entityRefs: string[]) =>
@@ -136,6 +142,11 @@ describe('EntitiesTable', () => {
     mockUseEntityMetadataMap.mockReturnValue({ entityMetadataMap: {} });
     mockUseAggregatedScorecardEntities.mockReturnValue({
       aggregatedScorecardEntities: defaultAggregatedData,
+      loadingData: false,
+      error: undefined,
+    });
+    mockUseAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: { metadata: { title: 'Open PRs' } },
       loadingData: false,
       error: undefined,
     });
