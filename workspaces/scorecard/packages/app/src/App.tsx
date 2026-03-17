@@ -16,27 +16,20 @@
 
 import { createApp } from '@backstage/frontend-defaults';
 
-import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { convertLegacyAppOptions } from '@backstage/core-compat-api';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import {
   scorecardTranslationsModule,
   scorecardCatalogModule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { signInModule } from './modules/signIn';
 import { navModule } from './modules/nav';
-/*
- * Legacy options: themes (RHDH light/dark)
- */
-const legacyConvertedOptions = convertLegacyAppOptions({
-  themes: getThemes(),
-});
 
 /*
  * app: Backstage app using the New Frontend System (NFS).
  */
 const app = createApp({
   features: [
-    legacyConvertedOptions,
+    rhdhThemeModule,
     scorecardCatalogModule,
     scorecardTranslationsModule,
     signInModule,

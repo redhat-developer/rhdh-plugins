@@ -94,25 +94,33 @@ export const SidebarContent = NavContentBlueprint.make({
           )}
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
             <SidebarScrollWrapper>
-              {mainWithoutMyGroups.map((item, index) => (
-                <Fragment key={`main-${index}`}>
-                  <SidebarItem
-                    to={item.to}
-                    text={item.text}
-                    title={item.title}
-                    icon={
-                      item.to.includes('/catalog') ? CategoryIcon : item.icon
-                    }
-                  />
-                  {index === 0 && (
-                    <MyGroupsSidebarItem
-                      singularTitle="My Group"
-                      pluralTitle="My Groups"
-                      icon={GroupIcon}
+              {mainWithoutMyGroups.length === 0 ? (
+                <MyGroupsSidebarItem
+                  singularTitle="My Group"
+                  pluralTitle="My Groups"
+                  icon={GroupIcon}
+                />
+              ) : (
+                mainWithoutMyGroups.map((item, index) => (
+                  <Fragment key={`main-${index}`}>
+                    <SidebarItem
+                      to={item.to}
+                      text={item.text}
+                      title={item.title}
+                      icon={
+                        item.to.includes('/catalog') ? CategoryIcon : item.icon
+                      }
                     />
-                  )}
-                </Fragment>
-              ))}
+                    {index === 0 && (
+                      <MyGroupsSidebarItem
+                        singularTitle="My Group"
+                        pluralTitle="My Groups"
+                        icon={GroupIcon}
+                      />
+                    )}
+                  </Fragment>
+                ))
+              )}
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
