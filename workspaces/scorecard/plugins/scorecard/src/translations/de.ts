@@ -106,10 +106,10 @@ const scorecardTranslationDe = createTranslationMessages({
     'entitiesPage.entitiesTable.header.owner': 'Eigentümer',
     'entitiesPage.entitiesTable.header.kind': 'Art',
     'entitiesPage.entitiesTable.header.lastUpdated': 'Zuletzt aktualisiert',
-    'entitiesPage.entitiesTableFooter.allRows': 'Alle Zeilen',
-    'entitiesPage.entitiesTableFooter.rows_one': '{{count}} Zeile',
-    'entitiesPage.entitiesTableFooter.rows_other': '{{count}} Zeilen',
-    'entitiesPage.entitiesTableFooter.of': 'von',
+    'entitiesPage.entitiesTable.footer.allRows': 'Alle Zeilen',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} Zeile',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} Zeilen',
+    'entitiesPage.entitiesTable.footer.of': 'von',
   },
 });
 

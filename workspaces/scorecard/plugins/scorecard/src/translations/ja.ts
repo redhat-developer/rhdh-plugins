@@ -108,10 +108,10 @@ const scorecardTranslationJa = createTranslationMessages({
     'entitiesPage.entitiesTable.header.owner': '所有者',
     'entitiesPage.entitiesTable.header.kind': '種類',
     'entitiesPage.entitiesTable.header.lastUpdated': '最終更新日',
-    'entitiesPage.entitiesTableFooter.allRows': 'すべての行',
-    'entitiesPage.entitiesTableFooter.rows_one': '{{count}} 行',
-    'entitiesPage.entitiesTableFooter.rows_other': '{{count}} 行',
-    'entitiesPage.entitiesTableFooter.of': 'の',
+    'entitiesPage.entitiesTable.footer.allRows': 'すべての行',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} 行',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} 行',
+    'entitiesPage.entitiesTable.footer.of': 'の',
   },
 });
 

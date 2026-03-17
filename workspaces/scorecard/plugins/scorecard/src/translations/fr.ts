@@ -108,10 +108,10 @@ const scorecardTranslationFr = createTranslationMessages({
     'entitiesPage.entitiesTable.header.owner': 'Propriétaire',
     'entitiesPage.entitiesTable.header.kind': 'Type',
     'entitiesPage.entitiesTable.header.lastUpdated': 'Dernière mise à jour',
-    'entitiesPage.entitiesTableFooter.allRows': 'Toutes les lignes',
-    'entitiesPage.entitiesTableFooter.rows_one': '{{count}} ligne',
-    'entitiesPage.entitiesTableFooter.rows_other': '{{count}} lignes',
-    'entitiesPage.entitiesTableFooter.of': 'de',
+    'entitiesPage.entitiesTable.footer.allRows': 'Toutes les lignes',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} ligne',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} lignes',
+    'entitiesPage.entitiesTable.footer.of': 'de',
   },
 });
 

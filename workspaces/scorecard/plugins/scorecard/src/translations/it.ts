@@ -108,10 +108,10 @@ const scorecardTranslationIt = createTranslationMessages({
     'entitiesPage.entitiesTable.header.owner': 'Proprietario',
     'entitiesPage.entitiesTable.header.kind': 'Tipo',
     'entitiesPage.entitiesTable.header.lastUpdated': 'Ultimo aggiornamento',
-    'entitiesPage.entitiesTableFooter.allRows': 'Tutte le righe',
-    'entitiesPage.entitiesTableFooter.rows_one': '{{count}} riga',
-    'entitiesPage.entitiesTableFooter.rows_other': '{{count}} righe',
-    'entitiesPage.entitiesTableFooter.of': 'di',
+    'entitiesPage.entitiesTable.footer.allRows': 'Tutte le righe',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} riga',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} righe',
+    'entitiesPage.entitiesTable.footer.of': 'di',
   },
 });
 

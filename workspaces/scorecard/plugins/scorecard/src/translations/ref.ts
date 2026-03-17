@@ -121,12 +121,12 @@ export const scorecardMessages = {
         kind: 'Kind',
         lastUpdated: 'Last updated',
       },
-    },
-    entitiesTableFooter: {
-      allRows: 'All rows',
-      rows_one: '{{count}} row',
-      rows_other: '{{count}} rows',
-      of: 'of',
+      footer: {
+        allRows: 'All rows',
+        rows_one: '{{count}} row',
+        rows_other: '{{count}} rows',
+        of: 'of',
+      },
     },
   },
 };
