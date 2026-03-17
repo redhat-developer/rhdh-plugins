@@ -416,8 +416,9 @@ describe('ProjectList', () => {
         json: async () => mockResponse,
       } as Response);
 
+      // After first error, backoff = POLLING_INTERVAL_MS * 2
       act(() => {
-        jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+        jest.advanceTimersByTime(POLLING_INTERVAL_MS * 2);
       });
 
       await waitFor(() => {

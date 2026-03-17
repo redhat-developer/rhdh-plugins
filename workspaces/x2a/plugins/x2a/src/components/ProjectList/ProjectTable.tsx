@@ -15,6 +15,7 @@
  */
 import React, {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -36,11 +37,13 @@ import { Box, Button, Grid, IconButton, Tooltip } from '@material-ui/core';
 
 import {
   CREATE_CHEF_PROJECT_TEMPLATE_PATH,
+  Module,
   Project,
   ProjectsGet,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
+import { usePolledFetch } from '../../hooks/usePolledFetch';
 import { useBulkRun } from '../../hooks/useBulkRun';
 import { useProjectWriteAccess } from '../../hooks/useProjectWriteAccess';
 import { Repository } from '../Repository';
@@ -259,6 +262,116 @@ const useColumns = (
   }, [t, getDefaultSort, nameCell, allExpanded, onToggleAll, onToggleRow]);
 };
 
+export interface ExpandedModulesEntry {
+  modules?: Module[];
+  loading: boolean;
+  error?: Error;
+}
+
+export interface ExpandedModulesState {
+  [projectId: string]: ExpandedModulesEntry;
+}
+
+/** @internal shape returned by the fetch function inside useExpandedModules */
+export interface ExpandedModulesData {
+  modules: Record<string, Module[]>;
+  errors: Record<string, Error>;
+}
+
+/**
+ * Centralized polling for modules of all expanded project rows.
+ * A single `usePolledFetch` loop fetches modules for every expanded project in
+ * one batch, preventing N independent pollers when many rows are expanded.
+ *
+ * Uses `Promise.allSettled` so that a single project failure does not break
+ * module fetching for all other expanded rows.
+ */
+export function useExpandedModules(expandedIds: string[]): {
+  modulesState: ExpandedModulesState;
+  refetchModules: () => void;
+} {
+  const clientService = useClientService();
+
+  const sortedIds = useMemo(() => [...expandedIds].sort(), [expandedIds]);
+  const key = sortedIds.join(',');
+
+  const {
+    data,
+    loading,
+    refetch: refetchModules,
+  } = usePolledFetch(
+    async (): Promise<ExpandedModulesData> => {
+      if (sortedIds.length === 0) return { modules: {}, errors: {} };
+      const results = await Promise.allSettled(
+        sortedIds.map(async id => {
+          const response = await clientService.projectsProjectIdModulesGet({
+            path: { projectId: id },
+          });
+          return [id, (await response.json()) as Module[]] as const;
+        }),
+      );
+
+      const modules: Record<string, Module[]> = {};
+      const errors: Record<string, Error> = {};
+      results.forEach((result, i) => {
+        const id = sortedIds[i];
+        if (result.status === 'fulfilled') {
+          modules[result.value[0]] = result.value[1];
+        } else {
+          errors[id] =
+            result.reason instanceof Error
+              ? result.reason
+              : new Error(String(result.reason));
+        }
+      });
+      return { modules, errors };
+    },
+    [key, clientService],
+    {
+      initialData:
+        sortedIds.length === 0 ? { modules: {}, errors: {} } : undefined,
+    },
+  );
+
+  const modulesState = useMemo<ExpandedModulesState>(() => {
+    const state: ExpandedModulesState = {};
+    for (const id of sortedIds) {
+      state[id] = {
+        modules: data?.modules[id],
+        loading: loading && data?.modules[id] === undefined,
+        error: data?.errors[id],
+      };
+    }
+    return state;
+  }, [sortedIds, data, loading]);
+
+  return { modulesState, refetchModules };
+}
+
+const ExpandedModulesContext = React.createContext<{
+  modulesState: ExpandedModulesState;
+  forceRefresh: () => void;
+}>({ modulesState: {}, forceRefresh: () => {} });
+
+/**
+ * Reads module data from {@link ExpandedModulesContext} so that it always
+ * receives the latest polled modules, even when Material-Table renders the
+ * detail panel from a stale closure captured at toggle time.
+ */
+const ConnectedDetailPanel = ({ project }: { project: Project }) => {
+  const { modulesState, forceRefresh } = useContext(ExpandedModulesContext);
+  const ms = modulesState[project.id];
+  return (
+    <DetailPanel
+      project={project}
+      forceRefresh={forceRefresh}
+      modules={ms?.modules}
+      modulesLoading={ms?.loading}
+      modulesError={ms?.error}
+    />
+  );
+};
+
 export const ProjectTable = ({
   projects,
   forceRefresh,
@@ -279,11 +392,37 @@ export const ProjectTable = ({
 
   const [error, setError] = useState<Error | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
+  const [expandedProjectIds, setExpandedProjectIds] = useState<Set<string>>(
+    new Set(),
+  );
   const tableRef = useRef<MaterialTableRef<Project>>(null);
+
+  const expandedIdsArray = useMemo(
+    () => Array.from(expandedProjectIds),
+    [expandedProjectIds],
+  );
+  const { modulesState, refetchModules } = useExpandedModules(expandedIdsArray);
+
+  const combinedForceRefresh = useCallback(() => {
+    forceRefresh();
+    refetchModules();
+  }, [forceRefresh, refetchModules]);
 
   useEffect(() => {
     setAllExpanded(false);
+    setExpandedProjectIds(new Set());
   }, [page, pageSize]);
+
+  // Prune expanded IDs that are no longer in the current data set (e.g. after
+  // deletion or a polling refresh that removed a project).
+  useEffect(() => {
+    const currentIds = new Set(projects.map(p => p.id));
+    setExpandedProjectIds(prev => {
+      const pruned = new Set([...prev].filter(id => currentIds.has(id)));
+      return pruned.size !== prev.size ? pruned : prev;
+    });
+  }, [projects]);
+
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -310,7 +449,7 @@ export const ProjectTable = ({
         return;
       }
 
-      forceRefresh();
+      combinedForceRefresh();
     } catch (e) {
       setError(e as Error);
     } finally {
@@ -333,14 +472,14 @@ export const ProjectTable = ({
           ),
         );
       }
-      forceRefresh();
+      combinedForceRefresh();
     } catch (e) {
       setError(e as Error);
     } finally {
       setIsBulkRunning(false);
       setBulkRunTarget(null);
     }
-  }, [bulkRunTarget, runAllForProject, forceRefresh, t]);
+  }, [bulkRunTarget, runAllForProject, combinedForceRefresh, t]);
 
   const handleBulkRunGlobalConfirm = useCallback(async () => {
     setError(null);
@@ -351,14 +490,14 @@ export const ProjectTable = ({
       if (result.failed > 0) {
         setError(new Error(t('bulkRun.errorGlobal')));
       }
-      forceRefresh();
+      combinedForceRefresh();
     } catch (e) {
       setError(e as Error);
     } finally {
       setIsBulkRunning(false);
       setBulkRunGlobalOpen(false);
     }
-  }, [runAllGlobal, canWriteProject, forceRefresh, t]);
+  }, [runAllGlobal, canWriteProject, combinedForceRefresh, t]);
 
   const handleOrderChange = (sortBy: number, od: OrderDirection) => {
     setOrderBy(sortBy);
@@ -380,11 +519,21 @@ export const ProjectTable = ({
       );
       if (index < 0) return;
 
+      const wasExpanded = !!rowData.tableData?.showDetailPanel;
+
       tableInstance.onToggleDetailPanel([index], () => (
-        <DetailPanel project={rowData} forceRefresh={forceRefresh} />
+        <ConnectedDetailPanel project={rowData} />
       ));
 
-      const wasExpanded = !!rowData.tableData?.showDetailPanel;
+      setExpandedProjectIds(prev => {
+        const next = new Set(prev);
+        if (wasExpanded) {
+          next.delete(rowData.id);
+        } else {
+          next.add(rowData.id);
+        }
+        return next;
+      });
       if (wasExpanded) {
         setAllExpanded(false);
       } else {
@@ -396,7 +545,7 @@ export const ProjectTable = ({
         setAllExpanded(allNowExpanded);
       }
     },
-    [forceRefresh],
+    [],
   );
 
   const handleToggleAllDetailPanels = useCallback(() => {
@@ -411,14 +560,24 @@ export const ProjectTable = ({
     const newExpanded = !allCurrentlyExpanded;
     setAllExpanded(newExpanded);
 
+    if (newExpanded) {
+      setExpandedProjectIds(
+        new Set(
+          dataManager.data.map(row => row.id).filter(Boolean) as string[],
+        ),
+      );
+    } else {
+      setExpandedProjectIds(new Set());
+    }
+
     dataManager.data.forEach(row => {
       row.tableData.showDetailPanel = newExpanded
-        ? () => <DetailPanel project={row} forceRefresh={forceRefresh} />
+        ? () => <ConnectedDetailPanel project={row} />
         : undefined;
     });
 
     tableInstance.setState(dataManager.getRenderState());
-  }, [forceRefresh]);
+  }, []);
 
   const columns = useColumns(
     orderBy,
@@ -503,33 +662,37 @@ export const ProjectTable = ({
         </Box>
       </Grid>
 
-      <Grid item>
-        <Table<Project>
-          title={t('table.projectsCount' as any, {
-            count: totalCount.toString(),
-          })}
-          options={{
-            search: false,
-            paging: true,
-            actionsColumnIndex: -1 /* to the row end */,
-            padding: 'default',
-            pageSize: pageSize,
-            showDetailPanelIcon: false,
-          }}
-          columns={columns}
-          data={data}
-          actions={actions}
-          detailPanel={({ rowData }: { rowData: Project }) => (
-            <DetailPanel project={rowData} forceRefresh={forceRefresh} />
-          )}
-          tableRef={tableRef}
-          onOrderChange={handleOrderChange}
-          page={page}
-          onPageChange={onPageChange}
-          onRowsPerPageChange={onRowsPerPageChange}
-          totalCount={totalCount}
-        />
-      </Grid>
+      <ExpandedModulesContext.Provider
+        value={{ modulesState, forceRefresh: combinedForceRefresh }}
+      >
+        <Grid item>
+          <Table<Project>
+            title={t('table.projectsCount' as any, {
+              count: totalCount.toString(),
+            })}
+            options={{
+              search: false,
+              paging: true,
+              actionsColumnIndex: -1 /* to the row end */,
+              padding: 'default',
+              pageSize: pageSize,
+              showDetailPanelIcon: false,
+            }}
+            columns={columns}
+            data={data}
+            actions={actions}
+            detailPanel={({ rowData }: { rowData: Project }) => (
+              <ConnectedDetailPanel project={rowData} />
+            )}
+            tableRef={tableRef}
+            onOrderChange={handleOrderChange}
+            page={page}
+            onPageChange={onPageChange}
+            onRowsPerPageChange={onRowsPerPageChange}
+            totalCount={totalCount}
+          />
+        </Grid>
+      </ExpandedModulesContext.Provider>
     </Grid>
   );
 };

@@ -15,7 +15,10 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import equal from 'fast-deep-equal';
-import { POLLING_INTERVAL_MS } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  POLLING_INTERVAL_MS,
+  MAX_BACKOFF_MS,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 export interface UsePolledFetchResult<T> {
   data: T | undefined;
@@ -35,10 +38,14 @@ export interface UsePolledFetchResult<T> {
  *   loading flag, providing a seamless background refresh after user actions.
  * - A deep-equal check prevents unnecessary re-renders when polled data is
  *   identical to the current state.
+ * - On consecutive errors the polling interval backs off exponentially
+ *   and resets to normal on the first successful fetch.
  *
- * @param fetchFn  Async function that returns the data. All values it closes
- *                 over must also appear in `deps` so the effect re-runs
- *                 when they change.
+ * @param fetchFn  Async function that returns the data.  Accessed via a ref so
+ *                 it does not need to be referentially stable, but **every value
+ *                 closed over by `fetchFn` must be listed in `deps`** — the
+ *                 eslint `exhaustive-deps` rule is intentionally suppressed for
+ *                 the inner effect and cannot verify this contract automatically.
  * @param deps     Dependency array – the effect re-runs when any value changes.
  * @param options  Optional `initialData` to skip the initial loading state.
  */
@@ -54,10 +61,13 @@ export function usePolledFetch<T>(
 
   const isFirstRunRef = useRef(true);
   const skipLoadingRef = useRef(false);
+  const fetchRef = useRef(fetchFn);
+  fetchRef.current = fetchFn;
 
   useEffect(() => {
     let aborted = false;
-    let timeoutId: ReturnType<typeof setTimeout>;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let consecutiveErrors = 0;
 
     if (isFirstRunRef.current) {
       isFirstRunRef.current = false;
@@ -69,8 +79,9 @@ export function usePolledFetch<T>(
 
     const fetchData = async () => {
       try {
-        const result = await fetchFn();
+        const result = await fetchRef.current();
         if (!aborted) {
+          consecutiveErrors = 0;
           setData(prev =>
             prev !== undefined && equal(prev, result) ? prev : result,
           );
@@ -79,13 +90,21 @@ export function usePolledFetch<T>(
         }
       } catch (e) {
         if (!aborted) {
+          consecutiveErrors++;
           setError(e instanceof Error ? e : new Error(String(e)));
           setLoading(false);
         }
       }
 
       if (!aborted) {
-        timeoutId = setTimeout(fetchData, POLLING_INTERVAL_MS);
+        const delay =
+          consecutiveErrors > 0
+            ? Math.min(
+                POLLING_INTERVAL_MS * Math.pow(2, consecutiveErrors),
+                MAX_BACKOFF_MS,
+              )
+            : POLLING_INTERVAL_MS;
+        timeoutId = setTimeout(fetchData, delay);
       }
     };
 
@@ -93,10 +112,9 @@ export function usePolledFetch<T>(
 
     return () => {
       aborted = true;
-      clearTimeout(timeoutId);
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, refreshCounter]);
+  }, [...deps, refreshCounter]); // eslint-disable-line react-hooks/exhaustive-deps -- deps are caller-controlled; fetchFn is accessed via fetchRef
 
   const refetch = useCallback(() => {
     skipLoadingRef.current = true;

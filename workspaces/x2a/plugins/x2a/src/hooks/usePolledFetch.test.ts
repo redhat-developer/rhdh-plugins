@@ -157,7 +157,8 @@ describe('usePolledFetch', () => {
       expect(result.current.error?.message).toBe('temporary');
     });
 
-    jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    // After first error, backoff = POLLING_INTERVAL_MS * 2^1
+    jest.advanceTimersByTime(POLLING_INTERVAL_MS * 2);
 
     await waitFor(() => {
       expect(result.current.error).toBeUndefined();
@@ -305,7 +306,7 @@ describe('usePolledFetch', () => {
     });
   });
 
-  it('continues polling after an error', async () => {
+  it('continues polling after an error with backoff', async () => {
     const fetchFn = jest
       .fn()
       .mockRejectedValueOnce(new Error('err1'))
@@ -318,17 +319,75 @@ describe('usePolledFetch', () => {
       expect(result.current.error?.message).toBe('err1');
     });
 
-    jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS * 2);
+    });
 
     await waitFor(() => {
       expect(result.current.error?.message).toBe('err2');
     });
 
-    jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS * 4);
+    });
 
     await waitFor(() => {
       expect(result.current.error).toBeUndefined();
       expect(result.current.data).toEqual({ id: 1 });
     });
+  });
+
+  it('resets backoff to normal interval after recovery', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('err'))
+      .mockResolvedValueOnce({ id: 1 })
+      .mockResolvedValue({ id: 2 });
+
+    const { result } = renderHook(() => usePolledFetch(fetchFn, []));
+
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe('err');
+    });
+
+    // Advance past backoff (POLLING_INTERVAL_MS * 2) for recovery
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS * 2);
+    });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ id: 1 });
+      expect(result.current.error).toBeUndefined();
+    });
+
+    // After recovery, next poll fires at normal POLLING_INTERVAL_MS
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ id: 2 });
+    });
+  });
+
+  it('does not retry before backoff interval elapses', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('err'))
+      .mockResolvedValue({ id: 1 });
+
+    const { result } = renderHook(() => usePolledFetch(fetchFn, []));
+
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe('err');
+    });
+
+    // Advancing by normal interval (less than backoff) should NOT trigger retry
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    });
+
+    expect(result.current.error?.message).toBe('err');
+    expect(result.current.data).toBeUndefined();
   });
 });

@@ -245,8 +245,9 @@ describe('ModulePage', () => {
 
     mockProjectGet.mockResolvedValue({ json: async () => mockProject });
 
+    // After first error, backoff = POLLING_INTERVAL_MS * 2
     await act(async () => {
-      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS * 2);
     });
 
     await waitFor(() => {

@@ -19,14 +19,6 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: mockUseTranslation,
 }));
 
-const mockFetch = jest.fn();
-const clientServiceMock = {
-  projectsProjectIdModulesGet: mockFetch,
-};
-jest.mock('../../ClientService', () => ({
-  useClientService: () => clientServiceMock,
-}));
-
 jest.mock('../ItemField', () => ({
   ItemField: ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div data-testid={`field-${label}`}>{value}</div>
@@ -54,12 +46,9 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-import { render, screen, waitFor, act } from '@testing-library/react';
-import {
-  POLLING_INTERVAL_MS,
-  Project,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { DetailPanel, clearModulesCache } from './DetailPanel';
+import { render, screen } from '@testing-library/react';
+import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { DetailPanel } from './DetailPanel';
 
 const mockProject: Project = {
   id: 'proj-1',
@@ -80,183 +69,67 @@ const mockModules = [
 ];
 
 describe('DetailPanel', () => {
-  beforeEach(() => {
-    jest.useFakeTimers();
-    mockFetch.mockReset();
-    clearModulesCache();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it('shows loading indicator on initial fetch', async () => {
-    mockFetch.mockReturnValue(new Promise(() => {}));
-
-    render(<DetailPanel project={mockProject} forceRefresh={jest.fn()} />);
+  it('shows loading indicator when modulesLoading is true and no modules', () => {
+    render(
+      <DetailPanel
+        project={mockProject}
+        forceRefresh={jest.fn()}
+        modulesLoading
+      />,
+    );
 
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
-  it('renders modules after successful fetch', async () => {
-    mockFetch.mockResolvedValue({
-      json: async () => mockModules,
-    });
-
+  it('renders modules when provided', () => {
     render(
       <DetailPanel
-        project={{ ...mockProject, id: 'proj-render' }}
+        project={mockProject}
         forceRefresh={jest.fn()}
+        modules={mockModules as any}
       />,
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('module-a')).toBeInTheDocument();
-    });
-
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.getByText('module-a')).toBeInTheDocument();
     expect(screen.getByText('module-b')).toBeInTheDocument();
   });
 
-  it('polls for data after POLLING_INTERVAL_MS', async () => {
-    mockFetch.mockResolvedValue({
-      json: async () => mockModules,
-    });
-
+  it('shows error panel when modulesError is provided', () => {
     render(
       <DetailPanel
-        project={{ ...mockProject, id: 'proj-poll' }}
+        project={mockProject}
         forceRefresh={jest.fn()}
+        modulesError={new Error('Network error')}
       />,
     );
-
-    await waitFor(() => {
-      expect(screen.getByText('module-a')).toBeInTheDocument();
-    });
-
-    const initialCallCount = mockFetch.mock.calls.length;
-
-    await act(async () => {
-      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
-    });
-
-    await waitFor(() => {
-      expect(mockFetch.mock.calls.length).toBeGreaterThan(initialCallCount);
-    });
-  });
-
-  it('does not show loading indicator during polling refresh', async () => {
-    mockFetch.mockResolvedValue({
-      json: async () => mockModules,
-    });
-
-    render(
-      <DetailPanel
-        project={{ ...mockProject, id: 'proj-noload' }}
-        forceRefresh={jest.fn()}
-      />,
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('module-a')).toBeInTheDocument();
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-    });
-    expect(screen.getByText('module-a')).toBeInTheDocument();
-  });
-
-  it('uses cached data to avoid loading flash on re-mount', async () => {
-    mockFetch.mockResolvedValue({
-      json: async () => mockModules,
-    });
-
-    const projectForCache = { ...mockProject, id: 'proj-cache' };
-
-    const { unmount } = render(
-      <DetailPanel project={projectForCache} forceRefresh={jest.fn()} />,
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('module-a')).toBeInTheDocument();
-    });
-
-    unmount();
-
-    render(<DetailPanel project={projectForCache} forceRefresh={jest.fn()} />);
-
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-    expect(screen.getByText('module-a')).toBeInTheDocument();
-  });
-
-  it('shows error panel when fetch fails', async () => {
-    mockFetch.mockRejectedValue(new Error('Network error'));
-
-    render(
-      <DetailPanel
-        project={{ ...mockProject, id: 'proj-err' }}
-        forceRefresh={jest.fn()}
-      />,
-    );
-
-    await waitFor(() => {
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-    });
 
     expect(screen.getByText(/Network error/)).toBeInTheDocument();
   });
 
-  it('recovers from error on next successful poll', async () => {
-    mockFetch
-      .mockRejectedValueOnce(new Error('Temporary'))
-      .mockResolvedValue({ json: async () => mockModules });
-
+  it('shows "no modules" when modules is an empty array', () => {
     render(
       <DetailPanel
-        project={{ ...mockProject, id: 'proj-recover' }}
+        project={mockProject}
         forceRefresh={jest.fn()}
+        modules={[]}
       />,
     );
 
-    await waitFor(() => {
-      expect(screen.getByText(/Temporary/)).toBeInTheDocument();
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    });
-    expect(screen.getByText('module-a')).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.getByText('No modules found yet...')).toBeInTheDocument();
   });
 
-  it('does not update state after unmount', async () => {
-    let resolve: (v: any) => void;
-    mockFetch.mockReturnValue(
-      new Promise(r => {
-        resolve = r;
-      }),
-    );
-
-    const { unmount } = render(
+  it('renders project fields', () => {
+    render(
       <DetailPanel
-        project={{ ...mockProject, id: 'proj-abort' }}
+        project={mockProject}
         forceRefresh={jest.fn()}
+        modules={mockModules as any}
       />,
     );
 
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
-
-    unmount();
-
-    // Resolve after unmount – should not throw
-    resolve!({ json: async () => mockModules });
+    expect(screen.getByTestId('field-Abbreviation')).toBeInTheDocument();
+    expect(screen.getByTestId('field-Description')).toBeInTheDocument();
   });
 });
