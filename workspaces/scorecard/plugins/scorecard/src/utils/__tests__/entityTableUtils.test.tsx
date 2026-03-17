@@ -60,5 +60,32 @@ describe('entityTableUtils', () => {
       );
       expect(result).toBe('1 day ago');
     });
+
+    it('should return "--" for falsy timestamp', () => {
+      expect(getLastUpdatedLabel('')).toBe('--');
+      expect(getLastUpdatedLabel(null as unknown as string)).toBe('--');
+      expect(getLastUpdatedLabel(undefined as unknown as string)).toBe('--');
+    });
+
+    it('should return "--" for invalid date', () => {
+      expect(getLastUpdatedLabel('not-a-date')).toBe('--');
+      expect(getLastUpdatedLabel('Invalid Date')).toBe('--');
+      expect(getLastUpdatedLabel(NaN)).toBe('--');
+    });
+
+    it('should return "2 days ago" for two days ago (plural)', () => {
+      const result = getLastUpdatedLabel('2026-03-08T10:00:00Z');
+      expect(result).toBe('2 days ago');
+    });
+
+    it('should return "6 days ago" for exactly 6 days ago (boundary)', () => {
+      const result = getLastUpdatedLabel('2026-03-04T10:00:00Z');
+      expect(result).toBe('6 days ago');
+    });
+
+    it('should return formatted date for 7 days ago (beyond 6-day threshold)', () => {
+      const result = getLastUpdatedLabel('2026-03-03T10:00:00Z');
+      expect(result).toBe('03 Mar 2026');
+    });
   });
 });

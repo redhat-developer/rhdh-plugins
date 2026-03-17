@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-import { isToday, differenceInCalendarDays, format } from 'date-fns';
+import { isToday, differenceInCalendarDays, format, isValid } from 'date-fns';
 
 export function getLastUpdatedLabel(timestamp: string | number | Date) {
+  if (!timestamp) return '--';
+
   const date = new Date(timestamp);
+
+  if (!isValid(date)) return '--';
+
   const today = new Date();
 
   if (isToday(date)) {
