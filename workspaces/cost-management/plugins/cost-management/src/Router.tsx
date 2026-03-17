@@ -16,7 +16,7 @@
 
 import { ErrorPage } from '@backstage/core-components';
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { OptimizationsPage } from './pages/optimizations/OptimizationsPage';
 import { OptimizationsBreakdownPage } from './pages/optimizations-breakdown/OptimizationsBreakdownPage';
 import { OpenShiftPage } from './pages/openshift/OpenShiftPage';
