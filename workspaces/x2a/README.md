@@ -301,3 +301,7 @@ Loaded Kubernetes configuration from ~/.kube/config
   - `migrations/` - Database migrations
 - `plugins/x2a-common/` - Shared code between frontend and backend
   - `client/src/schema/openapi/generated/` - Generated client-side API code
+
+## CSV Bulk Project Import
+
+See [CSV Bulk Project Import](./docs/csv-bulk-import.md) for the CSV file format, an example, repository URL conventions, and the `RepoAuthentication` scaffolder extension.
