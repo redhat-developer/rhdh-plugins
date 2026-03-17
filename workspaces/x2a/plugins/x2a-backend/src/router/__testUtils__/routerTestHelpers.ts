@@ -29,9 +29,10 @@ import { Knex } from 'knex';
 import { createRouter } from '..';
 import { X2ADatabaseService } from '../../services/X2ADatabaseService';
 import { migrate } from '../../services/dbMigrate';
+import { TEST_DATABASE_IDS } from '../../utils';
 
 const databases = TestDatabases.create({
-  ids: ['SQLITE_3', 'POSTGRES_18'],
+  ids: TEST_DATABASE_IDS,
 });
 export const supportedDatabaseIds = databases.eachSupportedId();
 export const clientsToDestroy: Knex[] = [];

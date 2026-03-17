@@ -29,9 +29,10 @@ import {
 
 import { X2ADatabaseService } from '..';
 import { migrate } from '../../dbMigrate';
+import { TEST_DATABASE_IDS } from '../../../utils';
 
 const databases = TestDatabases.create({
-  ids: ['SQLITE_3', 'POSTGRES_18'],
+  ids: TEST_DATABASE_IDS,
 });
 
 export const supportedDatabaseIds = databases.eachSupportedId();
