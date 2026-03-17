@@ -5,11 +5,15 @@
 ```ts
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { FieldExtensionComponent } from '@backstage/plugin-scaffolder-react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
-import { TranslationRef } from '@backstage/frontend-plugin-api';
-import { TranslationResource } from '@backstage/frontend-plugin-api';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
+
+// @public (undocumented)
+export const RepoAuthenticationExtension: FieldExtensionComponent<string, {}>;
 
 // @public
 export type TFuncX2A = TranslationFunction<typeof x2aPluginTranslationRef.T>;
@@ -31,9 +35,9 @@ root: RouteRef<undefined>;
 export const x2aPluginTranslationRef: TranslationRef<"plugin.x2a", {
 readonly "table.columns.name": string;
 readonly "table.columns.status": string;
+readonly "table.columns.createdAt": string;
 readonly "table.columns.sourceRepo": string;
 readonly "table.columns.targetRepo": string;
-readonly "table.columns.createdAt": string;
 readonly "table.actions.deleteProject": string;
 readonly "table.actions.expandAll": string;
 readonly "table.actions.collapseAll": string;
@@ -70,8 +74,8 @@ readonly "projectTable.deleteError": string;
 readonly "projectDetailsCard.title": string;
 readonly "projectDetailsCard.name": string;
 readonly "projectDetailsCard.description": string;
-readonly "projectDetailsCard.abbreviation": string;
 readonly "projectDetailsCard.status": string;
+readonly "projectDetailsCard.abbreviation": string;
 readonly "projectDetailsCard.createdBy": string;
 readonly "projectDetailsCard.sourceRepo": string;
 readonly "projectDetailsCard.targetRepo": string;
@@ -89,18 +93,18 @@ readonly "modulePage.artifacts.migrated_sources": string;
 readonly "modulePage.artifacts.ansible_project": string;
 readonly "modulePage.phases.title": string;
 readonly "modulePage.phases.id": string;
-readonly "modulePage.phases.cancel": string;
 readonly "modulePage.phases.status": string;
+readonly "modulePage.phases.cancel": string;
 readonly "modulePage.phases.duration": string;
 readonly "modulePage.phases.k8sJobName": string;
 readonly "modulePage.phases.startedAt": string;
 readonly "modulePage.phases.errorDetails": string;
 readonly "modulePage.phases.statuses.running": string;
 readonly "modulePage.phases.statuses.error": string;
-readonly "modulePage.phases.statuses.notStarted": string;
 readonly "modulePage.phases.statuses.pending": string;
 readonly "modulePage.phases.statuses.success": string;
 readonly "modulePage.phases.statuses.cancelled": string;
+readonly "modulePage.phases.statuses.notStarted": string;
 readonly "modulePage.phases.resyncMigrationPlanInstructions": string;
 readonly "modulePage.phases.reanalyzeInstructions": string;
 readonly "modulePage.phases.rerunAnalyze": string;
@@ -192,8 +196,8 @@ readonly "module.sourcePath": string;
 readonly "artifact.types.migration_plan": string;
 readonly "artifact.types.module_migration_plan": string;
 readonly "artifact.types.migrated_sources": string;
-readonly "artifact.types.ansible_project": string;
 readonly "artifact.types.project_metadata": string;
+readonly "artifact.types.ansible_project": string;
 readonly empty: string;
 }>;
 
