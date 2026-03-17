@@ -252,7 +252,7 @@ describe('GithubApiService tests', () => {
     );
   });
 
-  it('returns an a list of unique repositories and no errors', async () => {
+  it('returns a list of unique repositories and no errors', async () => {
     octokit.rest.apps.listReposAccessibleToInstallation
       .mockReturnValueOnce({
         data: {
