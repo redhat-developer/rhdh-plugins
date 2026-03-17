@@ -51,7 +51,7 @@ export const useBulkRun = () => {
         modules = await response.json();
       }
 
-      const eligible = modules.filter(m => canRunNextPhase(m));
+      const eligible = modules.filter(m => canRunNextPhase(m, project));
       if (eligible.length === 0) {
         return { total: 0, succeeded: 0, failed: 0 };
       }

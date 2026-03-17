@@ -835,6 +835,92 @@ describe('createRouter – modules', () => {
     );
 
     it.each(supportedDatabaseIds)(
+      'should allow running a new job after a previous one was cancelled - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const first = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send(runBody);
+        expect(first.status).toBe(200);
+
+        const cancel = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+        expect(cancel.status).toBe(200);
+
+        const second = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send(runBody);
+        expect(second.status).toBe(200);
+        expect(second.body.jobId).toBeDefined();
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 409 and clean up K8s job when job is cancelled during K8s creation window - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const mockDeleteJob = jest.fn().mockResolvedValue(undefined);
+        const mockCreateJob = jest
+          .fn()
+          .mockImplementation(async (params: { jobId: string }) => {
+            // Simulate a concurrent cancel arriving while K8s job is being created
+            await x2aDatabase.updateJob({
+              id: params.jobId,
+              status: 'cancelled',
+              finishedAt: new Date(),
+            });
+            return { k8sJobName: 'orphan-k8s-job' };
+          });
+
+        const app = await createApp(client, undefined, undefined, {
+          createJob: mockCreateJob,
+          deleteJob: mockDeleteJob,
+        });
+
+        const response = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send({
+            phase: 'analyze',
+            sourceRepoAuth: { token: 'source-token' },
+            targetRepoAuth: { token: 'target-token' },
+          });
+
+        expect(response.status).toBe(409);
+        expect(response.body.error).toBe('JobCancelledDuringCreation');
+
+        // The orphaned K8s job must be cleaned up
+        expect(mockDeleteJob).toHaveBeenCalledWith('orphan-k8s-job');
+
+        // The DB job must remain cancelled, not overwritten to running
+        const jobs = await x2aDatabase.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          lastJobOnly: true,
+        });
+        expect(jobs[0].status).toBe('cancelled');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
       'should accept optional aapCredentials and pass them to kubeService.createJob - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -874,6 +960,442 @@ describe('createRouter – modules', () => {
             moduleName: module.name,
           }),
         );
+      },
+      LONG_TEST_TIMEOUT,
+    );
+  });
+
+  describe('POST /projects/:projectId/modules/:moduleId/cancel', () => {
+    it.each(supportedDatabaseIds)(
+      'should cancel a running job and return 200 - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const runResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send({
+            phase: 'analyze',
+            sourceRepoAuth: { token: 'source-token' },
+            targetRepoAuth: { token: 'target-token' },
+          });
+        expect(runResponse.status).toBe(200);
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+
+        expect(cancelResponse.status).toBe(200);
+        expect(cancelResponse.body.message).toMatch(/cancelled/i);
+
+        const moduleResponse = await request(app)
+          .get(`/projects/${project.id}/modules/${module.id}`)
+          .send();
+        expect(moduleResponse.status).toBe(200);
+        expect(moduleResponse.body.analyze.status).toBe('cancelled');
+        expect(moduleResponse.body.status).toBe('cancelled');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should cancel a pending job (no k8sJobName) and return 200 - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'migrate',
+          status: 'pending',
+        });
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'migrate' });
+
+        expect(cancelResponse.status).toBe(200);
+
+        const moduleResponse = await request(app)
+          .get(`/projects/${project.id}/modules/${module.id}`)
+          .send();
+        expect(moduleResponse.status).toBe(200);
+        expect(moduleResponse.body.migrate.status).toBe('cancelled');
+        expect(moduleResponse.body.status).toBe('cancelled');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 409 when job is already finished (success) - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          status: 'success',
+        });
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+
+        expect(cancelResponse.status).toBe(409);
+        expect(cancelResponse.body.error).toBe('JobNotCancellable');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 409 when job is already cancelled - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          status: 'cancelled',
+        });
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+
+        expect(cancelResponse.status).toBe(409);
+        expect(cancelResponse.body.error).toBe('JobNotCancellable');
+        expect(cancelResponse.body.message).toContain('cancelled');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when no job exists for the phase - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+
+        expect(cancelResponse.status).toBe(404);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when project does not exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${nonExistentId}/modules/${nonExistentId}/cancel`)
+          .send({ phase: 'analyze' });
+
+        expect(cancelResponse.status).toBe(404);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when module does not exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${nonExistentId}/cancel`)
+          .send({ phase: 'analyze' });
+
+        expect(cancelResponse.status).toBe(404);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when module belongs to a different project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project1 = await createTestProject(x2aDatabase);
+        const project2 = await createTestProject(x2aDatabase, mockProject2);
+        const moduleOfProject2 = await createTestModule(
+          x2aDatabase,
+          project2.id,
+        );
+
+        await createTestJob(x2aDatabase, {
+          projectId: project2.id,
+          moduleId: moduleOfProject2.id,
+          phase: 'analyze',
+          status: 'running',
+        });
+
+        const cancelResponse = await request(app)
+          .post(
+            `/projects/${project1.id}/modules/${moduleOfProject2.id}/cancel`,
+          )
+          .send({ phase: 'analyze' });
+
+        expect(cancelResponse.status).toBe(404);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 400 when phase is invalid - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'init' });
+
+        expect(cancelResponse.status).toBe(400);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 400 when phase is missing - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({});
+
+        expect(cancelResponse.status).toBe(400);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 403 when user has neither x2a.user nor x2a admin permissions - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const app = await createApp(
+          client,
+          AuthorizeResult.DENY,
+          undefined,
+          undefined,
+          AuthorizeResult.DENY,
+        );
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+
+        expect(cancelResponse.status).toBe(403);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should store logs from k8s when cancelling a running job - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+
+        const mockGetJobLogs = jest
+          .fn()
+          .mockResolvedValue('partial job output before cancel');
+        const mockDeleteJob = jest.fn().mockResolvedValue(undefined);
+        const app = await createApp(client, undefined, undefined, {
+          getJobLogs: mockGetJobLogs,
+          deleteJob: mockDeleteJob,
+        });
+
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const runResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send({
+            phase: 'analyze',
+            sourceRepoAuth: { token: 'source-token' },
+            targetRepoAuth: { token: 'target-token' },
+          });
+        expect(runResponse.status).toBe(200);
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+        expect(cancelResponse.status).toBe(200);
+
+        expect(mockGetJobLogs).toHaveBeenCalled();
+        expect(mockDeleteJob).toHaveBeenCalled();
+
+        const log = await x2aDatabase.getJobLogs({
+          jobId: runResponse.body.jobId,
+        });
+        expect(log).toBe('partial job output before cancel');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 500 and keep job as running when K8s deletion fails - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+
+        const mockDeleteJob = jest
+          .fn()
+          .mockRejectedValue(new Error('K8s API unavailable'));
+        const app = await createApp(client, undefined, undefined, {
+          deleteJob: mockDeleteJob,
+        });
+
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const runResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send({
+            phase: 'analyze',
+            sourceRepoAuth: { token: 'source-token' },
+            targetRepoAuth: { token: 'target-token' },
+          });
+        expect(runResponse.status).toBe(200);
+
+        const cancelResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+
+        expect(cancelResponse.status).toBe(500);
+        expect(cancelResponse.body.error).toBe('K8sDeletionFailed');
+
+        // Job must remain running so reconciliation can still track it
+        const jobs = await x2aDatabase.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          lastJobOnly: true,
+        });
+        expect(jobs[0].status).toBe('running');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should handle concurrent cancel gracefully (second cancel sees already-cancelled job) - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+
+        // Slow deleteJob so the first cancel is still in-flight when the second arrives
+        const mockDeleteJob = jest.fn().mockResolvedValue(undefined);
+        const app = await createApp(client, undefined, undefined, {
+          deleteJob: mockDeleteJob,
+        });
+
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const runResponse = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send({
+            phase: 'analyze',
+            sourceRepoAuth: { token: 'source-token' },
+            targetRepoAuth: { token: 'target-token' },
+          });
+        expect(runResponse.status).toBe(200);
+
+        // First cancel succeeds
+        const cancel1 = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+        expect(cancel1.status).toBe(200);
+
+        // Second cancel sees the job is already cancelled → 409
+        const cancel2 = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/cancel`)
+          .send({ phase: 'analyze' });
+        expect(cancel2.status).toBe(409);
+        expect(cancel2.body.error).toBe('JobNotCancellable');
+
+        // Job remains cancelled, deleteJob was called only once
+        const jobs = await x2aDatabase.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          lastJobOnly: true,
+        });
+        expect(jobs[0].status).toBe('cancelled');
+        expect(mockDeleteJob).toHaveBeenCalledTimes(1);
       },
       LONG_TEST_TIMEOUT,
     );

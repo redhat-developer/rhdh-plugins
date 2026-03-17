@@ -90,4 +90,12 @@ describe('ModuleStatusCell', () => {
     expect(screen.getByText('-')).toBeInTheDocument();
     expect(screen.queryByText('review')).not.toBeInTheDocument();
   });
+
+  it('renders cancelled status text', async () => {
+    await renderInTestApp(
+      <ModuleStatusCell module={{ ...baseModule, status: 'cancelled' }} />,
+    );
+    expect(screen.getByText('Cancelled')).toBeInTheDocument();
+    expect(screen.queryByText('review')).not.toBeInTheDocument();
+  });
 });

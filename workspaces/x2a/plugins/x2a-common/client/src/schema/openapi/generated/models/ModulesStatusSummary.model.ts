@@ -46,4 +46,8 @@ export interface ModulesStatusSummary {
    * Number of modules in error state (execution is over but failed)
    */
   error: number;
+  /**
+   * Number of modules in cancelled state (last job was cancelled by the user)
+   */
+  cancelled: number;
 }

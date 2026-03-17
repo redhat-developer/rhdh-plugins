@@ -31,6 +31,7 @@ import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
 import { ProjectsProjectIdCollectArtifactsPost200Response } from '../models/ProjectsProjectIdCollectArtifactsPost200Response.model';
 import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
+import { ProjectsProjectIdModulesModuleIdCancelPostRequest } from '../models/ProjectsProjectIdModulesModuleIdCancelPostRequest.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
 import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
 import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
@@ -126,6 +127,16 @@ export type ProjectsProjectIdModulesGet = {
   path: {
     projectId: string;
   };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesModuleIdCancelPost = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  body: ProjectsProjectIdModulesModuleIdCancelPostRequest;
 };
 /**
  * @public
@@ -384,6 +395,36 @@ export class DefaultApiClient {
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
       method: 'GET',
+    });
+  }
+
+  /**
+   * Cancels a migration phase for a specific module. It deletes the corresponding job and does a clean-up.
+   * @param projectId -
+   * @param moduleId -
+   * @param projectsProjectIdModulesModuleIdCancelPostRequest -
+   */
+  public async projectsProjectIdModulesModuleIdCancelPost(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesModuleIdCancelPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<void>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules/{moduleId}/cancel`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      moduleId: request.path.moduleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
     });
   }
 

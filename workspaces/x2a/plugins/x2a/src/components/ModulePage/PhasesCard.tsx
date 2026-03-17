@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
 import { InfoCard } from '@backstage/core-components';
 import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import ErrorIcon from '@material-ui/icons/Error';
-import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
 import {
   MigrationPhase,
   Module,
+  Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 import { useTranslation } from '../../hooks/useTranslation';
 import { PhaseDetails } from '../PhaseDetails';
+import { PhaseStatusIcon } from '../PhaseStatus';
+import { hasPhasePrerequisites } from '../tools';
 
 const useStyles = makeStyles(theme => ({
   tabs: {
@@ -44,19 +44,21 @@ const useStyles = makeStyles(theme => ({
     '&:hover': {
       backgroundColor: theme.palette.action.hover,
     },
+    '& .MuiTab-wrapper': {
+      flexDirection: 'row',
+    },
   },
   tabLabel: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing(1),
-  },
-  statusIcon: {
-    display: 'inline-flex',
-    marginLeft: theme.spacing(1),
-  },
-  successIcon: {
-    color: theme.palette.success.main,
+    '& > span': {
+      alignItems: 'center',
+      '& svg, & img': {
+        top: 0,
+      },
+    },
   },
   tabPanel: {
     paddingTop: theme.spacing(2),
@@ -66,52 +68,31 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const getStatusIcon = (status?: string, classes?: any) => {
-  switch (status) {
-    case 'success':
-      return (
-        <CheckCircleIcon fontSize="small" className={classes?.successIcon} />
-      );
-    case 'error':
-      return <ErrorIcon fontSize="small" color="error" />;
-    case 'running':
-      return <HourglassEmptyIcon fontSize="small" color="action" />;
-    case 'pending':
-      return <HourglassEmptyIcon fontSize="small" color="disabled" />;
-    default:
-      return null;
-  }
-};
-
 export const PhasesCard = ({
   module,
+  project,
   projectId,
   moduleId,
+  activeTab,
+  handleTabChange,
   onRunPhase,
+  onCancelPhase,
 }: {
   module?: Module;
+  project?: Project;
   projectId: string;
   moduleId: string;
+  activeTab: number;
+  handleTabChange: (event: React.ChangeEvent<{}>, newValue: number) => void;
   onRunPhase?: (phase: MigrationPhase) => void;
+  onCancelPhase?: (phase: MigrationPhase) => void;
 }) => {
   const { t } = useTranslation();
   const classes = useStyles();
-  const [activeTab, setActiveTab] = useState(0);
 
   const analyzePhase = module?.analyze;
   const migratePhase = module?.migrate;
   const publishPhase = module?.publish;
-
-  const moduleMigrationPlanArtifact = analyzePhase?.artifacts?.find(
-    artifact => artifact.type === 'module_migration_plan',
-  );
-  const migratedSourcesArtifact = migratePhase?.artifacts?.find(
-    artifact => artifact.type === 'migrated_sources',
-  );
-
-  const handleTabChange = (_event: React.ChangeEvent<{}>, newValue: number) => {
-    setActiveTab(newValue);
-  };
 
   return (
     <InfoCard title={t('modulePage.phases.title')} variant="gridItem">
@@ -128,9 +109,7 @@ export const PhasesCard = ({
           label={
             <Box className={classes.tabLabel}>
               {t('module.phases.analyze')}
-              <Box className={classes.statusIcon}>
-                {getStatusIcon(analyzePhase?.status, classes)}
-              </Box>
+              <PhaseStatusIcon status={analyzePhase?.status} />
             </Box>
           }
         />
@@ -139,24 +118,28 @@ export const PhasesCard = ({
           label={
             <Box className={classes.tabLabel}>
               {t('module.phases.migrate')}
-              <Box className={classes.statusIcon}>
-                {getStatusIcon(migratePhase?.status, classes)}
-              </Box>
+              <PhaseStatusIcon status={migratePhase?.status} />
             </Box>
           }
-          disabled={!moduleMigrationPlanArtifact}
+          disabled={
+            !module ||
+            !project ||
+            !hasPhasePrerequisites(module, 'migrate', project)
+          }
         />
         <Tab
           className={classes.tab}
           label={
             <Box className={classes.tabLabel}>
               {t('module.phases.publish')}
-              <Box className={classes.statusIcon}>
-                {getStatusIcon(publishPhase?.status, classes)}
-              </Box>
+              <PhaseStatusIcon status={publishPhase?.status} />
             </Box>
           }
-          disabled={!migratedSourcesArtifact}
+          disabled={
+            !module ||
+            !project ||
+            !hasPhasePrerequisites(module, 'publish', project)
+          }
         />
       </Tabs>
 
@@ -167,6 +150,7 @@ export const PhasesCard = ({
           projectId={projectId}
           moduleId={moduleId}
           onRunPhase={onRunPhase}
+          onCancelPhase={onCancelPhase}
         />
       </Box>
       <Box className={activeTab === 1 ? classes.tabPanel : classes.hiddenPanel}>
@@ -176,6 +160,7 @@ export const PhasesCard = ({
           projectId={projectId}
           moduleId={moduleId}
           onRunPhase={onRunPhase}
+          onCancelPhase={onCancelPhase}
         />
       </Box>
       <Box className={activeTab === 2 ? classes.tabPanel : classes.hiddenPanel}>
@@ -185,6 +170,7 @@ export const PhasesCard = ({
           projectId={projectId}
           moduleId={moduleId}
           onRunPhase={onRunPhase}
+          onCancelPhase={onCancelPhase}
         />
       </Box>
     </InfoCard>

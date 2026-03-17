@@ -93,6 +93,7 @@ export const x2aPluginMessages = {
         running: 'Running',
         success: 'Success',
         error: 'Error',
+        cancelled: 'Cancelled',
       },
       resyncMigrationPlanInstructions:
         'Resync module list to match the migration plan.',
@@ -100,7 +101,7 @@ export const x2aPluginMessages = {
         'The module migration plan is already present. In case the overall project migration plan has been updated, retrigger the analysis to reflect the changes.',
       rerunAnalyze: 'Recreate the module migration plan',
       analyzeInstructions:
-        'Before running the analysis, review the overall project migration plan first, its content will drive the analysis of the module.',
+        'Before running the analysis, review the overall project migration plan first. Its content will drive the analysis of the module.',
       runAnalyze: 'Create module migration plan',
       migrateInstructions:
         'Before running the migration, review the module migration plan. The migration process will convert the Chef code to Ansible based on the plan.',
@@ -114,6 +115,9 @@ export const x2aPluginMessages = {
       republishInstructions:
         'The module has already been published. Retrigger the publish to update the target repository.',
       rerunPublish: 'Republish to target repository',
+      cancel: 'Cancel',
+      runError: 'Failed to run phase for module',
+      cancelError: 'Failed to cancel phase for module',
       commitId: 'Last Commit ID',
       viewLog: 'View Log',
       hideLog: 'Hide Log',
@@ -212,11 +216,15 @@ export const x2aPluginMessages = {
       pending: 'Pending',
       running: 'Running',
       error: 'Error',
+      cancelled: 'Cancelled',
       toReview_one: '{{count}} module with artifacts to review',
       toReview_other: '{{count}} modules with artifacts to review',
     },
     actions: {
-      runNextPhase: 'Run Next Phase',
+      runNextPhase: 'Run the next {{phase}} phase',
+      cancelPhase: 'Cancel the {{phase}} phase',
+      cancelPhaseError: 'Failed to cancel phase for module',
+      runNextPhaseError: 'Failed to run next phase for module',
     },
     currentPhase: 'Current Phase',
     lastUpdate: 'Last Update',
@@ -231,6 +239,7 @@ export const x2aPluginMessages = {
       running: 'Running',
       success: 'Success',
       error: 'Error',
+      cancelled: 'Cancelled',
     },
   },
   artifact: {
