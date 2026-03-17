@@ -15,7 +15,7 @@
  */
 
 // eslint-disable-next-line @backstage/no-undeclared-imports
-import { TestDatabaseId } from '@backstage/backend-test-utils';
+import type { TestDatabaseId } from '@backstage/backend-test-utils';
 import {
   Artifact,
   MigrationPhase,
@@ -24,7 +24,6 @@ import {
 export const LONG_TEST_TIMEOUT = 60 * 1000;
 export const nonExistentId = '00000000-0000-0000-0000-000000000000';
 
-// export const TEST_DATABASE_IDS: TestDatabaseId[] = ['SQLITE_3'];
 export const TEST_DATABASE_IDS: TestDatabaseId[] = ['SQLITE_3', 'POSTGRES_18'];
 
 export const getTestArtifacts = (

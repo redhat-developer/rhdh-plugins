@@ -29,7 +29,7 @@ import {
   supportedDatabaseIds,
   tearDownDatabases,
 } from './__testUtils__/testHelpers';
-import { nonExistentId } from '../../utils';
+import { nonExistentId } from '../../utils/tests';
 
 describe('X2ADatabaseService – jobs (update & delete)', () => {
   afterEach(async () => {

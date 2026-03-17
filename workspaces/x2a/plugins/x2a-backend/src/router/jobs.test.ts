@@ -29,7 +29,7 @@ import {
   supportedDatabaseIds,
   tearDownRouters,
 } from './__testUtils__/routerTestHelpers';
-import { LONG_TEST_TIMEOUT, nonExistentId } from '../utils';
+import { LONG_TEST_TIMEOUT, nonExistentId } from '../utils/tests';
 
 describe('createRouter – jobs (log)', () => {
   afterEach(async () => {

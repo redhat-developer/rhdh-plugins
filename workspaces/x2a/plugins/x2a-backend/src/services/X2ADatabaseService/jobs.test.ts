@@ -29,7 +29,8 @@ import {
   supportedDatabaseIds,
   tearDownDatabases,
 } from './__testUtils__/testHelpers';
-import { delay, LONG_TEST_TIMEOUT, nonExistentId } from '../../utils';
+import { delay } from '../../utils';
+import { LONG_TEST_TIMEOUT, nonExistentId } from '../../utils/tests';
 
 describe('X2ADatabaseService – jobs', () => {
   afterEach(async () => {

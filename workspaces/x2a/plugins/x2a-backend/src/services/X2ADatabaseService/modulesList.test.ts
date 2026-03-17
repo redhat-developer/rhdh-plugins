@@ -23,7 +23,7 @@ import {
   supportedDatabaseIds,
   tearDownDatabases,
 } from './__testUtils__/testHelpers';
-import { LONG_TEST_TIMEOUT, nonExistentId } from '../../utils';
+import { LONG_TEST_TIMEOUT, nonExistentId } from '../../utils/tests';
 
 describe('X2ADatabaseService – modules (list & delete)', () => {
   afterEach(async () => {

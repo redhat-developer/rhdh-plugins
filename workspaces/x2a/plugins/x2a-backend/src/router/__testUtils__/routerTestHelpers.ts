@@ -29,7 +29,7 @@ import { Knex } from 'knex';
 import { createRouter } from '..';
 import { X2ADatabaseService } from '../../services/X2ADatabaseService';
 import { migrate } from '../../services/dbMigrate';
-import { TEST_DATABASE_IDS } from '../../utils';
+import { TEST_DATABASE_IDS } from '../../utils/tests';
 
 const databases = TestDatabases.create({
   ids: TEST_DATABASE_IDS,

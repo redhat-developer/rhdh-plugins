@@ -29,7 +29,7 @@ import {
 
 import { X2ADatabaseService } from '..';
 import { migrate } from '../../dbMigrate';
-import { TEST_DATABASE_IDS } from '../../../utils';
+import { TEST_DATABASE_IDS } from '../../../utils/tests';
 
 const databases = TestDatabases.create({
   ids: TEST_DATABASE_IDS,

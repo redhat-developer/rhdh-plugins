@@ -24,7 +24,7 @@ import {
   supportedDatabaseIds,
   tearDownDatabases,
 } from './__testUtils__/testHelpers';
-import { nonExistentId } from '../../utils';
+import { nonExistentId } from '../../utils/tests';
 
 describe('X2ADatabaseService – projects (get & delete)', () => {
   afterEach(async () => {
