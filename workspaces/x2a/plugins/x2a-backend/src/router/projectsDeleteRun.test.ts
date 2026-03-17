@@ -21,15 +21,16 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import {
   createApp,
   createDatabase,
+  LONG_TEST_TIMEOUT,
   mockInputProject,
+  nonExistentId,
   supportedDatabaseIds,
-  tearDownRouters,
-} from './__testUtils__/routerTestHelpers';
-import { LONG_TEST_TIMEOUT, nonExistentId } from '../utils/tests';
+  tearDownDatabases,
+} from '../__testUtils__';
 
 describe('createRouter – projects (delete & run)', () => {
   afterEach(async () => {
-    await tearDownRouters();
+    await tearDownDatabases();
   });
 
   it.each(supportedDatabaseIds)(
@@ -196,41 +197,6 @@ describe('createRouter – projects (delete & run)', () => {
         .get(`/projects/${projectId}`)
         .send();
       expect(getAfterDeleteResponse.status).toBe(404);
-    },
-  );
-
-  it.each(supportedDatabaseIds)(
-    'should return 404 when deletion fails due to permission filtering - %p',
-    async databaseId => {
-      const { client } = await createDatabase(databaseId);
-      // User does not have admin write permission
-      const app = await createApp(
-        client,
-        AuthorizeResult.ALLOW, // Can create projects
-        AuthorizeResult.DENY, // Cannot delete others' projects (no admin write)
-      );
-
-      // Create a project
-      const createResponse = await request(app)
-        .post('/projects')
-        .send(mockInputProject);
-
-      expect(createResponse.status).toBe(200);
-      const projectId = createResponse.body.id;
-
-      // Note: The permission filtering happens at the database service level.
-      // When canWriteAll is false, deleteProject filters by created_by.
-      // Since the same user created and is deleting, it should succeed.
-      // Cross-user deletion prevention is tested in X2ADatabaseService tests.
-      // This test verifies the endpoint integration works correctly.
-
-      const deleteResponse = await request(app)
-        .delete(`/projects/${projectId}`)
-        .send();
-
-      // Same user can delete their own project
-      expect(deleteResponse.status).toBe(200);
-      expect(deleteResponse.body.deletedCount).toBe(1);
     },
   );
 

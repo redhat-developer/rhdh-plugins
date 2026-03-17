@@ -15,21 +15,32 @@
  */
 
 import { Knex } from 'knex';
-
 import {
   mockServices,
   TestDatabaseId,
   TestDatabases,
 } from '@backstage/backend-test-utils';
-
 import {
   Artifact,
   ArtifactType,
+  MigrationPhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { X2ADatabaseService } from '..';
-import { migrate } from '../../dbMigrate';
-import { TEST_DATABASE_IDS } from '../../../utils/tests';
+import { X2ADatabaseService } from '../services/X2ADatabaseService';
+import { migrate } from '../services/dbMigrate';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+export const LONG_TEST_TIMEOUT = 60 * 1000;
+export const nonExistentId = '00000000-0000-0000-0000-000000000000';
+
+export const TEST_DATABASE_IDS: TestDatabaseId[] = ['SQLITE_3', 'POSTGRES_18'];
+
+// ---------------------------------------------------------------------------
+// Database lifecycle
+// ---------------------------------------------------------------------------
 
 const databases = TestDatabases.create({
   ids: TEST_DATABASE_IDS,
@@ -37,7 +48,7 @@ const databases = TestDatabases.create({
 
 export const supportedDatabaseIds = databases.eachSupportedId();
 
-export const clientsToDestroy: Knex[] = [];
+const clientsToDestroy: Knex[] = [];
 
 export async function createDatabase(databaseId: TestDatabaseId) {
   const client = await databases.init(databaseId);
@@ -57,6 +68,22 @@ export function createService(client: Knex): X2ADatabaseService {
   });
 }
 
+export async function createDatabaseAndService(databaseId: TestDatabaseId) {
+  const { client } = await createDatabase(databaseId);
+  const x2aDatabase = createService(client);
+  return { client, x2aDatabase };
+}
+
+export function tearDownDatabases(): Promise<void> {
+  return Promise.all(
+    clientsToDestroy.splice(0).map(client => client.destroy()),
+  ).then(() => undefined);
+}
+
+// ---------------------------------------------------------------------------
+// Test data builders
+// ---------------------------------------------------------------------------
+
 export const defaultProjectRepoFields = {
   sourceRepoUrl: 'https://github.com/source/repo',
   targetRepoUrl: 'https://github.com/target/repo',
@@ -72,8 +99,25 @@ export function artifactsFromValues(
   return values.map(value => ({ type, value }));
 }
 
-export function tearDownDatabases(): Promise<void> {
-  return Promise.all(
-    clientsToDestroy.splice(0).map(client => client.destroy()),
-  ).then(() => undefined);
-}
+export const getTestArtifacts = (
+  phase: MigrationPhase,
+): Pick<Artifact, 'type' | 'value'>[] => {
+  const artifacts: Pick<Artifact, 'type' | 'value'>[] = [];
+  if (phase === 'init') {
+    artifacts.push({
+      value: 'migration_plan',
+      type: 'migration_plan',
+    });
+  } else if (phase === 'analyze') {
+    artifacts.push({
+      value: 'module_migration_plan',
+      type: 'module_migration_plan',
+    });
+  } else if (phase === 'migrate') {
+    artifacts.push({
+      value: 'migrated_sources',
+      type: 'migrated_sources',
+    });
+  }
+  return artifacts;
+};

@@ -22,15 +22,16 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import {
   createApp,
   createDatabase,
+  LONG_TEST_TIMEOUT,
   mockInputProject,
+  nonExistentId,
   supportedDatabaseIds,
-  tearDownRouters,
-} from './__testUtils__/routerTestHelpers';
-import { LONG_TEST_TIMEOUT, nonExistentId } from '../utils/tests';
+  tearDownDatabases,
+} from '../__testUtils__';
 
 describe('createRouter – projects', () => {
   afterEach(async () => {
-    await tearDownRouters();
+    await tearDownDatabases();
   });
 
   describe('projects endpoints', () => {

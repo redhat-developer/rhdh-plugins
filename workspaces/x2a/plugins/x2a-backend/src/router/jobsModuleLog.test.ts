@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
+import { mockCredentials } from '@backstage/backend-test-utils';
 import request from 'supertest';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { Knex } from 'knex';
 
-import { X2ADatabaseService } from '../services/X2ADatabaseService';
+import type { X2ADatabaseService } from '../services/X2ADatabaseService';
 import {
   createApp,
-  createDatabase,
+  createDatabaseAndService,
   createTestJob,
   createTestModule,
   createTestProject,
+  LONG_TEST_TIMEOUT,
   mockInputProject,
   mockProject2,
+  nonExistentId,
   supportedDatabaseIds,
-  tearDownRouters,
-} from './__testUtils__/routerTestHelpers';
-import { LONG_TEST_TIMEOUT, nonExistentId } from '../utils/tests';
+  tearDownDatabases,
+} from '../__testUtils__';
 
 describe('createRouter – jobs (module log)', () => {
   afterEach(async () => {
-    await tearDownRouters();
+    await tearDownDatabases();
   });
 
   describe.each(supportedDatabaseIds)(
@@ -47,13 +48,7 @@ describe('createRouter – jobs (module log)', () => {
       let module: { id: string };
 
       beforeEach(async () => {
-        const dbSetup = await createDatabase(databaseId);
-        client = dbSetup.client;
-        x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
-
+        ({ client, x2aDatabase } = await createDatabaseAndService(databaseId));
         project = await createTestProject(x2aDatabase);
         module = await createTestModule(x2aDatabase, project.id);
       }, LONG_TEST_TIMEOUT);

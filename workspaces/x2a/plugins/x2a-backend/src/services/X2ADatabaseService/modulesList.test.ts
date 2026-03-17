@@ -20,10 +20,11 @@ import {
   createDatabase,
   createService,
   defaultProjectRepoFields,
+  LONG_TEST_TIMEOUT,
+  nonExistentId,
   supportedDatabaseIds,
   tearDownDatabases,
-} from './__testUtils__/testHelpers';
-import { LONG_TEST_TIMEOUT, nonExistentId } from '../../utils/tests';
+} from '../../__testUtils__';
 
 describe('X2ADatabaseService – modules (list & delete)', () => {
   afterEach(async () => {

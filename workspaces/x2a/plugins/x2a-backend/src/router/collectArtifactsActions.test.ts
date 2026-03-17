@@ -17,20 +17,19 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import express from 'express';
-import { mockErrorHandler } from '@backstage/backend-test-utils';
 import type { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { registerCollectArtifactsRoutes } from './collectArtifacts';
 import {
-  createMockRouterDeps,
+  CollectArtifactsTestApp,
   MockRouterDeps,
-} from './__testUtils__/routerTestHelpers';
-import { SignatureValidator } from './utils/SignatureValidator';
+  setupCollectArtifactsApp,
+} from '../__testUtils__';
 
 describe('collectArtifacts routes (actions & signatures)', () => {
+  // sharing similar boilerplate with the collectArtifacts.test.ts, splitted for better parallelization of execution
   let app: express.Express;
   let mockDeps: MockRouterDeps;
-  let signatureValidator: SignatureValidator;
+  let signRequestBody: CollectArtifactsTestApp['signRequestBody'];
 
   const projectId = randomUUID();
   const jobId = randomUUID();
@@ -38,22 +37,8 @@ describe('collectArtifacts routes (actions & signatures)', () => {
   const k8sJobName = 'test-k8s-job-123';
   const callbackToken = randomUUID();
 
-  // Helper to sign request body
-  function signRequestBody(body: object, secret: string): string {
-    const bodyJson = JSON.stringify(body);
-    const bodyBuffer = Buffer.from(bodyJson, 'utf-8');
-    return signatureValidator.generateSignature(secret, bodyBuffer);
-  }
-
   beforeEach(() => {
-    mockDeps = createMockRouterDeps();
-    signatureValidator = new SignatureValidator();
-    app = express();
-    // Don't use express.json() - the route uses express.raw() instead
-    const router = express.Router();
-    registerCollectArtifactsRoutes(router, mockDeps as any);
-    app.use(router);
-    app.use(mockErrorHandler());
+    ({ app, mockDeps, signRequestBody } = setupCollectArtifactsApp());
   });
 
   describe('phase actions', () => {

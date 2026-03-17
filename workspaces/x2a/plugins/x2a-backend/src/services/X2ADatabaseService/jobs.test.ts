@@ -26,11 +26,12 @@ import {
   createDatabase,
   createService,
   defaultProjectRepoFields,
+  LONG_TEST_TIMEOUT,
+  nonExistentId,
   supportedDatabaseIds,
   tearDownDatabases,
-} from './__testUtils__/testHelpers';
+} from '../../__testUtils__';
 import { delay } from '../../utils';
-import { LONG_TEST_TIMEOUT, nonExistentId } from '../../utils/tests';
 
 describe('X2ADatabaseService – jobs', () => {
   afterEach(async () => {

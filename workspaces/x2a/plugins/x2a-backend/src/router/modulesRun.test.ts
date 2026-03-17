@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
+import { mockCredentials } from '@backstage/backend-test-utils';
 import request from 'supertest';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
-import { X2ADatabaseService } from '../services/X2ADatabaseService';
 import {
   createApp,
   createDatabase,
+  createDatabaseAndService,
   createTestJob,
   createTestModule,
   createTestProject,
+  LONG_TEST_TIMEOUT,
   mockInputProject,
   mockProject2,
+  nonExistentId,
   supportedDatabaseIds,
-  tearDownRouters,
-} from './__testUtils__/routerTestHelpers';
-import { LONG_TEST_TIMEOUT, nonExistentId } from '../utils/tests';
+  tearDownDatabases,
+} from '../__testUtils__';
 
 describe('createRouter – modules (run & cancel)', () => {
   afterEach(async () => {
-    await tearDownRouters();
+    await tearDownDatabases();
   });
 
   describe('POST /projects/:projectId/modules/:moduleId/run', () => {
@@ -47,11 +48,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should start module job when project and module exist and tokens provided - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -72,11 +70,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 404 when project or module does not exist - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -96,11 +91,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 403 when user has neither x2a.user nor x2a admin permissions - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
 
@@ -130,11 +122,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 404 when user without admin write accesses another user project - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const user1Project = await createTestProject(
           x2aDatabase,
           mockInputProject,
@@ -174,11 +163,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 409 when a job is already running for the module - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -203,11 +189,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 400 when phase is invalid or tokens missing - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -230,11 +213,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should allow running a new job after a previous one was cancelled - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -261,11 +241,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 409 and clean up K8s job when job is cancelled during K8s creation window - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
 
@@ -316,11 +293,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should accept optional aapCredentials and pass them to kubeService.createJob - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
 
@@ -362,11 +336,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should cancel a running job and return 200 - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -400,11 +371,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should cancel a pending job (no k8sJobName) and return 200 - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -435,11 +403,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 409 when job is already finished (success) - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -464,11 +429,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 409 when job is already cancelled - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -494,11 +456,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 404 when no job exists for the phase - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -529,11 +488,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 404 when module does not exist - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
 
@@ -548,11 +504,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 404 when module belongs to a different project - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project1 = await createTestProject(x2aDatabase);
         const project2 = await createTestProject(x2aDatabase, mockProject2);
@@ -582,11 +535,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 400 when phase is invalid - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -602,11 +552,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 400 when phase is missing - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const app = await createApp(client);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
@@ -622,11 +569,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 403 when user has neither x2a.user nor x2a admin permissions - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
         const project = await createTestProject(x2aDatabase);
         const module = await createTestModule(x2aDatabase, project.id);
 
@@ -650,11 +594,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should store logs from k8s when cancelling a running job - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
 
         const mockGetJobLogs = jest
           .fn()
@@ -696,11 +637,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should return 500 and keep job as running when K8s deletion fails - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
 
         const mockDeleteJob = jest
           .fn()
@@ -743,11 +681,8 @@ describe('createRouter – modules (run & cancel)', () => {
     it.each(supportedDatabaseIds)(
       'should handle concurrent cancel gracefully (second cancel sees already-cancelled job) - %p',
       async databaseId => {
-        const { client } = await createDatabase(databaseId);
-        const x2aDatabase = X2ADatabaseService.create({
-          logger: mockServices.logger.mock(),
-          dbClient: client,
-        });
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
 
         // Slow deleteJob so the first cancel is still in-flight when the second arrives
         const mockDeleteJob = jest.fn().mockResolvedValue(undefined);

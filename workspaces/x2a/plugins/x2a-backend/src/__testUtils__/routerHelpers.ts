@@ -18,24 +18,21 @@ import {
   mockCredentials,
   mockErrorHandler,
   mockServices,
-  TestDatabaseId,
-  TestDatabases,
 } from '@backstage/backend-test-utils';
 import express from 'express';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import type { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Knex } from 'knex';
 
-import { createRouter } from '..';
-import { X2ADatabaseService } from '../../services/X2ADatabaseService';
-import { migrate } from '../../services/dbMigrate';
-import { TEST_DATABASE_IDS } from '../../utils/tests';
+import { createRouter } from '../router';
+import { registerCollectArtifactsRoutes } from '../router/collectArtifacts';
+import { SignatureValidator } from '../router/utils/SignatureValidator';
+import { X2ADatabaseService } from '../services/X2ADatabaseService';
+import { createService } from './testHelpers';
 
-const databases = TestDatabases.create({
-  ids: TEST_DATABASE_IDS,
-});
-export const supportedDatabaseIds = databases.eachSupportedId();
-export const clientsToDestroy: Knex[] = [];
+// ---------------------------------------------------------------------------
+// Mock project fixtures
+// ---------------------------------------------------------------------------
 
 export const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
@@ -57,7 +54,10 @@ export const mockProject2: ProjectsPostRequest = {
   targetRepoBranch: 'main',
 };
 
-// Helper functions for test data setup
+// ---------------------------------------------------------------------------
+// Test data helpers (operate on a real X2ADatabaseService instance)
+// ---------------------------------------------------------------------------
+
 export async function createTestProject(
   x2aDatabase: X2ADatabaseService,
   projectData: ProjectsPostRequest = mockInputProject,
@@ -113,6 +113,10 @@ export async function createTestJob(
   return job;
 }
 
+// ---------------------------------------------------------------------------
+// Full router app (backed by a real DB)
+// ---------------------------------------------------------------------------
+
 export function getCatalogMock() {
   return {
     getEntityByRef: jest.fn().mockResolvedValue(null),
@@ -143,10 +147,7 @@ export async function createApp(
   adminViewResult?: AuthorizeResult,
   catalogOverride?: { getEntityByRef?: jest.Mock },
 ): Promise<express.Express> {
-  const x2aDatabase = X2ADatabaseService.create({
-    logger: mockServices.logger.mock(),
-    dbClient: client,
-  });
+  const x2aDatabase = createService(client);
   const router = await createRouter({
     httpAuth: mockServices.httpAuth(),
     logger: mockServices.logger.mock(),
@@ -156,13 +157,11 @@ export async function createApp(
           permission?: { name?: string; attributes?: { action?: string } };
         }[],
       ) => {
-        // Check which permission is being requested
         const permission = requests[0]?.permission;
         if (
           permission?.name === 'x2a.admin' &&
           permission?.attributes?.action === 'update'
         ) {
-          // This is x2aAdminWritePermission
           return [
             {
               result:
@@ -174,7 +173,6 @@ export async function createApp(
           permission?.name === 'x2a.admin' &&
           permission?.attributes?.action === 'read'
         ) {
-          // This is x2aAdminViewPermission
           return [
             {
               result:
@@ -182,7 +180,6 @@ export async function createApp(
             },
           ] as any;
         }
-        // Default to the provided authorizeResult or ALLOW
         return [{ result: authorizeResult ?? AuthorizeResult.ALLOW }] as any;
       },
     }),
@@ -235,24 +232,9 @@ export async function createApp(
   return app;
 }
 
-export async function createDatabase(databaseId: TestDatabaseId) {
-  const client = await databases.init(databaseId);
-  clientsToDestroy.push(client);
-  const mockDatabaseService = mockServices.database.mock({
-    getClient: async () => client,
-    migrations: { skip: false },
-  });
-
-  await migrate(mockDatabaseService);
-
-  return { client };
-}
-
-export function tearDownRouters(): Promise<void> {
-  return Promise.all(
-    clientsToDestroy.splice(0).map(client => client.destroy()),
-  ).then(() => undefined);
-}
+// ---------------------------------------------------------------------------
+// Lightweight mock deps (no real DB, for unit-style route tests)
+// ---------------------------------------------------------------------------
 
 export interface MockRouterDeps {
   httpAuth: ReturnType<typeof mockServices.httpAuth>;
@@ -346,4 +328,32 @@ export function createMockRouterDeps(): MockRouterDeps {
       },
     }),
   };
+}
+
+// ---------------------------------------------------------------------------
+// collectArtifacts test app (mock-based, no real DB)
+// ---------------------------------------------------------------------------
+
+export interface CollectArtifactsTestApp {
+  app: express.Express;
+  mockDeps: MockRouterDeps;
+  signRequestBody: (body: object, secret: string) => string;
+}
+
+export function setupCollectArtifactsApp(): CollectArtifactsTestApp {
+  const mockDeps = createMockRouterDeps();
+  const signatureValidator = new SignatureValidator();
+  const app = express();
+  const router = express.Router();
+  registerCollectArtifactsRoutes(router, mockDeps as any);
+  app.use(router);
+  app.use(mockErrorHandler());
+
+  function signRequestBody(body: object, secret: string): string {
+    const bodyJson = JSON.stringify(body);
+    const bodyBuffer = Buffer.from(bodyJson, 'utf-8');
+    return signatureValidator.generateSignature(secret, bodyBuffer);
+  }
+
+  return { app, mockDeps, signRequestBody };
 }
