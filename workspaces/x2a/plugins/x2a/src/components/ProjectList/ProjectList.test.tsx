@@ -47,7 +47,7 @@ import {
 import { ProjectList } from './ProjectList';
 import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import { permissionApiRef } from '@backstage/plugin-permission-react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { POLLING_INTERVAL_MS } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -301,7 +301,9 @@ describe('ProjectList', () => {
 
       const initialCallCount = fetchApiMock.mock.calls.length;
 
-      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+      act(() => {
+        jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+      });
 
       await waitFor(() => {
         expect(fetchApiMock.mock.calls.length).toBeGreaterThan(
@@ -334,7 +336,9 @@ describe('ProjectList', () => {
         expect(screen.getByText('Project 0')).toBeInTheDocument();
       });
 
-      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+      act(() => {
+        jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+      });
 
       await waitFor(() => {
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
@@ -373,7 +377,9 @@ describe('ProjectList', () => {
         json: async () => updatedResponse,
       } as Response);
 
-      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+      act(() => {
+        jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Project 10')).toBeInTheDocument();
@@ -410,7 +416,9 @@ describe('ProjectList', () => {
         json: async () => mockResponse,
       } as Response);
 
-      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+      act(() => {
+        jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Project 0')).toBeInTheDocument();

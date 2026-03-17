@@ -19,7 +19,7 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: mockUseTranslation,
 }));
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import {
   Job,
   POLLING_INTERVAL_MS,
@@ -59,7 +59,7 @@ describe('TimingCell', () => {
     ).toBeInTheDocument();
   });
 
-  it('updates the relative time on each polling interval tick', async () => {
+  it('updates the relative time on each polling interval tick', () => {
     jest.setSystemTime(new Date('2024-01-01T12:05:00Z'));
 
     const lastJob: Job = {
@@ -78,22 +78,22 @@ describe('TimingCell', () => {
     ).toBeInTheDocument();
 
     jest.setSystemTime(new Date('2024-01-01T12:15:00Z'));
-    jest.advanceTimersByTime(POLLING_INTERVAL_MS);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText('Finished 13m ago (took 1m 30s)'),
-      ).toBeInTheDocument();
+    act(() => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
     });
+
+    expect(
+      screen.getByText('Finished 13m ago (took 1m 30s)'),
+    ).toBeInTheDocument();
 
     jest.setSystemTime(new Date('2024-01-01T13:05:00Z'));
-    jest.advanceTimersByTime(POLLING_INTERVAL_MS);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText('Finished 1h 3m ago (took 1m 30s)'),
-      ).toBeInTheDocument();
+    act(() => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
     });
+
+    expect(
+      screen.getByText('Finished 1h 3m ago (took 1m 30s)'),
+    ).toBeInTheDocument();
   });
 
   it('does not start a timer when lastJob has no startedAt', () => {
@@ -112,7 +112,7 @@ describe('TimingCell', () => {
     expect(jest.getTimerCount()).toBe(0);
   });
 
-  it('renders running time when job has no finishedAt', async () => {
+  it('renders running time when job has no finishedAt', () => {
     jest.setSystemTime(new Date('2024-01-01T12:02:00Z'));
 
     const lastJob: Job = {
@@ -128,10 +128,10 @@ describe('TimingCell', () => {
     expect(screen.getByText('Running for 2m 0s')).toBeInTheDocument();
 
     jest.setSystemTime(new Date('2024-01-01T12:12:00Z'));
-    jest.advanceTimersByTime(POLLING_INTERVAL_MS);
-
-    await waitFor(() => {
-      expect(screen.getByText('Running for 12m 10s')).toBeInTheDocument();
+    act(() => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
     });
+
+    expect(screen.getByText('Running for 12m 10s')).toBeInTheDocument();
   });
 });

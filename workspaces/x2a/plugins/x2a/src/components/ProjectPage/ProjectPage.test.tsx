@@ -101,7 +101,7 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { POLLING_INTERVAL_MS } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ProjectPage } from './ProjectPage';
 
@@ -183,7 +183,9 @@ describe('ProjectPage', () => {
     const initialProjectCalls = mockProjectGet.mock.calls.length;
     const initialModulesCalls = mockModulesGet.mock.calls.length;
 
-    jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    });
 
     await waitFor(() => {
       expect(mockProjectGet.mock.calls.length).toBeGreaterThan(
@@ -205,7 +207,9 @@ describe('ProjectPage', () => {
       expect(screen.getByText('Test Project')).toBeInTheDocument();
     });
 
-    jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    });
 
     await waitFor(() => {
       expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
@@ -253,7 +257,9 @@ describe('ProjectPage', () => {
 
     mockProjectGet.mockResolvedValue({ json: async () => mockProject });
 
-    jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL_MS);
+    });
 
     await waitFor(() => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();

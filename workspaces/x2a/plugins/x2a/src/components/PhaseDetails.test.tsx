@@ -38,13 +38,13 @@ jest.mock('./ItemField', () => ({
   ),
 }));
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { PhaseDetails } from './PhaseDetails';
 
 describe('PhaseDetails', () => {
   describe('duration field', () => {
-    it('shows formatted duration when job has both startedAt and finishedAt', () => {
+    it('shows formatted duration when job has both startedAt and finishedAt', async () => {
       const phase: Job = {
         id: 'job-1',
         projectId: 'proj-1',
@@ -55,20 +55,22 @@ describe('PhaseDetails', () => {
         finishedAt: new Date('2024-01-01T12:02:30Z'),
       };
 
-      render(
-        <PhaseDetails
-          phase={phase}
-          projectId="proj-1"
-          phaseName="analyze"
-          moduleId="mod-1"
-        />,
-      );
+      await act(async () => {
+        render(
+          <PhaseDetails
+            phase={phase}
+            projectId="proj-1"
+            phaseName="analyze"
+            moduleId="mod-1"
+          />,
+        );
+      });
 
       const durationField = screen.getByTestId('item-field-Duration');
       expect(durationField.textContent).toContain('2m 30s');
     });
 
-    it('shows "-" when job is running (no finishedAt)', () => {
+    it('shows "-" when job is running (no finishedAt)', async () => {
       const phase: Job = {
         id: 'job-1',
         projectId: 'proj-1',
@@ -78,29 +80,33 @@ describe('PhaseDetails', () => {
         startedAt: new Date('2024-01-01T12:00:00Z'),
       };
 
-      render(
-        <PhaseDetails
-          phase={phase}
-          projectId="proj-1"
-          phaseName="analyze"
-          moduleId="mod-1"
-        />,
-      );
+      await act(async () => {
+        render(
+          <PhaseDetails
+            phase={phase}
+            projectId="proj-1"
+            phaseName="analyze"
+            moduleId="mod-1"
+          />,
+        );
+      });
 
       const durationField = screen.getByTestId('item-field-Duration');
       expect(durationField.textContent).toContain('-');
       expect(durationField.textContent).not.toMatch(/\d+[smhd]/);
     });
 
-    it('shows "-" when phase is undefined', () => {
-      render(
-        <PhaseDetails
-          phase={undefined}
-          projectId="proj-1"
-          phaseName="analyze"
-          moduleId="mod-1"
-        />,
-      );
+    it('shows "-" when phase is undefined', async () => {
+      await act(async () => {
+        render(
+          <PhaseDetails
+            phase={undefined}
+            projectId="proj-1"
+            phaseName="analyze"
+            moduleId="mod-1"
+          />,
+        );
+      });
 
       const durationField = screen.getByTestId('item-field-Duration');
       expect(durationField.textContent).toContain('-');
