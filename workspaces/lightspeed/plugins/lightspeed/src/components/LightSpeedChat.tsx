@@ -20,6 +20,7 @@ import {
   Ref,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -188,6 +189,7 @@ export const LightspeedChat = ({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
+  const bottomSentinelRef = useRef<HTMLDivElement>(null);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
   const {
@@ -599,15 +601,38 @@ export const LightspeedChat = ({
         })
       : [];
 
-  // When opening a new chat (welcome content), scroll to bottom so content is next to send box.
-  useEffect(() => {
+  // Scroll to bottom when welcome content appears (sentinel + useLayoutEffect/RAF + ResizeObserver).
+  useLayoutEffect(() => {
     if (welcomePrompts.length === 0) return undefined;
     const el = contentScrollRef.current;
+    const sentinel = bottomSentinelRef.current;
     if (!el) return undefined;
-    const timer = setTimeout(() => {
-      el.scrollTop = el.scrollHeight;
-    }, 50);
-    return () => clearTimeout(timer);
+
+    const scrollToBottom = () => {
+      if (sentinel && typeof sentinel.scrollIntoView === 'function') {
+        sentinel.scrollIntoView({ block: 'end', behavior: 'auto' });
+      } else {
+        el.scrollTop = el.scrollHeight;
+      }
+    };
+
+    const rafId =
+      typeof requestAnimationFrame !== 'undefined'
+        ? requestAnimationFrame(() => scrollToBottom())
+        : null;
+    if (rafId === null) scrollToBottom();
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => scrollToBottom())
+        : undefined;
+    resizeObserver?.observe(el);
+
+    return () => {
+      if (rafId !== null && typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(rafId);
+      }
+      resizeObserver?.disconnect();
+    };
   }, [welcomePrompts.length]);
 
   const handleFilter = useCallback((value: string) => {
@@ -869,6 +894,13 @@ export const LightspeedChat = ({
                     topicRestrictionEnabled={topicRestrictionEnabled}
                     displayMode={displayMode}
                   />
+                  {welcomePrompts.length > 0 && (
+                    <div
+                      ref={bottomSentinelRef}
+                      aria-hidden
+                      style={{ height: 0, flexShrink: 0 }}
+                    />
+                  )}
                 </div>
               </ChatbotContent>
               <ChatbotFooter className={classes.footer}>
