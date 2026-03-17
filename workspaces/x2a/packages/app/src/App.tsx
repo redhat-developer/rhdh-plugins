@@ -61,6 +61,7 @@ import {
   githubAuthApiRef,
   gitlabAuthApiRef,
 } from '@backstage/core-plugin-api';
+import { ConsentPage } from './components/oauth2/ConsentPage';
 
 const app = createApp({
   apis,
@@ -152,6 +153,7 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
+    <Route path="/oauth2/authorize/:sessionId" element={<ConsentPage />} />
   </FlatRoutes>
 );
 

@@ -20,6 +20,7 @@ g, user:development/guest, role:default/x2aUser
 g, group:default/x2a-admin-group, role:default/x2aAdmin
 
 g, user:default/elai-shalev, role:default/x2aAdmin
+g, user:default/eloycoto, role:default/x2aAdmin
 
 ########################################################
 # Catalog and Scaffolder templates permissions

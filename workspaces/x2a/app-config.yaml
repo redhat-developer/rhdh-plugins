@@ -22,7 +22,9 @@ backend:
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
     # Default Helmet Content-Security-Policy values can be removed by setting the key to false
   cors:
-    origin: http://localhost:3000
+    origin:
+      - http://localhost:3000
+      - http://localhost:6274
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
     credentials: true
   # This is for local development only, it is not recommended to use this in production
@@ -30,6 +32,10 @@ backend:
   database:
     client: better-sqlite3
     connection: ':memory:'
+  actions:
+    pluginSources:
+      - 'catalog'
+      - 'x2a'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
 proxy:
@@ -72,6 +78,9 @@ integrations:
     - host: bitbucket.org
 
 auth:
+  experimentalDynamicClientRegistration:
+    # enable the feature
+    enabled: true
   # see https://backstage.io/docs/auth/ to learn about auth providers
   environment: development
   providers:

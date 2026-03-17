@@ -17,11 +17,13 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { createRouter } from './router';
 import { migrate } from './services/dbMigrate';
 import { kubeServiceRef } from './services/KubeService';
+import { registerProjectActions } from './mcp/projects';
 
 /**
  * x2APlugin backend plugin
@@ -43,6 +45,7 @@ export const x2APlugin = createBackendPlugin({
         config: coreServices.rootConfig,
         x2aDatabase: x2aDatabaseServiceRef,
         kubeService: kubeServiceRef,
+        actionsRegistry: actionsRegistryServiceRef,
       },
       async init({
         httpRouter,
@@ -55,6 +58,7 @@ export const x2APlugin = createBackendPlugin({
         database,
         kubeService,
         config,
+        actionsRegistry,
       }) {
         await migrate(database);
 
@@ -75,6 +79,13 @@ export const x2APlugin = createBackendPlugin({
             config,
           }),
         );
+
+        registerProjectActions({
+          actionsRegistry,
+          permissionsSvc,
+          catalog,
+          x2aDatabase,
+        });
       },
     });
   },

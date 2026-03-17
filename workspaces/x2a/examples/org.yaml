@@ -48,3 +48,13 @@ spec:
     displayName: Elai Shalev
     email: foo@bar.com
   memberOf: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: eloycoto
+spec:
+  profile:
+    displayName: Eloy Coto
+    email: foo@bar.com
+  memberOf: []

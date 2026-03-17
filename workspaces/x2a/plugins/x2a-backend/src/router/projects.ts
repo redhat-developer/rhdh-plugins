@@ -31,9 +31,9 @@ import {
   getUserRef,
   reconcileJobStatus,
   useEnforceProjectPermissions,
-  useEnforceX2APermissions,
 } from './common';
 import { ProjectsGet, ProjectsPost } from '../schema/openapi';
+import { listProjects } from './listProjects';
 
 export function registerProjectRoutes(
   router: express.Router,
@@ -54,12 +54,7 @@ export function registerProjectRoutes(
     const endpoint = 'GET /projects';
     logger.info(`${endpoint} request received`);
 
-    const { canViewAll } = await useEnforceX2APermissions({
-      req,
-      readOnly: true,
-      permissionsSvc,
-      httpAuth,
-    });
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
 
     // parse request query
     const projectsGetRequestSchema = z.object({
@@ -90,24 +85,11 @@ export function registerProjectRoutes(
 
     logger.info(`${endpoint} request received: query=${JSON.stringify(query)}`);
 
-    // list projects
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-    const userRef = getUserRef(credentials);
-    const groupsOfUser = await getGroupsOfUser(userRef, {
-      catalog,
+    const response = await listProjects(
+      query,
+      { permissionsSvc, catalog, x2aDatabase },
       credentials,
-    });
-
-    const { projects, totalCount } = await x2aDatabase.listProjects(query, {
-      credentials,
-      canViewAll,
-      groupsOfUser,
-    });
-
-    const response: ProjectsGet['response'] = {
-      totalCount,
-      items: projects,
-    };
+    );
     res.json(response);
   });
 

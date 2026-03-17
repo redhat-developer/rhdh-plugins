@@ -84,6 +84,9 @@ backend.add(import('@backstage/plugin-kubernetes-backend'));
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
+// mcp plugin
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
+
 backend.add(import('@red-hat-developer-hub/backstage-plugin-x2a-backend'));
 
 backend.add(
