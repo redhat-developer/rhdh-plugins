@@ -13,6 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// This file is handled as a non-test file by Jest, even if it is used for tests only.
+// We want to keep these dependencies among devDependencies in the package.json file.
+// eslint-disable-next-line @backstage/no-undeclared-imports
+import { mockApis, MockErrorApi } from '@backstage/test-utils';
+// eslint-disable-next-line @backstage/no-undeclared-imports
+import { featureFlagsApiRef } from '@backstage/frontend-plugin-api';
+
+import { ApiRef, configApiRef, errorApiRef } from '@backstage/core-plugin-api';
+import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import {
   Project,
   ProjectsGet,
@@ -49,6 +59,25 @@ export const createMockResponse = (
   items,
   totalCount,
 });
+
+/**
+ * APIs required by Backstage's Table component when rendering outside of
+ * `renderInTestApp` (which sets these up automatically via wrapInTestApp).
+ */
+export const backstageTableApis: [ApiRef<any>, any][] = [
+  [errorApiRef, new MockErrorApi()],
+  [translationApiRef, mockApis.translation()],
+  [configApiRef, mockApis.config({})],
+  [
+    featureFlagsApiRef,
+    {
+      registerFlag: jest.fn(),
+      getRegisteredFlags: jest.fn().mockReturnValue([]),
+      isActive: jest.fn().mockReturnValue(false),
+      save: jest.fn(),
+    },
+  ],
+];
 
 export const mockPermissionApi = {
   authorize: jest.fn().mockResolvedValue({ result: 'ALLOW' }),

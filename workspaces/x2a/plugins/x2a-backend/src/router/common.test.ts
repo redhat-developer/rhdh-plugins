@@ -34,7 +34,7 @@ import {
   useEnforceProjectPermissions,
   useEnforceX2APermissions,
 } from './common';
-import { getCatalogMock } from './__testUtils__/routerTestHelpers';
+import { getCatalogMock } from '../__testUtils__';
 
 describe('common', () => {
   const createMockRequest = (credentialsHeader?: string): Request =>
