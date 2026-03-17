@@ -27,10 +27,10 @@ const octokit = {
     }
     return [];
   },
-  apps: {
-    listReposAccessibleToInstallation: jest.fn().mockReturnValue({ data: [] }),
-  },
   rest: {
+    apps: {
+      listReposAccessibleToInstallation: jest.fn(),
+    },
     repos: {
       listForAuthenticatedUser: jest.fn(),
       listForOrg: jest.fn(),
@@ -134,6 +134,13 @@ describe('GithubApiService tests', () => {
         },
       },
     });
+    octokit.rest.apps.listReposAccessibleToInstallation.mockReturnValue({
+      data: {
+        repositories: [],
+        total_count: 0,
+        repository_selection: 'all',
+      },
+    });
     octokit.rest.repos.listForOrg.mockReturnValue({ data: [] });
     octokit.rest.users.getByUsername.mockReturnValue({
       data: {
@@ -212,8 +219,12 @@ describe('GithubApiService tests', () => {
       },
     });
     octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({ data: [] });
-    octokit.apps.listReposAccessibleToInstallation.mockReturnValue({
-      data: ghRepos,
+    octokit.rest.apps.listReposAccessibleToInstallation.mockReturnValue({
+      data: {
+        repositories: ghRepos,
+        total_count: ghRepos.length,
+        repository_selection: 'all',
+      },
     });
 
     const result = await githubApiService.getRepositoriesFromIntegrations();
@@ -240,27 +251,35 @@ describe('GithubApiService tests', () => {
   });
 
   it('returns an a list of unique repositories and no errors', async () => {
-    octokit.apps.listReposAccessibleToInstallation
+    octokit.rest.apps.listReposAccessibleToInstallation
       .mockReturnValueOnce({
-        data: ghRepos,
+        data: {
+          repositories: ghRepos,
+          total_count: ghRepos.length,
+          repository_selection: 'all',
+        },
       })
       .mockReturnValue({
-        data: [
-          {
-            name: 'B',
-            full_name: 'backstage/B',
-            url: 'https://api.github.com/repos/backstage/B',
-            html_url: 'https://github.com/backstage/B',
-            default_branch: 'main',
-          },
-          {
-            name: 'C',
-            full_name: 'backstage/C',
-            url: 'https://api.github.com/repos/backstage/C',
-            html_url: 'https://github.com/backstage/C',
-            default_branch: 'default',
-          },
-        ],
+        data: {
+          repositories: [
+            {
+              name: 'B',
+              full_name: 'backstage/B',
+              url: 'https://api.github.com/repos/backstage/B',
+              html_url: 'https://github.com/backstage/B',
+              default_branch: 'main',
+            },
+            {
+              name: 'C',
+              full_name: 'backstage/C',
+              url: 'https://api.github.com/repos/backstage/C',
+              html_url: 'https://github.com/backstage/C',
+              default_branch: 'default',
+            },
+          ],
+          total_count: 2,
+          repository_selection: 'all',
+        },
       });
 
     const result = await githubApiService.getRepositoriesFromIntegrations();
@@ -311,14 +330,18 @@ describe('GithubApiService tests', () => {
         throw customError;
       },
     );
-    octokit.apps.listReposAccessibleToInstallation
+    octokit.rest.apps.listReposAccessibleToInstallation
       .mockImplementationOnce(async () => {
         const unauthorizedError = new Error('Bad credentials');
         unauthorizedError.name = '401 Unauthorized';
         throw unauthorizedError;
       })
       .mockReturnValue({
-        data: ghRepos,
+        data: {
+          repositories: ghRepos,
+          total_count: ghRepos.length,
+          repository_selection: 'all',
+        },
       });
 
     const result = await githubApiService.getRepositoriesFromIntegrations();
@@ -350,9 +373,6 @@ describe('GithubApiService tests', () => {
   it('returns list of repositories if we have a user token with access to an org', async () => {
     octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
       data: ghRepos,
-    });
-    octokit.apps.listReposAccessibleToInstallation.mockReturnValue({
-      data: [],
     });
 
     const result = await githubApiService.getRepositoriesFromIntegrations();
