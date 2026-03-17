@@ -34,7 +34,7 @@ const generateRowsPerPageOptions = (
   if (defaultOptions.includes(totalCount)) {
     const validOptions = defaultOptions.filter(option => option <= totalCount);
     return validOptions.map(value => ({
-      label: t('entitiesPage.entitiesTableFooter.rows_other', {
+      label: t('entitiesPage.entitiesTable.footer.rows_other', {
         count: value.toString(),
       }),
       value,
@@ -45,13 +45,13 @@ const generateRowsPerPageOptions = (
 
   if (validDefaults.length > 0 && totalCount <= maxDefaultOption) {
     const options = validDefaults.map(value => ({
-      label: t('entitiesPage.entitiesTableFooter.rows_other', {
+      label: t('entitiesPage.entitiesTable.footer.rows_other', {
         count: value.toString(),
       }),
       value,
     }));
     options.push({
-      label: t('entitiesPage.entitiesTableFooter.allRows'),
+      label: t('entitiesPage.entitiesTable.footer.allRows'),
       value: totalCount,
     });
     return options;
@@ -59,7 +59,7 @@ const generateRowsPerPageOptions = (
 
   if (validDefaults.length > 0) {
     return validDefaults.map(value => ({
-      label: t('entitiesPage.entitiesTableFooter.rows_other', {
+      label: t('entitiesPage.entitiesTable.footer.rows_other', {
         count: value.toString(),
       }),
       value,

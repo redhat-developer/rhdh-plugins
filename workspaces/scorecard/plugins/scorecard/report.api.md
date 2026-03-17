@@ -36,6 +36,12 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'emptyState.title': string;
     readonly 'emptyState.description': string;
     readonly 'emptyState.altText': string;
+    readonly 'notFound.title': string;
+    readonly 'notFound.description': string;
+    readonly 'notFound.altText': string;
+    readonly 'notFound.readMore': string;
+    readonly 'notFound.goBack': string;
+    readonly 'notFound.contactSupport': string;
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.title': string;
     readonly 'permissionRequired.description': string;
@@ -70,6 +76,10 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.noDataFound': string;
     readonly 'entitiesPage.unknownMetric': string;
     readonly 'entitiesPage.metricProviderNotRegistered': string;
+    readonly 'entitiesPage.entitiesTable.footer.of': string;
+    readonly 'entitiesPage.entitiesTable.footer.allRows': string;
+    readonly 'entitiesPage.entitiesTable.footer.rows_one': string;
+    readonly 'entitiesPage.entitiesTable.footer.rows_other': string;
     readonly 'entitiesPage.entitiesTable.header.owner': string;
     readonly 'entitiesPage.entitiesTable.header.metric': string;
     readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
@@ -79,10 +89,6 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.entitiesTable.title': string;
     readonly 'entitiesPage.entitiesTable.unavailable': string;
     readonly 'entitiesPage.entitiesTable.titleWithCount': string;
-    readonly 'entitiesPage.entitiesTableFooter.of': string;
-    readonly 'entitiesPage.entitiesTableFooter.allRows': string;
-    readonly 'entitiesPage.entitiesTableFooter.rows_one': string;
-    readonly 'entitiesPage.entitiesTableFooter.rows_other': string;
   }
 >;
 

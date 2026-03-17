@@ -75,7 +75,7 @@ export const EntitiesTablePagination = (
       </IconButton>
       {count === 0 ? 0 : (page - 1) * rowsPerPage + 1}-
       {Math.min(page * rowsPerPage, count)}{' '}
-      {t('entitiesPage.entitiesTableFooter.of')} {count}
+      {t('entitiesPage.entitiesTable.footer.of')} {count}
       <IconButton
         onClick={handleNextPageButtonClick}
         disabled={page >= Math.ceil(count / rowsPerPage)}

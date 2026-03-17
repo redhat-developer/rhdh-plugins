@@ -39,9 +39,9 @@ jest.mock('@backstage/core-plugin-api', () => ({
   useRouteRef: () => mockEntityLink,
 }));
 
-jest.mock('@backstage/catalog-model', () => ({
-  parseEntityRef: jest.requireActual('@backstage/catalog-model').parseEntityRef,
-}));
+jest.mock('@backstage/catalog-model', () =>
+  jest.requireActual('@backstage/catalog-model'),
+);
 
 const mockUseEntityPresentation = jest.fn();
 jest.mock('@backstage/plugin-catalog-react', () => ({

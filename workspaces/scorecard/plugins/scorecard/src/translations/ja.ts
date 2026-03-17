@@ -38,6 +38,15 @@ const scorecardTranslationJa = createTranslationMessages({
     'permissionRequired.button': 'さらに表示する',
     'permissionRequired.altText': '権限が必要',
 
+    // Not found state
+    'notFound.title': '404 ページが見つかりません',
+    'notFound.description':
+      'このリポジトリの docs ディレクトリのルートに {{indexFile}} ファイルを追加してみてください。',
+    'notFound.readMore': '詳細を見る',
+    'notFound.goBack': '戻る',
+    'notFound.contactSupport': 'サポートに連絡',
+    'notFound.altText': 'ページが見つかりません',
+
     // Error messages
     'errors.entityMissingProperties':
       'スコアカードの検索に必要なプロパティーがエンティティーにありません',
@@ -99,10 +108,10 @@ const scorecardTranslationJa = createTranslationMessages({
     'entitiesPage.entitiesTable.header.owner': '所有者',
     'entitiesPage.entitiesTable.header.kind': '種類',
     'entitiesPage.entitiesTable.header.lastUpdated': '最終更新日',
-    'entitiesPage.entitiesTableFooter.allRows': 'すべての行',
-    'entitiesPage.entitiesTableFooter.rows_one': '{{count}} 行',
-    'entitiesPage.entitiesTableFooter.rows_other': '{{count}} 行',
-    'entitiesPage.entitiesTableFooter.of': 'の',
+    'entitiesPage.entitiesTable.footer.allRows': 'すべての行',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} 行',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} 行',
+    'entitiesPage.entitiesTable.footer.of': 'の',
   },
 });
 

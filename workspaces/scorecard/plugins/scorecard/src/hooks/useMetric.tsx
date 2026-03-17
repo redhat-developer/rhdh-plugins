@@ -24,11 +24,11 @@ import { useTranslation } from './useTranslation';
 import { scorecardApiRef } from '../api';
 
 interface UseMetricOptions {
-  metricIds: string[];
+  metricId: string;
 }
 
 export const useMetric = (options: UseMetricOptions) => {
-  const { metricIds } = options;
+  const { metricId } = options;
   const { t } = useTranslation();
 
   const scorecardApi = useApi(scorecardApiRef);
@@ -36,7 +36,7 @@ export const useMetric = (options: UseMetricOptions) => {
   const { error, loading, value } = useAsync(async () => {
     try {
       const { metrics } = await scorecardApi.getMetrics({
-        metricIds,
+        metricIds: [metricId],
       });
 
       if (!Array.isArray(metrics) || metrics.length === 0) {
@@ -54,7 +54,7 @@ export const useMetric = (options: UseMetricOptions) => {
         }),
       );
     }
-  }, [scorecardApi, metricIds, t]);
+  }, [scorecardApi, metricId, t]);
 
   return useMemo(
     () => ({

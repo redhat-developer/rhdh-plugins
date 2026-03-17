@@ -38,6 +38,15 @@ const scorecardTranslationIt = createTranslationMessages({
     'permissionRequired.button': 'Per saperne di più',
     'permissionRequired.altText': 'Autorizzazione richiesta',
 
+    // Not found state
+    'notFound.title': '404 Pagina non trovata',
+    'notFound.description':
+      'Prova ad aggiungere un file {{indexFile}} nella root della directory docs di questo repository.',
+    'notFound.readMore': 'Scopri di più',
+    'notFound.goBack': 'Indietro',
+    'notFound.contactSupport': 'Contatta il supporto',
+    'notFound.altText': 'Pagina non trovata',
+
     // Error messages
     'errors.entityMissingProperties':
       'Entità priva delle proprietà richieste per la ricerca nella scheda punteggio',
@@ -99,10 +108,10 @@ const scorecardTranslationIt = createTranslationMessages({
     'entitiesPage.entitiesTable.header.owner': 'Proprietario',
     'entitiesPage.entitiesTable.header.kind': 'Tipo',
     'entitiesPage.entitiesTable.header.lastUpdated': 'Ultimo aggiornamento',
-    'entitiesPage.entitiesTableFooter.allRows': 'Tutte le righe',
-    'entitiesPage.entitiesTableFooter.rows_one': '{{count}} riga',
-    'entitiesPage.entitiesTableFooter.rows_other': '{{count}} righe',
-    'entitiesPage.entitiesTableFooter.of': 'di',
+    'entitiesPage.entitiesTable.footer.allRows': 'Tutte le righe',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} riga',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} righe',
+    'entitiesPage.entitiesTable.footer.of': 'di',
   },
 });
 

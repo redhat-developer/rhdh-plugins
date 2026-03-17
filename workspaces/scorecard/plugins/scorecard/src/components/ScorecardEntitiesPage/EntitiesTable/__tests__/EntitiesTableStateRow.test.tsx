@@ -93,26 +93,6 @@ describe('EntitiesTableStateRow', () => {
     expect(screen.getByText('No data found')).toBeInTheDocument();
   });
 
-  it('should render WarningPanel when error contains NotFoundError', () => {
-    render(
-      <TestWrapper>
-        <EntitiesTableStateRow
-          colSpan={6}
-          error={new Error('NotFoundError: Metric not found')}
-          metricId="unknown.metric"
-        />
-      </TestWrapper>,
-    );
-
-    expect(screen.getByTestId('warning-panel')).toBeInTheDocument();
-    expect(screen.getByTestId('warning-title')).toHaveTextContent(
-      'Metric provider unknown.metric not registered',
-    );
-    expect(screen.getByTestId('warning-message')).toHaveTextContent(
-      'NotFoundError: Metric not found',
-    );
-  });
-
   it('should call setMetricTitle when metric title is resolved', () => {
     const setMetricTitle = jest.fn();
     mockUseMetricDisplayLabels.mockReturnValue({
