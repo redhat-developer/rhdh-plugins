@@ -19,6 +19,7 @@ import { createDevApp } from '@backstage/dev-utils';
 import {
   resourceOptimizationPlugin,
   ResourceOptimizationPage,
+  OpenShiftPage,
 } from '../src/plugin';
 import { CostManagementIconOutlined } from '../src/components/icon/CostManagementIconOutlined';
 
@@ -28,6 +29,12 @@ createDevApp()
     title: 'Optimizations',
     path: '/cost-management/optimizations',
     element: <ResourceOptimizationPage />,
+    icon: CostManagementIconOutlined,
+  })
+  .addPage({
+    title: 'OpenShift',
+    path: '/cost-management/openshift',
+    element: <OpenShiftPage />,
     icon: CostManagementIconOutlined,
   })
   .render();
