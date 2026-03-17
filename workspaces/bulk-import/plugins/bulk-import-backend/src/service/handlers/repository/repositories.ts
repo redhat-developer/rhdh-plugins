@@ -115,11 +115,17 @@ export async function findRepositoriesByOrganization(
     `Getting all repositories for org "${orgName}" - (search,page,size)=(${search},${pageNumber},${pageSize})..`,
   );
 
-  const glReposByOrg = await deps.gitApiService
-    .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
-    .then(response => formatResponse(deps, response, checkStatus));
+  const glReposByOrg =
+    await deps.gitApiService.getOrgRepositoriesFromIntegrations(
+      orgName,
+      search,
+      pageNumber,
+      pageSize,
+    );
 
-  return glReposByOrg;
+  sortRepos(glReposByOrg.repositories);
+
+  return formatResponse(deps, glReposByOrg, checkStatus);
 }
 
 function sortRepos(repoList: Components.Schemas.Repository[]) {
