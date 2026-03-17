@@ -141,6 +141,9 @@ describe('GithubApiService tests', () => {
         repository_selection: 'all',
       },
     });
+    octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
+      data: [],
+    });
     octokit.rest.repos.listForOrg.mockReturnValue({ data: [] });
     octokit.rest.users.getByUsername.mockReturnValue({
       data: {
@@ -218,7 +221,6 @@ describe('GithubApiService tests', () => {
         type: 'User',
       },
     });
-    octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({ data: [] });
     octokit.rest.apps.listReposAccessibleToInstallation.mockReturnValue({
       data: {
         repositories: ghRepos,
