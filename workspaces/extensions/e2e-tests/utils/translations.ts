@@ -16,12 +16,12 @@
 
 // These translation files are not exported by the package, so relative imports are necessary for e2e tests
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { extensionsMessages } from '../../../../plugins/extensions/src/alpha/translations/ref.js';
-import extensionsTranslationDe from '../../../../plugins/extensions/src/alpha/translations/de.js';
-import extensionsTranslationEs from '../../../../plugins/extensions/src/alpha/translations/es.js';
-import extensionsTranslationFr from '../../../../plugins/extensions/src/alpha/translations/fr.js';
-import extensionsTranslationIt from '../../../../plugins/extensions/src/alpha/translations/it.js';
-import extensionsTranslationJa from '../../../../plugins/extensions/src/alpha/translations/ja.js';
+import { extensionsMessages } from '../../plugins/extensions/src/alpha/translations/ref.js';
+import extensionsTranslationDe from '../../plugins/extensions/src/alpha/translations/de.js';
+import extensionsTranslationEs from '../../plugins/extensions/src/alpha/translations/es.js';
+import extensionsTranslationFr from '../../plugins/extensions/src/alpha/translations/fr.js';
+import extensionsTranslationIt from '../../plugins/extensions/src/alpha/translations/it.js';
+import extensionsTranslationJa from '../../plugins/extensions/src/alpha/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type ExtensionsMessages = typeof extensionsMessages;

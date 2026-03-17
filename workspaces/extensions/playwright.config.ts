@@ -21,12 +21,6 @@ const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
 
-// Each app has its own e2e tests
-const testDir =
-  appMode === 'legacy'
-    ? 'packages/app-legacy/e2e-tests'
-    : 'packages/app/e2e-tests';
-
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -36,8 +30,6 @@ export default defineConfig({
   expect: {
     timeout: 10 * 1000, // Global expect timeout
   },
-
-  testDir,
 
   // Run your local dev server before starting the tests
   webServer: process.env.PLAYWRIGHT_URL
@@ -68,9 +60,10 @@ export default defineConfig({
 
   outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
 
+  testDir: 'e2e-tests',
+
   projects: LOCALES.map(locale => ({
     name: locale,
-    testDir,
     use: {
       channel: 'chrome' as const,
       locale,
