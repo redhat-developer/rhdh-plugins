@@ -11501,6 +11501,7 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.13"
     "@backstage/theme": "npm:^0.7.0"
     "@backstage/types": "npm:^1.2.2"
+    "@backstage/ui": "npm:^0.9.1"
     "@material-table/core": "npm:^6.4.4"
     "@material-ui/core": "npm:^4.12.2"
     "@monaco-editor/react": "npm:^4.7.0"
