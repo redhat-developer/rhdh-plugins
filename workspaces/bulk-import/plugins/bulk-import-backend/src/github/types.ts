@@ -140,3 +140,9 @@ export type AuthenticatedUserRepositoryList =
 
 export type AppInstallationRepositories =
   RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response']['data'];
+
+export type AuthenticatedUserRepositoryResponse =
+  RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response'];
+
+export type AppInstallationRepositoriesResponse =
+  RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response'];
