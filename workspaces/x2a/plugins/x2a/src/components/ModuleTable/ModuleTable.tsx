@@ -19,10 +19,12 @@ import {
   resolveScmProvider,
   Module,
   Project,
+  Job,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Link, Table, TableColumn } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import CancelIcon from '@material-ui/icons/Cancel';
 import { MaterialTableProps } from '@material-table/core/types';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
@@ -36,7 +38,12 @@ import { CurrentPhaseCell } from '../CurrentPhaseCell';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { TimingCell } from './TimingCell';
 import { moduleRouteRef } from '../../routes';
-import { canRunNextPhase, getLastPhaseReached, getNextPhase } from '../tools';
+import {
+  canCancelPhase,
+  canRunNextPhase,
+  getLastPhaseReached,
+  getNextPhase,
+} from '../tools';
 
 const useColumns = ({
   targetRepoUrl,
@@ -138,48 +145,57 @@ export const ModuleTable = ({
         return;
       }
 
-      // Authenticate the repositories
-      const sourceRepoAuthToken = (
-        await repoAuthentication.authenticate([
-          resolveScmProvider(
-            project.sourceRepoUrl,
-            hostMap,
-          ).getAuthTokenDescriptor(true),
-        ])
-      )[0].token;
-      const targetRepoAuthToken = (
-        await repoAuthentication.authenticate([
-          resolveScmProvider(
-            project.targetRepoUrl,
-            hostMap,
-          ).getAuthTokenDescriptor(false),
-        ])
-      )[0].token;
+      try {
+        // Authenticate the repositories
+        const sourceRepoAuthToken = (
+          await repoAuthentication.authenticate([
+            resolveScmProvider(
+              project.sourceRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(true),
+          ])
+        )[0].token;
+        const targetRepoAuthToken = (
+          await repoAuthentication.authenticate([
+            resolveScmProvider(
+              project.targetRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(false),
+          ])
+        )[0].token;
 
-      // Call the phase-run action
-      const response =
-        await clientService.projectsProjectIdModulesModuleIdRunPost({
-          path: { projectId: module.projectId, moduleId: module.id },
-          body: {
-            phase: nextPhase,
-            sourceRepoAuth: {
-              token: sourceRepoAuthToken,
+        // Call the phase-run action
+        const response =
+          await clientService.projectsProjectIdModulesModuleIdRunPost({
+            path: { projectId: module.projectId, moduleId: module.id },
+            body: {
+              phase: nextPhase,
+              sourceRepoAuth: {
+                token: sourceRepoAuthToken,
+              },
+              targetRepoAuth: {
+                token: targetRepoAuthToken,
+              },
+              // skipping AAP credentials in favor of the app-config.yaml
             },
-            targetRepoAuth: {
-              token: targetRepoAuthToken,
-            },
-            // skipping AAP credentials in favor of the app-config.yaml
-          },
-        });
+          });
 
-      const responseData = await response.json();
-      if (!responseData.jobId) {
-        setError('Failed to run next phase for module');
+        const responseData = await response.json();
+        if (!responseData.jobId) {
+          setError(t('module.actions.runNextPhaseError'));
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('module.actions.runNextPhaseError'),
+        );
       }
 
       forceRefresh();
     },
     [
+      t,
       clientService,
       forceRefresh,
       hostMap,
@@ -189,15 +205,78 @@ export const ModuleTable = ({
     ],
   );
 
-  const actions: MaterialTableProps<Module>['actions'] = [
-    (rowData: Module) => ({
-      // Idea: this can be a drop-down to select the phase to run
-      icon: PlayArrowIcon,
-      onClick: () => handleRunNext(rowData),
-      tooltip: t('module.actions.runNextPhase'),
-      disabled: !canRunNextPhase(rowData),
-    }),
-  ];
+  const handleCancel = useCallback(
+    async (lastJob?: Job) => {
+      setError(undefined);
+      if (!lastJob?.moduleId || lastJob.phase === 'init') {
+        // this should never happen
+        return;
+      }
+      try {
+        const response =
+          await clientService.projectsProjectIdModulesModuleIdCancelPost({
+            path: { projectId: lastJob.projectId, moduleId: lastJob.moduleId },
+            body: { phase: lastJob.phase },
+          });
+        if (response.status !== 200) {
+          const body = await response
+            .json()
+            .catch(() => ({}) as { message?: string });
+          setError(body?.message || t('module.actions.cancelPhaseError'));
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('module.actions.cancelPhaseError'),
+        );
+      }
+      forceRefresh();
+    },
+    [clientService, forceRefresh, t],
+  );
+
+  const actions: MaterialTableProps<Module>['actions'] = useMemo(
+    () => [
+      (rowData: Module) => {
+        const nextPhase = getNextPhase(rowData);
+        let isHidden = false;
+        if (!nextPhase) {
+          isHidden = true;
+        }
+
+        return {
+          // Idea: this can be a drop-down to select the phase to run
+          icon: PlayArrowIcon,
+          onClick: () => handleRunNext(rowData),
+          tooltip: t('module.actions.runNextPhase' as any, {
+            phase: nextPhase ? t(`module.phases.${nextPhase}`) : '',
+          }),
+          disabled: !canRunNextPhase(rowData, project),
+          hidden: isHidden,
+        };
+      },
+
+      (rowData: Module) => {
+        const lastJob = getLastPhaseReached(rowData);
+
+        let isHidden = true;
+        if (lastJob) {
+          isHidden = !canCancelPhase(lastJob.status);
+        }
+
+        return {
+          icon: CancelIcon,
+          onClick: () => handleCancel(lastJob),
+          tooltip: t('module.actions.cancelPhase' as any, {
+            phase: lastJob?.phase ? t(`module.phases.${lastJob.phase}`) : '',
+          }),
+          hidden: isHidden,
+        };
+      },
+    ],
+    [t, handleRunNext, handleCancel, project],
+  );
 
   return (
     <>

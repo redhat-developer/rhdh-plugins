@@ -21,4 +21,9 @@
 /**
  * @public
  */
-export type ModuleStatus = 'pending' | 'running' | 'success' | 'error';
+export type ModuleStatus =
+  | 'pending'
+  | 'running'
+  | 'success'
+  | 'error'
+  | 'cancelled';

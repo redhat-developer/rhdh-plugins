@@ -21,6 +21,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Tooltip, Box, makeStyles, Chip } from '@material-ui/core';
 import {
+  StatusAborted,
   StatusError,
   StatusOK,
   StatusPending,
@@ -66,6 +67,8 @@ const StatusWithText = ({
       return <StatusRunning>{children}</StatusRunning>;
     case 'pending':
       return <StatusPending>{children}</StatusPending>;
+    case 'cancelled':
+      return <StatusAborted>{children}</StatusAborted>;
     default:
       return (
         <Box component="span" className={classes.unknownStatus}>
@@ -83,9 +86,11 @@ export const ModuleStatusCell = ({ module }: { module?: Module }) => {
   const { t } = useTranslation();
   const styles = useStyles();
 
+  const status = module?.status;
+
   let chip;
-  if (module?.status === 'success') {
-    if (module.publish) {
+  if (status === 'success') {
+    if (module?.publish) {
       chip = (
         <Chip
           label={t('projectModulesCard.published')}
@@ -108,7 +113,6 @@ export const ModuleStatusCell = ({ module }: { module?: Module }) => {
     }
   }
 
-  const status = module?.status;
   const statusText = t(`module.statuses.${status || 'none'}`);
   const content = (
     <Box display="flex" flexWrap="wrap" alignItems="center">

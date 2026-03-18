@@ -32,7 +32,11 @@ import {
   orchestratorSlimApiRef,
   costManagementSlimApiRef,
 } from './apis';
-import { optimizationsBreakdownRouteRef, rootRouteRef } from './routes';
+import {
+  optimizationsBreakdownRouteRef,
+  openShiftRouteRef,
+  rootRouteRef,
+} from './routes';
 
 /** @public */
 export const resourceOptimizationPlugin = createPlugin({
@@ -82,6 +86,7 @@ export const resourceOptimizationPlugin = createPlugin({
   ],
   routes: {
     root: rootRouteRef,
+    openShift: openShiftRouteRef,
     breakdown: optimizationsBreakdownRouteRef,
   },
 });
@@ -92,5 +97,15 @@ export const ResourceOptimizationPage = resourceOptimizationPlugin.provide(
     name: 'ResourceOptimizationPage',
     component: () => import('./Router').then(m => m.Router),
     mountPoint: rootRouteRef,
+  }),
+);
+
+/** @public */
+export const OpenShiftPage = resourceOptimizationPlugin.provide(
+  createRoutableExtension({
+    name: 'OpenShiftPage',
+    component: () =>
+      import('./pages/openshift/OpenShiftPage').then(m => m.OpenShiftPage),
+    mountPoint: openShiftRouteRef,
   }),
 );

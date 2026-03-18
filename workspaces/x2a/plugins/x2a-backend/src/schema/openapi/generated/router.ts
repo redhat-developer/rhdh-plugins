@@ -529,6 +529,58 @@ export const spec = {
         }
       }
     },
+    "/projects/{projectId}/modules/{moduleId}/cancel": {
+      "post": {
+        "summary": "Cancels a migration phase for a specific module. It deletes the corresponding job and does a clean-up.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phase": {
+                    "$ref": "#/components/schemas/ModulePhase"
+                  }
+                },
+                "required": [
+                  "phase"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Migration job cancelled successfully"
+          },
+          "404": {
+            "description": "Project or module or job not found"
+          },
+          "409": {
+            "description": "Job can not be cancelled (probably already finished)"
+          }
+        }
+      }
+    },
     "/projects/{projectId}/log": {
       "get": {
         "summary": "Returns logs for the init phase",
@@ -881,17 +933,19 @@ export const spec = {
           "pending",
           "running",
           "success",
-          "error"
+          "error",
+          "cancelled"
         ]
       },
       "ModuleStatus": {
         "type": "string",
-        "description": "Module status is the status of the last job of its last phase.\nIf a later retrigger for an earlier phase fails (e.g. when retrigger on analyze\nfails but a former migrate already passed), the modules status should not change (is still based on the last phase).\nThe pending state is used for modules that are scheduled for execution but not yet actually running. If a module\nis in pending state for long time, it can refer to an issue with the OCP setup.\n",
+        "description": "Module status is the status of the last job of its most-advanced phase.\nIf the most-advanced phase's job was cancelled, the module status is cancelled.\nIf a later retrigger for an earlier phase fails (e.g. when retrigger on analyze\nfails but a former migrate already passed), the modules status should not change (is still based on the last phase).\nThe pending state is used for modules that have no jobs yet. If a module\nis in pending state for long time, it can refer to an issue with the OCP setup.\n",
         "enum": [
           "pending",
           "running",
           "success",
-          "error"
+          "error",
+          "cancelled"
         ]
       },
       "ProjectStatusState": {
@@ -932,6 +986,10 @@ export const spec = {
           "error": {
             "type": "integer",
             "description": "Number of modules in error state (execution is over but failed)"
+          },
+          "cancelled": {
+            "type": "integer",
+            "description": "Number of modules in cancelled state (last job was cancelled by the user)"
           }
         },
         "required": [
@@ -940,7 +998,8 @@ export const spec = {
           "waiting",
           "pending",
           "running",
-          "error"
+          "error",
+          "cancelled"
         ]
       },
       "ProjectStatus": {

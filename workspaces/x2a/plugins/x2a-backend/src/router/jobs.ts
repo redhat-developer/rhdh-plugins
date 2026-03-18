@@ -35,7 +35,11 @@ async function sendJobLogs(
 ): Promise<void> {
   const { x2aDatabase, kubeService, logger } = deps;
 
-  if (job.status === 'success' || job.status === 'error') {
+  if (
+    job.status === 'success' ||
+    job.status === 'error' ||
+    job.status === 'cancelled'
+  ) {
     logger.info(
       `Job ${job.id} is finished (status: ${job.status}), returning logs from database`,
     );

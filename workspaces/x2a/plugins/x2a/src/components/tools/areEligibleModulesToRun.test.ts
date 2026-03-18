@@ -15,12 +15,19 @@
  */
 
 import {
+  ArtifactType,
   Project,
   ModulesStatusSummary,
   ProjectStatusState,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { areEligibleModulesToRun } from './areEligibleModulesToRun';
+
+const migrationPlan = {
+  id: 'art-1',
+  type: 'migration_plan' as ArtifactType,
+  value: 'plan.json',
+};
 
 const baseProject: Omit<Project, 'status'> = {
   id: '123',
@@ -32,6 +39,7 @@ const baseProject: Omit<Project, 'status'> = {
   targetRepoBranch: 'main',
   createdAt: new Date('2024-01-01'),
   createdBy: 'user:default/tester',
+  migrationPlan,
 };
 
 const zeroSummary: ModulesStatusSummary = {
@@ -41,6 +49,7 @@ const zeroSummary: ModulesStatusSummary = {
   pending: 0,
   running: 0,
   error: 0,
+  cancelled: 0,
 };
 
 describe('areEligibleModulesToRun', () => {
@@ -68,7 +77,7 @@ describe('areEligibleModulesToRun', () => {
     expect(areEligibleModulesToRun(project)).toBe(true);
   });
 
-  it('returns true when state is "initialized" and pending > 0', () => {
+  it('returns true when pending > 0 and migrationPlan exists', () => {
     const project: Project = {
       ...baseProject,
       status: {
@@ -79,7 +88,41 @@ describe('areEligibleModulesToRun', () => {
     expect(areEligibleModulesToRun(project)).toBe(true);
   });
 
-  it('returns false when state is "initialized" but pending and waiting are 0', () => {
+  it('returns false when pending > 0 but migrationPlan is missing', () => {
+    const project: Project = {
+      ...baseProject,
+      migrationPlan: undefined,
+      status: {
+        state: 'initialized',
+        modulesSummary: { ...zeroSummary, pending: 3 },
+      },
+    };
+    expect(areEligibleModulesToRun(project)).toBe(false);
+  });
+
+  it('returns true when inProgress with pending modules and migrationPlan', () => {
+    const project: Project = {
+      ...baseProject,
+      status: {
+        state: 'inProgress',
+        modulesSummary: { ...zeroSummary, running: 2, pending: 1 },
+      },
+    };
+    expect(areEligibleModulesToRun(project)).toBe(true);
+  });
+
+  it('returns true when error > 0', () => {
+    const project: Project = {
+      ...baseProject,
+      status: {
+        state: 'inProgress',
+        modulesSummary: { ...zeroSummary, error: 2 },
+      },
+    };
+    expect(areEligibleModulesToRun(project)).toBe(true);
+  });
+
+  it('returns false when all counters are zero', () => {
     const project: Project = {
       ...baseProject,
       status: {
@@ -90,7 +133,7 @@ describe('areEligibleModulesToRun', () => {
     expect(areEligibleModulesToRun(project)).toBe(false);
   });
 
-  it('returns true when state is "initialized" and both waiting and pending > 0', () => {
+  it('returns true when both waiting and pending > 0', () => {
     const project: Project = {
       ...baseProject,
       status: {
@@ -101,27 +144,18 @@ describe('areEligibleModulesToRun', () => {
     expect(areEligibleModulesToRun(project)).toBe(true);
   });
 
-  it.each<ProjectStatusState>([
-    'created',
-    'initializing',
-    'inProgress',
-    'completed',
-    'failed',
-  ])(
-    'returns false when state is "%s" and waiting is 0',
-    (state: ProjectStatusState) => {
-      const project: Project = {
-        ...baseProject,
-        status: {
-          state,
-          modulesSummary: { ...zeroSummary },
-        },
-      };
-      expect(areEligibleModulesToRun(project)).toBe(false);
-    },
-  );
+  it('returns false when only running or finished modules remain', () => {
+    const project: Project = {
+      ...baseProject,
+      status: {
+        state: 'inProgress',
+        modulesSummary: { ...zeroSummary, running: 3 },
+      },
+    };
+    expect(areEligibleModulesToRun(project)).toBe(false);
+  });
 
-  it('returns false when all modules are finished and state is not "initialized"', () => {
+  it('returns false when all modules are finished', () => {
     const project: Project = {
       ...baseProject,
       status: {
@@ -144,6 +178,7 @@ describe('areEligibleModulesToRun', () => {
           pending: 2,
           running: 2,
           error: 2,
+          cancelled: 0,
         },
       },
     };

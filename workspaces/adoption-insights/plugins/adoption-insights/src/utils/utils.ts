@@ -30,12 +30,18 @@ import { APIsViewOptions } from '../types';
 import { adoptionInsightsTranslationRef } from '../translations';
 
 /**
- * Parse date string and normalize timezone format.
- * Converts +00 timezone format to Z for better browser compatibility.
+ * Parse date string and normalize timezone format for browser compatibility.
+ * - Converts +00 at end to Z.
+ * - Expands short offset (e.g. -04 or +05) to -04:00 or +05:00 so Date parses reliably.
  */
 export const safeDate = (dateString: string): Date => {
-  const normalizedDate = dateString.replace(/\+00$/, 'Z');
-  return new Date(normalizedDate);
+  let normalized = dateString.replace(/\+00$/, 'Z');
+  // Short offset like -04 or +05 is not reliably parsed by Date; expand to -04:00 or +05:00.
+  // Only apply when string has a time part (T) so we don't change date-only strings like 2025-03-01.
+  if (normalized.includes('T')) {
+    normalized = normalized.replace(/([-+])(\d{2})$/g, '$1$2:00');
+  }
+  return new Date(normalized);
 };
 
 // =============================================================================

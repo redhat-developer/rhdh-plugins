@@ -92,6 +92,7 @@ export class DefaultApiClient {
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdLogGet(request: ProjectsProjectIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
+    projectsProjectIdModulesModuleIdCancelPost(request: ProjectsProjectIdModulesModuleIdCancelPost, options?: RequestOptions): Promise<TypedResponse<void>>;
     projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
@@ -130,7 +131,7 @@ export interface Job {
 }
 
 // @public (undocumented)
-export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error';
+export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
 
 // @public
 export const MAX_CONCURRENT_BULK_RUN = 3;
@@ -160,6 +161,7 @@ export type ModulePhase = 'analyze' | 'migrate' | 'publish';
 
 // @public (undocumented)
 export interface ModulesStatusSummary {
+    cancelled: number;
     error: number;
     finished: number;
     pending: number;
@@ -169,7 +171,7 @@ export interface ModulesStatusSummary {
 }
 
 // @public (undocumented)
-export type ModuleStatus = 'pending' | 'running' | 'success' | 'error';
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
 
 // @public
 export function normalizeRepoUrl(url: string): string;
@@ -296,6 +298,21 @@ export type ProjectsProjectIdModulesGet = {
         projectId: string;
     };
 };
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdCancelPost = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+    body: ProjectsProjectIdModulesModuleIdCancelPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdModulesModuleIdCancelPostRequest {
+    // (undocumented)
+    phase: ModulePhase;
+}
 
 // @public (undocumented)
 export type ProjectsProjectIdModulesModuleIdGet = {

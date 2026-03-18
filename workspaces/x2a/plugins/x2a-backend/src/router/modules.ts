@@ -348,6 +348,26 @@ export function registerModuleRoutes(
         aapCredentials,
       });
 
+      // Re-read the job to detect cancellation during the K8s creation window
+      const freshJob = await x2aDatabase.getJob({ id: job.id });
+      if (freshJob?.status === 'cancelled') {
+        try {
+          await kubeService.deleteJob(k8sJobName);
+        } catch (e) {
+          logger.warn(
+            `Could not delete k8s job ${k8sJobName} after detecting cancellation for job ${job.id}: ${e}`,
+          );
+        }
+        logger.info(
+          `${phase} job was cancelled while K8s job was being created: jobId=${job.id}, moduleId=${moduleId}`,
+        );
+        return res.status(409).json({
+          error: 'JobCancelledDuringCreation',
+          message: `The ${phase} job was cancelled before it could start.`,
+          jobId: job.id,
+        });
+      }
+
       // Update job with k8s job name and mark as running
       await x2aDatabase.updateJob({
         id: job.id,
@@ -360,6 +380,114 @@ export function registerModuleRoutes(
       );
 
       return res.json({ status: 'running', jobId: job.id } as any);
+    },
+  );
+
+  router.post(
+    '/projects/:projectId/modules/:moduleId/cancel',
+    async (req: express.Request, res: express.Response) => {
+      const endpoint = 'POST /projects/:projectId/modules/:moduleId/cancel';
+      const { projectId, moduleId } = req.params;
+      logger.info(
+        `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}`,
+      );
+
+      const cancelModuleRequestSchema = z.object({
+        phase: z.enum(['analyze', 'migrate', 'publish']),
+      });
+
+      const parsedBody = cancelModuleRequestSchema
+        .passthrough()
+        .safeParse(req.body);
+      if (!parsedBody.success) {
+        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+      }
+      const { phase } = parsedBody.data;
+
+      await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        httpAuth,
+        permissionsSvc,
+        catalog,
+      });
+
+      const module = await x2aDatabase.getModule({
+        id: moduleId,
+        skipEnrichment: true,
+      });
+      if (!module) {
+        throw new NotFoundError(`Module "${moduleId}" not found.`);
+      }
+      if (module.projectId !== projectId) {
+        throw new NotFoundError(
+          `Module "${moduleId}" does not belong to project "${projectId}".`,
+        );
+      }
+
+      const jobs = await x2aDatabase.listJobs({
+        projectId,
+        moduleId,
+        phase,
+        lastJobOnly: true,
+      });
+
+      if (jobs.length === 0) {
+        throw new NotFoundError(
+          `No ${phase} job found for module "${moduleId}".`,
+        );
+      }
+
+      const job = jobs[0];
+
+      if (!['pending', 'running'].includes(job.status)) {
+        return res.status(409).json({
+          error: 'JobNotCancellable',
+          message: `The ${phase} job is in "${job.status}" state and cannot be cancelled.`,
+        });
+      }
+
+      // Fetch logs from k8s before deleting the job
+      let log: string | null = null;
+      if (job.k8sJobName) {
+        try {
+          log = (await kubeService.getJobLogs(job.k8sJobName)) as string;
+        } catch (e) {
+          logger.warn(
+            `Could not fetch logs for job ${job.id} (k8s: ${job.k8sJobName}) before cancellation: ${e}`,
+          );
+        }
+
+        // Delete the K8s job before updating DB status so that a deletion
+        // failure leaves the job as pending/running and reconciliation can
+        // still track it. deleteJob already treats 404 as success.
+        try {
+          await kubeService.deleteJob(job.k8sJobName);
+        } catch (e) {
+          logger.error(
+            `Failed to delete k8s job ${job.k8sJobName} for job ${job.id}, cancellation aborted: ${e}`,
+          );
+          return res.status(500).json({
+            error: 'K8sDeletionFailed',
+            message: `Failed to delete the Kubernetes job. The ${phase} job was not cancelled.`,
+          });
+        }
+      }
+
+      await x2aDatabase.updateJob({
+        id: job.id,
+        status: 'cancelled',
+        finishedAt: new Date(),
+        log,
+      });
+
+      logger.info(
+        `${phase} job cancelled: jobId=${job.id}, moduleId=${moduleId}`,
+      );
+
+      return res.json({ message: 'Job cancelled successfully' });
     },
   );
 }
