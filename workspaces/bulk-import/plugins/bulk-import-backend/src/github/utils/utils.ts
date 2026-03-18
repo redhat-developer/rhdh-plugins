@@ -25,6 +25,7 @@ import {
 } from '@backstage/integration';
 
 import { Octokit } from '@octokit/rest';
+import { OctokitResponse } from '@octokit/types';
 import gitUrlParse from 'git-url-parse';
 
 import { logErrorIfNeeded } from '../../helpers';
