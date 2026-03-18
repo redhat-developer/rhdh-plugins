@@ -135,14 +135,14 @@ export interface ExtendedGithubCredentialsProvider extends GithubCredentialsProv
   }) => Promise<ExtendedGithubCredentials[]>;
 }
 
-export type AuthenticatedUserRepositoryList =
-  RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response']['data'];
-
-export type AppInstallationRepositories =
-  RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response']['data'];
-
 export type AuthenticatedUserRepositoryResponse =
   RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response'];
 
+export type AuthenticatedUserRepositoryList =
+  AuthenticatedUserRepositoryResponse['data'];
+
 export type AppInstallationRepositoriesResponse =
   RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response'];
+
+export type AppInstallationRepositories =
+  AppInstallationRepositoriesResponse['data'];
