@@ -486,3 +486,44 @@ export async function listAllRepositoriesAccessibleToInstallation(
     repository_selection,
   };
 }
+
+async function getAllPages<ResponseType>(
+  deps: {
+    logger: LoggerService;
+  },
+  ghApiName: string,
+  fetchPageFn: (pageNumber: number) => Promise<OctokitResponse<ResponseType>>,
+): Promise<OctokitResponse<ResponseType>['data'][]> {
+  const PAGE_NUMBER_REGEX_MATCH_INDEX = 1;
+  const SECOND_PAGE_NUMBER = 2;
+
+  const firstPageResponse = await fetchPageFn(1);
+
+  const lastPageNumberString = firstPageResponse?.headers?.link
+    ?.split(',')
+    ?.find(s => s.includes('rel="last"'))
+    ?.match(/page=(\d+)/)?.[PAGE_NUMBER_REGEX_MATCH_INDEX];
+
+  if (!lastPageNumberString) {
+    deps.logger.debug(
+      `Unable to extract page number from rel='last' link found in response headers from '${ghApiName}' GH endpoint => returning current page size`,
+    );
+    return [firstPageResponse.data];
+  }
+
+  const lastPageNumber = Number.parseInt(lastPageNumberString, 10);
+
+  if (lastPageNumber < SECOND_PAGE_NUMBER) {
+    return [firstPageResponse.data];
+  }
+
+  const pagePromises = [];
+  for (let i = SECOND_PAGE_NUMBER; i <= lastPageNumber; i++) {
+    pagePromises.push(fetchPageFn(i));
+  }
+  const remainingPages = await Promise.all(pagePromises);
+
+  const allPages = [firstPageResponse, ...remainingPages];
+
+  return allPages.map(page => page.data);
+}
