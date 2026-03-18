@@ -129,16 +129,16 @@ export async function addGithubAppRepositories(
     pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
-  const search = reqParams?.search?.toLocaleLowerCase();
+  const lowercaseSearch = reqParams?.search?.toLocaleLowerCase();
   let totalCount: number | undefined;
 
   try {
     const { repositories: allRepositories } =
       await listAllRepositoriesAccessibleToInstallation(deps, octokit);
 
-    const filteredRepositories = search
+    const filteredRepositories = lowercaseSearch
       ? allRepositories.filter(repo =>
-          repo.name.toLocaleLowerCase().includes(search),
+          repo.name.toLocaleLowerCase().includes(lowercaseSearch),
         )
       : allRepositories;
 
@@ -186,17 +186,18 @@ export async function addGithubTokenRepositories(
     pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
-  const search = reqParams?.search?.toLocaleLowerCase();
+  const lowercaseSearch = reqParams?.search?.toLocaleLowerCase();
   let totalCount: number | undefined;
+
   try {
     const allRepositories = await listAllRepositoriesForAuthenticatedUser(
       deps,
       octokit,
     );
 
-    const filteredRepositories = search
+    const filteredRepositories = lowercaseSearch
       ? allRepositories.filter(repo =>
-          repo.name.toLocaleLowerCase().includes(search),
+          repo.name.toLocaleLowerCase().includes(lowercaseSearch),
         )
       : allRepositories;
 
