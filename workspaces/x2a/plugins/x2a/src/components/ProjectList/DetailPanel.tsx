@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useState } from 'react';
-import useAsync from 'react-use/lib/useAsync';
 import { Grid, GridProps, makeStyles, Typography } from '@material-ui/core';
-import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  Project,
+  Module,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { useClientService } from '../../ClientService';
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { ModuleTable } from '../ModuleTable';
 import { ItemField } from '../ItemField';
@@ -39,28 +39,29 @@ const gridItemProps: GridProps = {
   item: true,
 };
 
-export const DetailPanel = ({ project }: { project: Project }) => {
+export interface DetailPanelProps {
+  project: Project;
+  forceRefresh: () => void;
+  modules?: Module[];
+  modulesLoading?: boolean;
+  modulesError?: Error;
+}
+
+export const DetailPanel = ({
+  project,
+  forceRefresh,
+  modules,
+  modulesLoading,
+  modulesError,
+}: DetailPanelProps) => {
   const { t } = useTranslation();
   const styles = useStyles();
-  const clientService = useClientService();
-
-  const [refresh, setRefresh] = useState(0);
-  const forceRefresh = useCallback(() => {
-    setRefresh(refresh + 1);
-  }, [refresh]);
-
-  const { value, loading, error } = useAsync(async () => {
-    const response = await clientService.projectsProjectIdModulesGet({
-      path: { projectId: project.id },
-    });
-    return await response.json();
-  }, [project.id, refresh]);
 
   return (
     <Grid container spacing={3} direction="row" className={styles.detailPanel}>
-      {error && (
+      {modulesError && (
         <Grid {...gridItemProps} xs={12}>
-          <ResponseErrorPanel error={error} />
+          <ResponseErrorPanel error={modulesError} />
         </Grid>
       )}
 
@@ -93,18 +94,18 @@ export const DetailPanel = ({ project }: { project: Project }) => {
       )}
       {/* We do not need to repeat the same fields as in the ProjectTable component */}
 
-      {loading && <Progress />}
+      {modulesLoading && <Progress />}
 
-      {value && value.length > 0 && (
+      {modules && modules.length > 0 && (
         <Grid {...gridItemProps} xs={12}>
           <ModuleTable
-            modules={value}
+            modules={modules}
             forceRefresh={forceRefresh}
             project={project}
           />
         </Grid>
       )}
-      {!(value && value.length > 0) && (
+      {!(modules && modules.length > 0) && !modulesLoading && (
         <Grid {...gridItemProps} xs={12}>
           <Typography variant="body1" align="center">
             {t('project.noModules')}
