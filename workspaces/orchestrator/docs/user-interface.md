@@ -27,8 +27,12 @@ The Execute Workflow page supports prepopulating form fields from URL query para
 
 **Path format**
 
-- For flat schemas, use the property name directly: `?language=English&name=alice`
+- For flat schemas, use the property name directly: `?language=English&name=John`
 - For nested (multi-step) schemas, use dot notation: `?firstStep.fooTheFirst=test` or `?provideInputs.language=English`
+
+**Schema constraints**
+
+For fields with `enum` constraints in the schema, the query param value must match one of the allowed values. Case-insensitive matching is supported (e.g. `?language=english` maps to `English` when the enum is `['English', 'Spanish']`). Values that do not match any enum option are ignored and will not prepopulate the field.
 
 **Reserved parameters**
 

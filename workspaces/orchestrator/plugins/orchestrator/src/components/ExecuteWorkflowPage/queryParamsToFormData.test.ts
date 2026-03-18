@@ -284,6 +284,60 @@ describe('mergeQueryParamsIntoFormData', () => {
     expect(result).toEqual({ language: 'English' });
   });
 
+  it('coerces enum values (case-insensitive match)', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        language: {
+          type: 'string',
+          enum: ['English', 'Spanish'],
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('language=english');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ language: 'English' });
+  });
+
+  it('skips query param when value does not match enum', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        language: {
+          type: 'string',
+          enum: ['English', 'Spanish'],
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('language=French');
+    const baseData = { language: 'English' };
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ language: 'English' });
+  });
+
+  it('uses exact enum value when param matches exactly', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        language: {
+          type: 'string',
+          enum: ['English', 'Spanish'],
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('language=Spanish');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ language: 'Spanish' });
+  });
+
   it('does not mutate base data', () => {
     const schema = {
       type: 'object',

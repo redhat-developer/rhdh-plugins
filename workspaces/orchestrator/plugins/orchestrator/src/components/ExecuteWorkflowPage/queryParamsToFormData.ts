@@ -74,6 +74,49 @@ function extractSchemaPaths(
 }
 
 /**
+ * Gets the schema definition for a dot-notation path within the root schema.
+ */
+function getSchemaAtPath(
+  schema: JSONSchema7,
+  path: string,
+): JSONSchema7 | undefined {
+  if (!path) return undefined;
+  const pathParts = path.split('.');
+  let current: JSONSchema7Definition = schema;
+  for (const part of pathParts) {
+    if (typeof current === 'boolean' || !current.properties?.[part]) {
+      return undefined;
+    }
+    current = current.properties[part];
+  }
+  return typeof current === 'boolean' ? undefined : (current as JSONSchema7);
+}
+
+/**
+ * Coerces a query param value to match schema constraints (e.g. enum).
+ * Returns the value to use, or undefined if the value is invalid and should be skipped.
+ */
+function coerceValueForSchema(
+  paramValue: string,
+  propSchema: JSONSchema7 | undefined,
+): string | undefined {
+  if (!propSchema) return paramValue;
+  if (!propSchema.enum || !Array.isArray(propSchema.enum)) return paramValue;
+
+  const enumValues = propSchema.enum as (string | number | boolean)[];
+  const strParam = paramValue.trim();
+
+  // Exact match first
+  if (enumValues.includes(strParam)) return strParam;
+
+  // Case-insensitive match for string enums
+  const match = enumValues.find(
+    v => typeof v === 'string' && v.toLowerCase() === strParam.toLowerCase(),
+  );
+  return match !== undefined ? String(match) : undefined;
+}
+
+/**
  * Merges URL query parameters that match schema property paths into the base form data.
  * Query param values take precedence over base form data for prepopulation.
  * Reserved params (targetEntity, instanceId) are excluded.
@@ -100,7 +143,11 @@ export function mergeQueryParamsIntoFormData(
     }
 
     if (validPaths.has(paramKey)) {
-      set(result, paramKey, paramValue);
+      const propSchema = getSchemaAtPath(schema, paramKey);
+      const valueToSet = coerceValueForSchema(paramValue, propSchema);
+      if (valueToSet !== undefined) {
+        set(result, paramKey, valueToSet);
+      }
     }
   }
 
