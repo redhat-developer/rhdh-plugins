@@ -21,6 +21,30 @@ Workflows can also be invoked from Backstage software templates using the `orche
 - Monitor workflow execution status
 - View workflow results and outputs
 
+### Execute Workflow Form Prepopulation
+
+The Execute Workflow page supports prepopulating form fields from URL query parameters. When the workflow schema defines input fields, any query parameter whose name matches a schema property path will be used to prepopulate the corresponding form field.
+
+**Path format**
+
+- For flat schemas, use the property name directly: `?language=English&name=alice`
+- For nested (multi-step) schemas, use dot notation: `?firstStep.fooTheFirst=test` or `?provideInputs.language=English`
+
+**Reserved parameters**
+
+The following query parameters are reserved for navigation and are not used for form prepopulation:
+
+- `targetEntity` — Used to associate the workflow run with a catalog entity
+- `instanceId` — Used when re-running or viewing a specific workflow instance
+
+**Example**
+
+```
+/orchestrator/workflows/yamlgreet/execute?targetEntity=default:component:my-app&language=English&name=alice
+```
+
+In this example, `targetEntity` is excluded (reserved), while `language` and `name` prepopulate the form when those fields exist in the workflow schema.
+
 ### Entity Integration
 
 - Workflow tabs on entity pages
