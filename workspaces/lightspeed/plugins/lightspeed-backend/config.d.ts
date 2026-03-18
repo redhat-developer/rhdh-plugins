@@ -64,10 +64,10 @@ export interface Config {
        */
       llamaStack?: {
         /**
-         * Llama Stack API URL
+         * Llama Stack API port
          * @visibility backend
          */
-        url?: string;
+        port?: number;
         /**
          * Embedding model for vector database
          * @visibility backend

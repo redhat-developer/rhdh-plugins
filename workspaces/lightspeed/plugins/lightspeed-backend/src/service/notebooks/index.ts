@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export { createNotebooksRouter } from './ai-notebooks-router';
-export type { NotebooksRouterOptions } from './ai-notebooks-router';
-export { SessionService } from './session-service';
-export { DocumentService } from './document-service';
-export * from './ai-notebooks-types';
+export { createNotebooksRouter } from './notebooksRouters';
+export type { NotebooksRouterOptions } from './notebooksRouters';
+export { SessionService } from './sessions/sessionService';
+export { DocumentService } from './documents/documentService';
+export * from './types/notebooksTypes';

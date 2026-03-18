@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
+import { InputError } from '@backstage/errors';
+
 import * as yaml from 'js-yaml';
-import fetch from 'node-fetch';
 import * as pdfjsLib from 'pdfjs-dist';
 
-/**
- * Supported file types for document upload
- */
-export enum SupportedFileType {
-  MARKDOWN = 'md',
-  TEXT = 'txt',
-  PDF = 'pdf',
-  JSON = 'json',
-  YAML = 'yaml',
-  YML = 'yml',
-  LOG = 'log',
-  URL = 'url',
-}
+import { SupportedFileType } from '../../constant';
+import {
+  isValidFileType,
+  isValidURL,
+  stripHtmlTags,
+  validateURLForSSRF,
+} from './documentHelpers';
 
 export interface ParsedDocument {
   content: string;
@@ -72,10 +67,9 @@ function parseJSONFile(
   fileType: string,
 ): ParsedDocument {
   try {
-    const text = buffer.toString('utf-8');
-    const parsed = JSON.parse(text);
-    // Return formatted JSON for better readability
-    const content = JSON.stringify(parsed, null, 2);
+    const content = buffer.toString('utf-8');
+    // Validate JSON but keep original formatting
+    JSON.parse(content);
 
     return {
       content,
@@ -86,7 +80,7 @@ function parseJSONFile(
       },
     };
   } catch (error) {
-    throw new Error(`Invalid JSON file: ${error}`);
+    throw new InputError(`Invalid JSON file: ${error}`);
   }
 }
 
@@ -99,15 +93,9 @@ function parseYAMLFile(
   fileType: string,
 ): ParsedDocument {
   try {
-    const text = buffer.toString('utf-8');
-    // Parse YAML to validate it
-    const parsed = yaml.load(text);
-    // Convert back to YAML string for storage
-    const content = yaml.dump(parsed, {
-      indent: 2,
-      lineWidth: 120,
-      noRefs: true,
-    });
+    const content = buffer.toString('utf-8');
+    // Validate YAML but keep original formatting and comments
+    yaml.load(content);
 
     return {
       content,
@@ -118,7 +106,7 @@ function parseYAMLFile(
       },
     };
   } catch (error) {
-    throw new Error(`Invalid YAML file: ${error}`);
+    throw new InputError(`Invalid YAML file: ${error}`);
   }
 }
 
@@ -177,45 +165,6 @@ async function parsePDFFile(
 }
 
 /**
- * Strip HTML tags and extract readable text from HTML content
- */
-function stripHtmlTags(html: string): string {
-  // Remove script and style tags and their content
-  let text = html.replace(
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    '',
-  );
-  text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-
-  // Remove HTML comments
-  text = text.replace(/<!--[\s\S]*?-->/g, '');
-
-  // Replace common block elements with newlines
-  text = text.replace(
-    /<\/(div|p|br|h[1-6]|li|tr|section|article|header|footer)>/gi,
-    '\n',
-  );
-
-  // Remove all remaining HTML tags
-  text = text.replace(/<[^>]{1,1000}?>/g, '');
-
-  // Decode common HTML entities
-  text = text.replace(/&nbsp;/g, ' ');
-  text = text.replace(/&lt;/g, '<');
-  text = text.replace(/&gt;/g, '>');
-  text = text.replace(/&amp;/g, '&');
-  text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&#39;/g, "'");
-
-  // Clean up whitespace
-  text = text.replace(/\n\s*\n/g, '\n\n');
-  text = text.replace(/[ \t]+/g, ' ');
-  text = text.trim();
-
-  return text;
-}
-
-/**
  * Parse URL and fetch web content
  * Fetches HTML from URL and extracts readable text
  */
@@ -227,8 +176,11 @@ async function parseURLFile(
   try {
     // Validate URL format
     if (!isValidURL(url)) {
-      throw new Error(`Invalid URL format: ${url}`);
+      throw new InputError(`Invalid URL format: ${url}`);
     }
+
+    // Validate URL for SSRF vulnerabilities
+    await validateURLForSSRF(url);
 
     // Fetch the URL content
     const response = await fetch(url, {
@@ -260,9 +212,10 @@ async function parseURLFile(
       // Plain text or markdown - use as is
       content = await response.text();
     } else if (contentType.includes('application/json')) {
-      // JSON content - format it
-      const json = await response.json();
-      content = JSON.stringify(json, null, 2);
+      // JSON content - validate but keep original
+      const text = await response.text();
+      JSON.parse(text); // Validate it's valid JSON
+      content = text;
     } else {
       // Try to get as text anyway
       content = await response.text();
@@ -291,39 +244,6 @@ async function parseURLFile(
 }
 
 /**
- * Validate URL format
- */
-export function isValidURL(urlString: string): boolean {
-  try {
-    const url = new URL(urlString);
-    return url.protocol === 'http:' || url.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Validate file type
- */
-export function isValidFileType(fileType: string): boolean {
-  const normalizedType = fileType.toLowerCase().replace(/^\./, '');
-  return Object.values(SupportedFileType).includes(
-    normalizedType as SupportedFileType,
-  );
-}
-
-/**
- * Validate file size (max 20MB by default)
- */
-export function isValidFileSize(
-  fileSize: number,
-  maxSizeMB: number = 20,
-): boolean {
-  const maxSize = maxSizeMB * 1024 * 1024;
-  return fileSize <= maxSize;
-}
-
-/**
  * Parse file based on its type
  * For URL type, fileName parameter should contain the URL string
  */
@@ -337,7 +257,7 @@ export async function parseFile(
     .replace(/^\./, '') as SupportedFileType;
 
   if (!isValidFileType(normalizedType)) {
-    throw new Error(`Unsupported file type: ${fileType}`);
+    throw new InputError(`Unsupported file type: ${fileType}`);
   }
 
   switch (normalizedType) {
@@ -361,6 +281,6 @@ export async function parseFile(
       return parseURLFile(fileName, fileName, fileType);
 
     default:
-      throw new Error(`Unsupported file type: ${fileType}`);
+      throw new InputError(`Unsupported file type: ${fileType}`);
   }
 }

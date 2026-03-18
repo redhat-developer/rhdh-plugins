@@ -73,7 +73,7 @@ For user-facing feature documentation, see the [Lightspeed Frontend README](../l
 
 AI Notebooks requires a **Llama Stack service** to be running. Llama Stack provides the vector database, embeddings, and RAG capabilities.
 
-For Llama Stack setup and configuration, refer to the [Llama Stack documentation](https://github.com/meta-llama/llama-stack).
+For Llama Stack setup and configuration, refer to the [Llama Stack documentation](https://github.com/llamastack/llama-stack).
 
 #### Configuration
 
@@ -86,7 +86,7 @@ lightspeed:
 
     # Required when enabled: Llama Stack service configuration
     llamaStack:
-      url: http://0.0.0.0:8321 # Llama Stack API endpoint (required, commonly http://0.0.0.0:8321)
+      port: 8321 # Llama Stack API endpoint (required, commonly 8321)
 
       # Optional embedding configuration
       embeddingModel: sentence-transformers/nomic-ai/nomic-embed-text-v1.5 # (default shown)
@@ -108,7 +108,7 @@ lightspeed:
 **Configuration Options**:
 
 - **`enabled`**: Enable or disable the AI Notebooks feature (default: `false`)
-- **`llamaStack.url`**: URL of the Llama Stack service (required when enabled; commonly `http://0.0.0.0:8321`)
+- **`llamaStack.port`**: Port of the Llama Stack service (default: `8321`)
 - **`llamaStack.embeddingModel`**: Model used for generating embeddings (default: `sentence-transformers/nomic-ai/nomic-embed-text-v1.5`)
 - **`llamaStack.embeddingDimension`**: Dimension of embedding vectors (default: `768`)
 - **`llamaStack.vectorIo.providerId`**: Vector store provider in Llama Stack config (default: `rhdh-docs`)

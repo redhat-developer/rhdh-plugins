@@ -52,6 +52,7 @@
     "@langchain/openai": "^0.6.0",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
     "express": "^4.21.1",
+    "htmlparser2": "^9.1.0",
     "http-proxy-middleware": "^3.0.2",
     "js-yaml": "^4.1.1",
     "llama-stack-client": "^0.5.0",

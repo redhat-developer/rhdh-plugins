@@ -16,10 +16,12 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
+import { NotAllowedError, NotFoundError } from '@backstage/errors';
 
 import { LlamaStackClient } from 'llama-stack-client';
 
-import { NotebookSession, SessionMetadata } from './ai-notebooks-types';
+import { NotebookSession, SessionMetadata } from '../types/notebooksTypes';
+import { buildVectorStoreMetadata, extractSessionFromMetadata } from '../utils';
 
 /**
  * Service for managing notebook sessions with dedicated vector stores
@@ -55,51 +57,6 @@ export class SessionService {
       ) || 'rhdh-docs';
   }
 
-  /**
-   * Build VectorStore metadata object from session data
-   */
-  private buildVectorStoreMetadata(
-    session: NotebookSession,
-  ): Record<string, any> {
-    return {
-      user_id: session.user_id,
-      name: session.name,
-      description: session.description,
-      created_at: session.created_at,
-      updated_at: session.updated_at,
-      embedding_model: this.embeddingModel,
-      embedding_dimension: this.embeddingDimension,
-      provider_id: this.providerId,
-      ...(session.metadata || {}),
-    };
-  }
-
-  /**
-   * Extract session data from VectorStore metadata
-   */
-  private extractSessionFromMetadata(
-    sessionId: string,
-    metadata: Record<string, any>,
-  ): NotebookSession {
-    return {
-      session_id: sessionId,
-      user_id: metadata.user_id as string,
-      name: metadata.name as string,
-      description: metadata.description as string,
-      created_at: metadata.created_at as string,
-      updated_at: metadata.updated_at as string,
-      metadata: {
-        category: metadata.category,
-        project: metadata.project,
-        document_ids: metadata.document_ids,
-        embedding_model: metadata.embedding_model,
-        embedding_dimension: metadata.embedding_dimension,
-        provider_id: metadata.provider_id,
-        conversation_id: metadata.conversation_id,
-      },
-    };
-  }
-
   async createSession(
     userId: string,
     name: string,
@@ -131,7 +88,7 @@ export class SessionService {
       embedding_model: this.embeddingModel,
       embedding_dimension: this.embeddingDimension,
       provider_id: this.providerId,
-      metadata: this.buildVectorStoreMetadata(tempSession),
+      metadata: buildVectorStoreMetadata(tempSession),
     });
 
     const sessionId = vectorStore.id;
@@ -154,17 +111,17 @@ export class SessionService {
     const vectorStore = await this.client.vectorStores.retrieve(sessionId);
 
     if (!vectorStore.metadata) {
-      throw new Error(`Session ${sessionId} has no metadata`);
+      throw new NotFoundError(`Session ${sessionId} has no metadata`);
     }
 
-    const session = this.extractSessionFromMetadata(
+    const session = extractSessionFromMetadata(
       sessionId,
       vectorStore.metadata as Record<string, any>,
     );
 
     // Verify ownership
     if (session.user_id !== userId) {
-      throw new Error(
+      throw new NotAllowedError(
         `User ${userId} does not have access to session ${sessionId}`,
       );
     }
@@ -192,7 +149,7 @@ export class SessionService {
 
     // Update vector store metadata
     await this.client.vectorStores.update(sessionId, {
-      metadata: this.buildVectorStoreMetadata(updated),
+      metadata: buildVectorStoreMetadata(updated),
     });
 
     return updated;
@@ -218,7 +175,7 @@ export class SessionService {
       const session_user_id = (store.metadata?.user_id as string) || '';
       if (session_user_id === userId && store.metadata) {
         try {
-          const session = this.extractSessionFromMetadata(
+          const session = extractSessionFromMetadata(
             store.id,
             store.metadata as Record<string, any>,
           );

@@ -30,7 +30,7 @@ import {
 
 import { Readable } from 'node:stream';
 
-import { getUserRef } from './auth-helpers';
+import { DEFAULT_LIGHTSPEED_SERVICE_PORT } from './constant';
 import { userPermissionAuthorization } from './permission';
 import {
   DEFAULT_HISTORY_LENGTH,
@@ -53,7 +53,9 @@ export async function createRouter(
   const router = Router();
   router.use(express.json());
 
-  const port = config.getOptionalNumber('lightspeed.servicePort') ?? 8080;
+  const port =
+    config.getOptionalNumber('lightspeed.servicePort') ??
+    DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
 
   const mcpServersConfig = config.getOptionalConfigArray(
@@ -91,11 +93,12 @@ export async function createRouter(
       return next();
     }
     // TODO: parse server_id from req.body and get URL and token when multi-server is supported
-    const userEntity = await getUserRef(req, httpAuth, userInfo);
+    const credentials = await httpAuth.credentials(req);
+    const user = await userInfo.getUserInfo(credentials);
+    const userEntity = user.userEntityRef;
 
     logger.info(`receives call from user: ${userEntity}`);
     try {
-      const credentials = await httpAuth.credentials(req);
       if (req.method === 'GET') {
         await authorizer.authorizeUser(
           lightspeedChatReadPermission,
@@ -154,11 +157,12 @@ export async function createRouter(
 
   router.post('/v1/feedback', async (request, response) => {
     try {
-      const user_id = await getUserRef(request, httpAuth, userInfo);
+      const credentials = await httpAuth.credentials(request);
+      const user = await userInfo.getUserInfo(credentials);
+      const user_id = user.userEntityRef;
 
       logger.info(`/v1/feedback receives call from user: ${user_id}`);
 
-      const credentials = await httpAuth.credentials(request);
       await authorizer.authorizeUser(
         lightspeedChatCreatePermission,
         credentials,
@@ -207,11 +211,12 @@ export async function createRouter(
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
-        const user_id = await getUserRef(request, httpAuth, userInfo);
+        const credentials = await httpAuth.credentials(request);
+        const user = await userInfo.getUserInfo(credentials);
+        const user_id = user.userEntityRef;
 
         logger.info(`/v1/query receives call from user: ${user_id}`);
 
-        const credentials = await httpAuth.credentials(request);
         await authorizer.authorizeUser(
           lightspeedChatCreatePermission,
           credentials,
@@ -275,11 +280,12 @@ export async function createRouter(
     '/v2/conversations/:conversation_id',
     async (request, response) => {
       try {
-        const user_id = await getUserRef(request, httpAuth, userInfo);
+        const credentials = await httpAuth.credentials(request);
+        const user = await userInfo.getUserInfo(credentials);
+        const user_id = user.userEntityRef;
         const conversation_id = request.params.conversation_id;
 
         const requestBody = JSON.stringify(request.body);
-        const credentials = await httpAuth.credentials(request);
         await authorizer.authorizeUser(
           lightspeedChatCreatePermission,
           credentials,
