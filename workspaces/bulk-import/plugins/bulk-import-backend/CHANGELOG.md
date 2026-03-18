@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 7.2.0
+
+### Patch Changes
+
+- a16cd34: Added support for Backstage New Frontend System (NFS)
+- Updated dependencies [a16cd34]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.2.0
+
 ## 7.1.1
 
 ### Patch Changes
