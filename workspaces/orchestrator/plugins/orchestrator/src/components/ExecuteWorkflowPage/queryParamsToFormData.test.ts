@@ -338,6 +338,232 @@ describe('mergeQueryParamsIntoFormData', () => {
     expect(result).toEqual({ language: 'Spanish' });
   });
 
+  it('coerces numeric enum values', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        priority: {
+          type: 'integer',
+          enum: [1, 2, 3],
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('priority=2');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ priority: 2 });
+  });
+
+  it('skips numeric enum when value is not in enum', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        priority: {
+          type: 'integer',
+          enum: [1, 2, 3],
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('priority=5');
+    const baseData = { priority: 1 };
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ priority: 1 });
+  });
+
+  it('coerces boolean enum values', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        enabled: {
+          type: 'boolean',
+          enum: [true, false],
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('enabled=true');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ enabled: true });
+  });
+
+  it('coerces boolean enum values (case-insensitive)', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        enabled: {
+          type: 'boolean',
+          enum: [true, false],
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('enabled=FALSE');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ enabled: false });
+  });
+
+  it('coerces plain number field without enum', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        count: { type: 'number' },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('count=42.5');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ count: 42.5 });
+  });
+
+  it('coerces plain integer field without enum', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        count: { type: 'integer' },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('count=42');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ count: 42 });
+  });
+
+  it('skips integer field when value is not an integer', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        count: { type: 'integer' },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('count=42.5');
+    const baseData = { count: 10 };
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ count: 10 });
+  });
+
+  it('coerces plain boolean field without enum', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        active: { type: 'boolean' },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('active=true');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ active: true });
+  });
+
+  it('prepopulates fields defined via $ref in $defs', () => {
+    const schema = {
+      type: 'object',
+      $defs: {
+        LanguageField: {
+          type: 'string',
+          enum: ['English', 'Spanish'],
+        },
+      },
+      properties: {
+        language: { $ref: '#/$defs/LanguageField' },
+        name: { type: 'string' },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('language=english&name=alice');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ language: 'English', name: 'alice' });
+  });
+
+  it('prepopulates nested fields when step uses $ref', () => {
+    const schema = {
+      type: 'object',
+      $defs: {
+        InputsStep: {
+          type: 'object',
+          properties: {
+            language: { type: 'string', enum: ['English', 'Spanish'] },
+            name: { type: 'string' },
+          },
+        },
+      },
+      properties: {
+        step1: { $ref: '#/$defs/InputsStep' },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams(
+      'step1.language=Spanish&step1.name=bob',
+    );
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({
+      step1: { language: 'Spanish', name: 'bob' },
+    });
+  });
+
+  it('prepopulates nested $ref with enum coercion', () => {
+    const schema = {
+      type: 'object',
+      $defs: {
+        LanguageEnum: {
+          type: 'string',
+          enum: ['English', 'Spanish', 'French'],
+        },
+      },
+      properties: {
+        step1: {
+          type: 'object',
+          properties: {
+            language: { $ref: '#/$defs/LanguageEnum' },
+          },
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('step1.language=french');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ step1: { language: 'French' } });
+  });
+
+  it('prepopulates with #/definitions/ (legacy JSON Schema)', () => {
+    const schema = {
+      type: 'object',
+      definitions: {
+        NameField: { type: 'string' },
+      },
+      properties: {
+        name: { $ref: '#/definitions/NameField' },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('name=charlie');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ name: 'charlie' });
+  });
+
   it('does not mutate base data', () => {
     const schema = {
       type: 'object',
