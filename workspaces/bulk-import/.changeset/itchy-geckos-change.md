@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-bulk-import': patch
+'@red-hat-developer-hub/backstage-plugin-bulk-import': minor
 '@red-hat-developer-hub/backstage-plugin-bulk-import-common': patch
 '@red-hat-developer-hub/backstage-plugin-bulk-import-backend': patch
 ---
