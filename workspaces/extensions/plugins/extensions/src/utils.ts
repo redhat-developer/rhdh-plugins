@@ -197,7 +197,7 @@ export const getPluginActionTooltipMessage = (
   extensionsDisabled?: boolean,
   missingDynamicArtifact?: boolean,
   isPlugin: boolean = true,
-) => {
+): string | null => {
   if (isProductionEnvironment) {
     return t('tooltips.productionDisabled');
   }
@@ -217,7 +217,7 @@ export const getPluginActionTooltipMessage = (
     });
   }
 
-  return '';
+  return null;
 };
 
 export const isPluginInstalled = (
