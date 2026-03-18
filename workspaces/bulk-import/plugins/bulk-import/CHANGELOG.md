@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.2.0
+
+### Minor Changes
+
+- a16cd34: Added support for Backstage New Frontend System (NFS)
+
+### Patch Changes
+
+- 8751f81: Updated NFS app and dev harness to use `rhdhThemeModule` from `@red-hat-developer-hub/backstage-plugin-theme/alpha` instead of manually constructing ThemeBlueprint extensions
+- Updated dependencies [a16cd34]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.2.0
+
 ## 7.1.1
 
 ### Patch Changes
