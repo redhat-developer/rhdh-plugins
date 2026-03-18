@@ -46,13 +46,18 @@ const EntityCard: FC<EntityCardProps> = ({
     <Card
       elevation={0}
       sx={{
+        height: '100%',
         border: theme => `1px solid ${theme.palette.grey[400]}`,
         overflow: 'auto',
-        maxHeight: '100%',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <CardContent
         sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
           pb: 2,
           '&:last-child': {
             pb: 2,

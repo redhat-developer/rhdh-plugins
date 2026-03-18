@@ -134,6 +134,9 @@ export interface Job {
 export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
 
 // @public
+export const MAX_BACKOFF_MS: number;
+
+// @public
 export const MAX_CONCURRENT_BULK_RUN = 3;
 
 // @public (undocumented)
@@ -175,6 +178,9 @@ export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancel
 
 // @public
 export function normalizeRepoUrl(url: string): string;
+
+// @public
+export const POLLING_INTERVAL_MS: number;
 
 // @public (undocumented)
 export interface Project {

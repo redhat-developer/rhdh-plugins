@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useReducer, useState } from 'react';
-import useAsync from 'react-use/lib/useAsync';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import {
@@ -25,9 +24,14 @@ import {
   ResponseErrorPanel,
 } from '@backstage/core-components';
 import { Box, Grid } from '@material-ui/core';
+import {
+  Module,
+  Project,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
+import { usePolledFetch } from '../../hooks/usePolledFetch';
 import { useBulkRun } from '../../hooks/useBulkRun';
 import { useProjectWriteAccess } from '../../hooks/useProjectWriteAccess';
 import { projectRouteRef, rootRouteRef } from '../../routes';
@@ -54,7 +58,6 @@ export const ProjectPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [bulkRunModalOpen, setBulkRunModalOpen] = useState(false);
   const [isBulkRunning, setIsBulkRunning] = useState(false);
-  const [refreshKey, forceRefresh] = useReducer(x => x + 1, 0);
   const menuOpen = Boolean(menuAnchorEl);
 
   const handleMenuOpen: ProjectActionsProps['handleMenuOpen'] = useCallback(
@@ -116,26 +119,24 @@ export const ProjectPage = () => {
   }, [clientService, projectId, navigate, rootPath, t]);
 
   const {
-    value: project,
-    loading: projectLoading,
-    error: projectError,
-  } = useAsync(async () => {
-    const response = await clientService.projectsProjectIdGet({
-      path: { projectId },
-    });
-    return await response.json();
-  }, [projectId, refreshKey]);
+    data: pageData,
+    loading: isLoading,
+    error: loadError,
+    refetch: forceRefresh,
+  } = usePolledFetch(async () => {
+    const [projectResponse, modulesResponse] = await Promise.all([
+      // run in parallel to avoid blocking the UI, fail at once
+      clientService.projectsProjectIdGet({ path: { projectId } }),
+      clientService.projectsProjectIdModulesGet({ path: { projectId } }),
+    ]);
+    return {
+      project: (await projectResponse.json()) as Project,
+      modules: (await modulesResponse.json()) as Module[],
+    };
+  }, [projectId, clientService]);
 
-  const {
-    value: modules,
-    loading: modulesLoading,
-    error: modulesError,
-  } = useAsync(async () => {
-    const response = await clientService.projectsProjectIdModulesGet({
-      path: { projectId },
-    });
-    return await response.json();
-  }, [projectId, refreshKey]);
+  const project = pageData?.project;
+  const modules = pageData?.modules;
 
   const handleBulkRunModalClose = useCallback(() => {
     if (!isBulkRunning) {
@@ -167,7 +168,6 @@ export const ProjectPage = () => {
     }
   }, [project, modules, runAllForProject, forceRefresh, t]);
 
-  const loadError = projectError || modulesError;
   if (loadError) {
     return (
       <Page themeId="tool">
@@ -180,7 +180,6 @@ export const ProjectPage = () => {
   }
 
   const projectWritePermitted = !!(project && canWriteProject(project));
-  const isLoading = projectLoading || modulesLoading;
   return (
     <Page themeId="tool">
       <Header title={t('projectPage.title')}>
