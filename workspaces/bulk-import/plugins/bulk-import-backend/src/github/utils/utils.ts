@@ -392,15 +392,13 @@ export async function listAllRepositoriesForAuthenticatedUser(
     });
   };
 
-  const allPages = await getAllPages(
+  const allPagesData = await retrieveAllPagesData(
     deps,
     'repos.listForAuthenticatedUser',
     fetchListForAuthenticatedUser,
   );
 
-  const allRepositories = allPages.flatMap(
-    pageResponseData => pageResponseData,
-  );
+  const allRepositories = allPagesData.flat();
 
   return allRepositories;
 }
@@ -423,18 +421,18 @@ export async function listAllRepositoriesAccessibleToInstallation(
     });
   };
 
-  const allPages = await getAllPages(
+  const allPagesData = await retrieveAllPagesData(
     deps,
     'apps.listReposAccessibleToInstallation',
     fetchListReposAccessibleToInstallation,
   );
 
-  const allRepositories = allPages.flatMap(
+  const allRepositories = allPagesData.flatMap(
     pageResponseData => pageResponseData.repositories,
   );
 
-  const total_count = allPages?.[0]?.total_count ?? allRepositories.length;
-  const repository_selection = allPages?.[0]?.repository_selection;
+  const total_count = allPagesData?.[0]?.total_count ?? allRepositories.length;
+  const repository_selection = allPagesData?.[0]?.repository_selection;
 
   return {
     repositories: allRepositories,
@@ -443,7 +441,7 @@ export async function listAllRepositoriesAccessibleToInstallation(
   };
 }
 
-async function getAllPages<ResponseType>(
+async function retrieveAllPagesData<ResponseType>(
   deps: {
     logger: LoggerService;
   },
