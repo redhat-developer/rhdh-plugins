@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-import { test, type TestInfo } from '@playwright/test';
+import { SignInPage } from '@backstage/core-components';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import type { SignInPageProps } from '@backstage/plugin-app-react';
 
-/**
- * Skips the current test when the project (locale) is in the given list.
- * Call at the start of a test so it still runs on other locales.
- */
-export function skipIfLocales(
-  testInfo: TestInfo,
-  locales: string[],
-  reason: string,
-): void {
-  if (locales.includes(testInfo.project.name)) {
-    test.skip(true, reason);
-  }
+const githubProvider = {
+  id: 'github-auth-provider',
+  title: 'GitHub',
+  message: 'Sign in using GitHub',
+  apiRef: githubAuthApiRef,
+};
+
+export function SignInPageComponent(props: SignInPageProps) {
+  return <SignInPage {...props} auto providers={['guest', githubProvider]} />;
 }

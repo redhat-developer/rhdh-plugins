@@ -18,7 +18,6 @@ import { test, expect, Page, type BrowserContext } from '@playwright/test';
 import { Extensions } from './pages/extensions';
 import { runAccessibilityTests } from './utils/accessibility';
 import { ExtensionHelper } from './utils/helper';
-import { skipIfLocales } from './utils/localeSkip';
 import { ExtensionsMessages, getTranslations } from './utils/translations';
 
 /**
@@ -124,10 +123,10 @@ test.describe('Admin > Extensions', () => {
     test('Verify support type filters in extensions', async ({
       browser: _browser,
     }, testInfo) => {
-      skipIfLocales(
-        testInfo,
-        ['de', 'es'],
-        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
       );
       await extensions.selectDropdown(`${translations.search.supportType}`);
       await extensions.supportFilters();
@@ -137,10 +136,10 @@ test.describe('Admin > Extensions', () => {
     test('Verify certified badge in extensions', async ({
       browser: _browser,
     }, testInfo) => {
-      skipIfLocales(
-        testInfo,
-        ['de', 'es'],
-        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
       );
       await extensions.selectDropdown(`${translations.search.supportType}`);
       await extensions.toggleOption(translations.badges.certified);
@@ -171,10 +170,10 @@ test.describe('Admin > Extensions', () => {
     test('Verify Generally available badge in extensions', async ({
       browser: _browser,
     }, testInfo) => {
-      skipIfLocales(
-        testInfo,
-        ['de', 'es'],
-        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
       );
       await extensions.selectSupportTypeFilter(
         translations.badges.generallyAvailable,
@@ -208,10 +207,10 @@ test.describe('Admin > Extensions', () => {
     test('Verify custom plugin badge in extensions', async ({
       browser: _browser,
     }, testInfo) => {
-      skipIfLocales(
-        testInfo,
-        ['de', 'es'],
-        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
       );
       await extensions.selectSupportTypeFilter(
         translations.badges.customPlugin,
@@ -238,10 +237,10 @@ test.describe('Admin > Extensions', () => {
     test('Verify tech preview badge in extensions', async ({
       browser: _browser,
     }, testInfo) => {
-      skipIfLocales(
-        testInfo,
-        ['de', 'es'],
-        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
       );
       await extensions.verifySupportTypeBadge({
         supportType: translations.badges.techPreview,
@@ -255,11 +254,13 @@ test.describe('Admin > Extensions', () => {
       });
     });
 
-    test('Verify dev preview badge in extensions', async ({}, testInfo) => {
-      skipIfLocales(
-        testInfo,
-        ['de', 'es'],
-        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+    test('Verify dev preview badge in extensions', async ({
+      browser: _browser,
+    }, testInfo) => {
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
       );
       await extensions.selectSupportTypeFilter(translations.badges.devPreview);
       await extensionHelper.verifyHeading('Extensions');
@@ -278,10 +279,10 @@ test.describe('Admin > Extensions', () => {
     test('Verify community plugin badge in extensions', async ({
       browser: _browser,
     }, testInfo) => {
-      skipIfLocales(
-        testInfo,
-        ['de', 'es'],
-        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      // Below can be removed after bug https://redhat.atlassian.net/browse/RHDHBUGS-2821 is fixed
+      test.fixme(
+        testInfo.project.name === 'es' || testInfo.project.name === 'de',
+        'Skip Spanish and German tests',
       );
       await extensions.selectSupportTypeFilter(
         translations.badges.communityPlugin,
