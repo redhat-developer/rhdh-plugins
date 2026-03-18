@@ -22,6 +22,14 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { EntitySection } from './EntitySection';
 import { useEntities } from '../../hooks/useEntities';
 
+// jsdom does not provide ResizeObserver; required by useContainerQuery in EntitySection
+class ResizeObserverMock {
+  observe = jest.fn();
+  disconnect = jest.fn();
+  unobserve = jest.fn();
+}
+window.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
+
 jest.mock('../../hooks/useEntities');
 const mockUseEntities = useEntities as jest.MockedFunction<typeof useEntities>;
 
@@ -71,6 +79,10 @@ jest.mock('../../utils/utils', () => ({
 }));
 
 jest.mock('../../images/homepage-entities-1.svg', () => 'mock-image.svg');
+
+jest.mock('../../hooks/useContainerQuery', () => ({
+  useContainerQuery: () => 'lg',
+}));
 
 const theme = createTheme();
 
