@@ -101,7 +101,7 @@ const HiddenObjectFieldTemplate = (
         />
       )}
       <Grid container spacing={2} style={{ marginTop: '10px' }}>
-        {properties.map((element, index) => {
+        {properties.map(element => {
           const hiddenCondition = getHiddenCondition(uiSchema, element.name);
           const isHiddenByCondition =
             hiddenCondition !== undefined
@@ -111,14 +111,19 @@ const HiddenObjectFieldTemplate = (
 
           return isHidden ? (
             <div
-              key={index}
+              key={element.name}
               style={{ display: 'none' }}
               data-hidden-field="true"
             >
               {element.content}
             </div>
           ) : (
-            <Grid item xs={12} key={index} style={{ marginBottom: '10px' }}>
+            <Grid
+              item
+              xs={12}
+              key={element.name}
+              style={{ marginBottom: '10px' }}
+            >
               {element.content}
             </Grid>
           );
