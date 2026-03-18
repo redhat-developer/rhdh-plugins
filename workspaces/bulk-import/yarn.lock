@@ -12350,7 +12350,7 @@ __metadata:
     "@mui/styles": "npm:5.18.0"
     "@playwright/test": "npm:1.57.0"
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.13.0"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^4.29.21"
     "@testing-library/dom": "npm:^10.0.0"
@@ -12570,9 +12570,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.12.0":
-  version: 0.12.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.12.1"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.13.0"
   dependencies:
     "@mui/icons-material": "npm:^5.17.1"
   peerDependencies:
@@ -12582,7 +12582,7 @@ __metadata:
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/99506cde84cf8ad35c367a9625ea19e453685f0067f8ba6e058e90daf427e11b009e2c83f06b3a0ab23bd2395116ef9005262128553b098db97ef48b187fd06b
+  checksum: 10c0/561c04203e9047f4df3fd9a0c29eb0e6b578740899dc3da07870f807a4c3324fb6880e2501f168b60d9a121521eb1f6a9d65d9d837e803f469415e2c0f526053
   languageName: node
   linkType: hard
 
@@ -17293,7 +17293,7 @@ __metadata:
     "@mui/styles": "npm:5.18.0"
     "@playwright/test": "npm:1.57.0"
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.11.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.13.0"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@testing-library/dom": "npm:^10.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
