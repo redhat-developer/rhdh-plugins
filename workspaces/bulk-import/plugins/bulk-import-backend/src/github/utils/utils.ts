@@ -32,13 +32,17 @@ import { logErrorIfNeeded } from '../../helpers';
 import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import {
   AppInstallationRepositories,
+  AppInstallationRepositoriesResponse,
   AuthenticatedUserRepositoryList,
+  AuthenticatedUserRepositoryResponse,
   isGithubAppCredential,
   type ExtendedGithubCredentials,
   type GithubFetchError,
 } from '../types';
 import { buildOcto } from './ghUtils';
 import { validateAndBuildRepoData, ValidatedRepo } from './repoUtils';
+
+const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
 
 /**
  * Creates the GithubFetchError to be stored in the returned errors array of the returned GithubRepositoryResponse object
@@ -372,11 +376,9 @@ export async function listAllRepositoriesForAuthenticatedUser(
     pageSize?: number;
   },
 ): Promise<AuthenticatedUserRepositoryList> {
-  const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
-  const PAGE_NUMBER_REGEX_MATCH_INDEX = 1;
-  const SECOND_PAGE_NUMBER = 2;
-
-  const fetchListForAuthenticatedUser = async (pageNumber: number) => {
+  const fetchListForAuthenticatedUser = async (
+    pageNumber: number,
+  ): Promise<AuthenticatedUserRepositoryResponse> => {
     /**
      * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
      * These would include repositories they own, repositories where they are a collaborator,
@@ -390,37 +392,15 @@ export async function listAllRepositoriesForAuthenticatedUser(
     });
   };
 
-  const firstPageResponse = await fetchListForAuthenticatedUser(1);
-
-  const lastPageNumberString = firstPageResponse?.headers?.link
-    ?.split(',')
-    ?.find(s => s.includes('rel="last"'))
-    ?.match(/page=(\d+)/)?.[PAGE_NUMBER_REGEX_MATCH_INDEX];
-
-  if (!lastPageNumberString) {
-    deps.logger.debug(
-      `Unable to extract page number from rel='last' link found in response headers from 'repos.listForAuthenticatedUser' GH endpoint => returning current page size`,
-    );
-    return firstPageResponse.data;
-  }
-
-  const lastPageNumber = Number.parseInt(lastPageNumberString, 10);
-
-  if (lastPageNumber < SECOND_PAGE_NUMBER) {
-    return firstPageResponse.data;
-  }
-
-  const pagePromises = [];
-  for (let i = SECOND_PAGE_NUMBER; i <= lastPageNumber; i++) {
-    pagePromises.push(fetchListForAuthenticatedUser(i));
-  }
-  const pageResponses = await Promise.all(pagePromises);
-  pageResponses.unshift(firstPageResponse);
-
-  const allRepositories = pageResponses.flatMap(
-    pageResponse => pageResponse.data,
+  const allPages = await getAllPages(
+    deps,
+    'repos.listForAuthenticatedUser',
+    fetchListForAuthenticatedUser,
   );
-  // .sort((a, b) => a.name.localeCompare(b.name));
+
+  const allRepositories = allPages.flatMap(
+    pageResponseData => pageResponseData,
+  );
 
   return allRepositories;
 }
@@ -434,52 +414,27 @@ export async function listAllRepositoriesAccessibleToInstallation(
     pageSize?: number;
   },
 ): Promise<AppInstallationRepositories> {
-  const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
-  const PAGE_NUMBER_REGEX_MATCH_INDEX = 1;
-  const SECOND_PAGE_NUMBER = 2;
-
-  const fetchListReposAccessibleToInstallation = async (pageNumber: number) => {
+  const fetchListReposAccessibleToInstallation = async (
+    pageNumber: number,
+  ): Promise<AppInstallationRepositoriesResponse> => {
     return await octokit.rest.apps.listReposAccessibleToInstallation({
       page: pageNumber,
       per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
     });
   };
 
-  const firstPageResponse = await fetchListReposAccessibleToInstallation(1);
-
-  const lastPageNumberString = firstPageResponse?.headers?.link
-    ?.split(',')
-    ?.find(s => s.includes('rel="last"'))
-    ?.match(/page=(\d+)/)?.[PAGE_NUMBER_REGEX_MATCH_INDEX];
-
-  if (!lastPageNumberString) {
-    deps.logger.debug(
-      `Unable to extract page number from rel='last' link found in response headers from 'apps.listReposAccessibleToInstallation' GH endpoint => returning current page size`,
-    );
-    return firstPageResponse.data;
-  }
-
-  const lastPageNumber = Number.parseInt(lastPageNumberString, 10);
-
-  if (lastPageNumber < SECOND_PAGE_NUMBER) {
-    return firstPageResponse.data;
-  }
-
-  const pagePromises = [];
-  for (let i = SECOND_PAGE_NUMBER; i <= lastPageNumber; i++) {
-    pagePromises.push(fetchListReposAccessibleToInstallation(i));
-  }
-  const pageResponses = await Promise.all(pagePromises);
-  pageResponses.unshift(firstPageResponse);
-
-  const allRepositories = pageResponses.flatMap(
-    pageResponse => pageResponse.data.repositories,
+  const allPages = await getAllPages(
+    deps,
+    'apps.listReposAccessibleToInstallation',
+    fetchListReposAccessibleToInstallation,
   );
-  // .sort((a, b) => a.name.localeCompare(b.name));
 
-  const total_count =
-    pageResponses?.[0]?.data.total_count ?? allRepositories.length;
-  const repository_selection = pageResponses?.[0]?.data?.repository_selection;
+  const allRepositories = allPages.flatMap(
+    pageResponseData => pageResponseData.repositories,
+  );
+
+  const total_count = allPages?.[0]?.total_count ?? allRepositories.length;
+  const repository_selection = allPages?.[0]?.repository_selection;
 
   return {
     repositories: allRepositories,
