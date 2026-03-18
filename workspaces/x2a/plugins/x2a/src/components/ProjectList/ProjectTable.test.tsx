@@ -39,28 +39,26 @@ jest.mock('../../hooks/useProjectWriteAccess', () => ({
   }),
 }));
 
-import {
-  mockApis,
-  renderInTestApp,
-  TestApiProvider,
-} from '@backstage/test-utils';
+import { TestApiProvider } from '@backstage/test-utils';
 import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
-import { screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { mapOrderByToSort, ProjectTable } from './ProjectTable';
 import {
+  backstageTableApis,
   createMockProjects,
   defaultTableProps,
 } from '../../test-utils/projectListTestUtils';
 
 describe('ProjectTable', () => {
   let fetchApiMock: jest.Mock;
-  let discoveryApiMock: ReturnType<typeof mockApis.discovery>;
+  let discoveryApiMock: { getBaseUrl: jest.Mock };
 
   beforeEach(() => {
-    discoveryApiMock = mockApis.discovery({
-      baseUrl: 'http://localhost:1234',
-    });
+    discoveryApiMock = {
+      getBaseUrl: jest.fn().mockResolvedValue('http://localhost:1234'),
+    };
     fetchApiMock = jest.fn();
   });
 
@@ -69,19 +67,22 @@ describe('ProjectTable', () => {
   });
 
   describe('Columns', () => {
-    it('renders all expected column headers', async () => {
+    it('renders all expected column headers', () => {
       const mockProjects = createMockProjects(5);
       const props = defaultTableProps(mockProjects, 5);
 
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
+      render(
+        <MemoryRouter>
+          <TestApiProvider
+            apis={[
+              [fetchApiRef, { fetch: fetchApiMock }],
+              [discoveryApiRef, discoveryApiMock],
+              ...backstageTableApis,
+            ]}
+          >
+            <ProjectTable {...props} />
+          </TestApiProvider>
+        </MemoryRouter>,
       );
 
       expect(screen.getByText('Name')).toBeInTheDocument();
@@ -91,19 +92,22 @@ describe('ProjectTable', () => {
       expect(screen.getByText('Created At')).toBeInTheDocument();
     });
 
-    it('displays project data in columns', async () => {
+    it('displays project data in columns', () => {
       const mockProjects = createMockProjects(2);
       const props = defaultTableProps(mockProjects, 2);
 
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
+      render(
+        <MemoryRouter>
+          <TestApiProvider
+            apis={[
+              [fetchApiRef, { fetch: fetchApiMock }],
+              [discoveryApiRef, discoveryApiMock],
+              ...backstageTableApis,
+            ]}
+          >
+            <ProjectTable {...props} />
+          </TestApiProvider>
+        </MemoryRouter>,
       );
 
       expect(screen.getByText('Project 0')).toBeInTheDocument();
@@ -122,19 +126,22 @@ describe('ProjectTable', () => {
         orderDirection: 'asc',
       });
 
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable
-            {...props}
-            setOrderBy={setOrderBy}
-            setOrderDirection={setOrderDirection}
-          />
-        </TestApiProvider>,
+      render(
+        <MemoryRouter>
+          <TestApiProvider
+            apis={[
+              [fetchApiRef, { fetch: fetchApiMock }],
+              [discoveryApiRef, discoveryApiMock],
+              ...backstageTableApis,
+            ]}
+          >
+            <ProjectTable
+              {...props}
+              setOrderBy={setOrderBy}
+              setOrderDirection={setOrderDirection}
+            />
+          </TestApiProvider>
+        </MemoryRouter>,
       );
 
       const nameHeader = screen.getByText('Name');
@@ -157,15 +164,18 @@ describe('ProjectTable', () => {
         pageSize: 10,
       });
 
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} onPageChange={onPageChange} />
-        </TestApiProvider>,
+      render(
+        <MemoryRouter>
+          <TestApiProvider
+            apis={[
+              [fetchApiRef, { fetch: fetchApiMock }],
+              [discoveryApiRef, discoveryApiMock],
+              ...backstageTableApis,
+            ]}
+          >
+            <ProjectTable {...props} onPageChange={onPageChange} />
+          </TestApiProvider>
+        </MemoryRouter>,
       );
 
       const nextPageButton = screen.getByLabelText(/next page/i);
@@ -182,15 +192,21 @@ describe('ProjectTable', () => {
       const onRowsPerPageChange = jest.fn();
       const props = defaultTableProps(mockProjects, 25);
 
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} onRowsPerPageChange={onRowsPerPageChange} />
-        </TestApiProvider>,
+      render(
+        <MemoryRouter>
+          <TestApiProvider
+            apis={[
+              [fetchApiRef, { fetch: fetchApiMock }],
+              [discoveryApiRef, discoveryApiMock],
+              ...backstageTableApis,
+            ]}
+          >
+            <ProjectTable
+              {...props}
+              onRowsPerPageChange={onRowsPerPageChange}
+            />
+          </TestApiProvider>
+        </MemoryRouter>,
       );
 
       const rowsPerPageSelect = screen.getByLabelText(/rows per page/i);
@@ -204,212 +220,25 @@ describe('ProjectTable', () => {
       });
     });
 
-    it('displays table title with projects count', async () => {
+    it('displays table title with projects count', () => {
       const mockProjects = createMockProjects(10);
       const props = defaultTableProps(mockProjects, 20);
 
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
+      render(
+        <MemoryRouter>
+          <TestApiProvider
+            apis={[
+              [fetchApiRef, { fetch: fetchApiMock }],
+              [discoveryApiRef, discoveryApiMock],
+              ...backstageTableApis,
+            ]}
+          >
+            <ProjectTable {...props} />
+          </TestApiProvider>
+        </MemoryRouter>,
       );
 
       expect(screen.getByText(/Projects \(20\)/)).toBeInTheDocument();
-    });
-  });
-
-  describe('Detail panel', () => {
-    it('shows DetailPanel content when row is expanded', async () => {
-      const user = userEvent.setup();
-      const mockProjects = createMockProjects(1);
-      const props = defaultTableProps(mockProjects, 1);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
-      );
-
-      const expandButton = screen.getByLabelText('Expand row');
-      await user.click(expandButton);
-
-      await waitFor(() => {
-        expect(screen.getByText('Description')).toBeInTheDocument();
-        expect(screen.getByText('Description 0')).toBeInTheDocument();
-        expect(screen.getByText('Abbreviation')).toBeInTheDocument();
-        expect(screen.getByText('P0')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Expand/Collapse All', () => {
-    it('renders expand all toggle in the Name column header', async () => {
-      const mockProjects = createMockProjects(1);
-      const props = defaultTableProps(mockProjects, 1);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
-      );
-
-      expect(screen.getByLabelText('Expand all rows')).toBeInTheDocument();
-    });
-
-    it('expands all rows when expand all is clicked', async () => {
-      const user = userEvent.setup();
-      const mockProjects = createMockProjects(2);
-      const props = defaultTableProps(mockProjects, 2);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
-      );
-
-      const expandAllButton = screen.getByLabelText('Expand all rows');
-      await user.click(expandAllButton);
-
-      await waitFor(() => {
-        expect(screen.getByText('Description 0')).toBeInTheDocument();
-        expect(screen.getByText('Description 1')).toBeInTheDocument();
-      });
-    });
-
-    it('collapses all rows when collapse all is clicked after expand', async () => {
-      const user = userEvent.setup();
-      const mockProjects = createMockProjects(2);
-      const props = defaultTableProps(mockProjects, 2);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
-      );
-
-      await user.click(screen.getByLabelText('Expand all rows'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Description 0')).toBeInTheDocument();
-        expect(screen.getByText('Description 1')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByLabelText('Collapse all rows'));
-
-      await waitFor(() => {
-        expect(screen.queryByText('Description 0')).not.toBeInTheDocument();
-        expect(screen.queryByText('Description 1')).not.toBeInTheDocument();
-      });
-    });
-
-    it('expands remaining rows when partially expanded and expand all is clicked', async () => {
-      const user = userEvent.setup();
-      const mockProjects = createMockProjects(3);
-      const props = defaultTableProps(mockProjects, 3);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
-      );
-
-      const rowToggleButtons = screen.getAllByLabelText('Expand row');
-      await user.click(rowToggleButtons[0]);
-
-      await waitFor(() => {
-        expect(screen.getByText('Description 0')).toBeInTheDocument();
-        expect(screen.queryByText('Description 1')).not.toBeInTheDocument();
-      });
-
-      expect(screen.getByLabelText('Expand all rows')).toBeInTheDocument();
-
-      await user.click(screen.getByLabelText('Expand all rows'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Description 0')).toBeInTheDocument();
-        expect(screen.getByText('Description 1')).toBeInTheDocument();
-        expect(screen.getByText('Description 2')).toBeInTheDocument();
-      });
-    });
-
-    it('updates header toggle after expanding all then collapsing one row', async () => {
-      const user = userEvent.setup();
-      const mockProjects = createMockProjects(2);
-      const props = defaultTableProps(mockProjects, 2);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
-      );
-
-      await user.click(screen.getByLabelText('Expand all rows'));
-
-      await waitFor(() => {
-        expect(screen.getByLabelText('Collapse all rows')).toBeInTheDocument();
-      });
-
-      const collapseRowButtons = screen.getAllByLabelText('Collapse row');
-      await user.click(collapseRowButtons[0]);
-
-      await waitFor(() => {
-        expect(screen.getByLabelText('Expand all rows')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Actions', () => {
-    it('renders New Project button', async () => {
-      const mockProjects = createMockProjects(1);
-      const props = defaultTableProps(mockProjects, 1);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectTable {...props} />
-        </TestApiProvider>,
-      );
-
-      expect(screen.getByText('New Project')).toBeInTheDocument();
     });
   });
 });

@@ -32,21 +32,6 @@ backend:
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
-integrations:
-# So far no need for integrations
-#  github:
-#    - host: github.com
-#      # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
-#      # about setting up the GitHub integration here: https://backstage.io/docs/integrations/github/locations#configuration
-#      token: ${GITHUB_TOKEN}
-#  gitlab:
-#    - host: gitlab.cee.redhat.com
-#      token: ${GITLAB_TOKEN}
-### Example for how to add your GitHub Enterprise instance using the API:
-# - host: ghe.example.net
-#   apiBaseUrl: https://ghe.example.net/api/v3
-#   token: ${GHE_TOKEN}
-
 proxy:
   ### Example for how to add a proxy endpoint for the frontend.
   ### A typical reason to do this is to handle HTTPS and CORS for internal services.
@@ -70,6 +55,22 @@ techdocs:
 # when the popup and main window have different cookie contexts
 #enableExperimentalRedirectFlow: true
 
+integrations:
+  # Needed for SCM provider detection in the x2a plugin
+  # See https://backstage.io/docs/integrations/github/locations#configuration
+  # The tokens are not needed for provider detection, only the hostnames.
+  # To access a SCM (pull, push), the plugin authenticates via OAuth through the auth: providers, not through integration tokens.
+  github:
+    - host: github.com
+    #- host: github.mycompany.com # GitHub Enterprise on a custom domain
+    #  apiBaseUrl: https://github.mycompany.com/api/v3
+  gitlab:
+    - host: gitlab.com
+    #- host: gitlab.internal.io # Self-hosted GitLab
+    #  apiBaseUrl: https://gitlab.internal.io/api/v4
+  bitbucketCloud:
+    - host: bitbucket.org
+
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   environment: development
@@ -92,6 +93,17 @@ auth:
         signIn:
           resolvers:
             - resolver: usernameMatchingUserEntityName
+    bitbucket:
+      # Follow https://backstage.io/docs/auth/bitbucket/provider/
+      development:
+        clientId: ${AUTH_BITBUCKET_CLIENT_ID:-}
+        clientSecret: ${AUTH_BITBUCKET_CLIENT_SECRET:-}
+        signIn:
+          resolvers:
+            # The usernameMatchingUserEntityName resolver is not working for Bitbucket.
+            # Cannot make the bitbucket to provide user's email.
+            # See the org.yaml file for an example of how to use the usernameMatchingUserEntityAnnotation resolver.
+            - resolver: usernameMatchingUserEntityAnnotation
 
 scaffolder: {}
   # see https://backstage.io/docs/features/software-templates/configuration for software template options

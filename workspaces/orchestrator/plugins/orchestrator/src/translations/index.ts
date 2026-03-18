@@ -18,6 +18,10 @@ import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
 import { orchestratorTranslationRef } from './ref';
 
+/**
+ * Translation Resource for Orchestrator plugin
+ * @public
+ */
 export const orchestratorTranslations = createTranslationResource({
   ref: orchestratorTranslationRef,
   translations: {

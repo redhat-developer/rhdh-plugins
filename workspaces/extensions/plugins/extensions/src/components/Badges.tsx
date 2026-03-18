@@ -26,7 +26,7 @@ import {
 import { colors } from '../consts';
 
 import { useTranslation } from '../hooks/useTranslation';
-import { extensionsTranslationRef } from '../translations/ref';
+import { extensionsTranslationRef } from '../alpha/translations/ref';
 import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 interface BadgeOptions {

@@ -63,6 +63,7 @@ spec:
               # This is to be updated per production deployment along the auth in the app-config.yaml file
               - github.com
               - gitlab.com
+              - bitbucket.org
         sourceRepoBranch:
           title: Conversion source repository branch
           type: string
@@ -102,6 +103,7 @@ spec:
                         # This is to be updated per production deployment along the auth in the app-config.yaml file
                         - github.com
                         - gitlab.com
+                        - bitbucket.org
     - title: Conversion parameters
       properties:
         userPrompt:

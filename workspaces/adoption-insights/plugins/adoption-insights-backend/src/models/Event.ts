@@ -19,6 +19,7 @@ import {
   AnalyticsEvent,
   AnalyticsEventAttributes,
 } from '@backstage/core-plugin-api';
+import { normalizeToUTCISO } from '../utils/date';
 
 export type EventType = {
   user_ref: string;
@@ -49,8 +50,11 @@ export class Event {
     this.action = event.action;
     this.subject = event.subject;
     this.value = event.value;
-    this.created_at =
+    const rawTimestamp =
       (event.context?.timestamp as string) || new Date().toISOString();
+    this.created_at = normalizeToUTCISO(
+      typeof rawTimestamp === 'string' ? rawTimestamp : new Date(),
+    );
 
     // Handle type-based conversion
     this.context = isJson ? event.context : JSON.stringify(event.context ?? {});

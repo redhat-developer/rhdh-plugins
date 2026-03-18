@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-import { getScmProvider } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  resolveScmProvider,
+  ScmProviderName,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
  * Builds a URL to the repository at a specific branch.
- * Supports GitHub and GitLab (including self-hosted).
  */
-export const buildRepoBranchUrl = (url: string, branch: string): string => {
+export const buildRepoBranchUrl = (
+  url: string,
+  branch: string,
+  hostProviderMap?: Map<string, ScmProviderName>,
+): string => {
   const baseUrl = url.endsWith('.git') ? url.slice(0, -4) : url;
 
   try {
     const parsed = new URL(baseUrl);
-    const provider = getScmProvider(baseUrl);
-    const pathWithoutTrailingSlash = parsed.pathname.replace(/\/$/, '');
+    const provider = resolveScmProvider(baseUrl, hostProviderMap);
+    const path = parsed.pathname.replace(/\/$/, '');
+    const encodedBranch = encodeURIComponent(branch);
 
-    if (provider === 'gitlab') {
-      return `${parsed.origin}${pathWithoutTrailingSlash}/-/tree/${encodeURIComponent(branch)}`;
-    }
-
-    // GitHub
-    return `${parsed.origin}${pathWithoutTrailingSlash}/tree/${encodeURIComponent(branch)}`;
+    return provider.buildBranchUrl(parsed.origin, path, encodedBranch);
   } catch {
     return baseUrl;
   }

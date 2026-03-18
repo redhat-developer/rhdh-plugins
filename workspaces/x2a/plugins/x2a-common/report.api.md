@@ -5,6 +5,7 @@
 ```ts
 
 import { BasicPermission } from '@backstage/plugin-permission-common';
+import { Config } from '@backstage/config';
 
 // @public (undocumented)
 export interface AAPCredentials {
@@ -43,9 +44,6 @@ export interface Artifact {
 export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata' | 'ansible_project';
 
 // @public
-export const augmentRepoToken: (token: string, authDescriptor: AuthTokenDescriptor) => string;
-
-// @public
 export interface AuthToken {
     provider: string;
     token: string;
@@ -58,6 +56,12 @@ export type AuthTokenDescriptor = {
     scope?: string | string[];
     tokenType?: 'openId' | 'oauth';
 };
+
+// @public
+export const bitbucketProvider: ScmProvider;
+
+// @public
+export function buildScmHostMap(config: Config): Map<string, ScmProviderName>;
 
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
@@ -88,6 +92,7 @@ export class DefaultApiClient {
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdLogGet(request: ProjectsProjectIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
+    projectsProjectIdModulesModuleIdCancelPost(request: ProjectsProjectIdModulesModuleIdCancelPost, options?: RequestOptions): Promise<TypedResponse<void>>;
     projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
@@ -96,13 +101,10 @@ export class DefaultApiClient {
 }
 
 // @public
-export const getAuthTokenDescriptor: ({ repoUrl, readOnly, }: {
-    repoUrl: string;
-    readOnly: boolean;
-}) => AuthTokenDescriptor;
+export const githubProvider: ScmProvider;
 
 // @public
-export const getScmProvider: (repoUrl: string) => "github" | "gitlab";
+export const gitlabProvider: ScmProvider;
 
 // @public (undocumented)
 export interface GitRepoAuth {
@@ -129,7 +131,7 @@ export interface Job {
 }
 
 // @public (undocumented)
-export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error';
+export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
 
 // @public
 export const MAX_CONCURRENT_BULK_RUN = 3;
@@ -159,6 +161,7 @@ export type ModulePhase = 'analyze' | 'migrate' | 'publish';
 
 // @public (undocumented)
 export interface ModulesStatusSummary {
+    cancelled: number;
     error: number;
     finished: number;
     pending: number;
@@ -168,7 +171,7 @@ export interface ModulesStatusSummary {
 }
 
 // @public (undocumented)
-export type ModuleStatus = 'pending' | 'running' | 'success' | 'error';
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
 
 // @public
 export function normalizeRepoUrl(url: string): string;
@@ -297,6 +300,21 @@ export type ProjectsProjectIdModulesGet = {
 };
 
 // @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdCancelPost = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+    body: ProjectsProjectIdModulesModuleIdCancelPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdModulesModuleIdCancelPostRequest {
+    // (undocumented)
+    phase: ModulePhase;
+}
+
+// @public (undocumented)
 export type ProjectsProjectIdModulesModuleIdGet = {
     path: {
         projectId: string;
@@ -395,6 +413,26 @@ export interface RequestOptions {
     // (undocumented)
     token?: string;
 }
+
+// @public
+export function resolveScmProvider(repoUrl: string, hostProviderMap?: Map<string, ScmProviderName>): ScmProvider;
+
+// @public
+export function resolveScmProviderByName(name: ScmProviderName): ScmProvider;
+
+// @public
+export interface ScmProvider {
+    augmentToken(token: string): string;
+    buildArtifactUrl(origin: string, path: string, encodedBranch: string, filePath: string): string;
+    buildBranchUrl(origin: string, path: string, encodedBranch: string): string;
+    getAuthTokenDescriptor(readOnly: boolean): AuthTokenDescriptor;
+    matches(repoUrl: string): boolean;
+    // (undocumented)
+    readonly name: ScmProviderName;
+}
+
+// @public
+export type ScmProviderName = 'github' | 'gitlab' | 'bitbucket';
 
 // @public
 export interface Telemetry {

@@ -17,6 +17,10 @@
 import { defineConfig } from '@playwright/test';
 import { generateProjects } from '@backstage/e2e-test-utils/playwright';
 
+// APP_MODE: 'legacy' (app-legacy) or 'nfs' (app with new frontend system)
+const appMode = process.env.APP_MODE || 'legacy';
+const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -32,7 +36,7 @@ export default defineConfig({
     ? []
     : [
         {
-          command: 'yarn start',
+          command: startCommand,
           port: 3000,
           reuseExistingServer: true,
           timeout: 60_000,

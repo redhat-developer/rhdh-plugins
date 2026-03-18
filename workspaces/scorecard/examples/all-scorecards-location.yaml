@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: all-scorecards-location
+
+  description: A collection of all the scorecards
+spec:
+  targets:
+    - ./components/dependabot-scorecard-only.yaml
+    - ./components/github-scorecard-only.yaml
+    - ./components/jira-scorecard-only.yaml
+    - ./components/openssf-scorecard-only.yaml
+    - ./components/all-scorecards.yaml
+    - ./components/no-scorecards.yaml

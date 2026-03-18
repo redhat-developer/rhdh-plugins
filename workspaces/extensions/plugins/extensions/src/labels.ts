@@ -19,7 +19,7 @@ import {
   ExtensionsPackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
-import { extensionsTranslationRef } from './translations';
+import { extensionsTranslationRef } from './alpha/translations';
 
 // Translation-aware label mapping functions that replace the static mappings
 export const mapBackstageRoleToLabel = (

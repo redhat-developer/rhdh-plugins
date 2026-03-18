@@ -56,6 +56,38 @@ export const hasZFormat = (dateStr: string): boolean => {
   return dateStr.includes('Z') || dateStr.includes('T');
 };
 
+/**
+ * Normalize any date string or Date to UTC ISO string (e.g. 2026-03-11T16:17:46.540Z).
+ * Use this before storing timestamps in the database so they are consistent.
+ */
+export const normalizeToUTCISO = (date: string | Date): string => {
+  if (date instanceof Date) {
+    return date.toISOString();
+  }
+  const s = String(date).trim();
+  // Luxon fromISO handles ISO with Z or offset (e.g. -05:00)
+  let dt = DateTime.fromISO(s, { setZone: true });
+  if (dt.isValid) {
+    return dt.toUTC().toISO() ?? s;
+  }
+  // Try "yyyy-MM-dd HH:mm:ss.SSS -0500" or "yyyy-MM-dd HH:mm:ss -0500" style
+  dt = DateTime.fromFormat(s, 'yyyy-MM-dd HH:mm:ss.SSS ZZZ', { setZone: true });
+  if (dt.isValid) {
+    return dt.toUTC().toISO() ?? s;
+  }
+  dt = DateTime.fromFormat(s, 'yyyy-MM-dd HH:mm:ss ZZZ', { setZone: true });
+  if (dt.isValid) {
+    return dt.toUTC().toISO() ?? s;
+  }
+  dt = DateTime.fromFormat(s, 'yyyy-MM-dd HH:mm:ss', { zone: 'UTC' });
+  if (dt.isValid) {
+    return dt.toISO() ?? s;
+  }
+  // Return original when unparseable: do not substitute current time, which would
+  // silently corrupt created_at and misplace events in partitions/date-range queries.
+  return s;
+};
+
 export const convertToTargetTimezone = (
   date: string | Date,
   timeZone: string = new Intl.DateTimeFormat().resolvedOptions().timeZone,

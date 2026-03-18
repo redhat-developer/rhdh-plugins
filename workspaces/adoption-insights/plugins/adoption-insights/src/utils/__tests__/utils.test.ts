@@ -53,6 +53,12 @@ describe('safeDate', () => {
     expect(result.toISOString()).toBe('2025-09-29T00:00:00.000Z');
   });
 
+  it('should normalize short offset -04 to -04:00 for parsing', () => {
+    const result = safeDate('2026-03-09T01:00:00-04');
+    expect(result).toBeInstanceOf(Date);
+    expect(result.toISOString()).toBe('2026-03-09T05:00:00.000Z');
+  });
+
   it('should handle invalid dates gracefully', () => {
     const result = safeDate('invalid-date');
     expect(result).toBeInstanceOf(Date);

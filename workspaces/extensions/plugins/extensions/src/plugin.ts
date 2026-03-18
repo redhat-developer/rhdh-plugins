@@ -34,7 +34,7 @@ import { ExtensionsBackendClient } from '@red-hat-developer-hub/backstage-plugin
 import { extensionsApiRef, dynamicPluginsInfoApiRef } from './api';
 import { DynamicPluginsInfoClient } from './api/DynamicPluginsInfoClient';
 import { allRoutes } from './routes';
-import { extensionsTranslationRef } from './translations';
+import { extensionsTranslationRef } from './alpha/translations';
 
 /**
  * Extensions Plugin

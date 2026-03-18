@@ -98,7 +98,7 @@ export async function addGitlabTokenGroups(
         name: group.path,
         description: group.description ?? undefined,
         url: group.web_url,
-        avatar_url: group.avatar_url,
+        avatar_url: group.avatar_url ?? undefined,
         // From here down gitlab doesn't really have while calling the group api
         // public_repos: group?.data?.public_repos,
         // total_private_repos: group?.data?.total_private_repos,

@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 import { DiscoveryService } from '@backstage/backend-plugin-api';
+import { Config } from '@backstage/config';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import {
   DefaultApiClient,
   Project,
   ProjectsPost,
   ProjectsProjectIdRunPost200Response,
-  augmentRepoToken,
-  getAuthTokenDescriptor,
+  resolveScmProvider,
+  buildScmHostMap,
   normalizeRepoUrl,
+  ScmProviderName,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
@@ -32,6 +34,7 @@ import {
  */
 export type CreateProjectActionOptions = {
   fetchApi?: { fetch: typeof fetch };
+  hostProviderMap?: Map<string, ScmProviderName>;
 };
 
 /**
@@ -40,14 +43,17 @@ export type CreateProjectActionOptions = {
  * This action creates a new project in the x2a database.
  *
  * @param discoveryApi - Backstage discovery service
+ * @param config - Backstage root config (used to detect SCM providers from `integrations:` section)
  * @param options - Optional; use fetchApi to inject a custom fetch (e.g. in tests)
  * @public
  */
 export function createProjectAction(
   discoveryApi: DiscoveryService,
+  config: Config,
   options?: CreateProjectActionOptions,
 ) {
   const fetchApi = options?.fetchApi ?? { fetch };
+  const hostProviderMap = options?.hostProviderMap ?? buildScmHostMap(config);
 
   return createTemplateAction({
     id: 'x2a:project:create',
@@ -131,20 +137,11 @@ export function createProjectAction(
         throw new Error('Target repository token is required');
       }
 
-      sourceRepoToken = augmentRepoToken(
-        sourceRepoToken,
-        getAuthTokenDescriptor({
-          repoUrl: sourceRepoUrl,
-          readOnly: true,
-        }),
-      );
-      targetRepoToken = augmentRepoToken(
-        targetRepoToken,
-        getAuthTokenDescriptor({
-          repoUrl: targetRepoUrl,
-          readOnly: false,
-        }),
-      );
+      const sourceProvider = resolveScmProvider(sourceRepoUrl, hostProviderMap);
+      sourceRepoToken = sourceProvider.augmentToken(sourceRepoToken);
+
+      const targetProvider = resolveScmProvider(targetRepoUrl, hostProviderMap);
+      targetRepoToken = targetProvider.augmentToken(targetRepoToken);
 
       const body: ProjectsPost['body'] = {
         name: ctx.input.name,

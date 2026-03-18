@@ -20,6 +20,7 @@ import {
   getDateGroupingType,
   getTimeZoneOffsetString,
   isSameMonth,
+  normalizeToUTCISO,
   toEndOfDayUTC,
   toStartOfDayUTC,
 } from './date';
@@ -108,6 +109,42 @@ describe('convertToTargetTimezone', () => {
     expect(convertToTargetTimezone('2025-03-02T18:00:00.000Z')).toBe(
       '2025-03-02T23:30:00.000+05:30',
     );
+  });
+});
+
+describe('normalizeToUTCISO', () => {
+  it('should return ISO string for Date input', () => {
+    const d = new Date('2026-03-11T16:17:46.540Z');
+    expect(normalizeToUTCISO(d)).toBe('2026-03-11T16:17:46.540Z');
+  });
+
+  it('should normalize ISO with Z to UTC ISO', () => {
+    expect(normalizeToUTCISO('2026-03-11T16:17:46.540Z')).toBe(
+      '2026-03-11T16:17:46.540Z',
+    );
+  });
+
+  it('should normalize ISO with offset to UTC ISO', () => {
+    expect(normalizeToUTCISO('2026-03-11T11:17:46.540-05:00')).toBe(
+      '2026-03-11T16:17:46.540Z',
+    );
+  });
+
+  it('should normalize "yyyy-MM-dd HH:mm:ss.SSS -0500" to UTC ISO', () => {
+    expect(normalizeToUTCISO('2026-03-11 11:17:46.540 -0500')).toBe(
+      '2026-03-11T16:17:46.540Z',
+    );
+  });
+
+  it('should normalize "yyyy-MM-dd HH:mm:ss -0500" to UTC ISO', () => {
+    expect(normalizeToUTCISO('2026-03-11 11:17:46 -0500')).toBe(
+      '2026-03-11T16:17:46.000Z',
+    );
+  });
+
+  it('should return original string when unparseable (no silent substitution with current time)', () => {
+    const unparseable = 'not-a-date';
+    expect(normalizeToUTCISO(unparseable)).toBe(unparseable);
   });
 });
 

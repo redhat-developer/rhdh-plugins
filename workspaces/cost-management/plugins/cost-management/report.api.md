@@ -4,6 +4,7 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { OpenShiftPage as OpenShiftPage_2 } from './pages/openshift/OpenShiftPage';
 import { PathParams } from '@backstage/core-plugin-api';
 import { default as React_2 } from 'react';
 import { Router as Router_2 } from './Router';
@@ -44,12 +45,16 @@ export const CostManagementIconOutlined: (
 ) => React_2.JSX.Element;
 
 // @public (undocumented)
+export const OpenShiftPage: OpenShiftPage_2;
+
+// @public (undocumented)
 export const ResourceOptimizationPage: Router_2;
 
 // @public (undocumented)
 export const resourceOptimizationPlugin: BackstagePlugin<
   {
     root: RouteRef<undefined>;
+    openShift: RouteRef<undefined>;
     breakdown: SubRouteRef<PathParams<'/:id/*'>>;
   },
   {},

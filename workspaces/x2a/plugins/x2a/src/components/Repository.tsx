@@ -18,6 +18,7 @@ import { Link } from '@backstage/core-components';
 import { Chip, makeStyles, SvgIcon, Typography } from '@material-ui/core';
 import LaunchIcon from '@material-ui/icons/Launch';
 import { buildRepoBranchUrl } from './tools';
+import { useScmHostMap } from '../hooks/useScmHostMap';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -68,6 +69,7 @@ export const Repository = ({
   branch: string;
 }) => {
   const classes = useStyles();
+  const hostMap = useScmHostMap();
 
   return (
     <div className={classes.root}>
@@ -79,7 +81,7 @@ export const Repository = ({
       />
       <Typography variant="body2" component="span">
         <Link
-          to={buildRepoBranchUrl(url, branch)}
+          to={buildRepoBranchUrl(url, branch, hostMap)}
           target="_blank"
           rel="noopener noreferrer"
           className={classes.externalLink}

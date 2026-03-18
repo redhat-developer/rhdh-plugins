@@ -25,7 +25,7 @@ import {
 } from '@backstage/core-components';
 import { Box, Grid } from '@material-ui/core';
 import {
-  getAuthTokenDescriptor,
+  resolveScmProvider,
   MigrationPhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import Alert from '@material-ui/lab/Alert';
@@ -33,6 +33,7 @@ import AlertTitle from '@material-ui/lab/AlertTitle';
 
 import { moduleRouteRef } from '../../routes';
 import { useClientService } from '../../ClientService';
+import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useRepoAuthentication } from '../../repoAuth';
 import { ArtifactsCard } from './ArtifactsCard';
@@ -46,8 +47,17 @@ export const ModulePage = () => {
 
   const clientService = useClientService();
   const repoAuthentication = useRepoAuthentication();
+  const hostMap = useScmHostMap();
   const [error, setError] = useState<string | undefined>();
   const [refresh, setRefresh] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
+
+  const handleTabChange = useCallback(
+    (_event: React.ChangeEvent<{}>, newValue: number) => {
+      setActiveTab(newValue);
+    },
+    [],
+  );
 
   const {
     value: project,
@@ -82,18 +92,18 @@ export const ModulePage = () => {
       try {
         const sourceRepoAuthToken = (
           await repoAuthentication.authenticate([
-            getAuthTokenDescriptor({
-              repoUrl: project.sourceRepoUrl,
-              readOnly: true,
-            }),
+            resolveScmProvider(
+              project.sourceRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(true),
           ])
         )[0].token;
         const targetRepoAuthToken = (
           await repoAuthentication.authenticate([
-            getAuthTokenDescriptor({
-              repoUrl: project.targetRepoUrl,
-              readOnly: false,
-            }),
+            resolveScmProvider(
+              project.targetRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(false),
           ])
         )[0].token;
 
@@ -109,17 +119,59 @@ export const ModulePage = () => {
 
         const responseData = await response.json();
         if (!responseData.jobId) {
-          setError('Failed to run phase for module');
+          setError(`${t('modulePage.phases.runError')}`);
         }
 
         setRefresh(prev => prev + 1);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : 'Failed to run phase for module',
+          err instanceof Error
+            ? err.message
+            : `${t('modulePage.phases.runError')}`,
         );
       }
     },
-    [clientService, projectId, moduleId, repoAuthentication, project],
+    [
+      t,
+      clientService,
+      hostMap,
+      projectId,
+      moduleId,
+      repoAuthentication,
+      project,
+    ],
+  );
+
+  const handleCancelPhase = useCallback(
+    async (phase: MigrationPhase) => {
+      if (!project || phase === 'init') {
+        // The init phase belongs to the project's page
+        return;
+      }
+      setError(undefined);
+
+      try {
+        const response =
+          await clientService.projectsProjectIdModulesModuleIdCancelPost({
+            path: { projectId, moduleId },
+            body: { phase },
+          });
+        if (response.status !== 200) {
+          const body = await response
+            .json()
+            .catch(() => ({}) as { message?: string });
+          setError(body?.message || t('modulePage.phases.cancelError'));
+        }
+        setRefresh(prev => prev + 1);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('modulePage.phases.cancelError'),
+        );
+      }
+    },
+    [clientService, t, projectId, moduleId, project],
   );
 
   const fetchError = projectError || moduleError;
@@ -169,9 +221,13 @@ export const ModulePage = () => {
             <Grid item xs={12}>
               <PhasesCard
                 module={module}
+                project={project}
                 projectId={projectId}
                 moduleId={moduleId}
                 onRunPhase={handleRunPhase}
+                onCancelPhase={handleCancelPhase}
+                activeTab={activeTab}
+                handleTabChange={handleTabChange}
               />
             </Grid>
           </Grid>

@@ -17,11 +17,11 @@
 /**
  * Converts URL provided by the Backstage's RepoUrlPicker component to the format expected by the x2a API.
  *
- * Example:
- * - Input: github.com?owner=someone&repo=myrepo
- * - Output: https://github.com/someone/myrepo.git
+ * Examples:
+ * - GitHub/GitLab: github.com?owner=someone&repo=myrepo  →  https://github.com/someone/myrepo.git
+ * - Bitbucket:     bitbucket.org?workspace=ws&project=proj&repo=myrepo  →  https://bitbucket.org/ws/myrepo.git
  *
- * Supports GitHub/GitLab-style (owner + repo)
+ * Supports GitHub/GitLab-style (owner + repo) and Bitbucket-style (workspace + repo).
  *
  * @param url - The repository URL to normalize (e.g. from RepoUrlPicker: host?owner=...&repo=...)
  * @returns Ready to clone git repo URL
@@ -38,6 +38,7 @@ export function normalizeRepoUrl(url: string): string {
     const parsed = new URL(`https://${url.trim()}`);
     const host = parsed.host;
     const owner = parsed.searchParams.get('owner') ?? '';
+    const workspace = parsed.searchParams.get('workspace') ?? '';
     let repo = parsed.searchParams.get('repo') ?? '';
 
     // If repo param contains a full URL (user pasted a URL into the repo field),
@@ -52,8 +53,16 @@ export function normalizeRepoUrl(url: string): string {
     if (owner && repo) {
       return `https://${host}/${owner}/${repo}.git`;
     }
+
+    // Bitbucket style: host?workspace=ws&project=proj&repo=myrepo
+    // The "project" param is organizational metadata and not part of the clone URL.
+    if (workspace && repo) {
+      return `https://${host}/${workspace}/${repo}.git`;
+    }
   } catch (error) {
-    // eslint-disable-next-line no-useless-catch
+    // eslint-disable-next-line no-console
+    console.error('Failing to normalize repo URL, leaving as it is.');
+    // falls through to return the original URL
   }
 
   // Not in RepoUrlPicker form; return as-is (e.g. already a full clone URL)

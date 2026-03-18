@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-import { getScmProvider } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  resolveScmProvider,
+  ScmProviderName,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
  * Builds a URL to a specific file (artifact) in a repository at a given branch.
- * Supports GitHub and GitLab (including self-hosted).
  */
 export const buildArtifactUrl = (
   value: string,
   targetRepoUrl: string,
   targetRepoBranch: string,
+  hostProviderMap?: Map<string, ScmProviderName>,
 ): string => {
   const baseUrl = targetRepoUrl.endsWith('.git')
     ? targetRepoUrl.slice(0, -4)
@@ -31,15 +34,11 @@ export const buildArtifactUrl = (
 
   try {
     const parsed = new URL(baseUrl);
-    const provider = getScmProvider(baseUrl);
-    const pathWithoutTrailingSlash = parsed.pathname.replace(/\/$/, '');
+    const provider = resolveScmProvider(baseUrl, hostProviderMap);
+    const path = parsed.pathname.replace(/\/$/, '');
     const encodedBranch = encodeURIComponent(targetRepoBranch);
 
-    if (provider === 'gitlab') {
-      return `${parsed.origin}${pathWithoutTrailingSlash}/-/blob/${encodedBranch}/${value}`;
-    }
-
-    return `${parsed.origin}${pathWithoutTrailingSlash}/blob/${encodedBranch}/${value}`;
+    return provider.buildArtifactUrl(parsed.origin, path, encodedBranch, value);
   } catch {
     return `${baseUrl}/blob/${targetRepoBranch}/${value}`;
   }

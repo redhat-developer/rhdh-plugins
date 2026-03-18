@@ -14,79 +14,32 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/app-defaults';
-import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
+import { createApp } from '@backstage/frontend-defaults';
 import {
-  AlertDisplay,
-  OAuthRequestDialog,
-  SignInPage,
-} from '@backstage/core-components';
-import { githubAuthApiRef, gitlabAuthApiRef } from '@backstage/core-plugin-api';
-import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
-import {
-  CatalogEntityPage,
-  CatalogIndexPage,
-  catalogPlugin,
-} from '@backstage/plugin-catalog';
-import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
-import {
-  CatalogImportPage,
-  catalogImportPlugin,
-} from '@backstage/plugin-catalog-import';
-import { orgPlugin } from '@backstage/plugin-org';
-import { RequirePermission } from '@backstage/plugin-permission-react';
-import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
-import { SearchPage } from '@backstage/plugin-search';
-import {
-  TechDocsIndexPage,
-  techdocsPlugin,
-  TechDocsReaderPage,
-} from '@backstage/plugin-techdocs';
-import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
-import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
-import { UserSettingsPage } from '@backstage/plugin-user-settings';
-import {
-  OrchestratorPage,
-  orchestratorTranslations,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator';
-import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
-import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { NotificationsPage } from '@backstage/plugin-notifications';
-import { SignalsDisplay } from '@backstage/plugin-signals';
-import { RbacPage } from '@backstage-community/plugin-rbac';
-import { Navigate, Route } from 'react-router-dom';
-import { apis } from './apis';
-import { entityPage } from './components/catalog/EntityPage';
-import { Root } from './components/Root';
-import { searchPage } from './components/search/SearchPage';
-import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+  SignInPageBlueprint,
+  createFrontendModule,
+  githubAuthApiRef,
+  gitlabAuthApiRef,
+} from '@backstage/frontend-plugin-api';
+import { SignInPage } from '@backstage/core-components';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
-const app = createApp({
-  apis,
-  __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
-    resources: [bulkImportTranslations, orchestratorTranslations],
-  },
-  bindRoutes({ bind }) {
-    bind(catalogPlugin.externalRoutes, {
-      createComponent: scaffolderPlugin.routes.root,
-      viewTechDoc: techdocsPlugin.routes.docRoot,
-      createFromTemplate: scaffolderPlugin.routes.selectedTemplate,
-    });
-    bind(apiDocsPlugin.externalRoutes, {
-      registerApi: catalogImportPlugin.routes.importPage,
-    });
-    bind(scaffolderPlugin.externalRoutes, {
-      registerComponent: catalogImportPlugin.routes.importPage,
-      viewTechDoc: techdocsPlugin.routes.docRoot,
-    });
-    bind(orgPlugin.externalRoutes, {
-      catalogIndex: catalogPlugin.routes.catalogIndex,
-    });
-  },
-  components: {
-    SignInPage: props => (
+import { navModule } from './modules/nav';
+
+// Import the new frontend system plugin for bulk-import
+import bulkImportPlugin, {
+  bulkImportTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+
+// Import core Backstage plugins (NFS versions)
+import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
+import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
+
+// Create sign-in page extension with GitHub and GitLab providers
+const signInPageExtension = SignInPageBlueprint.make({
+  params: {
+    loader: async () => props => (
       <SignInPage
         {...props}
         auto
@@ -108,57 +61,44 @@ const app = createApp({
       />
     ),
   },
-  themes: getThemes(),
 });
 
-const routes = (
-  <FlatRoutes>
-    <Route path="/" element={<Navigate to="catalog" />} />
-    <Route path="/catalog" element={<CatalogIndexPage />} />
-    <Route
-      path="/catalog/:namespace/:kind/:name"
-      element={<CatalogEntityPage />}
-    >
-      {entityPage}
-    </Route>
-    <Route path="/docs" element={<TechDocsIndexPage />} />
-    <Route
-      path="/docs/:namespace/:kind/:name/*"
-      element={<TechDocsReaderPage />}
-    >
-      <TechDocsAddons>
-        <ReportIssue />
-      </TechDocsAddons>
-    </Route>
-    <Route path="/create" element={<ScaffolderPage />} />
-    <Route path="/api-docs" element={<ApiExplorerPage />} />
-    <Route
-      path="/catalog-import"
-      element={
-        <RequirePermission permission={catalogEntityCreatePermission}>
-          <CatalogImportPage />
-        </RequirePermission>
-      }
-    />
-    <Route path="/search" element={<SearchPage />}>
-      {searchPage}
-    </Route>
-    <Route path="/settings" element={<UserSettingsPage />} />
-    <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/bulk-import/*" element={<BulkImportPage />} />
-    <Route path="/notifications" element={<NotificationsPage />} />
-    <Route path="/orchestrator" element={<OrchestratorPage />} />
-    <Route path="/rbac" element={<RbacPage />} />
-  </FlatRoutes>
-);
+// Wrap in a module to make it a FrontendFeature
+const signInModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [signInPageExtension],
+});
 
-export default app.createRoot(
-  <>
-    <AlertDisplay />
-    <OAuthRequestDialog />
-    <SignalsDisplay />
-    <AppRouter>
-      <Root>{routes}</Root>
-    </AppRouter>
-  </>,
-);
+/**
+ * NFS app: A Backstage app using the New Frontend System (NFS)
+ *
+ * This app is used to test the migrated bulk-import plugin with:
+ * - createFrontendPlugin
+ * - PageBlueprint
+ * - NavItemBlueprint
+ * - ApiBlueprint
+ * - SignInPageBlueprint
+ *
+ * To run: yarn start (NFS) or yarn start:legacy (legacy app)
+ */
+const app = createApp({
+  features: [
+    // Core Backstage plugins (order determines sidebar: Catalog, Create, Bulk Import, Settings)
+    catalogPlugin,
+    scaffolderPlugin,
+    bulkImportPlugin,
+    userSettingsPlugin,
+    // Sign-in module with GitHub and GitLab providers
+    signInModule,
+    // RHDH themes
+    rhdhThemeModule,
+    // Translations module (language selector configured via app-config.yaml)
+    bulkImportTranslationsModule,
+    // Custom sidebar with logo
+    navModule,
+  ],
+});
+
+// Export the app root element (not a component)
+// In NFS, createRoot() returns a React element, not a component
+export default app.createRoot();

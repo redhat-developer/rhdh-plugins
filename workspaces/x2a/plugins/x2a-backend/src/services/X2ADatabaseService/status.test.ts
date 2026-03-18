@@ -59,6 +59,57 @@ describe('calculateModuleStatus', () => {
     );
   });
 
+  it('returns cancelled when the only job is cancelled', () => {
+    expect(calculateModuleStatus({ analyze: job('cancelled') }).status).toBe(
+      'cancelled',
+    );
+    expect(calculateModuleStatus({ migrate: job('cancelled') }).status).toBe(
+      'cancelled',
+    );
+    expect(calculateModuleStatus({ publish: job('cancelled') }).status).toBe(
+      'cancelled',
+    );
+  });
+
+  it('returns cancelled when the most-advanced phase is cancelled', () => {
+    expect(
+      calculateModuleStatus({
+        analyze: job('success'),
+        migrate: job('cancelled'),
+      }).status,
+    ).toBe('cancelled');
+    expect(
+      calculateModuleStatus({
+        analyze: job('success'),
+        migrate: job('success'),
+        publish: job('cancelled'),
+      }).status,
+    ).toBe('cancelled');
+    expect(
+      calculateModuleStatus({
+        analyze: job('error'),
+        migrate: job('cancelled'),
+        publish: job('cancelled'),
+      }).status,
+    ).toBe('cancelled');
+  });
+
+  it('returns non-cancelled status when a later phase succeeds even if earlier is cancelled', () => {
+    expect(
+      calculateModuleStatus({
+        analyze: job('cancelled'),
+        migrate: job('success'),
+      }).status,
+    ).toBe('success');
+    expect(
+      calculateModuleStatus({
+        analyze: job('cancelled'),
+        migrate: job('cancelled'),
+        publish: job('success'),
+      }).status,
+    ).toBe('success');
+  });
+
   it('returns migrate status when only migrate job is provided', () => {
     expect(calculateModuleStatus({ migrate: job('success') }).status).toBe(
       'success',
@@ -216,6 +267,7 @@ describe('calculateProjectStatus', () => {
         pending: 0,
         running: 0,
         error: 0,
+        cancelled: 0,
       });
     });
 
@@ -331,6 +383,16 @@ describe('calculateProjectStatus', () => {
       );
       expect(result.state).toBe('initialized');
       expect(result.modulesSummary.pending).toBe(1);
+    });
+
+    it('returns initialized when init succeeded and all modules are pending or cancelled', () => {
+      const result = calculateProjectStatus(
+        [module('cancelled'), module('pending'), module('cancelled')],
+        initJob('success'),
+      );
+      expect(result.state).toBe('initialized');
+      expect(result.modulesSummary.pending).toBe(1);
+      expect(result.modulesSummary.cancelled).toBe(2);
     });
   });
 
@@ -494,6 +556,19 @@ describe('calculateProjectStatus', () => {
       expect(result.modulesSummary.finished).toBe(1);
     });
 
+    it('counts waiting when publish phase exists but is cancelled', () => {
+      const result = calculateProjectStatus(
+        [
+          module('success', { publishStatus: 'cancelled' }),
+          module('success', { publishStatus: 'success' }),
+        ],
+        initJob('success'),
+      );
+      expect(result.modulesSummary.waiting).toBe(1);
+      expect(result.modulesSummary.finished).toBe(1);
+      expect(result.modulesSummary.total).toBe(2);
+    });
+
     it('counts pending as modules with status pending', () => {
       const result = calculateProjectStatus(
         [module('pending'), module('pending'), module('success')],
@@ -530,7 +605,18 @@ describe('calculateProjectStatus', () => {
         pending: 0,
         running: 0,
         error: 0,
+        cancelled: 0,
       });
+    });
+
+    it('counts cancelled as modules with status cancelled', () => {
+      const result = calculateProjectStatus(
+        [module('cancelled'), module('pending'), module('cancelled')],
+        initJob('success'),
+      );
+      expect(result.modulesSummary.cancelled).toBe(2);
+      expect(result.modulesSummary.pending).toBe(1);
+      expect(result.modulesSummary.total).toBe(3);
     });
   });
 });

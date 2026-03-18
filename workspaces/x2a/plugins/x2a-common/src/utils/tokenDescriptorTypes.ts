@@ -37,7 +37,7 @@ export interface AuthToken {
 export type AuthTokenDescriptor = {
   /**
    * The provider is the same as in the same provider that appears in the auth section of the app-config.yaml file.
-   * The built in providers supported are: github, gitlab and microsoft.
+   * The built in providers supported are: github, gitlab and bitbucket.
    * The provider matching is case insensitive (e.g., provider: 'github' matches header: 'X-Authorization-Github')
    * For custom provider the same applies (e.g., provider: 'my-custom-provider' matches header: 'X-Authorization-My-Custom-Provider')
    */

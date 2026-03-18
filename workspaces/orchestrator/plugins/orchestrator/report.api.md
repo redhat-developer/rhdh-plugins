@@ -8,11 +8,9 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SvgIconProps } from '@mui/material/SvgIcon';
-import { TranslationRef } from '@backstage/frontend-plugin-api';
-import { TranslationResource } from '@backstage/frontend-plugin-api';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
-// Warning: (ae-missing-release-tag) "IsOrchestratorCatalogTabAvailable" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
 // @public (undocumented)
 export const IsOrchestratorCatalogTabAvailable: () => boolean;
 
@@ -32,9 +30,7 @@ export const orchestratorPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;
 
-// Warning: (ae-missing-release-tag) "orchestratorTranslationRef" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export const orchestratorTranslationRef: TranslationRef<"plugin.orchestrator", {
 readonly "table.title.workflows": string;
 readonly "table.title.allRuns": string;
@@ -42,9 +38,9 @@ readonly "table.title.allWorkflowRuns": string;
 readonly "table.headers.name": string;
 readonly "table.headers.description": string;
 readonly "table.headers.duration": string;
+readonly "table.headers.status": string;
 readonly "table.headers.runStatus": string;
 readonly "table.headers.started": string;
-readonly "table.headers.status": string;
 readonly "table.headers.workflowStatus": string;
 readonly "table.headers.lastRun": string;
 readonly "table.headers.lastRunStatus": string;
@@ -52,8 +48,8 @@ readonly "table.headers.workflowName": string;
 readonly "table.actions.run": string;
 readonly "table.actions.viewRuns": string;
 readonly "table.actions.viewInputSchema": string;
-readonly "table.filters.started": string;
 readonly "table.filters.status": string;
+readonly "table.filters.started": string;
 readonly "table.filters.startedOptions.today": string;
 readonly "table.filters.startedOptions.yesterday": string;
 readonly "table.filters.startedOptions.last7days": string;
@@ -115,9 +111,9 @@ readonly "run.logs.viewLogs": string;
 readonly "run.logs.noLogsAvailable": string;
 readonly "run.abort.button": string;
 readonly "run.abort.title": string;
+readonly "run.abort.warning": string;
 readonly "run.abort.completed.title": string;
 readonly "run.abort.completed.message": string;
-readonly "run.abort.warning": string;
 readonly "run.retrigger": string;
 readonly "run.viewVariables": string;
 readonly "run.suggestedNextWorkflow": string;
@@ -128,9 +124,9 @@ readonly "workflow.errors.retriggerFailed": string;
 readonly "workflow.errors.abortFailed": string;
 readonly "workflow.errors.abortFailedWithReason": string;
 readonly "workflow.errors.failedToLoadDetails": string;
+readonly "workflow.definition": string;
 readonly "workflow.status.available": string;
 readonly "workflow.status.unavailable": string;
-readonly "workflow.definition": string;
 readonly "workflow.fields.description": string;
 readonly "workflow.fields.workflowId": string;
 readonly "workflow.fields.duration": string;
@@ -176,17 +172,13 @@ readonly "formDecorator.error": string;
 readonly "aria.close": string;
 }>;
 
-// Warning: (ae-missing-release-tag) "orchestratorTranslations" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export const orchestratorTranslations: TranslationResource<"plugin.orchestrator">;
 
 // Warnings were encountered during analysis:
 //
-// src/components/catalogComponents/CatalogTab.d.ts:1:22 - (ae-undocumented) Missing documentation for "IsOrchestratorCatalogTabAvailable".
-// src/components/catalogComponents/CatalogTab.d.ts:2:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
-// src/translations/index.d.ts:2:22 - (ae-undocumented) Missing documentation for "orchestratorTranslations".
-// src/translations/ref.d.ts:201:22 - (ae-undocumented) Missing documentation for "orchestratorTranslationRef".
+// src/components/catalogComponents/CatalogTab.d.ts:5:22 - (ae-undocumented) Missing documentation for "IsOrchestratorCatalogTabAvailable".
+// src/components/catalogComponents/CatalogTab.d.ts:6:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
 
 // (No @packageDocumentation comment for this package)
 
