@@ -36,7 +36,9 @@
     "@backstage/backend-test-utils": "^1.10.0",
     "@backstage/cli": "^0.34.5"
   },
+  "configSchema": "config.d.ts",
   "files": [
+    "config.d.ts",
     "dist"
   ]
 }

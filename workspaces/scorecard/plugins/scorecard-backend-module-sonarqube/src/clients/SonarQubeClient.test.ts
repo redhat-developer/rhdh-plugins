@@ -24,7 +24,7 @@ describe('SonarQubeClient', () => {
   const config = new ConfigReader({
     sonarqube: {
       baseUrl: 'https://sonarcloud.io',
-      token: 'test-token',
+      apiKey: 'test-key',
     },
   });
   const logger = {
@@ -42,7 +42,7 @@ describe('SonarQubeClient', () => {
     client = new SonarQubeClient(config, logger);
   });
 
-  it('sends Authorization header with Bearer token', async () => {
+  it('sends Authorization header with Basic auth by default', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ projectStatus: { status: 'OK' } }),
@@ -53,7 +53,7 @@ describe('SonarQubeClient', () => {
     expect(mockFetch).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        headers: { Authorization: 'Bearer test-token' },
+        headers: { Authorization: 'Basic test-key' },
       }),
     );
   });
@@ -148,7 +148,7 @@ describe('SonarQubeClient', () => {
     const configWithSlash = new ConfigReader({
       sonarqube: {
         baseUrl: 'https://sonarcloud.io/',
-        token: 'test-token',
+        apiKey: 'test-key',
       },
     });
     const clientWithSlash = new SonarQubeClient(configWithSlash, logger);
@@ -183,22 +183,105 @@ describe('SonarQubeClient', () => {
     );
   });
 
-  it('sends no Authorization header when token is not configured', async () => {
-    const noTokenConfig = new ConfigReader({
+  it('sends no Authorization header when apiKey is not configured', async () => {
+    const noKeyConfig = new ConfigReader({
       sonarqube: { baseUrl: 'https://sonarcloud.io' },
     });
-    const noTokenClient = new SonarQubeClient(noTokenConfig, logger);
+    const noKeyClient = new SonarQubeClient(noKeyConfig, logger);
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ projectStatus: { status: 'OK' } }),
     });
 
-    await noTokenClient.getQualityGateStatus('my-project');
+    await noKeyClient.getQualityGateStatus('my-project');
 
     expect(mockFetch).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ headers: {} }),
     );
+  });
+
+  describe('named instances', () => {
+    const multiConfig = new ConfigReader({
+      sonarqube: {
+        baseUrl: 'https://sonarcloud.io',
+        apiKey: 'default-key',
+        instances: [
+          {
+            name: 'internal',
+            baseUrl: 'https://sonar.internal.com',
+            apiKey: 'internal-key',
+            authType: 'Bearer',
+          },
+          {
+            name: 'public',
+            baseUrl: 'https://sonarcloud.io',
+          },
+        ],
+      },
+    });
+
+    it('uses named instance when instanceName is provided', async () => {
+      const multiClient = new SonarQubeClient(multiConfig, logger);
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ projectStatus: { status: 'OK' } }),
+      });
+
+      await multiClient.getQualityGateStatus('my-project', 'internal');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://sonar.internal.com/api/qualitygates/project_status?projectKey=my-project',
+        expect.objectContaining({
+          headers: { Authorization: 'Bearer internal-key' },
+        }),
+      );
+    });
+
+    it('uses default instance when no instanceName is provided', async () => {
+      const multiClient = new SonarQubeClient(multiConfig, logger);
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ projectStatus: { status: 'OK' } }),
+      });
+
+      await multiClient.getQualityGateStatus('my-project');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://sonarcloud.io/api/qualitygates/project_status?projectKey=my-project',
+        expect.objectContaining({
+          headers: { Authorization: 'Basic default-key' },
+        }),
+      );
+    });
+
+    it('throws when named instance is not found', async () => {
+      const multiClient = new SonarQubeClient(multiConfig, logger);
+
+      await expect(
+        multiClient.getQualityGateStatus('my-project', 'unknown'),
+      ).rejects.toThrow(
+        "SonarQube instance 'unknown' not found in configuration",
+      );
+    });
+
+    it('sends no Authorization header for instance without apiKey', async () => {
+      const multiClient = new SonarQubeClient(multiConfig, logger);
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ projectStatus: { status: 'OK' } }),
+      });
+
+      await multiClient.getQualityGateStatus('my-project', 'public');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ headers: {} }),
+      );
+    });
   });
 });
