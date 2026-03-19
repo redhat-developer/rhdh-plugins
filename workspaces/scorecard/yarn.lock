@@ -11117,6 +11117,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube@workspace:plugins/scorecard-backend-module-sonarqube":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube@workspace:plugins/scorecard-backend-module-sonarqube"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.5.0"
+    "@backstage/backend-test-utils": "npm:^1.10.0"
+    "@backstage/cli": "npm:^0.34.5"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:plugins/scorecard-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:plugins/scorecard-backend"
@@ -16474,6 +16484,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube": "workspace:^"
     app: "link:../app"
     better-sqlite3: "npm:^12.0.0"
     node-gyp: "npm:^10.0.0"
