@@ -36,6 +36,7 @@ import { useEntities } from '../../hooks/useEntities';
 import { ViewMoreLink } from './ViewMoreLink';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Trans } from '../Trans';
+import { containerGridItemSx } from '../../utils/GridItem';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -90,7 +91,15 @@ export const TemplateSection = () => {
         <Fragment>
           <Grid container spacing={1} alignItems="stretch">
             {templates?.items.map((item: any) => (
-              <Grid item xs={12} md={6} lg={3} key={item.title}>
+              <Grid
+                item
+                sx={containerGridItemSx({
+                  xs: 12,
+                  sm: 6,
+                  md: 3,
+                })}
+                key={item.title}
+              >
                 <TemplateCard
                   link={`/create/templates/${item.metadata.namespace}/${item.metadata.name}`}
                   title={item.metadata.title}
@@ -101,12 +110,19 @@ export const TemplateSection = () => {
               </Grid>
             ))}
             {templates?.items.length === 0 && (
-              <Grid item xs={12} md={12}>
+              <Grid
+                item
+                sx={containerGridItemSx({
+                  xs: 12,
+                })}
+              >
                 <Box
                   sx={{
+                    height: '100%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    minHeight: 250,
                     border: muiTheme =>
                       `1px solid ${muiTheme.palette.grey[400]}`,
                     borderRadius: 3,
@@ -150,7 +166,9 @@ export const TemplateSection = () => {
       sx={{
         padding: '24px',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
-        overflow: 'auto',
+        containerType: 'inline-size',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Typography
@@ -160,21 +178,31 @@ export const TemplateSection = () => {
           alignItems: 'center',
           fontWeight: '500',
           fontSize: '1.5rem',
+          flexShrink: 0,
         }}
       >
         {t('templates.title')}
       </Typography>
-      {content}
-      {templates?.items && templates?.items.length > 0 && (
-        <Box sx={{ pt: 2 }}>
-          <ViewMoreLink to={catalogTemplatesLink} underline="always">
-            <Trans
-              message="templates.viewAll"
-              params={{ count: templates?.totalItems?.toString() || '' }}
-            />
-          </ViewMoreLink>
-        </Box>
-      )}
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          mt: 1,
+        }}
+      >
+        {content}
+        {templates?.items && templates?.items.length > 0 && (
+          <Box sx={{ pt: 2 }}>
+            <ViewMoreLink to={catalogTemplatesLink} underline="always">
+              <Trans
+                message="templates.viewAll"
+                params={{ count: templates?.totalItems?.toString() || '' }}
+              />
+            </ViewMoreLink>
+          </Box>
+        )}
+      </Box>
     </Card>
   );
 };

@@ -27,7 +27,7 @@ import { collectionRouteRef, collectionsRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { useCollection } from '../hooks/useCollection';
 import { useTranslation } from '../hooks/useTranslation';
-import { getTranslatedText } from '../translations/utils';
+import { getTranslatedText } from '../alpha/translations/utils';
 import { ExtensionsCollectionGridLoader } from '../components/ExtensionsCollectionGrid';
 
 const CollectionHeader = () => {

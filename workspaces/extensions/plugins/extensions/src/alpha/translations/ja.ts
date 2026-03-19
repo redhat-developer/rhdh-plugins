@@ -19,7 +19,7 @@ import { extensionsTranslationRef } from './ref';
 
 /**
  * Japanese translation for plugin.extensions.
- * @public
+ * @alpha
  */
 const extensionsTranslationJa = createTranslationMessages({
   ref: extensionsTranslationRef,

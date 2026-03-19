@@ -18,7 +18,7 @@ import { useRouteRefParams } from '@backstage/core-plugin-api';
 import { useCollection } from '../hooks/useCollection';
 import { useCollectionPlugins } from '../hooks/useCollectionPlugins';
 import { useTranslation } from '../hooks/useTranslation';
-import { getTranslatedText } from '../translations/utils';
+import { getTranslatedText } from '../alpha/translations/utils';
 
 import { collectionRouteRef } from '../routes';
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';

@@ -15,7 +15,7 @@
  */
 import type { ReactNode } from 'react';
 
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, Fragment, useRef, useCallback } from 'react';
 
 import {
   CodeSnippet,
@@ -34,7 +34,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import CircularProgress from '@mui/material/CircularProgress';
 import CardContent from '@mui/material/CardContent';
 import { useTheme, styled } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 
 import EntityCard from './EntityCard';
 import { ViewMoreLink } from './ViewMoreLink';
@@ -46,6 +45,11 @@ import {
 } from '../../utils/utils';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Trans } from '../Trans';
+import { containerGridItemSx } from '../../utils/GridItem';
+import {
+  useContainerQuery,
+  type ContainerSize,
+} from '../../hooks/useContainerQuery';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -63,17 +67,30 @@ export const EntitySection = () => {
   const [isRemoveFirstCard, setIsRemoveFirstCard] = useState(false);
   const [showDiscoveryCard, setShowDiscoveryCard] = useState(true);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [isMediumBreakpoint, setIsMediumBreakpoint] = useState(false);
 
-  const isMd = useMediaQuery(theme.breakpoints.only('md'));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const containerSize = useContainerQuery(containerRef);
 
-  useEffect(() => {
-    if (isMd) {
-      setIsMediumBreakpoint(true);
-    } else {
-      setIsMediumBreakpoint(false);
-    }
-  }, [isMd]);
+  const entityCardCount =
+    containerSize === 'xs' || containerSize === 'sm' ? 2 : 4;
+
+  const illustrationWidthMap: Partial<Record<ContainerSize, number>> = {
+    md: 180,
+    lg: 220,
+    xl: 266,
+  };
+  const illustrationWidth = illustrationWidthMap[containerSize] ?? 266;
+
+  const visibleEntitiesCount = (() => {
+    const isWide =
+      containerSize === 'xl' ||
+      containerSize === 'lg' ||
+      containerSize === 'md';
+
+    if (!isWide) return entityCardCount;
+
+    return isRemoveFirstCard ? entityCardCount : entityCardCount - 2;
+  })();
 
   useEffect(() => {
     const isUserDismissedEntityIllustration =
@@ -81,13 +98,13 @@ export const EntitySection = () => {
     setIsRemoveFirstCard(isUserDismissedEntityIllustration);
   }, [displayName]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setShowDiscoveryCard(false);
     setTimeout(() => {
       addDismissedEntityIllustrationUsers(displayName);
       setIsRemoveFirstCard(true);
     }, 500);
-  };
+  }, [displayName]);
 
   const { data, error, isLoading } = useEntities({
     kind: ['Component', 'API', 'Resource', 'System'],
@@ -120,102 +137,121 @@ export const EntitySection = () => {
       </WarningPanel>
     );
   } else {
-    let entityCardCount = 2;
-    if (isMediumBreakpoint) entityCardCount = 3;
-
     content = (
       <Box sx={{ padding: '8px 8px 8px 0' }}>
         <Fragment>
           <Grid container spacing={1} alignItems="stretch">
-            {!isRemoveFirstCard && !profileLoading && (
-              <Grid item xs={12} md={6} lg={5} key="entities illustration">
-                <Card
-                  elevation={0}
-                  sx={{
-                    border: `1px solid ${theme.palette.grey[400]}`,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    position: 'relative',
-                    transition:
-                      'opacity 0.5s ease-out, transform 0.5s ease-in-out',
-                    opacity: showDiscoveryCard ? 1 : 0,
-                    transform: showDiscoveryCard
-                      ? 'translateX(0)'
-                      : 'translateX(-50px)',
-                  }}
-                >
-                  {!imgLoaded && (
-                    <Skeleton
-                      variant="rectangular"
-                      height={300}
-                      sx={{
-                        borderRadius: 3,
-                        width: 'clamp(140px, 14vw, 266px)',
-                      }}
-                    />
-                  )}
-                  <Box
-                    component="img"
-                    src={HomePageEntityIllustration}
-                    onLoad={() => setImgLoaded(true)}
-                    alt=""
-                    height={300}
+            {/* hiding discovery card on small containers */}
+            {!isRemoveFirstCard &&
+              !profileLoading &&
+              containerSize !== 'xs' &&
+              containerSize !== 'sm' && (
+                <Grid item sx={containerGridItemSx({ md: 4 })}>
+                  <Card
+                    elevation={0}
                     sx={{
-                      width: 'clamp(140px, 14vw, 266px)',
+                      height: '100%',
+                      border: `1px solid ${theme.palette.grey[400]}`,
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      position: 'relative',
+                      transition:
+                        'opacity 0.5s ease-out, transform 0.5s ease-in-out',
+                      opacity: showDiscoveryCard ? 1 : 0,
+                      transform: showDiscoveryCard
+                        ? 'translateX(0)'
+                        : 'translateX(-50px)',
                     }}
-                  />
-                  <Box sx={{ p: 2 }}>
-                    <Box>
-                      <Typography variant="body2" paragraph>
-                        {t('entities.description')}
-                      </Typography>
-                    </Box>
-                    {entities?.length > 0 && (
-                      <IconButton
-                        onClick={handleClose}
-                        aria-label={t('entities.close')}
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {!imgLoaded && (
+                        <Skeleton
+                          variant="rectangular"
+                          height={300}
+                          sx={{
+                            borderRadius: 3,
+                            width: illustrationWidth,
+                          }}
+                        />
+                      )}
+                      <Box
+                        component="img"
+                        src={HomePageEntityIllustration}
+                        onLoad={() => setImgLoaded(true)}
+                        alt=""
+                        height={300}
+                        sx={{
+                          width: illustrationWidth,
                         }}
-                      >
-                        <CloseIcon style={{ width: '16px', height: '16px' }} />
-                      </IconButton>
-                    )}
-                  </Box>
-                </Card>
-              </Grid>
-            )}
-            {entities
-              ?.slice(0, isRemoveFirstCard ? 4 : entityCardCount)
-              .map((item: any) => (
-                <Grid
-                  item
-                  xs={12}
-                  md={6}
-                  lg={isRemoveFirstCard ? 3 : 3.5}
-                  key={item.metadata.name}
-                >
-                  <EntityCard
-                    entity={item}
-                    title={item.metadata.title ?? item.metadata.name}
-                    version="latest"
-                    description={item.metadata.description ?? ''}
-                    tags={item.metadata?.tags ?? []}
-                    kind={item.kind}
-                  />
+                      />
+                      <Box sx={{ p: 2 }}>
+                        <Box sx={{ p: 2 }}>
+                          <Typography variant="body2" paragraph>
+                            {t('entities.description')}
+                          </Typography>
+                        </Box>
+                        {entities?.length > 0 && (
+                          <IconButton
+                            onClick={handleClose}
+                            aria-label={t('entities.close')}
+                            style={{
+                              position: 'absolute',
+                              top: '8px',
+                              right: '8px',
+                            }}
+                          >
+                            <CloseIcon
+                              style={{ width: '16px', height: '16px' }}
+                            />
+                          </IconButton>
+                        )}
+                      </Box>
+                    </Box>
+                  </Card>
                 </Grid>
-              ))}
+              )}
+            {entities?.slice(0, visibleEntitiesCount).map((item: any) => (
+              <Grid
+                item
+                sx={containerGridItemSx({
+                  xs: 12,
+                  sm: 6,
+                  md: isRemoveFirstCard ? 3 : 4,
+                })}
+                key={item.metadata.name}
+              >
+                <EntityCard
+                  entity={item}
+                  title={item.metadata.title ?? item.metadata.name}
+                  version="latest"
+                  description={item.metadata.description ?? ''}
+                  tags={item.metadata?.tags ?? []}
+                  kind={item.kind}
+                />
+              </Grid>
+            ))}
             {entities?.length === 0 && (
-              <Grid item md={isRemoveFirstCard ? 12 : 7}>
+              <Grid
+                item
+                sx={containerGridItemSx({
+                  sm: 12,
+                  md: isRemoveFirstCard ? 12 : 8,
+                })}
+              >
                 <Box
                   sx={{
+                    height: '100%',
+                    minHeight: 300,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    minHeight: 300,
                     border: muiTheme =>
                       `1px solid ${muiTheme.palette.grey[400]}`,
                     borderRadius: 3,
@@ -255,7 +291,9 @@ export const EntitySection = () => {
       sx={{
         padding: '24px',
         border: muitheme => `1px solid ${muitheme.palette.grey[300]}`,
-        overflow: 'auto',
+        containerType: 'inline-size',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Typography
@@ -265,21 +303,32 @@ export const EntitySection = () => {
           alignItems: 'center',
           fontWeight: '500',
           fontSize: '1.5rem',
+          flexShrink: 0,
         }}
       >
         {t('entities.title')}
       </Typography>
-      {content}
-      {entities?.length > 0 && (
-        <Box sx={{ pt: 2 }}>
-          <ViewMoreLink to="/catalog">
-            <Trans
-              message="entities.viewAll"
-              params={{ count: data?.totalItems?.toString() || '' }}
-            />
-          </ViewMoreLink>
-        </Box>
-      )}
+      <Box
+        ref={containerRef}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          mt: 1,
+        }}
+      >
+        {content}
+        {entities?.length > 0 && (
+          <Box sx={{ pt: 2 }}>
+            <ViewMoreLink to="/catalog">
+              <Trans
+                message="entities.viewAll"
+                params={{ count: data?.totalItems?.toString() || '' }}
+              />
+            </ViewMoreLink>
+          </Box>
+        )}
+      </Box>
     </Card>
   );
 };

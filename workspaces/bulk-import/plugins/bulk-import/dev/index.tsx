@@ -39,10 +39,7 @@ import {
   ApiBlueprint,
   createFrontendModule,
 } from '@backstage/frontend-plugin-api';
-import {
-  NavContentBlueprint,
-  ThemeBlueprint,
-} from '@backstage/plugin-app-react';
+import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { mockApis } from '@backstage/test-utils';
@@ -53,7 +50,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import AutoIcon from '@mui/icons-material/BrightnessAuto';
 
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import bulkImportPlugin, { bulkImportTranslationsModule } from '../src/alpha';
 import {
@@ -207,16 +204,9 @@ const devSidebarContent = NavContentBlueprint.make({
   },
 });
 
-const themeExtensions = getAllThemes().map(theme =>
-  ThemeBlueprint.make({
-    name: theme.id,
-    params: { theme },
-  }),
-);
-
 const devNavModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [devSidebarContent, ...themeExtensions],
+  extensions: [devSidebarContent],
 });
 
 const defaultPage = '/bulk-import';
@@ -226,6 +216,7 @@ const app = createApp({
     bulkImportPlugin,
     bulkImportTranslationsModule,
     bulkImportDevModule,
+    rhdhThemeModule,
     devNavModule,
   ],
 });

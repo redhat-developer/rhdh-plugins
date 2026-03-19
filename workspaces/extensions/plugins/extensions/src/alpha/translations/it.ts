@@ -17,6 +17,10 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { extensionsTranslationRef } from './ref';
 
+/**
+ * it translation for plugin.extensions.
+ * @alpha
+ */
 const extensionsTranslationIt = createTranslationMessages({
   ref: extensionsTranslationRef,
   full: true,

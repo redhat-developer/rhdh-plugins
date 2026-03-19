@@ -55,6 +55,7 @@ import {
 import { getErrorObject } from '../../utils/ErrorUtils';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import MissingSchemaNotice from './MissingSchemaNotice';
+import { mergeQueryParamsIntoFormData } from './queryParamsToFormData';
 import { getSchemaUpdater } from './schemaUpdater';
 
 export const ExecuteWorkflowPage = () => {
@@ -67,6 +68,7 @@ export const ExecuteWorkflowPage = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [updateError, setUpdateError] = useState<Error>();
   const [instanceId] = useQueryParamState<string>(QUERY_PARAM_INSTANCE_ID);
+
   const navigate = useNavigate();
   const instanceLink = useRouteRef(workflowInstanceRouteRef);
   const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
@@ -96,7 +98,13 @@ export const ExecuteWorkflowPage = () => {
     [schema],
   );
 
-  const initialFormData = value?.data ?? {};
+  const initialFormData = useMemo(() => {
+    const baseData = value?.data ?? {};
+    if (!schema) {
+      return baseData;
+    }
+    return mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+  }, [schema, value?.data, searchParams]);
   const {
     value: workflowName,
     loading: workflowNameLoading,

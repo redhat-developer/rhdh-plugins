@@ -37,7 +37,7 @@ import { getActiveStepKey } from '../utils/getSortedStepEntries';
 import { useStepperContext } from '../utils/StepperContext';
 import useValidator from '../utils/useValidator';
 import { AuthRequester } from './AuthRequester';
-import { createHiddenFieldTemplate } from './HiddenFieldTemplate';
+import HiddenObjectFieldTemplate from './HiddenObjectFieldTemplate';
 import StepperObjectField from './StepperObjectField';
 
 const MuiForm = withTheme<
@@ -45,12 +45,6 @@ const MuiForm = withTheme<
   JSONSchema7,
   OrchestratorFormContextProps
 >(MuiTheme);
-
-// Get the default FieldTemplate from Material-UI theme and wrap it with hidden field support
-const DefaultFieldTemplate = MuiTheme.templates?.FieldTemplate;
-const HiddenFieldTemplate = DefaultFieldTemplate
-  ? createHiddenFieldTemplate(DefaultFieldTemplate as any)
-  : undefined;
 
 const FormComponent = (decoratorProps: FormDecoratorProps) => {
   const formContext = decoratorProps.formContext;
@@ -151,9 +145,9 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           {...omit(decoratorProps, 'getExtraErrors')}
           widgets={{ AuthRequester, ...decoratorProps.widgets }}
           fields={isMultiStep ? { ObjectField: StepperObjectField } : {}}
-          templates={
-            HiddenFieldTemplate ? { FieldTemplate: HiddenFieldTemplate } : {}
-          }
+          templates={{
+            ObjectFieldTemplate: HiddenObjectFieldTemplate,
+          }}
           uiSchema={uiSchema}
           validator={validator}
           schema={schema}

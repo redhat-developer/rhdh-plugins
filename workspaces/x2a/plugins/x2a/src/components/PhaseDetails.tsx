@@ -171,12 +171,10 @@ export const PhaseDetails = (
   const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
-  const duration = phase?.startedAt
-    ? formatDuration(
-        t,
-        secondsBetween(phase.startedAt, phase.finishedAt ?? new Date()),
-      )
-    : empty;
+  const duration =
+    phase?.startedAt && phase?.finishedAt
+      ? formatDuration(t, secondsBetween(phase.startedAt, phase.finishedAt))
+      : empty;
 
   const canRunPhase = phase?.status !== 'running';
 

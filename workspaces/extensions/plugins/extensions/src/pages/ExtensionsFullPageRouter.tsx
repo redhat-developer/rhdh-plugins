@@ -16,8 +16,6 @@
 
 import { Route, Routes } from 'react-router-dom';
 
-import { useApp } from '@backstage/core-plugin-api';
-
 import { ExtensionsHomePage } from './ExtensionsHomePage';
 
 import { ExtensionsPluginsPage } from './ExtensionsPluginsPage';
@@ -31,10 +29,11 @@ import { ExtensionsPackageInstallPage } from './ExtensionsPackageInstallPage';
 import { ExtensionsCollectionsPage } from './ExtensionsCollectionsPage';
 import { ExtensionsCollectionPage } from './ExtensionsCollectionPage';
 import { InstallationContextProvider } from '../components/InstallationContext';
+import { ErrorPage } from '@backstage/core-components';
 
 const NotFound = () => {
-  const NotFoundErrorPage = useApp().getComponents().NotFoundErrorPage;
-  return <NotFoundErrorPage />;
+  // const NotFoundErrorPage = useApp().getComponents().NotFoundErrorPage;
+  return <ErrorPage status="404" statusMessage="Page not found" />;
 };
 
 export const ExtensionsFullPageRouter = () => {

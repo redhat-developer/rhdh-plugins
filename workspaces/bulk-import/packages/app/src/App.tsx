@@ -17,13 +17,12 @@
 import { createApp } from '@backstage/frontend-defaults';
 import {
   SignInPageBlueprint,
-  ThemeBlueprint,
   createFrontendModule,
   githubAuthApiRef,
   gitlabAuthApiRef,
 } from '@backstage/frontend-plugin-api';
 import { SignInPage } from '@backstage/core-components';
-import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import { navModule } from './modules/nav';
 
@@ -70,23 +69,6 @@ const signInModule = createFrontendModule({
   extensions: [signInPageExtension],
 });
 
-// Create theme extensions from RHDH themes
-const rhdhThemes = getThemes();
-const themeExtensions = rhdhThemes.map(theme =>
-  ThemeBlueprint.make({
-    name: theme.id,
-    params: {
-      theme: theme,
-    },
-  }),
-);
-
-// Wrap themes in a module
-const themesModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: themeExtensions,
-});
-
 /**
  * NFS app: A Backstage app using the New Frontend System (NFS)
  *
@@ -108,8 +90,8 @@ const app = createApp({
     userSettingsPlugin,
     // Sign-in module with GitHub and GitLab providers
     signInModule,
-    // RHDH themes (light/dark modes)
-    themesModule,
+    // RHDH themes
+    rhdhThemeModule,
     // Translations module (language selector configured via app-config.yaml)
     bulkImportTranslationsModule,
     // Custom sidebar with logo

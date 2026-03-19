@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useState } from 'react';
-import useAsync from 'react-use/lib/useAsync';
+import { useState } from 'react';
 
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 
@@ -24,6 +23,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { EmptyProjectList } from './EmptyProjectList';
+import { usePolledFetch } from '../../hooks/usePolledFetch';
 
 import { mapOrderByToSort, ProjectTable } from './ProjectTable';
 import { OrderDirection } from './types';
@@ -35,29 +35,27 @@ import { OrderDirection } from './types';
 export const ProjectList = () => {
   const clientService = useClientService();
 
-  const [refresh, setRefresh] = useState(0);
-
   const [orderBy, setOrderBy] = useState<number>(1);
   const [orderDirection, setOrderDirection] = useState<OrderDirection>('asc');
   const [page, setPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
 
-  const forceRefresh = useCallback(() => {
-    setRefresh(refresh + 1);
-  }, [refresh]);
-
-  const { value, loading, error } =
-    useAsync(async (): Promise<ProjectsGet200Response> => {
-      const response = await clientService.projectsGet({
-        query: {
-          order: orderDirection || 'asc',
-          sort: mapOrderByToSort(orderBy),
-          page,
-          pageSize,
-        },
-      });
-      return await response.json();
-    }, [refresh, clientService, orderBy, orderDirection, page, pageSize]);
+  const {
+    data: value,
+    loading,
+    error,
+    refetch: forceRefresh,
+  } = usePolledFetch(async (): Promise<ProjectsGet200Response> => {
+    const response = await clientService.projectsGet({
+      query: {
+        order: orderDirection || 'asc',
+        sort: mapOrderByToSort(orderBy),
+        page,
+        pageSize,
+      },
+    });
+    return await response.json();
+  }, [clientService, orderBy, orderDirection, page, pageSize]);
 
   if (loading) {
     return <Progress />;

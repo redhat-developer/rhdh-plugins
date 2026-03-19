@@ -4,58 +4,192 @@
 
 ```ts
 
-import { TranslationRef } from '@backstage/core-plugin-api/alpha';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
+/// <reference types="react" />
+
+import { AnyApiFactory } from '@backstage/frontend-plugin-api';
+import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
+import { ApiFactory } from '@backstage/frontend-plugin-api';
+import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
+import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
+import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
+import { ExtensionInput } from '@backstage/frontend-plugin-api';
+import { FrontendModule } from '@backstage/frontend-plugin-api';
+import { IconComponent } from '@backstage/frontend-plugin-api';
+import { IconElement } from '@backstage/frontend-plugin-api';
+import { JSX as JSX_2 } from 'react';
+import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
+import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
+import { PathParams } from '@backstage/core-plugin-api';
+import { RouteRef } from '@backstage/frontend-plugin-api';
+import { RouteRef as RouteRef_2 } from '@backstage/core-plugin-api';
+import { SubRouteRef } from '@backstage/core-plugin-api';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
+
+// @public (undocumented)
+const _default: OverridableFrontendPlugin<    {
+rootRouteRef: RouteRef_2<undefined>;
+pluginsRouteRef: SubRouteRef<undefined>;
+pluginRouteRef: SubRouteRef<PathParams<"/plugins/:namespace/:name">>;
+pluginInstallRouteRef: SubRouteRef<PathParams<"/plugins/:namespace/:name/install">>;
+packagesRouteRef: SubRouteRef<undefined>;
+packageRouteRef: SubRouteRef<PathParams<"/packages/:namespace/:name">>;
+packageInstallRouteRef: SubRouteRef<PathParams<"/packages/:namespace/:name/install">>;
+collectionsRouteRef: SubRouteRef<undefined>;
+collectionRouteRef: SubRouteRef<PathParams<"/collections/:namespace/:name">>;
+catalogTabRouteRef: SubRouteRef<undefined>;
+installedTabRouteRef: SubRouteRef<undefined>;
+}, {}, {
+"api:extensions/dynamic-plugins-info": OverridableExtensionDefinition<    {
+kind: "api";
+name: "dynamic-plugins-info";
+config: {};
+configInput: {};
+output: ExtensionDataRef<AnyApiFactory, "core.api.factory", {}>;
+inputs: {};
+params: <TApi, TImpl extends TApi, TDeps extends {
+[x: string]: unknown;
+}>(params: ApiFactory<TApi, TImpl, TDeps>) => ExtensionBlueprintParams<AnyApiFactory>;
+}>;
+"api:extensions/extensions": OverridableExtensionDefinition<    {
+kind: "api";
+name: "extensions";
+config: {};
+configInput: {};
+output: ExtensionDataRef<AnyApiFactory, "core.api.factory", {}>;
+inputs: {};
+params: <TApi, TImpl extends TApi, TDeps extends {
+[x: string]: unknown;
+}>(params: ApiFactory<TApi, TImpl, TDeps>) => ExtensionBlueprintParams<AnyApiFactory>;
+}>;
+"nav-item:extensions": OverridableExtensionDefinition<    {
+kind: "nav-item";
+name: undefined;
+config: {};
+configInput: {};
+output: ExtensionDataRef<    {
+title: string;
+icon: IconComponent;
+routeRef: RouteRef<undefined>;
+}, "core.nav-item.target", {}>;
+inputs: {};
+params: {
+title: string;
+icon: IconComponent;
+routeRef: RouteRef<undefined>;
+};
+}>;
+"page:extensions": OverridableExtensionDefinition<    {
+kind: "page";
+name: undefined;
+config: {
+path: string | undefined;
+title: string | undefined;
+};
+configInput: {
+title?: string | undefined;
+path?: string | undefined;
+};
+output: ExtensionDataRef<string, "core.routing.path", {}> | ExtensionDataRef<RouteRef<AnyRouteRefParams>, "core.routing.ref", {
+optional: true;
+}> | ExtensionDataRef<JSX_2.Element, "core.reactElement", {}> | ExtensionDataRef<string, "core.title", {
+optional: true;
+}> | ExtensionDataRef<IconElement, "core.icon", {
+optional: true;
+}>;
+inputs: {
+pages: ExtensionInput<ConfigurableExtensionDataRef<JSX_2.Element, "core.reactElement", {}> | ConfigurableExtensionDataRef<string, "core.routing.path", {}> | ConfigurableExtensionDataRef<RouteRef<AnyRouteRefParams>, "core.routing.ref", {
+optional: true;
+}> | ConfigurableExtensionDataRef<string, "core.title", {
+optional: true;
+}> | ConfigurableExtensionDataRef<IconElement, "core.icon", {
+optional: true;
+}>, {
+singleton: false;
+optional: false;
+internal: false;
+}>;
+};
+params: {
+defaultPath?: [Error: "Use the 'path' param instead"] | undefined;
+path: string;
+title?: string | undefined;
+icon?: IconElement | undefined;
+loader?: (() => Promise<JSX_2.Element>) | undefined;
+routeRef?: RouteRef<AnyRouteRefParams> | undefined;
+noHeader?: boolean | undefined;
+};
+}>;
+}>;
+export default _default;
+
+// @alpha (undocumented)
+export const extensionsNavItem: OverridableExtensionDefinition<    {
+kind: "nav-item";
+name: undefined;
+config: {};
+configInput: {};
+output: ExtensionDataRef<    {
+title: string;
+icon: IconComponent;
+routeRef: RouteRef<undefined>;
+}, "core.nav-item.target", {}>;
+inputs: {};
+params: {
+title: string;
+icon: IconComponent;
+routeRef: RouteRef<undefined>;
+};
+}>;
+
+// @alpha (undocumented)
+export const extensionsPage: OverridableExtensionDefinition<    {
+kind: "page";
+name: undefined;
+config: {
+path: string | undefined;
+title: string | undefined;
+};
+configInput: {
+title?: string | undefined;
+path?: string | undefined;
+};
+output: ExtensionDataRef<string, "core.routing.path", {}> | ExtensionDataRef<RouteRef<AnyRouteRefParams>, "core.routing.ref", {
+optional: true;
+}> | ExtensionDataRef<JSX_2.Element, "core.reactElement", {}> | ExtensionDataRef<string, "core.title", {
+optional: true;
+}> | ExtensionDataRef<IconElement, "core.icon", {
+optional: true;
+}>;
+inputs: {
+pages: ExtensionInput<ConfigurableExtensionDataRef<JSX_2.Element, "core.reactElement", {}> | ConfigurableExtensionDataRef<string, "core.routing.path", {}> | ConfigurableExtensionDataRef<RouteRef<AnyRouteRefParams>, "core.routing.ref", {
+optional: true;
+}> | ConfigurableExtensionDataRef<string, "core.title", {
+optional: true;
+}> | ConfigurableExtensionDataRef<IconElement, "core.icon", {
+optional: true;
+}>, {
+singleton: false;
+optional: false;
+internal: false;
+}>;
+};
+params: {
+defaultPath?: [Error: "Use the 'path' param instead"] | undefined;
+path: string;
+title?: string | undefined;
+icon?: IconElement | undefined;
+loader?: (() => Promise<JSX_2.Element>) | undefined;
+routeRef?: RouteRef<AnyRouteRefParams> | undefined;
+noHeader?: boolean | undefined;
+};
+}>;
 
 // @alpha
 export const extensionsTranslationRef: TranslationRef<"plugin.extensions", {
-readonly "button.update": string;
-readonly "button.install": string;
-readonly "button.uninstall": string;
-readonly "button.enable": string;
-readonly "button.disable": string;
-readonly "button.save": string;
-readonly "button.close": string;
-readonly "button.viewAll": string;
-readonly "button.viewDocumentation": string;
-readonly "button.viewInstalledPlugins": string;
-readonly "button.restart": string;
-readonly "dialog.backendRestartRequired": string;
-readonly "dialog.packageRestartMessage": string;
-readonly "dialog.pluginRestartMessage": string;
-readonly "header.title": string;
-readonly "header.extensions": string;
-readonly "header.catalog": string;
-readonly "header.installedPackages": string;
-readonly "header.installedPackagesWithCount": string;
-readonly "header.pluginsPage": string;
-readonly "header.packagesPage": string;
-readonly "header.collectionsPage": string;
-readonly "search.filter": string;
-readonly "search.author": string;
-readonly "search.placeholder": string;
-readonly "search.clear": string;
-readonly "search.clearFilter": string;
-readonly "search.category": string;
-readonly "search.supportType": string;
-readonly "search.noResults": string;
-readonly "search.filterBy": string;
-readonly "search.clearFilters": string;
-readonly "search.noResultsFound": string;
-readonly "table.plugins": string;
-readonly "table.packageName": string;
-readonly "table.version": string;
-readonly "table.role": string;
-readonly "table.name": string;
-readonly "table.packages": string;
-readonly "table.description": string;
-readonly "table.status": string;
-readonly "table.supportedVersion": string;
-readonly "table.action": string;
-readonly "table.versions": string;
-readonly "table.pluginsCount": string;
-readonly "table.packagesCount": string;
-readonly "table.pluginsTable": string;
+readonly "role.backend": string;
+readonly "role.backendModule": string;
+readonly "role.frontend": string;
 readonly "metadata.about": string;
 readonly "metadata.highlights": string;
 readonly "metadata.category": string;
@@ -70,9 +204,6 @@ readonly "metadata.supportProvider": string;
 readonly "metadata.entryName": string;
 readonly "metadata.bySomeone": string;
 readonly "metadata.backstageCompatibility": string;
-readonly "role.backend": string;
-readonly "role.backendModule": string;
-readonly "role.frontend": string;
 readonly "install.title": string;
 readonly "install.configurationRequired": string;
 readonly "install.optional": string;
@@ -108,6 +239,14 @@ readonly "install.errors.missingPluginsList": string;
 readonly "install.errors.missingPackageItem": string;
 readonly "install.errors.missingPackageField": string;
 readonly "install.errors.failedToSave": string;
+readonly "header.title": string;
+readonly "header.extensions": string;
+readonly "header.catalog": string;
+readonly "header.installedPackages": string;
+readonly "header.installedPackagesWithCount": string;
+readonly "header.pluginsPage": string;
+readonly "header.packagesPage": string;
+readonly "header.collectionsPage": string;
 readonly "installedPackages.table.title": string;
 readonly "installedPackages.table.searchPlaceholder": string;
 readonly "installedPackages.table.columns.packageName": string;
@@ -127,6 +266,17 @@ readonly "installedPackages.table.tooltips.enablePackage": string;
 readonly "installedPackages.table.tooltips.disablePackage": string;
 readonly "installedPackages.table.emptyMessages.noResults": string;
 readonly "installedPackages.table.emptyMessages.noRecords": string;
+readonly "button.update": string;
+readonly "button.install": string;
+readonly "button.uninstall": string;
+readonly "button.enable": string;
+readonly "button.disable": string;
+readonly "button.save": string;
+readonly "button.close": string;
+readonly "button.viewAll": string;
+readonly "button.viewDocumentation": string;
+readonly "button.viewInstalledPlugins": string;
+readonly "button.restart": string;
 readonly "status.notInstalled": string;
 readonly "status.installed": string;
 readonly "status.disabled": string;
@@ -151,6 +301,17 @@ readonly "alert.restartRequired": string;
 readonly "alert.backendRestartRequired": string;
 readonly "alert.viewPlugins": string;
 readonly "alert.viewPackages": string;
+readonly "search.author": string;
+readonly "search.filter": string;
+readonly "search.placeholder": string;
+readonly "search.clear": string;
+readonly "search.clearFilter": string;
+readonly "search.category": string;
+readonly "search.supportType": string;
+readonly "search.noResults": string;
+readonly "search.filterBy": string;
+readonly "search.clearFilters": string;
+readonly "search.noResultsFound": string;
 readonly "common.close": string;
 readonly "common.links": string;
 readonly "common.by": string;
@@ -159,6 +320,9 @@ readonly "common.noDescriptionAvailable": string;
 readonly "common.readMore": string;
 readonly "common.apply": string;
 readonly "common.couldNotApplyYaml": string;
+readonly "dialog.backendRestartRequired": string;
+readonly "dialog.packageRestartMessage": string;
+readonly "dialog.pluginRestartMessage": string;
 readonly "plugin.version": string;
 readonly "plugin.author": string;
 readonly "plugin.installation": string;
@@ -183,11 +347,25 @@ readonly "package.backstageRole": string;
 readonly "package.notFound": string;
 readonly "package.notAvailable": string;
 readonly "package.ensureCatalogEntity": string;
-readonly "actions.view": string;
+readonly "table.plugins": string;
+readonly "table.packageName": string;
+readonly "table.version": string;
+readonly "table.role": string;
+readonly "table.name": string;
+readonly "table.packages": string;
+readonly "table.description": string;
+readonly "table.status": string;
+readonly "table.supportedVersion": string;
+readonly "table.action": string;
+readonly "table.versions": string;
+readonly "table.pluginsCount": string;
+readonly "table.packagesCount": string;
+readonly "table.pluginsTable": string;
 readonly "actions.install": string;
 readonly "actions.enable": string;
 readonly "actions.disable": string;
 readonly "actions.actions": string;
+readonly "actions.view": string;
 readonly "actions.edit": string;
 readonly "actions.editConfiguration": string;
 readonly "actions.pluginConfigurations": string;
@@ -250,6 +428,9 @@ readonly "badges.addedByAdmin": string;
 
 // @alpha
 export const extensionsTranslations: TranslationResource<"plugin.extensions">;
+
+// @alpha
+export const extensionsTranslationsModule: FrontendModule;
 
 // (No @packageDocumentation comment for this package)
 
