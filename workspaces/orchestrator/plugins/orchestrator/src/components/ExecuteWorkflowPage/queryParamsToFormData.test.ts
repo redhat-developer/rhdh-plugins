@@ -564,6 +564,74 @@ describe('mergeQueryParamsIntoFormData', () => {
     expect(result).toEqual({ name: 'charlie' });
   });
 
+  it('coerces array type from comma-separated query param', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('tags=foo,bar,baz');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ tags: ['foo', 'bar', 'baz'] });
+  });
+
+  it('coerces array type with single value', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('tags=only-one');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ tags: ['only-one'] });
+  });
+
+  it('prepopulates oneOf branch field (mode.alphaValue)', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        mode: {
+          oneOf: [
+            {
+              type: 'object',
+              properties: {
+                alphaValue: { type: 'string' },
+              },
+              required: ['alphaValue'],
+            },
+            {
+              type: 'object',
+              properties: {
+                betaValue: { type: 'string' },
+              },
+              required: ['betaValue'],
+            },
+          ],
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('mode.alphaValue=test');
+    const baseData = {};
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ mode: { alphaValue: 'test' } });
+  });
+
   it('does not mutate base data', () => {
     const schema = {
       type: 'object',
