@@ -23,9 +23,10 @@ import type {
 import { Config } from '@backstage/config';
 
 import express, { Router } from 'express';
-import fetch from 'node-fetch';
 
 import { lightspeedNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
+
+import { Readable } from 'stream';
 
 import { DEFAULT_LIGHTSPEED_SERVICE_PORT, upload } from '../constant';
 import { userPermissionAuthorization } from '../permission';
@@ -38,7 +39,7 @@ import {
   createSessionListResponse,
   createSessionResponse,
 } from './types/notebooksResponses';
-import { handleError } from './utils';
+import { handleError, sendValidationError } from './utils';
 
 export interface NotebooksRouterOptions {
   logger: LoggerService;
@@ -80,14 +81,6 @@ export async function createNotebooksRouter(
 
   const authorizer = userPermissionAuthorization(permissions);
 
-  const checkPermission = async (req: any): Promise<void> => {
-    const credentials = await httpAuth.credentials(req);
-    await authorizer.authorizeUser(
-      lightspeedNotebooksUsePermission,
-      credentials,
-    );
-  };
-
   const getUserId = async (req: any): Promise<string> => {
     // const credentials = await httpAuth.credentials(req);
     // const user = await userInfo.getUserInfo(credentials);
@@ -95,17 +88,50 @@ export async function createNotebooksRouter(
     return 'user:default/guest';
   };
 
+  const requireNotebooksPermission = async (
+    req: any,
+    res: any,
+    next: any,
+  ): Promise<void> => {
+    try {
+      const credentials = await httpAuth.credentials(req);
+      await authorizer.authorizeUser(
+        lightspeedNotebooksUsePermission,
+        credentials,
+      );
+      next();
+    } catch (error) {
+      handleError(logger, res, error, 'Permission denied');
+    }
+  };
+
+  const requireSessionOwnership = () => {
+    return async (req: any, res: any, next: any) => {
+      try {
+        const { sessionId } = req.params;
+        const userId = await getUserId(req);
+        await sessionService.readSession(sessionId, userId);
+        next();
+      } catch (error) {
+        handleError(
+          logger,
+          res,
+          error,
+          'Session ownership verification failed',
+        );
+      }
+    };
+  };
+
   const withAuth = (
     handler: (req: any, res: any, userId: string) => Promise<void>,
-    errorContext: string,
   ) => {
-    return async (req: any, res: any) => {
+    return async (req: any, res: any, next: any) => {
       try {
-        await checkPermission(req);
         const userId = await getUserId(req);
         await handler(req, res, userId);
       } catch (error) {
-        handleError(logger, res, error, errorContext);
+        next(error);
       }
     };
   };
@@ -169,13 +195,16 @@ export async function createNotebooksRouter(
     res.json({ status: 'ok' });
   });
 
+  // Apply permission check to all routes after health
+  notebooksRouter.use('/v1', requireNotebooksPermission);
+
   notebooksRouter.post(
     '/v1/sessions',
     withAuth(async (req, res, userId) => {
       const { name, description, metadata } = req.body;
 
       if (!name) {
-        res.status(400).json({ status: 'error', error: 'name is required' });
+        sendValidationError(res, 'name is required');
         return;
       }
 
@@ -187,15 +216,15 @@ export async function createNotebooksRouter(
       );
 
       res.json(createSessionResponse(session, 'Session created successfully'));
-    }, 'Error creating session'),
+    }),
   );
 
   notebooksRouter.get(
     '/v1/sessions',
-    withAuth(async (req, res, userId) => {
+    withAuth(async (_req, res, userId) => {
       const sessions = await sessionService.listSessions(userId);
       res.json(createSessionListResponse(sessions));
-    }, 'Error listing sessions'),
+    }),
   );
 
   notebooksRouter.put(
@@ -213,7 +242,7 @@ export async function createNotebooksRouter(
       );
 
       res.json(createSessionResponse(session, 'Session updated successfully'));
-    }, 'Error updating session'),
+    }),
   );
 
   notebooksRouter.delete(
@@ -225,16 +254,15 @@ export async function createNotebooksRouter(
       await sessionService.deleteSession(sessionId, userId);
 
       res.json(createSessionResponse(session, 'Session deleted successfully'));
-    }, 'Error deleting session'),
+    }),
   );
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents',
+    requireSessionOwnership(),
     withAuth(async (req, res, userId) => {
       const sessionId = req.params.sessionId as string;
       const fileType = req.query.fileType as string | undefined;
-
-      await sessionService.readSession(sessionId, userId);
 
       const documents = await documentService.listDocuments(
         sessionId,
@@ -243,7 +271,7 @@ export async function createNotebooksRouter(
       );
 
       res.json(createDocumentListResponse(sessionId, documents));
-    }, 'Error listing documents'),
+    }),
   );
 
   notebooksRouter.put(
@@ -254,15 +282,15 @@ export async function createNotebooksRouter(
       const { fileType, title } = req.body;
 
       if (!title) {
-        res.status(400).json({ status: 'error', error: 'title is required' });
+        sendValidationError(res, 'title is required');
         return;
       }
 
       if (!fileType || !isValidFileType(fileType)) {
-        res.status(400).json({
-          status: 'error',
-          error: `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log, url`,
-        });
+        sendValidationError(
+          res,
+          `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log, url`,
+        );
         return;
       }
 
@@ -289,46 +317,42 @@ export async function createNotebooksRouter(
         session_id: sessionId,
         message: 'Document upload started',
       });
-    }, 'Error upserting document'),
+    }),
   );
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents/:documentId/status',
-    withAuth(async (req, res, userId) => {
+    requireSessionOwnership(),
+    withAuth(async (req, res, _userId) => {
       const { sessionId, documentId } = req.params;
-      const fileId = req.query.file_id as string;
 
-      if (!fileId) {
-        res.status(400).json({
-          status: 'error',
-          error: 'file_id query parameter is required',
-        });
+      if (!documentId) {
+        sendValidationError(res, 'document_id query parameter is required');
         return;
       }
 
-      // Verify session ownership
-      await sessionService.readSession(sessionId, userId);
-
       // Get file status directly from Llama Stack
-      const fileStatus = await documentService.getFileStatus(sessionId, fileId);
+      const fileStatus = await documentService.getFileStatus(
+        sessionId,
+        documentId,
+      );
 
       res.json({
         status: fileStatus.status,
-        file_id: fileId,
         document_id: documentId,
         session_id: sessionId,
         ...(fileStatus.error ? { error: fileStatus.error } : {}),
       });
-    }, 'Error getting document status'),
+    }),
   );
 
   notebooksRouter.delete(
     '/v1/sessions/:sessionId/documents/:documentId',
-    withAuth(async (req, res, userId) => {
+    requireSessionOwnership(),
+    withAuth(async (req, res, _userId) => {
       const sessionId = req.params.sessionId as string;
       const documentId = req.params.documentId as string;
 
-      await sessionService.readSession(sessionId, userId);
       await documentService.deleteDocument(sessionId, documentId);
 
       res.json(
@@ -338,7 +362,7 @@ export async function createNotebooksRouter(
           'Document deleted successfully',
         ),
       );
-    }, 'Error deleting document'),
+    }),
   );
 
   notebooksRouter.post(
@@ -348,7 +372,7 @@ export async function createNotebooksRouter(
       const { query } = req.body;
 
       if (!query) {
-        res.status(400).json({ status: 'error', error: 'query is required' });
+        sendValidationError(res, 'query is required');
         return;
       }
 
@@ -394,18 +418,26 @@ export async function createNotebooksRouter(
         return;
       }
 
-      if (!existingConversationId) {
-        const captureTransform = createConversationIdCaptureTransform(
-          session,
-          sessionId,
-          userId,
-        );
-        fetchResponse.body?.pipe(captureTransform).pipe(res);
-      } else {
-        fetchResponse.body?.pipe(res);
+      if (fetchResponse.body) {
+        const body = Readable.fromWeb(fetchResponse.body as any);
+        if (!existingConversationId) {
+          const captureTransform = createConversationIdCaptureTransform(
+            session,
+            sessionId,
+            userId,
+          );
+          body.pipe(captureTransform).pipe(res);
+        } else {
+          body.pipe(res);
+        }
       }
-    }, 'Error querying session'),
+    }),
   );
+
+  // Global error handler
+  notebooksRouter.use((err: Error, req: any, res: any, _next: any) => {
+    handleError(logger, res, err, req.path);
+  });
 
   // Wrap the notebooks router with the /ai-notebooks prefix
   const router = Router();

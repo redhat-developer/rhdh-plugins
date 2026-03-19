@@ -118,6 +118,86 @@ export class DocumentService {
   }
 
   /**
+   * Find a file by document_id in vector store
+   */
+  private async findFileByDocumentId(
+    sessionId: string,
+    documentId: string,
+  ): Promise<any | null> {
+    const filesResponse = await this.client.vectorStores.files.list(sessionId);
+    return (
+      filesResponse.data.find(f => f.attributes?.document_id === documentId) ||
+      null
+    );
+  }
+
+  /**
+   * Delete a file from both vector store and Files API
+   */
+  private async deleteFileCompletely(
+    sessionId: string,
+    fileId: string,
+  ): Promise<void> {
+    await this.client.vectorStores.files.delete(sessionId, fileId);
+    try {
+      await this.client.files.delete(fileId);
+    } catch (error) {
+      throw new Error(`Failed to delete file ${fileId}: ${error}`);
+    }
+  }
+
+  /**
+   * Update session metadata document IDs
+   */
+  private async updateSessionDocumentIds(
+    sessionId: string,
+    documentId: string,
+    operation: 'add' | 'replace' | 'remove',
+    oldDocumentId?: string,
+  ): Promise<void> {
+    const session = await this.retrieveSessionMetadata(sessionId);
+    if (!session) {
+      return;
+    }
+
+    // For remove operation, only proceed if document_ids exists
+    if (operation === 'remove' && !session.metadata?.document_ids) {
+      return;
+    }
+
+    const documentIds = session.metadata?.document_ids || [];
+
+    if (
+      operation === 'replace' &&
+      oldDocumentId &&
+      oldDocumentId !== documentId
+    ) {
+      const index = documentIds.indexOf(oldDocumentId);
+      if (index !== -1) {
+        documentIds[index] = documentId;
+      }
+    } else if (operation === 'add' && !documentIds.includes(documentId)) {
+      documentIds.push(documentId);
+    } else if (operation === 'remove') {
+      const filteredIds = documentIds.filter(id => id !== documentId);
+      session.metadata = {
+        ...session.metadata,
+        document_ids: filteredIds,
+      };
+      session.updated_at = new Date().toISOString();
+      await this.storeSessionMetadata(session);
+      return;
+    }
+
+    session.metadata = {
+      ...session.metadata,
+      document_ids: documentIds,
+    };
+    session.updated_at = new Date().toISOString();
+    await this.storeSessionMetadata(session);
+  }
+
+  /**
    * Wait for file processing to complete
    */
   private async waitForFileProcessing(
@@ -176,10 +256,10 @@ export class DocumentService {
   ): Promise<UpsertResult> {
     const documentId = sanitizeTitle(title);
 
-    // List files once
-    const filesResponse = await this.client.vectorStores.files.list(sessionId);
-    const existingFile = filesResponse.data.find(
-      f => f.attributes?.document_id === (currentDocumentId || documentId),
+    // Find existing file by document_id
+    const existingFile = await this.findFileByDocumentId(
+      sessionId,
+      currentDocumentId || documentId,
     );
 
     let replaced = false;
@@ -205,13 +285,12 @@ export class DocumentService {
 
       // Check for title conflicts when renaming
       if (currentDocumentId && documentId !== currentDocumentId) {
-        const conflictingFile = filesResponse.data.find(
-          f =>
-            f.attributes?.document_id === documentId &&
-            f.id !== existingFile.id,
+        const conflictingFile = await this.findFileByDocumentId(
+          sessionId,
+          documentId,
         );
 
-        if (conflictingFile) {
+        if (conflictingFile && conflictingFile.id !== existingFile.id) {
           throw new ConflictError(
             `A document with the title "${title}" already exists in this session`,
           );
@@ -219,14 +298,7 @@ export class DocumentService {
       }
 
       // Delete old file
-      await this.client.vectorStores.files.delete(sessionId, existingFile.id);
-      try {
-        await this.client.files.delete(existingFile.id);
-      } catch (error) {
-        throw new Error(
-          `Failed to delete old file ${existingFile.id}: ${error}`,
-        );
-      }
+      await this.deleteFileCompletely(sessionId, existingFile.id);
 
       replaced = true;
       this.logger.info(`Updating document: "${oldDocumentId}" -> "${title}"`);
@@ -263,7 +335,7 @@ export class DocumentService {
       },
     );
 
-    // Start background process - Don't await!
+    // Start background process
     this.updateSessionMetadataWhenComplete(
       sessionId,
       file.id,
@@ -301,26 +373,13 @@ export class DocumentService {
       await this.waitForFileProcessing(sessionId, fileId);
 
       // Update session metadata after processing completes
-      const session = await this.retrieveSessionMetadata(sessionId);
-      if (session) {
-        const documentIds = session.metadata?.document_ids || [];
-
-        if (replaced && oldDocumentId && oldDocumentId !== documentId) {
-          const index = documentIds.indexOf(oldDocumentId);
-          if (index !== -1) {
-            documentIds[index] = documentId;
-          }
-        } else if (!replaced && !documentIds.includes(documentId)) {
-          documentIds.push(documentId);
-        }
-
-        session.metadata = {
-          ...session.metadata,
-          document_ids: documentIds,
-        };
-        session.updated_at = new Date().toISOString();
-        await this.storeSessionMetadata(session);
-      }
+      const operation = replaced ? 'replace' : 'add';
+      await this.updateSessionDocumentIds(
+        sessionId,
+        documentId,
+        operation,
+        oldDocumentId,
+      );
 
       this.logger.info(
         `Background metadata update completed for document ${documentId}`,
@@ -337,15 +396,16 @@ export class DocumentService {
    */
   async getFileStatus(
     sessionId: string,
-    fileId: string,
+    documentId: string,
   ): Promise<{
     status: 'in_progress' | 'completed' | 'failed' | 'cancelled';
     error?: string;
   }> {
-    const file = await this.client.vectorStores.files.retrieve(
-      sessionId,
-      fileId,
-    );
+    const file = await this.findFileByDocumentId(sessionId, documentId);
+
+    if (!file) {
+      throw new NotFoundError(`Document not found: ${documentId}`);
+    }
 
     return {
       status: file.status,
@@ -382,7 +442,6 @@ export class DocumentService {
         return {
           document_id: (attrs.document_id as string) || file.id,
           title: (attrs.title as string) || file.id,
-          session_id: sessionId,
           user_id: (attrs.user_id as string) || userId,
           source_type:
             (attrs.source_type as SessionDocument['source_type']) || 'text',
@@ -404,43 +463,18 @@ export class DocumentService {
   async deleteDocument(sessionId: string, documentId: string): Promise<void> {
     this.logger.info(`Deleting document ${documentId} from ${sessionId}`);
 
-    // Find file by document_id in attributes
-    const filesResponse = await this.client.vectorStores.files.list(sessionId);
-    const file = filesResponse.data.find(
-      f => f.attributes?.document_id === documentId,
-    );
+    const file = await this.findFileByDocumentId(sessionId, documentId);
 
     if (!file) {
       throw new NotFoundError(`Document not found: ${documentId}`);
     }
 
-    // Delete from vector store (removes chunks and embeddings)
-    await this.client.vectorStores.files.delete(sessionId, file.id);
-    this.logger.info(`Deleted file ${file.id} from vector store`);
-
-    // Delete from Files API (cleanup)
-    try {
-      await this.client.files.delete(file.id);
-      this.logger.info(`Deleted file ${file.id} from Files API`);
-    } catch (error) {
-      throw new Error(
-        `Failed to delete file ${file.id} from Files API: ${error}`,
-      );
-    }
+    // Delete file completely
+    await this.deleteFileCompletely(sessionId, file.id);
+    this.logger.info(`Deleted file ${file.id} from vector store and Files API`);
 
     // Update session metadata to remove document
-    const session = await this.retrieveSessionMetadata(sessionId);
-    if (session && session.metadata?.document_ids) {
-      const documentIds = session.metadata.document_ids.filter(
-        id => id !== documentId,
-      );
-      session.metadata = {
-        ...session.metadata,
-        document_ids: documentIds,
-      };
-      session.updated_at = new Date().toISOString();
-      await this.storeSessionMetadata(session);
-    }
+    await this.updateSessionDocumentIds(sessionId, documentId, 'remove');
 
     this.logger.info(`Document ${documentId} successfully deleted`);
   }

@@ -206,9 +206,11 @@ describe('Notebooks Router', () => {
           .field('fileType', 'txt')
           .attach('file', Buffer.from('Test content'), 'test.txt');
 
-        expect(response.status).toBe(200);
-        expect(response.body.status).toBe('success');
+        expect(response.status).toBe(202);
+        expect(response.body.status).toBe('processing');
         expect(response.body.document_id).toBe('test-document');
+        expect(response.body.file_id).toBeDefined();
+        expect(response.body.session_id).toBe(sessionId);
       });
 
       it('should return 400 if title missing', async () => {

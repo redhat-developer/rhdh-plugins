@@ -16,7 +16,9 @@
 
 import { http, HttpResponse, type HttpHandler } from 'msw';
 
-export const LLAMA_STACK_ADDR = 'http://0.0.0.0:8321';
+import { DEFAULT_LLAMA_STACK_PORT } from '../src/service/constant';
+
+export const LLAMA_STACK_ADDR = `http://0.0.0.0:${DEFAULT_LLAMA_STACK_PORT}`;
 
 // Mock session data
 export const mockSession1 = {

@@ -67,6 +67,15 @@ export const handleError = (
 };
 
 /**
+ * Send a validation error response
+ * @param res - Response object
+ * @param error - Error message
+ */
+export const sendValidationError = (res: Response, error: string): void => {
+  res.status(400).json({ status: 'error', error });
+};
+
+/**
  * Sanitize title to create a valid document ID
  * Converts title to lowercase, replaces spaces/special chars with hyphens
  */

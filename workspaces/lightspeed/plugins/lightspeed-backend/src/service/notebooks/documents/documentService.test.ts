@@ -314,6 +314,19 @@ describe('DocumentService', () => {
         'Content 2',
       );
 
+      // Wait for background metadata updates to complete
+      // Poll until both documents appear in metadata
+      const maxWaitMs = 2000;
+      const startTime = Date.now();
+      while (Date.now() - startTime < maxWaitMs) {
+        const session = await sessionService.readSession(sessionId, mockUserId);
+        const docIds = session.metadata?.document_ids || [];
+        if (docIds.length === 2) {
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
       await documentService.deleteDocument(sessionId, doc1.document_id);
 
       const session = await sessionService.readSession(sessionId, mockUserId);
