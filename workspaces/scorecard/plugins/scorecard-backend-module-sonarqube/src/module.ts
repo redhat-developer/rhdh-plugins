@@ -17,15 +17,25 @@ import {
   coreServices,
   createBackendModule,
 } from '@backstage/backend-plugin-api';
+import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { createSonarQubeMetricProviders } from './metricProviders/SonarQubeMetricProviderFactory';
 
 export const scorecardModuleSonarqube = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'sonarqube',
   register(reg) {
     reg.registerInit({
-      deps: { logger: coreServices.logger },
-      async init({ logger }) {
-        logger.info('Hello World!');
+      deps: {
+        metrics: scorecardMetricsExtensionPoint,
+        config: coreServices.rootConfig,
+        logger: coreServices.logger,
+      },
+
+      async init({ metrics, config, logger }) {
+        const providers = createSonarQubeMetricProviders(config, logger);
+        for (const provider of providers) {
+          metrics.addMetricProvider(provider);
+        }
       },
     });
   },
