@@ -21,6 +21,52 @@ Workflows can also be invoked from Backstage software templates using the `orche
 - Monitor workflow execution status
 - View workflow results and outputs
 
+### Execute Workflow Form Prepopulation
+
+The Execute Workflow page supports prepopulating form fields from URL query parameters. When the workflow schema defines input fields, any query parameter whose name matches a schema property path will be used to prepopulate the corresponding form field.
+
+**Path format**
+
+- For flat schemas, use the property name directly: `?language=English&name=John`
+- For nested (multi-step) schemas, use dot notation: `?firstStep.fooTheFirst=test` or `?provideInputs.language=English`
+- For fields inside `oneOf` or `anyOf` branches, use the same dot notation: `?mode.alphaValue=test`
+
+**Schema support**
+
+The prepopulation logic supports the full JSON Schema draft-07 spec, including:
+
+- Fields defined via `$ref` in `$defs` or `definitions`
+- `oneOf` and `anyOf` — the correct branch is resolved from the provided data
+- Array fields — use comma-separated values: `?tags=foo,bar,baz`
+- Type coercion for numbers, integers, and booleans
+
+**Schema constraints**
+
+For fields with `enum` constraints in the schema, the query param value must match one of the allowed values. Case-insensitive matching is supported (e.g. `?language=english` maps to `English` when the enum is `['English', 'Spanish']`). Values that do not match any enum option are ignored and will not prepopulate the field.
+
+Query parameters that do not match any schema property path are ignored and will not be merged into the form.
+
+**Reserved parameters**
+
+The following query parameters are reserved for navigation and are not used for form prepopulation:
+
+- `targetEntity` — Used to associate the workflow run with a catalog entity
+- `instanceId` — Used when re-running or viewing a specific workflow instance
+
+**Examples**
+
+```
+/orchestrator/workflows/yamlgreet/execute?targetEntity=default:component:my-app&language=English&name=alice
+```
+
+In this example, `targetEntity` is excluded (reserved), while `language` and `name` prepopulate the form when those fields exist in the workflow schema.
+
+```
+/orchestrator/workflows/my-workflow/execute?language=English&mode.alphaValue=prefilled&tags=a,b,c
+```
+
+This example prepopulates a flat field (`language`), a nested field inside an `oneOf` branch (`mode.alphaValue`), and an array field (`tags`).
+
 ### Entity Integration
 
 - Workflow tabs on entity pages
