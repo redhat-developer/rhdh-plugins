@@ -42,7 +42,7 @@ describe('SonarQubeClient', () => {
     client = new SonarQubeClient(config, logger);
   });
 
-  it('sends Authorization header with Basic auth by default', async () => {
+  it('sends Authorization header with base64-encoded Basic auth by default', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ projectStatus: { status: 'OK' } }),
@@ -50,10 +50,11 @@ describe('SonarQubeClient', () => {
 
     await client.getQualityGateStatus('my-project');
 
+    const expectedToken = Buffer.from('test-key:').toString('base64');
     expect(mockFetch).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        headers: { Authorization: 'Basic test-key' },
+        headers: { Authorization: `Basic ${expectedToken}` },
       }),
     );
   });
@@ -250,10 +251,11 @@ describe('SonarQubeClient', () => {
 
       await multiClient.getQualityGateStatus('my-project');
 
+      const expectedToken = Buffer.from('default-key:').toString('base64');
       expect(mockFetch).toHaveBeenCalledWith(
         'https://sonarcloud.io/api/qualitygates/project_status?projectKey=my-project',
         expect.objectContaining({
-          headers: { Authorization: 'Basic default-key' },
+          headers: { Authorization: `Basic ${expectedToken}` },
         }),
       );
     });

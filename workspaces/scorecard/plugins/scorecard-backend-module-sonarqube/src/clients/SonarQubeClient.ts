@@ -73,7 +73,12 @@ export class SonarQubeClient {
     const url = `${instance.baseUrl}${path}`;
     const headers: Record<string, string> = {};
     if (instance.apiKey) {
-      headers.Authorization = `${instance.authType} ${instance.apiKey}`;
+      if (instance.authType === 'Basic') {
+        const encoded = Buffer.from(`${instance.apiKey}:`).toString('base64');
+        headers.Authorization = `Basic ${encoded}`;
+      } else {
+        headers.Authorization = `${instance.authType} ${instance.apiKey}`;
+      }
     }
     const response = await fetch(url, { headers });
     if (!response.ok) {
