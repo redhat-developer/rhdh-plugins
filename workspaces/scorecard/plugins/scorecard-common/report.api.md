@@ -151,6 +151,4 @@ export type ThresholdRule = {
   expression: string;
   color?: string;
 };
-
-// (No @packageDocumentation comment for this package)
 ```

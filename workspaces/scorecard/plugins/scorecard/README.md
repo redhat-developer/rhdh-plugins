@@ -104,16 +104,13 @@ permission:
    );
    ```
 
-2. **Scorecard Entities page** — To enable the drill-down page that lists entities contributing to a metric, add a route in your app (e.g. `packages/app/src/App.tsx`):
+2. **Scorecard page** — To enable the drill-down page that lists entities contributing to a metric, add a route in your app (e.g. `packages/app/src/App.tsx`):
 
    ```tsx
-   import { ScorecardEntitiesPage } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+   import { ScorecardPage } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
    // Inside your routes (e.g. <FlatRoutes>):
-   <Route
-     path="/scorecard/metrics/:metricId"
-     element={<ScorecardEntitiesPage />}
-   />;
+   <Route path="/scorecard/metrics/:metricId" element={<ScorecardPage />} />;
    ```
 
    The page is available at `/scorecard/metrics/:metricId` (e.g. `/scorecard/metrics/github.open_prs`). Users can reach it by following the "View entities" (or similar) link from a scorecard homepage card or from the main scorecard view.

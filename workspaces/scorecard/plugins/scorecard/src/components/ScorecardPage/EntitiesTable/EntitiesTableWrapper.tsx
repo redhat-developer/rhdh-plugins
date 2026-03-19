@@ -46,13 +46,12 @@ export const EntitiesTableWrapper: FC<EntitiesTableWrapperProps> = ({
         }}
       >
         <Typography
-          variant="h5"
+          variant="h3"
           sx={{
             p: 3,
             display: 'flex',
             alignItems: 'center',
             fontWeight: 'bold',
-            fontSize: '1.5rem',
           }}
         >
           {title}

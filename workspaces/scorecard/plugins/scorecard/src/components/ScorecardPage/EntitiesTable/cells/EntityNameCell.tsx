@@ -14,51 +14,52 @@
  * limitations under the License.
  */
 
-import { memo } from 'react';
-
 import { Link } from '@backstage/core-components';
-import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
+import { parseEntityRef } from '@backstage/catalog-model';
 import { useRouteRef } from '@backstage/core-plugin-api';
-import {
-  entityRouteRef,
-  useEntityPresentation,
-} from '@backstage/plugin-catalog-react';
+import { entityRouteRef } from '@backstage/plugin-catalog-react';
 
 import Tooltip from '@mui/material/Tooltip';
 
-export const OwnerCell = memo(({ ownerRef }: { ownerRef?: string }) => {
+interface EntityNameCellProps {
+  entityRef: string;
+  entityMetadata?: {
+    title?: string;
+    kind?: string;
+    description?: string;
+  };
+}
+export const EntityNameCell = ({
+  entityRef,
+  entityMetadata,
+}: EntityNameCellProps) => {
   const entityLink = useRouteRef(entityRouteRef);
 
-  const parsedEntityRef = ownerRef
-    ? parseEntityRef(ownerRef, {
-        defaultKind: 'group',
-        defaultNamespace: 'default',
-      })
-    : null;
-  const stringifiedEntityRef = parsedEntityRef
-    ? stringifyEntityRef(parsedEntityRef)
-    : '';
-  const { primaryTitle, secondaryTitle } =
-    useEntityPresentation(stringifiedEntityRef);
+  const { kind, namespace, name } = parseEntityRef(entityRef);
 
-  if (!ownerRef) return <>--</>;
+  const displayName = entityMetadata?.title ?? name ?? '--';
 
-  const link = entityLink(parsedEntityRef!);
+  const tooltipTitle = [
+    entityRef,
+    entityMetadata?.kind ?? kind,
+    entityMetadata?.description,
+  ]
+    .filter(Boolean)
+    .join(' | ');
 
   return (
-    <Tooltip enterDelay={1500} title={secondaryTitle ?? stringifiedEntityRef}>
+    <Tooltip enterDelay={1500} title={tooltipTitle}>
       <Link
-        to={link}
+        to={entityLink({ kind, namespace, name })}
         style={{
-          display: '-webkit-box',
-          WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: 1,
+          display: 'block',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         }}
       >
-        {primaryTitle}
+        {displayName}
       </Link>
     </Tooltip>
   );
-});
+};

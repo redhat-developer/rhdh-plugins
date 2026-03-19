@@ -17,7 +17,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { ScorecardEntitiesPage } from '../ScorecardEntitiesPage';
+import { ScorecardPage } from '../ScorecardPage';
 
 const mockUseParams = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -42,11 +42,11 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-const mockEntitiesPageHeader = jest.fn();
-jest.mock('../EntitiesPageHeader', () => ({
-  EntitiesPageHeader: (props: { title: string }) => {
-    mockEntitiesPageHeader(props);
-    return <div data-testid="entities-page-header">{props.title}</div>;
+const mockScorecardPageHeader = jest.fn();
+jest.mock('../ScorecardPageHeader', () => ({
+  ScorecardPageHeader: (props: { title: string }) => {
+    mockScorecardPageHeader(props);
+    return <div data-testid="scorecard-page-header">{props.title}</div>;
   },
 }));
 
@@ -94,7 +94,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <ThemeProvider theme={createTheme()}>{children}</ThemeProvider>
 );
 
-describe('ScorecardEntitiesPage', () => {
+describe('ScorecardPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -102,11 +102,11 @@ describe('ScorecardEntitiesPage', () => {
   it('should render page structure with header, content, table and scorecard card', () => {
     mockUseParams.mockReturnValue({ metricId: 'github.open_prs' });
 
-    render(<ScorecardEntitiesPage />, { wrapper: TestWrapper });
+    render(<ScorecardPage />, { wrapper: TestWrapper });
 
     expect(screen.getByTestId('page')).toBeInTheDocument();
     expect(screen.getByTestId('content')).toBeInTheDocument();
-    expect(screen.getByTestId('entities-page-header')).toBeInTheDocument();
+    expect(screen.getByTestId('scorecard-page-header')).toBeInTheDocument();
     expect(screen.getByTestId('entities-table')).toBeInTheDocument();
     expect(screen.getByTestId('scorecard-homepage-card')).toBeInTheDocument();
   });
@@ -114,9 +114,9 @@ describe('ScorecardEntitiesPage', () => {
   it('should pass metricId to header when metricTitle is empty', () => {
     mockUseParams.mockReturnValue({ metricId: 'github.open_prs' });
 
-    render(<ScorecardEntitiesPage />, { wrapper: TestWrapper });
+    render(<ScorecardPage />, { wrapper: TestWrapper });
 
-    expect(mockEntitiesPageHeader).toHaveBeenCalledWith(
+    expect(mockScorecardPageHeader).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'github.open_prs' }),
     );
   });
@@ -124,9 +124,9 @@ describe('ScorecardEntitiesPage', () => {
   it('should show Unknown metric in header when metricId is undefined', () => {
     mockUseParams.mockReturnValue({ metricId: undefined });
 
-    render(<ScorecardEntitiesPage />, { wrapper: TestWrapper });
+    render(<ScorecardPage />, { wrapper: TestWrapper });
 
-    expect(mockEntitiesPageHeader).toHaveBeenCalledWith(
+    expect(mockScorecardPageHeader).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Unknown metric' }),
     );
   });
@@ -134,7 +134,7 @@ describe('ScorecardEntitiesPage', () => {
   it('should pass metricId and setMetricTitle to EntitiesTable', () => {
     mockUseParams.mockReturnValue({ metricId: 'jira.blocking_tickets' });
 
-    render(<ScorecardEntitiesPage />, { wrapper: TestWrapper });
+    render(<ScorecardPage />, { wrapper: TestWrapper });
 
     expect(mockEntitiesTable).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -147,7 +147,7 @@ describe('ScorecardEntitiesPage', () => {
   it('should pass metricId, showSubheader false, and showInfo false to ScorecardHomepageCard', () => {
     mockUseParams.mockReturnValue({ metricId: 'github.open_prs' });
 
-    render(<ScorecardEntitiesPage />, { wrapper: TestWrapper });
+    render(<ScorecardPage />, { wrapper: TestWrapper });
 
     expect(mockScorecardHomepageCard).toHaveBeenCalledWith({
       metricId: 'github.open_prs',
@@ -159,9 +159,9 @@ describe('ScorecardEntitiesPage', () => {
   it('should update header title when setMetricTitle is called from EntitiesTable', () => {
     mockUseParams.mockReturnValue({ metricId: 'github.open_prs' });
 
-    render(<ScorecardEntitiesPage />, { wrapper: TestWrapper });
+    render(<ScorecardPage />, { wrapper: TestWrapper });
 
-    expect(mockEntitiesPageHeader).toHaveBeenLastCalledWith(
+    expect(mockScorecardPageHeader).toHaveBeenLastCalledWith(
       expect.objectContaining({ title: 'github.open_prs' }),
     );
 
@@ -169,7 +169,7 @@ describe('ScorecardEntitiesPage', () => {
       screen.getByRole('button', { name: 'Set title' }).click();
     });
 
-    expect(mockEntitiesPageHeader).toHaveBeenLastCalledWith(
+    expect(mockScorecardPageHeader).toHaveBeenLastCalledWith(
       expect.objectContaining({ title: 'Metric Title from Table' }),
     );
   });

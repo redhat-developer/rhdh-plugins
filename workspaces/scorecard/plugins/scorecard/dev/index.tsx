@@ -42,15 +42,17 @@ import type {
   Metric,
   EntityMetricDetailResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import Typography from '@mui/material/Typography';
 
 import {
   scorecardPlugin,
   EntityScorecardContent,
-  ScorecardEntitiesPage,
+  ScorecardPage,
   ScorecardHomepageCard,
 } from '../src/plugin';
 import { scorecardTranslations } from '../src/translations';
 import { scorecardApiRef, ScorecardApi } from '../src/api';
+import type { GetAggregatedScorecardEntitiesOptions } from '../src/components/types';
 import {
   mockScorecardErrorData,
   mockScorecardSuccessData,
@@ -92,14 +94,9 @@ class MockScorecardApi implements ScorecardApi {
       ] as unknown as Metric[],
     };
   }
-  async getAggregatedScorecardEntities(_options: {
-    metricId: string;
-    page: number;
-    pageSize: number;
-    ownershipEntityRefs?: string[];
-    orderBy?: string | null;
-    order?: 'asc' | 'desc';
-  }): Promise<EntityMetricDetailResponse> {
+  async getAggregatedScorecardEntities(
+    _options: GetAggregatedScorecardEntitiesOptions,
+  ): Promise<EntityMetricDetailResponse> {
     return mockAggregatedScorecardEntitiesData(
       _options.metricId,
       _options.page,
@@ -136,24 +133,34 @@ createDevApp()
   .addPage({
     element: (
       <ScorecardWrapper>
-        <Box
-          sx={{
-            width: 520,
-            height: 480,
-            '& > *': {
-              height: '100%',
-              minHeight: 0,
-              display: 'flex',
-              flexDirection: 'column',
-            },
-          }}
-        >
-          <ScorecardHomepageCard metricId="github.open_prs" />
-        </Box>
+        {/* Default usage of the homepage card without explicit size constraints. The card is expected to adapt to the parent container. */}
+        <ScorecardHomepageCard metricId="github.open_prs" />
       </ScorecardWrapper>
     ),
     title: 'Scorecard Homepage Card',
     path: '/',
+  })
+  .addPage({
+    element: (
+      <ScorecardWrapper>
+        {/* Showcase the card in different container sizes to validate responsiveness and layout behavior across use cases.
+        This helps ensure the component works correctly when embedded in various homepage grid configurations. */}
+        {[
+          { label: 'Small (320×300)', width: 320, height: 300 },
+          { label: 'Medium (520×480)', width: 520, height: 480 },
+          { label: 'Wide (800×400)', width: 800, height: 400 },
+        ].map(({ label, width, height }) => (
+          <Box key={label}>
+            <Typography variant="caption">{label}</Typography>
+            <Box sx={{ width, height }}>
+              <ScorecardHomepageCard metricId="github.open_prs" />
+            </Box>
+          </Box>
+        ))}
+      </ScorecardWrapper>
+    ),
+    title: 'Different Sizes of Scorecard Homepage Card',
+    path: '/different-sizes',
   })
   .addPage({
     element: (
@@ -179,14 +186,14 @@ createDevApp()
       <ScorecardWrapper>
         <EntityProvider entity={mockComponentEntity}>
           <TabbedLayout>
-            <TabbedLayout.Route path="/" title="Scorecard Entities">
-              <ScorecardEntitiesPage />
+            <TabbedLayout.Route path="/" title="Scorecard Page">
+              <ScorecardPage />
             </TabbedLayout.Route>
           </TabbedLayout>
         </EntityProvider>
       </ScorecardWrapper>
     ),
-    title: 'Scorecard Entities',
+    title: 'Scorecard Page',
     path: '/scorecard/metrics/github.open_prs',
   })
   .addPage({

@@ -27,6 +27,8 @@ import type {
   EntityMetricDetailResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
+import type { GetAggregatedScorecardEntitiesOptions } from '../components/types';
+
 export interface ScorecardApi {
   /**
    * Retrieves scorecard metrics for a specific entity.
@@ -45,23 +47,13 @@ export interface ScorecardApi {
   getMetrics(options: { metricIds: string[] }): Promise<{ metrics: Metric[] }>;
   /**
    * Retrieves aggregated scorecard entities.
-   * @param metricId - The ID of the metric to get aggregated entities for
-   * @param page - The page number to retrieve
-   * @param pageSize - The number of entities per page
-   * @param ownershipEntityRefs - Optional array of ownership entity refs to filter entities by
-   * @param orderBy - Optional column to sort by
-   * @param order - Optional sort order
+   * @param options - The options for getting aggregated scorecard entities
    * @returns Promise resolving to an aggregated scorecard entities result
    * @throws Error if the request fails or returns invalid data
    */
-  getAggregatedScorecardEntities(options: {
-    metricId: string;
-    page: number;
-    pageSize: number;
-    ownershipEntityRefs?: string[];
-    orderBy?: string | null;
-    order?: 'asc' | 'desc';
-  }): Promise<EntityMetricDetailResponse>;
+  getAggregatedScorecardEntities(
+    options: GetAggregatedScorecardEntitiesOptions,
+  ): Promise<EntityMetricDetailResponse>;
 }
 
 export const scorecardApiRef = createApiRef<ScorecardApi>({
@@ -234,14 +226,9 @@ export class ScorecardApiClient implements ScorecardApi {
     }
   }
 
-  async getAggregatedScorecardEntities(options: {
-    metricId: string;
-    page: number;
-    pageSize: number;
-    ownershipEntityRefs?: string[];
-    orderBy?: string | null;
-    order?: 'asc' | 'desc';
-  }): Promise<EntityMetricDetailResponse> {
+  async getAggregatedScorecardEntities(
+    options: GetAggregatedScorecardEntitiesOptions,
+  ): Promise<EntityMetricDetailResponse> {
     const {
       metricId,
       page,

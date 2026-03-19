@@ -56,7 +56,7 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import {
   ScorecardHomepageCard,
-  ScorecardEntitiesPage,
+  ScorecardPage,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
@@ -325,10 +325,7 @@ const routes = (
         </ScalprumContext.Provider>
       }
     />
-    <Route
-      path="/scorecard/metrics/:metricId"
-      element={<ScorecardEntitiesPage />}
-    />
+    <Route path="/scorecard/metrics/:metricId" element={<ScorecardPage />} />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"
