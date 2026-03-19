@@ -78,6 +78,42 @@ describe('SonarQubeNumberMetricProvider', () => {
         'sonarqube.security_issues',
         'SonarQube Security Issues',
       ],
+      [
+        'security_review_rating',
+        'sonarqube.security_review_rating',
+        'SonarQube Security Review Rating',
+      ],
+      [
+        'security_hotspots',
+        'sonarqube.security_hotspots',
+        'SonarQube Security Hotspots',
+      ],
+      [
+        'reliability_rating',
+        'sonarqube.reliability_rating',
+        'SonarQube Reliability Rating',
+      ],
+      [
+        'reliability_issues',
+        'sonarqube.reliability_issues',
+        'SonarQube Reliability Issues',
+      ],
+      [
+        'maintainability_rating',
+        'sonarqube.maintainability_rating',
+        'SonarQube Maintainability Rating',
+      ],
+      [
+        'maintainability_issues',
+        'sonarqube.maintainability_issues',
+        'SonarQube Maintainability Issues',
+      ],
+      ['code_coverage', 'sonarqube.code_coverage', 'SonarQube Code Coverage'],
+      [
+        'code_duplications',
+        'sonarqube.code_duplications',
+        'SonarQube Code Duplications',
+      ],
     ] as const)(
       'for %s returns id %s and title %s',
       (metricId, expectedId, expectedTitle) => {
@@ -164,42 +200,38 @@ describe('SonarQubeNumberMetricProvider', () => {
       expect(mockGetMeasures).not.toHaveBeenCalled();
     });
 
-    it('calls getMeasures with security_rating key for security_rating metric', async () => {
-      mockGetMeasures.mockResolvedValue({ security_rating: 2 });
-      const provider = new SonarQubeNumberMetricProvider(
-        mockConfig,
-        mockLogger,
-        'security_rating',
-      );
+    it.each([
+      ['security_rating', 'security_rating', 2],
+      ['security_issues', 'vulnerabilities', 7],
+      ['security_review_rating', 'security_review_rating', 1],
+      ['security_hotspots', 'security_hotspots', 3],
+      ['reliability_rating', 'reliability_rating', 1],
+      ['reliability_issues', 'bugs', 12],
+      ['maintainability_rating', 'sqale_rating', 2],
+      ['maintainability_issues', 'code_smells', 45],
+      ['code_coverage', 'coverage', 82.5],
+      ['code_duplications', 'duplicated_lines_density', 3.2],
+    ] as const)(
+      'calls getMeasures with %s API key for %s metric',
+      async (metricId, apiKey, value) => {
+        mockGetMeasures.mockResolvedValue({ [apiKey]: value });
+        const provider = new SonarQubeNumberMetricProvider(
+          mockConfig,
+          mockLogger,
+          metricId,
+        );
 
-      const result = await provider.calculateMetric(entity());
+        const result = await provider.calculateMetric(entity());
 
-      expect(result).toBe(2);
-      expect(mockGetMeasures).toHaveBeenCalledWith(
-        'my-project',
-        ['security_rating'],
-        undefined,
-      );
-      expect(mockGetOpenIssuesCount).not.toHaveBeenCalled();
-    });
-
-    it('calls getMeasures with vulnerabilities key for security_issues metric', async () => {
-      mockGetMeasures.mockResolvedValue({ vulnerabilities: 7 });
-      const provider = new SonarQubeNumberMetricProvider(
-        mockConfig,
-        mockLogger,
-        'security_issues',
-      );
-
-      const result = await provider.calculateMetric(entity());
-
-      expect(result).toBe(7);
-      expect(mockGetMeasures).toHaveBeenCalledWith(
-        'my-project',
-        ['vulnerabilities'],
-        undefined,
-      );
-    });
+        expect(result).toBe(value);
+        expect(mockGetMeasures).toHaveBeenCalledWith(
+          'my-project',
+          [apiKey],
+          undefined,
+        );
+        expect(mockGetOpenIssuesCount).not.toHaveBeenCalled();
+      },
+    );
 
     it('passes instanceName when annotation has instance prefix', async () => {
       mockGetOpenIssuesCount.mockResolvedValue(5);

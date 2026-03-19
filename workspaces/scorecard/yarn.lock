@@ -15822,6 +15822,7 @@ __metadata:
     "@playwright/test": "npm:^1.56.1"
     "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "npm:^1.10.2"
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
     "@roadiehq/backstage-plugin-github-pull-requests": "npm:^3.5.1"
     "@roadiehq/backstage-plugin-jira": "npm:^2.13.1"
