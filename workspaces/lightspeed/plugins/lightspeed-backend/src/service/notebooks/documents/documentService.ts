@@ -442,6 +442,7 @@ export class DocumentService {
         return {
           document_id: (attrs.document_id as string) || file.id,
           title: (attrs.title as string) || file.id,
+          session_id: (attrs.session_id as string) || sessionId,
           user_id: (attrs.user_id as string) || userId,
           source_type:
             (attrs.source_type as SessionDocument['source_type']) || 'text',

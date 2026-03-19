@@ -82,10 +82,9 @@ export async function createNotebooksRouter(
   const authorizer = userPermissionAuthorization(permissions);
 
   const getUserId = async (req: any): Promise<string> => {
-    // const credentials = await httpAuth.credentials(req);
-    // const user = await userInfo.getUserInfo(credentials);
-    // return user.userEntityRef;
-    return 'user:default/guest';
+    const credentials = await httpAuth.credentials(req);
+    const user = await userInfo.getUserInfo(credentials);
+    return user.userEntityRef;
   };
 
   const requireNotebooksPermission = async (
