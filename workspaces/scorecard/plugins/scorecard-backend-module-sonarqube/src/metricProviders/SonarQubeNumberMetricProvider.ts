@@ -27,17 +27,12 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { SonarQubeClient } from '../clients/SonarQubeClient';
 import {
   type SonarQubeNumberMetricId,
+  SONARQUBE_API_METRIC_KEYS,
   SONARQUBE_METRIC_CONFIG,
   SONARQUBE_NUMBER_THRESHOLDS,
   SONARQUBE_PROJECT_KEY_ANNOTATION,
   parseProjectKeyAnnotation,
 } from './SonarQubeConfig';
-
-const SONARQUBE_API_METRIC_KEYS: Record<SonarQubeNumberMetricId, string[]> = {
-  open_issues: [],
-  security_rating: ['security_rating'],
-  security_issues: ['vulnerabilities'],
-};
 
 export class SonarQubeNumberMetricProvider implements MetricProvider<'number'> {
   private readonly client: SonarQubeClient;
@@ -107,28 +102,17 @@ export class SonarQubeNumberMetricProvider implements MetricProvider<'number'> {
 
   async calculateMetric(entity: Entity): Promise<number> {
     const { instanceName, projectKey } = this.getAnnotation(entity);
+    const mapping = SONARQUBE_API_METRIC_KEYS[this.metricId];
 
-    switch (this.metricId) {
-      case 'open_issues':
-        return this.client.getOpenIssuesCount(projectKey, instanceName);
-      case 'security_rating': {
-        const measures = await this.client.getMeasures(
-          projectKey,
-          SONARQUBE_API_METRIC_KEYS.security_rating,
-          instanceName,
-        );
-        return measures.security_rating;
-      }
-      case 'security_issues': {
-        const measures = await this.client.getMeasures(
-          projectKey,
-          SONARQUBE_API_METRIC_KEYS.security_issues,
-          instanceName,
-        );
-        return measures.vulnerabilities;
-      }
-      default:
-        throw new Error(`Unknown metric ID: ${this.metricId}`);
+    if ('useIssuesApi' in mapping) {
+      return this.client.getOpenIssuesCount(projectKey, instanceName);
     }
+
+    const measures = await this.client.getMeasures(
+      projectKey,
+      [mapping.apiKey],
+      instanceName,
+    );
+    return measures[mapping.apiKey];
   }
 }

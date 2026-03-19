@@ -22,6 +22,7 @@ import {
   mockJiraDrillDownMissingPermission,
   mockMetricsApi,
   mockApiResponse,
+  mockSonarqubeScorecardResponse,
 } from './utils/apiUtils';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
@@ -42,6 +43,8 @@ import {
   jiraEntitiesDrillDownResponse,
   jiraEntitiesDrillDownNoDataResponse,
   jiraMetricMetadataResponse,
+  sonarqubeScorecardResponse,
+  sonarqubeFailedQualityGateResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
@@ -253,6 +256,105 @@ test.describe('Scorecard Plugin Tests', () => {
       await scorecardPage.validateScorecardAriaFor(jiraMetric);
 
       await runAccessibilityTests(page, testInfo);
+    });
+  });
+
+  test.describe('SonarQube Entity Scorecards', () => {
+    const sonarqubeMetricTitles = [
+      'SonarQube Quality Gate Status',
+      'SonarQube Open Issues',
+      'SonarQube Security Rating',
+      'SonarQube Security Issues',
+      'SonarQube Security Review Rating',
+      'SonarQube Security Hotspots',
+      'SonarQube Reliability Rating',
+      'SonarQube Reliability Issues',
+      'SonarQube Maintainability Rating',
+      'SonarQube Maintainability Issues',
+      'SonarQube Code Coverage',
+      'SonarQube Code Duplications',
+    ];
+
+    test('Verify all SonarQube metrics display correctly', async ({
+      browser,
+    }, testInfo) => {
+      await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('sonarqube-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      for (const title of sonarqubeMetricTitles) {
+        await expect(page.getByText(title)).toBeVisible({ timeout: 10000 });
+      }
+
+      await runAccessibilityTests(page, testInfo);
+    });
+
+    test('Verify SonarQube metric values', async () => {
+      await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('sonarqube-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      await expect(page.getByText('SonarQube Quality Gate Status')).toBeVisible(
+        { timeout: 10000 },
+      );
+
+      const expectedValues: Record<string, string> = {
+        'SonarQube Quality Gate Status': 'true',
+        'SonarQube Open Issues': '3',
+        'SonarQube Security Rating': '1',
+        'SonarQube Security Issues': '0',
+        'SonarQube Security Review Rating': '1',
+        'SonarQube Security Hotspots': '2',
+        'SonarQube Reliability Rating': '1',
+        'SonarQube Reliability Issues': '0',
+        'SonarQube Maintainability Rating': '1',
+        'SonarQube Maintainability Issues': '12',
+        'SonarQube Code Coverage': '82.5',
+        'SonarQube Code Duplications': '3.2',
+      };
+
+      for (const [title, value] of Object.entries(expectedValues)) {
+        const card = page
+          .locator('[role="article"]')
+          .filter({ hasText: title })
+          .first();
+        await expect(card).toContainText(value);
+      }
+    });
+
+    test('Verify SonarQube quality gate failure state', async () => {
+      await mockSonarqubeScorecardResponse(
+        page,
+        sonarqubeFailedQualityGateResponse,
+      );
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('sonarqube-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      await expect(page.getByText('SonarQube Quality Gate Status')).toBeVisible(
+        { timeout: 10000 },
+      );
+
+      const qualityGateCard = page
+        .locator('[role="article"]')
+        .filter({ hasText: 'SonarQube Quality Gate Status' })
+        .first();
+      await expect(qualityGateCard).toContainText('false');
+    });
+
+    test('Verify empty state for sonarqube entity with no metrics', async () => {
+      await mockSonarqubeScorecardResponse(page, emptyScorecardResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('sonarqube-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      await expect(page.getByText(translations.emptyState.title)).toBeVisible();
     });
   });
 

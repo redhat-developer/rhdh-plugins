@@ -75,20 +75,29 @@ describe('createSonarQubeMetricProvider', () => {
 });
 
 describe('createSonarQubeMetricProviders', () => {
-  it('returns four providers with correct IDs', () => {
+  it('returns twelve providers with correct IDs', () => {
     const providers = createSonarQubeMetricProviders(mockConfig, mockLogger);
-    expect(providers).toHaveLength(4);
+    expect(providers).toHaveLength(12);
     expect(providers.map(p => p.getProviderId())).toEqual([
       'sonarqube.quality_gate',
       'sonarqube.open_issues',
       'sonarqube.security_rating',
       'sonarqube.security_issues',
+      'sonarqube.security_review_rating',
+      'sonarqube.security_hotspots',
+      'sonarqube.reliability_rating',
+      'sonarqube.reliability_issues',
+      'sonarqube.maintainability_rating',
+      'sonarqube.maintainability_issues',
+      'sonarqube.code_coverage',
+      'sonarqube.code_duplications',
     ]);
   });
 
-  it('returns 1 boolean and 3 number providers', () => {
+  it('returns 1 boolean and 11 number providers', () => {
     const providers = createSonarQubeMetricProviders(mockConfig, mockLogger);
     const types = providers.map(p => p.getMetricType());
-    expect(types).toEqual(['boolean', 'number', 'number', 'number']);
+    expect(types.filter(t => t === 'boolean')).toHaveLength(1);
+    expect(types.filter(t => t === 'number')).toHaveLength(11);
   });
 });
