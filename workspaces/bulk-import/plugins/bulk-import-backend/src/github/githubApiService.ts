@@ -332,8 +332,6 @@ export class GithubApiService {
                 dataFetchErrors,
                 {
                   search,
-                  pageNumber,
-                  pageSize,
                 },
               )
             : await addGithubTokenRepositories(
