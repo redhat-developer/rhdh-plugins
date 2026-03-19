@@ -15,7 +15,6 @@
  */
 
 import { lazy, Suspense } from 'react';
-import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { Progress } from '@backstage/core-components';
@@ -27,51 +26,28 @@ const CodeEditor = lazy(() =>
 
 export const CodeEditorCard = ({ onLoad }: { onLoad: () => void }) => {
   return (
-    <Grid
-      item
-      xs={12}
-      md={6.5}
-      sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-    >
-      <Card
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          borderRadius: 0,
-        }}
-      >
-        <CardContent
-          sx={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'auto',
-            scrollbarWidth: 'thin',
-          }}
-        >
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'start',
-                  justifyContent: 'center',
-                }}
-              >
-                <div style={{ width: '100%', height: '100px' }}>
-                  <Progress />
-                </div>
+    <Card sx={{ flex: '1 1 0' }}>
+      <CardContent style={{ display: 'flex' }}>
+        <Suspense
+          fallback={
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'start',
+                justifyContent: 'center',
+              }}
+            >
+              <div style={{ width: '100%', height: '100px' }}>
+                <Progress />
               </div>
-            }
-          >
-            <CodeEditor defaultLanguage="yaml" onLoaded={onLoad} />
-          </Suspense>
-        </CardContent>
-      </Card>
-    </Grid>
+            </div>
+          }
+        >
+          <CodeEditor defaultLanguage="yaml" onLoaded={onLoad} />
+        </Suspense>
+      </CardContent>
+    </Card>
   );
 };

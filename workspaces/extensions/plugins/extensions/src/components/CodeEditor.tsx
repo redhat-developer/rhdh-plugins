@@ -18,7 +18,6 @@ import { useState, useCallback } from 'react';
 
 import { Progress } from '@backstage/core-components';
 
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import Typography from '@mui/material/Typography';
@@ -87,7 +86,7 @@ export const CodeEditor = ({
   };
 
   return (
-    <Box position="relative" sx={{ width: '100%', height: '100%' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Button
         variant="text"
         onClick={handleCopy}
@@ -112,15 +111,18 @@ export const CodeEditor = ({
         )}
       </Button>
 
-      <Editor
-        theme={paletteMode}
-        defaultLanguage={defaultLanguage}
-        onChange={onChange}
-        onMount={onMount}
-        loading={<Progress />}
-        options={defaultOptions}
-        {...otherProps}
-      />
-    </Box>
+      {/* Use absolute to enforce the editor to use the right hight. */}
+      <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
+        <Editor
+          theme={paletteMode}
+          defaultLanguage={defaultLanguage}
+          onChange={onChange}
+          onMount={onMount}
+          loading={<Progress />}
+          options={defaultOptions}
+          {...otherProps}
+        />
+      </div>
+    </div>
   );
 };
