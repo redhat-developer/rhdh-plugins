@@ -6120,6 +6120,7 @@ __metadata:
     "@changesets/cli": "npm:^2.27.1"
     "@playwright/test": "npm:^1.56.1"
     "@spotify/prettier-config": "npm:^15.0.0"
+    "@types/uuid": "npm:^9.0.1"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
     prettier: "npm:^2.3.2"
@@ -14975,6 +14976,13 @@ __metadata:
   version: 0.0.6
   resolution: "@types/use-sync-external-store@npm:0.0.6"
   checksum: 10c0/77c045a98f57488201f678b181cccd042279aff3da34540ad242f893acc52b358bd0a8207a321b8ac09adbcef36e3236944390e2df4fcedb556ce7bb2a88f2a8
+  languageName: node
+  linkType: hard
+
+"@types/uuid@npm:^9.0.1":
+  version: 9.0.8
+  resolution: "@types/uuid@npm:9.0.8"
+  checksum: 10c0/b411b93054cb1d4361919579ef3508a1f12bf15b5fdd97337d3d351bece6c921b52b6daeef89b62340fd73fd60da407878432a1af777f40648cbe53a01723489
   languageName: node
   linkType: hard
 
