@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-api
 
+## 2.5.3
+
+### Patch Changes
+
+- Updated dependencies [5a9d9d8]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+
 ## 2.5.2
 
 ### Patch Changes
