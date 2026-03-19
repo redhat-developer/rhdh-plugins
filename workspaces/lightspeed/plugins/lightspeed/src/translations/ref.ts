@@ -25,6 +25,32 @@ export const lightspeedMessages = {
   // Page titles and headers
   'page.title': 'Lightspeed',
   'page.subtitle': 'AI-powered development assistant',
+  'tabs.ariaLabel': 'Lightspeed views',
+  'tabs.chat': 'Chat',
+  'tabs.notebooks': 'Notebooks',
+  'tabs.notebooks.empty': 'Notebooks content goes here.',
+  'notebooks.title': 'My Notebooks',
+  'notebooks.empty.title': 'No created notebooks',
+  'notebooks.empty.description':
+    'Start a new notebook to organize your sources and generate AI-powered insights.',
+  'notebooks.empty.action': 'Create a new notebook',
+  'notebooks.documents': 'Documents',
+  'notebooks.actions.rename': 'Rename',
+  'notebooks.actions.delete': 'Delete',
+  'notebooks.rename.title': 'Rename {{name}}?',
+  'notebooks.rename.description':
+    'Please input the new name for this notebook and click submit to proceed.',
+  'notebooks.rename.label': 'New name',
+  'notebooks.rename.placeholder': 'New name',
+  'notebooks.rename.action': 'Submit',
+  'notebooks.delete.title': 'Delete {{name}}?',
+  'notebooks.delete.message':
+    "You'll no longer see this notebook here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
+  'notebooks.delete.action': 'Delete',
+  'notebooks.updated.today': 'Updated today',
+  'notebooks.updated.yesterday': 'Updated 1 day ago',
+  'notebooks.updated.days': 'Updated {{days}} days ago',
+  'notebooks.updated.on': 'Updated on',
 
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',
