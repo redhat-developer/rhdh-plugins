@@ -121,7 +121,7 @@ export const EntitiesTable = ({
 
   return (
     <EntitiesTableWrapper title={entitiesTableTitle} isError={!!entitiesError}>
-      <Table sx={{ width: '100%' }}>
+      <Table sx={{ width: '100%', tableLayout: 'fixed' }}>
         <EntitiesTableHeader
           orderBy={orderBy}
           order={order}

@@ -21,7 +21,7 @@ import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-pl
 
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
-import MuiTooltip from '@mui/material/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
@@ -46,7 +46,7 @@ const InfoComponent = ({ timestamp }: { timestamp: string }) => {
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', mr: 2 }}>
-      <MuiTooltip
+      <Tooltip
         title={
           <Box sx={{ textAlign: 'center' }}>
             {t('metric.lastUpdated' as any, { timestamp: lastUpdatedLabel })}
@@ -72,7 +72,7 @@ const InfoComponent = ({ timestamp }: { timestamp: string }) => {
             sx={{ color: theme.palette.text.secondary, fontSize: '1.75rem' }}
           />
         </IconButton>
-      </MuiTooltip>
+      </Tooltip>
     </Box>
   );
 };
@@ -116,7 +116,7 @@ export const ScorecardHomepageCardComponent = ({
       {...(showSubheader
         ? {
             subheader: (
-              <MuiTooltip
+              <Tooltip
                 enterDelay={1500}
                 title={t('metric.someEntitiesNotReportingValues')}
                 arrow
@@ -125,7 +125,7 @@ export const ScorecardHomepageCardComponent = ({
                 <Link to={`/scorecard/metrics/${scorecard.id}`}>
                   {t('thresholds.entities', { count: scorecard.result.total })}
                 </Link>
-              </MuiTooltip>
+              </Tooltip>
             ),
           }
         : {})}

@@ -14,25 +14,8 @@
  * limitations under the License.
  */
 
-export type PieData = {
-  name: string;
-  value: number;
-  color?: string;
-};
+import { Header as BackstageHeader } from '@backstage/core-components';
 
-export type EntityMetadata = {
-  title?: string;
-  description?: string;
-  kind?: string;
-};
-
-export type EntityMetadataMap = Record<string, EntityMetadata>;
-
-export type GetAggregatedScorecardEntitiesOptions = {
-  metricId: string;
-  page: number;
-  pageSize: number;
-  ownershipEntityRefs?: string[];
-  orderBy?: string | null;
-  order?: 'asc' | 'desc';
+export const ScorecardPageHeader = ({ title }: { title: string }) => {
+  return <BackstageHeader title={title} type="Home" typeLink="/" />;
 };

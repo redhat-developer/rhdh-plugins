@@ -53,6 +53,7 @@ export const CardWrapper = ({
         width: width ?? '100%',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
+        height: '100%',
       }}
       role={role}
     >

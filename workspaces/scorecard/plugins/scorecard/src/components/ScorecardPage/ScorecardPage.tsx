@@ -26,10 +26,10 @@ import { ScorecardHomepageCard } from '../ScorecardHomepageSection/ScorecardHome
 import NotFoundState from '../Common/NotFoundState';
 import { useTranslation } from '../../hooks/useTranslation';
 
-import { EntitiesPageHeader } from './EntitiesPageHeader';
+import { ScorecardPageHeader } from './ScorecardPageHeader';
 import { EntitiesTable } from './EntitiesTable/EntitiesTable';
 
-export const ScorecardEntitiesPage = () => {
+export const ScorecardPage = () => {
   const { metricId } = useParams<{ metricId?: string }>();
 
   const [metricTitle, setMetricTitle] = useState<string>('');
@@ -53,7 +53,7 @@ export const ScorecardEntitiesPage = () => {
 
   return (
     <Page themeId="home">
-      <EntitiesPageHeader
+      <ScorecardPageHeader
         title={finalTitle || metricId || t('entitiesPage.unknownMetric')}
       />
       <Divider />

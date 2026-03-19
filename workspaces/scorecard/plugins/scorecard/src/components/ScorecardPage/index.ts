@@ -14,8 +14,4 @@
  * limitations under the License.
  */
 
-import { Header as BackstageHeader } from '@backstage/core-components';
-
-export const EntitiesPageHeader = ({ title }: { title: string }) => {
-  return <BackstageHeader title={title} type="Home" typeLink="/" />;
-};
+export { ScorecardPage } from './ScorecardPage';

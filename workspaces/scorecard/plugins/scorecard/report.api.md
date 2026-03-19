@@ -12,9 +12,6 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const EntityScorecardContent: () => JSX_2.Element;
 
 // @public
-export const ScorecardEntitiesPage: () => JSX_2.Element;
-
-// @public
 export const ScorecardHomepageCard: ({
   metricId,
   showSubheader,
@@ -24,6 +21,9 @@ export const ScorecardHomepageCard: ({
   showSubheader?: boolean | undefined;
   showInfo?: boolean | undefined;
 }) => JSX_2.Element | null;
+
+// @public
+export const ScorecardPage: () => JSX_2.Element;
 
 // @public
 export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
