@@ -44,7 +44,11 @@ import type {
   GitlabFetchError,
   GitlabRepository,
 } from '../types';
-import { computeTotalCountFromPaginationInfo, handleError } from './utils';
+import {
+  computeTotalCountFromPaginationInfo,
+  handleError,
+  listAllRepositoriesForAuthenticatedUser,
+} from './utils';
 
 export type ValidatedRepo = {
   glConfig: GitLabIntegrationConfig;
@@ -129,69 +133,32 @@ export async function addGitlabTokenRepositories(
     pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
-  const search = reqParams?.search;
-  const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
-  const pageSize = reqParams?.pageSize ?? DefaultPageSize;
+  const lowercaseSearch = reqParams?.search?.toLocaleLowerCase();
   let totalCount: number | undefined;
+
   try {
-    if (search) {
-      // Use the projects api with the search param
-      // that api gives us all the things the token has access to including the different projects in various groups
+    const allRepositories = await listAllRepositoriesForAuthenticatedUser(
+      deps,
+      gitlab,
+    );
+    const filteredRepositories = lowercaseSearch
+      ? allRepositories.filter(repo =>
+          repo.name.toLocaleLowerCase().includes(lowercaseSearch),
+        )
+      : allRepositories;
 
-      const searchResp = await searchRepos(
-        gitlab,
-        search,
-        pageNumber,
-        pageSize,
-      );
-      totalCount = searchResp.totalCount;
-      searchResp.repositories.forEach(repo =>
-        repositories.set(repo.full_name, repo),
-      );
-    } else {
-      /**
-       * The Projects.all method with the membership: true option will grab all the repositories/projects the gitlab token has explicit access to.
-       * These would include repositories they own, repositories where they are a collaborator,
-       * and repositories that they can access through an organization membership.
-       */
-      const { data, paginationInfo } = await gitlab.Projects.all<
-        true,
-        'offset'
-      >({
-        membership: true,
-        perPage: pageSize,
-        page: pageNumber,
-        showExpanded: true,
+    filteredRepositories.forEach(repo => {
+      repositories.set(repo.path_with_namespace, {
+        name: repo.name,
+        full_name: repo.path_with_namespace,
+        url: repo._links.self,
+        html_url: repo.web_url,
+        default_branch: repo.default_branch,
+        updated_at: repo?.updated_at,
       });
+    });
 
-      data?.forEach((repo: ProjectSchema) => {
-        repositories.set(repo.path_with_namespace, {
-          name: repo.name,
-          full_name: repo.path_with_namespace,
-          url: repo._links.self,
-          html_url: repo.web_url,
-          default_branch: repo.default_branch,
-          updated_at: repo?.updated_at,
-        });
-      });
-
-      /*
-      paginationInfo: {
-        total: , This is the total amount of repos, but will be NaN if the value is above 10k, see: https://github.com/jdalrymple/gitbeaker/issues/839#issuecomment-636482319
-        next: ,
-        current: ,
-        previous: ,
-        perPage: ,
-        totalPages:
-      }
-      */
-
-      totalCount = await computeTotalCountFromPaginationInfo(
-        deps,
-        paginationInfo,
-        pageSize, // Not thrilled with this for some reason
-      );
-    }
+    totalCount = filteredRepositories.length;
   } catch (err) {
     handleError(
       deps,
