@@ -29,6 +29,7 @@ import {
   SONARQUBE_BOOLEAN_THRESHOLDS,
   SONARQUBE_METRIC_CONFIG,
   SONARQUBE_PROJECT_KEY_ANNOTATION,
+  parseProjectKeyAnnotation,
 } from './SonarQubeConfig';
 
 export class SonarQubeBooleanMetricProvider
@@ -81,15 +82,16 @@ export class SonarQubeBooleanMetricProvider
   }
 
   async calculateMetric(entity: Entity): Promise<boolean> {
-    const projectKey =
+    const annotation =
       entity.metadata.annotations?.[SONARQUBE_PROJECT_KEY_ANNOTATION];
-    if (!projectKey) {
+    if (!annotation) {
       throw new Error(
         `Missing annotation '${SONARQUBE_PROJECT_KEY_ANNOTATION}' for entity ${stringifyEntityRef(
           entity,
         )}`,
       );
     }
-    return this.client.getQualityGateStatus(projectKey);
+    const { instanceName, projectKey } = parseProjectKeyAnnotation(annotation);
+    return this.client.getQualityGateStatus(projectKey, instanceName);
   }
 }

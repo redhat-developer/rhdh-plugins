@@ -19,24 +19,61 @@ import type { Config } from '@backstage/config';
 
 const DEFAULT_BASE_URL = 'https://sonarcloud.io';
 
+type SonarQubeInstance = {
+  baseUrl: string;
+  apiKey?: string;
+  authType: 'Bearer' | 'Basic';
+};
+
 export class SonarQubeClient {
-  private readonly baseUrl: string;
-  private readonly token: string | undefined;
+  private readonly config: Config;
   private readonly logger: LoggerService;
 
   constructor(config: Config, logger: LoggerService) {
-    this.baseUrl = (
-      config.getOptionalString('sonarqube.baseUrl') ?? DEFAULT_BASE_URL
-    ).replace(/\/$/, '');
-    this.token = config.getOptionalString('sonarqube.token');
+    this.config = config;
     this.logger = logger.child({ component: 'SonarQubeClient' });
   }
 
-  private async fetchApi(path: string): Promise<any> {
-    const url = `${this.baseUrl}${path}`;
+  private resolveInstance(instanceName?: string): SonarQubeInstance {
+    const sonarqubeConfig = this.config.getOptionalConfig('sonarqube');
+
+    if (instanceName && sonarqubeConfig) {
+      const instances =
+        sonarqubeConfig.getOptionalConfigArray('instances') ?? [];
+      const instance = instances.find(
+        i => i.getString('name') === instanceName,
+      );
+      if (instance) {
+        return {
+          baseUrl: instance.getString('baseUrl').replace(/\/$/, ''),
+          apiKey: instance.getOptionalString('apiKey'),
+          authType:
+            (instance.getOptionalString('authType') as
+              | 'Bearer'
+              | 'Basic'
+              | undefined) ?? 'Basic',
+        };
+      }
+      throw new Error(
+        `SonarQube instance '${instanceName}' not found in configuration`,
+      );
+    }
+
+    return {
+      baseUrl: (
+        sonarqubeConfig?.getOptionalString('baseUrl') ?? DEFAULT_BASE_URL
+      ).replace(/\/$/, ''),
+      apiKey: sonarqubeConfig?.getOptionalString('apiKey'),
+      authType: 'Basic',
+    };
+  }
+
+  private async fetchApi(path: string, instanceName?: string): Promise<any> {
+    const instance = this.resolveInstance(instanceName);
+    const url = `${instance.baseUrl}${path}`;
     const headers: Record<string, string> = {};
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
+    if (instance.apiKey) {
+      headers.Authorization = `${instance.authType} ${instance.apiKey}`;
     }
     const response = await fetch(url, { headers });
     if (!response.ok) {
@@ -47,22 +84,30 @@ export class SonarQubeClient {
     return response.json();
   }
 
-  async getQualityGateStatus(projectKey: string): Promise<boolean> {
+  async getQualityGateStatus(
+    projectKey: string,
+    instanceName?: string,
+  ): Promise<boolean> {
     this.logger.debug(`Fetching quality gate status for project ${projectKey}`);
     const data = await this.fetchApi(
       `/api/qualitygates/project_status?projectKey=${encodeURIComponent(
         projectKey,
       )}`,
+      instanceName,
     );
     return data.projectStatus.status === 'OK';
   }
 
-  async getOpenIssuesCount(projectKey: string): Promise<number> {
+  async getOpenIssuesCount(
+    projectKey: string,
+    instanceName?: string,
+  ): Promise<number> {
     this.logger.debug(`Fetching open issues count for project ${projectKey}`);
     const data = await this.fetchApi(
       `/api/issues/search?componentKeys=${encodeURIComponent(
         projectKey,
       )}&statuses=OPEN,CONFIRMED,REOPENED&ps=1`,
+      instanceName,
     );
     return data.total;
   }
@@ -70,6 +115,7 @@ export class SonarQubeClient {
   async getMeasures(
     projectKey: string,
     metricKeys: string[],
+    instanceName?: string,
   ): Promise<Record<string, number>> {
     this.logger.debug(
       `Fetching measures [${metricKeys.join(', ')}] for project ${projectKey}`,
@@ -78,6 +124,7 @@ export class SonarQubeClient {
       `/api/measures/component?component=${encodeURIComponent(
         projectKey,
       )}&metricKeys=${encodeURIComponent(metricKeys.join(','))}`,
+      instanceName,
     );
 
     const result: Record<string, number> = {};

@@ -140,7 +140,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const result = await provider.calculateMetric(entity());
 
       expect(result).toBe(true);
-      expect(mockGetQualityGateStatus).toHaveBeenCalledWith('my-project');
+      expect(mockGetQualityGateStatus).toHaveBeenCalledWith(
+        'my-project',
+        undefined,
+      );
     });
 
     it('returns false when quality gate fails', async () => {
@@ -153,6 +156,21 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const result = await provider.calculateMetric(entity());
 
       expect(result).toBe(false);
+    });
+
+    it('passes instanceName when annotation has instance prefix', async () => {
+      mockGetQualityGateStatus.mockResolvedValue(true);
+      const provider = new SonarQubeBooleanMetricProvider(
+        mockConfig,
+        mockLogger,
+      );
+
+      await provider.calculateMetric(entity('internal/my-project'));
+
+      expect(mockGetQualityGateStatus).toHaveBeenCalledWith(
+        'my-project',
+        'internal',
+      );
     });
 
     it('throws when annotation is missing', async () => {

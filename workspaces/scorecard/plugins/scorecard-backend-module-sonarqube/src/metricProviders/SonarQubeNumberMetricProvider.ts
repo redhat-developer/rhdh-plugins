@@ -30,6 +30,7 @@ import {
   SONARQUBE_METRIC_CONFIG,
   SONARQUBE_NUMBER_THRESHOLDS,
   SONARQUBE_PROJECT_KEY_ANNOTATION,
+  parseProjectKeyAnnotation,
 } from './SonarQubeConfig';
 
 const SONARQUBE_API_METRIC_KEYS: Record<SonarQubeNumberMetricId, string[]> = {
@@ -88,29 +89,33 @@ export class SonarQubeNumberMetricProvider implements MetricProvider<'number'> {
     };
   }
 
-  private getProjectKey(entity: Entity): string {
-    const projectKey =
+  private getAnnotation(entity: Entity): {
+    instanceName?: string;
+    projectKey: string;
+  } {
+    const annotation =
       entity.metadata.annotations?.[SONARQUBE_PROJECT_KEY_ANNOTATION];
-    if (!projectKey) {
+    if (!annotation) {
       throw new Error(
         `Missing annotation '${SONARQUBE_PROJECT_KEY_ANNOTATION}' for entity ${stringifyEntityRef(
           entity,
         )}`,
       );
     }
-    return projectKey;
+    return parseProjectKeyAnnotation(annotation);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {
-    const projectKey = this.getProjectKey(entity);
+    const { instanceName, projectKey } = this.getAnnotation(entity);
 
     switch (this.metricId) {
       case 'open_issues':
-        return this.client.getOpenIssuesCount(projectKey);
+        return this.client.getOpenIssuesCount(projectKey, instanceName);
       case 'security_rating': {
         const measures = await this.client.getMeasures(
           projectKey,
           SONARQUBE_API_METRIC_KEYS.security_rating,
+          instanceName,
         );
         return measures.security_rating;
       }
@@ -118,6 +123,7 @@ export class SonarQubeNumberMetricProvider implements MetricProvider<'number'> {
         const measures = await this.client.getMeasures(
           projectKey,
           SONARQUBE_API_METRIC_KEYS.security_issues,
+          instanceName,
         );
         return measures.vulnerabilities;
       }

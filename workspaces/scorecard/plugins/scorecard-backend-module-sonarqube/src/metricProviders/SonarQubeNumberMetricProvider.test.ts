@@ -157,7 +157,10 @@ describe('SonarQubeNumberMetricProvider', () => {
       const result = await provider.calculateMetric(entity());
 
       expect(result).toBe(42);
-      expect(mockGetOpenIssuesCount).toHaveBeenCalledWith('my-project');
+      expect(mockGetOpenIssuesCount).toHaveBeenCalledWith(
+        'my-project',
+        undefined,
+      );
       expect(mockGetMeasures).not.toHaveBeenCalled();
     });
 
@@ -172,9 +175,11 @@ describe('SonarQubeNumberMetricProvider', () => {
       const result = await provider.calculateMetric(entity());
 
       expect(result).toBe(2);
-      expect(mockGetMeasures).toHaveBeenCalledWith('my-project', [
-        'security_rating',
-      ]);
+      expect(mockGetMeasures).toHaveBeenCalledWith(
+        'my-project',
+        ['security_rating'],
+        undefined,
+      );
       expect(mockGetOpenIssuesCount).not.toHaveBeenCalled();
     });
 
@@ -189,9 +194,27 @@ describe('SonarQubeNumberMetricProvider', () => {
       const result = await provider.calculateMetric(entity());
 
       expect(result).toBe(7);
-      expect(mockGetMeasures).toHaveBeenCalledWith('my-project', [
-        'vulnerabilities',
-      ]);
+      expect(mockGetMeasures).toHaveBeenCalledWith(
+        'my-project',
+        ['vulnerabilities'],
+        undefined,
+      );
+    });
+
+    it('passes instanceName when annotation has instance prefix', async () => {
+      mockGetOpenIssuesCount.mockResolvedValue(5);
+      const provider = new SonarQubeNumberMetricProvider(
+        mockConfig,
+        mockLogger,
+        'open_issues',
+      );
+
+      await provider.calculateMetric(entity('internal/my-project'));
+
+      expect(mockGetOpenIssuesCount).toHaveBeenCalledWith(
+        'my-project',
+        'internal',
+      );
     });
 
     it('throws when annotation is missing', async () => {

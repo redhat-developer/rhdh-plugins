@@ -18,6 +18,30 @@ import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scoreca
 
 export const SONARQUBE_PROJECT_KEY_ANNOTATION = 'sonarqube.org/project-key';
 
+export type SonarQubeAnnotation = {
+  instanceName?: string;
+  projectKey: string;
+};
+
+/**
+ * Parses the `sonarqube.org/project-key` annotation value.
+ * Supports an optional instance name prefix separated by `/`:
+ *   - `my-project`              → { projectKey: 'my-project' }
+ *   - `my-instance/my-project`  → { instanceName: 'my-instance', projectKey: 'my-project' }
+ */
+export function parseProjectKeyAnnotation(
+  annotation: string,
+): SonarQubeAnnotation {
+  const slashIndex = annotation.indexOf('/');
+  if (slashIndex === -1) {
+    return { projectKey: annotation };
+  }
+  return {
+    instanceName: annotation.substring(0, slashIndex),
+    projectKey: annotation.substring(slashIndex + 1),
+  };
+}
+
 export const SONARQUBE_METRICS = [
   'quality_gate',
   'open_issues',
