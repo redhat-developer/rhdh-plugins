@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.6.3
+
+### Patch Changes
+
+- 3d6415d: Avoid layout gaps for `ui:hidden` custom widgets by skipping grid items while
+  keeping hidden widgets mounted.
+- Updated dependencies [5a9d9d8]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.3
+
 ## 2.6.2
 
 ### Patch Changes
