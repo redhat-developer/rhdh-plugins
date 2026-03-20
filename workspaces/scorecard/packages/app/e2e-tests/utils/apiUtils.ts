@@ -48,6 +48,23 @@ export async function mockScorecardResponse(
   });
 }
 
+const SONARQUBE_SCORECARD_API_ROUTE =
+  '**/api/scorecard/metrics/catalog/Component/default/sonarqube-scorecard-only';
+
+export async function mockSonarqubeScorecardResponse(
+  page: Page,
+  responseData: object,
+  status = 200,
+) {
+  await page.route(SONARQUBE_SCORECARD_API_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(responseData),
+    });
+  });
+}
+
 const GITHUB_AGGREGATION_ROUTE =
   '**/api/scorecard/metrics/github.open_prs/catalog/aggregations';
 const JIRA_AGGREGATION_ROUTE =

@@ -118,6 +118,11 @@ permission:
       users:
         - name: user:development/guest
 
+# SonarQube configuration (optional - defaults to https://sonarcloud.io, no auth for public projects)
+# sonarqube:
+#   baseUrl: https://sonarcloud.io
+#   token: ${SONARQUBE_TOKEN}
+
 # Scorecard development configuration
 scorecard:
   plugins:
@@ -126,10 +131,10 @@ scorecard:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
-          initialDelay: { seconds: 5 }
+          initialDelay: { minutes: 1 }
     github:
       open_prs:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
-          initialDelay: { seconds: 5 }
+          initialDelay: { minutes: 1 }

@@ -172,6 +172,197 @@ export const invalidThresholdResponse = [
   },
 ];
 
+// SonarQube scorecard responses
+
+function sonarqubeNumberMetric(
+  id: string,
+  title: string,
+  description: string,
+  value: number,
+  thresholdRules: Array<{ key: string; expression: string }>,
+  evaluation: string,
+) {
+  return {
+    id,
+    status: 'success',
+    metadata: { title, description, type: 'number', history: true },
+    result: {
+      value,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: { rules: thresholdRules },
+        status: 'success',
+        evaluation,
+      },
+    },
+  };
+}
+
+const ratingRules = [
+  { key: 'success', expression: '<2' },
+  { key: 'warning', expression: '2-3' },
+  { key: 'error', expression: '>3' },
+];
+
+const issueRules = [
+  { key: 'success', expression: '<1' },
+  { key: 'warning', expression: '1-5' },
+  { key: 'error', expression: '>5' },
+];
+
+export const sonarqubeScorecardResponse = [
+  {
+    id: 'sonarqube.quality_gate',
+    status: 'success',
+    metadata: {
+      title: 'SonarQube Quality Gate Status',
+      description:
+        'Whether the project passes its SonarQube quality gate (true = OK, false = ERROR).',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: true,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            { key: 'success', expression: '==true' },
+            { key: 'error', expression: '==false' },
+          ],
+        },
+        status: 'success',
+        evaluation: 'success',
+      },
+    },
+  },
+  sonarqubeNumberMetric(
+    'sonarqube.open_issues',
+    'SonarQube Open Issues',
+    'Count of open issues (OPEN, CONFIRMED, REOPENED) in SonarQube.',
+    3,
+    [
+      { key: 'success', expression: '<1' },
+      { key: 'warning', expression: '1-10' },
+      { key: 'error', expression: '>10' },
+    ],
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.security_rating',
+    'SonarQube Security Rating',
+    'SonarQube security rating (A=1, B=2, C=3, D=4, E=5).',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.security_issues',
+    'SonarQube Security Issues',
+    'Count of open security vulnerabilities in SonarQube.',
+    0,
+    issueRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.security_review_rating',
+    'SonarQube Security Review Rating',
+    'SonarQube security review rating (A=1, B=2, C=3, D=4, E=5).',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.security_hotspots',
+    'SonarQube Security Hotspots',
+    'Count of security hotspots to review in SonarQube.',
+    2,
+    issueRules,
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.reliability_rating',
+    'SonarQube Reliability Rating',
+    'SonarQube reliability rating (A=1, B=2, C=3, D=4, E=5).',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.reliability_issues',
+    'SonarQube Reliability Issues',
+    'Count of open bugs in SonarQube.',
+    0,
+    issueRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.maintainability_rating',
+    'SonarQube Maintainability Rating',
+    'SonarQube maintainability rating (A=1, B=2, C=3, D=4, E=5).',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.maintainability_issues',
+    'SonarQube Maintainability Issues',
+    'Count of open code smells in SonarQube.',
+    12,
+    [
+      { key: 'success', expression: '<10' },
+      { key: 'warning', expression: '10-50' },
+      { key: 'error', expression: '>50' },
+    ],
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.code_coverage',
+    'SonarQube Code Coverage',
+    'Overall code coverage percentage in SonarQube.',
+    82.5,
+    [
+      { key: 'success', expression: '>80' },
+      { key: 'warning', expression: '50-80' },
+      { key: 'error', expression: '<50' },
+    ],
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.code_duplications',
+    'SonarQube Code Duplications',
+    'Percentage of duplicated lines in SonarQube.',
+    3.2,
+    [
+      { key: 'success', expression: '<3' },
+      { key: 'warning', expression: '3-10' },
+      { key: 'error', expression: '>10' },
+    ],
+    'warning',
+  ),
+];
+
+export const sonarqubeFailedQualityGateResponse = [
+  {
+    ...sonarqubeScorecardResponse[0],
+    result: {
+      value: false,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            { key: 'success', expression: '==true' },
+            { key: 'error', expression: '==false' },
+          ],
+        },
+        status: 'success',
+        evaluation: 'error',
+      },
+    },
+  },
+  ...sonarqubeScorecardResponse.slice(1),
+];
+
 // Aggregated scorecard responses (15 GitHub entities, 10 Jira entities)
 export const githubAggregatedResponse = {
   id: 'github.open_prs',
