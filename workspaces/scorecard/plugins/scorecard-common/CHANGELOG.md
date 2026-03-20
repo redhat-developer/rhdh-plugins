@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 2.5.0
+
+### Minor Changes
+
+- c83b206: Adds the ability to drill down from aggregated scorecard KPIs to view the individual entities that contribute to the overall score. This enables managers and platform engineers to identify specific services impacting metrics and troubleshoot issues at the entity level.
+
 ## 2.4.0
 
 ### Minor Changes

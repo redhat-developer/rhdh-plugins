@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 2.5.0
+
+### Minor Changes
+
+- bd5f3e8: added disable metric feature to the pull metric task
+- c83b206: Adds the ability to drill down from aggregated scorecard KPIs to view the individual entities that contribute to the overall score. This enables managers and platform engineers to identify specific services impacting metrics and troubleshoot issues at the entity level.
+
+### Patch Changes
+
+- 4f483a6: Normalize entity owners to their full canonical reference when syncing. Catalog entities are able to define a short name or the full entity reference for group ownership. This can lead to inconsistent filtering as we utilize the full entity reference for users and groups
+- 89b273f: Adds the ability to sort by status that was originally missed during the initial implementation of the drill down feature
+- Updated dependencies [c83b206]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.5.0
+
 ## 2.4.0
 
 ### Minor Changes
