@@ -26,7 +26,7 @@
 /workspaces/lightspeed                              @redhat-developer/rhdh-ui @karthikjeeyar @rohitkrai03   @yangcao77
 /workspaces/mcp-integrations                        @johnmcollier @gabemontero @thepetk @redhat-developer/rhdh-ai
 /workspaces/openshift-image-registry                @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
-/workspaces/orchestrator                            @lholmquist @lokanandaprabhu @redhat-developer/rhdh-plugins
+/workspaces/orchestrator                            @lholmquist @lokanandaprabhu @redhat-developer/rhdh-plugins @karthikjeeyar @christoph-jerolimov
 /workspaces/quickstart                              @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
 /workspaces/cost-management                         @ydayagi @mareklibra @batzionb @PreetiW @asmasarw
 /workspaces/sandbox                                 @lucifergene @rohitkrai03 @karthikjeeyar @xcoulon @alexeykazakov @mfrancisc @rsoaresd @jrosental @rajivnathan @MatousJobanek

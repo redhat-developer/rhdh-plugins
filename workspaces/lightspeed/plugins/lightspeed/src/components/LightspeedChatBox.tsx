@@ -85,6 +85,18 @@ const useStyles = makeStyles(theme => ({
       opacity: 0.65,
     },
   },
+  // Message box fills remaining height and scrolls when there are messages.
+  messageBoxFlex: {
+    flex: 1,
+    minHeight: 0,
+  },
+  // New chat: message box sizes to content so ChatbotContent is the scroll container.
+  // overflow: visible so full height is included in parent's scrollHeight (no clipping).
+  messageBoxAutoHeight: {
+    flex: 'none',
+    height: 'auto',
+    overflow: 'visible',
+  },
 }));
 
 // Extended message type that includes tool calls
@@ -180,15 +192,19 @@ export const LightspeedChatBox = forwardRef(
     const messageBoxClasses = `${classes.container} ${classes.userMessageText}`;
     const isEmbeddedMode = displayMode === ChatbotDisplayMode.embedded;
 
+    const isNewChat = welcomePrompts.length > 0 && messages.length === 0;
     const getMessageBoxClassName = () => {
+      const base = isNewChat
+        ? `${messageBoxClasses} ${classes.messageBoxAutoHeight}`
+        : `${messageBoxClasses} ${classes.messageBoxFlex}`;
       if (!welcomePrompts.length) {
-        return messageBoxClasses;
+        return base;
       }
-      const baseClasses = `${messageBoxClasses} ${classes.prompt}`;
+      const withPrompt = `${base} ${classes.prompt}`;
       if (isEmbeddedMode) {
-        return baseClasses;
+        return withPrompt;
       }
-      return `${baseClasses} ${classes.promptSuggestions}`;
+      return `${withPrompt} ${classes.promptSuggestions}`;
     };
 
     return (
