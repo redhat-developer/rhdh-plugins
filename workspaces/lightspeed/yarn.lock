@@ -10367,6 +10367,7 @@ __metadata:
     "@types/supertest": "npm:2.0.16"
     express: "npm:^4.21.1"
     http-proxy-middleware: "npm:^3.0.2"
+    knex: "npm:^3.1.0"
     msw: "npm:2.12.10"
     prettier: "npm:3.8.1"
     supertest: "npm:6.3.4"
@@ -23396,7 +23397,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:3, knex@npm:3.1.0, knex@npm:^3.0.0":
+"knex@npm:3, knex@npm:3.1.0, knex@npm:^3.0.0, knex@npm:^3.1.0":
   version: 3.1.0
   resolution: "knex@npm:3.1.0"
   dependencies:

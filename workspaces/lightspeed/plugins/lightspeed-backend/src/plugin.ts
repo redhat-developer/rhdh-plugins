@@ -19,6 +19,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 
+import { migrate } from './database/migration';
 import { createRouter } from './service/router';
 
 /**
@@ -36,14 +37,26 @@ export const lightspeedPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         userInfo: coreServices.userInfo,
         permissions: coreServices.permissions,
+        database: coreServices.database,
       },
-      async init({ logger, config, http, httpAuth, userInfo, permissions }) {
+      async init({
+        logger,
+        config,
+        http,
+        httpAuth,
+        userInfo,
+        permissions,
+        database,
+      }) {
+        await migrate(database);
+
         http.use(
           await createRouter({
-            config: config,
-            logger: logger,
-            httpAuth: httpAuth,
-            userInfo: userInfo,
+            config,
+            logger,
+            database,
+            httpAuth,
+            userInfo,
             permissions,
           }),
         );

@@ -51,7 +51,8 @@
     "@langchain/openai": "^0.6.0",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
     "express": "^4.21.1",
-    "http-proxy-middleware": "^3.0.2"
+    "http-proxy-middleware": "^3.0.2",
+    "knex": "^3.1.0"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.10.4",
@@ -68,7 +69,8 @@
   "files": [
     "dist",
     "config.d.ts",
-    "app-config.yaml"
+    "app-config.yaml",
+    "migrations"
   ],
   "configSchema": "config.d.ts",
   "repository": {
