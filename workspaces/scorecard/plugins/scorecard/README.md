@@ -2,6 +2,12 @@
 
 The Scorecard plugin provides a configurable framework to visualize Key Performance Indicators (KPIs) in Backstage. This frontend plugin integrates with the Scorecard backend to deliver Scorecards.
 
+**Features:**
+
+- **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
+- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues).
+- **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
+
 ## Getting started
 
 Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/scorecard](http://localhost:3000/scorecard).
@@ -52,7 +58,7 @@ permission:
 
 ### Configuration
 
-1. Add the Scorecard page to you Entity overview page by modifying `packages/app/src/components/catalog/EntityPage.tsx`:
+1. **Entity scorecard tab** — Add the Scorecard page to your Entity overview page by modifying `packages/app/src/components/catalog/EntityPage.tsx`:
 
    ```tsx
    import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
@@ -98,11 +104,22 @@ permission:
    );
    ```
 
+2. **Scorecard page** — To enable the drill-down page that lists entities contributing to a metric, add a route in your app (e.g. `packages/app/src/App.tsx`):
+
+   ```tsx
+   import { ScorecardPage } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+
+   // Inside your routes (e.g. <FlatRoutes>):
+   <Route path="/scorecard/metrics/:metricId" element={<ScorecardPage />} />;
+   ```
+
+   The page is available at `/scorecard/metrics/:metricId` (e.g. `/scorecard/metrics/github.open_prs`). Users can reach it by following the "View entities" (or similar) link from a scorecard homepage card or from the main scorecard view.
+
 ### Accessing the Plugin
 
 1. Open your Backstage application.
-2. Navigate to the Entity overview page from catalog.
-3. Explore and analyze scorecard metrics using the scorecards tab.
+2. **Entity scorecards** — Navigate to the Entity overview page from catalog and use the Scorecard tab to explore metrics for that entity.
+3. **Scorecard Entities page** — From the home page scorecard cards or the main scorecard, open a metric to see the list of entities contributing to it. The entities page shows a sortable, paginated table with entity names, metric values, and status (success, warning, error).
 
 ## Adding Translations
 

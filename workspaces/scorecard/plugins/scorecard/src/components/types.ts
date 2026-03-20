@@ -19,3 +19,20 @@ export type PieData = {
   value: number;
   color?: string;
 };
+
+export type EntityMetadata = {
+  title?: string;
+  description?: string;
+  kind?: string;
+};
+
+export type EntityMetadataMap = Record<string, EntityMetadata>;
+
+export type GetAggregatedScorecardEntitiesOptions = {
+  metricId: string;
+  page: number;
+  pageSize: number;
+  ownershipEntityRefs?: string[];
+  orderBy?: string | null;
+  order?: 'asc' | 'desc';
+};
