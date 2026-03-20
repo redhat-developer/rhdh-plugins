@@ -20,15 +20,15 @@ import fs from 'fs-extra';
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 
-import { validateTranslationFile } from '../lib/i18n/validateFile';
-import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
+import { validateTranslationFile } from '../../lib/i18n/validateFile';
+import { loadI18nConfig, mergeConfigWithOptions } from '../../lib/i18n/config';
 import {
   hasFileChanged,
   saveUploadCache,
   getCachedUpload,
-} from '../lib/i18n/uploadCache';
-import { commandExists, safeExecSyncOrThrow } from '../lib/utils/exec';
-import { countTranslationKeys } from '../lib/utils/translationUtils';
+} from '../../lib/i18n/uploadCache';
+import { commandExists, safeExecSyncOrThrow } from '../../lib/utils/exec';
+import { countTranslationKeys } from '../../lib/utils/translationUtils';
 
 /**
  * Detect repository name from git or directory
@@ -393,7 +393,7 @@ function displayMissingConfigError(
 
   console.error('');
   console.error(chalk.blue('📋 Quick Setup Guide:'));
-  console.error(chalk.gray('   1. Run: translations-cli i18n init'));
+  console.error(chalk.gray('   1. Run: translations-cli init'));
   console.error(chalk.gray('      This creates .i18n.config.json'));
   console.error('');
   console.error(
@@ -409,9 +409,7 @@ function displayMissingConfigError(
   console.error(
     chalk.gray('   3. Set up Memsource authentication (recommended):'),
   );
-  console.error(
-    chalk.gray('      - Run: translations-cli i18n setup-memsource'),
-  );
+  console.error(chalk.gray('      - Run: translations-cli memsource setup'));
   console.error(
     chalk.gray(
       '      - Or manually create ~/.memsourcerc following localization team instructions',
