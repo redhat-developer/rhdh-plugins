@@ -34,6 +34,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'table.columns.targetRepo': 'Dépôt cible',
     'table.columns.createdAt': 'Créé le',
     'table.actions.deleteProject': 'Supprimer le projet',
+    'table.actions.retriggerInit':
+      "Relancer la phase d'initialisation du projet",
     'table.actions.expandAll': 'Développer toutes les lignes',
     'table.actions.collapseAll': 'Réduire toutes les lignes',
     'table.actions.expandRow': 'Développer la ligne',
@@ -206,9 +208,10 @@ const x2aPluginTranslationFr = createTranslationMessages({
       'Exécuter tous les modules du projet « {{name}} » ?',
     'bulkRun.projectConfirm.message':
       "Cela déclenchera la prochaine phase de migration pour chaque module de ce projet dont l'état actuel le permet. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action. Les modules non éligibles seront ignorés.",
-    'bulkRun.globalConfirm.title': 'Exécuter tous les modules éligibles ?',
+    'bulkRun.globalConfirm.title':
+      'Exécuter tous les projets et modules éligibles ?',
     'bulkRun.globalConfirm.message':
-      "Cela déclenchera la prochaine phase de migration pour tous les modules éligibles de tous les projets auxquels vous avez accès en écriture, y compris les projets non visibles sur la page actuelle. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action.",
+      "Cela déclenchera la prochaine phase de migration pour tous les modules éligibles de tous les projets auxquels vous avez accès en écriture, y compris les projets non visibles sur la page actuelle. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action. De plus, la phase d'initialisation sera relancée pour les projets qui n'ont pas encore de modules et dont l'initialisation n'est pas en cours.",
     'bulkRun.projectPageConfirm.title':
       'Exécuter tous les modules de « {{name}} » ?',
     'bulkRun.projectPageConfirm.message':

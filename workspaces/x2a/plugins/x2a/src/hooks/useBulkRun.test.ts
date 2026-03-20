@@ -16,6 +16,7 @@
 
 const mockProjectsProjectIdModulesGet = jest.fn();
 const mockProjectsProjectIdModulesModuleIdRunPost = jest.fn();
+const mockProjectsProjectIdRunPost = jest.fn();
 const mockProjectsGet = jest.fn();
 const mockAuthenticate = jest.fn();
 
@@ -24,6 +25,7 @@ jest.mock('../ClientService', () => ({
     projectsProjectIdModulesGet: mockProjectsProjectIdModulesGet,
     projectsProjectIdModulesModuleIdRunPost:
       mockProjectsProjectIdModulesModuleIdRunPost,
+    projectsProjectIdRunPost: mockProjectsProjectIdRunPost,
     projectsGet: mockProjectsGet,
   }),
 }));
@@ -33,6 +35,7 @@ jest.mock('../repoAuth', () => ({
 }));
 
 jest.mock('../components/tools', () => ({
+  ...jest.requireActual('../components/tools'),
   canRunNextPhase: jest.fn(),
   getNextPhase: jest.fn(),
 }));
@@ -83,6 +86,21 @@ const makeModule = (overrides?: Partial<Module>): Module => ({
   projectId: 'proj-1',
   ...overrides,
 });
+
+const withModulesStatus: Pick<Project, 'status'> = {
+  status: {
+    state: 'inProgress',
+    modulesSummary: {
+      total: 1,
+      finished: 0,
+      waiting: 1,
+      pending: 0,
+      running: 0,
+      error: 0,
+      cancelled: 0,
+    },
+  },
+};
 
 const jsonResponse = (data: unknown) => ({
   ok: true,
@@ -457,9 +475,9 @@ describe('useBulkRun', () => {
     });
 
     it('paginates through all pages when totalCount exceeds a single page', async () => {
-      const p1 = makeProject({ id: 'p1' });
-      const p2 = makeProject({ id: 'p2' });
-      const p3 = makeProject({ id: 'p3' });
+      const p1 = makeProject({ id: 'p1', ...withModulesStatus });
+      const p2 = makeProject({ id: 'p2', ...withModulesStatus });
+      const p3 = makeProject({ id: 'p3', ...withModulesStatus });
       setupPaginatedProjects([[p1, p2], [p3]], 3);
       setupModulesForProjects({
         p1: [makeModule({ id: 'm1', projectId: 'p1' })],
@@ -486,7 +504,7 @@ describe('useBulkRun', () => {
 
     it('stops paginating once all items are fetched', async () => {
       const projects = Array.from({ length: 3 }, (_, i) =>
-        makeProject({ id: `p${i}` }),
+        makeProject({ id: `p${i}`, ...withModulesStatus }),
       );
       setupPaginatedProjects([projects], 3);
 
@@ -498,8 +516,8 @@ describe('useBulkRun', () => {
     });
 
     it('paginates using page size when totalCount is absent', async () => {
-      const p1 = makeProject({ id: 'p1' });
-      const p2 = makeProject({ id: 'p2' });
+      const p1 = makeProject({ id: 'p1', ...withModulesStatus });
+      const p2 = makeProject({ id: 'p2', ...withModulesStatus });
 
       mockProjectsGet.mockImplementation(async ({ query }: any) => {
         if (query.page === 0) {
@@ -534,8 +552,8 @@ describe('useBulkRun', () => {
     });
 
     it('aggregates results from multiple projects', async () => {
-      const p1 = makeProject({ id: 'p1' });
-      const p2 = makeProject({ id: 'p2' });
+      const p1 = makeProject({ id: 'p1', ...withModulesStatus });
+      const p2 = makeProject({ id: 'p2', ...withModulesStatus });
       setupGlobalProjects([p1, p2]);
       setupModulesForProjects({
         p1: [makeModule({ id: 'm1', projectId: 'p1' })],
@@ -556,8 +574,8 @@ describe('useBulkRun', () => {
     });
 
     it('applies project filter when provided', async () => {
-      const p1 = makeProject({ id: 'p1', name: 'keep' });
-      const p2 = makeProject({ id: 'p2', name: 'skip' });
+      const p1 = makeProject({ id: 'p1', name: 'keep', ...withModulesStatus });
+      const p2 = makeProject({ id: 'p2', name: 'skip', ...withModulesStatus });
       setupGlobalProjects([p1, p2]);
       setupModulesForProjects({
         p1: [makeModule({ id: 'm1', projectId: 'p1' })],
@@ -579,8 +597,8 @@ describe('useBulkRun', () => {
     });
 
     it('counts a project-level failure without aborting others', async () => {
-      const p1 = makeProject({ id: 'p1' });
-      const p2 = makeProject({ id: 'p2' });
+      const p1 = makeProject({ id: 'p1', ...withModulesStatus });
+      const p2 = makeProject({ id: 'p2', ...withModulesStatus });
       setupGlobalProjects([p1, p2]);
 
       mockProjectsProjectIdModulesGet.mockImplementation(
@@ -604,7 +622,7 @@ describe('useBulkRun', () => {
 
     it(`processes projects in batches of at most ${MAX_CONCURRENT_BULK_RUN}`, async () => {
       const projects = Array.from({ length: 7 }, (_, i) =>
-        makeProject({ id: `p${i}` }),
+        makeProject({ id: `p${i}`, ...withModulesStatus }),
       );
       setupGlobalProjects(projects);
 
@@ -629,6 +647,280 @@ describe('useBulkRun', () => {
 
       expect(maxConcurrent).toBeLessThanOrEqual(MAX_CONCURRENT_BULK_RUN);
       expect(callOrder).toHaveLength(7);
+    });
+
+    it('retriggers init for projects with no modules and no running init', async () => {
+      const initEligible = makeProject({
+        id: 'p-init',
+        initJob: { id: 'j1', status: 'error' } as any,
+      });
+      setupGlobalProjects([initEligible]);
+
+      mockProjectsProjectIdRunPost.mockResolvedValue(
+        jsonResponse({ jobId: 'init-job-1', status: 'pending' }),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      const outcome = await result.current.runAllGlobal();
+
+      expect(mockProjectsProjectIdRunPost).toHaveBeenCalledTimes(1);
+      expect(mockProjectsProjectIdRunPost).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: { projectId: 'p-init' },
+        }),
+      );
+      expect(mockProjectsProjectIdModulesGet).not.toHaveBeenCalled();
+      expect(outcome).toEqual({ total: 1, succeeded: 1, failed: 0 });
+    });
+
+    it('does not retrigger init when init job is running', async () => {
+      const runningInit = makeProject({
+        id: 'p-running',
+        initJob: { id: 'j1', status: 'running' } as any,
+      });
+      setupGlobalProjects([runningInit]);
+
+      mockProjectsProjectIdModulesGet.mockResolvedValue(jsonResponse([]));
+
+      const { result } = renderHook(() => useBulkRun());
+
+      const outcome = await result.current.runAllGlobal();
+
+      expect(mockProjectsProjectIdRunPost).not.toHaveBeenCalled();
+      expect(mockProjectsProjectIdModulesGet).toHaveBeenCalledTimes(1);
+      expect(outcome).toEqual({ total: 0, succeeded: 0, failed: 0 });
+    });
+
+    it('does not retrigger init when init job is pending', async () => {
+      const pendingInit = makeProject({
+        id: 'p-pending',
+        initJob: { id: 'j1', status: 'pending' } as any,
+      });
+      setupGlobalProjects([pendingInit]);
+
+      mockProjectsProjectIdModulesGet.mockResolvedValue(jsonResponse([]));
+
+      const { result } = renderHook(() => useBulkRun());
+
+      const outcome = await result.current.runAllGlobal();
+
+      expect(mockProjectsProjectIdRunPost).not.toHaveBeenCalled();
+      expect(outcome).toEqual({ total: 0, succeeded: 0, failed: 0 });
+    });
+
+    it('runs modules instead of retrigger when project has modules', async () => {
+      const withModules = makeProject({
+        id: 'p-mods',
+        status: {
+          state: 'inProgress',
+          modulesSummary: {
+            total: 2,
+            finished: 0,
+            waiting: 1,
+            pending: 1,
+            running: 0,
+            error: 0,
+            cancelled: 0,
+          },
+        },
+      });
+      setupGlobalProjects([withModules]);
+      setupModulesForProjects({
+        'p-mods': [
+          makeModule({ id: 'm1', projectId: 'p-mods' }),
+          makeModule({ id: 'm2', projectId: 'p-mods' }),
+        ],
+      });
+      mockProjectsProjectIdModulesModuleIdRunPost.mockResolvedValue(
+        jsonResponse({ jobId: 'job-1' }),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      const outcome = await result.current.runAllGlobal();
+
+      expect(mockProjectsProjectIdRunPost).not.toHaveBeenCalled();
+      expect(mockProjectsProjectIdModulesModuleIdRunPost).toHaveBeenCalledTimes(
+        2,
+      );
+      expect(outcome).toEqual({ total: 2, succeeded: 2, failed: 0 });
+    });
+
+    it('mixes module runs and init retriggers across projects', async () => {
+      const initEligible = makeProject({
+        id: 'p-init',
+        initJob: { id: 'j1', status: 'error' } as any,
+      });
+      const withModules = makeProject({
+        id: 'p-mods',
+        status: {
+          state: 'inProgress',
+          modulesSummary: {
+            total: 1,
+            finished: 0,
+            waiting: 1,
+            pending: 0,
+            running: 0,
+            error: 0,
+            cancelled: 0,
+          },
+        },
+      });
+      setupGlobalProjects([initEligible, withModules]);
+      setupModulesForProjects({
+        'p-mods': [makeModule({ id: 'm1', projectId: 'p-mods' })],
+      });
+      mockProjectsProjectIdRunPost.mockResolvedValue(
+        jsonResponse({ jobId: 'init-job-1', status: 'pending' }),
+      );
+      mockProjectsProjectIdModulesModuleIdRunPost.mockResolvedValue(
+        jsonResponse({ jobId: 'mod-job-1' }),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      const outcome = await result.current.runAllGlobal();
+
+      expect(mockProjectsProjectIdRunPost).toHaveBeenCalledTimes(1);
+      expect(mockProjectsProjectIdModulesModuleIdRunPost).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(outcome).toEqual({ total: 2, succeeded: 2, failed: 0 });
+    });
+
+    it('counts failed init retrigger in the failed total', async () => {
+      const initEligible = makeProject({
+        id: 'p-init',
+        initJob: { id: 'j1', status: 'error' } as any,
+      });
+      setupGlobalProjects([initEligible]);
+
+      mockProjectsProjectIdRunPost.mockRejectedValue(
+        new Error('init retrigger failed'),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      const outcome = await result.current.runAllGlobal();
+
+      expect(outcome).toEqual({ total: 0, succeeded: 0, failed: 1 });
+    });
+  });
+
+  describe('retriggerInit', () => {
+    it('calls projectsProjectIdRunPost with correct project ID and auth tokens', async () => {
+      const project = makeProject();
+
+      mockAuthenticate
+        .mockResolvedValueOnce([{ token: 'target-tok' }])
+        .mockResolvedValueOnce([{ token: 'source-tok' }]);
+      mockProjectsProjectIdRunPost.mockResolvedValue(
+        jsonResponse({ jobId: 'init-job-1', status: 'pending' }),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      const jobId = await result.current.retriggerInit(project);
+
+      expect(jobId).toBe('init-job-1');
+      expect(mockProjectsProjectIdRunPost).toHaveBeenCalledWith({
+        path: { projectId: 'proj-1' },
+        body: {
+          sourceRepoAuth: { token: 'source-tok' },
+          targetRepoAuth: { token: 'target-tok' },
+        },
+      });
+    });
+
+    it('authenticates source (read-only) and target (read-write) repos', async () => {
+      const project = makeProject({
+        sourceRepoUrl: 'https://github.com/org/src',
+        targetRepoUrl: 'https://github.com/org/tgt',
+      });
+
+      mockProjectsProjectIdRunPost.mockResolvedValue(
+        jsonResponse({ jobId: 'init-job-1', status: 'pending' }),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      await result.current.retriggerInit(project);
+
+      expect(mockAuthenticate).toHaveBeenCalledTimes(2);
+      expect(mockAuthenticate).toHaveBeenCalledWith([
+        { repoUrl: 'https://github.com/org/tgt', readOnly: false },
+      ]);
+      expect(mockAuthenticate).toHaveBeenCalledWith([
+        { repoUrl: 'https://github.com/org/src', readOnly: true },
+      ]);
+    });
+
+    it('reuses target token when source and target URLs match', async () => {
+      const sameUrl = 'https://github.com/org/repo';
+      const project = makeProject({
+        sourceRepoUrl: sameUrl,
+        targetRepoUrl: sameUrl,
+      });
+
+      mockAuthenticate.mockResolvedValueOnce([{ token: 'shared-tok' }]);
+      mockProjectsProjectIdRunPost.mockResolvedValue(
+        jsonResponse({ jobId: 'init-job-1', status: 'pending' }),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      await result.current.retriggerInit(project);
+
+      expect(mockAuthenticate).toHaveBeenCalledTimes(1);
+      expect(mockProjectsProjectIdRunPost).toHaveBeenCalledWith({
+        path: { projectId: 'proj-1' },
+        body: {
+          sourceRepoAuth: { token: 'shared-tok' },
+          targetRepoAuth: { token: 'shared-tok' },
+        },
+      });
+    });
+
+    it('throws when response has no jobId', async () => {
+      const project = makeProject();
+
+      mockProjectsProjectIdRunPost.mockResolvedValue(jsonResponse({}));
+
+      const { result } = renderHook(() => useBulkRun());
+
+      await expect(result.current.retriggerInit(project)).rejects.toThrow(
+        'No jobId returned for project init',
+      );
+    });
+
+    it('throws when API call fails', async () => {
+      const project = makeProject();
+
+      mockProjectsProjectIdRunPost.mockRejectedValue(
+        new Error('network error'),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      await expect(result.current.retriggerInit(project)).rejects.toThrow(
+        'network error',
+      );
+    });
+
+    it('throws when authentication fails', async () => {
+      const project = makeProject();
+
+      mockAuthenticate.mockRejectedValue(
+        new Error('GitHub auth provider is not configured'),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      await expect(result.current.retriggerInit(project)).rejects.toThrow(
+        'GitHub auth provider is not configured',
+      );
+      expect(mockProjectsProjectIdRunPost).not.toHaveBeenCalled();
     });
   });
 });

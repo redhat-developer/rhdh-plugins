@@ -39,6 +39,7 @@ readonly "table.columns.createdAt": string;
 readonly "table.columns.sourceRepo": string;
 readonly "table.columns.targetRepo": string;
 readonly "table.actions.deleteProject": string;
+readonly "table.actions.retriggerInit": string;
 readonly "table.actions.expandAll": string;
 readonly "table.actions.collapseAll": string;
 readonly "table.actions.expandRow": string;

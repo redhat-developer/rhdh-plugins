@@ -42,7 +42,11 @@ import { InitPhaseCard } from './InitPhaseCard';
 import { DeleteProjectDialog } from '../DeleteProjectDialog';
 import { BulkRunConfirmDialog } from '../BulkRunConfirmDialog';
 import { ProjectActions, ProjectActionsProps } from './ProjectActions';
-import { extractResponseError } from '../tools';
+import {
+  extractResponseError,
+  canRunNextPhase,
+  isEligibleForRetriggerInit,
+} from '../tools';
 
 export const ProjectPage = () => {
   const { t } = useTranslation();
@@ -50,7 +54,7 @@ export const ProjectPage = () => {
   const { projectId } = useRouteRefParams(projectRouteRef);
   const rootPath = useRouteRef(rootRouteRef);
   const clientService = useClientService();
-  const { runAllForProject } = useBulkRun();
+  const { runAllForProject, retriggerInit } = useBulkRun();
   const { canWriteProject } = useProjectWriteAccess();
   const [error, setError] = useState<Error | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -138,6 +142,18 @@ export const ProjectPage = () => {
   const project = pageData?.project;
   const modules = pageData?.modules;
 
+  const handleRetriggerInitClick = useCallback(async () => {
+    if (!project) return;
+    handleMenuClose();
+    setError(null);
+    try {
+      await retriggerInit(project);
+      forceRefresh();
+    } catch (e) {
+      setError(e as Error);
+    }
+  }, [project, retriggerInit, forceRefresh, handleMenuClose]);
+
   const handleBulkRunModalClose = useCallback(() => {
     if (!isBulkRunning) {
       setBulkRunModalOpen(false);
@@ -180,6 +196,8 @@ export const ProjectPage = () => {
   }
 
   const projectWritePermitted = !!(project && canWriteProject(project));
+  const hasEligibleModules =
+    !!project && !!modules && modules.some(m => canRunNextPhase(m, project));
   return (
     <Page themeId="tool">
       <Header title={t('projectPage.title')}>
@@ -191,7 +209,13 @@ export const ProjectPage = () => {
             menuAnchorEl={menuAnchorEl}
             handleDeleteClick={handleDeleteClick}
             handleRunAllClick={handleRunAllClick}
-            canRunAll={projectWritePermitted}
+            handleRetriggerInitClick={handleRetriggerInitClick}
+            canRunAll={projectWritePermitted && hasEligibleModules}
+            canRetriggerInit={
+              projectWritePermitted &&
+              !!project &&
+              isEligibleForRetriggerInit(project)
+            }
             canDeleteProject={projectWritePermitted}
           />
         )}

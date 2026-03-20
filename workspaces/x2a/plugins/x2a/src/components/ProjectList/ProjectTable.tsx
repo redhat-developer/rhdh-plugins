@@ -33,6 +33,7 @@ import {
 
 import DeleteIcon from '@material-ui/icons/Delete';
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
+import ReplayIcon from '@material-ui/icons/Replay';
 import ChevronRight from '@material-ui/icons/ChevronRight';
 import { Box, Button, Grid, IconButton, Tooltip } from '@material-ui/core';
 
@@ -53,7 +54,11 @@ import { DetailPanel } from './DetailPanel';
 import { ProjectStatusCell } from '../ProjectStatusCell';
 import { DeleteProjectDialog } from '../DeleteProjectDialog';
 import { BulkRunConfirmDialog } from '../BulkRunConfirmDialog';
-import { extractResponseError, areEligibleModulesToRun } from '../tools';
+import {
+  extractResponseError,
+  areEligibleModulesToRun,
+  isEligibleForRetriggerInit,
+} from '../tools';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { projectRouteRef } from '../../routes';
 
@@ -388,7 +393,7 @@ export const ProjectTable = ({
 }: ProjectTableProps) => {
   const clientService = useClientService();
   const { t } = useTranslation();
-  const { runAllForProject, runAllGlobal } = useBulkRun();
+  const { runAllForProject, runAllGlobal, retriggerInit } = useBulkRun();
   const { hasAnyWriteAccess, canWriteProject } = useProjectWriteAccess();
 
   const [error, setError] = useState<Error | null>(null);
@@ -500,6 +505,19 @@ export const ProjectTable = ({
     }
   }, [runAllGlobal, canWriteProject, combinedForceRefresh, t]);
 
+  const handleRetriggerInit = useCallback(
+    async (project: Project) => {
+      setError(null);
+      try {
+        await retriggerInit(project);
+        combinedForceRefresh();
+      } catch (e) {
+        setError(e as Error);
+      }
+    },
+    [retriggerInit, combinedForceRefresh],
+  );
+
   const handleOrderChange = (sortBy: number, od: OrderDirection) => {
     setOrderBy(sortBy);
     setOrderDirection(od);
@@ -590,6 +608,13 @@ export const ProjectTable = ({
   const data = projects;
 
   const actions = [
+    (rowData: Project) => ({
+      icon: ReplayIcon,
+      onClick: () => handleRetriggerInit(rowData),
+      tooltip: t('table.actions.retriggerInit'),
+      hidden: !isEligibleForRetriggerInit(rowData),
+      disabled: !canWriteProject(rowData),
+    }),
     (rowData: Project) => ({
       icon: PlaylistPlayIcon,
       onClick: () => setBulkRunTarget(rowData),

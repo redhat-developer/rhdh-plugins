@@ -143,6 +143,7 @@ export const x2aPluginMessages = {
     },
     actions: {
       deleteProject: 'Delete project',
+      retriggerInit: 'Retrigger project init phase',
       expandAll: 'Expand all rows',
       collapseAll: 'Collapse all rows',
       expandRow: 'Expand row',
@@ -187,9 +188,9 @@ export const x2aPluginMessages = {
         'This will trigger the next migration phase for every module in this project whose current state allows it. Make sure you have all the necessary artifacts in the target repositories reviewed before running this action. Modules that are not eligible will be skipped.',
     },
     globalConfirm: {
-      title: 'Run all eligible modules?',
+      title: 'Run all eligible projects and modules?',
       message:
-        'This will trigger the next migration phase for all eligible modules across every project you have write access to, including projects not visible on the current page. Make sure you have all the necessary artifacts in the target repositories reviewed before running this action.',
+        'This will trigger the next migration phase for all eligible modules across every project you have write access to, including projects not visible on the current page. Make sure you have all the necessary artifacts in the target repositories reviewed before running this action. Additionally, the init phase will be retriggered for projects that have no modules yet and whose init is not currently running.',
     },
     projectPageConfirm: {
       title: 'Run all modules in "{{name}}"?',

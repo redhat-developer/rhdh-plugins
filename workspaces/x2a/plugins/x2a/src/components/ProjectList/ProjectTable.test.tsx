@@ -24,10 +24,13 @@ jest.mock('@backstage/core-plugin-api', () => ({
   useRouteRef: require('../../test-utils/mockRouteRef').mockUseRouteRef,
 }));
 
+const mockRetriggerInit = jest.fn().mockResolvedValue('job-1');
+
 jest.mock('../../hooks/useBulkRun', () => ({
   useBulkRun: () => ({
     runAllForProject: jest.fn(),
     runAllGlobal: jest.fn(),
+    retriggerInit: mockRetriggerInit,
   }),
 }));
 
@@ -41,9 +44,10 @@ jest.mock('../../hooks/useProjectWriteAccess', () => ({
 
 import { TestApiProvider } from '@backstage/test-utils';
 import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { mapOrderByToSort, ProjectTable } from './ProjectTable';
 import {
   backstageTableApis,
@@ -239,6 +243,172 @@ describe('ProjectTable', () => {
       );
 
       expect(screen.getByText(/Projects \(20\)/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Retrigger init action', () => {
+    const RETRIGGER_TOOLTIP = 'Retrigger project init phase';
+
+    const zeroSummary = {
+      total: 0,
+      finished: 0,
+      waiting: 0,
+      pending: 0,
+      running: 0,
+      error: 0,
+      cancelled: 0,
+    };
+
+    const renderTable = (projects: Project[]) => {
+      const props = defaultTableProps(projects, projects.length);
+      return render(
+        <MemoryRouter>
+          <TestApiProvider
+            apis={[
+              [fetchApiRef, { fetch: fetchApiMock }],
+              [discoveryApiRef, discoveryApiMock],
+              ...backstageTableApis,
+            ]}
+          >
+            <ProjectTable {...props} />
+          </TestApiProvider>
+        </MemoryRouter>,
+      );
+    };
+
+    it('shows retrigger icon when project has no modules and init is not running', () => {
+      const projects = createMockProjects(1);
+      renderTable(projects);
+
+      expect(screen.queryAllByTitle(RETRIGGER_TOOLTIP).length).toBeGreaterThan(
+        0,
+      );
+    });
+
+    it('shows retrigger icon when status exists but modulesSummary.total is 0', () => {
+      const projects: Project[] = [
+        {
+          ...createMockProjects(1)[0],
+          status: { state: 'created', modulesSummary: zeroSummary },
+        },
+      ];
+      renderTable(projects);
+
+      expect(screen.queryAllByTitle(RETRIGGER_TOOLTIP).length).toBeGreaterThan(
+        0,
+      );
+    });
+
+    it('hides retrigger icon when project has modules', () => {
+      const projects: Project[] = [
+        {
+          ...createMockProjects(1)[0],
+          status: {
+            state: 'initialized',
+            modulesSummary: { ...zeroSummary, total: 3 },
+          },
+        },
+      ];
+      renderTable(projects);
+
+      expect(screen.queryByTitle(RETRIGGER_TOOLTIP)).toBeNull();
+    });
+
+    it('hides retrigger icon when init job is running', () => {
+      const projects: Project[] = [
+        {
+          ...createMockProjects(1)[0],
+          initJob: {
+            id: 'job-1',
+            projectId: 'project-0',
+            startedAt: new Date(),
+            phase: 'init',
+            k8sJobName: 'k8s-init-1',
+            status: 'running',
+          },
+        },
+      ];
+      renderTable(projects);
+
+      expect(screen.queryByTitle(RETRIGGER_TOOLTIP)).toBeNull();
+    });
+
+    it('hides retrigger icon when init job is pending', () => {
+      const projects: Project[] = [
+        {
+          ...createMockProjects(1)[0],
+          initJob: {
+            id: 'job-2',
+            projectId: 'project-0',
+            startedAt: new Date(),
+            phase: 'init',
+            k8sJobName: 'k8s-init-2',
+            status: 'pending',
+          },
+        },
+      ];
+      renderTable(projects);
+
+      expect(screen.queryByTitle(RETRIGGER_TOOLTIP)).toBeNull();
+    });
+
+    it('shows retrigger icon when init job finished with error and no modules', () => {
+      const projects: Project[] = [
+        {
+          ...createMockProjects(1)[0],
+          initJob: {
+            id: 'job-3',
+            projectId: 'project-0',
+            startedAt: new Date(),
+            finishedAt: new Date(),
+            phase: 'init',
+            k8sJobName: 'k8s-init-3',
+            status: 'error',
+          },
+        },
+      ];
+      renderTable(projects);
+
+      expect(screen.queryAllByTitle(RETRIGGER_TOOLTIP).length).toBeGreaterThan(
+        0,
+      );
+    });
+
+    it('shows retrigger icon when init job succeeded but no modules exist', () => {
+      const projects: Project[] = [
+        {
+          ...createMockProjects(1)[0],
+          initJob: {
+            id: 'job-4',
+            projectId: 'project-0',
+            startedAt: new Date(),
+            finishedAt: new Date(),
+            phase: 'init',
+            k8sJobName: 'k8s-init-4',
+            status: 'success',
+          },
+        },
+      ];
+      renderTable(projects);
+
+      expect(screen.queryAllByTitle(RETRIGGER_TOOLTIP).length).toBeGreaterThan(
+        0,
+      );
+    });
+
+    it('calls retriggerInit when the icon is clicked', async () => {
+      const projects = createMockProjects(1);
+      renderTable(projects);
+
+      const retriggerSpan = screen.getAllByTitle(RETRIGGER_TOOLTIP)[0];
+      const button = retriggerSpan.querySelector('button') ?? retriggerSpan;
+      fireEvent.click(button);
+
+      await waitFor(() => {
+        expect(mockRetriggerInit).toHaveBeenCalledWith(
+          expect.objectContaining({ id: 'project-0' }),
+        );
+      });
     });
   });
 });

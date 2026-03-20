@@ -34,6 +34,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'table.columns.targetRepo': 'Repositorio de destino',
     'table.columns.createdAt': 'Creado el',
     'table.actions.deleteProject': 'Eliminar proyecto',
+    'table.actions.retriggerInit': 'Reiniciar fase de inicio del proyecto',
     'table.actions.expandAll': 'Expandir todas las filas',
     'table.actions.collapseAll': 'Contraer todas las filas',
     'table.actions.expandRow': 'Expandir fila',
@@ -207,9 +208,10 @@ const x2aPluginTranslationEs = createTranslationMessages({
       '¿Ejecutar todos los módulos en el proyecto "{{name}}"?',
     'bulkRun.projectConfirm.message':
       'Esto activará la siguiente fase de migración para cada módulo en este proyecto cuyo estado actual lo permita. Asegúrese de haber revisado todos los artefactos necesarios en los repositorios de destino antes de ejecutar esta acción. Los módulos que no sean elegibles se omitirán.',
-    'bulkRun.globalConfirm.title': '¿Ejecutar todos los módulos elegibles?',
+    'bulkRun.globalConfirm.title':
+      '¿Ejecutar todos los proyectos y módulos elegibles?',
     'bulkRun.globalConfirm.message':
-      'Esto activará la siguiente fase de migración para todos los módulos elegibles en todos los proyectos a los que tiene acceso de escritura, incluidos los proyectos no visibles en la página actual. Asegúrese de haber revisado todos los artefactos necesarios en los repositorios de destino antes de ejecutar esta acción.',
+      'Esto activará la siguiente fase de migración para todos los módulos elegibles en todos los proyectos a los que tiene acceso de escritura, incluidos los proyectos no visibles en la página actual. Asegúrese de haber revisado todos los artefactos necesarios en los repositorios de destino antes de ejecutar esta acción. Además, se volverá a activar la fase de inicialización para los proyectos que aún no tienen módulos y cuya inicialización no se está ejecutando actualmente.',
     'bulkRun.projectPageConfirm.title':
       '¿Ejecutar todos los módulos en "{{name}}"?',
     'bulkRun.projectPageConfirm.message':

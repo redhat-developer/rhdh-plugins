@@ -34,6 +34,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'table.columns.targetRepo': 'Ziel-Repository',
     'table.columns.createdAt': 'Erstellt am',
     'table.actions.deleteProject': 'Projekt löschen',
+    'table.actions.retriggerInit': 'Projekt-Init-Phase erneut auslösen',
     'table.actions.expandAll': 'Alle Zeilen aufklappen',
     'table.actions.collapseAll': 'Alle Zeilen zuklappen',
     'table.actions.expandRow': 'Zeile aufklappen',
@@ -205,9 +206,10 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Alle Module im Projekt „{{name}}" ausführen?',
     'bulkRun.projectConfirm.message':
       'Dies löst die nächste Migrationsphase für jedes Modul in diesem Projekt aus, dessen aktueller Status dies zulässt. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen. Module, die nicht berechtigt sind, werden übersprungen.',
-    'bulkRun.globalConfirm.title': 'Alle berechtigten Module ausführen?',
+    'bulkRun.globalConfirm.title':
+      'Alle berechtigten Projekte und Module ausführen?',
     'bulkRun.globalConfirm.message':
-      'Dies löst die nächste Migrationsphase für alle berechtigten Module in allen Projekten aus, auf die Sie Schreibzugriff haben, einschließlich Projekte, die auf der aktuellen Seite nicht sichtbar sind. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen.',
+      'Dies löst die nächste Migrationsphase für alle berechtigten Module in allen Projekten aus, auf die Sie Schreibzugriff haben, einschließlich Projekte, die auf der aktuellen Seite nicht sichtbar sind. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen. Zusätzlich wird die Init-Phase für Projekte erneut ausgelöst, die noch keine Module haben und deren Init-Phase derzeit nicht läuft.',
     'bulkRun.projectPageConfirm.title': 'Alle Module in „{{name}}" ausführen?',
     'bulkRun.projectPageConfirm.message':
       'Dies löst die nächste Migrationsphase für jedes Modul in diesem Projekt aus, dessen aktueller Status dies zulässt. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen. Module, die nicht berechtigt sind, werden übersprungen.',

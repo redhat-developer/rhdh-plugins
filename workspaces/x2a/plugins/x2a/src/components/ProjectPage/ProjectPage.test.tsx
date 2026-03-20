@@ -41,9 +41,11 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
 }));
 
+const mockRetriggerInit = jest.fn().mockResolvedValue('job-1');
 jest.mock('../../hooks/useBulkRun', () => ({
   useBulkRun: () => ({
     runAllForProject: jest.fn(),
+    retriggerInit: (...args: unknown[]) => mockRetriggerInit(...args),
   }),
 }));
 
@@ -83,8 +85,31 @@ jest.mock('../BulkRunConfirmDialog', () => ({
   BulkRunConfirmDialog: () => null,
 }));
 
+const mockCanRunNextPhase = jest.fn();
+jest.mock('../tools', () => ({
+  ...jest.requireActual('../tools'),
+  canRunNextPhase: (...args: unknown[]) => mockCanRunNextPhase(...args),
+}));
+
 jest.mock('./ProjectActions', () => ({
-  ProjectActions: () => null,
+  ProjectActions: (props: {
+    canRunAll: boolean;
+    canRetriggerInit: boolean;
+    handleRetriggerInitClick: () => void;
+  }) => (
+    <div
+      data-testid="project-actions"
+      data-can-run-all={String(props.canRunAll)}
+      data-can-retrigger-init={String(props.canRetriggerInit)}
+    >
+      <button
+        data-testid="retrigger-init-btn"
+        onClick={props.handleRetriggerInitClick}
+      >
+        Retrigger init
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@backstage/core-components', () => ({
@@ -101,7 +126,13 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-import { render, screen, waitFor, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  waitFor,
+  act,
+  fireEvent,
+} from '@testing-library/react';
 import { POLLING_INTERVAL_MS } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ProjectPage } from './ProjectPage';
 
@@ -128,6 +159,8 @@ describe('ProjectPage', () => {
     jest.useFakeTimers();
     mockProjectGet.mockReset();
     mockModulesGet.mockReset();
+    mockCanRunNextPhase.mockReset();
+    mockRetriggerInit.mockReset().mockResolvedValue('job-1');
   });
 
   afterEach(() => {
@@ -283,5 +316,182 @@ describe('ProjectPage', () => {
     unmount();
 
     projectResolve!({ json: async () => mockProject });
+  });
+
+  describe('canRunAll prop', () => {
+    it('is false when modules list is empty', async () => {
+      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
+      mockModulesGet.mockResolvedValue({ json: async () => [] });
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('project-actions')).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('project-actions')).toHaveAttribute(
+        'data-can-run-all',
+        'false',
+      );
+      expect(mockCanRunNextPhase).not.toHaveBeenCalled();
+    });
+
+    it('is false when no module is eligible for next phase', async () => {
+      mockCanRunNextPhase.mockReturnValue(false);
+      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
+      mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('project-actions')).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(mockCanRunNextPhase).toHaveBeenCalled();
+      });
+
+      expect(screen.getByTestId('project-actions')).toHaveAttribute(
+        'data-can-run-all',
+        'false',
+      );
+    });
+
+    it('is true when at least one module is eligible for next phase', async () => {
+      mockCanRunNextPhase.mockImplementation(
+        (m: { id: string }) => m.id === 'mod-a',
+      );
+      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
+      mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('project-actions')).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(mockCanRunNextPhase).toHaveBeenCalled();
+      });
+
+      expect(screen.getByTestId('project-actions')).toHaveAttribute(
+        'data-can-run-all',
+        'true',
+      );
+    });
+  });
+
+  describe('canRetriggerInit prop', () => {
+    it('is true when project has no modules and no running init', async () => {
+      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
+      mockModulesGet.mockResolvedValue({ json: async () => [] });
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('project-actions')).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('project-actions')).toHaveAttribute(
+        'data-can-retrigger-init',
+        'true',
+      );
+    });
+
+    it('is false when project has modules', async () => {
+      const projectWithModules = {
+        ...mockProject,
+        status: {
+          state: 'inProgress',
+          modulesSummary: {
+            total: 2,
+            finished: 0,
+            waiting: 1,
+            pending: 1,
+            running: 0,
+            error: 0,
+            cancelled: 0,
+          },
+        },
+      };
+      mockProjectGet.mockResolvedValue({
+        json: async () => projectWithModules,
+      });
+      mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('project-actions')).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('project-actions')).toHaveAttribute(
+        'data-can-retrigger-init',
+        'false',
+      );
+    });
+
+    it('is false when init job is running', async () => {
+      const projectWithRunningInit = {
+        ...mockProject,
+        initJob: { id: 'j1', status: 'running' },
+      };
+      mockProjectGet.mockResolvedValue({
+        json: async () => projectWithRunningInit,
+      });
+      mockModulesGet.mockResolvedValue({ json: async () => [] });
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('project-actions')).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('project-actions')).toHaveAttribute(
+        'data-can-retrigger-init',
+        'false',
+      );
+    });
+  });
+
+  describe('retrigger init action', () => {
+    it('calls retriggerInit when the button is clicked', async () => {
+      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
+      mockModulesGet.mockResolvedValue({ json: async () => [] });
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('retrigger-init-btn')).toBeInTheDocument();
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('retrigger-init-btn'));
+      });
+
+      expect(mockRetriggerInit).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'proj-1' }),
+      );
+    });
+
+    it('shows error when retriggerInit fails', async () => {
+      mockRetriggerInit.mockRejectedValue(new Error('init failed'));
+      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
+      mockModulesGet.mockResolvedValue({ json: async () => [] });
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('retrigger-init-btn')).toBeInTheDocument();
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('retrigger-init-btn'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/init failed/)).toBeInTheDocument();
+      });
+    });
   });
 });
