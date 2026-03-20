@@ -58,11 +58,44 @@ export async function findAllRepositories(
     }',${pageNumber},${pageSize})..`,
   );
 
-  const repos = await deps.gitApiService
-    .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
-    .then(response => formatResponse(deps, response, checkStatus));
+  const alreadyImportedRepositories =
+    await deps.catalogHttpClient.listCatalogUrlLocationEntitiesById();
+  const alreadyImportedRepositoriesLocationTargets =
+    alreadyImportedRepositories.locations.map(location => location.target);
 
-  return repos;
+  const { repositories: allRepositories, errors } =
+    await deps.gitApiService.getRepositoriesFromIntegrations(
+      search,
+      pageNumber,
+      pageSize,
+    );
+
+  const notImportedYetRepositories = allRepositories.filter(repo => {
+    const html_urlWithSlash = repo.html_url.concat('/');
+
+    const alreadyImported = alreadyImportedRepositoriesLocationTargets.some(
+      target => target.startsWith(html_urlWithSlash),
+    );
+
+    return !alreadyImported;
+  });
+
+  sortRepos(notImportedYetRepositories);
+
+  const slicedRepositories = notImportedYetRepositories.slice(
+    (pageNumber - 1) * pageSize,
+    pageNumber * pageSize,
+  );
+
+  const gitRepositoryResponse:
+    | GithubRepositoryResponse
+    | GitlabRepositoryResponse = {
+    repositories: slicedRepositories,
+    errors,
+    totalCount: notImportedYetRepositories.length,
+  };
+
+  return await formatResponse(deps, gitRepositoryResponse, checkStatus);
 }
 
 export async function findRepositoriesByOrganization(
@@ -82,11 +115,17 @@ export async function findRepositoriesByOrganization(
     `Getting all repositories for org "${orgName}" - (search,page,size)=(${search},${pageNumber},${pageSize})..`,
   );
 
-  const glReposByOrg = await deps.gitApiService
-    .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
-    .then(response => formatResponse(deps, response, checkStatus));
+  const glReposByOrg =
+    await deps.gitApiService.getOrgRepositoriesFromIntegrations(
+      orgName,
+      search,
+      pageNumber,
+      pageSize,
+    );
 
-  return glReposByOrg;
+  sortRepos(glReposByOrg.repositories);
+
+  return formatResponse(deps, glReposByOrg, checkStatus);
 }
 
 function sortRepos(repoList: Components.Schemas.Repository[]) {
@@ -167,8 +206,6 @@ async function formatResponse(
       errors: errors,
     });
   }
-
-  sortRepos(repoList);
 
   return {
     statusCode: 200,

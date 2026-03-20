@@ -20,6 +20,8 @@ import type {
   GithubCredentialsProvider,
 } from '@backstage/integration';
 
+import { RestEndpointMethodTypes } from '@octokit/rest';
+
 // From https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
 export type GithubOrganization = {
   name: string;
@@ -132,3 +134,15 @@ export interface ExtendedGithubCredentialsProvider extends GithubCredentialsProv
     host: string;
   }) => Promise<ExtendedGithubCredentials[]>;
 }
+
+export type AuthenticatedUserRepositoryResponse =
+  RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response'];
+
+export type AuthenticatedUserRepositoryList =
+  AuthenticatedUserRepositoryResponse['data'];
+
+export type AppInstallationRepositoriesResponse =
+  RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response'];
+
+export type AppInstallationRepositories =
+  AppInstallationRepositoriesResponse['data'];

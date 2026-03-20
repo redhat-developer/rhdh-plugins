@@ -249,7 +249,6 @@ export class GithubApiService {
               },
               octokit,
               credential,
-              ghConfig,
               repositories,
               dataFetchErrors,
               {
@@ -329,13 +328,10 @@ export class GithubApiService {
                 },
                 octokit,
                 credential,
-                ghConfig,
                 repositories,
                 dataFetchErrors,
                 {
                   search,
-                  pageNumber,
-                  pageSize,
                 },
               )
             : await addGithubTokenRepositories(
@@ -348,8 +344,6 @@ export class GithubApiService {
                 dataFetchErrors,
                 {
                   search,
-                  pageNumber,
-                  pageSize,
                 },
               );
           this.logger.debug(
