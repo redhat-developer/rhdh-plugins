@@ -127,8 +127,11 @@ export const useConversationMessages = (
     if (currentConversation !== conversationId) {
       setCurrentConversation(conversationId);
       setConversations(prev => {
+        // Always clear TEMP when switching to it so "New chat" again gets empty messages and correct scroll.
+        if (conversationId === TEMP_CONVERSATION_ID) {
+          return { ...prev, [TEMP_CONVERSATION_ID]: [] };
+        }
         if (prev[conversationId]) return prev;
-
         return {
           ...prev,
           [conversationId]: [],
