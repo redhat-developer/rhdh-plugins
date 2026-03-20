@@ -56,6 +56,26 @@ export const lightspeedChatUpdatePermission = createPermission({
   },
 });
 
+/** This permission is used to list configured MCP servers
+ * @public
+ */
+export const lightspeedMcpReadPermission = createPermission({
+  name: 'lightspeed.mcp.read',
+  attributes: {
+    action: 'read',
+  },
+});
+
+/** This permission is used to add, update, delete, and validate MCP servers
+ * @public
+ */
+export const lightspeedMcpManagePermission = createPermission({
+  name: 'lightspeed.mcp.manage',
+  attributes: {
+    action: 'update',
+  },
+});
+
 /** This permission is used to access AI Notebooks features
  * @public
  */
@@ -76,5 +96,7 @@ export const lightspeedPermissions = [
   lightspeedChatCreatePermission,
   lightspeedChatDeletePermission,
   lightspeedChatUpdatePermission,
+  lightspeedMcpReadPermission,
+  lightspeedMcpManagePermission,
   lightspeedNotebooksUsePermission,
 ];

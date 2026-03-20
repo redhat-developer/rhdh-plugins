@@ -55,6 +55,7 @@
     "htmlparser2": "^9.1.0",
     "http-proxy-middleware": "^3.0.2",
     "js-yaml": "^4.1.1",
+    "knex": "^3.1.0",
     "llama-stack-client": "^0.5.0",
     "multer": "^1.4.5-lts.1",
     "pdfjs-dist": "^4.10.38"
@@ -75,7 +76,8 @@
   "files": [
     "dist",
     "config.d.ts",
-    "app-config.yaml"
+    "app-config.yaml",
+    "migrations"
   ],
   "configSchema": "config.d.ts",
   "repository": {
