@@ -219,7 +219,9 @@ test.describe('Scorecard Plugin Tests', () => {
       await page.getByText('Scorecard', { exact: true }).click();
 
       for (const title of sonarqubeMetricTitles) {
-        await expect(page.getByText(title)).toBeVisible({ timeout: 10000 });
+        await expect(page.getByText(title, { exact: true })).toBeVisible({
+          timeout: 10000,
+        });
       }
 
       await runAccessibilityTests(page, testInfo);
