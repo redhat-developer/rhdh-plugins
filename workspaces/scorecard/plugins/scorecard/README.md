@@ -1,14 +1,8 @@
-# 📊 Scorecard Plugin for Backstage
+# Scorecard Plugin for Backstage
 
 The Scorecard plugin provides a configurable framework to visualize Key Performance Indicators (KPIs) in Backstage. This frontend plugin integrates with the Scorecard backend to deliver Scorecards.
 
-## Getting started
-
-Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/scorecard](http://localhost:3000/scorecard).
-
-You can also serve the plugin in isolation by running `yarn start` in the plugin directory.
-This method of serving the plugin provides quicker iteration speed and a faster startup and hot reloads.
-It is only meant for local development, and the setup for it can be found inside the [/dev](./dev) directory.
+The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. Use the main package for legacy apps and the `/alpha` export for NFS apps. NFS supports only 1 module as of now (the catalog module that adds the Scorecard entity tab).
 
 ## For Administrators
 
@@ -16,43 +10,128 @@ It is only meant for local development, and the setup for it can be found inside
 
 Before installing the frontend plugin, ensure that the Scorecard backend is integrated into your Backstage instance. Follow the [Scorecard backend plugin README](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/scorecard/plugins/scorecard-backend/README.md) for setup instructions.
 
-### Installation
+### Installation and usage
 
-To install the Scorecard plugin, run the following command:
+Install the package in your frontend (use `app` for NFS or `app-legacy` for legacy):
 
 ```sh
 yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
+# or for the legacy frontend:
+yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
 ```
 
-**Note**
+### Procedure
 
-### Permission Framework Support
+#### NFS (New Frontend System) — app
 
-The Scorecard plugin has support for the permission framework.
+1. Install the Scorecard frontend plugin (see [Installation and usage](#installation-and-usage)) using `app`:
 
-- When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access scorecard UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
+   ```console
+   yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
+   ```
 
-```CSV
-p, role:default/team_a, scorecard.metric.read, read, allow
+2. Register the plugin in `packages/app/src/App.tsx` using the **alpha** export:
 
-g, user:default/<your-user-name>, role:default/team_a
-```
+   ```tsx
+   // In packages/app/src/App.tsx
+   import { createApp } from '@backstage/frontend-defaults';
+   import {
+     scorecardTranslationsModule,
+     scorecardCatalogModule,
+   } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 
-You can specify the path to this configuration file in your application configuration:
+   const app = createApp({
+     features: [
+       scorecardCatalogModule,
+       scorecardTranslationsModule,
+       // ... other plugins
+     ],
+   });
+
+   export default app.createRoot();
+   ```
+
+3. (Optional) Configure which entities show the Scorecard tab in `app-config.yaml` under `app.extensions`. If you do not add this extension config, the tab is shown for all entity kinds. To restrict by kind and optionally by type:
+
+   ```yaml
+   app:
+     extensions:
+       - entity-content:catalog/entity-content-scorecard:
+           config:
+             allowedFilters:
+               - kind: component
+               - kind: template
+               - kind: resource
+               - kind: location
+   ```
+
+   Each filter can include optional `kind` and/or `type`. An entity shows the tab if it matches at least one filter. You can restrict by **kind only**, by **type only**, or by **kind and type**:
+
+   **By kind only:**
 
 ```yaml
-permission:
-  enabled: true
-  rbac:
-    policies-csv-file: /some/path/rbac-policy.csv
-    policyFileReload: true
+allowedFilters:
+  - kind: component
+  - kind: template
 ```
 
-**Note:** The backend also checks `catalog.entity.read` for each entity. Make sure your users/roles can read the catalog entities they want to view scorecards for.
+**By type only** (e.g. any entity with `spec.type` equal to `service` or `website`):
 
-### Configuration
+```yaml
+allowedFilters:
+  - type: service
+  - type: website
+```
 
-1. Add the Scorecard page to you Entity overview page by modifying `packages/app/src/components/catalog/EntityPage.tsx`:
+**By kind and type** (e.g. only `component` with type `website` or type `service`):
+
+```yaml
+allowedFilters:
+  - kind: component
+    type: website
+  - kind: component
+    type: service
+```
+
+To align with the legacy EntityPage (Scorecard on component pages and default entity page, not on api/group/user/system/domain), use the first example (by kind only).
+
+4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml`:
+
+   ```yaml
+   discovery:
+     endpoints:
+       - target: http://localhost:7007/api/{{ pluginId }}
+         plugins:
+           - scorecard
+   ```
+
+5. Start the NFS app (e.g. `yarn start`), go to **Catalog**, open an entity. The **Scorecard** tab appears for entities that match your `allowedFilters` (or all entities if the extension config is omitted or empty).
+
+##### Modules and extensions (NFS)
+
+The following modules and extensions are available from `@red-hat-developer-hub/backstage-plugin-scorecard/alpha` for NFS apps:
+
+**Modules**
+
+| Module                        | Description                                                                                                                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3). |
+| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                           |
+
+**Extensions**
+
+- `api:scorecard` — Scorecard API (provided by the plugin; auto-discovered when the plugin is installed).
+- `entity-content:catalog/entity-content-scorecard` — Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type.
+
+#### Legacy app
+
+1. Install the Scorecard frontend plugin (see [Installation and usage](#installation-and-usage)) using `app-legacy`:
+
+   ```console
+   yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
+   ```
+
+2. Add the Scorecard tab to the entity overview in `packages/app-legacy/src/components/catalog/EntityPage.tsx` (or your legacy app's equivalent):
 
    ```tsx
    import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
@@ -82,7 +161,6 @@ permission:
        <EntitySwitch.Case if={isComponentType('service')}>
          {serviceEntityPage}
        </EntitySwitch.Case>
-
        <EntitySwitch.Case if={isComponentType('website')}>
          {websiteEntityPage}
        </EntitySwitch.Case>
@@ -98,11 +176,40 @@ permission:
    );
    ```
 
+3. Optionally use `ScorecardHomepageCard` and `scorecardTranslations` from the main and alpha packages as needed.
+
+4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml` (see discovery snippet under [NFS](#nfs-new-frontend-system--app)).
+
+5. Start the legacy app (e.g. `yarn start:legacy`) and open the **Scorecard** tab on catalog entity pages.
+
+### Permission Framework Support
+
+The Scorecard plugin has support for the permission framework.
+
+- When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access scorecard UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
+
+```CSV
+p, role:default/team_a, scorecard.metric.read, read, allow
+
+g, user:default/<your-user-name>, role:default/team_a
+```
+
+You can specify the path to this configuration file in your application configuration:
+
+```yaml
+permission:
+  enabled: true
+  rbac:
+    policies-csv-file: /some/path/rbac-policy.csv
+    policyFileReload: true
+```
+
+**Note:** The backend also checks `catalog.entity.read` for each entity. Make sure your users/roles can read the catalog entities they want to view scorecards for.
+
 ### Accessing the Plugin
 
-1. Open your Backstage application.
-2. Navigate to the Entity overview page from catalog.
-3. Explore and analyze scorecard metrics using the scorecards tab.
+- **app (NFS):** Open your Backstage app, go to **Catalog**, open an entity. The **Scorecard** tab appears when the entity matches your `allowedFilters` in app-config (or for all entities if the extension config is omitted).
+- **app-legacy:** Open your Backstage app, go to the entity overview from the catalog, and open the **Scorecard** tab to view and analyze scorecard metrics.
 
 ## Adding Translations
 
@@ -139,14 +246,14 @@ const scorecardTranslationDe = createTranslationMessages({
 });
 ```
 
-### 3. Translation Key Format
+### 2. Translation Key Format
 
 Translation keys follow this pattern:
 
 - **Metric titles**: `metric.{metric-id}.title`
 - **Metric descriptions**: `metric.{metric-id}.description`
 
-### 4. Fallback Behavior
+### 3. Fallback Behavior
 
 If a translation key is not found, the plugin will automatically fall back to:
 

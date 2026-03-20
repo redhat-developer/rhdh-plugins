@@ -13,5 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import '@backstage/cli/asset-types';
+import '@backstage/ui/css/styles.css';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-export * from './translations';
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
