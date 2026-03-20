@@ -16,12 +16,12 @@
 
 // These translation files are not exported by the package, so relative imports are necessary for e2e tests
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { homepageMessages } from '../../../../plugins/dynamic-home-page/src/translations/ref.js';
-import homepageTranslationDe from '../../../../plugins/dynamic-home-page/src/translations/de.js';
-import homepageTranslationFr from '../../../../plugins/dynamic-home-page/src/translations/fr.js';
-import homepageTranslationEs from '../../../../plugins/dynamic-home-page/src/translations/es.js';
-import homepageTranslationIt from '../../../../plugins/dynamic-home-page/src/translations/it.js';
-import homepageTranslationJa from '../../../../plugins/dynamic-home-page/src/translations/ja.js';
+import { homepageMessages } from '../../../../plugins/dynamic-home-page/src/alpha/translations/ref.js';
+import homepageTranslationDe from '../../../../plugins/dynamic-home-page/src/alpha/translations/de.js';
+import homepageTranslationFr from '../../../../plugins/dynamic-home-page/src/alpha/translations/fr.js';
+import homepageTranslationEs from '../../../../plugins/dynamic-home-page/src/alpha/translations/es.js';
+import homepageTranslationIt from '../../../../plugins/dynamic-home-page/src/alpha/translations/it.js';
+import homepageTranslationJa from '../../../../plugins/dynamic-home-page/src/alpha/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type HomepageMessages = typeof homepageMessages;
