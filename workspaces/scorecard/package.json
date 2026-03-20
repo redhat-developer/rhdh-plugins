@@ -46,6 +46,7 @@
     "@changesets/cli": "^2.27.1",
     "@playwright/test": "^1.56.1",
     "@spotify/prettier-config": "^15.0.0",
+    "@types/uuid": "^9.0.1",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",
