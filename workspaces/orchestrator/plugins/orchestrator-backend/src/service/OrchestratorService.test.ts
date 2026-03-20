@@ -327,4 +327,30 @@ describe('OrchestratorService', () => {
       expect(result).toBeDefined();
     });
   });
+
+  describe('executeWorkflowAsCloudEvent', () => {
+    const executeResponse: WorkflowExecutionResponse = {
+      id: createInstanceIdMock(1),
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should execute the operation', async () => {
+      sonataFlowServiceMock.executeWorkflowAsCloudEvent = jest
+        .fn()
+        .mockResolvedValue(executeResponse);
+
+      const result = await orchestratorService.executeWorkflowAsCloudEvent({
+        definitionId,
+        workflowSource: 'local',
+        workflowEventType: 'lock-event',
+        contextAttribute: 'lockId',
+        inputData,
+      });
+
+      expect(result).toBeDefined();
+    });
+  });
 });
