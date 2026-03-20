@@ -1,0 +1,38 @@
+app:
+  title: Augment AI Assistant
+  baseUrl: http://localhost:3000
+
+organization:
+  name: Red Hat
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+auth:
+  environment: development
+  providers:
+    guest: {}
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+
+# Augment plugin configuration
+augment:
+  llamaStack:
+    baseUrl: ${AUGMENT_LLAMA_STACK_URL:-http://localhost:8321}
+    model: ${AUGMENT_MODEL:-meta-llama/Llama-3.3-70B-Instruct}
