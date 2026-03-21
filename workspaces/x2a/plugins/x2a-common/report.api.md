@@ -32,6 +32,9 @@ export interface AgentMetrics {
     };
 }
 
+// @public
+export const allProviders: ScmProvider[];
+
 // @public (undocumented)
 export interface Artifact {
     id: string;
@@ -65,6 +68,9 @@ export function buildScmHostMap(config: Config): Map<string, ScmProviderName>;
 
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
+
+// @public
+export type CsvProjectRow = ProjectsPost['body'];
 
 // @public
 export const DEFAULT_PAGE_ORDER = "desc";
@@ -178,6 +184,9 @@ export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancel
 
 // @public
 export function normalizeRepoUrl(url: string): string;
+
+// @public
+export function parseCsvContent(dataUrl: string): CsvProjectRow[];
 
 // @public
 export const POLLING_INTERVAL_MS: number;
@@ -425,6 +434,9 @@ export function resolveScmProvider(repoUrl: string, hostProviderMap?: Map<string
 
 // @public
 export function resolveScmProviderByName(name: ScmProviderName): ScmProvider;
+
+// @public
+export const SCAFFOLDER_SECRET_PREFIX = "OAUTH_TOKEN_";
 
 // @public
 export interface ScmProvider {

@@ -10,78 +10,165 @@ spec:
   parameters:
     - title: Job name and description
       required:
+        - inputMethod
+      ui:order:
+        - inputMethod
         - name
+        - description
         - abbreviation
+        - ownedByGroup
+        - csvContent
       properties:
-        name:
-          title: Name
+        inputMethod:
+          title: Input method
           type: string
-          description: Unique name of the conversion project
-          ui:autofocus: true
-        description:
-          title: Description
-          type: string
-          description: Description of the project
-          ui:widget: textarea
-          ui:options:
-            rows: 3
-        abbreviation:
-          title: Abbreviation
-          type: string
-          default: 'myprj'
-          description: Abbreviation of the project to ease the project identification in the target repository.
-          pattern: '^([a-zA-Z][a-zA-Z0-9]*)(-[a-zA-Z0-9]+)*$'
-          maxLength: 5
-          minLength: 1
-        ownedByGroup:
-          title: Owned by group
-          type: string
-          description: Optional - The user group that will own the project. Make sure the group has either x2a.user or x2a.user admin (update) permission. Leave empty to use the creator (you) as owner.
-          ui:field: MyGroupsPicker
+          default: manual
+          enum:
+            - manual
+            - csv
+          enumNames:
+            - Manual entry
+            - CSV upload
+          ui:widget: radio
+      dependencies:
+        inputMethod:
+          allOf:
+            - if:
+                properties:
+                  inputMethod:
+                    const: manual
+              then:
+                required:
+                  - name
+                  - abbreviation
+                properties:
+                  name:
+                    title: Name
+                    type: string
+                    description: Unique name of the conversion project
+                    ui:autofocus: true
+                  description:
+                    title: Description
+                    type: string
+                    description: Description of the project
+                    ui:widget: textarea
+                    ui:options:
+                      rows: 3
+                  abbreviation:
+                    title: Abbreviation
+                    type: string
+                    default: 'myprj'
+                    description: Abbreviation of the project to ease the project identification in the target repository.
+                    pattern: '^([a-zA-Z][a-zA-Z0-9]*)(-[a-zA-Z0-9]+)*$'
+                    maxLength: 5
+                    minLength: 1
+                  ownedByGroup:
+                    title: Owned by group
+                    type: string
+                    description: Optional - The user group that will own the project. Make sure the group has either x2a.user or x2a.user admin (update) permission. Leave empty to use the creator (you) as owner.
+                    ui:field: MyGroupsPicker
+            - if:
+                properties:
+                  inputMethod:
+                    const: csv
+              then:
+                required:
+                  - csvContent
+                properties:
+                  csvContent:
+                    title: CSV file
+                    type: string
+                    format: data-url
+                    description: |
+                      Upload a CSV file containing project definitions including source and target repositories.
+
+                      Projects are created sequentially, with the same permissions and other checks applied to
+                      each one - just as if the signed-in user had created them individually.
+
+                      Projects whose name already exists are skipped. This means the import can be run
+                      repeatedly: fix any failing rows in the CSV, delete the broken project if needed,
+                      and re-upload — already-created projects will not be duplicated.
+
+                      The CSV file must contain the following headers: name, abbreviation, sourceRepoUrl, sourceRepoBranch, targetRepoBranch.
+
+                      Optional headers: description, ownedByGroup, targetRepoUrl.
+
+                      The headers can be in any order, but the values must be in the same order as the headers.
+                      The file must be encoded in UTF-8.
+                    ui:options:
+                      accept: '.csv'
+
     - title: Source and target repositories
       ui:order:
+        - inputMethod
+        - repoAuthentication
         - sourceRepoUrl
         - sourceRepoBranch
         - areTargetAndSourceRepoShared
         - targetRepoUrl
         - targetRepoBranch
-      required:
-        - sourceRepoUrl
-        - sourceRepoBranch
-        - targetRepoBranch
       properties:
-        sourceRepoUrl:
-          title: Conversion source repository
-          description: |
-            The Owner should be your SCM (Source Code Management) username. The repository name should be a name that already exists in your SCM account and contains a Chef cookbook or directory to convert.
+        # Carried over from page 1 as hidden so dependencies can reference it
+        inputMethod:
           type: string
-          ui:field: RepoUrlPicker
-          ui:options:
-            requestUserCredentials:
-              secretsKey: SRC_USER_OAUTH_TOKEN
-            allowedHosts:
-              # This is to be updated per production deployment along the auth in the app-config.yaml file
-              - github.com
-              - gitlab.com
-              - bitbucket.org
-        sourceRepoBranch:
-          title: Conversion source repository branch
-          type: string
-          description: The branch of the source repository to use for the conversion.
-          default: 'main'
-        areTargetAndSourceRepoShared:
-          title: Use the same repository for target and source
-          type: boolean
-          description: If checked, the target repository will be the same as the source repository.
-          default: true
-
-        # Can be replaced by RepoBranchPicker but it does not work nicely. https://backstage.io/docs/features/software-templates/writing-templates#the-repository-branch-picker
-        targetRepoBranch:
-          title: Conversion target repository branch
-          type: string
-          description: The branch of the target repository to use for the conversion.
-          default: 'main'
+          ui:widget: hidden
       dependencies:
+        inputMethod:
+          allOf:
+            - if:
+                properties:
+                  inputMethod:
+                    const: manual
+              then:
+                required:
+                  - sourceRepoUrl
+                  - sourceRepoBranch
+                  - targetRepoBranch
+                properties:
+                  sourceRepoUrl:
+                    title: Conversion source repository
+                    description: |
+                      The Owner should be your SCM (Source Code Management) username. The repository name should be a name that already exists in your SCM account and contains a Chef cookbook or directory to convert.
+                    type: string
+                    ui:field: RepoUrlPicker
+                    ui:options:
+                      requestUserCredentials:
+                        secretsKey: SRC_USER_OAUTH_TOKEN
+                      allowedHosts:
+                        # This is to be updated per production deployment along the auth in the app-config.yaml file
+                        - github.com
+                        - gitlab.com
+                        - bitbucket.org
+                  sourceRepoBranch:
+                    title: Conversion source repository branch
+                    type: string
+                    description: The branch of the source repository to use for the conversion.
+                    default: 'main'
+                  areTargetAndSourceRepoShared:
+                    title: Use the same repository for target and source
+                    type: boolean
+                    description: If checked, the target repository will be the same as the source repository.
+                    default: true
+                  # Can be replaced by RepoBranchPicker but it does not work nicely. https://backstage.io/docs/features/software-templates/writing-templates#the-repository-branch-picker
+                  targetRepoBranch:
+                    title: Conversion target repository branch
+                    type: string
+                    description: The branch of the target repository to use for the conversion.
+                    default: 'main'
+            - if:
+                properties:
+                  inputMethod:
+                    const: csv
+              then:
+                properties:
+                  repoAuthentication:
+                    type: string
+                    description: |
+                      Provide login to all the SCMs relevant for the source CSV.
+                    ui:field: RepoAuthentication
+                    ui:options:
+                      csvFieldName: csvContent
+
         areTargetAndSourceRepoShared:
           allOf:
             - if:
@@ -104,6 +191,7 @@ spec:
                         - github.com
                         - gitlab.com
                         - bitbucket.org
+
     - title: Conversion parameters
       properties:
         userPrompt:
@@ -119,6 +207,8 @@ spec:
       name: Create Project
       action: x2a:project:create
       input:
+        inputMethod: ${{ parameters.inputMethod }}
+        csvContent: ${{ parameters.csvContent }}
         name: ${{ parameters.name }}
         description: ${{ parameters.description }}
         abbreviation: ${{ parameters.abbreviation }}
@@ -135,3 +225,7 @@ spec:
     links:
       - title: Manage the project
         url: ${{ steps.createProject.output.nextUrl }}
+    text:
+      - title: Results
+        content: |
+          Successfully created: ${{ steps.createProject.output.successCount }} project(s). Skipped (already exist): ${{ steps.createProject.output.skippedCount }}. Errors: ${{ steps.createProject.output.errorCount }}.

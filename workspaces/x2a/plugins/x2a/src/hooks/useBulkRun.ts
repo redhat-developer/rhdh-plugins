@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { useCallback } from 'react';
+import { useTranslation } from './useTranslation';
 
 import {
   MAX_CONCURRENT_BULK_RUN,
@@ -25,7 +26,13 @@ import {
 import { useClientService } from '../ClientService';
 import { useScmHostMap } from './useScmHostMap';
 import { useRepoAuthentication } from '../repoAuth';
-import { canRunNextPhase, getNextPhase } from '../components/tools';
+import {
+  canRunNextPhase,
+  extractResponseError,
+  getNextPhase,
+  isEligibleForRetriggerInit,
+  isHttpSuccessResponse,
+} from '../components/tools';
 
 export type BulkRunResult = {
   total: number;
@@ -34,9 +41,40 @@ export type BulkRunResult = {
 };
 
 export const useBulkRun = () => {
+  const { t } = useTranslation();
   const clientService = useClientService();
   const repoAuth = useRepoAuthentication();
   const hostMap = useScmHostMap();
+
+  const getProjectAuthTokens = useCallback(
+    async (
+      project: Project,
+    ): Promise<{ sourceToken: string; targetToken: string }> => {
+      const targetToken = (
+        await repoAuth.authenticate([
+          resolveScmProvider(
+            project.targetRepoUrl,
+            hostMap,
+          ).getAuthTokenDescriptor(false),
+        ])
+      )[0].token;
+
+      let sourceToken = targetToken;
+      if (project.sourceRepoUrl !== project.targetRepoUrl) {
+        sourceToken = (
+          await repoAuth.authenticate([
+            resolveScmProvider(
+              project.sourceRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(true),
+          ])
+        )[0].token;
+      }
+
+      return { sourceToken, targetToken };
+    },
+    [repoAuth, hostMap],
+  );
 
   const runAllForProject = useCallback(
     async (
@@ -56,26 +94,10 @@ export const useBulkRun = () => {
         return { total: 0, succeeded: 0, failed: 0 };
       }
 
-      const targetRepoAuthToken = (
-        await repoAuth.authenticate([
-          resolveScmProvider(
-            project.targetRepoUrl,
-            hostMap,
-          ).getAuthTokenDescriptor(false),
-        ])
-      )[0].token;
-
-      let sourceRepoAuthToken = targetRepoAuthToken;
-      if (project.sourceRepoUrl !== project.targetRepoUrl) {
-        sourceRepoAuthToken = (
-          await repoAuth.authenticate([
-            resolveScmProvider(
-              project.sourceRepoUrl,
-              hostMap,
-            ).getAuthTokenDescriptor(true),
-          ])
-        )[0].token;
-      }
+      const {
+        sourceToken: sourceRepoAuthToken,
+        targetToken: targetRepoAuthToken,
+      } = await getProjectAuthTokens(project);
 
       const runModule = async (m: Module) => {
         const nextPhase = getNextPhase(m);
@@ -91,6 +113,16 @@ export const useBulkRun = () => {
               targetRepoAuth: { token: targetRepoAuthToken },
             },
           });
+        if (!isHttpSuccessResponse(response)) {
+          const message = await extractResponseError(
+            response,
+            t('bulkRun.errorModuleStart' as any, {
+              phase: nextPhase,
+              moduleName: m.name,
+            }),
+          );
+          throw new Error(message);
+        }
         const data = await response.json();
         if (!data.jobId) {
           throw new Error(`No jobId returned for module ${m.name}`);
@@ -113,42 +145,94 @@ export const useBulkRun = () => {
 
       return { total: eligible.length, succeeded, failed };
     },
-    [clientService, repoAuth, hostMap],
+    [clientService, getProjectAuthTokens, t],
   );
 
-  const runAllGlobal = useCallback(
-    async (projectFilter?: (p: Project) => boolean): Promise<BulkRunResult> => {
-      const pageSize = 100;
-      const allProjects: Project[] = [];
+  const retriggerInit = useCallback(
+    async (project: Project, userPrompt?: string): Promise<string> => {
+      const { sourceToken, targetToken } = await getProjectAuthTokens(project);
 
-      // reuse pagination to iterate over all projects but keeping the chunks small enough
-      for (let page = 0; ; page++) {
-        const response = await clientService.projectsGet({
-          query: { pageSize, page },
-        });
-        const data = await response.json();
-        const items = data.items ?? [];
-        allProjects.push(...items);
+      const response = await clientService.projectsProjectIdRunPost({
+        path: { projectId: project.id },
+        body: {
+          sourceRepoAuth: { token: sourceToken },
+          targetRepoAuth: { token: targetToken },
+          ...(userPrompt ? { userPrompt } : {}),
+        },
+      });
 
-        if (items.length === 0) break;
-        if (typeof data.totalCount === 'number') {
-          if (allProjects.length >= data.totalCount) break;
-        } else if (items.length < pageSize) {
-          break;
-        }
+      if (!isHttpSuccessResponse(response)) {
+        const message = await extractResponseError(
+          response,
+          t('retriggerInit.errorStart' as any, {}),
+        );
+        throw new Error(message);
       }
 
+      const responseData = await response.json();
+      if (!responseData.jobId) {
+        throw new Error('No jobId returned for project init');
+      }
+      return responseData.jobId;
+    },
+    [clientService, getProjectAuthTokens, t],
+  );
+
+  const processProject = useCallback(
+    async (project: Project, userPrompt?: string): Promise<BulkRunResult> => {
+      if (isEligibleForRetriggerInit(project)) {
+        try {
+          await retriggerInit(project, userPrompt);
+          return { total: 1, succeeded: 1, failed: 0 };
+        } catch {
+          // corresponding error is already shown at project-level, no need to report it again here
+          return { total: 1, succeeded: 0, failed: 1 };
+        }
+      }
+      return runAllForProject(project);
+    },
+    [retriggerInit, runAllForProject],
+  );
+
+  const fetchAllProjects = useCallback(async (): Promise<Project[]> => {
+    const pageSize = 100;
+    const allProjects: Project[] = [];
+
+    for (let page = 0; ; page++) {
+      const response = await clientService.projectsGet({
+        query: { pageSize, page },
+      });
+      const data = await response.json();
+      const items = data.items ?? [];
+      allProjects.push(...items);
+
+      if (items.length === 0) break;
+      if (typeof data.totalCount === 'number') {
+        if (allProjects.length >= data.totalCount) break;
+      } else if (items.length < pageSize) {
+        break;
+      }
+    }
+
+    return allProjects;
+  }, [clientService]);
+
+  const runAllGlobal = useCallback(
+    async (
+      projectFilter?: (p: Project) => boolean,
+      userPrompt?: string,
+    ): Promise<BulkRunResult> => {
+      const allProjects = await fetchAllProjects();
       const projects = projectFilter
         ? allProjects.filter(projectFilter)
         : allProjects;
 
       const combined: BulkRunResult = { total: 0, succeeded: 0, failed: 0 };
 
-      // This fires up to MAX_CONCURRENT_BULK_RUN^2 requests in parallel
       for (let i = 0; i < projects.length; i += MAX_CONCURRENT_BULK_RUN) {
         const batch = projects.slice(i, i + MAX_CONCURRENT_BULK_RUN);
         const results = await Promise.allSettled(
-          batch.map(p => runAllForProject(p)),
+          batch.map(p => processProject(p, userPrompt)),
         );
 
         for (const r of results) {
@@ -164,8 +248,8 @@ export const useBulkRun = () => {
 
       return combined;
     },
-    [clientService, runAllForProject],
+    [fetchAllProjects, processProject],
   );
 
-  return { runAllForProject, runAllGlobal };
+  return { runAllForProject, runAllGlobal, retriggerInit };
 };

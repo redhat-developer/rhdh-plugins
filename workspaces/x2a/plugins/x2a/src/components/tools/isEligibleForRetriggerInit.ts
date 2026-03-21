@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './buildArtifactUrl';
-export * from './extractResponseError';
-export * from './buildRepoBranchUrl';
-export * from './formatRelativeTime';
-export * from './humanizeArtifactType';
-export * from './humanizeDate';
-export * from './getLastPhaseReached';
-export * from './getNextPhase';
-export * from './canRunNextPhase';
-export * from './canCancelPhase';
-export * from './hasPhasePrerequisites';
-export * from './areEligibleModulesToRun';
-export * from './isEligibleForRetriggerInit';
+import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+/**
+ * A project is eligible for init-phase retrigger when it has no modules
+ * discovered yet and its init job is not currently in progress.
+ */
+export const isEligibleForRetriggerInit = (project: Project): boolean => {
+  const initJobStatus = project.initJob?.status;
+  const initRunning =
+    initJobStatus === 'running' || initJobStatus === 'pending';
+  const hasModules =
+    !!project.status?.modulesSummary && project.status.modulesSummary.total > 0;
+  return !hasModules && !initRunning;
+};

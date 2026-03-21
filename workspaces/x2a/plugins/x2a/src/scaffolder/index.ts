@@ -10,12 +10,6 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * See the License for the specific language governing permissions and limitations under the License.
  */
-export { x2APlugin, X2APage, RepoAuthenticationExtension } from './plugin';
-export { x2aPluginTranslations, x2aPluginTranslationRef } from './translations';
-export {
-  useTranslation as useX2ATranslation,
-  type TFuncX2A,
-} from './hooks/useTranslation';
+export * from './RepoAuthentication';
