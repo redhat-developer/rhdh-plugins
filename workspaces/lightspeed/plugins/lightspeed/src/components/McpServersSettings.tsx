@@ -18,7 +18,6 @@ import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
-
 import { makeStyles } from '@material-ui/core';
 import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
 import Typography from '@mui/material/Typography';
@@ -51,6 +50,7 @@ type McpServer = {
 
 type McpServersSettingsProps = {
   onClose: () => void;
+  backgroundColor?: string;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -247,7 +247,10 @@ const toUiServer = (
   validationError: server.status === 'error' ? validationError : undefined,
 });
 
-export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
+export const McpServersSettings = ({
+  onClose,
+  backgroundColor,
+}: McpServersSettingsProps) => {
   const classes = useStyles();
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
@@ -435,7 +438,10 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
   }, []);
 
   return (
-    <div className={classes.root}>
+    <div
+      className={classes.root}
+      style={backgroundColor ? { backgroundColor } : undefined}
+    >
       <div className={classes.headerRow}>
         <div>
           <Title headingLevel="h2" size="xl" className={classes.title}>
