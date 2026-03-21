@@ -68,6 +68,7 @@
     "@patternfly/chatbot": "6.5.0",
     "@patternfly/react-core": "6.4.1",
     "@patternfly/react-icons": "^6.3.1",
+    "@patternfly/react-table": "^6.4.1",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "@tanstack/react-query": "^5.59.15",

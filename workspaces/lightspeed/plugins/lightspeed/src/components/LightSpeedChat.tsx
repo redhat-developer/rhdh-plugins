@@ -45,6 +45,7 @@ import {
   FileDropZone,
   MessageBar,
   MessageProps,
+  Settings,
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import {
@@ -107,6 +108,7 @@ import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebooksTab } from './notebooks/NotebooksTab';
 import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
 import PermissionRequiredState from './PermissionRequiredState';
+import { McpServersSettings } from './McpServersSettings';
 import { RenameConversationModal } from './RenameConversationModal';
 
 const useStyles = makeStyles(theme => ({
@@ -331,6 +333,56 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minHeight: 0,
   },
+  settingsFlat: {
+    height: '100%',
+    width: '100%',
+    '&.pf-chatbot__settings-form-container': {
+      background: 'transparent',
+      padding: 0,
+      margin: 0,
+      width: '100%',
+      maxWidth: 'none',
+    },
+    '& .pf-chatbot__settings-form': {
+      margin: 0,
+      padding: 0,
+      width: '100%',
+      maxWidth: 'none',
+    },
+    '& .pf-chatbot__settings-form-row': {
+      background: 'transparent',
+      border: 0,
+      margin: 0,
+      padding: 0,
+      width: '100%',
+      maxWidth: 'none',
+    },
+    '& .pf-chatbot__settings-label': {
+      display: 'none',
+    },
+  },
+  mcpFullscreenLayout: {
+    display: 'flex',
+    minHeight: 0,
+    height: '100%',
+    flex: 1,
+    width: '100%',
+  },
+  mcpChatPane: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+    flex: 1,
+    minWidth: 0,
+  },
+  mcpSettingsPane: {
+    flex: 1,
+    minWidth: 0,
+    borderLeft: `1px solid ${theme.palette.divider}`,
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+  },
 }));
 
 type LightspeedChatProps = {
@@ -385,6 +437,8 @@ export const LightspeedChat = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
+  const [isMcpSettingsOpen, setIsMcpSettingsOpen] = useState<boolean>(false);
+  const [chatHeaderBgColor, setChatHeaderBgColor] = useState<string>();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
   const [messageBarKey, setMessageBarKey] = useState(0);
@@ -435,6 +489,16 @@ export const LightspeedChat = ({
       setIsChatHistoryDrawerOpen(true);
     }
   }, [isMobile, isFullscreenMode]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const headerElement = document.querySelector('.pf-chatbot__header');
+    if (!headerElement) return;
+    const computedBg = window.getComputedStyle(headerElement).backgroundColor;
+    if (computedBg) {
+      setChatHeaderBgColor(computedBg);
+    }
+  }, [displayMode, isMcpSettingsOpen]);
 
   const {
     isPinningChatsEnabled,
@@ -592,6 +656,7 @@ export const LightspeedChat = ({
 
   const onNewChat = useCallback(() => {
     (async () => {
+      setIsMcpSettingsOpen(false);
       if (conversationId !== TEMP_CONVERSATION_ID) {
         setMessages([]);
         setFileContents([]);
@@ -783,6 +848,7 @@ export const LightspeedChat = ({
 
   const onSelectActiveItem = useCallback(
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
+      setIsMcpSettingsOpen(false);
       setNewChatCreated(false);
       const newConvId = String(selectedItem);
       setConversationId((c_id: string) => {
@@ -804,6 +870,7 @@ export const LightspeedChat = ({
       setDraftMessage,
       scrollToBottomRef,
       setCurrentConversationId,
+      setIsMcpSettingsOpen,
     ],
   );
 
@@ -1012,6 +1079,114 @@ export const LightspeedChat = ({
     });
   };
 
+  const chatMainContent = (
+    <>
+      <ChatbotContent className={classes.chatbotContent}>
+        <div ref={contentScrollRef} className={classes.chatbotContentScroll}>
+          {welcomePrompts.length > 0 && (
+            <div className={classes.chatbotContentSpacer} aria-hidden />
+          )}
+          <LightspeedChatBox
+            userName={userName}
+            messages={messages}
+            profileLoading={profileLoading}
+            announcement={announcement}
+            ref={scrollToBottomRef}
+            welcomePrompts={welcomePrompts}
+            conversationId={conversationId}
+            isStreaming={isSendButtonDisabled}
+            topicRestrictionEnabled={topicRestrictionEnabled}
+            displayMode={displayMode}
+          />
+          {welcomePrompts.length > 0 && (
+            <div
+              ref={bottomSentinelRef}
+              aria-hidden
+              style={{ height: 0, flexShrink: 0 }}
+            />
+          )}
+        </div>
+      </ChatbotContent>
+      <ChatbotFooter className={classes.footer}>
+        <FilePreview />
+        <MessageBar
+          key={messageBarKey}
+          onSendMessage={sendMessage}
+          isSendButtonDisabled={isSendButtonDisabled}
+          hasAttachButton
+          handleAttach={handleAttach}
+          hasMicrophoneButton
+          value={draftMessage}
+          onChange={handleDraftMessage}
+          hasStopButton={isSendButtonDisabled}
+          handleStopButton={
+            isSendButtonDisabled ? handleStopButton : undefined
+          }
+          buttonProps={{
+            attach: {
+              inputTestId: 'attachment-input',
+              tooltipContent: t('tooltip.attach'),
+            },
+            microphone: {
+              tooltipContent: {
+                active: t('tooltip.microphone.active'),
+                inactive: t('tooltip.microphone.inactive'),
+              },
+            },
+            send: {
+              tooltipContent: t('tooltip.send'),
+            },
+          }}
+          allowedFileTypes={supportedFileTypes}
+          onAttachRejected={onAttachRejected}
+          placeholder={t('chatbox.message.placeholder')}
+        />
+        <ChatbotFootnote {...getFootnoteProps(t)} />
+      </ChatbotFooter>
+    </>
+  );
+
+  let mainPanelContent = <>{chatMainContent}</>;
+
+  if (isMcpSettingsOpen && isFullscreenMode) {
+    mainPanelContent = (
+      <div className={classes.mcpFullscreenLayout}>
+        <div className={classes.mcpChatPane}>{chatMainContent}</div>
+        <div className={classes.mcpSettingsPane}>
+          <McpServersSettings
+            onClose={() => setIsMcpSettingsOpen(false)}
+            backgroundColor={chatHeaderBgColor}
+          />
+        </div>
+      </div>
+    );
+  } else if (isMcpSettingsOpen) {
+    mainPanelContent = (
+      <Settings
+        className={classes.settingsFlat}
+        fields={[
+          {
+            id: 'mcp-servers-settings',
+            label: '',
+            field: (
+              <McpServersSettings
+                onClose={() => setIsMcpSettingsOpen(false)}
+                backgroundColor={chatHeaderBgColor}
+              />
+            ),
+          },
+        ]}
+      />
+    );
+  }
+
+  let drawerPanelStyle: { [key: string]: string | number } | undefined;
+  if (!isFullscreenMode) {
+    drawerPanelStyle = { zIndex: 1300 };
+  } else if (isMcpSettingsOpen) {
+    drawerPanelStyle = { width: 320, minWidth: 320, maxWidth: 320 };
+  }
+
   return (
     <>
       {notebookAlerts.length > 0 && (
@@ -1101,6 +1276,7 @@ export const LightspeedChat = ({
           <LightspeedChatBoxHeader
             selectedModel={selectedModel}
             handleSelectedModel={item => {
+              setIsMcpSettingsOpen(false);
               onNewChat();
               handleSelectedModel(item);
             }}
@@ -1110,6 +1286,7 @@ export const LightspeedChat = ({
             setDisplayMode={setDisplayMode}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
+            onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
         {isFullscreenMode && (
@@ -1131,7 +1308,7 @@ export const LightspeedChat = ({
             drawerPanelContentProps={{
               isResizable: isFullscreenMode,
               hasNoBorder: !isFullscreenMode,
-              style: isFullscreenMode ? undefined : { zIndex: 1300 },
+              style: drawerPanelStyle,
             }}
             reverseButtonOrder
             displayMode={ChatbotDisplayMode.embedded}
@@ -1192,74 +1369,7 @@ export const LightspeedChat = ({
                     </ChatbotAlert>
                   </div>
                 )}
-                <ChatbotContent className={classes.chatbotContent}>
-                  <div
-                    ref={contentScrollRef}
-                    className={classes.chatbotContentScroll}
-                  >
-                    {welcomePrompts.length > 0 && (
-                      <div
-                        className={classes.chatbotContentSpacer}
-                        aria-hidden
-                      />
-                    )}
-                    <LightspeedChatBox
-                      userName={userName}
-                      messages={messages}
-                      profileLoading={profileLoading}
-                      announcement={announcement}
-                      ref={scrollToBottomRef}
-                      welcomePrompts={welcomePrompts}
-                      conversationId={conversationId}
-                      isStreaming={isSendButtonDisabled}
-                      topicRestrictionEnabled={topicRestrictionEnabled}
-                      displayMode={displayMode}
-                    />
-                    {welcomePrompts.length > 0 && (
-                      <div
-                        ref={bottomSentinelRef}
-                        aria-hidden
-                        style={{ height: 0, flexShrink: 0 }}
-                      />
-                    )}
-                  </div>
-                </ChatbotContent>
-                <ChatbotFooter className={classes.footer}>
-                  <FilePreview />
-                  <MessageBar
-                    key={messageBarKey}
-                    onSendMessage={sendMessage}
-                    isSendButtonDisabled={isSendButtonDisabled}
-                    hasAttachButton
-                    handleAttach={handleAttach}
-                    hasMicrophoneButton
-                    value={draftMessage}
-                    onChange={handleDraftMessage}
-                    hasStopButton={isSendButtonDisabled}
-                    handleStopButton={
-                      isSendButtonDisabled ? handleStopButton : undefined
-                    }
-                    buttonProps={{
-                      attach: {
-                        inputTestId: 'attachment-input',
-                        tooltipContent: t('tooltip.attach'),
-                      },
-                      microphone: {
-                        tooltipContent: {
-                          active: t('tooltip.microphone.active'),
-                          inactive: t('tooltip.microphone.inactive'),
-                        },
-                      },
-                      send: {
-                        tooltipContent: t('tooltip.send'),
-                      },
-                    }}
-                    allowedFileTypes={supportedFileTypes}
-                    onAttachRejected={onAttachRejected}
-                    placeholder={t('chatbox.message.placeholder')}
-                  />
-                  <ChatbotFootnote {...getFootnoteProps(t)} />
-                </ChatbotFooter>
+                {mainPanelContent}
               </FileDropZone>
             }
           />
