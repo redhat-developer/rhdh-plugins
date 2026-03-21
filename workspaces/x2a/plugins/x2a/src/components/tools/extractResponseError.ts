@@ -15,10 +15,24 @@
  */
 
 /**
+ * True when the HTTP response indicates success (2xx). Prefers `response.ok`
+ * when present; otherwise uses `status` (some tests omit `ok`).
+ */
+export function isHttpSuccessResponse(
+  response: Pick<Response, 'ok' | 'status'>,
+): boolean {
+  if (typeof response.ok === 'boolean') {
+    return response.ok;
+  }
+  const { status } = response;
+  return typeof status === 'number' && status >= 200 && status < 300;
+}
+
+/**
  * Extracts an error message from a non-ok fetch Response.
  *
- * Tries to parse the Backstage-standard `{ error: { message } }` JSON body;
- * falls back to the provided `fallback` string.
+ * Supports Backstage `{ error: { message } }`, and the x2a-backend init run
+ * conflict shape `{ error: string, message: string }` (e.g. HTTP 409).
  */
 export async function extractResponseError(
   response: Pick<Response, 'json'>,
@@ -26,9 +40,23 @@ export async function extractResponseError(
 ): Promise<string> {
   try {
     const body = (await response.json()) as {
-      error?: { message?: string };
+      error?: { message?: string } | string;
+      message?: string;
     };
-    return body?.error?.message ?? fallback;
+    if (typeof body?.error === 'string' && typeof body?.message === 'string') {
+      return body.message;
+    }
+    if (
+      body?.error &&
+      typeof body.error === 'object' &&
+      typeof body.error.message === 'string'
+    ) {
+      return body.error.message;
+    }
+    if (typeof body?.message === 'string') {
+      return body.message;
+    }
+    return fallback;
   } catch {
     return fallback;
   }

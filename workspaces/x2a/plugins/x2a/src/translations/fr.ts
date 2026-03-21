@@ -34,6 +34,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'table.columns.targetRepo': 'Dépôt cible',
     'table.columns.createdAt': 'Créé le',
     'table.actions.deleteProject': 'Supprimer le projet',
+    'table.actions.retriggerInit':
+      "Relancer la phase d'initialisation du projet",
     'table.actions.expandAll': 'Développer toutes les lignes',
     'table.actions.collapseAll': 'Réduire toutes les lignes',
     'table.actions.expandRow': 'Développer la ligne',
@@ -206,9 +208,18 @@ const x2aPluginTranslationFr = createTranslationMessages({
       'Exécuter tous les modules du projet « {{name}} » ?',
     'bulkRun.projectConfirm.message':
       "Cela déclenchera la prochaine phase de migration pour chaque module de ce projet dont l'état actuel le permet. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action. Les modules non éligibles seront ignorés.",
-    'bulkRun.globalConfirm.title': 'Exécuter tous les modules éligibles ?',
+    'bulkRun.globalConfirm.title':
+      'Exécuter tous les projets et modules éligibles ?',
     'bulkRun.globalConfirm.message':
       "Cela déclenchera la prochaine phase de migration pour tous les modules éligibles de tous les projets auxquels vous avez accès en écriture, y compris les projets non visibles sur la page actuelle. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action.",
+    'bulkRun.globalConfirm.messageInitRetrigger':
+      "Certains projets sont éligibles pour relancer la phase d'initialisation. Leur phase de découverte sera également relancée.",
+    'bulkRun.globalConfirm.noInitEligible':
+      "Aucun projet n'est actuellement éligible pour relancer la phase d'initialisation.",
+    'bulkRun.globalConfirm.userPromptLabel':
+      "Instructions utilisateur pour la relance d'init (optionnel)",
+    'bulkRun.globalConfirm.userPromptPlaceholder':
+      "Si des projets nécessitent une relance de leur phase d'init, ces instructions seront utilisées pour personnaliser la conversion…",
     'bulkRun.projectPageConfirm.title':
       'Exécuter tous les modules de « {{name}} » ?',
     'bulkRun.projectPageConfirm.message':
@@ -217,7 +228,22 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'bulkRun.cancel': 'Annuler',
     'bulkRun.errorProject':
       "Erreur lors de l'exécution des modules du projet « {{name}} »",
+    'bulkRun.errorModuleStart':
+      'Erreur lors du démarrage de la phase « {{phase}} » pour le module « {{moduleName}} »',
     'bulkRun.errorGlobal': "Erreur lors de l'opération groupée",
+    'retriggerInit.confirm.title':
+      "Relancer la phase d'initialisation pour « {{name}} » ?",
+    'retriggerInit.confirm.message':
+      "Cela relancera la phase de découverte du projet en démarrant un nouveau travail d'initialisation. Les résultats d'initialisation précédents seront remplacés.",
+    'retriggerInit.confirm.userPromptLabel':
+      'Instructions utilisateur (optionnel)',
+    'retriggerInit.confirm.userPromptPlaceholder':
+      'Fournir des instructions supplémentaires pour la conversion…',
+    'retriggerInit.confirm.confirmButton': 'Relancer',
+    'retriggerInit.error':
+      "Erreur lors de la relance de la phase d'initialisation du projet « {{name}} »",
+    'retriggerInit.errorStart':
+      "Erreur lors du démarrage de l'initialisation du projet",
   },
 });
 

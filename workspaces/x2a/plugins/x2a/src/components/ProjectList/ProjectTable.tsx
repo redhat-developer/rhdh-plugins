@@ -33,8 +33,17 @@ import {
 
 import DeleteIcon from '@material-ui/icons/Delete';
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
+import ReplayIcon from '@material-ui/icons/Replay';
 import ChevronRight from '@material-ui/icons/ChevronRight';
-import { Box, Button, Grid, IconButton, Tooltip } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  Grid,
+  IconButton,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 
 import {
   CREATE_CHEF_PROJECT_TEMPLATE_PATH,
@@ -53,7 +62,12 @@ import { DetailPanel } from './DetailPanel';
 import { ProjectStatusCell } from '../ProjectStatusCell';
 import { DeleteProjectDialog } from '../DeleteProjectDialog';
 import { BulkRunConfirmDialog } from '../BulkRunConfirmDialog';
-import { extractResponseError, areEligibleModulesToRun } from '../tools';
+import { RetriggerInitConfirmDialog } from '../RetriggerInitConfirmDialog';
+import {
+  extractResponseError,
+  areEligibleModulesToRun,
+  isEligibleForRetriggerInit,
+} from '../tools';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { projectRouteRef } from '../../routes';
 
@@ -388,7 +402,7 @@ export const ProjectTable = ({
 }: ProjectTableProps) => {
   const clientService = useClientService();
   const { t } = useTranslation();
-  const { runAllForProject, runAllGlobal } = useBulkRun();
+  const { runAllForProject, runAllGlobal, retriggerInit } = useBulkRun();
   const { hasAnyWriteAccess, canWriteProject } = useProjectWriteAccess();
 
   const [error, setError] = useState<Error | null>(null);
@@ -427,9 +441,20 @@ export const ProjectTable = ({
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [retriggerInitTarget, setRetriggerInitTarget] =
+    useState<Project | null>(null);
+  const [isRetriggeringInit, setIsRetriggeringInit] = useState(false);
+
   const [bulkRunTarget, setBulkRunTarget] = useState<Project | null>(null);
   const [bulkRunGlobalOpen, setBulkRunGlobalOpen] = useState(false);
   const [isBulkRunning, setIsBulkRunning] = useState(false);
+  const [globalUserPrompt, setGlobalUserPrompt] = useState('');
+
+  const hasInitEligibleProjects = useMemo(
+    () =>
+      projects.some(p => canWriteProject(p) && isEligibleForRetriggerInit(p)),
+    [projects, canWriteProject],
+  );
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -487,7 +512,10 @@ export const ProjectTable = ({
     setIsBulkRunning(true);
 
     try {
-      const result = await runAllGlobal(canWriteProject);
+      const result = await runAllGlobal(
+        canWriteProject,
+        globalUserPrompt || undefined,
+      );
       if (result.failed > 0) {
         setError(new Error(t('bulkRun.errorGlobal')));
       }
@@ -497,8 +525,41 @@ export const ProjectTable = ({
     } finally {
       setIsBulkRunning(false);
       setBulkRunGlobalOpen(false);
+      setGlobalUserPrompt('');
     }
-  }, [runAllGlobal, canWriteProject, combinedForceRefresh, t]);
+  }, [
+    runAllGlobal,
+    canWriteProject,
+    globalUserPrompt,
+    combinedForceRefresh,
+    t,
+  ]);
+
+  const handleRetriggerInitConfirm = useCallback(
+    async (userPrompt: string) => {
+      if (!retriggerInitTarget) return;
+      setError(null);
+      setIsRetriggeringInit(true);
+
+      try {
+        await retriggerInit(retriggerInitTarget, userPrompt || undefined);
+        combinedForceRefresh();
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(
+          new Error(
+            `${t('retriggerInit.error' as any, {
+              name: retriggerInitTarget.name,
+            })}: ${msg}`,
+          ),
+        );
+      } finally {
+        setIsRetriggeringInit(false);
+        setRetriggerInitTarget(null);
+      }
+    },
+    [retriggerInitTarget, retriggerInit, combinedForceRefresh, t],
+  );
 
   const handleOrderChange = (sortBy: number, od: OrderDirection) => {
     setOrderBy(sortBy);
@@ -591,6 +652,13 @@ export const ProjectTable = ({
 
   const actions = [
     (rowData: Project) => ({
+      icon: ReplayIcon,
+      onClick: () => setRetriggerInitTarget(rowData),
+      tooltip: t('table.actions.retriggerInit'),
+      hidden: !isEligibleForRetriggerInit(rowData),
+      disabled: !canWriteProject(rowData),
+    }),
+    (rowData: Project) => ({
       icon: PlaylistPlayIcon,
       onClick: () => setBulkRunTarget(rowData),
       tooltip: t('bulkRun.projectAction'),
@@ -614,6 +682,14 @@ export const ProjectTable = ({
         onClose={() => setDeleteTarget(null)}
       />
 
+      <RetriggerInitConfirmDialog
+        open={!!retriggerInitTarget}
+        projectName={retriggerInitTarget?.name ?? ''}
+        isRunning={isRetriggeringInit}
+        onConfirm={handleRetriggerInitConfirm}
+        onClose={() => !isRetriggeringInit && setRetriggerInitTarget(null)}
+      />
+
       <BulkRunConfirmDialog
         idPostfix="project-single"
         open={!!bulkRunTarget}
@@ -633,8 +709,43 @@ export const ProjectTable = ({
         message={t('bulkRun.globalConfirm.message')}
         isRunning={isBulkRunning}
         onConfirm={handleBulkRunGlobalConfirm}
-        onClose={() => !isBulkRunning && setBulkRunGlobalOpen(false)}
-      />
+        onClose={() => {
+          if (!isBulkRunning) {
+            setBulkRunGlobalOpen(false);
+            setGlobalUserPrompt('');
+          }
+        }}
+      >
+        {hasInitEligibleProjects ? (
+          <>
+            <Typography variant="body1" style={{ marginTop: 16 }}>
+              {t('bulkRun.globalConfirm.messageInitRetrigger')}
+            </Typography>
+            <TextField
+              label={t('bulkRun.globalConfirm.userPromptLabel')}
+              placeholder={t('bulkRun.globalConfirm.userPromptPlaceholder')}
+              multiline
+              minRows={3}
+              maxRows={8}
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              value={globalUserPrompt}
+              onChange={e => setGlobalUserPrompt(e.target.value)}
+              disabled={isBulkRunning}
+              inputProps={{ 'data-testid': 'global-run-all-user-prompt' }}
+            />
+          </>
+        ) : (
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            style={{ marginTop: 16 }}
+          >
+            {t('bulkRun.globalConfirm.noInitEligible')}
+          </Typography>
+        )}
+      </BulkRunConfirmDialog>
 
       {error && (
         <Grid item>

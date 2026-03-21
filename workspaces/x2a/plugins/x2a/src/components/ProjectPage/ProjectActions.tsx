@@ -16,7 +16,9 @@
 import MoreVert from '@material-ui/icons/MoreVert';
 import DeleteIcon from '@material-ui/icons/Delete';
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
+import ReplayIcon from '@material-ui/icons/Replay';
 import {
+  Divider,
   ListItemIcon,
   Menu,
   MenuItem,
@@ -32,7 +34,9 @@ export type ProjectActionsProps = {
   menuAnchorEl: HTMLElement | null;
   handleDeleteClick: () => void;
   handleRunAllClick: () => void;
+  handleRetriggerInitClick: () => void;
   canRunAll: boolean;
+  canRetriggerInit: boolean;
   canDeleteProject: boolean;
 };
 
@@ -43,7 +47,9 @@ export const ProjectActions = ({
   menuAnchorEl,
   handleDeleteClick,
   handleRunAllClick,
+  handleRetriggerInitClick,
   canRunAll,
+  canRetriggerInit,
   canDeleteProject,
 }: ProjectActionsProps) => {
   const { t } = useTranslation();
@@ -76,12 +82,24 @@ export const ProjectActions = ({
           horizontal: 'right',
         }}
       >
+        <MenuItem
+          onClick={handleRetriggerInitClick}
+          disabled={!canRetriggerInit}
+        >
+          <ListItemIcon>
+            <ReplayIcon fontSize="small" />
+          </ListItemIcon>
+          {t('table.actions.retriggerInit')}
+        </MenuItem>
+
         <MenuItem onClick={handleRunAllClick} disabled={!canRunAll}>
           <ListItemIcon>
             <PlaylistPlayIcon fontSize="small" />
           </ListItemIcon>
           {t('bulkRun.projectPageAction')}
         </MenuItem>
+
+        <Divider />
 
         <MenuItem onClick={handleDeleteClick} disabled={!canDeleteProject}>
           <ListItemIcon>

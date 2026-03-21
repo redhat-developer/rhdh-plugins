@@ -109,6 +109,8 @@ export const createAndInitProject = async (
     logger.error(
       `Error triggering init-phase for project "${row.name}" (${project.id}): ${message}`,
     );
+
+    // if the init fails, let's keep the project created. The user can then list, update and retrigger it manually.
     throw error;
   }
 
