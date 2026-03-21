@@ -18,6 +18,7 @@ export type { ScmProvider, ScmProviderName } from './ScmProvider';
 export {
   resolveScmProvider,
   resolveScmProviderByName,
+  allProviders,
 } from './providerRegistry';
 export { buildScmHostMap } from './buildScmHostMap';
 export { githubProvider, gitlabProvider, bitbucketProvider } from './providers';

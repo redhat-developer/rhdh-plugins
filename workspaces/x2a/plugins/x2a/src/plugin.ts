@@ -17,8 +17,10 @@ import {
   createPlugin,
   createRoutableExtension,
 } from '@backstage/core-plugin-api';
+import { createScaffolderFieldExtension } from '@backstage/plugin-scaffolder-react';
 
 import { rootRouteRef } from './routes';
+import { RepoAuthentication, repoAuthenticationValidation } from './scaffolder';
 
 /** @public */
 export const x2APlugin = createPlugin({
@@ -34,5 +36,14 @@ export const X2APage = x2APlugin.provide(
     name: 'X2APage',
     component: () => import('./components/Router').then(m => m.Router),
     mountPoint: rootRouteRef,
+  }),
+);
+
+/** @public */
+export const RepoAuthenticationExtension = x2APlugin.provide(
+  createScaffolderFieldExtension({
+    component: RepoAuthentication,
+    name: 'RepoAuthentication', // name used in ui:field in templates
+    validation: repoAuthenticationValidation,
   }),
 );
