@@ -106,6 +106,12 @@ export const ProjectStatusCell = ({
         value: modulesSummary.error,
         color: '#FF0000',
       },
+      {
+        id: 'cancelled',
+        label: t('module.summary.cancelled'),
+        value: modulesSummary.cancelled,
+        color: '#9E9E9E',
+      },
     ];
 
     tooltipContent = (
@@ -133,6 +139,10 @@ export const ProjectStatusCell = ({
         <TooltipItem
           label={t('module.summary.error')}
           value={modulesSummary.error}
+        />
+        <TooltipItem
+          label={t('module.summary.cancelled')}
+          value={modulesSummary.cancelled}
         />
       </Grid>
     );

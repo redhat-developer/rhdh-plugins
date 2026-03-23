@@ -15,23 +15,10 @@ auth:
 catalog:
   locations:
     - type: file
-      target: ../../examples/entities.yaml
-    - type: file
-      target: ../../examples/github-scorecard-only.yaml
-      rules:
-        - allow: [Component]
-    - type: file
-      target: ../../examples/jira-scorecard-only.yaml
-      rules:
-        - allow: [Component]
-    - type: file
       target: ../../examples/all-scorecards.yaml
       rules:
-        - allow: [Component]
-    - type: file
-      target: ../../examples/no-scorecards.yaml
-      rules:
-        - allow: [Component]
+        - allow:
+            [Component, System, API, Resource, Location, Template, User, Group]
     # TODO: Additional catalog entities for your user
 
 proxy:

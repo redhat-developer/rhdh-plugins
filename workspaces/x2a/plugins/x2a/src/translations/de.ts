@@ -34,6 +34,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'table.columns.targetRepo': 'Ziel-Repository',
     'table.columns.createdAt': 'Erstellt am',
     'table.actions.deleteProject': 'Projekt löschen',
+    'table.actions.retriggerInit': 'Projekt-Init-Phase erneut auslösen',
     'table.actions.expandAll': 'Alle Zeilen aufklappen',
     'table.actions.collapseAll': 'Alle Zeilen zuklappen',
     'table.actions.expandRow': 'Zeile aufklappen',
@@ -95,11 +96,17 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.summary.pending': 'Ausstehend',
     'module.summary.running': 'Läuft',
     'module.summary.error': 'Fehler',
+    'module.summary.cancelled': 'Abgebrochen',
     'module.summary.toReview_one':
       '{{count}} Modul mit zu überprüfenden Artefakten',
     'module.summary.toReview_other':
       '{{count}} Module mit zu überprüfenden Artefakten',
-    'module.actions.runNextPhase': 'Nächste Phase ausführen',
+    'module.actions.runNextPhase': 'Nächste {{phase}}-Phase ausführen',
+    'module.actions.cancelPhase': 'Die {{phase}}-Phase abbrechen',
+    'module.actions.cancelPhaseError':
+      'Fehler beim Abbrechen der Phase für das Modul',
+    'module.actions.runNextPhaseError':
+      'Fehler beim Ausführen der nächsten Phase für das Modul',
     'module.currentPhase': 'Aktuelle Phase',
     'module.lastUpdate': 'Letzte Aktualisierung',
     'module.notStarted': 'Nicht gestartet',
@@ -114,6 +121,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.statuses.running': 'Läuft',
     'module.statuses.success': 'Erfolg',
     'module.statuses.error': 'Fehler',
+    'module.statuses.cancelled': 'Abgebrochen',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
     'artifact.types.project_metadata': 'Projektmetadaten',
     'artifact.types.ansible_project': 'AAP-Projekt',
@@ -137,6 +145,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.statuses.running': 'Läuft',
     'modulePage.phases.statuses.success': 'Erfolg',
     'modulePage.phases.statuses.error': 'Fehler',
+    'modulePage.phases.statuses.cancelled': 'Abgebrochen',
     'modulePage.phases.reanalyzeInstructions':
       'Der Modulmigrationsplan ist bereits vorhanden. Falls der gesamte Projektmigrationsplan aktualisiert wurde, lösen Sie die Analyse erneut aus, um die Änderungen widerzuspiegeln.',
     'modulePage.phases.rerunAnalyze': 'Modulmigrationsplan neu erstellen',
@@ -156,6 +165,11 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Das Modul wurde bereits veröffentlicht. Lösen Sie die Veröffentlichung erneut aus, um das Ziel-Repository zu aktualisieren.',
     'modulePage.phases.rerunPublish':
       'Im Ziel-Repository erneut veröffentlichen',
+    'modulePage.phases.cancel': 'Abbrechen',
+    'modulePage.phases.runError':
+      'Fehler beim Ausführen der Phase für das Modul',
+    'modulePage.phases.cancelError':
+      'Fehler beim Abbrechen der Phase für das Modul',
     'modulePage.phases.commitId': 'Letzte Commit-ID',
     'modulePage.phases.viewLog': 'Log anzeigen',
     'modulePage.phases.hideLog': 'Log ausblenden',
@@ -192,9 +206,18 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Alle Module im Projekt „{{name}}" ausführen?',
     'bulkRun.projectConfirm.message':
       'Dies löst die nächste Migrationsphase für jedes Modul in diesem Projekt aus, dessen aktueller Status dies zulässt. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen. Module, die nicht berechtigt sind, werden übersprungen.',
-    'bulkRun.globalConfirm.title': 'Alle berechtigten Module ausführen?',
+    'bulkRun.globalConfirm.title':
+      'Alle berechtigten Projekte und Module ausführen?',
     'bulkRun.globalConfirm.message':
       'Dies löst die nächste Migrationsphase für alle berechtigten Module in allen Projekten aus, auf die Sie Schreibzugriff haben, einschließlich Projekte, die auf der aktuellen Seite nicht sichtbar sind. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen.',
+    'bulkRun.globalConfirm.messageInitRetrigger':
+      'Einige Projekte sind berechtigt, die Init-Phase erneut auszuführen. Deren Erkennungsphase wird ebenfalls erneut ausgelöst.',
+    'bulkRun.globalConfirm.noInitEligible':
+      'Derzeit sind keine Projekte für eine erneute Ausführung der Init-Phase berechtigt.',
+    'bulkRun.globalConfirm.userPromptLabel':
+      'Benutzeranweisung für Init-Neustart (optional)',
+    'bulkRun.globalConfirm.userPromptPlaceholder':
+      'Falls Projekte ihre Init-Phase erneut durchlaufen müssen, wird diese Anweisung zur Anpassung der Konvertierung verwendet…',
     'bulkRun.projectPageConfirm.title': 'Alle Module in „{{name}}" ausführen?',
     'bulkRun.projectPageConfirm.message':
       'Dies löst die nächste Migrationsphase für jedes Modul in diesem Projekt aus, dessen aktueller Status dies zulässt. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen. Module, die nicht berechtigt sind, werden übersprungen.',
@@ -202,7 +225,20 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'bulkRun.cancel': 'Abbrechen',
     'bulkRun.errorProject':
       'Fehler beim Ausführen der Module im Projekt „{{name}}"',
+    'bulkRun.errorModuleStart':
+      'Fehler beim Starten der Phase „{{phase}}" für Modul „{{moduleName}}"',
     'bulkRun.errorGlobal': 'Fehler bei der Massenausführung',
+    'retriggerInit.confirm.title': 'Init-Phase für „{{name}}" erneut auslösen?',
+    'retriggerInit.confirm.message':
+      'Dies löst die Erkennungsphase für das Projekt erneut aus und startet einen neuen Init-Job. Vorherige Init-Ergebnisse werden ersetzt.',
+    'retriggerInit.confirm.userPromptLabel': 'Benutzeranweisung (optional)',
+    'retriggerInit.confirm.userPromptPlaceholder':
+      'Zusätzliche Anweisungen für die Konvertierung angeben…',
+    'retriggerInit.confirm.confirmButton': 'Erneut auslösen',
+    'retriggerInit.error':
+      'Fehler beim erneuten Auslösen der Init-Phase für Projekt „{{name}}"',
+    'retriggerInit.errorStart':
+      'Fehler beim Starten der Projektinitialisierung',
   },
 });
 

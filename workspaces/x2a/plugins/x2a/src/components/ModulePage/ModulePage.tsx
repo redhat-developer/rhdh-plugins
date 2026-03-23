@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import { useCallback, useState } from 'react';
-import useAsync from 'react-use/lib/useAsync';
 import { useRouteRefParams } from '@backstage/core-plugin-api';
 import {
   Content,
@@ -27,6 +26,8 @@ import { Box, Grid } from '@material-ui/core';
 import {
   resolveScmProvider,
   MigrationPhase,
+  Module,
+  Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
@@ -35,6 +36,7 @@ import { moduleRouteRef } from '../../routes';
 import { useClientService } from '../../ClientService';
 import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
+import { usePolledFetch } from '../../hooks/usePolledFetch';
 import { useRepoAuthentication } from '../../repoAuth';
 import { ArtifactsCard } from './ArtifactsCard';
 import { ModuleDetailsCard } from './ModuleDetailsCard';
@@ -49,29 +51,35 @@ export const ModulePage = () => {
   const repoAuthentication = useRepoAuthentication();
   const hostMap = useScmHostMap();
   const [error, setError] = useState<string | undefined>();
-  const [refresh, setRefresh] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
+
+  const handleTabChange = useCallback(
+    (_event: React.ChangeEvent<{}>, newValue: number) => {
+      setActiveTab(newValue);
+    },
+    [],
+  );
 
   const {
-    value: project,
-    loading: projectLoading,
-    error: projectError,
-  } = useAsync(async () => {
-    const response = await clientService.projectsProjectIdGet({
-      path: { projectId },
-    });
-    return await response.json();
-  }, [projectId]);
+    data,
+    loading: isLoading,
+    error: fetchError,
+    refetch,
+  } = usePolledFetch(async () => {
+    const [projectResponse, moduleResponse] = await Promise.all([
+      clientService.projectsProjectIdGet({ path: { projectId } }),
+      clientService.projectsProjectIdModulesModuleIdGet({
+        path: { projectId, moduleId },
+      }),
+    ]);
+    return {
+      project: (await projectResponse.json()) as Project,
+      module: (await moduleResponse.json()) as Module,
+    };
+  }, [projectId, moduleId, clientService]);
 
-  const {
-    value: module,
-    loading: moduleLoading,
-    error: moduleError,
-  } = useAsync(async () => {
-    const response = await clientService.projectsProjectIdModulesModuleIdGet({
-      path: { projectId, moduleId },
-    });
-    return await response.json();
-  }, [moduleId, refresh]);
+  const project = data?.project;
+  const module = data?.module;
 
   const handleRunPhase = useCallback(
     async (phase: MigrationPhase) => {
@@ -111,20 +119,62 @@ export const ModulePage = () => {
 
         const responseData = await response.json();
         if (!responseData.jobId) {
-          setError('Failed to run phase for module');
+          setError(`${t('modulePage.phases.runError')}`);
         }
 
-        setRefresh(prev => prev + 1);
+        refetch();
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : 'Failed to run phase for module',
+          err instanceof Error
+            ? err.message
+            : `${t('modulePage.phases.runError')}`,
         );
       }
     },
-    [clientService, hostMap, projectId, moduleId, repoAuthentication, project],
+    [
+      t,
+      clientService,
+      hostMap,
+      projectId,
+      moduleId,
+      repoAuthentication,
+      project,
+      refetch,
+    ],
   );
 
-  const fetchError = projectError || moduleError;
+  const handleCancelPhase = useCallback(
+    async (phase: MigrationPhase) => {
+      if (!project || phase === 'init') {
+        // The init phase belongs to the project's page
+        return;
+      }
+      setError(undefined);
+
+      try {
+        const response =
+          await clientService.projectsProjectIdModulesModuleIdCancelPost({
+            path: { projectId, moduleId },
+            body: { phase },
+          });
+        if (response.status !== 200) {
+          const body = await response
+            .json()
+            .catch(() => ({}) as { message?: string });
+          setError(body?.message || t('modulePage.phases.cancelError'));
+        }
+        refetch();
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('modulePage.phases.cancelError'),
+        );
+      }
+    },
+    [clientService, t, projectId, moduleId, project, refetch],
+  );
+
   if (fetchError) {
     return (
       <Page themeId="tool">
@@ -135,8 +185,6 @@ export const ModulePage = () => {
       </Page>
     );
   }
-
-  const isLoading = projectLoading || moduleLoading;
 
   return (
     <Page themeId="tool">
@@ -171,9 +219,13 @@ export const ModulePage = () => {
             <Grid item xs={12}>
               <PhasesCard
                 module={module}
+                project={project}
                 projectId={projectId}
                 moduleId={moduleId}
                 onRunPhase={handleRunPhase}
+                onCancelPhase={handleCancelPhase}
+                activeTab={activeTab}
+                handleTabChange={handleTabChange}
               />
             </Grid>
           </Grid>

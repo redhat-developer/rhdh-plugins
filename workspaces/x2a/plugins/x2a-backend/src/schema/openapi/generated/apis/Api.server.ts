@@ -28,6 +28,7 @@ import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
 import { ProjectsProjectIdCollectArtifactsPost200Response } from '../models/ProjectsProjectIdCollectArtifactsPost200Response.model';
 import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
+import { ProjectsProjectIdModulesModuleIdCancelPostRequest } from '../models/ProjectsProjectIdModulesModuleIdCancelPostRequest.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
 import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
 import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
@@ -117,6 +118,17 @@ export type ProjectsProjectIdModulesGet = {
 /**
  * @public
  */
+export type ProjectsProjectIdModulesModuleIdCancelPost = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  body: ProjectsProjectIdModulesModuleIdCancelPostRequest;
+  response: void | void | void;
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdModulesModuleIdGet = {
   path: {
     projectId: string;
@@ -184,6 +196,8 @@ export type EndpointMap = {
   '#get|/projects/{projectId}/log': ProjectsProjectIdLogGet;
 
   '#get|/projects/{projectId}/modules': ProjectsProjectIdModulesGet;
+
+  '#post|/projects/{projectId}/modules/{moduleId}/cancel': ProjectsProjectIdModulesModuleIdCancelPost;
 
   '#get|/projects/{projectId}/modules/{moduleId}': ProjectsProjectIdModulesModuleIdGet;
 

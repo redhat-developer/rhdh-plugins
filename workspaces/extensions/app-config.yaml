@@ -1,6 +1,22 @@
 app:
   title: Backstage App
   baseUrl: http://localhost:3000
+  packages: all
+
+  extensions:
+    - page:catalog:
+        config:
+          path: /
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+          defaultLanguage: 'en'
+    - nav-item:user-settings: false
+    - nav-item:search: false
+    - nav-item:home: false
+    - nav-item:catalog:
+        config:
+          title: 'Home'
 
 organization:
   name: My Company
@@ -128,6 +144,11 @@ permission:
     pluginsWithPermission:
       - catalog
       - extensions
+    admin:
+      superUsers:
+        - name: user:development/guest
+      users:
+        - name: user:development/guest
 
 extensions:
   # directory: ../../examples # YAML files are in the examples directory

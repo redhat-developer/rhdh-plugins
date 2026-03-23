@@ -23,7 +23,11 @@ report_result() {
     url="${url}&moduleId=${MODULE_ID}"
   fi
 
-  local cmd=(uv run app.py report --url "${url}" --job-id "${JOB_ID}" --source-dir "${SOURCE_BASE}")
+  local cmd=(uv run app.py report --url "${url}" --job-id "${JOB_ID}")
+
+  if [ -n "${SOURCE_BASE:-}" ]; then
+    cmd+=(--source-dir "${SOURCE_BASE}")
+  fi
 
   for artifact in "${ARTIFACTS[@]}"; do
     cmd+=(--artifacts "${artifact}")
@@ -223,7 +227,9 @@ case "${PHASE}" in
     #   --source-dir DIRECTORY  Source directory to analyze
     USER_REQ="${USER_PROMPT:-Analyze the Chef cookbooks and create a migration plan}"
     echo "Command: uv run app.py init --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
+    ERROR_MESSAGE="Unexpected error during init phase. See the job log for details."
     uv run app.py init --source-dir "${SOURCE_BASE}" "${USER_REQ}"
+    ERROR_MESSAGE=""
 
     # Copy output to target location
     # Note: x2a tool writes files to the source directory (--source-dir)
@@ -285,7 +291,9 @@ case "${PHASE}" in
 
     USER_REQ="${USER_PROMPT:-Analyze the module '${MODULE_NAME}' for migration to Ansible}"
     echo "Command: uv run app.py analyze --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
+    ERROR_MESSAGE="Unexpected error during analyze phase. See the job log for details."
     uv run app.py analyze --source-dir "${SOURCE_BASE}" "${USER_REQ}"
+    ERROR_MESSAGE=""
 
     # Copy output to target location
     # Note: x2a tool produces migration-plan-{module_name}.md (spaces replaced with underscores)
@@ -340,12 +348,14 @@ case "${PHASE}" in
 
     USER_REQ="${USER_PROMPT:-Migrate this module to Ansible}"
     echo "Command: uv run app.py migrate --source-dir ${SOURCE_BASE} --source-technology Chef --high-level-migration-plan ${PROJECT_PATH}/migration-plan.md --module-migration-plan ${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md \"${USER_REQ}\""
+    ERROR_MESSAGE="Unexpected error during migrate phase. See the job log for details."
     uv run app.py migrate \
       --source-dir "${SOURCE_BASE}" \
       --source-technology Chef \
       --high-level-migration-plan "${PROJECT_PATH}/migration-plan.md" \
       --module-migration-plan "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md" \
       "${USER_REQ}"
+    ERROR_MESSAGE=""
 
     # Copy output to target location
     # Note: x2a tool writes to ansible/roles/{module}/ in the source directory
@@ -393,7 +403,9 @@ case "${PHASE}" in
     # and writes to {project_id}/ansible-project/
     # It operates relative to CWD, so we run from TARGET_BASE
     pushd "${TARGET_BASE}"
+    ERROR_MESSAGE="Unexpected error during publish phase (publish-project). See the job log for details."
     uv run --project /app /app/app.py publish-project "${PROJECT_DIR}" "${MODULE_NAME}"
+    ERROR_MESSAGE=""
     popd
 
     # Verify ansible-project was created
@@ -412,10 +424,12 @@ case "${PHASE}" in
     echo "=== Step 2: Publishing to AAP ==="
     echo "Command: uv run app.py publish-aap --target-repo ${TARGET_REPO_URL} --target-branch ${TARGET_REPO_BRANCH} --project-id ${PROJECT_DIR}"
     cd /app
+    ERROR_MESSAGE="Unexpected error during publish phase (publish-aap). See the job log for details."
     PUBLISH_OUTPUT=$(uv run app.py publish-aap \
       --target-repo "${TARGET_REPO_URL}" \
       --target-branch "${TARGET_REPO_BRANCH}" \
       --project-id "${PROJECT_DIR}" 2>&1 | tee /dev/stderr)
+    ERROR_MESSAGE=""
 
     # Parse AAP project ID from output and construct URL
     AAP_PROJECT_ID=$(echo "${PUBLISH_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)

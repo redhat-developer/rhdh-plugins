@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Table,
@@ -25,16 +33,27 @@ import {
 
 import DeleteIcon from '@material-ui/icons/Delete';
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
+import ReplayIcon from '@material-ui/icons/Replay';
 import ChevronRight from '@material-ui/icons/ChevronRight';
-import { Box, Button, Grid, IconButton, Tooltip } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  Grid,
+  IconButton,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 
 import {
   CREATE_CHEF_PROJECT_TEMPLATE_PATH,
+  Module,
   Project,
   ProjectsGet,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
+import { usePolledFetch } from '../../hooks/usePolledFetch';
 import { useBulkRun } from '../../hooks/useBulkRun';
 import { useProjectWriteAccess } from '../../hooks/useProjectWriteAccess';
 import { Repository } from '../Repository';
@@ -43,9 +62,31 @@ import { DetailPanel } from './DetailPanel';
 import { ProjectStatusCell } from '../ProjectStatusCell';
 import { DeleteProjectDialog } from '../DeleteProjectDialog';
 import { BulkRunConfirmDialog } from '../BulkRunConfirmDialog';
-import { extractResponseError, areEligibleModulesToRun } from '../tools';
+import { RetriggerInitConfirmDialog } from '../RetriggerInitConfirmDialog';
+import {
+  extractResponseError,
+  areEligibleModulesToRun,
+  isEligibleForRetriggerInit,
+} from '../tools';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { projectRouteRef } from '../../routes';
+
+/**
+ * @material-table/core doesn't export a type for the table instance exposed via
+ * tableRef. This interface covers the internal API surface we rely on so that
+ * call-sites stay type-safe and breakage from library upgrades is caught early.
+ */
+type MaterialTableRef<T extends object> = {
+  dataManager: {
+    sortedData: (T & { id?: string })[];
+    data: (T & {
+      tableData: { showDetailPanel?: (() => React.ReactNode) | undefined };
+    })[];
+    getRenderState: () => object;
+  };
+  onToggleDetailPanel: (path: number[], render: () => React.ReactNode) => void;
+  setState: (state: object) => void;
+};
 
 type ProjectTableProps = {
   forceRefresh: () => void;
@@ -236,6 +277,116 @@ const useColumns = (
   }, [t, getDefaultSort, nameCell, allExpanded, onToggleAll, onToggleRow]);
 };
 
+export interface ExpandedModulesEntry {
+  modules?: Module[];
+  loading: boolean;
+  error?: Error;
+}
+
+export interface ExpandedModulesState {
+  [projectId: string]: ExpandedModulesEntry;
+}
+
+/** @internal shape returned by the fetch function inside useExpandedModules */
+export interface ExpandedModulesData {
+  modules: Record<string, Module[]>;
+  errors: Record<string, Error>;
+}
+
+/**
+ * Centralized polling for modules of all expanded project rows.
+ * A single `usePolledFetch` loop fetches modules for every expanded project in
+ * one batch, preventing N independent pollers when many rows are expanded.
+ *
+ * Uses `Promise.allSettled` so that a single project failure does not break
+ * module fetching for all other expanded rows.
+ */
+export function useExpandedModules(expandedIds: string[]): {
+  modulesState: ExpandedModulesState;
+  refetchModules: () => void;
+} {
+  const clientService = useClientService();
+
+  const sortedIds = useMemo(() => [...expandedIds].sort(), [expandedIds]);
+  const key = sortedIds.join(',');
+
+  const {
+    data,
+    loading,
+    refetch: refetchModules,
+  } = usePolledFetch(
+    async (): Promise<ExpandedModulesData> => {
+      if (sortedIds.length === 0) return { modules: {}, errors: {} };
+      const results = await Promise.allSettled(
+        sortedIds.map(async id => {
+          const response = await clientService.projectsProjectIdModulesGet({
+            path: { projectId: id },
+          });
+          return [id, (await response.json()) as Module[]] as const;
+        }),
+      );
+
+      const modules: Record<string, Module[]> = {};
+      const errors: Record<string, Error> = {};
+      results.forEach((result, i) => {
+        const id = sortedIds[i];
+        if (result.status === 'fulfilled') {
+          modules[result.value[0]] = result.value[1];
+        } else {
+          errors[id] =
+            result.reason instanceof Error
+              ? result.reason
+              : new Error(String(result.reason));
+        }
+      });
+      return { modules, errors };
+    },
+    [key, clientService],
+    {
+      initialData:
+        sortedIds.length === 0 ? { modules: {}, errors: {} } : undefined,
+    },
+  );
+
+  const modulesState = useMemo<ExpandedModulesState>(() => {
+    const state: ExpandedModulesState = {};
+    for (const id of sortedIds) {
+      state[id] = {
+        modules: data?.modules[id],
+        loading: loading && data?.modules[id] === undefined,
+        error: data?.errors[id],
+      };
+    }
+    return state;
+  }, [sortedIds, data, loading]);
+
+  return { modulesState, refetchModules };
+}
+
+const ExpandedModulesContext = createContext<{
+  modulesState: ExpandedModulesState;
+  forceRefresh: () => void;
+}>({ modulesState: {}, forceRefresh: () => {} });
+
+/**
+ * Reads module data from {@link ExpandedModulesContext} so that it always
+ * receives the latest polled modules, even when Material-Table renders the
+ * detail panel from a stale closure captured at toggle time.
+ */
+const ConnectedDetailPanel = ({ project }: { project: Project }) => {
+  const { modulesState, forceRefresh } = useContext(ExpandedModulesContext);
+  const ms = modulesState[project.id];
+  return (
+    <DetailPanel
+      project={project}
+      forceRefresh={forceRefresh}
+      modules={ms?.modules}
+      modulesLoading={ms?.loading}
+      modulesError={ms?.error}
+    />
+  );
+};
+
 export const ProjectTable = ({
   projects,
   forceRefresh,
@@ -251,22 +402,59 @@ export const ProjectTable = ({
 }: ProjectTableProps) => {
   const clientService = useClientService();
   const { t } = useTranslation();
-  const { runAllForProject, runAllGlobal } = useBulkRun();
+  const { runAllForProject, runAllGlobal, retriggerInit } = useBulkRun();
   const { hasAnyWriteAccess, canWriteProject } = useProjectWriteAccess();
 
   const [error, setError] = useState<Error | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
-  const tableRef = useRef<any>(null);
+  const [expandedProjectIds, setExpandedProjectIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const tableRef = useRef<MaterialTableRef<Project>>(null);
+
+  const expandedIdsArray = useMemo(
+    () => Array.from(expandedProjectIds),
+    [expandedProjectIds],
+  );
+  const { modulesState, refetchModules } = useExpandedModules(expandedIdsArray);
+
+  const combinedForceRefresh = useCallback(() => {
+    forceRefresh();
+    refetchModules();
+  }, [forceRefresh, refetchModules]);
 
   useEffect(() => {
     setAllExpanded(false);
+    setExpandedProjectIds(new Set());
+  }, [page, pageSize]);
+
+  // Prune expanded IDs that are no longer in the current data set (e.g. after
+  // deletion or a polling refresh that removed a project).
+  useEffect(() => {
+    const currentIds = new Set(projects.map(p => p.id));
+    setExpandedProjectIds(prev => {
+      const pruned = new Set([...prev].filter(id => currentIds.has(id)));
+      return pruned.size !== prev.size ? pruned : prev;
+    });
   }, [projects]);
+
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [retriggerInitTarget, setRetriggerInitTarget] =
+    useState<Project | null>(null);
+  const [isRetriggeringInit, setIsRetriggeringInit] = useState(false);
 
   const [bulkRunTarget, setBulkRunTarget] = useState<Project | null>(null);
   const [bulkRunGlobalOpen, setBulkRunGlobalOpen] = useState(false);
   const [isBulkRunning, setIsBulkRunning] = useState(false);
+  const [globalUserPrompt, setGlobalUserPrompt] = useState('');
+
+  const hasInitEligibleProjects = useMemo(
+    () =>
+      projects.some(p => canWriteProject(p) && isEligibleForRetriggerInit(p)),
+    [projects, canWriteProject],
+  );
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -287,7 +475,7 @@ export const ProjectTable = ({
         return;
       }
 
-      forceRefresh();
+      combinedForceRefresh();
     } catch (e) {
       setError(e as Error);
     } finally {
@@ -310,64 +498,116 @@ export const ProjectTable = ({
           ),
         );
       }
-      forceRefresh();
+      combinedForceRefresh();
     } catch (e) {
       setError(e as Error);
     } finally {
       setIsBulkRunning(false);
       setBulkRunTarget(null);
     }
-  }, [bulkRunTarget, runAllForProject, forceRefresh, t]);
+  }, [bulkRunTarget, runAllForProject, combinedForceRefresh, t]);
 
   const handleBulkRunGlobalConfirm = useCallback(async () => {
     setError(null);
     setIsBulkRunning(true);
 
     try {
-      const result = await runAllGlobal(canWriteProject);
+      const result = await runAllGlobal(
+        canWriteProject,
+        globalUserPrompt || undefined,
+      );
       if (result.failed > 0) {
         setError(new Error(t('bulkRun.errorGlobal')));
       }
-      forceRefresh();
+      combinedForceRefresh();
     } catch (e) {
       setError(e as Error);
     } finally {
       setIsBulkRunning(false);
       setBulkRunGlobalOpen(false);
+      setGlobalUserPrompt('');
     }
-  }, [runAllGlobal, canWriteProject, forceRefresh, t]);
+  }, [
+    runAllGlobal,
+    canWriteProject,
+    globalUserPrompt,
+    combinedForceRefresh,
+    t,
+  ]);
+
+  const handleRetriggerInitConfirm = useCallback(
+    async (userPrompt: string) => {
+      if (!retriggerInitTarget) return;
+      setError(null);
+      setIsRetriggeringInit(true);
+
+      try {
+        await retriggerInit(retriggerInitTarget, userPrompt || undefined);
+        combinedForceRefresh();
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(
+          new Error(
+            `${t('retriggerInit.error' as any, {
+              name: retriggerInitTarget.name,
+            })}: ${msg}`,
+          ),
+        );
+      } finally {
+        setIsRetriggeringInit(false);
+        setRetriggerInitTarget(null);
+      }
+    },
+    [retriggerInitTarget, retriggerInit, combinedForceRefresh, t],
+  );
 
   const handleOrderChange = (sortBy: number, od: OrderDirection) => {
     setOrderBy(sortBy);
     setOrderDirection(od);
   };
 
-  const getDetailPanel = useCallback(
-    ({ rowData }: { rowData: Project }): React.ReactNode => (
-      <DetailPanel project={rowData} />
-    ),
-    [],
-  );
-
   const handleToggleRow = useCallback(
-    (rowData: any) => {
+    (
+      rowData: Project & {
+        tableData?: { showDetailPanel?: (() => React.ReactNode) | undefined };
+      },
+    ) => {
       const tableInstance = tableRef.current;
       if (!tableInstance) return;
 
       const { dataManager } = tableInstance;
       const index = dataManager.sortedData.findIndex(
-        (row: any) => row === rowData || row.id === rowData.id,
+        row => row === rowData || row.id === rowData.id,
       );
       if (index < 0) return;
 
-      tableInstance.onToggleDetailPanel([index], getDetailPanel);
+      const wasExpanded = !!rowData.tableData?.showDetailPanel;
 
-      const allNowExpanded =
-        dataManager.data.length > 0 &&
-        dataManager.data.every((row: any) => !!row.tableData.showDetailPanel);
-      setAllExpanded(allNowExpanded);
+      tableInstance.onToggleDetailPanel([index], () => (
+        <ConnectedDetailPanel project={rowData} />
+      ));
+
+      setExpandedProjectIds(prev => {
+        const next = new Set(prev);
+        if (wasExpanded) {
+          next.delete(rowData.id);
+        } else {
+          next.add(rowData.id);
+        }
+        return next;
+      });
+      if (wasExpanded) {
+        setAllExpanded(false);
+      } else {
+        const allNowExpanded =
+          dataManager.data.length > 0 &&
+          dataManager.data.every(
+            row => row === rowData || !!row.tableData.showDetailPanel,
+          );
+        setAllExpanded(allNowExpanded);
+      }
     },
-    [getDetailPanel],
+    [],
   );
 
   const handleToggleAllDetailPanels = useCallback(() => {
@@ -377,17 +617,29 @@ export const ProjectTable = ({
     const { dataManager } = tableInstance;
     const allCurrentlyExpanded =
       dataManager.data.length > 0 &&
-      dataManager.data.every((row: any) => !!row.tableData.showDetailPanel);
+      dataManager.data.every(row => !!row.tableData.showDetailPanel);
 
     const newExpanded = !allCurrentlyExpanded;
     setAllExpanded(newExpanded);
 
-    dataManager.data.forEach((row: any) => {
-      row.tableData.showDetailPanel = newExpanded ? getDetailPanel : undefined;
+    if (newExpanded) {
+      setExpandedProjectIds(
+        new Set(
+          dataManager.data.map(row => row.id).filter(Boolean) as string[],
+        ),
+      );
+    } else {
+      setExpandedProjectIds(new Set());
+    }
+
+    dataManager.data.forEach(row => {
+      row.tableData.showDetailPanel = newExpanded
+        ? () => <ConnectedDetailPanel project={row} />
+        : undefined;
     });
 
     tableInstance.setState(dataManager.getRenderState());
-  }, [getDetailPanel]);
+  }, []);
 
   const columns = useColumns(
     orderBy,
@@ -399,6 +651,13 @@ export const ProjectTable = ({
   const data = projects;
 
   const actions = [
+    (rowData: Project) => ({
+      icon: ReplayIcon,
+      onClick: () => setRetriggerInitTarget(rowData),
+      tooltip: t('table.actions.retriggerInit'),
+      hidden: !isEligibleForRetriggerInit(rowData),
+      disabled: !canWriteProject(rowData),
+    }),
     (rowData: Project) => ({
       icon: PlaylistPlayIcon,
       onClick: () => setBulkRunTarget(rowData),
@@ -423,6 +682,14 @@ export const ProjectTable = ({
         onClose={() => setDeleteTarget(null)}
       />
 
+      <RetriggerInitConfirmDialog
+        open={!!retriggerInitTarget}
+        projectName={retriggerInitTarget?.name ?? ''}
+        isRunning={isRetriggeringInit}
+        onConfirm={handleRetriggerInitConfirm}
+        onClose={() => !isRetriggeringInit && setRetriggerInitTarget(null)}
+      />
+
       <BulkRunConfirmDialog
         idPostfix="project-single"
         open={!!bulkRunTarget}
@@ -442,8 +709,43 @@ export const ProjectTable = ({
         message={t('bulkRun.globalConfirm.message')}
         isRunning={isBulkRunning}
         onConfirm={handleBulkRunGlobalConfirm}
-        onClose={() => !isBulkRunning && setBulkRunGlobalOpen(false)}
-      />
+        onClose={() => {
+          if (!isBulkRunning) {
+            setBulkRunGlobalOpen(false);
+            setGlobalUserPrompt('');
+          }
+        }}
+      >
+        {hasInitEligibleProjects ? (
+          <>
+            <Typography variant="body1" style={{ marginTop: 16 }}>
+              {t('bulkRun.globalConfirm.messageInitRetrigger')}
+            </Typography>
+            <TextField
+              label={t('bulkRun.globalConfirm.userPromptLabel')}
+              placeholder={t('bulkRun.globalConfirm.userPromptPlaceholder')}
+              multiline
+              minRows={3}
+              maxRows={8}
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              value={globalUserPrompt}
+              onChange={e => setGlobalUserPrompt(e.target.value)}
+              disabled={isBulkRunning}
+              inputProps={{ 'data-testid': 'global-run-all-user-prompt' }}
+            />
+          </>
+        ) : (
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            style={{ marginTop: 16 }}
+          >
+            {t('bulkRun.globalConfirm.noInitEligible')}
+          </Typography>
+        )}
+      </BulkRunConfirmDialog>
 
       {error && (
         <Grid item>
@@ -472,31 +774,37 @@ export const ProjectTable = ({
         </Box>
       </Grid>
 
-      <Grid item>
-        <Table<Project>
-          title={t('table.projectsCount' as any, {
-            count: totalCount.toString(),
-          })}
-          options={{
-            search: false,
-            paging: true,
-            actionsColumnIndex: -1 /* to the row end */,
-            padding: 'default',
-            pageSize: pageSize,
-            showDetailPanelIcon: false,
-          }}
-          columns={columns}
-          data={data}
-          actions={actions}
-          detailPanel={getDetailPanel}
-          tableRef={tableRef}
-          onOrderChange={handleOrderChange}
-          page={page}
-          onPageChange={onPageChange}
-          onRowsPerPageChange={onRowsPerPageChange}
-          totalCount={totalCount}
-        />
-      </Grid>
+      <ExpandedModulesContext.Provider
+        value={{ modulesState, forceRefresh: combinedForceRefresh }}
+      >
+        <Grid item>
+          <Table<Project>
+            title={t('table.projectsCount' as any, {
+              count: totalCount.toString(),
+            })}
+            options={{
+              search: false,
+              paging: true,
+              actionsColumnIndex: -1 /* to the row end */,
+              padding: 'default',
+              pageSize: pageSize,
+              showDetailPanelIcon: false,
+            }}
+            columns={columns}
+            data={data}
+            actions={actions}
+            detailPanel={({ rowData }: { rowData: Project }) => (
+              <ConnectedDetailPanel project={rowData} />
+            )}
+            tableRef={tableRef}
+            onOrderChange={handleOrderChange}
+            page={page}
+            onPageChange={onPageChange}
+            onRowsPerPageChange={onRowsPerPageChange}
+            totalCount={totalCount}
+          />
+        </Grid>
+      </ExpandedModulesContext.Provider>
     </Grid>
   );
 };

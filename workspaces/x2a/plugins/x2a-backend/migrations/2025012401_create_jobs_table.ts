@@ -31,7 +31,7 @@ export async function up(knex: Knex): Promise<void> {
       .string('status')
       .notNullable()
       .defaultTo('pending')
-      .checkIn(['pending', 'running', 'success', 'error']);
+      .checkIn(['pending', 'running', 'success', 'error', 'cancelled']);
     table
       .string('phase')
       .notNullable()

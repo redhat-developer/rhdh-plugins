@@ -21,4 +21,9 @@
 /**
  * @public
  */
-export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error';
+export type JobStatusEnum =
+  | 'pending'
+  | 'running'
+  | 'success'
+  | 'error'
+  | 'cancelled';

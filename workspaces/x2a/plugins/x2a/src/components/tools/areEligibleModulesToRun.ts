@@ -16,9 +16,11 @@
 import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
- * Returns true when the project has at least one module whose next
- * phase can be triggered by a Bulk Run action (i.e. modules that
- * completed a non-final phase and are waiting for the next one).
+ * Lightweight project-level check aligned with canRunNextPhase:
+ *  - "waiting" modules completed a non-final phase and have the artifacts for the next one.
+ *  - "error" modules can rerun their failed phase.
+ *  - "pending" modules haven't started yet; they can run "analyze" when the
+ *    project's migrationPlan artifact is available.
  */
 export const areEligibleModulesToRun = (project: Project): boolean => {
   const summary = project.status?.modulesSummary;
@@ -28,6 +30,7 @@ export const areEligibleModulesToRun = (project: Project): boolean => {
 
   return (
     summary.waiting > 0 ||
-    (project.status?.state === 'initialized' && summary.pending > 0)
+    summary.error > 0 ||
+    (summary.pending > 0 && !!project.migrationPlan)
   );
 };

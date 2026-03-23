@@ -33,6 +33,7 @@ import { getLearningItems } from '../../utils/constants';
 import useGreeting from '../../hooks/useGreeting';
 import { LearningSectionItem } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
+import { containerGridItemSx } from '../../utils/GridItem';
 
 export const OnboardingSection = () => {
   const [user, setUser] = useState<string | null>();
@@ -80,16 +81,16 @@ export const OnboardingSection = () => {
   };
 
   const content = (
-    <Box>
-      <Grid container margin="auto">
+    <Box sx={{ mt: 2 }}>
+      <Grid container spacing={2}>
         <Grid
           item
-          xs={12}
-          md={6}
-          lg={3}
-          display="flex"
-          justifyContent="left"
-          alignItems="center"
+          sx={{
+            ...containerGridItemSx({ xs: 12, sm: 6, md: 3 }),
+            display: 'flex',
+            justifyContent: 'left',
+            alignItems: 'center',
+          }}
         >
           <Box
             component="img"
@@ -99,19 +100,20 @@ export const OnboardingSection = () => {
             alt=""
             sx={{
               width: 'clamp(200px, 20vw, 264px)',
+              height: 'auto',
             }}
           />
         </Grid>
         {getLearningItems(t).map((item: LearningSectionItem) => (
           <Grid
             item
-            xs={12}
-            md={6}
-            lg={3}
             key={item.title}
-            display="flex"
-            justifyContent="left"
-            alignItems="center"
+            sx={{
+              ...containerGridItemSx({ xs: 12, sm: 6, md: 3 }),
+              display: 'flex',
+              justifyContent: 'left',
+              alignItems: 'center',
+            }}
           >
             <OnboardingCard
               title={item.title}
@@ -134,7 +136,9 @@ export const OnboardingSection = () => {
       sx={{
         padding: '24px',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
-        overflow: 'auto',
+        containerType: 'inline-size',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       {!profileLoading && (
@@ -145,12 +149,22 @@ export const OnboardingSection = () => {
             alignItems: 'center',
             fontWeight: '500',
             fontSize: '1.5rem',
+            flexShrink: 0,
           }}
         >
           {`${greeting}, ${profileDisplayName() || t('onboarding.guest')}!`}
         </Typography>
       )}
-      {content}
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          mt: 1,
+        }}
+      >
+        {content}
+      </Box>
     </Card>
   );
 };

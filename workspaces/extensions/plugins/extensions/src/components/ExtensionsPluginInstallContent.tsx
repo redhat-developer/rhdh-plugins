@@ -23,6 +23,7 @@ import {
 } from '@backstage/core-components';
 
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { Flex } from '@backstage/ui';
 
 import yaml from 'yaml';
 import { useNavigate } from 'react-router-dom';
@@ -36,23 +37,18 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useTheme } from '@mui/material/styles';
 import AlertTitle from '@mui/material/AlertTitle';
+import { useTheme } from '@mui/material/styles';
 
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
@@ -81,50 +77,6 @@ import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
 import { InstallationWarning } from './InstallationWarning';
 
-const generateCheckboxList = (packages: ExtensionsPackage[], t: any) => {
-  const hasFrontend = packages.some(
-    pkg => pkg.spec?.backstage?.role === 'frontend-plugin',
-  );
-  const hasBackend = packages.some(
-    pkg => pkg.spec?.backstage?.role === 'backend-plugin',
-  );
-
-  const checkboxes = [
-    { label: t('install.installFrontend'), show: hasFrontend },
-    { label: t('install.installBackend'), show: hasBackend },
-    { label: t('install.installTemplates'), show: true }, // TODO, now always show
-  ];
-
-  return checkboxes.filter(cb => cb.show);
-};
-
-const CheckboxList = ({ packages }: { packages: ExtensionsPackage[] }) => {
-  const { t } = useTranslation();
-  const checkboxes = generateCheckboxList(packages, t);
-  const [checked, setChecked] = useState<{ [key: string]: boolean }>({});
-
-  const handleChange = (label: string) => {
-    setChecked(prev => ({ ...prev, [label]: !prev[label] }));
-  };
-
-  return (
-    <FormGroup>
-      {checkboxes.map((cb, index) => (
-        <FormControlLabel
-          key={index}
-          control={
-            <Checkbox
-              checked={checked[cb.label] ?? false}
-              onChange={() => handleChange(cb.label)}
-            />
-          }
-          label={cb.label}
-        />
-      ))}
-    </FormGroup>
-  );
-};
-
 interface TabItem {
   label: string;
   content: string | ExtensionsPackageAppConfigExamples[];
@@ -148,7 +100,6 @@ export const ExtensionsPluginInstallContent = ({
   const [installationError, setInstallationError] = useState<string | null>(
     null,
   );
-  const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
   const pluginConfig = usePluginConfig(params.namespace, params.name);
   const pluginConfigPermissions = usePluginConfigurationPermissions(
     params.namespace,
@@ -162,15 +113,6 @@ export const ExtensionsPluginInstallContent = ({
   const theme = useTheme();
   // TODO: add divider color in theme plugin
   const dividerColor = theme.palette.mode === 'dark' ? '#A3A3A3' : '#C7C7C7';
-
-  useEffect(() => {
-    const header = document.querySelector('nav#global-header');
-    setHasGlobalHeader(Boolean(header));
-  }, []);
-
-  const dynamicHeight = hasGlobalHeader
-    ? 'calc(100vh - 220px)'
-    : 'calc(100vh - 160px)';
 
   const codeEditor = useCodeEditor();
 
@@ -348,17 +290,14 @@ export const ExtensionsPluginInstallContent = ({
   };
 
   return (
-    <>
+    <Flex direction="column" gap="4" style={{ height: '100% ' }}>
+      {/* Content above the two sided "editor area" */}
       {showInstallationWarning && (
         <InstallationWarning configData={pluginConfig.data} />
       )}
-      {installationError && (
-        <Alert severity="error" sx={{ mb: '1rem' }}>
-          {installationError}
-        </Alert>
-      )}
+      {installationError && <Alert severity="error">{installationError}</Alert>}
       {missingDynamicArtifact && (
-        <Alert severity="error" sx={{ mb: '1rem' }}>
+        <Alert severity="error">
           <AlertTitle>
             {t('alert.missingDynamicArtifactTitlePlugin')}
           </AlertTitle>
@@ -367,198 +306,134 @@ export const ExtensionsPluginInstallContent = ({
           />
         </Alert>
       )}
-      <Box
-        sx={{
-          height: dynamicHeight,
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <Grid
-          container
-          spacing={3}
-          sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
-        >
-          {packages.length > 0 && <CodeEditorCard onLoad={onLoaded} />}
 
-          {showRightCard && (
-            <Grid
-              item
-              xs={12}
-              md={5.5}
-              sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-            >
-              <Card
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: 0,
-                  width: '99.8%', // workaround for 'overflow: hidden' causing card to be missing a border
-                }}
-              >
+      {/* "two sided content area" */}
+      <Flex direction="row" style={{ flexGrow: 1 }}>
+        <Flex style={{ flex: 65 }}>
+          {packages.length > 0 && <CodeEditorCard onLoad={onLoaded} />}
+        </Flex>
+
+        {showRightCard && (
+          <Flex style={{ flex: 55 }}>
+            <Card style={{ width: '100%' }}>
+              <div style={{ flex: '1 1 0', overflow: 'scroll' }}>
                 <CardHeader
                   title={
                     <Typography variant="h3">{getCardHeaderTitle()}</Typography>
                   }
-                  action={
-                    <Typography
-                      component="a"
-                      href="/path-to-file.zip" // update this
-                      download
-                      sx={{
-                        fontSize: 16,
-                        display: 'none', // change to 'flex' when ready
-                        alignItems: 'center',
-                        gap: 0.5,
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        m: 1,
-                      }}
-                    >
-                      <FileDownloadOutlinedIcon fontSize="small" />
-                      {t('install.download')}
-                    </Typography>
-                  }
-                  sx={{ pb: 0 }}
                 />
                 <CardContent
                   sx={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                    px: 0,
+                    px: 0 /* removes padding left and right of the tab underline */,
                   }}
                 >
                   {availableTabs.length > 1 && (
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                      <Tabs
-                        value={tabIndex}
-                        onChange={handleTabChange}
-                        aria-label={t('install.pluginTabs')}
-                        sx={{ px: 0 }}
-                      >
-                        {availableTabs.map((tab, index) => (
-                          <Tab
-                            key={tab.key}
-                            value={index}
-                            label={tab.label ?? ''}
-                          />
-                        ))}
-                      </Tabs>
-                    </Box>
+                    <Tabs
+                      value={tabIndex}
+                      onChange={handleTabChange}
+                      aria-label={t('install.pluginTabs')}
+                      sx={{ px: 0 }}
+                    >
+                      {availableTabs.map((tab, index) => (
+                        <Tab
+                          key={tab.key}
+                          value={index}
+                          label={tab.label ?? ''}
+                        />
+                      ))}
+                    </Tabs>
                   )}
-                  <Box
-                    sx={{
-                      flex: 1,
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    {availableTabs.map(
-                      (tab, index) =>
-                        tabIndex === index && (
-                          <TabPanel
-                            key={tab.key}
-                            value={tabIndex}
-                            index={index}
-                            markdownContent={tab.content ?? ''}
-                            others={tab.others}
-                            title={
-                              availableTabs.length === 1
-                                ? availableTabs[0].label
-                                : ''
-                            }
-                          />
-                        ),
-                    )}
-                  </Box>
+                  {availableTabs.map(
+                    (tab, index) =>
+                      tabIndex === index && (
+                        <TabPanel
+                          key={tab.key}
+                          value={tabIndex}
+                          index={index}
+                          markdownContent={tab.content ?? ''}
+                          others={tab.others}
+                          title={
+                            availableTabs.length === 1
+                              ? availableTabs[0].label
+                              : ''
+                          }
+                        />
+                      ),
+                  )}
                 </CardContent>
-              </Card>
-            </Grid>
-          )}
-        </Grid>
-        <Box
-          sx={{
-            mx: -3,
-            borderBottom: `1px solid ${dividerColor}`,
-            mt: 2,
-            mb: 3,
-          }}
-        />
-        <Box
-          sx={{
-            flexShrink: 0,
-            backgroundColor: 'inherit',
-          }}
-        >
-          <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
-            <CheckboxList packages={packages} />
-          </Box>
-          <Tooltip
-            title={
-              installTooltip ? (
-                <Box
-                  sx={{
-                    whiteSpace: 'normal',
-                    maxWidth: 250,
-                    overflowWrap: 'break-word',
-                  }}
-                >
-                  {installTooltip}
-                </Box>
-              ) : (
-                ''
-              )
-            }
-          >
-            <Typography component="span">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleInstall}
-                disabled={isInstallDisabled}
-                data-testid={getInstallButtonDatatestid()}
-                startIcon={
-                  isSubmitting && (
-                    <CircularProgress size="20px" color="inherit" />
-                  )
-                }
+              </div>
+            </Card>
+          </Flex>
+        )}
+      </Flex>
+
+      <Box
+        sx={{
+          mx: '-24px',
+          my: 2,
+          borderBottom: `1px solid ${dividerColor}`,
+        }}
+      />
+
+      {/* Button bar */}
+      <Flex gap="4">
+        <Tooltip
+          title={
+            installTooltip ? (
+              <div
+                style={{
+                  whiteSpace: 'normal',
+                  maxWidth: 250,
+                  overflowWrap: 'break-word',
+                }}
               >
-                {mapExtensionsPluginInstallStatusToInstallPageButton(
-                  plugin.spec?.installStatus ??
-                    ExtensionsPluginInstallStatus.NotInstalled,
-                  t,
-                )}
-              </Button>
-            </Typography>
-          </Tooltip>
-          <Button
-            variant="outlined"
-            color="primary"
-            sx={{ ml: 2 }}
-            onClick={() => navigate(pluginLink)}
-            data-testId={isInstallDisabled ? 'back-button' : 'cancel-button'}
-          >
-            {isInstallDisabled ? t('install.back') : t('install.cancel')}
-          </Button>
-          {(pluginConfigPermissions.data?.write === Permission.ALLOW ||
-            pluginConfigPermissions.data?.read === Permission.ALLOW) && (
+                {installTooltip}
+              </div>
+            ) : (
+              ''
+            )
+          }
+        >
+          <Typography component="span">
             <Button
-              variant="text"
+              variant="contained"
               color="primary"
-              onClick={onReset}
-              sx={{ ml: 3 }}
+              onClick={handleInstall}
+              disabled={isInstallDisabled}
+              data-testid={getInstallButtonDatatestid()}
+              startIcon={
+                isSubmitting && <CircularProgress size="20px" color="inherit" />
+              }
             >
-              {t('install.reset')}
+              {mapExtensionsPluginInstallStatusToInstallPageButton(
+                plugin.spec?.installStatus ??
+                  ExtensionsPluginInstallStatus.NotInstalled,
+                t,
+              )}
             </Button>
-          )}
-        </Box>
-      </Box>
-    </>
+          </Typography>
+        </Tooltip>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => navigate(pluginLink)}
+          data-testId={isInstallDisabled ? 'back-button' : 'cancel-button'}
+        >
+          {isInstallDisabled ? t('install.back') : t('install.cancel')}
+        </Button>
+        {(pluginConfigPermissions.data?.write === Permission.ALLOW ||
+          pluginConfigPermissions.data?.read === Permission.ALLOW) && (
+          <Button
+            variant="text"
+            color="primary"
+            onClick={onReset}
+            sx={{ ml: 2 }}
+          >
+            {t('install.reset')}
+          </Button>
+        )}
+      </Flex>
+    </Flex>
   );
 };
 

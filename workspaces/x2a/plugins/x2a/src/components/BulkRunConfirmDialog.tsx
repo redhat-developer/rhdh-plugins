@@ -34,6 +34,8 @@ export type BulkRunConfirmDialogProps = {
   onConfirm: () => void;
   onClose: () => void;
   idPostfix: string;
+  confirmLabel?: string;
+  children?: React.ReactNode;
 };
 
 export const BulkRunConfirmDialog = ({
@@ -44,6 +46,8 @@ export const BulkRunConfirmDialog = ({
   idPostfix,
   onConfirm,
   onClose,
+  confirmLabel,
+  children,
 }: BulkRunConfirmDialogProps) => {
   const { t } = useTranslation();
   const titleId = `bulk-run-modal-title-${idPostfix}`;
@@ -52,10 +56,10 @@ export const BulkRunConfirmDialog = ({
   const confirmingRef = useRef(false);
 
   useEffect(() => {
-    if (!open) {
+    if (!open || !isRunning) {
       confirmingRef.current = false;
     }
-  }, [open]);
+  }, [open, isRunning]);
 
   const handleConfirm = useCallback(() => {
     // Potential fast double-click protection
@@ -75,6 +79,7 @@ export const BulkRunConfirmDialog = ({
       <DialogTitle id={titleId}>{title}</DialogTitle>
       <DialogContent id={descriptionId}>
         <Typography variant="body1">{message}</Typography>
+        {children}
       </DialogContent>
 
       <DialogActions>
@@ -87,7 +92,7 @@ export const BulkRunConfirmDialog = ({
             isRunning ? <CircularProgress size={16} color="inherit" /> : null
           }
         >
-          {t('bulkRun.confirm')}
+          {confirmLabel ?? t('bulkRun.confirm')}
         </Button>
         <Button variant="outlined" onClick={onClose} disabled={isRunning}>
           {t('bulkRun.cancel')}

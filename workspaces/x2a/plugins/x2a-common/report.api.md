@@ -32,6 +32,9 @@ export interface AgentMetrics {
     };
 }
 
+// @public
+export const allProviders: ScmProvider[];
+
 // @public (undocumented)
 export interface Artifact {
     id: string;
@@ -67,6 +70,9 @@ export function buildScmHostMap(config: Config): Map<string, ScmProviderName>;
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
 
 // @public
+export type CsvProjectRow = ProjectsPost['body'];
+
+// @public
 export const DEFAULT_PAGE_ORDER = "desc";
 
 // @public
@@ -92,6 +98,7 @@ export class DefaultApiClient {
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdLogGet(request: ProjectsProjectIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
+    projectsProjectIdModulesModuleIdCancelPost(request: ProjectsProjectIdModulesModuleIdCancelPost, options?: RequestOptions): Promise<TypedResponse<void>>;
     projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
@@ -130,7 +137,10 @@ export interface Job {
 }
 
 // @public (undocumented)
-export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error';
+export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
+
+// @public
+export const MAX_BACKOFF_MS: number;
 
 // @public
 export const MAX_CONCURRENT_BULK_RUN = 3;
@@ -160,6 +170,7 @@ export type ModulePhase = 'analyze' | 'migrate' | 'publish';
 
 // @public (undocumented)
 export interface ModulesStatusSummary {
+    cancelled: number;
     error: number;
     finished: number;
     pending: number;
@@ -169,10 +180,16 @@ export interface ModulesStatusSummary {
 }
 
 // @public (undocumented)
-export type ModuleStatus = 'pending' | 'running' | 'success' | 'error';
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
 
 // @public
 export function normalizeRepoUrl(url: string): string;
+
+// @public
+export function parseCsvContent(dataUrl: string): CsvProjectRow[];
+
+// @public
+export const POLLING_INTERVAL_MS: number;
 
 // @public (undocumented)
 export interface Project {
@@ -298,6 +315,21 @@ export type ProjectsProjectIdModulesGet = {
 };
 
 // @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdCancelPost = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+    body: ProjectsProjectIdModulesModuleIdCancelPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdModulesModuleIdCancelPostRequest {
+    // (undocumented)
+    phase: ModulePhase;
+}
+
+// @public (undocumented)
 export type ProjectsProjectIdModulesModuleIdGet = {
     path: {
         projectId: string;
@@ -402,6 +434,9 @@ export function resolveScmProvider(repoUrl: string, hostProviderMap?: Map<string
 
 // @public
 export function resolveScmProviderByName(name: ScmProviderName): ScmProvider;
+
+// @public
+export const SCAFFOLDER_SECRET_PREFIX = "OAUTH_TOKEN_";
 
 // @public
 export interface ScmProvider {

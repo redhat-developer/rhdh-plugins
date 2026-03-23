@@ -34,6 +34,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'table.columns.targetRepo': 'Repositorio de destino',
     'table.columns.createdAt': 'Creado el',
     'table.actions.deleteProject': 'Eliminar proyecto',
+    'table.actions.retriggerInit': 'Reiniciar fase de inicio del proyecto',
     'table.actions.expandAll': 'Expandir todas las filas',
     'table.actions.collapseAll': 'Contraer todas las filas',
     'table.actions.expandRow': 'Expandir fila',
@@ -96,11 +97,17 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.summary.pending': 'Pendiente',
     'module.summary.running': 'En ejecución',
     'module.summary.error': 'Error',
+    'module.summary.cancelled': 'Cancelado',
     'module.summary.toReview_one':
       '{{count}} módulo con artefactos para revisar',
     'module.summary.toReview_other':
       '{{count}} módulos con artefactos para revisar',
-    'module.actions.runNextPhase': 'Ejecutar siguiente fase',
+    'module.actions.runNextPhase': 'Ejecutar la siguiente fase {{phase}}',
+    'module.actions.cancelPhase': 'Cancelar la fase {{phase}}',
+    'module.actions.cancelPhaseError':
+      'Error al cancelar la fase para el módulo',
+    'module.actions.runNextPhaseError':
+      'Error al ejecutar la siguiente fase para el módulo',
     'module.currentPhase': 'Fase actual',
     'module.lastUpdate': 'Última actualización',
     'module.notStarted': 'No iniciado',
@@ -115,6 +122,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.statuses.running': 'En ejecución',
     'module.statuses.success': 'Éxito',
     'module.statuses.error': 'Error',
+    'module.statuses.cancelled': 'Cancelado',
     'artifact.types.migrated_sources': 'Fuentes migradas',
     'artifact.types.project_metadata': 'Metadatos del proyecto',
     'artifact.types.ansible_project': 'Proyecto AAP',
@@ -140,6 +148,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.statuses.running': 'En ejecución',
     'modulePage.phases.statuses.success': 'Éxito',
     'modulePage.phases.statuses.error': 'Error',
+    'modulePage.phases.statuses.cancelled': 'Cancelado',
     'modulePage.phases.reanalyzeInstructions':
       'El plan de migración del módulo ya existe. Si el plan de migración general del proyecto se ha actualizado, vuelva a ejecutar el análisis para reflejar los cambios.',
     'modulePage.phases.rerunAnalyze': 'Recrear el plan de migración del módulo',
@@ -159,6 +168,9 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'El módulo ya ha sido publicado. Vuelva a ejecutar la publicación para actualizar el repositorio de destino.',
     'modulePage.phases.rerunPublish':
       'Volver a publicar en el repositorio de destino',
+    'modulePage.phases.cancel': 'Cancelar',
+    'modulePage.phases.runError': 'Error al ejecutar la fase para el módulo',
+    'modulePage.phases.cancelError': 'Error al cancelar la fase para el módulo',
     'modulePage.phases.commitId': 'Último ID de commit',
     'modulePage.phases.viewLog': 'Ver registro',
     'modulePage.phases.hideLog': 'Ocultar registro',
@@ -196,9 +208,18 @@ const x2aPluginTranslationEs = createTranslationMessages({
       '¿Ejecutar todos los módulos en el proyecto "{{name}}"?',
     'bulkRun.projectConfirm.message':
       'Esto activará la siguiente fase de migración para cada módulo en este proyecto cuyo estado actual lo permita. Asegúrese de haber revisado todos los artefactos necesarios en los repositorios de destino antes de ejecutar esta acción. Los módulos que no sean elegibles se omitirán.',
-    'bulkRun.globalConfirm.title': '¿Ejecutar todos los módulos elegibles?',
+    'bulkRun.globalConfirm.title':
+      '¿Ejecutar todos los proyectos y módulos elegibles?',
     'bulkRun.globalConfirm.message':
       'Esto activará la siguiente fase de migración para todos los módulos elegibles en todos los proyectos a los que tiene acceso de escritura, incluidos los proyectos no visibles en la página actual. Asegúrese de haber revisado todos los artefactos necesarios en los repositorios de destino antes de ejecutar esta acción.',
+    'bulkRun.globalConfirm.messageInitRetrigger':
+      'Algunos proyectos son elegibles para volver a ejecutar la fase de inicio. Su fase de descubrimiento también será reactivada.',
+    'bulkRun.globalConfirm.noInitEligible':
+      'Actualmente no hay proyectos elegibles para volver a ejecutar la fase de inicio.',
+    'bulkRun.globalConfirm.userPromptLabel':
+      'Instrucciones del usuario para reinicio de init (opcional)',
+    'bulkRun.globalConfirm.userPromptPlaceholder':
+      'Si algún proyecto necesita reiniciar su fase de init, estas instrucciones se usarán para personalizar la conversión…',
     'bulkRun.projectPageConfirm.title':
       '¿Ejecutar todos los módulos en "{{name}}"?',
     'bulkRun.projectPageConfirm.message':
@@ -207,7 +228,22 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'bulkRun.cancel': 'Cancelar',
     'bulkRun.errorProject':
       'Error al ejecutar los módulos en el proyecto "{{name}}"',
+    'bulkRun.errorModuleStart':
+      'Error al iniciar la fase "{{phase}}" para el módulo "{{moduleName}}"',
     'bulkRun.errorGlobal': 'Error en la operación masiva',
+    'retriggerInit.confirm.title':
+      '¿Reiniciar la fase de inicio para "{{name}}"?',
+    'retriggerInit.confirm.message':
+      'Esto volverá a activar la fase de descubrimiento del proyecto, iniciando un nuevo trabajo de inicialización. Los resultados anteriores de inicialización serán reemplazados.',
+    'retriggerInit.confirm.userPromptLabel':
+      'Instrucciones del usuario (opcional)',
+    'retriggerInit.confirm.userPromptPlaceholder':
+      'Proporcione instrucciones adicionales para la conversión…',
+    'retriggerInit.confirm.confirmButton': 'Reiniciar',
+    'retriggerInit.error':
+      'Error al reiniciar la fase de inicio del proyecto "{{name}}"',
+    'retriggerInit.errorStart':
+      'Error al iniciar la inicialización del proyecto',
   },
 });
 

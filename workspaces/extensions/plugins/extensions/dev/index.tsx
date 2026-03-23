@@ -14,31 +14,137 @@
  * limitations under the License.
  */
 
-import { createDevApp } from '@backstage/dev-utils';
+/**
+ * New Frontend System dev mode for the Extensions plugin
+ */
 
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
+import '@backstage/ui/css/styles.css';
+
+import { createApp } from '@backstage/frontend-defaults';
+import ReactDOM from 'react-dom/client';
 
 import {
-  extensionsPlugin,
-  ExtensionsFullPageRouter,
-  ExtensionsTabbedPageRouter,
-} from '../src/plugin';
-import { extensionsTranslations } from '../src/translations';
+  ApiBlueprint,
+  createFrontendModule,
+  createFrontendPlugin,
+  pluginHeaderActionsApiRef,
+} from '@backstage/frontend-plugin-api';
+import {
+  Sidebar,
+  SidebarGroup,
+  SidebarItem,
+  SidebarScrollWrapper,
+  SidebarSpace,
+} from '@backstage/core-components';
+import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import {
+  SidebarLanguageSwitcher,
+  SidebarSignOutButton,
+} from '@backstage/dev-utils';
 
-createDevApp()
-  .registerPlugin(extensionsPlugin)
-  .addTranslationResource(extensionsTranslations)
-  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
-  .setDefaultLanguage('en')
-  .addThemes(getAllThemes())
-  .addPage({
-    element: <ExtensionsFullPageRouter />,
-    title: 'FullPageRouter',
-    path: '/full-page-router',
-  })
-  .addPage({
-    element: <ExtensionsTabbedPageRouter />,
-    title: 'TabbedPageRouter',
-    path: '/tabbed-page-router',
-  })
-  .render();
+import {
+  extensionsPage,
+  extensionsNavItem,
+  extensionsTranslationsModule,
+} from '../src/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import { extensionsApiRef, dynamicPluginsInfoApiRef } from '../src/api';
+import { allRoutes } from '../src/routes';
+import { MockExtensionsApi } from './__data__/mockExtensions';
+
+const mockDynamicPluginsInfo = {
+  listLoadedPlugins: async () => [],
+};
+
+const mockExtensionApi = ApiBlueprint.make({
+  name: 'extensions-mock',
+  params: defineParams =>
+    defineParams({
+      api: extensionsApiRef,
+      deps: {},
+      factory: () => new MockExtensionsApi(),
+    }),
+});
+
+const mockDynamicPluginsInfoApi = ApiBlueprint.make({
+  name: 'dynamic-plugins-info-mock',
+  params: defineParams =>
+    defineParams({
+      api: dynamicPluginsInfoApiRef,
+      deps: {},
+      factory: () => mockDynamicPluginsInfo,
+    }),
+});
+
+const mockPluginHeaderActionsApi = ApiBlueprint.make({
+  name: 'plugin-header-actions-mock',
+  params: defineParams =>
+    defineParams({
+      api: pluginHeaderActionsApiRef,
+      deps: {},
+      factory: () => ({
+        getPluginHeaderActions: () => [],
+      }),
+    }),
+});
+
+const pluginHeaderActionsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [mockPluginHeaderActionsApi],
+});
+
+const extensionsDevPlugin = createFrontendPlugin({
+  pluginId: 'extensions',
+  info: { packageJson: () => import('../package.json') },
+  extensions: [
+    mockExtensionApi,
+    mockDynamicPluginsInfoApi,
+    extensionsPage,
+    extensionsNavItem,
+  ],
+  routes: allRoutes,
+});
+
+const devSidebarContent = NavContentBlueprint.make({
+  params: {
+    component: ({ items }) => (
+      <Sidebar>
+        <SidebarScrollWrapper>
+          {items.map(item => (
+            <SidebarItem
+              key={item.title}
+              to={item.to}
+              text={item.title}
+              icon={item.icon}
+            />
+          ))}
+        </SidebarScrollWrapper>
+        <SidebarSpace />
+        <SidebarGroup label="Settings">
+          <SidebarLanguageSwitcher />
+          <SidebarSignOutButton />
+        </SidebarGroup>
+      </Sidebar>
+    ),
+  },
+});
+
+const devNavModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [devSidebarContent],
+});
+
+const app = createApp({
+  features: [
+    pluginHeaderActionsModule,
+    extensionsTranslationsModule,
+    extensionsDevPlugin,
+    devNavModule,
+    rhdhThemeModule,
+  ],
+});
+
+const root = app.createRoot();
+
+ReactDOM.createRoot(document.getElementById('root')!).render(root);

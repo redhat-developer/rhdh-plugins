@@ -18,8 +18,13 @@ import { useState } from 'react';
 import useAsync from 'react-use/lib/useAsync';
 
 import { LogViewer, Progress } from '@backstage/core-components';
-import { Button } from '@backstage/ui';
-import { Box, Chip, Grid, Typography } from '@material-ui/core';
+import {
+  ButtonGroup,
+  Button,
+  Grid,
+  makeStyles,
+  Typography,
+} from '@material-ui/core';
 import {
   Job,
   MigrationPhase,
@@ -29,55 +34,41 @@ import {
 import { useTranslation } from '../hooks/useTranslation';
 import { useClientService } from '../ClientService';
 import { ItemField } from './ItemField';
-import { formatDuration, humanizeDate, secondsBetween } from './tools';
+import {
+  canCancelPhase,
+  formatDuration,
+  humanizeDate,
+  secondsBetween,
+} from './tools';
 import { PhaseTelemetry } from './PhaseTelemetry';
+import { PhaseStatus } from './PhaseStatus';
 
-const getStatusChip = (status: string | undefined, t: any) => {
-  if (!status) {
-    return (
-      <Chip
-        label={t('modulePage.phases.statuses.notStarted')}
-        size="small"
-        variant="outlined"
-      />
-    );
-  }
-
-  const statusConfig: Record<
-    string,
-    { labelKey: string; color: 'primary' | 'secondary' | 'default' }
-  > = {
-    success: {
-      labelKey: 'modulePage.phases.statuses.success',
-      color: 'primary',
-    },
-    error: { labelKey: 'modulePage.phases.statuses.error', color: 'secondary' },
-    running: {
-      labelKey: 'modulePage.phases.statuses.running',
-      color: 'default',
-    },
-    pending: {
-      labelKey: 'modulePage.phases.statuses.pending',
-      color: 'default',
-    },
-  };
-
-  const config = statusConfig[status] || { labelKey: status, color: 'default' };
-  return <Chip label={t(config.labelKey)} size="small" color={config.color} />;
-};
+const useStyles = makeStyles(theme => ({
+  buttonGroup: {
+    gap: theme.spacing(1),
+  },
+}));
 
 const PhaseRunAction = ({
   phase,
   phaseName,
+  isDisabled,
   onRunPhase,
+  onCancelPhase,
 }: {
   phase?: Job;
   phaseName: MigrationPhase;
+  isDisabled: boolean;
   onRunPhase?: (phase: MigrationPhase) => void;
+  onCancelPhase?: (phase: MigrationPhase) => void;
 }) => {
   const { t } = useTranslation();
+  const classes = useStyles();
 
   const previousRunSucceeded = phase?.status === 'success';
+  if (!onRunPhase) {
+    return null;
+  }
 
   const getInstructions = () => {
     if (phaseName === 'init') {
@@ -122,14 +113,35 @@ const PhaseRunAction = ({
 
   return (
     <>
-      <Grid item xs={12}>
-        <Button variant="primary" onPress={() => onRunPhase?.(phaseName)}>
+      <ButtonGroup
+        orientation="horizontal"
+        size="small"
+        className={classes.buttonGroup}
+      >
+        <Button
+          variant="outlined"
+          color="primary"
+          disabled={isDisabled}
+          onClick={() => {
+            onRunPhase(phaseName);
+          }}
+        >
           {getActionText()}
         </Button>
-      </Grid>
-      <Grid item xs={12}>
-        <Typography>{getInstructions()}</Typography>
-      </Grid>
+
+        {canCancelPhase(phase?.status) && onCancelPhase && (
+          <Button
+            variant="outlined"
+            onClick={() => {
+              onCancelPhase(phaseName);
+            }}
+          >
+            {t('modulePage.phases.cancel')}
+          </Button>
+        )}
+      </ButtonGroup>
+
+      <Typography>{getInstructions()}</Typography>
     </>
   );
 };
@@ -148,6 +160,7 @@ export const PhaseDetails = (
     phase?: Job;
     projectId: string;
     onRunPhase?: (phase: MigrationPhase) => void;
+    onCancelPhase?: (phase: MigrationPhase) => void;
   } & OptionalModuleId,
 ) => {
   const { t } = useTranslation();
@@ -155,15 +168,15 @@ export const PhaseDetails = (
   const empty = t('module.phases.none');
   const [showLog, setShowLog] = useState(false);
 
-  const { phase, projectId, phaseName, onRunPhase } = props;
+  const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
-  const duration = phase?.startedAt
-    ? formatDuration(
-        t,
-        secondsBetween(phase.startedAt, phase.finishedAt ?? new Date()),
-      )
-    : empty;
+  const duration =
+    phase?.startedAt && phase?.finishedAt
+      ? formatDuration(t, secondsBetween(phase.startedAt, phase.finishedAt))
+      : empty;
+
+  const canRunPhase = phase?.status !== 'running';
 
   const {
     value: logText,
@@ -193,23 +206,23 @@ export const PhaseDetails = (
 
   return (
     <Grid container direction="row" spacing={3}>
-      {onRunPhase && (
-        <PhaseRunAction
-          phase={phase}
-          phaseName={phaseName}
-          onRunPhase={onRunPhase}
-        />
-      )}
-
-      {/* TODO: Button for canceling the current job execution */}
+      <Grid item xs={12}>
+        {onRunPhase && (
+          <PhaseRunAction
+            isDisabled={!canRunPhase}
+            phase={phase}
+            phaseName={phaseName}
+            onRunPhase={onRunPhase}
+            onCancelPhase={onCancelPhase}
+          />
+        )}
+      </Grid>
 
       <Grid item xs={2}>
-        <Box>
-          <Typography variant="body2" color="textSecondary" gutterBottom>
-            {t('modulePage.phases.status')}
-          </Typography>
-          {getStatusChip(phase?.status, t)}
-        </Box>
+        <ItemField
+          label={t('modulePage.phases.status')}
+          value={<PhaseStatus status={phase?.status} />}
+        />
       </Grid>
       <Grid item xs={10}>
         <ItemField
@@ -248,7 +261,11 @@ export const PhaseDetails = (
 
       {phase && (
         <Grid item xs={12}>
-          <Button variant="secondary" onPress={() => setShowLog(prev => !prev)}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setShowLog(prev => !prev)}
+          >
             {showLog
               ? t('modulePage.phases.hideLog')
               : t('modulePage.phases.viewLog')}

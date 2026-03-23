@@ -42,6 +42,13 @@ export const CREATE_CHEF_PROJECT_TEMPLATE_PATH =
   '/create/templates/default/chef-conversion-project-template';
 
 /**
+ * Prefix for the scaffolder secret keys for the SCM provider tokens.
+ *
+ * @public
+ */
+export const SCAFFOLDER_SECRET_PREFIX = 'OAUTH_TOKEN_';
+
+/**
  * Maximum number of projects to run in parallel for a bulk run.
  * This is a trade-off between performance and resource usage.
  * For every project, we issue one API request per eligible module.
@@ -49,3 +56,17 @@ export const CREATE_CHEF_PROJECT_TEMPLATE_PATH =
  * @public
  */
 export const MAX_CONCURRENT_BULK_RUN = 3;
+
+/**
+ * Polling interval for refreshing data views.
+ *
+ * @public
+ */
+export const POLLING_INTERVAL_MS = 10 * 1000;
+
+/**
+ * Limit of increasing of the polling interval on consecutive errors (like server not reachable).
+ *
+ * @public
+ */
+export const MAX_BACKOFF_MS = 5 * 60 * 1000;

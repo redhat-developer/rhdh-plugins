@@ -17,15 +17,23 @@
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 // Finds the last job of the most advanced phase reached by the module.
-export const getLastPhaseReached = (rowData: Module) => {
+// When ignoreCancelled is true, phases with 'cancelled' status are skipped.
+export const getLastPhaseReached = (
+  rowData: Module,
+  ignoreCancelled: boolean = false,
+) => {
   const phases: ('publish' | 'migrate' | 'analyze')[] = [
     'publish',
     'migrate',
     'analyze',
   ];
   for (const phase of phases) {
-    if (rowData[phase]?.phase) {
-      return rowData[phase];
+    const job = rowData[phase];
+    if (job?.phase) {
+      if (ignoreCancelled && job.status === 'cancelled') {
+        continue;
+      }
+      return job;
     }
   }
   return undefined;

@@ -23,7 +23,9 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
- * Module's status is the status of the last job of its last phase.
+ * Module's status is the status of the last job of its most-advanced phase.
+ *
+ * If the most-advanced phase's job was cancelled, the module status is cancelled.
  *
  * If a later retrigger for an earlier phase fails (e.g. when retrigger on analyze
  * fails but a former migrate already passed), the modules status should not change.
@@ -37,6 +39,11 @@ export function calculateModuleStatus({
   migrate?: Job;
   publish?: Job;
 }): { status: ModuleStatus; errorDetails?: string } {
+  const latestPhaseJob = publish ?? migrate ?? analyze;
+  if (latestPhaseJob?.status === 'cancelled') {
+    return { status: 'cancelled', errorDetails: undefined };
+  }
+
   if (publish) {
     return { status: publish.status, errorDetails: publish.errorDetails };
   }
@@ -70,6 +77,7 @@ export function calculateProjectStatus(
         pending: 0,
         running: 0,
         error: 0,
+        cancelled: 0,
       },
     };
   }
@@ -82,13 +90,18 @@ export function calculateProjectStatus(
       module.status === 'success' && module.publish?.status === 'success',
   ).length;
   const waiting = projectModules.filter(
-    module => module.status === 'success' && !module.publish,
+    module =>
+      module.status === 'success' &&
+      (!module.publish || module.publish.status === 'cancelled'),
   ).length;
   const pending = projectModules.filter(
     module => module.status === 'pending',
   ).length;
   const running = projectModules.filter(
     module => module.status === 'running',
+  ).length;
+  const cancelled = projectModules.filter(
+    module => module.status === 'cancelled',
   ).length;
 
   let state: ProjectStatusState;
@@ -99,8 +112,8 @@ export function calculateProjectStatus(
   } else if (initJob?.status === 'success') {
     if (total > 0 && finished === total) {
       state = 'completed'; // All modules are in success state
-    } else if (total === 0 || pending === total) {
-      state = 'initialized'; // Module list is empty or all modules are in pending state
+    } else if (total === 0 || pending + cancelled === total) {
+      state = 'initialized'; // Module list is empty or all modules are in pending/cancelled state
     } else {
       state = 'inProgress'; // At least one module is beyond the pending state
     }
@@ -117,6 +130,7 @@ export function calculateProjectStatus(
       pending,
       running,
       error,
+      cancelled,
     },
   };
 }

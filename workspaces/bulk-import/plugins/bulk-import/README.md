@@ -71,3 +71,32 @@ g, user:default/<login-id/user-name>, role:default/team_a
     </SidebarPage>
    );
    ```
+
+## New Frontend System
+
+If you're using Backstage's new frontend system, add the plugin to your app:
+
+```tsx
+// packages/app/src/App.tsx
+import bulkImportPlugin from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+
+export default createApp({
+  features: [
+    // ...other plugins
+    bulkImportPlugin,
+  ],
+});
+```
+
+The plugin will automatically provide:
+
+- Bulk Import page at `/bulk-import` with all existing features
+- A "Bulk import" navigation item in the sidebar
+
+### Extensions
+
+The following extensions are available in the plugin:
+
+- `api:bulk-import`
+- `page:bulk-import`
+- `nav-item:bulk-import`

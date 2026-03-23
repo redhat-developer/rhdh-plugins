@@ -21,6 +21,7 @@ import {
   MarkdownContent,
   Progress,
 } from '@backstage/core-components';
+import { Flex } from '@backstage/ui';
 import { useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -31,11 +32,9 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
@@ -43,6 +42,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useQueryClient } from '@tanstack/react-query';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/material/styles';
 
 import { packageInstallRouteRef } from '../routes';
 
@@ -71,19 +71,13 @@ export const ExtensionsPackageEditContent = ({
 }) => {
   const { t } = useTranslation();
   const { mutateAsync: installPackage } = useInstallPackage();
-  const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const header = document.querySelector('nav#global-header');
-    setHasGlobalHeader(Boolean(header));
-  }, []);
-
-  const dynamicHeight = hasGlobalHeader
-    ? 'calc(100vh - 220px)'
-    : 'calc(100vh - 160px)';
+  const theme = useTheme();
+  // TODO: add divider color in theme plugin
+  const dividerColor = theme.palette.mode === 'dark' ? '#A3A3A3' : '#C7C7C7';
 
   const codeEditor = useCodeEditor();
   const params = useRouteRefParams(packageInstallRouteRef);
@@ -286,7 +280,8 @@ export const ExtensionsPackageEditContent = ({
   };
 
   return (
-    <>
+    <Flex direction="column" gap="4" style={{ height: '100% ' }}>
+      {/* Content above the two sided "editor area" */}
       {showEditWarning && <InstallationWarning configData={pkgConfig.data} />}
       {saveError && (
         <Alert severity="error" sx={{ mb: '1rem' }}>
@@ -305,37 +300,16 @@ export const ExtensionsPackageEditContent = ({
         </Alert>
       )}
 
-      <Box
-        sx={{
-          height: dynamicHeight,
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <Grid
-          container
-          spacing={3}
-          sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
-        >
+      {/* "two sided content area" */}
+      <Flex direction="row" style={{ flexGrow: 1 }}>
+        <Flex style={{ flex: 65 }}>
           <CodeEditorCard onLoad={onLoaded} />
+        </Flex>
 
-          {showRightCard && (
-            <Grid
-              item
-              xs={12}
-              md={5.5}
-              sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-            >
-              <Card
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: 0,
-                  width: '99.8%', // workaround for 'overflow: hidden' causing card to be missing a border
-                }}
-              >
+        {showRightCard && (
+          <Flex style={{ flex: 55 }}>
+            <Card style={{ width: '100%' }}>
+              <div style={{ flex: '1 1 0', overflow: 'scroll' }}>
                 <CardHeader
                   title={
                     <Typography variant="h3">
@@ -344,124 +318,95 @@ export const ExtensionsPackageEditContent = ({
                         : t('install.editInstructions')}
                     </Typography>
                   }
-                  action={
-                    <Typography
-                      component="a"
-                      href="/path-to-file.zip" // update this
-                      download
-                      sx={{
-                        fontSize: 16,
-                        display: 'none', // change to 'flex' when ready
-                        alignItems: 'center',
-                        gap: 0.5,
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        m: 1,
-                      }}
-                    >
-                      <FileDownloadOutlinedIcon fontSize="small" />
-                      {t('install.download')}
-                    </Typography>
-                  }
-                  sx={{ pb: 0 }}
                 />
                 <CardContent
                   sx={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
+                    px: 0 /* removes padding left and right to align headline and content */,
                   }}
                 >
-                  <Box
-                    sx={{
-                      flex: 1,
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    {availableTabs.map((tab, index) => (
-                      <TabPanel
-                        key={tab.key}
-                        value={0}
-                        index={index}
-                        markdownContent={tab.content ?? ''}
-                        others={tab.others}
-                      />
-                    ))}
-                  </Box>
+                  {availableTabs.map((tab, index) => (
+                    <TabPanel
+                      key={tab.key}
+                      value={0}
+                      index={index}
+                      markdownContent={tab.content ?? ''}
+                      others={tab.others}
+                    />
+                  ))}
                 </CardContent>
-              </Card>
-            </Grid>
+              </div>
+            </Card>
+          </Flex>
+        )}
+      </Flex>
+
+      <Box
+        sx={{
+          mx: '-24px',
+          my: 2,
+          borderBottom: `1px solid ${dividerColor}`,
+        }}
+      />
+
+      {/* Button bar */}
+      <Flex gap="4">
+        <Tooltip
+          title={getPluginActionTooltipMessage(
+            configError ===
+              ExtensionsStatus.INSTALLATION_DISABLED_IN_PRODUCTION,
+            null,
+            t,
+            configError === ExtensionsStatus.INSTALLATION_DISABLED,
+            !pkg.spec?.dynamicArtifact,
+            false,
           )}
-        </Grid>
-        <Box
-          sx={{
-            mt: 4,
-            flexShrink: 0,
-            backgroundColor: 'inherit',
+        >
+          <Typography component="span">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSave}
+              disabled={isSubmitting || disableSave}
+              startIcon={
+                isSubmitting ? (
+                  <CircularProgress size="20px" color="inherit" />
+                ) : undefined
+              }
+            >
+              {t('button.save')}
+            </Button>
+          </Typography>
+        </Tooltip>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => {
+            const ns = pkg.metadata.namespace ?? params.namespace;
+            const name = pkg.metadata.name;
+            const preserved = new URLSearchParams(location.search);
+            if (location?.state?.editAction) {
+              navigate(
+                `/extensions/installed-packages?${preserved.toString()}`,
+              );
+            } else {
+              navigate(
+                `/extensions/installed-packages/${ns}/${name}?${preserved.toString()}`,
+              );
+            }
           }}
         >
-          <Tooltip
-            title={getPluginActionTooltipMessage(
-              configError ===
-                ExtensionsStatus.INSTALLATION_DISABLED_IN_PRODUCTION,
-              null,
-              t,
-              configError === ExtensionsStatus.INSTALLATION_DISABLED,
-              !pkg.spec?.dynamicArtifact,
-              false,
-            )}
-          >
-            <Typography component="span">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSave}
-                disabled={isSubmitting || disableSave}
-                startIcon={
-                  isSubmitting ? (
-                    <CircularProgress size="20px" color="inherit" />
-                  ) : undefined
-                }
-              >
-                {t('button.save')}
-              </Button>
-            </Typography>
-          </Tooltip>
-          <Button
-            variant="outlined"
-            color="primary"
-            sx={{ ml: 2 }}
-            onClick={() => {
-              const ns = pkg.metadata.namespace ?? params.namespace;
-              const name = pkg.metadata.name;
-              const preserved = new URLSearchParams(location.search);
-              if (location?.state?.editAction) {
-                navigate(
-                  `/extensions/installed-packages?${preserved.toString()}`,
-                );
-              } else {
-                navigate(
-                  `/extensions/installed-packages/${ns}/${name}?${preserved.toString()}`,
-                );
-              }
-            }}
-          >
-            {t('install.cancel')}
-          </Button>
-          <Button
-            variant="text"
-            color="primary"
-            onClick={onLoaded}
-            sx={{ ml: 3 }}
-          >
-            {t('install.reset')}
-          </Button>
-        </Box>
-      </Box>
-    </>
+          {t('install.cancel')}
+        </Button>
+        <Button
+          variant="text"
+          color="primary"
+          onClick={onLoaded}
+          sx={{ ml: 2 }}
+        >
+          {t('install.reset')}
+        </Button>
+      </Flex>
+    </Flex>
   );
 };
 

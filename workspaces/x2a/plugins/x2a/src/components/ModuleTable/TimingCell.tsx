@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { useEffect, useState } from 'react';
+import {
+  Job,
+  POLLING_INTERVAL_MS,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { makeStyles } from '@material-ui/core';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -29,6 +33,20 @@ const useStyles = makeStyles(theme => ({
 export const TimingCell = ({ lastJob }: { lastJob: Job | undefined }) => {
   const { t } = useTranslation();
   const classes = useStyles();
+  const [, setTick] = useState(0);
+
+  // Forces the relative time to update for jobs which are not progressing anymore.
+  // This leads to a fast update on every cell per polling interval. It does not seem
+  // to be a performance issue. For a huge amount of modules shown, we drive these
+  // updates via introduce react context.
+  useEffect(() => {
+    if (!lastJob?.startedAt) return undefined;
+    const intervalId = setInterval(
+      () => setTick(prev => prev + 1),
+      POLLING_INTERVAL_MS,
+    );
+    return () => clearInterval(intervalId);
+  }, [lastJob?.startedAt, lastJob?.finishedAt]);
 
   if (!lastJob) {
     return <div className={classes.timing}>-</div>;

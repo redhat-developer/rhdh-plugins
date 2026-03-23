@@ -17,6 +17,7 @@
 
 /workspaces/adoption-insights                       @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @eswaraiahsapram
 /workspaces/ai-integrations                         @redhat-developer/rhdh-ui @redhat-developer/rhdh-ai @rohitkrai03 @karthikjeeyar @lucifergene   @johnmcollier @gabemontero
+/workspaces/app-defaults                            @redhat-developer/rhdh-ui @rohitkrai03 @christoph-jerolimov
 /workspaces/bulk-import                             @redhat-developer/rhdh-plugins @rm3l   @redhat-developer/rhdh-ui @debsmita1 @its-mitesh-kumar
 /workspaces/extensions                              @redhat-developer/rhdh-ui @christoph-jerolimov @karthikjeeyar
 /workspaces/global-floating-action-button           @redhat-developer/rhdh-ui @debsmita1 @divyanshiGupta
@@ -25,7 +26,7 @@
 /workspaces/lightspeed                              @redhat-developer/rhdh-ui @karthikjeeyar @rohitkrai03   @yangcao77
 /workspaces/mcp-integrations                        @johnmcollier @gabemontero @thepetk @redhat-developer/rhdh-ai
 /workspaces/openshift-image-registry                @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
-/workspaces/orchestrator                            @lholmquist @lokanandaprabhu @redhat-developer/rhdh-plugins
+/workspaces/orchestrator                            @lholmquist @lokanandaprabhu @redhat-developer/rhdh-plugins @karthikjeeyar @christoph-jerolimov
 /workspaces/quickstart                              @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
 /workspaces/cost-management                         @ydayagi @mareklibra @batzionb @PreetiW @asmasarw
 /workspaces/sandbox                                 @lucifergene @rohitkrai03 @karthikjeeyar @xcoulon @alexeykazakov @mfrancisc @rsoaresd @jrosental @rajivnathan @MatousJobanek

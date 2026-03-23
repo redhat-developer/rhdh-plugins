@@ -22,4 +22,7 @@ export * from './humanizeDate';
 export * from './getLastPhaseReached';
 export * from './getNextPhase';
 export * from './canRunNextPhase';
+export * from './canCancelPhase';
+export * from './hasPhasePrerequisites';
 export * from './areEligibleModulesToRun';
+export * from './isEligibleForRetriggerInit';
