@@ -118,21 +118,17 @@ export const extractSessionFromMetadata = (
   sessionId: string,
   metadata: Record<string, any>,
 ): NotebookSession => {
+  // Extract session-level fields
+  const { user_id, name, description, created_at, updated_at, ...rest } =
+    metadata;
+
   return {
     session_id: sessionId,
-    user_id: metadata.user_id as string,
-    name: metadata.name as string,
-    description: metadata.description as string,
-    created_at: metadata.created_at as string,
-    updated_at: metadata.updated_at as string,
-    metadata: {
-      category: metadata.category,
-      project: metadata.project,
-      document_ids: metadata.document_ids,
-      embedding_model: metadata.embedding_model,
-      embedding_dimension: metadata.embedding_dimension,
-      provider_id: metadata.provider_id,
-      conversation_id: metadata.conversation_id,
-    },
+    user_id: user_id as string,
+    name: name as string,
+    description: description as string,
+    created_at: created_at as string,
+    updated_at: updated_at as string,
+    metadata: rest,
   };
 };

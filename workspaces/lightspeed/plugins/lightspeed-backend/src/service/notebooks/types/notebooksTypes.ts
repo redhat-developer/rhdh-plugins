@@ -15,14 +15,15 @@
  */
 
 /**
- * Session metadata for categorization and organization
+ * Session metadata for organization
  */
 export interface SessionMetadata {
-  category?: string;
-  tags?: string[];
-  project?: string;
   document_ids?: string[]; // Track documents in this session
-  [key: string]: any;
+  conversation_id?: string | null; // Active conversation ID for RAG queries
+  embedding_model?: string; // Embedding model used
+  embedding_dimension?: number; // Embedding vector dimension
+  provider_id?: string; // AI provider identifier
+  [key: string]: any; // Allow custom metadata fields
 }
 
 /**

@@ -151,7 +151,31 @@ const isPrivateOrInternalIP = (ip: string): boolean => {
     // ::ffff:0:0/96 - IPv4-mapped IPv6
     if (lower.startsWith('::ffff:')) {
       const ipv4Part = ip.substring(7);
-      return isPrivateOrInternalIP(ipv4Part);
+      // Check if it's in dotted-decimal format (e.g., ::ffff:127.0.0.1)
+      if (ipv4Part.includes('.')) {
+        return isPrivateOrInternalIP(ipv4Part);
+      }
+      // Handle hex format (e.g., ::ffff:7f00:1 which is 127.0.0.1)
+      // Extract the hex parts and check against private ranges
+      const parts = ipv4Part.split(':');
+      if (parts.length >= 1) {
+        const firstHex = parseInt(parts[0], 16);
+        // Check for common private ranges in hex:
+        // 127.x.x.x -> 0x7F00-0x7FFF (loopback)
+        // 10.x.x.x -> 0x0A00-0x0AFF (private)
+        // 192.168.x.x -> 0xC0A8 (private)
+        // 172.16-31.x.x -> 0xAC10-0xAC1F (private)
+        // 169.254.x.x -> 0xA9FE (link-local)
+        if (
+          (firstHex >= 0x7f00 && firstHex <= 0x7fff) || // 127.x.x.x
+          (firstHex >= 0x0a00 && firstHex <= 0x0aff) || // 10.x.x.x
+          firstHex === 0xc0a8 || // 192.168.x.x
+          (firstHex >= 0xac10 && firstHex <= 0xac1f) || // 172.16-31.x.x
+          firstHex === 0xa9fe // 169.254.x.x
+        ) {
+          return true;
+        }
+      }
     }
   }
 
@@ -165,10 +189,13 @@ const isPrivateOrInternalIP = (ip: string): boolean => {
 export const validateURLForSSRF = async (urlString: string): Promise<void> => {
   const url = new URL(urlString);
 
+  // Strip brackets from IPv6 addresses (e.g., [::1] -> ::1)
+  const hostname = url.hostname.replace(/^\[|\]$/g, '');
+
   // Check if hostname is already an IP address
-  const ipVersion = isIP(url.hostname);
+  const ipVersion = isIP(hostname);
   if (ipVersion !== 0) {
-    if (isPrivateOrInternalIP(url.hostname)) {
+    if (isPrivateOrInternalIP(hostname)) {
       throw new InputError(
         'Access to private/internal IP addresses is not allowed',
       );
@@ -177,20 +204,20 @@ export const validateURLForSSRF = async (urlString: string): Promise<void> => {
   }
 
   // Block localhost and common internal hostnames
-  const hostname = url.hostname.toLowerCase();
+  const lowerHostname = hostname.toLowerCase();
   const blockedHostnames = [
     'localhost',
     'metadata.google.internal', // GCP metadata
     'kubernetes.default.svc', // K8s internal service
   ];
 
-  if (blockedHostnames.includes(hostname)) {
-    throw new InputError(`Access to ${hostname} is not allowed`);
+  if (blockedHostnames.includes(lowerHostname)) {
+    throw new InputError(`Access to ${lowerHostname} is not allowed`);
   }
 
   // Resolve hostname to IP addresses
   try {
-    const addresses = await dns.resolve(url.hostname);
+    const addresses = await dns.resolve(hostname);
 
     // Check all resolved IPs
     for (const address of addresses) {

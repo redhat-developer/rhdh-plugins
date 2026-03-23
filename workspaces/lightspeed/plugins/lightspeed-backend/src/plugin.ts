@@ -74,18 +74,6 @@ export const lightspeedPlugin = createBackendPlugin({
           path: '/ai-notebooks/health',
           allow: 'unauthenticated',
         });
-        http.addAuthPolicy({
-          path: '/ai-notebooks/v1/sessions',
-          allow: 'unauthenticated',
-        });
-        http.addAuthPolicy({
-          path: '/lightspeed/ai-notebooks/v1/sessions/:sessionId',
-          allow: 'unauthenticated',
-        });
-        http.addAuthPolicy({
-          path: '/lightspeed/ai-notebooks/v1/sessions/:sessionId/query',
-          allow: 'unauthenticated',
-        });
       },
     });
   },

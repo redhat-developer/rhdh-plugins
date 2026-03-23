@@ -78,13 +78,13 @@ describe('SessionService', () => {
         'Test Session',
         'Test description',
         {
-          category: 'test-category',
-          project: 'test-project',
+          custom_field: 'custom-value',
+          another_field: 'another-value',
         },
       );
 
-      expect(session.metadata?.category).toBe('test-category');
-      expect(session.metadata?.project).toBe('test-project');
+      expect(session.metadata?.custom_field).toBe('custom-value');
+      expect(session.metadata?.another_field).toBe('another-value');
     });
 
     it('should create session with default empty description', async () => {
@@ -171,7 +171,7 @@ describe('SessionService', () => {
         mockUserId,
         'Test Session',
         'Test description',
-        { category: 'old' },
+        { custom_status: 'old' },
       );
 
       const updated = await service.updateSession(
@@ -179,10 +179,10 @@ describe('SessionService', () => {
         mockUserId,
         undefined,
         undefined,
-        { category: 'new', conversation_id: 'conv-123' },
+        { custom_status: 'new', conversation_id: 'conv-123' },
       );
 
-      expect(updated.metadata?.category).toBe('new');
+      expect(updated.metadata?.custom_status).toBe('new');
       expect(updated.metadata?.conversation_id).toBe('conv-123');
     });
 
