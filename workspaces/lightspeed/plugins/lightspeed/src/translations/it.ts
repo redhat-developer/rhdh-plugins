@@ -150,6 +150,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'conversation.removeFromPinnedChats': 'Sblocca',
     'conversation.announcement.userMessage':
       "Messaggio dall'utente: {{prompt}}. Caricamento in corso del messaggio del bot.",
+    'conversation.announcement.responseStopped': 'Risposta interrotta.',
     'user.guest': 'Ospite',
     'user.loading': '...',
     'tooltip.attach': 'Allega',

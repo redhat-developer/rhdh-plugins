@@ -109,6 +109,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'conversation.addToPinnedChats': string;
     readonly 'conversation.removeFromPinnedChats': string;
     readonly 'conversation.announcement.userMessage': string;
+    readonly 'conversation.announcement.responseStopped': string;
     readonly 'user.guest': string;
     readonly 'user.loading': string;
     readonly 'tooltip.attach': string;

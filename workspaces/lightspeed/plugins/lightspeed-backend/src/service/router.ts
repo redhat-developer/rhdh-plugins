@@ -543,6 +543,7 @@ export async function createRouter(
         const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
         logger.error(errormsg);
         response.status(500).json({ error: errormsg });
+        return;
       }
       response.status(fetchResponse.status).json(await fetchResponse.json());
     } catch (error) {

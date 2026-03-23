@@ -58,8 +58,8 @@ export const RenameConversationModal = ({
         c => c.conversation_id === conversationId,
       );
       if (conversation) {
-        setChatName(conversation.topic_summary);
-        setOriginalChatName(conversation.topic_summary);
+        setChatName(conversation.topic_summary ?? '');
+        setOriginalChatName(conversation.topic_summary ?? '');
       } else {
         setChatName('');
         setOriginalChatName('');

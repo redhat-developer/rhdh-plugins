@@ -168,6 +168,7 @@ export const lightspeedMessages = {
   'conversation.removeFromPinnedChats': 'Unpin',
   'conversation.announcement.userMessage':
     'Message from User: {{prompt}}. Message from Bot is loading.',
+  'conversation.announcement.responseStopped': 'Response stopped.',
 
   // User states
   'user.guest': 'Guest',

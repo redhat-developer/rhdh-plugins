@@ -149,6 +149,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'conversation.removeFromPinnedChats': 'Détacher',
     'conversation.announcement.userMessage':
       'Message en provenance de l’utilisateur: {{prompt}}. Message en provenance du Bot en cours de chargement.',
+    'conversation.announcement.responseStopped': 'Réponse arrêtée.',
     'user.guest': 'Invité',
     'user.loading': '...',
     'tooltip.attach': 'Attacher',

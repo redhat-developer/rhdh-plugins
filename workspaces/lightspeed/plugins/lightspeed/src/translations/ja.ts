@@ -148,6 +148,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'conversation.removeFromPinnedChats': '固定解除',
     'conversation.announcement.userMessage':
       'ユーザーからのメッセージ: {{prompt}}。ボットからのメッセージを読み込んでいます。',
+    'conversation.announcement.responseStopped': '応答を停止しました。',
     'user.guest': 'ゲスト',
     'user.loading': '...',
     'tooltip.attach': '割り当て',

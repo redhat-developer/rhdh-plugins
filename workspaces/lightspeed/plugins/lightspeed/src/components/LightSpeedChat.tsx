@@ -381,6 +381,8 @@ export const LightspeedChat = ({
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
+  const [messageBarKey, setMessageBarKey] = useState(0);
+  const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
   const {
@@ -536,7 +538,10 @@ export const LightspeedChat = ({
 
   const onComplete = (message: string) => {
     setIsSendButtonDisabled(false);
-    setAnnouncement(`Message from Bot: ${message}`);
+    if (!wasStoppedByUserRef.current) {
+      setAnnouncement(`Message from Bot: ${message}`);
+    }
+    wasStoppedByUserRef.current = false;
     queryClient.invalidateQueries({
       queryKey: ['conversations'],
     });
@@ -564,6 +569,7 @@ export const LightspeedChat = ({
   const sendMessage = (message: string | number) => {
     if (!message.toString().trim()) return;
 
+    wasStoppedByUserRef.current = false;
     if (conversationId !== TEMP_CONVERSATION_ID) {
       setNewChatCreated(false);
     }
@@ -964,13 +970,19 @@ export const LightspeedChat = ({
   const { mutate: stopConversation } = useStopConversation();
 
   const handleStopButton = () => {
+    wasStoppedByUserRef.current = true;
     if (requestId) {
       stopConversation(requestId);
       setRequestId('');
     }
     setIsSendButtonDisabled(false);
-    setAnnouncement('');
-    setDraftMessage('');
+    setAnnouncement(t('conversation.announcement.responseStopped'));
+    const lastUserMessage = [...conversationMessages]
+      .reverse()
+      .find((m: { role?: string }) => m.role === 'user');
+    const restoredPrompt = (lastUserMessage?.content as string) ?? '';
+    setDraftMessage(restoredPrompt.trim());
+    if (restoredPrompt) setMessageBarKey(k => k + 1);
     setFileContents([]);
     setUploadError({ message: null });
   };
@@ -1209,6 +1221,7 @@ export const LightspeedChat = ({
                 <ChatbotFooter className={classes.footer}>
                   <FilePreview />
                   <MessageBar
+                    key={messageBarKey}
                     onSendMessage={sendMessage}
                     isSendButtonDisabled={isSendButtonDisabled}
                     hasAttachButton

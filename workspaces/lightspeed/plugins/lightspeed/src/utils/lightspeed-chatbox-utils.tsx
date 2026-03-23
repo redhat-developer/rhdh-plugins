@@ -217,7 +217,7 @@ export const getCategorizeMessages = (
   sortedMessages.forEach(c => {
     const message: Conversation = {
       id: c.conversation_id,
-      text: c.topic_summary,
+      text: c.topic_summary ?? '',
       icon: c.topic_summary ? undefined : <Spinner size="sm" />,
       label: t?.('message.options.label') || 'Options',
       additionalProps: {
