@@ -68,6 +68,7 @@
   "files": [
     "dist",
     "migrations",
+    "public",
     "templates"
   ],
   "maintainers": [

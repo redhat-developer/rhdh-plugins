@@ -13,15 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useApi, discoveryApiRef } from '@backstage/core-plugin-api';
 
 /**
- * Common functionalities for the x2a plugin.
- *
- * @packageDocumentation
+ * Matches /x2a/download/* and forwards the wildcard path to /api/x2a/static/*.
  */
-export * from '../client/src/schema/openapi';
-export * from './permissions';
-export * from './constants';
-export * from './utils';
-export * from './scm';
-export * from './csv';
+export const DownloadStaticPublicFile = () => {
+  const { '*': filePath } = useParams();
+  const discoveryApi = useApi(discoveryApiRef);
+
+  useEffect(() => {
+    if (!filePath) return;
+    discoveryApi.getBaseUrl('x2a').then(baseUrl => {
+      globalThis.location.href = `${baseUrl}/static/${filePath}`;
+    });
+  }, [discoveryApi, filePath]);
+
+  return null;
+};
