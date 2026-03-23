@@ -120,7 +120,7 @@ export class TfIdfEmbedder implements EmbeddingProvider {
       }
     }
 
-    this.vocabulary = Array.from(allTerms).sort();
+    this.vocabulary = Array.from(allTerms).sort((a, b) => a.localeCompare(b));
     this.vocabIndex = new Map(this.vocabulary.map((t, i) => [t, i]));
 
     const n = corpus.length || 1;

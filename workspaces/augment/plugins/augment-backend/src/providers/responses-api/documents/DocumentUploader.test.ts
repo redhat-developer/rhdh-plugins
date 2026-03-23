@@ -279,7 +279,7 @@ describe('DocumentUploader', () => {
       expect(result.failed).toHaveLength(2);
       const failedFileNames = result.failed
         .map(f => f.fileName)
-        .sort((a, b) => a.localeCompare(b));
+        .sort((a, b) => a!.localeCompare(b!));
       expect(failedFileNames).toEqual(['fail.txt', 'third.txt']);
       const errors = result.failed.map(f => f.error);
       expect(errors.some(e => e.includes('Files API error'))).toBe(true);

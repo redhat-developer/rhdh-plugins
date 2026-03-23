@@ -232,12 +232,11 @@ export class McpAuthService {
 
     // Deduplicate: if a fetch is already in-flight for this server, await it
     const inflightKey = `oauth:${serverId}`;
-    const inflight = this.inflightTokenRequests.get(inflightKey);
-    if (inflight) {
+    if (this.inflightTokenRequests.has(inflightKey)) {
       this.logger.debug(
         `Awaiting in-flight OAuth token request for ${serverId}`,
       );
-      return inflight;
+      return this.inflightTokenRequests.get(inflightKey)!;
     }
 
     const request = this.fetchOAuthToken(serverId, oauth);
@@ -460,10 +459,9 @@ export class McpAuthService {
 
     // In-flight dedup: share a single token request across concurrent callers
     const inflightKey = 'security:mcpOAuth';
-    const inflight = this.inflightTokenRequests.get(inflightKey);
-    if (inflight) {
+    if (this.inflightTokenRequests.has(inflightKey)) {
       this.logger.debug('Awaiting in-flight security mcpOAuth token request');
-      return inflight;
+      return this.inflightTokenRequests.get(inflightKey)!;
     }
 
     const request = this.fetchSecurityMcpOAuthToken();

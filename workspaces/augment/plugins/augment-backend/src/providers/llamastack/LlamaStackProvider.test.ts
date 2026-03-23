@@ -582,7 +582,7 @@ describe('LlamaStackProvider', () => {
     it('deleteDocument delegates to vector store facade', async () => {
       const provider = createProvider();
 
-      const result = await provider.rag.deleteDocument('f1', 'vs-1');
+      const result = await provider.rag.deleteDocument!('f1', 'vs-1');
 
       expect(mockVectorStoreFacade.deleteDocument).toHaveBeenCalledWith(
         'f1',

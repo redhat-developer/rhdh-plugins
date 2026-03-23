@@ -12,3 +12,4 @@
 | better-sqlite3                        | package.json:45:6 | error    |
 | node-gyp                              | package.json:46:6 | error    |
 | app                                   | package.json:44:6 | error    |
+

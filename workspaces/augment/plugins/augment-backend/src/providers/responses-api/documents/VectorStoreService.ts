@@ -36,6 +36,45 @@ import {
 /** Re-export for public API compatibility */
 export type { UploadFile, UploadResult } from './DocumentUploader';
 
+function applyVectorStoreOverrides(
+  baseConfig: LlamaStackConfig,
+  overrides: Record<string, unknown>,
+): LlamaStackConfig {
+  const cfg = { ...baseConfig } as LlamaStackConfig;
+
+  if (typeof overrides.vectorStoreName === 'string')
+    cfg.vectorStoreName = overrides.vectorStoreName;
+  if (typeof overrides.embeddingModel === 'string')
+    cfg.embeddingModel = overrides.embeddingModel;
+  if (typeof overrides.embeddingDimension === 'number')
+    cfg.embeddingDimension = overrides.embeddingDimension;
+  if (
+    overrides.searchMode === 'semantic' ||
+    overrides.searchMode === 'keyword' ||
+    overrides.searchMode === 'hybrid'
+  )
+    cfg.searchMode = overrides.searchMode;
+  if (typeof overrides.bm25Weight === 'number')
+    cfg.bm25Weight = overrides.bm25Weight;
+  if (typeof overrides.semanticWeight === 'number')
+    cfg.semanticWeight = overrides.semanticWeight;
+  if (
+    overrides.chunkingStrategy === 'auto' ||
+    overrides.chunkingStrategy === 'static'
+  )
+    cfg.chunkingStrategy = overrides.chunkingStrategy;
+  if (typeof overrides.maxChunkSizeTokens === 'number')
+    cfg.maxChunkSizeTokens = overrides.maxChunkSizeTokens;
+  if (typeof overrides.chunkOverlapTokens === 'number')
+    cfg.chunkOverlapTokens = overrides.chunkOverlapTokens;
+  if (typeof overrides.fileSearchMaxResults === 'number')
+    cfg.fileSearchMaxResults = overrides.fileSearchMaxResults;
+  if (typeof overrides.fileSearchScoreThreshold === 'number')
+    cfg.fileSearchScoreThreshold = overrides.fileSearchScoreThreshold;
+
+  return cfg;
+}
+
 /**
  * Vector Store Service
  *
@@ -399,37 +438,7 @@ export class VectorStoreService {
     embeddingModel: string;
     embeddingDimension?: number;
   }> {
-    const cfg = { ...baseConfig } as LlamaStackConfig;
-
-    if (typeof overrides.vectorStoreName === 'string')
-      cfg.vectorStoreName = overrides.vectorStoreName;
-    if (typeof overrides.embeddingModel === 'string')
-      cfg.embeddingModel = overrides.embeddingModel;
-    if (typeof overrides.embeddingDimension === 'number')
-      cfg.embeddingDimension = overrides.embeddingDimension;
-    if (
-      overrides.searchMode === 'semantic' ||
-      overrides.searchMode === 'keyword' ||
-      overrides.searchMode === 'hybrid'
-    )
-      cfg.searchMode = overrides.searchMode;
-    if (typeof overrides.bm25Weight === 'number')
-      cfg.bm25Weight = overrides.bm25Weight;
-    if (typeof overrides.semanticWeight === 'number')
-      cfg.semanticWeight = overrides.semanticWeight;
-    if (
-      overrides.chunkingStrategy === 'auto' ||
-      overrides.chunkingStrategy === 'static'
-    )
-      cfg.chunkingStrategy = overrides.chunkingStrategy;
-    if (typeof overrides.maxChunkSizeTokens === 'number')
-      cfg.maxChunkSizeTokens = overrides.maxChunkSizeTokens;
-    if (typeof overrides.chunkOverlapTokens === 'number')
-      cfg.chunkOverlapTokens = overrides.chunkOverlapTokens;
-    if (typeof overrides.fileSearchMaxResults === 'number')
-      cfg.fileSearchMaxResults = overrides.fileSearchMaxResults;
-    if (typeof overrides.fileSearchScoreThreshold === 'number')
-      cfg.fileSearchScoreThreshold = overrides.fileSearchScoreThreshold;
+    const cfg = applyVectorStoreOverrides(baseConfig, overrides);
 
     try {
       const serverStores = await this.listVectorStores();

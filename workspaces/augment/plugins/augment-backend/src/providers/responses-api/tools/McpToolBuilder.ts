@@ -17,6 +17,51 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { McpAuthService } from '../../llamastack/McpAuthService';
 import type { MCPServerConfig, ResponsesApiMcpTool } from '../../../types';
 
+function buildSingleMcpTool(
+  server: MCPServerConfig,
+  headers: Record<string, string>,
+  approvalConfig: ResponsesApiMcpTool['require_approval'],
+  logger?: LoggerService,
+  logPrefix?: string,
+): ResponsesApiMcpTool {
+  const log = logger && logPrefix ? logger : undefined;
+
+  log?.info(
+    `${logPrefix}MCP server ${server.id} HITL require_approval: ${JSON.stringify(approvalConfig)}`,
+  );
+
+  const mcpTool: ResponsesApiMcpTool = {
+    type: 'mcp',
+    server_url: server.url,
+    server_label: server.id,
+    require_approval: approvalConfig,
+  };
+
+  if (server.allowedTools && server.allowedTools.length > 0) {
+    mcpTool.allowed_tools = server.allowedTools;
+    log?.info(
+      `${logPrefix}MCP server ${server.id} limited to ${server.allowedTools.length} allowed tools`,
+    );
+  }
+
+  if (Object.keys(headers).length > 0) {
+    mcpTool.headers = headers;
+    log?.info(
+      `${logPrefix}MCP server ${server.id} auth: Authorization=${
+        headers.Authorization
+          ? `present(${headers.Authorization.length} chars)`
+          : 'absent'
+      }, totalHeaders=${Object.keys(headers).length}`,
+    );
+  } else {
+    log?.warn(
+      `${logPrefix}MCP server ${server.id} has NO headers/auth — Llama Stack will connect unauthenticated`,
+    );
+  }
+
+  return mcpTool;
+}
+
 /**
  * Build MCP tool definitions for the Responses API.
  *
@@ -35,52 +80,13 @@ export async function buildMcpTools(opts: {
     mcpServers.map(s => mcpAuth.getServerHeaders(s)),
   );
 
-  const tools: ResponsesApiMcpTool[] = [];
-  for (let i = 0; i < mcpServers.length; i++) {
-    const server = mcpServers[i];
-    const headers = headerResults[i];
-    const approvalConfig = mcpAuth.getApiApprovalConfig(server.requireApproval);
-
-    if (logger && logPrefix) {
-      logger.info(
-        `${logPrefix}MCP server ${server.id} HITL require_approval: ${JSON.stringify(approvalConfig)}`,
-      );
-    }
-
-    const mcpTool: ResponsesApiMcpTool = {
-      type: 'mcp',
-      server_url: server.url,
-      server_label: server.id,
-      require_approval: approvalConfig,
-    };
-
-    if (server.allowedTools && server.allowedTools.length > 0) {
-      mcpTool.allowed_tools = server.allowedTools;
-      if (logger && logPrefix) {
-        logger.info(
-          `${logPrefix}MCP server ${server.id} limited to ${server.allowedTools.length} allowed tools`,
-        );
-      }
-    }
-
-    if (Object.keys(headers).length > 0) {
-      mcpTool.headers = headers;
-      if (logger && logPrefix) {
-        logger.info(
-          `${logPrefix}MCP server ${server.id} auth: Authorization=${
-            headers.Authorization
-              ? `present(${headers.Authorization.length} chars)`
-              : 'absent'
-          }, totalHeaders=${Object.keys(headers).length}`,
-        );
-      }
-    } else if (logger && logPrefix) {
-      logger.warn(
-        `${logPrefix}MCP server ${server.id} has NO headers/auth — Llama Stack will connect unauthenticated`,
-      );
-    }
-
-    tools.push(mcpTool);
-  }
-  return tools;
+  return mcpServers.map((server, i) =>
+    buildSingleMcpTool(
+      server,
+      headerResults[i],
+      mcpAuth.getApiApprovalConfig(server.requireApproval),
+      logger,
+      logPrefix,
+    ),
+  );
 }

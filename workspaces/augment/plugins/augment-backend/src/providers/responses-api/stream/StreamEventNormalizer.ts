@@ -141,6 +141,19 @@ const LS_ITEM_TYPE = {
  * events (e.g., output_item.done for file_search produces both
  * stream.rag.results and potentially stream.tool.completed).
  */
+function handleTypelessEvent(
+  event: Record<string, unknown>,
+): NormalizedStreamEvent[] {
+  if (hasError(event) && event.error) {
+    const errorMessage =
+      typeof event.error === 'string'
+        ? event.error
+        : event.error.message || 'Unknown server error';
+    return [{ type: 'stream.error', error: errorMessage }];
+  }
+  return [];
+}
+
 export function normalizeLlamaStackEvent(
   rawJson: string,
   onUnknownEvent?: (type: string) => void,
@@ -149,22 +162,12 @@ export function normalizeLlamaStackEvent(
   try {
     event = JSON.parse(rawJson);
   } catch {
-    // JSON parse failure is expected for non-JSON event data; return empty array
     return [];
   }
 
   const type = event.type as string | undefined;
-
-  // Handle error events that lack a type field (e.g., {"error": {"message": "..."}})
   if (!type) {
-    if (hasError(event) && event.error) {
-      const errorMessage =
-        typeof event.error === 'string'
-          ? event.error
-          : event.error.message || 'Unknown server error';
-      return [{ type: 'stream.error', error: errorMessage }];
-    }
-    return [];
+    return handleTypelessEvent(event);
   }
 
   switch (type) {

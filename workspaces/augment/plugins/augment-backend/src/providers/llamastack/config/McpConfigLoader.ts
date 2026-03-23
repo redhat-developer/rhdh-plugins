@@ -126,6 +126,79 @@ export function loadMcpAuthConfigs(
   return configs;
 }
 
+function parseRequireApproval(
+  serverConfig: Config,
+  logger: LoggerService,
+): MCPServerConfig['requireApproval'] {
+  try {
+    const approvalConfigObj = serverConfig.getOptionalConfig('requireApproval');
+    if (approvalConfigObj) {
+      const alwaysTools = approvalConfigObj.getOptionalStringArray('always');
+      const neverTools = approvalConfigObj.getOptionalStringArray('never');
+      if (alwaysTools || neverTools) {
+        logger.info(
+          `MCP server requireApproval parsed: always=${JSON.stringify(alwaysTools)}, never=${JSON.stringify(neverTools)}`,
+        );
+        return { always: alwaysTools, never: neverTools };
+      }
+    }
+  } catch {
+    logger.debug(
+      'MCP server config parse failed, falling through to string parsing',
+    );
+  }
+
+  try {
+    const approvalString = serverConfig.getOptionalString('requireApproval');
+    if (approvalString) {
+      logger.info(`MCP server requireApproval: ${approvalString}`);
+      return approvalString as 'always' | 'never';
+    }
+  } catch (e) {
+    logger.warn(`Failed to parse requireApproval config: ${e}`);
+  }
+
+  return undefined;
+}
+
+function parseServerAuth(
+  serverConfig: Config,
+  server: MCPServerConfig,
+  logger: LoggerService,
+): void {
+  const authRef = serverConfig.getOptionalString('authRef');
+  if (authRef) {
+    server.authRef = authRef;
+    logger.info(`MCP server ${server.id} using auth config: ${authRef}`);
+  }
+
+  const oauthConfig = serverConfig.getOptionalConfig('oauth');
+  if (oauthConfig) {
+    server.oauth = {
+      tokenUrl: oauthConfig.getString('tokenUrl'),
+      clientId: oauthConfig.getString('clientId'),
+      clientSecret: oauthConfig.getString('clientSecret'),
+      scopes: oauthConfig.getOptionalStringArray('scopes'),
+    };
+    logger.info(
+      `MCP server ${server.id} configured with inline OAuth (client: ${server.oauth.clientId})`,
+    );
+  }
+
+  const saConfig = serverConfig.getOptionalConfig('serviceAccount');
+  if (saConfig) {
+    server.serviceAccount = {
+      name: saConfig.getString('name'),
+      namespace: saConfig.getOptionalString('namespace'),
+    };
+    logger.info(
+      `MCP server ${server.id} configured with ServiceAccount: ${
+        server.serviceAccount.namespace || 'default'
+      }/${server.serviceAccount.name}`,
+    );
+  }
+}
+
 /**
  * Load MCP server configurations from app-config.
  *
@@ -151,114 +224,35 @@ export function loadMcpServerConfigs(
     for (const serverConfig of mcpServersConfig) {
       const type = serverConfig.getString('type') as 'streamable-http' | 'sse';
 
-      // Only URL-based servers work with Responses API
-      if (type === 'streamable-http' || type === 'sse') {
-        // Parse requireApproval config - can be 'always', 'never', or an object with always/never arrays
-        let requireApproval: MCPServerConfig['requireApproval'];
-        try {
-          // First try to read as nested config object with always/never arrays
-          const approvalConfigObj =
-            serverConfig.getOptionalConfig('requireApproval');
-          if (approvalConfigObj) {
-            const alwaysTools =
-              approvalConfigObj.getOptionalStringArray('always');
-            const neverTools =
-              approvalConfigObj.getOptionalStringArray('never');
-            if (alwaysTools || neverTools) {
-              requireApproval = {
-                always: alwaysTools,
-                never: neverTools,
-              };
-              logger.info(
-                `MCP server requireApproval parsed: always=${JSON.stringify(
-                  alwaysTools,
-                )}, never=${JSON.stringify(neverTools)}`,
-              );
-            }
-          }
-        } catch {
-          logger.debug(
-            'MCP server config parse failed, falling through to string parsing',
-          );
-        }
-
-        // Fallback: read requireApproval as a simple string ('always' | 'never')
-        if (!requireApproval) {
-          try {
-            const approvalString =
-              serverConfig.getOptionalString('requireApproval');
-            if (approvalString) {
-              requireApproval = approvalString as 'always' | 'never';
-              logger.info(`MCP server requireApproval: ${approvalString}`);
-            }
-          } catch (e) {
-            logger.warn(`Failed to parse requireApproval config: ${e}`);
-          }
-        }
-
-        const server: MCPServerConfig = {
-          id: serverConfig.getString('id'),
-          name: serverConfig.getString('name'),
-          type,
-          url: serverConfig.getString('url'),
-          headers: serverConfig.getOptional('headers') as
-            | Record<string, string>
-            | undefined,
-          allowedTools: serverConfig.getOptionalStringArray('allowedTools'),
-        };
-
-        // Check for authRef (reference to named auth config)
-        const authRef = serverConfig.getOptionalString('authRef');
-        if (authRef) {
-          server.authRef = authRef;
-          logger.info(`MCP server ${server.id} using auth config: ${authRef}`);
-        }
-
-        // Parse OAuth config if present
-        const oauthConfig = serverConfig.getOptionalConfig('oauth');
-        if (oauthConfig) {
-          server.oauth = {
-            tokenUrl: oauthConfig.getString('tokenUrl'),
-            clientId: oauthConfig.getString('clientId'),
-            clientSecret: oauthConfig.getString('clientSecret'),
-            scopes: oauthConfig.getOptionalStringArray('scopes'),
-          };
-          logger.info(
-            `MCP server ${server.id} configured with inline OAuth (client: ${server.oauth.clientId})`,
-          );
-        }
-
-        // Parse ServiceAccount config if present
-        const saConfig = serverConfig.getOptionalConfig('serviceAccount');
-        if (saConfig) {
-          server.serviceAccount = {
-            name: saConfig.getString('name'),
-            namespace: saConfig.getOptionalString('namespace'),
-          };
-          logger.info(
-            `MCP server ${server.id} configured with ServiceAccount: ${
-              server.serviceAccount.namespace || 'default'
-            }/${server.serviceAccount.name}`,
-          );
-        }
-
-        if (requireApproval) {
-          server.requireApproval = requireApproval;
-          logger.info(
-            `MCP server ${server.id} HITL config: ${JSON.stringify(
-              requireApproval,
-            )}`,
-          );
-        }
-
-        servers.push(server);
-      } else {
+      if (type !== 'streamable-http' && type !== 'sse') {
         logger.warn(
-          `MCP server ${serverConfig.getString(
-            'id',
-          )} has unsupported type ${type} - only streamable-http and sse work with Responses API`,
+          `MCP server ${serverConfig.getString('id')} has unsupported type ${type} - only streamable-http and sse work with Responses API`,
+        );
+        continue;
+      }
+
+      const server: MCPServerConfig = {
+        id: serverConfig.getString('id'),
+        name: serverConfig.getString('name'),
+        type,
+        url: serverConfig.getString('url'),
+        headers: serverConfig.getOptional('headers') as
+          | Record<string, string>
+          | undefined,
+        allowedTools: serverConfig.getOptionalStringArray('allowedTools'),
+      };
+
+      parseServerAuth(serverConfig, server, logger);
+
+      const requireApproval = parseRequireApproval(serverConfig, logger);
+      if (requireApproval) {
+        server.requireApproval = requireApproval;
+        logger.info(
+          `MCP server ${server.id} HITL config: ${JSON.stringify(requireApproval)}`,
         );
       }
+
+      servers.push(server);
     }
   } catch (error) {
     const errorMsg = toErrorMessage(error);

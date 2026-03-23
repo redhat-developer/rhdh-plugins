@@ -52,6 +52,33 @@ export interface StatusAggregatorDeps {
   agentGraphError?: string | null;
 }
 
+function checkToolNameConflicts(
+  mcpServers: NonNullable<AugmentStatus['mcpServers']>,
+  logger: LoggerService,
+): void {
+  const toolNameToServers = new Map<string, string[]>();
+  for (const server of mcpServers) {
+    if (!server.connected || !server.tools) continue;
+    for (const tool of server.tools) {
+      const list = toolNameToServers.get(tool.name) ?? [];
+      list.push(server.id);
+      toolNameToServers.set(tool.name, list);
+    }
+  }
+  const conflicts = [...toolNameToServers.entries()].filter(
+    ([, servers]) => servers.length > 1,
+  );
+  if (conflicts.length > 0) {
+    const details = conflicts
+      .map(([name, servers]) => `${name} on [${servers.join(', ')}]`)
+      .join('; ');
+    logger.warn(
+      `Tool name conflict detected in direct mode: ${details}. ` +
+        `Set augment.toolExecutionMode: backend to resolve.`,
+    );
+  }
+}
+
 /**
  * Aggregates status by resolving config, building StatusDeps, and delegating
  * to StatusService. Extracted from ResponsesApiCoordinator.getStatus() to
@@ -131,27 +158,7 @@ export async function aggregateStatus(
   }
 
   if (deps.toolExecutionMode === 'direct' && status.mcpServers) {
-    const toolNameToServers = new Map<string, string[]>();
-    for (const server of status.mcpServers) {
-      if (!server.connected || !server.tools) continue;
-      for (const tool of server.tools) {
-        const list = toolNameToServers.get(tool.name) ?? [];
-        list.push(server.id);
-        toolNameToServers.set(tool.name, list);
-      }
-    }
-    const conflicts = [...toolNameToServers.entries()].filter(
-      ([, servers]) => servers.length > 1,
-    );
-    if (conflicts.length > 0) {
-      const details = conflicts
-        .map(([name, servers]) => `${name} on [${servers.join(', ')}]`)
-        .join('; ');
-      logger.warn(
-        `Tool name conflict detected in direct mode: ${details}. ` +
-          `Set augment.toolExecutionMode: backend to resolve.`,
-      );
-    }
+    checkToolNameConflicts(status.mcpServers, logger);
   }
 
   return status;
