@@ -60,9 +60,15 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.jira.open_issues.title': 'Jira ouvre des tickets bloquants',
     'metric.jira.open_issues.description':
       'Met en évidence le nombre de problèmes critiques et bloquants actuellement ouverts dans Jira.',
+    'metric.github.files_check.title':
+      'Vérification de fichier GitHub : {{name}}',
+    'metric.github.files_check.description':
+      'Vérifie si le fichier {{name}} existe dans le dépôt.',
     'thresholds.success': 'Succès',
     'thresholds.warning': 'Attention',
     'thresholds.error': 'Erreur',
+    'thresholds.exist': 'Existant',
+    'thresholds.missing': 'Manquant',
     'thresholds.noEntities': "Aucune entité dans l'état {{category}}",
     'thresholds.entities_one': '{{count}} entité',
     'thresholds.entities_other': '{{count}} entités',

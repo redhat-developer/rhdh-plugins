@@ -57,6 +57,7 @@ export const getStatusConfig = ({
 
   switch (evaluation) {
     case 'error':
+    case 'missing':
       return { color, icon: DangerousOutlinedIcon };
     case 'warning':
       return { color, icon: WarningAmberIcon };

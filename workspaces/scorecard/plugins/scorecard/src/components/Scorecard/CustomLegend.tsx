@@ -99,8 +99,10 @@ const CustomLegend = (props: CustomLegendProps) => {
                   return translated === `thresholds.${ruleKey}`
                     ? ruleKey.charAt(0).toUpperCase() + ruleKey.slice(1)
                     : translated;
-                })()}{' '}
-                {ruleExpression && `${ruleExpression}`}
+                })()}
+                {ruleExpression &&
+                  !/^==(?:true|false)$/.test(ruleExpression) &&
+                  ` ${ruleExpression}`}
               </Typography>
             </StyledLegendItem>
           );

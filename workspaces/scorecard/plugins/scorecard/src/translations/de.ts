@@ -40,6 +40,11 @@ const scorecardTranslationDe = createTranslationMessages({
     'errors.missingPermission': 'Fehlende Berechtigung',
     'errors.missingPermissionMessage':
       'Um die Metriken der Scorecard einzusehen, muss Ihnen der Administrator die erforderliche Berechtigung erteilen.',
+    'metric.github.files_check.title': 'GitHub-Dateiprüfung: {{name}}',
+    'metric.github.files_check.description':
+      'Prüft, ob die Datei {{name}} im Repository vorhanden ist.',
+    'thresholds.exist': 'Vorhanden',
+    'thresholds.missing': 'Fehlend',
   },
 });
 

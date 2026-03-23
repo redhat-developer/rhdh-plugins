@@ -161,7 +161,7 @@ export async function createRouter({
     );
 
     const provider = metricProvidersRegistry.getProvider(metricId);
-    const metric = provider.getMetric();
+    const metric = metricProvidersRegistry.getMetric(metricId);
     const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
 
     if (authorizedMetrics.length === 0) {

@@ -101,9 +101,16 @@ const ScorecardCenterLabel = ({
     );
   }, [isErrorState, errorLabel]);
 
+  const hasDisplayableValue = !isErrorState && typeof value === 'number';
+
   return (
     <g transform={`translate(${cx}, ${cy})`}>
-      <foreignObject x={-12} y={-28} width={24} height={24}>
+      <foreignObject
+        x={-12}
+        y={hasDisplayableValue ? -28 : -12}
+        width={24}
+        height={24}
+      >
         <StatusIcon
           sx={{
             fontSize: 24,
@@ -111,7 +118,7 @@ const ScorecardCenterLabel = ({
           }}
         />
       </foreignObject>
-      {!isErrorState && (
+      {hasDisplayableValue && (
         <text
           y={12}
           textAnchor="middle"

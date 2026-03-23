@@ -133,3 +133,11 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 5 }
+      files_check:
+        files:
+          - readme: 'README.md'
+          - i18guide: 'docs/backstage-i18n-guide.md'
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 5 }

@@ -18,7 +18,10 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
-import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  ScorecardThresholdRuleColors,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { getStatusConfig, SCORECARD_ERROR_STATE_COLOR } from '..';
 
 describe('statusUtils', () => {
@@ -152,6 +155,56 @@ describe('statusUtils', () => {
         const result = getStatusConfig({
           evaluation: 'success',
           thresholdRules: DEFAULT_NUMBER_THRESHOLDS.rules,
+        });
+
+        expect(result).toEqual({
+          color: 'success.main',
+          icon: CheckCircleOutlineIcon,
+        });
+      });
+
+      it('should return DangerousOutlinedIcon for missing evaluation', () => {
+        const result = getStatusConfig({
+          evaluation: 'missing',
+          thresholdStatus: 'success',
+          metricStatus: 'success',
+          thresholdRules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: ScorecardThresholdRuleColors.SUCCESS,
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: ScorecardThresholdRuleColors.ERROR,
+            },
+          ],
+        });
+
+        expect(result).toEqual({
+          color: 'error.main',
+          icon: DangerousOutlinedIcon,
+        });
+      });
+
+      it('should return CheckCircleOutlineIcon for exist evaluation', () => {
+        const result = getStatusConfig({
+          evaluation: 'exist',
+          thresholdStatus: 'success',
+          metricStatus: 'success',
+          thresholdRules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: ScorecardThresholdRuleColors.SUCCESS,
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: ScorecardThresholdRuleColors.ERROR,
+            },
+          ],
         });
 
         expect(result).toEqual({

@@ -27,6 +27,7 @@ import {
   emptyScorecardResponse,
   unavailableMetricResponse,
   invalidThresholdResponse,
+  fileCheckScorecardResponse,
   githubAggregatedResponse,
   jiraAggregatedResponse,
   emptyGithubAggregatedResponse,
@@ -185,6 +186,67 @@ test.describe('Scorecard Plugin Tests', () => {
       );
       await expect(errorLocator).toBeVisible();
       await scorecardPage.validateScorecardAriaFor(jiraMetric);
+
+      await runAccessibilityTests(page, testInfo);
+    });
+
+    test('Verify file check metrics display correctly', async ({
+      browser,
+    }, testInfo) => {
+      await mockScorecardResponse(page, fileCheckScorecardResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
+      await scorecardPage.openTab();
+
+      const existLabel = translations.thresholds.exist ?? 'Exist';
+      const missingLabel = translations.thresholds.missing ?? 'Missing';
+
+      const readmeTitle = evaluateMessage(
+        translations.metric['github.files_check'].title,
+        'readme',
+      );
+      const readmeDescription = evaluateMessage(
+        translations.metric['github.files_check'].description,
+        'readme',
+      );
+
+      const readmeCard = page
+        .locator('[role="article"]')
+        .filter({ hasText: readmeTitle })
+        .first();
+      await expect(readmeCard).toBeVisible();
+      await expect(readmeCard.getByText(readmeDescription)).toBeVisible();
+      await expect(
+        readmeCard.getByText(existLabel, { exact: true }),
+      ).toBeVisible();
+      await expect(
+        readmeCard.getByText(missingLabel, { exact: true }),
+      ).toBeVisible();
+
+      const codeownersTitle = evaluateMessage(
+        translations.metric['github.files_check'].title,
+        'codeowners',
+      );
+      const codeownersDescription = evaluateMessage(
+        translations.metric['github.files_check'].description,
+        'codeowners',
+      );
+
+      const codeownersCard = page
+        .locator('[role="article"]')
+        .filter({ hasText: codeownersTitle })
+        .first();
+      await expect(codeownersCard).toBeVisible();
+      await expect(
+        codeownersCard.getByText(codeownersDescription),
+      ).toBeVisible();
+      await expect(
+        codeownersCard.getByText(existLabel, { exact: true }),
+      ).toBeVisible();
+      await expect(
+        codeownersCard.getByText(missingLabel, { exact: true }),
+      ).toBeVisible();
 
       await runAccessibilityTests(page, testInfo);
     });

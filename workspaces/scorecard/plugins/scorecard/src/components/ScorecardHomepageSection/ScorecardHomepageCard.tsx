@@ -20,6 +20,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';
+import { resolveMetricTranslation } from '../../utils';
 import { ErrorStatePanel } from './ErrorStatePanel';
 import { EmptyStatePanel } from './EmptyStatePanel';
 
@@ -57,28 +58,30 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
         metricId={metricId}
         label={t('errors.noDataFound')}
         tooltipContent={t('errors.noDataFoundMessage')}
+        fallbackTitle={aggregatedScorecard.metadata.title}
+        fallbackDescription={aggregatedScorecard.metadata.description}
       />
     );
   }
 
-  const titleKey = `metric.${aggregatedScorecard.id}.title`;
-  const descriptionKey = `metric.${aggregatedScorecard.id}.description`;
-
-  const title = t(titleKey as any, {});
-  const description = t(descriptionKey as any, {});
-
-  const finalTitle =
-    title === titleKey ? aggregatedScorecard.metadata.title : title;
-  const finalDescription =
-    description === descriptionKey
-      ? aggregatedScorecard.metadata.description
-      : description;
+  const title = resolveMetricTranslation(
+    t,
+    aggregatedScorecard.id,
+    'title',
+    aggregatedScorecard.metadata.title,
+  );
+  const description = resolveMetricTranslation(
+    t,
+    aggregatedScorecard.id,
+    'description',
+    aggregatedScorecard.metadata.description,
+  );
 
   return (
     <ScorecardHomepageCardComponent
       key={aggregatedScorecard.id}
-      cardTitle={finalTitle}
-      description={finalDescription}
+      cardTitle={title}
+      description={description}
       scorecard={aggregatedScorecard}
     />
   );

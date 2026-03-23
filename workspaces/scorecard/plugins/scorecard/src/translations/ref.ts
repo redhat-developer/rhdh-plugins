@@ -71,6 +71,10 @@ export const scorecardMessages = {
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
     },
+    'github.files_check': {
+      title: 'GitHub file check: {{name}}',
+      description: 'Checks whether the {{name}} file exists in the repository.',
+    },
   },
 
   // Threshold translations
@@ -78,6 +82,8 @@ export const scorecardMessages = {
     success: 'Success',
     warning: 'Warning',
     error: 'Error',
+    exist: 'Exist',
+    missing: 'Missing',
     noEntities: 'No entities in {{category}} state',
     entities_one: '{{count}} entity',
     entities_other: '{{count}} entities',

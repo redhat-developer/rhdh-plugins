@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-export {
-  getHeightForCenterLabel,
-  getYOffsetForCenterLabel,
-} from './chartLabelUtils';
-export { getThresholdRuleColor, resolveStatusColor } from './colorUtils';
-export { SCORECARD_ERROR_STATE_COLOR } from './constants';
-export { getStatusConfig } from './statusUtils';
-export { resolveMetricTranslation } from './translationUtils';
+import {
+  type ThresholdConfig,
+  ScorecardThresholdRuleColors,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+export const DEFAULT_FILE_CHECK_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    {
+      key: 'exist',
+      expression: '==true',
+      color: ScorecardThresholdRuleColors.SUCCESS,
+    },
+    {
+      key: 'missing',
+      expression: '==false',
+      color: ScorecardThresholdRuleColors.ERROR,
+    },
+  ],
+};

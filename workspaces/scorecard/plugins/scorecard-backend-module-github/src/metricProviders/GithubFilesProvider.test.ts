@@ -18,7 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { GithubFilesProvider } from './GithubFilesProvider';
 import { GithubClient } from '../github/GithubClient';
-import { DEFAULT_BOOLEAN_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { DEFAULT_FILE_CHECK_THRESHOLDS } from './GithubConfig';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -138,9 +138,9 @@ describe('GithubFilesProvider', () => {
       ]);
     });
 
-    it('should return default boolean thresholds', () => {
+    it('should return default file check thresholds', () => {
       expect(provider.getMetricThresholds()).toEqual(
-        DEFAULT_BOOLEAN_THRESHOLDS,
+        DEFAULT_FILE_CHECK_THRESHOLDS,
       );
     });
 

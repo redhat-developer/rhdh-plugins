@@ -502,6 +502,7 @@ describe('CatalogMetricService', () => {
         auth: mockedAuth,
         registry: mockedRegistry,
         database: mockedDatabase,
+        logger: mockedLogger,
       });
 
       const results = await service.getLatestEntityMetrics(

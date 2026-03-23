@@ -42,6 +42,12 @@ const scorecardTranslationEs = createTranslationMessages({
     'errors.missingPermission': 'Permiso faltante',
     'errors.missingPermissionMessage':
       'Para ver las métricas de la tarjeta de puntuación, su administrador debe otorgarle el permiso requerido.',
+    'metric.github.files_check.title':
+      'Verificación de archivo en GitHub: {{name}}',
+    'metric.github.files_check.description':
+      'Verifica si el archivo {{name}} existe en el repositorio.',
+    'thresholds.exist': 'Existe',
+    'thresholds.missing': 'Faltante',
   },
 });
 

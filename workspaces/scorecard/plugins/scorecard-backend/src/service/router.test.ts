@@ -26,6 +26,7 @@ import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
   MockBooleanProvider,
+  MockBatchBooleanProvider,
   githubNumberMetricMetadata,
 } from '../../__fixtures__/mockProviders';
 import {
@@ -755,6 +756,44 @@ describe('createRouter', () => {
         metricProvidersRegistry
           .getProvider('github.open_prs')
           .getMetricThresholds(),
+        mockAggregatedMetric,
+      );
+    });
+
+    it('should use registry.getMetric to resolve the correct metric for batch providers', async () => {
+      const batchProvider = new MockBatchBooleanProvider(
+        'github',
+        'github.files_check',
+        [
+          { id: 'readme', path: 'README.md' },
+          { id: 'license', path: 'LICENSE' },
+        ],
+      );
+      metricProvidersRegistry.register(batchProvider);
+
+      const batchAggregationRouter = await createRouter({
+        metricProvidersRegistry,
+        catalogMetricService,
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+      });
+      const batchApp = express();
+      batchApp.use(batchAggregationRouter);
+      batchApp.use(mockErrorHandler());
+
+      const response = await request(batchApp).get(
+        '/metrics/github.files_check.license/catalog/aggregations',
+      );
+
+      expect(response.status).toBe(200);
+      expect(toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'github.files_check.license',
+          title: 'File: LICENSE',
+        }),
+        batchProvider.getMetricThresholds(),
         mockAggregatedMetric,
       );
     });

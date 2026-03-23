@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  ScorecardThresholdRuleColors,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const customScorecardResponse = [
   {
@@ -260,3 +263,70 @@ export const emptyGithubAggregatedResponse = {
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
   },
 };
+
+export const fileCheckScorecardResponse = [
+  {
+    id: 'github.files_check.readme',
+    status: 'success',
+    metadata: {
+      title: 'GitHub File: README.md',
+      description: 'Checks if README.md exists in the repository.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: true,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: ScorecardThresholdRuleColors.SUCCESS,
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: ScorecardThresholdRuleColors.ERROR,
+            },
+          ],
+        },
+        status: 'success',
+        evaluation: 'exist',
+      },
+    },
+  },
+  {
+    id: 'github.files_check.codeowners',
+    status: 'success',
+    metadata: {
+      title: 'GitHub File: CODEOWNERS',
+      description: 'Checks if CODEOWNERS exists in the repository.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: false,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: ScorecardThresholdRuleColors.SUCCESS,
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: ScorecardThresholdRuleColors.ERROR,
+            },
+          ],
+        },
+        status: 'success',
+        evaluation: 'missing',
+      },
+    },
+  },
+];

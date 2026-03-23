@@ -23,7 +23,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import NoScorecardsState from '../Common/NoScorecardsState';
 import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
-import { getStatusConfig } from '../../utils';
+import { getStatusConfig, resolveMetricTranslation } from '../../utils';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -78,25 +78,24 @@ export const EntityScorecardContent = () => {
           thresholdRules: metric.result.thresholdResult.definition?.rules,
         });
 
-        // Use metric ID to construct translation keys, fallback to original title/description
-        const titleKey = `metric.${metric.id}.title`;
-        const descriptionKey = `metric.${metric.id}.description`;
-
-        const title = t(titleKey as any, {});
-        const description = t(descriptionKey as any, {});
-
-        // If translation returns the key itself, fallback to original title/description
-        const finalTitle = title === titleKey ? metric.metadata.title : title;
-        const finalDescription =
-          description === descriptionKey
-            ? metric.metadata.description
-            : description;
+        const title = resolveMetricTranslation(
+          t,
+          metric.id,
+          'title',
+          metric.metadata.title,
+        );
+        const description = resolveMetricTranslation(
+          t,
+          metric.id,
+          'description',
+          metric.metadata.description,
+        );
 
         return (
           <Scorecard
             key={metric.id}
-            cardTitle={finalTitle}
-            description={finalDescription}
+            cardTitle={title}
+            description={description}
             statusColor={statusConfig.color}
             StatusIcon={statusConfig.icon ?? (() => null)}
             value={metric.result?.value}
