@@ -32,3 +32,9 @@ export const projectRouteRef = createSubRouteRef({
   parent: rootRouteRef,
   path: '/projects/:projectId',
 });
+
+export const downloadRouteRef = createSubRouteRef({
+  id: 'x2a.download',
+  parent: rootRouteRef,
+  path: '/download',
+});

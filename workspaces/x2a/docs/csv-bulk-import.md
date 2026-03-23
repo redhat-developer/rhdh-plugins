@@ -85,6 +85,12 @@ Notes on the example:
 - Row 2 (`db-setup`): uses RepoUrlPicker-style URLs for GitLab. `description` and `ownedByGroup` are left empty.
 - Row 3 (`cache-svc`): uses RepoUrlPicker-style URL for Bitbucket. `targetRepoUrl` is empty, so the source repository is used as the target.
 
+### CSV file template
+
+Download a [sample CSV file](../plugins/x2a-backend/public/sample-projects.csv) with all supported headers.
+
+At runtime, the file is served at `/x2a/download/sample-projects.csv` (via the frontend plugin route).
+
 ## RepoAuthentication Scaffolder Extension
 
 When using CSV import, the template uses the `RepoAuthentication` custom scaffolder field to collect OAuth tokens for each SCM provider found in the CSV. This replaces the standard `RepoUrlPicker` used in manual mode.

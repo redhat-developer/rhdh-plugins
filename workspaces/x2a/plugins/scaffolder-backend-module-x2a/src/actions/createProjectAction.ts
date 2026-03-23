@@ -54,9 +54,11 @@ const fetchExistingProjectNames = async (
         { token },
       );
       if (!response.ok) {
-        const errorBody = await response.json().catch(() => ({}));
+        const errorBody = (await response.json().catch(() => ({}))) as {
+          message?: string;
+        };
         throw new Error(
-          `status ${response.status}: ${(errorBody as { message?: string })?.message ?? JSON.stringify(errorBody)}`,
+          `status ${response.status}: ${errorBody?.message ?? JSON.stringify(errorBody)}`,
         );
       }
       data = await response.json();

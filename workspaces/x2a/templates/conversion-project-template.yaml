@@ -80,21 +80,14 @@ spec:
                     type: string
                     format: data-url
                     description: |
-                      Upload a CSV file containing project definitions including source and target repositories.
+                      Upload a UTF-8 encoded CSV file. Duplicates are skipped, so re-uploads are safe.
 
-                      Projects are created sequentially, with the same permissions and other checks applied to
-                      each one - just as if the signed-in user had created them individually.
+                      Required: name, abbreviation, sourceRepoUrl, sourceRepoBranch, targetRepoBranch.
 
-                      Projects whose name already exists are skipped. This means the import can be run
-                      repeatedly: fix any failing rows in the CSV, delete the broken project if needed,
-                      and re-upload — already-created projects will not be duplicated.
+                      Optional: description, ownedByGroup, targetRepoUrl.
 
-                      The CSV file must contain the following headers: name, abbreviation, sourceRepoUrl, sourceRepoBranch, targetRepoBranch.
+                      [Download sample CSV](/x2a/download/sample-projects.csv)
 
-                      Optional headers: description, ownedByGroup, targetRepoUrl.
-
-                      The headers can be in any order, but the values must be in the same order as the headers.
-                      The file must be encoded in UTF-8.
                     ui:options:
                       accept: '.csv'
 
@@ -164,7 +157,7 @@ spec:
                   repoAuthentication:
                     type: string
                     description: |
-                      Provide login to all the SCMs relevant for the source CSV.
+                      Authenticate with each SCM provider referenced in the CSV.
                     ui:field: RepoAuthentication
                     ui:options:
                       csvFieldName: csvContent

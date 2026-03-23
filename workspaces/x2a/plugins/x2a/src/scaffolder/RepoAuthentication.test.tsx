@@ -59,6 +59,11 @@ const MIXED_CSV = toDataUrl(
     'GL Project,GL,https://gitlab.com/org/gl-repo,main,https://gitlab.com/org/gl-target,main',
 );
 
+const CROSS_PROVIDER_CSV = toDataUrl(
+  'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch\n' +
+    'Cross Project,CP,https://github.com/org/source,main,https://gitlab.com/org/target,main',
+);
+
 const validatorContext = {
   apiHolder: { get: jest.fn() } as unknown as ApiHolder,
   formData: {},
@@ -217,6 +222,32 @@ describe('RepoAuthentication', () => {
       renderComponent({
         formContext: {
           formData: { csvContent: MIXED_CSV },
+        },
+      });
+
+      await waitFor(() => {
+        expect(mockAuthenticate).toHaveBeenCalledTimes(2);
+      });
+
+      await waitFor(() => {
+        expect(mockSetSecrets).toHaveBeenCalledWith(
+          expect.objectContaining({
+            OAUTH_TOKEN_github: 'token-for-github',
+            OAUTH_TOKEN_gitlab: 'token-for-gitlab',
+          }),
+        );
+      });
+    });
+
+    it('should authenticate both providers when a single row has cross-provider source and target', async () => {
+      mockAuthenticate.mockImplementation(descriptors => {
+        const provider = descriptors[0]?.provider ?? 'unknown';
+        return Promise.resolve([{ token: `token-for-${provider}`, provider }]);
+      });
+
+      renderComponent({
+        formContext: {
+          formData: { csvContent: CROSS_PROVIDER_CSV },
         },
       });
 

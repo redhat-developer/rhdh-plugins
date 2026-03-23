@@ -16,14 +16,19 @@
 import { Route, Routes } from 'react-router-dom';
 
 import { Dashboard } from './Dashboard';
+import { DownloadStaticPublicFile } from './DownloadStaticPublicFile';
 import { ModulePage } from './ModulePage';
-import { moduleRouteRef, projectRouteRef } from '../routes';
+import { downloadRouteRef, moduleRouteRef, projectRouteRef } from '../routes';
 import { ProjectPage } from './ProjectPage';
 
 export const Router = () => {
   return (
     // relative to x2a/
     <Routes>
+      <Route
+        path={`${downloadRouteRef.path}/*`}
+        element={<DownloadStaticPublicFile />}
+      />
       <Route path={moduleRouteRef.path} element={<ModulePage />} />
       <Route path={projectRouteRef.path} element={<ProjectPage />} />
       <Route path="/*" element={<Dashboard />} />
