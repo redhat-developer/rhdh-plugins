@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CircularProgress,
   Typography,
@@ -23,63 +23,78 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  TextField,
 } from '@material-ui/core';
 import { useTranslation } from '../hooks/useTranslation';
 
-export type BulkRunConfirmDialogProps = {
+export type RetriggerInitConfirmDialogProps = {
   open: boolean;
-  title: string;
-  message: string;
+  projectName: string;
   isRunning: boolean;
-  onConfirm: () => void;
+  onConfirm: (userPrompt: string) => void;
   onClose: () => void;
-  idPostfix: string;
-  confirmLabel?: string;
-  children?: React.ReactNode;
 };
 
-export const BulkRunConfirmDialog = ({
+export const RetriggerInitConfirmDialog = ({
   open,
-  title,
-  message,
+  projectName,
   isRunning,
-  idPostfix,
   onConfirm,
   onClose,
-  confirmLabel,
-  children,
-}: BulkRunConfirmDialogProps) => {
+}: RetriggerInitConfirmDialogProps) => {
   const { t } = useTranslation();
-  const titleId = `bulk-run-modal-title-${idPostfix}`;
-  const descriptionId = `bulk-run-modal-description-${idPostfix}`;
-
+  const [userPrompt, setUserPrompt] = useState('');
   const confirmingRef = useRef(false);
 
   useEffect(() => {
-    if (!open || !isRunning) {
+    if (!open) {
+      confirmingRef.current = false;
+      setUserPrompt('');
+    } else if (!isRunning) {
       confirmingRef.current = false;
     }
   }, [open, isRunning]);
 
   const handleConfirm = useCallback(() => {
-    // Potential fast double-click protection
     if (confirmingRef.current) return;
     confirmingRef.current = true;
-
-    onConfirm();
-  }, [onConfirm]);
+    onConfirm(userPrompt);
+  }, [onConfirm, userPrompt]);
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      aria-labelledby={titleId}
-      aria-describedby={descriptionId}
+      aria-labelledby="retrigger-init-modal-title"
+      aria-describedby="retrigger-init-modal-description"
+      fullWidth
+      maxWidth="sm"
     >
-      <DialogTitle id={titleId}>{title}</DialogTitle>
-      <DialogContent id={descriptionId}>
-        <Typography variant="body1">{message}</Typography>
-        {children}
+      <DialogTitle id="retrigger-init-modal-title">
+        {t('retriggerInit.confirm.title' as any, { name: projectName })}
+      </DialogTitle>
+      <DialogContent>
+        <Typography
+          id="retrigger-init-modal-description"
+          variant="body1"
+          gutterBottom
+        >
+          {t('retriggerInit.confirm.message')}
+        </Typography>
+        <TextField
+          label={t('retriggerInit.confirm.userPromptLabel')}
+          placeholder={t('retriggerInit.confirm.userPromptPlaceholder')}
+          multiline
+          minRows={3}
+          maxRows={8}
+          fullWidth
+          variant="outlined"
+          margin="normal"
+          value={userPrompt}
+          onChange={e => setUserPrompt(e.target.value)}
+          disabled={isRunning}
+          inputProps={{ 'data-testid': 'retrigger-init-user-prompt' }}
+        />
       </DialogContent>
 
       <DialogActions>
@@ -92,7 +107,7 @@ export const BulkRunConfirmDialog = ({
             isRunning ? <CircularProgress size={16} color="inherit" /> : null
           }
         >
-          {confirmLabel ?? t('bulkRun.confirm')}
+          {t('retriggerInit.confirm.confirmButton')}
         </Button>
         <Button variant="outlined" onClick={onClose} disabled={isRunning}>
           {t('bulkRun.cancel')}

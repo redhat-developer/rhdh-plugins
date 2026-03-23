@@ -15,6 +15,7 @@
  */
 
 import express from 'express';
+import { resolvePackagePath } from '@backstage/backend-plugin-api';
 
 import { createOpenApiRouter } from '../schema/openapi';
 import type { RouterDeps } from './types';
@@ -23,9 +24,16 @@ import { registerModuleRoutes } from './modules';
 import { registerJobRoutes } from './jobs';
 import { registerCollectArtifactsRoutes } from './collectArtifacts';
 
+const publicDir = resolvePackagePath(
+  '@red-hat-developer-hub/backstage-plugin-x2a-backend',
+  'public',
+);
+
 export async function createRouter(deps: RouterDeps): Promise<express.Router> {
   // Create main router that will hold everything
   const mainRouter = express.Router();
+
+  mainRouter.use('/static', express.static(publicDir));
 
   // Register collectArtifacts on main router (bypasses OpenAPI JSON parser)
   // This endpoint needs express.raw() middleware to get raw body bytes for HMAC validation
