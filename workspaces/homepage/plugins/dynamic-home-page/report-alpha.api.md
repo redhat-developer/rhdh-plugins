@@ -9,9 +9,9 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @alpha
-export const homePageDevModule: FrontendModule;
+export const homePageModule: FrontendModule;
 
-// @alpha
+// @public
 export const homepageTranslationRef: TranslationRef<"plugin.homepage", {
 readonly "header.local": string;
 readonly "header.welcome": string;
@@ -56,7 +56,7 @@ readonly "entities.register": string;
 readonly "entities.viewAll": string;
 }>;
 
-// @alpha
+// @public
 export const homepageTranslations: TranslationResource<"plugin.homepage">;
 
 // @alpha

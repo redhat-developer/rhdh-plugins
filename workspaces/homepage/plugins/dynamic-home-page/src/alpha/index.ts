@@ -28,7 +28,7 @@ import {
   templateSectionWidget,
   TopVisitedWidget,
 } from './extensions/homePageCards';
-import { homepageTranslations } from './translations';
+import { homepageTranslations } from '../translations';
 
 import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
 import { quickAccessApi } from './extensions/apis';
@@ -42,7 +42,7 @@ import { quickAccessApi } from './extensions/apis';
  *
  * @alpha
  */
-export const homePageDevModule = createFrontendModule({
+export const homePageModule = createFrontendModule({
   pluginId: 'home',
   extensions: [
     homePageLayoutExtension,
@@ -77,4 +77,8 @@ export const homepageTranslationsModule = createFrontendModule({
   ],
 });
 
-export { homepageTranslationRef, homepageTranslations } from './translations';
+/**
+ *
+ * @alpha
+ */
+export { homepageTranslationRef, homepageTranslations } from '../translations';

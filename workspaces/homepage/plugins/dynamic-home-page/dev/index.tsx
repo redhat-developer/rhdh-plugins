@@ -45,7 +45,7 @@ import {
   starredEntitiesApiRef,
 } from '@backstage/plugin-catalog-react';
 import {
-  homePageDevModule,
+  homePageModule,
   homepageTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
@@ -152,7 +152,7 @@ const app = createApp({
     devNavModule,
     catalogPlugin,
     searchPlugin,
-    homePageDevModule,
+    homePageModule,
     homepageTranslationsModule,
     homepageApiMocksModule,
     catalogDevModule,

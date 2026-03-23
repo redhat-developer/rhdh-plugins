@@ -21,6 +21,6 @@ export function isCardADefaultConfiguration(
 ): boolean {
   return (
     !!cardData.breakpointLayouts ||
-    Object.entries(cardData.breakpointLayouts ?? {})?.length === 0
+    Object.entries(cardData.breakpointLayouts ?? {}).length === 0
   );
 }

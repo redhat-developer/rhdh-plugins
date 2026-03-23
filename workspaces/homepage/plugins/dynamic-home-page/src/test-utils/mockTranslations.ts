@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { homepageMessages } from '../alpha/translations/ref';
+import { homepageMessages } from '../translations/ref';
 
 function flattenMessages(obj: any, prefix = ''): Record<string, string> {
   const flattened: Record<string, string> = {};

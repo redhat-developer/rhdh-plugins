@@ -21,7 +21,7 @@ import { homepageTranslationRef } from './ref';
 /**
  * Translation resource for the Dynamic Home Page plugin (en, de, es, fr, it, ja).
  *
- * @alpha
+ * @public
  */
 export const homepageTranslations = createTranslationResource({
   ref: homepageTranslationRef,

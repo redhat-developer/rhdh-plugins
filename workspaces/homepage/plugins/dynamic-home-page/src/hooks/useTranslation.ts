@@ -19,7 +19,7 @@ import {
   TranslationFunction,
 } from '@backstage/core-plugin-api/alpha';
 
-import { homepageTranslationRef } from '../alpha/translations';
+import { homepageTranslationRef } from '../translations';
 
 export const useTranslation = (): {
   t: TranslationFunction<typeof homepageTranslationRef.T>;
