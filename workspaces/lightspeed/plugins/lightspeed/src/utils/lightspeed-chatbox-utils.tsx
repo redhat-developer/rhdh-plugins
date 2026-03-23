@@ -15,6 +15,7 @@
  */
 import PushPinIcon from '@mui/icons-material/PushPin';
 import { Conversation, SourcesCardProps } from '@patternfly/chatbot';
+import { Spinner } from '@patternfly/react-core';
 
 import {
   BaseMessage,
@@ -179,15 +180,17 @@ const sortConversations = (
   sortOption: SortOption,
 ): ConversationList => {
   return [...messages].sort((a, b) => {
+    const aTopicSummary = a.topic_summary || '';
+    const bTopicSummary = b.topic_summary || '';
     switch (sortOption) {
       case 'oldest':
         return a.last_message_timestamp - b.last_message_timestamp;
       case 'alphabeticalAsc':
-        return a.topic_summary.localeCompare(b.topic_summary, undefined, {
+        return aTopicSummary.localeCompare(bTopicSummary, undefined, {
           sensitivity: 'base',
         });
       case 'alphabeticalDesc':
-        return b.topic_summary.localeCompare(a.topic_summary, undefined, {
+        return bTopicSummary.localeCompare(aTopicSummary, undefined, {
           sensitivity: 'base',
         });
       case 'newest':
@@ -215,6 +218,7 @@ export const getCategorizeMessages = (
     const message: Conversation = {
       id: c.conversation_id,
       text: c.topic_summary,
+      icon: c.topic_summary ? undefined : <Spinner size="sm" />,
       label: t?.('message.options.label') || 'Options',
       additionalProps: {
         'aria-label': t?.('aria.options.label') || 'Options',

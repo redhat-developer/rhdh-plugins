@@ -83,6 +83,7 @@ import {
   useNotebookSessions,
   usePinnedChatsSettings,
   useSortSettings,
+  useStopConversation,
 } from '../hooks';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
@@ -370,6 +371,7 @@ export const LightspeedChat = ({
     [],
   );
   const [conversationId, setConversationId] = useState<string>('');
+  const [requestId, setRequestId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
@@ -528,6 +530,10 @@ export const LightspeedChat = ({
     setCurrentConversationId(conv_id);
   };
 
+  const onRequestIdReady = (request_id: string) => {
+    setRequestId(request_id);
+  };
+
   const onComplete = (message: string) => {
     setIsSendButtonDisabled(false);
     setAnnouncement(`Message from Bot: ${message}`);
@@ -549,12 +555,15 @@ export const LightspeedChat = ({
       avatar,
       onComplete,
       onStart,
+      onRequestIdReady,
     );
 
   const [messages, setMessages] =
     useState<MessageProps[]>(conversationMessages);
 
   const sendMessage = (message: string | number) => {
+    if (!message.toString().trim()) return;
+
     if (conversationId !== TEMP_CONVERSATION_ID) {
       setNewChatCreated(false);
     }
@@ -693,7 +702,7 @@ export const LightspeedChat = ({
       const filteredConversations = Object.entries(categorizedMessages).reduce(
         (acc, [key, items]) => {
           const filteredItems = items.filter(item =>
-            item.text
+            (item.text ?? '')
               .toLocaleLowerCase('en-US')
               .includes(targetValue.toLocaleLowerCase('en-US')),
           );
@@ -952,6 +961,20 @@ export const LightspeedChat = ({
     handleFileUpload(data);
   };
 
+  const { mutate: stopConversation } = useStopConversation();
+
+  const handleStopButton = () => {
+    if (requestId) {
+      stopConversation(requestId);
+      setRequestId('');
+    }
+    setIsSendButtonDisabled(false);
+    setAnnouncement('');
+    setDraftMessage('');
+    setFileContents([]);
+    setUploadError({ message: null });
+  };
+
   const handleDraftMessage = (
     _e: ChangeEvent<HTMLTextAreaElement>,
     value: string | number,
@@ -1193,6 +1216,10 @@ export const LightspeedChat = ({
                     hasMicrophoneButton
                     value={draftMessage}
                     onChange={handleDraftMessage}
+                    hasStopButton={isSendButtonDisabled}
+                    handleStopButton={
+                      isSendButtonDisabled ? handleStopButton : undefined
+                    }
                     buttonProps={{
                       attach: {
                         inputTestId: 'attachment-input',

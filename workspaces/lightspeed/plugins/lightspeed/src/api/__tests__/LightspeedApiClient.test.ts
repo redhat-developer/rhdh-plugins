@@ -399,6 +399,38 @@ describe('LightspeedApiClient', () => {
     });
   });
 
+  describe('stopMessage', () => {
+    it('should return success when stop succeeds', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ success: true }),
+      } as unknown as Response);
+
+      const result = await client.stopMessage('req-123');
+
+      expect(result).toEqual({ success: true });
+      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/lightspeed/v1/query/interrupt',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ request_id: 'req-123' }),
+        }),
+      );
+    });
+
+    it('should throw error when stop fails', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      } as unknown as Response);
+
+      await expect(client.stopMessage('req-123')).rejects.toThrow(
+        'failed to stop message, status 500: Internal Server Error',
+      );
+    });
+  });
+
   describe('createMessage', () => {
     it('should return readable stream reader when message is created', async () => {
       const mockReader = {

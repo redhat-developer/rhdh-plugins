@@ -29,4 +29,5 @@ export * from './useNotebookSessions';
 export * from './usePinnedChatsSettings';
 export * from './useRenameNotebook';
 export * from './useSortSettings';
+export * from './useStopConversation';
 export * from './useTranslation';

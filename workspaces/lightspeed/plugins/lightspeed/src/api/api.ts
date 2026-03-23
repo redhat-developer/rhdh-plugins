@@ -50,6 +50,7 @@ export type LightspeedAPI = {
   getFeedbackStatus: () => Promise<boolean>;
   captureFeedback: (payload: CaptureFeedback) => Promise<{ response: string }>;
   isTopicRestrictionEnabled: () => Promise<boolean>;
+  stopMessage: (requestId: string) => Promise<{ success: boolean }>;
 };
 
 /**
