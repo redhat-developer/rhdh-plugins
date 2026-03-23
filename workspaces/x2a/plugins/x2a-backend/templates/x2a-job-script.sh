@@ -11,6 +11,9 @@ PUSH_FAILED=""
 TERMINATED=false
 COMMIT_ID=""
 
+# Path where x2a-convertor writes error details on failure
+export X2A_ERROR_FILE="/tmp/x2a-error.txt"
+
 # Report job result back to the backend.
 report_result() {
   local status="$1"
@@ -74,36 +77,24 @@ sanitize_secrets() {
   fi
 }
 
-# Run an x2a tool command, capturing output for error reporting.
-# On failure, extracts the error message from the tool's output and sets ERROR_MESSAGE.
+# Run an x2a tool command with error reporting.
+# On failure, reads the error details file written by x2a-convertor and sets ERROR_MESSAGE.
 # On success, clears ERROR_MESSAGE.
-# The captured output is stored in X2A_OUTPUT for callers that need to parse it.
 # Usage: run_x2a uv run app.py <phase> [args...]
 run_x2a() {
-  local rc
-  local tmpfile
-  tmpfile=$(mktemp)
+  rm -f "${X2A_ERROR_FILE}"
 
-  # Stream output in real-time via tee while also capturing it to a file
   set +e
-  "$@" 2>&1 | tee "${tmpfile}"
-  rc=${PIPESTATUS[0]}
+  "$@"
+  local rc=$?
   set -e
 
-  X2A_OUTPUT=$(cat "${tmpfile}")
-  rm -f "${tmpfile}"
-
   if [ ${rc} -ne 0 ]; then
-    # Extract the error block from x2a-convertor output.
-    # The convertor prints: \n\nError: <message>\n (potentially multi-line, always last thing before exit)
-    # Find the last "Error: " line number, then grab everything from there to the end.
-    local error_block=""
-    local last_error_line
-    last_error_line=$(echo "${X2A_OUTPUT}" | grep -n "^Error: " | tail -1 | cut -d: -f1)
-    if [ -n "${last_error_line}" ]; then
-      error_block=$(echo "${X2A_OUTPUT}" | tail -n +"${last_error_line}")
+    if [ -f "${X2A_ERROR_FILE}" ]; then
+      ERROR_MESSAGE=$(cat "${X2A_ERROR_FILE}")
+    else
+      ERROR_MESSAGE="Unexpected error during ${PHASE} phase. See the job log for details."
     fi
-    ERROR_MESSAGE="${error_block:-Unexpected error during ${PHASE} phase. See the job log for details.}"
     exit ${rc}
   fi
 
@@ -452,13 +443,21 @@ case "${PHASE}" in
     echo "=== Step 2: Publishing to AAP ==="
     echo "Command: uv run app.py publish-aap --target-repo ${TARGET_REPO_URL} --target-branch ${TARGET_REPO_BRANCH} --project-id ${PROJECT_DIR}"
     cd /app
-    run_x2a uv run app.py publish-aap \
+    rm -f "${X2A_ERROR_FILE}"
+    PUBLISH_OUTPUT=$(uv run app.py publish-aap \
       --target-repo "${TARGET_REPO_URL}" \
       --target-branch "${TARGET_REPO_BRANCH}" \
-      --project-id "${PROJECT_DIR}"
+      --project-id "${PROJECT_DIR}" 2>&1 | tee /dev/stderr) || {
+      if [ -f "${X2A_ERROR_FILE}" ]; then
+        ERROR_MESSAGE=$(cat "${X2A_ERROR_FILE}")
+      else
+        ERROR_MESSAGE="Unexpected error during publish phase (publish-aap). See the job log for details."
+      fi
+      exit 1
+    }
 
-    # Parse AAP project ID from output (captured by run_x2a in X2A_OUTPUT)
-    AAP_PROJECT_ID=$(echo "${X2A_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
+    # Parse AAP project ID from output
+    AAP_PROJECT_ID=$(echo "${PUBLISH_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
     if [ -n "${AAP_PROJECT_ID}" ]; then
       ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects/${AAP_PROJECT_ID}/details")
     else
