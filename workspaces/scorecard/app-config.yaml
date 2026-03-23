@@ -1,7 +1,21 @@
 app:
   title: Scaffolded Backstage App
   baseUrl: http://localhost:3000
+  packages: all
+  extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'fr']
+          defaultLanguage: 'en'
 
+    # Scorecard tab: entity shows tab if it matches any filter below.
+    - entity-content:catalog/entity-content-scorecard:
+        config:
+          allowedFilters:
+            - kind: component # e.g. Component with spec.type: website
+              type: website
+            - kind: api # e.g. any API entity
+            - type: service # e.g. Component or System with spec.type: service
 organization:
   name: My Company
 
