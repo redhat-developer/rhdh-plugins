@@ -17,6 +17,7 @@
 
 /workspaces/adoption-insights                       @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @eswaraiahsapram
 /workspaces/ai-integrations                         @redhat-developer/rhdh-ui @redhat-developer/rhdh-ai @rohitkrai03 @karthikjeeyar @lucifergene   @johnmcollier @gabemontero
+/workspaces/augment                                 @pkliczewski @rrbanda
 /workspaces/app-defaults                            @redhat-developer/rhdh-ui @rohitkrai03 @christoph-jerolimov
 /workspaces/bulk-import                             @redhat-developer/rhdh-plugins @rm3l   @redhat-developer/rhdh-ui @debsmita1 @its-mitesh-kumar
 /workspaces/extensions                              @redhat-developer/rhdh-ui @christoph-jerolimov @karthikjeeyar
@@ -34,6 +35,5 @@
 /workspaces/theme                                   @redhat-developer/rhdh-ui @ciiay   @logonoff
 /workspaces/translations                            @redhat-developer/rhdh-ui @ciiay @debsmita1 @karthikjeeyar
 /workspaces/konflux                                 @rrosatti @sahil143 @testcara @rakshett
-/workspaces/augment                                 @pkliczewski @rrbanda 
 /workspaces/x2a                                     @mareklibra @elai-shalev @eloycoto
 /workspaces/dcm                                     @asmasarw @jkilzi 
