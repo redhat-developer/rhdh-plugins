@@ -26,7 +26,7 @@ jest.mock('@backstage/plugin-scaffolder-react', () => ({
 }));
 
 jest.mock('../hooks/useScmHostMap', () => ({
-  useScmHostMap: () => new Map<string, string>(),
+  useScmHostMap: () => new Map(),
 }));
 
 jest.mock('../repoAuth', () => ({

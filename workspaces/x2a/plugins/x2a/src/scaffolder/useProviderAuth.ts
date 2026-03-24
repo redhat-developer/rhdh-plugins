@@ -46,6 +46,21 @@ interface UseProviderAuthParams {
   setSecrets: (secrets: Record<string, string>) => void;
 }
 
+/**
+ * Manages the full lifecycle of SCM provider authentication for a CSV import.
+ *
+ * Three effects divide the work:
+ *  1. **Reset** - clears all auth state when csvContent changes.
+ *  2. **Auto-auth** - fires one OAuth dialog per distinct provider.
+ *     All providers authenticate concurrently via Promise.all.
+ *     If any fail the user can retry them individually.
+ *  3. **Completion** - once every provider row reaches "authenticated",
+ *     stores tokens as scaffolder secrets and signals the parent form.
+ *
+ * Callbacks/props that change on every render (onChange, authenticate,
+ * secrets) are kept in refs so the effects' dependency arrays stay
+ * minimal and don't cause unwanted re-runs or cancellations.
+ */
 export function useProviderAuth({
   csvContent,
   hostProviderMap,
@@ -62,6 +77,8 @@ export function useProviderAuth({
   );
   const [isDone, setDone] = useState(false);
 
+  // Refs for values that may change every render - used inside effects
+  // and callbacks without adding them to dependency arrays.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const authenticateRef = useRef(authenticate);
@@ -76,7 +93,7 @@ export function useProviderAuth({
   // auto-auth effect and cancelling other in-flight provider auths.
   const initialAuthFailedRef = useRef(false);
 
-  // Bumped on every CSV change and on unmount so stale async results
+  // Bumped on every CSV change so stale async results
   // (from auto-auth or retry) are silently discarded.
   const authGenerationRef = useRef(0);
 
@@ -99,6 +116,8 @@ export function useProviderAuth({
         const allSourceProviders: ScmProvider[] = projectsToCreate.map(
           project => resolveScmProvider(project.sourceRepoUrl, hostProviderMap),
         );
+        // Deduplicate: targets get read-write access, sources that also
+        // appear as targets are excluded (the read-write token covers both).
         const targets = allTargetProviders.filter(
           (p, i, arr) => arr.findIndex(q => q.name === p.name) === i,
         );
@@ -121,6 +140,7 @@ export function useProviderAuth({
       }
     }, [csvContent, hostProviderMap]);
 
+  // Build the provider rows for the table.
   const providerRows: ProviderRow[] = useMemo(() => {
     const rows: ProviderRow[] = [];
     for (const p of distinctTargetProviders) {
@@ -151,7 +171,11 @@ export function useProviderAuth({
     providerErrors,
   ]);
 
-  // Reset all auth state when CSV content changes.
+  // Effect: Reset
+  // Clears all auth state when CSV content changes.  prevCsvRef lets us
+  // distinguish a real CSV change from a no-op re-render with the same
+  // value. The generation bump invalidates any in-flight retryProvider
+  // calls that were started for the previous CSV.
   useEffect(() => {
     if (csvContent !== prevCsvRef.current) {
       prevCsvRef.current = csvContent;
@@ -165,7 +189,10 @@ export function useProviderAuth({
     }
   }, [csvContent]);
 
-  // Auto-authenticate all providers on first render or CSV change.
+  // Effect: Auto-auth
+  // Fires one OAuth dialog per distinct provider, all concurrently.
+  // If the effect re-runs the cleanup sets
+  // `cancelled = true` so stale promises are discarded.
   useEffect(() => {
     if (!csvContent || initialAuthFailedRef.current || isDone || parseError) {
       return undefined;
@@ -179,6 +206,11 @@ export function useProviderAuth({
       return undefined;
     }
 
+    // Guard flag set by the cleanup function below. React calls the
+    // cleanup when this effect's dependencies change (e.g. csvContent)
+    // or when the component unmounts. Any in-flight authenticate()
+    // promises that settle after that point check this flag and skip
+    // their state updates so we never write stale tokens/statuses.
     let cancelled = false;
 
     const doAuthAsync = async () => {
@@ -210,6 +242,9 @@ export function useProviderAuth({
             ...prev,
             [provider.name]: e instanceof Error ? e.message : 'Unknown error',
           }));
+          // Mark via ref (not state) so we stop auto-auth on future
+          // renders without re-triggering this effect's cleanup and
+          // cancelling other providers still authenticating.
           initialAuthFailedRef.current = true;
         }
       };
@@ -221,6 +256,9 @@ export function useProviderAuth({
 
       if (cancelled) return;
 
+      // If some providers failed, signal incomplete auth to the parent
+      // so the form validation blocks progression. The completion effect
+      // will fire onChange('authenticated') once every row reaches 'authenticated'
       const tokenCount = Object.keys(providerTokensRef.current).length;
       if (tokenCount !== allDistinctProviders.length) {
         onChangeRef.current(undefined);
@@ -237,7 +275,9 @@ export function useProviderAuth({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [csvContent, isDone, parseError]);
 
-  // Complete: all providers authenticated → set secrets and notify parent.
+  // Effect: Completion
+  // Kept separate from auto-auth so that manual retries (retryProvider)
+  // also trigger completion without duplicating the secret-storing logic.
   useEffect(() => {
     if (isDone || providerRows.length === 0) return;
     if (!providerRows.every(r => r.status === 'authenticated')) return;
@@ -250,6 +290,11 @@ export function useProviderAuth({
     });
   }, [providerRows, isDone, setSecrets]);
 
+  // Retry a single provider after a failure. The auto-auth effect is
+  // not re-run but directly updates statuses/tokens and fires
+  // the completion-effect. A captured generation counter guards
+  // against staleness: if the input changes while a retry is in-flight,
+  // the generation will have been bumped and the stale result is silently discarded.
   const retryProvider = useCallback(
     async (provider: ScmProvider, readOnly: boolean) => {
       const generation = authGenerationRef.current;
