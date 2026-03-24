@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Container, HeaderPage, TabPanel, Tabs } from '@backstage/ui';
+import { Container, Header, TabPanel, Tabs } from '@backstage/ui';
 
 import { useLocation } from 'react-router';
 
@@ -29,24 +29,24 @@ export const BUITestPage = () => {
 
   return (
     <>
-      <HeaderPage
+      <Header
         title="Backstage UI Tests"
         customActions={<UserSettingsThemeToggle />}
         tabs={[
           {
             id: 'form-components',
             label: 'Form Components',
-            href: '.',
+            href: '/bui-test',
           },
           {
             id: 'table-example',
             label: 'Table Example',
-            href: 'table-example',
+            href: '/bui-test/table-example',
           },
           {
             id: 'card-example',
             label: 'Card Example',
-            href: 'card-example',
+            href: '/bui-test/card-example',
           },
         ]}
       />
