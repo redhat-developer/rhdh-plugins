@@ -71,7 +71,7 @@ export const parseFileContent = async (
   logger: LoggerService,
   fileType: string,
   file?: Express.Multer.File | undefined,
-  urlParam?: string | undefined,
+  urlParam?: string,
 ) => {
   if (fileType === 'url') {
     if (!urlParam) {
