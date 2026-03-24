@@ -64,4 +64,7 @@ export const HTML_BLOCK_TAGS = new Set([
   'header',
   'footer',
 ]);
+
 export const HTML_IGNORED_TAGS = new Set(['script', 'style']);
+
+export const POLL_INTERVAL_MS = 1000; // 1 second

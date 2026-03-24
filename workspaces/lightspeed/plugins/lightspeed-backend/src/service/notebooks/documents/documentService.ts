@@ -25,6 +25,7 @@ import {
   DEFAULT_CHUNKING_STRATEGY_TYPE,
   DEFAULT_FILE_PROCESSING_TIMEOUT_MS,
   DEFAULT_MAX_CHUNK_SIZE_TOKENS,
+  POLL_INTERVAL_MS,
 } from '../../constant';
 import { NotebookSession, SessionDocument } from '../types/notebooksTypes';
 import { buildVectorStoreMetadata, extractSessionFromMetadata } from '../utils';
@@ -187,7 +188,6 @@ export class DocumentService {
     fileId: string,
   ): Promise<void> {
     const startTime = Date.now();
-    const pollIntervalMs = 1000;
 
     while (Date.now() - startTime < this.fileProcessingTimeoutMs) {
       const file = await this.client.vectorStores.files.retrieve(
@@ -216,7 +216,7 @@ export class DocumentService {
       console.log('File still processing, waiting...', file.status);
       // Still in_progress, wait and retry
       this.logger.debug(`File ${fileId} still processing, waiting...`);
-      await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+      await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
     }
 
     throw new Error(
