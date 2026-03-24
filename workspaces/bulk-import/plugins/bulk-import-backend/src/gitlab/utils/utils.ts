@@ -264,6 +264,6 @@ export async function listAllRepositoriesForAuthenticatedUser(
     deps.logger.error(
       `Failed to list all repositories for authenticated user: ${error}`,
     );
-    return [];
+    throw error;
   }
 }
