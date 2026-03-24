@@ -23,6 +23,7 @@ import { useTheme } from '@mui/material/styles';
 import { getLastUpdatedLabel } from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { EntityMetadataMap } from '../../../components/types';
+import { useLanguage } from '../../../hooks/useLanguage';
 
 import { MetricStatusCell } from './cells/MetricStatusCell';
 import { OwnerCell } from './cells/OwnerCell';
@@ -37,6 +38,7 @@ export const EntitiesRow = ({
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const locale = useLanguage();
 
   return (
     <TableRow
@@ -71,7 +73,9 @@ export const EntitiesRow = ({
       <TableCell width="12%">{entity.entityKind}</TableCell>
 
       <TableCell width="20%">
-        {entity.timestamp ? getLastUpdatedLabel(entity.timestamp) : '--'}
+        {entity.timestamp
+          ? getLastUpdatedLabel(entity.timestamp, locale)
+          : '--'}
       </TableCell>
     </TableRow>
   );

@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
+import { subMinutes, subHours, subDays } from 'date-fns';
+
 export const mockAggregatedScorecardEntitiesData = (
   metricId: string,
   page: number,
   pageSize: number,
 ) => {
+  const now = new Date();
+
   return {
     metricId,
     metricMetadata: {
@@ -27,31 +31,106 @@ export const mockAggregatedScorecardEntitiesData = (
       type: 'number',
     },
     entities: [
+      // 1 minute ago
       {
-        entityRef: 'component:default/example-service',
-        entityName: 'example-service',
+        entityRef: 'component:default/service-one-minute',
+        entityName: 'service-one-minute',
+        entityNamespace: 'default',
+        entityKind: 'Component',
+        owner: 'group:default/platform',
+        metricValue: 5,
+        timestamp: now.toISOString(),
+        status: 'success',
+      },
+
+      // 15 minutes ago
+      {
+        entityRef: 'component:default/service-fifteen-minutes',
+        entityName: 'service-fifteen-minutes',
         entityNamespace: 'default',
         entityKind: 'Component',
         owner: 'group:default/platform',
         metricValue: 10,
-        timestamp: '2025-01-01T10:00:00.000Z',
+        timestamp: subMinutes(now, 15).toISOString(),
         status: 'success',
       },
+
+      // 1 hour ago
       {
-        entityRef: 'component:default/example-service-2',
-        entityName: 'example-service-2',
+        entityRef: 'component:default/service-one-hour',
+        entityName: 'service-one-hour',
         entityNamespace: 'default',
         entityKind: 'Component',
         owner: 'group:default/platform',
-        metricValue: 20,
-        timestamp: '2025-01-01T10:00:00.000Z',
+        metricValue: 30,
+        timestamp: subHours(now, 1).toISOString(),
+        status: 'warning',
+      },
+
+      // 5 hours ago
+      {
+        entityRef: 'component:default/service-five-hours',
+        entityName: 'service-five-hours',
+        entityNamespace: 'default',
+        entityKind: 'Component',
+        owner: 'group:default/platform',
+        metricValue: 50,
+        timestamp: subHours(now, 5).toISOString(),
+        status: 'error',
+      },
+
+      // Yesterday
+      {
+        entityRef: 'component:default/service-yesterday',
+        entityName: 'service-yesterday',
+        entityNamespace: 'default',
+        entityKind: 'Component',
+        owner: 'group:default/platform',
+        metricValue: 30,
+        timestamp: subDays(now, 1).toISOString(),
+        status: 'error',
+      },
+
+      // 3 days ago
+      {
+        entityRef: 'component:default/service-three-days',
+        entityName: 'service-three-days',
+        entityNamespace: 'default',
+        entityKind: 'Component',
+        owner: 'group:default/platform',
+        metricValue: 40,
+        timestamp: subDays(now, 3).toISOString(),
+        status: 'success',
+      },
+
+      // 7+ days ago → formatted date
+      {
+        entityRef: 'component:default/service-old',
+        entityName: 'service-old',
+        entityNamespace: 'default',
+        entityKind: 'Component',
+        owner: 'group:default/platform',
+        metricValue: 50,
+        timestamp: subDays(now, 10).toISOString(),
+        status: 'error',
+      },
+
+      // Invalid timestamp
+      {
+        entityRef: 'component:default/service-invalid',
+        entityName: 'service-invalid',
+        entityNamespace: 'default',
+        entityKind: 'Component',
+        owner: 'group:default/platform',
+        metricValue: 0,
+        timestamp: 'invalid-date',
         status: 'error',
       },
     ],
     pagination: {
-      page: page,
-      pageSize: pageSize,
-      total: 2,
+      page,
+      pageSize,
+      total: 8,
       totalPages: 1,
       isCapped: false,
     },

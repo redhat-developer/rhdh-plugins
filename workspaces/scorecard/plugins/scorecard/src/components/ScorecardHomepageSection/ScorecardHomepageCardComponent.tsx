@@ -37,19 +37,23 @@ import {
 } from '../../utils';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ResponsivePieChart } from './ResponsivePieChart';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const InfoComponent = ({ timestamp }: { timestamp: string }) => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const locale = useLanguage();
 
-  const lastUpdatedLabel = getLastUpdatedLabel(timestamp);
+  const lastUpdatedLabel = getLastUpdatedLabel(timestamp, locale);
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', mr: 2 }}>
       <Tooltip
         title={
           <Box sx={{ textAlign: 'center' }}>
-            {t('metric.lastUpdated' as any, { timestamp: lastUpdatedLabel })}
+            {lastUpdatedLabel !== '--'
+              ? t('metric.lastUpdated' as any, { timestamp: lastUpdatedLabel })
+              : t('metric.lastUpdatedNotAvailable')}
           </Box>
         }
         placement="top"

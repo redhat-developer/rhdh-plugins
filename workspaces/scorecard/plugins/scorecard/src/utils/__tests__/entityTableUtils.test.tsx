@@ -18,6 +18,7 @@ import { getLastUpdatedLabel } from '../entityTableUtils';
 
 describe('entityTableUtils', () => {
   describe('getLastUpdatedLabel', () => {
+    // Mock time: 2026-03-10T10:00:00Z
     const mockToday = new Date('2026-03-10T10:00:00Z');
 
     beforeAll(() => {
@@ -29,37 +30,7 @@ describe('entityTableUtils', () => {
       jest.useRealTimers();
     });
 
-    it('should return "Today" if the date is today', () => {
-      const result = getLastUpdatedLabel('2026-03-10T08:00:00Z');
-      expect(result).toBe('Today');
-    });
-
-    it('should return "1 day ago" for yesterday', () => {
-      const result = getLastUpdatedLabel('2026-03-09T10:00:00Z');
-      expect(result).toBe('1 day ago');
-    });
-
-    it('should return "3 days ago" for dates within 6 days', () => {
-      const result = getLastUpdatedLabel('2026-03-07T10:00:00Z');
-      expect(result).toBe('3 days ago');
-    });
-
-    it('should return formatted date for dates older than 6 days', () => {
-      const result = getLastUpdatedLabel('2026-03-01T10:00:00Z');
-      expect(result).toBe('01 Mar 2026');
-    });
-
-    it('should handle Date object input', () => {
-      const result = getLastUpdatedLabel(new Date('2026-03-09T10:00:00Z'));
-      expect(result).toBe('1 day ago');
-    });
-
-    it('should handle timestamp input', () => {
-      const result = getLastUpdatedLabel(
-        new Date('2026-03-09T10:00:00Z').getTime(),
-      );
-      expect(result).toBe('1 day ago');
-    });
+    // --- Falsy / invalid input ---
 
     it('should return "--" for falsy timestamp', () => {
       expect(getLastUpdatedLabel('')).toBe('--');
@@ -67,25 +38,101 @@ describe('entityTableUtils', () => {
       expect(getLastUpdatedLabel(undefined as unknown as string)).toBe('--');
     });
 
-    it('should return "--" for invalid date', () => {
+    it('should return "--" for invalid date string', () => {
       expect(getLastUpdatedLabel('not-a-date')).toBe('--');
       expect(getLastUpdatedLabel('Invalid Date')).toBe('--');
       expect(getLastUpdatedLabel(NaN)).toBe('--');
     });
 
-    it('should return "2 days ago" for two days ago (plural)', () => {
+    // --- Less than 1 minute ---
+
+    it('should return "1 minute ago" for a date less than 1 minute ago', () => {
+      // 30 seconds ago → minutesDiff = 0, falls into < 1 branch
+      const result = getLastUpdatedLabel('2026-03-10T09:59:30Z');
+      expect(result).toBe('1 minute ago');
+    });
+
+    // --- Minutes (1–59) ---
+
+    it('should return "1 minute ago" for exactly 1 minute ago', () => {
+      const result = getLastUpdatedLabel('2026-03-10T09:59:00Z');
+      expect(result).toBe('1 minute ago');
+    });
+
+    it('should return "30 minutes ago" for 30 minutes ago', () => {
+      const result = getLastUpdatedLabel('2026-03-10T09:30:00Z');
+      expect(result).toBe('30 minutes ago');
+    });
+
+    it('should return "59 minutes ago" for 59 minutes ago (boundary before hours)', () => {
+      const result = getLastUpdatedLabel('2026-03-10T09:01:00Z');
+      expect(result).toBe('59 minutes ago');
+    });
+
+    // --- Hours (1–23) ---
+
+    it('should return "1 hour ago" for exactly 1 hour ago', () => {
+      const result = getLastUpdatedLabel('2026-03-10T09:00:00Z');
+      expect(result).toBe('1 hour ago');
+    });
+
+    it('should return "5 hours ago" for 5 hours ago', () => {
+      const result = getLastUpdatedLabel('2026-03-10T05:00:00Z');
+      expect(result).toBe('5 hours ago');
+    });
+
+    it('should return "23 hours ago" for 23 hours ago (boundary before yesterday)', () => {
+      // 23 hours before mock time → still within same-day hour range (hoursDiff < 24)
+      const result = getLastUpdatedLabel('2026-03-09T11:00:00Z');
+      expect(result).toBe('23 hours ago');
+    });
+
+    // --- Yesterday ---
+
+    it('should return "yesterday" for exactly 24 hours ago (yesterday)', () => {
+      const result = getLastUpdatedLabel('2026-03-09T10:00:00Z');
+      expect(result).toBe('yesterday');
+    });
+
+    it('should handle Date object input and return "yesterday"', () => {
+      const result = getLastUpdatedLabel(new Date('2026-03-09T10:00:00Z'));
+      expect(result).toBe('yesterday');
+    });
+
+    it('should handle numeric timestamp input and return "yesterday"', () => {
+      const result = getLastUpdatedLabel(
+        new Date('2026-03-09T10:00:00Z').getTime(),
+      );
+      expect(result).toBe('yesterday');
+    });
+
+    // --- N days ago (2–6) ---
+
+    it('should return "2 days ago" for 2 days ago', () => {
       const result = getLastUpdatedLabel('2026-03-08T10:00:00Z');
       expect(result).toBe('2 days ago');
     });
 
-    it('should return "6 days ago" for exactly 6 days ago (boundary)', () => {
+    it('should return "3 days ago" for 3 days ago', () => {
+      const result = getLastUpdatedLabel('2026-03-07T10:00:00Z');
+      expect(result).toBe('3 days ago');
+    });
+
+    it('should return "6 days ago" for exactly 6 days ago (upper boundary)', () => {
       const result = getLastUpdatedLabel('2026-03-04T10:00:00Z');
       expect(result).toBe('6 days ago');
     });
 
-    it('should return formatted date for 7 days ago (beyond 6-day threshold)', () => {
+    // --- Formatted calendar date (7+ days) ---
+
+    it('should return a formatted date for 7 days ago (crosses 6-day threshold)', () => {
       const result = getLastUpdatedLabel('2026-03-03T10:00:00Z');
-      expect(result).toBe('03 Mar 2026');
+      expect(result).toBe('Mar 03, 2026');
+    });
+
+    it('should return a formatted date for dates older than 7 days', () => {
+      const result = getLastUpdatedLabel('2026-03-01T10:00:00Z');
+      expect(result).toBe('Mar 01, 2026');
     });
   });
 });

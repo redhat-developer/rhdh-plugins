@@ -86,6 +86,7 @@ export const scorecardMessages = {
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
     },
     lastUpdated: 'Last updated: {{timestamp}}',
+    lastUpdatedNotAvailable: 'Last updated: Not available',
     someEntitiesNotReportingValues:
       'Some entities are not reporting values related to this metric.',
   },

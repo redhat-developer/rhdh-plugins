@@ -39,6 +39,7 @@ import {
   getEntityCount,
   getMissingPermissionSnapshot,
   getThresholdsSnapshot,
+  formatLastUpdatedDate,
 } from './utils/translationUtils';
 import { runAccessibilityTests } from './utils/accessibility';
 import { skipIfLocales } from './utils/localeSkip';
@@ -294,7 +295,10 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Verify threshold and last updated tooltips', async () => {
-      const lastUpdatedFormatted = '24 Jan 2026';
+      const lastUpdatedFormatted = formatLastUpdatedDate(
+        '2026-01-24T14:10:32.858Z',
+        currentLocale,
+      );
 
       await mockAggregatedScorecardResponse(
         page,

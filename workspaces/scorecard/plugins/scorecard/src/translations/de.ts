@@ -78,6 +78,7 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.jira.open_issues.description':
       'Hervorhebt die Anzahl der kritischen, blockierenden Probleme, die derzeit in Jira offen sind.',
     'metric.lastUpdated': 'Zuletzt aktualisiert: {{timestamp}}',
+    'metric.lastUpdatedNotAvailable': 'Zuletzt aktualisiert: Nicht verfügbar',
     'metric.someEntitiesNotReportingValues':
       'Einige Elemente melden keine Werte, die mit dieser Metrik in Verbindung stehen.',
 

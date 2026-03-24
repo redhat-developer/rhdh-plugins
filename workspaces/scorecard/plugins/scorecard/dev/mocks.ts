@@ -19,13 +19,18 @@ import type { Entity } from '@backstage/catalog-model';
 import type {
   MetricResult,
   AggregatedMetricResult,
+  Metric,
+  EntityMetricDetailResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+import type { GetAggregatedScorecardEntitiesOptions } from '../src/components/types';
 
 import {
   mockScorecardErrorData,
   mockScorecardSuccessData,
 } from '../__fixtures__/scorecardData';
 import { mockAggregatedScorecardSuccessData } from '../__fixtures__/aggregatedScorecardData';
+import { mockAggregatedScorecardEntitiesData } from '../__fixtures__/aggregatedScorecardEntitiesData';
 
 /** mock catalog entity so the Catalog shows one entity and the Scorecard tab can be opened. */
 export const mockComponentEntity: Entity = {
@@ -50,9 +55,36 @@ export class MockScorecardApi {
   async getScorecards(_entity: Entity): Promise<MetricResult[]> {
     return [...mockScorecardSuccessData, ...mockScorecardErrorData];
   }
+
   async getAggregatedScorecard(
     _metricId: string,
   ): Promise<AggregatedMetricResult> {
     return mockAggregatedScorecardSuccessData;
+  }
+
+  async getMetrics(_options: {
+    metricIds: string[];
+  }): Promise<{ metrics: Metric[] }> {
+    const allMetrics = [
+      ...mockScorecardSuccessData,
+      ...mockScorecardErrorData,
+    ].map(m => ({
+      id: m.id,
+      title: m.metadata.title,
+      description: m.metadata.description,
+      type: m.metadata.type,
+      history: m.metadata.history,
+    }));
+    return { metrics: allMetrics };
+  }
+
+  async getAggregatedScorecardEntities(
+    options: GetAggregatedScorecardEntitiesOptions,
+  ): Promise<EntityMetricDetailResponse> {
+    return mockAggregatedScorecardEntitiesData(
+      options.metricId,
+      options.page ?? 1,
+      options.pageSize ?? 10,
+    ) as EntityMetricDetailResponse;
   }
 }

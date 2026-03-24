@@ -26,6 +26,10 @@ jest.mock('../../../../hooks/useTranslation', () => ({
   }),
 }));
 
+jest.mock('../../../../hooks/useLanguage', () => ({
+  useLanguage: () => 'en',
+}));
+
 jest.mock('../cells/MetricStatusCell', () => ({
   MetricStatusCell: ({ status }: { status: string }) => (
     <span data-testid="metric-status-cell">{status}</span>

@@ -103,6 +103,24 @@ export function getEntityCount(
   return evaluateMessage(key, count);
 }
 
+/**
+ * Mirrors the formatDate logic in entityTableUtils.ts so e2e tests produce
+ * the same locale-aware calendar string that the plugin renders in the browser.
+ */
+export function formatLastUpdatedDate(
+  timestamp: string,
+  locale: string,
+): string {
+  const date = new Date(timestamp);
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    timeZone,
+  }).format(date);
+}
+
 export function getLastUpdatedLabel(
   translations: ScorecardMessages,
   formattedTimestamp: string,

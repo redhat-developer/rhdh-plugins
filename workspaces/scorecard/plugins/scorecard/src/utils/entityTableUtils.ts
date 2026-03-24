@@ -14,26 +14,87 @@
  * limitations under the License.
  */
 
-import { isToday, differenceInCalendarDays, format, isValid } from 'date-fns';
+import {
+  differenceInCalendarDays,
+  isValid,
+  differenceInMinutes,
+  differenceInHours,
+  isYesterday,
+} from 'date-fns';
 
-export function getLastUpdatedLabel(timestamp: string | number | Date) {
+export const formatDate = (
+  date: Date,
+  options: Intl.DateTimeFormatOptions = {},
+  locale?: string,
+) => {
+  const currentLocale = locale || 'en';
+  const currentTimeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return new Intl.DateTimeFormat(currentLocale, {
+    timeZone: currentTimeZone,
+    ...options,
+  }).format(date);
+};
+
+export const formatRelativeTime = (
+  value: number,
+  unit: Intl.RelativeTimeFormatUnit,
+  locale?: string,
+) => {
+  const currentLocale = locale || 'en';
+
+  const rtf = new Intl.RelativeTimeFormat(currentLocale, {
+    numeric: 'auto',
+  });
+
+  return rtf.format(value, unit);
+};
+
+export function getLastUpdatedLabel(
+  timestamp: string | number | Date,
+  locale?: string,
+) {
   if (!timestamp) return '--';
 
   const date = new Date(timestamp);
-
   if (!isValid(date)) return '--';
 
-  const today = new Date();
+  const now = new Date();
 
-  if (isToday(date)) {
-    return 'Today';
+  const minutesDiff = differenceInMinutes(now, date);
+
+  // < 1 minute → 1 minute ago
+  if (minutesDiff < 1) {
+    return formatRelativeTime(-1, 'minute', locale);
   }
 
-  const diff = differenceInCalendarDays(today, date);
-
-  if (diff <= 6) {
-    return `${diff} day${diff > 1 ? 's' : ''} ago`;
+  // 1 - 59 minutes → N minutes ago
+  if (minutesDiff < 60) {
+    return formatRelativeTime(-minutesDiff, 'minute', locale);
   }
 
-  return format(date, 'dd MMM yyyy');
+  const hoursDiff = differenceInHours(now, date);
+
+  // 1 – 24 hours → N hours ago
+  if (hoursDiff < 24) {
+    return formatRelativeTime(-hoursDiff, 'hour', locale);
+  }
+
+  // Yesterday → yesterday
+  if (isYesterday(date)) {
+    return formatRelativeTime(-1, 'day', locale);
+  }
+
+  const daysDiff = differenceInCalendarDays(now, date);
+
+  // 2–6 days → N days ago
+  if (daysDiff <= 6) {
+    return formatRelativeTime(-daysDiff, 'day', locale);
+  }
+
+  // 7+ days → formatted date
+  return formatDate(
+    date,
+    { year: 'numeric', month: 'short', day: '2-digit' },
+    locale,
+  );
 }

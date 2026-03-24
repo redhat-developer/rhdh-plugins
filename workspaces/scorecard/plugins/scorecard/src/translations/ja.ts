@@ -80,6 +80,7 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.jira.open_issues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
     'metric.lastUpdated': '最終更新日: {{timestamp}}',
+    'metric.lastUpdatedNotAvailable': '最終更新日: 利用不可',
     'metric.someEntitiesNotReportingValues':
       'エンティティーがこの指標に関連する値を報告していません。',
 
