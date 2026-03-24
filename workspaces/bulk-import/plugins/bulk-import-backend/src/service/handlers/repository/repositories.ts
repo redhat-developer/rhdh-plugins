@@ -65,11 +65,7 @@ export async function findAllRepositories(
   );
 
   const { repositories: allRepositories, errors } =
-    await deps.gitApiService.getRepositoriesFromIntegrations(
-      search,
-      pageNumber,
-      pageSize,
-    );
+    await deps.gitApiService.getRepositoriesFromIntegrations(search, pageSize);
 
   const notImportedYetRepositories = allRepositories.filter(repo => {
     const html_urlWithSlash = repo.html_url.concat('/');

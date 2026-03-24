@@ -302,7 +302,6 @@ export class GithubApiService {
    */
   async getRepositoriesFromIntegrations(
     search?: string,
-    pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
   ): Promise<GithubRepositoryResponse> {
     const repositories = new Map<string, GithubRepository>();

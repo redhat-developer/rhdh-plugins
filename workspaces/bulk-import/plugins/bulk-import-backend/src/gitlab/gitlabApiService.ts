@@ -264,7 +264,6 @@ export class GitlabApiService {
    */
   async getRepositoriesFromIntegrations(
     search?: string,
-    pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
   ): Promise<GitlabRepositoryResponse> {
     const repositories = new Map<string, GitlabRepository>();
@@ -292,8 +291,6 @@ export class GitlabApiService {
             dataFetchErrors,
             {
               search,
-              pageNumber,
-              pageSize,
             },
           );
           this.logger.debug(
