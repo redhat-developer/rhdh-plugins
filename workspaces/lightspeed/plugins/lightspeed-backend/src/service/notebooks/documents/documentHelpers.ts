@@ -236,6 +236,21 @@ export const validateURLForSSRF = async (urlString: string): Promise<void> => {
 };
 
 /**
+ * Sanitize title to create a valid document ID
+ * Converts title to lowercase, replaces spaces/special chars with hyphens
+ */
+export const sanitizeTitle = (title: string): string => {
+  return (
+    title
+      .trim()
+      .toLocaleLowerCase('en-US')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+/g, '')
+      .replace(/-$/g, '') || 'untitled'
+  );
+};
+
+/**
  * Strip HTML tags and extract readable text from HTML content
  * @public
  */

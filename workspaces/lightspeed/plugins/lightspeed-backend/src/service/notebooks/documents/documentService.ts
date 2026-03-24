@@ -27,11 +27,8 @@ import {
   DEFAULT_MAX_CHUNK_SIZE_TOKENS,
 } from '../../constant';
 import { NotebookSession, SessionDocument } from '../types/notebooksTypes';
-import {
-  buildVectorStoreMetadata,
-  extractSessionFromMetadata,
-  sanitizeTitle,
-} from '../utils';
+import { buildVectorStoreMetadata, extractSessionFromMetadata } from '../utils';
+import { sanitizeTitle } from './documentHelpers';
 
 interface UpsertResult {
   document_id: string;
@@ -216,7 +213,7 @@ export class DocumentService {
         );
         throw new Error('File processing was cancelled');
       }
-
+      console.log('File still processing, waiting...', file.status);
       // Still in_progress, wait and retry
       this.logger.debug(`File ${fileId} still processing, waiting...`);
       await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
@@ -236,62 +233,117 @@ export class DocumentService {
     title: string,
     content: string,
     metadata?: Record<string, any>,
+    newTitle?: string,
   ): Promise<UpsertResult> {
     const documentId = sanitizeTitle(title);
+    const newDocumentId: string = sanitizeTitle(newTitle || title);
 
     // Find existing file by document_id
     const existingFile = await this.findFileByDocumentId(sessionId, documentId);
 
-    let replaced = false;
-    let oldDocumentId: string | undefined;
-    let createdAt: string = new Date().toISOString();
+    // If document doesn't exist, create it
+    if (!existingFile) {
+      this.logger.info(`Creating new document: "${newTitle || title}"`);
 
-    // If document exists
-    if (existingFile) {
-      oldDocumentId = existingFile.attributes?.document_id as string;
-      createdAt = (existingFile.attributes?.created_at as string) || createdAt;
+      const file = await this.client.files.create({
+        file: await toFile(
+          Buffer.from(content, 'utf-8'),
+          `${newDocumentId}.txt`,
+          {
+            type: 'text/plain',
+          },
+        ),
+        purpose: 'assistants',
+      });
 
-      // Check for title conflicts when renaming
-      if (documentId !== sanitizeTitle(title)) {
-        const conflictingFile = await this.findFileByDocumentId(
-          sessionId,
-          documentId,
-        );
+      this.logger.info(
+        `File uploaded: ${file.id} for document ${newDocumentId}`,
+      );
 
-        if (conflictingFile) {
-          throw new ConflictError(
-            `A document with the title "${title}" already exists in this session`,
-          );
-        }
-      }
-      await this.deleteDocument(sessionId, documentId);
-      replaced = true;
-      this.logger.info(`Updating document: "${oldDocumentId}" -> "${title}"`);
-    } else {
-      this.logger.info(`Creating new document: "${title}"`);
+      const vectorStoreFile = await this.client.vectorStores.files.create(
+        sessionId,
+        {
+          file_id: file.id,
+          attributes: {
+            document_id: newDocumentId,
+            title: newTitle || title,
+            source_type: metadata?.fileType || 'text',
+            created_at: new Date().toISOString(),
+            ...(metadata || {}),
+          },
+          chunking_strategy: this.chunkingStrategy,
+        },
+      );
+
+      // Start background process to update session metadata
+      this.updateSessionMetadataWhenComplete(
+        sessionId,
+        file.id,
+        newDocumentId,
+        false,
+        undefined,
+      ).catch(error => {
+        this.logger.error(`Background metadata update failed: ${error}`);
+      });
+
+      this.logger.info(
+        `Document "${newTitle || title}" (ID: ${newDocumentId}) upload started with file ${file.id}`,
+      );
+
+      return {
+        document_id: newDocumentId,
+        file_id: file.id,
+        replaced: false,
+        status: vectorStoreFile.status,
+      };
     }
 
-    // Create new file
+    // Document exists - determine if we can just update or need to recreate
+    const createdAt =
+      (existingFile.attributes?.created_at as string) ||
+      new Date().toISOString();
+
+    // Check for title conflicts when renaming
+    if (documentId !== newDocumentId) {
+      const conflictingFile = await this.findFileByDocumentId(
+        sessionId,
+        newDocumentId,
+      );
+
+      if (conflictingFile) {
+        throw new ConflictError(
+          `A document with the title "${newTitle || title}" already exists in this session`,
+        );
+      }
+    }
+
+    // Delete old file and create new one with updated content
+    await this.deleteDocument(sessionId, documentId);
+    this.logger.info(`Updating document: "${title}" -> "${newTitle || title}"`);
+
     const file = await this.client.files.create({
-      file: await toFile(Buffer.from(content, 'utf-8'), `${documentId}.txt`, {
-        type: 'text/plain',
-      }),
+      file: await toFile(
+        Buffer.from(content, 'utf-8'),
+        `${newDocumentId}.txt`,
+        {
+          type: 'text/plain',
+        },
+      ),
       purpose: 'assistants',
     });
 
-    this.logger.info(`File uploaded: ${file.id} for document ${documentId}`);
+    this.logger.info(`File uploaded: ${file.id} for document ${newDocumentId}`);
 
-    // Attach file to vector store with metadata
     const vectorStoreFile = await this.client.vectorStores.files.create(
       sessionId,
       {
         file_id: file.id,
         attributes: {
-          document_id: documentId,
-          title: title,
+          document_id: newDocumentId,
+          title: newTitle || title,
           source_type: metadata?.fileType || 'text',
           created_at: createdAt,
-          ...(replaced ? { updated_at: new Date().toISOString() } : {}),
+          updated_at: new Date().toISOString(),
           ...(metadata || {}),
         },
         chunking_strategy: this.chunkingStrategy,
@@ -302,21 +354,21 @@ export class DocumentService {
     this.updateSessionMetadataWhenComplete(
       sessionId,
       file.id,
+      newDocumentId,
+      true,
       documentId,
-      replaced,
-      oldDocumentId,
     ).catch(error => {
       this.logger.error(`Background metadata update failed: ${error}`);
     });
 
     this.logger.info(
-      `Document "${title}" (ID: ${documentId}) upload started with file ${file.id}`,
+      `Document "${newTitle || title}" (ID: ${newDocumentId}) upload started with file ${file.id}`,
     );
 
     return {
-      document_id: documentId,
+      document_id: newDocumentId,
       file_id: file.id,
-      replaced,
+      replaced: true,
       status: vectorStoreFile.status,
     };
   }

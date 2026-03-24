@@ -30,7 +30,11 @@ import { Readable } from 'stream';
 
 import { DEFAULT_LIGHTSPEED_SERVICE_PORT, upload } from '../constant';
 import { userPermissionAuthorization } from '../permission';
-import { isValidFileType, parseFileContent } from './documents/documentHelpers';
+import {
+  isValidFileType,
+  parseFileContent,
+  sanitizeTitle,
+} from './documents/documentHelpers';
 import { DocumentService } from './documents/documentService';
 import { SessionService } from './sessions/sessionService';
 import {
@@ -278,7 +282,7 @@ export async function createNotebooksRouter(
     upload.single('file') as any,
     withAuth(async (req, res, _userId) => {
       const sessionId = req.params.sessionId as string;
-      const { fileType, title } = req.body;
+      const { fileType, title, newTitle } = req.body;
 
       if (!title) {
         sendValidationError(res, 'title is required');
@@ -300,20 +304,31 @@ export async function createNotebooksRouter(
         req.body.file,
       );
 
-      const result = await documentService.upsertDocument(
-        sessionId,
-        title,
-        parsedDocument.content,
-        parsedDocument.metadata,
-      );
+      // Generate the final document_id (uses newTitle if provided, otherwise title)
+      const finalDocumentId = sanitizeTitle(newTitle || title);
 
-      // Return 202 with file_id for async processing
+      // Return 202 immediately
       res.status(202).json({
         status: 'processing',
-        document_id: result.document_id,
+        document_id: finalDocumentId,
         session_id: sessionId,
         message: 'Document upload started',
       });
+
+      // upload document to vector store in background
+      documentService
+        .upsertDocument(
+          sessionId,
+          title,
+          parsedDocument.content,
+          parsedDocument.metadata,
+          newTitle,
+        )
+        .catch((err: any) => {
+          logger.error(
+            `Background document upload failed for ${finalDocumentId}: ${err}`,
+          );
+        });
     }),
   );
 
