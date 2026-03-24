@@ -45,7 +45,7 @@ export const isValidURL = (urlString: string): boolean => {
  * Validate file size (max 20MB by default)
  */
 export const isValidFileSize = (fileSize: number): boolean => {
-  const maxSize = DEFAULT_MAX_FILE_SIZE_MB * 1024 * 1024;
+  const maxSize = DEFAULT_MAX_FILE_SIZE_MB;
   return fileSize <= maxSize;
 };
 
@@ -85,7 +85,7 @@ export const parseFileContent = async (
   }
   if (!isValidFileSize(file.size)) {
     throw new InputError(
-      `File size exceeds ${DEFAULT_MAX_FILE_SIZE_MB}MB limit`,
+      `File size exceeds ${DEFAULT_MAX_FILE_SIZE_MB / 1024 / 1024}MB limit`,
     );
   }
   logger.info(`Parsing file ${file.originalname} for fileType ${fileType}`);

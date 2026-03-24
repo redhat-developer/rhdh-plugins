@@ -86,12 +86,12 @@ describe('documentHelpers', () => {
     });
 
     it('should return true for files exactly the preset limit', () => {
-      expect(isValidFileSize(DEFAULT_MAX_FILE_SIZE_MB * MB)).toBe(true);
+      expect(isValidFileSize(DEFAULT_MAX_FILE_SIZE_MB)).toBe(true);
     });
 
     it('should return false for files over the preset limit', () => {
-      expect(isValidFileSize(DEFAULT_MAX_FILE_SIZE_MB * MB + 1)).toBe(false);
-      expect(isValidFileSize(DEFAULT_MAX_FILE_SIZE_MB * MB * 1.5)).toBe(false);
+      expect(isValidFileSize(DEFAULT_MAX_FILE_SIZE_MB + 1)).toBe(false);
+      expect(isValidFileSize(DEFAULT_MAX_FILE_SIZE_MB * 1.5)).toBe(false);
     });
   });
 
@@ -188,7 +188,7 @@ describe('documentHelpers', () => {
       await expect(
         parseFileContent(logger, 'txt', largeFile, undefined),
       ).rejects.toThrow(
-        `File size exceeds ${DEFAULT_MAX_FILE_SIZE_MB}MB limit`,
+        `File size exceeds ${DEFAULT_MAX_FILE_SIZE_MB / 1024 / 1024}MB limit`,
       );
     });
 

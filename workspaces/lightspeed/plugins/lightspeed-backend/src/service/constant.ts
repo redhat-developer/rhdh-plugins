@@ -24,12 +24,12 @@ export const DEFAULT_MAX_CHUNK_SIZE_TOKENS = 512; // 512 tokens
 export const DEFAULT_CHUNK_OVERLAP_TOKENS = 50; // 50 tokens
 export const DEFAULT_LLAMA_STACK_PORT = 8321; // Llama Stack port
 export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
-export const DEFAULT_MAX_FILE_SIZE_MB = 20; // 20MB
+export const DEFAULT_MAX_FILE_SIZE_MB = 20 * 1024 * 1024; // 20MB
 
 export const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: DEFAULT_MAX_FILE_SIZE_MB * 1024 * 1024,
+    fileSize: DEFAULT_MAX_FILE_SIZE_MB,
   },
 });
 
