@@ -16,7 +16,6 @@
 
 import {
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { rootRouteRef } from '../routes';
@@ -26,16 +25,10 @@ import { BCCTestPageComponent } from '..';
 const bccTestPage = PageBlueprint.make({
   params: {
     path: '/bcc-test',
+    title: 'BCC Tests',
+    icon: <ExtensionIcon />,
     routeRef: rootRouteRef,
     loader: async () => <BCCTestPageComponent />,
-  },
-});
-
-const bccTestNavItem = NavItemBlueprint.make({
-  params: {
-    title: 'BCC Tests',
-    routeRef: rootRouteRef,
-    icon: ExtensionIcon,
   },
 });
 
@@ -45,6 +38,6 @@ const bccTestNavItem = NavItemBlueprint.make({
 export default createFrontendPlugin({
   pluginId: 'bcc-test',
   info: { packageJson: () => import('../../package.json') },
-  extensions: [bccTestPage, bccTestNavItem],
+  extensions: [bccTestPage],
   routes: { root: rootRouteRef },
 });

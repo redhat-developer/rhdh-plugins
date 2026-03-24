@@ -16,7 +16,6 @@
 
 import {
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { rootRouteRef } from '../routes';
@@ -26,22 +25,16 @@ import { MUI4TestPageComponent } from '..';
 const mui4TestPage = PageBlueprint.make({
   params: {
     path: '/mui4-test',
+    title: 'MUI v4 Tests',
+    icon: <ExtensionIcon />,
     routeRef: rootRouteRef,
     loader: async () => <MUI4TestPageComponent />,
-  },
-});
-
-const mui4TestNavItem = NavItemBlueprint.make({
-  params: {
-    title: 'MUI v4 Tests',
-    routeRef: rootRouteRef,
-    icon: ExtensionIcon,
   },
 });
 
 export default createFrontendPlugin({
   pluginId: 'mui4-test',
   info: { packageJson: () => import('../../package.json') },
-  extensions: [mui4TestPage, mui4TestNavItem],
+  extensions: [mui4TestPage],
   routes: { root: rootRouteRef },
 });

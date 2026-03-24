@@ -16,7 +16,6 @@
 
 import {
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { rootRouteRef } from '../routes';
@@ -26,16 +25,10 @@ import { MUI5TestPageComponent } from '..';
 const mui5TestPage = PageBlueprint.make({
   params: {
     path: '/mui5-test',
+    title: 'MUI v5 Tests',
+    icon: <ExtensionIcon />,
     routeRef: rootRouteRef,
     loader: async () => <MUI5TestPageComponent />,
-  },
-});
-
-const mui5TestNavItem = NavItemBlueprint.make({
-  params: {
-    title: 'MUI v5 Tests',
-    routeRef: rootRouteRef,
-    icon: ExtensionIcon,
   },
 });
 
@@ -45,6 +38,6 @@ const mui5TestNavItem = NavItemBlueprint.make({
 export default createFrontendPlugin({
   pluginId: 'mui5-test',
   info: { packageJson: () => import('../../package.json') },
-  extensions: [mui5TestPage, mui5TestNavItem],
+  extensions: [mui5TestPage],
   routes: { root: rootRouteRef },
 });

@@ -16,7 +16,6 @@
 
 import {
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { rootRouteRef } from '../routes';
@@ -26,16 +25,10 @@ import { BUITestPageComponent } from '..';
 const buiTestPage = PageBlueprint.make({
   params: {
     path: '/bui-test',
+    title: 'BUI Tests',
+    icon: <ExtensionIcon />,
     routeRef: rootRouteRef,
     loader: async () => <BUITestPageComponent />,
-  },
-});
-
-const buiTestNavItem = NavItemBlueprint.make({
-  params: {
-    title: 'BUI Tests',
-    routeRef: rootRouteRef,
-    icon: ExtensionIcon,
   },
 });
 
@@ -45,6 +38,6 @@ const buiTestNavItem = NavItemBlueprint.make({
 export default createFrontendPlugin({
   pluginId: 'bui-test',
   info: { packageJson: () => import('../../package.json') },
-  extensions: [buiTestPage, buiTestNavItem],
+  extensions: [buiTestPage],
   routes: { root: rootRouteRef },
 });
