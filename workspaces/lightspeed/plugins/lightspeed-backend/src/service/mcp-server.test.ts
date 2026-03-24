@@ -88,6 +88,29 @@ jest.mock('@backstage/backend-plugin-api', () => ({
   })),
 }));
 
+async function startBackendServer(
+  config?: Record<PropertyKey, unknown>,
+  authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
+) {
+  const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
+    lightspeedPlugin,
+    mockServices.rootLogger.factory(),
+    mockServices.rootConfig.factory({
+      data: { ...BASE_CONFIG, ...config },
+    }),
+    mockServices.httpAuth.factory({
+      defaultCredentials: mockCredentials.user(mockUserId),
+    }),
+    mockServices.permissions.mock({
+      authorize: async () => [
+        { result: authorizeResult ?? AuthorizeResult.ALLOW },
+      ],
+    }).factory,
+    mockServices.userInfo.factory(),
+  ];
+  return (await startTestBackend({ features })).server;
+}
+
 describe('MCP server management endpoints', () => {
   const server = setupServer(...handlers, ...lcsHandlers, ...mcpHandlers);
 
@@ -110,30 +133,6 @@ describe('MCP server management endpoints', () => {
     jest.clearAllMocks();
     server.resetHandlers();
   });
-
-  async function startBackendServer(
-    config?: Record<PropertyKey, unknown>,
-    authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
-  ) {
-    const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] =
-      [
-        lightspeedPlugin,
-        mockServices.rootLogger.factory(),
-        mockServices.rootConfig.factory({
-          data: { ...BASE_CONFIG, ...(config || {}) },
-        }),
-        mockServices.httpAuth.factory({
-          defaultCredentials: mockCredentials.user(mockUserId),
-        }),
-        mockServices.permissions.mock({
-          authorize: async () => [
-            { result: authorizeResult ?? AuthorizeResult.ALLOW },
-          ],
-        }).factory,
-        mockServices.userInfo.factory(),
-      ];
-    return (await startTestBackend({ features })).server;
-  }
 
   // ─── GET /mcp-servers ─────────────────────────────────────────────
 
@@ -277,6 +276,24 @@ describe('MCP server management endpoints', () => {
       expect(patchRes.status).toBe(404);
     });
 
+    it('resets status when token is cleared', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG);
+
+      // First set a valid token (triggers validation → connected)
+      await request(backendServer)
+        .patch('/api/lightspeed/mcp-servers/static-mcp')
+        .send({ token: MOCK_MCP_VALID_TOKEN });
+
+      // Clear the token
+      const clearRes = await request(backendServer)
+        .patch('/api/lightspeed/mcp-servers/static-mcp')
+        .send({ token: null });
+
+      expect(clearRes.status).toBe(200);
+      expect(clearRes.body.server.status).toBe('unknown');
+      expect(clearRes.body.server.toolCount).toBe(0);
+    });
+
     it('returns 400 when no fields provided', async () => {
       const backendServer = await startBackendServer(MCP_CONFIG);
       const patchRes = await request(backendServer)
@@ -303,8 +320,8 @@ describe('MCP server management endpoints', () => {
   // ─── POST /mcp-servers/validate (generic) ─────────────────────────
 
   describe('POST /mcp-servers/validate', () => {
-    it('validates valid credentials', async () => {
-      const backendServer = await startBackendServer();
+    it('validates valid credentials with LCS-known URL', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG);
       const response = await request(backendServer)
         .post('/api/lightspeed/mcp-servers/validate')
         .send({ url: MOCK_MCP_ADDR, token: MOCK_MCP_VALID_TOKEN });
@@ -315,8 +332,8 @@ describe('MCP server management endpoints', () => {
       expect(response.body.tools).toHaveLength(3);
     });
 
-    it('validates invalid credentials', async () => {
-      const backendServer = await startBackendServer();
+    it('validates invalid credentials with LCS-known URL', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG);
       const response = await request(backendServer)
         .post('/api/lightspeed/mcp-servers/validate')
         .send({ url: MOCK_MCP_ADDR, token: 'bad-token' });
@@ -333,6 +350,16 @@ describe('MCP server management endpoints', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('url and token are required');
+    });
+
+    it('rejects unknown URL (SSRF protection)', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG);
+      const response = await request(backendServer)
+        .post('/api/lightspeed/mcp-servers/validate')
+        .send({ url: 'http://internal-service:1234', token: 'some-token' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('URL not recognized');
     });
   });
 

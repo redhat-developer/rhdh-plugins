@@ -205,7 +205,8 @@ export class McpServerValidator {
         }
       }
     } catch (error) {
-      this.logger.warn(`Failed to parse SSE tools/list response: ${error}`);
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to parse SSE tools/list response: ${msg}`);
     }
     return undefined;
   }

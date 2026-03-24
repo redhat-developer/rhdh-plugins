@@ -49,28 +49,13 @@ export class McpUserSettingsStore {
       .first();
   }
 
-  /** Create or update user settings for a server. */
+  /** Create or update user settings for a server (atomic). */
   async upsert(
     serverName: string,
     userEntityRef: string,
     updates: { enabled?: boolean; token?: string | null },
   ): Promise<McpUserSettingsRow> {
-    const existing = await this.get(serverName, userEntityRef);
     const now = new Date().toISOString();
-
-    if (existing) {
-      const fields: Partial<McpUserSettingsRow> = { updated_at: now };
-      if (updates.enabled !== undefined) fields.enabled = updates.enabled;
-      if (updates.token !== undefined) {
-        fields.token = updates.token;
-        if (updates.token) fields.status = 'unknown';
-      }
-
-      await this.db(TABLE)
-        .where({ server_name: serverName, user_entity_ref: userEntityRef })
-        .update(fields);
-      return (await this.get(serverName, userEntityRef))!;
-    }
 
     const row: McpUserSettingsRow = {
       id: randomUUID(),
@@ -83,26 +68,41 @@ export class McpUserSettingsStore {
       created_at: now,
       updated_at: now,
     };
-    await this.db(TABLE).insert(row);
-    return row;
+
+    const mergeFields: Partial<McpUserSettingsRow> = { updated_at: now };
+    if (updates.enabled !== undefined) mergeFields.enabled = updates.enabled;
+    if (updates.token !== undefined) {
+      mergeFields.token = updates.token;
+      // Reset cached validation when token changes (new or cleared)
+      mergeFields.status = 'unknown';
+      mergeFields.tool_count = 0;
+    }
+
+    await this.db(TABLE)
+      .insert(row)
+      .onConflict(['server_name', 'user_entity_ref'])
+      .merge(mergeFields);
+
+    const result = await this.get(serverName, userEntityRef);
+    if (!result) {
+      throw new Error(
+        `Failed to upsert settings for ${serverName}/${userEntityRef}`,
+      );
+    }
+    return result;
   }
 
-  /** Update cached validation status for a user's server setting. */
+  /** Update cached validation status for a user's server setting (atomic). */
   async updateStatus(
     serverName: string,
     userEntityRef: string,
     status: McpServerStatus,
     toolCount: number,
   ): Promise<void> {
-    const existing = await this.get(serverName, userEntityRef);
     const now = new Date().toISOString();
 
-    if (existing) {
-      await this.db(TABLE)
-        .where({ server_name: serverName, user_entity_ref: userEntityRef })
-        .update({ status, tool_count: toolCount, updated_at: now });
-    } else {
-      await this.db(TABLE).insert({
+    await this.db(TABLE)
+      .insert({
         id: randomUUID(),
         server_name: serverName,
         user_entity_ref: userEntityRef,
@@ -112,7 +112,8 @@ export class McpUserSettingsStore {
         tool_count: toolCount,
         created_at: now,
         updated_at: now,
-      });
-    }
+      })
+      .onConflict(['server_name', 'user_entity_ref'])
+      .merge({ status, tool_count: toolCount, updated_at: now });
   }
 }

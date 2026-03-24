@@ -133,7 +133,9 @@ export async function createRouter(
 
   async function refreshLcsUrlCache(): Promise<void> {
     try {
-      const response = await fetch(`http://0.0.0.0:${port}/v1/mcp-servers`);
+      const response = await fetch(`http://0.0.0.0:${port}/v1/mcp-servers`, {
+        signal: AbortSignal.timeout(5000),
+      });
       if (!response.ok) {
         logger.warn(
           `Failed to fetch MCP server URLs from LCS: HTTP ${response.status}`,
@@ -148,7 +150,8 @@ export async function createRouter(
       }
       logger.info(`Cached ${lcsUrlCache.size} MCP server URL(s) from LCS`);
     } catch (error) {
-      logger.warn(`Failed to fetch MCP server URLs from LCS: ${error}`);
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.warn(`Failed to fetch MCP server URLs from LCS: ${msg}`);
     }
   }
 
@@ -189,7 +192,7 @@ export async function createRouter(
           name: server.name,
           url: resolveServerUrl(server.name),
           enabled: setting ? Boolean(setting.enabled) : true,
-          status: (setting?.status as McpServerStatus) ?? 'unknown',
+          status: setting?.status ?? 'unknown',
           toolCount: setting?.tool_count ?? 0,
           hasToken: !!(setting?.token || server.token),
         };
@@ -217,6 +220,20 @@ export async function createRouter(
         return;
       }
 
+      // SSRF protection: only allow URLs registered in LCS
+      let knownUrls = new Set(lcsUrlCache.values());
+      if (!knownUrls.has(url)) {
+        await refreshLcsUrlCache();
+        knownUrls = new Set(lcsUrlCache.values());
+      }
+      if (!knownUrls.has(url)) {
+        res.status(400).json({
+          error:
+            'URL not recognized — only MCP server URLs registered in LCS are allowed',
+        });
+        return;
+      }
+
       const result = await mcpValidator.validate(url, token);
       res.json(result);
     } catch (error) {
@@ -232,18 +249,21 @@ export async function createRouter(
   router.post('/mcp-servers/:name/validate', async (req, res) => {
     try {
       const credentials = await httpAuth.credentials(req);
-      await authorizer.authorizeUser(lightspeedMcpReadPermission, credentials);
+      await authorizer.authorizeUser(
+        lightspeedMcpManagePermission,
+        credentials,
+      );
       const user = await userInfo.getUserInfo(credentials);
 
       const { name } = req.params;
       const server = staticServers.find(s => s.name === name);
       if (!server) {
         res.status(404).json({
-          error: `MCP server '${name}' not found in configuration`,
+          error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under lightspeed.mcpServers in app-config`,
         });
         return;
       }
-      // Resolve URL: config override → LCS cache → fresh LCS fetch
+      // Resolve URL: LCS cache → fresh LCS fetch
       let serverUrl = resolveServerUrl(server.name);
       if (!serverUrl) {
         await refreshLcsUrlCache();
@@ -304,7 +324,7 @@ export async function createRouter(
       const server = staticServers.find(s => s.name === name);
       if (!server) {
         res.status(404).json({
-          error: `MCP server '${name}' not found in configuration`,
+          error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under lightspeed.mcpServers in app-config`,
         });
         return;
       }
@@ -323,7 +343,11 @@ export async function createRouter(
       });
 
       let validation: McpValidationResult | undefined;
-      const serverUrl = resolveServerUrl(server.name);
+      let serverUrl = resolveServerUrl(server.name);
+      if (token && !serverUrl) {
+        await refreshLcsUrlCache();
+        serverUrl = resolveServerUrl(server.name);
+      }
       if (token && serverUrl) {
         validation = await mcpValidator.validate(serverUrl, token);
         const newStatus: McpServerStatus = validation.valid
@@ -344,10 +368,10 @@ export async function createRouter(
           name: server.name,
           url: resolveServerUrl(server.name),
           enabled: Boolean(setting.enabled),
-          status: setting.status as McpServerStatus,
+          status: setting.status,
           toolCount: setting.tool_count,
           hasToken: !!(setting.token || server.token),
-        } as McpServerResponse,
+        },
       };
       if (validation) result.validation = validation;
       res.json(result);

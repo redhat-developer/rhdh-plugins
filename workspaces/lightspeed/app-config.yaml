@@ -35,9 +35,9 @@ backend:
   database:
     client: better-sqlite3
     connection: ':memory:'
-      # Use the directory property to store the database in a file for local development
-      # The database is used for the user preferences and MCP servers settings
-      # directory: './sqlite-data'
+    # To persist the database to a file for local development, replace the above with:
+    # connection:
+    #   directory: './sqlite-data'
     # OpenShift / RHDH production — uses the PostgreSQL instance managed by the
     # RHDH Helm chart or Operator.  These env vars are injected from the
     # PostgreSQL Secret into the Backstage container by the deployment config.
