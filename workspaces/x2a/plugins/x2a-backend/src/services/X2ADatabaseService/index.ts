@@ -23,6 +23,7 @@ import {
   BackstageCredentials,
   BackstageUserPrincipal,
 } from '@backstage/backend-plugin-api';
+import { DatabaseManager } from '@backstage/backend-defaults/database';
 import { Expand } from '@backstage/types';
 import {
   Project,
@@ -46,6 +47,7 @@ import { ProjectOperations } from './projectOperations';
 import { isNonDbSortField } from './queryHelpers';
 import { removeSensitiveFromJob } from '../../router/common';
 import { MAX_CONCURRENT_ENRICHMENT_JOBS } from '../constants';
+import { migrate } from '../dbMigrate';
 import { maxConcurrency } from '../../utils';
 import { calculateModuleStatus, calculateProjectStatus } from './status';
 
@@ -360,13 +362,13 @@ export class X2ADatabaseService {
       const analyze = removeSensitiveFromJob(
         lastAnalyzeJobsOfModules[idxModule][0],
       );
-      const migrate = removeSensitiveFromJob(
+      const migrateJob = removeSensitiveFromJob(
         lastMigrateJobsOfModules[idxModule][0],
       );
       const publish = removeSensitiveFromJob(
         lastPublishJobsOfModules[idxModule][0],
       );
-      const lastJobs = { analyze, migrate, publish };
+      const lastJobs = { analyze, migrate: migrateJob, publish };
       return {
         ...module,
         ...lastJobs,
@@ -459,21 +461,34 @@ export class X2ADatabaseService {
   }
 }
 
+// This service is used by the x2a-backend, x2a-mcp-extras x2a-scaffolder-backend-module-x2a plugins, so it must be a root service.
 export const x2aDatabaseServiceRef = createServiceRef<
   Expand<X2ADatabaseService>
 >({
   id: 'x2a-database',
+  scope: 'root',
+  multiton: false,
   defaultFactory: async service =>
     createServiceFactory({
       service,
       deps: {
-        logger: coreServices.logger,
-        database: coreServices.database,
+        logger: coreServices.rootLogger,
+        config: coreServices.rootConfig,
+        lifecycle: coreServices.rootLifecycle,
       },
       async factory(deps) {
+        const dbManager = DatabaseManager.fromConfig(deps.config, {
+          rootLogger: deps.logger,
+          rootLifecycle: deps.lifecycle,
+        });
+        const database = dbManager.forPlugin('x2a', {
+          logger: deps.logger,
+          lifecycle: deps.lifecycle,
+        });
+        await migrate(database);
         return X2ADatabaseService.create({
-          ...deps,
-          dbClient: await deps.database.getClient(),
+          logger: deps.logger,
+          dbClient: await database.getClient(),
         });
       },
     }),

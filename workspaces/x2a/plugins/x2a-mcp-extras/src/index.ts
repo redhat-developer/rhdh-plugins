@@ -13,10 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { test, expect } from '@playwright/test';
-
-// To be implemented later
-test('noop test', async () => {
-  expect(true).toBe(true);
-});
+export { x2aMcpExtrasPlugin as default } from './plugin';

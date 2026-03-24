@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { lazy, Suspense } from 'react';
 import { Navigate, Route } from 'react-router-dom';
 import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
@@ -64,6 +65,16 @@ import {
   githubAuthApiRef,
   gitlabAuthApiRef,
 } from '@backstage/core-plugin-api';
+
+// The @backstage/plugin-auth is an NFS-only plugin (no legacy exports).
+// Lazy-load the internal Router via a relative path to bypass the exports field.
+const AuthRouter = lazy(() =>
+  // eslint-disable-next-line @backstage/no-relative-monorepo-imports
+  import(
+    // @ts-expect-error Relative path bypasses the exports field to access the internal Router
+    '../../../node_modules/@backstage/plugin-auth/dist/components/Router.esm.js'
+  ).then((m: { Router: React.ComponentType }) => ({ default: m.Router })),
+);
 
 const app = createApp({
   apis,
@@ -154,6 +165,14 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
+    <Route
+      path="/oauth2/*"
+      element={
+        <Suspense fallback={<></>}>
+          <AuthRouter />
+        </Suspense>
+      }
+    />
 
     {/* At RHDH runtime, this is replaced by dynamicPlugin configuration:
       https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/installing_and_viewing_plugins_in_red_hat_developer_hub/assembly-front-end-plugin-wiring.adoc_rhdh-extensions-plugins#con-providing-custom-scaffolder-field-extensions.adoc_assembly-front-end-plugin-wiring

@@ -14,3 +14,11 @@
  * limitations under the License.
  */
 export { x2APlugin as default } from './plugin';
+export { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
+export { kubeServiceRef } from './services/KubeService';
+export {
+  getUserRef,
+  getGroupsOfUser,
+  reconcileJobStatus,
+  generateCallbackToken,
+} from './router/common';

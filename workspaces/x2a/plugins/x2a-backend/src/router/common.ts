@@ -234,16 +234,15 @@ export const useEnforceProjectPermissions = async (
 };
 
 /**
- * Safely extracts user reference from credentials with fallback
+ * Safely extracts user reference from credentials with fallback.
+ * Accepts any BackstageCredentials type: returns the real userEntityRef for
+ * user principals and 'user:default/system' for service/other principals.
  */
-export function getUserRef(
-  credentials: BackstageCredentials<BackstageUserPrincipal>,
-): string {
-  try {
-    return credentials.principal.userEntityRef;
-  } catch {
-    return 'user:default/system';
-  }
+export function getUserRef(credentials: BackstageCredentials): string {
+  const principal = credentials?.principal as
+    | BackstageUserPrincipal
+    | undefined;
+  return principal?.userEntityRef ?? 'user:default/system';
 }
 
 /**
