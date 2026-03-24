@@ -68,8 +68,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.lastUpdatedNotAvailable': string;
     readonly 'metric.someEntitiesNotReportingValues': string;
     readonly 'thresholds.success': string;
-    readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;
+    readonly 'thresholds.warning': string;
     readonly 'thresholds.noEntities': string;
     readonly 'thresholds.entities_one': string;
     readonly 'thresholds.entities_other': string;
@@ -80,11 +80,11 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.entitiesTable.title': string;
     readonly 'entitiesPage.entitiesTable.unavailable': string;
     readonly 'entitiesPage.entitiesTable.titleWithCount': string;
+    readonly 'entitiesPage.entitiesTable.header.owner': string;
     readonly 'entitiesPage.entitiesTable.header.metric': string;
     readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
     readonly 'entitiesPage.entitiesTable.header.value': string;
     readonly 'entitiesPage.entitiesTable.header.entity': string;
-    readonly 'entitiesPage.entitiesTable.header.owner': string;
     readonly 'entitiesPage.entitiesTable.header.kind': string;
     readonly 'entitiesPage.entitiesTable.footer.of': string;
     readonly 'entitiesPage.entitiesTable.footer.allRows': string;
