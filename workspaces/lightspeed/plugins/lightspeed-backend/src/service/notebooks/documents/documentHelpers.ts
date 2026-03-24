@@ -70,8 +70,8 @@ export const isValidFileType = (fileType: string): boolean => {
 export const parseFileContent = async (
   logger: LoggerService,
   fileType: string,
-  file: Express.Multer.File | undefined,
-  urlParam: string | undefined,
+  file?: Express.Multer.File | undefined,
+  urlParam?: string | undefined,
 ) => {
   if (fileType === 'url') {
     if (!urlParam) {
@@ -84,7 +84,9 @@ export const parseFileContent = async (
     throw new InputError('No file uploaded');
   }
   if (!isValidFileSize(file.size)) {
-    throw new InputError('File size exceeds 20MB limit');
+    throw new InputError(
+      `File size exceeds ${DEFAULT_MAX_FILE_SIZE_MB}MB limit`,
+    );
   }
   logger.info(`Parsing file ${file.originalname} for fileType ${fileType}`);
   return await parseFile(file.buffer, file.originalname, fileType);
@@ -104,32 +106,23 @@ const isPrivateOrInternalIP = (ip: string): boolean => {
   if (ipVersion === 4) {
     const parts = ip.split('.').map(Number);
 
-    // 127.0.0.0/8 - Loopback
-    if (parts[0] === 127) return true;
-
-    // 10.0.0.0/8 - Private
-    if (parts[0] === 10) return true;
-
-    // 172.16.0.0/12 - Private
-    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
-
-    // 192.168.0.0/16 - Private
-    if (parts[0] === 192 && parts[1] === 168) return true;
-
-    // 169.254.0.0/16 - Link-local (includes cloud metadata endpoint 169.254.169.254)
-    if (parts[0] === 169 && parts[1] === 254) return true;
-
-    // 0.0.0.0/8 - Current network
-    if (parts[0] === 0) return true;
-
-    // 100.64.0.0/10 - Carrier-grade NAT
-    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true;
-
-    // 224.0.0.0/4 - Multicast
-    if (parts[0] >= 224 && parts[0] <= 239) return true;
-
-    // 240.0.0.0/4 - Reserved
-    if (parts[0] >= 240) return true;
+    switch (parts[0]) {
+      case 0: // 0.0.0.0/8 - Current network
+      case 10: // 10.0.0.0/8 - Private
+      case 127: // 127.0.0.0/8 - Loopback
+        return true;
+      case 100: // 100.64.0.0/10 - Carrier-grade NAT
+        return parts[1] >= 64 && parts[1] <= 127;
+      case 169: // 169.254.0.0/16 - Link-local (includes cloud metadata endpoint 169.254.169.254)
+        return parts[1] === 254;
+      case 172: // 172.16.0.0/12 - Private
+        return parts[1] >= 16 && parts[1] <= 31;
+      case 192: // 192.168.0.0/16 - Private
+        return parts[1] === 168;
+      default:
+        // 224.0.0.0/4 - Multicast, 240.0.0.0/4 - Reserved
+        return parts[0] >= 224;
+    }
   } else if (ipVersion === 6) {
     const lower = ip.toLowerCase();
 
@@ -209,6 +202,12 @@ export const validateURLForSSRF = async (urlString: string): Promise<void> => {
     'localhost',
     'metadata.google.internal', // GCP metadata
     'kubernetes.default.svc', // K8s internal service
+    'host.docker.internal', // Docker internal service
+    '169.254.169.254', // AWS/GCP/Azure metadata endpoint
+    '127.0.0.1', // Loopback address
+    '0.0.0.0', // Current network address
+    '::1', // Loopback address
+    '::', // Current network address
   ];
 
   if (blockedHostnames.includes(lowerHostname)) {

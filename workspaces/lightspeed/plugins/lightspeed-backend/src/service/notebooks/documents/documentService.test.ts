@@ -15,7 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { ConflictError, NotFoundError } from '@backstage/errors';
+import { NotFoundError } from '@backstage/errors';
 
 import { setupServer } from 'msw/node';
 
@@ -67,7 +67,6 @@ describe('DocumentService', () => {
     it('should create a new document', async () => {
       const result = await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Test Document',
         'This is test content',
         { fileType: 'text' },
@@ -82,7 +81,6 @@ describe('DocumentService', () => {
     it('should sanitize document title to create ID', async () => {
       const result = await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Test Document With Spaces & Special!',
         'Content',
       );
@@ -90,104 +88,38 @@ describe('DocumentService', () => {
       expect(result.document_id).toBe('test-document-with-spaces-special');
     });
 
-    it('should throw ConflictError when creating duplicate document', async () => {
+    it('should replace existing document with same title', async () => {
       await documentService.upsertDocument(
         sessionId,
-        mockUserId,
-        'Test Document',
-        'Content 1',
-      );
-
-      await expect(
-        documentService.upsertDocument(
-          sessionId,
-          mockUserId,
-          'Test Document',
-          'Content 2',
-        ),
-      ).rejects.toThrow(ConflictError);
-    });
-
-    it('should update existing document when currentDocumentId provided', async () => {
-      const created = await documentService.upsertDocument(
-        sessionId,
-        mockUserId,
         'Original Title',
         'Original content',
       );
 
       const result = await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Original Title',
         'Updated content',
-        undefined,
-        created.document_id,
       );
 
       expect(result.document_id).toBe('original-title');
       expect(result.replaced).toBe(true);
     });
 
-    it('should handle title change during update', async () => {
-      const created = await documentService.upsertDocument(
+    it('should create a new document when title differs from existing', async () => {
+      await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Original Title',
         'Content',
       );
 
       const result = await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'New Title',
         'Updated content',
-        undefined,
-        created.document_id,
       );
 
       expect(result.document_id).toBe('new-title');
-      expect(result.replaced).toBe(true);
-    });
-
-    it('should throw NotFoundError when updating non-existent document', async () => {
-      await expect(
-        documentService.upsertDocument(
-          sessionId,
-          mockUserId,
-          'New Title',
-          'Content',
-          undefined,
-          'non-existent-id',
-        ),
-      ).rejects.toThrow(NotFoundError);
-    });
-
-    it('should throw ConflictError when renaming to existing document title', async () => {
-      await documentService.upsertDocument(
-        sessionId,
-        mockUserId,
-        'Document 1',
-        'Content 1',
-      );
-
-      const doc2 = await documentService.upsertDocument(
-        sessionId,
-        mockUserId,
-        'Document 2',
-        'Content 2',
-      );
-
-      await expect(
-        documentService.upsertDocument(
-          sessionId,
-          mockUserId,
-          'Document 1',
-          'Updated content',
-          undefined,
-          doc2.document_id,
-        ),
-      ).rejects.toThrow(ConflictError);
+      expect(result.replaced).toBe(false);
     });
   });
 
@@ -195,13 +127,11 @@ describe('DocumentService', () => {
     it('should list all documents in a session', async () => {
       await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Document 1',
         'Content 1',
       );
       await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Document 2',
         'Content 2',
       );
@@ -226,20 +156,12 @@ describe('DocumentService', () => {
     });
 
     it('should filter documents by file type', async () => {
-      await documentService.upsertDocument(
-        sessionId,
-        mockUserId,
-        'Text Doc',
-        'Content',
-        { fileType: 'text' },
-      );
-      await documentService.upsertDocument(
-        sessionId,
-        mockUserId,
-        'PDF Doc',
-        'Content',
-        { fileType: 'pdf' },
-      );
+      await documentService.upsertDocument(sessionId, 'Text Doc', 'Content', {
+        fileType: 'text',
+      });
+      await documentService.upsertDocument(sessionId, 'PDF Doc', 'Content', {
+        fileType: 'pdf',
+      });
 
       const textDocs = await documentService.listDocuments(
         sessionId,
@@ -254,7 +176,6 @@ describe('DocumentService', () => {
     it('should include document metadata', async () => {
       await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Test Document',
         'Content',
         { fileType: 'text' },
@@ -280,7 +201,6 @@ describe('DocumentService', () => {
     it('should delete a document successfully', async () => {
       const created = await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Test Document',
         'Content',
       );
@@ -303,13 +223,11 @@ describe('DocumentService', () => {
     it('should remove document from session metadata', async () => {
       const doc1 = await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Document 1',
         'Content 1',
       );
       await documentService.upsertDocument(
         sessionId,
-        mockUserId,
         'Document 2',
         'Content 2',
       );

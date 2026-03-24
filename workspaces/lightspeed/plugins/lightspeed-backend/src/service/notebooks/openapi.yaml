@@ -444,7 +444,7 @@ paths:
 
         **Security**: URLs are validated against SSRF attacks (blocks private IPs, localhost, cloud metadata endpoints)
 
-        **File Size Limit**: Maximum 20MB
+        **File Size Limit**: Maximum preset limit
       operationId: uploadDocument
       parameters:
         - $ref: '#/components/parameters/SessionId'
@@ -528,10 +528,10 @@ paths:
                     status: error
                     error: No file uploaded
                 fileTooLarge:
-                  summary: File exceeds 20MB limit
+                  summary: File exceeds preset limit
                   value:
                     status: error
-                    error: File size exceeds 20MB limit
+                    error: File size exceeds preset limit
                 invalidJSON:
                   summary: Invalid JSON file
                   value:

@@ -15,13 +15,6 @@
  */
 import multer from 'multer';
 
-export const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 20 * 1024 * 1024, // 20MB
-  },
-});
-
 /**
  * Default values for AI Notebooks
  */
@@ -32,6 +25,13 @@ export const DEFAULT_CHUNK_OVERLAP_TOKENS = 50; // 50 tokens
 export const DEFAULT_LLAMA_STACK_PORT = 8321; // Llama Stack port
 export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
 export const DEFAULT_MAX_FILE_SIZE_MB = 20; // 20MB
+
+export const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: DEFAULT_MAX_FILE_SIZE_MB * 1024 * 1024,
+  },
+});
 
 /**
  * Supported file types for document upload AI Notebooks

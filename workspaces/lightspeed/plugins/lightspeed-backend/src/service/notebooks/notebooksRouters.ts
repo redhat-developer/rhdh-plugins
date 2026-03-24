@@ -276,7 +276,7 @@ export async function createNotebooksRouter(
   notebooksRouter.put(
     '/v1/sessions/:sessionId/documents',
     upload.single('file') as any,
-    withAuth(async (req, res, userId) => {
+    withAuth(async (req, res, _userId) => {
       const sessionId = req.params.sessionId as string;
       const { fileType, title } = req.body;
 
@@ -302,7 +302,6 @@ export async function createNotebooksRouter(
 
       const result = await documentService.upsertDocument(
         sessionId,
-        userId,
         title,
         parsedDocument.content,
         parsedDocument.metadata,
@@ -311,7 +310,6 @@ export async function createNotebooksRouter(
       // Return 202 with file_id for async processing
       res.status(202).json({
         status: 'processing',
-        file_id: result.file_id,
         document_id: result.document_id,
         session_id: sessionId,
         message: 'Document upload started',

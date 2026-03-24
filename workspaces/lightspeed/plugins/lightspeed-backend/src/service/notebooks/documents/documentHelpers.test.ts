@@ -18,6 +18,7 @@ import { mockServices } from '@backstage/backend-test-utils';
 
 import * as dns from 'dns/promises';
 
+import { DEFAULT_MAX_FILE_SIZE_MB } from '../../constant';
 import {
   isValidFileSize,
   isValidFileType,
@@ -76,7 +77,7 @@ describe('documentHelpers', () => {
   describe('isValidFileSize', () => {
     const MB = 1024 * 1024;
 
-    it('should return true for files under 20MB', () => {
+    it('should return true for files under the preset limit', () => {
       expect(isValidFileSize(0)).toBe(true);
       expect(isValidFileSize(1024)).toBe(true);
       expect(isValidFileSize(MB)).toBe(true);
@@ -84,14 +85,13 @@ describe('documentHelpers', () => {
       expect(isValidFileSize(19 * MB)).toBe(true);
     });
 
-    it('should return true for files exactly 20MB', () => {
-      expect(isValidFileSize(20 * MB)).toBe(true);
+    it('should return true for files exactly the preset limit', () => {
+      expect(isValidFileSize(DEFAULT_MAX_FILE_SIZE_MB * MB)).toBe(true);
     });
 
-    it('should return false for files over 20MB', () => {
-      expect(isValidFileSize(20 * MB + 1)).toBe(false);
-      expect(isValidFileSize(21 * MB)).toBe(false);
-      expect(isValidFileSize(100 * MB)).toBe(false);
+    it('should return false for files over the preset limit', () => {
+      expect(isValidFileSize(DEFAULT_MAX_FILE_SIZE_MB * MB + 1)).toBe(false);
+      expect(isValidFileSize(DEFAULT_MAX_FILE_SIZE_MB * MB * 1.5)).toBe(false);
     });
   });
 
@@ -185,7 +185,9 @@ describe('documentHelpers', () => {
 
       await expect(
         parseFileContent(logger, 'txt', largeFile, undefined),
-      ).rejects.toThrow('File size exceeds 20MB limit');
+      ).rejects.toThrow(
+        `File size exceeds ${DEFAULT_MAX_FILE_SIZE_MB}MB limit`,
+      );
     });
 
     it('should parse valid file successfully', async () => {

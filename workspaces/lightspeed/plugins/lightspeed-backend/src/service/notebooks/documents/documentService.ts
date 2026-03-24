@@ -132,21 +132,6 @@ export class DocumentService {
   }
 
   /**
-   * Delete a file from both vector store and Files API
-   */
-  private async deleteFileCompletely(
-    sessionId: string,
-    fileId: string,
-  ): Promise<void> {
-    await this.client.vectorStores.files.delete(sessionId, fileId);
-    try {
-      await this.client.files.delete(fileId);
-    } catch (error) {
-      throw new Error(`Failed to delete file ${fileId}: ${error}`);
-    }
-  }
-
-  /**
    * Update session metadata document IDs
    */
   private async updateSessionDocumentIds(
@@ -248,58 +233,38 @@ export class DocumentService {
    */
   async upsertDocument(
     sessionId: string,
-    userId: string,
     title: string,
     content: string,
     metadata?: Record<string, any>,
-    currentDocumentId?: string,
   ): Promise<UpsertResult> {
     const documentId = sanitizeTitle(title);
 
     // Find existing file by document_id
-    const existingFile = await this.findFileByDocumentId(
-      sessionId,
-      currentDocumentId || documentId,
-    );
+    const existingFile = await this.findFileByDocumentId(sessionId, documentId);
 
     let replaced = false;
     let oldDocumentId: string | undefined;
     let createdAt: string = new Date().toISOString();
-
-    // If updating (currentDocumentId provided) but document not found, error
-    if (currentDocumentId && !existingFile) {
-      throw new NotFoundError(`Document not found: ${currentDocumentId}`);
-    }
 
     // If document exists
     if (existingFile) {
       oldDocumentId = existingFile.attributes?.document_id as string;
       createdAt = (existingFile.attributes?.created_at as string) || createdAt;
 
-      // If not an explicit update and document exists, it's a conflict
-      if (!currentDocumentId && oldDocumentId === documentId) {
-        throw new ConflictError(
-          `A document with the title "${title}" already exists in this session. Please use a different title or update the existing document.`,
-        );
-      }
-
       // Check for title conflicts when renaming
-      if (currentDocumentId && documentId !== currentDocumentId) {
+      if (documentId !== sanitizeTitle(title)) {
         const conflictingFile = await this.findFileByDocumentId(
           sessionId,
           documentId,
         );
 
-        if (conflictingFile && conflictingFile.id !== existingFile.id) {
+        if (conflictingFile) {
           throw new ConflictError(
             `A document with the title "${title}" already exists in this session`,
           );
         }
       }
-
-      // Delete old file
-      await this.deleteFileCompletely(sessionId, existingFile.id);
-
+      await this.deleteDocument(sessionId, documentId);
       replaced = true;
       this.logger.info(`Updating document: "${oldDocumentId}" -> "${title}"`);
     } else {
@@ -323,9 +288,7 @@ export class DocumentService {
         file_id: file.id,
         attributes: {
           document_id: documentId,
-          user_id: userId,
           title: title,
-          session_id: sessionId,
           source_type: metadata?.fileType || 'text',
           created_at: createdAt,
           ...(replaced ? { updated_at: new Date().toISOString() } : {}),
@@ -461,7 +424,11 @@ export class DocumentService {
   /**
    * Delete a document from the vector store
    */
-  async deleteDocument(sessionId: string, documentId: string): Promise<void> {
+  async deleteDocument(
+    sessionId: string,
+    documentTitle: string,
+  ): Promise<void> {
+    const documentId = sanitizeTitle(documentTitle);
     this.logger.info(`Deleting document ${documentId} from ${sessionId}`);
 
     const file = await this.findFileByDocumentId(sessionId, documentId);
@@ -471,12 +438,12 @@ export class DocumentService {
     }
 
     // Delete file completely
-    await this.deleteFileCompletely(sessionId, file.id);
+    await this.client.vectorStores.files.delete(sessionId, file.id);
+
     this.logger.info(`Deleted file ${file.id} from vector store and Files API`);
 
     // Update session metadata to remove document
     await this.updateSessionDocumentIds(sessionId, documentId, 'remove');
-
-    this.logger.info(`Document ${documentId} successfully deleted`);
+    this.logger.info(`Deleted document ${documentTitle} from ${sessionId}`);
   }
 }
