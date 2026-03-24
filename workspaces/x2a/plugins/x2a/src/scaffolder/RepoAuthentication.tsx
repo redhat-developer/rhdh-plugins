@@ -13,23 +13,54 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-import { useEffect, useRef, useState } from 'react';
-
 import {
   type CustomFieldValidator,
   FieldExtensionComponentProps,
   useTemplateSecrets,
 } from '@backstage/plugin-scaffolder-react';
 import {
-  resolveScmProvider,
-  parseCsvContent,
-  ScmProvider,
-  SCAFFOLDER_SECRET_PREFIX,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Button, Typography } from '@material-ui/core';
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import {
+  StatusError,
+  StatusOK,
+  StatusPending,
+} from '@backstage/core-components';
 
 import { useScmHostMap } from '../hooks/useScmHostMap';
 import { useRepoAuthentication } from '../repoAuth';
+import { type ProviderAuthStatus, useProviderAuth } from './useProviderAuth';
+
+const useStyles = makeStyles(theme => ({
+  errorText: {
+    color: theme.palette.error.main,
+  },
+}));
+
+const StatusIcon = ({
+  status,
+  children,
+}: {
+  status: ProviderAuthStatus;
+  children?: React.ReactNode;
+}) => {
+  switch (status) {
+    case 'authenticated':
+      return <StatusOK>{children}</StatusOK>;
+    case 'error':
+      return <StatusError>{children}</StatusError>;
+    default:
+      return <StatusPending>{children}</StatusPending>;
+  }
+};
 
 /**
  * RepoAuthentication extension requests authentication tokens for all the SCM providers
@@ -43,15 +74,10 @@ export const RepoAuthentication = ({
   uiSchema,
   schema,
 }: FieldExtensionComponentProps<string>) => {
+  const classes = useStyles();
   const hostProviderMap = useScmHostMap();
   const { secrets, setSecrets } = useTemplateSecrets();
-  const repoAuthentication = useRepoAuthentication();
-  const [error, setError] = useState<string | undefined>();
-  const [suppressDialog, setSuppressDialog] = useState(false);
-  const [isDone, setDone] = useState(false);
-
-  const secretsRef = useRef(secrets);
-  secretsRef.current = secrets;
+  const { authenticate } = useRepoAuthentication();
 
   const { title, description } = schema;
   const csvFieldName =
@@ -60,143 +86,72 @@ export const RepoAuthentication = ({
     ? formContext?.formData?.[csvFieldName]
     : undefined;
 
-  const prevCsvRef = useRef(csvContent);
-
-  useEffect(() => {
-    if (csvContent !== prevCsvRef.current) {
-      prevCsvRef.current = csvContent;
-      setDone(false);
-      setSuppressDialog(false);
-      setError(undefined);
-      onChange(undefined);
-    }
-  }, [csvContent, onChange]);
-
-  useEffect(() => {
-    if (!csvContent || suppressDialog || isDone) {
-      return undefined;
-    }
-
-    setError(undefined);
-
-    let projectsToCreate;
-    try {
-      projectsToCreate = parseCsvContent(csvContent);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unknown error');
-      return undefined;
-    }
-
-    const allTargetProviders: ScmProvider[] = projectsToCreate.map(project =>
-      resolveScmProvider(project.targetRepoUrl, hostProviderMap),
-    );
-    const allSourceProviders: ScmProvider[] = projectsToCreate.map(project =>
-      resolveScmProvider(project.sourceRepoUrl, hostProviderMap),
-    );
-    const distinctTargetProviders = allTargetProviders.filter(
-      (p, i, arr) => arr.findIndex(q => q.name === p.name) === i,
-    );
-    const distinctSourceProviders = allSourceProviders.filter(
-      (p, i, arr) =>
-        arr.findIndex(q => q.name === p.name) === i &&
-        !distinctTargetProviders.some(t => t.name === p.name),
-    );
-    const allDistinctProviders = [
-      ...distinctTargetProviders,
-      ...distinctSourceProviders,
-    ];
-
-    let cancelled = false;
-    const authCsvSnapshot = csvContent;
-
-    const doAuthAsync = async () => {
-      const providerTokens = new Map<string, string>();
-
-      const authenticateProvider = async (
-        provider: ScmProvider,
-        readOnly: boolean,
-      ) => {
-        try {
-          const tokens = await repoAuthentication.authenticate([
-            provider.getAuthTokenDescriptor(readOnly),
-          ]);
-          if (cancelled) {
-            return;
-          }
-          providerTokens.set(
-            `${SCAFFOLDER_SECRET_PREFIX}${provider.name}`,
-            tokens[0].token,
-          );
-        } catch (e) {
-          if (cancelled) {
-            return;
-          }
-          setError(e instanceof Error ? e.message : 'Unknown error');
-          setSuppressDialog(true);
-        }
-      };
-
-      await Promise.all([
-        ...distinctTargetProviders.map(p => authenticateProvider(p, false)),
-        ...distinctSourceProviders.map(p => authenticateProvider(p, true)),
-      ]);
-
-      if (
-        cancelled ||
-        authCsvSnapshot !== prevCsvRef.current ||
-        providerTokens.size !== allDistinctProviders.length
-      ) {
-        if (
-          !cancelled &&
-          authCsvSnapshot === prevCsvRef.current &&
-          providerTokens.size !== allDistinctProviders.length
-        ) {
-          onChange(undefined);
-        }
-        return;
-      }
-
-      onChange('authenticated');
-      setDone(true);
-      setSecrets({
-        ...secretsRef.current,
-        ...Object.fromEntries(providerTokens),
-      });
-    };
-
-    doAuthAsync();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
+  const { providerRows, retryProvider, parseError } = useProviderAuth({
     csvContent,
     hostProviderMap,
-    repoAuthentication,
-    setSecrets,
-    suppressDialog,
-    isDone,
+    authenticate,
     onChange,
-  ]);
+    secrets: secrets as Record<string, string>,
+    setSecrets,
+  });
 
   return (
     <>
       <Typography variant="h6">{title}</Typography>
       <Typography variant="body1">{description}</Typography>
-      {suppressDialog && !isDone && (
-        <Typography variant="body1">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              setSuppressDialog(false);
-              setError(undefined);
-            }}
-          >
-            Try again
-          </Button>
-        </Typography>
+
+      {providerRows.length > 0 && (
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Provider</TableCell>
+                <TableCell>Access</TableCell>
+                <TableCell>OAuth scope</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {providerRows.map(row => (
+                <TableRow key={row.provider.name}>
+                  <TableCell>{row.provider.name}</TableCell>
+                  <TableCell>
+                    {row.readOnly ? 'Read-only' : 'Read / Write'}
+                  </TableCell>
+                  <TableCell>
+                    {Array.isArray(row.scope)
+                      ? row.scope.join(', ')
+                      : row.scope}
+                  </TableCell>
+                  <TableCell>
+                    <StatusIcon status={row.status}>
+                      {row.error && (
+                        <span className={classes.errorText}>{row.error}</span>
+                      )}
+                    </StatusIcon>
+                  </TableCell>
+                  <TableCell>
+                    {row.status === 'error' && (
+                      <Button
+                        variant="text"
+                        color="primary"
+                        size="small"
+                        onClick={() =>
+                          retryProvider(row.provider, row.readOnly)
+                        }
+                      >
+                        Retry
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
+
       {!csvFieldName && (
         <Typography variant="body1" color="error">
           CSV field name is required for RepoAuthentication extension
@@ -207,9 +162,9 @@ export const RepoAuthentication = ({
           CSV content is required for RepoAuthentication extension
         </Typography>
       )}
-      {error && (
+      {parseError && (
         <Typography variant="body1" color="error">
-          {error}
+          {parseError}
         </Typography>
       )}
     </>

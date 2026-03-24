@@ -153,6 +153,8 @@ spec:
                   inputMethod:
                     const: csv
               then:
+                required:
+                  - repoAuthentication
                 properties:
                   repoAuthentication:
                     type: string
