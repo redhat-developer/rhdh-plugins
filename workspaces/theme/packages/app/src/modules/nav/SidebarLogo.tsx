@@ -19,8 +19,7 @@ import {
   useSidebarOpenState,
 } from '@backstage/core-components';
 import { makeStyles } from '@material-ui/core';
-import { LogoFull } from './LogoFull';
-import { LogoIcon } from './LogoIcon';
+import { LogoFull, LogoIcon } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const useSidebarLogoStyles = makeStyles({
   root: {

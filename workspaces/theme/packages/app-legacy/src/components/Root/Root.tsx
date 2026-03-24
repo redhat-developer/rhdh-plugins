@@ -20,8 +20,6 @@ import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
 import CreateComponentIcon from '@material-ui/icons/AddCircleOutline';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
 import {
   Settings as SidebarSettings,
   UserSettingsSignInAvatar,
@@ -43,6 +41,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
+
+import { LogoFull, LogoIcon } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
