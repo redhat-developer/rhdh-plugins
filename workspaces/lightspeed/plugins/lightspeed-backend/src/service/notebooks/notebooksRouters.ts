@@ -63,7 +63,7 @@ export async function createNotebooksRouter(
   const llamaStackPort =
     (config.getOptionalNumber(
       'lightspeed.aiNotebooks.llamaStack.port',
-    ) as number) ?? 8321;
+    ) as number) ?? DEFAULT_LLAMA_STACK_PORT;
   const lightSpeedPort =
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
