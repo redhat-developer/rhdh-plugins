@@ -70,7 +70,7 @@ export const isValidFileType = (fileType: string): boolean => {
 export const parseFileContent = async (
   logger: LoggerService,
   fileType: string,
-  file?: Express.Multer.File | undefined,
+  file?: Express.Multer.File,
   urlParam?: string,
 ) => {
   if (fileType === 'url') {
