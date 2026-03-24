@@ -28,7 +28,7 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_URL
     ? []
     : {
-        command: 'yarn start',
+        command: 'yarn start:legacy',
         port: 3000,
         reuseExistingServer: true,
         env: {
@@ -51,7 +51,7 @@ export default defineConfig({
 
   projects: LOCALES.map(locale => ({
     name: locale,
-    testDir: 'packages/app/e2e-tests',
+    testDir: 'packages/app-legacy/e2e-tests',
     use: {
       channel: 'chrome' as const,
       locale,

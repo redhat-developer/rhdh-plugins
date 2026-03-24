@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: augment
+  description: AI assistant plugin for Backstage with RAG, tool calling, and safety guardrails.
+spec:
+  type: website
+  owner: rrbanda
+  lifecycle: experimental

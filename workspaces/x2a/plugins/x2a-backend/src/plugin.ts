@@ -63,6 +63,11 @@ export const x2APlugin = createBackendPlugin({
           allow: 'unauthenticated',
         });
 
+        httpRouter.addAuthPolicy({
+          path: '/static/:file',
+          allow: 'unauthenticated',
+        });
+
         httpRouter.use(
           await createRouter({
             httpAuth,

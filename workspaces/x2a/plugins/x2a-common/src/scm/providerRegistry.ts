@@ -26,7 +26,12 @@ const providers: ScmProvider[] = [bitbucketProvider, githubProvider];
 
 const fallbackProvider: ScmProvider = gitlabProvider;
 
-const allProviders: ScmProvider[] = [...providers, fallbackProvider];
+/**
+ * All SCM providers, ordered by priority.
+ *
+ * @public
+ */
+export const allProviders: ScmProvider[] = [...providers, fallbackProvider];
 
 /**
  * Detects the ScmProvider for a given repository URL.
