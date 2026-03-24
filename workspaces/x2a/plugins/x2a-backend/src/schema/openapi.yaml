@@ -532,6 +532,108 @@ paths:
         '404':
           description: Project or job not found
 
+  /projects/{projectId}/devspaces:
+    get:
+      summary: Returns the DevSpaces workspace for a project
+      description: |
+        Retrieves the OpenShift Dev Spaces workspace associated with the project.
+        Returns 404 if no workspace exists for this project.
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+          description: UUID of the project
+      responses:
+        '200':
+          description: DevSpaces workspace information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevSpacesWorkspace'
+        '404':
+          description: No DevSpaces workspace exists for this project
+
+    post:
+      summary: Creates a DevSpaces workspace for a project
+      description: |
+        Creates an OpenShift Dev Spaces workspace for Ansible development.
+        If a workspace already exists for this project, returns the existing workspace (idempotent).
+
+        The workspace will:
+        - Clone the project's target repository (where migrated Ansible code lives)
+        - Provide a browser-based IDE (VS Code) with Ansible tooling
+        - Be accessible via the URL returned in the response once status reaches 'running'
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+          description: UUID of the project
+      responses:
+        '201':
+          description: DevSpaces workspace created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: UUID of the created workspace
+                  status:
+                    $ref: '#/components/schemas/DevSpacesWorkspaceStatus'
+                  message:
+                    type: string
+                    description: Confirmation message
+                required:
+                  - id
+                  - status
+                  - message
+        '200':
+          description: DevSpaces workspace already exists (idempotent)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevSpacesWorkspace'
+        '404':
+          description: Project not found
+        '409':
+          description: Workspace is being deleted, cannot create yet
+
+    delete:
+      summary: Deletes the DevSpaces workspace for a project
+      description: |
+        Stops and deletes the OpenShift Dev Spaces workspace associated with the project.
+        This removes the Kubernetes DevWorkspace resource and all associated data.
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+          description: UUID of the project
+      responses:
+        '200':
+          description: DevSpaces workspace deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Confirmation message
+                  deletedWorkspaceId:
+                    type: string
+                    description: UUID of the deleted workspace
+                required:
+                  - message
+        '404':
+          description: No DevSpaces workspace exists for this project
+
 components:
   securitySchemes:
     callbackSignature:
@@ -909,3 +1011,40 @@ components:
       required:
         - name
         - durationSeconds
+
+    DevSpacesWorkspaceStatus:
+      type: string
+      enum:
+        - starting
+        - running
+        - stopped
+        - failed
+      description: |
+        Status of the DevSpaces workspace:
+        - starting: Workspace is being provisioned (pod creation, image pull, networking)
+        - running: Workspace is ready and accessible via URL
+        - stopped: Workspace has been stopped but not deleted
+        - failed: Workspace provisioning or runtime failed
+
+    DevSpacesWorkspace:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID for the DevSpaces workspace
+        status:
+          $ref: '#/components/schemas/DevSpacesWorkspaceStatus'
+        url:
+          type: string
+          description: IDE access URL (only present when status is 'running')
+        createdAt:
+          type: string
+          format: date-time
+          description: Date/time when the workspace was created
+        errorDetails:
+          type: string
+          description: Error information if status is 'failed'
+      required:
+        - id
+        - status
+        - createdAt

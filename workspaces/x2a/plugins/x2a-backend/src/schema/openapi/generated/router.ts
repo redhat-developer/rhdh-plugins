@@ -803,6 +803,142 @@ export const spec = {
           }
         }
       }
+    },
+    "/projects/{projectId}/devspaces": {
+      "get": {
+        "summary": "Returns the DevSpaces workspace for a project",
+        "description": "Retrieves the OpenShift Dev Spaces workspace associated with the project.\nReturns 404 if no workspace exists for this project.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "UUID of the project"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DevSpaces workspace information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DevSpacesWorkspace"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No DevSpaces workspace exists for this project"
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a DevSpaces workspace for a project",
+        "description": "Creates an OpenShift Dev Spaces workspace for Ansible development.\nIf a workspace already exists for this project, returns the existing workspace (idempotent).\n\nThe workspace will:\n- Clone the project's target repository (where migrated Ansible code lives)\n- Provide a browser-based IDE (VS Code) with Ansible tooling\n- Be accessible via the URL returned in the response once status reaches 'running'\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "UUID of the project"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DevSpaces workspace already exists (idempotent)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DevSpacesWorkspace"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "DevSpaces workspace created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "UUID of the created workspace"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/DevSpacesWorkspaceStatus"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Confirmation message"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "status",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "409": {
+            "description": "Workspace is being deleted, cannot create yet"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes the DevSpaces workspace for a project",
+        "description": "Stops and deletes the OpenShift Dev Spaces workspace associated with the project.\nThis removes the Kubernetes DevWorkspace resource and all associated data.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "UUID of the project"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DevSpaces workspace deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Confirmation message"
+                    },
+                    "deletedWorkspaceId": {
+                      "type": "string",
+                      "description": "UUID of the deleted workspace"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No DevSpaces workspace exists for this project"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1256,6 +1392,46 @@ export const spec = {
         "required": [
           "name",
           "durationSeconds"
+        ]
+      },
+      "DevSpacesWorkspaceStatus": {
+        "type": "string",
+        "enum": [
+          "starting",
+          "running",
+          "stopped",
+          "failed"
+        ],
+        "description": "Status of the DevSpaces workspace:\n- starting: Workspace is being provisioned (pod creation, image pull, networking)\n- running: Workspace is ready and accessible via URL\n- stopped: Workspace has been stopped but not deleted\n- failed: Workspace provisioning or runtime failed\n"
+      },
+      "DevSpacesWorkspace": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID for the DevSpaces workspace"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DevSpacesWorkspaceStatus"
+          },
+          "url": {
+            "type": "string",
+            "description": "IDE access URL (only present when status is 'running')"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date/time when the workspace was created"
+          },
+          "errorDetails": {
+            "type": "string",
+            "description": "Error information if status is 'failed'"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "createdAt"
         ]
       }
     }

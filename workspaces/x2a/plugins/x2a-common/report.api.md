@@ -95,6 +95,9 @@ export class DefaultApiClient {
     projectsPost(request: ProjectsPost, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdCollectArtifactsPost(request: ProjectsProjectIdCollectArtifactsPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdCollectArtifactsPost200Response>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
+    projectsProjectIdDevspacesDelete(request: ProjectsProjectIdDevspacesDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDevspacesDelete200Response>>;
+    projectsProjectIdDevspacesGet(request: ProjectsProjectIdDevspacesGet, options?: RequestOptions): Promise<TypedResponse<DevSpacesWorkspace>>;
+    projectsProjectIdDevspacesPost(request: ProjectsProjectIdDevspacesPost, options?: RequestOptions): Promise<TypedResponse<DevSpacesWorkspace | ProjectsProjectIdDevspacesPost201Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdLogGet(request: ProjectsProjectIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
@@ -105,6 +108,19 @@ export class DefaultApiClient {
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
 }
+
+// @public (undocumented)
+export interface DevSpacesWorkspace {
+    createdAt: Date;
+    errorDetails?: string;
+    id: string;
+    // (undocumented)
+    status: DevSpacesWorkspaceStatus;
+    url?: string;
+}
+
+// @public (undocumented)
+export type DevSpacesWorkspaceStatus = 'starting' | 'running' | 'stopped' | 'failed';
 
 // @public
 export const githubProvider: ScmProvider;
@@ -288,6 +304,41 @@ export type ProjectsProjectIdDelete = {
 // @public (undocumented)
 export interface ProjectsProjectIdDelete200Response {
     deletedCount: number;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdDevspacesDelete = {
+    path: {
+        projectId: string;
+    };
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdDevspacesDelete200Response {
+    deletedWorkspaceId?: string;
+    message: string;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdDevspacesGet = {
+    path: {
+        projectId: string;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdDevspacesPost = {
+    path: {
+        projectId: string;
+    };
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdDevspacesPost201Response {
+    id: string;
+    message: string;
+    // (undocumented)
+    status: DevSpacesWorkspaceStatus;
 }
 
 // @public (undocumented)

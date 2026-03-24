@@ -22,6 +22,7 @@ import { FetchApi } from '../types/fetch';
 import crossFetch from 'cross-fetch';
 import { pluginId } from '../pluginId';
 import * as parser from 'uri-template';
+import { DevSpacesWorkspace } from '../models/DevSpacesWorkspace.model';
 import { MigrationPhase } from '../models/MigrationPhase.model';
 import { Module } from '../models/Module.model';
 import { ModulePhase } from '../models/ModulePhase.model';
@@ -31,6 +32,8 @@ import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
 import { ProjectsProjectIdCollectArtifactsPost200Response } from '../models/ProjectsProjectIdCollectArtifactsPost200Response.model';
 import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
+import { ProjectsProjectIdDevspacesDelete200Response } from '../models/ProjectsProjectIdDevspacesDelete200Response.model';
+import { ProjectsProjectIdDevspacesPost201Response } from '../models/ProjectsProjectIdDevspacesPost201Response.model';
 import { ProjectsProjectIdModulesModuleIdCancelPostRequest } from '../models/ProjectsProjectIdModulesModuleIdCancelPostRequest.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
 import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
@@ -97,6 +100,30 @@ export type ProjectsProjectIdCollectArtifactsPost = {
  * @public
  */
 export type ProjectsProjectIdDelete = {
+  path: {
+    projectId: string;
+  };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdDevspacesDelete = {
+  path: {
+    projectId: string;
+  };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdDevspacesGet = {
+  path: {
+    projectId: string;
+  };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdDevspacesPost = {
   path: {
     projectId: string;
   };
@@ -315,6 +342,91 @@ export class DefaultApiClient {
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
       method: 'DELETE',
+    });
+  }
+
+  /**
+   * Stops and deletes the OpenShift Dev Spaces workspace associated with the project. This removes the Kubernetes DevWorkspace resource and all associated data.
+   * Deletes the DevSpaces workspace for a project
+   * @param projectId - UUID of the project
+   */
+  public async projectsProjectIdDevspacesDelete(
+    // @ts-ignore
+    request: ProjectsProjectIdDevspacesDelete,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<ProjectsProjectIdDevspacesDelete200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/devspaces`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Retrieves the OpenShift Dev Spaces workspace associated with the project. Returns 404 if no workspace exists for this project.
+   * Returns the DevSpaces workspace for a project
+   * @param projectId - UUID of the project
+   */
+  public async projectsProjectIdDevspacesGet(
+    // @ts-ignore
+    request: ProjectsProjectIdDevspacesGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<DevSpacesWorkspace>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/devspaces`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Creates an OpenShift Dev Spaces workspace for Ansible development. If a workspace already exists for this project, returns the existing workspace (idempotent).  The workspace will: - Clone the project's target repository (where migrated Ansible code lives) - Provide a browser-based IDE (VS Code) with Ansible tooling - Be accessible via the URL returned in the response once status reaches 'running'
+   * Creates a DevSpaces workspace for a project
+   * @param projectId - UUID of the project
+   */
+  public async projectsProjectIdDevspacesPost(
+    // @ts-ignore
+    request: ProjectsProjectIdDevspacesPost,
+    options?: RequestOptions,
+  ): Promise<
+    TypedResponse<
+      DevSpacesWorkspace | ProjectsProjectIdDevspacesPost201Response
+    >
+  > {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/devspaces`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
     });
   }
 
