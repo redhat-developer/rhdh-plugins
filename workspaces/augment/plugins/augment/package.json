@@ -1,0 +1,101 @@
+{
+  "name": "@red-hat-developer-hub/backstage-plugin-augment",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "license": "Apache-2.0",
+  "description": "Frontend plugin for Augment - AI assistant with RAG, tool calling, and safety guardrails",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "frontend-plugin",
+    "pluginId": "augment",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-augment",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-augment",
+      "@red-hat-developer-hub/backstage-plugin-augment-backend",
+      "@red-hat-developer-hub/backstage-plugin-augment-common"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/augment/plugins/augment"
+  },
+  "keywords": [
+    "backstage",
+    "backstage-plugin",
+    "rag",
+    "agentic",
+    "ai",
+    "chat",
+    "mcp",
+    "responses-api"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "backstage-cli package build",
+    "clean": "backstage-cli package clean",
+    "lint": "backstage-cli package lint",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack",
+    "start": "backstage-cli package start",
+    "test": "backstage-cli package test"
+  },
+  "dependencies": {
+    "@backstage/core-components": "^0.17.3",
+    "@backstage/core-plugin-api": "^1.10.8",
+    "@backstage/errors": "^1.2.7",
+    "@backstage/plugin-permission-react": "^0.4.30",
+    "@backstage/theme": "^0.6.6",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@mui/icons-material": "^5.17.1",
+    "@mui/material": "^5.17.1",
+    "@red-hat-developer-hub/backstage-plugin-augment-common": "workspace:^",
+    "katex": "^0.16.0",
+    "react-markdown": "^10.1.0",
+    "react-syntax-highlighter": "^16.1.0",
+    "react-use": "^17.2.4",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.0",
+    "remark-math": "^6.0.0"
+  },
+  "peerDependencies": {
+    "@types/react": "^17.0.0 || ^18.0.0",
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0",
+    "react-router": "^6.3.0",
+    "react-router-dom": "^6.3.0"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.34.5",
+    "@backstage/core-app-api": "^1.17.1",
+    "@backstage/dev-utils": "^1.1.11",
+    "@backstage/test-utils": "^1.7.8",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^17.0.0 || ^18.0.0",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0",
+    "react-router-dom": "^6.3.0"
+  },
+  "files": [
+    "dist",
+    "config.d.ts"
+  ],
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-augment",
+    "exposedModules": {
+      "PluginRoot": "./src/index.ts"
+    }
+  },
+  "configSchema": "config.d.ts"
+}
