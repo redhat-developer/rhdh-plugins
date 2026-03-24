@@ -52,6 +52,9 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 
+import { NotificationsPage } from '@backstage/plugin-notifications';
+import { SignalsDisplay } from '@backstage/plugin-signals';
+
 import { BCCTestPage } from '@red-hat-developer-hub/backstage-plugin-bcc-test';
 import { BUITestPage } from '@red-hat-developer-hub/backstage-plugin-bui-test';
 import { MUI4TestPage } from '@red-hat-developer-hub/backstage-plugin-mui4-test';
@@ -115,6 +118,7 @@ const routes = (
     <Route path="/search" element={<SearchPage />}>
       {searchPage}
     </Route>
+    <Route path="/notifications" element={<NotificationsPage />} />
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/bcc-tests" element={<BCCTestPage />} />
@@ -128,6 +132,7 @@ export default app.createRoot(
   <>
     <AlertDisplay />
     <OAuthRequestDialog />
+    <SignalsDisplay />
     <AppRouter>
       <Root>{routes}</Root>
     </AppRouter>

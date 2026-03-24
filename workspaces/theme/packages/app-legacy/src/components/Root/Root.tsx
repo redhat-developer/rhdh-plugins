@@ -41,6 +41,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
+import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
 import { LogoFull, LogoIcon } from '@red-hat-developer-hub/backstage-plugin-theme';
 
@@ -104,6 +105,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
       </SidebarGroup>
       <SidebarSpace />
       <SidebarDivider />
+      <NotificationsSidebarItem />
       <SidebarGroup
         label="Settings"
         icon={<UserSettingsSignInAvatar />}
