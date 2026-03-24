@@ -59,9 +59,10 @@ export async function findAllRepositories(
   );
 
   const alreadyImportedRepositories =
-    await deps.catalogHttpClient.listCatalogUrlLocationEntitiesById();
-  const alreadyImportedRepositoriesLocationTargets =
-    alreadyImportedRepositories.locations.map(location => location.target);
+    await deps.catalogHttpClient.listCatalogUrlLocations();
+  const alreadyImportedRepositoriesLocationTargets = Array.from(
+    new Set(alreadyImportedRepositories.uniqueCatalogUrlLocations.keys()),
+  );
 
   const { repositories: allRepositories, errors } =
     await deps.gitApiService.getRepositoriesFromIntegrations(
