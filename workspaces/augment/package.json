@@ -1,0 +1,17 @@
+{
+  "name": "@internal/augment",
+  "private": true,
+  "engines": {
+    "node": "22 || 24"
+  },
+  "scripts": {
+    "backstage-cli": "exit 0",
+    "build:api-reports:only": "exit 0",
+    "build:knip-reports": "exit 0",
+    "fix": "exit 0",
+    "postinstall": "cd ../../ && yarn install",
+    "prettier:check": "exit 0",
+    "tsc:full": "exit 0",
+    "test:all": "exit 0"
+  }
+}
