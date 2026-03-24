@@ -119,6 +119,8 @@ describe('documentHelpers', () => {
       expect(isValidFileType('PDF')).toBe(true);
       expect(isValidFileType('JSON')).toBe(true);
       expect(isValidFileType('YAML')).toBe(true);
+      expect(isValidFileType('.PDF')).toBe(true);
+      expect(isValidFileType('.YAML')).toBe(true);
     });
 
     it('should return false for unsupported file types', () => {

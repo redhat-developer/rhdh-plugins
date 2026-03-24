@@ -29,7 +29,6 @@ import {
   extractSessionFromMetadata,
   handleError,
   sanitizeTitle,
-  sendValidationError,
 } from './utils';
 
 describe('utils', () => {
@@ -121,15 +120,52 @@ describe('utils', () => {
       });
     });
 
-    it('should handle non-Error objects with 500 status', () => {
-      const error = 'String error';
+    it('should handle validation error strings with 400 status', () => {
+      const error = 'Field is required';
 
-      handleError(logger, mockRes as Response, error, 'Operation failed');
+      handleError(logger, mockRes as Response, error);
 
-      expect(mockStatus).toHaveBeenCalledWith(500);
+      expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
         status: 'error',
-        error: 'String error',
+        error: 'Field is required',
+      });
+      expect(logger.error).toHaveBeenCalledWith(
+        'Validation error: Field is required',
+      );
+    });
+
+    it('should handle empty validation error string', () => {
+      handleError(logger, mockRes as Response, '');
+
+      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockJson).toHaveBeenCalledWith({
+        status: 'error',
+        error: '',
+      });
+    });
+
+    it('should handle long validation error messages', () => {
+      const longMessage = 'a'.repeat(1000);
+
+      handleError(logger, mockRes as Response, longMessage);
+
+      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockJson).toHaveBeenCalledWith({
+        status: 'error',
+        error: longMessage,
+      });
+    });
+
+    it('should handle validation errors with special characters', () => {
+      const error = 'Invalid format: "name" must match /^[a-z]+$/';
+
+      handleError(logger, mockRes as Response, error);
+
+      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockJson).toHaveBeenCalledWith({
+        status: 'error',
+        error: 'Invalid format: "name" must match /^[a-z]+$/',
       });
     });
 
@@ -223,63 +259,6 @@ describe('utils', () => {
         handleError(logger, mockRes as Response, error, 'Test');
 
         expect(mockStatus).toHaveBeenCalledWith(expectedStatuses[index]);
-      });
-    });
-  });
-
-  describe('sendValidationError', () => {
-    let mockRes: Partial<Response>;
-    let mockJson: jest.Mock;
-    let mockStatus: jest.Mock;
-
-    beforeEach(() => {
-      mockJson = jest.fn().mockReturnThis();
-      mockStatus = jest.fn().mockReturnValue({ json: mockJson });
-      mockRes = {
-        status: mockStatus,
-      };
-    });
-
-    it('should send 400 status with error message', () => {
-      sendValidationError(mockRes as Response, 'Field is required');
-
-      expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({
-        status: 'error',
-        error: 'Field is required',
-      });
-    });
-
-    it('should handle empty error message', () => {
-      sendValidationError(mockRes as Response, '');
-
-      expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({
-        status: 'error',
-        error: '',
-      });
-    });
-
-    it('should handle long error messages', () => {
-      const longMessage = 'a'.repeat(1000);
-      sendValidationError(mockRes as Response, longMessage);
-
-      expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({
-        status: 'error',
-        error: longMessage,
-      });
-    });
-
-    it('should handle special characters in error message', () => {
-      sendValidationError(
-        mockRes as Response,
-        'Invalid format: "name" must match /^[a-z]+$/',
-      );
-
-      expect(mockJson).toHaveBeenCalledWith({
-        status: 'error',
-        error: 'Invalid format: "name" must match /^[a-z]+$/',
       });
     });
   });

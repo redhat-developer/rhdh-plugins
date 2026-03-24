@@ -27,21 +27,28 @@ import { NotebookSession } from './types/notebooksTypes';
 
 /**
  * Handle error and return appropriate HTTP status code and error message
+ * Supports both Error objects and plain strings (treated as validation errors)
  * @param logger - Logger service
  * @param res - Response object
- * @param error - Error object
- * @param message - Error message
+ * @param error - Error object or validation error string
+ * @param message - Optional context message (not used for string errors)
  * @returns Response object
  */
 export const handleError = (
   logger: LoggerService,
   res: Response,
   error: unknown,
-  message: string,
+  message?: string,
 ) => {
+  if (typeof error === 'string') {
+    logger.error(`Validation error: ${error}`);
+    res.status(400).json({ status: 'error', error });
+    return;
+  }
+
   // Properly stringify error for logging
   const errorMessage = error instanceof Error ? error.message : String(error);
-  const errormsg = `${message}: ${errorMessage}`;
+  const errormsg = message ? `${message}: ${errorMessage}` : errorMessage;
   logger.error(errormsg, error as Error);
 
   // Handle specific error types with appropriate HTTP status codes
@@ -64,15 +71,6 @@ export const handleError = (
     // 500 Internal Server Error - Unknown error type
     res.status(500).json({ status: 'error', error: errorMessage });
   }
-};
-
-/**
- * Send a validation error response
- * @param res - Response object
- * @param error - Error message
- */
-export const sendValidationError = (res: Response, error: string): void => {
-  res.status(400).json({ status: 'error', error });
 };
 
 /**

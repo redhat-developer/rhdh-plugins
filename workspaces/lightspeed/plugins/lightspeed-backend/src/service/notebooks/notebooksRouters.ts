@@ -28,7 +28,11 @@ import { lightspeedNotebooksUsePermission } from '@red-hat-developer-hub/backsta
 
 import { Readable } from 'stream';
 
-import { DEFAULT_LIGHTSPEED_SERVICE_PORT, upload } from '../constant';
+import {
+  DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  DEFAULT_LLAMA_STACK_PORT,
+  upload,
+} from '../constant';
 import { userPermissionAuthorization } from '../permission';
 import {
   isValidFileType,
@@ -43,7 +47,7 @@ import {
   createSessionListResponse,
   createSessionResponse,
 } from './types/notebooksResponses';
-import { handleError, sendValidationError } from './utils';
+import { handleError } from './utils';
 
 export interface NotebooksRouterOptions {
   logger: LoggerService;
@@ -207,7 +211,7 @@ export async function createNotebooksRouter(
       const { name, description, metadata } = req.body;
 
       if (!name) {
-        sendValidationError(res, 'name is required');
+        handleError(logger, res, 'name is required');
         return;
       }
 
@@ -285,12 +289,13 @@ export async function createNotebooksRouter(
       const { fileType, title, newTitle } = req.body;
 
       if (!title) {
-        sendValidationError(res, 'title is required');
+        handleError(logger, res, 'title is required');
         return;
       }
 
       if (!fileType || !isValidFileType(fileType)) {
-        sendValidationError(
+        handleError(
+          logger,
           res,
           `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log, url`,
         );
@@ -339,7 +344,7 @@ export async function createNotebooksRouter(
       const { sessionId, documentId } = req.params;
 
       if (!documentId) {
-        sendValidationError(res, 'document_id query parameter is required');
+        handleError(logger, res, 'document_id query parameter is required');
         return;
       }
 
@@ -384,7 +389,7 @@ export async function createNotebooksRouter(
       const { query } = req.body;
 
       if (!query) {
-        sendValidationError(res, 'query is required');
+        handleError(logger, res, 'query is required');
         return;
       }
 

@@ -63,15 +63,16 @@ export const lightspeedPlugin = createBackendPlugin({
             }),
           );
           logger.info('AI Notebooks enabled');
+
+          http.addAuthPolicy({
+            path: '/ai-notebooks/health',
+            allow: 'unauthenticated',
+          });
         }
 
         // Configure authentication policies
         http.addAuthPolicy({
           path: '/health',
-          allow: 'unauthenticated',
-        });
-        http.addAuthPolicy({
-          path: '/ai-notebooks/health',
           allow: 'unauthenticated',
         });
       },
