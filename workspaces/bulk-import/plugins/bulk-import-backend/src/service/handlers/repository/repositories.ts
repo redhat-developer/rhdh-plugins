@@ -58,14 +58,17 @@ export async function findAllRepositories(
     }',${pageNumber},${pageSize})..`,
   );
 
-  const alreadyImportedRepositories =
-    await deps.catalogHttpClient.listCatalogUrlLocations();
+  const [alreadyImportedRepositories, allRepositoriesResponse] =
+    await Promise.all([
+      deps.catalogHttpClient.listCatalogUrlLocations(),
+      deps.gitApiService.getRepositoriesFromIntegrations(search, pageSize),
+    ]);
+
   const alreadyImportedRepositoriesLocationTargets = Array.from(
     new Set(alreadyImportedRepositories.uniqueCatalogUrlLocations.keys()),
   );
 
-  const { repositories: allRepositories, errors } =
-    await deps.gitApiService.getRepositoriesFromIntegrations(search, pageSize);
+  const { repositories: allRepositories, errors } = allRepositoriesResponse;
 
   const notImportedYetRepositories = allRepositories.filter(repo => {
     const html_urlWithSlash = repo.html_url.concat('/');
