@@ -1,17 +1,72 @@
 {
   "name": "@internal/augment",
+  "version": "1.0.0",
   "private": true,
   "engines": {
     "node": "22 || 24"
   },
   "scripts": {
-    "backstage-cli": "exit 0",
-    "build:api-reports:only": "exit 0",
-    "build:knip-reports": "exit 0",
-    "fix": "exit 0",
-    "postinstall": "cd ../../ && yarn install",
-    "prettier:check": "exit 0",
-    "tsc:full": "exit 0",
-    "test:all": "exit 0"
-  }
+    "dev": "NODE_OPTIONS=--no-node-snapshot ; yarn workspaces foreach -A --include @red-hat-developer-hub/backstage-plugin-augment --include @red-hat-developer-hub/backstage-plugin-augment-backend --parallel -v -i run start",
+    "start": "NODE_OPTIONS=--no-node-snapshot ; backstage-cli repo start",
+    "build:backend": "yarn workspace backend build",
+    "build:all": "backstage-cli repo build --all",
+    "build:api-reports": "yarn tsc:full; yarn build:api-reports:only",
+    "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags",
+    "build:knip-reports": "backstage-repo-tools knip-reports",
+    "build-image": "yarn workspace backend build-image",
+    "tsc": "tsc",
+    "tsc:full": "tsc --skipLibCheck true --incremental false",
+    "clean": "backstage-cli repo clean",
+    "test": "backstage-cli repo test",
+    "test:all": "yarn prettier:check && yarn lint:all && backstage-cli repo test --coverage",
+    "test:e2e": "echo Skipping until we have tests: playwright test",
+    "fix": "backstage-cli repo fix",
+    "lint": "backstage-cli repo lint --since origin/main",
+    "lint:all": "backstage-cli repo lint",
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
+    "new": "backstage-cli new --scope @red-hat-developer-hub",
+    "postinstall": "cd ../../ && yarn install"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "plugins/*"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/augment"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.34.5",
+    "@backstage/e2e-test-utils": "^0.1.1",
+    "@backstage/repo-tools": "^0.16.0",
+    "@changesets/cli": "^2.27.1",
+    "@playwright/test": "1.58.2",
+    "knip": "^5.27.4",
+    "node-gyp": "^9.0.0",
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.0"
+  },
+  "resolutions": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "lru-cache": "^8"
+  },
+  "prettier": "@backstage/cli/config/prettier",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "maintainers": [
+    "@rrbanda"
+  ]
 }
