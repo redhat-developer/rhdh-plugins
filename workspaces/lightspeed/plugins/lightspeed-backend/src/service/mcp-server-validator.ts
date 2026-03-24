@@ -88,8 +88,10 @@ export class McpServerValidator {
           method: 'notifications/initialized',
         }),
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      }).catch(() => {
-        // notifications may not return a response — ignore errors
+      }).catch((err: unknown) => {
+        this.logger.debug(
+          `MCP initialized notification failed: ${err instanceof Error ? err.message : String(err)}`,
+        );
       });
 
       // Step 3: List tools
