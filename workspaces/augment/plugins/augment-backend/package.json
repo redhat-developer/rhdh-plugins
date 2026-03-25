@@ -46,7 +46,7 @@
     "test": "backstage-cli package test"
   },
   "dependencies": {
-    "@augment-adk/augment-adk": "^0.1.4",
+    "@augment-adk/augment-adk": "^0.1.12",
     "@backstage/backend-defaults": "^0.11.0",
     "@backstage/backend-plugin-api": "^1.4.0",
     "@backstage/config": "^1.3.3",

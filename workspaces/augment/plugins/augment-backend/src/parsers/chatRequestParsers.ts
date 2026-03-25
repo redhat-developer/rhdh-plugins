@@ -16,7 +16,6 @@
 import { InputError } from '@backstage/errors';
 import type { ChatRequest } from '../types';
 import {
-  MAX_MESSAGE_CONTENT_LENGTH,
   MAX_MESSAGES_PER_REQUEST,
   MAX_APPROVAL_FIELD_LENGTH,
 } from '../constants';
@@ -59,11 +58,6 @@ export function parseChatRequest(body: unknown): ChatRequest {
     }
     if (!VALID_ROLES.has(role)) {
       throw new InputError('Message role must be user, assistant, or system');
-    }
-    if (content.length > MAX_MESSAGE_CONTENT_LENGTH) {
-      throw new InputError(
-        `Message content exceeds maximum of ${MAX_MESSAGE_CONTENT_LENGTH} characters`,
-      );
     }
   }
 

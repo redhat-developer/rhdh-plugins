@@ -26,7 +26,6 @@ import type { VectorStoreConfig } from '../../types';
 export interface CreateStoreFormProps {
   localConfig: Partial<VectorStoreConfig>;
   embeddingModels: string[];
-  allModelIds: string[];
   modelsLoading: boolean;
   defaultEmbeddingModel?: string;
   onUpdate: <K extends keyof VectorStoreConfig>(
@@ -42,7 +41,6 @@ export interface CreateStoreFormProps {
 export function CreateStoreForm({
   localConfig,
   embeddingModels,
-  allModelIds,
   modelsLoading,
   defaultEmbeddingModel,
   onUpdate,
@@ -71,7 +69,7 @@ export function CreateStoreForm({
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
         <Autocomplete
           freeSolo
-          options={embeddingModels.length > 0 ? embeddingModels : allModelIds}
+          options={embeddingModels}
           value={localConfig.embeddingModel ?? ''}
           onInputChange={(_e, newValue) => onUpdate('embeddingModel', newValue)}
           getOptionLabel={opt => (typeof opt === 'string' ? opt : '')}
@@ -109,7 +107,11 @@ export function CreateStoreForm({
               {...params}
               label="Embedding Model"
               size="small"
-              helperText="Select from available models or type a custom identifier"
+              helperText={
+                embeddingModels.length > 0
+                  ? 'Select an embedding model or type a custom identifier'
+                  : 'No embedding models found on server — type a model identifier'
+              }
               InputProps={{
                 ...params.InputProps,
                 endAdornment: (

@@ -60,11 +60,6 @@ export const KBCreateStore = ({ vsConfig, onCreated }: Props) => {
     [models],
   );
 
-  const allModelIds = useMemo(
-    () => models.map(m => m.id).filter(Boolean) as string[],
-    [models],
-  );
-
   useEffect(() => {
     if (vsConfig.config && !localConfig) {
       setLocalConfig({ ...vsConfig.config });
@@ -117,7 +112,6 @@ export const KBCreateStore = ({ vsConfig, onCreated }: Props) => {
       <CreateStoreForm
         localConfig={localConfig}
         embeddingModels={embeddingModels}
-        allModelIds={allModelIds}
         modelsLoading={modelsLoading}
         defaultEmbeddingModel={vsConfig.config?.embeddingModel}
         onUpdate={update}

@@ -61,6 +61,7 @@ export function useApiQuery<T>(
   const [loading, setLoading] = useState(!skip);
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Ref keeps the latest initialValue without triggering callback recreation,
   // preventing stale closures when callers pass unstable references.
@@ -73,20 +74,27 @@ export function useApiQuery<T>(
       setLoading(false);
       return;
     }
+
+    // Abort any in-flight request so its stale response never overwrites ours
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       setLoading(true);
       setError(null);
       const result = await fetcher();
-      if (mountedRef.current) {
+      if (mountedRef.current && !controller.signal.aborted) {
         setData(result);
       }
     } catch (err) {
-      if (mountedRef.current) {
+      if (mountedRef.current && !controller.signal.aborted) {
         setError(normalizeErrorMessage(err));
-        setData(initialValueRef.current);
+        // Preserve previous data on error instead of resetting to initialValue
+        // to avoid "flash of empty list" on transient network failures
       }
     } finally {
-      if (mountedRef.current) {
+      if (mountedRef.current && !controller.signal.aborted) {
         setLoading(false);
       }
     }
@@ -101,6 +109,7 @@ export function useApiQuery<T>(
     refresh();
     return () => {
       mountedRef.current = false;
+      abortRef.current?.abort();
     };
   }, [refresh, depsKey]);
 

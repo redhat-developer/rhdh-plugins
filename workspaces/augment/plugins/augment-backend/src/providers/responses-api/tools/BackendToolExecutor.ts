@@ -18,11 +18,7 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { McpAuthService } from '../../llamastack/McpAuthService';
 import type { MCPServerConfig, ResponsesApiFunctionTool } from '../../../types';
-import {
-  BACKEND_TOOL_DISCOVERY_TTL_MS,
-  MAX_MCP_PROXY_RESPONSE_BYTES,
-  MAX_TOOL_OUTPUT_CHARS,
-} from '../../../constants';
+import { BACKEND_TOOL_DISCOVERY_TTL_MS } from '../../../constants';
 import { toErrorMessage } from '../../../services/utils';
 import { isPrivateUrlWithDns } from '../../../services/utils/SsrfGuard';
 import { connectToMcpServer } from '../../../services/utils/mcpClient';
@@ -56,40 +52,23 @@ interface ResolvedTool {
  *      callTool() and returns the result text
  */
 export class BackendToolExecutor {
-  private readonly registry = new Map<string, ResolvedTool>();
-  private readonly clients = new Map<string, Client>();
+  private registry = new Map<string, ResolvedTool>();
+  private clients = new Map<string, Client>();
   private cachedTools: ResponsesApiFunctionTool[] | null = null;
   private cachedServerKey = '';
   private lastDiscoveryTimestamp = 0;
   private inflightDiscovery: Promise<ResponsesApiFunctionTool[]> | null = null;
   private inflightServerKey = '';
-  private readonly maxOutputChars?: number;
+  private discoveryGeneration = 0;
 
   constructor(
     private readonly mcpAuth: McpAuthService,
     private readonly logger: LoggerService,
     private readonly skipTlsVerify: boolean,
-    options?: { maxOutputChars?: number },
-  ) {
-    this.maxOutputChars = options?.maxOutputChars;
-  }
+  ) {}
 
-  /**
-   * Truncate tool output to stay within the LLM context budget.
-   * Preserves the beginning (most relevant data) and appends a
-   * truncation notice so the LLM knows the output was cut.
-   */
-  static truncateOutput(output: string, maxChars: number): string {
-    if (output.length <= maxChars) return output;
-
-    const TRUNCATION_NOTICE = `\n\n[... OUTPUT TRUNCATED: showing ${maxChars.toLocaleString()} of ${output.length.toLocaleString()} chars. Ask the user to narrow the query for complete results. ...]`;
-    const keepChars = maxChars - TRUNCATION_NOTICE.length;
-    if (keepChars <= 0) return output.slice(0, maxChars);
-
-    const lastNewline = output.lastIndexOf('\n', keepChars);
-    const cutPoint = lastNewline > keepChars * 0.5 ? lastNewline : keepChars;
-
-    return output.slice(0, cutPoint) + TRUNCATION_NOTICE;
+  getDiscoveryGeneration(): number {
+    return this.discoveryGeneration;
   }
 
   static prefixName(serverId: string, toolName: string): string {
@@ -145,14 +124,18 @@ export class BackendToolExecutor {
   async discoverTools(
     servers: MCPServerConfig[],
   ): Promise<ResponsesApiFunctionTool[]> {
-    this.registry.clear();
-    await this.closeAllClients();
+    const nextRegistry = new Map<string, ResolvedTool>();
+    const nextClients = new Map<string, Client>();
     const tools: ResponsesApiFunctionTool[] = [];
 
     const results = await Promise.allSettled(
       servers.map(async server => {
-        const serverTools = await this.connectAndListTools(server);
-        return { server, serverTools };
+        // Admin-configured MCP servers are trusted; skip SSRF check
+        // so Kubernetes-internal URLs (resolving to private IPs) are
+        // not blocked during discovery.
+        const { client, tools: serverTools } =
+          await this.connectAndListToolsSafe(server, { skipSsrfCheck: true });
+        return { server, serverTools, client };
       }),
     );
 
@@ -163,7 +146,11 @@ export class BackendToolExecutor {
         );
         continue;
       }
-      const { server, serverTools } = result.value;
+      const { server, serverTools, client } = result.value;
+
+      if (client) {
+        nextClients.set(server.id, client);
+      }
 
       for (const tool of serverTools) {
         const prefixedName = BackendToolExecutor.prefixName(
@@ -182,7 +169,7 @@ export class BackendToolExecutor {
             properties: {},
           },
         };
-        this.registry.set(prefixedName, resolved);
+        nextRegistry.set(prefixedName, resolved);
 
         tools.push({
           type: 'function',
@@ -197,8 +184,91 @@ export class BackendToolExecutor {
       );
     }
 
+    // Preserve tools from servers that failed discovery (connection error,
+    // timeout, etc.) so a transient failure doesn't remove previously
+    // known tools from the registry.
+    const succeededServerIds = new Set<string>();
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value.client !== null) {
+        succeededServerIds.add(result.value.server.id);
+      }
+    }
+
+    let preservedCount = 0;
+    for (const [key, resolved] of this.registry) {
+      if (
+        !nextRegistry.has(key) &&
+        !succeededServerIds.has(resolved.serverId)
+      ) {
+        nextRegistry.set(key, resolved);
+        tools.push({
+          type: 'function',
+          name: resolved.prefixedName,
+          description: resolved.description,
+          parameters: BackendToolExecutor.slimSchema(resolved.inputSchema),
+        });
+        preservedCount++;
+      }
+    }
+    for (const [serverId, client] of this.clients) {
+      if (!nextClients.has(serverId) && !succeededServerIds.has(serverId)) {
+        nextClients.set(serverId, client);
+      }
+    }
+    if (preservedCount > 0) {
+      this.logger.warn(
+        `[BackendToolExecutor] Preserved ${preservedCount} tool(s) from failed server(s) during partial re-discovery`,
+      );
+    }
+
+    if (
+      nextRegistry.size === 0 &&
+      this.registry.size > 0 &&
+      succeededServerIds.size === 0
+    ) {
+      this.logger.warn(
+        `[BackendToolExecutor] No servers reachable during rediscovery (previous: ${this.registry.size}). ` +
+          `Keeping previous registry and cached tool definitions.`,
+      );
+      for (const [id, client] of nextClients) {
+        if (!this.clients.has(id) || this.clients.get(id) !== client) {
+          client.close().catch(err => {
+            this.logger.warn(
+              `[BackendToolExecutor] Error closing orphaned client ${id}: ${toErrorMessage(err)}`,
+            );
+          });
+        }
+      }
+      if (this.cachedTools) return this.cachedTools;
+      const rebuilt: ResponsesApiFunctionTool[] = [];
+      for (const resolved of this.registry.values()) {
+        rebuilt.push({
+          type: 'function',
+          name: resolved.prefixedName,
+          description: resolved.description,
+          parameters: BackendToolExecutor.slimSchema(resolved.inputSchema),
+        });
+      }
+      return rebuilt;
+    }
+
+    const staleClients = new Map(this.clients);
+    this.registry = nextRegistry;
+    this.clients = nextClients;
+    this.discoveryGeneration++;
+
+    for (const [id, client] of staleClients) {
+      if (!nextClients.has(id)) {
+        client.close().catch(err => {
+          this.logger.warn(
+            `[BackendToolExecutor] Error closing stale client ${id}: ${toErrorMessage(err)}`,
+          );
+        });
+      }
+    }
+
     this.logger.info(
-      `[BackendToolExecutor] Total: ${this.registry.size} function tools from ${servers.length} server(s)`,
+      `[BackendToolExecutor] Total: ${this.registry.size} function tools from ${servers.length} server(s) (generation=${this.discoveryGeneration})`,
     );
     return tools;
   }
@@ -246,18 +316,18 @@ export class BackendToolExecutor {
     return this.inflightDiscovery;
   }
 
-  /** Force the next `ensureToolsDiscovered` call to re-fetch. */
+  /**
+   * Force the next `ensureToolsDiscovered` call to re-fetch.
+   * Does NOT clear the registry or close clients — those remain
+   * available for in-flight requests until the next successful
+   * discovery atomically swaps them out.
+   */
   invalidateCache(): void {
     this.cachedTools = null;
     this.cachedServerKey = '';
     this.lastDiscoveryTimestamp = 0;
-    this.closeAllClients().catch(err => {
-      this.logger.warn(
-        `[BackendToolExecutor] Error closing clients during invalidation: ${toErrorMessage(err)}`,
-      );
-    });
     this.logger.info(
-      '[BackendToolExecutor] Tool cache invalidated, MCP clients closed',
+      '[BackendToolExecutor] Tool cache invalidated (registry and clients preserved for in-flight requests)',
     );
   }
 
@@ -373,16 +443,6 @@ export class BackendToolExecutor {
       args = {};
     }
 
-    const ssrfReason = await isPrivateUrlWithDns(tool.serverUrl);
-    if (ssrfReason) {
-      this.logger.error(
-        `[BackendToolExecutor] Blocked tool execution for ${tool.originalName}: URL blocked by SSRF guard (${ssrfReason})`,
-      );
-      return JSON.stringify({
-        error: `Tool server URL blocked: ${ssrfReason}`,
-      });
-    }
-
     this.logger.info(
       `[BackendToolExecutor] Executing ${tool.originalName} on ${tool.serverId}`,
     );
@@ -399,8 +459,7 @@ export class BackendToolExecutor {
           type: 'streamable-http',
           url: tool.serverUrl,
         };
-        await this.connectAndListTools(server);
-        const reconnectedClient = this.clients.get(tool.serverId);
+        const reconnectedClient = await this.reconnectToServer(server);
         if (!reconnectedClient) {
           return JSON.stringify({
             error: `Failed to connect to MCP server ${tool.serverId}`,
@@ -412,6 +471,37 @@ export class BackendToolExecutor {
       return await this.executeToolOnClient(client, tool, args);
     } catch (error) {
       const msg = toErrorMessage(error);
+
+      if (this.isSessionError(msg)) {
+        this.logger.warn(
+          `[BackendToolExecutor] Session expired for ${tool.serverId}, reconnecting and retrying...`,
+        );
+        this.clients.delete(tool.serverId);
+        const server: MCPServerConfig = {
+          id: tool.serverId,
+          name: tool.serverId,
+          type: 'streamable-http',
+          url: tool.serverUrl,
+        };
+        const freshClient = await this.reconnectToServer(server);
+        if (!freshClient) {
+          return JSON.stringify({
+            error: `Failed to reconnect to MCP server ${tool.serverId} after session expiry`,
+          });
+        }
+        try {
+          return await this.executeToolOnClient(freshClient, tool, args);
+        } catch (retryError) {
+          const retryMsg = toErrorMessage(retryError);
+          this.logger.error(
+            `[BackendToolExecutor] Retry failed for ${tool.originalName} on ${tool.serverId}: ${retryMsg}`,
+          );
+          return JSON.stringify({
+            error: `Tool execution failed after reconnect: ${retryMsg}`,
+          });
+        }
+      }
+
       this.logger.error(
         `[BackendToolExecutor] Failed to execute ${tool.originalName} on ${tool.serverId}: ${msg}`,
       );
@@ -424,21 +514,26 @@ export class BackendToolExecutor {
   // ===========================================================================
 
   /**
-   * Connect to an MCP server using the official SDK and list its tools.
-   * The Client handles the full MCP protocol: initialize handshake,
-   * session management, and transport details.
+   * Connect to an MCP server and list its tools without mutating
+   * instance state. Returns both the client and the tool list so
+   * `discoverTools` can collect them into temporary maps and perform
+   * an atomic swap.
    */
-  private async connectAndListTools(
+  private async connectAndListToolsSafe(
     server: MCPServerConfig,
-  ): Promise<
-    Array<{ name: string; description?: string; inputSchema?: unknown }>
-  > {
-    const ssrfReason = await isPrivateUrlWithDns(server.url);
-    if (ssrfReason) {
-      this.logger.warn(
-        `[BackendToolExecutor] Skipping MCP server ${server.id}: URL blocked by SSRF guard (${ssrfReason})`,
-      );
-      return [];
+    options?: { skipSsrfCheck?: boolean },
+  ): Promise<{
+    client: Client | null;
+    tools: Array<{ name: string; description?: string; inputSchema?: unknown }>;
+  }> {
+    if (!options?.skipSsrfCheck) {
+      const ssrfReason = await isPrivateUrlWithDns(server.url);
+      if (ssrfReason) {
+        this.logger.warn(
+          `[BackendToolExecutor] Skipping MCP server ${server.id}: URL blocked by SSRF guard (${ssrfReason})`,
+        );
+        return { client: null, tools: [] };
+      }
     }
 
     this.logger.info(
@@ -458,14 +553,39 @@ export class BackendToolExecutor {
         `[BackendToolExecutor] ${server.id} tools/list: ${tools.length} tool(s) [${tools.map(t => t.name).join(', ')}]`,
       );
 
-      this.clients.set(server.id, client);
-      return tools;
+      return { client, tools };
     } catch (err) {
       this.logger.error(
         `[BackendToolExecutor] Failed to connect to ${server.id}: ${toErrorMessage(err)}`,
       );
-      return [];
+      return { client: null, tools: [] };
     }
+  }
+
+  /**
+   * Reconnect to a single MCP server and store the client directly.
+   * Used only by `executeTool` when a client is missing (reconnection path).
+   */
+  private async reconnectToServer(
+    server: MCPServerConfig,
+  ): Promise<Client | null> {
+    const { client } = await this.connectAndListToolsSafe(server, {
+      skipSsrfCheck: true,
+    });
+    if (client) {
+      this.clients.set(server.id, client);
+    }
+    return client;
+  }
+
+  private isSessionError(message: string): boolean {
+    const lower = message.toLowerCase();
+    return (
+      lower.includes('session not found') ||
+      lower.includes('session expired') ||
+      lower.includes('session_not_found') ||
+      lower.includes('invalid session')
+    );
   }
 
   /**
@@ -512,30 +632,11 @@ export class BackendToolExecutor {
       formattedResult = JSON.stringify(result.content ?? result);
     }
 
-    if (formattedResult.length > MAX_MCP_PROXY_RESPONSE_BYTES) {
-      this.logger.warn(
-        `[BackendToolExecutor] Response from ${tool.serverId}/${tool.originalName} exceeds size limit (${formattedResult.length} bytes > ${MAX_MCP_PROXY_RESPONSE_BYTES})`,
-      );
-      return JSON.stringify({
-        error: `Tool response too large (${Math.round(formattedResult.length / 1024)}KB). Maximum allowed: ${Math.round(MAX_MCP_PROXY_RESPONSE_BYTES / 1024)}KB`,
-      });
-    }
-
-    const maxChars = this.maxOutputChars ?? MAX_TOOL_OUTPUT_CHARS;
-    if (formattedResult.length > maxChars) {
-      this.logger.warn(
-        `[BackendToolExecutor] Truncating output from ${tool.serverId}/${tool.originalName}: ${formattedResult.length} chars -> ${maxChars} chars (prevents context window overflow)`,
-      );
-      return BackendToolExecutor.truncateOutput(formattedResult, maxChars);
-    }
-
     return formattedResult;
   }
 
-  /**
-   * Close all connected MCP SDK clients.
-   */
-  private async closeAllClients(): Promise<void> {
+  /** Close all connected MCP SDK clients (used for graceful shutdown). */
+  async closeAllClients(): Promise<void> {
     const closePromises = Array.from(this.clients.entries()).map(
       async ([serverId, client]) => {
         try {

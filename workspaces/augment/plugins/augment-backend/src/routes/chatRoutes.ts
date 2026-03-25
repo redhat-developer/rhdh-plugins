@@ -199,10 +199,62 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'Failed to process chat message',
       async (req, res) => {
         const parsed = parseChatRequest(req.body);
-        const { messages, enableRAG, previousResponseId, conversationId } =
-          parsed;
+        const {
+          messages,
+          enableRAG,
+          previousResponseId,
+          conversationId,
+          sessionId,
+        } = parsed;
 
         await provider.refreshDynamicConfig?.();
+
+        let resolvedConversationId = conversationId;
+        if (sessionId && sessions && !resolvedConversationId) {
+          const userRef = await getUserRef(req);
+          const session = await sessions.getSession(sessionId, userRef);
+          if (!session) {
+            throw new InputError(`Session ${sessionId} not found`);
+          }
+          if (session.conversationId) {
+            resolvedConversationId = session.conversationId;
+          } else if (provider.conversations) {
+            let newConvId: string | undefined;
+            try {
+              ({ conversationId: newConvId } =
+                await provider.conversations.create());
+              const linked = await sessions.setConversationIdIfNull(
+                sessionId,
+                userRef,
+                newConvId,
+              );
+              if (linked) {
+                resolvedConversationId = newConvId;
+                logger.info(
+                  `Created conversation ${newConvId} for session ${sessionId}`,
+                );
+              } else {
+                await provider.conversations
+                  .deleteContainer?.(newConvId)
+                  .catch(() => {});
+                const refreshed = await sessions.getSession(sessionId, userRef);
+                resolvedConversationId = refreshed?.conversationId ?? undefined;
+                logger.info(
+                  `Race resolved: session ${sessionId} already linked to ${resolvedConversationId}, cleaned up ${newConvId}`,
+                );
+              }
+            } catch (convErr) {
+              if (newConvId) {
+                await provider.conversations
+                  .deleteContainer?.(newConvId)
+                  .catch(() => {});
+              }
+              logger.warn(
+                `Could not create LlamaStack conversation for session ${sessionId}, continuing without: ${convErr}`,
+              );
+            }
+          }
+        }
 
         const userContent = getLastUserContent(messages);
 
@@ -221,7 +273,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
           messages,
           enableRAG,
           previousResponseId,
-          conversationId,
+          conversationId: resolvedConversationId,
         });
 
         if (provider.safety?.isEnabled()) {

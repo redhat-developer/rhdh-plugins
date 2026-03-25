@@ -56,6 +56,7 @@ export class VectorStoreFacade {
   private docSync: DocumentSyncService | null;
   private readonly logger: LoggerService;
   private readonly ctx: VectorStoreFacadeContext;
+  private initPromise: Promise<void> | null = null;
 
   constructor(deps: VectorStoreFacadeDeps) {
     this.vectorStore = deps.vectorStore;
@@ -87,10 +88,25 @@ export class VectorStoreFacade {
       throw new Error('Vector store service not created');
     }
 
+    // Single-flight guard: concurrent callers share one init attempt
+    if (this.initPromise) {
+      await this.initPromise;
+      return;
+    }
+
+    this.initPromise = this.doVectorStoreInit();
     try {
-      await this.vectorStore.ensureExists();
+      await this.initPromise;
+    } finally {
+      this.initPromise = null;
+    }
+  }
+
+  private async doVectorStoreInit(): Promise<void> {
+    try {
+      await this.vectorStore!.ensureExists();
       this.ctx.configResolution.setLlamaStackConfig(
-        this.vectorStore.getConfig(),
+        this.vectorStore!.getConfig(),
       );
       this.ctx.setVectorStoreReady(true);
       this.logger.info('Vector store initialized on first use');
@@ -109,7 +125,12 @@ export class VectorStoreFacade {
     if (!this.vectorStore) {
       return [];
     }
-    if (!this.ctx.getVectorStoreReady()) {
+    try {
+      await this.ensureVectorStoreReady();
+    } catch (error) {
+      this.logger.warn(
+        `Vector store init failed, cannot list documents: ${toErrorMessage(error)}`,
+      );
       return [];
     }
     return this.vectorStore.listDocuments(vectorStoreId);
@@ -257,9 +278,7 @@ export class VectorStoreFacade {
     if (!this.vectorStore) {
       throw new Error('Vector store service not available');
     }
-    if (!this.ctx.getVectorStoreReady()) {
-      throw new Error('Vector store not initialized');
-    }
+    await this.ensureVectorStoreReady();
     return this.vectorStore.deleteDocument(fileId, vectorStoreId);
   }
 

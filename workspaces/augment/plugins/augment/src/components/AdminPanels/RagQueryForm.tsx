@@ -18,7 +18,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
+import { ToggleSwitch as Switch } from './shared/ToggleSwitch';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -29,6 +29,7 @@ import StorageIcon from '@mui/icons-material/Storage';
 import CircularProgress from '@mui/material/CircularProgress';
 import type { ActiveVectorStore } from '../../hooks';
 import type { RagTestMode } from './KBRagTest';
+import { SELECT_MENU_PROPS } from './shared/selectMenuProps';
 
 const MAX_RESULTS_OPTIONS = [3, 5, 10, 15, 20];
 
@@ -156,7 +157,10 @@ export function RagQueryForm({
             value={selectedStore?.id ?? ''}
             onChange={e => onSelectStore(e.target.value)}
             sx={{ minWidth: 160, flexGrow: 1 }}
-            SelectProps={{ displayEmpty: true }}
+            SelectProps={{
+              displayEmpty: true,
+              MenuProps: SELECT_MENU_PROPS,
+            }}
           >
             {stores.map(s => (
               <MenuItem key={s.id} value={s.id}>
@@ -180,7 +184,6 @@ export function RagQueryForm({
           <FormControlLabel
             control={
               <Switch
-                size="small"
                 checked={searchAllStores}
                 onChange={(_, v) => onSearchAllStoresChange(v)}
               />
@@ -212,6 +215,7 @@ export function RagQueryForm({
           value={maxResults}
           onChange={e => onMaxResultsChange(Number(e.target.value))}
           sx={{ minWidth: 88 }}
+          SelectProps={{ MenuProps: SELECT_MENU_PROPS }}
         >
           {MAX_RESULTS_OPTIONS.map(n => (
             <MenuItem key={n} value={n}>

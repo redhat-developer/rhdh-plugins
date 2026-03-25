@@ -563,12 +563,14 @@ export class ResponsesApiService {
     };
 
     // conversation and previous_response_id are mutually exclusive in
-    // Llama Stack.  Prefer conversation so tool-continuation turns are
-    // also stored in the conversation container for history retrieval.
-    if (options.conversationId) {
-      body.conversation = options.conversationId;
-    } else if (options.previousResponseId) {
+    // Llama Stack.  Prefer previous_response_id for function_call_output
+    // continuations: Llama Stack's conversation mode omits the assistant's
+    // tool-call from stored messages, so chained continuations fail with
+    // 500 when the matching function_call can't be found.
+    if (options.previousResponseId) {
       body.previous_response_id = options.previousResponseId;
+    } else if (options.conversationId) {
+      body.conversation = options.conversationId;
     }
     if (options.tools && options.tools.length > 0) {
       body.tools = options.tools;

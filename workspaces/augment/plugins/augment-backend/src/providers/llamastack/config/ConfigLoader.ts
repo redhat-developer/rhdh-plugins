@@ -88,7 +88,7 @@ export class ConfigLoader {
     | {
         agents: Record<string, AgentConfig>;
         defaultAgent: string;
-        maxAgentTurns: number;
+        maxAgentTurns?: number;
       }
     | undefined
     | null = null;
@@ -552,7 +552,7 @@ export class ConfigLoader {
     | {
         agents: Record<string, AgentConfig>;
         defaultAgent: string;
-        maxAgentTurns: number;
+        maxAgentTurns?: number;
       }
     | undefined {
     if (this.cachedAgentConfigs !== null) {
@@ -568,7 +568,7 @@ export class ConfigLoader {
     | {
         agents: Record<string, AgentConfig>;
         defaultAgent: string;
-        maxAgentTurns: number;
+        maxAgentTurns?: number;
       }
     | undefined {
     const agentsRaw = this.config.getOptional('augment.agents') as
@@ -596,11 +596,12 @@ export class ConfigLoader {
       (this.config.getOptionalString('augment.defaultAgent') as string) ||
       Object.keys(agents)[0];
 
-    const maxAgentTurns =
-      this.config.getOptionalNumber('augment.maxAgentTurns') ?? 10;
+    const maxAgentTurns = this.config.getOptionalNumber(
+      'augment.maxAgentTurns',
+    );
 
     this.logger.info(
-      `[MultiAgent] Loaded ${Object.keys(agents).length} agent(s): [${Object.keys(agents).join(', ')}], default="${defaultAgent}", maxTurns=${maxAgentTurns}`,
+      `[MultiAgent] Loaded ${Object.keys(agents).length} agent(s): [${Object.keys(agents).join(', ')}], default="${defaultAgent}", maxTurns=${maxAgentTurns ?? 'unlimited'}`,
     );
 
     return { agents, defaultAgent, maxAgentTurns };
@@ -630,6 +631,7 @@ export class ConfigLoader {
     this.warnIfNotArray(raw, key, 'mcpServers');
     this.warnIfNotArray(raw, key, 'handoffs');
     this.warnIfNotArray(raw, key, 'asTools');
+    this.warnIfNotArray(raw, key, 'vectorStoreIds');
 
     return {
       name: raw.name,
@@ -640,6 +642,7 @@ export class ConfigLoader {
       handoffs: this.asStringArray(raw.handoffs),
       asTools: this.asStringArray(raw.asTools),
       enableRAG: raw.enableRAG as boolean | undefined,
+      vectorStoreIds: this.asStringArray(raw.vectorStoreIds),
       enableWebSearch: raw.enableWebSearch as boolean | undefined,
       enableCodeInterpreter: raw.enableCodeInterpreter as boolean | undefined,
       functions: raw.functions as AgentConfig['functions'] | undefined,
@@ -792,7 +795,9 @@ export class ConfigLoader {
     const obj = raw as Record<string, unknown>;
     const enabled = typeof obj.enabled === 'boolean' ? obj.enabled : false;
     const maxToolsPerTurn =
-      typeof obj.maxToolsPerTurn === 'number' ? obj.maxToolsPerTurn : 6;
+      typeof obj.maxToolsPerTurn === 'number'
+        ? obj.maxToolsPerTurn
+        : Number.MAX_SAFE_INTEGER;
     const activationThreshold =
       typeof obj.activationThreshold === 'number'
         ? obj.activationThreshold

@@ -126,10 +126,4 @@ export interface MCPServerConfig {
    * This dramatically reduces token usage for servers with many tools.
    */
   allowedTools?: string[];
-  /**
-   * Maximum tool output size in characters for this server's tools.
-   * Outputs exceeding this limit are truncated with a notice.
-   * Overrides the global MAX_TOOL_OUTPUT_CHARS constant.
-   */
-  maxResponseChars?: number;
 }
