@@ -130,15 +130,45 @@ export class BackendToolExecutor {
 
     const results = await Promise.allSettled(
       servers.map(async server => {
-        // Admin-configured MCP servers are trusted; skip SSRF check
-        // so Kubernetes-internal URLs (resolving to private IPs) are
-        // not blocked during discovery.
         const { client, tools: serverTools } =
           await this.connectAndListToolsSafe(server, { skipSsrfCheck: true });
         return { server, serverTools, client };
       }),
     );
 
+    this.processDiscoveryResults(results, nextRegistry, nextClients, tools);
+
+    const succeededServerIds = this.collectSucceededServerIds(results);
+    this.preserveFailedServerTools(
+      succeededServerIds,
+      nextRegistry,
+      nextClients,
+      tools,
+    );
+
+    if (this.shouldKeepPreviousRegistry(nextRegistry, succeededServerIds)) {
+      this.closeOrphanedClients(nextClients);
+      return this.rebuildFromExistingRegistry();
+    }
+
+    this.swapRegistryAndCleanup(nextRegistry, nextClients, servers.length);
+    return tools;
+  }
+
+  private processDiscoveryResults(
+    results: PromiseSettledResult<{
+      server: MCPServerConfig;
+      serverTools: Array<{
+        name: string;
+        description?: string;
+        inputSchema?: unknown;
+      }>;
+      client: Client | null;
+    }>[],
+    nextRegistry: Map<string, ResolvedTool>,
+    nextClients: Map<string, Client>,
+    tools: ResponsesApiFunctionTool[],
+  ): void {
     for (const result of results) {
       if (result.status === 'rejected') {
         this.logger.error(
@@ -147,10 +177,7 @@ export class BackendToolExecutor {
         continue;
       }
       const { server, serverTools, client } = result.value;
-
-      if (client) {
-        nextClients.set(server.id, client);
-      }
+      if (client) nextClients.set(server.id, client);
 
       for (const tool of serverTools) {
         const prefixedName = BackendToolExecutor.prefixName(
@@ -170,7 +197,6 @@ export class BackendToolExecutor {
           },
         };
         nextRegistry.set(prefixedName, resolved);
-
         tools.push({
           type: 'function',
           name: prefixedName,
@@ -178,22 +204,33 @@ export class BackendToolExecutor {
           parameters: BackendToolExecutor.slimSchema(resolved.inputSchema),
         });
       }
-
       this.logger.info(
         `[BackendToolExecutor] Discovered ${serverTools.length} tools from ${server.id}: [${serverTools.map(t => t.name).join(', ')}]`,
       );
     }
+  }
 
-    // Preserve tools from servers that failed discovery (connection error,
-    // timeout, etc.) so a transient failure doesn't remove previously
-    // known tools from the registry.
-    const succeededServerIds = new Set<string>();
+  private collectSucceededServerIds(
+    results: PromiseSettledResult<{
+      server: MCPServerConfig;
+      client: Client | null;
+    }>[],
+  ): Set<string> {
+    const ids = new Set<string>();
     for (const result of results) {
       if (result.status === 'fulfilled' && result.value.client !== null) {
-        succeededServerIds.add(result.value.server.id);
+        ids.add(result.value.server.id);
       }
     }
+    return ids;
+  }
 
+  private preserveFailedServerTools(
+    succeededServerIds: Set<string>,
+    nextRegistry: Map<string, ResolvedTool>,
+    nextClients: Map<string, Client>,
+    tools: ResponsesApiFunctionTool[],
+  ): void {
     let preservedCount = 0;
     for (const [key, resolved] of this.registry) {
       if (
@@ -220,38 +257,54 @@ export class BackendToolExecutor {
         `[BackendToolExecutor] Preserved ${preservedCount} tool(s) from failed server(s) during partial re-discovery`,
       );
     }
+  }
 
-    if (
+  private shouldKeepPreviousRegistry(
+    nextRegistry: Map<string, ResolvedTool>,
+    succeededServerIds: Set<string>,
+  ): boolean {
+    return (
       nextRegistry.size === 0 &&
       this.registry.size > 0 &&
       succeededServerIds.size === 0
-    ) {
-      this.logger.warn(
-        `[BackendToolExecutor] No servers reachable during rediscovery (previous: ${this.registry.size}). ` +
-          `Keeping previous registry and cached tool definitions.`,
-      );
-      for (const [id, client] of nextClients) {
-        if (!this.clients.has(id) || this.clients.get(id) !== client) {
-          client.close().catch(err => {
-            this.logger.warn(
-              `[BackendToolExecutor] Error closing orphaned client ${id}: ${toErrorMessage(err)}`,
-            );
-          });
-        }
-      }
-      if (this.cachedTools) return this.cachedTools;
-      const rebuilt: ResponsesApiFunctionTool[] = [];
-      for (const resolved of this.registry.values()) {
-        rebuilt.push({
-          type: 'function',
-          name: resolved.prefixedName,
-          description: resolved.description,
-          parameters: BackendToolExecutor.slimSchema(resolved.inputSchema),
+    );
+  }
+
+  private closeOrphanedClients(nextClients: Map<string, Client>): void {
+    this.logger.warn(
+      `[BackendToolExecutor] No servers reachable during rediscovery (previous: ${this.registry.size}). ` +
+        `Keeping previous registry and cached tool definitions.`,
+    );
+    for (const [id, client] of nextClients) {
+      if (!this.clients.has(id) || this.clients.get(id) !== client) {
+        client.close().catch(err => {
+          this.logger.warn(
+            `[BackendToolExecutor] Error closing orphaned client ${id}: ${toErrorMessage(err)}`,
+          );
         });
       }
-      return rebuilt;
     }
+  }
 
+  private rebuildFromExistingRegistry(): ResponsesApiFunctionTool[] {
+    if (this.cachedTools) return this.cachedTools;
+    const rebuilt: ResponsesApiFunctionTool[] = [];
+    for (const resolved of this.registry.values()) {
+      rebuilt.push({
+        type: 'function',
+        name: resolved.prefixedName,
+        description: resolved.description,
+        parameters: BackendToolExecutor.slimSchema(resolved.inputSchema),
+      });
+    }
+    return rebuilt;
+  }
+
+  private swapRegistryAndCleanup(
+    nextRegistry: Map<string, ResolvedTool>,
+    nextClients: Map<string, Client>,
+    serverCount: number,
+  ): void {
     const staleClients = new Map(this.clients);
     this.registry = nextRegistry;
     this.clients = nextClients;
@@ -268,9 +321,8 @@ export class BackendToolExecutor {
     }
 
     this.logger.info(
-      `[BackendToolExecutor] Total: ${this.registry.size} function tools from ${servers.length} server(s) (generation=${this.discoveryGeneration})`,
+      `[BackendToolExecutor] Total: ${this.registry.size} function tools from ${serverCount} server(s) (generation=${this.discoveryGeneration})`,
     );
-    return tools;
   }
 
   private static serverCacheKey(servers: MCPServerConfig[]): string {

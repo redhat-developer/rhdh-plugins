@@ -105,17 +105,11 @@ export class AdkOrchestrator {
   ): Promise<ChatResponse> {
     try {
       const userInput = requireLastUserMessage(request, '[AdkOrchestrator] ');
-      const agentRef: AgentRef = { key: snapshot.defaultAgentKey };
-      const resumeState = this.getConversationState(
+      const { agentRef, resumeState } = this.resolveAgentContinuity(
         request.conversationId,
         snapshot,
+        'chat',
       );
-      if (resumeState) {
-        agentRef.key = resumeState.currentAgentKey;
-        this.logger.info(
-          `[AdkOrchestrator] Resuming from agent "${resumeState.currentAgentKey}" for conversation ${request.conversationId}`,
-        );
-      }
       const runOptions = await this.buildRunOptions(
         snapshot,
         buildDepsForAgent,
@@ -127,25 +121,7 @@ export class AdkOrchestrator {
       const result = await adkRun(userInput, runOptions);
 
       this.saveConversationState(request.conversationId, result);
-
-      if (result.pendingApprovals?.length && this.backendApprovalStore) {
-        for (const pa of result.pendingApprovals) {
-          const adkEntry = this.adkApprovalStore.get(
-            result.responseId ?? '',
-            pa.approvalRequestId,
-          );
-          if (adkEntry) {
-            if (!adkEntry.conversationId && request.conversationId) {
-              adkEntry.conversationId = request.conversationId;
-            }
-            this.backendApprovalStore.store(adkEntry);
-            this.logger.info(
-              `[HITL] Mirrored pending approval to BackendApprovalStore (chat): ` +
-                `tool=${pa.toolName}, callId=${pa.approvalRequestId}`,
-            );
-          }
-        }
-      }
+      this.mirrorPendingApprovals(result, request.conversationId);
 
       return toChatResponse(result);
     } catch (error) {
@@ -171,17 +147,11 @@ export class AdkOrchestrator {
   ): Promise<void> {
     try {
       const userInput = requireLastUserMessage(request, '[AdkOrchestrator] ');
-      const agentRef: AgentRef = { key: snapshot.defaultAgentKey };
-      const resumeState = this.getConversationState(
+      const { agentRef, resumeState } = this.resolveAgentContinuity(
         request.conversationId,
         snapshot,
+        'stream',
       );
-      if (resumeState) {
-        agentRef.key = resumeState.currentAgentKey;
-        this.logger.info(
-          `[AdkOrchestrator] Resuming stream from agent "${resumeState.currentAgentKey}" for conversation ${request.conversationId}`,
-        );
-      }
       const runOptions = await this.buildRunOptions(
         snapshot,
         buildDepsForAgent,
@@ -200,8 +170,7 @@ export class AdkOrchestrator {
         if (event.type === 'agent_start') {
           agentRef.key = event.agentKey;
         }
-        const frontendEvents = mapAdkEventToFrontend(event);
-        for (const fe of frontendEvents) {
+        for (const fe of mapAdkEventToFrontend(event)) {
           onEvent(fe);
         }
       }
@@ -209,25 +178,7 @@ export class AdkOrchestrator {
       const result = streamed.result;
 
       this.saveConversationState(request.conversationId, result);
-
-      if (result.pendingApprovals?.length && this.backendApprovalStore) {
-        for (const pa of result.pendingApprovals) {
-          const adkEntry = this.adkApprovalStore.get(
-            result.responseId ?? '',
-            pa.approvalRequestId,
-          );
-          if (adkEntry) {
-            if (!adkEntry.conversationId && request.conversationId) {
-              adkEntry.conversationId = request.conversationId;
-            }
-            this.backendApprovalStore.store(adkEntry);
-            this.logger.info(
-              `[HITL] Mirrored pending approval to BackendApprovalStore: ` +
-                `tool=${pa.toolName}, callId=${pa.approvalRequestId}`,
-            );
-          }
-        }
-      }
+      this.mirrorPendingApprovals(result, request.conversationId);
 
       onEvent(
         JSON.stringify({
@@ -250,6 +201,47 @@ export class AdkOrchestrator {
           error: message,
           code: 'adk_error',
         }),
+      );
+    }
+  }
+
+  private resolveAgentContinuity(
+    conversationId: string | undefined,
+    snapshot: AgentGraphSnapshot,
+    mode: 'chat' | 'stream',
+  ): { agentRef: AgentRef; resumeState: RunState | undefined } {
+    const agentRef: AgentRef = { key: snapshot.defaultAgentKey };
+    const resumeState = this.getConversationState(conversationId, snapshot);
+    if (resumeState) {
+      agentRef.key = resumeState.currentAgentKey;
+      this.logger.info(
+        `[AdkOrchestrator] Resuming ${mode} from agent "${resumeState.currentAgentKey}" for conversation ${conversationId}`,
+      );
+    }
+    return { agentRef, resumeState };
+  }
+
+  private mirrorPendingApprovals(
+    result: {
+      pendingApprovals?: Array<{ toolName: string; approvalRequestId: string }>;
+      responseId?: string;
+    },
+    conversationId?: string,
+  ): void {
+    if (!result.pendingApprovals?.length || !this.backendApprovalStore) return;
+    for (const pa of result.pendingApprovals) {
+      const adkEntry = this.adkApprovalStore.get(
+        result.responseId ?? '',
+        pa.approvalRequestId,
+      );
+      if (!adkEntry) continue;
+      if (!adkEntry.conversationId && conversationId) {
+        adkEntry.conversationId = conversationId;
+      }
+      this.backendApprovalStore.store(adkEntry);
+      this.logger.info(
+        `[HITL] Mirrored pending approval to BackendApprovalStore: ` +
+          `tool=${pa.toolName}, callId=${pa.approvalRequestId}`,
       );
     }
   }
@@ -314,6 +306,7 @@ export class AdkOrchestrator {
    */
   private async discoverBackendTools(deps: ChatDeps): Promise<FunctionTool[]> {
     if (!deps.backendToolExecutor) return [];
+    const toolExecutor = deps.backendToolExecutor;
 
     const meta = await this.ensureToolMetaCached(deps);
 
@@ -325,7 +318,7 @@ export class AdkOrchestrator {
       strict: false,
       execute: async (args: Record<string, unknown>): Promise<string> => {
         try {
-          return await deps.backendToolExecutor!.executeTool(
+          return await toolExecutor.executeTool(
             tool.name,
             JSON.stringify(args),
           );
@@ -350,11 +343,14 @@ export class AdkOrchestrator {
   private async ensureToolMetaCached(
     deps: ChatDeps,
   ): Promise<CachedToolMeta[]> {
+    const executor = deps.backendToolExecutor;
+    if (!executor) return [];
+
     const cacheKey = deps.mcpServers
       .map(s => s.id)
       .sort((a, b) => a.localeCompare(b))
       .join(',');
-    const currentGen = deps.backendToolExecutor?.getDiscoveryGeneration() ?? -1;
+    const currentGen = executor.getDiscoveryGeneration();
 
     if (
       this.cachedToolMeta &&
@@ -378,7 +374,7 @@ export class AdkOrchestrator {
 
     try {
       discovered = await Promise.race([
-        deps.backendToolExecutor!.ensureToolsDiscovered(deps.mcpServers),
+        executor.ensureToolsDiscovered(deps.mcpServers),
         new Promise<never>((_, reject) =>
           setTimeout(
             () => reject(new Error('Tool discovery timed out')),
@@ -408,8 +404,7 @@ export class AdkOrchestrator {
 
     this.cachedToolMeta = meta;
     this.cachedToolMetaKey = cacheKey;
-    this.cachedDiscoveryGeneration =
-      deps.backendToolExecutor?.getDiscoveryGeneration() ?? -1;
+    this.cachedDiscoveryGeneration = executor.getDiscoveryGeneration();
     return meta;
   }
 

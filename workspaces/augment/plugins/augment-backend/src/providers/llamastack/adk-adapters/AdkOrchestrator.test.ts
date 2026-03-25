@@ -927,48 +927,48 @@ describe('AdkOrchestrator', () => {
     });
   });
 
-  describe('multi-turn agent continuity', () => {
-    function makeMultiAgentSnapshot(): AgentGraphSnapshot {
-      return {
-        agents: new Map([
-          [
-            'router',
-            {
-              key: 'router',
-              functionName: 'router',
-              config: {
-                name: 'Router',
-                instructions: 'Route messages.',
-                handoffs: ['worker'],
-              },
-              handoffTools: [],
-              agentAsToolTools: [],
-              handoffTargetKeys: new Set(['worker']),
-              asToolTargetKeys: new Set(),
+  function makeMultiAgentSnapshot(): AgentGraphSnapshot {
+    return {
+      agents: new Map([
+        [
+          'router',
+          {
+            key: 'router',
+            functionName: 'router',
+            config: {
+              name: 'Router',
+              instructions: 'Route messages.',
+              handoffs: ['worker'],
             },
-          ],
-          [
-            'worker',
-            {
-              key: 'worker',
-              functionName: 'worker',
-              config: {
-                name: 'Worker Agent',
-                instructions: 'Do actual work.',
-                handoffDescription: 'Handles work requests.',
-              },
-              handoffTools: [],
-              agentAsToolTools: [],
-              handoffTargetKeys: new Set(),
-              asToolTargetKeys: new Set(),
+            handoffTools: [],
+            agentAsToolTools: [],
+            handoffTargetKeys: new Set(['worker']),
+            asToolTargetKeys: new Set(),
+          },
+        ],
+        [
+          'worker',
+          {
+            key: 'worker',
+            functionName: 'worker',
+            config: {
+              name: 'Worker Agent',
+              instructions: 'Do actual work.',
+              handoffDescription: 'Handles work requests.',
             },
-          ],
-        ]),
-        defaultAgentKey: 'router',
-        maxTurns: 10,
-      };
-    }
+            handoffTools: [],
+            agentAsToolTools: [],
+            handoffTargetKeys: new Set(),
+            asToolTargetKeys: new Set(),
+          },
+        ],
+      ]),
+      defaultAgentKey: 'router',
+      maxTurns: 10,
+    };
+  }
 
+  describe('multi-turn agent continuity', () => {
     it('passes resumeState on follow-up messages in the same conversation', async () => {
       const { run } = require('@augment-adk/augment-adk');
       const firstResult = {

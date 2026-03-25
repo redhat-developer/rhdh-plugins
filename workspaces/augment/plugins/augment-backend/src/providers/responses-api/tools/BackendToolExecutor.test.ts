@@ -747,7 +747,9 @@ describe('BackendToolExecutor', () => {
 
       // Should have tools from both: s1 (re-discovered) + s2 (preserved)
       expect(secondTools).toHaveLength(2);
-      const names = secondTools.map(t => t.name).sort();
+      const names = secondTools
+        .map(t => t.name)
+        .sort((a, b) => a.localeCompare(b));
       expect(names).toEqual(['s1__tool_a', 's2__tool_b']);
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.stringContaining('Preserved 1 tool(s) from failed server(s)'),

@@ -24,11 +24,14 @@ import type { SxProps, Theme } from '@mui/material/styles';
  * destructure `(event, checked)` keep working.
  */
 interface ToggleSwitchProps {
-  checked: boolean;
-  onChange: (event: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
-  disabled?: boolean;
-  sx?: SxProps<Theme>;
-  inputProps?: InputHTMLAttributes<HTMLInputElement>;
+  readonly checked: boolean;
+  readonly onChange: (
+    event: ChangeEvent<HTMLInputElement>,
+    checked: boolean,
+  ) => void;
+  readonly disabled?: boolean;
+  readonly sx?: SxProps<Theme>;
+  readonly inputProps?: InputHTMLAttributes<HTMLInputElement>;
 }
 
 const TRACK_W = 36;

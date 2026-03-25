@@ -89,7 +89,7 @@ export class VectorStoreFacade {
     }
 
     // Single-flight guard: concurrent callers share one init attempt
-    if (this.initPromise) {
+    if (this.initPromise !== null) {
       await this.initPromise;
       return;
     }
@@ -103,11 +103,13 @@ export class VectorStoreFacade {
   }
 
   private async doVectorStoreInit(): Promise<void> {
+    const vs = this.vectorStore;
+    if (!vs) {
+      throw new Error('Vector store service not created');
+    }
     try {
-      await this.vectorStore!.ensureExists();
-      this.ctx.configResolution.setLlamaStackConfig(
-        this.vectorStore!.getConfig(),
-      );
+      await vs.ensureExists();
+      this.ctx.configResolution.setLlamaStackConfig(vs.getConfig());
       this.ctx.setVectorStoreReady(true);
       this.logger.info('Vector store initialized on first use');
     } catch (error) {
