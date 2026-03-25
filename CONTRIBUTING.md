@@ -22,7 +22,7 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
     - [Next steps](#next-steps)
     - [Maintenance of older versions](#maintenance-of-older-versions)
   - [API Reports](#api-reports)
-  - [Submitting a Pull Request](#submitting-a-pull-request)
+  - [Submitting a Pull Request](#submitting-a-pull-request-for-a-new-workspace)
   - [Plugin Owner Responsibilities](#plugin-owner-responsibilities)
     - [Responsibilities](#responsibilities)
     - [Keeping Workspaces Up to Date with Backstage](#keeping-workspaces-up-to-date-with-backstage)
