@@ -21,7 +21,7 @@ import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
-import Switch from '@mui/material/Switch';
+import { ToggleSwitch } from '../shared/ToggleSwitch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -42,7 +42,13 @@ import SaveIcon from '@mui/icons-material/Save';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 import { useEffectiveConfig } from '../../../hooks/useEffectiveConfig';
-import { useAdminConfig, useModels, useGeneratePrompt } from '../../../hooks';
+import {
+  useAdminConfig,
+  useModels,
+  useGeneratePrompt,
+  useVectorStores,
+} from '../../../hooks';
+import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
 import {
   type AgentFormData,
   createDefaultAgent,
@@ -90,6 +96,7 @@ export const AgentsPanel = () => {
     [models],
   );
   const { generate, generating, error: generateError } = useGeneratePrompt();
+  const { stores: vectorStores } = useVectorStores();
 
   // ── State ──────────────────────────────────────────────────────────────
 
@@ -271,6 +278,8 @@ export const AgentsPanel = () => {
         if (agent.asTools.length > 0) entry.asTools = agent.asTools;
         if (agent.mcpServers.length > 0) entry.mcpServers = agent.mcpServers;
         if (agent.enableRAG) entry.enableRAG = true;
+        if (agent.vectorStoreIds.length > 0)
+          entry.vectorStoreIds = agent.vectorStoreIds;
         if (agent.enableWebSearch) entry.enableWebSearch = true;
         if (agent.enableCodeInterpreter) entry.enableCodeInterpreter = true;
         if (agent.toolChoice) entry.toolChoice = agent.toolChoice;
@@ -437,6 +446,7 @@ export const AgentsPanel = () => {
                 label="Starting Agent"
                 onChange={e => setDefaultAgentKey(e.target.value)}
                 sx={{ fontSize: '0.8rem' }}
+                MenuProps={SELECT_MENU_PROPS}
               >
                 {agentKeys.map(k => (
                   <MenuItem key={k} value={k} sx={{ fontSize: '0.8rem' }}>
@@ -669,11 +679,18 @@ export const AgentsPanel = () => {
                     }
                     variant="standard"
                     fullWidth
-                    placeholder="Description \u2014 other agents read this when deciding to route here"
+                    placeholder="Add a description \u2014 other agents read this when deciding to route here"
                     InputProps={{
                       sx: {
                         fontSize: '0.8rem',
                         color: theme.palette.text.secondary,
+                        borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.25)}`,
+                        '&:hover': {
+                          borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.5)}`,
+                        },
+                        '&.Mui-focused': {
+                          borderBottom: `1px solid ${theme.palette.primary.main}`,
+                        },
                       },
                       disableUnderline: true,
                     }}
@@ -828,15 +845,32 @@ export const AgentsPanel = () => {
                                   e.target.value as string[],
                                 )
                               }
-                              renderValue={vals =>
-                                (vals as string[])
-                                  .map(
-                                    v =>
-                                      availableMcpServers.find(s => s.id === v)
-                                        ?.name || v,
-                                  )
-                                  .join(', ')
-                              }
+                              MenuProps={SELECT_MENU_PROPS}
+                              renderValue={vals => (
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  {(vals as string[]).map(v => (
+                                    <Chip
+                                      key={v}
+                                      label={
+                                        availableMcpServers.find(
+                                          s => s.id === v,
+                                        )?.name || v
+                                      }
+                                      size="small"
+                                      sx={{
+                                        height: 22,
+                                        fontSize: '0.75rem',
+                                      }}
+                                    />
+                                  ))}
+                                </Box>
+                              )}
                             >
                               {availableMcpServers.map(s => (
                                 <MenuItem key={s.id} value={s.id}>
@@ -868,7 +902,7 @@ export const AgentsPanel = () => {
                       >
                         <FormControlLabel
                           control={
-                            <Switch
+                            <ToggleSwitch
                               checked={selectedAgent.enableRAG}
                               onChange={e =>
                                 updateAgent(
@@ -877,7 +911,6 @@ export const AgentsPanel = () => {
                                   e.target.checked,
                                 )
                               }
-                              size="small"
                             />
                           }
                           label={
@@ -896,9 +929,76 @@ export const AgentsPanel = () => {
                             </Box>
                           }
                         />
+                        {selectedAgent.enableRAG && vectorStores.length > 0 && (
+                          <FormControl
+                            size="small"
+                            sx={{ ml: 4, mt: 0.5, mb: 0.5 }}
+                          >
+                            <InputLabel
+                              sx={{ fontSize: '0.8rem' }}
+                              id={`vs-label-${selectedAgentKey}`}
+                            >
+                              Vector Stores
+                            </InputLabel>
+                            <Select
+                              multiple
+                              labelId={`vs-label-${selectedAgentKey}`}
+                              value={selectedAgent.vectorStoreIds}
+                              label="Vector Stores"
+                              onChange={e =>
+                                updateAgent(
+                                  selectedAgentKey,
+                                  'vectorStoreIds',
+                                  e.target.value as string[],
+                                )
+                              }
+                              MenuProps={SELECT_MENU_PROPS}
+                              renderValue={vals => (
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  {(vals as string[]).map(v => (
+                                    <Chip
+                                      key={v}
+                                      label={
+                                        vectorStores.find(s => s.id === v)
+                                          ?.name || v
+                                      }
+                                      size="small"
+                                      sx={{
+                                        height: 22,
+                                        fontSize: '0.75rem',
+                                      }}
+                                    />
+                                  ))}
+                                </Box>
+                              )}
+                            >
+                              {vectorStores.map(s => (
+                                <MenuItem key={s.id} value={s.id}>
+                                  {s.name || s.id}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                            <Typography
+                              sx={{
+                                fontSize: '0.65rem',
+                                color: theme.palette.text.secondary,
+                                mt: 0.5,
+                                ml: 0.5,
+                              }}
+                            >
+                              Leave empty to use global vector stores
+                            </Typography>
+                          </FormControl>
+                        )}
                         <FormControlLabel
                           control={
-                            <Switch
+                            <ToggleSwitch
                               checked={selectedAgent.enableWebSearch}
                               onChange={e =>
                                 updateAgent(
@@ -907,7 +1007,6 @@ export const AgentsPanel = () => {
                                   e.target.checked,
                                 )
                               }
-                              size="small"
                             />
                           }
                           label={
@@ -928,7 +1027,7 @@ export const AgentsPanel = () => {
                         />
                         <FormControlLabel
                           control={
-                            <Switch
+                            <ToggleSwitch
                               checked={selectedAgent.enableCodeInterpreter}
                               onChange={e =>
                                 updateAgent(
@@ -937,7 +1036,6 @@ export const AgentsPanel = () => {
                                   e.target.checked,
                                 )
                               }
-                              size="small"
                             />
                           }
                           label={
@@ -998,11 +1096,28 @@ export const AgentsPanel = () => {
                                   e.target.value as string[],
                                 )
                               }
-                              renderValue={vals =>
-                                (vals as string[])
-                                  .map(v => agents[v]?.name || v)
-                                  .join(', ')
-                              }
+                              MenuProps={SELECT_MENU_PROPS}
+                              renderValue={vals => (
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  {(vals as string[]).map(v => (
+                                    <Chip
+                                      key={v}
+                                      label={agents[v]?.name || v}
+                                      size="small"
+                                      sx={{
+                                        height: 22,
+                                        fontSize: '0.75rem',
+                                      }}
+                                    />
+                                  ))}
+                                </Box>
+                              )}
                             >
                               {agentKeys
                                 .filter(k => k !== selectedAgentKey)
@@ -1039,11 +1154,28 @@ export const AgentsPanel = () => {
                                   e.target.value as string[],
                                 )
                               }
-                              renderValue={vals =>
-                                (vals as string[])
-                                  .map(v => agents[v]?.name || v)
-                                  .join(', ')
-                              }
+                              MenuProps={SELECT_MENU_PROPS}
+                              renderValue={vals => (
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  {(vals as string[]).map(v => (
+                                    <Chip
+                                      key={v}
+                                      label={agents[v]?.name || v}
+                                      size="small"
+                                      sx={{
+                                        height: 22,
+                                        fontSize: '0.75rem',
+                                      }}
+                                    />
+                                  ))}
+                                </Box>
+                              )}
                             >
                               {agentKeys
                                 .filter(k => k !== selectedAgentKey)
@@ -1163,13 +1295,72 @@ export const AgentsPanel = () => {
                                 (e.target.value as string) || undefined,
                               )
                             }
+                            MenuProps={SELECT_MENU_PROPS}
                           >
                             <MenuItem value="">
-                              <em>Default</em>
+                              <Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: 500 }}
+                                >
+                                  <em>Default</em>
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  color="textSecondary"
+                                >
+                                  Inherit from platform settings
+                                </Typography>
+                              </Box>
                             </MenuItem>
-                            <MenuItem value="auto">auto</MenuItem>
-                            <MenuItem value="required">required</MenuItem>
-                            <MenuItem value="none">none</MenuItem>
+                            <MenuItem value="auto">
+                              <Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: 500 }}
+                                >
+                                  auto
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  color="textSecondary"
+                                >
+                                  Model decides when to call tools
+                                </Typography>
+                              </Box>
+                            </MenuItem>
+                            <MenuItem value="required">
+                              <Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: 500 }}
+                                >
+                                  required
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  color="textSecondary"
+                                >
+                                  Always call tools
+                                </Typography>
+                              </Box>
+                            </MenuItem>
+                            <MenuItem value="none">
+                              <Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: 500 }}
+                                >
+                                  none
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  color="textSecondary"
+                                >
+                                  Never call tools
+                                </Typography>
+                              </Box>
+                            </MenuItem>
                           </Select>
                         </FormControl>
                         <FormControl fullWidth size="small">
@@ -1187,6 +1378,7 @@ export const AgentsPanel = () => {
                                   : undefined,
                               );
                             }}
+                            MenuProps={SELECT_MENU_PROPS}
                           >
                             <MenuItem value="">
                               <em>Default</em>
@@ -1268,7 +1460,7 @@ export const AgentsPanel = () => {
                       <Box sx={{ display: 'flex', gap: 3, mt: 2.5 }}>
                         <FormControlLabel
                           control={
-                            <Switch
+                            <ToggleSwitch
                               checked={selectedAgent.resetToolChoice ?? false}
                               onChange={e =>
                                 updateAgent(
@@ -1277,7 +1469,6 @@ export const AgentsPanel = () => {
                                   e.target.checked || undefined,
                                 )
                               }
-                              size="small"
                             />
                           }
                           label={
@@ -1298,7 +1489,7 @@ export const AgentsPanel = () => {
                         />
                         <FormControlLabel
                           control={
-                            <Switch
+                            <ToggleSwitch
                               checked={
                                 selectedAgent.nestHandoffHistory ?? false
                               }
@@ -1309,7 +1500,6 @@ export const AgentsPanel = () => {
                                   e.target.checked || undefined,
                                 )
                               }
-                              size="small"
                             />
                           }
                           label={

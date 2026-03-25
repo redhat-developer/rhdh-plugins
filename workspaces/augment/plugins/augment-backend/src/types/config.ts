@@ -256,7 +256,7 @@ export type ToolChoiceConfig =
 export interface ToolScopingConfig {
   /** Enable semantic tool scoping (default: false) */
   enabled: boolean;
-  /** Max tools selected per chat turn (default: 12) */
+  /** Max tools selected per chat turn. */
   maxToolsPerTurn: number;
   /** Min total tool count before scoping activates (default: 15) */
   activationThreshold: number;
@@ -572,6 +572,8 @@ export interface AgentConfig {
   asTools?: string[];
   /** Whether this agent has access to RAG / file_search */
   enableRAG?: boolean;
+  /** Override global vector store IDs for this agent's RAG queries (falls back to global) */
+  vectorStoreIds?: string[];
   /** Whether this agent has access to web search */
   enableWebSearch?: boolean;
   /** Whether this agent has access to code interpreter */

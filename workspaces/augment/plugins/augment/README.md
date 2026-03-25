@@ -1,19 +1,20 @@
 # Augment Plugin
 
-A Backstage plugin that provides a **general-purpose RAG-powered documentation assistant** using Llama Stack's Responses API with built-in file_search capabilities.
+A Backstage frontend plugin for **Augment** — a multi-agent AI assistant built on Llama Stack's OpenAI-compatible Responses API.
 
-**Augment adapts to YOUR documentation** - whether it's migration guides, API docs, runbooks, architecture decisions, or any other technical content.
+Augment adapts to YOUR documentation and tools. Configure agents, connect MCP servers, ingest knowledge bases, and get AI-powered answers — all from a single chat interface inside Backstage.
 
 ## Features
 
-- 🔍 **RAG-Powered Search**: Ask questions and get accurate answers from your documentation
-- 📄 **Config-Driven Ingestion**: Documents are automatically synced from configured sources
-- 🤖 **Agentic AI**: Powered by Responses API — reasons about questions, calls tools, and synthesizes answers
-- 💬 **Rich Chat Interface**: Beautiful UI with markdown support and source citations
-- 🔌 **MCP Integration**: Connect to MCP servers for extended tool capabilities (e.g., Kubernetes, OpenShift)
-- ⚡ **Configurable Prompts**: Customize quick prompts for your specific use cases
-- 💾 **Conversation History**: Persistent chat sessions with the ability to resume previous conversations
-- 🔐 **3 Security Modes**: Flexible authentication from open access to full Keycloak integration
+- **Multi-Agent Chat**: Conversations can span multiple specialized agents via handoffs, with the active agent displayed in the UI
+- **RAG-Powered Search**: Ask questions and get accurate answers grounded in your documentation
+- **Config-Driven Ingestion**: Documents are automatically synced from configured sources (directories, URLs, GitHub repos)
+- **Agentic AI**: Powered by the Responses API — agents reason about questions, call tools, and synthesize answers
+- **Rich Chat Interface**: Streaming responses with markdown, code blocks, and source citations
+- **MCP Integration**: Connect to MCP servers for extended tool capabilities (e.g., Kubernetes, OpenShift)
+- **Configurable Prompts**: Customize quick prompts for your specific use cases
+- **Conversation History**: Persistent chat sessions backed by Llama Stack's Conversations API
+- **3 Security Modes**: Flexible authentication from open access to full Keycloak integration
 
 ## Screenshots
 
@@ -296,44 +297,48 @@ augment:
 
 ## How It Works
 
-1. **Automatic Ingestion**: On startup, documents are fetched from configured sources (directories, URLs, GitHub repos)
-2. **Chunking**: Documents are automatically chunked and indexed in the vector store
-3. **Periodic Sync**: If `syncSchedule` is configured, documents are re-synced periodically
-4. **RAG Search**: When you ask a question, the Responses API uses the `file_search` tool to find relevant content
-5. **Answer Generation**: The LLM generates an answer based on the retrieved context
-6. **Conversation Persistence**: Chat sessions are stored and can be resumed later
+1. **Automatic Ingestion**: On startup, documents are fetched from configured sources and uploaded to Llama Stack's vector store via the Files API
+2. **Chunking**: Documents are automatically chunked and indexed for semantic search
+3. **Periodic Sync**: If `syncSchedule` is configured, documents are re-synced at the specified interval
+4. **Multi-Agent Routing**: The backend's `ResponsesApiCoordinator` assembles each agent's `POST /v1/responses` call from YAML config — each agent gets its own `instructions`, `tools`, `model`, and `temperature`
+5. **Handoffs**: When a router agent calls a `transfer_to_{specialist}` tool, the coordinator switches the active agent and continues the conversation loop with the specialist's config
+6. **RAG Search**: Agents with `enableRAG: true` include the `file_search` tool, which queries the vector store for relevant document chunks
+7. **Tool Execution**: MCP tools, custom functions, and built-in tools (web search, code interpreter) are executed by the coordinator between LLM turns
+8. **Conversation Persistence**: Chat sessions are persisted via Llama Stack's Conversations API (`/v1/conversations`) and can be resumed later
 
 ## UI Components
 
-| Component                | Description                                                       |
-| ------------------------ | ----------------------------------------------------------------- |
-| **Chat Interface**       | Ask questions and get AI-powered answers with streaming responses |
-| **Welcome Screen**       | Quick action cards and workflow suggestions                       |
-| **Conversation History** | Browse and resume previous chat sessions                          |
-| **Knowledge Base Panel** | Read-only view of indexed documents with status indicators        |
-| **Agent Status Panel**   | Shows connection status for Augment Agent and MCP servers         |
-| **Right Pane**           | Collapsible sidebar with conversation history and settings        |
+| Component                | Description                                                               |
+| ------------------------ | ------------------------------------------------------------------------- |
+| **Chat Interface**       | Streaming AI responses with markdown, code blocks, and source citations   |
+| **Welcome Screen**       | Quick action cards and workflow suggestions                               |
+| **Conversation History** | Browse and resume previous chat sessions (backed by Conversations API)    |
+| **Knowledge Base Panel** | Read-only view of indexed documents with sync status                      |
+| **Agent Status Panel**   | Shows active agent, available handoff targets, and MCP server connections |
+| **Right Pane**           | Collapsible sidebar with conversation history, agent info, and settings   |
 
 ## Prerequisites
 
 - Backstage v1.35+ (new backend system)
 - Llama Stack server with:
-  - Files API enabled
-  - Vector store created
-  - Responses API with file_search tool support
+  - Responses API enabled (OpenAI-compatible `POST /v1/responses`)
+  - Conversations API enabled (`POST /v1/conversations`)
+  - Files API enabled for document upload
+  - Vector store created for RAG
+  - Safety API enabled (optional, for guardrails)
 - For RHDH: Red Hat Developer Hub 1.3+ with dynamic plugin support
 
 ## API Endpoints
 
-| Endpoint                         | Method | Description                                     |
-| -------------------------------- | ------ | ----------------------------------------------- |
-| `/api/augment/chat`              | POST   | Send chat messages with streaming RAG responses |
-| `/api/augment/documents`         | GET    | List indexed documents (read-only)              |
-| `/api/augment/conversations`     | GET    | List conversation history                       |
-| `/api/augment/conversations/:id` | GET    | Get a specific conversation                     |
-| `/api/augment/conversations/:id` | DELETE | Delete a conversation                           |
-| `/api/augment/sync`              | POST   | Trigger manual document sync                    |
-| `/api/augment/status`            | GET    | Get service and MCP server status               |
+| Endpoint                         | Method | Description                                                                          |
+| -------------------------------- | ------ | ------------------------------------------------------------------------------------ |
+| `/api/augment/chat`              | POST   | Send chat messages — the backend routes through agents and streams responses via SSE |
+| `/api/augment/documents`         | GET    | List indexed documents (read-only)                                                   |
+| `/api/augment/conversations`     | GET    | List conversation history (proxied from Llama Stack Conversations API)               |
+| `/api/augment/conversations/:id` | GET    | Get a specific conversation with full message history                                |
+| `/api/augment/conversations/:id` | DELETE | Delete a conversation                                                                |
+| `/api/augment/sync`              | POST   | Trigger manual document sync from configured sources                                 |
+| `/api/augment/status`            | GET    | Get service status (provider, vector store, MCP server connections)                  |
 
 ## Exports
 
@@ -397,6 +402,10 @@ yarn build:all
 - Check Llama Stack Responses API is accessible
 - Verify no corrupted data in Llama Stack storage
 - Review network requests for error responses
+
+For detailed troubleshooting steps, see [TROUBLESHOOTING.md](../augment-common/docs/TROUBLESHOOTING.md).
+
+For a full configuration reference (YAML requirements, admin UI scope, defaults, precedence rules), see [CONFIG_REFERENCE.md](../augment-common/docs/CONFIG_REFERENCE.md).
 
 ## License
 

@@ -25,7 +25,7 @@ export interface UseStoreDocumentsParams {
 
 export function useStoreDocuments({
   selectedStoreId,
-  onRefresh: _onRefresh,
+  onRefresh,
 }: UseStoreDocumentsParams) {
   const api = useApi(augmentApiRef);
   const {
@@ -35,20 +35,26 @@ export function useStoreDocuments({
   } = useDocuments(selectedStoreId);
 
   const [deleteInProgress, setDeleteInProgress] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleDelete = useCallback(
     async (fileId: string) => {
       setDeleteInProgress(fileId);
+      setDeleteError(null);
       try {
         await api.deleteDocument(fileId, selectedStoreId ?? undefined);
-      } catch {
+      } catch (err) {
+        setDeleteError(
+          err instanceof Error ? err.message : 'Failed to delete document',
+        );
         return;
       } finally {
         setDeleteInProgress(null);
       }
-      refreshDocs();
+      await refreshDocs();
+      onRefresh();
     },
-    [api, refreshDocs, selectedStoreId],
+    [api, refreshDocs, selectedStoreId, onRefresh],
   );
 
   return {
@@ -56,6 +62,7 @@ export function useStoreDocuments({
     docsLoading,
     refreshDocs,
     deleteInProgress,
+    deleteError,
     handleDelete,
   };
 }

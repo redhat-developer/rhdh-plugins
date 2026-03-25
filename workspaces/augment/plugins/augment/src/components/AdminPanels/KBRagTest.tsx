@@ -18,7 +18,7 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
+import { ToggleSwitch as Switch } from './shared/ToggleSwitch';
 import Typography from '@mui/material/Typography';
 import {
   useRagTest,
@@ -223,7 +223,6 @@ export const KBRagTest = ({
               <FormControlLabel
                 control={
                   <Switch
-                    size="small"
                     checked={searchAllStores}
                     onChange={(_, v) => setSearchAllStores(v)}
                   />
