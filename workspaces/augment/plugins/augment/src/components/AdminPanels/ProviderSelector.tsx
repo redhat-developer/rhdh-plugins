@@ -23,6 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { SELECT_MENU_PROPS } from './shared/selectMenuProps';
 
 /** @public */
 export interface ProviderSelectorProps {
@@ -35,25 +36,6 @@ const WRAPPER_SX = {
   display: 'flex',
   alignItems: 'center',
   gap: 1,
-} as const;
-
-// CSS isolation: force the dropdown menu list to render vertically.
-// Without this, host app global CSS may override ul/li display
-// properties inside the Popover, causing horizontal rendering.
-const MENU_PROPS = {
-  PaperProps: {
-    sx: {
-      '& .MuiList-root': {
-        display: 'flex',
-        flexDirection: 'column',
-        boxSizing: 'border-box',
-      },
-      '& .MuiMenuItem-root': {
-        display: 'flex',
-        boxSizing: 'border-box',
-      },
-    },
-  },
 } as const;
 
 /**
@@ -91,7 +73,7 @@ export function ProviderSelector({
           onChange={handleChange}
           label="Agent Platform"
           disabled={switching}
-          MenuProps={MENU_PROPS}
+          MenuProps={SELECT_MENU_PROPS}
         >
           {providers.map(p => (
             <MenuItem key={p.id} value={p.id}>

@@ -19,7 +19,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
+import { ToggleSwitch as Switch } from '../shared/ToggleSwitch';
 import Snackbar from '@mui/material/Snackbar';
 import { useAdminConfig } from '../../../hooks';
 import { AdminSection } from '../shared/AdminSection';

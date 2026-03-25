@@ -24,7 +24,6 @@ import type { ConversationService } from './ConversationService';
 import type { ApprovalResult } from './conversationTypes';
 import type { AgentGraphManager } from './AgentGraphManager';
 import type { MCPServerConfig } from '../../types';
-import { MAX_CONTINUATION_ITERATIONS } from '../../constants';
 import { toErrorMessage } from '../../services/utils';
 
 interface ToolCallInfo {
@@ -46,8 +45,8 @@ interface ToolCallInfo {
  * the MCP server's requireApproval is 'never') or surfaced as a chained
  * pendingApproval for the frontend to present to the user.
  *
- * The loop is bounded by MAX_CONTINUATION_ITERATIONS to prevent infinite
- * cycling.
+ * The loop exits naturally when the model returns a text response (no
+ * more function calls) or when a tool call requires user approval.
  */
 export class BackendApprovalHandler {
   constructor(
@@ -188,7 +187,6 @@ export class BackendApprovalHandler {
     const truncation = effectiveCfg?.truncation ?? 'auto';
     const safetyIdentifier =
       effectiveCfg?.safetyIdentifier ?? lsCfg?.safetyIdentifier;
-
     if (agentKey) {
       try {
         const graphManager = this.deps.getAgentGraphManager?.();
@@ -230,13 +228,9 @@ export class BackendApprovalHandler {
     const firstToolOutput = output;
     const firstOutputTruncated = output.includes('[... OUTPUT TRUNCATED:');
 
-    for (
-      let iteration = 0;
-      iteration < MAX_CONTINUATION_ITERATIONS;
-      iteration++
-    ) {
+    for (let iteration = 0; ; iteration++) {
       logger.info(
-        `[BackendApproval] Continuation iteration ${iteration + 1}/${MAX_CONTINUATION_ITERATIONS} (responseId=${currentResponseId})`,
+        `[BackendApproval] Continuation iteration ${iteration + 1} (responseId=${currentResponseId})`,
       );
 
       const result = await chatService.continueFunctionCallOutput({

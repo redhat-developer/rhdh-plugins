@@ -23,10 +23,7 @@ import {
   extractContentFromItem,
   extractUserInputFromRaw,
 } from './MessageProcessor';
-import {
-  MAX_RESPONSE_CHAIN_DEPTH,
-  RESPONSE_CHAIN_TIMEOUT_MS,
-} from '../../../constants';
+import { RESPONSE_CHAIN_TIMEOUT_MS } from '../../../constants';
 
 /** Response shape from Llama Stack GET /v1/responses */
 export interface ResponseListApiResult {
@@ -58,7 +55,6 @@ export interface ResponseListApiResult {
  * conversationId. Returns messages in chronological order.
  *
  * Guards:
- * - Max depth of 50 to prevent infinite loops.
  * - Per-request timeout of 15 s — if the chain is very long and the
  *   upstream server is slow, we return whatever we've collected so far
  *   rather than hanging indefinitely.
@@ -77,7 +73,7 @@ export async function walkResponseChain(
   let currentId: string | undefined = responseId;
   let depth = 0;
 
-  while (currentId && depth < MAX_RESPONSE_CHAIN_DEPTH) {
+  while (currentId) {
     if (visited.has(currentId)) {
       logger.warn(`Cycle detected in response chain at ${currentId}, stopping`);
       break;

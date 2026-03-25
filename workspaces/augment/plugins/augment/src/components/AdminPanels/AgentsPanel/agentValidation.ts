@@ -23,6 +23,7 @@ export interface AgentFormData {
   asTools: string[];
   mcpServers: string[];
   enableRAG: boolean;
+  vectorStoreIds: string[];
   enableWebSearch: boolean;
   enableCodeInterpreter: boolean;
   toolChoice?: 'auto' | 'required' | 'none';
@@ -45,6 +46,7 @@ export function createDefaultAgent(): AgentFormData {
     asTools: [],
     mcpServers: [],
     enableRAG: false,
+    vectorStoreIds: [],
     enableWebSearch: false,
     enableCodeInterpreter: false,
   };
@@ -66,6 +68,7 @@ export function agentFromConfig(cfg: Record<string, unknown>): AgentFormData {
     asTools: toStringArray(cfg.asTools),
     mcpServers: toStringArray(cfg.mcpServers),
     enableRAG: Boolean(cfg.enableRAG),
+    vectorStoreIds: toStringArray(cfg.vectorStoreIds),
     enableWebSearch: Boolean(cfg.enableWebSearch),
     enableCodeInterpreter: Boolean(cfg.enableCodeInterpreter),
   };

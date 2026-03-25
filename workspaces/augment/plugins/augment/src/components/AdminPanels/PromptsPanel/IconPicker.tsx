@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useCallback, useId } from 'react';
+import { useCallback, useId, type FC } from 'react';
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -21,6 +21,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { ICON_NAMES, getIconForName } from '../../WelcomeScreen/iconUtils';
+import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
 
 export interface IconPickerProps {
   readonly value: string | undefined;
@@ -44,7 +45,7 @@ const RENDER_SX = {
   '& svg': { fontSize: 16 },
 } as const;
 
-export const IconPicker: React.FC<IconPickerProps> = ({
+export const IconPicker: FC<IconPickerProps> = ({
   value,
   onChange,
   label = 'Icon',
@@ -77,6 +78,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
         onChange={handleChange}
         label={label}
         renderValue={renderValue}
+        MenuProps={SELECT_MENU_PROPS}
       >
         {ICON_NAMES.map(name => (
           <MenuItem key={name} value={name}>

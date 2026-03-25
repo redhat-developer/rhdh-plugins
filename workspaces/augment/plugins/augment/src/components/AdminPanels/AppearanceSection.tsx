@@ -28,6 +28,7 @@ import {
   dispatchBrandingRefresh,
 } from '../../hooks';
 import { AdminSection } from './shared/AdminSection';
+import { SELECT_MENU_PROPS } from './shared/selectMenuProps';
 import { ColorInput } from './shared/ColorInput';
 import {
   DEFAULT_BRANDING,
@@ -318,20 +319,33 @@ export const AppearanceSection = ({
               alignItems: 'center',
             }}
           >
-            <FormControl size="small" sx={{ width: 200 }}>
+            <FormControl
+              size="small"
+              sx={{ width: 200 }}
+              disabled={PRESET_NAMES.length === 0}
+            >
               <InputLabel id="theme-preset-label">Theme Preset</InputLabel>
               <Select
                 labelId="theme-preset-label"
                 value={local.themePreset ?? 'default'}
                 label="Theme Preset"
                 onChange={e => handlePresetChange(e.target.value)}
+                MenuProps={SELECT_MENU_PROPS}
               >
-                {PRESET_NAMES.map(name => (
-                  <MenuItem key={name} value={name}>
-                    <PresetSwatch presetName={name} />
-                    {name.charAt(0).toUpperCase() + name.slice(1)}
+                {PRESET_NAMES.length === 0 ? (
+                  <MenuItem value="" disabled>
+                    <Typography variant="body2" color="textSecondary">
+                      No presets available
+                    </Typography>
                   </MenuItem>
-                ))}
+                ) : (
+                  PRESET_NAMES.map(name => (
+                    <MenuItem key={name} value={name}>
+                      <PresetSwatch presetName={name} />
+                      {name.charAt(0).toUpperCase() + name.slice(1)}
+                    </MenuItem>
+                  ))
+                )}
               </Select>
             </FormControl>
           </Box>

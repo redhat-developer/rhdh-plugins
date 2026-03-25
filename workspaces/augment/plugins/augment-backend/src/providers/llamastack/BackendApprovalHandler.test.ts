@@ -207,4 +207,24 @@ describe('BackendApprovalHandler', () => {
     );
     expect(result).toEqual(expect.objectContaining({ toolExecuted: true }));
   });
+
+  it('handles missing approval store entry gracefully', async () => {
+    const { deps, mocks, getHandler } = createMockDeps();
+    mocks.approvalStore.get.mockReturnValue(undefined);
+
+    const handler = new BackendApprovalHandler(deps);
+    handler.initialize();
+
+    const handlerFn = getHandler();
+    const result = await handlerFn({
+      responseId: 'resp-1',
+      callId: 'call-1',
+      approved: true,
+      toolName: 'namespaces_list',
+      toolArguments: '{"all":true}',
+    });
+
+    expect(mocks.executor.executeTool).toHaveBeenCalled();
+    expect(result).toEqual(expect.objectContaining({ toolExecuted: true }));
+  });
 });
