@@ -142,6 +142,7 @@ const useStyles = makeStyles(theme => ({
       backgroundColor: 'transparent',
       paddingBottom: theme.spacing(2),
       fontWeight: 700,
+      cursor: 'pointer',
     },
     '& .pf-v6-c-tabs__item.pf-m-current .pf-v6-c-tabs__link, & .pf-v5-c-tabs__item.pf-m-current .pf-v5-c-tabs__link':
       {
