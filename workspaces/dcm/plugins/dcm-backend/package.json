@@ -33,7 +33,7 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/backend-defaults": "^0.15.1",
+    "@backstage/backend-defaults": "^0.15.2",
     "@backstage/backend-plugin-api": "^1.6.2",
     "@backstage/plugin-permission-common": "^0.8.4",
     "@backstage/plugin-permission-node": "^0.8.7",
