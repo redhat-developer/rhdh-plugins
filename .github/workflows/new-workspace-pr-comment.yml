@@ -1,7 +1,7 @@
 name: Comment on PRs that add a workspace
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, synchronize]
     branches: [main]
 
@@ -30,6 +30,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Fetch base commit
         run: git fetch --no-tags origin ${{ github.event.pull_request.base.sha }}
