@@ -51,7 +51,7 @@ function normalizeServer(s: Record<string, unknown>): McpServer {
     ...(asStringArray(s.allowedTools).length > 0
       ? { allowedTools: asStringArray(s.allowedTools) }
       : {}),
-    ...(approval ? { requireApproval: approval } : {}),
+    requireApproval: approval ?? 'never',
   };
 }
 
@@ -261,9 +261,10 @@ export function useMcpServers({
       ...(draft.allowedTools && draft.allowedTools.length > 0
         ? { allowedTools: draft.allowedTools }
         : {}),
-      ...(draft.requireApproval === 'always'
-        ? { requireApproval: 'always' as const }
-        : {}),
+      requireApproval:
+        draft.requireApproval === 'always'
+          ? ('always' as const)
+          : ('never' as const),
     };
 
     if (editingId) {

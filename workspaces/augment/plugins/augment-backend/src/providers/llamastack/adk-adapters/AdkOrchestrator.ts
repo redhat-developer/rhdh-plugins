@@ -17,8 +17,12 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import {
   run as adkRun,
   runStream,
+  ApprovalStore,
+  ToolResolver,
+  createContinuationState,
   type RunOptions,
   type RunStreamOptions,
+  type RunState,
   type ILogger,
   type FunctionTool,
   type AgentConfig as AdkAgentConfig,
@@ -30,6 +34,7 @@ import type {
   AgentGraphSnapshot,
   BuildDepsForAgent,
 } from '../../responses-api/agents/agentGraph';
+import type { BackendApprovalStore } from '../../responses-api/tools/BackendApprovalStore';
 import { BackstageModelAdapter } from './BackstageModelAdapter';
 import { toAdkLogger } from './BackstageLoggerAdapter';
 import { toAdkEffectiveConfig, toAdkMcpServerConfig } from './configAdapter';
@@ -46,28 +51,51 @@ import { requireLastUserMessage } from '../../responses-api/chat/chatUtils';
  *   with per-token SSE events, tool execution progress, and
  *   agent handoff notifications.
  */
+/**
+ * Per-request mutable reference to the currently active agent key.
+ * Created fresh for each `chat()` / `chatStream()` call so that
+ * concurrent requests do not interfere with each other.
+ */
+interface AgentRef {
+  key: string;
+}
+
+interface CachedToolMeta {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+}
+
 export class AdkOrchestrator {
   private readonly logger: LoggerService;
   private readonly adkLogger: ILogger;
   private readonly chatService: ResponsesApiService;
-  private cachedTools: FunctionTool[] | null = null;
-  private cachedToolsKey = '';
+  private readonly adkApprovalStore = new ApprovalStore();
+  private readonly backendApprovalStore?: BackendApprovalStore;
+  private cachedToolMeta: CachedToolMeta[] | null = null;
+  private cachedToolMetaKey = '';
+  private cachedDiscoveryGeneration = -1;
+
+  private static readonly MAX_CONVERSATION_STATES = 500;
+  private readonly conversationStates = new Map<string, RunState>();
 
   constructor(options: {
     chatService: ResponsesApiService;
     logger: LoggerService;
-    backendApprovalStore?: unknown;
+    backendApprovalStore?: BackendApprovalStore;
     toolScopeService?: unknown;
   }) {
     this.chatService = options.chatService;
     this.logger = options.logger;
     this.adkLogger = toAdkLogger(options.logger);
+    this.backendApprovalStore = options.backendApprovalStore;
   }
 
   /** Invalidate the cached tool list (e.g. after config change). */
   invalidateToolCache(): void {
-    this.cachedTools = null;
-    this.cachedToolsKey = '';
+    this.cachedToolMeta = null;
+    this.cachedToolMetaKey = '';
+    this.cachedDiscoveryGeneration = -1;
   }
 
   async chat(
@@ -77,13 +105,24 @@ export class AdkOrchestrator {
   ): Promise<ChatResponse> {
     try {
       const userInput = requireLastUserMessage(request, '[AdkOrchestrator] ');
+      const { agentRef, resumeState } = this.resolveAgentContinuity(
+        request.conversationId,
+        snapshot,
+        'chat',
+      );
       const runOptions = await this.buildRunOptions(
         snapshot,
         buildDepsForAgent,
+        agentRef,
         undefined,
         request.conversationId,
+        resumeState,
       );
       const result = await adkRun(userInput, runOptions);
+
+      this.saveConversationState(request.conversationId, result);
+      this.mirrorPendingApprovals(result, request.conversationId);
+
       return toChatResponse(result);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -108,11 +147,18 @@ export class AdkOrchestrator {
   ): Promise<void> {
     try {
       const userInput = requireLastUserMessage(request, '[AdkOrchestrator] ');
+      const { agentRef, resumeState } = this.resolveAgentContinuity(
+        request.conversationId,
+        snapshot,
+        'stream',
+      );
       const runOptions = await this.buildRunOptions(
         snapshot,
         buildDepsForAgent,
+        agentRef,
         signal,
         request.conversationId,
+        resumeState,
       );
 
       const streamed = runStream(userInput, {
@@ -121,19 +167,25 @@ export class AdkOrchestrator {
       } as RunStreamOptions);
 
       for await (const event of streamed) {
-        const frontendEvents = mapAdkEventToFrontend(event);
-        for (const fe of frontendEvents) {
+        if (event.type === 'agent_start') {
+          agentRef.key = event.agentKey;
+        }
+        for (const fe of mapAdkEventToFrontend(event)) {
           onEvent(fe);
         }
       }
 
       const result = streamed.result;
 
+      this.saveConversationState(request.conversationId, result);
+      this.mirrorPendingApprovals(result, request.conversationId);
+
       onEvent(
         JSON.stringify({
           type: 'stream.completed',
           usage: result.usage,
           agentName: result.agentName,
+          ...(result.responseId ? { responseId: result.responseId } : {}),
         }),
       );
     } catch (error) {
@@ -153,11 +205,54 @@ export class AdkOrchestrator {
     }
   }
 
+  private resolveAgentContinuity(
+    conversationId: string | undefined,
+    snapshot: AgentGraphSnapshot,
+    mode: 'chat' | 'stream',
+  ): { agentRef: AgentRef; resumeState: RunState | undefined } {
+    const agentRef: AgentRef = { key: snapshot.defaultAgentKey };
+    const resumeState = this.getConversationState(conversationId, snapshot);
+    if (resumeState) {
+      agentRef.key = resumeState.currentAgentKey;
+      this.logger.info(
+        `[AdkOrchestrator] Resuming ${mode} from agent "${resumeState.currentAgentKey}" for conversation ${conversationId}`,
+      );
+    }
+    return { agentRef, resumeState };
+  }
+
+  private mirrorPendingApprovals(
+    result: {
+      pendingApprovals?: Array<{ toolName: string; approvalRequestId: string }>;
+      responseId?: string;
+    },
+    conversationId?: string,
+  ): void {
+    if (!result.pendingApprovals?.length || !this.backendApprovalStore) return;
+    for (const pa of result.pendingApprovals) {
+      const adkEntry = this.adkApprovalStore.get(
+        result.responseId ?? '',
+        pa.approvalRequestId,
+      );
+      if (!adkEntry) continue;
+      if (!adkEntry.conversationId && conversationId) {
+        adkEntry.conversationId = conversationId;
+      }
+      this.backendApprovalStore.store(adkEntry);
+      this.logger.info(
+        `[HITL] Mirrored pending approval to BackendApprovalStore: ` +
+          `tool=${pa.toolName}, callId=${pa.approvalRequestId}`,
+      );
+    }
+  }
+
   private async buildRunOptions(
     snapshot: AgentGraphSnapshot,
     buildDepsForAgent: BuildDepsForAgent,
+    _agentRef: AgentRef,
     signal?: AbortSignal,
     conversationId?: string,
+    resumeState?: RunState,
   ): Promise<RunOptions> {
     const defaultAgent = snapshot.agents.get(snapshot.defaultAgentKey);
     if (!defaultAgent) {
@@ -173,6 +268,8 @@ export class AdkOrchestrator {
     const adkMcpServers = deps.mcpServers.map(toAdkMcpServerConfig);
     const functionTools = await this.discoverBackendTools(deps);
 
+    const toolResolver = this.buildToolResolver(functionTools, deps);
+
     return {
       model,
       agents: adkAgents,
@@ -180,27 +277,93 @@ export class AdkOrchestrator {
       config: adkConfig,
       mcpServers: adkMcpServers,
       functionTools,
+      toolResolver,
+      approvalStore: this.adkApprovalStore,
       conversationId,
       logger: this.adkLogger,
       maxAgentTurns: snapshot.maxTurns,
       signal,
+      resumeState,
     };
   }
 
   private static readonly DISCOVERY_TIMEOUT_MS = 30_000;
 
+  /**
+   * Discover MCP tools and build FunctionTool wrappers.
+   *
+   * Tool *metadata* (name, description, parameters) is cached across
+   * requests to avoid redundant MCP server round-trips.
+   * Tool *execute closures* are built fresh per request so they capture
+   * the current request's `agentRef` and `snapshot` — preventing
+   * cross-request state leakage.
+   *
+   * NOTE: Per-agent tool filtering (based on AgentConfig.mcpServers)
+   * is handled by the ADK's native `filterMcpServers` for MCP tools.
+   * For backend-proxied function tools, proper per-agent filtering
+   * requires an ADK-level change in `buildAgentTools`. Until then,
+   * all function tools are visible to all agents.
+   */
   private async discoverBackendTools(deps: ChatDeps): Promise<FunctionTool[]> {
     if (!deps.backendToolExecutor) return [];
+    const toolExecutor = deps.backendToolExecutor;
+
+    const meta = await this.ensureToolMetaCached(deps);
+
+    return meta.map(tool => ({
+      type: 'function' as const,
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters,
+      strict: false,
+      execute: async (args: Record<string, unknown>): Promise<string> => {
+        try {
+          return await toolExecutor.executeTool(
+            tool.name,
+            JSON.stringify(args),
+          );
+        } catch (execError) {
+          const msg =
+            execError instanceof Error ? execError.message : String(execError);
+          this.logger.error('[AdkOrchestrator] Tool execution failed', {
+            tool: tool.name,
+            error: msg,
+          });
+          return JSON.stringify({ error: msg });
+        }
+      },
+    }));
+  }
+
+  /**
+   * Cache the raw tool metadata from MCP discovery.
+   * This is safe to share across requests since metadata doesn't
+   * contain request-specific state.
+   */
+  private async ensureToolMetaCached(
+    deps: ChatDeps,
+  ): Promise<CachedToolMeta[]> {
+    const executor = deps.backendToolExecutor;
+    if (!executor) return [];
 
     const cacheKey = deps.mcpServers
       .map(s => s.id)
       .sort((a, b) => a.localeCompare(b))
       .join(',');
-    if (this.cachedTools && this.cachedToolsKey === cacheKey) {
-      this.logger.debug('[AdkOrchestrator] Using cached backend tools', {
-        count: this.cachedTools.length,
-      });
-      return this.cachedTools;
+    const currentGen = executor.getDiscoveryGeneration();
+
+    if (
+      this.cachedToolMeta &&
+      this.cachedToolMetaKey === cacheKey &&
+      this.cachedDiscoveryGeneration === currentGen
+    ) {
+      this.logger.debug(
+        '[AdkOrchestrator] Using cached backend tool metadata',
+        {
+          count: this.cachedToolMeta.length,
+        },
+      );
+      return this.cachedToolMeta;
     }
 
     let discovered: Array<{
@@ -211,7 +374,7 @@ export class AdkOrchestrator {
 
     try {
       discovered = await Promise.race([
-        deps.backendToolExecutor.ensureToolsDiscovered(deps.mcpServers),
+        executor.ensureToolsDiscovered(deps.mcpServers),
         new Promise<never>((_, reject) =>
           setTimeout(
             () => reject(new Error('Tool discovery timed out')),
@@ -233,33 +396,43 @@ export class AdkOrchestrator {
       servers: deps.mcpServers.map(s => s.id),
     });
 
-    const tools = discovered.map(apiTool => ({
-      type: 'function' as const,
+    const meta: CachedToolMeta[] = discovered.map(apiTool => ({
       name: apiTool.name,
       description: apiTool.description ?? apiTool.name,
       parameters: apiTool.parameters ?? { type: 'object', properties: {} },
-      strict: false,
-      execute: async (args: Record<string, unknown>): Promise<string> => {
-        try {
-          return await deps.backendToolExecutor!.executeTool(
-            apiTool.name,
-            JSON.stringify(args),
-          );
-        } catch (execError) {
-          const msg =
-            execError instanceof Error ? execError.message : String(execError);
-          this.logger.error('[AdkOrchestrator] Tool execution failed', {
-            tool: apiTool.name,
-            error: msg,
-          });
-          return JSON.stringify({ error: msg });
-        }
-      },
     }));
 
-    this.cachedTools = tools;
-    this.cachedToolsKey = cacheKey;
-    return tools;
+    this.cachedToolMeta = meta;
+    this.cachedToolMetaKey = cacheKey;
+    this.cachedDiscoveryGeneration = executor.getDiscoveryGeneration();
+    return meta;
+  }
+
+  /**
+   * Build a ToolResolver that maps each function tool back to its
+   * source MCP server ID. Without this, the ADK registers all
+   * function tools with serverId 'function' and partitionByApproval
+   * cannot match them to MCP servers' requireApproval config.
+   */
+  private buildToolResolver(
+    functionTools: FunctionTool[],
+    deps: ChatDeps,
+  ): ToolResolver {
+    const resolver = new ToolResolver(this.adkLogger);
+
+    for (const ft of functionTools) {
+      const serverInfo = deps.backendToolExecutor?.getToolServerInfo(ft.name);
+      resolver.register({
+        serverId: serverInfo?.serverId ?? 'function',
+        serverUrl: '',
+        originalName: serverInfo?.originalName ?? ft.name,
+        prefixedName: ft.name,
+        description: ft.description,
+        inputSchema: ft.parameters,
+      });
+    }
+
+    return resolver;
   }
 
   /**
@@ -275,5 +448,69 @@ export class AdkOrchestrator {
       agents[key] = resolved.config as unknown as AdkAgentConfig;
     }
     return agents;
+  }
+
+  /**
+   * Look up stored continuation state for a conversation so the next
+   * run() starts from the same agent that produced the last result.
+   *
+   * Returns undefined (falls back to default agent) when:
+   * - No conversationId is provided
+   * - No state is stored for this conversation
+   * - The stored agent no longer exists in the current snapshot
+   *   (e.g. admin deleted/renamed the agent between turns)
+   */
+  private getConversationState(
+    conversationId?: string,
+    snapshot?: AgentGraphSnapshot,
+  ): RunState | undefined {
+    if (!conversationId) return undefined;
+    const state = this.conversationStates.get(conversationId);
+    if (!state) return undefined;
+
+    if (snapshot && !snapshot.agents.has(state.currentAgentKey)) {
+      this.logger.warn(
+        `[AdkOrchestrator] Stored agent "${state.currentAgentKey}" no longer exists in graph, ` +
+          `falling back to default agent for conversation ${conversationId}`,
+      );
+      this.conversationStates.delete(conversationId);
+      return undefined;
+    }
+
+    return state;
+  }
+
+  /**
+   * Store continuation state after a completed run so follow-up messages
+   * resume from the active agent instead of restarting from the router.
+   */
+  private saveConversationState(
+    conversationId: string | undefined,
+    result: {
+      currentAgentKey?: string;
+      responseId?: string;
+      handoffPath?: string[];
+    },
+  ): void {
+    if (!conversationId || !result.currentAgentKey) return;
+
+    const state = createContinuationState(
+      result as Parameters<typeof createContinuationState>[0],
+      conversationId,
+    );
+
+    this.conversationStates.set(conversationId, state);
+
+    if (
+      this.conversationStates.size > AdkOrchestrator.MAX_CONVERSATION_STATES
+    ) {
+      const oldest = this.conversationStates.keys().next().value;
+      if (oldest) this.conversationStates.delete(oldest);
+    }
+
+    this.logger.debug(
+      `[AdkOrchestrator] Saved continuation state for conversation ${conversationId}, ` +
+        `activeAgent="${result.currentAgentKey}"`,
+    );
   }
 }

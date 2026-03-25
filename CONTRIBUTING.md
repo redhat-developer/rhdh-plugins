@@ -22,7 +22,7 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
     - [Next steps](#next-steps)
     - [Maintenance of older versions](#maintenance-of-older-versions)
   - [API Reports](#api-reports)
-  - [Submitting a Pull Request](#submitting-a-pull-request)
+  - [Submitting a Pull Request](#submitting-a-pull-request-for-a-new-workspace)
   - [Plugin Owner Responsibilities](#plugin-owner-responsibilities)
     - [Responsibilities](#responsibilities)
     - [Keeping Workspaces Up to Date with Backstage](#keeping-workspaces-up-to-date-with-backstage)
@@ -201,7 +201,6 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
 1. Prepare your environment by cloning a fork of both the `janus-idp/backstage-plugins` and the `backstage/rhdh-plugins` repositories
 
 2. In both repositories, create a new branch:
-
    - For `janus-idp/backstage-plugins`:
 
      ```bash
@@ -215,7 +214,6 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
      ```
 
 3. In the `backstage/rhdh-plugins` repository, execute the janus-plugin migrate command.- Usage:`yarn rhdh-cli janus-plugin migrate --monorepo-path [path_to_backstage_plugins]--workspace-name [workspace_name] --branch [branch_name] --maintainers [maintainer1],[maintainer2],[maintainer3],...`
-
    - The `path_to_backstage_plugins` is the path to the `backstage-plugins` project where the plugin(s) you want to migrate live.
    - The `workspace-name` is the name of the workspace you wish to create in the `rhdh-plugins` project. All plugins in the `backstage-plugins` that either are exactly or start with `@janus-idp/backstage-plugin-[workspace_name]` will be migrated to this new workspace.
    - The `branch_name` is the name of the branch in the `backstage-plugins` project where the changes to add a deprecate note for the migrated plugins will be made.
@@ -265,35 +263,35 @@ There are two ways you can do this:
 
 Each plugin/package has its own API Report which means you might see more than one file updated or created depending on your changes. These changes will then need to be committed as well.
 
-## Submitting a Pull Request
+## Submitting a Pull Request for a New Workspace
 
 When you've got your contribution working, tested, and committed to your branch it's time to create a Pull Request (PR). If you are unsure how to do this GitHub's [Creating a pull request from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) documentation will help you with that.
 
 For new plugins, it is recommended that your initial PR simply creates the workspace for your plugins. In this PR, be sure to add maintainers to the `CODEOWNERS` file for the new workspace. This will streamline the approval process, and also ensure that you have full autonomy over further development of your plugin.
 
-Please ping @rhdh-cope in #rhdh-plugins-ecosystem on Slack when the PR is ready for review. We will do our best to complete an initial review within 5 working days, and address any subsequent updates within 2 working days.
+Please ping @rhdh-cope in #rhdh-plugins-ecosystem on Slack when the PR is ready for review. We will do our best to complete an initial review within 5 working days, and address any subsequent updates within 2 working days. We will not begin this process until the CI is passing or CI failures are explicitly justified.
 
 ### Checklist to Ensure your Plugin is Ready to Merge
 
-* Workspace `package.json`
-  * `private: true`
-  * Use the correct repository url
-  * Keep workspace-level dependencies minimal
-* Plugin `package.json`
-  * For publishable plugins:
-    * Omit `private: true`
-    * Set `publishConfig.access` to `"public"`
-  * Include a valid `backstage` config with `role`, `pluginId`, and `pluginPackages`
-  * Use the correct repository URL
-* Required files
-  * Changeset is present
-  * README files with relevant documentation
-  * `backstage.json` specifying a compatible Backstage version
-* Configuration (if applicable)
-  * Include `config.d.ts` at the package level
-  * Add proper visibility annotations
-* Ownership
-  * Update `.github/CODEOWNERS` with appropriate maintainers
+- Workspace `package.json`
+  - `private: true`
+  - Use the correct repository url
+  - Keep workspace-level dependencies minimal
+- Plugin `package.json`
+  - For publishable plugins:
+    - Omit `private: true`
+    - Set `publishConfig.access` to `"public"`
+  - Include a valid `backstage` config with `role`, `pluginId`, and `pluginPackages`
+  - Use the correct repository URL
+- Required files
+  - Changeset is present
+  - README files with relevant documentation
+  - `backstage.json` specifying a compatible Backstage version
+- Configuration (if applicable)
+  - Include `config.d.ts` at the package level
+  - Add proper visibility annotations
+- Ownership
+  - Update `.github/CODEOWNERS` with appropriate maintainers
 
 ## Plugin Owner Responsibilities
 

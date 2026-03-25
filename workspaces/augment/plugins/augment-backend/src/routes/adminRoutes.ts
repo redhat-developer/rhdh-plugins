@@ -16,7 +16,7 @@
 import { InputError } from '@backstage/errors';
 import { AdminConfigService } from '../services/AdminConfigService';
 import { McpTestService } from '../services/McpTestService';
-import { MAX_DESCRIPTION_LENGTH, MAX_RAG_SEARCH_RESULTS } from '../constants';
+import { MAX_DESCRIPTION_LENGTH } from '../constants';
 import { createWithRoute } from './routeWrapper';
 import type { RouteContext } from './types';
 import type { AdminRouteDeps } from './adminRouteTypes';
@@ -132,13 +132,9 @@ export function registerAdminRoutes(
         }
         if (
           maxResults !== undefined &&
-          (typeof maxResults !== 'number' ||
-            maxResults < 1 ||
-            maxResults > MAX_RAG_SEARCH_RESULTS)
+          (typeof maxResults !== 'number' || maxResults < 1)
         ) {
-          throw new InputError(
-            `maxResults must be a number between 1 and ${MAX_RAG_SEARCH_RESULTS}`,
-          );
+          throw new InputError('maxResults must be a positive number');
         }
         if (
           vectorStoreId !== undefined &&
@@ -199,13 +195,9 @@ export function registerAdminRoutes(
         }
         if (
           maxResults !== undefined &&
-          (typeof maxResults !== 'number' ||
-            maxResults < 1 ||
-            maxResults > MAX_RAG_SEARCH_RESULTS)
+          (typeof maxResults !== 'number' || maxResults < 1)
         ) {
-          throw new InputError(
-            `maxResults must be a number between 1 and ${MAX_RAG_SEARCH_RESULTS}`,
-          );
+          throw new InputError('maxResults must be a positive number');
         }
         if (
           vectorStoreId !== undefined &&

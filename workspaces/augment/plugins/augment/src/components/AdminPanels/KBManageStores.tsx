@@ -74,6 +74,7 @@ export const KBManageStores = ({
     docsLoading,
     refreshDocs,
     deleteInProgress,
+    deleteError,
     handleDelete,
   } = useStoreDocuments({
     selectedStoreId,
@@ -110,6 +111,16 @@ export const KBManageStores = ({
           onClose={() => setIngestResult(null)}
         >
           {ingestResult}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={deleteError !== null}
+        autoHideDuration={6000}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" variant="filled">
+          {deleteError}
         </Alert>
       </Snackbar>
 

@@ -491,7 +491,7 @@ describe('ResponsesApiService', () => {
       ]);
     });
 
-    it('prefers conversation over previousResponseId (mutually exclusive in Llama Stack)', async () => {
+    it('prefers previous_response_id over conversation for correct chained HITL linking', async () => {
       mockClient.request.mockResolvedValue({
         id: 'resp-2',
         output: [],
@@ -503,6 +503,28 @@ describe('ResponsesApiService', () => {
         callId: 'call-1',
         output: 'result',
         previousResponseId: 'resp-1',
+        conversationId: 'conv_abc123',
+      });
+
+      const body = JSON.parse(
+        (mockClient.request.mock.calls[0]![1] as { body: string }).body,
+      );
+      expect(body.previous_response_id).toBe('resp-1');
+      expect(body.conversation).toBeUndefined();
+    });
+
+    it('falls back to conversation when previousResponseId is not provided', async () => {
+      mockClient.request.mockResolvedValue({
+        id: 'resp-2',
+        output: [],
+      });
+
+      await service.continueFunctionCallOutput({
+        client: mockClient as unknown as ResponsesApiClient,
+        model: 'test-model',
+        callId: 'call-1',
+        output: 'result',
+        previousResponseId: '',
         conversationId: 'conv_abc123',
       });
 

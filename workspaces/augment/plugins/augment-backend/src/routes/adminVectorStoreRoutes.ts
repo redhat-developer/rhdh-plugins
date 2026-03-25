@@ -212,6 +212,35 @@ export function registerAdminVectorStoreRoutes(
             if (typeof body.embeddingModel !== 'string') {
               throw new InputError('embeddingModel must be a string');
             }
+            if (provider.listModels) {
+              try {
+                const models = await provider.listModels();
+                const embeddingIds = models
+                  .filter(m => m.model_type === 'embedding')
+                  .map(m => m.id);
+                const candidateIds =
+                  embeddingIds.length > 0
+                    ? embeddingIds
+                    : models.map(m => m.id);
+                if (
+                  candidateIds.length > 0 &&
+                  !candidateIds.includes(body.embeddingModel as string)
+                ) {
+                  const label =
+                    embeddingIds.length > 0
+                      ? 'embedding models'
+                      : 'models (no embedding-tagged models found)';
+                  throw new InputError(
+                    `Embedding model "${body.embeddingModel}" not found on server. Available ${label}: ${candidateIds.join(', ')}`,
+                  );
+                }
+              } catch (err) {
+                if (err instanceof InputError) throw err;
+                logger.debug(
+                  `Could not validate embedding model against server: ${err}`,
+                );
+              }
+            }
           }
           if (body.embeddingDimension !== undefined) {
             if (
