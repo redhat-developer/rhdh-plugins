@@ -42,6 +42,48 @@ import {
 } from '../utils/lightspeed-chatbox-utils';
 import { useCreateConversationMessage } from './useCreateCoversationMessage';
 
+const toolCallIdKey = (id: string | number): string => {
+  return String(id);
+};
+
+const normalizeToolCalls = (
+  calls: (ToolCall | undefined)[] | undefined,
+): ToolCall[] => (calls ?? []).filter((tc): tc is ToolCall => tc !== null);
+
+const isMcpStyleToolCallPayload = (
+  data: Record<string, any> | undefined,
+): boolean => {
+  return (
+    !!data &&
+    typeof data.name === 'string' &&
+    data.name.trim().length > 0 &&
+    data.id !== null
+  );
+};
+
+/** Legacy tool_result uses data.token with at least tool_name and response. */
+const isLegacyToolResultToken = (
+  token: unknown,
+): token is { tool_name: string; response?: unknown } => {
+  return (
+    !!token &&
+    typeof token === 'object' &&
+    !Array.isArray(token) &&
+    typeof (token as { tool_name?: string }).tool_name === 'string' &&
+    (token as { tool_name: string }).tool_name.length > 0
+  );
+};
+
+const legacyToolResultToString = (response: unknown): string => {
+  if (!response) return '';
+  if (typeof response === 'string') return response;
+  try {
+    return JSON.stringify(response);
+  } catch {
+    return String(response);
+  }
+};
+
 // Fetch all conversation messages
 export const useFetchConversationMessages = (
   currentConversation: string,
@@ -118,7 +160,7 @@ export const useConversationMessages = (
   });
 
   // Track pending tool calls during streaming
-  const pendingToolCalls = useRef<{ [id: number]: ToolCall }>({});
+  const pendingToolCalls = useRef<Record<string, ToolCall>>({});
 
   // Cache tool calls by conversation ID and message index to persist across refetches
   // Key format: `${conversationId}-${messageIndex}`
@@ -302,19 +344,51 @@ export const useConversationMessages = (
               // Handle tool_call event
               if (event === 'tool_call') {
                 const toolCallData = data?.token;
-                if (
+                const legacyObjectCall =
                   typeof toolCallData === 'object' &&
-                  toolCallData?.tool_name
-                ) {
-                  // Full tool call with arguments - track start time
-                  const toolCall: ToolCall = {
+                  toolCallData !== null &&
+                  !Array.isArray(toolCallData) &&
+                  (toolCallData as { tool_name?: string }).tool_name;
+
+                const mcpStyle = isMcpStyleToolCallPayload(data);
+                const rawArgs = data?.args ?? data?.arguments;
+                const mcpArgs: Record<string, any> =
+                  rawArgs &&
+                  typeof rawArgs === 'object' &&
+                  !Array.isArray(rawArgs)
+                    ? rawArgs
+                    : {};
+
+                let toolCall: ToolCall | undefined;
+                // Prefer legacy token object when present (backward compatible)
+                if (legacyObjectCall && data.id !== null) {
+                  toolCall = {
                     id: data.id,
-                    toolName: toolCallData.tool_name,
-                    arguments: toolCallData.arguments || {},
+                    toolName: (toolCallData as { tool_name: string }).tool_name,
+                    arguments:
+                      (toolCallData as { arguments?: Record<string, any> })
+                        .arguments || {},
                     startTime: Date.now(),
                     isLoading: true,
                   };
-                  pendingToolCalls.current[data.id] = toolCall;
+                } else if (mcpStyle) {
+                  toolCall = {
+                    id: data.id,
+                    toolName: data.name.trim(),
+                    description:
+                      typeof data.type === 'string' && data.type !== data.name
+                        ? data.type
+                        : undefined,
+                    arguments: mcpArgs,
+                    startTime: Date.now(),
+                    isLoading: true,
+                  };
+                }
+
+                if (toolCall && data.id !== null) {
+                  const newToolCall: ToolCall = toolCall;
+                  pendingToolCalls.current[toolCallIdKey(data.id)] =
+                    newToolCall;
 
                   // Update the bot message with the pending tool call
                   setConversations(prevConversations => {
@@ -325,13 +399,19 @@ export const useConversationMessages = (
                     if (lastMessageIndex < 0) return prevConversations;
 
                     const lastMessage = { ...conversation[lastMessageIndex] };
-                    const existingToolCalls = lastMessage.toolCalls || [];
-                    lastMessage.toolCalls = [...existingToolCalls, toolCall];
+                    const existingToolCalls = normalizeToolCalls(
+                      lastMessage.toolCalls,
+                    );
+                    const nextToolCalls: ToolCall[] = [
+                      ...existingToolCalls,
+                      newToolCall,
+                    ];
+                    lastMessage.toolCalls = nextToolCalls;
 
                     // Cache tool calls for this message (message pair index)
                     const messageIndex = Math.floor(lastMessageIndex / 2);
                     const cacheKey = `${currentConversation}-${messageIndex}`;
-                    toolCallsCache.current[cacheKey] = lastMessage.toolCalls;
+                    toolCallsCache.current[cacheKey] = nextToolCalls;
 
                     const updatedConversation = [
                       ...conversation.slice(0, lastMessageIndex),
@@ -348,12 +428,14 @@ export const useConversationMessages = (
                   const [humanMessage, aiMessage] =
                     streamingConversations.current[currentConversation] || [];
                   if (aiMessage) {
-                    const existingToolCalls = aiMessage.toolCalls || [];
+                    const existingStreamingToolCalls = normalizeToolCalls(
+                      aiMessage.toolCalls,
+                    );
                     streamingConversations.current[currentConversation] = [
                       humanMessage,
                       {
                         ...aiMessage,
-                        toolCalls: [...existingToolCalls, toolCall],
+                        toolCalls: [...existingStreamingToolCalls, newToolCall],
                       },
                     ];
                   }
@@ -362,10 +444,41 @@ export const useConversationMessages = (
 
               // Handle tool_result event
               if (event === 'tool_result') {
-                const resultData = data?.token;
-                if (resultData?.tool_name) {
-                  const toolId = data.id;
-                  const pendingCall = pendingToolCalls.current[toolId];
+                const tokenResult = data?.token;
+                const legacyResult = isLegacyToolResultToken(tokenResult);
+
+                const mcpHasContent =
+                  data?.id !== null &&
+                  data.content !== undefined &&
+                  !legacyResult;
+
+                let responsePayload: string | undefined;
+                let matchToolName: string | undefined;
+                let toolIdKey: string | undefined;
+
+                if (legacyResult) {
+                  responsePayload = legacyToolResultToString(
+                    tokenResult.response,
+                  );
+                  matchToolName = tokenResult.tool_name;
+                  toolIdKey =
+                    data?.id !== null ? toolCallIdKey(data.id) : undefined;
+                } else if (mcpHasContent) {
+                  toolIdKey = toolCallIdKey(data.id);
+                  responsePayload =
+                    typeof data.content === 'string'
+                      ? data.content
+                      : JSON.stringify(data.content);
+                  if (
+                    typeof data.status === 'string' &&
+                    data.status !== 'success'
+                  ) {
+                    responsePayload = `[${data.status}] ${responsePayload}`;
+                  }
+                }
+
+                if (responsePayload !== undefined && toolIdKey !== undefined) {
+                  const pendingCall = pendingToolCalls.current[toolIdKey];
                   const endTime = Date.now();
                   const executionTime = pendingCall
                     ? (endTime - pendingCall.startTime) / 1000
@@ -384,13 +497,14 @@ export const useConversationMessages = (
 
                     // Find and update the matching tool call
                     const updatedToolCalls = toolCalls.map(tc => {
-                      if (
-                        tc.id === toolId ||
-                        tc.toolName === resultData.tool_name
-                      ) {
+                      const idMatches =
+                        toolCallIdKey(tc.id) === toolIdKey ||
+                        (matchToolName !== undefined &&
+                          tc.toolName === matchToolName);
+                      if (idMatches) {
                         return {
                           ...tc,
-                          response: resultData.response,
+                          response: responsePayload,
                           endTime,
                           executionTime,
                           isLoading: false,
@@ -423,13 +537,14 @@ export const useConversationMessages = (
                   if (aiMessage) {
                     const toolCalls = aiMessage.toolCalls || [];
                     const updatedToolCalls = toolCalls.map(tc => {
-                      if (
-                        tc.id === toolId ||
-                        tc.toolName === resultData.tool_name
-                      ) {
+                      const idMatches =
+                        toolCallIdKey(tc.id) === toolIdKey ||
+                        (matchToolName !== undefined &&
+                          tc.toolName === matchToolName);
+                      if (idMatches) {
                         return {
                           ...tc,
-                          response: resultData.response,
+                          response: responsePayload,
                           endTime,
                           executionTime,
                           isLoading: false,
@@ -444,7 +559,7 @@ export const useConversationMessages = (
                   }
 
                   // Clean up pending tool call
-                  delete pendingToolCalls.current[toolId];
+                  delete pendingToolCalls.current[toolIdKey];
                 }
               }
 
