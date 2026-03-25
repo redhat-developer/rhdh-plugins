@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
   pull-requests: write
 
 concurrency:
@@ -64,7 +65,7 @@ jobs:
           script: |
             const marker = '<!-- rhdh-new-workspace-pr-comment -->';
             const issue_number = context.payload.pull_request.number;
-            const { data: comments } = await github.rest.issues.listComments({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number,
