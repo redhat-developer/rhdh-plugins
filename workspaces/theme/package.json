@@ -55,7 +55,7 @@
     "jsdom": "^27.1.0",
     "node-gyp": "^9.0.0",
     "prettier": "^3.4.2",
-    "typescript": "~5.3.0"
+    "typescript": "~5.8.0"
   },
   "dependencies": {
     "knip": "^5.27.4"
@@ -65,7 +65,7 @@
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
-  "prettier": "@spotify/prettier-config",
+  "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
       "eslint --fix",
