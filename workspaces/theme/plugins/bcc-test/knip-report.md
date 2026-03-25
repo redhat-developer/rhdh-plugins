@@ -4,16 +4,9 @@
 
 | Name                        | Location          | Severity |
 | :-------------------------- | :---------------- | :------- |
-| @testing-library/user-event | package.json:63:6 | error    |
-| @backstage/core-app-api     | package.json:58:6 | error    |
-| @testing-library/react      | package.json:62:6 | error    |
-| @backstage/test-utils       | package.json:60:6 | error    |
-| msw                         | package.json:64:6 | error    |
-
-## Unlisted dependencies (2)
-
-| Name                           | Location            | Severity |
-| :----------------------------- | :------------------ | :------- |
-| @backstage/frontend-plugin-api | src/alpha/index.tsx | error    |
-| @material-ui/icons             | src/alpha/index.tsx | error    |
+| @testing-library/user-event | package.json:65:6 | error    |
+| @backstage/core-app-api     | package.json:60:6 | error    |
+| @testing-library/react      | package.json:64:6 | error    |
+| @backstage/test-utils       | package.json:62:6 | error    |
+| msw                         | package.json:66:6 | error    |
 

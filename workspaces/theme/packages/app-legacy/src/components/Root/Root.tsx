@@ -43,7 +43,10 @@ import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
-import { LogoFull, LogoIcon } from '@red-hat-developer-hub/backstage-plugin-theme';
+import {
+  LogoFull,
+  LogoIcon,
+} from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const useSidebarLogoStyles = makeStyles({
   root: {

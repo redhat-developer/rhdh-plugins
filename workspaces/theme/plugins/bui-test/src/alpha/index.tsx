@@ -19,7 +19,7 @@ import {
   createRouteRef,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import ExtensionIcon from '@material-ui/icons/Extension';
+import { RiPuzzleLine } from '@remixicon/react';
 
 const rootRouteRef = createRouteRef();
 
@@ -27,11 +27,10 @@ const buiTestPage = PageBlueprint.make({
   params: {
     path: '/bui-tests',
     title: 'BUI Tests',
-    icon: <ExtensionIcon />,
+    icon: <RiPuzzleLine />,
     routeRef: rootRouteRef,
-    loader: async () => import('../components/BUITestPage').then(m => (
-      <m.BUITestPage />
-    )),
+    loader: async () =>
+      import('../components/BUITestPage').then(m => <m.BUITestPage />),
   },
 });
 

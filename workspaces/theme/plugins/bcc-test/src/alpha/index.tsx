@@ -19,7 +19,7 @@ import {
   createRouteRef,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import ExtensionIcon from '@material-ui/icons/Extension';
+import { RiPuzzleLine } from '@remixicon/react';
 
 const rootRouteRef = createRouteRef();
 
@@ -27,11 +27,10 @@ const bccTestPage = PageBlueprint.make({
   params: {
     path: '/bcc-tests',
     title: 'BCC Tests',
-    icon: <ExtensionIcon />,
+    icon: <RiPuzzleLine />,
     routeRef: rootRouteRef,
-    loader: async () => import('../components/BCCTestPage').then(m => (
-      <m.BCCTestPage />
-    )),
+    loader: async () =>
+      import('../components/BCCTestPage').then(m => <m.BCCTestPage />),
   },
 });
 

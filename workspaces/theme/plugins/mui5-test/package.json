@@ -47,10 +47,10 @@
   "dependencies": {
     "@backstage/core-components": "^0.18.8",
     "@backstage/core-plugin-api": "^1.12.4",
+    "@backstage/frontend-plugin-api": "^0.15.1",
     "@backstage/plugin-user-settings": "^0.9.1",
-    "@mui/icons-material": "^5",
     "@mui/material": "^5",
-    "@mui/styles": "^5"
+    "@remixicon/react": "^4.9.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
