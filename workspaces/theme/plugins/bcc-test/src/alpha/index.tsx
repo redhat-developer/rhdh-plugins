@@ -25,7 +25,7 @@ const rootRouteRef = createRouteRef();
 
 const bccTestPage = PageBlueprint.make({
   params: {
-    path: '/bcc-test',
+    path: '/bcc-tests',
     title: 'BCC Tests',
     icon: <ExtensionIcon />,
     routeRef: rootRouteRef,

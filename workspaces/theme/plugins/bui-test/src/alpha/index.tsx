@@ -25,7 +25,7 @@ const rootRouteRef = createRouteRef();
 
 const buiTestPage = PageBlueprint.make({
   params: {
-    path: '/bui-test',
+    path: '/bui-tests',
     title: 'BUI Tests',
     icon: <ExtensionIcon />,
     routeRef: rootRouteRef,

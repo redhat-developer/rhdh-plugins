@@ -25,7 +25,7 @@ const rootRouteRef = createRouteRef();
 
 const mui4TestPage = PageBlueprint.make({
   params: {
-    path: '/mui4-test',
+    path: '/mui4-tests',
     title: 'MUI v4 Tests',
     icon: <ExtensionIcon />,
     routeRef: rootRouteRef,

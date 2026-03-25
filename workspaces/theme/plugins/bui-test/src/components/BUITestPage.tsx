@@ -36,17 +36,17 @@ export const BUITestPage = () => {
           {
             id: 'form-components',
             label: 'Form Components',
-            href: '/bui-test',
+            href: '/bui-tests',
           },
           {
             id: 'table-example',
             label: 'Table Example',
-            href: '/bui-test/table-example',
+            href: '/bui-tests/table-example',
           },
           {
             id: 'card-example',
             label: 'Card Example',
-            href: '/bui-test/card-example',
+            href: '/bui-tests/card-example',
           },
         ]}
       />

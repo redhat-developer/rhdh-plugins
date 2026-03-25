@@ -21,7 +21,7 @@ createDevApp()
   .registerPlugin(mui4TestPlugin)
   .addPage({
     element: <MUI4TestPage />,
-    title: 'Root Page',
-    path: '/mui4-test',
+    title: 'MUI4 v4 Tests',
+    path: '/mui4-tests',
   })
   .render();
