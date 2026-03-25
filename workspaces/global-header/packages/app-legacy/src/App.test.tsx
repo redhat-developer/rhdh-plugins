@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { render, waitFor } from '@testing-library/react';
 import App from './App';
 
@@ -34,7 +35,7 @@ describe('App', () => {
       ] as any,
     };
 
-    const rendered = render(App.createRoot());
+    const rendered = render(<App />);
 
     await waitFor(() => {
       expect(rendered.baseElement).toBeInTheDocument();

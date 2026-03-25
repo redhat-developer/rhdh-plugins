@@ -16,27 +16,32 @@
 
 // These translation files are not exported by the package, so relative imports are necessary for e2e tests
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { globalHeaderMessages } from '../../../../plugins/global-header/src/translations/ref.js';
-import globalHeaderTranslationDe from '../../../../plugins/global-header/src/translations/de.js';
-import globalHeaderTranslationEs from '../../../../plugins/global-header/src/translations/es.js';
-import globalHeaderTranslationFr from '../../../../plugins/global-header/src/translations/fr.js';
-import globalHeaderTranslationIt from '../../../../plugins/global-header/src/translations/it.js';
-import globalHeaderTranslationJa from '../../../../plugins/global-header/src/translations/ja.js';
+import { globalHeaderMessages } from '../../plugins/global-header/src/translations/ref.js';
+import globalHeaderTranslationDe from '../../plugins/global-header/src/translations/de.js';
+import globalHeaderTranslationEs from '../../plugins/global-header/src/translations/es.js';
+import globalHeaderTranslationFr from '../../plugins/global-header/src/translations/fr.js';
+import globalHeaderTranslationIt from '../../plugins/global-header/src/translations/it.js';
+import globalHeaderTranslationJa from '../../plugins/global-header/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type GlobalHeaderMessages = typeof globalHeaderMessages;
 
 function transform(messages: typeof globalHeaderTranslationDe.messages) {
-  const result = Object.keys(messages).reduce((res, key) => {
-    const path = key.split('.');
-    const lastIndex = path.length - 1;
-    path.reduce((acc, currentPath, i) => {
-      acc[currentPath] =
-        lastIndex === i ? messages[key] : acc[currentPath] || {};
-      return acc[currentPath];
-    }, res);
-    return res;
-  }, {});
+  const result = Object.keys(messages).reduce<Record<string, any>>(
+    (res, key) => {
+      const path = key.split('.');
+      const lastIndex = path.length - 1;
+      path.reduce<Record<string, any>>((acc, currentPath, i) => {
+        acc[currentPath] =
+          lastIndex === i
+            ? messages[key as keyof typeof messages]
+            : acc[currentPath] || {};
+        return acc[currentPath] as Record<string, any>;
+      }, res);
+      return res;
+    },
+    {},
+  );
 
   return result as GlobalHeaderMessages;
 }
