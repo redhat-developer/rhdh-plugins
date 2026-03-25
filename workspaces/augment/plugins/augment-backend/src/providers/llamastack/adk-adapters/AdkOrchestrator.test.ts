@@ -92,7 +92,7 @@ function mockLogger(): LoggerService {
 function baseConfig(): EffectiveConfig {
   return {
     model: 'llama3',
-    baseUrl: 'http://localhost:8321',
+    baseUrl: 'https://localhost:8321',
     systemPrompt: 'Be helpful.',
     enableWebSearch: false,
     enableCodeInterpreter: false,
@@ -699,7 +699,7 @@ describe('AdkOrchestrator', () => {
         functionName: 'delete_ns',
         argumentsJson: '{}',
         serverId: 'ocp',
-        serverUrl: 'http://ocp',
+        serverUrl: 'https://ocp',
         originalToolName: 'delete_ns',
         createdAt: Date.now(),
       };
@@ -808,7 +808,7 @@ describe('AdkOrchestrator', () => {
         functionName: 'scale_deploy',
         argumentsJson: '{}',
         serverId: 'ocp',
-        serverUrl: 'http://ocp',
+        serverUrl: 'https://ocp',
         originalToolName: 'scale_deploy',
         createdAt: Date.now(),
       };
