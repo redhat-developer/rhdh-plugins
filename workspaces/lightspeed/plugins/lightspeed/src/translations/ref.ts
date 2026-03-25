@@ -47,6 +47,7 @@ export const lightspeedMessages = {
   'notebooks.delete.message':
     "You'll no longer see this notebook here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
   'notebooks.delete.action': 'Delete',
+  'notebooks.delete.toast': 'Notebook deleted!',
   'notebooks.updated.today': 'Updated today',
   'notebooks.updated.yesterday': 'Updated 1 day ago',
   'notebooks.updated.days': 'Updated {{days}} days ago',

@@ -49,6 +49,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebooks.delete.message':
       'このノートブックはここに表示されなくなります。Lightspeed アクティビティに関連するプロンプト、応答、フィードバックも削除されます。',
     'notebooks.delete.action': '削除',
+    'notebooks.delete.toast': 'ノートブックを削除しました！',
     'notebooks.updated.today': '今日更新',
     'notebooks.updated.yesterday': '1日前に更新',
     'notebooks.updated.days': '{{days}}日前に更新',

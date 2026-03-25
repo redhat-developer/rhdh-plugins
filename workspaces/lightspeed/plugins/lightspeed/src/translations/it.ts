@@ -50,6 +50,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebooks.delete.message':
       'Non vedrai più questo quaderno qui. Questo eliminerà anche le attività correlate come prompt, risposte e feedback dalla tua attività Lightspeed.',
     'notebooks.delete.action': 'Elimina',
+    'notebooks.delete.toast': 'Quaderno eliminato!',
     'notebooks.updated.today': 'Aggiornato oggi',
     'notebooks.updated.yesterday': 'Aggiornato 1 giorno fa',
     'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',

@@ -49,6 +49,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebooks.delete.message':
       'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Eingaben, Antworten und Feedback aus Ihrer Lightspeed-Aktivität gelöscht.',
     'notebooks.delete.action': 'Löschen',
+    'notebooks.delete.toast': 'Notizbuch gelöscht!',
     'notebooks.updated.today': 'Heute aktualisiert',
     'notebooks.updated.yesterday': 'Vor 1 Tag aktualisiert',
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',

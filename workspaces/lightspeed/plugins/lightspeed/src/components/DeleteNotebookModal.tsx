@@ -78,11 +78,13 @@ const useStyles = makeStyles(theme => ({
 export const DeleteNotebookModal = ({
   isOpen,
   onClose,
+  onDeleted,
   sessionId,
   name,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  onDeleted: () => void;
   sessionId: string;
   name: string;
 }) => {
@@ -93,6 +95,7 @@ export const DeleteNotebookModal = ({
   const handleDelete = async () => {
     try {
       await deleteNotebook(sessionId);
+      onDeleted();
       onClose();
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -114,7 +117,7 @@ export const DeleteNotebookModal = ({
       <DialogTitle className={classes.dialogTitle}>
         <Box className={classes.titleRow}>
           <Typography component="span" className={classes.titleText}>
-            {t('notebooks.delete.title').replace('{{name}}', name)}
+            {t('notebooks.delete.title', { name } as any)}
           </Typography>
           <IconButton
             aria-label="close"

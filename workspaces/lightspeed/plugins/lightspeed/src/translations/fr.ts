@@ -49,6 +49,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebooks.delete.message':
       'Vous ne verrez plus ce carnet ici. Cela supprimera également l’activité associée comme les requêtes, réponses et retours depuis votre activité Lightspeed.',
     'notebooks.delete.action': 'Supprimer',
+    'notebooks.delete.toast': 'Carnet supprimé !',
     'notebooks.updated.today': 'Mis à jour aujourd’hui',
     'notebooks.updated.yesterday': 'Mis à jour il y a 1 jour',
     'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',

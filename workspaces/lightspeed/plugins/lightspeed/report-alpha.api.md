@@ -56,6 +56,7 @@ readonly "notebooks.rename.action": string;
 readonly "notebooks.delete.title": string;
 readonly "notebooks.delete.message": string;
 readonly "notebooks.delete.action": string;
+readonly "notebooks.delete.toast": string;
 readonly "notebooks.updated.today": string;
 readonly "notebooks.updated.yesterday": string;
 readonly "notebooks.updated.days": string;

@@ -48,6 +48,10 @@ import {
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import {
+  Alert,
+  AlertActionCloseButton,
+  AlertGroup,
+  AlertVariant,
   DropdownItem,
   MenuToggle,
   MenuToggleElement,
@@ -58,6 +62,7 @@ import {
   Tabs,
   Title,
   Tooltip,
+  type AlertProps,
 } from '@patternfly/react-core';
 import {
   PlusIcon,
@@ -157,6 +162,9 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
+    flex: 1,
+    minHeight: 0,
+    overflowY: 'auto',
   },
   notebooksHeader: {
     display: 'flex',
@@ -210,6 +218,7 @@ const useStyles = makeStyles(theme => ({
     gap: theme.spacing(2),
     width: '100%',
     maxWidth: '100%',
+    paddingBottom: theme.spacing(3),
     [theme.breakpoints.down('md')]: {
       gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
     },
@@ -303,6 +312,17 @@ const useStyles = makeStyles(theme => ({
     overflowY: 'auto',
     WebkitOverflowScrolling: 'touch',
   },
+  toastAlertGroup: {
+    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
+  },
+  toastAlert: {
+    maxWidth: '350px',
+    '& .pf-v6-c-alert__title': {
+      margin: 0,
+    },
+  },
   // When present, pushes welcome content to bottom (zoom out). Scroll up to see important box (zoom in).
   chatbotContentSpacer: {
     flex: 1,
@@ -346,6 +366,9 @@ export const LightspeedChat = ({
   );
   const [renameNotebookId, setRenameNotebookId] = useState<string | null>(null);
   const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null);
+  const [notebookAlerts, setNotebookAlerts] = useState<Partial<AlertProps>[]>(
+    [],
+  );
   const [conversationId, setConversationId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
@@ -383,6 +406,19 @@ export const LightspeedChat = ({
     }
   };
 
+  const handleNotebookDeleted = () => {
+    const key = Date.now();
+    setNotebookAlerts(prevAlerts => [
+      { title: t('notebooks.delete.toast'), variant: 'success', key },
+      ...prevAlerts,
+    ]);
+  };
+
+  const handleRemoveNotebookAlert = (key: React.Key) => {
+    setNotebookAlerts(prevAlerts =>
+      prevAlerts.filter(alert => alert.key !== key),
+    );
+  };
   // Open the chat history drawer when entering fullscreen mode on desktop
   useEffect(() => {
     if (!isMobile && isFullscreenMode) {
@@ -937,6 +973,30 @@ export const LightspeedChat = ({
 
   return (
     <>
+      {notebookAlerts.length > 0 && (
+        <AlertGroup
+          hasAnimations
+          isToast
+          isLiveRegion
+          className={classes.toastAlertGroup}
+        >
+          {notebookAlerts.map(({ key, title, variant }) => (
+            <Alert
+              key={key}
+              variant={AlertVariant[variant ?? 'success']}
+              title={title}
+              className={classes.toastAlert}
+              actionClose={
+                <AlertActionCloseButton
+                  title={title as string}
+                  variantLabel={`${variant ?? 'success'} alert`}
+                  onClose={() => handleRemoveNotebookAlert(key as React.Key)}
+                />
+              }
+            />
+          ))}
+        </AlertGroup>
+      )}
       {isDeleteModalOpen && (
         <DeleteModal
           isOpen={isDeleteModalOpen}
@@ -966,6 +1026,7 @@ export const LightspeedChat = ({
         <DeleteNotebookModal
           isOpen={Boolean(deleteNotebookId)}
           onClose={() => setDeleteNotebookId(null)}
+          onDeleted={handleNotebookDeleted}
           sessionId={deleteNotebookId}
           name={
             notebooks.find(n => n.session_id === deleteNotebookId)?.name ?? ''
