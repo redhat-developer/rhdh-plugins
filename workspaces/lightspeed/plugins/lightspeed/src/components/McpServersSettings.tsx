@@ -32,7 +32,6 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
-
 import { lightspeedMcpManagePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
 type ServerStatus = 'tokenRequired' | 'disabled' | 'ok' | 'failed' | 'unknown';
@@ -246,7 +245,6 @@ const toUiServer = (
   hasUserToken: server.hasUserToken,
   validationError: server.status === 'error' ? validationError : undefined,
 });
-
 export const McpServersSettings = ({
   onClose,
   backgroundColor,
