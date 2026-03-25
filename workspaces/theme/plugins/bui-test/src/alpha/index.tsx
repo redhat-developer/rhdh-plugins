@@ -16,11 +16,12 @@
 
 import {
   createFrontendPlugin,
+  createRouteRef,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import { rootRouteRef } from '../routes';
 import ExtensionIcon from '@material-ui/icons/Extension';
-import { BUITestPageComponent } from '..';
+
+const rootRouteRef = createRouteRef();
 
 const buiTestPage = PageBlueprint.make({
   params: {
@@ -28,7 +29,9 @@ const buiTestPage = PageBlueprint.make({
     title: 'BUI Tests',
     icon: <ExtensionIcon />,
     routeRef: rootRouteRef,
-    loader: async () => <BUITestPageComponent />,
+    loader: async () => import('../components/BUITestPage').then(m => (
+      <m.BUITestPage />
+    )),
   },
 });
 

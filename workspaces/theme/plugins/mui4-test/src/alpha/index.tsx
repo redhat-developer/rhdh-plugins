@@ -15,12 +15,13 @@
  */
 
 import {
+  createRouteRef,
   createFrontendPlugin,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import { rootRouteRef } from '../routes';
 import ExtensionIcon from '@material-ui/icons/Extension';
-import { MUI4TestPageComponent } from '..';
+
+const rootRouteRef = createRouteRef();
 
 const mui4TestPage = PageBlueprint.make({
   params: {
@@ -28,13 +29,20 @@ const mui4TestPage = PageBlueprint.make({
     title: 'MUI v4 Tests',
     icon: <ExtensionIcon />,
     routeRef: rootRouteRef,
-    loader: async () => <MUI4TestPageComponent />,
+    loader: async () => import('../components/MUI4TestPage').then(m => (
+      <m.MUI4TestPage />
+    )),
   },
 });
 
-export default createFrontendPlugin({
+/*
+ * @alpha
+ */
+const plugin = createFrontendPlugin({
   pluginId: 'mui4-test',
   info: { packageJson: () => import('../../package.json') },
   extensions: [mui4TestPage],
   routes: { root: rootRouteRef },
 });
+
+export default plugin;

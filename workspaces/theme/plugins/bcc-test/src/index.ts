@@ -22,4 +22,3 @@ ClassNameGenerator.configure(componentName => {
 });
 
 export * from './plugin';
-export { BCCTestPage as BCCTestPageComponent } from './components/BCCTestPage';

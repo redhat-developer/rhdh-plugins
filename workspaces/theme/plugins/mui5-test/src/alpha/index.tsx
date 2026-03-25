@@ -16,11 +16,12 @@
 
 import {
   createFrontendPlugin,
+  createRouteRef,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import { rootRouteRef } from '../routes';
 import ExtensionIcon from '@material-ui/icons/Extension';
-import { MUI5TestPageComponent } from '..';
+
+const rootRouteRef = createRouteRef();
 
 const mui5TestPage = PageBlueprint.make({
   params: {
@@ -28,7 +29,9 @@ const mui5TestPage = PageBlueprint.make({
     title: 'MUI v5 Tests',
     icon: <ExtensionIcon />,
     routeRef: rootRouteRef,
-    loader: async () => <MUI5TestPageComponent />,
+    loader: async () => import('../components/MUI5TestPage').then(m => (
+      <m.MUI5TestPage />
+    )),
   },
 });
 

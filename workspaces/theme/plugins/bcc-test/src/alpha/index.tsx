@@ -16,11 +16,12 @@
 
 import {
   createFrontendPlugin,
+  createRouteRef,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import { rootRouteRef } from '../routes';
 import ExtensionIcon from '@material-ui/icons/Extension';
-import { BCCTestPageComponent } from '..';
+
+const rootRouteRef = createRouteRef();
 
 const bccTestPage = PageBlueprint.make({
   params: {
@@ -28,7 +29,9 @@ const bccTestPage = PageBlueprint.make({
     title: 'BCC Tests',
     icon: <ExtensionIcon />,
     routeRef: rootRouteRef,
-    loader: async () => <BCCTestPageComponent />,
+    loader: async () => import('../components/BCCTestPage').then(m => (
+      <m.BCCTestPage />
+    )),
   },
 });
 
