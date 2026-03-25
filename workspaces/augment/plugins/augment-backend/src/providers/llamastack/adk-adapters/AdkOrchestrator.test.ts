@@ -158,6 +158,47 @@ function makeChatRequest(message = 'List namespaces'): ChatRequest {
   } as ChatRequest;
 }
 
+function makeMultiAgentSnapshot(): AgentGraphSnapshot {
+  return {
+    agents: new Map([
+      [
+        'router',
+        {
+          key: 'router',
+          functionName: 'router',
+          config: {
+            name: 'Router',
+            instructions: 'Route messages.',
+            handoffs: ['worker'],
+          },
+          handoffTools: [],
+          agentAsToolTools: [],
+          handoffTargetKeys: new Set(['worker']),
+          asToolTargetKeys: new Set(),
+        },
+      ],
+      [
+        'worker',
+        {
+          key: 'worker',
+          functionName: 'worker',
+          config: {
+            name: 'Worker Agent',
+            instructions: 'Do actual work.',
+            handoffDescription: 'Handles work requests.',
+          },
+          handoffTools: [],
+          agentAsToolTools: [],
+          handoffTargetKeys: new Set(),
+          asToolTargetKeys: new Set(),
+        },
+      ],
+    ]),
+    defaultAgentKey: 'router',
+    maxTurns: 10,
+  };
+}
+
 describe('AdkOrchestrator', () => {
   let orchestrator: AdkOrchestrator;
   let logger: LoggerService;
@@ -926,47 +967,6 @@ describe('AdkOrchestrator', () => {
       expect(resultB).toBe('result');
     });
   });
-
-  function makeMultiAgentSnapshot(): AgentGraphSnapshot {
-    return {
-      agents: new Map([
-        [
-          'router',
-          {
-            key: 'router',
-            functionName: 'router',
-            config: {
-              name: 'Router',
-              instructions: 'Route messages.',
-              handoffs: ['worker'],
-            },
-            handoffTools: [],
-            agentAsToolTools: [],
-            handoffTargetKeys: new Set(['worker']),
-            asToolTargetKeys: new Set(),
-          },
-        ],
-        [
-          'worker',
-          {
-            key: 'worker',
-            functionName: 'worker',
-            config: {
-              name: 'Worker Agent',
-              instructions: 'Do actual work.',
-              handoffDescription: 'Handles work requests.',
-            },
-            handoffTools: [],
-            agentAsToolTools: [],
-            handoffTargetKeys: new Set(),
-            asToolTargetKeys: new Set(),
-          },
-        ],
-      ]),
-      defaultAgentKey: 'router',
-      maxTurns: 10,
-    };
-  }
 
   describe('multi-turn agent continuity', () => {
     it('passes resumeState on follow-up messages in the same conversation', async () => {
