@@ -26,6 +26,10 @@ export type UiProps = {
   'fetch:body'?: Record<string, JsonValue>;
   'fetch:retrigger'?: string[];
   'fetch:clearOnRetrigger'?: boolean;
+  'fetch:retry:maxAttempts'?: number;
+  'fetch:retry:delay'?: number;
+  'fetch:retry:backoff'?: number;
+  'fetch:retry:statusCodes'?: number[];
   'fetch:error:ignoreUnready'?: boolean;
   'fetch:error:silent'?: boolean;
   'fetch:skipInitialValue'?: boolean;
