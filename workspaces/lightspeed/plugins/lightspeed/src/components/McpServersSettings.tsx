@@ -19,7 +19,7 @@ import { useMemo, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
 import Typography from '@mui/material/Typography';
-import { Button, Switch, Title } from '@patternfly/react-core';
+import { Button, Switch, Title, Tooltip } from '@patternfly/react-core';
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -31,7 +31,7 @@ import {
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
-type ServerStatus = 'tokenRequired' | 'disabled' | 'ok' | 'failed';
+type ServerStatus = 'tokenRequired' | 'disabled' | 'ok' | 'failed' | 'unknown';
 
 type McpServer = {
   id: string;
@@ -39,6 +39,7 @@ type McpServer = {
   enabled: boolean;
   status: ServerStatus;
   detail: string;
+  errorMessage?: string;
 };
 
 type McpServersSettingsProps = {
@@ -80,7 +81,7 @@ const useStyles = makeStyles(theme => ({
     paddingLeft: 0,
     paddingTop: 0,
     paddingBottom: 0,
-    marginLeft: 0,
+    marginLeft: '-0.85rem',
     fontWeight: 600,
     fontSize: '0.75rem',
     lineHeight: '1.25rem',
@@ -164,7 +165,7 @@ const INITIAL_SERVERS: McpServer[] = [
   {
     id: 'github',
     name: 'Github',
-    enabled: false,
+    enabled: true,
     status: 'tokenRequired',
     detail: 'Token required',
   },
@@ -185,9 +186,11 @@ const INITIAL_SERVERS: McpServer[] = [
   {
     id: 'kubernetes',
     name: 'Kubernetes',
-    enabled: false,
+    enabled: true,
     status: 'failed',
-    detail: '5 tools',
+    detail: '4 tools',
+    errorMessage:
+      'Token authentication failed, click edit to configure it again',
   },
   {
     id: 'developerhub',
@@ -213,7 +216,7 @@ const INITIAL_SERVERS: McpServer[] = [
   {
     id: 'figma',
     name: 'Figma',
-    enabled: false,
+    enabled: true,
     status: 'failed',
     detail: 'Failed',
   },
@@ -225,6 +228,24 @@ const getStatusIcon = (status: ServerStatus, className: string) => {
   if (status === 'failed')
     return <ExclamationCircleIcon className={className} />;
   return <CheckCircleIcon className={className} />;
+};
+
+const getDisplayStatus = (server: McpServer): ServerStatus => {
+  if (!server.enabled) return 'disabled';
+  if (server.status === 'tokenRequired') return 'tokenRequired';
+  if (server.status === 'failed') return 'failed';
+  if (server.status === 'ok') return 'ok';
+  return 'unknown';
+};
+
+const getDisplayDetail = (
+  server: McpServer,
+  displayStatus: ServerStatus,
+): string => {
+  if (displayStatus === 'disabled') return 'Disabled';
+  if (displayStatus === 'tokenRequired') return 'Token required';
+  if (displayStatus === 'failed') return server.detail || 'Failed';
+  return server.detail;
 };
 
 export const McpServersSettings = ({
@@ -295,32 +316,50 @@ export const McpServersSettings = ({
         </Thead>
         <Tbody>
           {sortedServers.map(server => {
+            const displayStatus = getDisplayStatus(server);
+            const displayDetail = getDisplayDetail(server, displayStatus);
             let statusClass = classes.statusWarn;
-            if (server.status === 'ok') {
+            if (displayStatus === 'ok') {
               statusClass = classes.statusOk;
-            } else if (server.status === 'tokenRequired') {
+            } else if (displayStatus === 'tokenRequired') {
               statusClass = classes.statusToken;
-            } else if (server.status === 'disabled') {
+            } else if (displayStatus === 'disabled') {
               statusClass = classes.statusDisabled;
             }
 
             return (
               <Tr key={server.id}>
                 <Td width={10} className={classes.toggleCell}>
-                  <Switch
-                    id={`mcp-switch-${server.id}`}
-                    aria-label={`Toggle ${server.name}`}
-                    isChecked={server.enabled}
-                    onChange={(_event, checked) =>
-                      setServers(prev =>
-                        prev.map(item =>
-                          item.id === server.id
-                            ? { ...item, enabled: checked }
-                            : item,
-                        ),
-                      )
-                    }
-                  />
+                  {(() => {
+                    const isUnavailable =
+                      server.status === 'failed' ||
+                      server.status === 'tokenRequired';
+                    const isChecked = isUnavailable ? false : server.enabled;
+
+                    return (
+                      <Switch
+                        id={`mcp-switch-${server.id}`}
+                        aria-label={`Toggle ${server.name}`}
+                        isChecked={isChecked}
+                        isDisabled={isUnavailable}
+                        onChange={(_event, checked) =>
+                          setServers(prev =>
+                            prev.map(item =>
+                              item.id === server.id
+                                ? {
+                                    ...item,
+                                    enabled: checked,
+                                    ...(checked && item.status === 'disabled'
+                                      ? { status: 'ok', detail: '5 tools' }
+                                      : {}),
+                                  }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                    );
+                  })()}
                 </Td>
                 <Td
                   width={35}
@@ -332,13 +371,24 @@ export const McpServersSettings = ({
                 </Td>
                 <Td width={40} className={classes.statusColumnCell}>
                   <div className={classes.statusCell}>
-                    {getStatusIcon(server.status, statusClass)}
-                    <Typography
-                      component="span"
-                      className={classes.statusValue}
-                    >
-                      {server.detail}
-                    </Typography>
+                    {getStatusIcon(displayStatus, statusClass)}
+                    {displayStatus === 'failed' && server.errorMessage ? (
+                      <Tooltip content={server.errorMessage}>
+                        <Typography
+                          component="span"
+                          className={classes.statusValue}
+                        >
+                          {displayDetail}
+                        </Typography>
+                      </Tooltip>
+                    ) : (
+                      <Typography
+                        component="span"
+                        className={classes.statusValue}
+                      >
+                        {displayDetail}
+                      </Typography>
+                    )}
                   </div>
                 </Td>
                 <Td width={15} isActionCell style={{ textAlign: 'right' }}>
