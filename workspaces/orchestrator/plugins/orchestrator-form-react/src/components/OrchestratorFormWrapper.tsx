@@ -91,11 +91,28 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     let _extraErrors: ErrorSchema<JsonObject> | undefined = undefined;
     let _validationError: Error | undefined = undefined;
     const activeKey = getActiveKey();
+    const shouldScopeExtraErrors =
+      Boolean(activeKey) && Boolean(uiSchema?.[activeKey as string]);
+    const extraErrorsFormData = shouldScopeExtraErrors
+      ? ({
+          [activeKey as string]: ((formData?.[
+            activeKey as string
+          ] as JsonObject) ?? {}) as JsonObject,
+        } as JsonObject)
+      : formData;
+    const extraErrorsUiSchema = shouldScopeExtraErrors
+      ? ({
+          [activeKey as string]: uiSchema?.[activeKey as string],
+        } as OrchestratorFormContextProps['uiSchema'])
+      : uiSchema;
 
     if (decoratorProps.getExtraErrors) {
       try {
         handleValidateStarted();
-        _extraErrors = await decoratorProps.getExtraErrors(formData, uiSchema);
+        _extraErrors = await decoratorProps.getExtraErrors(
+          extraErrorsFormData,
+          extraErrorsUiSchema,
+        );
 
         if (activeKey) {
           setExtraErrors(
