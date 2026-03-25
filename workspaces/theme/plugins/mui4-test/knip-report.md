@@ -1,10 +1,11 @@
 # Knip report
 
-## Unused dependencies (1)
+## Unused dependencies (2)
 
-| Name             | Location          | Severity |
-| :--------------- | :---------------- | :------- |
-| @material-ui/lab | package.json:53:6 | error    |
+| Name               | Location          | Severity |
+| :----------------- | :---------------- | :------- |
+| @material-ui/icons | package.json:52:6 | error    |
+| @material-ui/lab   | package.json:53:6 | error    |
 
 ## Unused devDependencies (5)
 
