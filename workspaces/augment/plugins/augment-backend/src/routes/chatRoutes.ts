@@ -175,6 +175,70 @@ function handleStreamErrorAndCleanup(
 }
 
 /**
+ * Resolve the conversationId for a request, creating one if needed
+ * when the session doesn't already have a linked conversation.
+ */
+async function resolveConversationId(
+  conversationId: string | undefined,
+  sessionId: string | undefined,
+  sessions: RouteContext['sessions'],
+  provider: RouteContext['provider'],
+  getUserRef: RouteContext['getUserRef'],
+  req: Parameters<RouteContext['getUserRef']>[0],
+  logger: LoggerService,
+): Promise<{ resolvedConversationId: string | undefined; userRef: string }> {
+  const userRef = await getUserRef(req);
+  let resolvedConversationId = conversationId;
+
+  if (!sessionId || !sessions || resolvedConversationId) {
+    return { resolvedConversationId, userRef };
+  }
+
+  const session = await sessions.getSession(sessionId, userRef);
+  if (!session) {
+    throw new InputError(`Session ${sessionId} not found`);
+  }
+
+  if (session.conversationId) {
+    return { resolvedConversationId: session.conversationId, userRef };
+  }
+
+  if (!provider.conversations) {
+    return { resolvedConversationId, userRef };
+  }
+
+  let newConvId: string | undefined;
+  try {
+    ({ conversationId: newConvId } = await provider.conversations.create());
+    const linked = await sessions.setConversationIdIfNull(
+      sessionId,
+      userRef,
+      newConvId,
+    );
+    if (linked) {
+      resolvedConversationId = newConvId;
+      logger.info(`Created conversation ${newConvId} for session ${sessionId}`);
+    } else {
+      await provider.conversations.deleteContainer?.(newConvId).catch(() => {});
+      const refreshed = await sessions.getSession(sessionId, userRef);
+      resolvedConversationId = refreshed?.conversationId ?? undefined;
+      logger.info(
+        `Race resolved: session ${sessionId} already linked to ${resolvedConversationId}, cleaned up ${newConvId}`,
+      );
+    }
+  } catch (convErr) {
+    if (newConvId) {
+      await provider.conversations.deleteContainer?.(newConvId).catch(() => {});
+    }
+    logger.warn(
+      `Could not create LlamaStack conversation for session ${sessionId}, continuing without: ${convErr}`,
+    );
+  }
+
+  return { resolvedConversationId, userRef };
+}
+
+/**
  * Registers chat, streaming, and human-in-the-loop approval endpoints.
  */
 export function registerChatRoutes(ctx: RouteContext): void {
@@ -199,10 +263,25 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'Failed to process chat message',
       async (req, res) => {
         const parsed = parseChatRequest(req.body);
-        const { messages, enableRAG, previousResponseId, conversationId } =
-          parsed;
+        const {
+          messages,
+          enableRAG,
+          previousResponseId,
+          conversationId,
+          sessionId,
+        } = parsed;
 
         await provider.refreshDynamicConfig?.();
+
+        const { resolvedConversationId } = await resolveConversationId(
+          conversationId,
+          sessionId,
+          sessions,
+          provider,
+          getUserRef,
+          req,
+          logger,
+        );
 
         const userContent = getLastUserContent(messages);
 
@@ -221,7 +300,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
           messages,
           enableRAG,
           previousResponseId,
-          conversationId,
+          conversationId: resolvedConversationId,
         });
 
         if (provider.safety?.isEnabled()) {
@@ -302,54 +381,15 @@ export function registerChatRoutes(ctx: RouteContext): void {
     try {
       await provider.refreshDynamicConfig?.();
 
-      const userRef = await getUserRef(req);
-
-      let resolvedConversationId = conversationId;
-      if (sessionId && sessions) {
-        const session = await sessions.getSession(sessionId, userRef);
-        if (!session) {
-          throw new InputError(`Session ${sessionId} not found`);
-        }
-        if (session.conversationId) {
-          resolvedConversationId = session.conversationId;
-        } else if (provider.conversations) {
-          let newConvId: string | undefined;
-          try {
-            ({ conversationId: newConvId } =
-              await provider.conversations.create());
-            const linked = await sessions.setConversationIdIfNull(
-              sessionId,
-              userRef,
-              newConvId,
-            );
-            if (linked) {
-              resolvedConversationId = newConvId;
-              logger.info(
-                `Created conversation ${newConvId} for session ${sessionId}`,
-              );
-            } else {
-              // Another request already linked a conversation — use the winner's
-              await provider.conversations
-                .deleteContainer?.(newConvId)
-                .catch(() => {});
-              const refreshed = await sessions.getSession(sessionId, userRef);
-              resolvedConversationId = refreshed?.conversationId ?? undefined;
-              logger.info(
-                `Race resolved: session ${sessionId} already linked to ${resolvedConversationId}, cleaned up ${newConvId}`,
-              );
-            }
-          } catch (convErr) {
-            if (newConvId) {
-              await provider.conversations
-                .deleteContainer?.(newConvId)
-                .catch(() => {});
-            }
-            logger.warn(
-              `Could not create LlamaStack conversation for session ${sessionId}, continuing without: ${convErr}`,
-            );
-          }
-        }
-      }
+      const { resolvedConversationId, userRef } = await resolveConversationId(
+        conversationId,
+        sessionId,
+        sessions,
+        provider,
+        getUserRef,
+        req,
+        logger,
+      );
 
       if (provider.safety?.isEnabled()) {
         const userContent = getLastUserContent(messages);

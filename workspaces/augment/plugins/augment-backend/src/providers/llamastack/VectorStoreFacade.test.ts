@@ -198,12 +198,43 @@ describe('VectorStoreFacade', () => {
       expect(mockVectorStore.listDocuments).not.toHaveBeenCalled();
     });
 
-    it('returns empty array when vector store not ready', async () => {
+    it('lazy-initializes vector store when not ready and lists documents', async () => {
       mockContext.getVectorStoreReady.mockReturnValue(false);
+      const docs: DocumentInfo[] = [
+        {
+          id: 'f2',
+          fileName: 'b.md',
+          format: FileFormat.MARKDOWN,
+          fileSize: 200,
+          uploadedAt: '',
+          status: 'completed',
+        },
+      ];
+      mockVectorStore.listDocuments.mockResolvedValue(docs);
+
       const facade = createFacade();
       const result = await facade.listDocuments();
+
+      expect(mockVectorStore.ensureExists).toHaveBeenCalled();
+      expect(mockContext.setVectorStoreReady).toHaveBeenCalledWith(true);
+      expect(mockVectorStore.listDocuments).toHaveBeenCalled();
+      expect(result).toEqual(docs);
+    });
+
+    it('returns empty array when lazy init fails', async () => {
+      mockContext.getVectorStoreReady.mockReturnValue(false);
+      mockVectorStore.ensureExists.mockRejectedValue(
+        new Error('server unreachable'),
+      );
+
+      const facade = createFacade();
+      const result = await facade.listDocuments();
+
       expect(result).toEqual([]);
       expect(mockVectorStore.listDocuments).not.toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Vector store init failed'),
+      );
     });
   });
 
@@ -438,11 +469,31 @@ describe('VectorStoreFacade', () => {
       );
     });
 
-    it('throws when vector store not ready', async () => {
+    it('lazy-initializes vector store when not ready and deletes document', async () => {
       mockContext.getVectorStoreReady.mockReturnValue(false);
+      mockVectorStore.deleteDocument.mockResolvedValue({ success: true });
+
+      const facade = createFacade();
+      const result = await facade.deleteDocument('f1');
+
+      expect(mockVectorStore.ensureExists).toHaveBeenCalled();
+      expect(mockContext.setVectorStoreReady).toHaveBeenCalledWith(true);
+      expect(mockVectorStore.deleteDocument).toHaveBeenCalledWith(
+        'f1',
+        undefined,
+      );
+      expect(result).toEqual({ success: true });
+    });
+
+    it('throws when lazy init fails for delete', async () => {
+      mockContext.getVectorStoreReady.mockReturnValue(false);
+      mockVectorStore.ensureExists.mockRejectedValue(
+        new Error('server unreachable'),
+      );
+
       const facade = createFacade();
       await expect(facade.deleteDocument('f1')).rejects.toThrow(
-        'Vector store not initialized',
+        'Vector store initialization failed',
       );
     });
   });

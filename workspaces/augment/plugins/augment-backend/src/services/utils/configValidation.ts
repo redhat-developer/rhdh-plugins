@@ -18,9 +18,6 @@ import type { AdminConfigKey } from '@red-hat-developer-hub/backstage-plugin-aug
 import {
   MAX_BRANDING_FIELD_LENGTH,
   MAX_CONFIG_VALUE_SIZE,
-  MAX_CHUNK_OVERLAP_TOKENS,
-  MAX_CHUNK_SIZE_TOKENS,
-  MAX_FILE_SEARCH_RESULTS,
   MAX_MODEL_LENGTH,
   MAX_SYSTEM_PROMPT_LENGTH,
 } from '../../constants';
@@ -98,7 +95,12 @@ function validateAgents(value: unknown): void {
     ) {
       throw new InputError(`Agent "${key}" must have non-empty instructions`);
     }
-    const arrayFields = ['handoffs', 'asTools', 'mcpServers'] as const;
+    const arrayFields = [
+      'handoffs',
+      'asTools',
+      'mcpServers',
+      'vectorStoreIds',
+    ] as const;
     for (const field of arrayFields) {
       if (agent[field] !== undefined) {
         if (!Array.isArray(agent[field])) {
@@ -454,9 +456,9 @@ const VALIDATORS: Partial<Record<AdminConfigKey, (value: unknown) => void>> = {
     }> = [
       { name: 'bm25Weight', min: 0, max: 1 },
       { name: 'semanticWeight', min: 0, max: 1 },
-      { name: 'maxChunkSizeTokens', min: 1, max: MAX_CHUNK_SIZE_TOKENS },
-      { name: 'chunkOverlapTokens', min: 0, max: MAX_CHUNK_OVERLAP_TOKENS },
-      { name: 'fileSearchMaxResults', min: 1, max: MAX_FILE_SEARCH_RESULTS },
+      { name: 'maxChunkSizeTokens', min: 1 },
+      { name: 'chunkOverlapTokens', min: 0 },
+      { name: 'fileSearchMaxResults', min: 1 },
       { name: 'fileSearchScoreThreshold', min: 0, max: 1 },
     ];
     for (const { name, min, max } of numericFields) {

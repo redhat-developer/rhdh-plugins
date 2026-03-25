@@ -526,7 +526,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-test')
-        .send({ query: 'test', maxResults: 100 });
+        .send({ query: 'test', maxResults: 0 });
 
       expect(res.status).toBe(400);
     });
@@ -591,7 +591,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-generate')
-        .send({ query: 'test', maxResults: 100 });
+        .send({ query: 'test', maxResults: 0 });
 
       expect(res.status).toBe(400);
     });

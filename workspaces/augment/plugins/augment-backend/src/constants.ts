@@ -37,9 +37,6 @@ export const DEFAULT_HTTP_TIMEOUT_MS = 30_000;
 /** Buffer (seconds) before token expiry to trigger a refresh. */
 export const TOKEN_EXPIRY_BUFFER_S = 60;
 
-/** Timeout for token exchange operations (ms). */
-export const TOKEN_EXCHANGE_TIMEOUT_MS = 30_000;
-
 /** Minimum token lifetime (seconds) to consider caching. */
 export const MIN_TOKEN_LIFETIME_S = 300;
 
@@ -52,9 +49,6 @@ export const MAX_DESCRIPTION_LENGTH = 2_000;
 
 /** Maximum length for system prompt configuration. */
 export const MAX_SYSTEM_PROMPT_LENGTH = 50_000;
-
-/** Maximum length for a single chat message content string (64 KB). */
-export const MAX_MESSAGE_CONTENT_LENGTH = 64_000;
 
 /** Maximum number of messages in a single chat request. */
 export const MAX_MESSAGES_PER_REQUEST = 200;
@@ -139,20 +133,8 @@ export const DEFAULT_CHUNK_SIZE = 512;
 /** Default chunk overlap for document ingestion. */
 export const DEFAULT_CHUNK_OVERLAP = 50;
 
-/** Maximum allowed chunk size (tokens) in vector store config validation. */
-export const MAX_CHUNK_SIZE_TOKENS = 100_000;
-
-/** Maximum allowed chunk overlap (tokens) in vector store config validation. */
-export const MAX_CHUNK_OVERLAP_TOKENS = 50_000;
-
-/** Maximum file search results in vector store config validation. */
-export const MAX_FILE_SEARCH_RESULTS = 100;
-
 /** Default limit for conversation listing. */
 export const DEFAULT_CONVERSATIONS_LIMIT = 50;
-
-/** Maximum RAG search results for RAG test endpoint. */
-export const MAX_RAG_SEARCH_RESULTS = 20;
 
 /** Cache TTL for RuntimeConfigResolver (ms). */
 export const CONFIG_CACHE_TTL_MS = 5_000;
@@ -164,40 +146,11 @@ export const CONFIG_CACHE_TTL_MS = 5_000;
 /** Max auto-reapprovals for chained HITL duplicate requests. */
 export const MAX_AUTO_REAPPROVALS = 3;
 
-/**
- * Max iterations for the HITL continuation loop in BackendApprovalHandler.
- * After approving a tool, the LLM may request additional tool calls; this
- * bounds the auto-execution loop to prevent infinite cycling.
- */
-export const MAX_CONTINUATION_ITERATIONS = 10;
-
-/** Max visits to a single agent before cycle detection triggers. */
-export const MAX_AGENT_VISITS = 3;
-
 /** Max retries for transient API failures (502, 503, 504, ECONNRESET). */
 export const MAX_API_RETRIES = 2;
 
 /** Base delay in ms for exponential backoff between API retries. */
 export const RETRY_BASE_DELAY_MS = 1000;
-
-/** Maximum depth when walking a response chain. */
-export const MAX_RESPONSE_CHAIN_DEPTH = 50;
-
-/** Instruction length (chars) above which a warning is logged. */
-export const INSTRUCTION_LENGTH_WARNING_THRESHOLD = 8_000;
-
-/** Maximum MCP proxy response body size (bytes). */
-export const MAX_MCP_PROXY_RESPONSE_BYTES = 10 * 1024 * 1024;
-
-/**
- * Maximum tool output size in characters that will be sent to the LLM
- * as function_call_output. Outputs exceeding this are intelligently
- * truncated to prevent context window overflow (the -4993 max_tokens bug).
- * ~4K chars is roughly 1K tokens — leaves room for tool schemas,
- * system prompt, and conversation history when models have limited
- * context windows (e.g. 8K). Larger windows can override via config.
- */
-export const MAX_TOOL_OUTPUT_CHARS = 4_000;
 
 /** TTL for BackendToolExecutor's cached tool schemas (ms). */
 export const BACKEND_TOOL_DISCOVERY_TTL_MS = 5 * 60 * 1000;

@@ -148,16 +148,21 @@ export class ResponsesApiProvider implements AgenticProvider {
         object?: string;
         owned_by?: string;
         model_type?: string;
+        custom_metadata?: Record<string, unknown>;
       }>;
     }>('/v1/models', { method: 'GET' });
 
     const models = (response.data || [])
       .filter(m => typeof m.id === 'string' && m.id.length > 0)
-      .map(m => ({
-        id: m.id,
-        ...(m.owned_by ? { owned_by: m.owned_by } : {}),
-        ...(m.model_type ? { model_type: m.model_type } : {}),
-      }));
+      .map(m => {
+        const modelType =
+          m.model_type ?? (m.custom_metadata?.model_type as string | undefined);
+        return {
+          id: m.id,
+          ...(m.owned_by ? { owned_by: m.owned_by } : {}),
+          ...(modelType ? { model_type: modelType } : {}),
+        };
+      });
 
     this._modelsCache = {
       data: models,
@@ -410,6 +415,12 @@ export class ResponsesApiProvider implements AgenticProvider {
           parsed.type.startsWith('stream.')
         ) {
           const event = parsed as unknown as NormalizedStreamEvent;
+          if (event.type === 'stream.started' && event.responseId) {
+            streamResponseId = event.responseId;
+          }
+          if (event.type === 'stream.completed' && currentAgentName) {
+            event.agentName = currentAgentName;
+          }
           if (event.type === 'stream.tool.approval') {
             const approvalEvent = event as unknown as Record<string, unknown>;
             if (!approvalEvent.responseId && streamResponseId) {

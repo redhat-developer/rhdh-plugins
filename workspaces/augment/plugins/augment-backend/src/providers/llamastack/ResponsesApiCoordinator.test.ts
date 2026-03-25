@@ -190,4 +190,64 @@ describe('ResponsesApiCoordinator', () => {
       );
     });
   });
+
+  describe('invalidateRuntimeConfig', () => {
+    it('calls invalidateToolCache on adkOrchestrator when initialized', () => {
+      const coordinator = new ResponsesApiCoordinator({
+        logger: mockLogger as unknown as LoggerService,
+        config: mockConfig,
+      });
+
+      const mockInvalidateToolCache = jest.fn();
+      const mockInvalidateGraphManager = jest.fn();
+
+      (coordinator as any).adkOrchestrator = {
+        invalidateToolCache: mockInvalidateToolCache,
+      };
+      (coordinator as any).agentGraphManager = {
+        invalidate: mockInvalidateGraphManager,
+      };
+
+      coordinator.invalidateRuntimeConfig();
+
+      expect(mockInvalidateToolCache).toHaveBeenCalledTimes(1);
+      expect(mockInvalidateGraphManager).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not throw when adkOrchestrator is null', () => {
+      const coordinator = new ResponsesApiCoordinator({
+        logger: mockLogger as unknown as LoggerService,
+        config: mockConfig,
+      });
+
+      expect(() => coordinator.invalidateRuntimeConfig()).not.toThrow();
+    });
+  });
+
+  describe('chat delegation', () => {
+    it('throws when AdkOrchestrator is not initialized', async () => {
+      const coordinator = new ResponsesApiCoordinator({
+        logger: mockLogger as unknown as LoggerService,
+        config: mockConfig,
+      });
+
+      await expect(
+        coordinator.chat({ messages: [{ role: 'user', content: 'hi' }] }),
+      ).rejects.toThrow('not initialized');
+    });
+
+    it('throws on chatStream when AdkOrchestrator is not initialized', async () => {
+      const coordinator = new ResponsesApiCoordinator({
+        logger: mockLogger as unknown as LoggerService,
+        config: mockConfig,
+      });
+
+      await expect(
+        coordinator.chatStream(
+          { messages: [{ role: 'user', content: 'hi' }] },
+          jest.fn(),
+        ),
+      ).rejects.toThrow('not initialized');
+    });
+  });
 });

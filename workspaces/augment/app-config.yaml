@@ -36,3 +36,64 @@ augment:
   llamaStack:
     baseUrl: ${AUGMENT_LLAMA_STACK_URL:-http://localhost:8321}
     model: ${AUGMENT_MODEL:-meta-llama/Llama-3.3-70B-Instruct}
+
+  promptGroups:
+    - id: getting-started
+      title: Getting Started
+      description: Common tasks to help you get up and running
+      icon: rocket
+      color: '#9333ea'
+      order: 1
+      cards:
+        - title: Explore the Catalog
+          description: Find components, APIs, and services
+          prompt: What components and services are available in the Backstage catalog? Give me an overview.
+          icon: search
+        - title: Onboarding Guide
+          description: New to the platform? Start here
+          prompt: I'm new to this platform. Can you walk me through what's available and how to get started?
+          icon: school
+        - title: Check System Health
+          description: Get a quick status overview
+          prompt: Can you check the health and status of the platform services?
+          icon: speed
+
+    - id: development
+      title: Development
+      description: Tools and helpers for your development workflow
+      icon: code
+      color: '#0ea5e9'
+      order: 2
+      cards:
+        - title: Debug an Issue
+          description: Troubleshoot errors and failures
+          prompt: I'm running into an issue and need help debugging. Can you help me investigate?
+          icon: bug
+        - title: Review Logs
+          description: Analyze recent logs for problems
+          prompt: Can you help me review recent logs and identify any errors or warnings?
+          icon: terminal
+        - title: Code Review Help
+          description: Get feedback on code changes
+          prompt: I'd like help reviewing code changes. What best practices should I follow?
+          icon: github
+
+    - id: operations
+      title: Operations
+      description: Manage deployments, infrastructure, and configurations
+      icon: cloud
+      color: '#10b981'
+      order: 3
+      cards:
+        - title: Deployment Status
+          description: Check current deployment state
+          prompt: What is the current deployment status? Are there any recent deployments or rollouts in progress?
+          icon: rocket
+        - title: Infrastructure Overview
+          description: Review cluster and resource usage
+          prompt: Give me an overview of the infrastructure — cluster health, resource usage, and any alerts.
+          icon: storage
+        - title: Configuration Check
+          description: Review and validate configurations
+          prompt: Can you review the current configurations and flag any potential issues or misconfigurations?
+          icon: settings

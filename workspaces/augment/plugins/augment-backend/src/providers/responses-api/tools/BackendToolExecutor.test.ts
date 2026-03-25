@@ -17,10 +17,7 @@
 import { BackendToolExecutor } from './BackendToolExecutor';
 import type { McpAuthService } from '../../llamastack/McpAuthService';
 import type { MCPServerConfig } from '../../../types';
-import {
-  BACKEND_TOOL_DISCOVERY_TTL_MS,
-  MAX_MCP_PROXY_RESPONSE_BYTES,
-} from '../../../constants';
+import { BACKEND_TOOL_DISCOVERY_TTL_MS } from '../../../constants';
 
 // Mock the MCP SDK
 const mockConnect = jest.fn().mockResolvedValue(undefined);
@@ -432,92 +429,29 @@ describe('BackendToolExecutor', () => {
     });
   });
 
-  describe('response size limit', () => {
-    it('rejects responses exceeding MAX_MCP_PROXY_RESPONSE_BYTES', async () => {
-      const mcpAuth = createMockMcpAuth();
-      const executor = new BackendToolExecutor(
-        mcpAuth,
-        mockLogger as any,
-        false,
-      );
-
-      mockListTools.mockResolvedValue({
-        tools: [{ name: 'big_tool', description: 'Returns large data' }],
-      });
-      await executor.discoverTools([makeServer('s1')]);
-
-      const oversizedText = 'x'.repeat(MAX_MCP_PROXY_RESPONSE_BYTES + 1);
-      mockCallTool.mockResolvedValue({
-        content: [{ type: 'text', text: oversizedText }],
-      });
-
-      const result = await executor.executeTool('s1__big_tool', '{}');
-      const parsed = JSON.parse(result);
-      expect(parsed.error).toContain('Tool response too large');
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('exceeds size limit'),
-      );
-    });
-
-    it('allows responses within size limit', async () => {
-      const mcpAuth = createMockMcpAuth();
-      const executor = new BackendToolExecutor(
-        mcpAuth,
-        mockLogger as any,
-        false,
-      );
-
-      mockListTools.mockResolvedValue({
-        tools: [{ name: 'ok_tool', description: 'Normal tool' }],
-      });
-      await executor.discoverTools([makeServer('s1')]);
-
-      mockCallTool.mockResolvedValue({
-        content: [{ type: 'text', text: 'OK result' }],
-      });
-
-      const result = await executor.executeTool('s1__ok_tool', '{}');
-      expect(result).toBe('OK result');
-    });
-  });
-
   describe('SSRF guard', () => {
-    it('blocks private URLs during tool discovery', async () => {
+    it('admin-configured servers bypass SSRF during discovery', async () => {
       const mcpAuth = createMockMcpAuth();
       const executor = new BackendToolExecutor(
         mcpAuth,
         mockLogger as any,
         false,
       );
+
+      mockListTools.mockResolvedValue({
+        tools: [{ name: 'internal_tool', description: 'Internal tool' }],
+      });
 
       const tools = await executor.discoverTools([
         makeServer('internal', 'https://169.254.169.254/latest/meta-data/'),
       ]);
 
-      expect(tools).toHaveLength(0);
-      expect(mockConnect).not.toHaveBeenCalled();
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('SSRF guard'),
-      );
+      expect(tools).toHaveLength(1);
+      expect(tools[0].name).toBe('internal__internal_tool');
+      expect(mockConnect).toHaveBeenCalledTimes(1);
     });
 
-    it('blocks localhost URLs during tool discovery', async () => {
-      const mcpAuth = createMockMcpAuth();
-      const executor = new BackendToolExecutor(
-        mcpAuth,
-        mockLogger as any,
-        false,
-      );
-
-      const tools = await executor.discoverTools([
-        makeServer('local', 'https://localhost:8080/mcp'),
-      ]);
-
-      expect(tools).toHaveLength(0);
-      expect(mockConnect).not.toHaveBeenCalled();
-    });
-
-    it('blocks private URLs during tool execution', async () => {
+    it('admin-configured localhost servers are allowed during discovery', async () => {
       const mcpAuth = createMockMcpAuth();
       const executor = new BackendToolExecutor(
         mcpAuth,
@@ -526,23 +460,15 @@ describe('BackendToolExecutor', () => {
       );
 
       mockListTools.mockResolvedValue({
-        tools: [{ name: 'evil_tool', description: 'Bad tool' }],
+        tools: [{ name: 'local_tool', description: 'Local tool' }],
       });
-      await executor.discoverTools([
-        makeServer('safe', 'https://safe.example.com/mcp'),
+
+      const tools = await executor.discoverTools([
+        makeServer('local', 'https://localhost:8080/mcp'),
       ]);
 
-      // Manually tamper the registry to simulate a stale URL pointing to private IP
-      const registry = (executor as any).registry as Map<
-        string,
-        { serverUrl: string }
-      >;
-      const tool = registry.get('safe__evil_tool');
-      if (tool) tool.serverUrl = 'https://10.0.0.1/mcp';
-
-      const result = await executor.executeTool('safe__evil_tool', '{}');
-      const parsed = JSON.parse(result);
-      expect(parsed.error).toContain('URL blocked');
+      expect(tools).toHaveLength(1);
+      expect(mockConnect).toHaveBeenCalledTimes(1);
     });
 
     it('allows public URLs', async () => {
@@ -703,7 +629,7 @@ describe('BackendToolExecutor', () => {
   });
 
   describe('client lifecycle', () => {
-    it('closes clients on invalidateCache', async () => {
+    it('preserves clients on invalidateCache for in-flight requests', async () => {
       const mcpAuth = createMockMcpAuth();
       const executor = new BackendToolExecutor(
         mcpAuth,
@@ -718,9 +644,11 @@ describe('BackendToolExecutor', () => {
 
       executor.invalidateCache();
 
-      // Wait for async close
       await new Promise(resolve => setTimeout(resolve, 10));
-      expect(mockClose).toHaveBeenCalled();
+      expect(mockClose).not.toHaveBeenCalled();
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('registry and clients preserved'),
+      );
     });
 
     it('reconnects if client is missing during executeTool', async () => {
@@ -748,6 +676,343 @@ describe('BackendToolExecutor', () => {
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.stringContaining('reconnecting'),
       );
+    });
+  });
+
+  describe('zero-tool rediscovery preserves cached tools', () => {
+    it('preserves tools when server is unreachable during rediscovery', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      mockListTools.mockResolvedValue({
+        tools: [
+          { name: 'tool_a', description: 'A' },
+          { name: 'tool_b', description: 'B' },
+        ],
+      });
+
+      const servers = [makeServer('s1')];
+      const firstTools = await executor.ensureToolsDiscovered(servers);
+      expect(firstTools).toHaveLength(2);
+
+      executor.invalidateCache();
+
+      mockConnect.mockRejectedValue(new Error('Server unreachable'));
+
+      const secondTools = await executor.ensureToolsDiscovered(servers);
+
+      expect(secondTools).toHaveLength(2);
+      expect(secondTools[0].name).toBe('s1__tool_a');
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Preserved 2 tool(s) from failed server(s)'),
+      );
+    });
+  });
+
+  describe('partial re-discovery preservation', () => {
+    it('preserves tools from failed servers when other servers succeed', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      // First discovery: both servers succeed
+      mockListTools
+        .mockResolvedValueOnce({
+          tools: [{ name: 'tool_a', description: 'Tool A' }],
+        })
+        .mockResolvedValueOnce({
+          tools: [{ name: 'tool_b', description: 'Tool B' }],
+        });
+
+      const servers = [makeServer('s1'), makeServer('s2')];
+      const firstTools = await executor.discoverTools(servers);
+      expect(firstTools).toHaveLength(2);
+
+      // Second discovery: s2 fails (connection error), s1 succeeds
+      mockConnect
+        .mockResolvedValueOnce(undefined) // s1 succeeds
+        .mockRejectedValueOnce(new Error('Connection refused')); // s2 fails
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'tool_a', description: 'Tool A updated' }],
+      });
+
+      const secondTools = await executor.discoverTools(servers);
+
+      // Should have tools from both: s1 (re-discovered) + s2 (preserved)
+      expect(secondTools).toHaveLength(2);
+      const names = secondTools
+        .map(t => t.name)
+        .sort((a, b) => a.localeCompare(b));
+      expect(names).toEqual(['s1__tool_a', 's2__tool_b']);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Preserved 1 tool(s) from failed server(s)'),
+      );
+    });
+
+    it('does not preserve tools when a server succeeds with zero tools', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      // First discovery: s1 has tools
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'tool_a', description: 'A' }],
+      });
+      await executor.discoverTools([makeServer('s1')]);
+      expect(executor.getToolCount()).toBe(1);
+
+      // Second discovery: s1 succeeds but returns 0 tools (legitimate removal)
+      mockListTools.mockResolvedValueOnce({ tools: [] });
+      await executor.discoverTools([makeServer('s1')]);
+
+      // Server was reachable (client not null) so its tools are not preserved
+      expect(executor.getToolCount()).toBe(0);
+    });
+
+    it('preserves clients for failed servers so executeTool still works', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      // First discovery: both servers succeed
+      mockListTools
+        .mockResolvedValueOnce({
+          tools: [{ name: 'tool_a', description: 'A' }],
+        })
+        .mockResolvedValueOnce({
+          tools: [{ name: 'tool_b', description: 'B' }],
+        });
+
+      const servers = [makeServer('s1'), makeServer('s2')];
+      await executor.discoverTools(servers);
+
+      // Second discovery: s2 fails
+      mockConnect
+        .mockResolvedValueOnce(undefined) // s1 succeeds
+        .mockRejectedValueOnce(new Error('s2 down')); // s2 fails
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'tool_a', description: 'A' }],
+      });
+      await executor.discoverTools(servers);
+
+      // s2's tool should still be resolvable
+      expect(executor.isBackendTool('s2__tool_b')).toBe(true);
+      const info = executor.getToolServerInfo('s2__tool_b');
+      expect(info).toEqual({ serverId: 's2', originalName: 'tool_b' });
+    });
+  });
+
+  describe('discoveryGeneration', () => {
+    it('starts at 0', () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+      expect(executor.getDiscoveryGeneration()).toBe(0);
+    });
+
+    it('increments after successful discovery', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      mockListTools.mockResolvedValue({
+        tools: [{ name: 'tool_a', description: 'A' }],
+      });
+
+      await executor.discoverTools([makeServer('s1')]);
+      expect(executor.getDiscoveryGeneration()).toBe(1);
+
+      await executor.discoverTools([makeServer('s1')]);
+      expect(executor.getDiscoveryGeneration()).toBe(2);
+    });
+
+    it('still increments when all servers fail (tools preserved via partial re-discovery)', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      // First discovery succeeds
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'tool_a', description: 'A' }],
+      });
+      await executor.discoverTools([makeServer('s1')]);
+      expect(executor.getDiscoveryGeneration()).toBe(1);
+
+      // Second discovery: server fails → tools preserved, swap still happens
+      mockConnect.mockRejectedValueOnce(new Error('Server unreachable'));
+      await executor.discoverTools([makeServer('s1')]);
+
+      // Generation increments because swap occurred (with preserved tools)
+      expect(executor.getDiscoveryGeneration()).toBe(2);
+      // Tools were preserved
+      expect(executor.getToolCount()).toBe(1);
+    });
+
+    it('increments on partial re-discovery (some servers fail)', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      mockListTools
+        .mockResolvedValueOnce({
+          tools: [{ name: 'tool_a', description: 'A' }],
+        })
+        .mockResolvedValueOnce({
+          tools: [{ name: 'tool_b', description: 'B' }],
+        });
+
+      await executor.discoverTools([makeServer('s1'), makeServer('s2')]);
+      expect(executor.getDiscoveryGeneration()).toBe(1);
+
+      // s2 fails but s1 succeeds → partial re-discovery with preservation
+      mockConnect
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('s2 down'));
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'tool_a', description: 'A' }],
+      });
+
+      await executor.discoverTools([makeServer('s1'), makeServer('s2')]);
+      expect(executor.getDiscoveryGeneration()).toBe(2);
+    });
+  });
+
+  describe('session expiry auto-reconnect', () => {
+    it('reconnects and retries when execution fails with "session not found"', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'pods_list', description: 'List pods' }],
+      });
+      await executor.discoverTools([makeServer('ocp-mcp')]);
+
+      // First call fails with session error, reconnect succeeds, retry succeeds
+      mockCallTool
+        .mockRejectedValueOnce(
+          new Error(
+            'Streamable HTTP error: Error POSTing to endpoint: session not found',
+          ),
+        )
+        .mockResolvedValueOnce({
+          content: [{ type: 'text', text: 'pod-1\npod-2' }],
+        });
+
+      // Reconnect discovery
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'pods_list', description: 'List pods' }],
+      });
+
+      const result = await executor.executeTool('ocp-mcp__pods_list', '{}');
+      expect(result).toBe('pod-1\npod-2');
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Session expired'),
+      );
+    });
+
+    it('returns error when reconnect fails after session expiry', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'pods_list', description: 'List pods' }],
+      });
+      await executor.discoverTools([makeServer('ocp-mcp')]);
+
+      mockCallTool.mockRejectedValueOnce(new Error('session not found'));
+
+      // Reconnect fails
+      mockConnect.mockRejectedValueOnce(new Error('Server unreachable'));
+
+      const result = await executor.executeTool('ocp-mcp__pods_list', '{}');
+      expect(JSON.parse(result).error).toContain('Failed to reconnect');
+    });
+
+    it('does not reconnect for non-session errors', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'pods_list', description: 'List pods' }],
+      });
+      await executor.discoverTools([makeServer('ocp-mcp')]);
+
+      mockCallTool.mockRejectedValueOnce(new Error('Permission denied'));
+
+      const result = await executor.executeTool('ocp-mcp__pods_list', '{}');
+      expect(JSON.parse(result).error).toContain('Permission denied');
+      expect(mockLogger.warn).not.toHaveBeenCalledWith(
+        expect.stringContaining('Session expired'),
+      );
+    });
+  });
+
+  describe('atomic swap correctness', () => {
+    it('preserves in-flight tool across a registry swap to different servers', async () => {
+      const mcpAuth = createMockMcpAuth();
+      const executor = new BackendToolExecutor(
+        mcpAuth,
+        mockLogger as any,
+        false,
+      );
+
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'tool_x', description: 'X' }],
+      });
+      await executor.discoverTools([makeServer('s1')]);
+
+      // Swap registry to a different set of servers
+      mockListTools.mockResolvedValueOnce({
+        tools: [{ name: 'tool_y', description: 'Y' }],
+      });
+      await executor.discoverTools([makeServer('s2')]);
+
+      // s1's tool was preserved because s1 was not in the new discovery set
+      expect(executor.isBackendTool('s1__tool_x')).toBe(true);
+      expect(executor.isBackendTool('s2__tool_y')).toBe(true);
+
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: 'text', text: 'result-from-preserved-tool' }],
+      });
+      const result = await executor.executeTool('s1__tool_x', '{}');
+      expect(result).toBe('result-from-preserved-tool');
     });
   });
 });

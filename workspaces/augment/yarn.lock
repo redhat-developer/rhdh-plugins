@@ -207,10 +207,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@augment-adk/augment-adk@npm:^0.1.4":
-  version: 0.1.4
-  resolution: "@augment-adk/augment-adk@npm:0.1.4"
-  checksum: 10c0/bc6099bdca5c518d3241631cde24062adcee5436f1eb6ec6f166714dec9765421da90783e649e98e6f5c2b1fbef75a95d6ac250842a40fa5a7ce55196d338e10
+"@augment-adk/augment-adk@npm:^0.1.12":
+  version: 0.1.12
+  resolution: "@augment-adk/augment-adk@npm:0.1.12"
+  peerDependencies:
+    zod: ^3.0.0
+    zod-to-json-schema: ^3.0.0
+  peerDependenciesMeta:
+    zod:
+      optional: true
+    zod-to-json-schema:
+      optional: true
+  checksum: 10c0/0ba1e5358c293fd5f050012fa0dba6ed79fad4786ed47e9a18fc00575470caa287a3f0e1f5ceb5cbe27b18487e5593088c6e6d6b3de2f924fa517c806280e03b
   languageName: node
   linkType: hard
 
@@ -11300,7 +11308,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-augment-backend@workspace:plugins/augment-backend"
   dependencies:
-    "@augment-adk/augment-adk": "npm:^0.1.4"
+    "@augment-adk/augment-adk": "npm:^0.1.12"
     "@backstage/backend-defaults": "npm:^0.11.0"
     "@backstage/backend-plugin-api": "npm:^1.4.0"
     "@backstage/backend-test-utils": "npm:^1.6.0"

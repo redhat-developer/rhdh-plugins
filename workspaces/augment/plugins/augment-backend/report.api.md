@@ -552,7 +552,6 @@ export interface MCPServerConfig {
   authRef?: string;
   headers?: Record<string, string>;
   id: string;
-  maxResponseChars?: number;
   name: string;
   oauth?: OAuthClientConfig;
   requireApproval?: 'always' | 'never' | ApprovalFilter;
