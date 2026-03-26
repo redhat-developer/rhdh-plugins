@@ -198,32 +198,51 @@ async function resolveCostManagementAccess(
     'cost',
     { clusterKey: 'cost_clusters', projectKey: 'cost_projects' },
     async opts => {
-      const token = await getTokenFromApi(opts);
-      const [clustersResp, projectsResp] = await Promise.all([
-        opts.costManagementApi.searchOpenShiftClusters('', {
-          token,
-          limit: 1000,
-        }),
-        opts.costManagementApi.searchOpenShiftProjects('', {
-          token,
-          limit: 1000,
-        }),
-      ]);
+      let token: string;
+      try {
+        token = await getTokenFromApi(opts);
+      } catch {
+        return null;
+      }
 
-      const clustersData = await clustersResp.json();
-      const projectsData = await projectsResp.json();
+      try {
+        const [clustersResp, projectsResp] = await Promise.all([
+          opts.costManagementApi.searchOpenShiftClusters('', {
+            token,
+            limit: 1000,
+          }),
+          opts.costManagementApi.searchOpenShiftProjects('', {
+            token,
+            limit: 1000,
+          }),
+        ]);
 
-      const clusters: Record<string, string> = {};
-      clustersData.data?.forEach(
-        (c: { value: string; cluster_alias: string }) => {
-          if (c.cluster_alias && c.value) clusters[c.cluster_alias] = c.value;
-        },
-      );
-      const projects = [
-        ...new Set(projectsData.data?.map((p: { value: string }) => p.value)),
-      ].filter((p): p is string => p !== undefined);
+        const clustersData = await clustersResp.json();
+        const projectsData = await projectsResp.json();
 
-      return { clusters, projects };
+        if (
+          (clustersData as any).errors ||
+          (projectsData as any).errors ||
+          !clustersData.data ||
+          !projectsData.data
+        ) {
+          return null;
+        }
+
+        const clusters: Record<string, string> = {};
+        clustersData.data.forEach(
+          (c: { value: string; cluster_alias: string }) => {
+            if (c.cluster_alias && c.value) clusters[c.cluster_alias] = c.value;
+          },
+        );
+        const projects = [
+          ...new Set(projectsData.data.map((p: { value: string }) => p.value)),
+        ].filter((p): p is string => p !== undefined);
+
+        return { clusters, projects };
+      } catch {
+        return null;
+      }
     },
   );
 }
