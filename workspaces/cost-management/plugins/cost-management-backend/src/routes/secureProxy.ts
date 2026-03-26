@@ -277,6 +277,12 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
       return res.status(400).json({ error: 'Missing proxy path' });
     }
 
+    if (/(?:^|\/)\.\.(\/|$)/.test(proxyPath) || proxyPath.startsWith('/')) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid proxy path: traversal not allowed' });
+    }
+
     try {
       const access = await resolveAccess(req, proxyPath, options);
 
@@ -289,33 +295,36 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
       const targetBase =
         config?.getOptionalString('costManagementProxyBaseUrl') ??
         DEFAULT_COST_MANAGEMENT_PROXY_BASE_URL;
-      const targetUrl = new URL(
-        `${targetBase}/cost-management/v1/${proxyPath}`,
-      );
+      const basePath = `${targetBase}/cost-management/v1/`;
+      const targetUrl = new URL(proxyPath, basePath);
+
+      if (!targetUrl.pathname.startsWith(new URL(basePath).pathname)) {
+        return res
+          .status(400)
+          .json({ error: 'Invalid proxy path: traversal not allowed' });
+      }
 
       // Express qs parser converts bracket keys like filter[time_scope_value]
       // into nested objects, losing the flat key format the RHCC API expects.
-      // Use the raw query string to preserve the original key names.
-      const rbacControlledPatterns =
+      // Decode each param before matching so percent-encoded variants of
+      // RBAC-controlled keys (e.g. filter%5Bexact%3Acluster%5D) are also caught.
+      const rbacControlledKeys = new Set(
         access.filterStyle === 'ros'
-          ? [/^cluster=/m, /^project=/m]
-          : [/^filter\[exact:cluster\]=/m, /^filter\[exact:project\]=/m];
+          ? ['cluster', 'project']
+          : ['filter[exact:cluster]', 'filter[exact:project]'],
+      );
 
       const rawQuery = req.originalUrl.split('?')[1] || '';
       const rawParams = rawQuery.split('&').filter(p => p.length > 0);
 
       for (const param of rawParams) {
-        const shouldStrip = rbacControlledPatterns.some(pattern =>
-          pattern.test(param),
-        );
-        if (!shouldStrip) {
-          const eqIdx = param.indexOf('=');
-          const key = eqIdx >= 0 ? param.substring(0, eqIdx) : param;
-          const val = eqIdx >= 0 ? param.substring(eqIdx + 1) : '';
-          targetUrl.searchParams.append(
-            decodeURIComponent(key),
-            decodeURIComponent(val),
-          );
+        const eqIdx = param.indexOf('=');
+        const rawKey = eqIdx >= 0 ? param.substring(0, eqIdx) : param;
+        const rawVal = eqIdx >= 0 ? param.substring(eqIdx + 1) : '';
+        const decodedKey = decodeURIComponent(rawKey);
+
+        if (!rbacControlledKeys.has(decodedKey)) {
+          targetUrl.searchParams.append(decodedKey, decodeURIComponent(rawVal));
         }
       }
 
