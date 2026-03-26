@@ -67,15 +67,15 @@ export const costManagementPlugin = createBackendPlugin({
           allow: 'unauthenticated',
         });
         httpRouter.addAuthPolicy({
-          path: '/token',
-          allow: 'user-cookie',
-        });
-        httpRouter.addAuthPolicy({
           path: '/access',
           allow: 'user-cookie',
         });
         httpRouter.addAuthPolicy({
           path: '/access/cost-management',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/proxy',
           allow: 'user-cookie',
         });
       },
