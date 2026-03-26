@@ -427,7 +427,7 @@ export interface OrchestratorSlimApi {
 
 // @public (undocumented)
 export class OrchestratorSlimClient implements OrchestratorSlimApi {
-  /** @deprecated identityApi is retained for backward compatibility but no longer used. */
+  // @deprecated
   constructor(options: {
     discoveryApi: DiscoveryApi;
     fetchApi: FetchApi;
@@ -437,7 +437,6 @@ export class OrchestratorSlimClient implements OrchestratorSlimApi {
   checkWorkflowAvailability(
     workflowId: string,
   ): Promise<WorkflowAvailabilityResult>;
-  // (undocumented)
   executeWorkflow<D = JsonObject>(
     workflowId: string,
     workflowInputData: D,
