@@ -37,7 +37,7 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
 2. **Optional:** Update `app-config.yaml` based on your environment.
    - **`auth:`**
      - Configure authentication providers for sign-in and SCM access (GitHub, GitLab). See [Backstage auth docs](https://backstage.io/docs/auth/).
-     - Based on your options of auth-providers, mind updating the `conversion-project-template.yaml` for source and target repository URLs.
+     - Based on your options of auth-providers, mind updating the `plugins/scaffolder-backend-module-x2a/templates/conversion-project-template.yaml` for source and target repository URLs.
    - **`integrations:`**
      - Configure SCM integrations for custom-domain hosts (e.g. self-hosted GitHub Enterprise, GitLab, or Bitbucket). The plugin reads the `integrations:` section to detect which SCM provider owns a given repository URL. Only the `host` field is required for this purpose; access tokens in `integrations:` entries are **not** needed by the x2a plugin (authentication is handled via OAuth through the `auth:` providers above). See the [SCM Provider Detection](#scm-provider-detection) section below.
    - **`x2a:`** - Provide LLM credentials, Ansible Automation Platform connection details, and Kubernetes resource limits. See [x2a-convertor technical details](https://github.com/x2ansible/x2a-convertor?tab=readme-ov-file#technical-details).
