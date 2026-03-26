@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { SidebarContent } from './Sidebar';
 
-export * from './plugin';
+export const navModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [SidebarContent],
+});

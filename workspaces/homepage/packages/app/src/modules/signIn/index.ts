@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { SignInPageBlueprint } from '@backstage/plugin-app-react';
 
-export * from './plugin';
+export const signInModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    SignInPageBlueprint.make({
+      params: {
+        loader: () =>
+          import('./SignInPageComponent').then(m => m.SignInPageComponent),
+      },
+    }),
+  ],
+});

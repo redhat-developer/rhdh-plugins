@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import { SignInPage } from '@backstage/core-components';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import type { SignInPageProps } from '@backstage/plugin-app-react';
 
-export * from './plugin';
+const githubProvider = {
+  id: 'github-auth-provider',
+  title: 'GitHub',
+  message: 'Sign in using GitHub',
+  apiRef: githubAuthApiRef,
+};
+
+export function SignInPageComponent(props: SignInPageProps) {
+  return <SignInPage {...props} auto providers={['guest', githubProvider]} />;
+}

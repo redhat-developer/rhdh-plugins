@@ -19,6 +19,7 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 /**
  * Messages object containing all English translations.
  * This is our single source of truth for translations.
+ *
  * @public
  */
 export const homepageMessages = {
@@ -93,8 +94,9 @@ export const homepageMessages = {
 };
 
 /**
- * Reference translation for Homepage.
- * Defines all the translation keys used in the plugin.
+ * Translation ref for the Dynamic Home Page plugin.
+ * Defines all translation keys used in the plugin.
+ *
  * @public
  */
 export const homepageTranslationRef = createTranslationRef({

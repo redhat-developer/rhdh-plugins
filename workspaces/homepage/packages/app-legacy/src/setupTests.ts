@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
-
-export * from './plugin';
+import '@testing-library/jest-dom';
