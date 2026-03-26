@@ -21,7 +21,7 @@ export const LOCAL_ADDR = `http://${localHostAndPort}`;
 
 export const LOCAL_GITLAB_ADDR = `https://gitlab.com/api/v4`;
 
-const CATALOG_API_LOCATIONS_LOCAL_ADDR =
+export const CATALOG_API_LOCATIONS_LOCAL_ADDR =
   /^https?:\/\/localhost:\d+\/api\/catalog\/locations$/;
 
 export function loadTestFixture(filePathFromFixturesDir: string) {
