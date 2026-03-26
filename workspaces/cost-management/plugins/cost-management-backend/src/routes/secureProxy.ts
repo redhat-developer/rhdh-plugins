@@ -54,15 +54,38 @@ async function resolveAccess(
   return resolveCostManagementAccess(req, options);
 }
 
-async function resolveOptimizationsAccess(
+interface CacheConfig {
+  clusterKey: string;
+  projectKey: string;
+}
+
+type DataFetcher = (
+  options: RouterOptions,
+) => Promise<{ clusters: Record<string, string>; projects: string[] } | null>;
+
+/**
+ * Common RBAC resolution: check plugin-level permission, fetch + cache
+ * cluster/project data, filter authorised entries, and return the result.
+ */
+async function resolveAccessForSection(
   req: Request,
   options: RouterOptions,
+  pluginPerms: typeof rosPluginPermissions,
+  filterStyle: AccessResult['filterStyle'],
+  cacheKeys: CacheConfig,
+  fetchData: DataFetcher,
 ): Promise<AccessResult> {
-  const { permissions, httpAuth, cache, optimizationApi } = options;
+  const { permissions, httpAuth, cache } = options;
+  const deny = (): AccessResult => ({
+    decision: 'DENY',
+    clusterFilters: [],
+    projectFilters: [],
+    filterStyle,
+  });
 
   const pluginDecision = await authorize(
     req,
-    rosPluginPermissions,
+    pluginPerms,
     permissions,
     httpAuth,
   );
@@ -71,59 +94,34 @@ async function resolveOptimizationsAccess(
       decision: 'ALLOW',
       clusterFilters: [],
       projectFilters: [],
-      filterStyle: 'ros',
+      filterStyle,
     };
   }
-
-  const ALL_CLUSTERS_MAP_CACHE_KEY = 'all_clusters_map';
-  const ALL_PROJECTS_CACHE_KEY = 'all_projects';
 
   let clusterDataMap: Record<string, string> = {};
   let allProjects: string[] = [];
 
-  const clusterMapDataFromCache = (await cache.get(
-    ALL_CLUSTERS_MAP_CACHE_KEY,
-  )) as Record<string, string> | undefined;
-  const projectDataFromCache = (await cache.get(ALL_PROJECTS_CACHE_KEY)) as
+  const cachedClusters = (await cache.get(cacheKeys.clusterKey)) as
+    | Record<string, string>
+    | undefined;
+  const cachedProjects = (await cache.get(cacheKeys.projectKey)) as
     | string[]
     | undefined;
 
-  if (clusterMapDataFromCache && projectDataFromCache) {
-    clusterDataMap = clusterMapDataFromCache;
-    allProjects = projectDataFromCache;
+  if (cachedClusters && cachedProjects) {
+    clusterDataMap = cachedClusters;
+    allProjects = cachedProjects;
   } else {
-    const token = await getTokenFromApi(options);
-    const optimizationResponse = await optimizationApi.getRecommendationList(
-      { query: { limit: -1, orderHow: 'desc', orderBy: 'last_reported' } },
-      { token },
-    );
-    const recommendationList = await optimizationResponse.json();
+    const result = await fetchData(options);
+    if (!result) return deny();
 
-    if ((recommendationList as any).errors) {
-      return {
-        decision: 'DENY',
-        clusterFilters: [],
-        projectFilters: [],
-        filterStyle: 'ros',
-      };
-    }
+    clusterDataMap = result.clusters;
+    allProjects = result.projects;
 
-    if (recommendationList.data) {
-      recommendationList.data.forEach(recommendation => {
-        if (recommendation.clusterAlias && recommendation.clusterUuid) {
-          clusterDataMap[recommendation.clusterAlias] =
-            recommendation.clusterUuid;
-        }
-      });
-      allProjects = [
-        ...new Set(recommendationList.data.map(r => r.project)),
-      ].filter(p => p !== undefined) as string[];
-
-      await cache.set(ALL_CLUSTERS_MAP_CACHE_KEY, clusterDataMap, {
-        ttl: CACHE_TTL,
-      });
-      await cache.set(ALL_PROJECTS_CACHE_KEY, allProjects, { ttl: CACHE_TTL });
-    }
+    await Promise.all([
+      cache.set(cacheKeys.clusterKey, clusterDataMap, { ttl: CACHE_TTL }),
+      cache.set(cacheKeys.projectKey, allProjects, { ttl: CACHE_TTL }),
+    ]);
   }
 
   const { authorizedClusterIds, authorizedClusterProjects } =
@@ -133,9 +131,10 @@ async function resolveOptimizationsAccess(
       httpAuth,
       clusterDataMap,
       allProjects,
+      ...(filterStyle === 'cost' ? (['cost'] as const) : []),
     );
 
-  const finalClusterIds = [
+  const finalClusters = [
     ...new Set([
       ...authorizedClusterIds,
       ...authorizedClusterProjects.map(r => r.cluster),
@@ -143,122 +142,90 @@ async function resolveOptimizationsAccess(
   ];
   const finalProjects = authorizedClusterProjects.map(r => r.project);
 
-  if (finalClusterIds.length === 0) {
-    return {
-      decision: 'DENY',
-      clusterFilters: [],
-      projectFilters: [],
-      filterStyle: 'ros',
-    };
-  }
+  if (finalClusters.length === 0) return deny();
 
   return {
     decision: 'ALLOW',
-    clusterFilters: finalClusterIds,
+    clusterFilters: finalClusters,
     projectFilters: finalProjects,
-    filterStyle: 'ros',
+    filterStyle,
   };
+}
+
+async function resolveOptimizationsAccess(
+  req: Request,
+  options: RouterOptions,
+): Promise<AccessResult> {
+  return resolveAccessForSection(
+    req,
+    options,
+    rosPluginPermissions,
+    'ros',
+    { clusterKey: 'all_clusters_map', projectKey: 'all_projects' },
+    async opts => {
+      const token = await getTokenFromApi(opts);
+      const response = await opts.optimizationApi.getRecommendationList(
+        { query: { limit: -1, orderHow: 'desc', orderBy: 'last_reported' } },
+        { token },
+      );
+      const list = await response.json();
+
+      if ((list as any).errors || !list.data) return null;
+
+      const clusters: Record<string, string> = {};
+      list.data.forEach(r => {
+        if (r.clusterAlias && r.clusterUuid) {
+          clusters[r.clusterAlias] = r.clusterUuid;
+        }
+      });
+      const projects = [...new Set(list.data.map(r => r.project))].filter(
+        (p): p is string => p !== undefined,
+      );
+
+      return { clusters, projects };
+    },
+  );
 }
 
 async function resolveCostManagementAccess(
   req: Request,
   options: RouterOptions,
 ): Promise<AccessResult> {
-  const { permissions, httpAuth, cache, costManagementApi } = options;
-
-  const pluginDecision = await authorize(
+  return resolveAccessForSection(
     req,
+    options,
     costPluginPermissions,
-    permissions,
-    httpAuth,
+    'cost',
+    { clusterKey: 'cost_clusters', projectKey: 'cost_projects' },
+    async opts => {
+      const token = await getTokenFromApi(opts);
+      const [clustersResp, projectsResp] = await Promise.all([
+        opts.costManagementApi.searchOpenShiftClusters('', {
+          token,
+          limit: 1000,
+        }),
+        opts.costManagementApi.searchOpenShiftProjects('', {
+          token,
+          limit: 1000,
+        }),
+      ]);
+
+      const clustersData = await clustersResp.json();
+      const projectsData = await projectsResp.json();
+
+      const clusters: Record<string, string> = {};
+      clustersData.data?.forEach(
+        (c: { value: string; cluster_alias: string }) => {
+          if (c.cluster_alias && c.value) clusters[c.cluster_alias] = c.value;
+        },
+      );
+      const projects = [
+        ...new Set(projectsData.data?.map((p: { value: string }) => p.value)),
+      ].filter((p): p is string => p !== undefined);
+
+      return { clusters, projects };
+    },
   );
-  if (pluginDecision.result === AuthorizeResult.ALLOW) {
-    return {
-      decision: 'ALLOW',
-      clusterFilters: [],
-      projectFilters: [],
-      filterStyle: 'cost',
-    };
-  }
-
-  const COST_CLUSTERS_CACHE_KEY = 'cost_clusters';
-  const COST_PROJECTS_CACHE_KEY = 'cost_projects';
-
-  let clusterDataMap: Record<string, string> = {};
-  let allProjects: string[] = [];
-
-  const clustersFromCache = (await cache.get(COST_CLUSTERS_CACHE_KEY)) as
-    | Record<string, string>
-    | undefined;
-  const projectsFromCache = (await cache.get(COST_PROJECTS_CACHE_KEY)) as
-    | string[]
-    | undefined;
-
-  if (clustersFromCache && projectsFromCache) {
-    clusterDataMap = clustersFromCache;
-    allProjects = projectsFromCache;
-  } else {
-    const token = await getTokenFromApi(options);
-    const [clustersResponse, projectsResponse] = await Promise.all([
-      costManagementApi.searchOpenShiftClusters('', { token, limit: 1000 }),
-      costManagementApi.searchOpenShiftProjects('', { token, limit: 1000 }),
-    ]);
-
-    const clustersData = await clustersResponse.json();
-    const projectsData = await projectsResponse.json();
-
-    clustersData.data?.forEach(
-      (cluster: { value: string; cluster_alias: string }) => {
-        if (cluster.cluster_alias && cluster.value) {
-          clusterDataMap[cluster.cluster_alias] = cluster.value;
-        }
-      },
-    );
-    allProjects = [
-      ...new Set(
-        projectsData.data?.map((project: { value: string }) => project.value),
-      ),
-    ].filter(p => p !== undefined) as string[];
-
-    await Promise.all([
-      cache.set(COST_CLUSTERS_CACHE_KEY, clusterDataMap, { ttl: CACHE_TTL }),
-      cache.set(COST_PROJECTS_CACHE_KEY, allProjects, { ttl: CACHE_TTL }),
-    ]);
-  }
-
-  const { authorizedClusterIds, authorizedClusterProjects } =
-    await filterAuthorizedClustersAndProjects(
-      req,
-      permissions,
-      httpAuth,
-      clusterDataMap,
-      allProjects,
-      'cost',
-    );
-
-  const finalClusterNames = [
-    ...new Set([
-      ...authorizedClusterIds,
-      ...authorizedClusterProjects.map(r => r.cluster),
-    ]),
-  ];
-  const finalProjects = authorizedClusterProjects.map(r => r.project);
-
-  if (finalClusterNames.length === 0) {
-    return {
-      decision: 'DENY',
-      clusterFilters: [],
-      projectFilters: [],
-      filterStyle: 'cost',
-    };
-  }
-
-  return {
-    decision: 'ALLOW',
-    clusterFilters: finalClusterNames,
-    projectFilters: finalProjects,
-    filterStyle: 'cost',
-  };
 }
 
 /**
