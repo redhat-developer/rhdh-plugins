@@ -32,6 +32,37 @@ import {
   costClusterProjectPermission,
 } from '@red-hat-developer-hub/plugin-cost-management-common/permissions';
 
+const AUTHORIZE_CHUNK_SIZE = 250;
+
+async function authorizeInChunks(
+  permissionsSvc: PermissionsService,
+  requests: AuthorizePermissionRequest[],
+  credentials: Awaited<ReturnType<HttpAuthService['credentials']>>,
+): Promise<AuthorizePermissionResponse[]> {
+  if (requests.length === 0) return [];
+
+  const decisions: AuthorizePermissionResponse[] = [];
+  const requestChunks = requests.reduce<AuthorizePermissionRequest[][]>(
+    (chunks, request, index) => {
+      if (index % AUTHORIZE_CHUNK_SIZE === 0) {
+        chunks.push([]);
+      }
+      chunks.at(-1)?.push(request);
+      return chunks;
+    },
+    [],
+  );
+
+  for (const chunk of requestChunks) {
+    const chunkDecisions = await permissionsSvc.authorize(chunk, {
+      credentials,
+    });
+    decisions.push(...chunkDecisions);
+  }
+
+  return decisions;
+}
+
 /** Permission type for cluster-level access */
 export type ClusterPermissionType = 'ros' | 'cost';
 
@@ -138,11 +169,10 @@ export const filterAuthorizedClustersAndProjects = async (
       return { permission: perm };
     });
 
-  const clusterDecisions = await permissionsSvc.authorize(
+  const clusterDecisions = await authorizeInChunks(
+    permissionsSvc,
     clusterPermissionRequests,
-    {
-      credentials,
-    },
+    credentials,
   );
 
   // Track clusters with and without full access
@@ -187,8 +217,7 @@ export const filterAuthorizedClustersAndProjects = async (
       const clusterIdentifier =
         permissionType === 'cost' ? clusterName : clusterId;
 
-      for (let j = 0; j < allProjects.length; j++) {
-        const projectName = allProjects[j];
+      for (const projectName of allProjects) {
         const perm = getClusterProjectPermission(clusterName, projectName);
 
         projectPermissionRequests[idx] = {
@@ -205,17 +234,18 @@ export const filterAuthorizedClustersAndProjects = async (
     }
 
     // Batch check project-level permissions
-    const projectDecisions = await permissionsSvc.authorize(
+    const projectDecisions = await authorizeInChunks(
+      permissionsSvc,
       projectPermissionRequests,
-      { credentials },
+      credentials,
     );
 
     // Process project-level results
-    for (let i = 0; i < projectDecisions.length; i++) {
-      const decision = projectDecisions[i].result;
+    for (const [index, decision] of projectDecisions.entries()) {
+      const decisionResult = decision.result;
 
-      if (decision === AuthorizeResult.ALLOW) {
-        const result = projectPermissionMap[i];
+      if (decisionResult === AuthorizeResult.ALLOW) {
+        const result = projectPermissionMap[index];
         authorizedClusterProjects.push(result);
         // Project-level permission also grants cluster access
         clustersGrantedViaProjects.add(result.cluster);
