@@ -40,6 +40,7 @@ export const costManagementPlugin = createBackendPlugin({
         cache: coreServices.cache,
         discovery: coreServices.discovery,
         auth: coreServices.auth,
+        userInfo: coreServices.userInfo,
         optimizationApi: optimizationServiceRef,
         costManagementApi: costManagementServiceRef,
       },
@@ -52,6 +53,7 @@ export const costManagementPlugin = createBackendPlugin({
         cache,
         discovery,
         auth,
+        userInfo,
         optimizationApi,
         costManagementApi,
       }) {
@@ -63,6 +65,7 @@ export const costManagementPlugin = createBackendPlugin({
           cache,
           discovery,
           auth,
+          userInfo,
           optimizationApi,
           costManagementApi,
         });

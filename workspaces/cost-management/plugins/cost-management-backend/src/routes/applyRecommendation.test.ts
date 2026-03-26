@@ -53,6 +53,7 @@ describe('applyRecommendation', () => {
       cache: mockServices.cache.mock(),
       discovery: mockDiscovery,
       auth: mockServices.auth(),
+      userInfo: mockServices.userInfo(),
       optimizationApi: {
         getRecommendationList: jest.fn(),
         getRecommendationById: jest.fn(),

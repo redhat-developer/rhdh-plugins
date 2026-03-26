@@ -26,6 +26,7 @@ import type {
   CacheService,
   DiscoveryService,
   AuthService,
+  UserInfoService,
 } from '@backstage/backend-plugin-api';
 
 /** @public */
@@ -37,6 +38,7 @@ export interface RouterOptions {
   cache: CacheService;
   discovery: DiscoveryService;
   auth: AuthService;
+  userInfo: UserInfoService;
   optimizationApi: OptimizationsApi;
   costManagementApi: CostManagementSlimApi;
 }
