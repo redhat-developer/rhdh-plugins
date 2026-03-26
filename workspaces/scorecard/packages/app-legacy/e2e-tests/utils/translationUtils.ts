@@ -103,6 +103,34 @@ export function getEntityCount(
   return evaluateMessage(key, count);
 }
 
+/**
+ * Mirrors the formatDate logic in entityTableUtils.ts so e2e tests produce
+ * the same locale-aware calendar string that the plugin renders in the browser.
+ */
+export function formatLastUpdatedDate(
+  timestamp: string,
+  locale: string,
+): string {
+  const date = new Date(timestamp);
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    timeZone,
+  }).format(date);
+}
+
+export function getLastUpdatedLabel(
+  translations: ScorecardMessages,
+  formattedTimestamp: string,
+) {
+  const template =
+    (translations.metric as { lastUpdated?: string }).lastUpdated ??
+    'Last updated: {{timestamp}}';
+  return evaluateMessage(template, formattedTimestamp);
+}
+
 export function getMissingPermissionSnapshot(
   translations: ScorecardMessages,
   metricId: 'jira.open_issues' | 'github.open_prs',
@@ -125,7 +153,10 @@ export function getThresholdsSnapshot(
 ) {
   return `
         - article:
-          - text: ${translations.metric[metricId].title} ${entityCount}
+          - text: ${translations.metric[metricId].title}
+          - link:
+            - /url: /scorecard/metrics/${metricId}
+            - text: ${entityCount}
           - separator
           - paragraph: ${translations.metric[metricId].description}
           - paragraph: ${translations.thresholds.success}

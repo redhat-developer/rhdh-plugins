@@ -39,6 +39,7 @@ import {
   getEntityCount,
   getMissingPermissionSnapshot,
   getThresholdsSnapshot,
+  formatLastUpdatedDate,
 } from './utils/translationUtils';
 import { runAccessibilityTests } from './utils/accessibility';
 import { skipIfLocales } from './utils/localeSkip';
@@ -196,7 +197,7 @@ test.describe('Scorecard Plugin Tests', () => {
 
       const entityCount = getEntityCount(translations, currentLocale, '0');
 
-      await expect(page.locator('article')).toMatchAriaSnapshot(
+      await expect(homePage.getCard('jira.open_issues')).toMatchAriaSnapshot(
         getMissingPermissionSnapshot(
           translations,
           'jira.open_issues',
@@ -204,7 +205,7 @@ test.describe('Scorecard Plugin Tests', () => {
         ),
       );
 
-      await expect(page.locator('article')).toMatchAriaSnapshot(
+      await expect(homePage.getCard('github.open_prs')).toMatchAriaSnapshot(
         getMissingPermissionSnapshot(
           translations,
           'github.open_prs',
@@ -260,7 +261,7 @@ test.describe('Scorecard Plugin Tests', () => {
       );
       const jiraEntityCount = getEntityCount(translations, currentLocale, '10');
 
-      await expect(page.locator('article')).toMatchAriaSnapshot(
+      await expect(homePage.getCard('github.open_prs')).toMatchAriaSnapshot(
         getThresholdsSnapshot(
           translations,
           'github.open_prs',
@@ -268,7 +269,7 @@ test.describe('Scorecard Plugin Tests', () => {
         ),
       );
 
-      await expect(page.locator('article')).toMatchAriaSnapshot(
+      await expect(homePage.getCard('jira.open_issues')).toMatchAriaSnapshot(
         getThresholdsSnapshot(
           translations,
           'jira.open_issues',
@@ -293,7 +294,12 @@ test.describe('Scorecard Plugin Tests', () => {
       await homePage.expectCardHasNoDataFound('jira.open_issues');
     });
 
-    test('Verify threshold tooltips', async () => {
+    test('Verify threshold and last updated tooltips', async () => {
+      const lastUpdatedFormatted = formatLastUpdatedDate(
+        '2026-01-24T14:10:32.858Z',
+        currentLocale,
+      );
+
       await mockAggregatedScorecardResponse(
         page,
         githubAggregatedResponse,
@@ -312,6 +318,7 @@ test.describe('Scorecard Plugin Tests', () => {
       await homePage.verifyThresholdTooltip(githubCard, 'success', '5', '33%');
       await homePage.verifyThresholdTooltip(githubCard, 'warning', '7', '47%');
       await homePage.verifyThresholdTooltip(githubCard, 'error', '3', '20%');
+      await homePage.verifyLastUpdatedTooltip(githubCard, lastUpdatedFormatted);
 
       await homePage.enterEditMode();
       await homePage.clearAllCards();
@@ -322,6 +329,7 @@ test.describe('Scorecard Plugin Tests', () => {
       await homePage.verifyThresholdTooltip(jiraCard, 'success', '6', '60%');
       await homePage.verifyThresholdTooltip(jiraCard, 'warning', '3', '30%');
       await homePage.verifyThresholdTooltip(jiraCard, 'error', '1', '10%');
+      await homePage.verifyLastUpdatedTooltip(jiraCard, lastUpdatedFormatted);
     });
   });
 });

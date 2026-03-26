@@ -23,7 +23,11 @@ import type { Entity } from '@backstage/catalog-model';
 import type {
   MetricResult,
   AggregatedMetricResult,
+  Metric,
+  EntityMetricDetailResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+import type { GetAggregatedScorecardEntitiesOptions } from '../components/types';
 
 export interface ScorecardApi {
   /**
@@ -34,6 +38,22 @@ export interface ScorecardApi {
    */
   getScorecards(entity: Entity, metricIds?: string[]): Promise<MetricResult[]>;
   getAggregatedScorecard(metricId: string): Promise<AggregatedMetricResult>;
+  /**
+   * Retrieves a metric by ID.
+   * @param metricIds - The IDs of the metrics to retrieve
+   * @returns Promise resolving to a metric result
+   * @throws Error if the request fails or returns invalid data
+   */
+  getMetrics(options: { metricIds: string[] }): Promise<{ metrics: Metric[] }>;
+  /**
+   * Retrieves aggregated scorecard entities.
+   * @param options - The options for getting aggregated scorecard entities
+   * @returns Promise resolving to an aggregated scorecard entities result
+   * @throws Error if the request fails or returns invalid data
+   */
+  getAggregatedScorecardEntities(
+    options: GetAggregatedScorecardEntitiesOptions,
+  ): Promise<EntityMetricDetailResponse>;
 }
 
 export const scorecardApiRef = createApiRef<ScorecardApi>({
@@ -130,6 +150,117 @@ export class ScorecardApiClient implements ScorecardApi {
 
     const baseUrl = await this.getBaseUrl();
     const url = new URL(`${baseUrl}/metrics/${metricId}/catalog/aggregations`);
+
+    try {
+      const response = await this.fetchApi.fetch(url.toString());
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch aggregated scorecards: ${response.status} ${response.statusText}. ${errorText}`,
+        );
+      }
+
+      const data = await response.json();
+
+      if (!data || Array.isArray(data) || typeof data !== 'object') {
+        throw new TypeError(
+          'Invalid response format from aggregated scorecard API',
+        );
+      }
+
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(
+        `Unexpected error fetching aggregated scorecards: ${String(error)}`,
+      );
+    }
+  }
+
+  async getMetrics(options?: {
+    metricIds?: string[];
+  }): Promise<{ metrics: Metric[] }> {
+    const { metricIds } = options || {};
+
+    const isMetricIds =
+      metricIds && Array.isArray(metricIds) && metricIds.length > 0;
+
+    const baseUrl = await this.getBaseUrl();
+    const url = new URL(`${baseUrl}/metrics`);
+
+    if (isMetricIds) {
+      url.searchParams.set('metricIds', metricIds.join(','));
+    }
+
+    try {
+      const response = await this.fetchApi.fetch(url.toString());
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch metric: ${response.status} ${response.statusText}. ${errorText}`,
+        );
+      }
+
+      const data = await response.json();
+
+      if (
+        !data ||
+        Array.isArray(data) ||
+        typeof data !== 'object' ||
+        !('metrics' in data) ||
+        !Array.isArray(data.metrics)
+      ) {
+        throw new TypeError('Invalid response format from metrics API');
+      }
+
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(`Unexpected error fetching metric: ${String(error)}`);
+    }
+  }
+
+  async getAggregatedScorecardEntities(
+    options: GetAggregatedScorecardEntitiesOptions,
+  ): Promise<EntityMetricDetailResponse> {
+    const {
+      metricId,
+      page,
+      pageSize,
+      ownershipEntityRefs = [],
+      orderBy = null,
+      order = 'asc',
+    } = options;
+
+    if (!metricId) {
+      throw new Error('Metric ID is required for aggregated scorecards');
+    }
+
+    const baseUrl = await this.getBaseUrl();
+    const url = new URL(
+      `${baseUrl}/metrics/${metricId}/catalog/aggregations/entities`,
+    );
+    if (page) {
+      url.searchParams.append('page', page.toString());
+    }
+    if (pageSize) {
+      url.searchParams.append('pageSize', pageSize.toString());
+    }
+    if (ownershipEntityRefs.length > 0) {
+      for (const ownershipEntityRef of ownershipEntityRefs) {
+        url.searchParams.append('owner', ownershipEntityRef);
+      }
+    }
+    if (orderBy) {
+      url.searchParams.append('sortBy', orderBy);
+      url.searchParams.append('sortOrder', order);
+    }
 
     try {
       const response = await this.fetchApi.fetch(url.toString());
