@@ -169,6 +169,7 @@ describe('applyRecommendation', () => {
     const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(JSON.stringify({ id: 'workflow-instance-123' }), {
         status: 200,
+        headers: { 'Content-Type': 'application/json' },
       }),
     );
 
@@ -194,6 +195,7 @@ describe('applyRecommendation', () => {
     const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(JSON.stringify({ error: 'Workflow not found' }), {
         status: 404,
+        headers: { 'Content-Type': 'application/json' },
       }),
     );
 

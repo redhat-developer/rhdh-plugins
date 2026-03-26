@@ -54,7 +54,7 @@ export async function createRouter(
 
   router.post('/apply-recommendation', applyRecommendation(options));
 
-  router.all('/proxy/*', secureProxy(options));
+  router.get('/proxy/*', secureProxy(options));
 
   return router;
 }

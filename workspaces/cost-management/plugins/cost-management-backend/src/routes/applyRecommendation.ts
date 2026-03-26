@@ -145,7 +145,15 @@ export const applyRecommendation: (options: RouterOptions) => RequestHandler =
         body: JSON.stringify({ inputData }),
       });
 
-      const payload = await upstreamResponse.json();
+      const contentType = upstreamResponse.headers.get('content-type') || '';
+      let payload: unknown;
+      try {
+        payload = contentType.includes('application/json')
+          ? await upstreamResponse.json()
+          : { message: await upstreamResponse.text() };
+      } catch {
+        payload = { error: 'Upstream returned unparseable response' };
+      }
 
       if (!upstreamResponse.ok) {
         logger.warn('audit:apply-recommendation:upstream-error', {
