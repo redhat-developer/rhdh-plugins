@@ -244,19 +244,19 @@ export const lcsHandlers: HttpHandler[] = [
       servers: [
         {
           name: 'static-mcp',
-          url: 'http://mock-mcp-server:9999',
+          url: 'https://mock-mcp-server:9999',
           provider_id: 'model-context-protocol',
           source: 'config',
         },
         {
           name: 'no-token-server',
-          url: 'http://mock-mcp-server:9999',
+          url: 'https://mock-mcp-server:9999',
           provider_id: 'model-context-protocol',
           source: 'config',
         },
         {
           name: 'lcs-only-server',
-          url: 'http://mock-mcp-server:9999',
+          url: 'https://mock-mcp-server:9999',
           provider_id: 'model-context-protocol',
           source: 'api',
         },

@@ -19,6 +19,12 @@ export const lightspeedChatReadPermission: BasicPermission;
 export const lightspeedChatUpdatePermission: BasicPermission;
 
 // @public
+export const lightspeedMcpManagePermission: BasicPermission;
+
+// @public
+export const lightspeedMcpReadPermission: BasicPermission;
+
+// @public
 export const lightspeedNotebooksUsePermission: BasicPermission;
 
 // @public

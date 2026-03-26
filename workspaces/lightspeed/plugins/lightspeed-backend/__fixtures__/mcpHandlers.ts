@@ -16,7 +16,7 @@
 
 import { http, HttpResponse, type HttpHandler } from 'msw';
 
-export const MOCK_MCP_ADDR = 'http://mock-mcp-server:9999';
+export const MOCK_MCP_ADDR = 'https://mock-mcp-server:9999';
 export const MOCK_MCP_VALID_TOKEN = 'valid-mcp-token';
 
 const MOCK_TOOLS = [

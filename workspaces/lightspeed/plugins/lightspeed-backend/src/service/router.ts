@@ -195,6 +195,7 @@ export async function createRouter(
           status: setting?.status ?? 'unknown',
           toolCount: setting?.tool_count ?? 0,
           hasToken: !!(setting?.token || server.token),
+          hasUserToken: !!setting?.token,
         };
       });
 
@@ -371,6 +372,7 @@ export async function createRouter(
           status: setting.status,
           toolCount: setting.tool_count,
           hasToken: !!(setting.token || server.token),
+          hasUserToken: !!setting.token,
         },
       };
       if (validation) result.validation = validation;

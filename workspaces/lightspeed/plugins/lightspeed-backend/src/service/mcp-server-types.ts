@@ -27,9 +27,15 @@ export interface McpUserSettingsRow {
   updated_at: string;
 }
 
+/**
+ * @public
+ */
 export type McpServerStatus = 'connected' | 'error' | 'unknown';
 
-/** Public-facing response for an MCP server with user settings merged. */
+/**
+ * Public-facing response for an MCP server with user settings merged.
+ * @public
+ */
 export interface McpServerResponse {
   name: string;
   url?: string;
@@ -37,13 +43,20 @@ export interface McpServerResponse {
   status: McpServerStatus;
   toolCount: number;
   hasToken: boolean;
+  hasUserToken: boolean;
 }
 
+/**
+ * @public
+ */
 export interface McpToolInfo {
   name: string;
   description: string;
 }
 
+/**
+ * @public
+ */
 export interface McpValidationResult {
   valid: boolean;
   toolCount: number;

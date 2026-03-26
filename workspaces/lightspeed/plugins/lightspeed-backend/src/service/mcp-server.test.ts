@@ -162,6 +162,7 @@ describe('MCP server management endpoints', () => {
         status: 'unknown',
         toolCount: 0,
         hasToken: true,
+        hasUserToken: false,
       });
     });
 
@@ -178,11 +179,35 @@ describe('MCP server management endpoints', () => {
         (s: any) => s.name === 'no-token-server',
       );
       expect(noTokenServer.hasToken).toBe(false);
+      expect(noTokenServer.hasUserToken).toBe(false);
 
       const withTokenServer = response.body.servers.find(
         (s: any) => s.name === 'static-mcp',
       );
       expect(withTokenServer.hasToken).toBe(true);
+      expect(withTokenServer.hasUserToken).toBe(false);
+    });
+
+    it('distinguishes admin token from user token via hasUserToken', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG);
+
+      // Before user sets a token: admin token exists, no user token
+      let response = await request(backendServer).get(
+        '/api/lightspeed/mcp-servers',
+      );
+      expect(response.body.servers[0].hasToken).toBe(true);
+      expect(response.body.servers[0].hasUserToken).toBe(false);
+
+      // After user sets a personal token: both should be true
+      await request(backendServer)
+        .patch('/api/lightspeed/mcp-servers/static-mcp')
+        .send({ token: 'my-personal-token' });
+
+      response = await request(backendServer).get(
+        '/api/lightspeed/mcp-servers',
+      );
+      expect(response.body.servers[0].hasToken).toBe(true);
+      expect(response.body.servers[0].hasUserToken).toBe(true);
     });
 
     it('reflects user settings after PATCH', async () => {
@@ -251,6 +276,7 @@ describe('MCP server management endpoints', () => {
       expect(patchRes.status).toBe(200);
       expect(patchRes.body.server.status).toBe('connected');
       expect(patchRes.body.server.hasToken).toBe(true);
+      expect(patchRes.body.server.hasUserToken).toBe(true);
       expect(patchRes.body.validation).toBeDefined();
       expect(patchRes.body.validation.valid).toBe(true);
       expect(patchRes.body.validation.toolCount).toBe(3);
@@ -292,6 +318,7 @@ describe('MCP server management endpoints', () => {
       expect(clearRes.status).toBe(200);
       expect(clearRes.body.server.status).toBe('unknown');
       expect(clearRes.body.server.toolCount).toBe(0);
+      expect(clearRes.body.server.hasUserToken).toBe(false);
     });
 
     it('returns 400 when no fields provided', async () => {
@@ -356,7 +383,7 @@ describe('MCP server management endpoints', () => {
       const backendServer = await startBackendServer(MCP_CONFIG);
       const response = await request(backendServer)
         .post('/api/lightspeed/mcp-servers/validate')
-        .send({ url: 'http://internal-service:1234', token: 'some-token' });
+        .send({ url: 'https://internal-service:1234', token: 'some-token' });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('URL not recognized');
