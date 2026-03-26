@@ -1,9 +1,22 @@
-The Cost Management plugin protects its backend endpoints with the builtin permission mechanism and combines it with the RBAC plugin.
+The Cost Management plugin protects its backend endpoints with the builtin permission mechanism and combines it with the RBAC plugin. All permission checks are enforced **server-side** within the backend plugin's secure proxy — the frontend never receives data the user is not authorized to see, and RBAC filters cannot be bypassed by modifying client requests.
 
 The Cost Management plugin consists of two main sections, each with its own set of permissions:
 
 - **Optimizations**: Uses permissions starting with `ros.`
 - **OpenShift**: Uses permissions starting with `cost.`
+
+### How it works
+
+When a frontend request arrives at `/api/cost-management/proxy/*`, the backend:
+
+1. Authenticates the user via Backstage `httpAuth`
+2. Evaluates the user's permissions against the `ros.*` or `cost.*` policy
+3. Determines the authorized list of clusters and projects
+4. Strips any client-supplied cluster/project filter parameters
+5. Injects the server-authorized filters before forwarding to the upstream API
+6. Returns only the data the user is permitted to see
+
+This means granting `ros.demolab` only allows seeing data for the `demolab` cluster — the user cannot modify query parameters to access other clusters.
 
 ## 1. Optimizations Section
 
