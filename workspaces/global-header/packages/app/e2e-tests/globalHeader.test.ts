@@ -22,7 +22,6 @@ import {
   type TestInfo,
 } from '@playwright/test';
 import { switchToLocale } from './utils/globalHeaderHelper';
-import { skipIfLocales } from './utils/localeSkip';
 import { GlobalHeaderMessages, getTranslations } from './utils/translations';
 import { runAccessibilityTests } from './utils/accessibility';
 
@@ -85,11 +84,6 @@ function getHeaderElements() {
 test('Verify Global header to be visible', async ({
   browser: _browser,
 }, testInfo: TestInfo) => {
-  skipIfLocales(
-    testInfo,
-    ['de', 'es'],
-    'Missing create.* translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2795',
-  );
   const { globalHeader, companyLogo, ...headerElements } = getHeaderElements();
 
   await expect(companyLogo).toBeVisible();
@@ -116,11 +110,6 @@ test('Verify Global header to be visible', async ({
 });
 
 test('Verify Hover texts to be visible', async ({}, testInfo: TestInfo) => {
-  skipIfLocales(
-    testInfo,
-    ['de', 'es'],
-    'Missing create.* translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2795',
-  );
   const { globalHeader, starredItems, appLauncher, help, notifications } =
     getHeaderElements();
 
@@ -155,11 +144,6 @@ test('Verify Hover texts to be visible', async ({}, testInfo: TestInfo) => {
 });
 
 test('Verify Search functionality and results', async ({}, testInfo: TestInfo) => {
-  skipIfLocales(
-    testInfo,
-    ['de', 'es'],
-    'Missing create.* translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2795',
-  );
   const { search } = getHeaderElements();
   const searchQuery = 'example-website';
   const expectedUrl = /\/example-website/;
@@ -179,11 +163,6 @@ test('Verify Search functionality and results', async ({}, testInfo: TestInfo) =
 });
 
 test('Verify Self-service functionality', async ({}, testInfo: TestInfo) => {
-  skipIfLocales(
-    testInfo,
-    ['de', 'es'],
-    'Missing create.* translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2795',
-  );
   const { selfService } = getHeaderElements();
   await selfService.click();
   await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
@@ -200,11 +179,6 @@ test('Verify Self-service functionality', async ({}, testInfo: TestInfo) => {
 });
 
 test('Verify Starred items functionality', async ({}, testInfo: TestInfo) => {
-  skipIfLocales(
-    testInfo,
-    ['de', 'es'],
-    'Missing create.* translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2795',
-  );
   const { starredItems, companyLogo } = getHeaderElements();
   const entityName = 'example-website';
 
@@ -230,11 +204,6 @@ test('Verify Starred items functionality', async ({}, testInfo: TestInfo) => {
 });
 
 test('Verify Application launcher functionality', async ({}, testInfo: TestInfo) => {
-  skipIfLocales(
-    testInfo,
-    ['de', 'es'],
-    'Missing create.* translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2795',
-  );
   const { appLauncher } = getHeaderElements();
   await appLauncher.click();
   await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
@@ -251,11 +220,6 @@ test('Verify Application launcher functionality', async ({}, testInfo: TestInfo)
 });
 
 test('Verify Help functionality', async ({}, testInfo: TestInfo) => {
-  skipIfLocales(
-    testInfo,
-    ['de', 'es'],
-    'Missing create.* translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2795',
-  );
   const { help } = getHeaderElements();
   await help.click();
   await expect(
@@ -268,11 +232,6 @@ test('Verify Help functionality', async ({}, testInfo: TestInfo) => {
 });
 
 test('Verify Notifications functionality', async ({}, testInfo: TestInfo) => {
-  skipIfLocales(
-    testInfo,
-    ['de', 'es'],
-    'Missing create.* translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2795',
-  );
   const { notifications } = getHeaderElements();
 
   await notifications.click();

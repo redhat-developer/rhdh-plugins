@@ -33,12 +33,15 @@ const quickstartTranslationEs = createTranslationMessages({
     'steps.configureRbac.title': 'Configuración de RBAC',
     'steps.configureRbac.description':
       'Asigne roles y permisos para controlar quién puede ver, crear o modificar recursos, lo que garantiza una colaboración segura y eficiente.',
+    'steps.configureRbac.ctaTitle': 'Administrar acceso',
     'steps.configureGit.title': 'Configuración de Git',
     'steps.configureGit.description':
       'Conecte sus proveedores de Git, como GitHub, para gestionar el código, automatizar flujos de trabajo e integrarlos en las funcionalidades de la plataforma.',
+    'steps.configureGit.ctaTitle': 'Aprenda más',
     'steps.managePlugins.title': 'Gestión de complementos',
     'steps.managePlugins.description':
       'Explore e instale extensiones para agregar funcionalidades, conectarse con herramientas externas y personalizar su experiencia.',
+    'steps.managePlugins.ctaTitle': 'Explorar complementos',
     'steps.importApplication.title': 'Aplicación de importación',
     'steps.importApplication.description':
       'Importe su código y servicios existentes al catálogo para organizarlos y acceder a ellos a través de su portal para desarrolladores.',
@@ -46,13 +49,16 @@ const quickstartTranslationEs = createTranslationMessages({
     'steps.learnAboutCatalog.title': 'Información sobre el Catálogo',
     'steps.learnAboutCatalog.description':
       'Descubra todos los componentes de software, servicios y API, y vea sus propietarios y documentación.',
+    'steps.learnAboutCatalog.ctaTitle': 'Ver Catálogo',
     'steps.exploreSelfServiceTemplates.title':
       'Información sobre plantillas de autoservicio',
     'steps.exploreSelfServiceTemplates.description':
       'Utilice nuestras plantillas de autoservicio para configurar rápidamente nuevos proyectos, servicios o documentación.',
+    'steps.exploreSelfServiceTemplates.ctaTitle': 'Explorar plantillas',
     'steps.findAllLearningPaths.title': 'Acceso a las rutas de aprendizaje',
     'steps.findAllLearningPaths.description':
       'Integre aprendizaje en línea personalizado en sus flujos de trabajo con rutas de aprendizaje, a fin de agilizar el proceso de incorporación, reducir brechas de habilidades y promover prácticas recomendadas.',
+    'steps.findAllLearningPaths.ctaTitle': 'Ver rutas de aprendizaje',
     'button.quickstart': 'Inicio rápido',
     'button.openQuickstartGuide': 'Abrir la Guía de inicio rápido',
     'button.closeDrawer': 'Cerrar panel',
@@ -71,6 +77,7 @@ const quickstartTranslationEs = createTranslationMessages({
       'Esta es una página de prueba para el complemento de inicio rápido. Utilice los botones a continuación para interactuar con el panel de inicio rápido.',
     'dev.drawerControls': 'Controles del panel',
     'dev.currentState': 'Estado actual del panel: {{state}}',
+    'dev.stateOpen': 'Abierto',
     'dev.stateClosed': 'Cerrado',
     'dev.instructions': 'Instrucciones',
     'dev.step1':
