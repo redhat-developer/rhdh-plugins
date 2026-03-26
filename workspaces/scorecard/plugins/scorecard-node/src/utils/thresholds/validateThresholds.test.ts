@@ -61,13 +61,33 @@ describe('validateThresholds', () => {
       expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
     });
 
-    it('should validate config with custom threshold keys and colors', () => {
+    it('should validate config with custom threshold keys, colors and icons', () => {
       const validConfig = {
         rules: [
-          { key: 'critical', expression: '>80', color: '#d32f2f' },
-          { key: 'high', expression: '60-79', color: '#ff9800' },
-          { key: 'medium', expression: '40-59', color: '#ffc107' },
-          { key: 'low', expression: '20-39', color: '#4caf50' },
+          {
+            key: 'critical',
+            expression: '>80',
+            color: '#d32f2f',
+            icon: 'scorecardErrorStatusIcon',
+          },
+          {
+            key: 'high',
+            expression: '60-79',
+            color: '#ff9800',
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="130"><rect width="300" height="100"x="10" y="10" /></svg>',
+          },
+          {
+            key: 'medium',
+            expression: '40-59',
+            color: '#ffc107',
+            icon: 'kind:component',
+          },
+          {
+            key: 'low',
+            expression: '20-39',
+            color: '#4caf50',
+            icon: 'https://raw.githubusercontent.com/redhat-developer/example/main/icons/scorecard-icon.svg',
+          },
           { key: 'success', expression: '<20' },
         ],
       };
@@ -236,13 +256,64 @@ describe('validateThresholds', () => {
       const config = {
         rules: [
           { key: 'success', expression: '<20' },
-          { key: 'critical', expression: '>=20' },
+          {
+            key: 'critical',
+            expression: '>=20',
+            icon: 'scorecardErrorStatusIcon',
+          },
         ],
       };
 
       expect(() => validateThresholds(config, 'number')).toThrow(
         new ThresholdConfigFormatError(
-          "Custom threshold key \"critical\" must specify a color property. Only standard keys ('success', 'warning', 'error') have default colors.",
+          "Custom threshold key \"critical\" must specify a color or icon property. Only standard keys ('success', 'warning', 'error') have default colors and icons.",
+        ),
+      );
+    });
+
+    it('should throw error for custom threshold key without icon', () => {
+      const config = {
+        rules: [
+          { key: 'success', expression: '<20' },
+          {
+            key: 'critical',
+            expression: '>=20',
+            color: '#FF0000',
+          },
+        ],
+      };
+
+      expect(() => validateThresholds(config, 'number')).toThrow(
+        new ThresholdConfigFormatError(
+          "Custom threshold key \"critical\" must specify a color or icon property. Only standard keys ('success', 'warning', 'error') have default colors and icons.",
+        ),
+      );
+    });
+
+    it('should throw error for invalid icon type', () => {
+      const config = {
+        rules: [
+          { key: 'critical', expression: '>=20', color: '#FF0000', icon: 123 },
+        ],
+      };
+
+      expect(() => validateThresholds(config, 'number')).toThrow(
+        new ThresholdConfigFormatError(
+          'Invalid icon format for rule "critical": icon must be a non-empty string',
+        ),
+      );
+    });
+
+    it('should throw error for empty icon string', () => {
+      const config = {
+        rules: [
+          { key: 'critical', expression: '>=20', color: '#FF0000', icon: '' },
+        ],
+      };
+
+      expect(() => validateThresholds(config, 'number')).toThrow(
+        new ThresholdConfigFormatError(
+          'Invalid icon format for rule "critical": icon must be a non-empty string',
         ),
       );
     });
@@ -251,50 +322,52 @@ describe('validateThresholds', () => {
       {
         description: 'missing # in hex color',
         config: {
-          rules: [{ key: 'custom', expression: '<5', color: 'FF5733' }],
+          rules: [{ key: 'success', expression: '<5', color: 'FF5733' }],
         },
         expectedError:
-          'Invalid color format for rule "custom": "FF5733" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+          'Invalid color format for rule "success": "FF5733" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
       },
       {
         description: 'invalid hex characters',
         config: {
-          rules: [{ key: 'custom', expression: '<5', color: '#GGGGGG' }],
+          rules: [{ key: 'success', expression: '<5', color: '#GGGGGG' }],
         },
         expectedError:
-          'Invalid color format for rule "custom": "#GGGGGG" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+          'Invalid color format for rule "success": "#GGGGGG" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
       },
       {
         description: 'invalid predefined constant',
         config: {
-          rules: [{ key: 'custom', expression: '<5', color: 'invalid.color' }],
+          rules: [{ key: 'success', expression: '<5', color: 'invalid.color' }],
         },
         expectedError:
-          'Invalid color format for rule "custom": "invalid.color" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+          'Invalid color format for rule "success": "invalid.color" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
       },
       {
         description: 'empty color string',
         config: {
-          rules: [{ key: 'custom', expression: '<5', color: '' }],
+          rules: [{ key: 'success', expression: '<5', color: '' }],
         },
         expectedError:
-          'Invalid color format for rule "custom": color must be a non-empty string',
+          'Invalid color format for rule "success": color must be a non-empty string',
       },
       {
         description: 'non-string color',
         config: {
-          rules: [{ key: 'custom', expression: '<5', color: 123 } as any],
+          rules: [{ key: 'success', expression: '<5', color: 123 }],
         },
         expectedError:
-          'Invalid color format for rule "custom": color must be a non-empty string',
+          'Invalid color format for rule "success": color must be a non-empty string',
       },
       {
         description: 'RGB with missing comma',
         config: {
-          rules: [{ key: 'custom', expression: '<5', color: 'rgb(50, 87 37)' }],
+          rules: [
+            { key: 'success', expression: '<5', color: 'rgb(50, 87 37)' },
+          ],
         },
         expectedError:
-          'Invalid color format for rule "custom": "rgb(50, 87 37)" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+          'Invalid color format for rule "success": "rgb(50, 87 37)" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
       },
     ])(
       'should throw error for invalid color: $description',

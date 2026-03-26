@@ -30,3 +30,7 @@ ClassNameGenerator.configure(componentName => {
 export * from './plugin';
 
 export { scorecardTranslations, scorecardTranslationRef } from './translations';
+
+export { default as ScorecardSuccessStatusIcon } from '@mui/icons-material/CheckCircleOutline';
+export { default as ScorecardWarningStatusIcon } from '@mui/icons-material/WarningAmber';
+export { default as ScorecardErrorStatusIcon } from '@mui/icons-material/DangerousOutlined';
