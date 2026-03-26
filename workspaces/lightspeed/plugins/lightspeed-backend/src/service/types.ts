@@ -15,6 +15,7 @@
  */
 
 import type {
+  DatabaseService,
   HttpAuthService,
   LoggerService,
   PermissionsService,
@@ -29,6 +30,7 @@ import type { Config } from '@backstage/config';
 export type RouterOptions = {
   logger: LoggerService;
   config: Config;
+  database: DatabaseService;
   httpAuth: HttpAuthService;
   userInfo: UserInfoService;
   permissions: PermissionsService;

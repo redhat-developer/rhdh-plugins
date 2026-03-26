@@ -35,6 +35,18 @@ backend:
   database:
     client: better-sqlite3
     connection: ':memory:'
+    # To persist the database to a file for local development, replace the above with:
+    # connection:
+    #   directory: './sqlite-data'
+    # OpenShift / RHDH production — uses the PostgreSQL instance managed by the
+    # RHDH Helm chart or Operator.  These env vars are injected from the
+    # PostgreSQL Secret into the Backstage container by the deployment config.
+    # client: pg
+    # connection:
+    #   host: ${POSTGRES_HOST}
+    #   port: ${POSTGRES_PORT}
+    #   user: ${POSTGRES_USER}
+    #   password: ${POSTGRES_PASSWORD}
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
 integrations:

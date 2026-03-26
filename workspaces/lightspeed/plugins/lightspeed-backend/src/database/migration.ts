@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-export { lightspeedPlugin as default } from './plugin';
-export * from './service/router';
+import {
+  DatabaseService,
+  resolvePackagePath,
+} from '@backstage/backend-plugin-api';
 
-export type { RouterOptions } from './service/types';
-export type {
-  McpServerResponse,
-  McpServerStatus,
-  McpToolInfo,
-  McpValidationResult,
-} from './service/mcp-server-types';
+const migrationsDir = resolvePackagePath(
+  '@red-hat-developer-hub/backstage-plugin-lightspeed-backend',
+  'migrations',
+);
+
+export async function migrate(databaseManager: DatabaseService) {
+  const knex = await databaseManager.getClient();
+
+  if (!databaseManager.migrations?.skip) {
+    await knex.migrate.latest({
+      directory: migrationsDir,
+    });
+  }
+}

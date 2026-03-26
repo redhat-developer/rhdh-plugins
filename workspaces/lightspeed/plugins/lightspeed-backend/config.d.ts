@@ -36,15 +36,18 @@ export interface Config {
      */
     mcpServers?: Array<{
       /**
-       * The name of the mcp server.
+       * The name of the MCP server. Must match the name registered in LCS config.
+       * The URL is fetched from LCS (GET /v1/mcp-servers) at startup.
        * @visibility backend
        */
       name: string;
       /**
-       * The access token for authenticating MCP server.
+       * The default access token for authenticating with this MCP server.
+       * Optional — if omitted, users must provide their own token via the UI.
+       * Users can also override this with a personal token via PATCH /mcp-servers/:name.
        * @visibility secret
        */
-      token: string;
+      token?: string;
     }>;
     /**
      * Configuration for AI Notebooks (Developer Preview)
