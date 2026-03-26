@@ -38,6 +38,8 @@ export const costManagementPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         permissions: coreServices.permissions,
         cache: coreServices.cache,
+        discovery: coreServices.discovery,
+        auth: coreServices.auth,
         optimizationApi: optimizationServiceRef,
         costManagementApi: costManagementServiceRef,
       },
@@ -48,6 +50,8 @@ export const costManagementPlugin = createBackendPlugin({
         httpAuth,
         permissions,
         cache,
+        discovery,
+        auth,
         optimizationApi,
         costManagementApi,
       }) {
@@ -57,6 +61,8 @@ export const costManagementPlugin = createBackendPlugin({
           httpAuth,
           permissions,
           cache,
+          discovery,
+          auth,
           optimizationApi,
           costManagementApi,
         });
@@ -76,6 +82,10 @@ export const costManagementPlugin = createBackendPlugin({
         });
         httpRouter.addAuthPolicy({
           path: '/proxy',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/apply-recommendation',
           allow: 'user-cookie',
         });
       },

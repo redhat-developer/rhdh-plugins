@@ -24,6 +24,8 @@ import type {
   HttpAuthService,
   PermissionsService,
   CacheService,
+  DiscoveryService,
+  AuthService,
 } from '@backstage/backend-plugin-api';
 
 /** @public */
@@ -33,6 +35,8 @@ export interface RouterOptions {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
   cache: CacheService;
+  discovery: DiscoveryService;
+  auth: AuthService;
   optimizationApi: OptimizationsApi;
   costManagementApi: CostManagementSlimApi;
 }

@@ -18,10 +18,15 @@ import express from 'express';
 import Router from 'express-promise-router';
 import type { RouterOptions } from '../models/RouterOptions';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
-import { rosPluginPermissions } from '@red-hat-developer-hub/plugin-cost-management-common/permissions';
+import {
+  rosPluginPermissions,
+  rosApplyPermissions,
+  costPluginPermissions,
+} from '@red-hat-developer-hub/plugin-cost-management-common/permissions';
 import { getAccess } from '../routes/access';
 import { getCostManagementAccess } from '../routes/costManagementAccess';
 import { secureProxy } from '../routes/secureProxy';
+import { applyRecommendation } from '../routes/applyRecommendation';
 
 /** @public */
 export async function createRouter(
@@ -29,7 +34,11 @@ export async function createRouter(
 ): Promise<express.Router> {
   const router = Router();
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
-    permissions: rosPluginPermissions,
+    permissions: [
+      ...rosPluginPermissions,
+      ...rosApplyPermissions,
+      ...costPluginPermissions,
+    ],
   });
 
   router.use(express.json());
@@ -42,6 +51,8 @@ export async function createRouter(
   router.get('/access', getAccess(options));
 
   router.get('/access/cost-management', getCostManagementAccess(options));
+
+  router.post('/apply-recommendation', applyRecommendation(options));
 
   router.all('/proxy/*', secureProxy(options));
 

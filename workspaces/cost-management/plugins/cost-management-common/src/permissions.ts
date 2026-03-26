@@ -23,6 +23,12 @@ export const rosPluginReadPermission = createPermission({
 });
 
 /** @public */
+export const rosApplyPermission = createPermission({
+  name: 'ros.apply',
+  attributes: { action: 'update' },
+});
+
+/** @public */
 export const rosClusterSpecificPermission = (clusterName: string) =>
   createPermission({
     name: `ros.${clusterName}`,
@@ -67,3 +73,6 @@ export const costPluginPermissions = [costPluginReadPermission];
 
 /** @public */
 export const rosPluginPermissions = [rosPluginReadPermission];
+
+/** @public */
+export const rosApplyPermissions = [rosApplyPermission];

@@ -427,10 +427,11 @@ export interface OrchestratorSlimApi {
 
 // @public (undocumented)
 export class OrchestratorSlimClient implements OrchestratorSlimApi {
+  /** @deprecated identityApi is retained for backward compatibility but no longer used. */
   constructor(options: {
     discoveryApi: DiscoveryApi;
     fetchApi: FetchApi;
-    identityApi: IdentityApi;
+    identityApi?: IdentityApi;
   });
   // (undocumented)
   checkWorkflowAvailability(

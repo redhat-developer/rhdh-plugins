@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-import React, { useMemo } from 'react';
-import { Box, Button, Grid, Tooltip } from '@material-ui/core';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  Tooltip,
+} from '@material-ui/core';
 import type { WorkflowUnavailableReason } from '@red-hat-developer-hub/plugin-cost-management-common/clients';
 import { RecommendationType } from '../../models/ChartEnums';
 import { ChartInfoCard } from './components/chart-info-card/ChartInfoCard';
@@ -44,49 +54,66 @@ interface OptimizationEngineTabProps extends ContainerInfoCardProps {
   workflowErrorMessage?: string;
 }
 
-export const OptimizationEngineTab = (props: OptimizationEngineTabProps) => {
-  const isWorkflowAvailable = !!props.workflowId;
+export const OptimizationEngineTab = ({
+  workflowId,
+  workflowErrorMessage,
+  workflowUnavailableReason,
+  onApplyRecommendation,
+  ...restProps
+}: OptimizationEngineTabProps) => {
+  const isWorkflowAvailable = !!workflowId;
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const tooltipMessage = useMemo(() => {
     if (isWorkflowAvailable) {
       return '';
     }
-    // Prefer the actual error message from the API
-    if (props.workflowErrorMessage) {
-      return props.workflowErrorMessage;
+    if (workflowErrorMessage) {
+      return workflowErrorMessage;
     }
-    // Fall back to default messages based on reason
-    if (props.workflowUnavailableReason) {
-      return DEFAULT_WORKFLOW_MESSAGES[props.workflowUnavailableReason];
+    if (workflowUnavailableReason) {
+      return DEFAULT_WORKFLOW_MESSAGES[workflowUnavailableReason];
     }
     return DEFAULT_WORKFLOW_MESSAGES.not_configured;
-  }, [
-    isWorkflowAvailable,
-    props.workflowErrorMessage,
-    props.workflowUnavailableReason,
-  ]);
+  }, [isWorkflowAvailable, workflowErrorMessage, workflowUnavailableReason]);
+
+  const handleApplyClick = useCallback(() => {
+    setConfirmOpen(true);
+  }, []);
+
+  const handleConfirmCancel = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
+
+  const handleConfirmApply = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setConfirmOpen(false);
+      onApplyRecommendation?.(event);
+    },
+    [onApplyRecommendation],
+  );
 
   return (
     <Grid container>
       <Grid item xs={12}>
         <ContainerInfoCard
-          containerData={props.containerData}
-          recommendationTerm={props.recommendationTerm}
-          onRecommendationTermChange={props.onRecommendationTermChange}
+          containerData={restProps.containerData}
+          recommendationTerm={restProps.recommendationTerm}
+          onRecommendationTermChange={restProps.onRecommendationTermChange}
         />
       </Grid>
 
       <Grid item xs={6}>
         <CodeInfoCard
           cardTitle="Current configuration"
-          yamlCodeData={props.currentConfiguration}
+          yamlCodeData={restProps.currentConfiguration}
         />
       </Grid>
       <Grid item xs={6}>
         <CodeInfoCard
           cardTitle="Recommended configuration"
           showCopyCodeButton
-          yamlCodeData={props.recommendedConfiguration}
+          yamlCodeData={restProps.recommendedConfiguration}
           action={
             <Tooltip
               title={tooltipMessage}
@@ -98,7 +125,7 @@ export const OptimizationEngineTab = (props: OptimizationEngineTabProps) => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={props.onApplyRecommendation}
+                  onClick={handleApplyClick}
                   disabled={!isWorkflowAvailable}
                 >
                   Apply recommendation
@@ -112,21 +139,44 @@ export const OptimizationEngineTab = (props: OptimizationEngineTabProps) => {
       <Grid item xs={6}>
         <ChartInfoCard
           title="CPU utilization"
-          chartData={props.chartData}
-          recommendationTerm={props.recommendationTerm}
-          optimizationType={props.optimizationType}
+          chartData={restProps.chartData}
+          recommendationTerm={restProps.recommendationTerm}
+          optimizationType={restProps.optimizationType}
           resourceType={RecommendationType.cpu}
         />
       </Grid>
       <Grid item xs={6}>
         <ChartInfoCard
           title="Memory utilization"
-          chartData={props.chartData}
-          recommendationTerm={props.recommendationTerm}
-          optimizationType={props.optimizationType}
+          chartData={restProps.chartData}
+          recommendationTerm={restProps.recommendationTerm}
+          optimizationType={restProps.optimizationType}
           resourceType={RecommendationType.memory}
         />
       </Grid>
+
+      <Dialog open={confirmOpen} onClose={handleConfirmCancel}>
+        <DialogTitle>Apply recommendation?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This will execute a workflow to modify the resource configuration on
+            the target cluster. This action cannot be easily undone. Are you
+            sure you want to proceed?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleConfirmCancel} color="default">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmApply}
+            color="primary"
+            variant="contained"
+          >
+            Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 };
