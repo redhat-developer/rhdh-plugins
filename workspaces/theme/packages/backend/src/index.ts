@@ -59,4 +59,11 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
 // kubernetes plugin
 backend.add(import('@backstage/plugin-kubernetes-backend'));
 
+// notifications plugin
+backend.add(import('@backstage/plugin-signals-backend'));
+backend.add(import('@backstage/plugin-notifications-backend'));
+backend.add(
+  import('@backstage/plugin-scaffolder-backend-module-notifications'),
+);
+
 backend.start();

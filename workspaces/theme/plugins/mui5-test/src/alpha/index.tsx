@@ -16,26 +16,21 @@
 
 import {
   createFrontendPlugin,
-  NavItemBlueprint,
+  createRouteRef,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import { rootRouteRef } from '../routes';
-import ExtensionIcon from '@material-ui/icons/Extension';
-import { MUI5TestPageComponent } from '..';
+import { RiPuzzleLine } from '@remixicon/react';
+
+const rootRouteRef = createRouteRef();
 
 const mui5TestPage = PageBlueprint.make({
   params: {
-    path: '/mui5-test',
-    routeRef: rootRouteRef,
-    loader: async () => <MUI5TestPageComponent />,
-  },
-});
-
-const mui5TestNavItem = NavItemBlueprint.make({
-  params: {
+    path: '/mui5-tests',
     title: 'MUI v5 Tests',
+    icon: <RiPuzzleLine />,
     routeRef: rootRouteRef,
-    icon: ExtensionIcon,
+    loader: async () =>
+      import('../components/MUI5TestPage').then(m => <m.MUI5TestPage />),
   },
 });
 
@@ -45,6 +40,6 @@ const mui5TestNavItem = NavItemBlueprint.make({
 export default createFrontendPlugin({
   pluginId: 'mui5-test',
   info: { packageJson: () => import('../../package.json') },
-  extensions: [mui5TestPage, mui5TestNavItem],
+  extensions: [mui5TestPage],
   routes: { root: rootRouteRef },
 });

@@ -14,4 +14,6 @@
  * limitations under the License.
  */
 
-console.log('Hello from ${{ values.name }}!');
+export * from './LogoFull';
+export * from './LogoIcon';
+export * from './ThemeProvider';

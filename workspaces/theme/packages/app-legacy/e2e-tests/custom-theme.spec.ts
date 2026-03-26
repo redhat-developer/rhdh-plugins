@@ -75,13 +75,13 @@ test.describe('CustomTheme should be applied', () => {
       'MUI v4 tests': ['Papers', 'Tabs', 'Grids', 'Inline styles'],
       'MUI v5 tests': ['Papers', 'Tabs', 'Grids', 'Inline styles'],
     };
-    await page.getByRole('link', { name: 'BCC tests' }).click();
+    await page.locator('nav').getByRole('link', { name: 'BCC tests' }).click();
 
     const themeNames = ['RHDH Dark (latest)', 'RHDH Light (latest)'];
     for (const themeName of themeNames) {
       await page.getByRole('button', { name: themeName }).click();
       for (const [tab, subTabs] of Object.entries(tabs)) {
-        await page.getByRole('link', { name: tab }).click();
+        await page.locator('nav').getByRole('link', { name: tab }).click();
         await runAccessibilityTests(
           page,
           testInfo,

@@ -438,7 +438,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             borderBottom: `1px solid ${general.tableBorderColor}`,
           },
         },
-        // @ts-expect-error: MUI types are not up to date
         head: {
           textTransform: 'unset !important',
           color: `${general.tableColumnTitleColor} !important`,

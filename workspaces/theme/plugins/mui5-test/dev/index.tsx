@@ -21,7 +21,7 @@ createDevApp()
   .registerPlugin(mui5TestPlugin)
   .addPage({
     element: <MUI5TestPage />,
-    title: 'Root Page',
-    path: '/mui5-test',
+    title: 'MUI5 v5 Tests',
+    path: '/mui5-tests',
   })
   .render();
