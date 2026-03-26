@@ -19,7 +19,10 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { rest } from 'msw';
 import request from 'supertest';
 
-import { LOCAL_ADDR } from '../../../../__fixtures__/handlers';
+import {
+  CATALOG_API_LOCATIONS_LOCAL_ADDR,
+  LOCAL_ADDR,
+} from '../../../../__fixtures__/handlers';
 import {
   setupTest,
   startBackendServer,
@@ -102,6 +105,197 @@ describe('repositories', () => {
       expect(response.body).toEqual({
         approvalTool: 'GITLAB',
         errors: ['Gitlab Token auth did not succeed'],
+      });
+    });
+
+    describe('filtering repositories', () => {
+      it('returns all repos when no repos are imported yet', async () => {
+        const { mockCatalogClient } = useTestData();
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' });
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/dolbear',
+              lastUpdate: '2025-07-31T14:52:27.849Z',
+              name: 'dolbear',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/dolbear',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/funtimes',
+              lastUpdate: '2025-08-15T15:03:44.927Z',
+              name: 'funtimes',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/funtimes',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/swapi-node',
+              lastUpdate: '2025-07-31T14:54:57.289Z',
+              name: 'swapi-node',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/swapi-node',
+            },
+          ],
+          totalCount: 3,
+        });
+      });
+
+      it('returns empty array when there are no repos to be imported', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(`${LOCAL_ADDR}/api/v4/projects`, (_, res, ctx) =>
+            res(ctx.status(200), ctx.json([])),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' });
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [],
+          totalCount: 0,
+        });
+      });
+
+      it('returns filtered (not yet imported) repos when some repos are already imported', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
+            res(
+              ctx.status(200),
+              ctx.json([
+                {
+                  data: {
+                    id: 'imported-funtimes',
+                    target:
+                      'http://localhost:8765/saltypig1/funtimes/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+              ]),
+            ),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' });
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/dolbear',
+              lastUpdate: '2025-07-31T14:52:27.849Z',
+              name: 'dolbear',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/dolbear',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/swapi-node',
+              lastUpdate: '2025-07-31T14:54:57.289Z',
+              name: 'swapi-node',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/swapi-node',
+            },
+          ],
+          totalCount: 2,
+        });
+      });
+
+      it('returns empty array when all repos are already imported', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
+            res(
+              ctx.status(200),
+              ctx.json([
+                {
+                  data: {
+                    id: 'imported-dolbear',
+                    target:
+                      'http://localhost:8765/saltypig1/dolbear/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+                {
+                  data: {
+                    id: 'imported-funtimes',
+                    target:
+                      'http://localhost:8765/saltypig1/funtimes/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+                {
+                  data: {
+                    id: 'imported-swapi-node',
+                    target:
+                      'http://localhost:8765/saltypig1/swapi-node/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+              ]),
+            ),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' });
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [],
+          totalCount: 0,
+        });
       });
     });
   });
