@@ -14,18 +14,31 @@
  * limitations under the License.
  */
 
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { makeStyles } from '@material-ui/core';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { Alert, Button, Switch, Title, Tooltip } from '@patternfly/react-core';
+import {
+  Alert,
+  Button,
+  Modal,
+  Switch,
+  Title,
+  Tooltip,
+} from '@patternfly/react-core';
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   KeyIcon,
+  LockIcon,
   OffIcon,
   SortAmountDownIcon,
   SortAmountUpIcon,
@@ -51,6 +64,10 @@ type McpServersSettingsProps = {
   onClose: () => void;
   backgroundColor?: string;
 };
+
+type TokenValidationState = 'idle' | 'validating' | 'success' | 'error';
+
+const SAVED_TOKEN_MASK = '********************';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -145,6 +162,143 @@ const useStyles = makeStyles(theme => ({
   },
   actionButton: {
     color: theme.palette.text.secondary,
+  },
+  modalDescription: {
+    color: theme.palette.text.secondary,
+    fontSize: '0.875rem',
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+  },
+  modalContent: {
+    position: 'relative',
+    padding: theme.spacing(3, 0, 3, 3),
+    marginRight: theme.spacing(3),
+  },
+  modalCustomCloseButton: {
+    position: 'absolute',
+    top: theme.spacing(2),
+    right: theme.spacing(-0.5),
+    color: '#1F1F1F',
+  },
+  modalHeading: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
+    marginBottom: theme.spacing(1),
+    fontSize: '1.25rem',
+    lineHeight: 1.4,
+    fontWeight: 500,
+    '& .v5-MuiTypography-root': {
+      fontSize: '1.25rem',
+      lineHeight: 1.4,
+      fontWeight: 500,
+    },
+  },
+  tokenRow: {
+    position: 'relative',
+  },
+  tokenClearButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: '50%',
+    transform: 'translateY(-50%)',
+    zIndex: 1,
+    color: theme.palette.text.secondary,
+  },
+  tokenHelper: {
+    color: theme.palette.text.secondary,
+    fontSize: '0.75rem',
+    marginTop: theme.spacing(0.5),
+  },
+  tokenInput: {
+    marginTop: '1rem !important',
+    '& .MuiOutlinedInput-root': {
+      height: '3.5rem',
+    },
+    '& .MuiOutlinedInput-input': {
+      padding: '0 0.875rem',
+    },
+    '& .MuiInputLabel-root': {
+      fontSize: '0.875rem',
+    },
+  },
+  tokenInputSuccess: {
+    '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#3E8635',
+      borderWidth: 1,
+    },
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#3E8635',
+    },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#3E8635',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: '#3E8635',
+    },
+  },
+  tokenInputError: {
+    '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#C9190B',
+      borderWidth: 1,
+    },
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#C9190B',
+    },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#C9190B',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: '#C9190B',
+    },
+  },
+  modalActions: {
+    marginTop: theme.spacing(3),
+    display: 'flex',
+    gap: theme.spacing(1),
+  },
+  modalActionButton: {
+    fontSize: '1rem',
+  },
+  modalCancelButton: {
+    fontSize: '1rem',
+  },
+  forgetTokenButton: {
+    fontSize: '1rem',
+    border: '1px solid #B1380B',
+    borderRadius: '1.25rem',
+    padding: '0.375rem 1rem',
+    color: '#B1380B',
+    backgroundColor: 'transparent',
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    boxShadow: 'none',
+    '&:hover': {
+      backgroundColor: 'rgba(201, 25, 11, 0.08)',
+    },
+  },
+  configureModal: {
+    '& .pf-v6-c-modal-box': {
+      width: '608px',
+      maxWidth: '608px',
+      height: '326px',
+      minHeight: '326px',
+    },
+    '& .pf-v6-c-modal-box__title, & .pf-v6-c-modal-box__title-text, & .pf-v5-c-modal-box__title, & .pf-v5-c-modal-box__title-text':
+      {
+        fontSize: '1.25rem !important',
+        lineHeight: '1.4 !important',
+      },
+    '& .pf-v6-c-modal-box__close': {
+      display: 'none',
+    },
+    '& .pf-v5-c-modal-box__close': {
+      display: 'none',
+    },
+    '& .pf-v6-c-button__icon': {
+      paddingTop: '5px !important',
+      fontSize: '1.25rem !important',
+    },
   },
   toggleCell: {
     paddingRight: '0 !important',
@@ -261,6 +415,12 @@ export const McpServersSettings = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  const [editingServerId, setEditingServerId] = useState<string | null>(null);
+  const [tokenInputValue, setTokenInputValue] = useState('');
+  const [hasSavedTokenInModal, setHasSavedTokenInModal] = useState(false);
+  const [tokenValidationState, setTokenValidationState] =
+    useState<TokenValidationState>('idle');
+  const [tokenValidationMessage, setTokenValidationMessage] = useState('');
 
   const getBaseUrl = useCallback(() => {
     return `${configApi.getString('backend.baseUrl')}/api/lightspeed`;
@@ -403,11 +563,17 @@ export const McpServersSettings = ({
             ? e.message
             : `Failed to update ${serverName} settings`,
         );
+        throw e;
       } finally {
         setIsSaving(prev => ({ ...prev, [serverName]: false }));
       }
     },
     [canManageMcp, fetchJson, getBaseUrl, loadServers],
+  );
+
+  const editingServer = useMemo(
+    () => servers.find(server => server.id === editingServerId),
+    [servers, editingServerId],
   );
 
   const selectedCount = useMemo(
@@ -429,10 +595,147 @@ export const McpServersSettings = ({
     return next;
   }, [servers, sortAsc]);
 
-  const onEditClick = useCallback((event: MouseEvent) => {
-    // Intentionally no-op in this branch; follow-up branch will wire edit flow.
-    event.preventDefault();
+  const closeConfigureModal = useCallback(() => {
+    setEditingServerId(null);
+    setTokenInputValue('');
+    setHasSavedTokenInModal(false);
+    setTokenValidationState('idle');
+    setTokenValidationMessage('');
   }, []);
+
+  const openConfigureModal = (server: McpServer) => {
+    setEditingServerId(server.id);
+    const hasSavedToken = server.hasToken;
+    setHasSavedTokenInModal(hasSavedToken);
+    setTokenInputValue(hasSavedToken ? SAVED_TOKEN_MASK : '');
+    if (server.status === 'error' && server.validationError) {
+      setTokenValidationState('error');
+      setTokenValidationMessage(server.validationError);
+    } else {
+      setTokenValidationState('idle');
+      setTokenValidationMessage('');
+    }
+  };
+
+  const onTokenInputChange = (value: string) => {
+    if (hasSavedTokenInModal && value !== SAVED_TOKEN_MASK) {
+      setHasSavedTokenInModal(false);
+    }
+    setTokenInputValue(value);
+    setTokenValidationState('idle');
+    setTokenValidationMessage('');
+  };
+
+  const clearTokenInput = () => {
+    if (hasSavedTokenInModal) {
+      setHasSavedTokenInModal(false);
+    }
+    setTokenInputValue('');
+    setTokenValidationState('idle');
+    setTokenValidationMessage('');
+  };
+
+  const forgetSavedToken = () => {
+    setHasSavedTokenInModal(false);
+    setTokenInputValue('');
+    setTokenValidationState('idle');
+    setTokenValidationMessage('');
+  };
+
+  let tokenInputStateClass = '';
+  let tokenHelperColor: string | undefined;
+  if (tokenValidationState === 'success') {
+    tokenInputStateClass = classes.tokenInputSuccess;
+    tokenHelperColor = '#3E8635';
+  } else if (tokenValidationState === 'error') {
+    tokenInputStateClass = classes.tokenInputError;
+    tokenHelperColor = '#C9190B';
+  }
+
+  let tokenInputAdornment = (
+    <IconButton
+      aria-label="Clear token input"
+      size="small"
+      className={classes.tokenClearButton}
+      onClick={clearTokenInput}
+    >
+      <CancelOutlinedIcon
+        style={{
+          color: '#6A6E73',
+          fontSize: 24,
+          width: 24,
+          height: 24,
+        }}
+      />
+    </IconButton>
+  );
+
+  if (tokenValidationState === 'success') {
+    tokenInputAdornment = (
+      <CheckCircleIcon
+        style={{
+          color: '#3E8635',
+          fontSize: 20,
+          width: 20,
+          height: 20,
+          marginRight: 3,
+        }}
+      />
+    );
+  } else if (tokenValidationState === 'error') {
+    tokenInputAdornment = (
+      <ExclamationCircleIcon
+        style={{
+          color: '#C9190B',
+          fontSize: 20,
+          width: 20,
+          height: 20,
+          marginRight: 3,
+        }}
+      />
+    );
+  }
+
+  const saveServerToken = useCallback(async () => {
+    if (!editingServer || !canManageMcp) return;
+
+    if (hasSavedTokenInModal && tokenInputValue === SAVED_TOKEN_MASK) {
+      closeConfigureModal();
+      return;
+    }
+
+    const token = tokenInputValue.trim();
+    const hasToken = token.length > 0;
+
+    setTokenValidationState('validating');
+    setTokenValidationMessage('Saving and validating token...');
+
+    try {
+      await patchServer(editingServer.name, {
+        enabled: true,
+        token: hasToken ? token : null,
+      });
+      if (hasToken) {
+        await validateServer(editingServer.name);
+      }
+      closeConfigureModal();
+    } catch (e) {
+      setTokenValidationState('error');
+      setTokenValidationMessage(
+        e instanceof Error
+          ? e.message
+          : `Failed to update ${editingServer.name} token`,
+      );
+    }
+  }, [
+    canManageMcp,
+    closeConfigureModal,
+    editingServer,
+    hasSavedTokenInModal,
+    patchServer,
+    tokenInputValue,
+    validateServer,
+  ]);
 
   return (
     <div
@@ -539,7 +842,7 @@ export const McpServersSettings = ({
                         isChecked={isChecked}
                         isDisabled={isToggleDisabled}
                         onChange={(_event, checked) => {
-                          patchServer(server.name, { enabled: checked });
+                          void patchServer(server.name, { enabled: checked });
                         }}
                       />
                     );
@@ -599,7 +902,7 @@ export const McpServersSettings = ({
                     variant="plain"
                     className={classes.actionButton}
                     isDisabled={!canManageMcp}
-                    onClick={onEditClick}
+                    onClick={() => openConfigureModal(server)}
                   />
                 </Td>
               </Tr>
@@ -607,6 +910,94 @@ export const McpServersSettings = ({
           })}
         </Tbody>
       </Table>
+      <Modal
+        variant="small"
+        title={`Configure ${editingServer?.name ?? ''} server`}
+        isOpen={Boolean(editingServer)}
+        onClose={closeConfigureModal}
+        className={classes.configureModal}
+      >
+        <div className={classes.modalContent}>
+          <IconButton
+            aria-label="Close configure modal"
+            size="small"
+            className={classes.modalCustomCloseButton}
+            onClick={closeConfigureModal}
+          >
+            <CloseOutlinedIcon />
+          </IconButton>
+          <div className={classes.modalHeading}>
+            <LockIcon />
+            <Typography component="div">{`Configure ${editingServer?.name ?? ''} server`}</Typography>
+          </div>
+          <div className={classes.modalDescription}>
+            Credentials are encrypted at rest and scoped to your profile.
+            Lightspeed will operate with your exact permissions.
+          </div>
+          <div className={classes.tokenRow}>
+            <TextField
+              id="mcp-pat-input"
+              type="password"
+              variant="outlined"
+              fullWidth
+              value={tokenInputValue}
+              onChange={event => onTokenInputChange(event.target.value)}
+              className={`${classes.tokenInput} ${tokenInputStateClass}`}
+              label={
+                hasSavedTokenInModal ? 'Saved token' : 'Personal Access Token'
+              }
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {tokenInputAdornment}
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {(!hasSavedTokenInModal || tokenValidationState !== 'idle') && (
+              <div
+                className={classes.tokenHelper}
+                style={{ color: tokenHelperColor }}
+              >
+                {tokenValidationMessage || 'Enter your token'}
+              </div>
+            )}
+          </div>
+          <div className={classes.modalActions}>
+            <Button
+              key="save"
+              variant="primary"
+              onClick={() => void saveServerToken()}
+              isDisabled={
+                !canManageMcp ||
+                Boolean(isSaving[editingServer?.name ?? '']) ||
+                !tokenInputValue.trim()
+              }
+              className={classes.modalActionButton}
+            >
+              Save
+            </Button>
+            {hasSavedTokenInModal && (
+              <Button
+                key="forget-token"
+                variant="plain"
+                onClick={forgetSavedToken}
+                className={classes.forgetTokenButton}
+              >
+                Forget token
+              </Button>
+            )}
+            <Button
+              key="cancel"
+              variant="link"
+              onClick={closeConfigureModal}
+              className={classes.modalCancelButton}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
