@@ -33,7 +33,7 @@
   "dependencies": {
     "@backstage/backend-plugin-api": "1.4.2",
     "@backstage/config": "^1.3.6",
-    "@backstage/plugin-scaffolder-node": "^0.11.0",
+    "@backstage/plugin-scaffolder-node": "^0.12.4",
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
   },
   "devDependencies": {
@@ -41,6 +41,7 @@
     "@backstage/plugin-scaffolder-node-test-utils": "^0.3.5"
   },
   "files": [
-    "dist"
+    "dist",
+    "templates"
   ]
 }
