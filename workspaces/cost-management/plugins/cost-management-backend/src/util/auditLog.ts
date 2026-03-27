@@ -41,7 +41,8 @@ export async function resolveActor(
     const credentials = await options.httpAuth.credentials(req);
     const info = await options.userInfo.getUserInfo(credentials);
     return info.userEntityRef;
-  } catch {
+  } catch (error) {
+    options.logger.warn('Failed to resolve actor identity', error);
     return 'unknown';
   }
 }
