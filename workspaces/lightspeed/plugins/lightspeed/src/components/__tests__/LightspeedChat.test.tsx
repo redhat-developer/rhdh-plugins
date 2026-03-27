@@ -180,7 +180,7 @@ describe('LightspeedChat', () => {
   const mockSetCurrentConversationId = jest.fn();
 
   beforeEach(() => {
-    mockUsePermission.mockReturnValue({ loading: true, allowed: true });
+    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
     mockUseConversations.mockReturnValue({
       data: [],
       isRefetching: false,
