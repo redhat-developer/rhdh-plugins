@@ -16,21 +16,34 @@
 
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
-import { performLogin } from './fixtures/auth';
+import { performLogin, performOIDCLogin } from './fixtures/auth';
 import { openshiftPageUrlPattern } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
+const isLiveCluster = !!process.env.PLAYWRIGHT_URL;
 
 /**
  * OpenShift Cost Management page tests.
  * Covers: FLPATH-3130 (cost overview page), FLPATH-3131 (currency & exports).
+ *
+ * On a live cluster with RBAC, the OpenShift cost page requires the
+ * `cost.plugin` permission. The default OIDC user (ro-read-no-workflow)
+ * only has `ros.plugin`, so we use `ro-read-all` which has both.
  */
 test.describe('Resource Optimization - OpenShift Cost Management @live @ro', () => {
   let rosPage: ResourceOptimizationPage;
 
   test.beforeEach(async ({ page }) => {
     rosPage = new ResourceOptimizationPage(page);
-    await performLogin(page);
+
+    if (isLiveCluster) {
+      const user = process.env.RBAC_COSTREAD_USER ?? 'ro-read-all';
+      const pass = process.env.RBAC_COSTREAD_PASS ?? 'test';
+      await performOIDCLogin(page, user, pass);
+    } else {
+      await performLogin(page);
+    }
+
     await rosPage.navigateToOpenShiftPage();
   });
 
