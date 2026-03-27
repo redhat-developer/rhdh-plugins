@@ -331,7 +331,7 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
           Accept: acceptHeader,
           Authorization: `Bearer ${token}`,
         },
-        method: req.method,
+        method: 'GET',
       });
 
       const contentType = upstreamResponse.headers.get('content-type') || '';
