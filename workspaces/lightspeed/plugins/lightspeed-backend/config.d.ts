@@ -36,15 +36,89 @@ export interface Config {
      */
     mcpServers?: Array<{
       /**
-       * The name of the mcp server.
+       * The name of the MCP server. Must match the name registered in LCS config.
+       * The URL is fetched from LCS (GET /v1/mcp-servers) at startup.
        * @visibility backend
        */
       name: string;
       /**
-       * The access token for authenticating MCP server.
+       * The default access token for authenticating with this MCP server.
+       * Optional — if omitted, users must provide their own token via the UI.
+       * Users can also override this with a personal token via PATCH /mcp-servers/:name.
        * @visibility secret
        */
-      token: string;
+      token?: string;
     }>;
+    /**
+     * Configuration for AI Notebooks (Developer Preview)
+     */
+    aiNotebooks?: {
+      /**
+       * Enable/disable AI Notebooks feature
+       * When enabled, exposes AI Notebooks REST API endpoints for document-based conversations with RAG.
+       * Requires Llama Stack service to be running (default: http://0.0.0.0:8321).
+       * @default false
+       * @visibility frontend
+       */
+      enabled?: boolean;
+      /**
+       * Llama Stack configuration
+       * @visibility backend
+       */
+      llamaStack?: {
+        /**
+         * Llama Stack API port
+         * @visibility backend
+         */
+        port?: number;
+        /**
+         * Embedding model for vector database
+         * @visibility backend
+         */
+        embeddingModel?: string;
+        /**
+         * Embedding dimension
+         * @visibility backend
+         */
+        embeddingDimension?: number;
+        /**
+         * Vector IO configuration
+         * @visibility backend
+         */
+        vectorIo?: {
+          /**
+           * Vector store provider ID
+           * @visibility backend
+           */
+          providerId?: string;
+        };
+      };
+      /**
+       * File processing timeout in milliseconds
+       * @visibility backend
+       */
+      fileProcessingTimeoutMs?: number;
+      /**
+       * Chunking strategy configuration
+       * @visibility backend
+       */
+      chunkingStrategy?: {
+        /**
+         * Type of chunking strategy ('auto' or 'static')
+         * @visibility backend
+         */
+        type?: string;
+        /**
+         * Maximum chunk size in tokens (for static strategy)
+         * @visibility backend
+         */
+        maxChunkSizeTokens?: number;
+        /**
+         * Chunk overlap in tokens (for static strategy)
+         * @visibility backend
+         */
+        chunkOverlapTokens?: number;
+      };
+    };
   };
 }

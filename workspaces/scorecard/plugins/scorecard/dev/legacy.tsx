@@ -14,28 +14,53 @@
  * limitations under the License.
  */
 
+import type { ReactNode } from 'react';
+
 // eslint-disable-next-line
 import '@backstage/ui/css/styles.css';
 
 import { createDevApp } from '@backstage/dev-utils';
-import { EntityProvider } from '@backstage/plugin-catalog-react';
-import { Page, Header, TabbedLayout } from '@backstage/core-components';
+import {
+  CatalogApi,
+  catalogApiRef,
+  EntityProvider,
+} from '@backstage/plugin-catalog-react';
+import {
+  Page,
+  Header,
+  TabbedLayout,
+  Content,
+} from '@backstage/core-components';
 import { TestApiProvider } from '@backstage/test-utils';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import type { Entity } from '@backstage/catalog-model';
 import type {
   MetricResult,
   AggregatedMetricResult,
+  Metric,
+  EntityMetricDetailResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { CatalogEntityPage } from '@backstage/plugin-catalog';
 
-import { scorecardPlugin, EntityScorecardContent } from '../src/plugin';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+
+import {
+  scorecardPlugin,
+  EntityScorecardContent,
+  ScorecardHomepageCard,
+  ScorecardPage,
+} from '../src/plugin';
 import { scorecardTranslations } from '../src/translations';
 import { scorecardApiRef, ScorecardApi } from '../src/api';
+import type { GetAggregatedScorecardEntitiesOptions } from '../src/components/types';
 import {
   mockScorecardErrorData,
   mockScorecardSuccessData,
 } from '../__fixtures__/scorecardData';
 import { mockAggregatedScorecardSuccessData } from '../__fixtures__/aggregatedScorecardData';
+import { mockAggregatedScorecardEntitiesData } from '../__fixtures__/aggregatedScorecardEntitiesData';
+import { mockCatalogApi } from './mocks';
 
 const mockComponentEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
@@ -55,12 +80,52 @@ class MockScorecardApi implements ScorecardApi {
   async getScorecards(_entity: Entity): Promise<MetricResult[]> {
     return [...mockScorecardSuccessData, ...mockScorecardErrorData];
   }
+
   async getAggregatedScorecard(
     _metricId: string,
   ): Promise<AggregatedMetricResult> {
     return mockAggregatedScorecardSuccessData;
   }
+
+  async getMetrics(_options: {
+    metricIds: string[];
+  }): Promise<{ metrics: Metric[] }> {
+    const allMetrics = [
+      ...mockScorecardSuccessData,
+      ...mockScorecardErrorData,
+    ].map(m => ({
+      id: m.id,
+      title: m.metadata.title,
+      description: m.metadata.description,
+      type: m.metadata.type,
+      history: m.metadata.history,
+    }));
+    return { metrics: allMetrics };
+  }
+
+  async getAggregatedScorecardEntities(
+    options: GetAggregatedScorecardEntitiesOptions,
+  ): Promise<EntityMetricDetailResponse> {
+    return mockAggregatedScorecardEntitiesData(
+      options.metricId,
+      options.page ?? 1,
+      options.pageSize ?? 10,
+    ) as EntityMetricDetailResponse;
+  }
 }
+
+const ScorecardWrapper = ({ children }: { children: ReactNode }) => (
+  <TestApiProvider
+    apis={[
+      [scorecardApiRef, new MockScorecardApi()],
+      [catalogApiRef, mockCatalogApi as CatalogApi],
+    ]}
+  >
+    <Page themeId="tool">
+      <Content>{children}</Content>
+    </Page>
+  </TestApiProvider>
+);
 
 createDevApp()
   .registerPlugin(scorecardPlugin)
@@ -70,23 +135,74 @@ createDevApp()
   .addThemes(getAllThemes())
   .addPage({
     element: (
-      <TestApiProvider apis={[[scorecardApiRef, new MockScorecardApi()]]}>
+      <ScorecardWrapper>
+        <ScorecardHomepageCard metricId="github.open_prs" />
+      </ScorecardWrapper>
+    ),
+    title: 'Default Layout',
+    path: '/',
+  })
+  .addPage({
+    element: (
+      <ScorecardWrapper>
+        {[
+          { label: 'Small (320x380)', width: 320, height: 380 },
+          { label: 'Medium (520x480)', width: 520, height: 480 },
+          { label: 'Large (800x480)', width: 800, height: 480 },
+        ].map(({ label, width, height }) => (
+          <Box key={label}>
+            <Typography variant="caption">{label}</Typography>
+            <Box sx={{ width, height }}>
+              <ScorecardHomepageCard metricId="github.open_prs" />
+            </Box>
+          </Box>
+        ))}
+      </ScorecardWrapper>
+    ),
+    title: 'Custom Layout',
+    path: '/custom-layout-scorecard-homepage-card',
+  })
+  .addPage({
+    element: (
+      <ScorecardWrapper>
         <EntityProvider entity={mockComponentEntity}>
-          <Page themeId="tool">
-            <Header
-              type="component — tool"
-              title={mockComponentEntity.metadata.name}
-            />
-            <TabbedLayout>
-              <TabbedLayout.Route path="/" title="Scorecard">
-                <EntityScorecardContent />
-              </TabbedLayout.Route>
-            </TabbedLayout>
-          </Page>
+          <Header
+            type="component — tool"
+            title={mockComponentEntity.metadata.name}
+          />
+          <TabbedLayout>
+            <TabbedLayout.Route path="/" title="Scorecard">
+              <EntityScorecardContent />
+            </TabbedLayout.Route>
+          </TabbedLayout>
         </EntityProvider>
-      </TestApiProvider>
+      </ScorecardWrapper>
     ),
     title: 'Scorecard',
     path: '/scorecard',
+  })
+  .addPage({
+    element: (
+      <ScorecardWrapper>
+        <EntityProvider entity={mockComponentEntity}>
+          <TabbedLayout>
+            <TabbedLayout.Route path="/" title="Scorecard Entities">
+              <ScorecardPage />
+            </TabbedLayout.Route>
+          </TabbedLayout>
+        </EntityProvider>
+      </ScorecardWrapper>
+    ),
+    title: 'Scorecard Entities',
+    path: '/scorecard/metrics/github.open_prs',
+  })
+  .addPage({
+    element: (
+      <ScorecardWrapper>
+        <CatalogEntityPage />
+      </ScorecardWrapper>
+    ),
+    title: 'Catalog Entity',
+    path: '/catalog/:namespace/:kind/:name',
   })
   .render();

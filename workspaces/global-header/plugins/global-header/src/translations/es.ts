@@ -55,6 +55,13 @@ const globalHeaderTranslationEs = createTranslationMessages({
     'notifications.title': 'Notificaciones',
     'notifications.unsupportedDismissOption':
       'Opción para desestimar "{{option}}" no admitida. Opciones admitidas actualmente: "none", "session" o "localstorage".',
+    'create.title': 'Autoservicio',
+    'create.registerComponent.title': 'Registrar un componente',
+    'create.registerComponent.subtitle': 'Importarlo a la página de catálogo',
+    'create.templates.sectionTitle': 'Usar una plantilla',
+    'create.templates.allTemplates': 'Todas las plantillas',
+    'create.templates.errorFetching': 'Error al obtener plantillas',
+    'create.templates.noTemplatesAvailable': 'No hay plantillas disponibles',
   },
 });
 

@@ -2882,7 +2882,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/integration@npm:^1.18.0, @backstage/integration@npm:^1.18.2, @backstage/integration@npm:^1.19.2, @backstage/integration@npm:^1.20.0":
+"@backstage/integration@npm:^1.18.2, @backstage/integration@npm:^1.19.2, @backstage/integration@npm:^1.20.0":
   version: 1.20.0
   resolution: "@backstage/integration@npm:1.20.0"
   dependencies:
@@ -4045,7 +4045,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-common@npm:^1.7.1, @backstage/plugin-scaffolder-common@npm:^1.7.5, @backstage/plugin-scaffolder-common@npm:^1.7.6":
+"@backstage/plugin-scaffolder-common@npm:^1.7.5, @backstage/plugin-scaffolder-common@npm:^1.7.6":
   version: 1.7.6
   resolution: "@backstage/plugin-scaffolder-common@npm:1.7.6"
   dependencies:
@@ -4102,34 +4102,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10c0/5fcaa13b177b5bfa10fee526f3ca66964f34204c8ad181170a3ccec65615b93401cd8e27269ffedec301b7c7d5267042960d9ad65d49aac3f80f333f68be3525
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-scaffolder-node@npm:^0.11.0":
-  version: 0.11.2
-  resolution: "@backstage/plugin-scaffolder-node@npm:0.11.2"
-  dependencies:
-    "@backstage/backend-plugin-api": "npm:^1.4.3"
-    "@backstage/catalog-model": "npm:^1.7.5"
-    "@backstage/errors": "npm:^1.2.7"
-    "@backstage/integration": "npm:^1.18.0"
-    "@backstage/plugin-permission-common": "npm:^0.9.1"
-    "@backstage/plugin-scaffolder-common": "npm:^1.7.1"
-    "@backstage/types": "npm:^1.2.2"
-    "@isomorphic-git/pgp-plugin": "npm:^0.0.7"
-    concat-stream: "npm:^2.0.0"
-    fs-extra: "npm:^11.2.0"
-    globby: "npm:^11.0.0"
-    isomorphic-git: "npm:^1.23.0"
-    jsonschema: "npm:^1.5.0"
-    lodash: "npm:^4.17.21"
-    p-limit: "npm:^3.1.0"
-    tar: "npm:^6.1.12"
-    winston: "npm:^3.2.1"
-    winston-transport: "npm:^4.7.0"
-    zod: "npm:^3.22.4"
-    zod-to-json-schema: "npm:^3.20.4"
-  checksum: 10c0/9564602307fa10270c7ed15e965b9352b26766d0721fff2a608180ff0dbbf4a880c81f09f53b80efe7897cc77197f417e2a4592895c4051fcf2dc491a7b18f4d
   languageName: node
   linkType: hard
 
@@ -12038,7 +12010,7 @@ __metadata:
     "@backstage/backend-plugin-api": "npm:1.4.2"
     "@backstage/cli": "npm:^0.34.5"
     "@backstage/config": "npm:^1.3.6"
-    "@backstage/plugin-scaffolder-node": "npm:^0.11.0"
+    "@backstage/plugin-scaffolder-node": "npm:^0.12.4"
     "@backstage/plugin-scaffolder-node-test-utils": "npm:^0.3.5"
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
   languageName: unknown

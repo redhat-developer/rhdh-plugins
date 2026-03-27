@@ -3,6 +3,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: User
 metadata:
+  namespace: development
   name: guest
 spec:
   memberOf: [guests]
@@ -11,6 +12,7 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Group
 metadata:
+  namespace: development
   name: guests
 spec:
   type: team

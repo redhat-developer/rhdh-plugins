@@ -24,6 +24,9 @@ p, role:default/team_a, lightspeed.chat.create, create, allow
 p, role:default/team_a, lightspeed.chat.delete, delete, allow
 p, role:default/team_a, lightspeed.chat.update, update, allow
 
+# Required for AI Notebooks feature (if enabled)
+p, role:default/team_a, lightspeed.notebooks.use, update, allow
+
 g, user:default/<your-user-name>, role:default/team_a
 
 ```
@@ -83,6 +86,43 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 
 1. Open your Backstage application and select a Lightspeed nav item from the **Navigation**.
 2. Ask you questions to the Lightspeed chatbot.
+
+### AI Notebooks (Developer Preview)
+
+AI Notebooks is an experimental feature that enables **document-based conversations with Retrieval-Augmented Generation (RAG)**. This feature allows you to:
+
+- **Create persistent notebook sessions** with their own vector databases
+- **Upload and manage documents** to query against, including:
+  - Text files (`.txt`, `.md`, `.log`)
+  - PDF documents with automatic text extraction
+  - Structured data (`.json`, `.yaml`)
+  - Web content via URL (up to 20MB per file)
+- **Query your documents** using natural language and get context-aware AI responses
+- **Organize documents** by sessions with metadata and tagging
+- **Maintain context** across conversations - all uploaded documents remain available throughout the session
+
+#### How AI Notebooks Works
+
+1. **Session Management**: Create a notebook session, which is backed by its own vector database
+2. **Document Upload**: Upload documents - they are automatically processed, chunked, and embedded into the vector database
+3. **RAG Conversations**: Ask questions about your documents - relevant chunks are retrieved and provided as context to the LLM
+4. **Persistent Storage**: Your documents and conversations remain available throughout the session lifecycle
+
+#### Prerequisites for AI Notebooks
+
+- AI Notebooks requires a **Llama Stack service** to be running
+- The backend administrator must enable the feature (see [Backend Configuration](../lightspeed-backend/README.md#ai-notebooks-developer-preview))
+- Users need the appropriate RBAC permissions (if enabled)
+
+#### Using AI Notebooks
+
+1. Ensure AI Notebooks is enabled in your Backstage instance
+2. Navigate to the Lightspeed page
+3. Create a new notebook session or select an existing one
+4. Upload documents you want to query
+5. Start asking questions about your uploaded documents
+
+For backend configuration and API details, administrators should refer to the [Lightspeed Backend Plugin Documentation](../lightspeed-backend/README.md#ai-notebooks-developer-preview).
 
 ## Loading as Dynamic Plugin
 

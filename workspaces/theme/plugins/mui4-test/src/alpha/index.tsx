@@ -15,33 +15,33 @@
  */
 
 import {
+  createRouteRef,
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import { rootRouteRef } from '../routes';
-import ExtensionIcon from '@material-ui/icons/Extension';
-import { MUI4TestPageComponent } from '..';
+import { RiPuzzleLine } from '@remixicon/react';
+
+const rootRouteRef = createRouteRef();
 
 const mui4TestPage = PageBlueprint.make({
   params: {
-    path: '/mui4-test',
-    routeRef: rootRouteRef,
-    loader: async () => <MUI4TestPageComponent />,
-  },
-});
-
-const mui4TestNavItem = NavItemBlueprint.make({
-  params: {
+    path: '/mui4-tests',
     title: 'MUI v4 Tests',
+    icon: <RiPuzzleLine />,
     routeRef: rootRouteRef,
-    icon: ExtensionIcon,
+    loader: async () =>
+      import('../components/MUI4TestPage').then(m => <m.MUI4TestPage />),
   },
 });
 
-export default createFrontendPlugin({
+/*
+ * @alpha
+ */
+const plugin = createFrontendPlugin({
   pluginId: 'mui4-test',
   info: { packageJson: () => import('../../package.json') },
-  extensions: [mui4TestPage, mui4TestNavItem],
+  extensions: [mui4TestPage],
   routes: { root: rootRouteRef },
 });
+
+export default plugin;

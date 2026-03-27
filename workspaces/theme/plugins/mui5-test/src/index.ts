@@ -22,4 +22,3 @@ ClassNameGenerator.configure(componentName => {
 });
 
 export * from './plugin';
-export { MUI5TestPage as MUI5TestPageComponent } from './components/MUI5TestPage';

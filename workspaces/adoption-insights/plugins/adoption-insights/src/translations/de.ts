@@ -42,6 +42,8 @@ const adoptionInsightsTranslationDe = createTranslationMessages({
     'activeUsers.averagePrefix':
       'Die durchschnittliche maximale Anzahl aktiver Benutzer betrug',
     'activeUsers.averageText': '{{count}} pro {{period}}',
+    'activeUsers.averageSuffix': ' für diesen Zeitraum.',
+    'activeUsers.hour': 'Stunde',
     'activeUsers.day': 'Tag',
     'activeUsers.week': 'Woche',
     'activeUsers.month': 'Monat',
@@ -64,6 +66,8 @@ const adoptionInsightsTranslationDe = createTranslationMessages({
     'searches.averagePrefix':
       'Die durchschnittliche Anzahl der Suchanfragen betrug',
     'searches.averageText': '{{count}} pro {{period}}',
+    'searches.averageSuffix': ' für diesen Zeitraum.',
+    'searches.hour': 'Stunde',
     'searches.day': 'Tag',
     'searches.week': 'Woche',
     'searches.month': 'Monat',
@@ -73,6 +77,8 @@ const adoptionInsightsTranslationDe = createTranslationMessages({
     'users.licensed': 'Lizenziert',
     'users.licensedNotLoggedIn': 'Lizenziert (nicht angemeldet)',
     'users.ofTotal': 'von {{total}}',
+    'users.tooltip':
+      'Legen Sie die Anzahl der lizenzierten Benutzer in der app-config.yaml fest',
     'table.headers.name': 'Name',
     'table.headers.kind': 'Art',
     'table.headers.lastUsed': 'Zuletzt verwendet',
@@ -81,6 +87,8 @@ const adoptionInsightsTranslationDe = createTranslationMessages({
     'table.headers.trend': 'Trend',
     'table.headers.entity': 'Element',
     'table.pagination.topN': 'Wichtigste {{count}}',
+    'filter.all': 'Alle',
+    'filter.selectKind': 'Art auswählen',
     'common.noResults':
       'Für diesen Datumsbereich wurden keine Ergebnisse gefunden.',
     'common.readMore': 'Mehr lesen',

@@ -19,6 +19,8 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 
+import { migrate } from './database/migration';
+import { createNotebooksRouter } from './service/notebooks';
 import { createRouter } from './service/router';
 
 /**
@@ -36,19 +38,51 @@ export const lightspeedPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         userInfo: coreServices.userInfo,
         permissions: coreServices.permissions,
+        database: coreServices.database,
       },
-      async init({ logger, config, http, httpAuth, userInfo, permissions }) {
+      async init({
+        logger,
+        config,
+        http,
+        httpAuth,
+        userInfo,
+        permissions,
+        database,
+      }) {
+        await migrate(database);
+
         http.use(
           await createRouter({
-            config: config,
-            logger: logger,
-            httpAuth: httpAuth,
-            userInfo: userInfo,
+            config,
+            logger,
+            database,
+            httpAuth,
+            userInfo,
             permissions,
           }),
         );
 
-        // allow health endpoint to be unauthenticated accessible
+        const aiNotebooksEnabled =
+          config.getOptionalBoolean('lightspeed.aiNotebooks.enabled') ?? false;
+        if (aiNotebooksEnabled) {
+          http.use(
+            await createNotebooksRouter({
+              config: config,
+              logger: logger,
+              httpAuth: httpAuth,
+              userInfo: userInfo,
+              permissions,
+            }),
+          );
+          logger.info('AI Notebooks enabled');
+
+          http.addAuthPolicy({
+            path: '/ai-notebooks/health',
+            allow: 'unauthenticated',
+          });
+        }
+
+        // Configure authentication policies
         http.addAuthPolicy({
           path: '/health',
           allow: 'unauthenticated',

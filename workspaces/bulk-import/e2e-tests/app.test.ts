@@ -33,7 +33,6 @@ import {
   PreviewSidebarSnapshotsType,
 } from './utils/ariaSnapshots';
 import { runAccessibilityTests, switchToLocale } from './utils/helpers';
-import { skipIfLocales } from './utils/localeSkip';
 import {
   BulkImportMessages,
   getSelectedRepositoriesHeading,
@@ -125,11 +124,6 @@ test.describe('Bulk Import', () => {
   test('should render bulk import page with source control options, search, and repositories table', async ({
     browser,
   }, testInfo: TestInfo) => {
-    skipIfLocales(
-      testInfo,
-      ['de', 'es'],
-      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2792',
-    );
     const article = sharedPage.getByRole('article');
 
     await expect(article).toMatchAriaSnapshot(`
@@ -190,11 +184,6 @@ test.describe('Bulk Import', () => {
   });
 
   test('Verify preview sidebar', async ({ browser }, testInfo: TestInfo) => {
-    skipIfLocales(
-      testInfo,
-      ['de', 'es'],
-      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2792',
-    );
     const backendServiceCheckbox = sharedPage
       .getByRole('rowheader', { name: 'backend-service' })
       .getByRole('checkbox');
@@ -249,11 +238,6 @@ test.describe('Bulk Import', () => {
   });
 
   test('Verify Import flow', async ({}, testInfo) => {
-    skipIfLocales(
-      testInfo,
-      ['de', 'es'],
-      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2792',
-    );
     const backendServiceCheckbox = sharedPage
       .getByRole('rowheader', { name: 'backend-service' })
       .getByRole('checkbox');

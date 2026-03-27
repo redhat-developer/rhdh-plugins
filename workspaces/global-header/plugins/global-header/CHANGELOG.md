@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.20.3
+
+### Patch Changes
+
+- afd7a1e: Update translations for Global Header.
+
 ## 1.20.2
 
 ### Patch Changes

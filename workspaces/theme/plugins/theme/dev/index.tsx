@@ -25,7 +25,6 @@ import ReactDOM from 'react-dom/client';
 import {
   createFrontendModule,
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import {
@@ -57,15 +56,10 @@ const themeDevPageModule = createFrontendPlugin({
       name: 'theme-test',
       params: {
         path: '/',
+        title: 'Test page',
+        icon: <ExtensionIcon />,
         routeRef: rootRouteRef,
         loader: async () => <ThemeTestPage />,
-      },
-    }),
-    NavItemBlueprint.make({
-      params: {
-        routeRef: rootRouteRef,
-        title: 'Test page',
-        icon: ExtensionIcon,
       },
     }),
   ],

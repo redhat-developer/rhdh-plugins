@@ -15,7 +15,11 @@
  */
 
 import { Locator, Page, expect } from '@playwright/test';
-import { ScorecardMessages, getEntityCount } from '../utils/translationUtils';
+import {
+  ScorecardMessages,
+  getEntityCount,
+  getLastUpdatedLabel,
+} from '../utils/translationUtils';
 
 type ThresholdState = 'success' | 'warning' | 'error';
 
@@ -102,5 +106,13 @@ export class HomePage {
   ) {
     const card = this.getCard(metricId);
     await expect(card).toContainText(this.translations.errors.noDataFound);
+  }
+
+  async verifyLastUpdatedTooltip(card: Locator, formattedTimestamp: string) {
+    const label = getLastUpdatedLabel(this.translations, formattedTimestamp);
+    const infoIcon = card.locator('[data-testid="InfoOutlinedIcon"]');
+    await expect(infoIcon).toBeVisible();
+    await infoIcon.hover();
+    await expect(this.page.getByText(label)).toBeVisible();
   }
 }

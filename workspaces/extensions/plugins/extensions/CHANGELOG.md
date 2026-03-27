@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.15.0
+
+### Minor Changes
+
+- 03cb9bb: Migrated plugin to NFS
+
+### Patch Changes
+
+- afd7a1e: Update translations for Extensions.
+- a3fe4bb: Improve button position and make the design independ from the fact if the global-header is installed/used or not.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.15.0
+
 ## 0.14.5
 
 ### Patch Changes

@@ -27,6 +27,33 @@ const lightspeedTranslationFr = createTranslationMessages({
   messages: {
     'page.title': 'Lightspeed',
     'page.subtitle': 'Assistant de développement AI-POWERED',
+    'tabs.ariaLabel': 'Vues Lightspeed',
+    'tabs.chat': 'Chat',
+    'tabs.notebooks': 'Carnets',
+    'tabs.notebooks.empty': 'Le contenu des carnets s’affichera ici.',
+    'notebooks.title': 'Mes carnets',
+    'notebooks.empty.title': 'Aucun carnet créé',
+    'notebooks.empty.description':
+      'Créez un nouveau carnet pour organiser vos sources et générer des informations alimentées par l’IA.',
+    'notebooks.empty.action': 'Créer un nouveau carnet',
+    'notebooks.documents': 'Documents',
+    'notebooks.actions.rename': 'Renommer',
+    'notebooks.actions.delete': 'Supprimer',
+    'notebooks.rename.title': 'Renommer {{name}} ?',
+    'notebooks.rename.description':
+      'Veuillez saisir le nouveau nom de ce carnet et cliquer sur Envoyer pour continuer.',
+    'notebooks.rename.label': 'Nouveau nom',
+    'notebooks.rename.placeholder': 'Nouveau nom',
+    'notebooks.rename.action': 'Envoyer',
+    'notebooks.delete.title': 'Supprimer {{name}} ?',
+    'notebooks.delete.message':
+      'Vous ne verrez plus ce carnet ici. Cela supprimera également l’activité associée comme les requêtes, réponses et retours depuis votre activité Lightspeed.',
+    'notebooks.delete.action': 'Supprimer',
+    'notebooks.delete.toast': 'Carnet supprimé !',
+    'notebooks.updated.today': 'Mis à jour aujourd’hui',
+    'notebooks.updated.yesterday': 'Mis à jour il y a 1 jour',
+    'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',
+    'notebooks.updated.on': 'Mis à jour le',
     'prompts.codeReadability.title': 'Obtenir de l’aide pour Décrypter le Code',
     'prompts.codeReadability.message':
       'Pourriez-vous me suggérer des techniques qui puissent rendre mon code plus lisible et facile d’entretien?',

@@ -19,6 +19,7 @@ export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
 
 export * from './hooks';
 export * from './themes';
+export { LogoFull, LogoIcon } from './components';
 export type {
   BackstageThemePalette,
   RHDHThemePalette,

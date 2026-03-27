@@ -237,6 +237,33 @@ export const lcsHandlers: HttpHandler[] = [
     return HttpResponse.json(mockModelRes);
   }),
 
+  // LCS MCP server list — returns registered servers so the backend can
+  // resolve URLs for validation without requiring url in app-config.
+  http.get(`${LOCAL_LCS_ADDR}/v1/mcp-servers`, () => {
+    return HttpResponse.json({
+      servers: [
+        {
+          name: 'static-mcp',
+          url: 'https://mock-mcp-server:9999',
+          provider_id: 'model-context-protocol',
+          source: 'config',
+        },
+        {
+          name: 'no-token-server',
+          url: 'https://mock-mcp-server:9999',
+          provider_id: 'model-context-protocol',
+          source: 'config',
+        },
+        {
+          name: 'lcs-only-server',
+          url: 'https://mock-mcp-server:9999',
+          provider_id: 'model-context-protocol',
+          source: 'api',
+        },
+      ],
+    });
+  }),
+
   // Catch-all handler for unknown paths
   http.all(`${LOCAL_LCS_ADDR}/*`, ({ request }) => {
     console.log(`Caught request to unknown path: ${request.url}`);
