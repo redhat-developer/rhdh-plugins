@@ -142,7 +142,16 @@ export const applyRecommendation: (options: RouterOptions) => RequestHandler =
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ inputData }),
+        body: JSON.stringify({
+          inputData: {
+            clusterName: inputData.clusterName,
+            resourceType: inputData.resourceType,
+            resourceNamespace: inputData.resourceNamespace,
+            resourceName: inputData.resourceName,
+            containerName: inputData.containerName,
+            containerResources: inputData.containerResources,
+          },
+        }),
       });
 
       const contentType = upstreamResponse.headers.get('content-type') || '';
