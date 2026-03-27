@@ -28,7 +28,7 @@ const MOCK_TOOLS = [
 export const mcpHandlers: HttpHandler[] = [
   http.post(MOCK_MCP_ADDR, async ({ request }) => {
     const auth = request.headers.get('Authorization');
-    if (auth !== `Bearer ${MOCK_MCP_VALID_TOKEN}`) {
+    if (auth !== `${MOCK_MCP_VALID_TOKEN}`) {
       return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

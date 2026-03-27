@@ -57,7 +57,7 @@ interface StaticMcpServer {
 
 /**
  * Build MCP-HEADERS for LCS.  Format matches the LCS "client" auth model:
- *   { "server-name": { "Authorization": "Bearer <token>" } }
+ *   { "server-name": { "Authorization": "<token>" } }
  *
  * For each admin-configured server, includes the user's override token if
  * present in the DB, falling back to the admin default from app-config.
@@ -82,7 +82,7 @@ async function buildMcpHeaders(
     // If neither exists, the server is excluded from MCP-HEADERS.
     const token = setting?.token || server.token;
     if (token) {
-      headers[server.name] = { Authorization: `Bearer ${token}` };
+      headers[server.name] = { Authorization: `${token}` };
     }
   }
 
