@@ -27,6 +27,33 @@ const lightspeedTranslationDe = createTranslationMessages({
   messages: {
     'page.title': 'Lightspeed',
     'page.subtitle': 'KI-gestützter Entwicklungsassistent',
+    'tabs.ariaLabel': 'Lightspeed-Ansichten',
+    'tabs.chat': 'Chat',
+    'tabs.notebooks': 'Notizbücher',
+    'tabs.notebooks.empty': 'Inhalte der Notizbücher kommen hierhin.',
+    'notebooks.title': 'Meine Notizbücher',
+    'notebooks.empty.title': 'Keine erstellten Notizbücher',
+    'notebooks.empty.description':
+      'Erstellen Sie ein neues Notizbuch, um Ihre Quellen zu organisieren und KI-gestützte Erkenntnisse zu gewinnen.',
+    'notebooks.empty.action': 'Neues Notizbuch erstellen',
+    'notebooks.documents': 'Dokumente',
+    'notebooks.actions.rename': 'Umbenennen',
+    'notebooks.actions.delete': 'Löschen',
+    'notebooks.rename.title': '{{name}} umbenennen?',
+    'notebooks.rename.description':
+      'Bitte geben Sie den neuen Namen für dieses Notizbuch ein und klicken Sie auf „Senden“, um fortzufahren.',
+    'notebooks.rename.label': 'Neuer Name',
+    'notebooks.rename.placeholder': 'Neuer Name',
+    'notebooks.rename.action': 'Senden',
+    'notebooks.delete.title': '{{name}} löschen?',
+    'notebooks.delete.message':
+      'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Eingaben, Antworten und Feedback aus Ihrer Lightspeed-Aktivität gelöscht.',
+    'notebooks.delete.action': 'Löschen',
+    'notebooks.delete.toast': 'Notizbuch gelöscht!',
+    'notebooks.updated.today': 'Heute aktualisiert',
+    'notebooks.updated.yesterday': 'Vor 1 Tag aktualisiert',
+    'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',
+    'notebooks.updated.on': 'Aktualisiert am',
     'prompts.codeReadability.title': 'Hilfe zur Code-Lesbarkeit erhalten',
     'prompts.codeReadability.message':
       'Können Sie mir Techniken vorschlagen, mit denen ich meinen Code lesbarer und wartungsfreundlicher gestalten kann?',

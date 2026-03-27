@@ -27,6 +27,33 @@ const lightspeedTranslationEs = createTranslationMessages({
   messages: {
     'page.title': 'Lightspeed',
     'page.subtitle': 'Asistente de desarrollo con tecnología de IA',
+    'tabs.ariaLabel': 'Vistas de Lightspeed',
+    'tabs.chat': 'Chat',
+    'tabs.notebooks': 'Cuadernos',
+    'tabs.notebooks.empty': 'El contenido de los cuadernos va aquí.',
+    'notebooks.title': 'Mis cuadernos',
+    'notebooks.empty.title': 'No hay cuadernos creados',
+    'notebooks.empty.description':
+      'Crea un nuevo cuaderno para organizar tus fuentes y generar información con IA.',
+    'notebooks.empty.action': 'Crear un cuaderno nuevo',
+    'notebooks.documents': 'Documentos',
+    'notebooks.actions.rename': 'Renombrar',
+    'notebooks.actions.delete': 'Eliminar',
+    'notebooks.rename.title': '¿Renombrar {{name}}?',
+    'notebooks.rename.description':
+      'Introduce el nuevo nombre para este cuaderno y haz clic en Enviar para continuar.',
+    'notebooks.rename.label': 'Nuevo nombre',
+    'notebooks.rename.placeholder': 'Nuevo nombre',
+    'notebooks.rename.action': 'Enviar',
+    'notebooks.delete.title': '¿Eliminar {{name}}?',
+    'notebooks.delete.message':
+      'Ya no verás este cuaderno aquí. Esto también eliminará actividad relacionada como solicitudes, respuestas y comentarios de tu actividad de Lightspeed.',
+    'notebooks.delete.action': 'Eliminar',
+    'notebooks.delete.toast': '¡Cuaderno eliminado!',
+    'notebooks.updated.today': 'Actualizado hoy',
+    'notebooks.updated.yesterday': 'Actualizado hace 1 día',
+    'notebooks.updated.days': 'Actualizado hace {{days}} días',
+    'notebooks.updated.on': 'Actualizado el',
     'prompts.codeReadability.title':
       'Obtener ayuda sobre la legibilidad del código',
     'prompts.codeReadability.message':

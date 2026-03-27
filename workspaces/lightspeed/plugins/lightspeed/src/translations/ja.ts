@@ -27,6 +27,33 @@ const lightspeedTranslationJa = createTranslationMessages({
   messages: {
     'page.title': 'Lightspeed',
     'page.subtitle': 'AI 搭載開発アシスタント',
+    'tabs.ariaLabel': 'Lightspeed のビュー',
+    'tabs.chat': 'チャット',
+    'tabs.notebooks': 'ノートブック',
+    'tabs.notebooks.empty': 'ノートブックの内容はここに表示されます。',
+    'notebooks.title': 'マイノートブック',
+    'notebooks.empty.title': '作成されたノートブックはありません',
+    'notebooks.empty.description':
+      '新しいノートブックを作成してソースを整理し、AI による洞察を生成します。',
+    'notebooks.empty.action': '新しいノートブックを作成',
+    'notebooks.documents': 'ドキュメント',
+    'notebooks.actions.rename': '名前の変更',
+    'notebooks.actions.delete': '削除',
+    'notebooks.rename.title': '{{name}} の名前を変更しますか?',
+    'notebooks.rename.description':
+      'このノートブックの新しい名前を入力し、送信をクリックして続行してください。',
+    'notebooks.rename.label': '新しい名前',
+    'notebooks.rename.placeholder': '新しい名前',
+    'notebooks.rename.action': '送信',
+    'notebooks.delete.title': '{{name}} を削除しますか?',
+    'notebooks.delete.message':
+      'このノートブックはここに表示されなくなります。Lightspeed アクティビティに関連するプロンプト、応答、フィードバックも削除されます。',
+    'notebooks.delete.action': '削除',
+    'notebooks.delete.toast': 'ノートブックを削除しました！',
+    'notebooks.updated.today': '今日更新',
+    'notebooks.updated.yesterday': '1日前に更新',
+    'notebooks.updated.days': '{{days}}日前に更新',
+    'notebooks.updated.on': '更新日',
     'prompts.codeReadability.title': 'コードの可読性に関するヘルプを利用する',
     'prompts.codeReadability.message':
       'コードの可読性と保守性を高めるための手法を提案してくれませんか?',
