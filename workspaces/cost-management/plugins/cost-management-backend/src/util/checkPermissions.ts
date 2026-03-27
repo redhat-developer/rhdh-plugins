@@ -87,8 +87,8 @@ export const authorize = async (
  * Uses permission hierarchy where project-level access also grants cluster access.
  *
  * Permission Hierarchy:
- * - cost.{cluster} → grants access to cluster + ALL projects in that cluster
- * - cost.{cluster}.{project} → grants access to cluster + that specific project
+ * - cost/{cluster} → grants access to cluster + ALL projects in that cluster
+ * - cost/{cluster}/{project} → grants access to cluster + that specific project
  *
  * @param request - The HTTP request
  * @param permissionsSvc - The permissions service

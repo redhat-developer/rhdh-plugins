@@ -57,7 +57,7 @@ export const getCostManagementAccess: (
     return response.json(body);
   }
 
-  // RBAC Filtering logic for Cluster & Project using cost.{clusterName} and cost.{clusterName}.{projectName} permissions
+  // RBAC Filtering logic for Cluster & Project using cost/{clusterName} and cost/{clusterName}/{projectName} permissions
   let clusterDataMap: Record<string, string> = {};
   let allProjects: string[] = [];
 
