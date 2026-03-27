@@ -32,7 +32,6 @@ import {
   switchToLocale,
 } from './utils/insightsHelpers';
 import { runAccessibilityTests } from './utils/accessibility.js';
-import { skipIfLocales } from './utils/localeSkip.js';
 import {
   InsightsMessages,
   getTranslations,
@@ -113,11 +112,6 @@ test('Select date range', async () => {
 });
 
 test('Active users panel shows 1 visitor', async ({}, testInfo) => {
-  skipIfLocales(
-    testInfo,
-    ['de', 'es'],
-    'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2791',
-  );
   const panel = getPanel(page, translations.activeUsers.title);
   await expect(panel.locator('.recharts-surface')).toBeVisible();
   const averageTextContent = replaceTemplate(
@@ -217,11 +211,6 @@ test.describe(() => {
   });
 
   test('Visited component shows up in top catalog entities', async ({}, testInfo) => {
-    skipIfLocales(
-      testInfo,
-      ['de', 'es'],
-      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2791',
-    );
     const panel = getPanel(page, translations.catalogEntities.allTitle);
     await expect(panel).toContainText(translations.filter.selectKind);
     await panel.getByLabel(translations.filter.selectKind).click();
@@ -256,11 +245,6 @@ test.describe(() => {
   });
 
   test('New data shows in searches', async ({}, testInfo) => {
-    skipIfLocales(
-      testInfo,
-      ['de', 'es'],
-      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2791',
-    );
     const panel = getPanel(
       page,
       replaceTemplate(translations.searches.totalCount, { count: '1' }),
