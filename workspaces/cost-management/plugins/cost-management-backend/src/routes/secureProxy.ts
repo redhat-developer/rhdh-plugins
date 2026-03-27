@@ -228,6 +228,59 @@ async function resolveCostManagementAccess(
   );
 }
 
+function isPathTraversal(proxyPath: string): boolean {
+  return /(?:^|\/)\.\.(\/|$)/.test(proxyPath) || proxyPath.startsWith('/');
+}
+
+/**
+ * Parses the raw query string, stripping RBAC-controlled keys and
+ * decoding percent-encoded parameters. Returns null if encoding is malformed.
+ */
+function parseClientQueryParams(
+  originalUrl: string,
+  rbacControlledKeys: Set<string>,
+): { key: string; value: string }[] | null {
+  const rawQuery = originalUrl.split('?')[1] || '';
+  const rawParams = rawQuery.split('&').filter(p => p.length > 0);
+  const result: { key: string; value: string }[] = [];
+
+  for (const param of rawParams) {
+    const eqIdx = param.indexOf('=');
+    const rawKey = eqIdx >= 0 ? param.substring(0, eqIdx) : param;
+    const rawVal = eqIdx >= 0 ? param.substring(eqIdx + 1) : '';
+
+    try {
+      const decodedKey = decodeURIComponent(rawKey);
+      const decodedVal = decodeURIComponent(rawVal);
+      if (!rbacControlledKeys.has(decodedKey)) {
+        result.push({ key: decodedKey, value: decodedVal });
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Appends server-side RBAC cluster/project filters to the target URL
+ * using the appropriate key format for ROS vs Cost Management APIs.
+ */
+function injectRbacFilters(targetUrl: URL, access: AccessResult): void {
+  const clusterKey =
+    access.filterStyle === 'ros' ? 'cluster' : 'filter[exact:cluster]';
+  const projectKey =
+    access.filterStyle === 'ros' ? 'project' : 'filter[exact:project]';
+
+  access.clusterFilters.forEach(c =>
+    targetUrl.searchParams.append(clusterKey, c),
+  );
+  access.projectFilters.forEach(p =>
+    targetUrl.searchParams.append(projectKey, p),
+  );
+}
+
 /**
  * Server-side proxy that keeps the SSO token on the backend and enforces
  * RBAC before forwarding requests to the Cost Management API.
@@ -244,7 +297,7 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
       return res.status(400).json({ error: 'Missing proxy path' });
     }
 
-    if (/(?:^|\/)\.\.(\/|$)/.test(proxyPath) || proxyPath.startsWith('/')) {
+    if (isPathTraversal(proxyPath)) {
       return res
         .status(400)
         .json({ error: 'Invalid proxy path: traversal not allowed' });
@@ -273,79 +326,50 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
 
       // Express qs parser converts bracket keys like filter[time_scope_value]
       // into nested objects, losing the flat key format the RHCC API expects.
-      // Decode each param before matching so percent-encoded variants of
-      // RBAC-controlled keys (e.g. filter%5Bexact%3Acluster%5D) are also caught.
       const rbacControlledKeys = new Set(
         access.filterStyle === 'ros'
           ? ['cluster', 'project']
           : ['filter[exact:cluster]', 'filter[exact:project]'],
       );
 
-      const rawQuery = req.originalUrl.split('?')[1] || '';
-      const rawParams = rawQuery.split('&').filter(p => p.length > 0);
-
-      for (const param of rawParams) {
-        const eqIdx = param.indexOf('=');
-        const rawKey = eqIdx >= 0 ? param.substring(0, eqIdx) : param;
-        const rawVal = eqIdx >= 0 ? param.substring(eqIdx + 1) : '';
-        const decodedKey = decodeURIComponent(rawKey);
-
-        if (!rbacControlledKeys.has(decodedKey)) {
-          targetUrl.searchParams.append(decodedKey, decodeURIComponent(rawVal));
-        }
+      const clientParams = parseClientQueryParams(
+        req.originalUrl,
+        rbacControlledKeys,
+      );
+      if (!clientParams) {
+        return res
+          .status(400)
+          .json({ error: 'Malformed percent-encoding in query string' });
       }
 
-      // Inject server-side RBAC filters (empty arrays = full access, no filter needed)
-      if (access.clusterFilters.length > 0) {
-        if (access.filterStyle === 'ros') {
-          access.clusterFilters.forEach(c =>
-            targetUrl.searchParams.append('cluster', c),
-          );
-        } else {
-          access.clusterFilters.forEach(c =>
-            targetUrl.searchParams.append('filter[exact:cluster]', c),
-          );
-        }
+      for (const { key, value } of clientParams) {
+        targetUrl.searchParams.append(key, value);
       }
-      if (access.projectFilters.length > 0) {
-        if (access.filterStyle === 'ros') {
-          access.projectFilters.forEach(p =>
-            targetUrl.searchParams.append('project', p),
-          );
-        } else {
-          access.projectFilters.forEach(p =>
-            targetUrl.searchParams.append('filter[exact:project]', p),
-          );
-        }
-      }
+
+      injectRbacFilters(targetUrl, access);
 
       logger.info(
         `Proxying ${req.method} to ${targetUrl.pathname}${targetUrl.search}`,
       );
 
-      const acceptHeader = req.headers.accept || 'application/json';
-
       const upstreamResponse = await fetch(targetUrl.toString(), {
         headers: {
           'Content-Type': 'application/json',
-          Accept: acceptHeader,
+          Accept: req.headers.accept || 'application/json',
           Authorization: `Bearer ${token}`,
         },
         method: 'GET',
       });
 
       const contentType = upstreamResponse.headers.get('content-type') || '';
-
       res.status(upstreamResponse.status);
 
       if (contentType.includes('application/json')) {
-        const data = await upstreamResponse.json();
-        return res.json(data);
+        return res.json(await upstreamResponse.json());
       }
 
-      const text = await upstreamResponse.text();
       res.set('Content-Type', contentType);
-      return res.send(text);
+      return res.send(await upstreamResponse.text());
     } catch (error) {
       logger.error('Secure proxy error', error);
       return res.status(500).json({ error: 'Internal proxy error' });
