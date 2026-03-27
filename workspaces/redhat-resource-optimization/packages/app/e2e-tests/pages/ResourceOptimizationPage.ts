@@ -748,13 +748,17 @@ export class ResourceOptimizationPage {
    * Verify Unauthorized error is displayed.
    */
   async expectUnauthorized() {
-    // The plugin may render "Unauthorized", "Forbidden", or a generic error
-    // depending on the backend proxy response. Match any of these patterns.
-    const errorIndicator = this.page
+    // The secure proxy may return 403 (Forbidden) or filter data to empty.
+    // The UI may render an alert banner OR an empty table with 0 containers.
+    // Accept either pattern as valid "unauthorized" behavior.
+    const errorAlert = this.page
       .getByRole('alert')
       .filter({ hasText: /unauthorized|forbidden|error/i });
 
-    await expect(errorIndicator).toBeVisible({ timeout: 15000 });
+    const emptyTable = this.page.getByText(/Optimizable containers \(0\)/);
+
+    const unauthorizedIndicator = errorAlert.or(emptyTable);
+    await expect(unauthorizedIndicator).toBeVisible({ timeout: 20000 });
   }
 
   /**

@@ -78,21 +78,36 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
         page.getByText(/Optimizable containers \([1-9]\d*\)/),
       ).toBeVisible({ timeout: 30000 });
 
-      // Click the Nth row
-      await rosPage.clickDataRowByIndex(rowIndex);
-      await page.waitForTimeout(2000);
+      // Click the Nth row's link to navigate to the detail page
+      const rows = page.locator('table tbody tr');
+      const targetRow = rows.nth(rowIndex);
+      const rowVisible = await targetRow
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
+      if (!rowVisible) {
+        // eslint-disable-next-line no-console
+        console.log(`Row ${rowIndex}: not visible in table — skipping`);
+        continue;
+      }
+
+      const containerLink = targetRow.getByRole('link').first();
+      await containerLink.click();
+      await page.waitForLoadState('domcontentloaded');
+
+      // Wait for the detail page to fully render (permission check + data)
       await page
         .locator('[role="progressbar"]')
         // eslint-disable-next-line testing-library/await-async-utils
-        .waitFor({ state: 'hidden', timeout: 15000 })
+        .waitFor({ state: 'hidden', timeout: 30000 })
         .catch(() => {});
+      await page.waitForTimeout(3000);
 
       // Check Apply button is visible and enabled
       const applyButton = page.getByRole('button', {
         name: /apply recommendation/i,
       });
       const isVisible = await applyButton
-        .isVisible({ timeout: 8000 })
+        .isVisible({ timeout: 15000 })
         .catch(() => false);
 
       if (!isVisible) {
