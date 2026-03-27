@@ -65,7 +65,7 @@ interface CacheEntry<T> {
  * when multiple resource requests arrive in parallel for the same entity.
  */
 class CatalogCache {
-  private cache = new Map<string, CacheEntry<unknown>>();
+  private readonly cache = new Map<string, CacheEntry<unknown>>();
 
   get<T>(key: string): T | undefined {
     const entry = this.cache.get(key);
@@ -176,6 +176,77 @@ export class KonfluxService {
   }
 
   /**
+   * Fetch and cache the entity from the catalog
+   */
+  private async getCachedEntity(
+    entityRef: string,
+    credentials: BackstageCredentials,
+  ): Promise<Entity | undefined> {
+    const cacheKey = `entity:${entityRef}`;
+    let entity = this.catalogCache.get<Entity>(cacheKey);
+    if (!entity) {
+      entity =
+        (await this.catalog!.getEntityByRef(entityRef, {
+          credentials,
+        })) ?? undefined;
+      if (entity) {
+        this.catalogCache.set(cacheKey, entity);
+      }
+    }
+    return entity;
+  }
+
+  /**
+   * Fetch and cache the Konflux configuration for an entity
+   */
+  private async getCachedKonfluxConfig(
+    entityRef: string,
+    entity: Entity,
+    credentials: BackstageCredentials,
+  ): Promise<KonfluxConfig | undefined> {
+    const cacheKey = `config:${entityRef}`;
+    let konfluxConfig = this.catalogCache.get<KonfluxConfig>(cacheKey);
+    if (!konfluxConfig) {
+      konfluxConfig = await getKonfluxConfig(
+        this.config,
+        entity,
+        credentials,
+        this.catalog!,
+        this.konfluxLogger,
+      );
+      if (konfluxConfig) {
+        this.catalogCache.set(cacheKey, konfluxConfig);
+      }
+    }
+    return konfluxConfig;
+  }
+
+  /**
+   * Fetch and cache cluster-namespace combinations for an entity
+   */
+  private async getCachedCombinations(
+    entityRef: string,
+    entity: Entity,
+    credentials: BackstageCredentials,
+    konfluxConfig: KonfluxConfig,
+  ): Promise<SubcomponentClusterConfig[]> {
+    const cacheKey = `combinations:${entityRef}`;
+    let combinations =
+      this.catalogCache.get<SubcomponentClusterConfig[]>(cacheKey);
+    if (!combinations) {
+      combinations = await determineClusterNamespaceCombinations(
+        entity,
+        credentials,
+        konfluxConfig,
+        this.konfluxLogger,
+        this.catalog!,
+      );
+      this.catalogCache.set(cacheKey, combinations);
+    }
+    return combinations;
+  }
+
+  /**
    * Aggregate resources from multiple clusters based on entity configuration
    */
   async aggregateResources(
@@ -201,18 +272,7 @@ export class KonfluxService {
       limitPerCluster: PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
     };
 
-    // fetch the main entity (cached to avoid duplicate lookups across parallel requests)
-    const entityCacheKey = `entity:${entityRef}`;
-    let entity = this.catalogCache.get<Entity>(entityCacheKey);
-    if (!entity) {
-      entity =
-        (await this.catalog.getEntityByRef(entityRef, {
-          credentials,
-        })) ?? undefined;
-      if (entity) {
-        this.catalogCache.set(entityCacheKey, entity);
-      }
-    }
+    const entity = await this.getCachedEntity(entityRef, credentials);
     if (!entity) {
       this.konfluxLogger.error('Entity not found', undefined, {
         entityRef,
@@ -221,22 +281,11 @@ export class KonfluxService {
       throw new Error(`Entity not found: ${entityRef}`);
     }
 
-    // get Konflux config (cached)
-    const configCacheKey = `config:${entityRef}`;
-    let konfluxConfig = this.catalogCache.get<KonfluxConfig>(configCacheKey);
-    if (!konfluxConfig) {
-      konfluxConfig = await getKonfluxConfig(
-        this.config,
-        entity,
-        credentials,
-        this.catalog,
-        this.konfluxLogger,
-      );
-      if (konfluxConfig) {
-        this.catalogCache.set(configCacheKey, konfluxConfig);
-      }
-    }
-
+    const konfluxConfig = await this.getCachedKonfluxConfig(
+      entityRef,
+      entity,
+      credentials,
+    );
     if (!konfluxConfig) {
       this.konfluxLogger.warn('No Konflux configuration found', {
         entityRef,
@@ -245,21 +294,12 @@ export class KonfluxService {
       return { data: [] };
     }
 
-    // determine cluster-namespace combinations (cached)
-    const comboCacheKey = `combinations:${entityRef}`;
-    let combinations =
-      this.catalogCache.get<SubcomponentClusterConfig[]>(comboCacheKey);
-    if (!combinations) {
-      combinations = await determineClusterNamespaceCombinations(
-        entity,
-        credentials,
-        konfluxConfig,
-        this.konfluxLogger,
-        this.catalog,
-      );
-      this.catalogCache.set(comboCacheKey, combinations);
-    }
-
+    let combinations = await this.getCachedCombinations(
+      entityRef,
+      entity,
+      credentials,
+      konfluxConfig,
+    );
     if (combinations.length === 0) {
       this.konfluxLogger.warn('No cluster-namespace combinations found', {
         entityRef,
