@@ -181,8 +181,9 @@ export class KonfluxService {
   private async getCachedEntity(
     entityRef: string,
     credentials: BackstageCredentials,
+    userId: string,
   ): Promise<Entity | undefined> {
-    const cacheKey = `entity:${entityRef}`;
+    const cacheKey = `entity:${entityRef}:${userId}`;
     let entity = this.catalogCache.get<Entity>(cacheKey);
     if (!entity) {
       entity =
@@ -203,8 +204,9 @@ export class KonfluxService {
     entityRef: string,
     entity: Entity,
     credentials: BackstageCredentials,
+    userId: string,
   ): Promise<KonfluxConfig | undefined> {
-    const cacheKey = `config:${entityRef}`;
+    const cacheKey = `config:${entityRef}:${userId}`;
     let konfluxConfig = this.catalogCache.get<KonfluxConfig>(cacheKey);
     if (!konfluxConfig) {
       konfluxConfig = await getKonfluxConfig(
@@ -229,8 +231,9 @@ export class KonfluxService {
     entity: Entity,
     credentials: BackstageCredentials,
     konfluxConfig: KonfluxConfig,
+    userId: string,
   ): Promise<SubcomponentClusterConfig[]> {
-    const cacheKey = `combinations:${entityRef}`;
+    const cacheKey = `combinations:${entityRef}:${userId}`;
     let combinations =
       this.catalogCache.get<SubcomponentClusterConfig[]>(cacheKey);
     if (!combinations) {
@@ -272,7 +275,9 @@ export class KonfluxService {
       limitPerCluster: PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
     };
 
-    const entity = await this.getCachedEntity(entityRef, credentials);
+    const userId = userEntityRef || userEmail || 'unknown';
+
+    const entity = await this.getCachedEntity(entityRef, credentials, userId);
     if (!entity) {
       this.konfluxLogger.error('Entity not found', undefined, {
         entityRef,
@@ -285,6 +290,7 @@ export class KonfluxService {
       entityRef,
       entity,
       credentials,
+      userId,
     );
     if (!konfluxConfig) {
       this.konfluxLogger.warn('No Konflux configuration found', {
@@ -299,6 +305,7 @@ export class KonfluxService {
       entity,
       credentials,
       konfluxConfig,
+      userId,
     );
     if (combinations.length === 0) {
       this.konfluxLogger.warn('No cluster-namespace combinations found', {
@@ -319,8 +326,6 @@ export class KonfluxService {
     // decode continuation token to get pagination state for each source
     let paginationState: PaginationState = {};
     const isLoadMoreRequest = !!validatedFilters?.continuationToken;
-
-    const userId = userEntityRef || userEmail || 'unknown';
 
     if (validatedFilters?.continuationToken) {
       try {
