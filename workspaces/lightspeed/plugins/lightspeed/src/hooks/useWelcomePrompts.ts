@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+
+import { useMemo } from 'react';
 
 import { ConfigApi, configApiRef, useApi } from '@backstage/core-plugin-api';
 
@@ -28,7 +29,7 @@ export const useWelcomePrompts = (): SamplePrompts => {
   const { t } = useTranslation();
   const { data: questionValidationEnabled } = useTopicRestrictionStatus();
 
-  return React.useMemo(() => {
+  return useMemo(() => {
     // Transform translation keys to actual prompts
     const translatePrompts = (prompts: SamplePrompts): SamplePrompts => {
       return prompts.map((prompt: SamplePrompt) => {
