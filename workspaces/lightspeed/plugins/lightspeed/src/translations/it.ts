@@ -103,6 +103,10 @@ const lightspeedTranslationIt = createTranslationMessages({
     'permission.required.title': 'Autorizzazioni mancanti',
     'permission.required.description':
       "Per visualizzare il plugin Lightspeed, contattare l'amministratore per ottenere le autorizzazioni <b>lightspeed.chat.read</b> e <b>lightspeed.chat.create</b>.",
+    'permission.notebooks.title': 'Autorizzazione mancante',
+    'permission.notebooks.description':
+      "Per visualizzare i quaderni Lightspeed, l'amministratore deve concedere l'autorizzazione.",
+    'permission.notebooks.goBack': 'Torna indietro',
     'disclaimer.withValidation':
       'Questa funzione utilizza una tecnologia AI. Non includere nei dati immessi informazioni personali o altre informazioni sensibili. Le interazioni possono essere utilizzate per migliorare i prodotti o i servizi Red Hat.',
     'disclaimer.withoutValidation':

@@ -80,6 +80,7 @@ import {
   useIsMobile,
   useLastOpenedConversation,
   useLightspeedDeletePermission,
+  useLightspeedNotebooksPermission,
   useNotebookSessions,
   usePinnedChatsSettings,
   useSortSettings,
@@ -102,6 +103,7 @@ import { DeleteNotebookModal } from './DeleteNotebookModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
+import { NotebookPermissionRequired } from './NotebookPermissionRequired';
 import { NotebooksTab } from './NotebooksTab';
 import { RenameConversationModal } from './RenameConversationModal';
 import { RenameNotebookModal } from './RenameNotebookModal';
@@ -463,6 +465,8 @@ export const LightspeedChat = ({
 
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
   const { allowed: hasUpdateAccess } = useLightspeedUpdatePermission();
+  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
+    useLightspeedNotebooksPermission();
   const samplePrompts = useWelcomePrompts();
   useEffect(() => {
     if (!user || !isReady) return;
@@ -1218,19 +1222,26 @@ export const LightspeedChat = ({
             }
           />
         )}
-        {showNotebooksPanel && (
-          <NotebooksTab
-            notebooks={notebooks}
-            hasNotebooks={hasNotebooks}
-            classes={classes}
-            openNotebookMenuId={openNotebookMenuId}
-            setOpenNotebookMenuId={setOpenNotebookMenuId}
-            onRename={setRenameNotebookId}
-            onDelete={setDeleteNotebookId}
-            t={t}
-            getDocumentsCount={getDocumentsCount}
-          />
-        )}
+        {showNotebooksPanel &&
+          !notebooksPermissionLoading &&
+          hasNotebooksAccess && (
+            <NotebooksTab
+              notebooks={notebooks}
+              hasNotebooks={hasNotebooks}
+              classes={classes}
+              openNotebookMenuId={openNotebookMenuId}
+              setOpenNotebookMenuId={setOpenNotebookMenuId}
+              onRename={setRenameNotebookId}
+              onDelete={setDeleteNotebookId}
+              t={t}
+              getDocumentsCount={getDocumentsCount}
+            />
+          )}
+        {showNotebooksPanel &&
+          !notebooksPermissionLoading &&
+          !hasNotebooksAccess && (
+            <NotebookPermissionRequired onGoBack={() => setActiveTab(0)} />
+          )}
       </Chatbot>
       <Attachment />
     </>

@@ -57,6 +57,7 @@ import {
   LightspeedPage,
   LightspeedDrawerProvider,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+import { RbacPage } from '@backstage-community/plugin-rbac';
 
 const githubProvider = {
   id: 'github-auth-provider',
@@ -129,6 +130,7 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/lightspeed" element={<LightspeedPage />} />
+    <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );
 

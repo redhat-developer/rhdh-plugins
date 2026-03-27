@@ -102,6 +102,10 @@ const lightspeedTranslationDe = createTranslationMessages({
     'permission.required.title': 'Fehlende Berechtigungen',
     'permission.required.description':
       'Um das Lightspeed-Plugin anzuzeigen, wenden Sie sich an Ihren Administrator, um die Berechtigungen <b>lightspeed.chat.read</b> und <b>lightspeed.chat.create</b> zu erhalten.',
+    'permission.notebooks.title': 'Fehlende Berechtigung',
+    'permission.notebooks.description':
+      'Um die Lightspeed-Notizbücher anzuzeigen, muss Ihnen Ihr Administrator die Berechtigung erteilen.',
+    'permission.notebooks.goBack': 'Zurück',
     'disclaimer.withValidation':
       'Diese Funktion nutzt KI-Technologie. Geben Sie bei Ihrer Eingabe keine persönlichen oder sonstigen sensiblen Informationen an. Interaktionen können dazu genutzt werden, die Produkte oder Dienstleistungen von Red Hat zu verbessern.',
     'disclaimer.withoutValidation':

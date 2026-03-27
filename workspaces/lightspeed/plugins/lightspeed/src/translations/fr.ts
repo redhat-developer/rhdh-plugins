@@ -99,6 +99,10 @@ const lightspeedTranslationFr = createTranslationMessages({
     'conversation.rename.confirm.action': 'Renommer',
     'conversation.rename.placeholder': 'Nom de la conversation',
     'permission.required.title': 'Autorisations manquantes',
+    'permission.notebooks.title': 'Autorisation manquante',
+    'permission.notebooks.description':
+      "Pour afficher les carnets Lightspeed, votre administrateur doit vous accorder l'autorisation.",
+    'permission.notebooks.goBack': 'Retour',
     'permission.required.description':
       'Pour afficher le plugin lightspeed, veuillez contacter votre administrateur pour qu’il vous donne les permissions<b>lightspeed.chat.read</b> et <b>lightspeed.chat.create</b> .',
     'disclaimer.withValidation':
