@@ -28,6 +28,7 @@ import {
   mockClusters,
   mockOptimizations,
 } from './fixtures/optimizationResponses';
+import { detailPageUrlPattern } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 
@@ -264,7 +265,7 @@ test.describe('Resource Optimization Plugin', () => {
       await page.waitForLoadState('domcontentloaded');
 
       // Verify we navigated to the details page
-      await expect(page).toHaveURL(/\/redhat-resource-optimization\/[a-f0-9]/);
+      await expect(page).toHaveURL(detailPageUrlPattern());
 
       // Wait for details page to load
       await page.waitForTimeout(1000);

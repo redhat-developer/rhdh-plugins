@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-export const optimizationBaseUrl = '**/api/redhat-resource-optimization';
+import { API_BASE } from '../utils/routes';
+
+export const optimizationBaseUrl = `**${API_BASE}`;
 
 export const mockClusters = [
   {

@@ -17,6 +17,12 @@
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
 import { performLogin } from './fixtures/auth';
+import {
+  listPageUrlPattern,
+  openshiftPageUrlPattern,
+  PLUGIN_ROUTE_BASE,
+  OPENSHIFT_ROUTE,
+} from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 
@@ -74,7 +80,7 @@ test.describe('Resource Optimization - Navigation @live @ro', () => {
       await rosPage.navigateFromSidebar();
 
       await expect(page.getByText('Resource Optimization')).toBeVisible();
-      await expect(page).toHaveURL(/\/redhat-resource-optimization/);
+      await expect(page).toHaveURL(listPageUrlPattern());
     });
 
     test('should navigate to OpenShift page via sidebar', async ({ page }) => {
@@ -91,7 +97,7 @@ test.describe('Resource Optimization - Navigation @live @ro', () => {
       await openShiftLink.click();
 
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(/\/redhat-resource-optimization\/ocp/);
+      await expect(page).toHaveURL(openshiftPageUrlPattern());
     });
   });
 
@@ -106,7 +112,7 @@ test.describe('Resource Optimization - Navigation @live @ro', () => {
       await rosPage.navigateToOptimization();
 
       await expect(page.getByText('Resource Optimization')).toBeVisible();
-      await expect(page).toHaveURL(/\/redhat-resource-optimization/);
+      await expect(page).toHaveURL(listPageUrlPattern());
     });
 
     test('should navigate directly to OpenShift page via URL', async ({
@@ -115,7 +121,7 @@ test.describe('Resource Optimization - Navigation @live @ro', () => {
       await performLogin(page);
       await rosPage.navigateToOpenShiftPage();
 
-      await expect(page).toHaveURL(/\/redhat-resource-optimization\/ocp/);
+      await expect(page).toHaveURL(openshiftPageUrlPattern());
     });
   });
 });

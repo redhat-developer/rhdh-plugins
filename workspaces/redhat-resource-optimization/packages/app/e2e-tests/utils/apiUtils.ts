@@ -15,13 +15,14 @@
  */
 
 import { Page, expect } from '@playwright/test';
+import { API_BASE } from './routes';
 
 /**
  * Wait for a specific API call to succeed
  */
 export async function waitUntilApiCallSucceeds(
   page: Page,
-  urlPart: string = '/api/redhat-resource-optimization',
+  urlPart: string = API_BASE,
 ): Promise<void> {
   const response = await page.waitForResponse(
     async res => {
@@ -39,30 +40,21 @@ export async function waitUntilApiCallSucceeds(
  * Wait for optimization API call to complete
  */
 export async function waitForOptimizationApiCall(page: Page): Promise<void> {
-  await waitUntilApiCallSucceeds(
-    page,
-    '/api/redhat-resource-optimization/optimizations',
-  );
+  await waitUntilApiCallSucceeds(page, `${API_BASE}/optimizations`);
 }
 
 /**
  * Wait for clusters API call to complete
  */
 export async function waitForClustersApiCall(page: Page): Promise<void> {
-  await waitUntilApiCallSucceeds(
-    page,
-    '/api/redhat-resource-optimization/clusters',
-  );
+  await waitUntilApiCallSucceeds(page, `${API_BASE}/clusters`);
 }
 
 /**
  * Wait for workflow execution API call to complete
  */
 export async function waitForWorkflowApiCall(page: Page): Promise<void> {
-  await waitUntilApiCallSucceeds(
-    page,
-    '/api/redhat-resource-optimization/workflow',
-  );
+  await waitUntilApiCallSucceeds(page, `${API_BASE}/workflow`);
 }
 
 /**

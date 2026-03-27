@@ -16,6 +16,7 @@
 
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
+import { PLUGIN_ROUTE_BASE } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 
@@ -73,7 +74,7 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
 
     for (const cluster of healthyClusters) {
       // Navigate to the list page
-      await page.goto('/redhat-resource-optimization', {
+      await page.goto(PLUGIN_ROUTE_BASE, {
         waitUntil: 'domcontentloaded',
       });
       await page

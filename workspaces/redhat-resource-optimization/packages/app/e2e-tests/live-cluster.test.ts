@@ -17,6 +17,7 @@
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
 import { performGuestLogin } from './fixtures/auth';
+import { PLUGIN_ROUTE_BASE } from './utils/routes';
 
 /**
  * Live cluster tests for the Resource Optimization Plugin.
@@ -368,7 +369,7 @@ test.describe('Resource Optimization - Performance @live @ro @perf', () => {
 
     // Now measure just the page navigation time
     const startTime = Date.now();
-    await page.goto('/redhat-resource-optimization', {
+    await page.goto(PLUGIN_ROUTE_BASE, {
       waitUntil: 'domcontentloaded',
     });
     await optimizationPage.waitForPageLoad();

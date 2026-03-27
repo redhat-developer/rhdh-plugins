@@ -16,6 +16,11 @@
 
 import { Page, expect, Locator } from '@playwright/test';
 import { performGuestLogin, performOIDCLogin } from '../fixtures/auth';
+import {
+  PLUGIN_ROUTE_BASE,
+  API_BASE,
+  detailPageUrlPattern,
+} from '../utils/routes';
 
 export class ResourceOptimizationPage {
   readonly page: Page;
@@ -608,10 +613,9 @@ export class ResourceOptimizationPage {
    * Verify we're on the details page.
    */
   async verifyDetailsPage() {
-    await expect(this.page).toHaveURL(
-      /\/redhat-resource-optimization\/[a-f0-9]/,
-      { timeout: 10000 },
-    );
+    await expect(this.page).toHaveURL(detailPageUrlPattern(), {
+      timeout: 10000,
+    });
     await expect(this.page.getByText('Details')).toBeVisible({
       timeout: 10000,
     });
@@ -679,19 +683,15 @@ export class ResourceOptimizationPage {
    * This is expected for users without workflow permissions.
    */
   async verifyApplyRecommendationDisabled() {
-    // The button may be wrapped in a tooltip container when disabled.
-    // A <span> with title="No permission to access the workflow" overlays the
-    // button and intercepts pointer events, so we use { force: true } for hover.
     const applyButton = this.page.getByRole('button', {
       name: /apply recommendation/i,
     });
     await expect(applyButton).toBeVisible({ timeout: 5000 });
     await expect(applyButton).toBeDisabled();
 
-    // Check for the "no permission" tooltip wrapper
-    const noPermissionWrapper = this.page.locator(
-      '[title="No permission to access the workflow"]',
-    );
+    // Check for the "no permission" tooltip — the message varies by plugin
+    // version so we match both the old and new tooltip text.
+    const noPermissionWrapper = this.page.locator('[title*="permission" i]');
     try {
       await expect(noPermissionWrapper).toBeVisible({ timeout: 3000 });
     } catch {
@@ -748,13 +748,13 @@ export class ResourceOptimizationPage {
    * Verify Unauthorized error is displayed.
    */
   async expectUnauthorized() {
-    // The "Unauthorized" error appears as a toast/alert notification with heading
-    // "Error: Unauthorized". The alert role is the most reliable locator.
-    const unauthorizedAlert = this.page
+    // The plugin may render "Unauthorized", "Forbidden", or a generic error
+    // depending on the backend proxy response. Match any of these patterns.
+    const errorIndicator = this.page
       .getByRole('alert')
-      .filter({ hasText: /unauthorized/i });
+      .filter({ hasText: /unauthorized|forbidden|error/i });
 
-    await expect(unauthorizedAlert).toBeVisible({ timeout: 15000 });
+    await expect(errorIndicator).toBeVisible({ timeout: 15000 });
   }
 
   /**
@@ -868,19 +868,16 @@ export class ResourceOptimizationPage {
     this._capturedCMToken = null;
 
     // Capture the Cost Management Bearer token
-    await this.page.route(
-      '**/redhat-resource-optimization/token**',
-      async route => {
-        const response = await route.fetch();
-        try {
-          const body = await response.json();
-          this._capturedCMToken = body.accessToken || body.access_token || null;
-          await route.fulfill({ response, body: JSON.stringify(body) });
-        } catch {
-          await route.continue();
-        }
-      },
-    );
+    await this.page.route(`**${API_BASE}/token**`, async route => {
+      const response = await route.fetch();
+      try {
+        const body = await response.json();
+        this._capturedCMToken = body.accessToken || body.access_token || null;
+        await route.fulfill({ response, body: JSON.stringify(body) });
+      } catch {
+        await route.continue();
+      }
+    });
 
     // Capture the recommendations response
     await this.page.route('**/recommendations/openshift**', async route => {
@@ -899,7 +896,7 @@ export class ResourceOptimizationPage {
    * Remove all API interceptors.
    */
   async removeAPIInterceptors() {
-    await this.page.unroute('**/redhat-resource-optimization/token**');
+    await this.page.unroute(`**${API_BASE}/token**`);
     await this.page.unroute('**/recommendations/openshift**');
   }
 

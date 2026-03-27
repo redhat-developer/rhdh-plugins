@@ -17,6 +17,7 @@
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
 import { performLogin } from './fixtures/auth';
+import { PLUGIN_ROUTE_BASE } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 
@@ -47,7 +48,7 @@ test.describe('Resource Optimization - Dark Theme @live @ro', () => {
     await rosPage.switchTheme('Dark');
 
     // Navigate to the Resource Optimization page
-    await page.goto('/redhat-resource-optimization', {
+    await page.goto(PLUGIN_ROUTE_BASE, {
       waitUntil: 'domcontentloaded',
     });
     await rosPage.waitForPageLoad();
@@ -72,7 +73,7 @@ test.describe('Resource Optimization - Dark Theme @live @ro', () => {
     await performLogin(page);
     await rosPage.switchTheme('Dark');
 
-    await page.goto('/redhat-resource-optimization', {
+    await page.goto(PLUGIN_ROUTE_BASE, {
       waitUntil: 'domcontentloaded',
     });
     await rosPage.waitForPageLoad();

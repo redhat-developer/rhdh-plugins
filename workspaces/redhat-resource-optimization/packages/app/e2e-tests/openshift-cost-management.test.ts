@@ -17,6 +17,7 @@
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
 import { performLogin } from './fixtures/auth';
+import { openshiftPageUrlPattern } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 
@@ -39,7 +40,7 @@ test.describe('Resource Optimization - OpenShift Cost Management @live @ro', () 
 
   test.describe('Cost Overview (FLPATH-3130)', () => {
     test('should load the OpenShift cost management page', async ({ page }) => {
-      await expect(page).toHaveURL(/\/redhat-resource-optimization\/ocp/);
+      await expect(page).toHaveURL(openshiftPageUrlPattern());
     });
 
     test('should display the OpenShift cost overview', async ({ page }) => {
