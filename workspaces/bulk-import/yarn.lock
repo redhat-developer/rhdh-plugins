@@ -2762,7 +2762,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/integration@npm:^1.19.2, @backstage/integration@npm:^1.20.0":
+"@backstage/integration-react@npm:^1.2.16":
+  version: 1.2.16
+  resolution: "@backstage/integration-react@npm:1.2.16"
+  dependencies:
+    "@backstage/config": "npm:^1.3.6"
+    "@backstage/core-plugin-api": "npm:^1.12.4"
+    "@backstage/integration": "npm:^2.0.0"
+    "@material-ui/core": "npm:^4.12.2"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.30.2
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/70ff6dca97e1ff797e322771061ad642cd8f138f63fd44b743fd2eab1d975823e55a6bd95a04a4fe05b9974301164ceaae5ff79e91e90520e77710405ddf43ba
+  languageName: node
+  linkType: hard
+
+"@backstage/integration@npm:^1.19.2, @backstage/integration@npm:^1.20.0, @backstage/integration@npm:^1.20.1":
   version: 1.20.1
   resolution: "@backstage/integration@npm:1.20.1"
   dependencies:
@@ -12410,6 +12430,7 @@ __metadata:
     "@backstage/dev-utils": "npm:^1.1.19"
     "@backstage/frontend-defaults": "npm:^0.3.5"
     "@backstage/frontend-plugin-api": "npm:^0.13.4"
+    "@backstage/integration-react": "npm:^1.2.16"
     "@backstage/plugin-app-react": "npm:^0.1.0"
     "@backstage/plugin-catalog-import": "npm:^0.13.9"
     "@backstage/plugin-catalog-react": "npm:^1.21.6"

@@ -9,7 +9,7 @@ All URIs are relative to *http://localhost:7007/api/bulk-import*
 
 <a name="findAllRepositories"></a>
 # **findAllRepositories**
-> RepositoryList findAllRepositories(checkImportStatus, pagePerIntegration, sizePerIntegration, search, approvalTool)
+> RepositoryList findAllRepositories(checkImportStatus, pagePerIntegration, sizePerIntegration, search, approvalTool, x-scm-tokens)
 
 Fetch Organization Repositories accessible by Backstage Github Integrations
 
@@ -22,6 +22,7 @@ Fetch Organization Repositories accessible by Backstage Github Integrations
 | **sizePerIntegration** | **Integer**| the number of items per Integration to return per page | [optional] [default to 20] |
 | **search** | **String**| returns only the items that match the search string | [optional] [default to null] |
 | **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
+| **x-scm-tokens** | [**Map**](../Models/String.md)| Optional JSON-encoded map of SCM host URL to user authentication token. Used to fetch repositories on behalf of the user for each configured SCM host.  | [optional] [default to null] |
 
 ### Return type
 

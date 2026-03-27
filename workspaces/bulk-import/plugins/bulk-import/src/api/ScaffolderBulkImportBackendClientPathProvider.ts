@@ -15,9 +15,9 @@
  */
 
 import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
-import { IBulkImportRESTPathProvider } from './BulkImportBackendClient';
+import { BulkImportRESTPathProviderBase } from './BulkImportBackendClient';
 
-export class ScaffolderBulkImportBackendClientPathProvider implements IBulkImportRESTPathProvider {
+export class ScaffolderBulkImportBackendClientPathProvider extends BulkImportRESTPathProviderBase {
   getCreateImportJobsPath(dryRun?: boolean): string | undefined {
     return dryRun === true ? undefined : `/api/bulk-import/task-imports`;
   }
@@ -25,17 +25,21 @@ export class ScaffolderBulkImportBackendClientPathProvider implements IBulkImpor
   getDeleteImportActionPath(
     repo: string,
     _defaultBranch: string,
-    approvalTool: string,
+    approvalTool?: string,
   ): string {
-    return `/api/bulk-import/task-import/by-repo?repo=${repo}&approvalTool=${approvalTool}`;
+    const params = new URLSearchParams({ repo });
+    if (approvalTool) params.set('approvalTool', approvalTool);
+    return `/api/bulk-import/task-import/by-repo?${params.toString()}`;
   }
 
   getGetImportActionPath(
     repo: string,
     _defaultBranch: string,
-    approvalTool: string,
+    approvalTool?: string,
   ): string {
-    return `/api/bulk-import/task-import/by-repo?repo=${repo}&approvalTool=${approvalTool}`;
+    const params = new URLSearchParams({ repo });
+    if (approvalTool) params.set('approvalTool', approvalTool);
+    return `/api/bulk-import/task-import/by-repo?${params.toString()}`;
   }
 
   getGetImportJobsPath(
@@ -45,6 +49,13 @@ export class ScaffolderBulkImportBackendClientPathProvider implements IBulkImpor
     sortColumn: AddedRepositoryColumnNameEnum,
     sortOrder: SortingOrderEnum,
   ): string {
-    return `/api/bulk-import/task-imports?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}`;
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      search: searchString,
+      sortColumn,
+      sortOrder,
+    });
+    return `/api/bulk-import/task-imports?${params.toString()}`;
   }
 }

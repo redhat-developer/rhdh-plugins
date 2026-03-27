@@ -15,9 +15,9 @@
  */
 
 import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
-import { IBulkImportRESTPathProvider } from './BulkImportBackendClient';
+import { BulkImportRESTPathProviderBase } from './BulkImportBackendClient';
 
-export class OrchestratorBulkImportBackendClientPathProvider implements IBulkImportRESTPathProvider {
+export class OrchestratorBulkImportBackendClientPathProvider extends BulkImportRESTPathProviderBase {
   getCreateImportJobsPath(dryRun?: boolean): string | undefined {
     return dryRun === true
       ? undefined
@@ -27,17 +27,21 @@ export class OrchestratorBulkImportBackendClientPathProvider implements IBulkImp
   getDeleteImportActionPath(
     repo: string,
     _defaultBranch: string,
-    approvalTool: string,
+    approvalTool?: string,
   ): string {
-    return `/api/bulk-import/orchestrator-import/by-repo?repo=${repo}&approvalTool=${approvalTool}`;
+    const params = new URLSearchParams({ repo });
+    if (approvalTool) params.set('approvalTool', approvalTool);
+    return `/api/bulk-import/orchestrator-import/by-repo?${params.toString()}`;
   }
 
   getGetImportActionPath(
     repo: string,
     _defaultBranch: string,
-    approvalTool: string,
+    approvalTool?: string,
   ): string {
-    return `/api/bulk-import/orchestrator-import/by-repo?repo=${repo}&approvalTool=${approvalTool}`;
+    const params = new URLSearchParams({ repo });
+    if (approvalTool) params.set('approvalTool', approvalTool);
+    return `/api/bulk-import/orchestrator-import/by-repo?${params.toString()}`;
   }
 
   getGetImportJobsPath(
@@ -47,6 +51,13 @@ export class OrchestratorBulkImportBackendClientPathProvider implements IBulkImp
     sortColumn: AddedRepositoryColumnNameEnum,
     sortOrder: SortingOrderEnum,
   ): string {
-    return `/api/bulk-import/orchestrator-workflows?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}`;
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      search: searchString,
+      sortColumn,
+      sortOrder,
+    });
+    return `/api/bulk-import/orchestrator-workflows?${params.toString()}`;
   }
 }

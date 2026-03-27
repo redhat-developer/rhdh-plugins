@@ -49,6 +49,24 @@ paths:
               example:
                 status: 'ok'
 
+  /scm-hosts:
+    get:
+      operationId: findAllSCMHosts
+      summary: Retrieve the SCM Integration hosts
+      security:
+        - BearerAuth: []
+      tags: [Management]
+      responses:
+        200:
+          description: List of Integrations available to the Bulk Import plugin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCMHostList'
+              examples:
+                multipleRepos:
+                  $ref: '#/components/examples/scmHosts'
+
   /organizations:
     get:
       operationId: findAllOrganizations
@@ -105,6 +123,7 @@ paths:
         - $ref: '#/components/parameters/sizePerIntegrationQueryParam'
         - $ref: '#/components/parameters/searchQueryParam'
         - $ref: '#/components/parameters/approvalToolParam'
+        - $ref: '#/components/parameters/xSCMTokensHeaderParam'
       responses:
         200:
           description: Org Repository list was fetched successfully with no errors
@@ -143,6 +162,7 @@ paths:
         - $ref: '#/components/parameters/sizePerIntegrationQueryParam'
         - $ref: '#/components/parameters/searchQueryParam'
         - $ref: '#/components/parameters/approvalToolParam'
+        - $ref: '#/components/parameters/xSCMTokensHeaderParam'
       responses:
         200:
           description: Repository list was fetched successfully with no errors
@@ -590,6 +610,15 @@ components:
         type: string
         enum: ['v1', 'v2']
         default: 'v1'
+    xSCMTokensHeaderParam:
+      in: header
+      name: x-scm-tokens
+      description: >
+        Optional JSON-encoded map of SCM host URL to user authentication token.
+        Used to fetch repositories on behalf of the user for each configured SCM host.
+      required: false
+      schema:
+        $ref: '#/components/schemas/SCMTokenMap'
 
     pagePerIntegrationQueryParam:
       in: query
@@ -684,6 +713,35 @@ components:
         default: GIT
 
   schemas:
+    SCMTokenMap:
+      title: SCM Token Map
+      type: object
+      description: >
+        Map of SCM integration base URL to the user's OAuth access token for that
+        host. Keys must match the base URLs returned by GET /scm-hosts (e.g.
+        "https://github.com" or "https://gitlab.corp.com"). Values must be
+        non-empty OAuth bearer tokens scoped to the minimum required access
+        (read-only repository listing). Unknown keys are silently ignored by
+        the server.
+      additionalProperties:
+        type: string
+      example:
+        'https://github.com': 'ghp_xxx'
+        'https://ghe.example.com': 'ghe_yyy'
+
+    SCMHostList:
+      title: SCM Host List
+      type: object
+      properties:
+        github:
+          type: array
+          items:
+            type: string
+        gitlab:
+          type: array
+          items:
+            type: string
+
     OrganizationList:
       title: Organization List
       type: object
@@ -1024,6 +1082,15 @@ components:
       description: Backstage Permissions Framework JWT
 
   examples:
+    scmHosts:
+      summary: Multiple scmHosts
+      value:
+        github:
+          - 'https://github.com'
+          - 'https://ghe.example.com'
+        gitlab:
+          - 'https://gitlab.com'
+
     multipleOrgs:
       summary: Multiple organizations
       value:

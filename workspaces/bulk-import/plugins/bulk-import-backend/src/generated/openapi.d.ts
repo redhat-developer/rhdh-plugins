@@ -13,6 +13,7 @@ import type {
 declare namespace Components {
     export interface HeaderParameters {
         apiVersionHeaderParam?: Parameters.ApiVersionHeaderParam;
+        xSCMTokensHeaderParam?: Parameters.XSCMTokensHeaderParam;
     }
     namespace Parameters {
         export type ApiVersionHeaderParam = "v1" | "v2";
@@ -26,6 +27,17 @@ declare namespace Components {
         export type SizeQueryParam = number;
         export type SortColumnQueryParam = "repository.name" | "repository.organization" | "repository.url" | "lastUpdate" | "status";
         export type SortOrderQueryParam = "asc" | "desc";
+        export type XSCMTokensHeaderParam = /**
+         * SCM Token Map
+         * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. "https://github.com" or "https://gitlab.corp.com"). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
+         *
+         * example:
+         * {
+         *   "https://github.com": "ghp_xxx",
+         *   "https://ghe.example.com": "ghe_yyy"
+         * }
+         */
+        Schemas.SCMTokenMap;
     }
     export interface QueryParameters {
         pagePerIntegrationQueryParam?: Parameters.PagePerIntegrationQueryParam;
@@ -238,6 +250,26 @@ declare namespace Components {
             totalCount?: number;
             pagePerIntegration?: number;
             sizePerIntegration?: number;
+        }
+        /**
+         * SCM Host List
+         */
+        export interface SCMHostList {
+            github?: string[];
+            gitlab?: string[];
+        }
+        /**
+         * SCM Token Map
+         * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. "https://github.com" or "https://gitlab.corp.com"). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
+         *
+         * example:
+         * {
+         *   "https://github.com": "ghp_xxx",
+         *   "https://ghe.example.com": "ghe_yyy"
+         * }
+         */
+        export interface SCMTokenMap {
+            [name: string]: string;
         }
         /**
          * Scaffolder Task
@@ -467,12 +499,26 @@ declare namespace Paths {
         }
     }
     namespace FindAllRepositories {
+        export interface HeaderParameters {
+            "x-scm-tokens"?: Parameters.XScmTokens;
+        }
         namespace Parameters {
             export type ApprovalTool = string;
             export type CheckImportStatus = boolean;
             export type PagePerIntegration = number;
             export type Search = string;
             export type SizePerIntegration = number;
+            export type XScmTokens = /**
+             * SCM Token Map
+             * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. "https://github.com" or "https://gitlab.corp.com"). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
+             *
+             * example:
+             * {
+             *   "https://github.com": "ghp_xxx",
+             *   "https://ghe.example.com": "ghe_yyy"
+             * }
+             */
+            Components.Schemas.SCMTokenMap;
         }
         export interface QueryParameters {
             checkImportStatus?: Parameters.CheckImportStatus;
@@ -484,6 +530,11 @@ declare namespace Paths {
         namespace Responses {
             export type $200 = /* Repository List */ Components.Schemas.RepositoryList;
             export type $500 = /* Repository List */ Components.Schemas.RepositoryList;
+        }
+    }
+    namespace FindAllSCMHosts {
+        namespace Responses {
+            export type $200 = /* SCM Host List */ Components.Schemas.SCMHostList;
         }
     }
     namespace FindAllTaskImports {
@@ -547,6 +598,9 @@ declare namespace Paths {
         }
     }
     namespace FindRepositoriesByOrganization {
+        export interface HeaderParameters {
+            "x-scm-tokens"?: Parameters.XScmTokens;
+        }
         namespace Parameters {
             export type ApprovalTool = string;
             export type CheckImportStatus = boolean;
@@ -554,6 +608,17 @@ declare namespace Paths {
             export type PagePerIntegration = number;
             export type Search = string;
             export type SizePerIntegration = number;
+            export type XScmTokens = /**
+             * SCM Token Map
+             * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. "https://github.com" or "https://gitlab.corp.com"). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
+             *
+             * example:
+             * {
+             *   "https://github.com": "ghp_xxx",
+             *   "https://ghe.example.com": "ghe_yyy"
+             * }
+             */
+            Components.Schemas.SCMTokenMap;
         }
         export interface PathParameters {
             organizationName: Parameters.OrganizationName;
@@ -607,6 +672,14 @@ export interface OperationMethods {
     config?: AxiosRequestConfig  
   ): OperationResponse<Paths.Ping.Responses.$200>
   /**
+   * findAllSCMHosts - Retrieve the SCM Integration hosts
+   */
+  'findAllSCMHosts'(
+    parameters?: Parameters<UnknownParamsObject> | null,
+    data?: any,
+    config?: AxiosRequestConfig  
+  ): OperationResponse<Paths.FindAllSCMHosts.Responses.$200>
+  /**
    * findAllOrganizations - Fetch Organizations accessible by Backstage Github Integrations
    */
   'findAllOrganizations'(
@@ -618,7 +691,7 @@ export interface OperationMethods {
    * findRepositoriesByOrganization - Fetch Repositories in the specified GitHub organization, provided it is accessible by any of the configured GitHub Integrations.
    */
   'findRepositoriesByOrganization'(
-    parameters?: Parameters<Paths.FindRepositoriesByOrganization.QueryParameters & Paths.FindRepositoriesByOrganization.PathParameters> | null,
+    parameters?: Parameters<Paths.FindRepositoriesByOrganization.QueryParameters & Paths.FindRepositoriesByOrganization.HeaderParameters & Paths.FindRepositoriesByOrganization.PathParameters> | null,
     data?: any,
     config?: AxiosRequestConfig  
   ): OperationResponse<Paths.FindRepositoriesByOrganization.Responses.$200>
@@ -626,7 +699,7 @@ export interface OperationMethods {
    * findAllRepositories - Fetch Organization Repositories accessible by Backstage Github Integrations
    */
   'findAllRepositories'(
-    parameters?: Parameters<Paths.FindAllRepositories.QueryParameters> | null,
+    parameters?: Parameters<Paths.FindAllRepositories.QueryParameters & Paths.FindAllRepositories.HeaderParameters> | null,
     data?: any,
     config?: AxiosRequestConfig  
   ): OperationResponse<Paths.FindAllRepositories.Responses.$200>
@@ -739,6 +812,16 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig  
     ): OperationResponse<Paths.Ping.Responses.$200>
   }
+  ['/scm-hosts']: {
+    /**
+     * findAllSCMHosts - Retrieve the SCM Integration hosts
+     */
+    'get'(
+      parameters?: Parameters<UnknownParamsObject> | null,
+      data?: any,
+      config?: AxiosRequestConfig  
+    ): OperationResponse<Paths.FindAllSCMHosts.Responses.$200>
+  }
   ['/organizations']: {
     /**
      * findAllOrganizations - Fetch Organizations accessible by Backstage Github Integrations
@@ -754,7 +837,7 @@ export interface PathsDictionary {
      * findRepositoriesByOrganization - Fetch Repositories in the specified GitHub organization, provided it is accessible by any of the configured GitHub Integrations.
      */
     'get'(
-      parameters?: Parameters<Paths.FindRepositoriesByOrganization.QueryParameters & Paths.FindRepositoriesByOrganization.PathParameters> | null,
+      parameters?: Parameters<Paths.FindRepositoriesByOrganization.QueryParameters & Paths.FindRepositoriesByOrganization.HeaderParameters & Paths.FindRepositoriesByOrganization.PathParameters> | null,
       data?: any,
       config?: AxiosRequestConfig  
     ): OperationResponse<Paths.FindRepositoriesByOrganization.Responses.$200>
@@ -764,7 +847,7 @@ export interface PathsDictionary {
      * findAllRepositories - Fetch Organization Repositories accessible by Backstage Github Integrations
      */
     'get'(
-      parameters?: Parameters<Paths.FindAllRepositories.QueryParameters> | null,
+      parameters?: Parameters<Paths.FindAllRepositories.QueryParameters & Paths.FindAllRepositories.HeaderParameters> | null,
       data?: any,
       config?: AxiosRequestConfig  
     ): OperationResponse<Paths.FindAllRepositories.Responses.$200>
@@ -892,6 +975,8 @@ export type OrganizationList = Components.Schemas.OrganizationList;
 export type PullRequest = Components.Schemas.PullRequest;
 export type Repository = Components.Schemas.Repository;
 export type RepositoryList = Components.Schemas.RepositoryList;
+export type SCMHostList = Components.Schemas.SCMHostList;
+export type SCMTokenMap = Components.Schemas.SCMTokenMap;
 export type ScaffolderTask = Components.Schemas.ScaffolderTask;
 export type Source = Components.Schemas.Source;
 export type SourceImport = Components.Schemas.SourceImport;

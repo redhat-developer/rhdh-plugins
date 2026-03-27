@@ -21,14 +21,18 @@ import {
   configApiRef,
   identityApiRef,
   useApi,
+  useApiHolder,
 } from '@backstage/core-plugin-api';
+import { scmAuthApiRef } from '@backstage/integration-react';
 
 import { useQuery } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../api/BulkImportBackendClient';
 import {
   AddRepositoryData,
+  APITypes,
   ApprovalTool,
+  DataFetcherQueryParams,
   OrgAndRepoResponse,
   RepositoriesError,
 } from '../types';
@@ -36,15 +40,6 @@ import {
   prepareDataForOrganizations,
   prepareDataForRepositories,
 } from '../utils/repository-utils';
-
-export interface DataFetcherQueryParams {
-  showOrganizations?: boolean;
-  orgName?: string;
-  page?: number;
-  querySize?: number;
-  searchString?: string;
-  approvalTool: ApprovalTool;
-}
 
 export const useRepositories = (
   options: DataFetcherQueryParams,
@@ -62,6 +57,8 @@ export const useRepositories = (
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
   const bulkImportApi = useApi(bulkImportApiRef);
+  const apiHolder = useApiHolder();
+  const scmAuth = apiHolder.get(scmAuthApiRef);
 
   const { value: user } = useAsync(async () => {
     const identityRef = await identityApi.getBackstageIdentity();
@@ -73,45 +70,76 @@ export const useRepositories = (
     return url;
   });
 
+  const { value: scmAuthTokens, loading: tokenLoading } = useAsync(async () => {
+    if (!scmAuth) return undefined;
+    const hosts = await bulkImportApi.getSCMHosts();
+    if (!hosts || hosts instanceof Response || !('github' in hosts))
+      return undefined;
+    const urls =
+      options.approvalTool === ApprovalTool.Gitlab
+        ? hosts.gitlab
+        : hosts.github;
+
+    if (!urls?.length) return undefined;
+
+    const tokenRecord: Record<string, string> = {};
+    for (const url of urls) {
+      try {
+        const { token } = await scmAuth.getCredentials({
+          url,
+          additionalScope: { repoWrite: false },
+        });
+        if (token) tokenRecord[url] = token;
+      } catch {
+        // No OAuth provider registered for this host — skip it and fall back
+        // to server-side credentials for that integration on the backend.
+      }
+    }
+    return Object.keys(tokenRecord).length > 0 ? tokenRecord : undefined;
+  }, [scmAuth, bulkImportApi, options.approvalTool]);
+
   const fetchRepositories = async (queryOptions: DataFetcherQueryParams) => {
-    if (queryOptions?.showOrganizations) {
-      return await bulkImportApi.dataFetcher(
-        queryOptions?.page ?? 0,
-        queryOptions?.querySize ?? 0,
-        queryOptions?.searchString || '',
-        queryOptions?.approvalTool,
-        {
-          fetchOrganizations: true,
-        },
-      );
-    }
-    if (queryOptions?.orgName) {
-      return await bulkImportApi.dataFetcher(
-        queryOptions?.page ?? 0,
-        queryOptions?.querySize ?? 0,
-        queryOptions?.searchString || '',
-        queryOptions?.approvalTool,
-        {
-          orgName: queryOptions?.orgName,
-        },
-      );
-    }
-    return await bulkImportApi.dataFetcher(
-      queryOptions?.page ?? 0,
-      queryOptions?.querySize ?? 0,
-      queryOptions?.searchString || '',
-      queryOptions?.approvalTool,
+    const apiOptions: APITypes = {
+      ...(queryOptions.showOrganizations && { fetchOrganizations: true }),
+      ...(queryOptions.orgName && { orgName: queryOptions.orgName }),
+      scmAuthTokens,
+    };
+    return bulkImportApi.dataFetcher(
+      queryOptions.page ?? 0,
+      queryOptions.querySize ?? 0,
+      queryOptions.searchString ?? '',
+      queryOptions.approvalTool,
+      apiOptions,
     );
   };
+
+  const tokenGeneration = useMemo(
+    () =>
+      scmAuthTokens
+        ? Object.entries(scmAuthTokens)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([k, v]) => `${k}=${v}`)
+            .join(',')
+        : '',
+    [scmAuthTokens],
+  );
 
   const {
     data: value,
     error,
     isLoading: isQueryLoading,
   } = useQuery(
-    [options?.showOrganizations ? 'organizations' : 'repositories', options],
+    [
+      options?.showOrganizations ? 'organizations' : 'repositories',
+      options,
+      tokenGeneration,
+    ],
     () => fetchRepositories(options),
-    { refetchInterval: pollInterval || 60000, refetchOnWindowFocus: false },
+    {
+      enabled: !tokenLoading,
+      refetchInterval: pollInterval || 60000,
+      refetchOnWindowFocus: false,
+    },
   );
 
   const prepareData = useMemo(() => {
@@ -126,7 +154,7 @@ export const useRepositories = (
   }, [options?.showOrganizations, value, user, baseUrl]);
 
   return {
-    loading: isQueryLoading,
+    loading: tokenLoading || isQueryLoading,
     data: prepareData,
     error: {
       ...(error ?? {}),

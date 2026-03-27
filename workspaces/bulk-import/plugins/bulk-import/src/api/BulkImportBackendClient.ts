@@ -39,6 +39,7 @@ import { ScaffolderBulkImportBackendClientPathProvider } from './ScaffolderBulkI
 
 // @public
 export type BulkImportAPI = {
+  getSCMHosts(): Promise<{ github: string[]; gitlab: string[] } | Response>;
   dataFetcher: (
     page: number,
     size: number,
@@ -98,6 +99,32 @@ export interface IBulkImportRESTPathProvider {
     sortColumn: AddedRepositoryColumnNameEnum,
     sortOrder: SortingOrderEnum,
   ): string;
+  getSCMHostPath(): string;
+}
+
+export abstract class BulkImportRESTPathProviderBase implements IBulkImportRESTPathProvider {
+  abstract getCreateImportJobsPath(dryRun?: boolean): string | undefined;
+  abstract getDeleteImportActionPath(
+    repo: string,
+    defaultBranch: string,
+    approvalTool?: string,
+  ): string;
+  abstract getGetImportActionPath(
+    repo: string,
+    defaultBranch: string,
+    approvalTool?: string,
+  ): string;
+  abstract getGetImportJobsPath(
+    page: number,
+    size: number,
+    searchString: string,
+    sortColumn: AddedRepositoryColumnNameEnum,
+    sortOrder: SortingOrderEnum,
+  ): string;
+
+  getSCMHostPath(): string {
+    return `/api/bulk-import/scm-hosts`;
+  }
 }
 
 export class BulkImportBackendClient implements BulkImportAPI {
@@ -136,6 +163,7 @@ export class BulkImportBackendClient implements BulkImportAPI {
     options?: APITypes,
   ) {
     const { token: idToken } = await this.identityApi.getCredentials();
+
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
       getApi(backendUrl, page, size, searchString, approvalTool, options),
@@ -143,6 +171,9 @@ export class BulkImportBackendClient implements BulkImportAPI {
         headers: {
           'Content-Type': 'application/json',
           ...(idToken && { Authorization: `Bearer ${idToken}` }),
+          ...(options?.scmAuthTokens && {
+            'X-SCM-Tokens': JSON.stringify(options.scmAuthTokens),
+          }),
         },
       },
     );
@@ -206,6 +237,25 @@ export class BulkImportBackendClient implements BulkImportAPI {
       throw errorResponse;
     }
     return jsonResponse.status === 204 ? null : await jsonResponse.json();
+  }
+
+  async getSCMHosts() {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}${this.pathProvider.getSCMHostPath()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+      },
+    );
+    if (jsonResponse.status !== 200 && jsonResponse.status !== 204) {
+      return jsonResponse;
+    }
+    return jsonResponse.json();
   }
 
   async deleteImportAction(

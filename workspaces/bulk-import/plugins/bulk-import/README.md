@@ -19,6 +19,8 @@ The sections below are relevant for static plugins. If the plugin is expected to
 
 - Follow the [GitHub Locations](https://backstage.io/docs/integrations/github/locations) to integrate GitHub integrations in your Backstage instance. For now, the plugin only supports loading catalog entities from github.com or GitHub Enterprise.
 
+- _(Optional)_ To enable [on behalf of user access](#on-behalf-of-user-access), configure a GitHub and/or GitLab OAuth auth provider and ensure `ScmAuthApi` from `@backstage/integration-react` is registered in your application. Without this, the plugin falls back to server-side integration credentials.
+
 ---
 
 **NOTE**
@@ -71,6 +73,47 @@ g, user:default/<login-id/user-name>, role:default/team_a
     </SidebarPage>
    );
    ```
+
+## On Behalf of User Access
+
+The Bulk Import plugin can fetch repository and organization listings **on behalf of the signed-in user** using their OAuth credentials, so that users see only the repositories and organizations they personally have access to.
+
+### How It Works
+
+When `ScmAuthApi` (from `@backstage/integration-react`) is available in the application, the plugin:
+
+1. Calls `GET /api/bulk-import/scm-hosts` to discover the configured GitHub and GitLab integration host URLs.
+2. Requests an OAuth token for each host from `ScmAuthApi` using a read-only scope (`repoWrite: false`).
+3. Passes the collected tokens to the backend via the `X-SCM-Tokens` request header when listing repositories or organizations.
+
+The backend then uses these user tokens to call the SCM APIs on behalf of the user, returning only what that user can access.
+
+### Fallback Behavior
+
+The GitHub and GitLab auth providers are **soft dependencies** — if they are not configured the plugin degrades gracefully:
+
+- If `ScmAuthApi` is not registered in the application, no tokens are collected and the backend falls back to server-side credentials (GitHub App, PAT, or GitLab token).
+- If a token cannot be obtained for a specific host (e.g., the user has not signed in via that provider, or no OAuth provider is registered for that host), that host is silently skipped. The backend uses its configured integration credentials for any host without a user token.
+- Deployments that do not configure GitHub or GitLab OAuth providers continue to work exactly as before with no configuration changes required.
+
+### Configuring Auth Providers
+
+To enable user-scoped repository listings, configure the relevant auth providers in your `app-config.yaml`:
+
+```yaml
+auth:
+  providers:
+    github:
+      development:
+        clientId: ${GITHUB_CLIENT_ID}
+        clientSecret: ${GITHUB_CLIENT_SECRET}
+    gitlab:
+      development:
+        clientId: ${GITLAB_CLIENT_ID}
+        clientSecret: ${GITLAB_CLIENT_SECRET}
+```
+
+Refer to the Backstage documentation for [GitHub auth](https://backstage.io/docs/auth/github/provider) and [GitLab auth](https://backstage.io/docs/auth/gitlab/provider) for full configuration details.
 
 ## New Frontend System
 

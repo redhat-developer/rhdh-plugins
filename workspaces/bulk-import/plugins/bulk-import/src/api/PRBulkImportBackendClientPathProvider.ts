@@ -15,9 +15,9 @@
  */
 
 import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
-import { IBulkImportRESTPathProvider } from './BulkImportBackendClient';
+import { BulkImportRESTPathProviderBase } from './BulkImportBackendClient';
 
-export class PRBulkImportBackendClientPathProvider implements IBulkImportRESTPathProvider {
+export class PRBulkImportBackendClientPathProvider extends BulkImportRESTPathProviderBase {
   getCreateImportJobsPath(dryRun?: boolean): string {
     return dryRun
       ? `/api/bulk-import/imports?dryRun=true`
@@ -27,17 +27,21 @@ export class PRBulkImportBackendClientPathProvider implements IBulkImportRESTPat
   getDeleteImportActionPath(
     repo: string,
     defaultBranch: string,
-    approvalTool: string,
+    approvalTool?: string,
   ): string {
-    return `/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}&approvalTool=${approvalTool}`;
+    const params = new URLSearchParams({ repo, defaultBranch });
+    if (approvalTool) params.set('approvalTool', approvalTool);
+    return `/api/bulk-import/import/by-repo?${params.toString()}`;
   }
 
   getGetImportActionPath(
     repo: string,
     defaultBranch: string,
-    approvalTool: string,
+    approvalTool?: string,
   ): string {
-    return `/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}&approvalTool=${approvalTool}`;
+    const params = new URLSearchParams({ repo, defaultBranch });
+    if (approvalTool) params.set('approvalTool', approvalTool);
+    return `/api/bulk-import/import/by-repo?${params.toString()}`;
   }
 
   getGetImportJobsPath(
@@ -47,6 +51,13 @@ export class PRBulkImportBackendClientPathProvider implements IBulkImportRESTPat
     sortColumn: AddedRepositoryColumnNameEnum,
     sortOrder: SortingOrderEnum,
   ): string {
-    return `/api/bulk-import/imports?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}`;
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      search: searchString,
+      sortColumn,
+      sortOrder,
+    });
+    return `/api/bulk-import/imports?${params.toString()}`;
   }
 }

@@ -34,6 +34,7 @@ import {
   extractLocationOwnerMap,
   logErrorIfNeeded,
 } from '../helpers';
+import { GitApiService } from '../scm/GitApiService';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -63,12 +64,12 @@ import {
   getCredentialsForConfig,
 } from './utils/utils';
 
-export class GitlabApiService {
+export class GitlabApiService implements GitApiService {
   private readonly logger: LoggerService;
   private readonly integrations: ScmIntegrations;
   private readonly gitlabCredentialsProvider: CustomGitlabCredentialsProvider;
   private readonly config: Config;
-  // Cache for storing ETags (used for efficient caching of unchanged data returned by GitHub)
+  // Cache for storing ETags (used for efficient caching of unchanged data returned by GitLab)
   private readonly cache: CacheService;
   constructor(
     logger: LoggerService,
@@ -147,9 +148,9 @@ export class GitlabApiService {
   }
 
   async getOrganizationsFromIntegrations(
-    search?: string,
     pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
+    search?: string,
   ): Promise<GitlabOrganizationResponse> {
     const groups = new Map<string, GitlabOrganization>();
     const result = await fetchFromAllIntegrations(
@@ -200,13 +201,67 @@ export class GitlabApiService {
     };
   }
 
+  private async fetchUserTokenGitlabIntegrationRepositories(
+    userTokens: Record<string, string>,
+    fetcher: (
+      glApi: InstanceType<typeof Gitlab<false>>,
+      credential: ExtendedGitlabCredentials,
+      errors: Map<number, GitlabFetchError>,
+    ) => Promise<{ totalCount?: number }>,
+  ): Promise<{ errors: GitlabFetchError[]; totalCount: number | undefined }> {
+    const allErrors: GitlabFetchError[] = [];
+    let totalCount: number | undefined;
+    const glConfigs = this.integrations.gitlab.list().map(i => i.config);
+    for (const glConfig of glConfigs) {
+      const normalizedBase = glConfig.baseUrl.replace(/\/$/, '');
+      const token =
+        userTokens[normalizedBase] ?? userTokens[`https://${glConfig.host}`];
+
+      if (!token) {
+        continue;
+      }
+      const userCredential: ExtendedGitlabCredentials = { token };
+      const userGitlab = buildGitlab(
+        { logger: this.logger, cache: this.cache },
+        { credential: userCredential },
+        glConfig.baseUrl, // NOTE: baseUrl, NOT apiBaseUrl (Gitlab constructor takes the base, not /api/v4)
+      );
+      const dataFetchErrors = new Map<number, GitlabFetchError>();
+      const result = await fetcher(userGitlab, userCredential, dataFetchErrors);
+      totalCount = (totalCount ?? 0) + (result.totalCount ?? 0);
+      dataFetchErrors.forEach(err => allErrors.push(err));
+    }
+    return { errors: allErrors, totalCount };
+  }
+
   async getOrgRepositoriesFromIntegrations(
     orgName: string,
     search?: string,
     pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
+    userTokens?: Record<string, string>,
   ): Promise<GitlabRepositoryResponse> {
     const orgRepositories = new Map<string, GitlabRepository>();
+
+    if (userTokens && Object.keys(userTokens).length > 0) {
+      const { errors: allErrors, totalCount } =
+        await this.fetchUserTokenGitlabIntegrationRepositories(
+          userTokens,
+          (userGitlab, userCredential, dataFetchErrors) =>
+            addGitlabTokenOrgRepositories(
+              { logger: this.logger },
+              userGitlab,
+              userCredential,
+              orgName,
+              orgRepositories,
+              dataFetchErrors,
+              { search, pageNumber, pageSize },
+            ),
+        );
+      const repoList = Array.from(orgRepositories.values());
+      return { repositories: repoList, errors: allErrors, totalCount };
+    }
+
     const result = await fetchFromAllIntegrations(
       {
         logger: this.logger,
@@ -266,8 +321,28 @@ export class GitlabApiService {
     search?: string,
     pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
+    userTokens?: Record<string, string>,
   ): Promise<GitlabRepositoryResponse> {
     const repositories = new Map<string, GitlabRepository>();
+
+    if (userTokens && Object.keys(userTokens).length > 0) {
+      const { errors: allErrors, totalCount } =
+        await this.fetchUserTokenGitlabIntegrationRepositories(
+          userTokens,
+          (userGitlab, userCredential, dataFetchErrors) =>
+            addGitlabTokenRepositories(
+              { logger: this.logger },
+              userGitlab,
+              userCredential,
+              repositories,
+              dataFetchErrors,
+              { search, pageNumber, pageSize },
+            ),
+        );
+      const repoList = Array.from(repositories.values());
+      return { repositories: repoList, errors: allErrors, totalCount };
+    }
+
     const result = await fetchFromAllIntegrations(
       {
         logger: this.logger,
