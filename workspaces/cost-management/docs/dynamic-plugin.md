@@ -38,7 +38,7 @@ The procedure involves the following steps:
      pluginConfig:
        dynamicPlugins:
          frontend:
-           backstage-community.plugin-cost-management:
+           red-hat-developer-hub.plugin-cost-management:
              appIcons:
                - name: costManagementIconOutlined
                  importName: CostManagementIconOutlined
@@ -48,6 +48,22 @@ The procedure involves the following steps:
                  menuItem:
                    icon: costManagementIconOutlined
                    text: Optimizations
+               - path: /cost-management/openshift
+                 importName: OpenShiftPage
+                 menuItem:
+                   icon: costManagementIconOutlined
+                   text: OpenShift
+             menuItems:
+               cost-management/optimizations:
+                 parent: cost-management
+                 priority: 10
+               cost-management/openshift:
+                 parent: cost-management
+                 priority: 20
+               cost-management:
+                 icon: costManagementIconOutlined
+                 title: Cost management
+                 priority: 100
    - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:latest!red-hat-developer-hub-plugin-cost-management-backend
      disabled: false
      pluginConfig:
@@ -57,7 +73,10 @@ The procedure involves the following steps:
          optimizationWorkflowId: 'patch-k8s-resource'
    ```
 
-   > **Note:** No `proxy` configuration is required. The backend plugin communicates
-   > with the Red Hat Cost Management API server-side. SSO tokens are obtained
-   > internally via OAuth2 `client_credentials` grant and never exposed to the
-   > browser. RBAC filtering is enforced server-side before data is returned.
+   > **Note:** No `proxy` configuration is required. Previous versions required a
+   > `proxy.endpoints['/cost-management/v1']` entry that forwarded requests to
+   > `console.redhat.com` — this has been removed. The backend plugin now
+   > communicates with the Red Hat Cost Management API server-side via a secure
+   > proxy. SSO tokens are obtained internally via OAuth2 `client_credentials`
+   > grant and never exposed to the browser. RBAC filtering is enforced
+   > server-side before data is returned. See [rbac.md](./rbac.md) for details.
