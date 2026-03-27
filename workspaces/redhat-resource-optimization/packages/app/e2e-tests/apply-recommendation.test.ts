@@ -23,18 +23,24 @@ const devMode = !process.env.PLAYWRIGHT_URL;
 /**
  * Apply Recommendation happy-path workflow test.
  *
- * Strategy — one workload per cluster, first success wins:
- *   1. Intercept the recommendations API + CM Bearer token on page load.
- *   2. Probe each cluster's /sources/{id}/ endpoint to filter broken ones.
- *   3. For each healthy cluster, click ONE table row belonging to it.
- *   4. Click "Apply recommendation" on the detail page.
+ * Strategy — try visible table rows directly:
+ *   1. Log in as a user with ros.apply + RORead permissions.
+ *   2. Navigate to Optimizations and verify data is loaded.
+ *   3. Click the first table row to enter the detail page.
+ *   4. Click "Apply recommendation" and confirm in the dialog.
  *   5. If the workflow starts → test passes.
- *   6. If it errors → try the next cluster.
- *   7. If all clusters fail → skip gracefully.
+ *   6. If it errors → try the next row (up to MAX_ROWS_TO_TRY).
+ *   7. If all rows fail → skip gracefully.
+ *
+ * Note: The secure proxy handles token management server-side, so there is
+ * no client-side token or source health probe. Instead we simply try rows
+ * from the table and rely on the backend to reject broken sources with an
+ * error that the UI surfaces.
  */
 test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow', () => {
   test.skip(devMode, 'Apply Recommendation requires a live RHDH instance');
 
+  const MAX_ROWS_TO_TRY = 5;
   let rosPage: ResourceOptimizationPage;
 
   test.beforeEach(async ({ page }) => {
@@ -46,9 +52,6 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
   }) => {
     test.setTimeout(360000);
 
-    // --- Set up API interceptors BEFORE navigation ---
-    await rosPage.setupAPIInterceptors();
-
     const user = process.env.RBAC_FULL_USER ?? 'costmgmt-full-access';
     const pass = process.env.RBAC_FULL_PASS ?? 'test';
 
@@ -57,23 +60,12 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
     const count = await rosPage.getOptimizableContainerCount();
     test.skip(!count || count === 0, 'No optimization data available');
 
-    await page.waitForTimeout(3000);
-
-    // --- Find healthy clusters ---
-    const healthyClusters = await rosPage.findAllHealthyClusters();
-    await rosPage.removeAPIInterceptors();
-
-    test.skip(healthyClusters.length === 0, 'No healthy cluster sources found');
-
-    // eslint-disable-next-line no-console
-    console.log(`Healthy clusters: ${healthyClusters.join(', ')}`);
-
-    // --- Try one workload per cluster ---
+    // --- Try rows from the table until a workflow succeeds ---
     let workflowStarted = false;
-    const triedClusters: string[] = [];
+    const rowsToTry = Math.min(count!, MAX_ROWS_TO_TRY);
 
-    for (const cluster of healthyClusters) {
-      // Navigate to the list page
+    for (let rowIndex = 0; rowIndex < rowsToTry; rowIndex++) {
+      // Navigate back to list page for each attempt
       await page.goto(PLUGIN_ROUTE_BASE, {
         waitUntil: 'domcontentloaded',
       });
@@ -86,49 +78,53 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
         page.getByText(/Optimizable containers \([1-9]\d*\)/),
       ).toBeVisible({ timeout: 30000 });
 
-      // Find the first row for this cluster and click it
-      const found = await rosPage.clickRowForCluster(cluster);
-      if (!found) {
-        // eslint-disable-next-line no-console
-        console.log(
-          `Cluster "${cluster}": no row found on the visible page — skipping`,
-        );
-        continue;
-      }
-
-      triedClusters.push(cluster);
-      // eslint-disable-next-line no-console
-      console.log(
-        `Cluster "${cluster}": clicked row, checking Apply button...`,
-      );
-
-      await page.waitForTimeout(3000);
+      // Click the Nth row
+      await rosPage.clickDataRowByIndex(rowIndex);
+      await page.waitForTimeout(2000);
       await page
         .locator('[role="progressbar"]')
         // eslint-disable-next-line testing-library/await-async-utils
         .waitFor({ state: 'hidden', timeout: 15000 })
         .catch(() => {});
 
-      // Check Apply button
+      // Check Apply button is visible and enabled
       const applyButton = page.getByRole('button', {
-        name: 'Apply recommendation',
+        name: /apply recommendation/i,
       });
       const isVisible = await applyButton
         .isVisible({ timeout: 8000 })
         .catch(() => false);
-      if (!isVisible || !(await applyButton.isEnabled())) {
+
+      if (!isVisible) {
         // eslint-disable-next-line no-console
-        console.log(
-          `Cluster "${cluster}": Apply button not available — skipping`,
-        );
+        console.log(`Row ${rowIndex}: Apply button not visible — skipping`);
+        continue;
+      }
+
+      const isEnabled = await applyButton.isEnabled().catch(() => false);
+      if (!isEnabled) {
+        // eslint-disable-next-line no-console
+        console.log(`Row ${rowIndex}: Apply button disabled — skipping`);
         continue;
       }
 
       // Click Apply
       await applyButton.click();
+
+      // Handle the confirmation dialog if it appears
+      const confirmButton = page.getByRole('button', {
+        name: /^apply$/i,
+      });
+      const hasDialog = await confirmButton
+        .isVisible({ timeout: 3000 })
+        .catch(() => false);
+      if (hasDialog) {
+        await confirmButton.click();
+      }
+
       await page.waitForTimeout(5000);
 
-      // Check for error alert
+      // Check for error — the secure proxy surfaces errors as an alert panel
       const errorAlert = page.getByRole('alert').filter({ hasText: /error/i });
       const hasError = await errorAlert
         .isVisible({ timeout: 8000 })
@@ -136,26 +132,21 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
 
       if (hasError) {
         const errorText =
-          (await errorAlert.locator('h6').first().textContent())?.trim() || '';
+          (await errorAlert.locator('h6, p').first().textContent())?.trim() ||
+          '';
         // eslint-disable-next-line no-console
-        console.log(`Cluster "${cluster}": ERROR — ${errorText}`);
+        console.log(`Row ${rowIndex}: ERROR — ${errorText}`);
         continue;
       }
 
-      // Workflow started
       // eslint-disable-next-line no-console
-      console.log(`Cluster "${cluster}": SUCCESS — workflow started`);
+      console.log(`Row ${rowIndex}: SUCCESS — workflow started`);
       workflowStarted = true;
       break;
     }
 
     if (!workflowStarted) {
-      test.skip(
-        true,
-        `Workflow failed for all ${
-          triedClusters.length
-        } cluster(s): ${triedClusters.join(', ')}`,
-      );
+      test.skip(true, `Workflow failed for all ${rowsToTry} row(s) tried`);
     }
 
     // --- Verify the workflow ran (any terminal or in-progress status) ---
@@ -164,14 +155,12 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
     const runningBadge = page.getByText('Running', { exact: true });
     const pendingBadge = page.getByText('Pending', { exact: true });
 
-    // Wait for ANY workflow status to appear — proves the workflow executed
     const anyStatus = completedBadge
       .or(failedBadge)
       .or(runningBadge)
       .or(pendingBadge);
     await expect(anyStatus).toBeVisible({ timeout: 30000 });
 
-    // If still running/pending, wait for a terminal state
     const terminalStatus = completedBadge.or(failedBadge);
     await expect(terminalStatus).toBeVisible({ timeout: 300000 });
   });
@@ -192,7 +181,7 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
 
     await rosPage.verifyApplyRecommendationButton();
     const applyButton = page.getByRole('button', {
-      name: 'Apply recommendation',
+      name: /apply recommendation/i,
     });
     await expect(applyButton).toBeEnabled();
   });
