@@ -26,7 +26,13 @@ import {
 } from '@backstage/frontend-plugin-api';
 import appPlugin from '@backstage/plugin-app';
 
-import { auth0AuthApiRef, oidcAuthApiRef, samlAuthApiRef } from './AuthApiRefs';
+import {
+  auth0AuthApiRef,
+  keycloakAuthApiRef,
+  oidcAuthApiRef,
+  pingfederateAuthApiRef,
+  samlAuthApiRef,
+} from './AuthApiRefs';
 import { SignInPage } from './components/SignInPage';
 
 const oidcAuthApi = ApiBlueprint.make({
@@ -47,6 +53,54 @@ const oidcAuthApi = ApiBlueprint.make({
           provider: {
             id: 'oidc',
             title: 'OIDC',
+            icon: () => null,
+          },
+          environment: configApi.getOptionalString('auth.environment'),
+        }),
+    }),
+});
+
+const keycloakAuthApi = ApiBlueprint.make({
+  name: 'keycloak-auth',
+  params: defineParams =>
+    defineParams({
+      api: keycloakAuthApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        oauthRequestApi: oauthRequestApiRef,
+        configApi: configApiRef,
+      },
+      factory: ({ discoveryApi, oauthRequestApi, configApi }) =>
+        OAuth2.create({
+          discoveryApi,
+          oauthRequestApi: oauthRequestApi,
+          provider: {
+            id: 'keycloak',
+            title: 'Keycloak',
+            icon: () => null,
+          },
+          environment: configApi.getOptionalString('auth.environment'),
+        }),
+    }),
+});
+
+const pingfederateAuthApi = ApiBlueprint.make({
+  name: 'pingfederate-auth',
+  params: defineParams =>
+    defineParams({
+      api: pingfederateAuthApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        oauthRequestApi: oauthRequestApiRef,
+        configApi: configApiRef,
+      },
+      factory: ({ discoveryApi, oauthRequestApi, configApi }) =>
+        OAuth2.create({
+          discoveryApi,
+          oauthRequestApi: oauthRequestApi,
+          provider: {
+            id: 'pingfederate',
+            title: 'PingFederate',
             icon: () => null,
           },
           environment: configApi.getOptionalString('auth.environment'),
@@ -111,12 +165,19 @@ const signInPageOverride = appPlugin.getExtension('sign-in-page:app').override({
 });
 
 /**
- * RHDH app sign-in page plus OIDC, Auth0, and SAML OAuth2 frontend APIs (`pluginId: app`).
+ * RHDH app sign-in page plus OIDC, Keycloak, PingFederate, Auth0, and SAML OAuth2 frontend APIs (`pluginId: app`).
  * Default-export this module for dynamic frontend loading.
  *
  * @alpha
  */
 export const appAuthModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [signInPageOverride, oidcAuthApi, auth0AuthApi, samlAuthApi],
+  extensions: [
+    signInPageOverride,
+    oidcAuthApi,
+    keycloakAuthApi,
+    pingfederateAuthApi,
+    auth0AuthApi,
+    samlAuthApi,
+  ],
 });

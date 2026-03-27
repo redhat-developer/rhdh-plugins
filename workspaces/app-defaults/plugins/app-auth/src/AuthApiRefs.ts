@@ -61,3 +61,22 @@ export const auth0AuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
 export const samlAuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
   id: 'internal.auth.saml',
 });
+
+/**
+ * Keycloak auth API for the RHDH multi-provider sign-in page.
+ *
+ * @alpha
+ */
+export const keycloakAuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
+  id: 'internal.auth.keycloak',
+});
+
+/**
+ * PingFederate auth API for the RHDH multi-provider sign-in page.
+ *
+ * @alpha
+ */
+export const pingfederateAuthApiRef: ApiRef<CustomAuthApiRefType> =
+  createApiRef({
+    id: 'internal.auth.pingfederate',
+  });
