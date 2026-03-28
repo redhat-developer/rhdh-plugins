@@ -32,6 +32,9 @@ import {
   MigrationPhase,
   Artifact,
   Telemetry,
+  ProjectStatusState,
+  DEFAULT_PAGE_ORDER,
+  DEFAULT_PAGE_SIZE,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { ProjectsGet } from '../../schema/openapi';
@@ -39,7 +42,13 @@ import { ProjectsGet } from '../../schema/openapi';
 import { JobOperations, CreateJobInput } from './jobOperations';
 import { ModuleOperations } from './moduleOperations';
 import { ProjectOperations } from './projectOperations';
+import { isNonDbSortField } from './queryHelpers';
 import { removeSensitiveFromJob } from '../../router/common';
+import {
+  IN_MEMORY_SORT_WARN_THRESHOLD,
+  MAX_CONCURRENT_ENRICHMENT_JOBS,
+} from '../constants';
+import { maxConcurrency } from '../../utils';
 import { calculateModuleStatus, calculateProjectStatus } from './status';
 
 export class X2ADatabaseService {
@@ -104,6 +113,19 @@ export class X2ADatabaseService {
     return this.#projectOps.createProject(input, options);
   }
 
+  /**
+   * Semantic ordering for ProjectStatusState.
+   * Lower values appear first in ascending sort.
+   */
+  static readonly STATE_ORDER: Record<ProjectStatusState, number> = {
+    created: 0,
+    initializing: 1,
+    initialized: 2,
+    inProgress: 3,
+    failed: 4,
+    completed: 5,
+  };
+
   async listProjects(
     query: ProjectsGet['query'],
     options: {
@@ -112,13 +134,97 @@ export class X2ADatabaseService {
       groupsOfUser: string[];
     },
   ): Promise<{ projects: Project[]; totalCount: number }> {
-    const result = await this.#projectOps.listProjects(query, options);
+    const sortByComputedField = isNonDbSortField(query.sort);
+
+    const result = await this.#projectOps.listProjects(query, options, {
+      skipPagination: sortByComputedField,
+    });
+
+    if (
+      sortByComputedField &&
+      result.totalCount > IN_MEMORY_SORT_WARN_THRESHOLD
+    ) {
+      // If this proves to be a performance bottleneck, let's consider either
+      // removing the sort by status
+      // or having materialized DB column (works with Postgres only)
+      // or introducing a separate complex DB SELECT for the case of sorting
+      // by status which will join/group jobs.
+      this.#logger.warn(
+        `In-memory sort by "${query.sort}" is loading ${result.totalCount} projects.`,
+      );
+    }
 
     this.#logger.info(
       `this.#projectOps.listProjects finished, adding migration plans to projects`,
     );
-    await Promise.all(result.projects.map(p => this.enrichProject(p)));
+    await maxConcurrency(
+      result.projects.map(p => () => this.enrichProject(p)),
+      MAX_CONCURRENT_ENRICHMENT_JOBS,
+    );
+
+    if (sortByComputedField) {
+      this.sortAndPaginateInMemory(result, query);
+    }
+
     return result;
+  }
+
+  /**
+   * Sort enriched projects by a computed field and apply pagination in memory.
+   * Used when the sort field (e.g. "status") has no DB column.
+   */
+  private sortAndPaginateInMemory(
+    result: { projects: Project[]; totalCount: number },
+    query: ProjectsGet['query'],
+  ): void {
+    const order = query.order || DEFAULT_PAGE_ORDER;
+
+    if (query.sort === 'status') {
+      const summaryKeys = [
+        'finished',
+        'error',
+        'running',
+        'waiting',
+        'pending',
+        'cancelled',
+      ] as const;
+
+      result.projects.sort((a, b) => {
+        const stateA = a.status?.state;
+        const stateB = b.status?.state;
+        const rankA = stateA
+          ? (X2ADatabaseService.STATE_ORDER[stateA] ?? 99)
+          : 99;
+        const rankB = stateB
+          ? (X2ADatabaseService.STATE_ORDER[stateB] ?? 99)
+          : 99;
+        const stateCmp = rankA - rankB;
+        if (stateCmp !== 0) return order === 'asc' ? stateCmp : -stateCmp;
+
+        const sumA = a.status?.modulesSummary;
+        const sumB = b.status?.modulesSummary;
+        const totalA = sumA?.total || 0;
+        const totalB = sumB?.total || 0;
+
+        for (const key of summaryKeys) {
+          const pctA = totalA > 0 && sumA ? (sumA[key] ?? 0) / totalA : 0;
+          const pctB = totalB > 0 && sumB ? (sumB[key] ?? 0) / totalB : 0;
+          const diff = pctA - pctB;
+          if (diff !== 0) return order === 'asc' ? diff : -diff;
+        }
+
+        return 0;
+      });
+    } else {
+      this.#logger.error(
+        `No in-memory sort implementation for computed field "${query.sort}", result will be unsorted.`,
+      );
+    }
+
+    const pageSize = query.pageSize || DEFAULT_PAGE_SIZE;
+    const page = query.page || 0;
+    const start = page * pageSize;
+    result.projects = result.projects.slice(start, start + pageSize);
   }
 
   /**

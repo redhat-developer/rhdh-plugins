@@ -40,9 +40,17 @@ const SORT_COLUMN_MAP: Record<string, string> = {
   startedAt: 'started_at',
 };
 
+const NON_DB_SORT_FIELDS: ReadonlySet<string> = new Set(['status']);
+
 /**
  * Map REST sort param to database column name.
+ * Returns `undefined` for computed fields (e.g. "status") that have no DB column.
  */
 export function mapSortToDatabaseColumn(sort?: string): string | undefined {
-  return sort ? SORT_COLUMN_MAP[sort] || sort : undefined;
+  if (!sort || NON_DB_SORT_FIELDS.has(sort)) return undefined;
+  return SORT_COLUMN_MAP[sort] || sort;
+}
+
+export function isNonDbSortField(sort?: string): boolean {
+  return !!sort && NON_DB_SORT_FIELDS.has(sort);
 }

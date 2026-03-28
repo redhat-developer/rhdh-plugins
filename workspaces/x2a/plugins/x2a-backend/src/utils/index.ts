@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 export * from './delay';
+export * from './maxConcurrency';
 export * from './stringifyError';
