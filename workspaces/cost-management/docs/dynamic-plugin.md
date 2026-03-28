@@ -40,30 +40,30 @@ The procedure involves the following steps:
          frontend:
            red-hat-developer-hub.plugin-cost-management:
              appIcons:
-               - name: costManagementIconOutlined
+               - name: costManagementIcon
                  importName: CostManagementIconOutlined
              dynamicRoutes:
                - path: /cost-management/optimizations
                  importName: ResourceOptimizationPage
                  menuItem:
-                   icon: costManagementIconOutlined
+                   icon: costManagementIcon
                    text: Optimizations
                - path: /cost-management/openshift
                  importName: OpenShiftPage
                  menuItem:
-                   icon: costManagementIconOutlined
+                   icon: costManagementIcon
                    text: OpenShift
              menuItems:
-               cost-management/optimizations:
-                 parent: cost-management
-                 priority: 10
-               cost-management/openshift:
-                 parent: cost-management
-                 priority: 20
                cost-management:
-                 icon: costManagementIconOutlined
+                 icon: costManagementIcon
                  title: Cost management
                  priority: 100
+               cost-management.optimizations:
+                 parent: cost-management
+                 priority: 10
+               cost-management.openshift:
+                 parent: cost-management
+                 priority: 20
    - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:latest!red-hat-developer-hub-plugin-cost-management-backend
      disabled: false
      pluginConfig:
