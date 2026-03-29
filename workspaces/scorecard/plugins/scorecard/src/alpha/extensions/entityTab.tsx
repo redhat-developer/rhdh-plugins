@@ -14,45 +14,12 @@
  * limitations under the License.
  */
 
-import {
-  createApiFactory,
-  createFrontendPlugin,
-  createFrontendModule,
-  discoveryApiRef,
-  fetchApiRef,
-  ApiBlueprint,
-} from '@backstage/frontend-plugin-api';
-import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
-import { rootRouteRef } from './routes';
-import { ScorecardApiClient, scorecardApiRef } from './api';
-import { scorecardTranslations } from './translations';
 import { Entity } from '@backstage/catalog-model';
-
-/** Scorecard API extension */
-const scorecardApi = ApiBlueprint.make({
-  params: defineParams =>
-    defineParams(
-      createApiFactory({
-        api: scorecardApiRef,
-        deps: { fetchApi: fetchApiRef, discoveryApi: discoveryApiRef },
-        factory: ({ fetchApi, discoveryApi }) =>
-          new ScorecardApiClient({ fetchApi, discoveryApi }),
-      }),
-    ),
-});
+import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
+import { rootRouteRef } from '../../routes';
 
 /**
- * Extension for Scorecard translations.
- */
-const scorecardTranslation = TranslationBlueprint.make({
-  params: {
-    resource: scorecardTranslations,
-  },
-});
-
-/**
- * Extension for the Scorecard Tab on Entity pages.
+ * Extension for the Scorecard tab on Entity pages.
  * @alpha
  */
 export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
@@ -80,7 +47,6 @@ export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
       filter: (entity: Entity): boolean => {
         const filters = config.allowedFilters;
 
-        // Default: If no config is provided, show the tab for everyone
         if (!filters || filters.length === 0) return true;
 
         return filters.some(f => {
@@ -96,46 +62,10 @@ export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
       },
       loader: async () => {
         const { EntityScorecardContent } = await import(
-          './components/Scorecard'
+          '../../components/Scorecard'
         );
         return <EntityScorecardContent />;
       },
     });
   },
 });
-
-/**
- * The primary Scorecard frontend plugin.
- * @alpha
- */
-export default createFrontendPlugin({
-  pluginId: 'scorecard',
-  extensions: [scorecardApi],
-  routes: {
-    root: rootRouteRef,
-  },
-});
-
-/**
- * Catalog module that automatically injects the Scorecard tab into the Catalog.
- * @alpha
- */
-export const scorecardCatalogModule = createFrontendModule({
-  pluginId: 'catalog',
-  extensions: [scorecardEntityContent],
-});
-
-/**
- * App module that automatically registers Scorecard translations.
- * @alpha
- */
-export const scorecardTranslationsModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [scorecardTranslation],
-});
-
-/**
- * Re-exporting translations for external usage.
- * @alpha
- */
-export * from './translations';

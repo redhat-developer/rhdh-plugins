@@ -46,12 +46,14 @@ import {
 } from '@backstage/dev-utils';
 
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import homePlugin from '@backstage/plugin-home/alpha';
 import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import scorecardPlugin, {
   scorecardCatalogModule,
+  scorecardHomeModule,
   scorecardTranslationsModule,
 } from '../src/alpha';
 import { scorecardApiRef } from '../src/api';
@@ -137,8 +139,10 @@ const app = createApp({
   features: [
     devNavModule,
     catalogPlugin,
+    homePlugin,
     scorecardPlugin,
     scorecardCatalogModule,
+    scorecardHomeModule,
     scorecardTranslationsModule,
     appDevModule,
     catalogDevModule,

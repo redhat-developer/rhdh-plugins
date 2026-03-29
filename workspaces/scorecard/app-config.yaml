@@ -5,8 +5,13 @@ app:
   extensions:
     - api:app/app-language:
         config:
-          availableLanguages: ['en', 'de', 'fr']
+          availableLanguages: ['en', 'de', 'fr', 'it', 'es', 'ja']
           defaultLanguage: 'en'
+    - api:home/visits: true
+    - app-root-element:home/visit-listener: true
+    - page:home:
+        config:
+          path: /
 
     # Scorecard tab: entity shows tab if it matches any filter below.
     - entity-content:catalog/entity-content-scorecard:
@@ -16,6 +21,28 @@ app:
               type: website
             - kind: api # e.g. any API entity
             - type: service # e.g. Component or System with spec.type: service
+    - home-page-layout:home/dynamic-homepage-layout:
+        config:
+          customizable: true
+          widgetLayout:
+            ScorecardGithubHomepage:
+              priority: 250
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 12, h: 6 }
+                xs: { w: 12, h: 6 }
+                xxs: { w: 12, h: 6 }
+            ScorecardJiraHomepage:
+              priority: 240
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 12, h: 6 }
+                xs: { w: 12, h: 6 }
+                xxs: { w: 12, h: 6 }
 organization:
   name: My Company
 
