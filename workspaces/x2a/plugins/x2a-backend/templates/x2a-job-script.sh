@@ -123,6 +123,12 @@ git_clone_repos() {
     "https://${SOURCE_REPO_TOKEN}@${SOURCE_REPO_URL#https://}" \
     /workspace/source
 
+  # Strip the token from the git remote URL so that tools like Chef's
+  # CookbookProfiler::Git (which reads `git config --get remote.origin.url`)
+  # never see the credential. This prevents tokens from leaking into
+  # generated files such as Policyfile.lock.json.
+  git -C /workspace/source remote set-url origin "${SOURCE_REPO_URL}"
+
   echo "=== Cloning target repository ==="
   local target_auth_url="https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}"
 
@@ -238,6 +244,7 @@ case "${PHASE}" in
     # Copy any other generated files (like metadata)
     cp -v "${SOURCE_BASE}"/*.json "${PROJECT_PATH}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${PROJECT_PATH}/" 2>/dev/null || true
+    cp -rv "${SOURCE_BASE}/migration_dependencies" "${PROJECT_PATH}/" 2>/dev/null || true
 
     # Show what was created
     echo ""
@@ -301,6 +308,7 @@ case "${PHASE}" in
     cp -v "${SOURCE_BASE}/migration-plan-${MODULE_NAME_SANITIZED}.md" "${OUTPUT_DIR}/"
     cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
+    cp -rv "${SOURCE_BASE}/migration_dependencies" "${OUTPUT_DIR}/" 2>/dev/null || true
 
     echo ""
     echo "=== Output directory contents ==="
@@ -363,6 +371,7 @@ case "${PHASE}" in
     cp -rv "${SOURCE_BASE}/ansible" "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
+    cp -rv "${SOURCE_BASE}/migration_dependencies" "${OUTPUT_DIR}/" 2>/dev/null || true
 
     echo ""
     echo "=== Output directory contents ==="
