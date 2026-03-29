@@ -59,9 +59,9 @@ sanitize_secrets() {
   # Match GitHub PATs (ghp_, gho_, github_pat_) and generic token@host patterns in URLs
   local count=0
   while IFS= read -r -d '' file; do
-    if grep -qE 'https?://[^@/:[:space:]]+@' "$file" 2>/dev/null; then
-      # Strip token from URLs: https://ghp_xxx@github.com/... → https://github.com/...
-      sed -i 's|https\?://[^@/:[:space:]]*@|https://|g' "$file"
+    if grep -qE 'https?://[^@/[:space:]]+@' "$file" 2>/dev/null; then
+      # Strip credentials from URLs: https://user:token@host/... → https://host/...
+      sed -i 's|https\?://[^@/[:space:]]*@|https://|g' "$file"
       echo "  Sanitized: ${file#/workspace/target/}"
       count=$((count + 1))
     fi
@@ -235,8 +235,8 @@ case "${PHASE}" in
     # Note: x2a tool writes files to the source directory (--source-dir)
     echo "Copying output to ${PROJECT_PATH}/"
     cp -v "${SOURCE_BASE}/migration-plan.md" "${PROJECT_PATH}/"
-    # Copy any other generated files (like metadata)
-    cp -v "${SOURCE_BASE}"/*.json "${PROJECT_PATH}/" 2>/dev/null || true
+    # Copy generated metadata (only specific files — avoid copying Chef artifacts like Policyfile.lock.json)
+    cp -v "${SOURCE_BASE}/generated-project-metadata.json" "${PROJECT_PATH}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${PROJECT_PATH}/" 2>/dev/null || true
 
     # Show what was created
@@ -299,7 +299,6 @@ case "${PHASE}" in
     # Note: x2a tool produces migration-plan-{module_name}.md (spaces replaced with underscores)
     echo "Copying output to ${OUTPUT_DIR}/"
     cp -v "${SOURCE_BASE}/migration-plan-${MODULE_NAME_SANITIZED}.md" "${OUTPUT_DIR}/"
-    cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
 
     echo ""
@@ -361,7 +360,6 @@ case "${PHASE}" in
     # Note: x2a tool writes to ansible/roles/{module}/ in the source directory
     echo "Copying output to ${OUTPUT_DIR}/"
     cp -rv "${SOURCE_BASE}/ansible" "${OUTPUT_DIR}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
 
     echo ""
