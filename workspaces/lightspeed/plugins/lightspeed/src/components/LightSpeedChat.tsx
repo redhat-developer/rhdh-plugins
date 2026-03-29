@@ -99,14 +99,14 @@ import {
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
 import { DeleteModal } from './DeleteModal';
-import { DeleteNotebookModal } from './DeleteNotebookModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
-import { NotebookPermissionRequired } from './NotebookPermissionRequired';
-import { NotebooksTab } from './NotebooksTab';
+import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
+import { NotebookPermissionRequired } from './notebooks/NotebookPermissionRequired';
+import { NotebooksTab } from './notebooks/NotebooksTab';
+import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
 import { RenameConversationModal } from './RenameConversationModal';
-import { RenameNotebookModal } from './RenameNotebookModal';
 
 const useStyles = makeStyles(theme => ({
   body: {

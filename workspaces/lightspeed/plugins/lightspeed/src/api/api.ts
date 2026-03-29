@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createApiRef } from '@backstage/core-plugin-api';
+import { createApiRef, type ApiRef } from '@backstage/core-plugin-api';
 
 import {
   Attachment,
@@ -57,6 +57,7 @@ export type LightspeedAPI = {
  * Lightspeed API interface
  */
 
-export const lightspeedApiRef = createApiRef<LightspeedAPI>({
-  id: 'plugin.lightspeed.service',
-});
+export const lightspeedApiRef: ApiRef<LightspeedAPI> =
+  createApiRef<LightspeedAPI>({
+    id: 'plugin.lightspeed.service',
+  });

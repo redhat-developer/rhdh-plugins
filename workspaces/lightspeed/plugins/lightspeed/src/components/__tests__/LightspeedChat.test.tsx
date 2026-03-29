@@ -71,7 +71,7 @@ jest.mock('../../hooks/useConversations', () => ({
   }),
 }));
 
-jest.mock('../../hooks/useNotebookSessions', () => ({
+jest.mock('../../hooks/notebooks/useNotebookSessions', () => ({
   useNotebookSessions: jest.fn().mockReturnValue({
     data: [],
     refetch: jest.fn(),

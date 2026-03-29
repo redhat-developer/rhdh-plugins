@@ -30,9 +30,9 @@ import {
 import { EllipsisVIcon } from '@patternfly/react-icons';
 import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
 
-import { lightspeedTranslationRef } from '../translations/ref';
-import { NotebookSession } from '../types';
-import { formatUpdatedLabel } from '../utils/notebooks-utils';
+import { lightspeedTranslationRef } from '../../translations/ref';
+import { NotebookSession } from '../../types';
+import { formatUpdatedLabel } from '../../utils/notebooks-utils';
 
 type NotebookCardProps = {
   notebook: NotebookSession;

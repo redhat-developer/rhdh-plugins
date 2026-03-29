@@ -18,8 +18,8 @@ import { useApi } from '@backstage/core-plugin-api';
 
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
-import { notebooksApiRef } from '../api/notebooksApi';
-import { NotebookSession } from '../types';
+import { notebooksApiRef } from '../../api/notebooksApi';
+import { NotebookSession } from '../../types';
 
 export const useNotebookSessions = (
   enabled: boolean = true,

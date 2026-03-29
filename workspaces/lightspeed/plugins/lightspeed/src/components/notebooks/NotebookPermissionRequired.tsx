@@ -17,8 +17,8 @@
 import { Button, Grid, Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 
-import { useTranslation } from '../hooks/useTranslation';
-import permissionRequired from '../images/permission-required.svg';
+import { useTranslation } from '../../hooks/useTranslation';
+import permissionRequired from '../../images/permission-required.svg';
 
 const useStyles = makeStyles(theme =>
   createStyles({
