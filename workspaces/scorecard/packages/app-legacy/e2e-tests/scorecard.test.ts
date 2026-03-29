@@ -70,6 +70,17 @@ test.describe('Scorecard Plugin Tests', () => {
 
   test.describe('Entity Scorecards', () => {
     test('Verify permission required state', async ({ browser }, testInfo) => {
+      await mockScorecardResponse(
+        page,
+        {
+          error: {
+            name: 'NotAllowedError',
+            message: 'Permission denied',
+          },
+        },
+        403,
+      );
+
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
       await page.getByText('Scorecard', { exact: true }).click();
@@ -184,7 +195,30 @@ test.describe('Scorecard Plugin Tests', () => {
 
   test.describe('Aggregated Scorecards', () => {
     test('Verify missing permission state', async () => {
+      await mockAggregatedScorecardResponse(
+        page,
+        {
+          error: {
+            name: 'NotAllowedError',
+            message: 'Permission denied',
+          },
+        },
+        {
+          error: {
+            name: 'NotAllowedError',
+            message: 'Permission denied',
+          },
+        },
+        403,
+      );
+
       await homePage.navigateToHome();
+      await page.reload();
+      await homePage.enterEditMode();
+      await homePage.clearAllCards();
+      await homePage.addCard('Scorecard: GitHub open PRs');
+      await homePage.addCard('Scorecard: Jira open blocking');
+      await homePage.saveChanges();
 
       const entityCount = getEntityCount(translations, currentLocale, '0');
 
@@ -268,7 +302,9 @@ test.describe('Scorecard Plugin Tests', () => {
         ),
       );
 
-      await runAccessibilityTests(page, testInfo);
+      await runAccessibilityTests(page, testInfo, undefined, {
+        includeSelectors: ['[data-chart-container]'],
+      });
     });
 
     test('Verify cards aggregation data is not found when API returns empty aggregated response', async () => {

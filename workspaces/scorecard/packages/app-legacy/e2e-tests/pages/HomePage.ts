@@ -22,6 +22,8 @@ import {
 } from '../utils/translationUtils';
 
 type ThresholdState = 'success' | 'warning' | 'error';
+const escapeRegex = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export class HomePage {
   readonly page: Page;
@@ -48,7 +50,22 @@ export class HomePage {
 
   async addCard(cardName: string) {
     await this.page.getByRole('button', { name: 'Add widget' }).click();
-    await this.page.getByRole('button', { name: cardName }).click();
+    await expect(
+      this.page.getByRole('heading', { name: 'Add new widget to dashboard' }),
+    ).toBeVisible();
+
+    let cardPattern: RegExp;
+    if (cardName === 'Onboarding section') {
+      cardPattern = /Onboarding section|RhdhOnboardingSection/i;
+    } else if (cardName === 'Scorecard: GitHub open PRs') {
+      cardPattern = /Scorecard:\s*GitHub open PRs|ScorecardGithubHomepage/i;
+    } else if (cardName === 'Scorecard: Jira open blocking') {
+      cardPattern = /Scorecard:\s*Jira open blocking|ScorecardJiraHomepage/i;
+    } else {
+      cardPattern = new RegExp(escapeRegex(cardName), 'i');
+    }
+
+    await this.page.getByRole('button', { name: cardPattern }).first().click();
   }
 
   async saveChanges() {
@@ -69,8 +86,9 @@ export class HomePage {
 
   getCard(metricId: 'github.open_prs' | 'jira.open_issues'): Locator {
     return this.page
-      .locator('article')
-      .filter({ hasText: this.translations.metric[metricId].title });
+      .getByText(this.translations.metric[metricId].title, { exact: true })
+      .last()
+      .locator('xpath=ancestor::article[1]');
   }
 
   async verifyThresholdTooltip(
