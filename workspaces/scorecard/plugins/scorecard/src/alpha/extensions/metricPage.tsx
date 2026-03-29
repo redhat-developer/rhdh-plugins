@@ -15,7 +15,7 @@
  */
 
 import { PageBlueprint } from '@backstage/frontend-plugin-api';
-import { rootRouteRef } from '../../routes';
+import { metricRouteRef } from '../../routes';
 
 /**
  * NFS page extension for the Scorecard page.
@@ -23,8 +23,8 @@ import { rootRouteRef } from '../../routes';
  */
 export const scorecardPage = PageBlueprint.make({
   params: {
-    path: '/scorecard',
-    routeRef: rootRouteRef,
+    path: '/scorecard/metrics/:metricId',
+    routeRef: metricRouteRef,
     loader: () =>
       import('../../pages/ScorecardPage').then(m => <m.ScorecardPage />),
   },

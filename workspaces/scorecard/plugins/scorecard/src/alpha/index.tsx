@@ -19,7 +19,7 @@ import {
   createFrontendPlugin,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { rootRouteRef } from '../routes';
+import { metricRouteRef, rootRouteRef } from '../routes';
 import { scorecardTranslations } from '../translations';
 import { scorecardApi } from './extensions/api';
 import { scorecardEntityContent } from './extensions/entityTab';
@@ -47,6 +47,7 @@ export default createFrontendPlugin({
   extensions: [scorecardApi, scorecardPage],
   routes: {
     root: rootRouteRef,
+    metric: metricRouteRef,
   },
 });
 
