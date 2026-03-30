@@ -1151,9 +1151,7 @@ export const LightspeedChat = ({
   );
 
   const mcpSettingsPanel = (
-    <McpServersSettings
-      onClose={() => setIsMcpSettingsOpen(false)}
-    />
+    <McpServersSettings onClose={() => setIsMcpSettingsOpen(false)} />
   );
 
   const mainPanelContent = (() => {
