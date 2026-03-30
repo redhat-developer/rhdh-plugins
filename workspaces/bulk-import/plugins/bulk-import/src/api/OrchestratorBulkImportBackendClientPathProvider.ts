@@ -15,7 +15,7 @@
  */
 
 import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
-import { BulkImportRESTPathProviderBase } from './BulkImportBackendClient';
+import { BulkImportRESTPathProviderBase } from './BulkImportBackendClientBase';
 
 export class OrchestratorBulkImportBackendClientPathProvider extends BulkImportRESTPathProviderBase {
   getCreateImportJobsPath(dryRun?: boolean): string | undefined {

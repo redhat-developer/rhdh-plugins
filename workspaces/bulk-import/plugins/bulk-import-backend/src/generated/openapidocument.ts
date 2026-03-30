@@ -1145,7 +1145,7 @@ const OPENAPI = `
       "SCMTokenMap": {
         "title": "SCM Token Map",
         "type": "object",
-        "description": "Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. \"https://github.com\" or \"https://gitlab.corp.com\"). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.\\n",
+        "description": "Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. https://github.com or https://gitlab.corp.com). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.\\n",
         "additionalProperties": {
           "type": "string"
         },

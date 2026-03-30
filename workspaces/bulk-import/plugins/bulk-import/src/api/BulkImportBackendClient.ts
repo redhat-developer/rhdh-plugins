@@ -33,9 +33,16 @@ import {
   SortingOrderEnum,
 } from '../types';
 import { getApi } from '../utils/repository-utils';
+import {
+  BulkImportRESTPathProviderBase,
+  IBulkImportRESTPathProvider,
+} from './BulkImportBackendClientBase';
 import { OrchestratorBulkImportBackendClientPathProvider } from './OrchestratorBulkImportBackendClientPathProvider';
 import { PRBulkImportBackendClientPathProvider } from './PRBulkImportBackendClientPathProvider';
 import { ScaffolderBulkImportBackendClientPathProvider } from './ScaffolderBulkImportBackendClientPathProvider';
+
+export type { IBulkImportRESTPathProvider };
+export { BulkImportRESTPathProviderBase };
 
 // @public
 export type BulkImportAPI = {
@@ -79,53 +86,6 @@ export type Options = {
 export const bulkImportApiRef = createApiRef<BulkImportAPI>({
   id: 'plugin.bulk-import.service',
 });
-
-export interface IBulkImportRESTPathProvider {
-  getCreateImportJobsPath(dryRun?: boolean): string | undefined;
-  getDeleteImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool?: string,
-  ): string;
-  getGetImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool?: string,
-  ): string;
-  getGetImportJobsPath(
-    page: number,
-    size: number,
-    searchString: string,
-    sortColumn: AddedRepositoryColumnNameEnum,
-    sortOrder: SortingOrderEnum,
-  ): string;
-  getSCMHostPath(): string;
-}
-
-export abstract class BulkImportRESTPathProviderBase implements IBulkImportRESTPathProvider {
-  abstract getCreateImportJobsPath(dryRun?: boolean): string | undefined;
-  abstract getDeleteImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool?: string,
-  ): string;
-  abstract getGetImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool?: string,
-  ): string;
-  abstract getGetImportJobsPath(
-    page: number,
-    size: number,
-    searchString: string,
-    sortColumn: AddedRepositoryColumnNameEnum,
-    sortOrder: SortingOrderEnum,
-  ): string;
-
-  getSCMHostPath(): string {
-    return `/api/bulk-import/scm-hosts`;
-  }
-}
 
 export class BulkImportBackendClient implements BulkImportAPI {
   private readonly configApi: ConfigApi;

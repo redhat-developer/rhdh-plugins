@@ -29,7 +29,7 @@ declare namespace Components {
         export type SortOrderQueryParam = "asc" | "desc";
         export type XSCMTokensHeaderParam = /**
          * SCM Token Map
-         * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. "https://github.com" or "https://gitlab.corp.com"). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
+         * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. https://github.com or https://gitlab.corp.com). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
          *
          * example:
          * {
@@ -260,7 +260,7 @@ declare namespace Components {
         }
         /**
          * SCM Token Map
-         * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. "https://github.com" or "https://gitlab.corp.com"). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
+         * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. https://github.com or https://gitlab.corp.com). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
          *
          * example:
          * {
@@ -510,7 +510,7 @@ declare namespace Paths {
             export type SizePerIntegration = number;
             export type XScmTokens = /**
              * SCM Token Map
-             * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. "https://github.com" or "https://gitlab.corp.com"). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
+             * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. https://github.com or https://gitlab.corp.com). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
              *
              * example:
              * {
@@ -610,7 +610,7 @@ declare namespace Paths {
             export type SizePerIntegration = number;
             export type XScmTokens = /**
              * SCM Token Map
-             * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. "https://github.com" or "https://gitlab.corp.com"). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
+             * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. https://github.com or https://gitlab.corp.com). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
              *
              * example:
              * {

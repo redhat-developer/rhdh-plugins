@@ -15,49 +15,50 @@
  */
 
 import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
-import { BulkImportRESTPathProviderBase } from './BulkImportBackendClientBase';
 
-export class PRBulkImportBackendClientPathProvider extends BulkImportRESTPathProviderBase {
-  getCreateImportJobsPath(dryRun?: boolean): string {
-    return dryRun
-      ? `/api/bulk-import/imports?dryRun=true`
-      : `/api/bulk-import/imports`;
-  }
-
+export interface IBulkImportRESTPathProvider {
+  getCreateImportJobsPath(dryRun?: boolean): string | undefined;
   getDeleteImportActionPath(
     repo: string,
     defaultBranch: string,
     approvalTool?: string,
-  ): string {
-    const params = new URLSearchParams({ repo, defaultBranch });
-    if (approvalTool) params.set('approvalTool', approvalTool);
-    return `/api/bulk-import/import/by-repo?${params.toString()}`;
-  }
-
+  ): string;
   getGetImportActionPath(
     repo: string,
     defaultBranch: string,
     approvalTool?: string,
-  ): string {
-    const params = new URLSearchParams({ repo, defaultBranch });
-    if (approvalTool) params.set('approvalTool', approvalTool);
-    return `/api/bulk-import/import/by-repo?${params.toString()}`;
-  }
-
+  ): string;
   getGetImportJobsPath(
     page: number,
     size: number,
     searchString: string,
     sortColumn: AddedRepositoryColumnNameEnum,
     sortOrder: SortingOrderEnum,
-  ): string {
-    const params = new URLSearchParams({
-      page: String(page),
-      size: String(size),
-      search: searchString,
-      sortColumn,
-      sortOrder,
-    });
-    return `/api/bulk-import/imports?${params.toString()}`;
+  ): string;
+  getSCMHostPath(): string;
+}
+
+export abstract class BulkImportRESTPathProviderBase implements IBulkImportRESTPathProvider {
+  abstract getCreateImportJobsPath(dryRun?: boolean): string | undefined;
+  abstract getDeleteImportActionPath(
+    repo: string,
+    defaultBranch: string,
+    approvalTool?: string,
+  ): string;
+  abstract getGetImportActionPath(
+    repo: string,
+    defaultBranch: string,
+    approvalTool?: string,
+  ): string;
+  abstract getGetImportJobsPath(
+    page: number,
+    size: number,
+    searchString: string,
+    sortColumn: AddedRepositoryColumnNameEnum,
+    sortOrder: SortingOrderEnum,
+  ): string;
+
+  getSCMHostPath(): string {
+    return `/api/bulk-import/scm-hosts`;
   }
 }

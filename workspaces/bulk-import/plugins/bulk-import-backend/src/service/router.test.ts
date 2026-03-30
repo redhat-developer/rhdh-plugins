@@ -31,6 +31,11 @@ describe('router tests', () => {
   describe('permission framework denial', () => {
     it.each([
       [
+        'GET /scm-hosts',
+        async (req: request.SuperTest<request.Test>) =>
+          req.get('/api/bulk-import/scm-hosts'),
+      ],
+      [
         'GET /organizations',
         async (req: request.SuperTest<request.Test>) =>
           req.get('/api/bulk-import/organizations'),
