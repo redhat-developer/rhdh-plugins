@@ -33,7 +33,11 @@ describe('MetricStatusCell', () => {
   it('should render status text when status is provided', () => {
     render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="success" theme={theme} />
+        <MetricStatusCell
+          status="success"
+          theme={theme}
+          statusColor="success.main"
+        />
       </ThemeProvider>,
     );
 
@@ -43,7 +47,7 @@ describe('MetricStatusCell', () => {
   it('should render -- when status is empty string', () => {
     render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="" theme={theme} />
+        <MetricStatusCell status="" theme={theme} statusColor="" />
       </ThemeProvider>,
     );
 
@@ -53,7 +57,11 @@ describe('MetricStatusCell', () => {
   it('should render a colored indicator box', () => {
     const { container } = render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="success" theme={theme} />
+        <MetricStatusCell
+          status="success"
+          theme={theme}
+          statusColor="success.main"
+        />
       </ThemeProvider>,
     );
 
@@ -64,7 +72,11 @@ describe('MetricStatusCell', () => {
   it('should use theme fallback color when status has no palette key', () => {
     render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="customStatus" theme={theme} />
+        <MetricStatusCell
+          status="customStatus"
+          theme={theme}
+          statusColor="customStatus"
+        />
       </ThemeProvider>,
     );
 

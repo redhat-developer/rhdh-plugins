@@ -20,12 +20,14 @@ import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 export const useOwnershipEntityRefs = () => {
   const identityApi = useApi(identityApiRef);
   const [ownershipEntityRefs, setOwnershipEntityRefs] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     identityApi.getBackstageIdentity().then(identity => {
       setOwnershipEntityRefs(identity?.ownershipEntityRefs ?? []);
+      setLoading(false);
     });
   }, [identityApi]);
 
-  return ownershipEntityRefs;
+  return { ownershipEntityRefs, loading };
 };

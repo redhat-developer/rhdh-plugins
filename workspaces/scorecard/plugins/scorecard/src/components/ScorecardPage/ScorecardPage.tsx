@@ -28,6 +28,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 import { ScorecardPageHeader } from './ScorecardPageHeader';
 import { EntitiesTable } from './EntitiesTable/EntitiesTable';
+import { ScorecardQueryProvider } from '../ScorecardQueryProvider';
 
 export const ScorecardPage = () => {
   const { aggregationId = '', metricId = '' } = useParams<{
@@ -112,3 +113,13 @@ export const ScorecardPage = () => {
     </Page>
   );
 };
+
+/**
+ * ScorecardPage wrapped with QueryClientProvider so it works
+ * when rendered outside a tree that already has a provider (e.g. on the homepage).
+ */
+export const ScorecardPageWithProvider = () => (
+  <ScorecardQueryProvider>
+    <ScorecardPage />
+  </ScorecardQueryProvider>
+);

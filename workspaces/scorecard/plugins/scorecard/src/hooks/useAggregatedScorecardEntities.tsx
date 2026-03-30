@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useMemo } from 'react';
 
+import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@backstage/core-plugin-api';
-import useAsync from 'react-use/lib/useAsync';
 import type { EntityMetricDetailResponse } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardApiRef } from '../api';
@@ -29,13 +28,13 @@ interface UseAggregatedScorecardEntitiesOptions {
   ownershipEntityRefs?: string[];
   orderBy?: string | null;
   order?: 'asc' | 'desc';
+  enabled?: boolean;
 }
 
 export const useAggregatedScorecardEntities = (
   options: UseAggregatedScorecardEntitiesOptions,
 ) => {
   const scorecardApi = useApi(scorecardApiRef);
-
   const {
     metricId,
     page = 1,
@@ -43,57 +42,55 @@ export const useAggregatedScorecardEntities = (
     ownershipEntityRefs = [],
     orderBy = null,
     order = 'asc',
+    enabled = true,
   } = options;
   const { t } = useTranslation();
 
-  const { error, loading, value } = useAsync(async () => {
-    try {
-      const aggregatedScorecardEntities =
-        await scorecardApi.getAggregatedScorecardEntities({
-          metricId,
-          page,
-          pageSize,
-          ownershipEntityRefs,
-          orderBy,
-          order,
-        });
+  const { error, isLoading, data } = useQuery({
+    queryKey: [
+      'aggregatedScorecardEntities',
+      metricId,
+      page,
+      pageSize,
+      ownershipEntityRefs,
+      orderBy,
+      order,
+    ],
+    queryFn: async () => {
+      try {
+        const aggregatedScorecardEntities =
+          await scorecardApi.getAggregatedScorecardEntities({
+            metricId,
+            page,
+            pageSize,
+            ownershipEntityRefs,
+            orderBy,
+            order,
+          });
 
-      if (
-        !aggregatedScorecardEntities ||
-        Array.isArray(aggregatedScorecardEntities) ||
-        typeof aggregatedScorecardEntities !== 'object'
-      ) {
-        throw new Error(t('errors.invalidApiResponse'));
+        if (
+          !aggregatedScorecardEntities ||
+          Array.isArray(aggregatedScorecardEntities) ||
+          typeof aggregatedScorecardEntities !== 'object'
+        ) {
+          throw new Error(t('errors.invalidApiResponse'));
+        }
+
+        return aggregatedScorecardEntities;
+      } catch (err) {
+        if (err instanceof Error) {
+          throw err;
+        }
+        throw new Error(t('errors.fetchError' as any, { error: String(err) }));
       }
+    },
+    enabled: Boolean(metricId) && enabled,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-      return aggregatedScorecardEntities;
-    } catch (err) {
-      if (err instanceof Error) {
-        throw err;
-      }
-      throw new Error(
-        t('errors.fetchError' as any, {
-          error: String(err),
-        }),
-      );
-    }
-  }, [
-    scorecardApi,
-    metricId,
-    page,
-    pageSize,
-    ownershipEntityRefs,
-    orderBy,
-    order,
-    t,
-  ]);
-
-  return useMemo(
-    () => ({
-      aggregatedScorecardEntities: value as EntityMetricDetailResponse,
-      loadingData: loading,
-      error,
-    }),
-    [value, loading, error],
-  );
+  return {
+    aggregatedScorecardEntities: data as EntityMetricDetailResponse,
+    loadingData: isLoading,
+    error,
+  };
 };

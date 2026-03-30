@@ -138,7 +138,10 @@ describe('EntitiesTable', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseOwnershipEntityRefs.mockReturnValue([]);
+    mockUseOwnershipEntityRefs.mockReturnValue({
+      ownershipEntityRefs: [],
+      loading: false,
+    });
     mockUseEntityMetadataMap.mockReturnValue({ entityMetadataMap: {} });
     mockUseAggregatedScorecardEntities.mockReturnValue({
       aggregatedScorecardEntities: defaultAggregatedData,
@@ -292,6 +295,7 @@ describe('EntitiesTable', () => {
         ownershipEntityRefs: [],
         orderBy: null,
         order: 'asc',
+        enabled: true,
       }),
     );
   });

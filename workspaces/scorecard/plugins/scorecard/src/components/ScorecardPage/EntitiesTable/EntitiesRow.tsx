@@ -20,10 +20,15 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import { useTheme } from '@mui/material/styles';
 
-import { getLastUpdatedLabel } from '../../../utils';
+import {
+  getLastUpdatedLabel,
+  getThresholdRuleColor,
+  SCORECARD_ERROR_STATE_COLOR,
+} from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { EntityMetadataMap } from '../../../components/types';
 import { useLanguage } from '../../../hooks/useLanguage';
+import { useAggregatedScorecard } from '../../../hooks/useAggregatedScorecard';
 
 import { MetricStatusCell } from './cells/MetricStatusCell';
 import { OwnerCell } from './cells/OwnerCell';
@@ -32,13 +37,24 @@ import { EntityNameCell } from './cells/EntityNameCell';
 export const EntitiesRow = ({
   entity,
   entityMetadataMap,
+  metricId,
 }: {
   entity: EntityMetricDetail;
   entityMetadataMap: EntityMetadataMap;
+  metricId: string;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const locale = useLanguage();
+
+  const { aggregatedScorecard } = useAggregatedScorecard({
+    metricId: metricId as string,
+  });
+  const thresholdRules = aggregatedScorecard?.result?.thresholds?.rules ?? [];
+
+  const statusColor =
+    getThresholdRuleColor(thresholdRules, entity?.status ?? '') ??
+    SCORECARD_ERROR_STATE_COLOR;
 
   return (
     <TableRow
@@ -50,7 +66,11 @@ export const EntitiesRow = ({
       }}
     >
       <TableCell width="12%">
-        <MetricStatusCell status={entity?.status ?? undefined} theme={theme} />
+        <MetricStatusCell
+          status={entity?.status ?? undefined}
+          theme={theme}
+          statusColor={statusColor}
+        />
       </TableCell>
 
       <TableCell width="8%">

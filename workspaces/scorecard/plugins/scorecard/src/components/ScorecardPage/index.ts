@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export { ScorecardPage } from './ScorecardPage';
+export { ScorecardPage, ScorecardPageWithProvider } from './ScorecardPage';

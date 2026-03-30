@@ -62,7 +62,8 @@ export const EntitiesTable = ({
 
   const { orderBy, order } = sortState;
 
-  const ownershipEntityRefs = useOwnershipEntityRefs();
+  const { ownershipEntityRefs, loading: ownershipLoading } =
+    useOwnershipEntityRefs();
 
   const {
     aggregatedScorecardEntities,
@@ -75,6 +76,7 @@ export const EntitiesTable = ({
     ownershipEntityRefs,
     orderBy,
     order,
+    enabled: !ownershipLoading,
   });
 
   const isNotFound = entitiesError?.message?.includes('NotFoundError');
@@ -129,7 +131,7 @@ export const EntitiesTable = ({
         />
 
         <TableBody>
-          {loadingDataEntities && (
+          {(ownershipLoading || loadingDataEntities) && (
             <TableRow key="entities-table-loading-row">
               <TableCell
                 colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
@@ -140,7 +142,7 @@ export const EntitiesTable = ({
             </TableRow>
           )}
 
-          {!loadingDataEntities && entitiesError && (
+          {!ownershipLoading && !loadingDataEntities && entitiesError && (
             <EntitiesTableStateRow
               colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
               error={entitiesError}
@@ -149,22 +151,27 @@ export const EntitiesTable = ({
             />
           )}
 
-          {!loadingDataEntities && !entitiesError && entities.length === 0 && (
-            <EntitiesTableStateRow
-              colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
-              metricId={metricId}
-              setMetricTitle={setMetricTitle}
-              noEntities={entities.length === 0}
-            />
-          )}
+          {!ownershipLoading &&
+            !loadingDataEntities &&
+            !entitiesError &&
+            entities.length === 0 && (
+              <EntitiesTableStateRow
+                colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
+                metricId={metricId}
+                setMetricTitle={setMetricTitle}
+                noEntities={entities.length === 0}
+              />
+            )}
 
-          {!loadingDataEntities &&
+          {!ownershipLoading &&
+            !loadingDataEntities &&
             entities.length > 0 &&
             entities.map((entity: EntityMetricDetail) => (
               <EntitiesRow
                 key={entity.entityRef}
                 entity={entity}
                 entityMetadataMap={entityMetadataMap}
+                metricId={metricId as string}
               />
             ))}
         </TableBody>
