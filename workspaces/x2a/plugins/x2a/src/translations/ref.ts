@@ -137,6 +137,8 @@ export const x2aPluginMessages = {
     columns: {
       name: 'Name',
       status: 'Status',
+      statusSortDisabledTooltip:
+        'Sorting by status is not available when the project count exceeds {{threshold}}',
       sourceRepo: 'Source Repository',
       targetRepo: 'Target Repository',
       createdAt: 'Created At',

@@ -100,15 +100,14 @@ export class ProjectOperations {
       canViewAll?: boolean;
       groupsOfUser: string[];
     },
+    dbOptions?: { skipPagination?: boolean },
   ): Promise<{ projects: Project[]; totalCount: number }> {
     const calledByUserRef = getUserRef(options.credentials);
     this.#logger.info(`listProjects called by ${calledByUserRef}`);
 
     const pageSize = query.pageSize || DEFAULT_PAGE_SIZE;
 
-    const rows = await this.#dbClient('projects')
-      .limit(pageSize)
-      .offset((query.page || 0) * pageSize)
+    const rowsQuery = this.#dbClient('projects')
       .select('*')
       .modify(queryBuilder =>
         filterPermissions(
@@ -117,35 +116,54 @@ export class ProjectOperations {
           calledByUserRef,
           options.groupsOfUser,
         ),
-      )
-      .orderBy(
-        mapSortToDatabaseColumn(query.sort) || DEFAULT_PAGE_SORT,
-        query.order || DEFAULT_PAGE_ORDER,
       );
 
-    const totalCount = (await this.#dbClient('projects')
-      .count('*', { as: 'count' })
-      .modify(queryBuilder =>
-        filterPermissions(
-          queryBuilder,
-          options.canViewAll,
-          calledByUserRef,
-          options.groupsOfUser,
-        ),
-      )
-      .first()) as { count: string | number };
+    if (!dbOptions?.skipPagination) {
+      rowsQuery
+        .orderBy(
+          mapSortToDatabaseColumn(query.sort) || DEFAULT_PAGE_SORT,
+          query.order || DEFAULT_PAGE_ORDER,
+        )
+        .limit(pageSize)
+        .offset((query.page || 0) * pageSize);
+    }
+
+    const rows = await rowsQuery;
+
+    // When pagination is skipped, rows already contains every matching row,
+    // so a separate COUNT query would be redundant.
+    const totalCount = dbOptions?.skipPagination
+      ? rows.length
+      : Number.parseInt(
+          String(
+            (
+              (await this.#dbClient('projects')
+                .count('*', { as: 'count' })
+                .modify(queryBuilder =>
+                  filterPermissions(
+                    queryBuilder,
+                    options.canViewAll,
+                    calledByUserRef,
+                    options.groupsOfUser,
+                  ),
+                )
+                .first()) as { count: string | number }
+            )?.count,
+          ),
+          10,
+        );
 
     const projects: Project[] = rows.map((row: Record<string, unknown>) =>
       mapRowToProject(row),
     );
 
     this.#logger.debug(
-      `Fetched ${projects.length} out of ${totalCount.count} projects from database (permissions applied)`,
+      `Fetched ${projects.length} out of ${totalCount} projects from database (permissions applied)`,
     );
 
     return {
       projects,
-      totalCount: Number.parseInt(String(totalCount.count), 10),
+      totalCount,
     };
   }
 

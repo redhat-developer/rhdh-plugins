@@ -42,6 +42,7 @@ readonly "table.columns.status": string;
 readonly "table.columns.createdAt": string;
 readonly "table.columns.sourceRepo": string;
 readonly "table.columns.targetRepo": string;
+readonly "table.columns.statusSortDisabledTooltip": string;
 readonly "table.actions.deleteProject": string;
 readonly "table.actions.retriggerInit": string;
 readonly "table.actions.expandAll": string;
