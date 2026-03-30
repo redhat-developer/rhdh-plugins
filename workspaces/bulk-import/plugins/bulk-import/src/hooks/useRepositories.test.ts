@@ -236,6 +236,60 @@ describe('useRepositories', () => {
       });
     });
 
+    it('does not include raw token values in the React Query key', async () => {
+      const secretToken = 'super-secret-oauth-token';
+      const mockGetCredentials = jest
+        .fn()
+        .mockResolvedValue({ token: secretToken });
+      const mockScmAuth = { getCredentials: mockGetCredentials };
+
+      const mockGetSCMHosts = jest.fn().mockResolvedValue({
+        github: ['https://github.com'],
+        gitlab: [],
+      });
+      const mockBulkImportApi = {
+        getSCMHosts: mockGetSCMHosts,
+        dataFetcher: jest.fn(),
+      };
+
+      mockUseApiHolder.mockReturnValue({
+        get: jest.fn().mockReturnValue(mockScmAuth),
+      });
+
+      const mockUseApi = jest.requireMock('@backstage/core-plugin-api').useApi;
+      mockUseApi.mockImplementation((ref: { id: string }) => {
+        if (ref.id === 'plugin.bulk-import.service') return mockBulkImportApi;
+        return undefined;
+      });
+
+      (useQuery as jest.Mock).mockClear();
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockGetRepositories,
+        isLoading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const { result } = renderHook(() =>
+        useRepositories({
+          page: 1,
+          querySize: 10,
+          approvalTool: ApprovalTool.Git,
+        }),
+      );
+
+      await waitFor(() => {
+        expect(result.current.loading).toBeFalsy();
+      });
+
+      // Inspect the query key from the most recent render — it must never
+      // expose raw token values; only the sorted host URLs should appear.
+      const lastQueryKey = (useQuery as jest.Mock).mock.calls.at(-1)?.[0];
+      const serialised = JSON.stringify(lastQueryKey);
+      expect(serialised).not.toContain(secretToken);
+      expect(serialised).toContain('https://github.com');
+    });
+
     it('skips token fetching when getSCMHosts returns a Response error', async () => {
       const mockScmAuth = { getCredentials: jest.fn() };
       const mockGetSCMHosts = jest

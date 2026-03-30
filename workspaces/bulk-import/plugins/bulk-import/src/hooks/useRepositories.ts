@@ -113,14 +113,11 @@ export const useRepositories = (
     );
   };
 
-  const tokenGeneration = useMemo(
+  const scmAuthHosts = useMemo(
     () =>
-      scmAuthTokens
-        ? Object.entries(scmAuthTokens)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([k, v]) => `${k}=${v}`)
-            .join(',')
-        : '',
+      Object.keys(scmAuthTokens ?? {})
+        .sort()
+        .join(','),
     [scmAuthTokens],
   );
 
@@ -132,7 +129,7 @@ export const useRepositories = (
     [
       options?.showOrganizations ? 'organizations' : 'repositories',
       options,
-      tokenGeneration,
+      scmAuthHosts,
     ],
     () => fetchRepositories(options),
     {
