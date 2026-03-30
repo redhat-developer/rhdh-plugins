@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+export * from './AppSidebarGroup';
+export * from './AppSidebarGroupBlueprint';
+export * from './appSidebarGroupDataRef';
 export * from './AppSidebarItem';
 export * from './AppSidebarItemBlueprint';
 export * from './appSidebarItemDataRef';

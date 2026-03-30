@@ -15,29 +15,74 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { AppSidebarItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import {
+  AppSidebarGroupBlueprint,
+  AppSidebarItemBlueprint,
+} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import CategoryIcon from '@material-ui/icons/Category';
+import CloudIcon from '@material-ui/icons/Cloud';
+import StorageIcon from '@material-ui/icons/Storage';
+import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
+import HelpIcon from '@material-ui/icons/Help';
 
-const chatDrawer = AppSidebarItemBlueprint.make({
-  name: 'demo-chat',
+// --- Group with children (attachTo pattern) ---
+
+const platformGroup = AppSidebarGroupBlueprint.make({
+  name: 'demo-platform',
   params: {
-    id: 'demo-chat',
-    title: 'Chat',
-    titleKey: 'app.demo.chat',
-    // element: <ChatDrawerContent />,
+    id: 'demo-platform',
+    title: 'Platform',
+    icon: CategoryIcon,
   },
 });
 
-const helpDrawer = AppSidebarItemBlueprint.make({
+const clustersItem = AppSidebarItemBlueprint.make({
+  name: 'demo-clusters',
+  attachTo: platformGroup.inputs.children,
+  params: {
+    id: 'demo-clusters',
+    title: 'Clusters',
+    href: '/clusters',
+    icon: CloudIcon,
+  },
+});
+
+const databasesItem = AppSidebarItemBlueprint.make({
+  name: 'demo-databases',
+  attachTo: platformGroup.inputs.children,
+  params: {
+    id: 'demo-databases',
+    title: 'Databases',
+    href: '/databases',
+    icon: StorageIcon,
+  },
+});
+
+// --- Top-level href item ---
+
+const docsItem = AppSidebarItemBlueprint.make({
+  name: 'demo-docs',
+  params: {
+    id: 'demo-docs',
+    title: 'Docs',
+    href: '/docs',
+    icon: LibraryBooksIcon,
+  },
+});
+
+// --- Top-level item with custom element ---
+
+const helpItem = AppSidebarItemBlueprint.make({
   name: 'demo-help',
   params: {
     id: 'demo-help',
     title: 'Help',
-    titleKey: 'app.demo.help',
-    // element: <HelpDrawerContent />,
+    icon: HelpIcon,
+    href: '/help',
   },
 });
 
 export const sidebarDemoModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [chatDrawer, helpDrawer],
+  extensions: [platformGroup, clustersItem, databasesItem, docsItem, helpItem],
 });

@@ -15,33 +15,39 @@
  */
 
 import { createExtensionBlueprint } from '@backstage/frontend-plugin-api';
+import type { IconComponent } from '@backstage/frontend-plugin-api';
 
 import { appSidebarItemDataRef } from './appSidebarItemDataRef';
 
 /**
  * Blueprint for plugins to contribute sidebar item content to the app sidebar.
  *
- * The `resizable`, `defaultWidth`, and `priority` fields can be overridden by
- * deployers via `app-config.yaml` without changing plugin code:
+ * Supports three modes:
+ * - **Link items**: provide `title`, `href`, and `icon` for a simple nav link
+ * - **Custom element items**: provide `element` for fully custom rendering
+ * - **Child items**: use `attachTo` to nest under an `AppSidebarGroupBlueprint`
+ *
+ * The `priority` and `href` fields can be overridden by deployers via
+ * `app-config.yaml` without changing plugin code:
  *
  * ```yaml
  * app:
  *   extensions:
- *     - app-drawer-content:app/my-drawer:
+ *     - app-sidebar-item:app/my-item:
  *         config:
- *           defaultWidth: 600
- *           resizable: false
+ *           priority: 100
+ *           href: /custom-path
  * ```
  *
  * @example
  * ```
- * const myDrawer = AppDrawerContentBlueprint.make({
- *   name: 'my-drawer',
+ * const myItem = AppSidebarItemBlueprint.make({
+ *   name: 'my-item',
  *   params: {
- *     id: 'my-drawer',
- *     element: <MyDrawerContent />,
- *     resizable: true,
- *     defaultWidth: 500,
+ *     id: 'my-item',
+ *     title: 'My Item',
+ *     href: '/my-item',
+ *     icon: MyIcon,
  *   },
  * });
  * ```
@@ -57,9 +63,8 @@ export const AppSidebarItemBlueprint = createExtensionBlueprint({
   },
   config: {
     schema: {
-      defaultWidth: z => z.number().optional(),
-      resizable: z => z.boolean().optional(),
       priority: z => z.number().optional(),
+      href: z => z.string().optional(),
     },
   },
   *factory(
@@ -67,6 +72,8 @@ export const AppSidebarItemBlueprint = createExtensionBlueprint({
       id: string;
       title: string;
       titleKey?: string;
+      href?: string;
+      icon?: IconComponent;
       element?: React.ReactElement;
       priority?: number;
     },
@@ -76,6 +83,8 @@ export const AppSidebarItemBlueprint = createExtensionBlueprint({
       id: params.id,
       title: params.title,
       titleKey: params.titleKey,
+      href: config.href ?? params.href,
+      icon: params.icon,
       element: params.element,
       priority: config.priority ?? params.priority,
     });

@@ -16,24 +16,26 @@
 
 import type { IconComponent } from '@backstage/frontend-plugin-api';
 
+import type { AppSidebarItem } from './AppSidebarItem';
+
 /**
- * Application sidebar content contributed by a plugin via AppSidebarItemBlueprint.
+ * A sidebar group that contains child nav items, contributed via
+ * AppSidebarGroupBlueprint. Children attach to the group using
+ * AppSidebarItemBlueprint with `attachTo: group.inputs.children`.
  *
- * @public
+ * @alpha
  */
-export interface AppSidebarItem {
-  /** Unique identifier for this sidebar item. */
+export interface AppSidebarGroup {
+  /** Unique identifier for this sidebar group. */
   id: string;
-  /** Title for the sidebar item. */
+  /** Title for the sidebar group. */
   title: string;
   /** Key for localizing the title. */
   titleKey?: string;
-  /** URL path for simple link items. */
-  href?: string;
-  /** Icon component for the sidebar item. */
+  /** Icon component for the sidebar group. */
   icon?: IconComponent;
-  /** React element to render as sidebar item. */
-  element?: React.ReactElement;
-  /** Ordering priority when multiple items are registered. Higher = first. */
+  /** Child nav items collected from attached extensions. */
+  children: AppSidebarItem[];
+  /** Ordering priority when multiple groups are registered. Higher = first. */
   priority?: number;
 }

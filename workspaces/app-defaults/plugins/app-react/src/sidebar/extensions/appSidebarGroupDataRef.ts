@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { SidebarContent } from './Sidebar';
+import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
 
-export * from './extensions';
+import type { AppSidebarGroup } from './AppSidebarGroup';
 
-export const appSidebarModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [SidebarContent],
-});
+/**
+ * Extension data ref carrying sidebar group content from a plugin to the host.
+ *
+ * @alpha
+ */
+export const appSidebarGroupDataRef =
+  createExtensionDataRef<AppSidebarGroup>().with({
+    id: 'app.sidebar.group',
+  });
