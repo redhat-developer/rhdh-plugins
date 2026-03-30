@@ -14,9 +14,20 @@
  * limitations under the License.
  */
 import { KonfluxConfig } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import type { KubeConfig } from '@kubernetes/client-node';
+import type { KubeConfig, CustomObjectsApi } from '@kubernetes/client-node';
 import { KonfluxLogger } from './logger';
 import { getKubeClient } from './kube-client';
+
+/**
+ * Cache for CustomObjectsApi clients keyed by "cluster:apiUrl".
+ *
+ * Per-request auth headers are injected via middleware in the callers,
+ * so cached clients are safe to share across users.
+ *
+ *  Caching avoids creating a new KubeConfig, CustomObjectsApi, and TLS
+ * connection on every API call.
+ */
+const clientCache = new Map<string, CustomObjectsApi>();
 
 /**
  * Creates a KubeConfig for connecting to a Kubernetes cluster.
@@ -93,4 +104,55 @@ export const createKubeConfig = async (
     });
     return null;
   }
+};
+
+/**
+ * Returns a cached CustomObjectsApi client for the given cluster, creating
+ * one on first access. The client is safe to share across requests because
+ * auth headers are injected per-request via middleware.
+ *
+ * @param konfluxConfig - Konflux configuration
+ * @param cluster - Cluster name
+ * @param konfluxLogger - Logger instance
+ * @param useKubearchiveUrl - If true, targets the kubearchive API URL
+ * @returns CustomObjectsApi instance or null if client creation fails
+ */
+export const getOrCreateClient = async (
+  konfluxConfig: KonfluxConfig | undefined,
+  cluster: string,
+  konfluxLogger: KonfluxLogger,
+  useKubearchiveUrl = false,
+): Promise<CustomObjectsApi | null> => {
+  if (!konfluxConfig) {
+    return null;
+  }
+
+  const clusterConfig = konfluxConfig.clusters?.[cluster];
+  const apiUrl = useKubearchiveUrl
+    ? clusterConfig?.kubearchiveApiUrl
+    : clusterConfig?.apiUrl;
+
+  const cacheKey = `${cluster}:${apiUrl}`;
+
+  const cached = clientCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const kc = await createKubeConfig(
+    konfluxConfig,
+    cluster,
+    konfluxLogger,
+    clusterConfig?.serviceAccountToken,
+    useKubearchiveUrl,
+  );
+
+  if (!kc) {
+    return null;
+  }
+
+  const { CustomObjectsApi } = await getKubeClient();
+  const client = kc.makeApiClient(CustomObjectsApi);
+  clientCache.set(cacheKey, client);
+  return client;
 };
