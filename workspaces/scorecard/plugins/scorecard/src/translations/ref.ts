@@ -115,7 +115,7 @@ export const scorecardMessages = {
       unavailable: 'Unavailable',
       titleWithCount: 'Entities ({{count}})',
       header: {
-        metric: 'Metric',
+        status: 'Status',
         value: 'Value',
         entity: 'Entity',
         owner: 'Owner',

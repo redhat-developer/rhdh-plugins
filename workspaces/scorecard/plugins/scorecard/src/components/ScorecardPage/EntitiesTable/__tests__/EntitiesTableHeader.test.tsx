@@ -43,7 +43,7 @@ describe('EntitiesTableHeader', () => {
     );
 
     expect(
-      screen.getByText('entitiesPage.entitiesTable.header.metric'),
+      screen.getByText('entitiesPage.entitiesTable.header.status'),
     ).toBeInTheDocument();
     expect(
       screen.getByText('entitiesPage.entitiesTable.header.value'),
@@ -71,7 +71,7 @@ describe('EntitiesTableHeader', () => {
     );
 
     const statusHeader = screen.getByText(
-      'entitiesPage.entitiesTable.header.metric',
+      'entitiesPage.entitiesTable.header.status',
     );
     await userEvent.click(statusHeader);
 
@@ -86,7 +86,7 @@ describe('EntitiesTableHeader', () => {
     );
 
     const sortLabel = screen.getByRole('button', {
-      name: /entitiesPage.entitiesTable.header.metric/i,
+      name: /entitiesPage.entitiesTable.header.status/i,
     });
     expect(sortLabel).toBeInTheDocument();
   });

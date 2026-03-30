@@ -29,7 +29,7 @@ interface HeadCell {
 export const SCORECARD_ENTITIES_TABLE_HEADERS: readonly HeadCell[] = [
   {
     id: 'status',
-    label: 'entitiesPage.entitiesTable.header.metric',
+    label: 'entitiesPage.entitiesTable.header.status',
     width: '12%',
     sortable: true,
   },
