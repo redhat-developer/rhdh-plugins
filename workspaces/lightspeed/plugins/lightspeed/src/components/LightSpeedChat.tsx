@@ -336,24 +336,39 @@ const useStyles = makeStyles(theme => ({
   settingsFlat: {
     height: '100%',
     width: '100%',
+    backgroundColor:
+      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
     '&.pf-chatbot__settings-form-container': {
-      background: 'transparent',
+      background:
+        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
       padding: 0,
       margin: 0,
+      minHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
       width: '100%',
       maxWidth: 'none',
     },
     '& .pf-chatbot__settings-form': {
       margin: 0,
       padding: 0,
+      background:
+        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      minHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
       width: '100%',
       maxWidth: 'none',
     },
     '& .pf-chatbot__settings-form-row': {
-      background: 'transparent',
+      background:
+        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
       border: 0,
       margin: 0,
       padding: 0,
+      minHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
       width: '100%',
       maxWidth: 'none',
     },
@@ -379,6 +394,8 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minWidth: 0,
     borderLeft: `1px solid ${theme.palette.divider}`,
+    backgroundColor:
+      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
@@ -438,7 +455,6 @@ export const LightspeedChat = ({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
   const [isMcpSettingsOpen, setIsMcpSettingsOpen] = useState<boolean>(false);
-  const [chatHeaderBgColor, setChatHeaderBgColor] = useState<string>();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
   const [messageBarKey, setMessageBarKey] = useState(0);
@@ -489,16 +505,6 @@ export const LightspeedChat = ({
       setIsChatHistoryDrawerOpen(true);
     }
   }, [isMobile, isFullscreenMode]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const headerElement = document.querySelector('.pf-chatbot__header');
-    if (!headerElement) return;
-    const computedBg = window.getComputedStyle(headerElement).backgroundColor;
-    if (computedBg) {
-      setChatHeaderBgColor(computedBg);
-    }
-  }, [displayMode, isMcpSettingsOpen]);
 
   const {
     isPinningChatsEnabled,
@@ -1153,10 +1159,7 @@ export const LightspeedChat = ({
       <div className={classes.mcpFullscreenLayout}>
         <div className={classes.mcpChatPane}>{chatMainContent}</div>
         <div className={classes.mcpSettingsPane}>
-          <McpServersSettings
-            onClose={() => setIsMcpSettingsOpen(false)}
-            backgroundColor={chatHeaderBgColor}
-          />
+          <McpServersSettings onClose={() => setIsMcpSettingsOpen(false)} />
         </div>
       </div>
     );
@@ -1169,10 +1172,7 @@ export const LightspeedChat = ({
             id: 'mcp-servers-settings',
             label: '',
             field: (
-              <McpServersSettings
-                onClose={() => setIsMcpSettingsOpen(false)}
-                backgroundColor={chatHeaderBgColor}
-              />
+              <McpServersSettings onClose={() => setIsMcpSettingsOpen(false)} />
             ),
           },
         ]}

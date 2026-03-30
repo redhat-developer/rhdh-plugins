@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { makeStyles } from '@material-ui/core';
 import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
 import Typography from '@mui/material/Typography';
-import { Button, Switch, Title, Tooltip } from '@patternfly/react-core';
+import { Alert, Button, Switch, Title, Tooltip } from '@patternfly/react-core';
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -37,23 +39,25 @@ type McpServer = {
   id: string;
   name: string;
   enabled: boolean;
-  status: ServerStatus;
-  detail: string;
-  errorMessage?: string;
+  status: 'connected' | 'error' | 'unknown';
+  toolCount: number;
+  hasToken: boolean;
+  hasUserToken: boolean;
 };
 
 type McpServersSettingsProps = {
   onClose: () => void;
-  backgroundColor?: string;
 };
 
 const useStyles = makeStyles(theme => ({
   root: {
     padding: 0,
     height: '100%',
+    minHeight: '100%',
     width: '100%',
     overflow: 'auto',
-    backgroundColor: theme.palette.action.disabled,
+    backgroundColor:
+      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
   },
   headerRow: {
     display: 'flex',
@@ -159,68 +163,29 @@ const useStyles = makeStyles(theme => ({
       verticalAlign: 'middle',
     },
   },
+  alert: {
+    marginLeft: theme.spacing(3),
+    marginRight: theme.spacing(3),
+    marginBottom: theme.spacing(2),
+  },
 }));
 
-const INITIAL_SERVERS: McpServer[] = [
-  {
-    id: 'github',
-    name: 'Github',
-    enabled: true,
-    status: 'tokenRequired',
-    detail: 'Token required',
-  },
-  {
-    id: 'dynatrace',
-    name: 'Dynatrace',
-    enabled: false,
-    status: 'disabled',
-    detail: 'Disabled',
-  },
-  {
-    id: 'openshift',
-    name: 'Openshift',
-    enabled: true,
-    status: 'ok',
-    detail: '7 tools',
-  },
-  {
-    id: 'kubernetes',
-    name: 'Kubernetes',
-    enabled: true,
-    status: 'failed',
-    detail: '4 tools',
-    errorMessage:
-      'Token authentication failed, click edit to configure it again',
-  },
-  {
-    id: 'developerhub',
-    name: 'Developer Hub',
-    enabled: true,
-    status: 'ok',
-    detail: '5 tools',
-  },
-  {
-    id: 'jenkins',
-    name: 'Jenkins',
-    enabled: false,
-    status: 'disabled',
-    detail: 'Disabled',
-  },
-  {
-    id: 'servicenow',
-    name: 'Servicenow',
-    enabled: true,
-    status: 'ok',
-    detail: '3 tools',
-  },
-  {
-    id: 'figma',
-    name: 'Figma',
-    enabled: true,
-    status: 'failed',
-    detail: 'Failed',
-  },
-];
+type McpServerResponse = {
+  name: string;
+  enabled: boolean;
+  status: 'connected' | 'error' | 'unknown';
+  toolCount: number;
+  hasToken: boolean;
+  hasUserToken: boolean;
+};
+
+type McpServersListResponse = {
+  servers?: McpServerResponse[];
+};
+
+type McpServersPatchResponse = {
+  server?: McpServerResponse;
+};
 
 const getStatusIcon = (status: ServerStatus, className: string) => {
   if (status === 'tokenRequired') return <KeyIcon className={className} />;
@@ -232,9 +197,9 @@ const getStatusIcon = (status: ServerStatus, className: string) => {
 
 const getDisplayStatus = (server: McpServer): ServerStatus => {
   if (!server.enabled) return 'disabled';
-  if (server.status === 'tokenRequired') return 'tokenRequired';
-  if (server.status === 'failed') return 'failed';
-  if (server.status === 'ok') return 'ok';
+  if (!server.hasToken) return 'tokenRequired';
+  if (server.status === 'error') return 'failed';
+  if (server.status === 'connected') return 'ok';
   return 'unknown';
 };
 
@@ -244,17 +209,128 @@ const getDisplayDetail = (
 ): string => {
   if (displayStatus === 'disabled') return 'Disabled';
   if (displayStatus === 'tokenRequired') return 'Token required';
-  if (displayStatus === 'failed') return server.detail || 'Failed';
-  return server.detail;
+  if (displayStatus === 'failed') return 'Failed';
+  if (displayStatus === 'ok') {
+    const suffix = server.toolCount === 1 ? 'tool' : 'tools';
+    return `${server.toolCount} ${suffix}`;
+  }
+  return 'Unknown';
 };
 
-export const McpServersSettings = ({
-  onClose,
-  backgroundColor,
-}: McpServersSettingsProps) => {
+const toUiServer = (server: McpServerResponse): McpServer => ({
+  id: server.name,
+  name: server.name,
+  enabled: server.enabled,
+  status: server.status,
+  toolCount: server.toolCount,
+  hasToken: server.hasToken,
+  hasUserToken: server.hasUserToken,
+});
+
+export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
   const classes = useStyles();
-  const [servers, setServers] = useState<McpServer[]>(INITIAL_SERVERS);
+  const configApi = useApi(configApiRef);
+  const fetchApi = useApi(fetchApiRef);
+  const [servers, setServers] = useState<McpServer[]>([]);
   const [sortAsc, setSortAsc] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState<string | null>(null);
+
+  const getBaseUrl = useCallback(() => {
+    return `${configApi.getString('backend.baseUrl')}/api/lightspeed`;
+  }, [configApi]);
+
+  const fetchJson = useCallback(
+    async <T,>(url: string, init?: RequestInit): Promise<T> => {
+      const response = await fetchApi.fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        ...init,
+      });
+      if (!response.ok) {
+        let message = `${response.status} ${response.statusText}`;
+        try {
+          const bodyText = await response.text();
+          if (bodyText) {
+            const parsed = JSON.parse(bodyText);
+            if (parsed?.error) {
+              message = parsed.error;
+            }
+          }
+        } catch {
+          // Keep default message when parsing fails.
+        }
+        throw new Error(message);
+      }
+
+      const text = await response.text();
+      return (text ? JSON.parse(text) : {}) as T;
+    },
+    [fetchApi],
+  );
+
+  const loadServers = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const baseUrl = getBaseUrl();
+      const data = await fetchJson<McpServersListResponse>(
+        `${baseUrl}/mcp-servers`,
+      );
+      setServers((data.servers ?? []).map(toUiServer));
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : 'Failed to load MCP server settings',
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchJson, getBaseUrl]);
+
+  useEffect(() => {
+    loadServers();
+  }, [loadServers]);
+
+  const patchServer = useCallback(
+    async (
+      serverName: string,
+      body: { enabled?: boolean; token?: string | null },
+    ) => {
+      setError(null);
+      setIsSaving(prev => ({ ...prev, [serverName]: true }));
+      try {
+        const baseUrl = getBaseUrl();
+        const data = await fetchJson<McpServersPatchResponse>(
+          `${baseUrl}/mcp-servers/${encodeURIComponent(serverName)}`,
+          {
+            method: 'PATCH',
+            body: JSON.stringify(body),
+          },
+        );
+
+        if (data.server) {
+          setServers(prev =>
+            prev.map(server =>
+              server.name === serverName ? toUiServer(data.server!) : server,
+            ),
+          );
+        } else {
+          await loadServers();
+        }
+      } catch (e) {
+        setError(
+          e instanceof Error
+            ? e.message
+            : `Failed to update ${serverName} settings`,
+        );
+      } finally {
+        setIsSaving(prev => ({ ...prev, [serverName]: false }));
+      }
+    },
+    [fetchJson, getBaseUrl, loadServers],
+  );
 
   const selectedCount = useMemo(
     () => servers.filter(server => server.enabled).length,
@@ -270,7 +346,7 @@ export const McpServersSettings = ({
   }, [servers, sortAsc]);
 
   return (
-    <div className={classes.root} style={{ backgroundColor }}>
+    <div className={classes.root}>
       <div className={classes.headerRow}>
         <div>
           <Title headingLevel="h2" size="xl" className={classes.title}>
@@ -288,6 +364,14 @@ export const McpServersSettings = ({
           onClick={onClose}
         />
       </div>
+      {error && (
+        <Alert
+          variant="danger"
+          isInline
+          title={error}
+          className={classes.alert}
+        />
+      )}
 
       <Table
         variant="compact"
@@ -315,6 +399,11 @@ export const McpServersSettings = ({
           </Tr>
         </Thead>
         <Tbody>
+          {isLoading && (
+            <Tr>
+              <Td colSpan={4}>Loading MCP servers...</Td>
+            </Tr>
+          )}
           {sortedServers.map(server => {
             const displayStatus = getDisplayStatus(server);
             const displayDetail = getDisplayDetail(server, displayStatus);
@@ -332,31 +421,20 @@ export const McpServersSettings = ({
                 <Td width={10} className={classes.toggleCell}>
                   {(() => {
                     const isUnavailable =
-                      server.status === 'failed' ||
-                      server.status === 'tokenRequired';
+                      displayStatus === 'failed' ||
+                      displayStatus === 'tokenRequired';
                     const isChecked = isUnavailable ? false : server.enabled;
+                    const isRowSaving = Boolean(isSaving[server.name]);
 
                     return (
                       <Switch
                         id={`mcp-switch-${server.id}`}
                         aria-label={`Toggle ${server.name}`}
                         isChecked={isChecked}
-                        isDisabled={isUnavailable}
-                        onChange={(_event, checked) =>
-                          setServers(prev =>
-                            prev.map(item =>
-                              item.id === server.id
-                                ? {
-                                    ...item,
-                                    enabled: checked,
-                                    ...(checked && item.status === 'disabled'
-                                      ? { status: 'ok', detail: '5 tools' }
-                                      : {}),
-                                  }
-                                : item,
-                            ),
-                          )
-                        }
+                        isDisabled={isUnavailable || isRowSaving}
+                        onChange={(_event, checked) => {
+                          patchServer(server.name, { enabled: checked });
+                        }}
                       />
                     );
                   })()}
@@ -372,8 +450,8 @@ export const McpServersSettings = ({
                 <Td width={40} className={classes.statusColumnCell}>
                   <div className={classes.statusCell}>
                     {getStatusIcon(displayStatus, statusClass)}
-                    {displayStatus === 'failed' && server.errorMessage ? (
-                      <Tooltip content={server.errorMessage}>
+                    {displayStatus === 'failed' ? (
+                      <Tooltip content="Token authentication failed, click edit to configure it again">
                         <Typography
                           component="span"
                           className={classes.statusValue}
@@ -397,6 +475,7 @@ export const McpServersSettings = ({
                     icon={<ModeEditOutlineOutlinedIcon fontSize="small" />}
                     variant="plain"
                     className={classes.actionButton}
+                    isDisabled
                   />
                 </Td>
               </Tr>
