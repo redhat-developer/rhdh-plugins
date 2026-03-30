@@ -244,7 +244,7 @@ export class V2 {
         );
       }
 
-      // Once we have the start state and its eventRef, go back an find it in the events array
+      // Once we have the start state and its eventRef, go back and find it in the events array
       const workflowEventToUse = parsedDefinitionSource.events.filter(
         (val: { name: any }) => {
           return val.name === eventName;
