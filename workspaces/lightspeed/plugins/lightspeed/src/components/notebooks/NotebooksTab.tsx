@@ -33,6 +33,7 @@ type NotebooksTabProps = {
   setOpenNotebookMenuId: React.Dispatch<React.SetStateAction<string | null>>;
   onRename: (sessionId: string) => void;
   onDelete: (sessionId: string) => void;
+  onCreateNotebook: () => void;
   t: TranslationFunction<typeof lightspeedTranslationRef.T>;
   getDocumentsCount: (documentIds?: string[]) => number;
 };
@@ -45,6 +46,7 @@ export const NotebooksTab = ({
   setOpenNotebookMenuId,
   onRename,
   onDelete,
+  onCreateNotebook,
   t,
   getDocumentsCount,
 }: NotebooksTabProps) => (
@@ -58,6 +60,7 @@ export const NotebooksTab = ({
           variant="primary"
           className={classes.notebooksAction}
           icon={<PlusCircleIcon />}
+          onClick={onCreateNotebook}
         >
           {t('notebooks.empty.action')}
         </Button>
@@ -76,7 +79,11 @@ export const NotebooksTab = ({
         >
           {t('notebooks.empty.description')}
         </Typography>
-        <Button variant="primary" className={classes.notebooksActionEmpty}>
+        <Button
+          variant="primary"
+          className={classes.notebooksActionEmpty}
+          onClick={onCreateNotebook}
+        >
           {t('notebooks.empty.action')}
         </Button>
       </div>

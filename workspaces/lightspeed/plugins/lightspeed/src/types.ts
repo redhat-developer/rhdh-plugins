@@ -213,3 +213,75 @@ export type NotebookSession = {
   updated_at: string;
   metadata?: NotebookSessionMetadata;
 };
+
+/**
+ * @public
+ * Supported file types for notebook document uploads
+ */
+export type NotebookDocumentSourceType =
+  | 'text'
+  | 'pdf'
+  | 'url'
+  | 'md'
+  | 'json'
+  | 'yaml'
+  | 'log';
+
+/**
+ * @public
+ * Document within a notebook session
+ */
+export type SessionDocument = {
+  document_id: string;
+  title: string;
+  session_id: string;
+  user_id: string;
+  source_type: NotebookDocumentSourceType;
+  created_at: string;
+  metadata?: Record<string, any>;
+};
+
+/**
+ * @public
+ * Response from the document upload endpoint (HTTP 202)
+ */
+export type UploadDocumentResponse = {
+  status: 'processing';
+  document_id: string;
+  session_id: string;
+  message: string;
+};
+
+/**
+ * @public
+ * Document processing status from the status polling endpoint
+ */
+export type DocumentStatus = {
+  status: 'in_progress' | 'completed' | 'failed' | 'cancelled';
+  document_id: string;
+  session_id: string;
+  error?: string;
+};
+
+/**
+ * @public
+ * Response wrapper for session creation
+ */
+export type SessionResponse = {
+  status: 'success' | 'error';
+  session?: NotebookSession;
+  message?: string;
+  error?: string;
+};
+
+/**
+ * @public
+ * Response wrapper for document list
+ */
+export type DocumentListResponse = {
+  status: 'success' | 'error';
+  session_id?: string;
+  documents?: SessionDocument[];
+  count?: number;
+  error?: string;
+};
