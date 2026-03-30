@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
 import { BulkImportRESTPathProviderBase } from './BulkImportBackendClientBase';
 
 export class OrchestratorBulkImportBackendClientPathProvider extends BulkImportRESTPathProviderBase {
@@ -34,28 +33,7 @@ export class OrchestratorBulkImportBackendClientPathProvider extends BulkImportR
     return `/api/bulk-import/orchestrator-import/by-repo?${params.toString()}`;
   }
 
-  getGetImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool?: string,
-  ): string {
-    return this.getDeleteImportActionPath(repo, defaultBranch, approvalTool);
-  }
-
-  getGetImportJobsPath(
-    page: number,
-    size: number,
-    searchString: string,
-    sortColumn: AddedRepositoryColumnNameEnum,
-    sortOrder: SortingOrderEnum,
-  ): string {
-    const params = new URLSearchParams({
-      page: String(page),
-      size: String(size),
-      search: searchString,
-      sortColumn,
-      sortOrder,
-    });
-    return `/api/bulk-import/orchestrator-workflows?${params.toString()}`;
+  protected getImportJobsBasePath(): string {
+    return `/api/bulk-import/orchestrator-workflows`;
   }
 }

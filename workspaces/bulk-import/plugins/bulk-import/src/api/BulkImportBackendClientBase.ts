@@ -45,18 +45,33 @@ export abstract class BulkImportRESTPathProviderBase implements IBulkImportRESTP
     defaultBranch: string,
     approvalTool?: string,
   ): string;
-  abstract getGetImportActionPath(
+
+  getGetImportActionPath(
     repo: string,
     defaultBranch: string,
     approvalTool?: string,
-  ): string;
-  abstract getGetImportJobsPath(
+  ): string {
+    return this.getDeleteImportActionPath(repo, defaultBranch, approvalTool);
+  }
+
+  protected abstract getImportJobsBasePath(): string;
+
+  getGetImportJobsPath(
     page: number,
     size: number,
     searchString: string,
     sortColumn: AddedRepositoryColumnNameEnum,
     sortOrder: SortingOrderEnum,
-  ): string;
+  ): string {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      search: searchString,
+      sortColumn,
+      sortOrder,
+    });
+    return `${this.getImportJobsBasePath()}?${params.toString()}`;
+  }
 
   getSCMHostPath(): string {
     return `/api/bulk-import/scm-hosts`;

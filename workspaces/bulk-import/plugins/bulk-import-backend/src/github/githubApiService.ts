@@ -95,6 +95,35 @@ export class GithubApiService implements GitApiService {
     this.cache = cacheService;
   }
 
+  private get integrationDeps() {
+    return {
+      logger: this.logger,
+      cache: this.cache,
+      githubCredentialsProvider: this.githubCredentialsProvider,
+    };
+  }
+
+  private get executionDeps() {
+    return {
+      ...this.integrationDeps,
+      config: this.config,
+    };
+  }
+
+  private buildRepositoryResponse(
+    repositories: Map<string, GithubRepository>,
+    result: { data: number[]; errors: Map<number, GithubFetchError> },
+    pageSize: number,
+  ): GithubRepositoryResponse {
+    const repoList = Array.from(repositories.values());
+    const totalCount = computeTotalCount(repoList, result.data, pageSize);
+    return {
+      repositories: repoList,
+      errors: Array.from(result.errors.values()),
+      totalCount,
+    };
+  }
+
   async getCredentials(repoUrl: string): Promise<{ token: string }> {
     const provider = DefaultGithubCredentialsProvider.fromIntegrations(
       this.integrations,
@@ -115,11 +144,7 @@ export class GithubApiService implements GitApiService {
     errors?: GithubFetchError[];
   }> {
     const { data, errors } = await fetchFromMatchedIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.integrationDeps,
       this.integrations,
       repoUrl,
       async (octokit, gitUrl) => {
@@ -155,11 +180,7 @@ export class GithubApiService implements GitApiService {
   ): Promise<GithubOrganizationResponse> {
     const orgs = new Map<string, GithubOrganization>();
     const result = await fetchFromAllIntegrations(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.integrationDeps,
       this.integrations,
       {
         dataFetcher: async (
@@ -293,11 +314,7 @@ export class GithubApiService implements GitApiService {
     }
 
     const result = await fetchFromAllIntegrations(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.integrationDeps,
       this.integrations,
       {
         dataFetcher: async (
@@ -356,13 +373,7 @@ export class GithubApiService implements GitApiService {
       },
     );
 
-    const repoList = Array.from(repositories.values());
-    const totalCount = computeTotalCount(repoList, result.data, pageSize);
-    return {
-      repositories: repoList,
-      errors: Array.from(result.errors?.values() ?? []),
-      totalCount,
-    };
+    return this.buildRepositoryResponse(repositories, result, pageSize);
   }
 
   /**
@@ -401,11 +412,7 @@ export class GithubApiService implements GitApiService {
     }
 
     const result = await fetchFromAllIntegrations(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.integrationDeps,
       this.integrations,
       {
         dataFetcher: async (
@@ -456,13 +463,7 @@ export class GithubApiService implements GitApiService {
       },
     );
 
-    const repoList = Array.from(repositories.values());
-    const totalCount = computeTotalCount(repoList, result.data, pageSize);
-    return {
-      repositories: repoList,
-      errors: Array.from(result.errors?.values() ?? []),
-      totalCount,
-    };
+    return this.buildRepositoryResponse(repositories, result, pageSize);
   }
 
   async filterLocationsAccessibleFromIntegrations(
@@ -473,44 +474,36 @@ export class GithubApiService implements GitApiService {
     const allAccessibleAppOrgs = new Set<string>();
     const allAccessibleTokenOrgs = new Set<string>();
     const allAccessibleUsernames = new Set<string>();
-    await fetchFromAllIntegrations(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
-      this.integrations,
-      {
-        dataFetcher: async (
-          octokit: Octokit,
-          credential: ExtendedGithubCredentials,
-          ghConfig: GithubIntegrationConfig,
-        ) => {
-          if (isGithubAppCredential(credential)) {
-            const appOrgMap = await getAllAppOrgs(
-              this.githubCredentialsProvider,
-              ghConfig,
-              credential.accountLogin,
-            );
-            for (const [_, ghOrg] of appOrgMap) {
-              allAccessibleAppOrgs.add(ghOrg.name);
-            }
-          } else {
-            // find authenticated GitHub owner...
-            const username = (await octokit.rest.users.getAuthenticated())?.data
-              ?.login;
-            if (username) {
-              allAccessibleUsernames.add(username);
-            }
-            // ... along with orgs accessible from the token auth
-            (await octokit.paginate(octokit.rest.orgs.listForAuthenticatedUser))
-              ?.map(org => org.login)
-              ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
+    await fetchFromAllIntegrations(this.integrationDeps, this.integrations, {
+      dataFetcher: async (
+        octokit: Octokit,
+        credential: ExtendedGithubCredentials,
+        ghConfig: GithubIntegrationConfig,
+      ) => {
+        if (isGithubAppCredential(credential)) {
+          const appOrgMap = await getAllAppOrgs(
+            this.githubCredentialsProvider,
+            ghConfig,
+            credential.accountLogin,
+          );
+          for (const [_, ghOrg] of appOrgMap) {
+            allAccessibleAppOrgs.add(ghOrg.name);
           }
-          return {};
-        },
+        } else {
+          // find authenticated GitHub owner...
+          const username = (await octokit.rest.users.getAuthenticated())?.data
+            ?.login;
+          if (username) {
+            allAccessibleUsernames.add(username);
+          }
+          // ... along with orgs accessible from the token auth
+          (await octokit.paginate(octokit.rest.orgs.listForAuthenticatedUser))
+            ?.map(org => org.login)
+            ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
+        }
+        return {};
       },
-    );
+    });
 
     return locationUrls.filter(loc => {
       if (!locationGitOwnerMap.has(loc)) {
@@ -537,11 +530,7 @@ export class GithubApiService implements GitApiService {
     prBranch?: string;
   }> {
     const { data } = await fetchFromMatchedIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.integrationDeps,
       this.integrations,
       repoUrl,
       async (octokit, gitUrl) => {
@@ -576,11 +565,7 @@ export class GithubApiService implements GitApiService {
     body?: string,
   ): Promise<void> {
     await fetchFromMatchedIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.integrationDeps,
       this.integrations,
       repoUrl,
       async (octokit, gitUrl) => {
@@ -704,11 +689,7 @@ export class GithubApiService implements GitApiService {
   }> {
     const branchName = getBranchName(this.config);
     const { data } = await fetchFromMatchedIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.integrationDeps,
       this.integrations,
       input.repoUrl,
       async (octokit, gitUrl) => {
@@ -740,11 +721,7 @@ export class GithubApiService implements GitApiService {
     },
   ): Promise<string | undefined> {
     const { data } = await fetchFromMatchedIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.integrationDeps,
       this.integrations,
       input.repoUrl,
       async (octokit, gitUrl) => {
@@ -792,12 +769,7 @@ export class GithubApiService implements GitApiService {
     const errors: any[] = [];
 
     const result = await executeFunctionOnFirstSuccessfulIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        config: this.config,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.executionDeps,
       this.integrations,
       {
         repoUrl: input.repoUrl,
@@ -975,12 +947,7 @@ export class GithubApiService implements GitApiService {
     fileName: string;
   }): Promise<boolean> {
     const fileExists = await executeFunctionOnFirstSuccessfulIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        config: this.config,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.executionDeps,
       this.integrations,
       {
         repoUrl: input.repoUrl,
@@ -1020,12 +987,7 @@ export class GithubApiService implements GitApiService {
     },
   ): Promise<void> {
     await executeFunctionOnFirstSuccessfulIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        config: this.config,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.executionDeps,
       this.integrations,
       {
         repoUrl: input.repoUrl,
@@ -1068,12 +1030,7 @@ export class GithubApiService implements GitApiService {
     gitUrl: gitUrlParse.GitUrl;
   }): Promise<void> {
     await executeFunctionOnFirstSuccessfulIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        config: this.config,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.executionDeps,
       this.integrations,
       {
         repoUrl: input.repoUrl,
@@ -1101,12 +1058,7 @@ export class GithubApiService implements GitApiService {
 
   async isRepoEmpty(input: { repoUrl: string }): Promise<boolean | undefined> {
     return await executeFunctionOnFirstSuccessfulIntegration(
-      {
-        logger: this.logger,
-        cache: this.cache,
-        config: this.config,
-        githubCredentialsProvider: this.githubCredentialsProvider,
-      },
+      this.executionDeps,
       this.integrations,
       {
         repoUrl: input.repoUrl,
