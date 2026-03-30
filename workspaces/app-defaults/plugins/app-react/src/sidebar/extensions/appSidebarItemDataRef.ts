@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/frontend-defaults';
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
 
-import {
-  appDrawerModule,
-  appSidebarModule,
-} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import type { AppSidebarItem } from './AppSidebarItem';
 
-import { drawerDemoModule } from './modules/drawer-demo';
-
-import { sidebarDemoModule } from './modules/sidebar-demo';
-
-export default createApp({
-  features: [catalogPlugin, appDrawerModule, appSidebarModule, drawerDemoModule, sidebarDemoModule],
-});
+/**
+ * Extension data ref carrying sidebar item content from a plugin to the host.
+ *
+ * @alpha
+ */
+export const appSidebarItemDataRef =
+  createExtensionDataRef<AppSidebarItem>().with({
+    id: 'app.sidebar.item',
+  });

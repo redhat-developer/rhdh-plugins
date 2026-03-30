@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/frontend-defaults';
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
-
-import {
-  appDrawerModule,
-  appSidebarModule,
-} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-
-import { drawerDemoModule } from './modules/drawer-demo';
-
-import { sidebarDemoModule } from './modules/sidebar-demo';
-
-export default createApp({
-  features: [catalogPlugin, appDrawerModule, appSidebarModule, drawerDemoModule, sidebarDemoModule],
-});
+/**
+ * Application sidebar content contributed by a plugin via AppSidebarItemBlueprint.
+ *
+ * @public
+ */
+export interface AppSidebarItem {
+  /** Unique identifier for this sidebar item. */
+  id: string;
+  /** Title for the sidebar item. */
+  title: string;
+  /** Key for localizing the title. */
+  titleKey?: string;
+  /** React element to render as sidebar item. */
+  element?: React.ReactElement;
+  /** Ordering priority when multiple drawers are registered. Higher = first. */
+  priority?: number;
+}

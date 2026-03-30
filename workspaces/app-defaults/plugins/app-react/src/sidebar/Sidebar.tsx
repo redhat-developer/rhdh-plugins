@@ -32,6 +32,8 @@ import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 export const SidebarContent = NavContentBlueprint.make({
   params: {
     component: ({ navItems }) => {
+      console.log('xxx navItems', navItems);
+
       const nav = navItems.withComponent(item => (
         <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
       ));

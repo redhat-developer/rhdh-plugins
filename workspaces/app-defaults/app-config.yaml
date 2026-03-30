@@ -6,6 +6,11 @@ app:
   packages: all
 
   extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+          defaultLanguage: 'en'
+
     # Configure the catalog index page to be the root page, this is normally mounted on /catalog
     - page:catalog:
         config:

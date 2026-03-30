@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/frontend-defaults';
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { SidebarContent } from './Sidebar';
 
-import {
-  appDrawerModule,
-  appSidebarModule,
-} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+export * from './extensions';
 
-import { drawerDemoModule } from './modules/drawer-demo';
-
-import { sidebarDemoModule } from './modules/sidebar-demo';
-
-export default createApp({
-  features: [catalogPlugin, appDrawerModule, appSidebarModule, drawerDemoModule, sidebarDemoModule],
+export const appSidebarModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [SidebarContent],
 });

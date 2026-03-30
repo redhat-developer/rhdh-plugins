@@ -21,4 +21,5 @@
  */
 
 export * from './extensions';
-export type * from './drawer';
+export * from './drawer';
+export * from './sidebar';
