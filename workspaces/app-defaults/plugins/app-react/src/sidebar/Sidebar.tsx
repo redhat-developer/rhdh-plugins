@@ -27,10 +27,10 @@ import {
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { SidebarLogo } from './SidebarLogo';
 import { useSidebarItems } from './SidebarItemsContext';
-// eslint-disable-next-line no-restricted-imports
-import MenuIcon from '@material-ui/icons';
-// eslint-disable-next-line no-restricted-imports
-import SearchIcon from '@material-ui/icons';
+// eslint-disable-next-line no-restricted-imports -- individual icon import, not barrel
+import MenuIcon from '@material-ui/icons/Menu';
+// eslint-disable-next-line no-restricted-imports -- individual icon import, not barrel
+import SearchIcon from '@material-ui/icons/Search';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
