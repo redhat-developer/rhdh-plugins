@@ -28,6 +28,130 @@ import { setupTest, startBackendServer } from '../../__fixtures__/testUtils';
 describe('router tests', () => {
   const useTestData = setupTest();
 
+  describe('x-scm-tokens middleware', () => {
+    it.each([
+      [
+        'GET /repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req.get('/api/bulk-import/repositories').set('x-scm-tokens', header),
+      ],
+      [
+        'GET /organizations/:org/repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req
+            .get('/api/bulk-import/organizations/my-org-1/repositories')
+            .set('x-scm-tokens', header),
+      ],
+    ])(
+      '%s: returns 400 when x-scm-tokens is not a valid JSON object',
+      async (
+        _endpoint: string,
+        reqHandler: (
+          req: request.SuperTest<request.Test>,
+          header: string,
+        ) => request.Test,
+      ) => {
+        const { mockCatalogClient } = useTestData();
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const cases = [
+          'not-json',
+          '["array", "not", "object"]',
+          '{"host": 123}',
+          '{"host": ""}',
+        ];
+
+        for (const invalidHeader of cases) {
+          const response = await reqHandler(
+            request(backendServer),
+            invalidHeader,
+          );
+          expect(response.status).toEqual(400);
+        }
+      },
+    );
+
+    it.each([
+      [
+        'GET /repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req.get('/api/bulk-import/repositories').set('x-scm-tokens', header),
+      ],
+      [
+        'GET /organizations/:org/repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req
+            .get('/api/bulk-import/organizations/my-org-1/repositories')
+            .set('x-scm-tokens', header),
+      ],
+    ])(
+      '%s: ignores x-scm-tokens and returns 200 when header exceeds size limit',
+      async (
+        _endpoint: string,
+        reqHandler: (
+          req: request.SuperTest<request.Test>,
+          header: string,
+        ) => request.Test,
+      ) => {
+        const { mockCatalogClient } = useTestData();
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const oversizedHeader = JSON.stringify({
+          'https://github.com': 'a'.repeat(4097),
+        });
+
+        const response = await reqHandler(
+          request(backendServer),
+          oversizedHeader,
+        );
+        expect(response.status).toEqual(200);
+      },
+    );
+
+    it.each([
+      [
+        'GET /repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req.get('/api/bulk-import/repositories').set('x-scm-tokens', header),
+      ],
+      [
+        'GET /organizations/:org/repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req
+            .get('/api/bulk-import/organizations/my-org-1/repositories')
+            .set('x-scm-tokens', header),
+      ],
+    ])(
+      '%s: returns 200 and processes request when x-scm-tokens is a valid token map',
+      async (
+        _endpoint: string,
+        reqHandler: (
+          req: request.SuperTest<request.Test>,
+          header: string,
+        ) => request.Test,
+      ) => {
+        const { mockCatalogClient } = useTestData();
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const validHeader = JSON.stringify({
+          'https://github.com': 'gho_validUserToken',
+        });
+
+        const response = await reqHandler(request(backendServer), validHeader);
+        expect(response.status).toEqual(200);
+      },
+    );
+  });
+
   describe('permission framework denial', () => {
     it.each([
       [

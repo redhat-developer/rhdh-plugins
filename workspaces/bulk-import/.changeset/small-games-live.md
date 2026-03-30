@@ -13,6 +13,7 @@ This release introduces the ability for the Bulk Import plugin to fetch reposito
 
 - Added a new `GET /api/bulk-import/scm-hosts` endpoint that returns the configured GitHub and GitLab integration host URLs as a `SCMHostList` object, enabling the frontend to discover which hosts to request OAuth tokens for.
 - The `GET /repositories` and `GET /organizations/{organizationName}/repositories` endpoints now accept an optional `x-scm-tokens` request header — a JSON map of SCM host base URL to user OAuth token. When tokens are present, repository listings reflect what the signed-in user can personally access rather than the full scope of the server-wide integration credentials.
+- The `x-scm-tokens` header is stripped from the request immediately upon receipt, before the permission check and before any audit event is created, so OAuth token values are never persisted in audit logs.
 - When user tokens are provided for GitHub, the Octokit response cache is intentionally disabled to prevent cross-user ETag cache leakage. Server-side credential paths are not affected.
 - Introduced a shared `GitApiService` interface and common SCM types (`SCMOrganization`, `SCMRepository`, `SCMFetchError`, etc.) to unify the GitHub and GitLab service implementations under a consistent contract.
 

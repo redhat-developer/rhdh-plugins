@@ -373,6 +373,8 @@ The GitHub and GitLab auth providers are **soft dependencies**. When user tokens
 
 When user tokens are provided for GitHub, the Octokit response cache is intentionally disabled to prevent cross-user ETag cache leakage. Server-side credential paths are not affected.
 
+The `x-scm-tokens` header is stripped from the request immediately upon receipt — before the permission check and before any audit event is created — so OAuth token values are never persisted in audit logs.
+
 #### New API Endpoint
 
 | Method | Path                         | Description                                                                                 |

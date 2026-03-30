@@ -164,17 +164,6 @@ function parseScmTokensHeader(
   return token;
 }
 
-function extractUserTokens(
-  headers:
-    | Paths.FindAllRepositories.HeaderParameters
-    | Paths.FindRepositoriesByOrganization.HeaderParameters,
-  logger: LoggerService,
-): Record<string, string> | undefined {
-  const raw = headers['x-scm-tokens'] as string | undefined;
-  delete headers['x-scm-tokens']; // consumed; strip before any logging path
-  return parseScmTokensHeader(raw, logger);
-}
-
 /**
  * Router
  * @public
@@ -307,10 +296,9 @@ export async function createRouter(
       q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
       q.checkImportStatus = stringToBoolean(q.checkImportStatus);
 
-      const h: Paths.FindAllRepositories.HeaderParameters = {
-        ...c.request.headers,
-      };
-      const userTokens = extractUserTokens(h, logger);
+      const userTokens = res.locals.scmTokens as
+        | Record<string, string>
+        | undefined;
 
       const response = await findAllRepositories(
         {
@@ -351,10 +339,9 @@ export async function createRouter(
       q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
       q.checkImportStatus = stringToBoolean(q.checkImportStatus);
 
-      const h: Paths.FindRepositoriesByOrganization.HeaderParameters = {
-        ...c.request.headers,
-      };
-      const userTokens = extractUserTokens(h, logger);
+      const userTokens = res.locals.scmTokens as
+        | Record<string, string>
+        | undefined;
 
       const response = await findRepositoriesByOrganization(
         {
@@ -748,6 +735,24 @@ export async function createRouter(
     permissions: [bulkImportPermission],
   });
   router.use(permissionIntegrationRouter);
+
+  // Strip x-scm-tokens from req.headers before the permission check and audit
+  // middleware run so that OAuth tokens are never captured in audit logs.
+  // The parsed map is stored in res.locals.scmTokens for handler use.
+  router.use((req, res, next) => {
+    const raw = req.headers['x-scm-tokens'];
+    const rawStr = Array.isArray(raw) ? raw[0] : raw;
+    delete req.headers['x-scm-tokens'];
+    if (rawStr) {
+      try {
+        res.locals.scmTokens = parseScmTokensHeader(rawStr, logger);
+      } catch (e) {
+        next(e);
+        return;
+      }
+    }
+    next();
+  });
 
   router.use(async (req, _res, next) => {
     if (req.path !== '/ping') {
