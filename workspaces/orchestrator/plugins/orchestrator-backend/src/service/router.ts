@@ -259,7 +259,6 @@ function initPublicServices(
   scheduler: SchedulerService,
   workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry,
 ): PublicServices {
-  console.log('init public services');
   const dataIndexUrl = config.getString('orchestrator.dataIndexService.url');
   const orchestratorKafka: OrchestratorKafkaServiceOptions | undefined =
     config.getOptional('orchestrator.kafka');
