@@ -803,7 +803,7 @@ async function createAuditorEventByOperationId(
       auditorEvent = await auditCreateEvent(auditor, 'ping', req);
       break;
     case Operations.FIND_ALL_SCM_HOSTS:
-      auditorEvent = await auditCreateEvent(auditor, 'scm-read', req);
+      auditorEvent = await auditCreateEvent(auditor, 'scm-hosts-read', req);
       break;
 
     case Operations.FIND_ALL_ORGANIZATIONS:
