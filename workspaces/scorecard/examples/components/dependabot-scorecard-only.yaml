@@ -6,6 +6,7 @@ metadata:
   name: dependabot-scorecard-only
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins
+    github.com/dependabot: 'true'
     backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins
 spec:
   type: service

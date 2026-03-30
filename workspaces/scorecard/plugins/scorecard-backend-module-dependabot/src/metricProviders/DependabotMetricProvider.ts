@@ -37,6 +37,7 @@ import {
 } from './DependabotConfig';
 
 const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
+const GITHUB_DEPENDABOT_ENABLED_VALUE = 'true';
 
 /**
  * Metric provider for Dependabot alerts of a single severity (critical, high, medium, low).
@@ -88,6 +89,8 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
       'metadata.annotations.github.com/project-slug': CATALOG_FILTER_EXISTS,
+      'metadata.annotations.github.com/dependabot':
+        GITHUB_DEPENDABOT_ENABLED_VALUE,
     };
   }
 

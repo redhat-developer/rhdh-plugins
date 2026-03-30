@@ -130,7 +130,7 @@ describe('DependabotMetricProvider', () => {
   });
 
   describe('getCatalogFilter', () => {
-    it('requires github.com/project-slug annotation', () => {
+    it('requires project-slug and dependabot annotation value true', () => {
       const provider = new DependabotMetricProvider(
         mockConfig,
         mockLogger,
@@ -140,6 +140,7 @@ describe('DependabotMetricProvider', () => {
       expect(
         filter['metadata.annotations.github.com/project-slug'],
       ).toBeDefined();
+      expect(filter['metadata.annotations.github.com/dependabot']).toBe('true');
     });
   });
 
