@@ -16,20 +16,31 @@
 
 /**
  * Runs an array of promise-returning functions with limited concurrency.
+ * Uses a sliding-window pool: whenever a task finishes, the next one starts
+ * immediately, keeping up to `limit` tasks in-flight at all times.
  *
  * @param tasks - Functions that return a promise when invoked
  * @param limit - Maximum number of tasks running at the same time
- * @returns Array of settled results in the original order
+ * @returns Array of results in the original order
  */
 export async function maxConcurrency<T>(
   tasks: (() => Promise<T>)[],
   limit: number,
 ): Promise<T[]> {
-  const results: T[] = [];
-  for (let i = 0; i < tasks.length; i += limit) {
-    const batch = tasks.slice(i, i + limit);
-    const batchResults = await Promise.all(batch.map(fn => fn()));
-    results.push(...batchResults);
+  const results = new Array<T>(tasks.length);
+  let next = 0;
+
+  async function runNext(): Promise<void> {
+    while (next < tasks.length) {
+      const idx = next++;
+      results[idx] = await tasks[idx]();
+    }
   }
+
+  const workers = Array.from({ length: Math.min(limit, tasks.length) }, () =>
+    runNext(),
+  );
+  await Promise.all(workers);
+
   return results;
 }
