@@ -16,16 +16,38 @@
 
 import { createApiRef, type ApiRef } from '@backstage/core-plugin-api';
 
-import { NotebookSession } from '../types';
+import {
+  DocumentStatus,
+  NotebookSession,
+  SessionDocument,
+  UploadDocumentResponse,
+} from '../types';
 
 /**
  * @public
  * AI Notebooks API
  */
 export type NotebooksAPI = {
+  createSession: (
+    name: string,
+    description?: string,
+  ) => Promise<NotebookSession>;
   listSessions: () => Promise<NotebookSession[]>;
   renameSession: (sessionId: string, name: string) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
+  uploadDocument: (
+    sessionId: string,
+    file: File,
+    fileType: string,
+    title: string,
+    newTitle?: string,
+  ) => Promise<UploadDocumentResponse>;
+  listDocuments: (sessionId: string) => Promise<SessionDocument[]>;
+  deleteDocument: (sessionId: string, documentId: string) => Promise<void>;
+  getDocumentStatus: (
+    sessionId: string,
+    documentId: string,
+  ) => Promise<DocumentStatus>;
 };
 
 /**

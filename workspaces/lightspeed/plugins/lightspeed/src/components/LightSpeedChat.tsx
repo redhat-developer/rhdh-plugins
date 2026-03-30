@@ -72,7 +72,11 @@ import {
 } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { supportedFileTypes, TEMP_CONVERSATION_ID } from '../const';
+import {
+  supportedFileTypes,
+  TEMP_CONVERSATION_ID,
+  UNTITLED_NOTEBOOK_NAME,
+} from '../const';
 import {
   useBackstageUserIdentity,
   useConversationMessages,
@@ -85,11 +89,12 @@ import {
   usePinnedChatsSettings,
   useSortSettings,
 } from '../hooks';
+import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
-import { ConversationSummary } from '../types';
+import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
   getCategorizeMessages,
@@ -105,6 +110,7 @@ import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebookPermissionRequired } from './notebooks/NotebookPermissionRequired';
 import { NotebooksTab } from './notebooks/NotebooksTab';
+import { NotebookView } from './notebooks/NotebookView';
 import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
 import { RenameConversationModal } from './RenameConversationModal';
 
@@ -368,9 +374,13 @@ export const LightspeedChat = ({
   );
   const [renameNotebookId, setRenameNotebookId] = useState<string | null>(null);
   const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null);
+  const [activeNotebook, setActiveNotebook] = useState<NotebookSession | null>(
+    null,
+  );
   const [notebookAlerts, setNotebookAlerts] = useState<Partial<AlertProps>[]>(
     [],
   );
+  const createNotebookMutation = useCreateNotebook();
   const [conversationId, setConversationId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
@@ -407,6 +417,21 @@ export const LightspeedChat = ({
       refetchNotebooks();
     }
   };
+
+  const handleCreateNotebook = useCallback(() => {
+    createNotebookMutation.mutate(
+      { name: UNTITLED_NOTEBOOK_NAME },
+      {
+        onSuccess: (session: NotebookSession) => {
+          setActiveNotebook(session);
+        },
+      },
+    );
+  }, [createNotebookMutation]);
+
+  const handleCloseNotebook = useCallback(() => {
+    setActiveNotebook(null);
+  }, []);
 
   const handleNotebookDeleted = () => {
     const key = Date.now();
@@ -1224,7 +1249,20 @@ export const LightspeedChat = ({
         )}
         {showNotebooksPanel &&
           !notebooksPermissionLoading &&
-          hasNotebooksAccess && (
+          hasNotebooksAccess &&
+          activeNotebook && (
+            <NotebookView
+              notebookName={activeNotebook.name}
+              documents={[]}
+              onClose={handleCloseNotebook}
+              onUploadClick={() => {}}
+              onAddDocument={() => {}}
+            />
+          )}
+        {showNotebooksPanel &&
+          !notebooksPermissionLoading &&
+          hasNotebooksAccess &&
+          !activeNotebook && (
             <NotebooksTab
               notebooks={notebooks}
               hasNotebooks={hasNotebooks}
@@ -1233,6 +1271,7 @@ export const LightspeedChat = ({
               setOpenNotebookMenuId={setOpenNotebookMenuId}
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}
+              onCreateNotebook={handleCreateNotebook}
               t={t}
               getDocumentsCount={getDocumentsCount}
             />

@@ -53,6 +53,18 @@ export const lightspeedMessages = {
   'notebooks.updated.days': 'Updated {{days}} days ago',
   'notebooks.updated.on': 'Updated on',
 
+  // Notebook view
+  'notebook.view.title': 'Untitled notebook',
+  'notebook.view.close': 'Close notebook',
+  'notebook.view.documents.count': '{{count}} Documents',
+  'notebook.view.documents.add': 'Add',
+  'notebook.view.upload.heading': 'Upload a resource to get started',
+  'notebook.view.upload.action': 'Upload a resource',
+  'notebook.view.input.placeholder': 'Ask about your documents...',
+  'notebook.view.sidebar.collapse': 'Collapse sidebar',
+  'notebook.view.sidebar.expand': 'Expand sidebar',
+  'notebook.view.sidebar.resize': 'Resize sidebar',
+
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',
   'prompts.codeReadability.message':
