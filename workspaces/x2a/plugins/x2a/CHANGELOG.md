@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 1.1.1
+
+### Patch Changes
+
+- f68510b: Icon for the X2A left side menu.
+
 ## 1.1.0
 
 ### Minor Changes
