@@ -87,8 +87,7 @@ export const SONARQUBE_METRIC_CONFIG: Record<
   quality_gate: {
     id: 'sonarqube.quality_gate',
     title: 'SonarQube Quality Gate Status',
-    description:
-      'Whether the project passes its SonarQube quality gate (true = OK, false = ERROR).',
+    description: 'Whether the project passes its SonarQube quality gate.',
   },
   open_issues: {
     id: 'sonarqube.open_issues',

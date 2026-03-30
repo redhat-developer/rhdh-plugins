@@ -259,8 +259,7 @@ export const sonarqubeScorecardResponse = [
     status: 'success',
     metadata: {
       title: 'SonarQube Quality Gate Status',
-      description:
-        'Whether the project passes its SonarQube quality gate (true = OK, false = ERROR).',
+      description: 'Whether the project passes its SonarQube quality gate.',
       type: 'boolean',
       history: true,
     },
