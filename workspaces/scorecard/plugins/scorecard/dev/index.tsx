@@ -45,8 +45,6 @@ import {
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
 
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
-import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
@@ -112,20 +110,29 @@ const scorecardDevModule = createFrontendModule({
 
 const devSidebarContent = NavContentBlueprint.make({
   params: {
-    component: ({ items }) => (
-      <Sidebar>
-        <SidebarGroup label="Menu">
-          <SidebarScrollWrapper>
-            {items.map((item, index) => (
-              <SidebarItem {...item} key={index} />
-            ))}
-          </SidebarScrollWrapper>
-        </SidebarGroup>
-        <SidebarSpace />
-        <SidebarLanguageSwitcher />
-        <SidebarSignOutButton />
-      </Sidebar>
-    ),
+    component: ({ items }) => {
+      const homeItem = items.find(
+        item => item.to === '/' || item.title?.toLowerCase() === 'home',
+      );
+      const orderedItems = homeItem
+        ? [homeItem, ...items.filter(item => item !== homeItem)]
+        : items;
+
+      return (
+        <Sidebar>
+          <SidebarGroup label="Menu">
+            <SidebarScrollWrapper>
+              {orderedItems.map((item, index) => (
+                <SidebarItem {...item} key={index} />
+              ))}
+            </SidebarScrollWrapper>
+          </SidebarGroup>
+          <SidebarSpace />
+          <SidebarLanguageSwitcher />
+          <SidebarSignOutButton />
+        </Sidebar>
+      );
+    },
   },
 });
 
@@ -137,7 +144,6 @@ const devNavModule = createFrontendModule({
 const app = createApp({
   features: [
     devNavModule,
-    catalogPlugin,
     scorecardPlugin,
     scorecardCatalogModule,
     scorecardHomeModule,
@@ -146,7 +152,6 @@ const app = createApp({
     catalogDevModule,
     scorecardDevModule,
     rhdhThemeModule,
-    userSettingsPlugin,
   ],
 });
 

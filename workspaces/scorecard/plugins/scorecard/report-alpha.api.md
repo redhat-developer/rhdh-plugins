@@ -135,7 +135,6 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.entitiesTable.title': string;
     readonly 'entitiesPage.entitiesTable.unavailable': string;
     readonly 'entitiesPage.entitiesTable.titleWithCount': string;
-    readonly 'entitiesPage.entitiesTable.header.metric': string;
     readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
     readonly 'entitiesPage.entitiesTable.header.status': string;
     readonly 'entitiesPage.entitiesTable.header.value': string;
