@@ -15,6 +15,7 @@
  */
 
 import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
+import type { RendererProps } from '@backstage/plugin-home-react';
 import { ScorecardHomepageCard } from '../../components/ScorecardHomepageSection';
 
 const defaultCardLayout = {
@@ -38,6 +39,10 @@ function ScorecardJiraHomepageContent() {
   return <ScorecardHomepageCard metricId="jira.open_issues" />;
 }
 
+function BorderlessHomeWidgetRenderer({ Content }: RendererProps) {
+  return <Content />;
+}
+
 /**
  * NFS widget: ScorecardHomepageCard.
  * @alpha
@@ -46,7 +51,11 @@ export const scorecardHomepageWidget = HomePageWidgetBlueprint.make({
   name: 'scorecard-github-homepage',
   params: {
     name: 'ScorecardGithubHomepage',
+    title: 'Scorecard: GitHub open PRs',
     layout: defaultCardLayout,
+    componentProps: {
+      Renderer: BorderlessHomeWidgetRenderer,
+    },
     components: () =>
       Promise.resolve({
         Content: ScorecardHomepageContent,
@@ -62,7 +71,11 @@ export const scorecardJiraHomepageWidget = HomePageWidgetBlueprint.make({
   name: 'scorecard-jira-homepage',
   params: {
     name: 'ScorecardJiraHomepage',
+    title: 'Scorecard: Jira open blocking tickets',
     layout: defaultCardLayout,
+    componentProps: {
+      Renderer: BorderlessHomeWidgetRenderer,
+    },
     components: () =>
       Promise.resolve({
         Content: ScorecardJiraHomepageContent,
