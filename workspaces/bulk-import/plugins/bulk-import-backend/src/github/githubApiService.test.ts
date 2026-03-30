@@ -422,12 +422,7 @@ describe('GithubApiService tests', () => {
         data: [],
       });
 
-      const result = await githubApiService.getRepositoriesFromIntegrations(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
+      const result = await githubApiService.getRepositoriesFromIntegrations();
 
       // Server credentials path is used — getAllCredentials IS called
       expect(mockGetAllCredentials).toHaveBeenCalled();

@@ -22,11 +22,13 @@ import {
   mockBulkImportDryRunResponse,
   mockBulkImportImportsResponse,
   mockBulkImportRepositoriesResponse,
+  mockBulkImportSCMHostsResponse,
   mockImportByRepoData,
   mockImportByRepoFrontendData,
   mockImportsData,
   mockImportsDryRunData,
   mockRepositoriesData,
+  mockSCMHostsData,
 } from './utils/apiUtils';
 import {
   getPreviewSidebarSnapshots,
@@ -51,6 +53,7 @@ test.describe('Bulk Import', () => {
     context = await browser.newContext();
     sharedPage = await context.newPage();
 
+    await mockBulkImportSCMHostsResponse(sharedPage, mockSCMHostsData);
     await mockBulkImportRepositoriesResponse(sharedPage, mockRepositoriesData);
     await sharedPage.goto('/');
 
