@@ -244,7 +244,6 @@ case "${PHASE}" in
     # Copy any other generated files (like metadata)
     cp -v "${SOURCE_BASE}"/*.json "${PROJECT_PATH}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${PROJECT_PATH}/" 2>/dev/null || true
-    cp -rv "${SOURCE_BASE}/migration_dependencies" "${PROJECT_PATH}/" 2>/dev/null || true
 
     # Show what was created
     echo ""
@@ -306,9 +305,12 @@ case "${PHASE}" in
     # Note: x2a tool produces migration-plan-{module_name}.md (spaces replaced with underscores)
     echo "Copying output to ${OUTPUT_DIR}/"
     cp -v "${SOURCE_BASE}/migration-plan-${MODULE_NAME_SANITIZED}.md" "${OUTPUT_DIR}/"
-    cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
-    cp -rv "${SOURCE_BASE}/migration_dependencies" "${OUTPUT_DIR}/" 2>/dev/null || true
+    cp -rv "${SOURCE_BASE}/migration-dependencies" "${OUTPUT_DIR}/" 2>/dev/null || true
+
+    # Update project-level Policyfile.lock.json — chef-cli may have updated it
+    # during dependency resolution. Keep it at project root only, not per-module.
+    cp -v "${SOURCE_BASE}/Policyfile.lock.json" "${PROJECT_PATH}/" 2>/dev/null || true
 
     echo ""
     echo "=== Output directory contents ==="
@@ -342,6 +344,14 @@ case "${PHASE}" in
     echo "Copying migration-plan.md from target to source directory..."
     cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
 
+    # Copy migration-dependencies from target repo back to source dir.
+    # The analyze phase created this directory and committed it to the target repo.
+    # The migrate phase runs in a separate pod, so we need to restore it.
+    if [ -d "${PROJECT_PATH}/migration-dependencies" ]; then
+      echo "Copying migration-dependencies from target to source directory..."
+      cp -rv "${PROJECT_PATH}/migration-dependencies" "${SOURCE_BASE}/"
+    fi
+
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
       ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
@@ -369,9 +379,7 @@ case "${PHASE}" in
     # Note: x2a tool writes to ansible/roles/{module}/ in the source directory
     echo "Copying output to ${OUTPUT_DIR}/"
     cp -rv "${SOURCE_BASE}/ansible" "${OUTPUT_DIR}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
-    cp -rv "${SOURCE_BASE}/migration_dependencies" "${OUTPUT_DIR}/" 2>/dev/null || true
 
     echo ""
     echo "=== Output directory contents ==="
