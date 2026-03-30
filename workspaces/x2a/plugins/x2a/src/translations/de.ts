@@ -30,6 +30,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Starten und verfolgen Sie die asynchrone Umwandlung von Chef-Dateien in produktionsreife Ansible Playbooks.',
     'table.columns.name': 'Name',
     'table.columns.status': 'Status',
+    'table.columns.statusSortDisabledTooltip':
+      'Sortierung nach Status ist nicht verfügbar, wenn die Projektanzahl {{threshold}} überschreitet',
     'table.columns.sourceRepo': 'Quell-Repository',
     'table.columns.targetRepo': 'Ziel-Repository',
     'table.columns.createdAt': 'Erstellt am',

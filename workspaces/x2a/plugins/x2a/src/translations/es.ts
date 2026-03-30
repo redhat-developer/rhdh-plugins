@@ -30,6 +30,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'Inicie y realice el seguimiento de las conversiones asíncronas de archivos Chef a playbooks Ansible listos para producción.',
     'table.columns.name': 'Nombre',
     'table.columns.status': 'Estado',
+    'table.columns.statusSortDisabledTooltip':
+      'La ordenación por estado no está disponible cuando el número de proyectos supera {{threshold}}',
     'table.columns.sourceRepo': 'Repositorio de origen',
     'table.columns.targetRepo': 'Repositorio de destino',
     'table.columns.createdAt': 'Creado el',
