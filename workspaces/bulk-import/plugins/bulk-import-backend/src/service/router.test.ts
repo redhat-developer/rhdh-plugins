@@ -43,7 +43,7 @@ describe('router tests', () => {
             .set('x-scm-tokens', header),
       ],
     ])(
-      '%s: returns 400 when x-scm-tokens is not a valid JSON object',
+      '%s: returns 400 when x-scm-tokens does not contain a valid JSON-encoded token map',
       async (
         _endpoint: string,
         reqHandler: (

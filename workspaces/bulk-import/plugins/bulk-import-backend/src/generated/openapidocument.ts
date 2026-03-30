@@ -1031,10 +1031,11 @@ const OPENAPI = `
       "xSCMTokensHeaderParam": {
         "in": "header",
         "name": "x-scm-tokens",
-        "description": "Optional JSON-encoded map of SCM host URL to user authentication token. Used to fetch repositories on behalf of the user for each configured SCM host.\\n",
+        "description": "Optional JSON-encoded map of SCM host URL to user authentication token. Used to fetch repositories on behalf of the user for each configured SCM host. The value must be a JSON string whose structure matches SCMTokenMap (keys are SCM base URLs, values are OAuth bearer tokens).\\n",
         "required": false,
         "schema": {
-          "$ref": "#/components/schemas/SCMTokenMap"
+          "type": "string",
+          "example": "{\"https://github.com\":\"ghp_xxx\",\"https://ghe.example.com\":\"ghe_yyy\"}"
         }
       },
       "pagePerIntegrationQueryParam": {

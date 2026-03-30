@@ -358,7 +358,7 @@ The plugin supports fetching repository and organization listings **on behalf of
 
 1. The frontend calls `GET /api/bulk-import/scm-hosts` to retrieve the list of configured SCM integration host URLs, grouped by provider (`github` and `gitlab`).
 2. For each host, the frontend requests an OAuth token from the Backstage `ScmAuthApi` (provided by `@backstage/integration-react`).
-3. The collected tokens are sent to the backend via the optional `x-scm-tokens` request header — a JSON object mapping each integration base URL to the user's OAuth token.
+3. The collected tokens are sent to the backend via the optional `x-scm-tokens` request header — a JSON-encoded string whose value, when parsed, maps each integration base URL to the user's OAuth token (e.g. `{"https://github.com":"ghp_xxx"}`).
 4. The backend uses these user tokens to call the GitHub or GitLab APIs on behalf of the user, so the repository listings reflect what the signed-in user can personally access.
 
 #### Fallback Behavior

@@ -22,7 +22,7 @@ Fetch Organization Repositories accessible by Backstage Github Integrations
 | **sizePerIntegration** | **Integer**| the number of items per Integration to return per page | [optional] [default to 20] |
 | **search** | **String**| returns only the items that match the search string | [optional] [default to null] |
 | **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
-| **x-scm-tokens** | [**Map**](../Models/String.md)| Optional JSON-encoded map of SCM host URL to user authentication token. Used to fetch repositories on behalf of the user for each configured SCM host.  | [optional] [default to null] |
+| **x-scm-tokens** | **String**| Optional JSON-encoded map of SCM host URL to user authentication token. Used to fetch repositories on behalf of the user for each configured SCM host. The value must be a JSON string whose structure matches SCMTokenMap (keys are SCM base URLs, values are OAuth bearer tokens).  | [optional] [default to null] |
 
 ### Return type
 

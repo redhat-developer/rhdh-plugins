@@ -13,7 +13,11 @@ import type {
 declare namespace Components {
     export interface HeaderParameters {
         apiVersionHeaderParam?: Parameters.ApiVersionHeaderParam;
-        xSCMTokensHeaderParam?: Parameters.XSCMTokensHeaderParam;
+        xSCMTokensHeaderParam?: /**
+         * example:
+         * {"https://github.com":"ghp_xxx","https://ghe.example.com":"ghe_yyy"}
+         */
+        Parameters.XSCMTokensHeaderParam;
     }
     namespace Parameters {
         export type ApiVersionHeaderParam = "v1" | "v2";
@@ -27,17 +31,11 @@ declare namespace Components {
         export type SizeQueryParam = number;
         export type SortColumnQueryParam = "repository.name" | "repository.organization" | "repository.url" | "lastUpdate" | "status";
         export type SortOrderQueryParam = "asc" | "desc";
-        export type XSCMTokensHeaderParam = /**
-         * SCM Token Map
-         * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. https://github.com or https://gitlab.corp.com). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
-         *
+        /**
          * example:
-         * {
-         *   "https://github.com": "ghp_xxx",
-         *   "https://ghe.example.com": "ghe_yyy"
-         * }
+         * {"https://github.com":"ghp_xxx","https://ghe.example.com":"ghe_yyy"}
          */
-        Schemas.SCMTokenMap;
+        export type XSCMTokensHeaderParam = string;
     }
     export interface QueryParameters {
         pagePerIntegrationQueryParam?: Parameters.PagePerIntegrationQueryParam;
@@ -500,7 +498,11 @@ declare namespace Paths {
     }
     namespace FindAllRepositories {
         export interface HeaderParameters {
-            "x-scm-tokens"?: Parameters.XScmTokens;
+            "x-scm-tokens"?: /**
+             * example:
+             * {"https://github.com":"ghp_xxx","https://ghe.example.com":"ghe_yyy"}
+             */
+            Parameters.XScmTokens;
         }
         namespace Parameters {
             export type ApprovalTool = string;
@@ -508,17 +510,11 @@ declare namespace Paths {
             export type PagePerIntegration = number;
             export type Search = string;
             export type SizePerIntegration = number;
-            export type XScmTokens = /**
-             * SCM Token Map
-             * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. https://github.com or https://gitlab.corp.com). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
-             *
+            /**
              * example:
-             * {
-             *   "https://github.com": "ghp_xxx",
-             *   "https://ghe.example.com": "ghe_yyy"
-             * }
+             * {"https://github.com":"ghp_xxx","https://ghe.example.com":"ghe_yyy"}
              */
-            Components.Schemas.SCMTokenMap;
+            export type XScmTokens = string;
         }
         export interface QueryParameters {
             checkImportStatus?: Parameters.CheckImportStatus;
@@ -599,7 +595,11 @@ declare namespace Paths {
     }
     namespace FindRepositoriesByOrganization {
         export interface HeaderParameters {
-            "x-scm-tokens"?: Parameters.XScmTokens;
+            "x-scm-tokens"?: /**
+             * example:
+             * {"https://github.com":"ghp_xxx","https://ghe.example.com":"ghe_yyy"}
+             */
+            Parameters.XScmTokens;
         }
         namespace Parameters {
             export type ApprovalTool = string;
@@ -608,17 +608,11 @@ declare namespace Paths {
             export type PagePerIntegration = number;
             export type Search = string;
             export type SizePerIntegration = number;
-            export type XScmTokens = /**
-             * SCM Token Map
-             * Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. https://github.com or https://gitlab.corp.com). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.
-             *
+            /**
              * example:
-             * {
-             *   "https://github.com": "ghp_xxx",
-             *   "https://ghe.example.com": "ghe_yyy"
-             * }
+             * {"https://github.com":"ghp_xxx","https://ghe.example.com":"ghe_yyy"}
              */
-            Components.Schemas.SCMTokenMap;
+            export type XScmTokens = string;
         }
         export interface PathParameters {
             organizationName: Parameters.OrganizationName;
