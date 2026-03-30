@@ -1016,6 +1016,75 @@ describe('X2ADatabaseService – projects', () => {
       );
 
       it.each(supportedDatabaseIds)(
+        'treats equivalent fractions as equal (e.g. 1/3 vs 2/6) and falls through to next tiebreaker - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          // Project A: 1 finished + 1 error + 1 pending → finished = 1/3, error = 1/3
+          const projA = await makeProject(service, 'Frac-A', 'FA', 'success');
+          await addModule(service, projA.id, 'fa-m1', 'finished');
+          await addModule(service, projA.id, 'fa-m2', 'error');
+          await addModule(service, projA.id, 'fa-m3', 'pending');
+
+          // Project B: 2 finished + 4 pending → finished = 2/6 = 1/3, error = 0
+          const projB = await makeProject(service, 'Frac-B', 'FB', 'success');
+          await addModule(service, projB.id, 'fb-m1', 'finished');
+          await addModule(service, projB.id, 'fb-m2', 'finished');
+          await addModule(service, projB.id, 'fb-m3', 'pending');
+          await addModule(service, projB.id, 'fb-m4', 'pending');
+          await addModule(service, projB.id, 'fb-m5', 'pending');
+          await addModule(service, projB.id, 'fb-m6', 'pending');
+
+          // Both inProgress with identical finished% (1/3).
+          // Tiebreaker: error% → A has 1/3, B has 0 → B sorts first ascending.
+          const asc = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          expect(asc.projects.map(p => p.name)).toEqual(['Frac-B', 'Frac-A']);
+
+          const desc = await service.listProjects(
+            { sort: 'status', order: 'desc' },
+            listOpts,
+          );
+          expect(desc.projects.map(p => p.name)).toEqual(['Frac-A', 'Frac-B']);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'treats identical fractions with same denominator as tied - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          // Both projects: 1 finished + 2 pending → finished = 1/3
+          // All summary percentages are identical so the comparator returns 0.
+          const projA = await makeProject(service, 'Same-A', 'SA', 'success');
+          await addModule(service, projA.id, 'sa-m1', 'finished');
+          await addModule(service, projA.id, 'sa-m2', 'pending');
+          await addModule(service, projA.id, 'sa-m3', 'pending');
+
+          const projB = await makeProject(service, 'Same-B', 'SB', 'success');
+          await addModule(service, projB.id, 'sb-m1', 'finished');
+          await addModule(service, projB.id, 'sb-m2', 'pending');
+          await addModule(service, projB.id, 'sb-m3', 'pending');
+
+          const result = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          expect(result.totalCount).toBe(2);
+          expect(result.projects).toHaveLength(2);
+          expect(
+            result.projects.every(p => p.status?.state === 'inProgress'),
+          ).toBe(true);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
         'treats projects with 0 modules as tied on all percentages - %p',
         async databaseId => {
           const { client } = await createDatabase(databaseId);

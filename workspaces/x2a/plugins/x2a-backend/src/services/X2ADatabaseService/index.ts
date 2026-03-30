@@ -187,28 +187,30 @@ export class X2ADatabaseService {
         'cancelled',
       ] as const;
 
-      result.projects.sort((a, b) => {
-        const stateA = a.status?.state;
-        const stateB = b.status?.state;
-        const rankA = stateA
-          ? (X2ADatabaseService.STATE_ORDER[stateA] ?? 99)
-          : 99;
-        const rankB = stateB
-          ? (X2ADatabaseService.STATE_ORDER[stateB] ?? 99)
-          : 99;
-        const stateCmp = rankA - rankB;
-        if (stateCmp !== 0) return order === 'asc' ? stateCmp : -stateCmp;
+      const sign = order === 'asc' ? 1 : -1;
 
+      const stateRank = (p: Project): number =>
+        X2ADatabaseService.STATE_ORDER[p.status?.state as ProjectStatusState] ??
+        99;
+
+      result.projects.sort((a, b) => {
+        // Primary: project-level state (created to completed).
+        const stateCmp = stateRank(a) - stateRank(b);
+        if (stateCmp !== 0) return sign * stateCmp;
+
+        // Secondary: compare module-summary proportions in priority order
+        // (finished to cancelled) so projects further along sort first.
+        // Cross-multiplication (a/b vs c/d to a*d vs c*b) avoids floating-point
+        // division. The sign is preserved because both totals are non-negative.
         const sumA = a.status?.modulesSummary;
         const sumB = b.status?.modulesSummary;
         const totalA = sumA?.total || 0;
         const totalB = sumB?.total || 0;
 
         for (const key of summaryKeys) {
-          const pctA = totalA > 0 && sumA ? (sumA[key] ?? 0) / totalA : 0;
-          const pctB = totalB > 0 && sumB ? (sumB[key] ?? 0) / totalB : 0;
-          const diff = pctA - pctB;
-          if (diff !== 0) return order === 'asc' ? diff : -diff;
+          const diff =
+            (sumA?.[key] ?? 0) * totalB - (sumB?.[key] ?? 0) * totalA;
+          if (diff !== 0) return sign * diff;
         }
 
         return 0;
