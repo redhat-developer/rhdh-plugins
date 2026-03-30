@@ -37,7 +37,7 @@ describe('MetricStatusCell', () => {
       </ThemeProvider>,
     );
 
-    expect(screen.getByText('success')).toBeInTheDocument();
+    expect(screen.getByText('Success')).toBeInTheDocument();
   });
 
   it('should render -- when status is empty string', () => {
@@ -68,6 +68,34 @@ describe('MetricStatusCell', () => {
       </ThemeProvider>,
     );
 
-    expect(screen.getByText('customStatus')).toBeInTheDocument();
+    expect(screen.getByText('CustomStatus')).toBeInTheDocument();
+  });
+
+  it('should render translated label for known threshold statuses', () => {
+    const { rerender } = render(
+      <ThemeProvider theme={theme}>
+        <MetricStatusCell status="warning" theme={theme} />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByText('Warning')).toBeInTheDocument();
+
+    rerender(
+      <ThemeProvider theme={theme}>
+        <MetricStatusCell status="error" theme={theme} />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByText('Error')).toBeInTheDocument();
+  });
+
+  it('should capitalise unknown status when no translation key matches', () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <MetricStatusCell status="pending" theme={theme} />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByText('Pending')).toBeInTheDocument();
   });
 });
