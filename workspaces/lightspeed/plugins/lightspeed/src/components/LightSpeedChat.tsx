@@ -1152,33 +1152,37 @@ export const LightspeedChat = ({
     </>
   );
 
-  let mainPanelContent = <>{chatMainContent}</>;
+  const mcpSettingsPanel = (
+    <McpServersSettings onClose={() => setIsMcpSettingsOpen(false)} />
+  );
 
-  if (isMcpSettingsOpen && isFullscreenMode) {
-    mainPanelContent = (
-      <div className={classes.mcpFullscreenLayout}>
-        <div className={classes.mcpChatPane}>{chatMainContent}</div>
-        <div className={classes.mcpSettingsPane}>
-          <McpServersSettings onClose={() => setIsMcpSettingsOpen(false)} />
+  const mainPanelContent = (() => {
+    if (!isMcpSettingsOpen) {
+      return <>{chatMainContent}</>;
+    }
+
+    if (isFullscreenMode) {
+      return (
+        <div className={classes.mcpFullscreenLayout}>
+          <div className={classes.mcpChatPane}>{chatMainContent}</div>
+          <div className={classes.mcpSettingsPane}>{mcpSettingsPanel}</div>
         </div>
-      </div>
-    );
-  } else if (isMcpSettingsOpen) {
-    mainPanelContent = (
+      );
+    }
+
+    return (
       <Settings
         className={classes.settingsFlat}
         fields={[
           {
             id: 'mcp-servers-settings',
             label: '',
-            field: (
-              <McpServersSettings onClose={() => setIsMcpSettingsOpen(false)} />
-            ),
+            field: mcpSettingsPanel,
           },
         ]}
       />
     );
-  }
+  })();
 
   let drawerPanelStyle: { [key: string]: string | number } | undefined;
   if (!isFullscreenMode) {

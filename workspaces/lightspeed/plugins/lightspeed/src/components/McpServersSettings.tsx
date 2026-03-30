@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 
@@ -345,6 +345,11 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
     return next;
   }, [servers, sortAsc]);
 
+  const onEditClick = useCallback((event: MouseEvent) => {
+    // Intentionally no-op in this branch; follow-up branch will wire edit flow.
+    event.preventDefault();
+  }, []);
+
   return (
     <div className={classes.root}>
       <div className={classes.headerRow}>
@@ -475,7 +480,7 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
                     icon={<ModeEditOutlineOutlinedIcon fontSize="small" />}
                     variant="plain"
                     className={classes.actionButton}
-                    isDisabled
+                    onClick={onEditClick}
                   />
                 </Td>
               </Tr>
