@@ -35,6 +35,7 @@ import {
   ProjectStatusState,
   DEFAULT_PAGE_ORDER,
   DEFAULT_PAGE_SIZE,
+  IN_MEMORY_SORT_WARN_THRESHOLD,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { ProjectsGet } from '../../schema/openapi';
@@ -44,10 +45,7 @@ import { ModuleOperations } from './moduleOperations';
 import { ProjectOperations } from './projectOperations';
 import { isNonDbSortField } from './queryHelpers';
 import { removeSensitiveFromJob } from '../../router/common';
-import {
-  IN_MEMORY_SORT_WARN_THRESHOLD,
-  MAX_CONCURRENT_ENRICHMENT_JOBS,
-} from '../constants';
+import { MAX_CONCURRENT_ENRICHMENT_JOBS } from '../constants';
 import { maxConcurrency } from '../../utils';
 import { calculateModuleStatus, calculateProjectStatus } from './status';
 
