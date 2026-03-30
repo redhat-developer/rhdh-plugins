@@ -80,20 +80,28 @@ sanitize_secrets() {
 # Run an x2a tool command with error reporting.
 # On failure, reads the error details file written by x2a-convertor and sets ERROR_MESSAGE.
 # On success, clears ERROR_MESSAGE.
+# Captured output is stored in X2A_OUTPUT for callers that need to parse it.
 # Usage: run_x2a uv run app.py <phase> [args...]
 run_x2a() {
   rm -f "${X2A_ERROR_FILE}"
 
+  echo "Command: $*"
+
+  local tmpfile
+  tmpfile=$(mktemp)
+
   set +e
-  "$@"
-  local rc=$?
+  "$@" 2>&1 | tee "${tmpfile}"
+  local rc=${PIPESTATUS[0]}
   set -e
 
+  X2A_OUTPUT=$(cat "${tmpfile}")
+  rm -f "${tmpfile}"
+
   if [ ${rc} -ne 0 ]; then
+    ERROR_MESSAGE="Unexpected error during ${PHASE} phase. See the job log for details."
     if [ -f "${X2A_ERROR_FILE}" ]; then
-      ERROR_MESSAGE=$(cat "${X2A_ERROR_FILE}")
-    else
-      ERROR_MESSAGE="Unexpected error during ${PHASE} phase. See the job log for details."
+      ERROR_MESSAGE+=" Message: $(cat "${X2A_ERROR_FILE}")"
     fi
     exit ${rc}
   fi
@@ -253,7 +261,6 @@ case "${PHASE}" in
     # Usage: app.py init [OPTIONS] USER_REQUIREMENTS
     #   --source-dir DIRECTORY  Source directory to analyze
     USER_REQ="${USER_PROMPT:-Analyze the Chef cookbooks and create a migration plan}"
-    echo "Command: uv run app.py init --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
     run_x2a uv run app.py init --source-dir "${SOURCE_BASE}" "${USER_REQ}"
 
     # Copy output to target location
@@ -315,7 +322,6 @@ case "${PHASE}" in
     echo "Working directory: $(pwd)"
 
     USER_REQ="${USER_PROMPT:-Analyze the module '${MODULE_NAME}' for migration to Ansible}"
-    echo "Command: uv run app.py analyze --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
     run_x2a uv run app.py analyze --source-dir "${SOURCE_BASE}" "${USER_REQ}"
 
     # Copy output to target location
@@ -370,7 +376,6 @@ case "${PHASE}" in
     echo "Working directory: $(pwd)"
 
     USER_REQ="${USER_PROMPT:-Migrate this module to Ansible}"
-    echo "Command: uv run app.py migrate --source-dir ${SOURCE_BASE} --source-technology Chef --high-level-migration-plan ${PROJECT_PATH}/migration-plan.md --module-migration-plan ${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md \"${USER_REQ}\""
     run_x2a uv run app.py migrate \
       --source-dir "${SOURCE_BASE}" \
       --source-technology Chef \
@@ -418,8 +423,6 @@ case "${PHASE}" in
 
     # Step 1: publish-project — assemble Ansible project from migrated role
     echo "=== Step 1: Assembling Ansible project ==="
-    echo "Command: uv run app.py publish-project ${PROJECT_DIR} ${MODULE_NAME}"
-
     # publish-project reads from {project_id}/modules/{module_name}/ansible/roles/{module_name}/
     # and writes to {project_id}/ansible-project/
     # It operates relative to CWD, so we run from TARGET_BASE
@@ -441,23 +444,14 @@ case "${PHASE}" in
     # Step 2: publish-aap — register with AAP and sync
     echo ""
     echo "=== Step 2: Publishing to AAP ==="
-    echo "Command: uv run app.py publish-aap --target-repo ${TARGET_REPO_URL} --target-branch ${TARGET_REPO_BRANCH} --project-id ${PROJECT_DIR}"
     cd /app
-    rm -f "${X2A_ERROR_FILE}"
-    PUBLISH_OUTPUT=$(uv run app.py publish-aap \
+    run_x2a uv run app.py publish-aap \
       --target-repo "${TARGET_REPO_URL}" \
       --target-branch "${TARGET_REPO_BRANCH}" \
-      --project-id "${PROJECT_DIR}" 2>&1 | tee /dev/stderr) || {
-      if [ -f "${X2A_ERROR_FILE}" ]; then
-        ERROR_MESSAGE=$(cat "${X2A_ERROR_FILE}")
-      else
-        ERROR_MESSAGE="Unexpected error during publish phase (publish-aap). See the job log for details."
-      fi
-      exit 1
-    }
+      --project-id "${PROJECT_DIR}"
 
-    # Parse AAP project ID from output
-    AAP_PROJECT_ID=$(echo "${PUBLISH_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
+    # Parse AAP project ID from captured output
+    AAP_PROJECT_ID=$(echo "${X2A_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
     if [ -n "${AAP_PROJECT_ID}" ]; then
       ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects/${AAP_PROJECT_ID}/details")
     else
