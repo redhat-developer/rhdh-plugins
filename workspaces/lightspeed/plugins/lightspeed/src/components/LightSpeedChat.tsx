@@ -455,7 +455,6 @@ export const LightspeedChat = ({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
   const [isMcpSettingsOpen, setIsMcpSettingsOpen] = useState<boolean>(false);
-  const [chatHeaderBgColor, setChatHeaderBgColor] = useState<string>();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
   const [messageBarKey, setMessageBarKey] = useState(0);
@@ -506,16 +505,6 @@ export const LightspeedChat = ({
       setIsChatHistoryDrawerOpen(true);
     }
   }, [isMobile, isFullscreenMode]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const headerElement = document.querySelector('.pf-chatbot__header');
-    if (!headerElement) return;
-    const computedBg = window.getComputedStyle(headerElement).backgroundColor;
-    if (computedBg) {
-      setChatHeaderBgColor(computedBg);
-    }
-  }, [displayMode, isMcpSettingsOpen]);
 
   const {
     isPinningChatsEnabled,
@@ -1164,7 +1153,6 @@ export const LightspeedChat = ({
   const mcpSettingsPanel = (
     <McpServersSettings
       onClose={() => setIsMcpSettingsOpen(false)}
-      backgroundColor={chatHeaderBgColor}
     />
   );
 

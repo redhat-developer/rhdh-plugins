@@ -324,7 +324,6 @@ export const McpServersSettings = ({
     },
     [fetchJson, getBaseUrl],
   );
-
   const loadServers = useCallback(async () => {
     setIsLoading(true);
     setError(null);
