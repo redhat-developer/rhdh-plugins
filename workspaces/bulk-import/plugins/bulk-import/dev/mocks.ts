@@ -131,6 +131,12 @@ export class MockBulkImportApi implements BulkImportAPI {
       i => i.repository.url === repo,
     ) as ImportJobStatus;
   }
+
+  async getSCMHosts(): Promise<
+    { github: string[]; gitlab: string[] } | Response
+  > {
+    return { github: [], gitlab: [] };
+  }
 }
 
 export const mockBulkImportApi = new MockBulkImportApi();

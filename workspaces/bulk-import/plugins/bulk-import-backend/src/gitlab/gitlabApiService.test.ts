@@ -289,7 +289,11 @@ describe('GitlabApiService tests', () => {
       paginationInfo: { total: 1 },
     });
 
-    const result = await gitlabApiService.getOrganizationsFromIntegrations('A');
+    const result = await gitlabApiService.getOrganizationsFromIntegrations(
+      1,
+      20,
+      'A',
+    );
 
     const expected_response = {
       organizations: [
@@ -493,12 +497,7 @@ describe('GitlabApiService tests', () => {
         paginationInfo: { total: 2 },
       });
 
-      await gitlabApiService.getRepositoriesFromIntegrations(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
+      await gitlabApiService.getRepositoriesFromIntegrations();
 
       // Server credentials path — getAllCredentials IS called
       expect(mockGetAllCredentials).toHaveBeenCalled();

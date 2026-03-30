@@ -116,7 +116,7 @@ export const useRepositories = (
   const scmAuthHosts = useMemo(
     () =>
       Object.keys(scmAuthTokens ?? {})
-        .sort()
+        .sort((a, b) => a.localeCompare(b))
         .join(','),
     [scmAuthTokens],
   );

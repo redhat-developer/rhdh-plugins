@@ -33,16 +33,10 @@ import {
   SortingOrderEnum,
 } from '../types';
 import { getApi } from '../utils/repository-utils';
-import {
-  BulkImportRESTPathProviderBase,
-  IBulkImportRESTPathProvider,
-} from './BulkImportBackendClientBase';
+import { IBulkImportRESTPathProvider } from './BulkImportBackendClientBase';
 import { OrchestratorBulkImportBackendClientPathProvider } from './OrchestratorBulkImportBackendClientPathProvider';
 import { PRBulkImportBackendClientPathProvider } from './PRBulkImportBackendClientPathProvider';
 import { ScaffolderBulkImportBackendClientPathProvider } from './ScaffolderBulkImportBackendClientPathProvider';
-
-export type { IBulkImportRESTPathProvider };
-export { BulkImportRESTPathProviderBase };
 
 // @public
 export type BulkImportAPI = {

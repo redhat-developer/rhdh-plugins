@@ -270,7 +270,7 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
     let fetchSpy: jest.SpyInstance;
 
     beforeEach(() => {
-      fetchSpy = jest.spyOn(global, 'fetch');
+      fetchSpy = jest.spyOn(globalThis, 'fetch');
     });
 
     afterEach(() => {

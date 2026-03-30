@@ -301,7 +301,7 @@ The Bulk Import Backend plugin emits audit events for various operations. Events
 
 - **`ping`**: tracks `GET` requests to the `/ping` endpoint, which allows to make sure the bulk import backend is up and running.
 
-- **`scm-hosts-read`**: tracks `GET` requests to the `/scm-hosts` endpoint, which returns the list of configured GitHub and GitLab integration host URLs.
+- **`scm-hosts-read`**: tracks `GET` requests to the `/scm-hosts-read` endpoint, which returns the list of configured GitHub and GitLab integration host URLs.
 
 - **`org-read`**: tracks `GET` requests to the `/organizations` endpoint, which returns the list of organizations accessible from all configured SCM Integrations (GitHub and GitLab).
 

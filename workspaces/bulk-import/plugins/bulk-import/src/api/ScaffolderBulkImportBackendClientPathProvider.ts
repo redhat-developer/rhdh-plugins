@@ -34,12 +34,10 @@ export class ScaffolderBulkImportBackendClientPathProvider extends BulkImportRES
 
   getGetImportActionPath(
     repo: string,
-    _defaultBranch: string,
+    defaultBranch: string,
     approvalTool?: string,
   ): string {
-    const params = new URLSearchParams({ repo });
-    if (approvalTool) params.set('approvalTool', approvalTool);
-    return `/api/bulk-import/task-import/by-repo?${params.toString()}`;
+    return this.getDeleteImportActionPath(repo, defaultBranch, approvalTool);
   }
 
   getGetImportJobsPath(

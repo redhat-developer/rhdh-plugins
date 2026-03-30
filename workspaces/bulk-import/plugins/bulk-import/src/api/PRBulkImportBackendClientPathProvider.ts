@@ -39,9 +39,7 @@ export class PRBulkImportBackendClientPathProvider extends BulkImportRESTPathPro
     defaultBranch: string,
     approvalTool?: string,
   ): string {
-    const params = new URLSearchParams({ repo, defaultBranch });
-    if (approvalTool) params.set('approvalTool', approvalTool);
-    return `/api/bulk-import/import/by-repo?${params.toString()}`;
+    return this.getDeleteImportActionPath(repo, defaultBranch, approvalTool);
   }
 
   getGetImportJobsPath(

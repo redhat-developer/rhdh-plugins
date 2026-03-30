@@ -1035,7 +1035,7 @@ const OPENAPI = `
         "required": false,
         "schema": {
           "type": "string",
-          "example": "{\"https://github.com\":\"ghp_xxx\",\"https://ghe.example.com\":\"ghe_yyy\"}"
+          "example": "{\\"https://github.com\\":\\"ghp_xxx\\",\\"https://ghe.example.com\\":\\"ghe_yyy\\"}"
         }
       },
       "pagePerIntegrationQueryParam": {
