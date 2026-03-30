@@ -90,4 +90,45 @@ describe('EntitiesTableHeader', () => {
     });
     expect(sortLabel).toBeInTheDocument();
   });
+
+  it('should call onSortRequest with the correct column id when a different sortable header is clicked', async () => {
+    const onSortRequest = jest.fn();
+    render(
+      <table>
+        <EntitiesTableHeader {...defaultProps} onSortRequest={onSortRequest} />
+      </table>,
+    );
+
+    await userEvent.click(
+      screen.getByText('entitiesPage.entitiesTable.header.entity'),
+    );
+    expect(onSortRequest).toHaveBeenCalledWith('entityName');
+
+    await userEvent.click(
+      screen.getByText('entitiesPage.entitiesTable.header.lastUpdated'),
+    );
+    expect(onSortRequest).toHaveBeenCalledWith('timestamp');
+  });
+
+  it('should call onSortRequest again when clicking the already-active sorted column', async () => {
+    const onSortRequest = jest.fn();
+    render(
+      <table>
+        <EntitiesTableHeader
+          orderBy="status"
+          order="asc"
+          onSortRequest={onSortRequest}
+        />
+      </table>,
+    );
+
+    const metricHeader = screen.getByText(
+      'entitiesPage.entitiesTable.header.metric',
+    );
+    await userEvent.click(metricHeader);
+    await userEvent.click(metricHeader);
+
+    expect(onSortRequest).toHaveBeenCalledTimes(2);
+    expect(onSortRequest).toHaveBeenCalledWith('status');
+  });
 });
