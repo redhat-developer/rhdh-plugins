@@ -43,11 +43,13 @@
   ],
   "files": [
     "app-config.yaml",
+    "config.d.ts",
     "dist",
     "dist-dynamic/*.*",
     "dist-dynamic/dist/**",
     "static"
   ],
+  "configSchema": "config.d.ts",
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
