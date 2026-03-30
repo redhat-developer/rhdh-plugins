@@ -34,7 +34,7 @@ export class McpServerValidator {
   async validate(url: string, token: string): Promise<McpValidationResult> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `${token}`,
       Accept: 'application/json, text/event-stream',
     };
 

@@ -514,8 +514,8 @@ describe('lightspeed router tests', () => {
 
       const parsedHeaders = JSON.parse(capturedMcpHeaders!);
       expect(parsedHeaders).toEqual({
-        'mcp-server-1': { Authorization: 'Bearer token-1' },
-        'mcp-server-2': { Authorization: 'Bearer token-2' },
+        'mcp-server-1': { Authorization: 'token-1' },
+        'mcp-server-2': { Authorization: 'token-2' },
       });
     });
 
@@ -617,7 +617,7 @@ describe('lightspeed router tests', () => {
 
       const parsedHeaders = JSON.parse(capturedMcpHeaders!);
       expect(parsedHeaders).toEqual({
-        'single-mcp-server': { Authorization: 'Bearer single-token' },
+        'single-mcp-server': { Authorization: 'single-token' },
       });
     });
 

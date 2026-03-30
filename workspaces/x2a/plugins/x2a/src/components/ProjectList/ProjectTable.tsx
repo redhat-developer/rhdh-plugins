@@ -49,6 +49,7 @@ import {
   CREATE_CHEF_PROJECT_TEMPLATE_PATH,
   Module,
   Project,
+  PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD,
   ProjectsGet,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
@@ -138,6 +139,7 @@ const useColumns = (
   allExpanded: boolean,
   onToggleAll: () => void,
   onToggleRow: (rowData: any) => void,
+  totalCount: number | undefined,
 ): TableColumn<Project>[] => {
   const { t } = useTranslation();
   const projectPath = useRouteRef(projectRouteRef);
@@ -166,6 +168,11 @@ const useColumns = (
     },
     [orderBy, orderDirection],
   );
+
+  const isStatusSortable =
+    totalCount !== undefined &&
+    totalCount > 0 &&
+    totalCount <= PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD;
 
   return useMemo(() => {
     // Important: Keep the order in sync with the mapOrderByToSort() function.
@@ -234,12 +241,24 @@ const useColumns = (
         defaultSort: getDefaultSort(1),
       },
       {
-        title: t('table.columns.status'),
+        title: isStatusSortable ? (
+          t('table.columns.status')
+        ) : (
+          // TODO: make this configurable via an env variable
+          <Tooltip
+            title={t('table.columns.statusSortDisabledTooltip' as any, {
+              threshold: String(PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD),
+            })}
+          >
+            <span>{t('table.columns.status')}</span>
+          </Tooltip>
+        ),
         field: 'status',
         render: (rowData: Project) => (
           <ProjectStatusCell projectStatus={rowData.status} />
         ),
-        defaultSort: getDefaultSort(2),
+        sorting: isStatusSortable,
+        defaultSort: isStatusSortable ? getDefaultSort(2) : undefined,
       },
       {
         title: t('table.columns.sourceRepo'),
@@ -274,7 +293,15 @@ const useColumns = (
     ];
 
     return columns;
-  }, [t, getDefaultSort, nameCell, allExpanded, onToggleAll, onToggleRow]);
+  }, [
+    t,
+    getDefaultSort,
+    nameCell,
+    allExpanded,
+    onToggleAll,
+    onToggleRow,
+    isStatusSortable,
+  ]);
 };
 
 export interface ExpandedModulesEntry {
@@ -647,6 +674,7 @@ export const ProjectTable = ({
     allExpanded,
     handleToggleAllDetailPanels,
     handleToggleRow,
+    totalCount,
   );
   const data = projects;
 

@@ -186,10 +186,9 @@ export const useKonfluxResource = <
     getNextPageParam: lastPage => lastPage.continuationToken,
     initialPageParam: undefined as string | undefined,
     enabled: !!entity && !!resource && options?.enabled !== false,
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   const allData = query.data?.pages.flatMap(page => page.data) ?? [];

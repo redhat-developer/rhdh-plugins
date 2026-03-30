@@ -16,13 +16,13 @@
 
 import { KubearchiveService } from '../kubearchive-service';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import type { KubeConfig, CustomObjectsApi } from '@kubernetes/client-node';
+import type { CustomObjectsApi } from '@kubernetes/client-node';
 import {
   KonfluxConfig,
   K8sResourceCommonWithClusterInfo,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { KonfluxLogger } from '../../helpers/logger';
-import { createKubeConfig } from '../../helpers/client-factory';
+import { getOrCreateClient } from '../../helpers/client-factory';
 import { getKubeClient } from '../../helpers/kube-client';
 
 jest.mock('../../helpers/logger');
@@ -32,7 +32,6 @@ jest.mock('../../helpers/kube-client');
 describe('KubearchiveService', () => {
   let mockLogger: jest.Mocked<LoggerService>;
   let mockKonfluxLogger: jest.Mocked<KonfluxLogger>;
-  let mockKubeConfig: jest.Mocked<KubeConfig>;
   let mockCustomObjectsApi: jest.Mocked<CustomObjectsApi>;
   let service: KubearchiveService;
 
@@ -104,18 +103,13 @@ describe('KubearchiveService', () => {
       listNamespacedCustomObjectWithHttpInfo: jest.fn(),
     } as unknown as jest.Mocked<CustomObjectsApi>;
 
-    mockKubeConfig = {
-      makeApiClient: jest.fn().mockReturnValue(mockCustomObjectsApi),
-      loadFromOptions: jest.fn(),
-    } as unknown as jest.Mocked<KubeConfig>;
-
     (
       KonfluxLogger as jest.MockedClass<typeof KonfluxLogger>
     ).mockImplementation(() => mockKonfluxLogger);
 
     (
-      createKubeConfig as jest.MockedFunction<typeof createKubeConfig>
-    ).mockResolvedValue(mockKubeConfig);
+      getOrCreateClient as jest.MockedFunction<typeof getOrCreateClient>
+    ).mockResolvedValue(mockCustomObjectsApi);
 
     class MockObservable<T> {
       constructor(public value: T) {}
@@ -545,10 +539,10 @@ describe('KubearchiveService', () => {
       });
 
       (
-        createKubeConfig as jest.MockedFunction<typeof createKubeConfig>
+        getOrCreateClient as jest.MockedFunction<typeof getOrCreateClient>
       ).mockResolvedValue(null);
 
-      // provide OIDC token so it passes token check and reaches createKubeConfig
+      // provide OIDC token so it passes token check and reaches getOrCreateClient
       await expect(
         service.fetchResources({
           konfluxConfig,
@@ -564,7 +558,7 @@ describe('KubearchiveService', () => {
       ).rejects.toThrow(`Cluster '${cluster}' not found`);
 
       expect(mockKonfluxLogger.error).toHaveBeenCalledWith(
-        'Failed to create KubeConfig - cluster not found',
+        'Failed to create API client - cluster not found',
         undefined,
         expect.objectContaining({
           cluster,
@@ -586,7 +580,7 @@ describe('KubearchiveService', () => {
       });
 
       (
-        createKubeConfig as jest.MockedFunction<typeof createKubeConfig>
+        getOrCreateClient as jest.MockedFunction<typeof getOrCreateClient>
       ).mockResolvedValue(null);
 
       await expect(
@@ -602,7 +596,7 @@ describe('KubearchiveService', () => {
       ).rejects.toThrow(`Cluster '${cluster}' not found`);
 
       expect(mockKonfluxLogger.error).toHaveBeenCalledWith(
-        'Failed to create KubeConfig - cluster not found',
+        'Failed to create API client - cluster not found',
         undefined,
         expect.objectContaining({
           cluster,

@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-common
 
+## 1.1.0
+
+### Minor Changes
+
+- 613b44e: Forced minor version bump.
+
+### Patch Changes
+
+- 4fb1a6e: Bulk run project action added. Filters eligible projects based on privileges.
+- 50fa945: Adding Project Details Page and fixing issues in the Module Details Page.
+- 7565e2e: Add the Cancel phase migration action.
+- f3f900e: feat(x2a): introduce polling to keep the views up-to-date (affects multiple pages)
+- 5d26b30: Add Bitbucket repository support.
+- e9f35e2: The user can newly bulk-create conversion projects from an uploaded CSV file.
+
 ## 1.0.2
 
 ### Patch Changes

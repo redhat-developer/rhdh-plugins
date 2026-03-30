@@ -2,4 +2,4 @@
 '@red-hat-developer-hub/backstage-plugin-x2a': patch
 ---
 
-Add icon for external links.
+Icon for the X2A left side menu.
