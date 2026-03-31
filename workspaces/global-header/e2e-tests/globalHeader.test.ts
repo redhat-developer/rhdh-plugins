@@ -109,7 +109,7 @@ test('Verify Global header to be visible', async ({
   await runAccessibilityTests(page, testInfo);
 });
 
-test('Verify Hover texts to be visible', async ({}, testInfo: TestInfo) => {
+test('Verify Hover texts to be visible', async () => {
   const { globalHeader, starredItems, appLauncher, help, notifications } =
     getHeaderElements();
 
@@ -143,7 +143,7 @@ test('Verify Hover texts to be visible', async ({}, testInfo: TestInfo) => {
     `);
 });
 
-test('Verify Search functionality and results', async ({}, testInfo: TestInfo) => {
+test('Verify Search functionality and results', async () => {
   const { search } = getHeaderElements();
   const searchQuery = 'example-website';
   const expectedUrl = /\/example-website/;
@@ -162,7 +162,7 @@ test('Verify Search functionality and results', async ({}, testInfo: TestInfo) =
   await expect(page.locator('h1')).toContainText(searchQuery);
 });
 
-test('Verify Self-service functionality', async ({}, testInfo: TestInfo) => {
+test('Verify Self-service functionality', async () => {
   const { selfService } = getHeaderElements();
   await selfService.click();
   await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
@@ -178,9 +178,8 @@ test('Verify Self-service functionality', async ({}, testInfo: TestInfo) => {
   await page.keyboard.press('Escape');
 });
 
-test('Verify Starred items functionality', async ({}, testInfo: TestInfo) => {
+test('Verify Starred items functionality', async () => {
   const { starredItems, companyLogo } = getHeaderElements();
-  const entityName = 'example-website';
 
   await starredItems.click();
   await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
@@ -203,7 +202,7 @@ test('Verify Starred items functionality', async ({}, testInfo: TestInfo) => {
   await page.keyboard.press('Escape');
 });
 
-test('Verify Application launcher functionality', async ({}, testInfo: TestInfo) => {
+test('Verify Application launcher functionality', async () => {
   const { appLauncher } = getHeaderElements();
   await appLauncher.click();
   await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
@@ -219,7 +218,7 @@ test('Verify Application launcher functionality', async ({}, testInfo: TestInfo)
   await page.keyboard.press('Escape');
 });
 
-test('Verify Help functionality', async ({}, testInfo: TestInfo) => {
+test('Verify Help functionality', async () => {
   const { help } = getHeaderElements();
   await help.click();
   await expect(
@@ -231,7 +230,7 @@ test('Verify Help functionality', async ({}, testInfo: TestInfo) => {
   await page.keyboard.press('Escape');
 });
 
-test('Verify Notifications functionality', async ({}, testInfo: TestInfo) => {
+test('Verify Notifications functionality', async () => {
   const { notifications } = getHeaderElements();
 
   await notifications.click();
