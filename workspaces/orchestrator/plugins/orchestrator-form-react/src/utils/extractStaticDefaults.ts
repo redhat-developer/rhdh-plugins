@@ -20,6 +20,10 @@ import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import get from 'lodash/get';
 import set from 'lodash/set';
 
+const isPlainObject = (value: unknown): value is JsonObject => {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+};
+
 /**
  * Extracts static default values from fetch:response:default properties in the schema.
  * These values are applied to formData before widgets render, ensuring defaults
@@ -75,7 +79,13 @@ export function extractStaticDefaults(
       // Only set if not already in existing form data
       const existingValue = get(existingFormData, path);
       if (existingValue === undefined || existingValue === null) {
-        set(defaults, path, staticDefault);
+        if (path === '') {
+          if (isPlainObject(staticDefault)) {
+            Object.assign(defaults, staticDefault);
+          }
+        } else {
+          set(defaults, path, staticDefault);
+        }
       }
     }
 
