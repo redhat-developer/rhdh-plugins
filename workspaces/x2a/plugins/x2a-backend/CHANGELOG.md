@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 1.2.0
+
+### Minor Changes
+
+- 6f5bfca: Implement sorting by project status.
+
 ## 1.1.0
 
 ### Minor Changes
