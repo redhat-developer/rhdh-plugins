@@ -33,16 +33,6 @@ describe('buildGraphQlQuery', () => {
     whereClause: 'version: "1.0"',
   };
 
-  const getPaginationString = (pagination: Pagination | undefined) => {
-    const paginationOrder = pagination?.order
-      ? pagination.order.toUpperCase()
-      : 'ASC';
-    if (pagination) {
-      return `orderBy: {${pagination.sortField}: ${paginationOrder}}, pagination: {limit: ${pagination.limit}, offset: ${pagination.offset}})`;
-    }
-    return undefined;
-  };
-
   type TestCase = {
     name: string;
     params: typeof defaultTestParams;
