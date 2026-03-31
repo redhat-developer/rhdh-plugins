@@ -18,6 +18,17 @@ When a frontend request arrives at `/api/cost-management/proxy/*`, the backend:
 
 This means granting `ros.demolab` only allows seeing data for the `demolab` cluster — the user cannot modify query parameters to access other clusters.
 
+### Apply Recommendation authorization
+
+When a user clicks "Apply recommendation", the frontend sends the request to the backend's `/api/cost-management/apply-recommendation` endpoint. The backend:
+
+1. Validates the `resourceType` against a server-side allowlist (`deployment`, `replicaset`, `daemonset`, `statefulset`, `deploymentconfig`, `replicationcontroller`)
+2. Checks the `ros.apply` permission — the user must be explicitly granted this permission to execute workflows
+3. Forwards the validated request to the Orchestrator plugin using service-to-service authentication
+4. Audit logs the action (user, cluster, namespace, workload, workflow ID, outcome)
+
+A confirmation dialog on the frontend also prevents accidental clicks.
+
 ## 1. Optimizations Section
 
 The Optimizations section allows users to view resource usage trends and optimization recommendations for workloads running on OpenShift clusters.
@@ -29,6 +40,7 @@ The Optimizations section allows users to view resource usage trends and optimiz
 | ros.plugin                        | -             | read   | Allows the user to access all optimization data in the Cost Management plugin                                              |
 | ros.[CLUSTER_NAME]                | -             | read   | Allows the user to access optimization data for a specific Cluster in the Cost Management plugin                           |
 | ros.[CLUSTER_NAME].[PROJECT_NAME] | -             | read   | Allows the user to access optimization data for a specific Project within a specific Cluster in the Cost Management plugin |
+| ros.apply                         | -             | update | Allows the user to apply optimization recommendations via workflow execution                                               |
 
 The user is permitted to do an action if either the generic permission or the specific one allows it. In other words, it is not possible to grant generic ros.plugin and then selectively disable it for a specific cluster via ros.[CLUSTER_NAME] with deny.
 
@@ -69,6 +81,11 @@ p, role:default/rosUser, ros.demolab, read, allow
 ####
 p, role:default/rosUser, ros.demolab.thanos, read, allow
 p, role:default/rosUser, ros.OpenShift on Azure.mobile, read, allow
+
+####
+# Optimizations Section (ros.) - Apply Recommendation permission
+####
+p, role:default/rosUser, ros.apply, update, allow
 
 ####
 # OpenShift Section (cost.) - Generic permissions
@@ -130,6 +147,20 @@ p, role:default/rosClusterProjectUser, ros.demolab.thanos, read, allow
 
 g, user:default/test_user_3, role:default/rosClusterProjectUser
 ```
+
+#### ros.apply Permission
+
+Since the `test_user_7` user has the `default/rosApplyUser` role, which has `ros.apply` permission, it can:
+
+- Execute the Apply Recommendation workflow to modify workload resource configurations
+
+```csv
+p, role:default/rosApplyUser, ros.apply, update, allow
+
+g, user:default/test_user_7, role:default/rosApplyUser
+```
+
+> **Note:** `ros.apply` is separate from the read permissions. A user can have read access to optimization data without being able to apply recommendations, and vice versa. Typically both `ros.plugin` (or cluster-specific read) and `ros.apply` are granted together.
 
 ### OpenShift Cost Section
 

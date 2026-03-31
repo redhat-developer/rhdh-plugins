@@ -23,6 +23,12 @@ export const costPluginPermissions: BasicPermission[];
 export const costPluginReadPermission: BasicPermission;
 
 // @public (undocumented)
+export const rosApplyPermission: BasicPermission;
+
+// @public (undocumented)
+export const rosApplyPermissions: BasicPermission[];
+
+// @public (undocumented)
 export const rosClusterProjectPermission: (
   clusterName: string,
   projectName: string,

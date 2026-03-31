@@ -29,6 +29,8 @@ describe('createRouter', () => {
       httpAuth: mockServices.httpAuth(),
       permissions: mockServices.permissions.mock(),
       cache: mockServices.cache.mock(),
+      discovery: mockServices.discovery(),
+      auth: mockServices.auth(),
       optimizationApi: {
         getRecommendationList: jest.fn(),
         getRecommendationById: jest.fn(),
