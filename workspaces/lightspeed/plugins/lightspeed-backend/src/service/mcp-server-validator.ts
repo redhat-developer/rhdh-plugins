@@ -96,6 +96,80 @@ const getNetworkErrorMessage = (url: string, error: unknown): string => {
   );
 };
 
+const getEndpointLabel = (targetUrl: string): string => {
+  try {
+    const parsed = new URL(targetUrl);
+    return parsed.port ? `${parsed.hostname}:${parsed.port}` : parsed.hostname;
+  } catch {
+    return targetUrl;
+  }
+};
+
+const getNestedError = (error: unknown): Error | undefined => {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'cause' in error &&
+    (error as { cause?: unknown }).cause instanceof Error
+  ) {
+    return (error as { cause: Error }).cause;
+  }
+  return undefined;
+};
+
+const getNetworkErrorMessage = (url: string, error: unknown): string => {
+  const endpoint = getEndpointLabel(url);
+  const nestedError = getNestedError(error);
+  const fullMessage = [
+    error instanceof Error ? error.message : '',
+    nestedError?.name ?? '',
+    nestedError?.message ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (
+    fullMessage.includes('timeout') ||
+    fullMessage.includes('aborterror') ||
+    fullMessage.includes('aborted')
+  ) {
+    return `Connection timed out while contacting ${endpoint}`;
+  }
+  if (
+    fullMessage.includes('econnrefused') ||
+    fullMessage.includes('connection refused')
+  ) {
+    return `Connection refused by ${endpoint}`;
+  }
+  if (
+    fullMessage.includes('enotfound') ||
+    fullMessage.includes('getaddrinfo')
+  ) {
+    return `Host not found for ${endpoint}`;
+  }
+  if (
+    fullMessage.includes('econnreset') ||
+    fullMessage.includes('socket hang up')
+  ) {
+    return `Connection reset by ${endpoint}`;
+  }
+  if (
+    fullMessage.includes('ehostunreach') ||
+    fullMessage.includes('enetunreach')
+  ) {
+    return `Host unreachable: ${endpoint}`;
+  }
+  if (fullMessage.includes('fetch failed')) {
+    return `Unable to connect to ${endpoint}`;
+  }
+
+  return (
+    nestedError?.message ||
+    (error instanceof Error ? error.message : String(error))
+  );
+};
+
 /**
  * Validates MCP server credentials using the Streamable HTTP transport.
  *
