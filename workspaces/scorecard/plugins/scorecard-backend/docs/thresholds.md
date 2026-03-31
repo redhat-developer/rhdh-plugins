@@ -324,6 +324,9 @@ The `icon` value is a string and can be one of:
 - **Image URL**: `http(s)://...`, `/assets/icon.svg`
 - **Data URI**: `data:image/svg+xml;base64,...`
 
+> [!NOTE]
+> SVG String, Image URL, and Data URI icons are treated as images and do not inherit the threshold status color. You must define the color within the icon itself.
+
 For information on registering custom icons with Backstage, see [Adding Icons](https://backstage.io/docs/conf/user-interface/icons/#adding-icons).
 To use your custom Backstage System icons in RHDH for Scorecard, you will need to add `appIcons` key to the plugin that is exporting them:
 
