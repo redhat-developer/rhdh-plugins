@@ -103,8 +103,8 @@ const ScorecardCenterLabel = ({
   }, [isErrorState, errorLabel]);
 
   return (
-    <g>
-      <foreignObject x={cx - 12} y={cy - 28} width={24} height={24}>
+    <g transform={`translate(${cx}, ${cy})`}>
+      <foreignObject x={-12} y={-28} width={24} height={24}>
         <ScorecardIcon
           icon={statusIcon}
           size="medium"
@@ -116,8 +116,7 @@ const ScorecardCenterLabel = ({
       </foreignObject>
       {!isErrorState && (
         <text
-          x={cx}
-          y={cy + 12}
+          y={12}
           textAnchor="middle"
           dominantBaseline="middle"
           fontSize={24}
@@ -129,8 +128,8 @@ const ScorecardCenterLabel = ({
       )}
       {isErrorState && (
         <foreignObject
-          x={cx - 50}
-          y={cy + layout.yOffset}
+          x={-50}
+          y={layout.yOffset}
           width={100}
           height={layout.height}
         >
