@@ -59,6 +59,7 @@ export const ScorecardIcon = ({
   }
 
   if (
+    icon.startsWith('data:') ||
     icon.startsWith('https://') ||
     icon.startsWith('http://') ||
     icon.startsWith('/')
