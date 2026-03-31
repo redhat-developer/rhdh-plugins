@@ -19,6 +19,8 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import { McpValidationResult } from './mcp-server-types';
 
 const REQUEST_TIMEOUT_MS = 10_000;
+const INVALID_CREDENTIALS_ERROR =
+  'Invalid credentials — server returned 401/403';
 
 const getEndpointLabel = (targetUrl: string): string => {
   try {
@@ -107,9 +109,47 @@ export class McpServerValidator {
 
   async validate(url: string, token: string): Promise<McpValidationResult> {
     const trimmedToken = token.trim();
-    const authorizationHeader = /^Bearer\s+/i.test(trimmedToken)
-      ? trimmedToken
-      : `Bearer ${trimmedToken}`;
+    const hasAuthScheme = /^[A-Za-z][A-Za-z0-9_-]*\s+/.test(trimmedToken);
+    const authorizationHeaders = hasAuthScheme
+      ? [trimmedToken]
+      : [trimmedToken, `Bearer ${trimmedToken}`];
+
+    let lastResult: McpValidationResult = {
+      valid: false,
+      toolCount: 0,
+      tools: [],
+      error: INVALID_CREDENTIALS_ERROR,
+    };
+
+    for (const [index, authorizationHeader] of authorizationHeaders.entries()) {
+      const result = await this.validateWithAuthorizationHeader(
+        url,
+        authorizationHeader,
+      );
+      lastResult = result;
+
+      const isLastAttempt = index === authorizationHeaders.length - 1;
+      const shouldRetryWithAlternativeAuth =
+        !isLastAttempt &&
+        !result.valid &&
+        result.error === INVALID_CREDENTIALS_ERROR;
+
+      if (!shouldRetryWithAlternativeAuth) {
+        return result;
+      }
+
+      this.logger.debug(
+        `MCP validation got 401/403 for ${url}; retrying with an alternate Authorization header format`,
+      );
+    }
+
+    return lastResult;
+  }
+
+  private async validateWithAuthorizationHeader(
+    url: string,
+    authorizationHeader: string,
+  ): Promise<McpValidationResult> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Authorization: authorizationHeader,
@@ -139,7 +179,7 @@ export class McpServerValidator {
           valid: false,
           toolCount: 0,
           tools: [],
-          error: 'Invalid credentials — server returned 401/403',
+          error: INVALID_CREDENTIALS_ERROR,
         };
       }
 

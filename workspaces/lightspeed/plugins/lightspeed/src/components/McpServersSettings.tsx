@@ -17,6 +17,7 @@
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
 
 import { makeStyles } from '@material-ui/core';
 import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
@@ -32,6 +33,8 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
+
+import { lightspeedMcpManagePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
 type ServerStatus = 'tokenRequired' | 'disabled' | 'ok' | 'failed' | 'unknown';
 
@@ -209,8 +212,8 @@ const getStatusIcon = (status: ServerStatus, className: string) => {
 };
 
 const getDisplayStatus = (server: McpServer): ServerStatus => {
-  if (!server.enabled) return 'disabled';
   if (!server.hasToken) return 'tokenRequired';
+  if (!server.enabled) return 'disabled';
   if (server.status === 'error') return 'failed';
   if (server.status === 'connected') return 'ok';
   return 'unknown';
@@ -248,6 +251,10 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
   const classes = useStyles();
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
+  const mcpManagePermission = usePermission({
+    permission: lightspeedMcpManagePermission,
+  });
+  const canManageMcp = mcpManagePermission.allowed;
   const [servers, setServers] = useState<McpServer[]>([]);
   const [sortAsc, setSortAsc] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -328,22 +335,24 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
       const uiServers = (data.servers ?? []).map(server => toUiServer(server));
       setServers(uiServers);
 
-      const serversToValidate = uiServers.filter(server => server.hasToken);
-      void Promise.allSettled(
-        serversToValidate.map(async server => {
-          try {
-            await validateServer(server.name);
-          } catch (validationError) {
-            setError(
-              prev =>
-                prev ??
-                (validationError instanceof Error
-                  ? validationError.message
-                  : `Failed to validate ${server.name}`),
-            );
-          }
-        }),
-      );
+      if (canManageMcp) {
+        const serversToValidate = uiServers.filter(server => server.hasToken);
+        void Promise.allSettled(
+          serversToValidate.map(async server => {
+            try {
+              await validateServer(server.name);
+            } catch (validationError) {
+              setError(
+                prev =>
+                  prev ??
+                  (validationError instanceof Error
+                    ? validationError.message
+                    : `Failed to validate ${server.name}`),
+              );
+            }
+          }),
+        );
+      }
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'Failed to load MCP server settings',
@@ -351,7 +360,7 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchJson, getBaseUrl, validateServer]);
+  }, [canManageMcp, fetchJson, getBaseUrl, validateServer]);
 
   useEffect(() => {
     loadServers();
@@ -362,6 +371,9 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
       serverName: string,
       body: { enabled?: boolean; token?: string | null },
     ) => {
+      if (!canManageMcp) {
+        return;
+      }
       setError(null);
       setIsSaving(prev => ({ ...prev, [serverName]: true }));
       try {
@@ -395,7 +407,7 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
         setIsSaving(prev => ({ ...prev, [serverName]: false }));
       }
     },
-    [fetchJson, getBaseUrl, loadServers],
+    [canManageMcp, fetchJson, getBaseUrl, loadServers],
   );
 
   const selectedCount = useMemo(
@@ -449,6 +461,14 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
           className={classes.alert}
         />
       )}
+      {!mcpManagePermission.loading && !canManageMcp && (
+        <Alert
+          variant="info"
+          isInline
+          title="You have read-only access to MCP servers."
+          className={classes.alert}
+        />
+      )}
 
       <Table
         variant="compact"
@@ -481,6 +501,11 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
               <Td colSpan={4}>Loading MCP servers...</Td>
             </Tr>
           )}
+          {!isLoading && sortedServers.length === 0 && (
+            <Tr>
+              <Td colSpan={4}>No MCP servers available.</Td>
+            </Tr>
+          )}
           {sortedServers.map(server => {
             const displayStatus = getDisplayStatus(server);
             const displayDetail = getDisplayDetail(server, displayStatus);
@@ -508,7 +533,9 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
                         id={`mcp-switch-${server.id}`}
                         aria-label={`Toggle ${server.name}`}
                         isChecked={isChecked}
-                        isDisabled={isUnavailable || isRowSaving}
+                        isDisabled={
+                          isUnavailable || isRowSaving || !canManageMcp
+                        }
                         onChange={(_event, checked) => {
                           patchServer(server.name, { enabled: checked });
                         }}
@@ -557,6 +584,7 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
                     icon={<ModeEditOutlineOutlinedIcon fontSize="small" />}
                     variant="plain"
                     className={classes.actionButton}
+                    isDisabled={!canManageMcp}
                     onClick={onEditClick}
                   />
                 </Td>
