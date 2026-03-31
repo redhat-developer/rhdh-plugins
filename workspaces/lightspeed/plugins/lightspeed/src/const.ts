@@ -70,3 +70,7 @@ export const RHDH_SAMPLE_PROMPTS: SamplePrompts = [
 export const VALID_TOPIC_RESTRICTION_PROVIDER_IDS = [
   'lightspeed_question_validity-shield',
 ];
+
+// Matches app shell margin on main when ApplicationDrawer is docked (e.g. Root.tsx).
+export const DOCKED_CONTENT_OFFSET =
+  'calc(var(--docked-drawer-width, 500px) + 1.5em)';
