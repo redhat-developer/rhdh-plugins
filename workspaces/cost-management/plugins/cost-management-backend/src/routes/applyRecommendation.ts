@@ -19,6 +19,7 @@ import type { RouterOptions } from '../models/RouterOptions';
 import { authorize } from '../util/checkPermissions';
 import { rosApplyPermissions } from '@red-hat-developer-hub/plugin-cost-management-common/permissions';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { resolveActor, emitAuditLog } from '../util/auditLog';
 
 const ALLOWED_RESOURCE_TYPES = new Set([
   'deployment',
@@ -104,6 +105,8 @@ export const applyRecommendation: (options: RouterOptions) => RequestHandler =
     }
     const { workflowId, inputData } = validation.data;
 
+    const actor = await resolveActor(req, options);
+
     const decision = await authorize(
       req,
       rosApplyPermissions,
@@ -111,14 +114,18 @@ export const applyRecommendation: (options: RouterOptions) => RequestHandler =
       httpAuth,
     );
     if (decision.result !== AuthorizeResult.ALLOW) {
-      logger.info('audit:apply-recommendation:denied', {
+      emitAuditLog(options, {
+        actor,
         action: 'apply_recommendation',
+        resource: `/apply-recommendation/${workflowId}`,
         decision: 'DENY',
-        workflowId,
-        cluster: inputData.clusterName,
-        namespace: inputData.resourceNamespace,
-        workload: inputData.resourceName,
-        resourceType: inputData.resourceType,
+        meta: {
+          workflowId,
+          cluster: inputData.clusterName,
+          namespace: inputData.resourceNamespace,
+          workload: inputData.resourceName,
+          resourceType: inputData.resourceType,
+        },
       });
       return res
         .status(403)
@@ -165,28 +172,38 @@ export const applyRecommendation: (options: RouterOptions) => RequestHandler =
       }
 
       if (!upstreamResponse.ok) {
-        logger.warn('audit:apply-recommendation:upstream-error', {
+        emitAuditLog(options, {
+          actor,
           action: 'apply_recommendation',
+          resource: `/apply-recommendation/${workflowId}`,
           decision: 'ALLOW',
-          workflowId,
-          cluster: inputData.clusterName,
-          namespace: inputData.resourceNamespace,
-          workload: inputData.resourceName,
-          resourceType: inputData.resourceType,
-          upstreamStatus: upstreamResponse.status,
+          meta: {
+            workflowId,
+            cluster: inputData.clusterName,
+            namespace: inputData.resourceNamespace,
+            workload: inputData.resourceName,
+            resourceType: inputData.resourceType,
+            upstreamStatus: upstreamResponse.status,
+            outcome: 'upstream_error',
+          },
         });
         return res.status(upstreamResponse.status).json(payload);
       }
 
-      logger.info('audit:apply-recommendation:success', {
+      emitAuditLog(options, {
+        actor,
         action: 'apply_recommendation',
+        resource: `/apply-recommendation/${workflowId}`,
         decision: 'ALLOW',
-        workflowId,
-        instanceId: (payload as { id?: string }).id,
-        cluster: inputData.clusterName,
-        namespace: inputData.resourceNamespace,
-        workload: inputData.resourceName,
-        resourceType: inputData.resourceType,
+        meta: {
+          workflowId,
+          instanceId: (payload as { id?: string }).id,
+          cluster: inputData.clusterName,
+          namespace: inputData.resourceNamespace,
+          workload: inputData.resourceName,
+          resourceType: inputData.resourceType,
+          outcome: 'success',
+        },
       });
 
       return res.status(200).json(payload);

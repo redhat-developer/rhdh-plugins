@@ -27,6 +27,7 @@ import {
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { getTokenFromApi } from '../util/tokenUtil';
 import { DEFAULT_COST_MANAGEMENT_PROXY_BASE_URL } from '../util/constant';
+import { resolveActor, emitAuditLog } from '../util/auditLog';
 
 const CACHE_TTL = 15 * 60 * 1000;
 
@@ -290,7 +291,7 @@ function injectRbacFilters(targetUrl: URL, access: AccessResult): void {
  */
 export const secureProxy: (options: RouterOptions) => RequestHandler =
   options => async (req, res) => {
-    const { logger, config } = options;
+    const { config } = options;
     const proxyPath = req.params[0];
 
     if (!proxyPath) {
@@ -305,8 +306,19 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
 
     try {
       const access = await resolveAccess(req, proxyPath, options);
+      const actor = await resolveActor(req, options);
 
       if (access.decision !== 'ALLOW') {
+        emitAuditLog(options, {
+          actor,
+          action: 'data_access',
+          resource: proxyPath,
+          decision: 'DENY',
+          filters: {
+            clusters: access.clusterFilters,
+            projects: access.projectFilters,
+          },
+        });
         return res.status(403).json({ error: 'Access denied by RBAC policy' });
       }
 
@@ -348,9 +360,16 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
 
       injectRbacFilters(targetUrl, access);
 
-      logger.info(
-        `Proxying ${req.method} to ${targetUrl.pathname}${targetUrl.search}`,
-      );
+      emitAuditLog(options, {
+        actor,
+        action: 'data_access',
+        resource: proxyPath,
+        decision: 'ALLOW',
+        filters: {
+          clusters: access.clusterFilters,
+          projects: access.projectFilters,
+        },
+      });
 
       const upstreamResponse = await fetch(targetUrl.toString(), {
         headers: {
@@ -371,7 +390,7 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
       res.set('Content-Type', contentType);
       return res.send(await upstreamResponse.text());
     } catch (error) {
-      logger.error('Secure proxy error', error);
+      options.logger.error('Secure proxy error', error);
       return res.status(500).json({ error: 'Internal proxy error' });
     }
   };
