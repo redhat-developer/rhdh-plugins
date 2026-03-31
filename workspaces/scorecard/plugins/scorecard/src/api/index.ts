@@ -19,51 +19,25 @@ import {
   FetchApi,
   DiscoveryApi,
 } from '@backstage/core-plugin-api';
-import type { Entity } from '@backstage/catalog-model';
 import type {
   MetricResult,
   AggregatedMetricResult,
+  AggregationMetadata,
   Metric,
   EntityMetricDetailResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import type { GetAggregatedScorecardEntitiesOptions } from '../components/types';
 
-export interface ScorecardApi {
-  /**
-   * Retrieves scorecard metrics for a specific entity.
-   * @param entity - The Backstage entity to get metrics for
-   * @param metricIds - Optional array of specific metric IDs to retrieve
-   * @returns Promise resolving to an array of metric results
-   */
-  getScorecards(entity: Entity, metricIds?: string[]): Promise<MetricResult[]>;
-  getAggregatedScorecard(metricId: string): Promise<AggregatedMetricResult>;
-  /**
-   * Retrieves a metric by ID.
-   * @param metricIds - The IDs of the metrics to retrieve
-   * @returns Promise resolving to a metric result
-   * @throws Error if the request fails or returns invalid data
-   */
-  getMetrics(options: { metricIds: string[] }): Promise<{ metrics: Metric[] }>;
-  /**
-   * Retrieves aggregated scorecard entities.
-   * @param options - The options for getting aggregated scorecard entities
-   * @returns Promise resolving to an aggregated scorecard entities result
-   * @throws Error if the request fails or returns invalid data
-   */
-  getAggregatedScorecardEntities(
-    options: GetAggregatedScorecardEntitiesOptions,
-  ): Promise<EntityMetricDetailResponse>;
-}
+import type {
+  ScorecardApi,
+  ScorecardApiClientOptions,
+  ScorecardOptions,
+} from './types';
 
 export const scorecardApiRef = createApiRef<ScorecardApi>({
   id: 'plugin.scorecard.service',
 });
-
-export type ScorecardApiClientOptions = {
-  fetchApi: FetchApi;
-  discoveryApi: DiscoveryApi;
-};
 
 /**
  * Client implementation for the Scorecard API.
@@ -78,25 +52,14 @@ export class ScorecardApiClient implements ScorecardApi {
     this.discoveryApi = options.discoveryApi;
   }
 
-  /**
-   * Gets the base URL for the scorecard backend API.
-   * @returns Promise resolving to the base URL
-   */
   async getBaseUrl(): Promise<string> {
     return await this.discoveryApi.getBaseUrl('scorecard');
   }
 
-  /**
-   * Retrieves scorecard metrics for a specific entity.
-   * @param entity - The Backstage entity to get metrics for
-   * @param metricIds - Optional array of specific metric IDs to retrieve
-   * @returns Promise resolving to an array of metric results
-   * @throws Error if the request fails or returns invalid data
-   */
-  async getScorecards(
-    entity: Entity,
-    metricIds?: string[],
-  ): Promise<MetricResult[]> {
+  async getScorecards({
+    entity,
+    metricIds,
+  }: ScorecardOptions): Promise<MetricResult[]> {
     if (
       !entity?.kind ||
       !entity?.metadata?.namespace ||
@@ -142,14 +105,14 @@ export class ScorecardApiClient implements ScorecardApi {
   }
 
   async getAggregatedScorecard(
-    metricId: string,
+    aggregationId: string,
   ): Promise<AggregatedMetricResult> {
-    if (!metricId) {
-      throw new Error('Metric ID is required for aggregated scorecards');
+    if (!aggregationId) {
+      throw new Error('Aggregation ID is required for aggregated scorecards');
     }
 
     const baseUrl = await this.getBaseUrl();
-    const url = new URL(`${baseUrl}/metrics/${metricId}/catalog/aggregations`);
+    const url = new URL(`${baseUrl}/aggregations/${aggregationId}`);
 
     try {
       const response = await this.fetchApi.fetch(url.toString());
@@ -163,7 +126,15 @@ export class ScorecardApiClient implements ScorecardApi {
 
       const data = await response.json();
 
-      if (!data || Array.isArray(data) || typeof data !== 'object') {
+      if (
+        !data ||
+        Array.isArray(data) ||
+        typeof data !== 'object' ||
+        !('result' in data) ||
+        !('metadata' in data) ||
+        !('id' in data) ||
+        !('status' in data)
+      ) {
         throw new TypeError(
           'Invalid response format from aggregated scorecard API',
         );
@@ -287,6 +258,49 @@ export class ScorecardApiClient implements ScorecardApi {
       }
       throw new Error(
         `Unexpected error fetching aggregated scorecards: ${String(error)}`,
+      );
+    }
+  }
+
+  async getAggregationMetadata(
+    aggregationId: string,
+  ): Promise<AggregationMetadata> {
+    const baseUrl = await this.getBaseUrl();
+    const url = new URL(`${baseUrl}/aggregations/${aggregationId}/metadata`);
+
+    try {
+      const response = await this.fetchApi.fetch(url.toString());
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch aggregation metadata: ${response.status} ${response.statusText}. ${errorText}`,
+        );
+      }
+
+      const data = await response.json();
+
+      if (
+        !data ||
+        Array.isArray(data) ||
+        typeof data !== 'object' ||
+        !('title' in data) ||
+        !('description' in data) ||
+        !('type' in data) ||
+        !('aggregationType' in data)
+      ) {
+        throw new TypeError(
+          'Invalid response format from aggregation metadata API',
+        );
+      }
+
+      return data as AggregationMetadata;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(
+        `Unexpected error fetching aggregation metadata: ${String(error)}`,
       );
     }
   }

@@ -88,7 +88,75 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-jira.open_issues',
+      id: 'scorecard-deprecated-metric-id',
+      title: 'Scorecard: Deprecated metric id',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        // The "metricId" represent old logic and will be removed in the future
+        metricId: 'jira.open_issues',
+        // aggregationId: 'openIssuesKpi',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-with-default-aggregation-config',
+      title: 'Scorecard: With default aggregation config',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        // The "metricId" represent old logic and will be removed in the future
+        // metricId: 'github.open_prs',
+        aggregationId: 'github.open_prs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-openIssuesKpi',
       title: 'Scorecard: Jira open blocking tickets',
       // Supported card layout
       cardLayout: {
@@ -113,14 +181,16 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        metricId: 'jira.open_issues',
+        // The "metricId" represent old logic and will be removed in the future
+        // metricId: 'jira.open_issues',
+        aggregationId: 'openIssuesKpi',
       },
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-github.open_prs',
+      id: 'scorecard-openPrsKpi',
       title: 'Scorecard: GitHub open PRs',
       // Supported card layout
       cardLayout: {
@@ -145,7 +215,9 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6, x: 4 },
       },
       props: {
-        metricId: 'github.open_prs',
+        // The "metricId" represent old logic and will be removed in the future
+        // metricId: 'github.open_prs',
+        aggregationId: 'openPrsKpi',
       },
     },
   },

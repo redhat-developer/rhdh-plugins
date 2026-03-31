@@ -50,6 +50,8 @@ const scorecardTranslationEs = createTranslationMessages({
     // Error messages
     'errors.entityMissingProperties':
       'Entidad a la que le faltan las propiedades requeridas para la búsqueda en la tarjeta de puntuación',
+    'errors.aggregationMissingProperties':
+      'A la agregación le faltan las propiedades necesarias para agregar los datos.',
     'errors.invalidApiResponse':
       'Formato de respuesta no válido de la API de la tarjeta de puntuación',
     'errors.fetchError':

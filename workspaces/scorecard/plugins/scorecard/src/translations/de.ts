@@ -50,6 +50,8 @@ const scorecardTranslationDe = createTranslationMessages({
     // Error messages
     'errors.entityMissingProperties':
       'Für die Scorecard-Suche fehlen dem Element die erforderlichen Eigenschaften.',
+    'errors.aggregationMissingProperties':
+      'Der Aggregation fehlen die erforderlichen Eigenschaften, um die Daten zu aggregieren.',
     'errors.invalidApiResponse': 'Ungültiges Antwortformat der Scorecard-API',
     'errors.fetchError': 'Fehler beim Abrufen der Scorecards: {{error}}',
     'errors.metricDataUnavailable': 'Metrikdaten nicht verfügbar',

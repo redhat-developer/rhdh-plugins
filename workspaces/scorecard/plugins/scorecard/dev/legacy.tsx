@@ -39,6 +39,7 @@ import type {
   AggregatedMetricResult,
   Metric,
   EntityMetricDetailResponse,
+  AggregationMetadata,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogEntityPage } from '@backstage/plugin-catalog';
 
@@ -52,15 +53,17 @@ import {
   ScorecardPage,
 } from '../src/plugin';
 import { scorecardTranslations } from '../src/translations';
-import { scorecardApiRef, ScorecardApi } from '../src/api';
+import { scorecardApiRef } from '../src/api';
+import type { ScorecardApi } from '../src/api/types';
 import type { GetAggregatedScorecardEntitiesOptions } from '../src/components/types';
 import {
+  mockAggregatedScorecardData,
   mockScorecardErrorData,
   mockScorecardSuccessData,
 } from '../__fixtures__/scorecardData';
-import { mockAggregatedScorecardSuccessData } from '../__fixtures__/aggregatedScorecardData';
 import { mockAggregatedScorecardEntitiesData } from '../__fixtures__/aggregatedScorecardEntitiesData';
 import { mockCatalogApi } from './mocks';
+import { ScorecardOptions } from '../src/api/types';
 
 const mockComponentEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
@@ -77,14 +80,29 @@ const mockComponentEntity: Entity = {
 };
 
 class MockScorecardApi implements ScorecardApi {
-  async getScorecards(_entity: Entity): Promise<MetricResult[]> {
+  async getBaseUrl(): Promise<string> {
+    return 'https://example.com';
+  }
+
+  async getScorecards(_options: ScorecardOptions): Promise<MetricResult[]> {
     return [...mockScorecardSuccessData, ...mockScorecardErrorData];
   }
 
   async getAggregatedScorecard(
     _metricId: string,
   ): Promise<AggregatedMetricResult> {
-    return mockAggregatedScorecardSuccessData;
+    return mockAggregatedScorecardData.statusGrouped;
+  }
+
+  async getAggregationMetadata(
+    _aggregationId: string,
+  ): Promise<AggregationMetadata> {
+    return {
+      title: 'GitHub open issues',
+      description: 'GitHub open issues',
+      type: 'number',
+      aggregationType: 'statusGrouped',
+    };
   }
 
   async getMetrics(_options: {
@@ -153,7 +171,7 @@ createDevApp()
           <Box key={label}>
             <Typography variant="caption">{label}</Typography>
             <Box sx={{ width, height }}>
-              <ScorecardHomepageCard metricId="github.open_prs" />
+              <ScorecardHomepageCard aggregationId="github.open_prs" />
             </Box>
           </Box>
         ))}

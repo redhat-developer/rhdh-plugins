@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { NotFoundError } from '@backstage/errors';
+import { ConfigReader } from '@backstage/config';
+import { InputError, NotFoundError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { CatalogMetricService } from './CatalogMetricService';
@@ -34,6 +35,7 @@ import * as permissionUtils from '../permissions/permissionUtils';
 import {
   AggregatedMetric,
   Metric,
+  aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import * as thresholdUtils from '../utils/mergeEntityAndProviderThresholds';
 import { DbMetricValue, DbAggregatedMetric } from '../database/types';
@@ -146,6 +148,7 @@ describe('CatalogMetricService', () => {
       registry: mockedRegistry,
       database: mockedDatabase,
       logger: mockedLogger,
+      config: mockServices.rootConfig({ data: {} }),
     });
 
     jest.useFakeTimers();
@@ -452,6 +455,7 @@ describe('CatalogMetricService', () => {
             'component:default/test-component-2',
           ],
           'github.important_metric',
+          aggregationTypes.statusGrouped,
         );
       });
 
@@ -491,6 +495,7 @@ describe('CatalogMetricService', () => {
         result = await service.getAggregatedMetricByEntityRefs(
           [],
           'github.important_metric',
+          aggregationTypes.statusGrouped,
         );
       });
 
@@ -1137,6 +1142,121 @@ describe('CatalogMetricService', () => {
         description: provider.getMetric().description,
         type: provider.getMetric().type,
       });
+    });
+  });
+
+  describe('getAggregationConfigs', () => {
+    const kpiConfigReader = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          openPrsKpi: {
+            title: 'GitHub PRs',
+            description: 'Open pull requests',
+            type: 'statusGrouped',
+            metricId: 'github.open_prs',
+          },
+          openIssuesKpi: {
+            title: 'Jira issues',
+            description: 'Open issues',
+            type: 'statusGrouped',
+            metricId: 'jira.open_issues',
+          },
+        },
+      },
+    });
+
+    let aggService: CatalogMetricService;
+    let aggRegistry: MetricProvidersRegistry;
+
+    beforeEach(() => {
+      aggRegistry = new MetricProvidersRegistry();
+      aggRegistry.register(
+        new MockNumberProvider('github.open_prs', 'github', 'GitHub PRs'),
+      );
+      aggRegistry.register(
+        new MockNumberProvider('jira.open_issues', 'jira', 'Jira issues'),
+      );
+
+      aggService = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: aggRegistry,
+        database: mockedDatabase,
+        logger: mockedLogger,
+        config: kpiConfigReader,
+      });
+    });
+
+    it('should return empty array when scorecard.aggregationKPIs is absent', () => {
+      const s = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: aggRegistry,
+        database: mockedDatabase,
+        logger: mockedLogger,
+        config: mockServices.rootConfig({ data: {} }),
+      });
+
+      expect(s.getAggregationConfigs()).toEqual([]);
+    });
+
+    it('should return all KPI configs when aggregationIds and metricIds are default', () => {
+      const result = aggService.getAggregationConfigs();
+
+      expect(result).toHaveLength(2);
+      expect(result.map(c => c.id)).toContain('openIssuesKpi');
+      expect(result.map(c => c.id)).toContain('openPrsKpi');
+    });
+
+    it('should filter by aggregationIds', () => {
+      const result = aggService.getAggregationConfigs(['openPrsKpi']);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        id: 'openPrsKpi',
+        metricId: 'github.open_prs',
+        type: 'statusGrouped',
+      });
+    });
+
+    it('should filter by metricIds to KPIs whose metricId is listed', () => {
+      const result = aggService.getAggregationConfigs([], ['github.open_prs']);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('openPrsKpi');
+    });
+
+    it('should return empty when aggregationId exists but metricIds filter excludes its metric', () => {
+      const result = aggService.getAggregationConfigs(
+        ['openPrsKpi'],
+        ['jira.open_issues'],
+      );
+
+      expect(result).toEqual([]);
+    });
+
+    it('should throw InputError when a KPI entry fails schema validation', () => {
+      const badService = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: aggRegistry,
+        database: mockedDatabase,
+        logger: mockedLogger,
+        config: new ConfigReader({
+          scorecard: {
+            aggregationKPIs: {
+              badKpi: {
+                title: 'Valid title',
+                description: 'Valid description',
+                type: 'notARealAggregationType',
+                metricId: 'github.open_prs',
+              },
+            },
+          },
+        }),
+      });
+
+      expect(() => badService.getAggregationConfigs()).toThrow(InputError);
     });
   });
 });

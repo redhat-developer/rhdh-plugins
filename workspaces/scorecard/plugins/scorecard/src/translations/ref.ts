@@ -55,6 +55,8 @@ export const scorecardMessages = {
   errors: {
     entityMissingProperties:
       'Entity missing required properties for scorecard lookup',
+    aggregationMissingProperties:
+      'The aggregation is missing the required properties to aggregate the data',
     invalidApiResponse: 'Invalid response format from scorecard API',
     fetchError: 'Error fetching scorecards: {{error}}',
     metricDataUnavailable: 'Metric data unavailable',

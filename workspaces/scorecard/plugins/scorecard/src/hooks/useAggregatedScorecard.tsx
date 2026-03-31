@@ -20,35 +20,27 @@ import useAsync from 'react-use/lib/useAsync';
 
 import { scorecardApiRef } from '../api';
 import { useTranslation } from './useTranslation';
+import { UseResponseData } from './types';
 import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-interface UseAggregatedScorecardOptions {
-  metricId: string;
-}
-
 export const useAggregatedScorecard = (
-  options: UseAggregatedScorecardOptions,
-) => {
-  const scorecardApi = useApi(scorecardApiRef);
-
-  const { metricId } = options;
+  aggregationId: string,
+): UseResponseData<AggregatedMetricResult> => {
   const { t } = useTranslation();
 
-  const { error, loading, value } = useAsync(async () => {
+  if (aggregationId.trim() === '') {
+    throw new Error(t('errors.aggregationMissingProperties'));
+  }
+
+  const scorecardApi = useApi(scorecardApiRef);
+
+  const {
+    error,
+    loading: isLoading,
+    value: data,
+  } = useAsync(async () => {
     try {
-      const aggregatedScorecard = await scorecardApi.getAggregatedScorecard(
-        metricId,
-      );
-
-      if (
-        !aggregatedScorecard ||
-        Array.isArray(aggregatedScorecard) ||
-        typeof aggregatedScorecard !== 'object'
-      ) {
-        throw new Error(t('errors.invalidApiResponse'));
-      }
-
-      return aggregatedScorecard;
+      return await scorecardApi.getAggregatedScorecard(aggregationId);
     } catch (err) {
       if (err instanceof Error) {
         throw err;
@@ -59,14 +51,14 @@ export const useAggregatedScorecard = (
         }),
       );
     }
-  }, [scorecardApi]);
+  }, [scorecardApi, aggregationId, t]);
 
   return useMemo(
     () => ({
-      aggregatedScorecard: value as AggregatedMetricResult,
-      loadingData: loading,
+      data,
+      isLoading,
       error,
     }),
-    [value, loading, error],
+    [data, isLoading, error],
   );
 };

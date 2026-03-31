@@ -73,18 +73,20 @@ jest.mock('../EntitiesTable/EntitiesTable', () => ({
 const mockScorecardHomepageCard = jest.fn();
 jest.mock('../../ScorecardHomepageSection/ScorecardHomepageCard', () => ({
   ScorecardHomepageCard: (props: {
-    metricId: string;
+    metricId?: string;
+    aggregationId?: string;
     showSubheader: boolean;
     showInfo: boolean;
   }) => {
     mockScorecardHomepageCard(props);
+    const id = props.aggregationId || props.metricId;
     return (
       <div
         data-testid="scorecard-homepage-card"
         data-show-subheader={props.showSubheader}
         data-show-info={props.showInfo}
       >
-        {props.metricId}
+        {id}
       </div>
     );
   },
@@ -144,16 +146,34 @@ describe('ScorecardPage', () => {
     );
   });
 
-  it('should pass metricId, showSubheader false, and showInfo false to ScorecardHomepageCard', () => {
+  it('should pass resolved scorecard id as aggregationId with showSubheader and showInfo false', () => {
     mockUseParams.mockReturnValue({ metricId: 'github.open_prs' });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
     expect(mockScorecardHomepageCard).toHaveBeenCalledWith({
-      metricId: 'github.open_prs',
+      aggregationId: 'github.open_prs',
       showSubheader: false,
       showInfo: false,
     });
+  });
+
+  it('should prefer route aggregationId over metricId for ScorecardHomepageCard and EntitiesTable', () => {
+    mockUseParams.mockReturnValue({
+      metricId: 'github.open_prs',
+      aggregationId: 'openPrsKpi',
+    });
+
+    render(<ScorecardPage />, { wrapper: TestWrapper });
+
+    expect(mockScorecardHomepageCard).toHaveBeenCalledWith({
+      aggregationId: 'openPrsKpi',
+      showSubheader: false,
+      showInfo: false,
+    });
+    expect(mockEntitiesTable).toHaveBeenCalledWith(
+      expect.objectContaining({ metricId: 'openPrsKpi' }),
+    );
   });
 
   it('should update header title when setMetricTitle is called from EntitiesTable', () => {

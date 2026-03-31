@@ -31,13 +31,16 @@ import { EntitiesTable } from './EntitiesTable/EntitiesTable';
 
 export const ScorecardPage = () => {
   const { metricId } = useParams<{ metricId?: string }>();
-
+  const { aggregationId } = useParams<{ aggregationId?: string }>();
   const [metricTitle, setMetricTitle] = useState<string>('');
   const [metricNotFound, setMetricNotFound] = useState<boolean>(false);
 
   const { t } = useTranslation();
 
-  const titleKey = `metric.${metricId}.title`;
+  // Deprecated logic to support both metricId and aggregationId. Will be removed in the future.
+  const resolvedScorecardId = aggregationId || metricId || '';
+
+  const titleKey = `metric.${resolvedScorecardId}.title`;
   const title = t(titleKey as any, {});
   const finalTitle = title === titleKey ? metricTitle : title;
 
@@ -54,7 +57,9 @@ export const ScorecardPage = () => {
   return (
     <Page themeId="home">
       <ScorecardPageHeader
-        title={finalTitle || metricId || t('entitiesPage.unknownMetric')}
+        title={
+          finalTitle || resolvedScorecardId || t('entitiesPage.unknownMetric')
+        }
       />
       <Divider />
       <Content>
@@ -69,7 +74,7 @@ export const ScorecardPage = () => {
         >
           <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 0%' }, minWidth: 0 }}>
             <EntitiesTable
-              metricId={metricId}
+              metricId={resolvedScorecardId}
               setMetricTitle={setMetricTitle}
               setMetricNotFound={setMetricNotFound}
             />
@@ -94,7 +99,7 @@ export const ScorecardPage = () => {
             }}
           >
             <ScorecardHomepageCard
-              metricId={metricId as string}
+              aggregationId={resolvedScorecardId}
               showSubheader={false}
               showInfo={false}
             />

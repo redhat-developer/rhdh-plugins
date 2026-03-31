@@ -23,8 +23,9 @@ import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-
 
 import { scorecardApiRef } from '../api';
 import { useTranslation } from './useTranslation';
+import { UseResponseData } from './types';
 
-export interface UseScorecardsOptions {
+interface UseScorecardsOptions {
   /**
    * Optional array of specific metric IDs to retrieve.
    * If not provided, all available metrics will be fetched.
@@ -32,22 +33,19 @@ export interface UseScorecardsOptions {
   metricIds?: string[];
 }
 
-export interface UseScorecardsResponse {
-  /** Array of metric results from the scorecard API */
-  scorecards: MetricResult[];
-  /** Whether the data is currently being fetched */
-  loadingData: boolean;
-  /** Any error that occurred during the fetch */
-  error: Error | undefined;
-}
-
-export const useScorecards = (options: UseScorecardsOptions = {}) => {
+export const useScorecards = (
+  options: UseScorecardsOptions = {},
+): UseResponseData<MetricResult[]> => {
   const { entity } = useEntity();
   const scorecardApi = useApi(scorecardApiRef);
   const { metricIds } = options;
   const { t } = useTranslation();
 
-  const { error, loading, value } = useAsync(async () => {
+  const {
+    error,
+    loading: isLoading,
+    value: data,
+  } = useAsync(async () => {
     if (
       !entity?.kind ||
       !entity?.metadata?.namespace ||
@@ -57,9 +55,12 @@ export const useScorecards = (options: UseScorecardsOptions = {}) => {
     }
 
     try {
-      const scorecards = await scorecardApi.getScorecards(entity, metricIds);
+      const scorecards = await scorecardApi.getScorecards({
+        entity,
+        metricIds,
+      });
 
-      if (!scorecards || !Array.isArray(scorecards)) {
+      if (!scorecards) {
         throw new Error(t('errors.invalidApiResponse'));
       }
 
@@ -74,14 +75,14 @@ export const useScorecards = (options: UseScorecardsOptions = {}) => {
         }),
       );
     }
-  }, [entity, scorecardApi, t]);
+  }, [entity, JSON.stringify(metricIds), scorecardApi, t]);
 
   return useMemo(
     () => ({
-      scorecards: value,
-      loadingData: loading,
+      data,
+      isLoading,
       error,
     }),
-    [value, loading, error],
+    [data, isLoading, error],
   );
 };

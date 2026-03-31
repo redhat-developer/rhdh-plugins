@@ -15,10 +15,25 @@
  */
 
 import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
+import { AggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface Config {
   /** Configuration for scorecard plugin */
   scorecard?: {
+    /** Configuration for scorecard aggregation KPIs */
+    aggregationKPIs?: {
+      /** Unique identifier for scorecard aggregation KPIs */
+      [aggregationId: string]: {
+        /** Title of the aggregation */
+        title: string;
+        /** Description of the aggregation */
+        description: string;
+        /** Type of the aggregation */
+        type: AggregationType;
+        /** Metric ID for which the aggregation is calculated */
+        metricId: string;
+      };
+    };
     /** Number of days to retain metric data in the database. Older data will be automatically cleaned up. Default: 365 days */
     dataRetentionDays?: number;
     /** List of metric IDs (e.g. openssf.packaging) that are disabled globally. Entity annotations cannot override this. */

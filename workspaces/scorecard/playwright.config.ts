@@ -45,6 +45,9 @@ export default defineConfig({
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
+    /* Default Playwright navigation timeout is 0 (no limit); cap to avoid hangs. */
+    navigationTimeout: 60_000,
+    actionTimeout: 30_000,
   },
 
   outputDir: 'node_modules/.cache/e2e-test-results',

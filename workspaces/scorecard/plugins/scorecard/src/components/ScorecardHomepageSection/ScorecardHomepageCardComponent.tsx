@@ -71,7 +71,7 @@ const InfoComponent = ({ timestamp }: { timestamp: string }) => {
           },
         }}
       >
-        <IconButton>
+        <IconButton data-testid="scorecard-homepage-card-info">
           <InfoOutlinedIcon
             sx={{ color: theme.palette.text.secondary, fontSize: '1.75rem' }}
           />
@@ -87,12 +87,14 @@ export const ScorecardHomepageCardComponent = ({
   description,
   showSubheader = true,
   showInfo = true,
+  dataTestId,
 }: {
   scorecard: AggregatedMetricResult;
   cardTitle: string;
   description: string;
   showSubheader?: boolean;
   showInfo?: boolean;
+  dataTestId?: string;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -117,6 +119,7 @@ export const ScorecardHomepageCardComponent = ({
   return (
     <CardWrapper
       title={cardTitle}
+      dataTestId={dataTestId}
       {...(showSubheader
         ? {
             subheader: (
