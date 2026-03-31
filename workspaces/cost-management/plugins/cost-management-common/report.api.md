@@ -151,7 +151,7 @@ export interface CostManagementSlimApi {
   >;
 }
 
-// @public (undocumented)
+// @public
 export class CostManagementSlimClient implements CostManagementSlimApi {
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi });
   // (undocumented)

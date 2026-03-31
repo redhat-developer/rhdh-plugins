@@ -17,11 +17,11 @@
 import express from 'express';
 import Router from 'express-promise-router';
 import type { RouterOptions } from '../models/RouterOptions';
-import { getToken } from '../routes/token';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 import { rosPluginPermissions } from '@red-hat-developer-hub/plugin-cost-management-common/permissions';
 import { getAccess } from '../routes/access';
 import { getCostManagementAccess } from '../routes/costManagementAccess';
+import { secureProxy } from '../routes/secureProxy';
 
 /** @public */
 export async function createRouter(
@@ -38,11 +38,12 @@ export async function createRouter(
   router.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
-  router.get('/token', getToken(options));
 
   router.get('/access', getAccess(options));
 
   router.get('/access/cost-management', getCostManagementAccess(options));
+
+  router.all('/proxy/*', secureProxy(options));
 
   return router;
 }

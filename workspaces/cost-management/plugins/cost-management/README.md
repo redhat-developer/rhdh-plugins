@@ -28,19 +28,15 @@ You can follow one of these options depending on your environment and how you ch
    ```yaml
    # app-config.yaml
 
-   proxy:
-     endpoints:
-       '/cost-management/v1':
-         target: https://console.redhat.com/api/cost-management/v1
-         allowedHeaders: ['Authorization']
-         # See: https://backstage.io/docs/releases/v1.28.0/#breaking-proxy-backend-plugin-protected-by-default
-         credentials: dangerously-allow-unauthenticated
-
    # Replace `${RHHCC_SA_CLIENT_ID}` and `${RHHCC_SA_CLIENT_SECRET}` with the service account credentials.
    costManagement:
      clientId: ${RHHCC_SA_CLIENT_ID}
      clientSecret: ${RHHCC_SA_CLIENT_SECRET}
    ```
+
+   > **Note:** No `proxy` configuration is required. The backend plugin handles all
+   > communication with the Red Hat Cost Management API server-side, including SSO
+   > token management and RBAC enforcement.
 
 1. Add the back-end plugin to `packages/backend/src/index.ts`
 
@@ -138,51 +134,16 @@ The procedure involves the following steps:
    ```yaml
    # Add to app-config-rhdh ConfigMap
 
-   proxy:
-     endpoints:
-       '/cost-management/v1':
-         target: https://console.redhat.com/api/cost-management/v1
-         allowedHeaders: ['Authorization']
-         credentials: dangerously-allow-unauthenticated
-     costManagement:
-       clientId: '${RHHCC_SA_CLIENT_ID}'
-       clientSecret: '${RHHCC_SA_CLIENT_SECRET}'
-     dynamicPlugins:
-       frontend:
-         red-hat-developer-hub.plugin-cost-management:
-           appIcons:
+   costManagement:
+     clientId: '${RHHCC_SA_CLIENT_ID}'
+     clientSecret: '${RHHCC_SA_CLIENT_SECRET}'
    ```
 
-- name: costManagementIconOutlined
-  importName: CostManagementIconOutlined
-  routeBindings:
-  targets: - name: resourceOptimizationPlugin
-  dynamicRoutes: - path: /cost-management/optimizations
-  importName: ResourceOptimizationPage
-  menuItem:
-  icon: costManagementIconOutlined
-  text: Optimizations
+   > **Note:** No `proxy` configuration is required. The backend plugin handles all
+   > communication with the Red Hat Cost Management API server-side, including SSO
+   > token management and RBAC enforcement.
 
-  ````
-
-  ```yaml
-  # Add to dynamic-plugins-rhdh ConfigMap
-
-  kind: ConfigMap
-  apiVersion: v1
-  metadata # <omitted>
-  data:
-    dynamic-plugins.yaml: |
-      includes:
-        - dynamic-plugins.default.yaml
-      plugins:
-        - package: '@marek.libra/plugin-cost-management-dynamic@1.0.1'
-          integrity: 'sha512-w53eSjMAUmKG2nwYeq+6B63qPeAqmSz2C4NsBaMleV4A8ST05yht/UK2pgHJTpxtLo0CYSq/+plR3s47xhO0aQ=='
-          disabled: false
-        - package: '@marek.libra/plugin-cost-management-backend-dynamic@1.0.0'
-          integrity: 'sha512-ndhUnXGJUdLX1FubdCW/I8uE5oq5I0f/R/dSNGsCqD6Y/Uvcja5y8DE8W8hI+t2GnnEttuxehmjTBbjAT7sQRQ=='
-          disabled: false
-  ````
+   See [dynamic-plugin.md](../docs/dynamic-plugin.md) for complete dynamic plugin configuration.
 
 ### Contributing
 
