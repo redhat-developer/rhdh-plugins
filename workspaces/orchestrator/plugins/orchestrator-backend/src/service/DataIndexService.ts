@@ -31,7 +31,11 @@ import {
 
 import { ErrorBuilder } from '../helpers/errorBuilder';
 import { buildFilterCondition } from '../helpers/filterBuilder';
-import { buildGraphQlQuery } from '../helpers/queryBuilder';
+import {
+  buildGraphQlQuery,
+  buildOrderByVariables,
+  buildPaginationVariables,
+} from '../helpers/queryBuilder';
 import { Pagination } from '../types/pagination';
 import { FETCH_PROCESS_INSTANCES_SORT_FIELD } from './constants';
 
@@ -215,6 +219,10 @@ export class DataIndexService {
         ? `id: {in: ${JSON.stringify(definitionIds)}}`
         : undefined;
 
+    // TODO: something with filters
+    // We need to know how many filters there are so we can create those variables
+    // Then somehow add those to the top of the query
+    // Then add those to our variable list when exectuting the client
     const filterCondition = filter
       ? buildFilterCondition(
           await this.initInputProcessDefinitionArgs(),
@@ -222,6 +230,8 @@ export class DataIndexService {
           filter,
         )
       : undefined;
+
+    // console.log(`Filter Condition: ${filterCondition}`);
 
     let whereClause: string | undefined;
     if (definitionIdsCondition && filterCondition) {
@@ -232,6 +242,8 @@ export class DataIndexService {
       whereClause = undefined;
     }
 
+    // console.log(`Where Clause: ${whereClause}`);
+
     const graphQlQuery = buildGraphQlQuery({
       type: 'ProcessDefinitions',
       queryBody:
@@ -240,7 +252,11 @@ export class DataIndexService {
       pagination,
     });
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
-    const result = await this.client.query(graphQlQuery, {});
+    // console.log(`GraphQL query: ${graphQlQuery}`);
+    const result = await this.client.query(graphQlQuery, {
+      paginationInfo: buildPaginationVariables(pagination),
+      orderByInfo: buildOrderByVariables(pagination),
+    });
     this.logger.debug(
       `Get workflow definitions result: ${JSON.stringify(result)}`,
     );
@@ -275,6 +291,8 @@ export class DataIndexService {
         )
       : '';
 
+    // console.log(`Filter Condition: ${filterCondition}`);
+
     let whereClause = '';
     const conditions = [];
 
@@ -298,6 +316,8 @@ export class DataIndexService {
       whereClause = `and: [${conditions.join(', ')}]`;
     }
 
+    // console.log(`Where Clause: ${whereClause}`);
+
     const graphQlQuery = buildGraphQlQuery({
       type: 'ProcessInstances',
       queryBody:
@@ -307,10 +327,14 @@ export class DataIndexService {
     });
 
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
+    // console.log(`GraphQL query: ${graphQlQuery}`);
 
     const result = await this.client.query<{
       ProcessInstances: ProcessInstance[];
-    }>(graphQlQuery, {});
+    }>(graphQlQuery, {
+      paginationInfo: buildPaginationVariables(pagination),
+      orderByInfo: buildOrderByVariables(pagination),
+    });
     this.logger.debug(
       `Fetch process instances result: ${JSON.stringify(result)}`,
     );
@@ -352,6 +376,8 @@ export class DataIndexService {
 
     const whereClause = `and: [{${processIdNotNullCondition}}, {${filterCondition}}]`;
 
+    // console.log(`Where Clause: ${whereClause}`);
+
     // Apply a limit to prevent memory exhaustion and network timeouts when entities
     // have thousands of process instances. Entities with more instances than this limit
     // may not see all their associated workflows.
@@ -371,7 +397,10 @@ export class DataIndexService {
 
     const result = await this.client.query<{
       ProcessInstances: ProcessInstance[];
-    }>(graphQlQuery, {});
+    }>(graphQlQuery, {
+      paginationInfo: buildPaginationVariables(pagination),
+      orderByInfo: buildOrderByVariables(pagination),
+    });
     this.logger.debug(
       `Fetch definition ids from instances history result: ${JSON.stringify(result)}`,
     );

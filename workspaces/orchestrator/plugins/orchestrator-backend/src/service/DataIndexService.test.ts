@@ -252,7 +252,10 @@ describe('fetchWorkflowInfos', () => {
     expect(mockClient.query).toHaveBeenCalled();
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
   });
 
@@ -289,7 +292,10 @@ describe('fetchWorkflowInfos', () => {
     expect(mockClient.query).toHaveBeenCalled();
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
   });
 
@@ -327,7 +333,15 @@ describe('fetchWorkflowInfos', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(1);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {
+          name: 'ASC',
+        },
+        paginationInfo: {
+          limit: 10,
+          offset: 0,
+        },
+      },
     );
     expect(buildFilterConditionSpy).not.toHaveBeenCalled();
   });
@@ -373,7 +387,10 @@ describe('fetchWorkflowInfos', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
   });
 
@@ -422,7 +439,10 @@ describe('fetchWorkflowInfos', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
@@ -461,7 +481,15 @@ describe('fetchWorkflowInfos', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {
+          name: 'ASC',
+        },
+        paginationInfo: {
+          limit: 10,
+          offset: 0,
+        },
+      },
     );
     expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(2);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
@@ -598,7 +626,10 @@ describe('fetchInstances', () => {
     expect(mockClient.query).toHaveBeenCalled();
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
   });
 
@@ -632,7 +663,10 @@ describe('fetchInstances', () => {
     expect(mockClient.query).toHaveBeenCalled();
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessInstances);
@@ -673,7 +707,15 @@ describe('fetchInstances', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(1);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {
+          name: 'ASC',
+        },
+        paginationInfo: {
+          limit: 10,
+          offset: 0,
+        },
+      },
     );
   });
 
@@ -712,7 +754,10 @@ describe('fetchInstances', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
   });
 
@@ -749,7 +794,10 @@ describe('fetchInstances', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessInstances);
@@ -791,7 +839,15 @@ describe('fetchInstances', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {
+          name: 'ASC',
+        },
+        paginationInfo: {
+          limit: 10,
+          offset: 0,
+        },
+      },
     );
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessInstances);
