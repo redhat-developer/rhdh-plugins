@@ -43,6 +43,7 @@ type McpServer = {
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  validationError?: string;
 };
 
 type McpServersSettingsProps = {
@@ -185,6 +186,18 @@ type McpServersListResponse = {
 
 type McpServersPatchResponse = {
   server?: McpServerResponse;
+  validation?: {
+    error?: string;
+  };
+};
+
+type McpServersValidateResponse = {
+  name: string;
+  status: 'connected' | 'error' | 'unknown';
+  toolCount: number;
+  validation?: {
+    error?: string;
+  };
 };
 
 const getStatusIcon = (status: ServerStatus, className: string) => {
@@ -217,7 +230,10 @@ const getDisplayDetail = (
   return 'Unknown';
 };
 
-const toUiServer = (server: McpServerResponse): McpServer => ({
+const toUiServer = (
+  server: McpServerResponse,
+  validationError?: string,
+): McpServer => ({
   id: server.name,
   name: server.name,
   enabled: server.enabled,
@@ -225,6 +241,7 @@ const toUiServer = (server: McpServerResponse): McpServer => ({
   toolCount: server.toolCount,
   hasToken: server.hasToken,
   hasUserToken: server.hasUserToken,
+  validationError: server.status === 'error' ? validationError : undefined,
 });
 
 export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
@@ -271,6 +288,35 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
     [fetchApi],
   );
 
+  const validateServer = useCallback(
+    async (serverName: string) => {
+      const baseUrl = getBaseUrl();
+      const data = await fetchJson<McpServersValidateResponse>(
+        `${baseUrl}/mcp-servers/${encodeURIComponent(serverName)}/validate`,
+        {
+          method: 'POST',
+        },
+      );
+
+      setServers(prev =>
+        prev.map(server =>
+          server.name === serverName
+            ? {
+                ...server,
+                status: data.status,
+                toolCount: data.toolCount,
+                validationError:
+                  data.status === 'error'
+                    ? (data.validation?.error ?? 'Validation failed')
+                    : undefined,
+              }
+            : server,
+        ),
+      );
+    },
+    [fetchJson, getBaseUrl],
+  );
+
   const loadServers = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -279,7 +325,25 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
       const data = await fetchJson<McpServersListResponse>(
         `${baseUrl}/mcp-servers`,
       );
-      setServers((data.servers ?? []).map(toUiServer));
+      const uiServers = (data.servers ?? []).map(server => toUiServer(server));
+      setServers(uiServers);
+
+      const serversToValidate = uiServers.filter(server => server.hasToken);
+      void Promise.allSettled(
+        serversToValidate.map(async server => {
+          try {
+            await validateServer(server.name);
+          } catch (validationError) {
+            setError(
+              prev =>
+                prev ??
+                (validationError instanceof Error
+                  ? validationError.message
+                  : `Failed to validate ${server.name}`),
+            );
+          }
+        }),
+      );
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'Failed to load MCP server settings',
@@ -287,7 +351,7 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchJson, getBaseUrl]);
+  }, [fetchJson, getBaseUrl, validateServer]);
 
   useEffect(() => {
     loadServers();
@@ -313,7 +377,9 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
         if (data.server) {
           setServers(prev =>
             prev.map(server =>
-              server.name === serverName ? toUiServer(data.server!) : server,
+              server.name === serverName
+                ? toUiServer(data.server!, data.validation?.error)
+                : server,
             ),
           );
         } else {
@@ -333,7 +399,13 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
   );
 
   const selectedCount = useMemo(
-    () => servers.filter(server => server.enabled).length,
+    () =>
+      servers.filter(server => {
+        const displayStatus = getDisplayStatus(server);
+        const isUnavailable =
+          displayStatus === 'failed' || displayStatus === 'tokenRequired';
+        return server.enabled && !isUnavailable;
+      }).length,
     [servers],
   );
 
@@ -456,7 +528,12 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
                   <div className={classes.statusCell}>
                     {getStatusIcon(displayStatus, statusClass)}
                     {displayStatus === 'failed' ? (
-                      <Tooltip content="Token authentication failed, click edit to configure it again">
+                      <Tooltip
+                        content={
+                          server.validationError ??
+                          'Validation failed. Check server URL and token.'
+                        }
+                      >
                         <Typography
                           component="span"
                           className={classes.statusValue}

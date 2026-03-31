@@ -20,6 +20,80 @@ import { McpValidationResult } from './mcp-server-types';
 
 const REQUEST_TIMEOUT_MS = 10_000;
 
+const getEndpointLabel = (targetUrl: string): string => {
+  try {
+    const parsed = new URL(targetUrl);
+    return parsed.port ? `${parsed.hostname}:${parsed.port}` : parsed.hostname;
+  } catch {
+    return targetUrl;
+  }
+};
+
+const getNestedError = (error: unknown): Error | undefined => {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'cause' in error &&
+    (error as { cause?: unknown }).cause instanceof Error
+  ) {
+    return (error as { cause: Error }).cause;
+  }
+  return undefined;
+};
+
+const getNetworkErrorMessage = (url: string, error: unknown): string => {
+  const endpoint = getEndpointLabel(url);
+  const nestedError = getNestedError(error);
+  const fullMessage = [
+    error instanceof Error ? error.message : '',
+    nestedError?.name ?? '',
+    nestedError?.message ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (
+    fullMessage.includes('timeout') ||
+    fullMessage.includes('aborterror') ||
+    fullMessage.includes('aborted')
+  ) {
+    return `Connection timed out while contacting ${endpoint}`;
+  }
+  if (
+    fullMessage.includes('econnrefused') ||
+    fullMessage.includes('connection refused')
+  ) {
+    return `Connection refused by ${endpoint}`;
+  }
+  if (
+    fullMessage.includes('enotfound') ||
+    fullMessage.includes('getaddrinfo')
+  ) {
+    return `Host not found for ${endpoint}`;
+  }
+  if (
+    fullMessage.includes('econnreset') ||
+    fullMessage.includes('socket hang up')
+  ) {
+    return `Connection reset by ${endpoint}`;
+  }
+  if (
+    fullMessage.includes('ehostunreach') ||
+    fullMessage.includes('enetunreach')
+  ) {
+    return `Host unreachable: ${endpoint}`;
+  }
+  if (fullMessage.includes('fetch failed')) {
+    return `Unable to connect to ${endpoint}`;
+  }
+
+  return (
+    nestedError?.message ||
+    (error instanceof Error ? error.message : String(error))
+  );
+};
+
 /**
  * Validates MCP server credentials using the Streamable HTTP transport.
  *
@@ -32,13 +106,13 @@ export class McpServerValidator {
   constructor(private readonly logger: LoggerService) {}
 
   async validate(url: string, token: string): Promise<McpValidationResult> {
-    // Bearer prefix is required here because the validator hits the MCP server
-    // directly (not through LCS). LCS handles its own auth scheme via
-    // MCP-HEADERS (see buildMcpHeaders in router.ts), but direct MCP
-    // Streamable HTTP endpoints expect standard Bearer authentication.
+    const trimmedToken = token.trim();
+    const authorizationHeader = /^Bearer\s+/i.test(trimmedToken)
+      ? trimmedToken
+      : `Bearer ${trimmedToken}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: authorizationHeader,
       Accept: 'application/json, text/event-stream',
     };
 
@@ -150,20 +224,7 @@ export class McpServerValidator {
       );
       return { valid: true, toolCount: 0, tools: [] };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-
-      if (
-        message.includes('TimeoutError') ||
-        message.includes('AbortError') ||
-        message.includes('abort')
-      ) {
-        return {
-          valid: false,
-          toolCount: 0,
-          tools: [],
-          error: 'Connection timed out',
-        };
-      }
+      const message = getNetworkErrorMessage(url, error);
 
       this.logger.error(`MCP validation failed for ${url}: ${message}`);
       return {
