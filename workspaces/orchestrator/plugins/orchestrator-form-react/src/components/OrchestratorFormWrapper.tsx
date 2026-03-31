@@ -93,13 +93,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     const activeKey = getActiveKey();
     const shouldScopeExtraErrors =
       Boolean(activeKey) && Boolean(uiSchema?.[activeKey as string]);
-    const extraErrorsFormData = shouldScopeExtraErrors
-      ? ({
-          [activeKey as string]: ((formData?.[
-            activeKey as string
-          ] as JsonObject) ?? {}) as JsonObject,
-        } as JsonObject)
-      : formData;
+    const extraErrorsFormData = (_formData ?? formData) as JsonObject;
     const extraErrorsUiSchema = shouldScopeExtraErrors
       ? ({
           [activeKey as string]: uiSchema?.[activeKey as string],
