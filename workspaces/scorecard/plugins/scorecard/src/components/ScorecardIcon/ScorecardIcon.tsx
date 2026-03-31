@@ -27,6 +27,47 @@ export interface ScorecardIconProps {
   sx?: SxProps<Theme>;
 }
 
+const IconImage = ({
+  src,
+  size,
+  sx,
+}: {
+  src: string;
+  size?: 'small' | 'medium' | 'large';
+  sx?: SxProps<Theme>;
+}) => (
+  <MuiIcon fontSize={size} sx={sx}>
+    <Box
+      component="span"
+      sx={{
+        display: 'none',
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'currentColor',
+        mask: `url("${src}") center / contain no-repeat`,
+        WebkitMask: `url("${src}") center / contain no-repeat`,
+        '@supports (-webkit-mask-image: url("")) or (mask-image: url(""))': {
+          display: 'inline-block',
+        },
+      }}
+    />
+    {/* Fallback for browsers without masking support */}
+    <Box
+      component="img"
+      src={src}
+      alt=""
+      sx={{
+        width: '100%',
+        height: '100%',
+        objectFit: 'contain',
+        '@supports (-webkit-mask-image: url("")) or (mask-image: url(""))': {
+          display: 'none',
+        },
+      }}
+    />
+  </MuiIcon>
+);
+
 /**
  * @public
  */
@@ -51,11 +92,7 @@ export const ScorecardIcon = ({
 
   if (icon.startsWith('<svg')) {
     const svgDataUri = `data:image/svg+xml;base64,${btoa(icon)}`;
-    return (
-      <MuiIcon fontSize={size} sx={sx}>
-        <img src={svgDataUri} alt="" />
-      </MuiIcon>
-    );
+    return <IconImage src={svgDataUri} size={size} sx={sx} />;
   }
 
   if (
@@ -64,11 +101,7 @@ export const ScorecardIcon = ({
     icon.startsWith('http://') ||
     icon.startsWith('/')
   ) {
-    return (
-      <MuiIcon fontSize={size} baseClassName="material-icons-outlined" sx={sx}>
-        <img src={icon} alt="" height="100%" width="100%" />
-      </MuiIcon>
-    );
+    return <IconImage src={icon} size={size} sx={sx} />;
   }
 
   return (
