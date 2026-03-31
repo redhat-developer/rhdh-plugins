@@ -27,6 +27,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useOwnershipEntityRefs } from '../../../hooks/useOwnershipEntityRefs';
 import { useAggregatedScorecardEntities } from '../../../hooks/useAggregatedScorecardEntities';
+import { useAggregatedScorecard } from '../../../hooks/useAggregatedScorecard';
 import { useEntityMetadataMap } from '../../../hooks/useEntityMetadataMap';
 import { SCORECARD_ENTITIES_TABLE_HEADERS } from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -79,10 +80,17 @@ export const EntitiesTable = ({
     enabled: !ownershipLoading,
   });
 
-  const isNotFound = entitiesError?.message?.includes('NotFoundError');
-  if (isNotFound) {
-    setMetricNotFound?.(true);
-  }
+  const { aggregatedScorecard } = useAggregatedScorecard({
+    metricId: metricId as string,
+    enabled: !!metricId && !ownershipLoading && !loadingDataEntities,
+  });
+  const thresholdRules = aggregatedScorecard?.result?.thresholds?.rules ?? [];
+
+  useEffect(() => {
+    if (entitiesError?.message?.includes('NotFoundError')) {
+      setMetricNotFound?.(true);
+    }
+  }, [entitiesError, setMetricNotFound]);
 
   useEffect(() => {
     setMetricTitle(aggregatedScorecardEntities?.metricMetadata?.title ?? '');
@@ -171,7 +179,7 @@ export const EntitiesTable = ({
                 key={entity.entityRef}
                 entity={entity}
                 entityMetadataMap={entityMetadataMap}
-                metricId={metricId as string}
+                thresholdRules={thresholdRules}
               />
             ))}
         </TableBody>

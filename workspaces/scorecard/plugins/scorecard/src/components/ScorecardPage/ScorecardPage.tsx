@@ -22,13 +22,13 @@ import { Content, Page } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 
+import { ScorecardQueryProvider } from '../../api';
 import { ScorecardHomepageCard } from '../ScorecardHomepageSection/ScorecardHomepageCard';
 import NotFoundState from '../Common/NotFoundState';
 import { useTranslation } from '../../hooks/useTranslation';
 
 import { ScorecardPageHeader } from './ScorecardPageHeader';
 import { EntitiesTable } from './EntitiesTable/EntitiesTable';
-import { ScorecardQueryProvider } from '../ScorecardQueryProvider';
 
 export const ScorecardPage = () => {
   const { aggregationId = '', metricId = '' } = useParams<{

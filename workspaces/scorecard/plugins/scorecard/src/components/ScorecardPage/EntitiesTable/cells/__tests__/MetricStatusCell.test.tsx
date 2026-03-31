@@ -86,7 +86,11 @@ describe('MetricStatusCell', () => {
   it('should render translated label for known threshold statuses', () => {
     const { rerender } = render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="warning" theme={theme} />
+        <MetricStatusCell
+          status="warning"
+          theme={theme}
+          statusColor="warning.main"
+        />
       </ThemeProvider>,
     );
 
@@ -94,7 +98,11 @@ describe('MetricStatusCell', () => {
 
     rerender(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="error" theme={theme} />
+        <MetricStatusCell
+          status="error"
+          theme={theme}
+          statusColor="error.main"
+        />
       </ThemeProvider>,
     );
 
@@ -104,7 +112,11 @@ describe('MetricStatusCell', () => {
   it('should capitalise unknown status when no translation key matches', () => {
     render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="pending" theme={theme} />
+        <MetricStatusCell
+          status="pending"
+          theme={theme}
+          statusColor="pending.main"
+        />
       </ThemeProvider>,
     );
 

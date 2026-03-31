@@ -36,7 +36,7 @@ export const MetricStatusCell = memo(
     if (translatedStatus === `thresholds.${status}` && status) {
       translatedStatus = status?.charAt(0).toUpperCase() + status?.slice(1);
     }
-    
+
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Box

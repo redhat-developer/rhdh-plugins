@@ -85,7 +85,6 @@ export const useAggregatedScorecardEntities = (
       }
     },
     enabled: Boolean(metricId) && enabled,
-    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   return {

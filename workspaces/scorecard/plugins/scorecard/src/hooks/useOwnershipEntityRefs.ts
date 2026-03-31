@@ -23,10 +23,17 @@ export const useOwnershipEntityRefs = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    identityApi.getBackstageIdentity().then(identity => {
-      setOwnershipEntityRefs(identity?.ownershipEntityRefs ?? []);
-      setLoading(false);
-    });
+    identityApi
+      .getBackstageIdentity()
+      .then(identity => {
+        setOwnershipEntityRefs(identity?.ownershipEntityRefs ?? []);
+      })
+      .catch(() => {
+        setOwnershipEntityRefs([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [identityApi]);
 
   return { ownershipEntityRefs, loading };

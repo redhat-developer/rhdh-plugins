@@ -16,7 +16,7 @@
 
 import type { ComponentProps } from 'react';
 
-import { ScorecardQueryProvider } from '../ScorecardQueryProvider';
+import { ScorecardQueryProvider } from '../../api';
 import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';

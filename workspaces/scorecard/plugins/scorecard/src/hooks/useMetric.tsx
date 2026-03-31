@@ -51,7 +51,6 @@ export const useMetric = (options: UseMetricOptions) => {
       }
     },
     enabled: Boolean(metricId),
-    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   return {

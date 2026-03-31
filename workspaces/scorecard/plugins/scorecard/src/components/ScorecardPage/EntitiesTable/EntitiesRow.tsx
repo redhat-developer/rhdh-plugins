@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { EntityMetricDetail } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type {
+  EntityMetricDetail,
+  ThresholdRule,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
@@ -28,7 +31,6 @@ import {
 import { useTranslation } from '../../../hooks/useTranslation';
 import { EntityMetadataMap } from '../../../components/types';
 import { useLanguage } from '../../../hooks/useLanguage';
-import { useAggregatedScorecard } from '../../../hooks/useAggregatedScorecard';
 
 import { MetricStatusCell } from './cells/MetricStatusCell';
 import { OwnerCell } from './cells/OwnerCell';
@@ -37,20 +39,15 @@ import { EntityNameCell } from './cells/EntityNameCell';
 export const EntitiesRow = ({
   entity,
   entityMetadataMap,
-  metricId,
+  thresholdRules,
 }: {
   entity: EntityMetricDetail;
   entityMetadataMap: EntityMetadataMap;
-  metricId: string;
+  thresholdRules: ThresholdRule[];
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const locale = useLanguage();
-
-  const { aggregatedScorecard } = useAggregatedScorecard({
-    metricId: metricId as string,
-  });
-  const thresholdRules = aggregatedScorecard?.result?.thresholds?.rules ?? [];
 
   const statusColor =
     getThresholdRuleColor(thresholdRules, entity?.status ?? '') ??

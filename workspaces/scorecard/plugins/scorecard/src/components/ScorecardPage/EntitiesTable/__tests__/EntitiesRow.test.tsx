@@ -99,7 +99,7 @@ describe('EntitiesRow', () => {
         <EntitiesRow
           entity={defaultEntity}
           entityMetadataMap={defaultEntityMetadataMap}
-          metricId="github.open_prs"
+          thresholdRules={[]}
         />
       </TestWrapper>,
     );
@@ -128,7 +128,7 @@ describe('EntitiesRow', () => {
         <EntitiesRow
           entity={{ ...defaultEntity, metricValue: undefined }}
           entityMetadataMap={{}}
-          metricId="github.open_prs"
+          thresholdRules={[]}
         />
       </TestWrapper>,
     );
@@ -142,7 +142,7 @@ describe('EntitiesRow', () => {
         <EntitiesRow
           entity={{ ...defaultEntity, metricValue: 0 }}
           entityMetadataMap={{}}
-          metricId="github.open_prs"
+          thresholdRules={[]}
         />
       </TestWrapper>,
     );
@@ -156,7 +156,7 @@ describe('EntitiesRow', () => {
         <EntitiesRow
           entity={defaultEntity}
           entityMetadataMap={defaultEntityMetadataMap}
-          metricId="github.open_prs"
+          thresholdRules={[]}
         />
       </TestWrapper>,
     );
