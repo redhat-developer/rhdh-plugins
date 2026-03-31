@@ -136,7 +136,8 @@ function handleBinaryOperator(
   binaryFilter: FieldFilter,
   fieldDef: IntrospectionField | undefined,
   type: 'ProcessDefinition' | 'ProcessInstance',
-): string {
+): any {
+  // TODO: Needs to change
   if (isEnumFilter(binaryFilter.field, type)) {
     if (!isValidEnumOperator(binaryFilter.operator)) {
       throw new Error(
@@ -149,9 +150,31 @@ function handleBinaryOperator(
         .map(v => formatValue(binaryFilter.field, v, fieldDef, type))
         .join(', ')}]`
     : formatValue(binaryFilter.field, binaryFilter.value, fieldDef, type);
-  return `${binaryFilter.field}: {${getGraphQLOperator(
-    binaryFilter.operator,
-  )}: ${formattedValue}}`;
+  // Return some object that has the string value but instead of the formatted value, replace with the variable
+  // the object also has the variableName and the formatted value as properties
+  /**
+   * {
+   *  clause: `${binaryFilter.field}: {${getGraphQLOperator(binaryFilter.operator,)}: $someVariableName}`
+   *  formattedValue: 'some string',
+   *  variableName: '$someVariableName'
+   * }
+   */
+  const nonSecureRandomAlphaNumeric = Math.random()
+    .toString(36)
+    .slice(2)
+    .slice(0, 4);
+  const clauseVariableName = `clauseVariable${nonSecureRandomAlphaNumeric}`;
+  const clause = `${binaryFilter.field}: {${getGraphQLOperator(binaryFilter.operator)}: $${clauseVariableName}}`;
+  const clauseObject = {
+    formattedValue: formattedValue,
+    clauseVariableName: clauseVariableName,
+    clause,
+  };
+  console.log(clauseObject);
+  return clauseObject;
+  // return `${binaryFilter.field}: {${getGraphQLOperator(
+  //   binaryFilter.operator,
+  // )}: ${formattedValue}}`;
 }
 
 export function buildFilterCondition(
@@ -159,7 +182,8 @@ export function buildFilterCondition(
   type: ProcessType,
   filters?: Filter,
   isNested?: boolean,
-): string {
+): any {
+  // TODO: This needs to return an object instead of the string
   if (!filters) {
     return '';
   }
@@ -195,11 +219,15 @@ export function buildFilterCondition(
     }
   }
 
+  let handledFilterOperation;
+
   switch (filters.operator) {
     case FieldFilterOperatorEnum.IsNull:
-      return handleIsNullOperator(filters);
+      handledFilterOperation = handleIsNullOperator(filters);
+      break;
     case FieldFilterOperatorEnum.Between:
-      return handleBetweenOperator(filters);
+      handledFilterOperation = handleBetweenOperator(filters);
+      break;
     case FieldFilterOperatorEnum.Eq:
     case FieldFilterOperatorEnum.Like:
     case FieldFilterOperatorEnum.In:
@@ -207,11 +235,15 @@ export function buildFilterCondition(
     case FieldFilterOperatorEnum.Gte:
     case FieldFilterOperatorEnum.Lt:
     case FieldFilterOperatorEnum.Lte:
-      return handleBinaryOperator(filters, fieldDef, type);
+      handledFilterOperation = handleBinaryOperator(filters, fieldDef, type);
+      break;
 
     default:
       throw new Error(`Can't build filter condition`);
   }
+
+  console.log(handledFilterOperation);
+  return handledFilterOperation;
 }
 
 function isOperatorSupported(operator: FieldFilterOperatorEnum): boolean {
@@ -255,7 +287,7 @@ function formatValue(
   type: ProcessType,
 ): string {
   if (!fieldDef) {
-    return `"${fieldValue}"`;
+    return `${fieldValue}`;
   }
 
   if (!isFieldFilterSupported) {
@@ -270,7 +302,7 @@ function formatValue(
     fieldDef.type.name === TypeName.Id ||
     fieldDef.type.name === TypeName.Date
   ) {
-    return `"${fieldValue}"`;
+    return `${fieldValue}`;
   }
   throw new Error(
     `Failed to format value for ${fieldName} ${fieldValue} with type ${fieldDef.type.name}`,

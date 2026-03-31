@@ -223,6 +223,11 @@ export class DataIndexService {
     // We need to know how many filters there are so we can create those variables
     // Then somehow add those to the top of the query
     // Then add those to our variable list when exectuting the client
+    // TODO: the buildFilterCondition function needs to return an object that has the following:
+    // A list of the filters
+    // The fileters object should also include what the variable name will be and the value associated
+    // That list should be passed into the query builder function so then can get populated on the "header thing"
+    // That list will also get spread during the call to the query
     const filterCondition = filter
       ? buildFilterCondition(
           await this.initInputProcessDefinitionArgs(),
@@ -231,11 +236,11 @@ export class DataIndexService {
         )
       : undefined;
 
-    // console.log(`Filter Condition: ${filterCondition}`);
+    console.log(`Filter Condition: ${filterCondition}`);
 
     let whereClause: string | undefined;
     if (definitionIdsCondition && filterCondition) {
-      whereClause = `and: [{${definitionIdsCondition}}, {${filterCondition}}]`;
+      whereClause = `and: [{${definitionIdsCondition}}, {${filterCondition.clause}}]`;
     } else if (definitionIdsCondition || filterCondition) {
       whereClause = definitionIdsCondition ?? filterCondition;
     } else {
@@ -250,12 +255,15 @@ export class DataIndexService {
         'id, name, version, type, endpoint, serviceUrl, source, metadata',
       whereClause,
       pagination,
+      filterCondition: filterCondition,
     });
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
     // console.log(`GraphQL query: ${graphQlQuery}`);
+    // Spread the values here
     const result = await this.client.query(graphQlQuery, {
       paginationInfo: buildPaginationVariables(pagination),
       orderByInfo: buildOrderByVariables(pagination),
+      [filterCondition.clauseVariableName]: filterCondition.formattedValue,
     });
     this.logger.debug(
       `Get workflow definitions result: ${JSON.stringify(result)}`,

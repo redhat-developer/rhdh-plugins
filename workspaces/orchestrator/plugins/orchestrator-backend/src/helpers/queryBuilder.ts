@@ -15,15 +15,17 @@
  */
 
 import { Pagination, PaginationQueryVariable } from '../types/pagination';
+import { buildFilterCondition } from './filterBuilder';
 
 export function buildGraphQlQuery(args: {
   type: 'ProcessDefinitions' | 'ProcessInstances' | 'Jobs';
   queryBody: string;
   whereClause?: string;
   pagination?: Pagination;
+  filterCondition?: any;
 }): string {
   // TODO: add variables to the top, https://graphql.org/learn/queries/#variables
-  let query = `query ($paginationInfo: Pagination, $orderByInfo: ${args.type.slice(0, -1)}OrderBy){${args.type}`;
+  let query = `query ($paginationInfo: Pagination, $orderByInfo: ${args.type.slice(0, -1)}OrderBy, $${args.filterCondition.clauseVariableName}: String){${args.type}`;
 
   const whereClause = buildWhereClause(args.whereClause);
   const paginationClause = 'pagination: $paginationInfo';
