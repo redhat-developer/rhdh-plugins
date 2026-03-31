@@ -26,6 +26,8 @@ import {
   Grid,
   Tooltip,
 } from '@material-ui/core';
+import { usePermission } from '@backstage/plugin-permission-react';
+import { rosApplyPermission } from '@red-hat-developer-hub/plugin-cost-management-common/permissions';
 import type { WorkflowUnavailableReason } from '@red-hat-developer-hub/plugin-cost-management-common/clients';
 import { RecommendationType } from '../../models/ChartEnums';
 import { ChartInfoCard } from './components/chart-info-card/ChartInfoCard';
@@ -64,7 +66,17 @@ export const OptimizationEngineTab = ({
   const isWorkflowAvailable = !!workflowId;
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  const { loading: permLoading, allowed: canApply } = usePermission({
+    permission: rosApplyPermission,
+  });
+
+  const isButtonDisabled =
+    !isWorkflowAvailable || permLoading || canApply === false;
+
   const tooltipMessage = useMemo(() => {
+    if (canApply === false) {
+      return 'You do not have permission to apply recommendations';
+    }
     if (isWorkflowAvailable) {
       return '';
     }
@@ -75,7 +87,12 @@ export const OptimizationEngineTab = ({
       return DEFAULT_WORKFLOW_MESSAGES[workflowUnavailableReason];
     }
     return DEFAULT_WORKFLOW_MESSAGES.not_configured;
-  }, [isWorkflowAvailable, workflowErrorMessage, workflowUnavailableReason]);
+  }, [
+    canApply,
+    isWorkflowAvailable,
+    workflowErrorMessage,
+    workflowUnavailableReason,
+  ]);
 
   const handleApplyClick = useCallback(() => {
     setConfirmOpen(true);
@@ -117,16 +134,16 @@ export const OptimizationEngineTab = ({
           action={
             <Tooltip
               title={tooltipMessage}
-              disableHoverListener={isWorkflowAvailable}
-              disableFocusListener={isWorkflowAvailable}
-              disableTouchListener={isWorkflowAvailable}
+              disableHoverListener={!isButtonDisabled}
+              disableFocusListener={!isButtonDisabled}
+              disableTouchListener={!isButtonDisabled}
             >
               <Box component="span" display="inline-block">
                 <Button
                   variant="contained"
                   color="primary"
                   onClick={handleApplyClick}
-                  disabled={!isWorkflowAvailable}
+                  disabled={isButtonDisabled}
                 >
                   Apply recommendation
                 </Button>

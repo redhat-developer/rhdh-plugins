@@ -31,7 +31,7 @@ export const rosApplyPermission = createPermission({
 /** @public */
 export const rosClusterSpecificPermission = (clusterName: string) =>
   createPermission({
-    name: `ros.${clusterName}`,
+    name: `ros/${clusterName}`,
     attributes: { action: 'read' },
   });
 
@@ -41,7 +41,7 @@ export const rosClusterProjectPermission = (
   projectName: string,
 ) =>
   createPermission({
-    name: `ros.${clusterName}.${projectName}`,
+    name: `ros/${clusterName}/${projectName}`,
     attributes: { action: 'read' },
   });
 
@@ -54,7 +54,7 @@ export const costPluginReadPermission = createPermission({
 /** @public */
 export const costClusterSpecificPermission = (clusterName: string) =>
   createPermission({
-    name: `cost.${clusterName}`,
+    name: `cost/${clusterName}`,
     attributes: { action: 'read' },
   });
 
@@ -64,7 +64,7 @@ export const costClusterProjectPermission = (
   projectName: string,
 ) =>
   createPermission({
-    name: `cost.${clusterName}.${projectName}`,
+    name: `cost/${clusterName}/${projectName}`,
     attributes: { action: 'read' },
   });
 
