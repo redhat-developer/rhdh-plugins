@@ -335,22 +335,24 @@ export const McpServersSettings = ({
       const uiServers = (data.servers ?? []).map(server => toUiServer(server));
       setServers(uiServers);
 
-      const serversToValidate = uiServers.filter(server => server.hasToken);
-      void Promise.allSettled(
-        serversToValidate.map(async server => {
-          try {
-            await validateServer(server.name);
-          } catch (validationError) {
-            setError(
-              prev =>
-                prev ??
-                (validationError instanceof Error
-                  ? validationError.message
-                  : `Failed to validate ${server.name}`),
-            );
-          }
-        }),
-      );
+      if (canManageMcp) {
+        const serversToValidate = uiServers.filter(server => server.hasToken);
+        void Promise.allSettled(
+          serversToValidate.map(async server => {
+            try {
+              await validateServer(server.name);
+            } catch (validationError) {
+              setError(
+                prev =>
+                  prev ??
+                  (validationError instanceof Error
+                    ? validationError.message
+                    : `Failed to validate ${server.name}`),
+              );
+            }
+          }),
+        );
+      }
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'Failed to load MCP server settings',
@@ -358,7 +360,7 @@ export const McpServersSettings = ({
     } finally {
       setIsLoading(false);
     }
-  }, [fetchJson, getBaseUrl, validateServer]);
+  }, [canManageMcp, fetchJson, getBaseUrl, validateServer]);
 
   useEffect(() => {
     loadServers();

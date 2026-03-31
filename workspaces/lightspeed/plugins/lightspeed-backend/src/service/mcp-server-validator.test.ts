@@ -35,22 +35,44 @@ describe('McpServerValidator auth header behavior', () => {
     jest.clearAllMocks();
   });
 
-  it('tries raw token first, then Bearer on 401/403', async () => {
+  it('tries raw token first, then falls back to Bearer on 401/403', async () => {
     const fetchMock = jest
       .fn()
-      .mockResolvedValue(new Response(null, { status: 401 }));
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            result: { capabilities: { tools: {} } },
+            id: 1,
+          }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          },
+        ),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            result: { tools: [{ name: 'tool-1' }] },
+            id: 2,
+          }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          },
+        ),
+      );
     global.fetch = fetchMock;
 
     const validator = new McpServerValidator(logger);
     const result = await validator.validate(url, 'raw-token');
 
-    expect(result).toMatchObject({
-      valid: false,
-      toolCount: 0,
-      tools: [],
-      error: 'Invalid credentials — server returned 401/403',
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.valid).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({
       Authorization: 'raw-token',
     });
@@ -59,7 +81,7 @@ describe('McpServerValidator auth header behavior', () => {
     });
   });
 
-  it('uses token as-is when it already has an auth scheme', async () => {
+  it('does not rewrite tokens that already include an auth scheme', async () => {
     const fetchMock = jest
       .fn()
       .mockResolvedValue(new Response(null, { status: 401 }));
