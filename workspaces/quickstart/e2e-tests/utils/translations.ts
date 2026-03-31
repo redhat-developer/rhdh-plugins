@@ -15,12 +15,12 @@
  */
 
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { quickstartMessages } from '../../../../plugins/quickstart/src/translations/ref.js';
-import quickstartTranslationDe from '../../../../plugins/quickstart/src/translations/de.js';
-import quickstartTranslationFr from '../../../../plugins/quickstart/src/translations/fr.js';
-import quickstartTranslationEs from '../../../../plugins/quickstart/src/translations/es.js';
-import quickstartTranslationIt from '../../../../plugins/quickstart/src/translations/it.js';
-import quickstartTranslationJa from '../../../../plugins/quickstart/src/translations/ja.js';
+import { quickstartMessages } from '../../plugins/quickstart/src/translations/ref.js';
+import quickstartTranslationDe from '../../plugins/quickstart/src/translations/de.js';
+import quickstartTranslationFr from '../../plugins/quickstart/src/translations/fr.js';
+import quickstartTranslationEs from '../../plugins/quickstart/src/translations/es.js';
+import quickstartTranslationIt from '../../plugins/quickstart/src/translations/it.js';
+import quickstartTranslationJa from '../../plugins/quickstart/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type QuickstartMessages = typeof quickstartMessages;

@@ -1,8 +1,30 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { defineConfig } from '@playwright/test';
 
 const LOCALES = ['en', 'fr', 'it', 'ja', 'de', 'es'] as const;
 
-const testDir = 'packages/app/e2e-tests';
+// APP_MODE: 'legacy' (app-legacy) or 'nfs' (app with new frontend system)
+const appMode = process.env.APP_MODE || 'legacy';
+const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+
+// Config paths (absolute to work from any cwd)
+const baseConfig = `${__dirname}/app-config.yaml`;
+const devConfig = `${__dirname}/app-config-dev.yaml`;
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
@@ -15,20 +37,24 @@ export default defineConfig({
     ? []
     : [
         {
-          command: 'yarn start --config ../../app-config.yaml',
+          command: `${startCommand} --config ${baseConfig}`,
           port: 3000,
           reuseExistingServer: true,
+          cwd: __dirname,
         },
         {
-          command: 'yarn start --config ../../app-config-dev.yaml',
+          command: `${startCommand} --config ${devConfig}`,
           port: 3001,
           reuseExistingServer: true,
+          cwd: __dirname,
         },
       ],
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
+  ],
 
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
@@ -36,13 +62,13 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
+
+  testDir: 'e2e-tests',
 
   projects: [
-    // Main config: all locales, default port 3000, exclude developer spec
     ...LOCALES.map(locale => ({
       name: locale,
-      testDir,
       testIgnore: '**/quick-start-developer.spec.ts',
       use: {
         channel: 'chrome' as const,
@@ -50,10 +76,8 @@ export default defineConfig({
         baseURL: 'http://localhost:3000',
       },
     })),
-    // Dev config: all locales, port 3001, developer spec only
     ...LOCALES.map(locale => ({
       name: `dev-config-${locale}`,
-      testDir,
       testMatch: '**/quick-start-developer.spec.ts',
       use: {
         channel: 'chrome' as const,
