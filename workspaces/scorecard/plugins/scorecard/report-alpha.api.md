@@ -57,8 +57,8 @@ export const scorecardEntityContent: OverridableExtensionDefinition<{
   config: {
     allowedFilters:
       | {
-          kind?: string | undefined;
           type?: string | undefined;
+          kind?: string | undefined;
         }[]
       | undefined;
     path: string | undefined;
@@ -69,8 +69,8 @@ export const scorecardEntityContent: OverridableExtensionDefinition<{
   configInput: {
     allowedFilters?:
       | {
-          kind?: string | undefined;
           type?: string | undefined;
+          kind?: string | undefined;
         }[]
       | undefined;
     filter?: EntityPredicate | undefined;
@@ -153,6 +153,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.description': string;
     readonly 'permissionRequired.altText': string;
     readonly 'errors.entityMissingProperties': string;
+    readonly 'errors.aggregationMissingProperties': string;
     readonly 'errors.invalidApiResponse': string;
     readonly 'errors.fetchError': string;
     readonly 'errors.metricDataUnavailable': string;
@@ -187,11 +188,11 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.entitiesTable.footer.allRows': string;
     readonly 'entitiesPage.entitiesTable.footer.rows_one': string;
     readonly 'entitiesPage.entitiesTable.footer.rows_other': string;
+    readonly 'entitiesPage.entitiesTable.header.entity': string;
+    readonly 'entitiesPage.entitiesTable.header.status': string;
     readonly 'entitiesPage.entitiesTable.header.owner': string;
     readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
-    readonly 'entitiesPage.entitiesTable.header.status': string;
     readonly 'entitiesPage.entitiesTable.header.value': string;
-    readonly 'entitiesPage.entitiesTable.header.entity': string;
     readonly 'entitiesPage.entitiesTable.header.kind': string;
     readonly 'entitiesPage.entitiesTable.title': string;
     readonly 'entitiesPage.entitiesTable.unavailable': string;
