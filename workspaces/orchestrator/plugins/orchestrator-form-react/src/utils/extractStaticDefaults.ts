@@ -60,16 +60,22 @@ export function extractStaticDefaults(
 
     // Extract fetch:response:default from ui:props
     const uiProps = (curSchema as Record<string, unknown>)['ui:props'];
+    let staticDefault: unknown;
     if (uiProps && typeof uiProps === 'object') {
-      const staticDefault = (uiProps as Record<string, unknown>)[
+      staticDefault = (uiProps as Record<string, unknown>)[
         'fetch:response:default'
       ];
-      if (staticDefault !== undefined) {
-        // Only set if not already in existing form data
-        const existingValue = get(existingFormData, path);
-        if (existingValue === undefined || existingValue === null) {
-          set(defaults, path, staticDefault);
-        }
+    }
+
+    if (staticDefault === undefined && 'default' in curSchema) {
+      staticDefault = (curSchema as JSONSchema7).default;
+    }
+
+    if (staticDefault !== undefined) {
+      // Only set if not already in existing form data
+      const existingValue = get(existingFormData, path);
+      if (existingValue === undefined || existingValue === null) {
+        set(defaults, path, staticDefault);
       }
     }
 
