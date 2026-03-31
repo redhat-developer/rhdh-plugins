@@ -358,16 +358,16 @@ The plugin supports fetching repository and organization listings **on behalf of
 
 1. The frontend calls `GET /api/bulk-import/scm-hosts` to retrieve the list of configured SCM integration host URLs, grouped by provider (`github` and `gitlab`).
 2. For each host, the frontend requests an OAuth token from the Backstage `ScmAuthApi` (provided by `@backstage/integration-react`).
-3. The collected tokens are sent to the backend via the optional `x-scm-tokens` request header — a JSON-encoded string whose value, when parsed, maps each integration base URL to the user's OAuth token (e.g. `{"https://github.com":"ghp_xxx"}`).
+3. The collected tokens are sent to the backend via the **required** `x-scm-tokens` request header — a JSON-encoded string whose value, when parsed, maps each integration base URL to the user's OAuth token (e.g. `{"https://github.com":"ghp_xxx"}`).
 4. The backend uses these user tokens to call the GitHub or GitLab APIs on behalf of the user, so the repository listings reflect what the signed-in user can personally access.
 
-#### Fallback Behavior
+#### Required OAuth Configuration
 
-The GitHub and GitLab auth providers are **soft dependencies**. When user tokens are absent or unavailable, the backend falls back gracefully to server-side credentials:
+The `x-scm-tokens` header is **required** for `GET /repositories` and `GET /organizations/{organizationName}/repositories`. Requests that omit the header, supply an empty token map, or send a header that exceeds the allowed size are rejected with **HTTP 401**.
 
-- If the `x-scm-tokens` header is not present or is empty, the backend uses its configured integration credentials (GitHub App, PAT, or GitLab token) for all repository listing calls. Existing behavior is fully preserved.
-- If a token is provided for some hosts but not others, the backend uses the user token where available and the server-side credential for any host that was omitted.
-- Deployments that do not configure GitHub or GitLab OAuth providers continue to work exactly as before with no configuration changes required.
+A GitHub and/or GitLab OAuth provider must therefore be configured in the Backstage application for these endpoints to work. Refer to the [Backstage GitHub auth docs](https://backstage.io/docs/auth/github/provider) and [GitLab auth docs](https://backstage.io/docs/auth/gitlab/provider) for setup instructions.
+
+> **Migration note:** Deployments that previously relied solely on server-side credentials (GitHub App, PAT, or GitLab token) for the repository list view must now also configure an SCM OAuth provider. The server-side credentials are still used for all other operations (import creation, status checks, etc.) and are unaffected by this change.
 
 #### Security Note
 
@@ -381,7 +381,7 @@ The `x-scm-tokens` header is stripped from the request immediately upon receipt 
 | ------ | ---------------------------- | ------------------------------------------------------------------------------------------- |
 | `GET`  | `/api/bulk-import/scm-hosts` | Returns configured GitHub and GitLab integration host base URLs as an `SCMHostList` object. |
 
-The existing `GET /repositories` and `GET /organizations/{organizationName}/repositories` endpoints now accept an optional `x-scm-tokens` header. See the [API documentation](api-docs/README.md) for the full request/response specification.
+The existing `GET /repositories` and `GET /organizations/{organizationName}/repositories` endpoints now **require** the `x-scm-tokens` header. See the [API documentation](api-docs/README.md) for the full request/response specification.
 
 ## REST API
 

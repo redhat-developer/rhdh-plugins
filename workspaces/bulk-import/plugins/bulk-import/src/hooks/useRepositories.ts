@@ -70,7 +70,11 @@ export const useRepositories = (
     return url;
   });
 
-  const { value: scmAuthTokens, loading: tokenLoading } = useAsync(async () => {
+  const {
+    value: scmAuthTokens,
+    loading: tokenLoading,
+    error: tokenFetchError,
+  } = useAsync(async () => {
     if (!scmAuth) return undefined;
     const hosts = await bulkImportApi.getSCMHosts();
     if (!hosts || hosts instanceof Response || !('github' in hosts))
@@ -91,11 +95,15 @@ export const useRepositories = (
         });
         if (token) tokenRecord[url] = token;
       } catch {
-        // No OAuth provider registered for this host — skip it and fall back
-        // to server-side credentials for that integration on the backend.
+        // No OAuth provider registered for this host — skip it.
       }
     }
-    return Object.keys(tokenRecord).length > 0 ? tokenRecord : undefined;
+    if (Object.keys(tokenRecord).length === 0) {
+      throw new Error(
+        'No user SCM credentials could be obtained. Please ensure your SCM OAuth integration is configured.',
+      );
+    }
+    return tokenRecord;
   }, [scmAuth, bulkImportApi, options.approvalTool]);
 
   const fetchRepositories = async (queryOptions: DataFetcherQueryParams) => {
@@ -133,7 +141,7 @@ export const useRepositories = (
     ],
     () => fetchRepositories(options),
     {
-      enabled: !tokenLoading,
+      enabled: !tokenLoading && !tokenFetchError,
       refetchInterval: pollInterval || 60000,
       refetchOnWindowFocus: false,
     },
@@ -154,6 +162,7 @@ export const useRepositories = (
     loading: tokenLoading || isQueryLoading,
     data: prepareData,
     error: {
+      ...(tokenFetchError ? { errors: [tokenFetchError.message] } : {}),
       ...(error ?? {}),
       ...((value?.errors && value.errors.length > 0) ||
       (value as any as Response)?.statusText

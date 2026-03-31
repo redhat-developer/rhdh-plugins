@@ -88,7 +88,7 @@ describe('router tests', () => {
             .set('x-scm-tokens', header),
       ],
     ])(
-      '%s: ignores x-scm-tokens and returns 200 when header exceeds size limit',
+      '%s: ignores x-scm-tokens and returns 401 when header exceeds size limit',
       async (
         _endpoint: string,
         reqHandler: (
@@ -110,7 +110,9 @@ describe('router tests', () => {
           request(backendServer),
           oversizedHeader,
         );
-        expect(response.status).toEqual(200);
+        // Oversized header is silently discarded; the missing valid token then
+        // triggers the 401 guard added for compliance.
+        expect(response.status).toEqual(401);
       },
     );
 

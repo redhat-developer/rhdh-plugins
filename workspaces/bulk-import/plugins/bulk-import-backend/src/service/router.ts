@@ -300,6 +300,13 @@ export async function createRouter(
         | Record<string, string>
         | undefined;
 
+      if (!userTokens || Object.keys(userTokens).length === 0) {
+        return res.status(401).json({
+          error:
+            'User SCM credentials are required to list repositories. Ensure the SCM OAuth integration is configured.',
+        });
+      }
+
       const response = await findAllRepositories(
         {
           logger,
@@ -342,6 +349,13 @@ export async function createRouter(
       const userTokens = res.locals.scmTokens as
         | Record<string, string>
         | undefined;
+
+      if (!userTokens || Object.keys(userTokens).length === 0) {
+        return res.status(401).json({
+          error:
+            'User SCM credentials are required to list repositories. Ensure the SCM OAuth integration is configured.',
+        });
+      }
 
       const response = await findRepositoriesByOrganization(
         {

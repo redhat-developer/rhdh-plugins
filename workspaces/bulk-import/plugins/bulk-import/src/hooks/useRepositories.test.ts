@@ -190,7 +190,7 @@ describe('useRepositories', () => {
       });
     });
 
-    it('skips a host gracefully when scmAuth.getCredentials throws for it', async () => {
+    it('surfaces a tokenFetchError when scmAuth is registered but all token fetches fail', async () => {
       const mockGetCredentials = jest
         .fn()
         .mockRejectedValue(new Error('No OAuth provider for this host'));
@@ -216,7 +216,7 @@ describe('useRepositories', () => {
       });
 
       (useQuery as jest.Mock).mockReturnValue({
-        data: mockGetRepositories,
+        data: undefined,
         isLoading: false,
         error: null,
         refetch: jest.fn(),
@@ -230,10 +230,66 @@ describe('useRepositories', () => {
         }),
       );
 
-      // Should complete without throwing even though getCredentials rejected
       await waitFor(() => {
         expect(result.current.loading).toBeFalsy();
       });
+
+      // When all token fetches fail, the hook surfaces an error so the UI can
+      // prompt the user to configure the SCM OAuth integration.
+      expect(result.current.error?.errors).toEqual([
+        'No user SCM credentials could be obtained. Please ensure your SCM OAuth integration is configured.',
+      ]);
+    });
+
+    it('disables the query when tokenFetchError is set (no request fired without tokens)', async () => {
+      const mockGetCredentials = jest
+        .fn()
+        .mockRejectedValue(new Error('No OAuth provider for this host'));
+      const mockScmAuth = { getCredentials: mockGetCredentials };
+
+      const mockGetSCMHosts = jest.fn().mockResolvedValue({
+        github: ['https://github.com'],
+        gitlab: [],
+      });
+      const mockBulkImportApi = {
+        getSCMHosts: mockGetSCMHosts,
+        dataFetcher: jest.fn(),
+      };
+
+      mockUseApiHolder.mockReturnValue({
+        get: jest.fn().mockReturnValue(mockScmAuth),
+      });
+
+      const mockUseApi = jest.requireMock('@backstage/core-plugin-api').useApi;
+      mockUseApi.mockImplementation((ref: { id: string }) => {
+        if (ref.id === 'plugin.bulk-import.service') return mockBulkImportApi;
+        return undefined;
+      });
+
+      (useQuery as jest.Mock).mockClear();
+      (useQuery as jest.Mock).mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const { result } = renderHook(() =>
+        useRepositories({
+          page: 1,
+          querySize: 10,
+          approvalTool: ApprovalTool.Git,
+        }),
+      );
+
+      await waitFor(() => {
+        expect(result.current.loading).toBeFalsy();
+      });
+
+      // useQuery must have been called with enabled: false so no HTTP request
+      // is fired when user tokens are unavailable.
+      const lastOptions = (useQuery as jest.Mock).mock.calls.at(-1)?.[2];
+      expect(lastOptions?.enabled).toBe(false);
     });
 
     it('does not include raw token values in the React Query key', async () => {

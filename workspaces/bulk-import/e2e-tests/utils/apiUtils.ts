@@ -144,8 +144,15 @@ const repositories = {
 
 /**
  * Mock data for SCM hosts response.
- * Returns empty host lists so useRepositories skips the token-fetching flow
- * and proceeds directly to fetching repositories without SCM credentials.
+ * Returns empty host lists so the `useRepositories` hook hits the early-return
+ * path (`!urls?.length → return undefined`) and never attempts token collection.
+ * This means `tokenFetchError` stays `undefined`, the query is enabled, and the
+ * frontend fires a request without `X-SCM-Tokens`.
+ *
+ * In production the backend would reject such a request with HTTP 401, but the
+ * Playwright route mock for `ApiRoutes.repositories` intercepts the request
+ * before it reaches the backend, so the e2e tests still receive the mocked
+ * repository data regardless of the missing header.
  */
 export const mockSCMHostsData = {
   github: [],

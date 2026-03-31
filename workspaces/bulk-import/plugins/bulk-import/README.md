@@ -19,7 +19,7 @@ The sections below are relevant for static plugins. If the plugin is expected to
 
 - Follow the [GitHub Locations](https://backstage.io/docs/integrations/github/locations) to integrate GitHub integrations in your Backstage instance. For now, the plugin only supports loading catalog entities from github.com or GitHub Enterprise.
 
-- _(Optional)_ To enable [on behalf of user access](#on-behalf-of-user-access), configure a GitHub and/or GitLab OAuth auth provider and ensure `ScmAuthApi` from `@backstage/integration-react` is registered in your application. Without this, the plugin falls back to server-side integration credentials.
+- Configure a GitHub and/or GitLab OAuth auth provider and register `ScmAuthApi` from `@backstage/integration-react` in your application. **This is required for repository listing.** The `GET /repositories` and `GET /organizations/{org}/repositories` backend endpoints require user OAuth credentials (sent via the `X-SCM-Tokens` header) and will return HTTP 401 if they are absent. See [Configuring Auth Providers](#configuring-auth-providers) for setup instructions.
 
 ---
 
@@ -88,13 +88,13 @@ When `ScmAuthApi` (from `@backstage/integration-react`) is available in the appl
 
 The backend then uses these user tokens to call the SCM APIs on behalf of the user, returning only what that user can access.
 
-### Fallback Behavior
+### Required OAuth Configuration
 
-The GitHub and GitLab auth providers are **soft dependencies** — if they are not configured the plugin degrades gracefully:
+GitHub and/or GitLab OAuth providers are **required** for repository and organization listing. The backend enforces this: `GET /repositories` and `GET /organizations/{org}/repositories` return **HTTP 401** if the `X-SCM-Tokens` header is absent or empty.
 
-- If `ScmAuthApi` is not registered in the application, no tokens are collected and the backend falls back to server-side credentials (GitHub App, PAT, or GitLab token).
-- If a token cannot be obtained for a specific host (e.g., the user has not signed in via that provider, or no OAuth provider is registered for that host), that host is silently skipped. The backend uses its configured integration credentials for any host without a user token.
-- Deployments that do not configure GitHub or GitLab OAuth providers continue to work exactly as before with no configuration changes required.
+If `ScmAuthApi` is not registered in the application, or if token collection fails for every configured SCM host, the frontend blocks the listing request and surfaces a descriptive error prompting the user to configure the OAuth integration.
+
+> **Migration note:** Deployments that previously relied on server-side integration credentials alone for the repository list view (GitHub App, PAT, or GitLab token) must now also configure an SCM OAuth provider. See [Configuring Auth Providers](#configuring-auth-providers) below.
 
 ### Configuring Auth Providers
 

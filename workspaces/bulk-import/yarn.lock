@@ -2741,7 +2741,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/integration-react@npm:^1.2.14, @backstage/integration-react@npm:^1.2.15, @backstage/integration-react@npm:^1.2.16":
+"@backstage/integration-react@npm:^1.2.14, @backstage/integration-react@npm:^1.2.16":
   version: 1.2.16
   resolution: "@backstage/integration-react@npm:1.2.16"
   dependencies:
@@ -2749,6 +2749,7 @@ __metadata:
     "@backstage/core-plugin-api": "npm:^1.12.4"
     "@backstage/integration": "npm:^2.0.0"
     "@material-ui/core": "npm:^4.12.2"
+    "@material-ui/icons": "npm:^4.9.1"
   peerDependencies:
     "@types/react": ^17.0.0 || ^18.0.0
     react: ^17.0.0 || ^18.0.0
@@ -2761,7 +2762,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/integration@npm:^1.19.2, @backstage/integration@npm:^1.20.0, @backstage/integration@npm:^1.20.1":
+"@backstage/integration@npm:^1.19.2, @backstage/integration@npm:^1.20.0":
   version: 1.20.1
   resolution: "@backstage/integration@npm:1.20.1"
   dependencies:
