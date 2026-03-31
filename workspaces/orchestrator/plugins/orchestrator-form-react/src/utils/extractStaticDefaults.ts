@@ -25,11 +25,14 @@ const isPlainObject = (value: unknown): value is JsonObject => {
 };
 
 /**
- * Extracts static default values from fetch:response:default properties in the schema.
+ * Extracts static default values from the schema in priority order:
+ * 1) ui:props.fetch:response:default
+ * 2) JSON Schema default
+ *
  * These values are applied to formData before widgets render, ensuring defaults
  * are available immediately without waiting for fetch operations.
  *
- * @param schema - The JSON Schema containing ui:props with fetch:response:default
+ * @param schema - The JSON Schema containing ui:props and/or default values
  * @param existingFormData - Existing form data to preserve (won't be overwritten)
  * @returns An object containing the extracted default values merged with existing data
  */
