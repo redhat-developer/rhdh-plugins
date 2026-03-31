@@ -28,7 +28,7 @@ import {
 import { BackstageCredentials } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 
-import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
+import { Entity } from '@backstage/catalog-model';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { KonfluxLogger } from './logger';
 
@@ -37,8 +37,9 @@ import { KonfluxLogger } from './logger';
  *
  * In Konflux plugin, a "subcomponent" refers to a Backstage Component that has a
  * `subcomponentOf` relationship to the current Component being viewed.
- * Backstage automatically creates a `partOf` relation from the subcomponent
- * entity to the parent entity, which is what we query for.
+ * Backstage automatically creates a `hasPart` relation on the parent entity
+ * for each subcomponent, so we read those refs and batch-fetch the entities
+ * instead of scanning the entire catalog.
  *
  * @param entity - The main/parent entity to find related entities for
  * @param credentials - Backstage credentials for authentication
@@ -53,20 +54,22 @@ const getRelatedEntities = async (
 ): Promise<Entity[] | null> => {
   try {
     if (catalog) {
-      const entityRef = stringifyEntityRef(entity);
+      const hasPartRefs = (entity.relations || [])
+        .filter(rel => rel.type === 'hasPart')
+        .map(rel => rel.targetRef);
 
-      const allEntitiesForFiltering = await catalog.getEntities(
-        {},
+      if (hasPartRefs.length === 0) {
+        return [];
+      }
+
+      const response = await catalog.getEntitiesByRefs(
+        { entityRefs: hasPartRefs },
         { credentials },
       );
-      const filteredRelatedEntities = allEntitiesForFiltering.items.filter(
-        item =>
-          item.relations?.some(
-            rel => rel.type === 'partOf' && rel.targetRef === entityRef,
-          ),
-      );
 
-      return filteredRelatedEntities;
+      return response.items.filter(
+        (item): item is Entity => item !== undefined,
+      );
     }
     return null;
   } catch (error) {

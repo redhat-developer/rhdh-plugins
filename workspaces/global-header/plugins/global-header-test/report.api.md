@@ -7,10 +7,7 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 
 // @public (undocumented)
-export const CrashButton: ({
-  label,
-  ...props
-}: CrashButtonProps) => JSX_2.Element;
+export const CrashButton: (input: CrashButtonProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface CrashButtonProps {
@@ -31,10 +28,7 @@ export interface CrashHeaderProps {
 export const globalHeaderTestPlugin: BackstagePlugin<{}, {}, {}>;
 
 // @public (undocumented)
-export const TestButton: ({
-  label,
-  ...props
-}: TestButtonProps) => JSX_2.Element;
+export const TestButton: (input: TestButtonProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface TestButtonProps {

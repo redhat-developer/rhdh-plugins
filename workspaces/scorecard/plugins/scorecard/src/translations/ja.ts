@@ -103,7 +103,7 @@ const scorecardTranslationJa = createTranslationMessages({
     'entitiesPage.entitiesTable.title': 'エンティティー',
     'entitiesPage.entitiesTable.unavailable': '利用不可',
     'entitiesPage.entitiesTable.titleWithCount': 'エンティティー ({{count}})',
-    'entitiesPage.entitiesTable.header.metric': 'メトリクス',
+    'entitiesPage.entitiesTable.header.status': '状態',
     'entitiesPage.entitiesTable.header.value': '値',
     'entitiesPage.entitiesTable.header.entity': 'エンティティー',
     'entitiesPage.entitiesTable.header.owner': '所有者',

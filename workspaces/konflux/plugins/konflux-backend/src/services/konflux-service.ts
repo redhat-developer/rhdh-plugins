@@ -25,10 +25,13 @@ import {
   SubcomponentClusterConfig,
   Filters,
   K8sResourceCommonWithClusterInfo,
+  KonfluxConfig,
   PAGINATION_CONFIG,
   ClusterError,
   GroupVersionKind,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+
+import { Entity } from '@backstage/catalog-model';
 
 import {
   createResourceWithClusterInfo,
@@ -49,6 +52,36 @@ import { FetchContext, ResourceFetcherService } from './resource-fetcher';
 import { KonfluxLogger } from '../helpers/logger';
 import { validateUserEmailForImpersonation } from '../helpers/validation';
 import { extractKubernetesErrorDetails } from '../helpers/error-extraction';
+
+const CATALOG_CACHE_TTL_MS = 30_000; // 30 seconds
+
+interface CacheEntry<T> {
+  data: T;
+  expiry: number;
+}
+
+/**
+ * Simple TTL cache for catalog lookups. Prevents duplicate catalog calls
+ * when multiple resource requests arrive in parallel for the same entity.
+ */
+class CatalogCache {
+  private readonly cache = new Map<string, CacheEntry<unknown>>();
+
+  get<T>(key: string): T | undefined {
+    const entry = this.cache.get(key);
+    if (entry && Date.now() < entry.expiry) {
+      return entry.data as T;
+    }
+    if (entry) {
+      this.cache.delete(key);
+    }
+    return undefined;
+  }
+
+  set<T>(key: string, data: T): void {
+    this.cache.set(key, { data, expiry: Date.now() + CATALOG_CACHE_TTL_MS });
+  }
+}
 
 export interface AggregatedResourcesResponse {
   data: K8sResourceCommonWithClusterInfo[];
@@ -85,6 +118,7 @@ export class KonfluxService {
   private readonly catalog?: CatalogService;
   private readonly config: Config;
   private readonly resourceFetcher: ResourceFetcherService;
+  private readonly catalogCache = new CatalogCache();
 
   constructor(config: Config, logger: LoggerService, catalog: CatalogService) {
     this.konfluxLogger = new KonfluxLogger(logger);
@@ -142,6 +176,80 @@ export class KonfluxService {
   }
 
   /**
+   * Fetch and cache the entity from the catalog
+   */
+  private async getCachedEntity(
+    entityRef: string,
+    credentials: BackstageCredentials,
+    userId: string,
+  ): Promise<Entity | undefined> {
+    const cacheKey = `entity:${entityRef}:${userId}`;
+    let entity = this.catalogCache.get<Entity>(cacheKey);
+    if (!entity) {
+      entity =
+        (await this.catalog!.getEntityByRef(entityRef, {
+          credentials,
+        })) ?? undefined;
+      if (entity) {
+        this.catalogCache.set(cacheKey, entity);
+      }
+    }
+    return entity;
+  }
+
+  /**
+   * Fetch and cache the Konflux configuration for an entity
+   */
+  private async getCachedKonfluxConfig(
+    entityRef: string,
+    entity: Entity,
+    credentials: BackstageCredentials,
+    userId: string,
+  ): Promise<KonfluxConfig | undefined> {
+    const cacheKey = `config:${entityRef}:${userId}`;
+    let konfluxConfig = this.catalogCache.get<KonfluxConfig>(cacheKey);
+    if (!konfluxConfig) {
+      konfluxConfig = await getKonfluxConfig(
+        this.config,
+        entity,
+        credentials,
+        this.catalog!,
+        this.konfluxLogger,
+      );
+      if (konfluxConfig) {
+        this.catalogCache.set(cacheKey, konfluxConfig);
+      }
+    }
+    return konfluxConfig;
+  }
+
+  /**
+   * Fetch and cache cluster-namespace combinations for an entity
+   */
+  private async getCachedCombinations(
+    entityRef: string,
+    entity: Entity,
+    credentials: BackstageCredentials,
+    konfluxConfig: KonfluxConfig,
+    userId: string,
+  ): Promise<SubcomponentClusterConfig[]> {
+    const cacheKey = `combinations:${entityRef}:${userId}`;
+    let combinations =
+      this.catalogCache.get<SubcomponentClusterConfig[]>(cacheKey);
+    if (!combinations) {
+      combinations = await determineClusterNamespaceCombinations(
+        entity,
+        credentials,
+        konfluxConfig,
+        this.konfluxLogger,
+        this.catalog!,
+      );
+      this.catalogCache.set(cacheKey, combinations);
+    }
+    return combinations;
+  }
+
+  /**
    * Aggregate resources from multiple clusters based on entity configuration
    */
   async aggregateResources(
@@ -167,10 +275,9 @@ export class KonfluxService {
       limitPerCluster: PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
     };
 
-    // fetch the main entity
-    const entity = await this.catalog.getEntityByRef(entityRef, {
-      credentials,
-    });
+    const userId = userEntityRef || userEmail || 'unknown';
+
+    const entity = await this.getCachedEntity(entityRef, credentials, userId);
     if (!entity) {
       this.konfluxLogger.error('Entity not found', undefined, {
         entityRef,
@@ -179,14 +286,12 @@ export class KonfluxService {
       throw new Error(`Entity not found: ${entityRef}`);
     }
 
-    const konfluxConfig = await getKonfluxConfig(
-      this.config,
+    const konfluxConfig = await this.getCachedKonfluxConfig(
+      entityRef,
       entity,
       credentials,
-      this.catalog,
-      this.konfluxLogger,
+      userId,
     );
-
     if (!konfluxConfig) {
       this.konfluxLogger.warn('No Konflux configuration found', {
         entityRef,
@@ -195,15 +300,13 @@ export class KonfluxService {
       return { data: [] };
     }
 
-    // determine cluster-namespace combinations
-    let combinations = await determineClusterNamespaceCombinations(
+    let combinations = await this.getCachedCombinations(
+      entityRef,
       entity,
       credentials,
       konfluxConfig,
-      this.konfluxLogger,
-      this.catalog,
+      userId,
     );
-
     if (combinations.length === 0) {
       this.konfluxLogger.warn('No cluster-namespace combinations found', {
         entityRef,
@@ -223,8 +326,6 @@ export class KonfluxService {
     // decode continuation token to get pagination state for each source
     let paginationState: PaginationState = {};
     const isLoadMoreRequest = !!validatedFilters?.continuationToken;
-
-    const userId = userEntityRef || userEmail || 'unknown';
 
     if (validatedFilters?.continuationToken) {
       try {
@@ -292,7 +393,8 @@ export class KonfluxService {
     const aggregatedData = results
       .filter((r): r is NonNullable<typeof r> => !!r && !!r.items)
       .flatMap(result => {
-        const clusterInfo = konfluxConfig.clusters[result.combination.cluster];
+        const clusterInfo =
+          konfluxConfig?.clusters?.[result.combination.cluster];
         return result.items.map((item: K8sResourceCommonWithClusterInfo) =>
           createResourceWithClusterInfo(
             item,

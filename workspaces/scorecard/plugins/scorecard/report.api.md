@@ -89,8 +89,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.entitiesTable.footer.rows_one': string;
     readonly 'entitiesPage.entitiesTable.footer.rows_other': string;
     readonly 'entitiesPage.entitiesTable.header.owner': string;
-    readonly 'entitiesPage.entitiesTable.header.metric': string;
     readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
+    readonly 'entitiesPage.entitiesTable.header.status': string;
     readonly 'entitiesPage.entitiesTable.header.value': string;
     readonly 'entitiesPage.entitiesTable.header.entity': string;
     readonly 'entitiesPage.entitiesTable.header.kind': string;

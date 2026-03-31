@@ -69,6 +69,29 @@ describe('extract ui schema', () => {
     expect(uiSchema).toEqual({ name: { 'ui:autofocus': true } });
   });
 
+  it('extracts ui:hidden and other ui:* on object nodes that also have properties', () => {
+    const mixedSchema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        visibleField: {
+          type: 'string',
+          title: 'Visible',
+        },
+        workflowParams: {
+          type: 'object',
+          'ui:hidden': true,
+          properties: {
+            solutionName: { type: 'string', default: 'a' },
+            solutionVersion: { type: 'string', default: '1.0' },
+          },
+        } as JSONSchema7,
+      },
+    };
+    const uiSchema = generateUiSchema(mixedSchema, false);
+    expect(uiSchema.workflowParams).toEqual({ 'ui:hidden': true });
+    expect(uiSchema.visibleField).toMatchObject({ 'ui:autofocus': true });
+  });
+
   it('should extract from array', () => {
     const mixedSchema = {
       title: 'A list of tasks',

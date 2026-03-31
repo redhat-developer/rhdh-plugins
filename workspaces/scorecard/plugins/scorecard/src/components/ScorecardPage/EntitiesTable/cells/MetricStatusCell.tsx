@@ -17,9 +17,16 @@
 import { memo } from 'react';
 
 import Box from '@mui/material/Box';
+import { useTranslation } from '../../../../hooks/useTranslation';
 
 export const MetricStatusCell = memo(
   ({ status, theme }: { status: string | undefined; theme: any }) => {
+    const { t } = useTranslation();
+
+    let translatedStatus = t(`thresholds.${status}` as any, {});
+    if (translatedStatus === `thresholds.${status}` && status) {
+      translatedStatus = status?.charAt(0).toUpperCase() + status?.slice(1);
+    }
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Box
@@ -32,7 +39,7 @@ export const MetricStatusCell = memo(
             flexShrink: 0,
           }}
         />
-        {status || '--'}
+        {(status && translatedStatus) || '--'}
       </Box>
     );
   },

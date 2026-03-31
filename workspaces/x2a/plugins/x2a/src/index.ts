@@ -19,3 +19,4 @@ export {
   useTranslation as useX2ATranslation,
   type TFuncX2A,
 } from './hooks/useTranslation';
+export { X2AIcon } from './components/x2aIcon';

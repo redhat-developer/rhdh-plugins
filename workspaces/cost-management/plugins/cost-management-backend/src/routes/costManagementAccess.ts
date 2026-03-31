@@ -23,6 +23,7 @@ import {
 import { costPluginPermissions } from '@red-hat-developer-hub/plugin-cost-management-common/permissions';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { getTokenFromApi } from '../util/tokenUtil';
+import { resolveActor, emitAuditLog } from '../util/auditLog';
 
 // Cache keys for cost management clusters and projects
 const COST_CLUSTERS_CACHE_KEY = 'cost_clusters';
@@ -49,6 +50,14 @@ export const getCostManagementAccess: (
   if (costPluginDecision.result === AuthorizeResult.ALLOW) {
     finalDecision = AuthorizeResult.ALLOW;
 
+    const actor = await resolveActor(_, options);
+    emitAuditLog(options, {
+      actor,
+      action: 'access_check',
+      resource: '/access/cost-management',
+      decision: 'ALLOW',
+    });
+
     const body = {
       decision: finalDecision,
       authorizedClusterNames: [],
@@ -57,7 +66,7 @@ export const getCostManagementAccess: (
     return response.json(body);
   }
 
-  // RBAC Filtering logic for Cluster & Project using cost.{clusterName} and cost.{clusterName}.{projectName} permissions
+  // RBAC Filtering logic for Cluster & Project using cost/{clusterName} and cost/{clusterName}/{projectName} permissions
   let clusterDataMap: Record<string, string> = {};
   let allProjects: string[] = [];
 
@@ -163,6 +172,18 @@ export const getCostManagementAccess: (
   if (finalAuthorizedClusterNames.length > 0) {
     finalDecision = AuthorizeResult.ALLOW;
   }
+
+  const actor = await resolveActor(_, options);
+  emitAuditLog(options, {
+    actor,
+    action: 'access_check',
+    resource: '/access/cost-management',
+    decision: finalDecision === AuthorizeResult.ALLOW ? 'ALLOW' : 'DENY',
+    filters: {
+      clusters: finalAuthorizedClusterNames,
+      projects: authorizeProjects,
+    },
+  });
 
   const body = {
     decision: finalDecision,

@@ -1,5 +1,8 @@
 dist
 dist-types
 coverage
+knip-report.md
+report.api.md
+report-alpha.api.md
 .vscode
 .eslintrc.js
