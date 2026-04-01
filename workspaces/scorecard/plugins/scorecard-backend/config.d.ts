@@ -43,17 +43,58 @@ export interface Config {
         [metricName: string]: {
           /** Threshold configuration for the metric */
           thresholds?: {
+            /**
+             * Rules describe how metric values are categorized and how that category is presented in the UI.
+             * They are evaluated in order and the first matching rule is applied.
+             */
             rules?: Array<{
+              /**
+               * Threshold category key that a metric value is assigned to when this rule
+               * matches (for example `success`, `warning`, `error`, or a custom key).
+               */
               key: string;
-              /** Threshold expression - supports: >=, <=, >, <, ==, !=, - (range) */
+              /**
+               * Threshold expression that determines whether a metric value matches this
+               * rule. Supports:`>=`, `<=`, `>`, `<`, `==`, `!=`, `-` (range).
+               *
+               * @example `<= 10` - Metric value must be less than or equal to 10.
+               * @example `10-60` - Metric value must be between 10 and 60 (inclusive).
+               */
               expression: string;
               /**
-               * Color for this threshold rule. Can be a theme palette path (e.g., 'error.main')
-               * or a direct color value (e.g., '#ADD8E6', 'blue', 'rgb(255,255,0)')
+               * Color configuration - supports multiple formats:
+               * - theme palette reference (`success.main` / `warning.main` / `error.main`)
+               * - HEX code (e.g. '#FFA500')
+               * - RGB/RGBA (e.g. 'rgb(255, 0, 0)')
+               *
+               * Threshold rules 'success', 'warning' and 'error' have default colors.
                */
               color?: string;
+              /**
+               * Icon configuration - supports multiple formats:
+               * - Backstage system icons: 'kind:component', 'kind:api', etc.
+               * - Material Design icons: 'settings', 'home', 'build', etc.
+               * - SVG strings: '<svg xmlns="http://www.w3.org/2000/svg">...</svg>'
+               * - URLs: 'https://example.com/icon.png', '/assets/icon.svg'
+               * - Data URIs: 'data:image/svg+xml;base64,...'
+               *
+               * Threshold rules 'success', 'warning' and 'error' have default icons.
+               */
+              icon?: string;
             }>;
           };
+          /**
+           * Schedule for collecting this metric. If not set, the default hourly schedule is used.
+           *
+           * Default schedule:
+           * ```ts
+           * {
+           *   frequency: { hours: 1 },
+           *   timeout: { minutes: 15 },
+           *   initialDelay: { minutes: 1 },
+           * }
+           * ```
+           */
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
       };

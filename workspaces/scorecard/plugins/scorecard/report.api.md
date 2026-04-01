@@ -5,11 +5,16 @@
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { default as ScorecardErrorStatusIcon } from '@mui/icons-material/DangerousOutlined';
+import { default as ScorecardSuccessStatusIcon } from '@mui/icons-material/CheckCircleOutline';
+import { default as ScorecardWarningStatusIcon } from '@mui/icons-material/WarningAmber';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export const EntityScorecardContent: () => JSX_2.Element;
+
+export { ScorecardErrorStatusIcon };
 
 // @public
 export const ScorecardHomepageCard: ({
@@ -27,6 +32,8 @@ export const ScorecardPage: () => JSX_2.Element;
 
 // @public
 export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
+
+export { ScorecardSuccessStatusIcon };
 
 // @public
 export const scorecardTranslationRef: TranslationRef<
@@ -95,6 +102,8 @@ export const scorecardTranslationRef: TranslationRef<
 
 // @public
 export const scorecardTranslations: TranslationResource<'plugin.scorecard'>;
+
+export { ScorecardWarningStatusIcon };
 
 // (No @packageDocumentation comment for this package)
 ```

@@ -122,11 +122,11 @@ describe('EntitiesTableHeader', () => {
       </table>,
     );
 
-    const metricHeader = screen.getByText(
-      'entitiesPage.entitiesTable.header.metric',
+    const statusHeader = screen.getByText(
+      'entitiesPage.entitiesTable.header.status',
     );
-    await userEvent.click(metricHeader);
-    await userEvent.click(metricHeader);
+    await userEvent.click(statusHeader);
+    await userEvent.click(statusHeader);
 
     expect(onSortRequest).toHaveBeenCalledTimes(2);
     expect(onSortRequest).toHaveBeenCalledWith('status');
