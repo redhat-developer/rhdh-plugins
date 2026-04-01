@@ -33,7 +33,7 @@ jq -r '
         continue
     fi
     # Generate deprecation message
-    message="This package has been archived from the backstage/community-plugins repository"
+    message="This package has been archived from the redhat-developer/rhdh-plugins repository"
     [[ -n "$plugin" ]] && message="$message (plugin: $plugin)"
     [[ -n "$reason" ]] && message="$message. Reason: $reason"
     message="$message."
