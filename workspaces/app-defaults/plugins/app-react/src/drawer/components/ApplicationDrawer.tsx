@@ -16,9 +16,9 @@
 
 import { useEffect, useRef } from 'react';
 
-import { useAppDrawer } from './AppDrawerContext';
+import { useAppDrawer } from '../hooks/useAppDrawer';
 import { DrawerPanel } from './DrawerPanel';
-import type { AppDrawerContent } from './types';
+import type { AppDrawerContent } from '../types';
 
 const DEFAULT_WIDTH = 500;
 

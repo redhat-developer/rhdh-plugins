@@ -10598,6 +10598,7 @@ __metadata:
     "@backstage/frontend-plugin-api": "npm:^0.15.1"
     "@backstage/plugin-app-react": "npm:^0.2.1"
     "@backstage/test-utils": "npm:^1.7.16"
+    "@backstage/version-bridge": "npm:^1.0.12"
     "@mui/material": "npm:5.18.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"

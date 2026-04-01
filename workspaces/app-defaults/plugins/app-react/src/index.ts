@@ -20,4 +20,9 @@
  * @packageDocumentation
  */
 
-export * from './drawer';
+export { useAppDrawer } from './drawer';
+export { ApplicationDrawer } from './drawer';
+export { DrawerPanel } from './drawer';
+export type { ApplicationDrawerProps } from './drawer';
+export type { DrawerPanelProps } from './drawer';
+export type { AppDrawerContent, AppDrawerApi } from './drawer';

@@ -16,9 +16,10 @@
 
 import { render, screen, act } from '@testing-library/react';
 
-import { AppDrawerProvider, useAppDrawer } from './AppDrawerContext';
+import { useAppDrawer } from '../hooks/useAppDrawer';
+import { drawerStore } from '../utils/drawerStore';
 import { ApplicationDrawer } from './ApplicationDrawer';
-import type { AppDrawerContent } from './types';
+import type { AppDrawerContent } from '../types';
 
 function OpenButton({ id }: { id: string }) {
   const { openDrawer } = useAppDrawer();
@@ -32,16 +33,15 @@ function CloseButton({ id }: { id: string }) {
 
 function renderWithProvider(contents: AppDrawerContent[]) {
   return render(
-    <AppDrawerProvider>
-      <ApplicationDrawer contents={contents}>
-        <OpenButton id="test-drawer" />
-        <CloseButton id="test-drawer" />
-      </ApplicationDrawer>
-    </AppDrawerProvider>,
+    <ApplicationDrawer contents={contents}>
+      <OpenButton id="test-drawer" />
+      <CloseButton id="test-drawer" />
+    </ApplicationDrawer>,
   );
 }
 
 describe('ApplicationDrawer', () => {
+  beforeEach(() => drawerStore.reset());
   afterEach(() => {
     document.body.classList.remove('docked-drawer-open');
     document.body.style.removeProperty('--docked-drawer-width');
