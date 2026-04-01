@@ -13,5 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
 
-export * from './translations';
+import { SidebarContent } from './Sidebar';
+
+export const navModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [SidebarContent],
+});
