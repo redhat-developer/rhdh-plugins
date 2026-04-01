@@ -104,11 +104,11 @@ import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
+import { McpServersSettings } from './McpServersSettings';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebooksTab } from './notebooks/NotebooksTab';
 import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
 import PermissionRequiredState from './PermissionRequiredState';
-import { McpServersSettings } from './McpServersSettings';
 import { RenameConversationModal } from './RenameConversationModal';
 
 const useStyles = makeStyles(theme => ({
