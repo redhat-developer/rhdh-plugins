@@ -19,6 +19,7 @@ import { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
 
 import { McpServerStatus, McpUserSettingsRow } from './mcp-server-types';
+import { TokenEncryptor } from './token-encryption';
 
 const TABLE = 'lightspeed_mcp_user_settings';
 
@@ -28,15 +29,21 @@ const TABLE = 'lightspeed_mcp_user_settings';
  * Each row represents one user's settings for one static MCP server:
  * enabled/disabled toggle, optional personal token override, and
  * cached validation status.
+ *
+ * Tokens are encrypted/decrypted transparently via the TokenEncryptor.
  */
 export class McpUserSettingsStore {
-  constructor(private readonly db: Knex) {}
+  constructor(
+    private readonly db: Knex,
+    private readonly encryptor: TokenEncryptor,
+  ) {}
 
   /** List all settings for a specific user. */
   async listByUser(userEntityRef: string): Promise<McpUserSettingsRow[]> {
-    return this.db<McpUserSettingsRow>(TABLE)
+    const rows = await this.db<McpUserSettingsRow>(TABLE)
       .where({ user_entity_ref: userEntityRef })
       .select('*');
+    return rows.map(r => this.decryptRow(r));
   }
 
   /** Get settings for a specific server + user combination. */
@@ -44,9 +51,17 @@ export class McpUserSettingsStore {
     serverName: string,
     userEntityRef: string,
   ): Promise<McpUserSettingsRow | undefined> {
-    return this.db<McpUserSettingsRow>(TABLE)
+    const row = await this.db<McpUserSettingsRow>(TABLE)
       .where({ server_name: serverName, user_entity_ref: userEntityRef })
       .first();
+    return row ? this.decryptRow(row) : undefined;
+  }
+
+  private decryptRow(row: McpUserSettingsRow): McpUserSettingsRow {
+    if (row.token) {
+      return { ...row, token: this.encryptor.decrypt(row.token) };
+    }
+    return row;
   }
 
   /** Create or update user settings for a server (atomic). */
@@ -56,13 +71,16 @@ export class McpUserSettingsStore {
     updates: { enabled?: boolean; token?: string | null },
   ): Promise<McpUserSettingsRow> {
     const now = new Date().toISOString();
+    const encryptedToken = updates.token
+      ? this.encryptor.encrypt(updates.token)
+      : (updates.token ?? null);
 
     const row: McpUserSettingsRow = {
       id: randomUUID(),
       server_name: serverName,
       user_entity_ref: userEntityRef,
       enabled: updates.enabled ?? true,
-      token: updates.token ?? null,
+      token: encryptedToken,
       status: 'unknown',
       tool_count: 0,
       created_at: now,
@@ -72,8 +90,7 @@ export class McpUserSettingsStore {
     const mergeFields: Partial<McpUserSettingsRow> = { updated_at: now };
     if (updates.enabled !== undefined) mergeFields.enabled = updates.enabled;
     if (updates.token !== undefined) {
-      mergeFields.token = updates.token;
-      // Reset cached validation when token changes (new or cleared)
+      mergeFields.token = encryptedToken;
       mergeFields.status = 'unknown';
       mergeFields.tool_count = 0;
     }

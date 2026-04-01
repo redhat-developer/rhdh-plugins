@@ -41,6 +41,7 @@ import {
 } from './mcp-server-types';
 import { McpServerValidator } from './mcp-server-validator';
 import { userPermissionAuthorization } from './permission';
+import { createTokenEncryptor } from './token-encryption';
 import {
   DEFAULT_HISTORY_LENGTH,
   QueryRequestBody,
@@ -124,7 +125,8 @@ export async function createRouter(
 
   // Initialize database-backed store for per-user preferences and validator
   const dbClient = await database.getClient();
-  const settingsStore = new McpUserSettingsStore(dbClient);
+  const encryptor = createTokenEncryptor(config, logger);
+  const settingsStore = new McpUserSettingsStore(dbClient, encryptor);
   const mcpValidator = new McpServerValidator(logger);
 
   // URL cache populated from LCS GET /v1/mcp-servers.
@@ -185,6 +187,11 @@ export async function createRouter(
 
       const userSettings = await settingsStore.listByUser(user.userEntityRef);
       const settingsMap = new Map(userSettings.map(s => [s.server_name, s]));
+
+      const hasAllUrls = staticServers.every(s => lcsUrlCache.has(s.name));
+      if (!hasAllUrls) {
+        await refreshLcsUrlCache();
+      }
 
       const servers: McpServerResponse[] = staticServers.map(server => {
         const setting = settingsMap.get(server.name);
