@@ -30,7 +30,7 @@ import {
   type DropEvent as ReactDropzoneDropEvent,
 } from 'react-dropzone';
 
-import { makeStyles } from '@material-ui/core';
+import { Button, makeStyles } from '@material-ui/core';
 import {
   Chatbot,
   ChatbotAlert,
@@ -103,9 +103,9 @@ import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
-import { NotebookPermissionRequired } from './notebooks/NotebookPermissionRequired';
 import { NotebooksTab } from './notebooks/NotebooksTab';
 import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
+import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 
 const useStyles = makeStyles(theme => ({
@@ -360,8 +360,12 @@ export const LightspeedChat = ({
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [activeTab, setActiveTab] = useState<number>(0);
+  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
+    useLightspeedNotebooksPermission();
+  const notebooksPermissionResolved =
+    !notebooksPermissionLoading && hasNotebooksAccess;
   const { data: notebooks = [], refetch: refetchNotebooks } =
-    useNotebookSessions(activeTab === 1);
+    useNotebookSessions(activeTab === 1 && notebooksPermissionResolved);
   const hasNotebooks = notebooks.length > 0;
   const [openNotebookMenuId, setOpenNotebookMenuId] = useState<string | null>(
     null,
@@ -403,7 +407,7 @@ export const LightspeedChat = ({
   ) => {
     const nextTab = Number(tabIndex);
     setActiveTab(nextTab);
-    if (nextTab === 1) {
+    if (nextTab === 1 && notebooksPermissionResolved) {
       refetchNotebooks();
     }
   };
@@ -465,8 +469,6 @@ export const LightspeedChat = ({
 
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
   const { allowed: hasUpdateAccess } = useLightspeedUpdatePermission();
-  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
-    useLightspeedNotebooksPermission();
   const samplePrompts = useWelcomePrompts();
   useEffect(() => {
     if (!user || !isReady) return;
@@ -1240,7 +1242,20 @@ export const LightspeedChat = ({
         {showNotebooksPanel &&
           !notebooksPermissionLoading &&
           !hasNotebooksAccess && (
-            <NotebookPermissionRequired onGoBack={() => setActiveTab(0)} />
+            <PermissionRequiredState
+              subject={t('permission.subject.notebooks')}
+              permissions={['lightspeed.notebooks.use']}
+              action={
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  style={{ borderRadius: '20px' }}
+                  onClick={() => setActiveTab(0)}
+                >
+                  {t('permission.notebooks.goBack')}
+                </Button>
+              }
+            />
           )}
       </Chatbot>
       <Attachment />

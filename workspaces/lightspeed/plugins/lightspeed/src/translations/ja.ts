@@ -100,10 +100,9 @@ const lightspeedTranslationJa = createTranslationMessages({
     'conversation.rename.placeholder': 'チャット名',
     'permission.required.title': '権限の不足',
     'permission.required.description':
-      'lightspeed プラグインを表示するには、管理者に連絡して <b>lightspeed.chat.read</b> および <b>lightspeed.chat.create</b> 権限を付与してもらうよう依頼してください。',
-    'permission.notebooks.title': '権限の不足',
-    'permission.notebooks.description':
-      'Lightspeed ノートブックを表示するには、管理者から権限を付与してもらう必要があります。',
+      '<subject/> を表示するには、管理者に連絡して <permissions/> 権限を付与してもらうよう依頼してください。',
+    'permission.subject.plugin': 'Lightspeed プラグイン',
+    'permission.subject.notebooks': 'Lightspeed ノートブック',
     'permission.notebooks.goBack': '戻る',
     'disclaimer.withValidation':
       'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
