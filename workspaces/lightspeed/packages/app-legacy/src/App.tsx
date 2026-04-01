@@ -59,7 +59,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 import { RbacPage } from '@backstage-community/plugin-rbac';
 
-
 const githubProvider = {
   id: 'github-auth-provider',
   title: 'GitHub',
