@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-import { createApiRef, type ApiRef } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
 
-import { NotebookSession } from '../types';
+import { lightspeedNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
-/**
- * @public
- * AI Notebooks API
- */
-export type NotebooksAPI = {
-  listSessions: () => Promise<NotebookSession[]>;
-  renameSession: (sessionId: string, name: string) => Promise<void>;
-  deleteSession: (sessionId: string) => Promise<void>;
+export const useLightspeedNotebooksPermission = () => {
+  const result = usePermission({
+    permission: lightspeedNotebooksUsePermission,
+  });
+
+  return {
+    loading: result.loading,
+    allowed: result.allowed,
+  };
 };
-
-/**
- * @public
- * AI Notebooks API interface
- */
-export const notebooksApiRef: ApiRef<NotebooksAPI> = createApiRef<NotebooksAPI>(
-  {
-    id: 'plugin.lightspeed.notebooks.service',
-  },
-);

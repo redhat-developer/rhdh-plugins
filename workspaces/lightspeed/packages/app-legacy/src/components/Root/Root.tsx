@@ -47,6 +47,7 @@ import {
   LightspeedDrawerStateExposer,
   LightspeedFAB,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+import { Administration } from '@backstage-community/plugin-rbac';
 import { ApplicationDrawer } from './ApplicationDrawer';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
@@ -127,6 +128,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           </SidebarGroup>
           <SidebarSpace />
           <SidebarDivider />
+          <Administration />
           <SidebarGroup
             label="Settings"
             icon={<UserSettingsSignInAvatar />}

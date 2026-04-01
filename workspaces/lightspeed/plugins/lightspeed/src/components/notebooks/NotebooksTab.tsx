@@ -21,8 +21,8 @@ import { Button } from '@patternfly/react-core';
 import { PlusCircleIcon } from '@patternfly/react-icons';
 import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
 
-import { lightspeedTranslationRef } from '../translations/ref';
-import { NotebookSession } from '../types';
+import { lightspeedTranslationRef } from '../../translations/ref';
+import { NotebookSession } from '../../types';
 import { NotebookCard } from './NotebookCard';
 
 type NotebooksTabProps = {

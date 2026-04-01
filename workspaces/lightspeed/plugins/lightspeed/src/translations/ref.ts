@@ -105,7 +105,10 @@ export const lightspeedMessages = {
   // Permissions
   'permission.required.title': 'Missing permissions',
   'permission.required.description':
-    'To view lightspeed plugin, contact your administrator to give the <b>lightspeed.chat.read</b> and <b>lightspeed.chat.create</b> permissions.',
+    'To view <subject/>, contact your administrator to give the <permissions/> permission.',
+  'permission.subject.plugin': 'the Lightspeed plugin',
+  'permission.subject.notebooks': 'the Lightspeed notebooks',
+  'permission.notebooks.goBack': 'Go back',
 
   // Disclaimers
   'disclaimer.withValidation':

@@ -71,7 +71,7 @@ jest.mock('../../hooks/useConversations', () => ({
   }),
 }));
 
-jest.mock('../../hooks/useNotebookSessions', () => ({
+jest.mock('../../hooks/notebooks/useNotebookSessions', () => ({
   useNotebookSessions: jest.fn().mockReturnValue({
     data: [],
     refetch: jest.fn(),
@@ -180,7 +180,7 @@ describe('LightspeedChat', () => {
   const mockSetCurrentConversationId = jest.fn();
 
   beforeEach(() => {
-    mockUsePermission.mockReturnValue({ loading: true, allowed: true });
+    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
     mockUseConversations.mockReturnValue({
       data: [],
       isRefetching: false,
@@ -673,6 +673,59 @@ describe('LightspeedChat', () => {
         .getByText('Overlay')
         .closest('button, li, [role="menuitem"]');
       expect(overlayOption).toHaveClass('pf-m-selected');
+    });
+  });
+
+  describe('notebooks permission denied', () => {
+    beforeEach(() => {
+      mockUsePermission.mockImplementation((args: any) => {
+        if (args.permission.name === 'lightspeed.notebooks.use') {
+          return { loading: false, allowed: false };
+        }
+        return { loading: false, allowed: true };
+      });
+    });
+
+    it('should show permission required state when notebooks permission is denied', async () => {
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
+      await userEvent.click(notebooksTab);
+
+      await waitFor(() => {
+        expect(screen.getByText('Missing permissions')).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: 'Go back' }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should navigate back to chat tab when Go back is clicked', async () => {
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
+      await userEvent.click(notebooksTab);
+
+      await waitFor(() => {
+        expect(screen.getByText('Missing permissions')).toBeInTheDocument();
+      });
+
+      const goBackButton = screen.getByRole('button', { name: 'Go back' });
+      await userEvent.click(goBackButton);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText('Missing permissions'),
+        ).not.toBeInTheDocument();
+      });
     });
   });
 });

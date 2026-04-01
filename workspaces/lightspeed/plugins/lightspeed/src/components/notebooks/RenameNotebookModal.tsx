@@ -29,8 +29,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
-import { useRenameNotebook } from '../hooks/useRenameNotebook';
-import { useTranslation } from '../hooks/useTranslation';
+import { useRenameNotebook } from '../../hooks/notebooks/useRenameNotebook';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const useStyles = makeStyles(theme => ({
   dialogPaper: {

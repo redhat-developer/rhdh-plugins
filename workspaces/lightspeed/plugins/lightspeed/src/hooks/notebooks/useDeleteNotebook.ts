@@ -22,24 +22,19 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query';
 
-import { notebooksApiRef } from '../api/notebooksApi';
+import { notebooksApiRef } from '../../api/notebooksApi';
 
-type RenameNotebookPayload = {
-  sessionId: string;
-  name: string;
-};
-
-export const useRenameNotebook = (): UseMutationResult<
+export const useDeleteNotebook = (): UseMutationResult<
   void,
   unknown,
-  RenameNotebookPayload
+  string
 > => {
   const notebooksApi = useApi(notebooksApiRef);
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: RenameNotebookPayload) => {
-      await notebooksApi.renameSession(payload.sessionId, payload.name);
+    mutationFn: async (sessionId: string) => {
+      await notebooksApi.deleteSession(sessionId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notebooks', 'sessions'] });

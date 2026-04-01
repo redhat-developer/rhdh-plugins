@@ -70,6 +70,9 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'conversation.rename.placeholder': string;
     readonly 'permission.required.title': string;
     readonly 'permission.required.description': string;
+    readonly 'permission.subject.plugin': string;
+    readonly 'permission.subject.notebooks': string;
+    readonly 'permission.notebooks.goBack': string;
     readonly 'footer.accuracy.label': string;
     readonly 'common.cancel': string;
     readonly 'common.close': string;
