@@ -106,6 +106,7 @@ function extractUiSchema(mixedSchema: JSONSchema7): UiSchema<JsonObject> {
       processObject(getSchemaDefinition(curSchema.$ref, rootSchema), path);
     } else if (curSchema.properties) {
       processObjectProperties(curSchema.properties, path);
+      processLeafSchema(curSchema, path);
     } else if (curSchema.items) {
       processArraySchema(curSchema, path);
     } else {
