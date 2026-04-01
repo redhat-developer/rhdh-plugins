@@ -90,8 +90,8 @@ export const QuickstartButton = ({
       sx={{
         width: '100%',
         color: 'inherit',
-        ...style,
       }}
+      style={style}
       data-testid="quickstart-button"
       onClick={handleClick}
     >

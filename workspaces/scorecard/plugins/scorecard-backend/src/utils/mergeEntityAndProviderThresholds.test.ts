@@ -215,7 +215,12 @@ describe('mergeEntityAndProviderThresholds', () => {
           return {
             rules: [
               { key: 'low', expression: '<10', color: 'success.main' },
-              { key: 'high', expression: '10-20', color: '#FF0000' },
+              {
+                key: 'high',
+                expression: '10-20',
+                color: '#FF0000',
+                icon: 'scorecardWarningStatusIcon',
+              },
               { key: 'error', expression: '>20' },
             ],
           };
@@ -237,7 +242,12 @@ describe('mergeEntityAndProviderThresholds', () => {
       expect(result).toEqual({
         rules: [
           { key: 'low', expression: '<10', color: 'success.main' },
-          { key: 'high', expression: '10-60', color: '#FF0000' },
+          {
+            key: 'high',
+            expression: '10-60',
+            color: '#FF0000',
+            icon: 'scorecardWarningStatusIcon',
+          },
           { key: 'error', expression: '>60' },
         ],
       });

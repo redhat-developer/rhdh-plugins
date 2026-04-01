@@ -8,6 +8,7 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { FieldExtensionComponent } from '@backstage/plugin-scaffolder-react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
+import { SvgIconProps } from '@material-ui/core/SvgIcon';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
@@ -22,6 +23,9 @@ export type TFuncX2A = TranslationFunction<typeof x2aPluginTranslationRef.T>;
 export const useX2ATranslation: () => {
     t: TFuncX2A;
 };
+
+// @public
+export const X2AIcon: (props: SvgIconProps) => JSX_2.Element;
 
 // @public (undocumented)
 export const X2APage: () => JSX_2.Element;
@@ -38,6 +42,7 @@ readonly "table.columns.status": string;
 readonly "table.columns.createdAt": string;
 readonly "table.columns.sourceRepo": string;
 readonly "table.columns.targetRepo": string;
+readonly "table.columns.statusSortDisabledTooltip": string;
 readonly "table.actions.deleteProject": string;
 readonly "table.actions.retriggerInit": string;
 readonly "table.actions.expandAll": string;

@@ -16,11 +16,19 @@
 
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
 
 import Scorecard from '../Scorecard';
+
+jest.mock('@backstage/core-plugin-api', () => ({
+  ...jest.requireActual('@backstage/core-plugin-api'),
+  useApp: () => ({
+    getSystemIcon: (key: string) => {
+      return function MockSystemIcon() {
+        return <span data-testid={`system-icon-${key}`} />;
+      };
+    },
+  }),
+}));
 
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: any) => (
@@ -78,7 +86,7 @@ describe('Scorecard Component', () => {
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
     statusColor: 'success.main',
-    StatusIcon: CheckCircleOutlineIcon,
+    statusIcon: 'scorecardSuccessStatusIcon',
     value: 8,
     thresholds: {
       status: 'success' as const,
@@ -137,10 +145,11 @@ describe('Scorecard Component', () => {
       </TestWrapper>,
     );
 
-    const iconElement = container.querySelector(
-      '[data-testid="CheckCircleOutlineIcon"]',
-    );
-    expect(iconElement).toBeInTheDocument();
+    expect(
+      container.querySelector(
+        '[data-testid="system-icon-scorecardSuccessStatusIcon"]',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('should handle zero value correctly', () => {
@@ -170,7 +179,7 @@ describe('Scorecard Component', () => {
     const warningProps = {
       ...defaultProps,
       statusColor: 'warning.main',
-      StatusIcon: WarningAmberIcon,
+      statusIcon: 'scorecardWarningStatusIcon',
       value: 25,
     };
 
@@ -191,7 +200,7 @@ describe('Scorecard Component', () => {
     const errorProps = {
       ...defaultProps,
       statusColor: 'error.main',
-      StatusIcon: DangerousOutlinedIcon,
+      statusIcon: 'scorecardErrorStatusIcon',
       value: 75,
     };
 
@@ -212,7 +221,7 @@ describe('Scorecard Component', () => {
     const customProps = {
       ...defaultProps,
       statusColor: '#FF5733',
-      StatusIcon: CheckCircleOutlineIcon,
+      statusIcon: 'scorecardSuccessStatusIcon',
       value: 4,
       thresholds: {
         ...defaultProps.thresholds,

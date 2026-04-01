@@ -24,7 +24,7 @@
 /workspaces/global-floating-action-button           @redhat-developer/rhdh-ui @debsmita1 @divyanshiGupta
 /workspaces/global-header                           @redhat-developer/rhdh-ui @ciiay @divyanshiGupta
 /workspaces/homepage                                @redhat-developer/rhdh-ui @christoph-jerolimov @eswaraiahsapram
-/workspaces/lightspeed                              @redhat-developer/rhdh-ui @karthikjeeyar @rohitkrai03   @yangcao77
+/workspaces/lightspeed                              @redhat-developer/rhdh-ui @redhat-developer/rhdh-ai @karthikjeeyar @rohitkrai03 @yangcao77
 /workspaces/mcp-integrations                        @johnmcollier @gabemontero @thepetk @redhat-developer/rhdh-ai
 /workspaces/openshift-image-registry                @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
 /workspaces/orchestrator                            @lholmquist @lokanandaprabhu @redhat-developer/rhdh-plugins @karthikjeeyar @christoph-jerolimov
@@ -36,4 +36,4 @@
 /workspaces/translations                            @redhat-developer/rhdh-ui @ciiay @debsmita1 @karthikjeeyar
 /workspaces/konflux                                 @rrosatti @sahil143 @testcara @rakshett
 /workspaces/x2a                                     @mareklibra @elai-shalev @eloycoto
-/workspaces/dcm                                     @asmasarw @jkilzi 
+/workspaces/dcm                                     @asmasarw @jkilzi @mareklibra

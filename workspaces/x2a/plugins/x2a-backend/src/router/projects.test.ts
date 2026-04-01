@@ -22,6 +22,8 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import {
   createApp,
   createDatabase,
+  createService,
+  createTestJob,
   LONG_TEST_TIMEOUT,
   mockInputProject,
   nonExistentId,
@@ -496,6 +498,111 @@ describe('createRouter – projects', () => {
           .get(`/projects/${groupProjectId}`)
           .send();
         expect(getAfterDelete.status).toBe(404);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should sort projects by status with correct pagination - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+        const x2aDatabase = createService(client);
+
+        // Create 3 projects that will get different calculated statuses
+        const projectA = await request(app)
+          .post('/projects')
+          .send({
+            ...mockInputProject,
+            name: 'Project Alpha',
+            abbreviation: 'PA',
+          });
+        expect(projectA.status).toBe(200);
+
+        const projectB = await request(app)
+          .post('/projects')
+          .send({
+            ...mockInputProject,
+            name: 'Project Beta',
+            abbreviation: 'PB',
+          });
+        expect(projectB.status).toBe(200);
+
+        const projectC = await request(app)
+          .post('/projects')
+          .send({
+            ...mockInputProject,
+            name: 'Project Charlie',
+            abbreviation: 'PC',
+          });
+        expect(projectC.status).toBe(200);
+
+        // Project Alpha: no init job → status.state = 'created'
+        // Project Beta: init job success → status.state = 'initialized'
+        // Project Charlie: init job error → status.state = 'failed'
+        await createTestJob(x2aDatabase, {
+          projectId: projectB.body.id,
+          moduleId: null,
+          phase: 'init',
+          status: 'success',
+        });
+        await createTestJob(x2aDatabase, {
+          projectId: projectC.body.id,
+          moduleId: null,
+          phase: 'init',
+          status: 'error',
+        });
+
+        // Semantic ascending: created(0) < initialized(2) < failed(4)
+        const responseAsc = await request(app)
+          .get('/projects?sort=status&order=asc')
+          .send();
+
+        expect(responseAsc.status).toBe(200);
+        expect(responseAsc.body.totalCount).toBe(3);
+        const statesAsc = responseAsc.body.items.map(
+          (p: { status?: { state: string } }) => p.status?.state,
+        );
+        expect(statesAsc).toEqual(['created', 'initialized', 'failed']);
+
+        // Semantic descending: failed(4) > initialized(2) > created(0)
+        const responseDesc = await request(app)
+          .get('/projects?sort=status&order=desc')
+          .send();
+
+        expect(responseDesc.status).toBe(200);
+        const statesDesc = responseDesc.body.items.map(
+          (p: { status?: { state: string } }) => p.status?.state,
+        );
+        expect(statesDesc).toEqual(['failed', 'initialized', 'created']);
+
+        // Pagination: page 0 with pageSize 2
+        const page0 = await request(app)
+          .get('/projects?sort=status&order=asc&pageSize=2&page=0')
+          .send();
+
+        expect(page0.status).toBe(200);
+        expect(page0.body.totalCount).toBe(3);
+        expect(page0.body.items).toHaveLength(2);
+        expect(
+          page0.body.items.map(
+            (p: { status?: { state: string } }) => p.status?.state,
+          ),
+        ).toEqual(['created', 'initialized']);
+
+        // Pagination: page 1 with pageSize 2
+        const page1 = await request(app)
+          .get('/projects?sort=status&order=asc&pageSize=2&page=1')
+          .send();
+
+        expect(page1.status).toBe(200);
+        expect(page1.body.totalCount).toBe(3);
+        expect(page1.body.items).toHaveLength(1);
+        expect(
+          page1.body.items.map(
+            (p: { status?: { state: string } }) => p.status?.state,
+          ),
+        ).toEqual(['failed']);
       },
       LONG_TEST_TIMEOUT,
     );

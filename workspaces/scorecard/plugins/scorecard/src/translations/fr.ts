@@ -103,7 +103,7 @@ const scorecardTranslationFr = createTranslationMessages({
     'entitiesPage.entitiesTable.title': 'Entités',
     'entitiesPage.entitiesTable.unavailable': 'Non disponible',
     'entitiesPage.entitiesTable.titleWithCount': 'Entités ({{count}})',
-    'entitiesPage.entitiesTable.header.metric': 'Métrique',
+    'entitiesPage.entitiesTable.header.status': 'Statut',
     'entitiesPage.entitiesTable.header.value': 'Valeur',
     'entitiesPage.entitiesTable.header.entity': 'Entité',
     'entitiesPage.entitiesTable.header.owner': 'Propriétaire',

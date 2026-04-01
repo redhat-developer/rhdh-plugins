@@ -117,6 +117,9 @@ export interface GitRepoAuth {
     token: string;
 }
 
+// @public
+export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
+
 // @public (undocumented)
 export interface Job {
     artifacts?: Array<Artifact>;
@@ -210,6 +213,9 @@ export interface Project {
     targetRepoBranch: string;
     targetRepoUrl: string;
 }
+
+// @public
+export const PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD = 500;
 
 // @public (undocumented)
 export type ProjectsGet = {

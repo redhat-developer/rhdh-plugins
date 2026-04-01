@@ -1,9 +1,3 @@
-proxy:
-  endpoints:
-    '/cost-management/v1':
-      target: https://console.redhat.com/api/cost-management/v1
-      allowedHeaders: ['Authorization']
-      credentials: dangerously-allow-unauthenticated
 costManagement:
   clientId: ${CM_CLIENT_ID}
   clientSecret: ${CM_CLIENT_SECRET}

@@ -1,9 +1,33 @@
-The Cost Management plugin protects its backend endpoints with the builtin permission mechanism and combines it with the RBAC plugin.
+The Cost Management plugin protects its backend endpoints with the builtin permission mechanism and combines it with the RBAC plugin. All permission checks are enforced **server-side** within the backend plugin's secure proxy — the frontend never receives data the user is not authorized to see, and RBAC filters cannot be bypassed by modifying client requests.
 
 The Cost Management plugin consists of two main sections, each with its own set of permissions:
 
 - **Optimizations**: Uses permissions starting with `ros.`
 - **OpenShift**: Uses permissions starting with `cost.`
+
+### How it works
+
+When a frontend request arrives at `/api/cost-management/proxy/*`, the backend:
+
+1. Authenticates the user via Backstage `httpAuth`
+2. Evaluates the user's permissions against the `ros.*` or `cost.*` policy
+3. Determines the authorized list of clusters and projects
+4. Strips any client-supplied cluster/project filter parameters
+5. Injects the server-authorized filters before forwarding to the upstream API
+6. Returns only the data the user is permitted to see
+
+This means granting `ros/demolab` only allows seeing data for the `demolab` cluster — the user cannot modify query parameters to access other clusters.
+
+### Apply Recommendation authorization
+
+When a user clicks "Apply recommendation", the frontend sends the request to the backend's `/api/cost-management/apply-recommendation` endpoint. The backend:
+
+1. Validates the `resourceType` against a server-side allowlist (`deployment`, `replicaset`, `daemonset`, `statefulset`, `deploymentconfig`, `replicationcontroller`)
+2. Checks the `ros.apply` permission — the user must be explicitly granted this permission to execute workflows
+3. Forwards the validated request to the Orchestrator plugin using service-to-service authentication
+4. Audit logs the action (user, cluster, namespace, workload, workflow ID, outcome)
+
+A confirmation dialog on the frontend also prevents accidental clicks.
 
 ## 1. Optimizations Section
 
@@ -14,10 +38,11 @@ The Optimizations section allows users to view resource usage trends and optimiz
 | Name                              | Resource Type | Policy | Description                                                                                                                |
 | --------------------------------- | ------------- | ------ | -------------------------------------------------------------------------------------------------------------------------- |
 | ros.plugin                        | -             | read   | Allows the user to access all optimization data in the Cost Management plugin                                              |
-| ros.[CLUSTER_NAME]                | -             | read   | Allows the user to access optimization data for a specific Cluster in the Cost Management plugin                           |
-| ros.[CLUSTER_NAME].[PROJECT_NAME] | -             | read   | Allows the user to access optimization data for a specific Project within a specific Cluster in the Cost Management plugin |
+| ros/[CLUSTER_NAME]                | -             | read   | Allows the user to access optimization data for a specific Cluster in the Cost Management plugin                           |
+| ros/[CLUSTER_NAME]/[PROJECT_NAME] | -             | read   | Allows the user to access optimization data for a specific Project within a specific Cluster in the Cost Management plugin |
+| ros.apply                         | -             | update | Allows the user to apply optimization recommendations via workflow execution                                               |
 
-The user is permitted to do an action if either the generic permission or the specific one allows it. In other words, it is not possible to grant generic ros.plugin and then selectively disable it for a specific cluster via ros.[CLUSTER_NAME] with deny.
+The user is permitted to do an action if either the generic permission or the specific one allows it. In other words, it is not possible to grant generic ros.plugin and then selectively disable it for a specific cluster via ros/[CLUSTER_NAME] with deny.
 
 ## 2. OpenShift Section
 
@@ -28,10 +53,10 @@ The OpenShift section displays cost tracking for OpenShift clusters with flexibl
 | Name                               | Resource Type | Policy | Description                                                                                                                  |
 | ---------------------------------- | ------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------- |
 | cost.plugin                        | -             | read   | Allows the user to access all OpenShift cost data in the Cost Management plugin                                              |
-| cost.[CLUSTER_NAME]                | -             | read   | Allows the user to access OpenShift cost data for a specific Cluster in the Cost Management plugin                           |
-| cost.[CLUSTER_NAME].[PROJECT_NAME] | -             | read   | Allows the user to access OpenShift cost data for a specific Project within a specific Cluster in the Cost Management plugin |
+| cost/[CLUSTER_NAME]                | -             | read   | Allows the user to access OpenShift cost data for a specific Cluster in the Cost Management plugin                           |
+| cost/[CLUSTER_NAME]/[PROJECT_NAME] | -             | read   | Allows the user to access OpenShift cost data for a specific Project within a specific Cluster in the Cost Management plugin |
 
-The user is permitted to do an action if either the generic permission or the specific one allows it. In other words, it is not possible to grant generic cost.plugin and then selectively disable it for a specific cluster via cost.[CLUSTER_NAME] with deny.
+The user is permitted to do an action if either the generic permission or the specific one allows it. In other words, it is not possible to grant generic cost.plugin and then selectively disable it for a specific cluster via cost/[CLUSTER_NAME] with deny.
 
 ## Defining Policy File
 
@@ -48,14 +73,19 @@ p, role:default/rosUser, ros.plugin, read, deny
 ####
 # Optimizations Section (ros.) - Cluster RBAC permissions
 ####
-p, role:default/rosUser, ros.OpenShift on AWS, read, allow
-p, role:default/rosUser, ros.demolab, read, allow
+p, role:default/rosUser, ros/OpenShift on AWS, read, allow
+p, role:default/rosUser, ros/demolab, read, allow
 
 ####
 # Optimizations Section (ros.) - Cluster+Project RBAC permissions
 ####
-p, role:default/rosUser, ros.demolab.thanos, read, allow
-p, role:default/rosUser, ros.OpenShift on Azure.mobile, read, allow
+p, role:default/rosUser, ros/demolab/thanos, read, allow
+p, role:default/rosUser, ros/OpenShift on Azure/mobile, read, allow
+
+####
+# Optimizations Section (ros.) - Apply Recommendation permission
+####
+p, role:default/rosUser, ros.apply, update, allow
 
 ####
 # OpenShift Section (cost.) - Generic permissions
@@ -65,14 +95,14 @@ p, role:default/costUser, cost.plugin, read, deny
 ####
 # OpenShift Section (cost.) - Cluster RBAC permissions
 ####
-p, role:default/costUser, cost.OpenShift on AWS, read, allow
-p, role:default/costUser, cost.demolab, read, allow
+p, role:default/costUser, cost/OpenShift on AWS, read, allow
+p, role:default/costUser, cost/demolab, read, allow
 
 ####
 # OpenShift Section (cost.) - Cluster+Project RBAC permissions
 ####
-p, role:default/costUser, cost.demolab.thanos, read, allow
-p, role:default/costUser, cost.OpenShift on Azure.mobile, read, allow
+p, role:default/costUser, cost/demolab/thanos, read, allow
+p, role:default/costUser, cost/OpenShift on Azure/mobile, read, allow
 
 g, user:default/preeti.exploring.life, role:default/rosUser
 g, user:default/preeti.exploring.life, role:default/costUser
@@ -94,29 +124,43 @@ p, role:default/rosUser, ros.plugin, read, allow
 g, user:default/test_user_1, role:default/rosUser
 ```
 
-#### ros.[CLUSTER_NAME]
+#### ros/[CLUSTER_NAME]
 
-Since the `test_user_2` user has the `default/rosClusterUser` role, which has `ros.OpenShift on AWS` permission, it can:
+Since the `test_user_2` user has the `default/rosClusterUser` role, which has `ros/OpenShift on AWS` permission, it can:
 
 - See the list of records for `OpenShift on AWS` cluster for the service account which is specified in the [app-config file](../app-config.yaml) file using `clientId` and `clientSecret` and optimization recommendations for the same.
 
 ```csv
-p, role:default/rosClusterUser, ros.OpenShift on AWS, read, allow
+p, role:default/rosClusterUser, ros/OpenShift on AWS, read, allow
 
 g, user:default/test_user_2, role:default/rosClusterUser
 ```
 
-#### ros.[CLUSTER_NAME].[PROJECT_NAME]
+#### ros/[CLUSTER_NAME]/[PROJECT_NAME]
 
-Since the `test_user_3` user has the `default/rosClusterProjectUser` role, which has `ros.demolab.thanos` permission, it can:
+Since the `test_user_3` user has the `default/rosClusterProjectUser` role, which has `ros/demolab/thanos` permission, it can:
 
 - See the list of records for `thanos` project under `demolab` cluster for the service account which is specified in the [app-config file](../app-config.yaml) file using `clientId` and `clientSecret` and optimization recommendations for the same.
 
 ```csv
-p, role:default/rosClusterProjectUser, ros.demolab.thanos, read, allow
+p, role:default/rosClusterProjectUser, ros/demolab/thanos, read, allow
 
 g, user:default/test_user_3, role:default/rosClusterProjectUser
 ```
+
+#### ros.apply Permission
+
+Since the `test_user_7` user has the `default/rosApplyUser` role, which has `ros.apply` permission, it can:
+
+- Execute the Apply Recommendation workflow to modify workload resource configurations
+
+```csv
+p, role:default/rosApplyUser, ros.apply, update, allow
+
+g, user:default/test_user_7, role:default/rosApplyUser
+```
+
+> **Note:** `ros.apply` is separate from the read permissions. A user can have read access to optimization data without being able to apply recommendations, and vice versa. Typically both `ros.plugin` (or cluster-specific read) and `ros.apply` are granted together.
 
 ### OpenShift Cost Section
 
@@ -132,31 +176,70 @@ p, role:default/costUser, cost.plugin, read, allow
 g, user:default/test_user_4, role:default/costUser
 ```
 
-#### cost.[CLUSTER_NAME]
+#### cost/[CLUSTER_NAME]
 
-Since the `test_user_5` user has the `default/costClusterUser` role, which has `cost.OpenShift on AWS` permission, it can:
+Since the `test_user_5` user has the `default/costClusterUser` role, which has `cost/OpenShift on AWS` permission, it can:
 
 - See the list of records for `OpenShift on AWS` cluster for the service account which is specified in the [app-config file](../app-config.yaml) file using `clientId` and `clientSecret` and cost data for the same.
 
 ```csv
-p, role:default/costClusterUser, cost.OpenShift on AWS, read, allow
+p, role:default/costClusterUser, cost/OpenShift on AWS, read, allow
 
 g, user:default/test_user_5, role:default/costClusterUser
 ```
 
-#### cost.[CLUSTER_NAME].[PROJECT_NAME]
+#### cost/[CLUSTER_NAME]/[PROJECT_NAME]
 
-Since the `test_user_6` user has the `default/costClusterProjectUser` role, which has `cost.demolab.thanos` permission, it can:
+Since the `test_user_6` user has the `default/costClusterProjectUser` role, which has `cost/demolab/thanos` permission, it can:
 
 - See the list of records for `thanos` project under `demolab` cluster for the service account which is specified in the [app-config file](../app-config.yaml) file using `clientId` and `clientSecret` and cost data for the same.
 
 ```csv
-p, role:default/costClusterProjectUser, cost.demolab.thanos, read, allow
+p, role:default/costClusterProjectUser, cost/demolab/thanos, read, allow
 
 g, user:default/test_user_6, role:default/costClusterProjectUser
 ```
 
 See https://casbin.org/docs/rbac for more information about casbin rules.
+
+## Migration Guide: Permission Name Separator Change
+
+> **Breaking change**: Cluster-specific and project-specific permission names now use `/` (slash) as the separator instead of `.` (dot).
+
+Previous versions used a dot separator (e.g., `ros.demolab.thanos`), which caused ambiguity when cluster names themselves contained dots (e.g., `ros.my.cluster.project` — is the cluster `my.cluster` and the project `project`, or the cluster `my` and the project `cluster.project`?).
+
+The `/` separator eliminates this ambiguity: `ros/my.cluster/project` is unambiguous.
+
+### What to update
+
+Replace all dot-separated cluster/project permission names in your RBAC policy CSV:
+
+| Old format (dot separator)       | New format (slash separator)     |
+| -------------------------------- | -------------------------------- |
+| `ros.CLUSTER_NAME`               | `ros/CLUSTER_NAME`               |
+| `ros.CLUSTER_NAME.PROJECT_NAME`  | `ros/CLUSTER_NAME/PROJECT_NAME`  |
+| `cost.CLUSTER_NAME`              | `cost/CLUSTER_NAME`              |
+| `cost.CLUSTER_NAME.PROJECT_NAME` | `cost/CLUSTER_NAME/PROJECT_NAME` |
+
+> **Note**: The generic `ros.plugin` and `cost.plugin` permissions are unchanged — only cluster/project-specific permissions use the new format.
+
+### Example migration
+
+**Before:**
+
+```csv
+p, role:default/rosUser, ros.demolab, read, allow
+p, role:default/rosUser, ros.demolab.thanos, read, allow
+p, role:default/costUser, cost.OpenShift on AWS, read, allow
+```
+
+**After:**
+
+```csv
+p, role:default/rosUser, ros/demolab, read, allow
+p, role:default/rosUser, ros/demolab/thanos, read, allow
+p, role:default/costUser, cost/OpenShift on AWS, read, allow
+```
 
 ## Enable permissions
 

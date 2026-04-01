@@ -40,7 +40,7 @@ jest.mock('../Scorecard', () => {
     value,
     loading,
     statusColor,
-    StatusIcon,
+    statusIcon,
     thresholds,
     isThresholdError,
     thresholdError,
@@ -63,7 +63,7 @@ jest.mock('../Scorecard', () => {
         <p>{description}</p>
         <span>Value: {value}</span>
         <span>Status: {statusColor}</span>
-        {StatusIcon && <span data-testid="status-icon">Status Icon</span>}
+        {statusIcon && <span data-testid="status-icon">Status Icon</span>}
         {thresholds && <span data-testid="thresholds">Thresholds</span>}
         {isThresholdError && (
           <span data-testid="threshold-error">

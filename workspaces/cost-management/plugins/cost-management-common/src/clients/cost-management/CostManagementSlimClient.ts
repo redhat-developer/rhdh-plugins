@@ -24,20 +24,18 @@ import type {
   DownloadCostManagementRequest,
 } from './types';
 import type { CostManagementSlimApi } from './CostManagementSlimApi';
-import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
-import { AuthorizeResult } from '@backstage/plugin-permission-common';
-import type {
-  GetCostManagementAccessResponse,
-  GetTokenResponse,
-} from '../optimizations/types';
-
-/** @public */
+/**
+ * Client for Cost Management data.
+ *
+ * In the frontend, requests are routed through the backend plugin's secure
+ * proxy (`/api/cost-management/proxy/...`), which keeps the SSO token
+ * server-side and enforces RBAC before forwarding to the Cost Management API.
+ *
+ * @public
+ */
 export class CostManagementSlimClient implements CostManagementSlimApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
-  private token?: string;
-  private accessCache?: GetCostManagementAccessResponse;
-  private accessCacheExpiry?: number;
 
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi }) {
     this.discoveryApi = options.discoveryApi;
@@ -47,81 +45,47 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   public async getCostManagementReport(
     request: GetCostManagementRequest,
   ): Promise<TypedResponse<CostManagementReport>> {
-    // Ensure access and token
-    await this.ensureAccessAndToken();
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+    const uri = '/proxy/reports/openshift/costs/';
 
-    // Get the proxy base URL for cost-management API
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    const uri = '/cost-management/v1/reports/openshift/costs/';
-
-    // Build query params from the original request
     const queryParams = this.buildCostManagementQueryParams(request);
-
-    // Add RBAC filters
-    await this.appendRBACFilters(queryParams);
 
     const queryString = queryParams.toString();
     const queryPart = queryString ? `?${queryString}` : '';
     const url = `${baseUrl}${uri}${queryPart}`;
 
-    return await this.fetchWithTokenAndRetry<CostManagementReport>(url);
+    return await this.fetchViaBackendProxy<CostManagementReport>(url);
   }
 
   public async downloadCostManagementReport(
     request: DownloadCostManagementRequest,
   ): Promise<void> {
-    // Ensure access and token
-    await this.ensureAccessAndToken();
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+    const uri = '/proxy/reports/openshift/costs/';
 
-    // Get the proxy base URL for cost-management API
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    const uri = '/cost-management/v1/reports/openshift/costs/';
-
-    // Build query params, setting limit to 0 to get all results
     const downloadRequest: GetCostManagementRequest = {
       query: {
         ...request.query,
-        'filter[limit]': 0, // 0 means no limit - get all results
+        'filter[limit]': 0,
       },
     };
-    // Remove offset for download
     delete downloadRequest.query['filter[offset]'];
 
     const queryParams = this.buildCostManagementQueryParams(downloadRequest);
-
-    // Add RBAC filters
-    await this.appendRBACFilters(queryParams);
 
     const queryString = queryParams.toString();
     const queryPart = queryString ? `?${queryString}` : '';
     const url = `${baseUrl}${uri}${queryPart}`;
 
-    // Determine content type based on format
     const acceptHeader =
       request.format === 'csv' ? 'text/csv' : 'application/json';
 
-    // Fetch with appropriate Accept header
-    let response = await this.fetchApi.fetch(url, {
+    const response = await this.fetchApi.fetch(url, {
       headers: {
         Accept: acceptHeader,
-        Authorization: `Bearer ${this.token}`,
       },
       method: 'GET',
     });
-
-    // Handle 401 errors by refreshing token and retrying
-    if (!response.ok && response.status === 401) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
-
-      response = await this.fetchApi.fetch(url, {
-        headers: {
-          Accept: acceptHeader,
-          Authorization: `Bearer ${this.token}`,
-        },
-        method: 'GET',
-      });
-    }
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -447,9 +411,9 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   ): Promise<
     TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
   > {
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
     const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
-    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-nodes/${searchParam}`;
+    const url = `${baseUrl}/proxy/resource-types/openshift-nodes/${searchParam}`;
 
     return await this.fetchResourceType(url);
   }
@@ -462,15 +426,10 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   public async getOpenShiftTags(
     timeScopeValue: number = -1,
   ): Promise<TypedResponse<{ data: string[]; meta?: any; links?: any }>> {
-    // Ensure access and token
-    await this.ensureAccessAndToken();
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+    const url = `${baseUrl}/proxy/tags/openshift/?filter[time_scope_value]=${timeScopeValue}&key_only=true&limit=1000`;
 
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    const url = await this.buildUrlWithRBACFilters(
-      `${baseUrl}/cost-management/v1/tags/openshift/?filter[time_scope_value]=${timeScopeValue}&key_only=true&limit=1000`,
-    );
-
-    return await this.fetchWithTokenAndRetry<{
+    return await this.fetchViaBackendProxy<{
       data: string[];
       meta?: any;
       links?: any;
@@ -493,17 +452,12 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   > {
-    // Ensure access and token
-    await this.ensureAccessAndToken();
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+    const url = `${baseUrl}/proxy/tags/openshift/?filter[key]=${encodeURIComponent(
+      tagKey,
+    )}&filter[time_scope_value]=${timeScopeValue}`;
 
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    const url = await this.buildUrlWithRBACFilters(
-      `${baseUrl}/cost-management/v1/tags/openshift/?filter[key]=${encodeURIComponent(
-        tagKey,
-      )}&filter[time_scope_value]=${timeScopeValue}`,
-    );
-
-    return await this.fetchWithTokenAndRetry<{
+    return await this.fetchViaBackendProxy<{
       data: Array<{ key: string; values: string[]; enabled: boolean }>;
       meta?: any;
       links?: any;
@@ -517,13 +471,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   > {
-    // Get or refresh token
-    if (!this.token) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
-    }
-
-    return await this.fetchWithTokenAndRetry<{
+    return await this.fetchViaBackendProxy<{
       data: Array<{ value: string; cluster_alias: string }>;
       meta?: any;
       links?: any;
@@ -531,76 +479,14 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   }
 
   /**
-   * Ensures user has access and token is available
-   * @throws UnauthorizedError if access is denied
-   */
-  private async ensureAccessAndToken(): Promise<void> {
-    const accessAPIResponse = await this.getCostManagementAccess();
-
-    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
-      throw new UnauthorizedError();
-    }
-
-    if (!this.token) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
-    }
-  }
-
-  /**
-   * Appends RBAC cluster and project filters to URLSearchParams
-   */
-  private async appendRBACFilters(queryParams: URLSearchParams): Promise<void> {
-    const accessAPIResponse = await this.getCostManagementAccess();
-
-    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
-    if (authorizedClusters.length > 0) {
-      authorizedClusters.forEach(clusterName => {
-        queryParams.append('filter[exact:cluster]', clusterName);
-      });
-    }
-
-    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
-    if (authorizedProjects.length > 0) {
-      authorizedProjects.forEach(projectName => {
-        queryParams.append('filter[exact:project]', projectName);
-      });
-    }
-  }
-
-  /**
-   * Builds a URL with RBAC filters appended
-   */
-  private async buildUrlWithRBACFilters(baseUrl: string): Promise<string> {
-    const accessAPIResponse = await this.getCostManagementAccess();
-    let url = baseUrl;
-
-    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
-    if (authorizedClusters.length > 0) {
-      authorizedClusters.forEach(clusterName => {
-        url += `&filter[exact:cluster]=${encodeURIComponent(clusterName)}`;
-      });
-    }
-
-    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
-    if (authorizedProjects.length > 0) {
-      authorizedProjects.forEach(projectName => {
-        url += `&filter[exact:project]=${encodeURIComponent(projectName)}`;
-      });
-    }
-
-    return url;
-  }
-
-  /**
-   * Builds resource type URL with search and limit parameters
+   * Builds resource type URL routed through the backend secure proxy
    */
   private async buildResourceTypeUrl(
     resourceType: string,
     search?: string,
     limit?: number,
   ): Promise<string> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
 
     const params = new URLSearchParams();
     if (search) {
@@ -612,11 +498,12 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     const queryString = params.toString();
     const queryPart = queryString ? `?${queryString}` : '';
 
-    return `${baseUrl}/cost-management/v1/resource-types/${resourceType}/${queryPart}`;
+    return `${baseUrl}/proxy/resource-types/${resourceType}/${queryPart}`;
   }
 
   /**
-   * Fetches with externally provided token (for backend use)
+   * Fetches with externally provided token (for backend use).
+   * This path bypasses the secure proxy since it's already server-side.
    */
   private async fetchWithExternalToken<T>(
     url: string,
@@ -642,35 +529,19 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   }
 
   /**
-   * Fetches a URL with token authentication, handles 401 errors by refreshing token and retrying
-   * @param url - The URL to fetch
-   * @returns TypedResponse with the response data
+   * Fetches a URL via the backend secure proxy. No Authorization header
+   * is sent; the backend injects the SSO token and RBAC filters
+   * server-side. Authentication is via the Backstage session cookie.
    */
-  private async fetchWithTokenAndRetry<T>(
+  private async fetchViaBackendProxy<T>(
     url: string,
   ): Promise<TypedResponse<T>> {
-    // Call the API via backend proxy
-    let response = await this.fetchApi.fetch(url, {
+    const response = await this.fetchApi.fetch(url, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.token}`,
       },
       method: 'GET',
     });
-
-    // Handle 401 errors by refreshing token and retrying
-    if (!response.ok && response.status === 401) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
-
-      response = await this.fetchApi.fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.token}`,
-        },
-        method: 'GET',
-      });
-    }
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -683,39 +554,5 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
         return data;
       },
     };
-  }
-
-  private async getCostManagementAccess(): Promise<GetCostManagementAccessResponse> {
-    const now = Date.now();
-    const CACHE_TTL = 15 * 60 * 1000; // 15 minutes - matches backend cache
-
-    // Return cached access response if still valid
-    if (
-      this.accessCache &&
-      this.accessCacheExpiry &&
-      this.accessCacheExpiry > now
-    ) {
-      return this.accessCache;
-    }
-
-    // Fetch fresh access data
-    const baseUrl = await this.discoveryApi.getBaseUrl(`${pluginId}`);
-    const response = await this.fetchApi.fetch(
-      `${baseUrl}/access/cost-management`,
-    );
-    const data = (await response.json()) as GetCostManagementAccessResponse;
-
-    // Cache the response
-    this.accessCache = data;
-    this.accessCacheExpiry = now + CACHE_TTL;
-
-    return data;
-  }
-
-  private async getNewToken(): Promise<GetTokenResponse> {
-    const baseUrl = await this.discoveryApi.getBaseUrl(`${pluginId}`);
-    const response = await this.fetchApi.fetch(`${baseUrl}/token`);
-    const data = (await response.json()) as GetTokenResponse;
-    return data;
   }
 }

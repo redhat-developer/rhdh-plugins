@@ -8,19 +8,14 @@ import type { ComponentType } from 'react';
 import { CSSProperties } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { MenuItemProps } from '@mui/material/MenuItem';
-import { TranslationRef } from '@backstage/core-plugin-api/alpha';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export const ApplicationLauncherDropdown: () => JSX_2.Element;
 
 // @public
-export const CompanyLogo: ({
-  logo,
-  width,
-  height,
-  to,
-}: CompanyLogoProps) => JSX_2.Element;
+export const CompanyLogo: (input: CompanyLogoProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface CompanyLogoProps {
@@ -44,7 +39,7 @@ export interface CreateDropdownProps {
 export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[];
 
 // @public (undocumented)
-export const Divider: ({ layout }: DividerProps) => JSX_2.Element;
+export const Divider: (input: DividerProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface DividerProps {
@@ -129,19 +124,7 @@ export const globalHeaderTranslationRef: TranslationRef<
 export const globalHeaderTranslations: TranslationResource<'plugin.global-header'>;
 
 // @public (undocumented)
-export const HeaderButton: ({
-  title,
-  tooltip,
-  color,
-  size,
-  variant,
-  ariaLabel,
-  startIcon,
-  endIcon,
-  externalLinkIcon,
-  to,
-  layout,
-}: HeaderButtonProps) => JSX_2.Element;
+export const HeaderButton: (input: HeaderButtonProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface HeaderButtonProps {
@@ -170,24 +153,10 @@ export interface HeaderButtonProps {
 }
 
 // @public (undocumented)
-export const HeaderIcon: ({
-  icon,
-  size,
-  layout,
-}: HeaderIconProps) => JSX_2.Element | null;
+export const HeaderIcon: (input: HeaderIconProps) => JSX_2.Element | null;
 
 // @public (undocumented)
-export const HeaderIconButton: ({
-  title,
-  titleKey,
-  icon,
-  tooltip,
-  color,
-  size,
-  ariaLabel,
-  to,
-  layout,
-}: HeaderIconButtonProps) => JSX_2.Element;
+export const HeaderIconButton: (input: HeaderIconButtonProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface HeaderIconButtonProps {
@@ -312,15 +281,9 @@ export interface NotificationBannerProps {
 }
 
 // @public (undocumented)
-export const NotificationButton: ({
-  title,
-  tooltip,
-  color,
-  size,
-  badgeColor,
-  to,
-  layout,
-}: NotificationButtonProps) => JSX_2.Element | null;
+export const NotificationButton: (
+  input: NotificationButtonProps,
+) => JSX_2.Element | null;
 
 // @public (undocumented)
 export interface NotificationButtonProps {
@@ -386,11 +349,7 @@ export type SoftwareTemplatesSectionProps = {
 };
 
 // @public
-export const Spacer: ({
-  growFactor,
-  minWidth,
-  layout,
-}: SpacerProps) => JSX_2.Element;
+export const Spacer: (input: SpacerProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface SpacerProps {

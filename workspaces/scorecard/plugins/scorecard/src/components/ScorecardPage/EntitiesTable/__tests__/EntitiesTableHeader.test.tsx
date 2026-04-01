@@ -43,7 +43,7 @@ describe('EntitiesTableHeader', () => {
     );
 
     expect(
-      screen.getByText('entitiesPage.entitiesTable.header.metric'),
+      screen.getByText('entitiesPage.entitiesTable.header.status'),
     ).toBeInTheDocument();
     expect(
       screen.getByText('entitiesPage.entitiesTable.header.value'),
@@ -71,7 +71,7 @@ describe('EntitiesTableHeader', () => {
     );
 
     const statusHeader = screen.getByText(
-      'entitiesPage.entitiesTable.header.metric',
+      'entitiesPage.entitiesTable.header.status',
     );
     await userEvent.click(statusHeader);
 
@@ -86,8 +86,49 @@ describe('EntitiesTableHeader', () => {
     );
 
     const sortLabel = screen.getByRole('button', {
-      name: /entitiesPage.entitiesTable.header.metric/i,
+      name: /entitiesPage.entitiesTable.header.status/i,
     });
     expect(sortLabel).toBeInTheDocument();
+  });
+
+  it('should call onSortRequest with the correct column id when a different sortable header is clicked', async () => {
+    const onSortRequest = jest.fn();
+    render(
+      <table>
+        <EntitiesTableHeader {...defaultProps} onSortRequest={onSortRequest} />
+      </table>,
+    );
+
+    await userEvent.click(
+      screen.getByText('entitiesPage.entitiesTable.header.entity'),
+    );
+    expect(onSortRequest).toHaveBeenCalledWith('entityName');
+
+    await userEvent.click(
+      screen.getByText('entitiesPage.entitiesTable.header.lastUpdated'),
+    );
+    expect(onSortRequest).toHaveBeenCalledWith('timestamp');
+  });
+
+  it('should call onSortRequest again when clicking the already-active sorted column', async () => {
+    const onSortRequest = jest.fn();
+    render(
+      <table>
+        <EntitiesTableHeader
+          orderBy="status"
+          order="asc"
+          onSortRequest={onSortRequest}
+        />
+      </table>,
+    );
+
+    const statusHeader = screen.getByText(
+      'entitiesPage.entitiesTable.header.status',
+    );
+    await userEvent.click(statusHeader);
+    await userEvent.click(statusHeader);
+
+    expect(onSortRequest).toHaveBeenCalledTimes(2);
+    expect(onSortRequest).toHaveBeenCalledWith('status');
   });
 });

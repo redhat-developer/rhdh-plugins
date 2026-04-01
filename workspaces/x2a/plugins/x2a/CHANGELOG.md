@@ -1,5 +1,45 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 1.1.1
+
+### Patch Changes
+
+- f68510b: Icon for the X2A left side menu.
+
+## 1.1.0
+
+### Minor Changes
+
+- 613b44e: Forced minor version bump.
+
+### Patch Changes
+
+- 079e654: Fix alignment and wrapping of module and status with icons.
+- 4fb1a6e: Bulk run project action added. Filters eligible projects based on privileges.
+- cd887eb: Fixing alignment of the external link icon. Sprucing up the git branch icon. Rearranging the description field.
+- 50fa945: Adding Project Details Page and fixing issues in the Module Details Page.
+- f7f1512: Unify relative time formatters and internationalize them.
+- 78f3533: Add icon for external links.
+- 2a5a9e3: Reduce the amount of details in the project list and improve user's navigation to review.
+- 1e8abd2: The user can newly retrigger the project's init phase.
+- 2bf13d3: Adding summary to the RepoAuthentication widget.
+- 6876289: Add the Delete project action to the project detail page.
+- f763734: Split testsuites for better parallelization on local dev machines.
+- bae8cf4: Add bulk caret expanding/collapsing all ProjectList rows.
+- 7565e2e: Add the Cancel phase migration action.
+- f3f900e: feat(x2a): introduce polling to keep the views up-to-date (affects multiple pages)
+- 5d26b30: Add Bitbucket repository support.
+- e81c2ba: Rearrange the ModulePage grid items to make the artifacts and details card more readable.
+- e9f35e2: The user can newly bulk-create conversion projects from an uploaded CSV file.
+- Updated dependencies [4fb1a6e]
+- Updated dependencies [613b44e]
+- Updated dependencies [50fa945]
+- Updated dependencies [7565e2e]
+- Updated dependencies [f3f900e]
+- Updated dependencies [5d26b30]
+- Updated dependencies [e9f35e2]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.1.0
+
 ## 1.0.2
 
 ### Patch Changes
