@@ -25,65 +25,67 @@ jobs:
         with:
           egress-policy: audit
 
-      - name: Checkout PR head
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Fetch base commit
-        run: git fetch --no-tags origin ${{ github.event.pull_request.base.sha }}
-
-      - name: Detect new top-level directories under workspaces/
-        id: detect
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          set -euo pipefail
-          if git cat-file -e "${BASE_SHA}:workspaces" 2>/dev/null; then
-            git ls-tree "${BASE_SHA}:workspaces" | awk '$2=="tree" {print $4}' | sort -u > /tmp/base_ws.txt
-          else
-            : > /tmp/base_ws.txt
-          fi
-          if git cat-file -e "${HEAD_SHA}:workspaces" 2>/dev/null; then
-            git ls-tree "${HEAD_SHA}:workspaces" | awk '$2=="tree" {print $4}' | sort -u > /tmp/head_ws.txt
-          else
-            : > /tmp/head_ws.txt
-          fi
-          comm -13 /tmp/base_ws.txt /tmp/head_ws.txt > /tmp/new_ws.txt || true
-          if [ ! -s /tmp/new_ws.txt ]; then
-            echo "has_new=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_new=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Post PR comment
-        if: steps.detect.outputs.has_new == 'true'
+      - name: Detect new workspace and post comment if needed
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const baseSha = context.payload.pull_request.base.sha;
+            const headSha = context.payload.pull_request.head.sha;
+
+            async function listWorkspaceDirNames(ref) {
+              try {
+                const { data } = await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path: 'workspaces',
+                  ref,
+                });
+                if (!Array.isArray(data)) {
+                  return [];
+                }
+                return data
+                  .filter((entry) => entry.type === 'dir')
+                  .map((entry) => entry.name)
+                  .sort();
+              } catch (e) {
+                if (e.status === 404) {
+                  return [];
+                }
+                throw e;
+              }
+            }
+
+            const baseDirs = await listWorkspaceDirNames(baseSha);
+            const headDirs = await listWorkspaceDirNames(headSha);
+            const baseSet = new Set(baseDirs);
+            const hasNew = headDirs.some((d) => !baseSet.has(d));
+            if (!hasNew) {
+              return;
+            }
+
             const marker = '<!-- rhdh-new-workspace-pr-comment -->';
             const issue_number = context.payload.pull_request.number;
             const comments = await github.paginate(github.rest.issues.listComments, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner,
+              repo,
               issue_number,
               per_page: 100,
             });
             if (comments.some((c) => c.body?.includes(marker))) {
               return;
             }
-            const contributing = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md#submitting-a-pull-request-for-a-new-workspace`;
+
+            const contributing = `https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md#submitting-a-pull-request-for-a-new-workspace`;
             const body = [
               marker,
               '',
               'This pull request adds a new top-level directory under `workspaces/`. Please follow **[Submitting a Pull Request for a New Workspace](' + contributing + ')** in `CONTRIBUTING.md`.',
             ].join('\n');
             await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner,
+              repo,
               issue_number,
               body,
             });
