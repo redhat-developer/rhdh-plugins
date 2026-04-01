@@ -1,0 +1,13 @@
+{
+  "archived": [
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-openshift-image-registry",
+      "version": "1.18.0",
+      "workspace": "openshift-image-registry",
+      "plugin": "anaopenshift-image-registry",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-openshift-image-registry@1.18.0",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-04-01"
+    }
+  ]
+}

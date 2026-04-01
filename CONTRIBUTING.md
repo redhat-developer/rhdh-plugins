@@ -82,7 +82,7 @@ We use [changesets](https://github.com/atlassian/changesets) to help us prepare 
 
 To create a changeset, follow these steps:
 
-1. Make sure you are in the root directory of the workspace for the plugin you want to create a changeset for. For ex: if you are making changes on the `openshift-image-registry` plugin then you should be on `workspaces/openshift-image-registry` dir
+1. Make sure you are in the root directory of the workspace for the plugin you want to create a changeset for. For ex: if you are making changes on the `scorecard` plugin then you should be on `workspaces/scorecard` dir
 
 2. Run the following command to create a new changeset:
 
@@ -136,7 +136,7 @@ From there, once the script has finished, you should have a new `yarn workspace`
 Once you have a workspace setup, the creation of new plugins and packages is just like any other Backstage repository. You can use the `yarn new` command to run the prompt for creating new plugins or packages.
 
 ```bash
-cd workspaces/openshift-image-registry
+cd workspaces/scorecard
 yarn install
 yarn new
 ```
