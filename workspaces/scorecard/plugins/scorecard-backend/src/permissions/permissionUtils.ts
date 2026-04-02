@@ -129,7 +129,12 @@ export const matches = (
   return (
     Object.values(scorecardRules)
       .find(r => r.name === filters.rule)
-      ?.apply(metric, filters.params ?? {}) ?? false
+      ?.apply(
+        metric,
+        (filters.params ?? {}) as Parameters<
+          (typeof scorecardRules)[keyof typeof scorecardRules]['apply']
+        >[1],
+      ) ?? false
   );
 };
 
