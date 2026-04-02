@@ -297,6 +297,73 @@ describe('repositories', () => {
           totalCount: 0,
         });
       });
+
+      it('returns all repos even though a non-root catalog location exists', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
+            res(
+              ctx.status(200),
+              ctx.json([
+                {
+                  data: {
+                    id: 'imported-funtimes-nested',
+                    target:
+                      'http://localhost:8765/saltypig1/funtimes/blob/main/packages/backend/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+              ]),
+            ),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' });
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/dolbear',
+              lastUpdate: '2025-07-31T14:52:27.849Z',
+              name: 'dolbear',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/dolbear',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/funtimes',
+              lastUpdate: '2025-08-15T15:03:44.927Z',
+              name: 'funtimes',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/funtimes',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/swapi-node',
+              lastUpdate: '2025-07-31T14:54:57.289Z',
+              name: 'swapi-node',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/swapi-node',
+            },
+          ],
+          totalCount: 3,
+        });
+      });
     });
   });
 

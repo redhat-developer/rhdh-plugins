@@ -334,6 +334,72 @@ describe('repositories', () => {
           totalCount: 0,
         });
       });
+
+      it('returns all repos even though a non-root catalog location exists', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
+            res(
+              ctx.status(200),
+              ctx.json([
+                {
+                  data: {
+                    id: 'imported-animated-happiness-sub',
+                    target:
+                      'http://localhost:8765/octocat/animated-happiness/blob/master/monorepo/nested/path/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+              ]),
+            ),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer).get(
+          '/api/bulk-import/repositories',
+        );
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'master',
+              errors: [],
+              id: 'octocat/animated-happiness',
+              lastUpdate: '2011-01-26T19:14:43Z',
+              name: 'animated-happiness',
+              organization: 'octocat',
+              url: 'http://localhost:8765/octocat/animated-happiness',
+            },
+            {
+              defaultBranch: 'master',
+              errors: [],
+              id: 'octocat/Hello-World',
+              lastUpdate: '2011-01-26T19:14:43Z',
+              name: 'Hello-World',
+              organization: 'octocat',
+              url: 'http://localhost:8765/octocat/Hello-World',
+            },
+            {
+              defaultBranch: 'master',
+              errors: [],
+              id: 'my-user/Lorem-Ipsum',
+              lastUpdate: '2011-01-26T19:14:43Z',
+              name: 'Lorem-Ipsum',
+              organization: 'my-user',
+              url: 'http://localhost:8765/my-user/Lorem-Ipsum',
+            },
+          ],
+          totalCount: 3,
+        });
+      });
     });
   });
 
