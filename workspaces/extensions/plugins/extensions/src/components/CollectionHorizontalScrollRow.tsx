@@ -98,7 +98,7 @@ export const CollectionHorizontalScrollRow = ({
       </Typography>
       <HorizontalScrollGrid>
         <Stack direction="row" alignItems="stretch" gap={2} sx={{ p: 1 }}>
-          {plugins.data?.map(plugin => (
+          {plugins.data?.map((plugin: any) => (
             <div
               key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}
               style={{ display: 'flex', width: 340 }}

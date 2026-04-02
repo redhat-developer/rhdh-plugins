@@ -92,11 +92,11 @@ export const ExtensionsPackageEditContent = ({
       const first = lines[0] ?? '';
       const isAlreadyItem = /^\s*-\s+/.test(first);
       const wrapped = isAlreadyItem
-        ? ['plugins:', ...lines.map(l => (l ? `  ${l}` : l))]
+        ? ['plugins:', ...lines.map((l: string) => (l ? `  ${l}` : l))]
         : [
             'plugins:',
             `- ${first}`,
-            ...lines.slice(1).map(l => (l ? `  ${l}` : l)),
+            ...lines.slice(1).map((l: string) => (l ? `  ${l}` : l)),
           ];
       codeEditor.setValue(wrapped.filter(l => l !== undefined).join('\n'));
       return;
@@ -145,11 +145,11 @@ export const ExtensionsPackageEditContent = ({
       const first = lines[0] ?? '';
       const isAlreadyItem = /^\s*-\s+/.test(first);
       const wrapped = isAlreadyItem
-        ? ['plugins:', ...lines.map(l => (l ? `  ${l}` : l))]
+        ? ['plugins:', ...lines.map((l: string) => (l ? `  ${l}` : l))]
         : [
             'plugins:',
             `- ${first}`,
-            ...lines.slice(1).map(l => (l ? `  ${l}` : l)),
+            ...lines.slice(1).map((l: string) => (l ? `  ${l}` : l)),
           ];
       codeEditor.setValue(wrapped.filter(l => l !== undefined).join('\n'));
     }

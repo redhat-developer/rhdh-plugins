@@ -37,7 +37,7 @@ const CategoryFilter = () => {
 
   const items = useMemo(() => {
     if (!categories) return [];
-    return categories.map(category => ({
+    return categories.map((category: any) => ({
       label: category.value,
       value: category.value,
       count: category.count,
@@ -70,7 +70,7 @@ const AuthorFilter = () => {
 
   const items = useMemo(() => {
     if (!authors) return [];
-    return authors.map(author => ({
+    return authors.map((author: any) => ({
       label: author.value,
       value: author.value,
       count: author.count,

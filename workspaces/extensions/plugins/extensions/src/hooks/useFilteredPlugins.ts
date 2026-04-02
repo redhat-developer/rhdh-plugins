@@ -24,6 +24,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useExtensionsApi } from './useExtensionsApi';
+import { AnyQueryResult } from './types';
 
 const filteredPluginsRequest: GetEntitiesRequest = {
   orderFields: [
@@ -38,7 +39,7 @@ const filteredPluginsRequest: GetEntitiesRequest = {
   ],
 };
 
-export const useFilteredPlugins = () => {
+export const useFilteredPlugins = (): AnyQueryResult => {
   const [searchParams] = useSearchParams();
   const fullTextSearch = searchParams.get('q');
   const filters = searchParams.getAll('filter');

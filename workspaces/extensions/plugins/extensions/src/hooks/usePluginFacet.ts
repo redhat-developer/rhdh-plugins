@@ -17,8 +17,9 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useExtensionsApi } from './useExtensionsApi';
+import { AnyQueryResult } from './types';
 
-export const usePluginFacet = (facet: string) => {
+export const usePluginFacet = (facet: string): AnyQueryResult => {
   const extensionsApi = useExtensionsApi();
   return useQuery({
     queryKey: ['extensionsApi', 'getPluginFacet', facet],

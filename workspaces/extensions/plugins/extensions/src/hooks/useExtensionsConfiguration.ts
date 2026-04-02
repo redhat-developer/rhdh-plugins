@@ -16,8 +16,9 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useExtensionsApi } from './useExtensionsApi';
+import { AnyQueryResult } from './types';
 
-export const useExtensionsConfiguration = () => {
+export const useExtensionsConfiguration = (): AnyQueryResult => {
   const extensionsApi = useExtensionsApi();
 
   return useQuery({

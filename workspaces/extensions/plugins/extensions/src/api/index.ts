@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { createApiRef } from '@backstage/core-plugin-api';
+import { createApiRef, type ApiRef } from '@backstage/core-plugin-api';
 
 import { ExtensionsApi } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
-export const extensionsApiRef = createApiRef<ExtensionsApi>({
-  id: 'plugin.extensions.api-ref',
-});
+export const extensionsApiRef: ApiRef<ExtensionsApi> =
+  createApiRef<ExtensionsApi>({
+    id: 'plugin.extensions.api-ref',
+  });
 
 export type DynamicPluginInfo = {
   name: string;
@@ -32,6 +33,7 @@ export interface DynamicPluginsInfoApi {
   listLoadedPlugins(): Promise<DynamicPluginInfo[]>;
 }
 
-export const dynamicPluginsInfoApiRef = createApiRef<DynamicPluginsInfoApi>({
-  id: 'plugin.extensions.dynamic-plugins-info',
-});
+export const dynamicPluginsInfoApiRef: ApiRef<DynamicPluginsInfoApi> =
+  createApiRef<DynamicPluginsInfoApi>({
+    id: 'plugin.extensions.dynamic-plugins-info',
+  });

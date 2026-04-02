@@ -16,19 +16,24 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { useExtensionsApi } from './useExtensionsApi';
+import { AnyMutationResult } from './types';
 
-export const useInstallPackage = () => {
-  const extensionsApi = useExtensionsApi();
-
-  return useMutation({
-    mutationFn: async ({
-      namespace,
-      name,
-      configYaml,
-    }: {
-      namespace: string;
-      name: string;
-      configYaml: string;
-    }) => await extensionsApi.installPackage?.(namespace, name, configYaml),
-  });
+type InstallPackageVariables = {
+  namespace: string;
+  name: string;
+  configYaml: string;
 };
+
+export const useInstallPackage =
+  (): AnyMutationResult<InstallPackageVariables> => {
+    const extensionsApi = useExtensionsApi();
+
+    return useMutation({
+      mutationFn: async ({
+        namespace,
+        name,
+        configYaml,
+      }: InstallPackageVariables) =>
+        await extensionsApi.installPackage?.(namespace, name, configYaml),
+    });
+  };

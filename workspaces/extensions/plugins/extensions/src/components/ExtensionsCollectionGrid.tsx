@@ -49,7 +49,7 @@ export const ExtensionsCollectionGridLoader = () => {
             <PluginCardSkeleton />
           </>
         ) : null}
-        {plugins.data?.map(plugin => (
+        {plugins.data?.map((plugin: any) => (
           <PluginCard
             key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}
             plugin={plugin}

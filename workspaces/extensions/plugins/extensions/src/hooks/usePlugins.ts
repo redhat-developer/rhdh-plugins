@@ -19,8 +19,9 @@ import { useQuery } from '@tanstack/react-query';
 import { GetEntitiesRequest } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useExtensionsApi } from './useExtensionsApi';
+import { AnyQueryResult } from './types';
 
-export const usePlugins = (request: GetEntitiesRequest) => {
+export const usePlugins = (request: GetEntitiesRequest): AnyQueryResult => {
   const extensionsApi = useExtensionsApi();
   return useQuery({
     queryKey: ['extensionsApi', 'getPlugins', request],

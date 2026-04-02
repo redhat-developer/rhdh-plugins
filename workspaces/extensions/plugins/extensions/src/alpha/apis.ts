@@ -29,7 +29,7 @@ import { DynamicPluginsInfoClient } from '../api/DynamicPluginsInfoClient';
  * API module providing extensions implementations.
  * @alpha
  */
-export const extensionApi = ApiBlueprint.make({
+export const extensionApi: any = ApiBlueprint.make({
   name: 'extensions',
   params: defineParams =>
     defineParams({
@@ -54,7 +54,7 @@ export const extensionApi = ApiBlueprint.make({
  * API module providing dynamic-plugins-info implementations.
  * @alpha
  */
-export const dynamicPluginsInfoApi = ApiBlueprint.make({
+export const dynamicPluginsInfoApi: any = ApiBlueprint.make({
   name: 'dynamic-plugins-info',
   params: defineParams =>
     defineParams({

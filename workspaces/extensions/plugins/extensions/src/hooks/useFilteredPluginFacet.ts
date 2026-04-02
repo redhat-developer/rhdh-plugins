@@ -20,6 +20,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ExtensionsAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useExtensionsApi } from './useExtensionsApi';
+import { AnyQueryResult } from './types';
 
 /**
  * Hook to get plugin facets filtered by current active filters
@@ -29,7 +30,7 @@ import { useExtensionsApi } from './useExtensionsApi';
 export const useFilteredPluginFacet = (
   facet: string,
   excludeFilterType?: string,
-) => {
+): AnyQueryResult => {
   const [searchParams] = useSearchParams();
   const extensionsApi = useExtensionsApi();
 

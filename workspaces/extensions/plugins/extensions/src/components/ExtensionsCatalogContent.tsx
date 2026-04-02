@@ -189,7 +189,7 @@ export const ExtensionsCatalogContent = () => {
         </CatalogFilterLayout.Filters>
         <CatalogFilterLayout.Content>
           <Stack direction="column" gap={3}>
-            {featuredCollections.data?.items?.map(collection => (
+            {featuredCollections.data?.items?.map((collection: any) => (
               <CollectionHorizontalScrollRow
                 key={`${collection.metadata.namespace}/${collection.metadata.name}`}
                 collection={collection}

@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-import { useQuery } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 
-import { useExtensionsApi } from './useExtensionsApi';
-import { AnyQueryResult } from './types';
-
-export const usePackage = (
-  namespace?: string,
-  name?: string,
-): AnyQueryResult => {
-  const extensionsApi = useExtensionsApi();
-  return useQuery({
-    queryKey: ['extensionsApi', 'getPackageByName', namespace, name],
-    queryFn: () => extensionsApi.getPackageByName(namespace!, name!),
-    enabled: Boolean(namespace && name),
-  });
-};
+export type AnyQueryResult = UseQueryResult<any>;
+export type AnyMutationResult<TVariables = any> = UseMutationResult<
+  any,
+  unknown,
+  TVariables
+>;

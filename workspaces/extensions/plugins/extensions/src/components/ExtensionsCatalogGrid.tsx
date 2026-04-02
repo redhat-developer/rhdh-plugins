@@ -39,7 +39,7 @@ export const ExtensionsCatalogGrid = () => {
 
   return (
     <PluginCardGrid>
-      {filteredPlugins.data?.items.map(plugin => (
+      {filteredPlugins.data?.items.map((plugin: any) => (
         <PluginCard
           key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}
           plugin={plugin}

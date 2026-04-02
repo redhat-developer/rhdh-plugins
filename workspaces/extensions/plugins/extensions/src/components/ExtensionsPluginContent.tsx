@@ -396,7 +396,7 @@ export const ExtensionsPluginContent = ({
 
   const missingDynamicArtifact = isExtensionsPackage(plugin)
     ? !plugin.spec?.dynamicArtifact
-    : packages?.data?.some(p => !p.spec?.dynamicArtifact);
+    : packages?.data?.some((p: any) => !p.spec?.dynamicArtifact);
 
   const pluginActionButton = () => {
     const disablePluginActions =

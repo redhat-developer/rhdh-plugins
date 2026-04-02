@@ -33,7 +33,7 @@ export const ExtensionsCollectionsGrid = () => {
         </>
       ) : null}
 
-      {collections.data?.items?.map(collection => (
+      {collections.data?.items?.map((collection: any) => (
         <CollectionHorizontalScrollRow
           key={`${collection.metadata.namespace}/${collection.metadata.name}`}
           collection={collection}

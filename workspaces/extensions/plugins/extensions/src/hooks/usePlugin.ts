@@ -17,8 +17,9 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useExtensionsApi } from './useExtensionsApi';
+import { AnyQueryResult } from './types';
 
-export const usePlugin = (namespace: string, name: string) => {
+export const usePlugin = (namespace: string, name: string): AnyQueryResult => {
   const extensionsApi = useExtensionsApi();
   return useQuery({
     queryKey: ['extensionsApi', 'getPluginByName', namespace, name],

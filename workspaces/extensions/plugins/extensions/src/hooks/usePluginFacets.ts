@@ -19,8 +19,11 @@ import { useQuery } from '@tanstack/react-query';
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 
 import { useExtensionsApi } from './useExtensionsApi';
+import { AnyQueryResult } from './types';
 
-export const usePluginFacets = (request: GetEntityFacetsRequest) => {
+export const usePluginFacets = (
+  request: GetEntityFacetsRequest,
+): AnyQueryResult => {
   const extensionsApi = useExtensionsApi();
   return useQuery({
     queryKey: ['extensionsApi', 'getPluginFacets', request],

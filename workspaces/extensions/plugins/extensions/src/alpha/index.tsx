@@ -32,36 +32,40 @@ export * from './translations';
 /**
  * @alpha
  */
-export const extensionsPage = PageBlueprint.make({
-  params: {
-    path: '/extensions',
-    routeRef: rootRouteRef,
-    loader: () =>
-      import('../pages/DynamicExtensionsPluginRouter').then(m =>
-        compatWrapper(<m.DynamicExtensionsPluginRouter />),
-      ),
-    // async () => compatWrapper(<DynamicExtensionsPluginRouter/>),
-  },
-});
+export const extensionsPage: ReturnType<typeof PageBlueprint.make> =
+  PageBlueprint.make({
+    params: {
+      path: '/extensions',
+      routeRef: rootRouteRef,
+      loader: () =>
+        import('../pages/DynamicExtensionsPluginRouter').then(m =>
+          compatWrapper(<m.DynamicExtensionsPluginRouter />),
+        ),
+      // async () => compatWrapper(<DynamicExtensionsPluginRouter/>),
+    },
+  });
 
 /**
  * @alpha
  */
 
-export const extensionsNavItem = NavItemBlueprint.make({
-  params: {
-    title: 'Extensions',
-    routeRef: rootRouteRef,
-    icon: ExtensionsIcon,
-  },
-});
+export const extensionsNavItem: ReturnType<typeof NavItemBlueprint.make> =
+  NavItemBlueprint.make({
+    params: {
+      title: 'Extensions',
+      routeRef: rootRouteRef,
+      icon: ExtensionsIcon,
+    },
+  });
 
 /**
  * Translation module for the rbac plugin
  * @alpha
  */
 
-export const extensionsTranslationsModule = createFrontendModule({
+export const extensionsTranslationsModule: ReturnType<
+  typeof createFrontendModule
+> = createFrontendModule({
   pluginId: 'app',
   extensions: [
     TranslationBlueprint.make({
@@ -76,14 +80,17 @@ export const extensionsTranslationsModule = createFrontendModule({
 /*
  * @alpha
  */
-export default createFrontendPlugin({
-  pluginId: 'extensions',
-  info: { packageJson: () => import('../../package.json') },
-  extensions: [
-    dynamicPluginsInfoApi,
-    extensionApi,
-    extensionsPage,
-    extensionsNavItem,
-  ],
-  routes: allRoutes,
-});
+const extensionsPlugin: ReturnType<typeof createFrontendPlugin> =
+  createFrontendPlugin({
+    pluginId: 'extensions',
+    info: { packageJson: () => import('../../package.json') },
+    extensions: [
+      dynamicPluginsInfoApi,
+      extensionApi,
+      extensionsPage,
+      extensionsNavItem,
+    ],
+    routes: allRoutes,
+  });
+
+export default extensionsPlugin;
