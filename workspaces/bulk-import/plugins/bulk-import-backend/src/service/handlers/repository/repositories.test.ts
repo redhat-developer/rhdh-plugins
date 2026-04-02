@@ -236,7 +236,7 @@ describe('repositories', () => {
                   data: {
                     id: 'imported-hello-world',
                     target:
-                      'http://localhost:8765/octocat/Hello-World/catalog-info.yaml',
+                      'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
                     type: 'url',
                   },
                 },
@@ -293,7 +293,7 @@ describe('repositories', () => {
                   data: {
                     id: 'imported-animated-happiness',
                     target:
-                      'http://localhost:8765/octocat/animated-happiness/catalog-info.yaml',
+                      'http://localhost:8765/octocat/animated-happiness/blob/master/catalog-info.yaml',
                     type: 'url',
                   },
                 },
@@ -301,7 +301,7 @@ describe('repositories', () => {
                   data: {
                     id: 'imported-hello-world',
                     target:
-                      'http://localhost:8765/octocat/Hello-World/catalog-info.yaml',
+                      'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
                     type: 'url',
                   },
                 },
@@ -309,7 +309,7 @@ describe('repositories', () => {
                   data: {
                     id: 'imported-lorem-ipsum',
                     target:
-                      'http://localhost:8765/my-user/Lorem-Ipsum/catalog-info.yaml',
+                      'http://localhost:8765/my-user/Lorem-Ipsum/blob/master/catalog-info.yaml',
                     type: 'url',
                   },
                 },

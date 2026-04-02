@@ -197,7 +197,7 @@ describe('repositories', () => {
                   data: {
                     id: 'imported-funtimes',
                     target:
-                      'http://localhost:8765/saltypig1/funtimes/catalog-info.yaml',
+                      'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
                     type: 'url',
                   },
                 },
@@ -255,7 +255,7 @@ describe('repositories', () => {
                   data: {
                     id: 'imported-dolbear',
                     target:
-                      'http://localhost:8765/saltypig1/dolbear/catalog-info.yaml',
+                      'http://localhost:8765/saltypig1/dolbear/blob/main/catalog-info.yaml',
                     type: 'url',
                   },
                 },
@@ -263,7 +263,7 @@ describe('repositories', () => {
                   data: {
                     id: 'imported-funtimes',
                     target:
-                      'http://localhost:8765/saltypig1/funtimes/catalog-info.yaml',
+                      'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
                     type: 'url',
                   },
                 },
@@ -271,7 +271,7 @@ describe('repositories', () => {
                   data: {
                     id: 'imported-swapi-node',
                     target:
-                      'http://localhost:8765/saltypig1/swapi-node/catalog-info.yaml',
+                      'http://localhost:8765/saltypig1/swapi-node/blob/main/catalog-info.yaml',
                     type: 'url',
                   },
                 },
