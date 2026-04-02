@@ -50,7 +50,7 @@ backend plugin handles upstream communication directly.
 All backend endpoints emit structured audit log entries with user identity via Backstage's logger. Each entry includes:
 
 - **`actor`** — the authenticated user's entity ref (e.g., `user:default/admin`)
-- **`action`** — the operation performed (`data_access`, `apply_recommendation`, `access_check`, `cost_access_check`)
+- **`action`** — the operation performed (`data_access`, `apply_recommendation`, `access_check`)
 - **`decision`** — the RBAC outcome (`ALLOW` or `DENY`)
 - **`resource`** — the upstream API path accessed
 - **`filters`** — the server-injected cluster/project filters (for proxy requests)

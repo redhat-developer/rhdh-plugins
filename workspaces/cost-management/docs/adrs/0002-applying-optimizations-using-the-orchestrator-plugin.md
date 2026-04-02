@@ -16,7 +16,7 @@ was hardened beyond the original design:
   checks `ros.apply` permission, and forwards to Orchestrator using
   service-to-service authentication.
 - **Input validation**: `resourceType` is validated against a server-side
-  allowlist; all input fields are sanitized.
+  allowlist; all input fields are validated for presence and type.
 - **Audit logging**: Every apply action is logged with user identity, cluster,
   namespace, workload, and outcome.
 - **Confirmation dialog**: The UI presents a confirmation step before applying.
