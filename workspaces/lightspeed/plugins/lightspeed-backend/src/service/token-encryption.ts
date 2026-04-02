@@ -29,9 +29,14 @@ const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
 const ENCRYPTED_PREFIX = 'enc:';
 
+export interface DecryptResult {
+  plaintext: string | null;
+  needsReEncrypt: boolean;
+}
+
 export interface TokenEncryptor {
   encrypt(plaintext: string): string;
-  decrypt(stored: string): string | null;
+  decrypt(stored: string): DecryptResult;
   readonly enabled: boolean;
 }
 
@@ -39,17 +44,35 @@ function deriveKey(secret: string): Buffer {
   return createHash('sha256').update(secret).digest();
 }
 
+function decryptWithKey(key: Buffer, stored: string): string {
+  const combined = Buffer.from(stored.slice(ENCRYPTED_PREFIX.length), 'base64');
+  const iv = combined.subarray(0, IV_LENGTH);
+  const authTag = combined.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
+  const encrypted = combined.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
+  const decipher = createDecipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  });
+  decipher.setAuthTag(authTag);
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString(
+    'utf8',
+  );
+}
+
 class AesGcmEncryptor implements TokenEncryptor {
   readonly enabled = true;
-  private readonly key: Buffer;
+  private readonly primaryKey: Buffer;
+  private readonly allKeys: Buffer[];
+  private readonly logger: LoggerService;
 
-  constructor(secret: string) {
-    this.key = deriveKey(secret);
+  constructor(secrets: string[], logger: LoggerService) {
+    this.primaryKey = deriveKey(secrets[0]);
+    this.allKeys = secrets.map(deriveKey);
+    this.logger = logger;
   }
 
   encrypt(plaintext: string): string {
     const iv = randomBytes(IV_LENGTH);
-    const cipher = createCipheriv(ALGORITHM, this.key, iv, {
+    const cipher = createCipheriv(ALGORITHM, this.primaryKey, iv, {
       authTagLength: AUTH_TAG_LENGTH,
     });
     const encrypted = Buffer.concat([
@@ -61,25 +84,30 @@ class AesGcmEncryptor implements TokenEncryptor {
     return `${ENCRYPTED_PREFIX}${combined.toString('base64')}`;
   }
 
-  decrypt(stored: string): string | null {
+  decrypt(stored: string): DecryptResult {
     if (!stored.startsWith(ENCRYPTED_PREFIX)) {
-      return null;
+      this.logger.warn(
+        'Found legacy plaintext token in database — it will be re-encrypted with the current key',
+      );
+      return { plaintext: stored, needsReEncrypt: true };
     }
-    const combined = Buffer.from(
-      stored.slice(ENCRYPTED_PREFIX.length),
-      'base64',
+    for (let i = 0; i < this.allKeys.length; i++) {
+      try {
+        const plaintext = decryptWithKey(this.allKeys[i], stored);
+        if (i > 0) {
+          this.logger.info(
+            `Decrypted token using non-primary key at index ${i} — it will be re-encrypted with the primary key`,
+          );
+        }
+        return { plaintext, needsReEncrypt: i > 0 };
+      } catch {
+        // Try the next key
+      }
+    }
+    this.logger.error(
+      'Failed to decrypt token with any configured key — token will be treated as missing',
     );
-    const iv = combined.subarray(0, IV_LENGTH);
-    const authTag = combined.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
-    const encrypted = combined.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
-    const decipher = createDecipheriv(ALGORITHM, this.key, iv, {
-      authTagLength: AUTH_TAG_LENGTH,
-    });
-    decipher.setAuthTag(authTag);
-    return Buffer.concat([
-      decipher.update(encrypted),
-      decipher.final(),
-    ]).toString('utf8');
+    return { plaintext: null, needsReEncrypt: false };
   }
 }
 
@@ -90,11 +118,11 @@ class PlaintextPassthrough implements TokenEncryptor {
     return plaintext;
   }
 
-  decrypt(stored: string): string | null {
+  decrypt(stored: string): DecryptResult {
     if (stored.startsWith(ENCRYPTED_PREFIX)) {
-      return null;
+      return { plaintext: null, needsReEncrypt: false };
     }
-    return stored;
+    return { plaintext: stored, needsReEncrypt: false };
   }
 }
 
@@ -103,13 +131,15 @@ export function createTokenEncryptor(
   logger: LoggerService,
 ): TokenEncryptor {
   const keys = config.getOptionalConfigArray('backend.auth.keys');
-  const secret = keys?.[0]?.getOptionalString('secret');
+  const secrets = keys
+    ?.map(k => k.getOptionalString('secret'))
+    .filter((s): s is string => !!s);
 
-  if (secret) {
+  if (secrets && secrets.length > 0) {
     logger.info(
-      'Token encryption enabled — MCP user tokens will be encrypted at rest using backend.auth.keys',
+      `Token encryption enabled — MCP user tokens will be encrypted at rest using backend.auth.keys (${secrets.length} key(s) configured)`,
     );
-    return new AesGcmEncryptor(secret);
+    return new AesGcmEncryptor(secrets, logger);
   }
 
   logger.warn(

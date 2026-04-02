@@ -126,7 +126,7 @@ export async function createRouter(
   // Initialize database-backed store for per-user preferences and validator
   const dbClient = await database.getClient();
   const encryptor = createTokenEncryptor(config, logger);
-  const settingsStore = new McpUserSettingsStore(dbClient, encryptor);
+  const settingsStore = new McpUserSettingsStore(dbClient, encryptor, logger);
   const mcpValidator = new McpServerValidator(logger);
 
   // URL cache populated from LCS GET /v1/mcp-servers.

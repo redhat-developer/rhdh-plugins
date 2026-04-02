@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
+
 import { Knex } from 'knex';
 
 import { randomUUID } from 'node:crypto';
@@ -36,6 +38,7 @@ export class McpUserSettingsStore {
   constructor(
     private readonly db: Knex,
     private readonly encryptor: TokenEncryptor,
+    private readonly logger: LoggerService,
   ) {}
 
   /** List all settings for a specific user. */
@@ -43,7 +46,7 @@ export class McpUserSettingsStore {
     const rows = await this.db<McpUserSettingsRow>(TABLE)
       .where({ user_entity_ref: userEntityRef })
       .select('*');
-    return rows.map(r => this.decryptRow(r));
+    return Promise.all(rows.map(r => this.decryptRow(r)));
   }
 
   /** Get settings for a specific server + user combination. */
@@ -57,11 +60,50 @@ export class McpUserSettingsStore {
     return row ? this.decryptRow(row) : undefined;
   }
 
-  private decryptRow(row: McpUserSettingsRow): McpUserSettingsRow {
-    if (row.token) {
-      return { ...row, token: this.encryptor.decrypt(row.token) };
+  private async decryptRow(
+    row: McpUserSettingsRow,
+  ): Promise<McpUserSettingsRow> {
+    if (!row.token) {
+      return row;
     }
-    return row;
+    try {
+      const result = this.encryptor.decrypt(row.token);
+      if (result.needsReEncrypt && result.plaintext) {
+        await this.reEncryptToken(
+          row.server_name,
+          row.user_entity_ref,
+          result.plaintext,
+        );
+      }
+      return { ...row, token: result.plaintext };
+    } catch (err) {
+      this.logger.error(
+        `Failed to decrypt token for ${row.server_name}/${row.user_entity_ref} — treating as missing`,
+        err instanceof Error ? err : undefined,
+      );
+      return { ...row, token: null };
+    }
+  }
+
+  private async reEncryptToken(
+    serverName: string,
+    userEntityRef: string,
+    plaintext: string,
+  ): Promise<void> {
+    try {
+      const encrypted = this.encryptor.encrypt(plaintext);
+      await this.db(TABLE)
+        .where({ server_name: serverName, user_entity_ref: userEntityRef })
+        .update({ token: encrypted, updated_at: new Date().toISOString() });
+      this.logger.info(
+        `Re-encrypted token for ${serverName} with the current primary key`,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to re-encrypt token for ${serverName} — will retry on next read`,
+        err instanceof Error ? err : undefined,
+      );
+    }
   }
 
   /** Create or update user settings for a server (atomic). */
