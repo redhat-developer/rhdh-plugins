@@ -25,16 +25,13 @@ import {
 } from '@backstage/integration';
 
 import { Octokit } from '@octokit/rest';
-import { OctokitResponse } from '@octokit/types';
 import gitUrlParse from 'git-url-parse';
 
 import { logErrorIfNeeded } from '../../helpers';
 import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import {
   AppInstallationRepositories,
-  AppInstallationRepositoriesResponse,
   AuthenticatedUserRepositoryList,
-  AuthenticatedUserRepositoryResponse,
   isGithubAppCredential,
   type ExtendedGithubCredentials,
   type GithubFetchError,
@@ -368,116 +365,39 @@ export async function fetchFromMatchedIntegration<T>(
 }
 
 export async function listAllRepositoriesForAuthenticatedUser(
-  deps: {
-    logger: LoggerService;
-  },
   octokit: Octokit,
   options?: {
     pageSize?: number;
   },
 ): Promise<AuthenticatedUserRepositoryList> {
-  const fetchListForAuthenticatedUser = async (
-    pageNumber: number,
-  ): Promise<AuthenticatedUserRepositoryResponse> => {
-    /**
-     * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
-     * These would include repositories they own, repositories where they are a collaborator,
-     * and repositories that they can access through an organization membership.
-     */
-    return await octokit.rest.repos.listForAuthenticatedUser({
-      page: pageNumber,
-      per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
-      sort: 'full_name',
-      direction: 'asc',
-    });
-  };
-
-  const allPagesData = await retrieveAllPagesData(
-    deps,
-    'repos.listForAuthenticatedUser',
-    fetchListForAuthenticatedUser,
-  );
-
-  const allRepositories = allPagesData.flat();
-
-  return allRepositories;
+  /**
+   * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
+   * These would include repositories they own, repositories where they are a collaborator,
+   * and repositories that they can access through an organization membership.
+   */
+  return await octokit.paginate(octokit.rest.repos.listForAuthenticatedUser, {
+    per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
+    sort: 'full_name',
+    direction: 'asc',
+  });
 }
 
 export async function listAllRepositoriesAccessibleToInstallation(
-  deps: {
-    logger: LoggerService;
-  },
   octokit: Octokit,
   options?: {
     pageSize?: number;
   },
 ): Promise<AppInstallationRepositories> {
-  const fetchListReposAccessibleToInstallation = async (
-    pageNumber: number,
-  ): Promise<AppInstallationRepositoriesResponse> => {
-    return await octokit.rest.apps.listReposAccessibleToInstallation({
-      page: pageNumber,
+  const repositoriesResponse = await octokit.paginate(
+    octokit.rest.apps.listReposAccessibleToInstallation,
+    {
       per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
-    });
-  };
-
-  const allPagesData = await retrieveAllPagesData(
-    deps,
-    'apps.listReposAccessibleToInstallation',
-    fetchListReposAccessibleToInstallation,
+    },
   );
-
-  const allRepositories = allPagesData.flatMap(
-    pageResponseData => pageResponseData.repositories,
-  );
-
-  const total_count = allPagesData?.[0]?.total_count ?? allRepositories.length;
-  const repository_selection = allPagesData?.[0]?.repository_selection;
 
   return {
-    repositories: allRepositories,
-    total_count,
-    repository_selection,
+    repositories: repositoriesResponse?.repositories ?? repositoriesResponse,
+    total_count: repositoriesResponse.total_count,
+    repository_selection: repositoriesResponse.repository_selection,
   };
-}
-
-async function retrieveAllPagesData<ResponseType>(
-  deps: {
-    logger: LoggerService;
-  },
-  ghApiName: string,
-  fetchPageFn: (pageNumber: number) => Promise<OctokitResponse<ResponseType>>,
-): Promise<OctokitResponse<ResponseType>['data'][]> {
-  const PAGE_NUMBER_REGEX_MATCH_INDEX = 1;
-  const SECOND_PAGE_NUMBER = 2;
-
-  const firstPageResponse = await fetchPageFn(1);
-
-  const lastPageNumberString = firstPageResponse?.headers?.link
-    ?.split(',')
-    ?.find(s => s.includes('rel="last"'))
-    ?.match(/page=(\d+)/)?.[PAGE_NUMBER_REGEX_MATCH_INDEX];
-
-  if (!lastPageNumberString) {
-    deps.logger.debug(
-      `Unable to extract page number from rel='last' link found in response headers from '${ghApiName}' GH endpoint => returning current page size`,
-    );
-    return [firstPageResponse.data];
-  }
-
-  const lastPageNumber = Number.parseInt(lastPageNumberString, 10);
-
-  if (lastPageNumber < SECOND_PAGE_NUMBER) {
-    return [firstPageResponse.data];
-  }
-
-  const pagePromises = [];
-  for (let i = SECOND_PAGE_NUMBER; i <= lastPageNumber; i++) {
-    pagePromises.push(fetchPageFn(i));
-  }
-  const remainingPages = await Promise.all(pagePromises);
-
-  const allPages = [firstPageResponse, ...remainingPages];
-
-  return allPages.map(page => page.data);
 }

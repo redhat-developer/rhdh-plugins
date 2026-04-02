@@ -134,7 +134,7 @@ export async function addGithubAppRepositories(
 
   try {
     const { repositories: allRepositories } =
-      await listAllRepositoriesAccessibleToInstallation(deps, octokit);
+      await listAllRepositoriesAccessibleToInstallation(octokit);
 
     const filteredRepositories = lowercaseSearch
       ? allRepositories.filter(repo =>
@@ -190,10 +190,8 @@ export async function addGithubTokenRepositories(
   let totalCount: number | undefined;
 
   try {
-    const allRepositories = await listAllRepositoriesForAuthenticatedUser(
-      deps,
-      octokit,
-    );
+    const allRepositories =
+      await listAllRepositoriesForAuthenticatedUser(octokit);
 
     const filteredRepositories = lowercaseSearch
       ? allRepositories.filter(repo =>
