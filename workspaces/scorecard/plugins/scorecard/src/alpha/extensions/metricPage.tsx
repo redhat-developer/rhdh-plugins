@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-import { createRouteRef } from '@backstage/core-plugin-api';
+import { PageBlueprint } from '@backstage/frontend-plugin-api';
+import { metricRouteRef } from '../../routes';
 
-export const rootRouteRef = createRouteRef({
-  id: 'scorecard',
-});
-
-export const metricRouteRef = createRouteRef({
-  id: 'scorecard-metric',
-  params: ['metricId'],
+/**
+ * NFS page extension for the Scorecard page.
+ * @alpha
+ */
+export const scorecardPage = PageBlueprint.make({
+  params: {
+    path: '/scorecard/metrics/:metricId',
+    routeRef: metricRouteRef,
+    loader: () =>
+      import('../../pages/ScorecardPage').then(m => <m.ScorecardPage />),
+  },
 });

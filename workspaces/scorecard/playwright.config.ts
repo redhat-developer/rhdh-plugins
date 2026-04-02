@@ -17,6 +17,8 @@
 import { defineConfig } from '@playwright/test';
 
 const LOCALES = ['en', 'fr', 'it', 'ja', 'de', 'es'] as const;
+const appMode = process.env.APP_MODE || 'legacy';
+const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
@@ -28,7 +30,7 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_URL
     ? []
     : {
-        command: 'yarn start:legacy',
+        command: startCommand,
         port: 3000,
         reuseExistingServer: true,
         env: {
@@ -39,7 +41,9 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
+  ],
 
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
@@ -47,7 +51,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
 
   projects: LOCALES.map(locale => ({
     name: locale,

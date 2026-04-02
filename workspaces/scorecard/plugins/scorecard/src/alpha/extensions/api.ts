@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-import { createRouteRef } from '@backstage/core-plugin-api';
+import {
+  ApiBlueprint,
+  createApiFactory,
+  discoveryApiRef,
+  fetchApiRef,
+} from '@backstage/frontend-plugin-api';
+import { ScorecardApiClient, scorecardApiRef } from '../../api';
 
-export const rootRouteRef = createRouteRef({
-  id: 'scorecard',
-});
-
-export const metricRouteRef = createRouteRef({
-  id: 'scorecard-metric',
-  params: ['metricId'],
+/** Scorecard API extension. */
+export const scorecardApi = ApiBlueprint.make({
+  params: defineParams =>
+    defineParams(
+      createApiFactory({
+        api: scorecardApiRef,
+        deps: { fetchApi: fetchApiRef, discoveryApi: discoveryApiRef },
+        factory: ({ fetchApi, discoveryApi }) =>
+          new ScorecardApiClient({ fetchApi, discoveryApi }),
+      }),
+    ),
 });
