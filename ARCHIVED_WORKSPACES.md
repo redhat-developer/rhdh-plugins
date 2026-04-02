@@ -12,16 +12,6 @@ When a workspace or plugin is archived:
 - A Git tag can provide historical reference to the source
 - An entry is added to this document for reference
 
-To archive a workspace or plugin, use the `archive-workspace` script:
-
-```bash
-# Archive an entire workspace
-./scripts/archive-workspace workspace-name
-
-# Archive a specific plugin within a workspace
-./scripts/archive-workspace workspace-name plugin-name
-```
-
 ## Archived Items
 
 | Workspace                | Package                                                            | Reason               | Source                                                                                                                                                                                                                                           |
