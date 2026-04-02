@@ -84,6 +84,7 @@ import {
   useNotebookSessions,
   usePinnedChatsSettings,
   useSortSettings,
+  useStopConversation,
 } from '../hooks';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
@@ -376,6 +377,7 @@ export const LightspeedChat = ({
     [],
   );
   const [conversationId, setConversationId] = useState<string>('');
+  const [requestId, setRequestId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
@@ -385,6 +387,8 @@ export const LightspeedChat = ({
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
+  const [messageBarKey, setMessageBarKey] = useState(0);
+  const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
   const {
@@ -534,9 +538,16 @@ export const LightspeedChat = ({
     setCurrentConversationId(conv_id);
   };
 
+  const onRequestIdReady = (request_id: string) => {
+    setRequestId(request_id);
+  };
+
   const onComplete = (message: string) => {
     setIsSendButtonDisabled(false);
-    setAnnouncement(`Message from Bot: ${message}`);
+    if (!wasStoppedByUserRef.current) {
+      setAnnouncement(`Message from Bot: ${message}`);
+    }
+    wasStoppedByUserRef.current = false;
     queryClient.invalidateQueries({
       queryKey: ['conversations'],
     });
@@ -555,12 +566,16 @@ export const LightspeedChat = ({
       avatar,
       onComplete,
       onStart,
+      onRequestIdReady,
     );
 
   const [messages, setMessages] =
     useState<MessageProps[]>(conversationMessages);
 
   const sendMessage = (message: string | number) => {
+    if (!message.toString().trim()) return;
+
+    wasStoppedByUserRef.current = false;
     if (conversationId !== TEMP_CONVERSATION_ID) {
       setNewChatCreated(false);
     }
@@ -699,7 +714,7 @@ export const LightspeedChat = ({
       const filteredConversations = Object.entries(categorizedMessages).reduce(
         (acc, [key, items]) => {
           const filteredItems = items.filter(item =>
-            item.text
+            (item.text ?? '')
               .toLocaleLowerCase('en-US')
               .includes(targetValue.toLocaleLowerCase('en-US')),
           );
@@ -958,6 +973,26 @@ export const LightspeedChat = ({
     handleFileUpload(data);
   };
 
+  const { mutate: stopConversation } = useStopConversation();
+
+  const handleStopButton = () => {
+    wasStoppedByUserRef.current = true;
+    if (requestId) {
+      stopConversation(requestId);
+      setRequestId('');
+    }
+    setIsSendButtonDisabled(false);
+    setAnnouncement(t('conversation.announcement.responseStopped'));
+    const lastUserMessage = [...conversationMessages]
+      .reverse()
+      .find((m: { role?: string }) => m.role === 'user');
+    const restoredPrompt = (lastUserMessage?.content as string) ?? '';
+    setDraftMessage(restoredPrompt.trim());
+    if (restoredPrompt) setMessageBarKey(k => k + 1);
+    setFileContents([]);
+    setUploadError({ message: null });
+  };
+
   const handleDraftMessage = (
     _e: ChangeEvent<HTMLTextAreaElement>,
     value: string | number,
@@ -1192,6 +1227,7 @@ export const LightspeedChat = ({
                 <ChatbotFooter className={classes.footer}>
                   <FilePreview />
                   <MessageBar
+                    key={messageBarKey}
                     onSendMessage={sendMessage}
                     isSendButtonDisabled={isSendButtonDisabled}
                     hasAttachButton
@@ -1199,6 +1235,10 @@ export const LightspeedChat = ({
                     hasMicrophoneButton
                     value={draftMessage}
                     onChange={handleDraftMessage}
+                    hasStopButton={isSendButtonDisabled}
+                    handleStopButton={
+                      isSendButtonDisabled ? handleStopButton : undefined
+                    }
                     buttonProps={{
                       attach: {
                         inputTestId: 'attachment-input',

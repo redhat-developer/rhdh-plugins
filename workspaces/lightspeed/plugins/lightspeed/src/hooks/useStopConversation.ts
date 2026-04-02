@@ -19,45 +19,20 @@ import { useApi } from '@backstage/core-plugin-api';
 import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
-import { Attachment } from '../types';
 
-type CreateMessageVariables = {
-  prompt: string;
-  selectedModel: string;
-  selectedProvider: string;
-  currentConversation: string;
-  attachments: Attachment[];
-};
-
-export const useCreateConversationMessage = (): UseMutationResult<
-  ReadableStreamDefaultReader<Uint8Array>,
+export const useStopConversation = (): UseMutationResult<
+  { success: boolean },
   Error,
-  CreateMessageVariables
+  string
 > => {
   const lightspeedApi = useApi(lightspeedApiRef);
 
   return useMutation({
-    mutationFn: async ({
-      prompt,
-      selectedModel,
-      selectedProvider,
-      currentConversation,
-      attachments,
-    }: CreateMessageVariables) => {
-      if (!currentConversation) {
-        throw new Error('Failed to generate AI response');
-      }
-
-      return await lightspeedApi.createMessage(
-        `${prompt}`,
-        selectedModel,
-        selectedProvider,
-        currentConversation,
-        attachments,
-      );
+    mutationFn: async (requestId: string) => {
+      return await lightspeedApi.stopMessage(requestId);
     },
     onError: error => {
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-console
       console.warn(error);
     },
   });

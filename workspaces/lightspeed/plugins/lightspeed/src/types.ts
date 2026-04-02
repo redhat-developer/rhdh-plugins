@@ -112,7 +112,7 @@ export interface BaseMessage {
 export type ConversationSummary = {
   conversation_id: string;
   last_message_timestamp: number;
-  topic_summary: string;
+  topic_summary: string | null;
 };
 
 export enum SupportedFileType {

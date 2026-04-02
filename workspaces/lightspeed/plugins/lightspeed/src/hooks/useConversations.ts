@@ -30,6 +30,12 @@ export const useConversations = (): UseQueryResult<ConversationList, Error> => {
       const response = await lightspeedApi.getConversations();
       return response;
     },
+    refetchInterval: query => {
+      const data = query.state.data;
+      if (!data?.length) return false;
+      const hasNullSummary = data.some(c => !c.topic_summary);
+      return hasNullSummary ? 2000 : false;
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

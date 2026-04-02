@@ -154,6 +154,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'conversation.announcement.userMessage':
       'Mensaje del usuario: {{prompt}}. El mensaje del bot se está cargando.',
     'user.guest': 'Invitado',
+    'conversation.announcement.responseStopped': 'Respuesta detenida.',
     'user.loading': '...',
     'tooltip.attach': 'Adjuntar',
     'tooltip.send': 'Enviar',
