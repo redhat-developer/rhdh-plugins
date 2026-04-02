@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-// Still needed when testEnvironment is not the default jsdom (Backstage only injects
-// cross-fetch for the stock jest-environment-jsdom).
-import 'cross-fetch/polyfill';
-import '@testing-library/jest-dom';
+export interface Config {
+  /**
+   * Sign-in provider id(s) to show on the RHDH sign-in page.
+   * @visibility frontend
+   */
+  signInPage?: string | string[];
+}

@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-// Still needed when testEnvironment is not the default jsdom (Backstage only injects
-// cross-fetch for the stock jest-environment-jsdom).
-import 'cross-fetch/polyfill';
-import '@testing-library/jest-dom';
+/**
+ * New Frontend System: default SCM integrations APIs for the app plugin.
+ *
+ * @packageDocumentation
+ */
+
+export { appIntegrationsModule } from './appIntegrationsModule';
+export { mergeScmAuthFromDeps } from './mergeScmAuthFromDeps';
+export type { ScmAuthFactoryDeps } from './mergeScmAuthFromDeps';
+
+export { appIntegrationsModule as default } from './appIntegrationsModule';

@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-// Still needed when testEnvironment is not the default jsdom (Backstage only injects
-// cross-fetch for the stock jest-environment-jsdom).
-import 'cross-fetch/polyfill';
-import '@testing-library/jest-dom';
+/**
+ * New Frontend System: RHDH sign-in and auth API extensions for the app plugin.
+ *
+ * @packageDocumentation
+ */
+
+export { appAuthModule } from './appAuthModule';
+export { SignInPage } from './components/SignInPage';
+export * from './AuthApiRefs';
+export * from './translations/signIn';
+
+export { appAuthModule as default } from './appAuthModule';

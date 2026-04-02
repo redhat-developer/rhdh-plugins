@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-// Still needed when testEnvironment is not the default jsdom (Backstage only injects
-// cross-fetch for the stock jest-environment-jsdom).
-import 'cross-fetch/polyfill';
-import '@testing-library/jest-dom';
+/**
+ * Stub package root export for API reporting and bundlers. This plugin targets
+ * the new frontend system only; use `./alpha` for public APIs.
+ *
+ * @packageDocumentation
+ */
+export default {};
