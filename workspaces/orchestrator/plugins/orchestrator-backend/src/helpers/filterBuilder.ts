@@ -24,6 +24,8 @@ import {
   TypeName,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { randomBytes } from 'node:crypto';
+
 import { FilterClause, FilterClauseVariable } from '../types/filterClause';
 
 type ProcessType = 'ProcessDefinition' | 'ProcessInstance';
@@ -377,5 +379,5 @@ function getGraphQLOperator(operator: FieldFilterOperatorEnum): string {
 // Function for getting 4 random digits to append to the clause variable name.
 // Not used for any secrets or anything
 function nonSecureRandomAlphaNumeric() {
-  return Math.random().toString(36).slice(2).slice(0, 4);
+  return randomBytes(8).toString('hex').slice(0, 4);
 }
