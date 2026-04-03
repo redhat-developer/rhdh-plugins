@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
@@ -52,6 +52,7 @@ type ServerStatus = 'tokenRequired' | 'disabled' | 'ok' | 'failed' | 'unknown';
 type McpServer = {
   id: string;
   name: string;
+  url?: string;
   enabled: boolean;
   status: 'connected' | 'error' | 'unknown';
   toolCount: number;
@@ -329,6 +330,7 @@ const useStyles = makeStyles(theme => ({
 
 type McpServerResponse = {
   name: string;
+  url?: string;
   enabled: boolean;
   status: 'connected' | 'error' | 'unknown';
   toolCount: number;
@@ -354,6 +356,12 @@ type McpServersValidateResponse = {
   validation?: {
     error?: string;
   };
+};
+
+type McpTokenValidateResponse = {
+  valid: boolean;
+  toolCount: number;
+  error?: string;
 };
 
 const getStatusIcon = (status: ServerStatus, className: string) => {
@@ -392,6 +400,7 @@ const toUiServer = (
 ): McpServer => ({
   id: server.name,
   name: server.name,
+  url: server.url,
   enabled: server.enabled,
   status: server.status,
   toolCount: server.toolCount,
@@ -421,6 +430,8 @@ export const McpServersSettings = ({
   const [tokenValidationState, setTokenValidationState] =
     useState<TokenValidationState>('idle');
   const [tokenValidationMessage, setTokenValidationMessage] = useState('');
+  const latestTokenValidationRequest = useRef(0);
+  const latestValidatedTokenKey = useRef<string | null>(null);
 
   const getBaseUrl = useCallback(() => {
     return `${configApi.getString('backend.baseUrl')}/api/lightspeed`;
@@ -481,6 +492,81 @@ export const McpServersSettings = ({
             : server,
         ),
       );
+    },
+    [fetchJson, getBaseUrl],
+  );
+
+  const validateTokenInput = useCallback(
+    async (server: McpServer, token: string, requestId: number) => {
+      if (!server.url) {
+        if (requestId !== latestTokenValidationRequest.current) {
+          return;
+        }
+        setTokenValidationState('error');
+        setTokenValidationMessage('Server URL is not available for validation');
+        return;
+      }
+
+      const toFriendlyErrorMessage = (errorMessage?: string) => {
+        if (!errorMessage) {
+          return 'Authorization failed. Try again.';
+        }
+        if (errorMessage.includes('Invalid credentials')) {
+          return 'Authorization failed. Try again.';
+        }
+        return errorMessage;
+      };
+
+      try {
+        const baseUrl = getBaseUrl();
+        const result = await fetchJson<McpTokenValidateResponse>(
+          `${baseUrl}/mcp-servers/validate`,
+          {
+            method: 'POST',
+            body: JSON.stringify({ url: server.url, token }),
+          },
+        );
+
+        if (requestId !== latestTokenValidationRequest.current) {
+          return;
+        }
+
+        const status = result.valid ? 'connected' : 'error';
+        const validationError = result.valid
+          ? undefined
+          : toFriendlyErrorMessage(result.error);
+
+        setServers(prev =>
+          prev.map(existing =>
+            existing.name === server.name
+              ? {
+                  ...existing,
+                  status,
+                  toolCount: result.toolCount,
+                  validationError,
+                }
+              : existing,
+          ),
+        );
+
+        if (result.valid) {
+          setTokenValidationState('success');
+          setTokenValidationMessage('Connection successful');
+        } else {
+          setTokenValidationState('error');
+          setTokenValidationMessage(validationError ?? 'Authorization failed');
+        }
+      } catch (validationError) {
+        if (requestId !== latestTokenValidationRequest.current) {
+          return;
+        }
+        setTokenValidationState('error');
+        setTokenValidationMessage(
+          validationError instanceof Error
+            ? validationError.message
+            : 'Authorization failed. Try again.',
+        );
+      }
     },
     [fetchJson, getBaseUrl],
   );
@@ -601,6 +687,7 @@ export const McpServersSettings = ({
     setHasSavedTokenInModal(false);
     setTokenValidationState('idle');
     setTokenValidationMessage('');
+    latestValidatedTokenKey.current = null;
   }, []);
 
   const openConfigureModal = (server: McpServer) => {
@@ -608,6 +695,7 @@ export const McpServersSettings = ({
     const hasSavedToken = server.hasToken;
     setHasSavedTokenInModal(hasSavedToken);
     setTokenInputValue(hasSavedToken ? SAVED_TOKEN_MASK : '');
+    latestValidatedTokenKey.current = null;
     if (server.status === 'error' && server.validationError) {
       setTokenValidationState('error');
       setTokenValidationMessage(server.validationError);
@@ -624,7 +712,68 @@ export const McpServersSettings = ({
     setTokenInputValue(value);
     setTokenValidationState('idle');
     setTokenValidationMessage('');
+    latestValidatedTokenKey.current = null;
   };
+
+  useEffect(() => {
+    const isSavedTokenPlaceholder =
+      hasSavedTokenInModal && tokenInputValue === SAVED_TOKEN_MASK;
+    const token = tokenInputValue.trim();
+    const editingServerName = editingServer?.name;
+    const editingServerUrl = editingServer?.url;
+    const tokenKey = editingServerName
+      ? `${editingServerName}::${token}`
+      : null;
+    const shouldValidate =
+      Boolean(editingServerName) &&
+      Boolean(editingServerUrl) &&
+      canManageMcp &&
+      Boolean(token) &&
+      !isSavedTokenPlaceholder &&
+      tokenKey !== latestValidatedTokenKey.current;
+
+    const timeoutId = shouldValidate
+      ? (() => {
+          const requestId = latestTokenValidationRequest.current + 1;
+          latestTokenValidationRequest.current = requestId;
+          latestValidatedTokenKey.current = tokenKey;
+          setTokenValidationState('validating');
+          setTokenValidationMessage('Validating token...');
+          return window.setTimeout(() => {
+            if (!editingServerName || !editingServerUrl) {
+              return;
+            }
+            void validateTokenInput(
+              {
+                id: editingServerName,
+                name: editingServerName,
+                url: editingServerUrl,
+                enabled: true,
+                status: 'unknown',
+                toolCount: 0,
+                hasToken: true,
+                hasUserToken: true,
+              },
+              token,
+              requestId,
+            );
+          }, 500);
+        })()
+      : undefined;
+
+    return () => {
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [
+    canManageMcp,
+    editingServer?.name,
+    editingServer?.url,
+    hasSavedTokenInModal,
+    tokenInputValue,
+    validateTokenInput,
+  ]);
 
   const clearTokenInput = () => {
     if (hasSavedTokenInModal) {
@@ -633,6 +782,7 @@ export const McpServersSettings = ({
     setTokenInputValue('');
     setTokenValidationState('idle');
     setTokenValidationMessage('');
+    latestValidatedTokenKey.current = null;
   };
 
   const forgetSavedToken = () => {
@@ -640,6 +790,7 @@ export const McpServersSettings = ({
     setTokenInputValue('');
     setTokenValidationState('idle');
     setTokenValidationMessage('');
+    latestValidatedTokenKey.current = null;
   };
 
   let tokenInputStateClass = '';
@@ -971,6 +1122,7 @@ export const McpServersSettings = ({
               isDisabled={
                 !canManageMcp ||
                 Boolean(isSaving[editingServer?.name ?? '']) ||
+                tokenValidationState === 'validating' ||
                 !tokenInputValue.trim()
               }
               className={classes.modalActionButton}
