@@ -307,8 +307,6 @@ export class DataIndexService {
       whereClause = `and: [${conditions.join(', ')}]`;
     }
 
-    console.log(`Where Clause: ${whereClause}`);
-
     const graphQlQuery = buildGraphQlQuery({
       type: 'ProcessInstances',
       queryBody:

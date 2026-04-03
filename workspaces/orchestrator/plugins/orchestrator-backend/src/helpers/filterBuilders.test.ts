@@ -18,7 +18,6 @@ import {
   FieldFilterOperatorEnum,
   Filter,
   IntrospectionField,
-  ProcessInstanceState,
   ProcessInstanceStatusDTO,
   TypeKind,
   TypeName,
