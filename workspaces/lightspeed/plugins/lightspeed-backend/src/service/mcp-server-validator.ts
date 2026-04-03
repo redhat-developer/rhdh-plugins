@@ -32,9 +32,13 @@ export class McpServerValidator {
   constructor(private readonly logger: LoggerService) {}
 
   async validate(url: string, token: string): Promise<McpValidationResult> {
+    // Bearer prefix is required here because the validator hits the MCP server
+    // directly (not through LCS). LCS handles its own auth scheme via
+    // MCP-HEADERS (see buildMcpHeaders in router.ts), but direct MCP
+    // Streamable HTTP endpoints expect standard Bearer authentication.
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      Authorization: `${token}`,
+      Authorization: `Bearer ${token}`,
       Accept: 'application/json, text/event-stream',
     };
 
