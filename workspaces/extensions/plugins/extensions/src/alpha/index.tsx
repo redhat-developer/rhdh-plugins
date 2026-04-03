@@ -80,6 +80,9 @@ export const extensionsTranslationsModule: ReturnType<
 /*
  * @alpha
  */
+/**
+ * @alpha
+ */
 const extensionsPlugin: ReturnType<typeof createFrontendPlugin> =
   createFrontendPlugin({
     pluginId: 'extensions',
