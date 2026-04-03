@@ -427,6 +427,7 @@ export const McpServersSettings = ({
   const [editingServerId, setEditingServerId] = useState<string | null>(null);
   const [tokenInputValue, setTokenInputValue] = useState('');
   const [hasSavedTokenInModal, setHasSavedTokenInModal] = useState(false);
+  const [hadSavedTokenAtOpen, setHadSavedTokenAtOpen] = useState(false);
   const [tokenValidationState, setTokenValidationState] =
     useState<TokenValidationState>('idle');
   const [tokenValidationMessage, setTokenValidationMessage] = useState('');
@@ -685,6 +686,7 @@ export const McpServersSettings = ({
     setEditingServerId(null);
     setTokenInputValue('');
     setHasSavedTokenInModal(false);
+    setHadSavedTokenAtOpen(false);
     setTokenValidationState('idle');
     setTokenValidationMessage('');
     latestValidatedTokenKey.current = null;
@@ -694,6 +696,7 @@ export const McpServersSettings = ({
     setEditingServerId(server.id);
     const hasSavedToken = server.hasToken;
     setHasSavedTokenInModal(hasSavedToken);
+    setHadSavedTokenAtOpen(hasSavedToken);
     setTokenInputValue(hasSavedToken ? SAVED_TOKEN_MASK : '');
     latestValidatedTokenKey.current = null;
     if (server.status === 'error' && server.validationError) {
@@ -887,6 +890,8 @@ export const McpServersSettings = ({
     tokenInputValue,
     validateServer,
   ]);
+
+  const allowEmptyTokenSave = hadSavedTokenAtOpen && !tokenInputValue.trim();
 
   return (
     <div
@@ -1123,7 +1128,7 @@ export const McpServersSettings = ({
                 !canManageMcp ||
                 Boolean(isSaving[editingServer?.name ?? '']) ||
                 tokenValidationState === 'validating' ||
-                !tokenInputValue.trim()
+                (!tokenInputValue.trim() && !allowEmptyTokenSave)
               }
               className={classes.modalActionButton}
             >
