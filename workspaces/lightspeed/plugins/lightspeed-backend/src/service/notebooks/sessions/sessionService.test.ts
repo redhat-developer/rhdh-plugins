@@ -32,7 +32,7 @@ describe('SessionService', () => {
   const mockUserId = 'user:default/guest';
   const mockUserId2 = 'user:default/other';
 
-  let service;
+  let service!: SessionService;
 
   beforeAll(() => {
     // ERROR on unhandled requests to catch any real HTTP calls
