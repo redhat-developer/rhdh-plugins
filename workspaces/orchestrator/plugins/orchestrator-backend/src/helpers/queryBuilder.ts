@@ -14,20 +14,34 @@
  * limitations under the License.
  */
 
+import { FilterClause } from '../types/filterClause';
 import { Pagination, PaginationQueryVariable } from '../types/pagination';
-import { buildFilterCondition } from './filterBuilder';
 
 export function buildGraphQlQuery(args: {
   type: 'ProcessDefinitions' | 'ProcessInstances' | 'Jobs';
   queryBody: string;
   whereClause?: string;
   pagination?: Pagination;
-  filterCondition?: any;
+  filterCondition?: FilterClause;
 }): string {
-  // TODO: add variables to the top, https://graphql.org/learn/queries/#variables
-  let query = `query ($paginationInfo: Pagination, $orderByInfo: ${args.type.slice(0, -1)}OrderBy, $${args.filterCondition.clauseVariableName}: String){${args.type}`;
+  const queryHeaderStart = 'query (';
+  const queryHeaderEnd = ')';
 
+  const queryHeaderPaginationOrderByParams = `$paginationInfo: Pagination, $orderByInfo: ${args.type.slice(0, -1)}OrderBy`;
+
+  const filterParams = args.filterCondition?.clauseVariable
+    ?.map(cl => {
+      return `$${cl.clauseVariableName}: ${cl.clauseVariableType}`;
+    })
+    .join(', ');
+
+  const params = [queryHeaderPaginationOrderByParams, filterParams]
+    .filter(Boolean)
+    .join(', ');
+
+  let query = `${queryHeaderStart}${params}${queryHeaderEnd}{${args.type}`;
   const whereClause = buildWhereClause(args.whereClause);
+
   const paginationClause = 'pagination: $paginationInfo';
   const orderByClause = 'orderBy: $orderByInfo';
 
@@ -74,4 +88,20 @@ export function buildPaginationVariables(
     paginationVariable.offset = pagination.offset;
   }
   return paginationVariable;
+}
+
+export function buildQueryParamVariable(
+  pagination?: Pagination,
+  filterCondition?: FilterClause,
+) {
+  const paramVariables: any = {
+    paginationInfo: buildPaginationVariables(pagination),
+    orderByInfo: buildOrderByVariables(pagination),
+  };
+
+  filterCondition?.clauseVariable?.forEach(p => {
+    paramVariables[p.clauseVariableName] = p.formattedValue;
+  });
+
+  return paramVariables;
 }

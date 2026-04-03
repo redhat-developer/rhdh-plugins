@@ -24,12 +24,13 @@ import {
   TypeName,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { FilterClause } from '../types/filterClause';
 import {
   buildFilterCondition,
   isOperatorAllowedForField,
 } from './filterBuilder';
 
-describe.skip('isOperatorAllowedForField', () => {
+describe('isOperatorAllowedForField', () => {
   const testIsValidOperator = (
     operator: FieldFilterOperatorEnum,
     fieldDef: IntrospectionField,
@@ -126,15 +127,17 @@ describe('column filters', () => {
     name: string;
     introspectionFields: IntrospectionField[];
     filter: Filter | undefined;
-    expectedResult: string;
+    expectedResult: string | any;
+    expectedFormattedValue: string | boolean | any;
   };
-  describe.skip('empty filter testcases', () => {
+  describe('empty filter testcases', () => {
     const emptyFilterTestCases: FilterTestCase[] = [
       {
-        name: 'returns empty string when filters are null or undefined',
+        name: 'returns empty object when filters are null or undefined',
         introspectionFields: [],
         filter: undefined,
-        expectedResult: '',
+        expectedResult: {},
+        expectedFormattedValue: undefined,
       },
     ];
     emptyFilterTestCases.forEach(
@@ -145,7 +148,7 @@ describe('column filters', () => {
             'ProcessInstance',
             filter,
           );
-          expect(result).toBe(expectedResult);
+          expect(result).toEqual(expectedResult);
         });
       },
     );
@@ -162,209 +165,249 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.Eq,
           'Hello World Workflow',
         ),
-        expectedResult: 'name: {equal: "Hello World Workflow"}',
+        expectedResult: 'name: {equal: $variable1}',
+        expectedFormattedValue: ['Hello World Workflow'],
       },
-      // {
-      //   name: 'returns correct filter for single string field with like operator',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //   ],
-      //   filter: createFieldFilter(
-      //     'name',
-      //     FieldFilterOperatorEnum.Like,
-      //     'Hello%',
-      //   ),
-      //   expectedResult: 'name: {like: "Hello%"}',
-      // },
-      // {
-      //   name: 'returns correct filter for string field with isNull operator (true)',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //   ],
-      //   filter: createFieldFilter('name', FieldFilterOperatorEnum.IsNull, true),
-      //   expectedResult: 'name: {isNull: true}',
-      // },
-      // {
-      //   name: 'returns correct filter for string field with isNull operator (false)',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //   ],
-      //   filter: createFieldFilter(
-      //     'name',
-      //     FieldFilterOperatorEnum.IsNull,
-      //     false,
-      //   ),
-      //   expectedResult: 'name: {isNull: false}',
-      // },
-      // {
-      //   name: 'returns correct filter for string field with isNull operator ("true" as string)',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //   ],
-      //   filter: createFieldFilter(
-      //     'name',
-      //     FieldFilterOperatorEnum.IsNull,
-      //     'True',
-      //   ),
-      //   expectedResult: 'name: {isNull: true}',
-      // },
-      // {
-      //   name: 'returns correct filter for string field with isNull operator ("false" as string)',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //   ],
-      //   filter: createFieldFilter(
-      //     'name',
-      //     FieldFilterOperatorEnum.IsNull,
-      //     'FALSE',
-      //   ),
-      //   expectedResult: 'name: {isNull: false}',
-      // },
-      // {
-      //   name: 'returns correct filter for string field with in operator (single value)',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //   ],
-      //   filter: createFieldFilter('name', FieldFilterOperatorEnum.In, [
-      //     'Test String',
-      //   ]),
-      //   expectedResult: 'name: {in: ["Test String"]}',
-      // },
-      // {
-      //   name: 'returns correct filter for string field with in operator (multiple values)',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //   ],
-      //   filter: createFieldFilter('name', FieldFilterOperatorEnum.In, [
-      //     'Test String 1',
-      //     'Test String 2',
-      //     'Test String 3',
-      //   ]),
-      //   expectedResult:
-      //     'name: {in: ["Test String 1", "Test String 2", "Test String 3"]}',
-      // },
-      // {
-      //   name: 'returns correct OR filter for two string fields with equal operator',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //     createIntrospectionField('processName', TypeName.String),
-      //   ],
-      //   filter: {
-      //     operator: 'OR',
-      //     filters: [
-      //       createFieldFilter(
-      //         'name',
-      //         FieldFilterOperatorEnum.Eq,
-      //         'Hello World Workflow',
-      //       ),
-      //       createFieldFilter(
-      //         'processName',
-      //         FieldFilterOperatorEnum.Eq,
-      //         'Greeting workflow',
-      //       ),
-      //     ],
-      //   },
-      //   expectedResult:
-      //     'or: {name: {equal: "Hello World Workflow"}, processName: {equal: "Greeting workflow"}}',
-      // },
-      // {
-      //   name: 'returns correct filter for string field with like and isNull operators',
-      //   introspectionFields: [
-      //     createIntrospectionField('description', TypeName.String),
-      //   ],
-      //   filter: {
-      //     operator: 'OR',
-      //     filters: [
-      //       createFieldFilter(
-      //         'description',
-      //         FieldFilterOperatorEnum.Like,
-      //         '%Test%',
-      //       ),
-      //       createFieldFilter(
-      //         'description',
-      //         FieldFilterOperatorEnum.IsNull,
-      //         true,
-      //       ),
-      //     ],
-      //   },
-      //   expectedResult:
-      //     'or: {description: {like: "%Test%"}, description: {isNull: true}}',
-      // },
-      // {
-      //   name: 'returns correct filter for string field with in, like, equal, and isNull operators',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //   ],
-      //   filter: {
-      //     operator: 'OR',
-      //     filters: [
-      //       createFieldFilter('name', FieldFilterOperatorEnum.In, [
-      //         'Test String 1',
-      //         'Test String 2',
-      //       ]),
-      //       createFieldFilter('name', FieldFilterOperatorEnum.Like, '%Test%'),
-      //       createFieldFilter(
-      //         'name',
-      //         FieldFilterOperatorEnum.Eq,
-      //         'Exact Match',
-      //       ),
-      //       createFieldFilter('name', FieldFilterOperatorEnum.IsNull, false),
-      //     ],
-      //   },
-      //   expectedResult:
-      //     'or: {name: {in: ["Test String 1", "Test String 2"]}, name: {like: "%Test%"}, name: {equal: "Exact Match"}, name: {isNull: false}}',
-      // },
-      // {
-      //   name: 'returns correct filter for string field with in, like, equal, and isNull operators',
-      //   introspectionFields: [
-      //     createIntrospectionField('name', TypeName.String),
-      //   ],
-      //   filter: {
-      //     operator: 'AND',
-      //     filters: [
-      //       createFieldFilter('name', FieldFilterOperatorEnum.In, [
-      //         'Test String 1',
-      //         'Test String 2',
-      //       ]),
-      //       createFieldFilter('name', FieldFilterOperatorEnum.Like, '%Test%'),
-      //       createFieldFilter(
-      //         'name',
-      //         FieldFilterOperatorEnum.Eq,
-      //         'Exact Match',
-      //       ),
-      //       createFieldFilter('name', FieldFilterOperatorEnum.IsNull, false),
-      //     ],
-      //   },
-      //   expectedResult:
-      //     'and: {name: {in: ["Test String 1", "Test String 2"]}, name: {like: "%Test%"}, name: {equal: "Exact Match"}, name: {isNull: false}}',
-      // },
+      {
+        name: 'returns correct filter for single string field with like operator',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+        ],
+        filter: createFieldFilter(
+          'name',
+          FieldFilterOperatorEnum.Like,
+          'Hello%',
+        ),
+        expectedResult: 'name: {like: $variable1}',
+        expectedFormattedValue: ['Hello%'],
+      },
+      {
+        name: 'returns correct filter for string field with isNull operator (true)',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+        ],
+        filter: createFieldFilter('name', FieldFilterOperatorEnum.IsNull, true),
+        expectedResult: 'name: {isNull: $variable1}',
+        expectedFormattedValue: [true],
+      },
+      {
+        name: 'returns correct filter for string field with isNull operator (false)',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+        ],
+        filter: createFieldFilter(
+          'name',
+          FieldFilterOperatorEnum.IsNull,
+          false,
+        ),
+        expectedResult: 'name: {isNull: $variable1}',
+        expectedFormattedValue: [false],
+      },
+      {
+        name: 'returns correct filter for string field with isNull operator ("true" as string)',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+        ],
+        filter: createFieldFilter(
+          'name',
+          FieldFilterOperatorEnum.IsNull,
+          'True',
+        ),
+        expectedResult: 'name: {isNull: $variable1}',
+        expectedFormattedValue: [true],
+      },
+      {
+        name: 'returns correct filter for string field with isNull operator ("false" as string)',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+        ],
+        filter: createFieldFilter(
+          'name',
+          FieldFilterOperatorEnum.IsNull,
+          'FALSE',
+        ),
+        expectedResult: 'name: {isNull: $variable1}',
+        expectedFormattedValue: [false],
+      },
+      {
+        name: 'returns correct filter for string field with in operator (single value)',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+        ],
+        filter: createFieldFilter('name', FieldFilterOperatorEnum.In, [
+          'Test String',
+        ]),
+        expectedResult: 'name: {in: $variable1}',
+        expectedFormattedValue: [['Test String']],
+      },
+      {
+        name: 'returns correct filter for string field with in operator (multiple values)',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+        ],
+        filter: createFieldFilter('name', FieldFilterOperatorEnum.In, [
+          'Test String 1',
+          'Test String 2',
+          'Test String 3',
+        ]),
+        expectedResult: 'name: {in: $variable1}',
+        expectedFormattedValue: [
+          ['Test String 1', 'Test String 2', 'Test String 3'],
+        ],
+      },
+      {
+        name: 'returns correct OR filter for two string fields with equal operator',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+          createIntrospectionField('processName', TypeName.String),
+        ],
+        filter: {
+          operator: 'OR',
+          filters: [
+            createFieldFilter(
+              'name',
+              FieldFilterOperatorEnum.Eq,
+              'Hello World Workflow',
+            ),
+            createFieldFilter(
+              'processName',
+              FieldFilterOperatorEnum.Eq,
+              'Greeting workflow',
+            ),
+          ],
+        },
+        expectedResult:
+          'or: {name: {equal: $variable1}, processName: {equal: $variable2}}',
+        expectedFormattedValue: ['Hello World Workflow', 'Greeting workflow'],
+      },
+      {
+        name: 'returns correct filter for string field with like and isNull operators',
+        introspectionFields: [
+          createIntrospectionField('description', TypeName.String),
+        ],
+        filter: {
+          operator: 'OR',
+          filters: [
+            createFieldFilter(
+              'description',
+              FieldFilterOperatorEnum.Like,
+              '%Test%',
+            ),
+            createFieldFilter(
+              'description',
+              FieldFilterOperatorEnum.IsNull,
+              true,
+            ),
+          ],
+        },
+        expectedResult:
+          'or: {description: {like: $variable1}, description: {isNull: $variable2}}',
+        expectedFormattedValue: ['%Test%', true],
+      },
+      {
+        name: 'returns correct filter for string field with in, like, equal, and isNull operators',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+        ],
+        filter: {
+          operator: 'OR',
+          filters: [
+            createFieldFilter('name', FieldFilterOperatorEnum.In, [
+              'Test String 1',
+              'Test String 2',
+            ]),
+            createFieldFilter('name', FieldFilterOperatorEnum.Like, '%Test%'),
+            createFieldFilter(
+              'name',
+              FieldFilterOperatorEnum.Eq,
+              'Exact Match',
+            ),
+            createFieldFilter('name', FieldFilterOperatorEnum.IsNull, false),
+          ],
+        },
+        expectedResult:
+          'or: {name: {in: $variable1}, name: {like: $variable2}, name: {equal: $variable3}, name: {isNull: $variable4}}',
+        expectedFormattedValue: [
+          ['Test String 1', 'Test String 2'],
+          '%Test%',
+          'Exact Match',
+          false,
+        ],
+      },
+      {
+        name: 'returns correct filter for string field with in, like, equal, and isNull operators',
+        introspectionFields: [
+          createIntrospectionField('name', TypeName.String),
+        ],
+        filter: {
+          operator: 'AND',
+          filters: [
+            createFieldFilter('name', FieldFilterOperatorEnum.In, [
+              'Test String 1',
+              'Test String 2',
+            ]),
+            createFieldFilter('name', FieldFilterOperatorEnum.Like, '%Test%'),
+            createFieldFilter(
+              'name',
+              FieldFilterOperatorEnum.Eq,
+              'Exact Match',
+            ),
+            createFieldFilter('name', FieldFilterOperatorEnum.IsNull, false),
+          ],
+        },
+        expectedResult:
+          'and: {name: {in: $variable1}, name: {like: $variable2}, name: {equal: $variable3}, name: {isNull: $variable4}}',
+        expectedFormattedValue: [
+          ['Test String 1', 'Test String 2'],
+          '%Test%',
+          'Exact Match',
+          false,
+        ],
+      },
     ];
     stringTestCases.forEach(
-      ({ name, introspectionFields, filter, expectedResult }) => {
+      ({
+        name,
+        introspectionFields,
+        filter,
+        expectedResult,
+        expectedFormattedValue,
+      }) => {
         it(`${name}`, () => {
-          const result = buildFilterCondition(
+          const result: FilterClause = buildFilterCondition(
             introspectionFields,
             'ProcessInstance',
             filter,
           );
-          expect(result).toBe(expectedResult);
+          expect(result).toBeDefined();
+          let formattedClause = expectedResult;
+          result.clauseVariable.forEach((item, index) => {
+            formattedClause = formattedClause.replace(
+              `$variable${index + 1}`,
+              `$${item.clauseVariableName}`,
+            );
+            expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+          });
+          expect(formattedClause).toBe(result.clause);
         });
       },
     );
   });
-  describe.skip('idArgument testcases', () => {
+  describe('idArgument testcases', () => {
     const idTestCases: FilterTestCase[] = [
       {
         name: 'returns correct filter for single id field with equal operator',
         introspectionFields: [createIntrospectionField('id', TypeName.Id)],
         filter: createFieldFilter('id', FieldFilterOperatorEnum.Eq, 'idA'),
-        expectedResult: 'id: {equal: "idA"}',
+        expectedResult: 'id: {equal: $variable1}',
+        expectedFormattedValue: ['idA'],
       },
       {
         name: 'returns correct filter for single id field with isNull operator (false as boolean)',
         introspectionFields: [createIntrospectionField('id', TypeName.Id)],
         filter: createFieldFilter('id', FieldFilterOperatorEnum.IsNull, false),
-        expectedResult: 'id: {isNull: false}',
+        expectedResult: 'id: {isNull: $variable1}',
+        expectedFormattedValue: [false],
       },
       {
         name: 'returns correct filter for single id field with isNull operator (false as string)',
@@ -374,7 +417,8 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.IsNull,
           'false',
         ),
-        expectedResult: 'id: {isNull: false}',
+        expectedResult: 'id: {isNull: $variable1}',
+        expectedFormattedValue: [false],
       },
       {
         name: 'returns correct filter for single id field with IN operator',
@@ -384,7 +428,8 @@ describe('column filters', () => {
           'idB',
           'idC',
         ]),
-        expectedResult: 'id: {in: ["idA", "idB", "idC"]}',
+        expectedResult: 'id: {in: $variable1}',
+        expectedFormattedValue: [['idA', 'idB', 'idC']],
       },
       {
         name: 'returns correct OR filter for multiple id fields with equal, isNull, and IN operators',
@@ -405,7 +450,8 @@ describe('column filters', () => {
           ],
         },
         expectedResult:
-          'or: {id: {equal: "idA"}, processId: {isNull: true}, id: {in: ["idA", "idB", "idC"]}}',
+          'or: {id: {equal: $variable1}, processId: {isNull: $variable2}, id: {in: $variable3}}',
+        expectedFormattedValue: ['idA', true, ['idA', 'idB', 'idC']],
       },
       {
         name: 'returns correct AND filter for multiple id fields with equal, isNull, and IN operators',
@@ -426,24 +472,40 @@ describe('column filters', () => {
           ],
         },
         expectedResult:
-          'and: {id: {equal: "idA"}, processId: {isNull: true}, id: {in: ["idA", "idB", "idC"]}}',
+          'and: {id: {equal: $variable1}, processId: {isNull: $variable2}, id: {in: $variable3}}',
+        expectedFormattedValue: ['idA', true, ['idA', 'idB', 'idC']],
       },
     ];
 
     idTestCases.forEach(
-      ({ name, introspectionFields, filter, expectedResult }) => {
+      ({
+        name,
+        introspectionFields,
+        filter,
+        expectedResult,
+        expectedFormattedValue,
+      }) => {
         it(`${name}`, () => {
           const result = buildFilterCondition(
             introspectionFields,
             'ProcessInstance',
             filter,
           );
-          expect(result).toBe(expectedResult);
+          expect(result).toBeDefined();
+          let formattedClause = expectedResult;
+          result.clauseVariable.forEach((item, index) => {
+            formattedClause = formattedClause.replace(
+              `$variable${index + 1}`,
+              `$${item.clauseVariableName}`,
+            );
+            expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+          });
+          expect(formattedClause).toBe(result.clause);
         });
       },
     );
   });
-  describe.skip('dateArgument testcases', () => {
+  describe('dateArgument testcases', () => {
     const testDate1 = '2024-10-10T09:54:40.759Z';
     const testDate2 = '2025-10-10T09:54:40.759Z';
 
@@ -456,7 +518,8 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.Eq,
           testDate1,
         ),
-        expectedResult: `start: {equal: "${testDate1}"}`,
+        expectedResult: `start: {equal: $variable1}`,
+        expectedFormattedValue: [testDate1],
       },
       {
         name: 'returns correct filter for single date field with isNull operator (false as boolean)',
@@ -466,7 +529,8 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.IsNull,
           false,
         ),
-        expectedResult: 'start: {isNull: false}',
+        expectedResult: 'start: {isNull: $variable1}',
+        expectedFormattedValue: [false],
       },
       {
         name: 'returns correct filter for single date field with isNull operator (false as string)',
@@ -476,7 +540,8 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.IsNull,
           'false',
         ),
-        expectedResult: 'start: {isNull: false}',
+        expectedResult: 'start: {isNull: $variable1}',
+        expectedFormattedValue: [false],
       },
       {
         name: 'returns correct filter for single date field with GT operator',
@@ -486,7 +551,8 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.Gt,
           testDate1,
         ),
-        expectedResult: `start: {greaterThan: "${testDate1}"}`,
+        expectedResult: `start: {greaterThan: $variable1}`,
+        expectedFormattedValue: [testDate1],
       },
       {
         name: 'returns correct filter for single date field with GTE operator',
@@ -496,7 +562,8 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.Gte,
           testDate1,
         ),
-        expectedResult: `start: {greaterThanEqual: "${testDate1}"}`,
+        expectedResult: `start: {greaterThanEqual: $variable1}`,
+        expectedFormattedValue: [testDate1],
       },
       {
         name: 'returns correct filter for single date field with LT operator',
@@ -506,7 +573,8 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.Lt,
           testDate1,
         ),
-        expectedResult: `start: {lessThan: "${testDate1}"}`,
+        expectedResult: `start: {lessThan: $variable1}`,
+        expectedFormattedValue: [testDate1],
       },
       {
         name: 'returns correct filter for single date field with LTE operator',
@@ -516,7 +584,8 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.Lte,
           testDate1,
         ),
-        expectedResult: `start: {lessThanEqual: "${testDate1}"}`,
+        expectedResult: `start: {lessThanEqual: $variable1}`,
+        expectedFormattedValue: [testDate1],
       },
       {
         name: 'returns correct filter for single date field with BETWEEN operator',
@@ -525,7 +594,8 @@ describe('column filters', () => {
           testDate1,
           testDate2,
         ]),
-        expectedResult: `start: {between: {from: "${testDate1}", to: "${testDate2}"}}`,
+        expectedResult: `start: {between: {from: $variable1, to: $variable2}}`,
+        expectedFormattedValue: [testDate1, testDate2],
       },
       {
         name: 'returns correct OR filter for multiple id fields with equal, isNull, and GT operators',
@@ -541,7 +611,8 @@ describe('column filters', () => {
             createFieldFilter('end', FieldFilterOperatorEnum.Gt, testDate1),
           ],
         },
-        expectedResult: `or: {start: {equal: "${testDate1}"}, end: {isNull: false}, end: {greaterThan: "${testDate1}"}}`,
+        expectedResult: `or: {start: {equal: $variable1}, end: {isNull: $variable2}, end: {greaterThan: $variable3}}`,
+        expectedFormattedValue: [testDate1, false, testDate1],
       },
       {
         name: 'returns correct OR filter for multiple id fields with equal, isNull, and GTE operators',
@@ -557,7 +628,8 @@ describe('column filters', () => {
             createFieldFilter('end', FieldFilterOperatorEnum.Gte, testDate1),
           ],
         },
-        expectedResult: `or: {start: {equal: "${testDate1}"}, end: {isNull: false}, end: {greaterThanEqual: "${testDate1}"}}`,
+        expectedResult: `or: {start: {equal: $variable1}, end: {isNull: $variable2}, end: {greaterThanEqual: $variable3}}`,
+        expectedFormattedValue: [testDate1, false, testDate1],
       },
       {
         name: 'returns correct AND filter for multiple id fields with equal, isNull, and LTE operators',
@@ -573,7 +645,8 @@ describe('column filters', () => {
             createFieldFilter('end', FieldFilterOperatorEnum.Lte, testDate1),
           ],
         },
-        expectedResult: `and: {start: {equal: "${testDate1}"}, end: {isNull: false}, end: {lessThanEqual: "${testDate1}"}}`,
+        expectedResult: `and: {start: {equal: $variable1}, end: {isNull: $variable2}, end: {lessThanEqual: $variable3}}`,
+        expectedFormattedValue: [testDate1, false, testDate1],
       },
       {
         name: 'returns correct AND filter for multiple id fields with equal, isNull, LTE, and between operators',
@@ -593,24 +666,46 @@ describe('column filters', () => {
             ]),
           ],
         },
-        expectedResult: `and: {start: {equal: "${testDate1}"}, end: {isNull: false}, end: {lessThanEqual: "${testDate1}"}, start: {between: {from: "${testDate1}", to: "${testDate2}"}}}`,
+        expectedResult: `and: {start: {equal: $variable1}, end: {isNull: $variable2}, end: {lessThanEqual: $variable3}, start: {between: {from: $variable4, to: $variable5}}}`,
+        expectedFormattedValue: [
+          testDate1,
+          false,
+          testDate1,
+          testDate1,
+          testDate2,
+        ],
       },
     ];
 
     idTestCases.forEach(
-      ({ name, introspectionFields, filter, expectedResult }) => {
+      ({
+        name,
+        introspectionFields,
+        filter,
+        expectedResult,
+        expectedFormattedValue,
+      }) => {
         it(`${name}`, () => {
           const result = buildFilterCondition(
             introspectionFields,
             'ProcessInstance',
             filter,
           );
-          expect(result).toBe(expectedResult);
+          expect(result).toBeDefined();
+          let formattedClause = expectedResult;
+          result.clauseVariable.forEach((item, index) => {
+            formattedClause = formattedClause.replace(
+              `$variable${index + 1}`,
+              `$${item.clauseVariableName}`,
+            );
+            expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+          });
+          expect(formattedClause).toBe(result.clause);
         });
       },
     );
   });
-  describe.skip('enumArgument testcases', () => {
+  describe('enumArgument testcases', () => {
     const idTestCases: FilterTestCase[] = [
       {
         name: 'returns correct filter for state enum field with equal operator',
@@ -622,19 +717,35 @@ describe('column filters', () => {
           FieldFilterOperatorEnum.Eq,
           ProcessInstanceStatusDTO.Completed,
         ),
-        expectedResult: `state: {equal: ${ProcessInstanceState.Completed}}`,
+        expectedResult: `state: {equal: $variable1}`,
+        expectedFormattedValue: ['COMPLETED'],
       },
     ];
 
     idTestCases.forEach(
-      ({ name, introspectionFields, filter, expectedResult }) => {
+      ({
+        name,
+        introspectionFields,
+        filter,
+        expectedResult,
+        expectedFormattedValue,
+      }) => {
         it(`${name}`, () => {
           const result = buildFilterCondition(
             introspectionFields,
             'ProcessInstance',
             filter,
           );
-          expect(result).toBe(expectedResult);
+          expect(result).toBeDefined();
+          let formattedClause = expectedResult;
+          result.clauseVariable.forEach((item, index) => {
+            formattedClause = formattedClause.replace(
+              `$variable${index + 1}`,
+              `$${item.clauseVariableName}`,
+            );
+            expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+          });
+          expect(formattedClause).toBe(result.clause);
         });
       },
     );
