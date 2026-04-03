@@ -35,7 +35,7 @@ describe('McpServerValidator auth header behavior', () => {
     jest.clearAllMocks();
   });
 
-  it('always prepends Bearer and returns invalid credentials on 401/403', async () => {
+  it('tries raw token first, then Bearer on 401/403', async () => {
     const fetchMock = jest
       .fn()
       .mockResolvedValue(new Response(null, { status: 401 }));
@@ -50,13 +50,16 @@ describe('McpServerValidator auth header behavior', () => {
       tools: [],
       error: 'Invalid credentials — server returned 401/403',
     });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({
+      Authorization: 'raw-token',
+    });
+    expect(fetchMock.mock.calls[1][1]?.headers).toMatchObject({
       Authorization: 'Bearer raw-token',
     });
   });
 
-  it('still prepends Bearer when token already has an auth scheme', async () => {
+  it('uses token as-is when it already has an auth scheme', async () => {
     const fetchMock = jest
       .fn()
       .mockResolvedValue(new Response(null, { status: 401 }));
@@ -68,7 +71,7 @@ describe('McpServerValidator auth header behavior', () => {
     expect(result.valid).toBe(false);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({
-      Authorization: 'Bearer Basic abc123',
+      Authorization: 'Basic abc123',
     });
   });
 });
