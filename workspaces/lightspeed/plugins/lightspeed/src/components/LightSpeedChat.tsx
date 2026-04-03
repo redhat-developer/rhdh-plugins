@@ -1125,9 +1125,7 @@ export const LightspeedChat = ({
           value={draftMessage}
           onChange={handleDraftMessage}
           hasStopButton={isSendButtonDisabled}
-          handleStopButton={
-            isSendButtonDisabled ? handleStopButton : undefined
-          }
+          handleStopButton={isSendButtonDisabled ? handleStopButton : undefined}
           buttonProps={{
             attach: {
               inputTestId: 'attachment-input',
