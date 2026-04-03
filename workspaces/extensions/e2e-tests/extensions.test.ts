@@ -32,6 +32,10 @@ const LOCALE_DISPLAY_NAMES: Record<string, string> = {
   ja: '日本語',
 };
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * Get the display name for a locale code
  */
@@ -44,18 +48,26 @@ test.describe('Admin > Extensions', () => {
   let extensions: Extensions;
   let extensionHelper: ExtensionHelper;
   let translations: ExtensionsMessages;
-  let sharedPage: Page;
-  let sharedContext: BrowserContext;
+  let sharedPage!: Page;
+  let sharedContext!: BrowserContext;
 
   async function switchToLocale(page: Page, locale: string): Promise<void> {
     const baseLocale = locale.split('-')[0];
     if (baseLocale === 'en') return;
 
     const displayName = getLocaleDisplayName(locale);
-    await page.getByRole('link', { name: 'Settings' }).click();
-    await page.getByRole('button', { name: 'English' }).click();
+    const localeDisplayPattern = new RegExp(
+      `^(${Object.values(LOCALE_DISPLAY_NAMES).map(escapeRegExp).join('|')})$`,
+    );
+
+    // Navigating directly avoids flaky duplicate "Settings" links in sidebar.
+    await page.goto('/settings');
+    await page
+      .getByRole('button', { name: localeDisplayPattern })
+      .first()
+      .click();
     await page.getByRole('option', { name: displayName }).click();
-    await page.locator('a').filter({ hasText: 'Home' }).click();
+    await page.goto('/');
   }
 
   test.beforeAll(async ({ browser }) => {
@@ -74,7 +86,9 @@ test.describe('Admin > Extensions', () => {
   });
 
   test.afterAll(async () => {
-    await sharedContext.close();
+    if (sharedContext) {
+      await sharedContext.close();
+    }
   });
 
   test.describe('Extensions > Catalog', () => {
