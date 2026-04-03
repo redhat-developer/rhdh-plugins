@@ -527,19 +527,30 @@ export const McpServersSettings = ({ onClose }: McpServersSettingsProps) => {
                       displayStatus === 'tokenRequired';
                     const isChecked = isUnavailable ? false : server.enabled;
                     const isRowSaving = Boolean(isSaving[server.name]);
-
-                    return (
+                    const isToggleDisabled =
+                      isUnavailable || isRowSaving || !canManageMcp;
+                    const switchControl = (
                       <Switch
                         id={`mcp-switch-${server.id}`}
                         aria-label={`Toggle ${server.name}`}
                         isChecked={isChecked}
-                        isDisabled={
-                          isUnavailable || isRowSaving || !canManageMcp
-                        }
+                        isDisabled={isToggleDisabled}
                         onChange={(_event, checked) => {
                           patchServer(server.name, { enabled: checked });
                         }}
                       />
+                    );
+
+                    if (!isToggleDisabled) {
+                      return switchControl;
+                    }
+
+                    return (
+                      <Tooltip content={displayDetail}>
+                        <Typography component="span">
+                          {switchControl}
+                        </Typography>
+                      </Tooltip>
                     );
                   })()}
                 </Td>
