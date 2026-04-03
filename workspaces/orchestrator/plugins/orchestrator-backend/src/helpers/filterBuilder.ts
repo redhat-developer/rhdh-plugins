@@ -89,7 +89,6 @@ function handleLogicalFilter(
     clauseVariable: subClauses.flatMap(cl => cl.clauseVariable),
   };
   return filterClause;
-  // return `${filter.operator.toLowerCase()}: {${subClauses.join(', ')}}`;
 }
 
 function handleNestedFilter(
@@ -134,8 +133,7 @@ function handleBetweenOperator(filter: FieldFilter): FilterClause {
   const clause = `${filter.field}: {${getGraphQLOperator(
     FieldFilterOperatorEnum.Between,
   )}: {from: $${clauseVariableName1}, to: $${clauseVariableName2}}}`;
-  filterClauseVariableArray.push(filterClauseVariable1);
-  filterClauseVariableArray.push(filterClauseVariable2);
+  filterClauseVariableArray.push(filterClauseVariable1, filterClauseVariable2);
   const filterClause: FilterClause = {
     clause: clause,
     clauseVariable: filterClauseVariableArray,

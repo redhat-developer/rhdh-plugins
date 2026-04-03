@@ -341,7 +341,6 @@ export class DataIndexService {
     return processInstances;
   }
 
-  // TODO: this has a NestedFilter
   public async fetchDefinitionIdsFromInstances(args: {
     targetEntity: string;
   }): Promise<string[]> {
@@ -358,7 +357,7 @@ export class DataIndexService {
         value: targetEntity,
       },
     };
-    // TODO: construct the where clause and filter condition
+
     const filterCondition = buildFilterCondition(
       await this.inspectInputArgument(type),
       type,
