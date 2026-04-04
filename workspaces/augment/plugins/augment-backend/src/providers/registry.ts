@@ -109,6 +109,42 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
       configFields: [],
     },
   ],
+  [
+    'kagenti',
+    {
+      id: 'kagenti',
+      displayName: 'Kagenti',
+      description: 'Kagenti -- Kubernetes-native AI agent operations platform',
+      implemented: true,
+      capabilities: {
+        chat: true,
+        rag: false,
+        safety: false,
+        evaluation: false,
+        conversations: false,
+        mcpTools: true,
+      },
+      configFields: [
+        {
+          key: 'baseUrl',
+          label: 'Kagenti API URL',
+          type: 'string',
+          required: true,
+          description: 'Base URL of the Kagenti API server',
+          placeholder:
+            'https://kagenti-api-kagenti-system.apps.ocp.example.com',
+        },
+        {
+          key: 'agentName',
+          label: 'Default Agent',
+          type: 'string',
+          required: false,
+          description: 'Default agent name for chat',
+          placeholder: 'weather-service',
+        },
+      ],
+    },
+  ],
 ]);
 
 /**

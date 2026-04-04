@@ -894,12 +894,234 @@ export interface Config {
     };
 
     /**
+     * Kagenti agent operations platform configuration.
+     * Required when augment.provider is 'kagenti'.
+     * @visibility backend
+     */
+    kagenti?: {
+      /**
+       * Base URL for the Kagenti API
+       * @visibility backend
+       */
+      baseUrl: string;
+
+      /**
+       * Default Kubernetes namespace for agent/tool operations
+       * Default: 'default'
+       * @visibility backend
+       */
+      namespace?: string;
+
+      /**
+       * Namespace allowlist. If set, only these namespaces are visible.
+       * Overrides showAllNamespaces. If omitted, all enabled namespaces are shown.
+       * @visibility backend
+       */
+      namespaces?: string[];
+
+      /**
+       * Show all Kagenti-enabled namespaces
+       * Ignored when 'namespaces' allowlist is set
+       * Default: true
+       * @visibility backend
+       */
+      showAllNamespaces?: boolean;
+
+      /**
+       * Default agent name for chat (in the default namespace)
+       * If not set, listModels() returns all agents across namespaces
+       * @visibility backend
+       */
+      agentName?: string;
+
+      /**
+       * Agent allowlist for the chat model picker (namespace/name format)
+       * If set, only these agents appear in listModels()
+       * @visibility backend
+       */
+      agents?: string[];
+
+      /**
+       * Skip TLS certificate verification (for self-signed certs)
+       * Default: false
+       * @visibility backend
+       */
+      skipTlsVerify?: boolean;
+
+      /**
+       * Enable verbose logging for streaming events
+       * Default: false
+       * @visibility backend
+       */
+      verboseStreamLogging?: boolean;
+
+      /**
+       * HTTP request timeout in milliseconds (non-streaming)
+       * Default: 30000 (30s)
+       * @visibility backend
+       */
+      requestTimeoutMs?: number;
+
+      /**
+       * Stream request timeout in milliseconds (0 = unlimited)
+       * Default: 300000 (5 min)
+       * @visibility backend
+       */
+      streamTimeoutMs?: number;
+
+      /**
+       * Max retry attempts for retryable HTTP errors (429, 502, 503, 504)
+       * Default: 3
+       * @visibility backend
+       */
+      maxRetries?: number;
+
+      /**
+       * Base delay between retries in milliseconds (exponential backoff)
+       * Default: 1000
+       * @visibility backend
+       */
+      retryBaseDelayMs?: number;
+
+      /**
+       * Seconds before token expiry to refresh (buffer)
+       * Default: 60
+       * @visibility backend
+       */
+      tokenExpiryBufferSeconds?: number;
+
+      /**
+       * Override dashboard URLs returned by Kagenti API
+       * Useful when Augment accesses Kagenti through a different route
+       * @visibility backend
+       */
+      dashboards?: {
+        /** MCP Inspector URL override @visibility backend */
+        mcpInspector?: string;
+        /** MCP Proxy URL override @visibility backend */
+        mcpProxy?: string;
+        /** Distributed traces dashboard URL override @visibility backend */
+        traces?: string;
+        /** Network dashboard URL override @visibility backend */
+        network?: string;
+        /** Keycloak console URL override @visibility backend */
+        keycloakConsole?: string;
+      };
+
+      /**
+       * Sandbox default settings
+       * @visibility backend
+       */
+      sandbox?: {
+        /**
+         * Default session TTL for cleanup (minutes)
+         * Used as fallback when ttl_minutes is not provided by the caller
+         * @visibility backend
+         */
+        sessionTtlMinutes?: number;
+
+        /**
+         * Default skill for sandbox chat
+         * @visibility backend
+         */
+        defaultSkill?: string;
+
+        /**
+         * Sidecar defaults
+         * @visibility backend
+         */
+        sidecar?: {
+          /**
+           * Default auto_approve for sidecar enable requests
+           * Default: false
+           * @visibility backend
+           */
+          autoApprove?: boolean;
+        };
+      };
+
+      /**
+       * Migration policy defaults
+       * @visibility backend
+       */
+      migration?: {
+        /**
+         * Default for delete_old on agent migrate
+         * Default: false
+         * @visibility backend
+         */
+        deleteOld?: boolean;
+
+        /**
+         * Default for dry_run on migrate-all
+         * Default: false
+         * @visibility backend
+         */
+        dryRun?: boolean;
+      };
+
+      /**
+       * Pagination defaults for list endpoints
+       * @visibility backend
+       */
+      pagination?: {
+        /**
+         * Default page size when limit is not specified
+         * Default: 50
+         * @visibility backend
+         */
+        defaultLimit?: number;
+
+        /**
+         * Maximum allowed page size (caps user-provided limits)
+         * Default: 200
+         * @visibility backend
+         */
+        maxLimit?: number;
+      };
+
+      /**
+       * Enable Zod schema validation on agent card and stream payloads
+       * from @kagenti/adk. Logs warnings on validation failure but never
+       * breaks the flow (fail-open). Useful for catching API contract drift.
+       * Default: false
+       * @visibility backend
+       */
+      validateResponses?: boolean;
+
+      /**
+       * Keycloak authentication for Kagenti API
+       * Uses OAuth2 Client Credentials Grant
+       * @visibility backend
+       */
+      auth: {
+        /**
+         * Keycloak token endpoint URL
+         * @visibility backend
+         */
+        tokenEndpoint: string;
+
+        /**
+         * OAuth2 client ID
+         * @visibility backend
+         */
+        clientId: string;
+
+        /**
+         * OAuth2 client secret
+         * @visibility secret
+         */
+        clientSecret: string;
+      };
+    };
+
+    /**
      * AI provider type
-     * Currently only 'llamastack' is supported
+     * Supported: 'llamastack', 'kagenti'
      * Default: 'llamastack'
      * @visibility backend
      */
-    provider?: 'llamastack';
+    provider?: 'llamastack' | 'kagenti';
 
     /**
      * Shared OAuth configurations for MCP server authentication.

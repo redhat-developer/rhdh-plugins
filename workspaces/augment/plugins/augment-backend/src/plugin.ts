@@ -255,6 +255,7 @@ export const augmentPlugin = createBackendPlugin({
           '/vector-stores',
           '/prompt-groups',
           '/admin',
+          '/kagenti',
         ];
 
         for (const path of protectedPaths) {
