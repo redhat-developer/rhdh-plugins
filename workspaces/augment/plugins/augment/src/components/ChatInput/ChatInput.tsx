@@ -20,6 +20,7 @@ import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import SendIcon from '@mui/icons-material/Send';
 import StopIcon from '@mui/icons-material/Stop';
@@ -60,6 +61,12 @@ export interface ChatInputProps {
   inputRef?: React.Ref<HTMLTextAreaElement>;
   /** Name of the currently active agent (multi-agent conversations) */
   activeAgentName?: string;
+  /** The selected model/agent ID (e.g. namespace/name) */
+  selectedModel?: string;
+  /** Whether this is a Kagenti provider */
+  isKagenti?: boolean;
+  /** Called when user clears the agent selection */
+  onClearAgent?: () => void;
 }
 
 /**
@@ -81,6 +88,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   enableFileUpload = false,
   inputRef,
   activeAgentName,
+  selectedModel,
+  isKagenti = false,
+  onClearAgent,
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -178,22 +188,55 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               }}
             >
               {/* Active agent indicator */}
-              {activeAgentName && (
+              {(activeAgentName || selectedModel) && (
                 <Chip
-                  label={`Talking to: ${activeAgentName}`}
+                  icon={
+                    <Box
+                      component="span"
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        bgcolor: theme.palette.success.main,
+                        ml: 0.5,
+                      }}
+                    />
+                  }
+                  label={activeAgentName || (selectedModel?.includes('/') ? selectedModel.split('/').pop() : selectedModel)}
                   size="small"
                   variant="outlined"
+                  onDelete={onClearAgent}
                   sx={{
                     alignSelf: 'flex-start',
                     mb: 0.5,
                     maxWidth: '100%',
                     fontSize: '0.7rem',
-                    height: 22,
+                    height: 24,
                     borderColor: theme.palette.primary.main,
                     color: theme.palette.primary.main,
                     fontWeight: 500,
+                    '& .MuiChip-deleteIcon': {
+                      fontSize: 14,
+                      color: theme.palette.text.secondary,
+                      '&:hover': { color: theme.palette.text.primary },
+                    },
                   }}
                 />
+              )}
+              {/* Prompt to select agent when none chosen */}
+              {isKagenti && !activeAgentName && !selectedModel && !isTyping && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    alignSelf: 'flex-start',
+                    mb: 0.5,
+                    fontSize: '0.7rem',
+                    color: theme.palette.text.disabled,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  {t('chatInput.selectAgentPrompt')}
+                </Typography>
               )}
               {/* Attached file indicator */}
               {attachedFile && (
@@ -226,7 +269,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 autoFocus
                 inputRef={inputRef}
                 inputProps={{
-                  'aria-label': 'Chat message input',
+                  'aria-label': t('chatInput.chatMessageInput'),
                 }}
               />
             </Box>

@@ -31,8 +31,14 @@ export function parseChatRequest(body: unknown): ChatRequest {
     throw new InputError('Request body must be a JSON object');
   }
 
-  const { messages, enableRAG, previousResponseId, conversationId, sessionId } =
-    body as Record<string, unknown>;
+  const {
+    messages,
+    enableRAG,
+    previousResponseId,
+    conversationId,
+    sessionId,
+    model,
+  } = body as Record<string, unknown>;
 
   if (!Array.isArray(messages) || messages.length === 0) {
     throw new InputError('messages must be a non-empty array');
@@ -73,6 +79,9 @@ export function parseChatRequest(body: unknown): ChatRequest {
   if (sessionId !== undefined && typeof sessionId !== 'string') {
     throw new InputError('sessionId must be a string');
   }
+  if (model !== undefined && typeof model !== 'string') {
+    throw new InputError('model must be a string');
+  }
 
   return {
     messages: messages as ChatRequest['messages'],
@@ -80,6 +89,7 @@ export function parseChatRequest(body: unknown): ChatRequest {
     previousResponseId: previousResponseId as string | undefined,
     conversationId: conversationId as string | undefined,
     sessionId: sessionId as string | undefined,
+    model: model as string | undefined,
   };
 }
 

@@ -47,6 +47,8 @@ export interface UseStreamingChatOptions {
   onScrollToBottom?: () => void;
   /** Callback when a new session is lazily created (first message) */
   onSessionCreated?: (sessionId: string) => void;
+  /** Model or agent identifier (e.g. "namespace/agentName" for Kagenti) */
+  model?: string;
 }
 
 /**
@@ -88,6 +90,7 @@ export function useStreamingChat({
   onMessagesChange,
   onScrollToBottom,
   onSessionCreated,
+  model,
 }: UseStreamingChatOptions): UseStreamingChatReturn {
   const api = useApi(augmentApiRef);
   const {
@@ -112,6 +115,11 @@ export function useStreamingChat({
     messageIdCounter.current += 1;
     return `msg-${Date.now()}-${id}`;
   }, []);
+
+  // Keep model in a ref so sendMessage always reads the latest value
+  // without needing model in the dependency array (which would recreate sendMessage)
+  const modelRef = useRef(model);
+  modelRef.current = model;
 
   // Store previousResponseId in state for reliable conversation threading
   const [previousResponseId, setPreviousResponseId] = useState<
@@ -188,7 +196,7 @@ export function useStreamingChat({
         if (!activeSessionId) {
           try {
             const title = messageText.slice(0, 80);
-            const session = await api.createSession(title);
+            const session = await api.createSession(title, modelRef.current);
             activeSessionId = session.id;
             sendSessionId = activeSessionId;
             setSessionId(activeSessionId);
@@ -225,6 +233,7 @@ export function useStreamingChat({
             activeSessionId,
             enableRAG,
             controller.signal,
+            modelRef.current,
           );
         } else {
           // Legacy flow: frontend manages conversation_id
@@ -281,6 +290,7 @@ export function useStreamingChat({
             controller.signal,
             previousResponseIdRef.current,
             activeConvId,
+            modelRef.current,
           );
         }
 
@@ -296,14 +306,17 @@ export function useStreamingChat({
         setIsTyping(false);
         abortControllerRef.current = null;
 
-        // Don't clear streaming state if there's a pending approval (HITL)
-        if (currentStreamingState.phase !== 'pending_approval') {
+        const isInteractivePhase =
+          currentStreamingState.phase === 'pending_approval' ||
+          currentStreamingState.phase === 'form_input' ||
+          currentStreamingState.phase === 'auth_required';
+
+        if (!isInteractivePhase) {
           setStreamingState(null);
           pendingStateRef.current = null;
         }
 
-        // Skip processing if HITL is pending
-        if (currentStreamingState.phase === 'pending_approval') {
+        if (isInteractivePhase) {
           return;
         }
 

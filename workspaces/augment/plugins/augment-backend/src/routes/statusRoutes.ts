@@ -27,17 +27,36 @@ import type { RouteContext } from './types';
 export function registerStatusRoutes(
   ctx: RouteContext,
   adminConfig?: AdminConfigService,
+  initializationError?: string | null,
 ): void {
   const { router, logger, config, provider, sendRouteError } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
   router.get('/health', (_req, res) => {
+    if (initializationError) {
+      res.status(503).json({
+        status: 'degraded',
+        error: 'Provider initialization failed',
+        message: initializationError,
+      });
+      return;
+    }
     res.json({ status: 'ok' });
   });
 
   router.get(
     '/status',
     withRoute('GET /status', 'Failed to get status', async (req, res) => {
+      if (initializationError) {
+        res.status(503).json({
+          providerId: provider.id,
+          initializationError,
+          provider: { connected: false, baseUrl: '(not connected)' },
+          mcpServers: [],
+        });
+        return;
+      }
+
       const status = await provider.getStatus();
       const isAdmin = await ctx.checkIsAdmin(req);
 

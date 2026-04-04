@@ -20,7 +20,16 @@ const STORAGE_KEY_MODE = 'augment:view-mode';
 const STORAGE_KEY_BANNER = 'augment:admin-banner-seen';
 
 export type ViewMode = 'chat' | 'admin';
-export type AdminPanel = 'platform' | 'agents' | 'branding';
+export type AdminPanel =
+  | 'platform'
+  | 'agents'
+  | 'branding'
+  | 'kagenti-agents'
+  | 'kagenti-tools'
+  | 'kagenti-builds'
+  | 'kagenti-sandbox'
+  | 'kagenti-admin'
+  | 'kagenti-dashboards';
 
 export interface UseAdminViewOptions {
   isAdmin: boolean;
@@ -49,9 +58,14 @@ export function useAdminView({
   const [adminPanel, setAdminPanel] = useState<AdminPanel>('platform');
   const [showAdminBanner, setShowAdminBanner] = useState(false);
 
-  // localStorage persistence for admin mode
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin) {
+      setViewMode('chat');
+      try {
+        localStorage.removeItem(STORAGE_KEY_MODE);
+      } catch { /* localStorage unavailable */ }
+      return;
+    }
     try {
       const savedMode = localStorage.getItem(STORAGE_KEY_MODE);
       if (savedMode === 'admin') setViewMode('admin');

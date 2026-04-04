@@ -27,6 +27,10 @@ import type {
   QuickAction,
 } from '../../types';
 import { PromptGroupRow } from './PromptGroupRow';
+import { AgentGallery } from './AgentGallery';
+import type { AgentWithCard } from './agentUtils';
+import { OnboardingBanner } from './OnboardingBanner';
+import { AgentDetailDrawer } from './AgentDetailDrawer';
 import { buildEffectivePromptGroups } from './buildEffectivePromptGroups';
 import {
   getContainerSx,
@@ -40,6 +44,8 @@ interface WelcomeScreenProps {
   readonly quickActions: readonly QuickAction[];
   readonly onQuickActionSelect: (action: QuickAction) => void;
   readonly promptGroups?: readonly PromptGroup[];
+  readonly onAgentSelect?: (agentId: string, agentName: string) => void;
+  readonly showAgentGallery?: boolean;
 }
 
 const EMPTY_STATE_SX = {
@@ -69,12 +75,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   quickActions,
   onQuickActionSelect,
   promptGroups: configPromptGroups,
+  onAgentSelect,
+  showAgentGallery = false,
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const { branding } = useBranding();
   const { t } = useTranslation();
   const [logoError, setLogoError] = useState(false);
+  const [drawerAgent, setDrawerAgent] = useState<AgentWithCard | null>(null);
 
   const safeLogoUrl = useMemo(
     () => sanitizeBrandingUrl(branding.logoUrl),
@@ -142,6 +151,25 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           {branding.tagline}
         </Typography>
       </Box>
+
+      {showAgentGallery && onAgentSelect && (
+        <>
+          <OnboardingBanner
+            appName={branding.appName}
+            primaryColor={branding.primaryColor}
+          />
+          <AgentGallery
+            onAgentSelect={onAgentSelect}
+            onAgentInfo={setDrawerAgent}
+          />
+          <AgentDetailDrawer
+            agent={drawerAgent}
+            open={!!drawerAgent}
+            onClose={() => setDrawerAgent(null)}
+            onStartConversation={onAgentSelect}
+          />
+        </>
+      )}
 
       <Box sx={getPromptGroupsContainerSx(isDark, theme)}>
         {effectivePromptGroups.length > 0 ? (

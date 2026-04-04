@@ -135,6 +135,32 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
             'https://kagenti-api-kagenti-system.apps.ocp.example.com',
         },
         {
+          key: 'auth.tokenEndpoint',
+          label: 'Token endpoint',
+          type: 'string',
+          required: true,
+          description:
+            'OAuth2 token endpoint (Keycloak) for service authentication',
+          placeholder:
+            'https://keycloak.example.com/realms/kagenti/protocol/openid-connect/token',
+        },
+        {
+          key: 'auth.clientId',
+          label: 'Client ID',
+          type: 'string',
+          required: true,
+          description: 'OAuth2 client ID for Kagenti API authentication',
+          placeholder: 'backstage-augment',
+        },
+        {
+          key: 'auth.clientSecret',
+          label: 'Client secret',
+          type: 'string',
+          required: true,
+          sensitive: true,
+          description: 'OAuth2 client secret for Kagenti API authentication',
+        },
+        {
           key: 'agentName',
           label: 'Default Agent',
           type: 'string',

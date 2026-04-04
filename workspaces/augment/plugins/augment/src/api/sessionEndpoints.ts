@@ -51,10 +51,11 @@ export async function listSessions(
 export async function createSession(
   deps: SessionApiDeps,
   title?: string,
+  model?: string,
 ): Promise<ChatSessionSummary> {
   const data = await deps.fetchJson<{ session: ChatSessionSummary }>(
     '/sessions',
-    jsonBody({ title }),
+    jsonBody({ title, model }),
   );
   return data.session;
 }

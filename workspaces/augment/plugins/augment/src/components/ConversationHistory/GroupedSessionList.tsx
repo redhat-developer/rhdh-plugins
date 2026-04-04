@@ -28,7 +28,7 @@ export interface GroupedSessionListProps {
   searchQuery: string;
   deleteState: DeleteState;
   formatTime: (date: Date) => string;
-  onSelectSession: (sessionId: string, adminView?: boolean) => void;
+  onSelectSession: (sessionId: string, adminView?: boolean, sessionModel?: string) => void;
 }
 
 /**
@@ -89,7 +89,7 @@ export function GroupedSessionList({
               showAllUsers={showAllUsers}
               deleteState={deleteState}
               formatTime={formatTime}
-              onSelect={() => onSelectSession(session.id, showAllUsers)}
+              onSelect={() => onSelectSession(session.id, showAllUsers, session.model)}
               fadeIndex={index}
             />
           ))}

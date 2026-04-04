@@ -30,7 +30,7 @@ import { BotAvatarIcon } from '../icons';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import TextField from '@mui/material/TextField';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -48,6 +48,8 @@ import { ReasoningDisplay } from '../StreamingMessage/ReasoningDisplay';
 import { ToolCallsSection } from './ToolCallsSection';
 import { RAGSourcesSection } from './RAGSourcesSection';
 import { ErrorCard } from './ErrorCard';
+import { ArtifactRenderer } from '../StreamingMessage/ArtifactRenderer';
+import { CitationRenderer } from '../StreamingMessage/CitationRenderer';
 import {
   getMessageContainerSx,
   getMessageWrapperSx,
@@ -114,9 +116,9 @@ const ScrollableTable = (props: React.HTMLAttributes<HTMLTableElement>) => (
 );
 
 const MARKDOWN_COMPONENTS = {
-  code: InlineCode as never,
-  pre: PreBlock as never,
-  table: ScrollableTable as never,
+  code: InlineCode as Components['code'],
+  pre: PreBlock as Components['pre'],
+  table: ScrollableTable as Components['table'],
 };
 
 interface ChatMessageProps {
@@ -363,6 +365,25 @@ export const ChatMessage = React.memo(function ChatMessage({
                   {hasRAGSources && (
                     <RAGSourcesSection ragSources={ragSources} />
                   )}
+
+                  {/* Artifacts from A2A agents */}
+                  {!message.isUser &&
+                    message.artifacts &&
+                    message.artifacts.length > 0 && (
+                      <ArtifactRenderer
+                        artifacts={message.artifacts.map(a => ({
+                          ...a,
+                          lastChunk: true,
+                        }))}
+                      />
+                    )}
+
+                  {/* Citations from A2A agents */}
+                  {!message.isUser &&
+                    message.citations &&
+                    message.citations.length > 0 && (
+                      <CitationRenderer citations={message.citations} />
+                    )}
 
                   {/* Output Validation Error */}
                   {!message.isUser && message.outputValidationError && (

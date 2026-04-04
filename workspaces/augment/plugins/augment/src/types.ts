@@ -194,6 +194,19 @@ export interface Message {
   outputValidationError?: string;
   /** Structured reasoning summaries from the model's thought process */
   reasoningSummaries?: Array<{ id: string; text: string }>;
+  /** Artifacts generated during the response */
+  artifacts?: Array<{
+    artifactId: string;
+    name?: string;
+    description?: string;
+    content: string;
+  }>;
+  /** Citation references from the agent's response */
+  citations?: Array<{
+    title?: string;
+    url?: string;
+    snippet?: string;
+  }>;
 }
 
 /**
@@ -322,4 +335,6 @@ export interface ChatSessionSummary {
   conversationId: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Model or agent identifier associated with this session (e.g. "namespace/agentName") */
+  model?: string;
 }

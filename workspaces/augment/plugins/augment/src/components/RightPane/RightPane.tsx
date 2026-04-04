@@ -29,7 +29,7 @@ import { AgentInfoSection } from './AgentInfoSection';
 interface RightPaneProps {
   sidebarCollapsed: boolean;
   onToggleSidebar: () => void;
-  onSelectSession?: (sessionId: string, adminView?: boolean) => void;
+  onSelectSession?: (sessionId: string, adminView?: boolean, sessionModel?: string) => void;
   onActiveSessionDeleted?: () => void;
   activeSessionId?: string;
   refreshTrigger?: number;
@@ -59,8 +59,8 @@ export const RightPane = ({
   const overallReady = !loading && providerConnected;
 
   const handleSelectSession = useCallback(
-    (sessionId: string, adminView?: boolean) => {
-      onSelectSession?.(sessionId, adminView);
+    (sessionId: string, adminView?: boolean, sessionModel?: string) => {
+      onSelectSession?.(sessionId, adminView, sessionModel);
       if (isMobile) {
         onToggleSidebar();
       }
@@ -140,7 +140,10 @@ export const RightPane = ({
               role="button"
               tabIndex={0}
               onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') onAdminClick();
+                if (e.key === 'Enter' || e.key === ' ') {
+                  if (e.key === ' ') e.preventDefault();
+                  onAdminClick();
+                }
               }}
               aria-label="Open Command Center"
               sx={{

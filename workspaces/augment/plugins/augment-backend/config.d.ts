@@ -1006,6 +1006,8 @@ export interface Config {
         network?: string;
         /** Keycloak console URL override @visibility backend */
         keycloakConsole?: string;
+        /** Domain name override @visibility backend */
+        domainName?: string;
       };
 
       /**
@@ -1090,6 +1092,22 @@ export interface Config {
       validateResponses?: boolean;
 
       /**
+       * Local overrides for Kagenti feature flags.
+       * Merged on top of flags fetched from the Kagenti API.
+       * Useful for testing without a running Kagenti server or
+       * forcing features on/off regardless of server state.
+       * @visibility backend
+       */
+      featureOverrides?: {
+        /** Override sandbox feature flag */
+        sandbox?: boolean;
+        /** Override integrations feature flag */
+        integrations?: boolean;
+        /** Override triggers feature flag */
+        triggers?: boolean;
+      };
+
+      /**
        * Keycloak authentication for Kagenti API
        * Uses OAuth2 Client Credentials Grant
        * @visibility backend
@@ -1097,13 +1115,13 @@ export interface Config {
       auth: {
         /**
          * Keycloak token endpoint URL
-         * @visibility backend
+         * @visibility secret
          */
         tokenEndpoint: string;
 
         /**
          * OAuth2 client ID
-         * @visibility backend
+         * @visibility secret
          */
         clientId: string;
 

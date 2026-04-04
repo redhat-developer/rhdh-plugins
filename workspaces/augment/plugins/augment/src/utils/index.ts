@@ -25,6 +25,8 @@ export {
 
 export { normalizeErrorMessage } from './errors';
 
+export { getErrorMessage } from './getErrorMessage';
+
 export { sanitizeResponseText } from './sanitize';
 
 export { formatResponseText, formatToolOutput } from './formatResponse';

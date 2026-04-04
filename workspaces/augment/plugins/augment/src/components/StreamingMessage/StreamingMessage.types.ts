@@ -20,7 +20,11 @@
  * Types for the streaming message component and its state management.
  */
 
-import type { ResponseUsage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  ResponseUsage,
+  StreamFormDescriptor,
+  StreamCitationReference,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 
 /**
  * Tool call tracking - matches Responses API structure
@@ -84,6 +88,8 @@ export type StreamingPhase =
   | 'calling_tools'
   | 'executing_backend_tools'
   | 'pending_approval'
+  | 'form_input'
+  | 'auth_required'
   | 'generating'
   | 'completed';
 
@@ -127,6 +133,29 @@ export interface StreamingState {
   handoffs: HandoffInfo[];
   /** Output validation error when structured output schema validation failed */
   outputValidationError?: string;
+  /** Pending form descriptor from an A2A form request event */
+  pendingForm?: {
+    taskId?: string;
+    contextId?: string;
+    form: StreamFormDescriptor;
+  };
+  /** Pending authentication demand from an A2A auth required event */
+  pendingAuth?: {
+    taskId?: string;
+    authType: 'oauth' | 'secret';
+    url?: string;
+    demands?: { secrets?: Array<{ name: string; description?: string }>; [key: string]: unknown };
+  };
+  /** Accumulated artifacts from streaming */
+  artifacts?: Array<{
+    artifactId: string;
+    name?: string;
+    description?: string;
+    content: string;
+    lastChunk?: boolean;
+  }>;
+  /** Citation references from the agent's response */
+  citations?: StreamCitationReference[];
 }
 
 /**

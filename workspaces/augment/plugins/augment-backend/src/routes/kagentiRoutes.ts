@@ -15,7 +15,11 @@
  */
 
 import * as net from 'net';
+import * as dns from 'dns';
+import { promisify } from 'util';
 import { InputError } from '@backstage/errors';
+
+const dnsLookup = promisify(dns.lookup);
 import { createWithRoute } from './routeWrapper';
 import type { RouteContext } from './types';
 import type { KagentiProvider } from '../providers/kagenti';
@@ -27,6 +31,7 @@ const PRIVATE_IP_RANGES = [
   /^192\.168\./,
   /^169\.254\./,
   /^0\./,
+  /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./,
 ];
 
 function isPrivateHost(hostname: string): boolean {
@@ -36,14 +41,24 @@ function isPrivateHost(hostname: string): boolean {
   if (net.isIPv4(hostname)) {
     return PRIVATE_IP_RANGES.some(r => r.test(hostname));
   }
-  if (net.isIPv6(hostname.replace(/^\[|\]$/g, ''))) {
-    const bare = hostname.replace(/^\[|\]$/g, '');
-    return (
-      bare === '::1' ||
-      bare.startsWith('fe80:') ||
-      bare.startsWith('fc') ||
-      bare.startsWith('fd')
-    );
+  const bare = hostname.replace(/^\[|\]$/g, '');
+  if (net.isIPv6(bare)) {
+    const lower = bare.toLowerCase();
+    if (
+      lower === '::1' ||
+      lower.startsWith('fe80:') ||
+      lower.startsWith('fc') ||
+      lower.startsWith('fd')
+    ) {
+      return true;
+    }
+    if (lower.startsWith('::ffff:')) {
+      const mapped = lower.substring(7);
+      if (net.isIPv4(mapped)) {
+        return PRIVATE_IP_RANGES.some(r => r.test(mapped));
+      }
+    }
+    return false;
   }
   return false;
 }
@@ -55,7 +70,7 @@ function isPrivateHost(hostname: string): boolean {
  * These routes are always registered when the active provider is 'kagenti'.
  */
 export function registerKagentiRoutes(ctx: RouteContext): void {
-  const { router, logger, provider, sendRouteError } = ctx;
+  const { router, logger, provider, sendRouteError, requireAdminAccess, getUserRef } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
   if (provider.id !== 'kagenti') {
@@ -68,6 +83,31 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
   const kagenti = provider as KagentiProvider;
   const api = kagenti.getApiClient();
 
+  router.use('/kagenti', async (req, _res, next) => {
+    try {
+      const userRef = await getUserRef(req);
+      kagenti.setUserContext(userRef);
+    } catch { /* non-critical */ }
+    next();
+  });
+
+  function validateNamespaceParam(
+    req: import('express').Request,
+    res: import('express').Response,
+    next: import('express').NextFunction,
+  ) {
+    const ns = req.params.namespace || (req.query.namespace as string);
+    if (ns) {
+      try {
+        kagenti.validateNamespace(ns);
+      } catch (err) {
+        sendRouteError(res, err, 'Namespace validation', 'Namespace access denied', undefined, 403);
+        return;
+      }
+    }
+    next();
+  }
+
   // -- Health -----------------------------------------------------------------
 
   router.get(
@@ -77,7 +117,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
       'Failed to get Kagenti health',
       async (_req, res) => {
         const [health, ready] = await Promise.all([api.health(), api.ready()]);
-        res.json({ health: health.status, ready: ready.status });
+        res.json({ health: health.status, ready: ready.status === 'ready' });
       },
     ),
   );
@@ -90,8 +130,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
       'GET /kagenti/config/features',
       'Failed to get feature flags',
       async (_req, res) => {
-        const flags = await api.getFeatureFlags();
-        res.json(flags);
+        res.json(kagenti.getFeatureFlags());
       },
     ),
   );
@@ -115,6 +154,9 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
           ...(overrides.keycloakConsole && {
             keycloakConsole: overrides.keycloakConsole,
           }),
+          ...(overrides.domainName && {
+            domainName: overrides.domainName,
+          }),
         };
         res.json(merged);
       },
@@ -131,7 +173,10 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
       async (req, res) => {
         const enabledOnly = req.query.enabled_only !== 'false';
         const result = await api.listNamespaces(enabledOnly);
-        res.json(result);
+        res.json({
+          ...result,
+          defaultNamespace: kagenti.getConfig().namespace,
+        });
       },
     ),
   );
@@ -140,13 +185,14 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.get(
     '/kagenti/agents',
+    validateNamespaceParam,
     withRoute(
       'GET /kagenti/agents',
       'Failed to list agents',
       async (req, res) => {
         const namespace = req.query.namespace as string | undefined;
         const result = await api.listAgents(namespace);
-        res.json(result);
+        res.json({ agents: result.items ?? [] });
       },
     ),
   );
@@ -177,6 +223,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.get(
     '/kagenti/agents/:namespace/:name',
+    validateNamespaceParam,
     withRoute(
       req => `GET /kagenti/agents/${req.params.namespace}/${req.params.name}`,
       'Failed to get agent',
@@ -184,8 +231,18 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
         const { namespace, name } = req.params;
         const detail = await api.getAgent(namespace, name);
         let agentCard;
+        let securityDemands: Record<string, boolean> | undefined;
         try {
-          agentCard = await api.getAgentCard(namespace, name);
+          const cached = await kagenti.getAgentCardCached(namespace, name);
+          agentCard = cached.card;
+          const d = cached.demands;
+          securityDemands = {
+            requiresOAuth: !!d.oauthDemands,
+            requiresSecrets: !!d.secretDemands,
+            requiresLlm: !!d.llmDemands,
+            requiresMcp: !!d.mcpDemands,
+            requiresForm: !!d.formDemands,
+          };
         } catch (cardErr) {
           const msg =
             cardErr instanceof Error ? cardErr.message : String(cardErr);
@@ -201,13 +258,14 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
             );
           }
         }
-        res.json({ ...detail, agentCard });
+        res.json({ ...detail, agentCard, securityDemands });
       },
     ),
   );
 
   router.get(
     '/kagenti/agents/:namespace/:name/route-status',
+    validateNamespaceParam,
     withRoute(
       req =>
         `GET /kagenti/agents/${req.params.namespace}/${req.params.name}/route-status`,
@@ -222,6 +280,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/agents',
+    requireAdminAccess,
     withRoute(
       'POST /kagenti/agents',
       'Failed to create agent',
@@ -240,6 +299,8 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.delete(
     '/kagenti/agents/:namespace/:name',
+    requireAdminAccess,
+    validateNamespaceParam,
     withRoute(
       req =>
         `DELETE /kagenti/agents/${req.params.namespace}/${req.params.name}`,
@@ -256,6 +317,8 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/agents/:namespace/:name/migrate',
+    requireAdminAccess,
+    validateNamespaceParam,
     withRoute(
       req =>
         `POST /kagenti/agents/${req.params.namespace}/${req.params.name}/migrate`,
@@ -272,6 +335,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/agents/migration/migrate-all',
+    requireAdminAccess,
     withRoute(
       'POST /kagenti/agents/migration/migrate-all',
       'Failed to migrate all agents',
@@ -299,6 +363,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.get(
     '/kagenti/agents/:namespace/:name/build-info',
+    validateNamespaceParam,
     withRoute(
       req =>
         `GET /kagenti/agents/${req.params.namespace}/${req.params.name}/build-info`,
@@ -313,6 +378,8 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/agents/:namespace/:name/buildrun',
+    requireAdminAccess,
+    validateNamespaceParam,
     withRoute(
       req =>
         `POST /kagenti/agents/${req.params.namespace}/${req.params.name}/buildrun`,
@@ -327,6 +394,8 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/agents/:namespace/:name/finalize-build',
+    requireAdminAccess,
+    validateNamespaceParam,
     withRoute(
       req =>
         `POST /kagenti/agents/${req.params.namespace}/${req.params.name}/finalize-build`,
@@ -373,6 +442,19 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
             'Requests to private/internal addresses are not allowed',
           );
         }
+        if (!net.isIPv4(hostname) && !net.isIPv6(hostname.replace(/^\[|\]$/g, ''))) {
+          try {
+            const { address } = await dnsLookup(hostname, { family: 0 });
+            if (isPrivateHost(address)) {
+              throw new InputError(
+                'URL resolves to a private/internal address',
+              );
+            }
+          } catch (dnsErr) {
+            if (dnsErr instanceof InputError) throw dnsErr;
+            throw new InputError(`DNS resolution failed for ${hostname}`);
+          }
+        }
         const result = await api.fetchEnvUrl(url);
         res.json(result);
       },
@@ -383,6 +465,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.get(
     '/kagenti/tools',
+    validateNamespaceParam,
     withRoute(
       'GET /kagenti/tools',
       'Failed to list tools',
@@ -396,6 +479,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.get(
     '/kagenti/tools/:namespace/:name',
+    validateNamespaceParam,
     withRoute(
       req => `GET /kagenti/tools/${req.params.namespace}/${req.params.name}`,
       'Failed to get tool',
@@ -409,6 +493,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.get(
     '/kagenti/tools/:namespace/:name/route-status',
+    validateNamespaceParam,
     withRoute(
       req =>
         `GET /kagenti/tools/${req.params.namespace}/${req.params.name}/route-status`,
@@ -423,6 +508,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/tools',
+    requireAdminAccess,
     withRoute(
       'POST /kagenti/tools',
       'Failed to create tool',
@@ -441,6 +527,8 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.delete(
     '/kagenti/tools/:namespace/:name',
+    requireAdminAccess,
+    validateNamespaceParam,
     withRoute(
       req => `DELETE /kagenti/tools/${req.params.namespace}/${req.params.name}`,
       'Failed to delete tool',
@@ -456,6 +544,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.get(
     '/kagenti/tools/:namespace/:name/build-info',
+    validateNamespaceParam,
     withRoute(
       req =>
         `GET /kagenti/tools/${req.params.namespace}/${req.params.name}/build-info`,
@@ -470,6 +559,8 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/tools/:namespace/:name/buildrun',
+    requireAdminAccess,
+    validateNamespaceParam,
     withRoute(
       req =>
         `POST /kagenti/tools/${req.params.namespace}/${req.params.name}/buildrun`,
@@ -484,6 +575,8 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/tools/:namespace/:name/finalize-build',
+    requireAdminAccess,
+    validateNamespaceParam,
     withRoute(
       req =>
         `POST /kagenti/tools/${req.params.namespace}/${req.params.name}/finalize-build`,
@@ -500,6 +593,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/tools/:namespace/:name/connect',
+    validateNamespaceParam,
     withRoute(
       req =>
         `POST /kagenti/tools/${req.params.namespace}/${req.params.name}/connect`,
@@ -514,6 +608,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/tools/:namespace/:name/invoke',
+    validateNamespaceParam,
     withRoute(
       req =>
         `POST /kagenti/tools/${req.params.namespace}/${req.params.name}/invoke`,
@@ -546,7 +641,7 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
         const namespace = req.query.namespace as string | undefined;
         const allNamespaces = req.query.allNamespaces === 'true';
         const result = await api.listAllBuilds(namespace, allNamespaces);
-        res.json(result);
+        res.json({ builds: result.items ?? [] });
       },
     ),
   );

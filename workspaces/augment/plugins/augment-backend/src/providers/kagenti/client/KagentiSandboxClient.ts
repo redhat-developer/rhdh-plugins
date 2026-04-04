@@ -463,20 +463,22 @@ export class KagentiSandboxClient {
   // -- Token Usage ------------------------------------------------------------
 
   async getSessionTokenUsage(
+    namespace: string,
     contextId: string,
   ): Promise<SessionTokenUsageResponse> {
     return this.api.request(
       'GET',
-      `/api/v1/token-usage/sessions/${e(contextId)}`,
+      `${P}/${e(namespace)}/token-usage/sessions/${e(contextId)}`,
     );
   }
 
   async getSessionTreeUsage(
+    namespace: string,
     contextId: string,
   ): Promise<SessionTreeUsageResponse> {
     return this.api.request(
       'GET',
-      `/api/v1/token-usage/sessions/${e(contextId)}/tree`,
+      `${P}/${e(namespace)}/token-usage/sessions/${e(contextId)}/tree`,
     );
   }
 

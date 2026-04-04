@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Link from '@mui/material/Link';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -26,9 +29,16 @@ import BuildIcon from '@mui/icons-material/Build';
 import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
 import StarIcon from '@mui/icons-material/Star';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { useApi } from '@backstage/core-plugin-api';
 import { McpIcon } from '../icons';
 import { StatusDot } from './StatusDot';
 import { useStatus } from '../../hooks';
+import { augmentApiRef } from '../../api';
+import type {
+  KagentiAgentCard,
+  KagentiDashboardConfig,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 
 export interface AgentInfoSectionProps {
   expanded: boolean;
@@ -44,6 +54,45 @@ export const AgentInfoSection = ({
 }: AgentInfoSectionProps) => {
   const theme = useTheme();
   const { status, loading } = useStatus();
+  const api = useApi(augmentApiRef);
+  const isKagenti = status?.providerId === 'kagenti';
+
+  const [agentCard, setAgentCard] = useState<KagentiAgentCard | undefined>();
+  const [dashboards, setDashboards] = useState<KagentiDashboardConfig | undefined>();
+
+  useEffect(() => {
+    if (!isKagenti || !currentAgent) {
+      setAgentCard(undefined);
+      return;
+    }
+    const parts = currentAgent.includes('/')
+      ? currentAgent.split('/')
+      : [undefined, currentAgent];
+    const ns = parts[0];
+    const name = parts[parts.length - 1];
+    if (!ns || !name) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const detail = await api.getKagentiAgent(ns, name);
+        if (!cancelled) setAgentCard(detail.agentCard);
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, [api, isKagenti, currentAgent]);
+
+  useEffect(() => {
+    if (!isKagenti) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const d = await api.getKagentiDashboards();
+        if (!cancelled) setDashboards(d);
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, [api, isKagenti]);
 
   const providerConnected = status?.provider.connected ?? false;
   const vectorStoreConnected = status?.vectorStore.connected ?? false;
@@ -393,6 +442,115 @@ export const AgentInfoSection = ({
                   </Box>
                 </Tooltip>
               ))}
+            </>
+          )}
+
+          {/* Kagenti Agent Card Details */}
+          {isKagenti && agentCard && (
+            <>
+              <Box
+                sx={{
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                  my: 0.5,
+                }}
+              />
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  color: theme.palette.text.secondary,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                }}
+              >
+                Agent Card
+              </Typography>
+              {agentCard.version && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}>
+                    Version
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 500, ml: 'auto' }}>
+                    {agentCard.version}
+                  </Typography>
+                </Box>
+              )}
+              {agentCard.skills.length > 0 && (
+                <Box>
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary, mb: 0.25, display: 'block' }}>
+                    Skills
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {agentCard.skills.map((skill, idx) => (
+                      <Tooltip key={skill.id || idx} title={skill.description || ''} placement="left">
+                        <Chip
+                          label={skill.name || skill.id || 'skill'}
+                          size="small"
+                          variant="outlined"
+                          sx={{ height: 18, fontSize: '0.6rem', '& .MuiChip-label': { px: 0.75 } }}
+                        />
+                      </Tooltip>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}>
+                  Streaming
+                </Typography>
+                <Chip
+                  label={agentCard.streaming ? 'Yes' : 'No'}
+                  size="small"
+                  color={agentCard.streaming ? 'success' : 'default'}
+                  sx={{ height: 16, fontSize: '0.6rem', ml: 'auto' }}
+                />
+              </Box>
+            </>
+          )}
+
+          {/* Dashboard Links */}
+          {isKagenti && dashboards && Object.entries(dashboards).some(([, v]) => v) && (
+            <>
+              <Box
+                sx={{
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                  my: 0.5,
+                }}
+              />
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  color: theme.palette.text.secondary,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                }}
+              >
+                Dashboards
+              </Typography>
+              {Object.entries(dashboards)
+                .filter(([key, val]) => val && key !== 'domainName')
+                .map(([key, url]) => (
+                  <Link
+                    key={key}
+                    href={url as string}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    underline="hover"
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      fontSize: '0.7rem',
+                      color: theme.palette.primary.main,
+                    }}
+                  >
+                    <OpenInNewIcon sx={{ fontSize: 12 }} />
+                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                  </Link>
+                ))}
             </>
           )}
         </Box>

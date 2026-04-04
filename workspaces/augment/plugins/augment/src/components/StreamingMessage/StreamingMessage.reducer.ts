@@ -24,7 +24,10 @@
  * This reducer is provider-agnostic — it only processes normalized events.
  */
 
-import type { ResponseUsage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  ResponseUsage,
+  StreamFormDescriptor,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { StreamingEvent } from '../../types';
 import { StreamingState, ToolCallState } from './StreamingMessage.types';
 import {
@@ -74,7 +77,11 @@ export function updateStreamingState(
   // Guard: once HITL approval is pending, only process stream lifecycle
   // and tool-data events. Discard text, reasoning, RAG, and discovery
   // events that would otherwise override the PENDING_APPROVAL phase.
-  if (state.phase === STREAMING_PHASES.PENDING_APPROVAL) {
+  if (
+    state.phase === STREAMING_PHASES.PENDING_APPROVAL ||
+    state.phase === STREAMING_PHASES.FORM_INPUT ||
+    state.phase === STREAMING_PHASES.AUTH_REQUIRED
+  ) {
     switch (event.type) {
       case EVENT_TYPES.STREAM_STARTED:
       case EVENT_TYPES.STREAM_COMPLETED:
@@ -83,6 +90,10 @@ export function updateStreamingState(
       case EVENT_TYPES.STREAM_TOOL_COMPLETED:
       case EVENT_TYPES.STREAM_TOOL_FAILED:
       case EVENT_TYPES.STREAM_TOOL_DELTA:
+      case EVENT_TYPES.STREAM_FORM_REQUEST:
+      case EVENT_TYPES.STREAM_AUTH_REQUIRED:
+      case EVENT_TYPES.STREAM_ARTIFACT:
+      case EVENT_TYPES.STREAM_CITATION:
         break;
       default:
         return state;
@@ -388,6 +399,140 @@ export function updateStreamingState(
           newRagSources.length > 0 ? STREAMING_PHASES.SEARCHING : state.phase,
         filesSearched: newFilesSearched,
         ragSources: newRagSources,
+      };
+    }
+
+    // ---- Form input request (A2A) ----
+
+    case EVENT_TYPES.STREAM_FORM_REQUEST: {
+      const formEvent = event as {
+        taskId?: string;
+        contextId?: string;
+        form?: StreamFormDescriptor;
+      };
+      return {
+        ...state,
+        phase: STREAMING_PHASES.FORM_INPUT,
+        pendingForm: {
+          taskId: formEvent.taskId,
+          contextId: formEvent.contextId,
+          form: formEvent.form || {},
+        },
+      };
+    }
+
+    // ---- Auth required (A2A) ----
+
+    case EVENT_TYPES.STREAM_AUTH_REQUIRED: {
+      const authEvent = event as {
+        taskId?: string;
+        authType?: 'oauth' | 'secret';
+        url?: string;
+        demands?: { secrets?: Array<{ name: string; description?: string }> };
+      };
+      return {
+        ...state,
+        phase: STREAMING_PHASES.AUTH_REQUIRED,
+        pendingAuth: {
+          taskId: authEvent.taskId,
+          authType: authEvent.authType || 'secret',
+          url: authEvent.url,
+          demands: authEvent.demands,
+        },
+      };
+    }
+
+    // ---- Artifact streaming (A2A) ----
+
+    case EVENT_TYPES.STREAM_ARTIFACT: {
+      const artifactEvent = event as {
+        artifactId?: string;
+        name?: string;
+        description?: string;
+        content?: string;
+        append?: boolean;
+        lastChunk?: boolean;
+      };
+      if (!artifactEvent.artifactId) return state;
+
+      const existing = state.artifacts || [];
+      const idx = existing.findIndex(
+        a => a.artifactId === artifactEvent.artifactId,
+      );
+
+      let updatedArtifacts;
+      if (idx >= 0 && artifactEvent.append) {
+        updatedArtifacts = existing.map((a, i) =>
+          i === idx
+            ? {
+                ...a,
+                content: a.content + (artifactEvent.content || ''),
+                lastChunk: artifactEvent.lastChunk,
+              }
+            : a,
+        );
+      } else if (idx >= 0) {
+        updatedArtifacts = existing.map((a, i) =>
+          i === idx
+            ? {
+                ...a,
+                content: artifactEvent.content || '',
+                name: artifactEvent.name || a.name,
+                description: artifactEvent.description || a.description,
+                lastChunk: artifactEvent.lastChunk,
+              }
+            : a,
+        );
+      } else {
+        updatedArtifacts = [
+          ...existing,
+          {
+            artifactId: artifactEvent.artifactId,
+            name: artifactEvent.name,
+            description: artifactEvent.description,
+            content: artifactEvent.content || '',
+            lastChunk: artifactEvent.lastChunk,
+          },
+        ];
+      }
+
+      return { ...state, artifacts: updatedArtifacts };
+    }
+
+    // ---- Citations (A2A) ----
+
+    case EVENT_TYPES.STREAM_CITATION: {
+      const citationEvent = event as {
+        citations?: Array<{
+          title?: string;
+          url?: string;
+          snippet?: string;
+        }>;
+      };
+      if (!citationEvent.citations?.length) return state;
+
+      const existingCitations = state.citations || [];
+      const existingRag = state.ragSources || [];
+      const seenKeys = new Set(
+        existingCitations.map(c => c.url || c.title || ''),
+      );
+
+      const newCitations = citationEvent.citations.filter(c => {
+        const key = c.url || c.title || '';
+        return key && !seenKeys.has(key);
+      });
+
+      const newRagSources = newCitations.map(c => ({
+        filename: c.title || 'Citation',
+        text: c.snippet,
+        title: c.title,
+        sourceUrl: c.url,
+      }));
+
+      return {
+        ...state,
+        citations: [...existingCitations, ...newCitations],
+        ragSources: [...existingRag, ...newRagSources],
       };
     }
 

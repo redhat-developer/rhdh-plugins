@@ -111,7 +111,7 @@ async function handleSseStream(
  * Registers Kagenti sandbox routes. Only called when sandbox feature flag is on.
  */
 export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
-  const { router, logger, provider, sendRouteError } = ctx;
+  const { router, logger, provider, sendRouteError, requireAdminAccess, getUserRef, checkIsAdmin } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
   if (provider.id !== 'kagenti') {
@@ -131,6 +131,38 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
   const kagentiCfg = kagenti.getConfig();
   const { defaultLimit, maxLimit } = kagentiCfg.pagination;
 
+  function validateNamespaceParam(
+    req: import('express').Request,
+    res: import('express').Response,
+    next: import('express').NextFunction,
+  ) {
+    const ns = req.params.namespace;
+    if (ns) {
+      try {
+        kagenti.validateNamespace(ns);
+      } catch (err) {
+        sendRouteError(res, err, 'Namespace validation', 'Namespace access denied', undefined, 403);
+        return;
+      }
+    }
+    next();
+  }
+
+  // Register non-namespaced routes BEFORE the namespace validation middleware
+  router.get(
+    '/kagenti/sandbox/defaults',
+    withRoute(
+      'GET /kagenti/sandbox defaults',
+      'Failed to get sandbox defaults',
+      async (_req, res) => {
+        const result = await sandbox.getSandboxDefaults();
+        res.json(result);
+      },
+    ),
+  );
+
+  router.use('/kagenti/sandbox/:namespace', validateNamespaceParam);
+
   // -- Sessions ---------------------------------------------------------------
 
   router.get(
@@ -145,7 +177,14 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
           search: req.query.search as string | undefined,
           agentName: req.query.agent_name as string | undefined,
         });
-        res.json(result);
+        const isAdmin = await checkIsAdmin(req);
+        let sessions = result.items ?? [];
+        if (!isAdmin) {
+          sessions = sessions.filter(
+            s => s.visibility !== 'private' || s.visibility === undefined,
+          );
+        }
+        res.json({ sessions, total: result.total });
       },
     ),
   );
@@ -240,6 +279,7 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/sandbox/:namespace/sessions/:contextId/approve',
+    requireAdminAccess,
     withRoute(
       'POST /kagenti/sandbox session approve',
       'Failed to approve session',
@@ -255,6 +295,7 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/sandbox/:namespace/sessions/:contextId/deny',
+    requireAdminAccess,
     withRoute(
       'POST /kagenti/sandbox session deny',
       'Failed to deny session',
@@ -286,6 +327,7 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
 
   router.post(
     '/kagenti/sandbox/:namespace/cleanup',
+    requireAdminAccess,
     withRoute(
       'POST /kagenti/sandbox cleanup',
       'Failed to cleanup sessions',
@@ -308,7 +350,7 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
       'Failed to list sandbox agents',
       async (req, res) => {
         const result = await sandbox.listSandboxAgents(req.params.namespace);
-        res.json(result);
+        res.json({ agents: Array.isArray(result) ? result : [] });
       },
     ),
   );
@@ -384,6 +426,10 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
   );
 
   router.post('/kagenti/sandbox/:namespace/chat/stream', (req, res) => {
+    if (!req.body?.message || typeof req.body.message !== 'string') {
+      res.status(400).json({ error: 'message is required and must be a string' });
+      return;
+    }
     logger.debug('POST /kagenti/sandbox chat/stream');
     handleSseStream(res, logger, kagentiCfg, (onLine, signal) =>
       sandbox.sandboxChatStream(
@@ -419,20 +465,9 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
 
   // -- Sandbox Deploy ---------------------------------------------------------
 
-  router.get(
-    '/kagenti/sandbox/defaults',
-    withRoute(
-      'GET /kagenti/sandbox defaults',
-      'Failed to get sandbox defaults',
-      async (_req, res) => {
-        const result = await sandbox.getSandboxDefaults();
-        res.json(result);
-      },
-    ),
-  );
-
   router.post(
     '/kagenti/sandbox/:namespace/create',
+    requireAdminAccess,
     withRoute(
       'POST /kagenti/sandbox create',
       'Failed to create sandbox',
@@ -448,6 +483,7 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
 
   router.delete(
     '/kagenti/sandbox/:namespace/:name',
+    requireAdminAccess,
     withRoute(
       'DELETE /kagenti/sandbox',
       'Failed to delete sandbox',
@@ -590,7 +626,7 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
           req.params.namespace,
           req.params.contextId,
         );
-        res.json(result);
+        res.json({ sidecars: Array.isArray(result) ? result : [] });
       },
     ),
   );
@@ -708,7 +744,7 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
       'GET /kagenti/token-usage session',
       'Failed to get token usage',
       async (req, res) => {
-        const result = await sandbox.getSessionTokenUsage(req.params.contextId);
+        const result = await sandbox.getSessionTokenUsage(req.params.namespace, req.params.contextId);
         res.json(result);
       },
     ),
@@ -720,7 +756,7 @@ export function registerKagentiSandboxRoutes(ctx: RouteContext): void {
       'GET /kagenti/token-usage tree',
       'Failed to get token usage tree',
       async (req, res) => {
-        const result = await sandbox.getSessionTreeUsage(req.params.contextId);
+        const result = await sandbox.getSessionTreeUsage(req.params.namespace, req.params.contextId);
         res.json(result);
       },
     ),

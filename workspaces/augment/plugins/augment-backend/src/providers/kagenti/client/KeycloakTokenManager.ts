@@ -107,6 +107,10 @@ export class KeycloakTokenManager {
       const req = transport.request(requestOptions, res => {
         const chunks: Buffer[] = [];
         res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('error', err => {
+          this.logger.error(`Keycloak token response stream error: ${err.message}`);
+          reject(err);
+        });
         res.on('end', () => {
           const raw = Buffer.concat(chunks).toString('utf-8');
           if (!res.statusCode || res.statusCode >= 400) {
@@ -124,6 +128,15 @@ export class KeycloakTokenManager {
           try {
             const parsed: KeycloakTokenResponse = JSON.parse(raw);
 
+            if (!parsed.access_token || typeof parsed.access_token !== 'string') {
+              reject(new Error('Keycloak returned empty or missing access_token'));
+              return;
+            }
+
+            const expiresIn = typeof parsed.expires_in === 'number' && Number.isFinite(parsed.expires_in)
+              ? parsed.expires_in
+              : MIN_TOKEN_LIFETIME_SECONDS + this.tokenExpiryBufferSeconds;
+
             if (this.generation !== startGen) {
               resolve(parsed.access_token);
               return;
@@ -132,18 +145,18 @@ export class KeycloakTokenManager {
             this.cachedToken = parsed.access_token;
 
             const effectiveLifetime = Math.max(
-              parsed.expires_in - this.tokenExpiryBufferSeconds,
+              expiresIn - this.tokenExpiryBufferSeconds,
               MIN_TOKEN_LIFETIME_SECONDS,
             );
             this.expiresAt = Date.now() + effectiveLifetime * 1000;
 
-            if (parsed.expires_in <= this.tokenExpiryBufferSeconds) {
+            if (expiresIn <= this.tokenExpiryBufferSeconds) {
               this.logger.warn(
-                `Keycloak token expires_in (${parsed.expires_in}s) is <= buffer (${this.tokenExpiryBufferSeconds}s); using minimum lifetime of ${MIN_TOKEN_LIFETIME_SECONDS}s`,
+                `Keycloak token expires_in (${expiresIn}s) is <= buffer (${this.tokenExpiryBufferSeconds}s); using minimum lifetime of ${MIN_TOKEN_LIFETIME_SECONDS}s`,
               );
             } else {
               this.logger.debug(
-                `Acquired Keycloak token, expires in ${parsed.expires_in}s`,
+                `Acquired Keycloak token, expires in ${expiresIn}s`,
               );
             }
             resolve(parsed.access_token);

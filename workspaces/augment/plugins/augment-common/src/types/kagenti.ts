@@ -177,7 +177,17 @@ export interface KagentiDashboardConfig {
   domainName?: string;
 }
 
-/** @public */
+/**
+ * Kagenti server's user-facing SSO / Keycloak configuration.
+ *
+ * **This is NOT the Backstage service credentials** configured in
+ * `augment.kagenti.auth` (which uses OAuth2 client-credentials grant
+ * for backend-to-Kagenti API authentication). This type represents
+ * the Kagenti server's own authentication settings for end users,
+ * as returned by the `GET /api/v1/auth/config` endpoint.
+ *
+ * @public
+ */
 export interface KagentiAuthConfig {
   enabled: boolean;
   keycloak_url?: string;

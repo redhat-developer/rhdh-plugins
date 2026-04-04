@@ -28,7 +28,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { BotAvatarIcon } from '../icons';
 import { useTheme } from '@mui/material/styles';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -58,6 +58,10 @@ import {
 } from './styles';
 import { ToolCallDisplay, RAGSearchDisplay } from './ToolCallDisplay';
 import { PhaseChip, LoadingIndicator } from './StreamingProgress';
+import { FormRequestCard } from './FormRequestCard';
+import { AuthRequiredCard } from './AuthRequiredCard';
+import { ArtifactRenderer } from './ArtifactRenderer';
+import { CitationRenderer } from './CitationRenderer';
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -80,10 +84,10 @@ const ScrollableTable = (props: React.HTMLAttributes<HTMLTableElement>) => (
   </div>
 );
 
-const MARKDOWN_COMPONENTS = {
-  code: InlineCode as never,
-  pre: PreBlock as never,
-  table: ScrollableTable as never,
+const MARKDOWN_COMPONENTS: Components = {
+  code: InlineCode as Components['code'],
+  pre: PreBlock as Components['pre'],
+  table: ScrollableTable as Components['table'],
 };
 
 // =============================================================================
@@ -92,6 +96,10 @@ const MARKDOWN_COMPONENTS = {
 
 interface StreamingMessageProps {
   state: StreamingState;
+  onFormSubmit?: (values: Record<string, unknown>) => void;
+  onFormCancel?: () => void;
+  onAuthConfirm?: () => void;
+  onSecretsSubmit?: (secrets: Record<string, string>) => void;
 }
 
 // =============================================================================
@@ -111,6 +119,10 @@ interface StreamingMessageProps {
  */
 export const StreamingMessage: React.FC<StreamingMessageProps> = ({
   state,
+  onFormSubmit,
+  onFormCancel,
+  onAuthConfirm,
+  onSecretsSubmit,
 }) => {
   const theme = useTheme();
   const { branding } = useBranding();
@@ -140,8 +152,13 @@ export const StreamingMessage: React.FC<StreamingMessageProps> = ({
   // Don't render anything during pending_approval phase with no visible content
   // The ToolApprovalDialog will handle the UI
   const isPendingApproval = state.phase === 'pending_approval';
+  const hasPendingForm = state.phase === 'form_input' && !!state.pendingForm;
+  const hasPendingAuth = state.phase === 'auth_required' && !!state.pendingAuth;
+  const hasArtifacts = (state.artifacts?.length ?? 0) > 0;
+  const hasCitations = (state.citations?.length ?? 0) > 0;
   const hasVisibleContent =
-    showRAG || hasToolCalls || state.text || showLoading || hasReasoning;
+    showRAG || hasToolCalls || state.text || showLoading || hasReasoning ||
+    hasPendingForm || hasPendingAuth || hasArtifacts || hasCitations;
   if (isPendingApproval && !hasVisibleContent) {
     return null;
   }
@@ -244,6 +261,36 @@ export const StreamingMessage: React.FC<StreamingMessageProps> = ({
                   <Box component="span" sx={getTypingCursorSx()} />
                 )}
               </Box>
+            )}
+
+            {/* Form Input Request (A2A) */}
+            {state.phase === 'form_input' && state.pendingForm && (
+              <FormRequestCard
+                form={state.pendingForm.form}
+                onSubmit={onFormSubmit}
+                onCancel={onFormCancel}
+              />
+            )}
+
+            {/* Auth Required (A2A) */}
+            {state.phase === 'auth_required' && state.pendingAuth && (
+              <AuthRequiredCard
+                authType={state.pendingAuth.authType}
+                url={state.pendingAuth.url}
+                demands={state.pendingAuth.demands}
+                onOAuthConfirm={onAuthConfirm}
+                onSecretsSubmit={onSecretsSubmit}
+              />
+            )}
+
+            {/* Artifacts */}
+            {state.artifacts && state.artifacts.length > 0 && (
+              <ArtifactRenderer artifacts={state.artifacts} />
+            )}
+
+            {/* Citations */}
+            {state.citations && state.citations.length > 0 && (
+              <CitationRenderer citations={state.citations} />
             )}
 
             {/* Loading state */}
