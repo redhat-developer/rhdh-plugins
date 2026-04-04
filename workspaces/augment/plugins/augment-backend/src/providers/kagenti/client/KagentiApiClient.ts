@@ -58,6 +58,7 @@ import type {
   MCPToolsResponse,
   MCPInvokeRequest,
   MCPInvokeResponse,
+  ContextHistoryListResponse,
 } from './types';
 import { API_PREFIX, encodePathSegment as e } from './utils';
 
@@ -74,6 +75,10 @@ export interface KagentiApiClientOptions {
   retryBaseDelayMs?: number;
 }
 
+export interface KagentiRequestContext {
+  userRef?: string;
+}
+
 export class KagentiApiClient {
   private readonly baseUrl: string;
   private readonly tokenManager: KeycloakTokenManager;
@@ -84,6 +89,7 @@ export class KagentiApiClient {
   private readonly streamTimeoutMs: number;
   private readonly maxRetries: number;
   private readonly retryBaseDelayMs: number;
+  private _requestContext: KagentiRequestContext = {};
 
   constructor(options: KagentiApiClientOptions) {
     this.baseUrl = options.baseUrl.replace(/\/+$/, '');
@@ -103,6 +109,14 @@ export class KagentiApiClient {
     } else {
       this.httpAgent = new http.Agent({ keepAlive: true });
     }
+  }
+
+  /**
+   * Set per-request context (e.g. Backstage user identity) that will be
+   * forwarded to the Kagenti API as an X-Backstage-User header.
+   */
+  setRequestContext(ctx: KagentiRequestContext): void {
+    this._requestContext = ctx;
   }
 
   // ---------------------------------------------------------------------------
@@ -134,12 +148,18 @@ export class KagentiApiClient {
         lastError = err instanceof Error ? err : new Error(String(err));
         const statusMatch = lastError.message.match(/status (\d+)/);
         const status = statusMatch ? Number(statusMatch[1]) : 0;
-        if (!RETRYABLE_STATUS_CODES.has(status) || attempt === maxAttempts) {
+        if (status === 401 && attempt === 0) {
+          this.tokenManager.clearCache();
+          this.logger.warn(`Got 401, cleared token cache and retrying ${method} ${path}`);
+          continue;
+        }
+        const isNetworkError = status === 0 && /ECONNRESET|ECONNREFUSED|EPIPE|ETIMEDOUT|EAI_AGAIN/i.test(lastError.message);
+        if ((!RETRYABLE_STATUS_CODES.has(status) && !isNetworkError) || attempt === maxAttempts) {
           throw lastError;
         }
         const delay = this.retryBaseDelayMs * Math.pow(2, attempt);
         this.logger.warn(
-          `Retrying ${method} ${path} after ${status} (attempt ${attempt + 1}/${maxAttempts}, delay ${delay}ms)`,
+          `Retrying ${method} ${path} after ${status} (attempt ${attempt + 1} of ${maxAttempts + 1}, delay ${delay}ms)`,
         );
         await new Promise(r => setTimeout(r, delay));
       }
@@ -174,12 +194,15 @@ export class KagentiApiClient {
             'Content-Length': Buffer.byteLength(payload),
             Authorization: `Bearer ${token}`,
             Accept: 'text/event-stream',
+            ...(this._requestContext.userRef && {
+              'X-Backstage-User': this._requestContext.userRef,
+            }),
           },
           agent: this.httpAgent,
           timeout: this.streamTimeoutMs || 0,
         },
         res => {
-          if (!res.statusCode || res.statusCode >= 400) {
+          if (!res.statusCode || res.statusCode >= 300) {
             const errChunks: Buffer[] = [];
             res.on('data', (c: Buffer) => errChunks.push(c));
             res.on('end', () => {
@@ -238,6 +261,12 @@ export class KagentiApiClient {
         reject(err);
       });
 
+      req.on('timeout', () => {
+        req.destroy();
+        cleanupAbort();
+        reject(new Error(`Kagenti stream request timed out`));
+      });
+
       if (signal) {
         const onAbort = () => {
           req.destroy();
@@ -272,6 +301,10 @@ export class KagentiApiClient {
       headers.Authorization = `Bearer ${token}`;
     }
 
+    if (this._requestContext.userRef) {
+      headers['X-Backstage-User'] = this._requestContext.userRef;
+    }
+
     let payload: string | undefined;
     if (body !== undefined) {
       payload = JSON.stringify(body);
@@ -296,6 +329,7 @@ export class KagentiApiClient {
         res => {
           const chunks: Buffer[] = [];
           res.on('data', (c: Buffer) => chunks.push(c));
+          res.on('error', err => reject(err));
           res.on('end', () => {
             const raw = Buffer.concat(chunks).toString('utf-8');
             if (!res.statusCode || res.statusCode >= 400) {
@@ -309,6 +343,14 @@ export class KagentiApiClient {
               reject(
                 new Error(
                   `Kagenti API error: ${method} ${path} status ${res.statusCode}${detail ? ` - ${detail}` : ''}`,
+                ),
+              );
+              return;
+            }
+            if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
+              reject(
+                new Error(
+                  `Kagenti API error: ${method} ${path} unexpected redirect status ${res.statusCode}`,
                 ),
               );
               return;
@@ -361,6 +403,13 @@ export class KagentiApiClient {
   // Auth
   // ---------------------------------------------------------------------------
 
+  /**
+   * Fetches the Kagenti server's user-facing SSO/Keycloak configuration.
+   * Note: This is NOT the same as the Backstage service credentials
+   * configured in augment.kagenti.auth. This endpoint returns the
+   * Kagenti server's own authentication settings for end users.
+   * Currently unused — reserved for future SSO integration.
+   */
   async getAuthConfig(): Promise<AuthConfigResponse> {
     return this.request<AuthConfigResponse>(
       'GET',
@@ -405,7 +454,7 @@ export class KagentiApiClient {
   // ---------------------------------------------------------------------------
 
   async listNamespaces(enabledOnly = true): Promise<NamespaceListResponse> {
-    const qs = enabledOnly ? '?enabled_only=true' : '';
+    const qs = `?enabled_only=${enabledOnly}`;
     return this.request<NamespaceListResponse>(
       'GET',
       `${API_PREFIX}/namespaces${qs}`,
@@ -431,8 +480,19 @@ export class KagentiApiClient {
     name: string,
     message: string,
     sessionId?: string,
+    a2aMetadata?: {
+      metadata?: Record<string, unknown>;
+      parts?: Array<Record<string, unknown>>;
+      contextId?: string;
+    },
   ): Promise<ChatResponse> {
-    const body: ChatRequest = { message, session_id: sessionId };
+    const body: ChatRequest = {
+      message,
+      session_id: sessionId,
+      ...(a2aMetadata?.metadata && { metadata: a2aMetadata.metadata }),
+      ...(a2aMetadata?.parts && { parts: a2aMetadata.parts }),
+      ...(a2aMetadata?.contextId && { context_id: a2aMetadata.contextId }),
+    };
     return this.request<ChatResponse>(
       'POST',
       `${API_PREFIX}/chat/${e(namespace)}/${e(name)}/send`,
@@ -458,7 +518,7 @@ export class KagentiApiClient {
       session_id: sessionId,
       ...(a2aMetadata?.metadata && { metadata: a2aMetadata.metadata }),
       ...(a2aMetadata?.parts && { parts: a2aMetadata.parts }),
-      ...(a2aMetadata?.contextId && { contextId: a2aMetadata.contextId }),
+      ...(a2aMetadata?.contextId && { context_id: a2aMetadata.contextId }),
     };
     return this.streamRequest(
       `${API_PREFIX}/chat/${e(namespace)}/${e(name)}/stream`,
@@ -777,6 +837,24 @@ export class KagentiApiClient {
     return this.request<ShipwrightBuildListResponse>(
       'GET',
       `${API_PREFIX}/shipwright/builds${qs}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Contexts (conversation history)
+  // ---------------------------------------------------------------------------
+
+  async listContextHistory(
+    contextId: string,
+    opts?: { limit?: number; pageToken?: string },
+  ): Promise<ContextHistoryListResponse> {
+    const params = new URLSearchParams();
+    if (opts?.limit !== undefined) params.set('limit', String(opts.limit));
+    if (opts?.pageToken) params.set('page_token', opts.pageToken);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.request<ContextHistoryListResponse>(
+      'GET',
+      `${API_PREFIX}/contexts/${e(contextId)}/history${qs}`,
     );
   }
 }

@@ -129,12 +129,14 @@ export class KagentiStreamNormalizer {
     try {
       payload = JSON.parse(jsonLine);
     } catch {
+      this.verboseLogger?.warn(
+        `Unparseable SSE line from Kagenti, skipping: ${jsonLine.substring(0, 200)}`,
+      );
       return [
         {
           type: 'stream.error',
           error: 'Unparseable SSE data received from Kagenti',
         },
-        { type: 'stream.completed' },
       ];
     }
 
@@ -283,16 +285,17 @@ export class KagentiStreamNormalizer {
             });
             break;
 
-          case TaskStatusUpdateType.ApprovalRequired:
+          case TaskStatusUpdateType.ApprovalRequired: {
+            const approvalId = (result as { id?: string }).id ?? update.taskId;
             events.push({
               type: 'stream.tool.approval',
-              callId: update.taskId,
+              callId: approvalId,
               name: 'agent-approval',
               arguments: JSON.stringify(result.request),
               responseId: update.contextId,
             });
             break;
-
+          }
           case TaskStatusUpdateType.OAuthRequired:
             events.push({
               type: 'stream.auth.required',
@@ -355,7 +358,7 @@ export class KagentiStreamNormalizer {
   ): void {
     this.ensureStarted(events, update.contextId);
 
-    const textParts = update.artifact.parts
+    const textParts = (update.artifact.parts ?? [])
       .filter(p => 'text' in p)
       .map(p => (p as { text: string }).text);
 
@@ -372,8 +375,6 @@ export class KagentiStreamNormalizer {
         lastChunk: update.lastChunk,
       });
 
-      this.accumulatedText += content;
-      events.push({ type: 'stream.text.delta', delta: content });
     }
 
     if (update.lastChunk) {
@@ -541,8 +542,14 @@ export class KagentiStreamNormalizer {
     }
 
     if (evt?.type === 'artifact' && payload.content) {
-      this.accumulatedText += payload.content;
-      events.push({ type: 'stream.text.delta', delta: payload.content });
+      events.push({
+        type: 'stream.artifact',
+        artifactId: `legacy-${Date.now()}`,
+        name: typeof (evt as Record<string, unknown>).name === 'string' ? ((evt as Record<string, unknown>).name as string) : undefined,
+        content: payload.content,
+        append: false,
+        lastChunk: true,
+      });
     }
 
     const handledContent =

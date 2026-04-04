@@ -40,6 +40,14 @@ import { SecurityGate } from './SecurityGate';
 import { CommandCenterHeader } from './CommandCenterHeader';
 import { ProviderOfflineBanner } from './ProviderOfflineBanner';
 import { AgentConfigPanel, BrandingPanel, AgentsPanel } from '../AdminPanels';
+import {
+  KagentiAgentsPanel,
+  KagentiToolsPanel,
+  KagentiBuildPipelinePanel,
+  KagentiSandboxPanel,
+  KagentiAdminPanel,
+  KagentiDashboardLinks,
+} from '../AdminPanels/KagentiPanels';
 
 const AugmentPageContent = () => {
   const theme = useTheme();
@@ -75,6 +83,27 @@ const AugmentPageContent = () => {
   const api = useApi(augmentApiRef);
   const [rightPaneCollapsed, setRightPaneCollapsed] = useState(true);
   const [currentAgent, setCurrentAgent] = useState<string | undefined>();
+  const [kagentiNamespace, setKagentiNamespace] = useState<string>(() => {
+    try { return sessionStorage.getItem('augment:kagenti-ns') || ''; } catch { return ''; }
+  });
+  const handleNamespaceChange = useCallback((ns: string) => {
+    setKagentiNamespace(ns);
+    try { sessionStorage.setItem('augment:kagenti-ns', ns); } catch { /* noop */ }
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('augment:kagenti-ns')) return;
+    } catch { /* noop */ }
+    let cancelled = false;
+    api.listKagentiNamespaces().then(res => {
+      if (!cancelled && res.defaultNamespace) {
+        setKagentiNamespace(res.defaultNamespace);
+      }
+    }).catch(() => { /* non-critical */ });
+    return () => { cancelled = true; };
+  }, [api]);
+
   const chatContainerRef = useRef<ChatContainerRef>(null);
 
   const handleCurrentAgentChange = useCallback(
@@ -166,12 +195,14 @@ const AugmentPageContent = () => {
             {/* ============================================= */}
             {/* COMMAND CENTER MODE                           */}
             {/* ============================================= */}
-            {viewMode === 'admin' && (
+            {isAdmin && viewMode === 'admin' && (
               <>
                 <CommandCenterHeader
                   adminPanel={adminPanel}
                   onAdminPanelChange={setAdminPanel}
                   onBackToChat={switchToChat}
+                  kagentiNamespace={kagentiNamespace}
+                  onKagentiNamespaceChange={handleNamespaceChange}
                 />
 
                 {/* Admin Panel Content — position-based containment guarantees
@@ -185,16 +216,30 @@ const AugmentPageContent = () => {
                   }}
                 >
                   <Box
+                    key={adminPanel}
                     sx={{
                       position: 'absolute',
                       inset: 0,
                       overflow: 'auto',
+                      animation: 'fadeSlideIn 0.2s ease-out',
+                      '@keyframes fadeSlideIn': {
+                        '0%': { opacity: 0, transform: 'translateY(4px)' },
+                        '100%': { opacity: 1, transform: 'translateY(0)' },
+                      },
                       ...adminScrollSx,
                     }}
                   >
                     {adminPanel === 'platform' && <AgentConfigPanel />}
                     {adminPanel === 'agents' && <AgentsPanel />}
                     {adminPanel === 'branding' && <BrandingPanel />}
+                    {liveStatus?.providerId === 'kagenti' && adminPanel === 'kagenti-agents' && <KagentiAgentsPanel namespace={kagentiNamespace || undefined} />}
+                    {liveStatus?.providerId === 'kagenti' && adminPanel === 'kagenti-tools' && <KagentiToolsPanel namespace={kagentiNamespace || undefined} />}
+                    {liveStatus?.providerId === 'kagenti' && adminPanel === 'kagenti-builds' && <KagentiBuildPipelinePanel namespace={kagentiNamespace || undefined} />}
+                    {liveStatus?.providerId === 'kagenti' && adminPanel === 'kagenti-sandbox' && <KagentiSandboxPanel namespace={kagentiNamespace || undefined} />}
+                    {liveStatus?.providerId === 'kagenti' && adminPanel === 'kagenti-admin' && <KagentiAdminPanel />}
+                    {liveStatus?.providerId === 'kagenti' && adminPanel === 'kagenti-dashboards' && (
+                      <KagentiDashboardLinks namespace={kagentiNamespace || undefined} />
+                    )}
                   </Box>
                 </Box>
               </>

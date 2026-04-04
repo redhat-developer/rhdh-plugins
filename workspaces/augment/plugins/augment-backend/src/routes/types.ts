@@ -93,5 +93,6 @@ export interface RouteContext {
     approved: boolean;
     toolName?: string;
     toolArguments?: string;
+    reason?: string;
   };
 }

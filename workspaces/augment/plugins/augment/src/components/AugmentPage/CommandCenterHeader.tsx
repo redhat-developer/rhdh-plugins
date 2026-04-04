@@ -23,18 +23,29 @@ import Tab from '@mui/material/Tab';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import Divider from '@mui/material/Divider';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import TuneIcon from '@mui/icons-material/Tune';
 import PaletteIcon from '@mui/icons-material/Palette';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import BuildIcon from '@mui/icons-material/Build';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import ScienceIcon from '@mui/icons-material/Science';
+import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { AdminPanel } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useStatus } from '../../hooks';
+import { NamespacePicker } from '../AdminPanels/KagentiPanels';
 
 export interface CommandCenterHeaderProps {
   adminPanel: AdminPanel;
   onAdminPanelChange: (panel: AdminPanel) => void;
   onBackToChat: () => void;
+  kagentiNamespace?: string;
+  onKagentiNamespaceChange?: (ns: string) => void;
 }
 
 /**
@@ -44,14 +55,25 @@ export function CommandCenterHeader({
   adminPanel,
   onAdminPanelChange,
   onBackToChat,
+  kagentiNamespace,
+  onKagentiNamespaceChange,
 }: CommandCenterHeaderProps) {
   const theme = useTheme();
   const { t } = useTranslation();
+  const { status } = useStatus();
+  const isKagenti = status?.providerId === 'kagenti';
+
   const panelLabels = useMemo<Record<AdminPanel, string>>(
     () => ({
       platform: t('commandCenter.platform'),
       agents: t('commandCenter.agents'),
       branding: t('commandCenter.branding'),
+      'kagenti-agents': t('commandCenter.kagentiAgents', { defaultValue: 'Agents' }),
+      'kagenti-tools': t('commandCenter.kagentiTools', { defaultValue: 'Tools' }),
+      'kagenti-builds': t('commandCenter.kagentiBuilds', { defaultValue: 'Builds' }),
+      'kagenti-sandbox': t('commandCenter.kagentiSandbox', { defaultValue: 'Sandbox' }),
+      'kagenti-admin': t('commandCenter.kagentiAdmin', { defaultValue: 'Admin' }),
+      'kagenti-dashboards': t('commandCenter.kagentiDashboards', { defaultValue: 'Dashboards' }),
     }),
     [t],
   );
@@ -124,6 +146,14 @@ export function CommandCenterHeader({
             </Typography>
           </Breadcrumbs>
         </Box>
+        {isKagenti && onKagentiNamespaceChange && (
+          <Box sx={{ width: 200 }}>
+            <NamespacePicker
+              value={kagentiNamespace || ''}
+              onChange={onKagentiNamespaceChange}
+            />
+          </Box>
+        )}
         <Button
           size="small"
           variant="outlined"
@@ -192,6 +222,55 @@ export function CommandCenterHeader({
             label={t('commandCenter.branding')}
             value="branding"
           />
+          {isKagenti && <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />}
+          {isKagenti && (
+            <Tab
+              icon={<SmartToyIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label={panelLabels['kagenti-agents']}
+              value="kagenti-agents"
+            />
+          )}
+          {isKagenti && (
+            <Tab
+              icon={<BuildIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label={panelLabels['kagenti-tools']}
+              value="kagenti-tools"
+            />
+          )}
+          {isKagenti && (
+            <Tab
+              icon={<AccountTreeIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label={panelLabels['kagenti-builds']}
+              value="kagenti-builds"
+            />
+          )}
+          {isKagenti && (
+            <Tab
+              icon={<ScienceIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label={panelLabels['kagenti-sandbox']}
+              value="kagenti-sandbox"
+            />
+          )}
+          {isKagenti && (
+            <Tab
+              icon={<AdminPanelSettingsOutlinedIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label={panelLabels['kagenti-admin']}
+              value="kagenti-admin"
+            />
+          )}
+          {isKagenti && (
+            <Tab
+              icon={<DashboardIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label={panelLabels['kagenti-dashboards']}
+              value="kagenti-dashboards"
+            />
+          )}
         </Tabs>
       </Box>
     </>

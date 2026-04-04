@@ -32,6 +32,7 @@ export interface ChatSession {
   conversationId: string | null;
   createdAt: string;
   updatedAt: string;
+  model?: string;
 }
 
 interface ChatSessionRow {
@@ -41,6 +42,7 @@ interface ChatSessionRow {
   conversation_id: string | null;
   created_at: string;
   updated_at: string;
+  model: string | null;
 }
 
 const TABLE_NAME = 'augment_sessions';
@@ -94,6 +96,26 @@ export class ChatSessionService {
             );
           }
         }
+        // Add model column if missing (migration for existing tables)
+        const hasModel = await this.db.schema.hasColumn(TABLE_NAME, 'model');
+        if (!hasModel) {
+          try {
+            await this.db.schema.alterTable(TABLE_NAME, table => {
+              table.string('model').nullable();
+            });
+            this.logger.info(`Added model column to ${TABLE_NAME} table`);
+          } catch (alterError) {
+            const hasModelNow = await this.db.schema.hasColumn(
+              TABLE_NAME,
+              'model',
+            );
+            if (!hasModelNow) throw alterError;
+            this.logger.info(
+              `model column in ${TABLE_NAME} was added by another instance`,
+            );
+          }
+        }
+
         this.logger.info(`Using existing ${TABLE_NAME} table`);
       } else {
         try {
@@ -105,6 +127,7 @@ export class ChatSessionService {
               .notNullable()
               .defaultTo('user:default/guest');
             table.string('conversation_id').nullable();
+            table.string('model').nullable();
             table
               .timestamp('created_at')
               .notNullable()
@@ -139,10 +162,15 @@ export class ChatSessionService {
       conversationId: row.conversation_id,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      ...(row.model ? { model: row.model } : {}),
     };
   }
 
-  async createSession(userRef: string, title?: string): Promise<ChatSession> {
+  async createSession(
+    userRef: string,
+    title?: string,
+    model?: string,
+  ): Promise<ChatSession> {
     if (!this.db) throw new Error('Database not initialized');
 
     const id = randomUUID();
@@ -154,6 +182,7 @@ export class ChatSessionService {
       title: sessionTitle,
       user_ref: userRef,
       conversation_id: null,
+      model: model || null,
       created_at: now,
       updated_at: now,
     });
@@ -166,6 +195,7 @@ export class ChatSessionService {
       conversationId: null,
       createdAt: now,
       updatedAt: now,
+      ...(model ? { model } : {}),
     };
   }
 

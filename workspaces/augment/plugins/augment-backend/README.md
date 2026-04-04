@@ -148,6 +148,120 @@ augment:
       handoffDescription: 'Handles Kubernetes and OpenShift operations'
 ```
 
+### Kagenti Provider
+
+To use Kagenti as the AI provider instead of Llama Stack, set `augment.provider` to `kagenti` and add the `augment.kagenti` configuration block:
+
+```yaml
+augment:
+  provider: kagenti
+
+  kagenti:
+    # Required: Kagenti API server URL
+    baseUrl: https://kagenti-api-kagenti-system.apps.ocp.example.com
+
+    # Required: OAuth2 client credentials for Kagenti API authentication
+    auth:
+      tokenEndpoint: https://keycloak.example.com/realms/kagenti/protocol/openid-connect/token
+      clientId: backstage-augment
+      clientSecret: ${KAGENTI_CLIENT_SECRET}
+
+    # Optional: Default namespace for agents and tools (default: "default")
+    namespace: my-namespace
+
+    # Optional: Restrict to specific namespaces (allowlist)
+    namespaces:
+      - team-a
+      - team-b
+
+    # Optional: Show all namespaces in the namespace picker (default: true)
+    showAllNamespaces: true
+
+    # Optional: Default agent name for chat
+    agentName: my-agent
+
+    # Optional: Skip TLS verification for self-signed certs (default: false)
+    skipTlsVerify: false
+
+    # Optional: Timeout configuration
+    requestTimeoutMs: 30000
+    streamTimeoutMs: 300000
+    maxRetries: 3
+
+    # Optional: Local overrides for feature flags from the Kagenti API
+    featureOverrides:
+      sandbox: true
+      integrations: true
+      triggers: true
+
+    # Optional: Dashboard URL overrides
+    dashboards:
+      traces: https://jaeger.example.com
+      network: https://kiali.example.com
+      mcpInspector: https://mcp-inspector.example.com
+      mcpProxy: https://mcp-proxy.example.com
+      keycloakConsole: https://keycloak.example.com/admin
+
+    # Optional: Sandbox default settings
+    sandbox:
+      sessionTtlMinutes: 30
+      defaultSkill: python
+      sidecar:
+        autoApprove: false
+```
+
+### Kagenti Agent Security
+
+Kagenti supports several layers of agent security that are integrated with the Augment plugin:
+
+**Service Authentication**: The plugin authenticates to the Kagenti API using OAuth2 client credentials (configured via `augment.kagenti.auth`). All API calls use a shared service token.
+
+**User Identity Propagation**: The Backstage user's identity is forwarded to the Kagenti API via the `X-Backstage-User` header on every request, enabling per-user audit trails and access control on the Kagenti side.
+
+**Namespace Access Control**: When `namespaces` is configured as an allowlist, the plugin enforces that users can only access agents and tools within those namespaces. If `showAllNamespaces: false`, only the default `namespace` is accessible.
+
+**Route-Level Authorization**: Kagenti mutation routes (create/delete agents, tools, builds, LLM configuration, integrations) require admin access (`augment.admin` permission). Read-only routes (list agents, list tools, view agent cards) are accessible to all plugin users.
+
+**Auth Bridge**: When creating agents or tools, the "Auth bridge enabled" flag enables identity propagation between services. The calling user's identity is forwarded to the tool via Kagenti's auth bridge, allowing the tool to make authenticated calls on behalf of the user.
+
+**SPIRE (Workload Identity)**: The "SPIRE enabled" flag enables SPIFFE-based workload identity with mutual TLS. When enabled, the tool receives a cryptographic workload identity and communicates with other services using mTLS.
+
+**A2A Interactive Security**: During agent conversations, Kagenti agents can request:
+- **User Approval**: Human-in-the-loop confirmation before executing tools
+- **OAuth Authentication**: Redirect the user to an identity provider for authentication
+- **Secrets**: Prompt the user for credentials or API keys
+- **Form Input**: Request structured data from the user
+
+### Kagenti — API-Only Features (No UI)
+
+The following 9 capabilities have full backend routes and client support but are **not available in the Augment UI**. They can be accessed programmatically via the REST API.
+
+#### Sandbox (requires `sandbox` feature flag)
+
+| Feature | Endpoints | Notes |
+|---------|-----------|-------|
+| Sandbox Chat | `POST /kagenti/sandbox/:ns/chat` | Non-streaming chat within a sandbox session |
+| Sandbox Streaming Chat | `POST /kagenti/sandbox/:ns/chat/stream` | SSE streaming chat within a sandbox session |
+| Session Subscribe (SSE) | `GET /kagenti/sandbox/:ns/sessions/:id/subscribe` | Real-time session event stream |
+| Create / Delete Sandbox | `POST /DELETE /kagenti/sandbox/:ns/...` | Sandbox lifecycle management |
+| Browse Sandbox Files | `GET /kagenti/sandbox/:ns/files/...` | File browsing, directory listing, file content retrieval |
+| Sidecar Management | `POST /kagenti/sandbox/:ns/.../sidecars/...` | Enable, disable, configure, approve, deny sidecars |
+| Session Chain / History | `GET .../chain`, `GET .../history` | Detailed session execution chain and conversation history |
+
+#### Agent Management
+
+| Feature | Endpoints | Notes |
+|---------|-----------|-------|
+| Agent Migration | `POST /kagenti/agents/:ns/:name/migrate`, `POST .../migrate-all` | Migrate agents from legacy CRD format to deployment-based format |
+
+#### Integrations (requires `integrations` feature flag)
+
+| Feature | Endpoints | Notes |
+|---------|-----------|-------|
+| Update Integration | `PUT /kagenti/integrations/:ns/:name` | Modify an existing integration's configuration |
+
+These are tracked as planned enhancements. The core agent chat flow uses the main `chatStream` endpoint and is fully functional in the UI.
+
 ## Document Sources
 
 ### Directory Source

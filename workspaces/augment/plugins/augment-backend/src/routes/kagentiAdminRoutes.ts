@@ -23,7 +23,7 @@ import type { KagentiProvider } from '../providers/kagenti';
  * integrations, and triggers. Conditionally registered based on feature flags.
  */
 export function registerKagentiAdminRoutes(ctx: RouteContext): void {
-  const { router, logger, provider, sendRouteError } = ctx;
+  const { router, logger, provider, sendRouteError, requireAdminAccess } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
   if (provider.id !== 'kagenti') {
@@ -37,6 +37,13 @@ export function registerKagentiAdminRoutes(ctx: RouteContext): void {
     logger.warn('Admin client not available, skipping admin routes');
     return;
   }
+
+  // Admin routes intentionally skip per-namespace validation:
+  // admins may need cross-namespace access for LLM key management,
+  // integrations, and model configuration.
+  router.use('/kagenti/models', requireAdminAccess);
+  router.use('/kagenti/llm', requireAdminAccess);
+  router.use('/kagenti/integrations', requireAdminAccess);
 
   // -- Models (sandbox flag) --------------------------------------------------
 
@@ -74,7 +81,7 @@ export function registerKagentiAdminRoutes(ctx: RouteContext): void {
         'Failed to list teams',
         async (_req, res) => {
           const result = await admin.listTeams();
-          res.json(result);
+          res.json({ teams: Array.isArray(result) ? result : [] });
         },
       ),
     );
@@ -112,7 +119,7 @@ export function registerKagentiAdminRoutes(ctx: RouteContext): void {
         'Failed to list keys',
         async (_req, res) => {
           const result = await admin.listKeys();
-          res.json(result);
+          res.json({ keys: Array.isArray(result) ? result : [] });
         },
       ),
     );
@@ -243,6 +250,7 @@ export function registerKagentiAdminRoutes(ctx: RouteContext): void {
   if (flags.triggers) {
     router.post(
       '/kagenti/sandbox/trigger',
+      requireAdminAccess,
       withRoute(
         'POST /kagenti/sandbox/trigger',
         'Failed to create trigger',

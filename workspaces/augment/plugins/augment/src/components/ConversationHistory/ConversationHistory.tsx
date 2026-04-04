@@ -20,6 +20,8 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
 import { alpha, useTheme } from '@mui/material/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useBranding } from '../../hooks';
@@ -33,7 +35,7 @@ import { GroupedSessionList } from './GroupedSessionList';
 
 interface ConversationHistoryProps {
   /** Callback when a session is selected */
-  onSelectSession: (sessionId: string, adminView?: boolean) => void;
+  onSelectSession: (sessionId: string, adminView?: boolean, sessionModel?: string) => void;
   /** Called when the currently active session is deleted so the parent can clear the chat */
   onActiveSessionDeleted?: () => void;
   /** Currently active session ID */
@@ -61,6 +63,7 @@ export const ConversationHistory = ({
   const { branding } = useBranding();
   const [sessions, setSessions] = useState<ChatSessionSummary[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -76,6 +79,7 @@ export const ConversationHistory = ({
   const loadSessions = useCallback(async () => {
     const gen = ++loadGenRef.current;
     setLoading(true);
+    setLoadError(null);
     setHasMore(true);
     setLoadingMore(false);
     try {
@@ -88,6 +92,9 @@ export const ConversationHistory = ({
       if (list.length < PAGE_SIZE) setHasMore(false);
     } catch (err) {
       debugError('Failed to load sessions:', err);
+      if (loadGenRef.current === gen) {
+        setLoadError(err instanceof Error ? err.message : 'Failed to load conversations');
+      }
     } finally {
       if (loadGenRef.current === gen) {
         setLoading(false);
@@ -202,7 +209,7 @@ export const ConversationHistory = ({
   const filteredSessions = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     return query
-      ? sessions.filter(s => s.title.toLowerCase().includes(query))
+      ? sessions.filter(s => (s.title || '').toLowerCase().includes(query))
       : sessions;
   }, [sessions, searchQuery]);
 
@@ -324,10 +331,25 @@ export const ConversationHistory = ({
           },
         }}
       >
+        {loadError && sessions.length === 0 && (
+          <Box sx={{ px: 1, py: 2 }}>
+            <Alert
+              severity="error"
+              action={
+                <Button size="small" color="inherit" onClick={() => loadSessions()}>
+                  Retry
+                </Button>
+              }
+              sx={{ fontSize: '0.75rem' }}
+            >
+              {loadError}
+            </Alert>
+          </Box>
+        )}
         {/* eslint-disable-next-line no-nested-ternary */}
         {sessions.length === 0 && loading ? (
           <ConversationSkeleton />
-        ) : sessions.length === 0 ? (
+        ) : sessions.length === 0 && !loadError ? (
           <EmptyConversationState />
         ) : (
           <GroupedSessionList

@@ -83,6 +83,7 @@ function createMockRouteContext() {
     id: 'kagenti',
     displayName: 'Kagenti',
     getSandboxClient: () => mockSandboxClient,
+    validateNamespace: jest.fn(),
     getFeatureFlags: () => ({
       sandbox: true,
       integrations: false,
@@ -135,7 +136,7 @@ describe('kagentiSandboxRoutes', () => {
     const { app } = createMockRouteContext();
     const res = await request(app).get('/kagenti/sandbox/ns1/sessions');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ items: [], total: 0 });
+    expect(res.body).toEqual({ sessions: [], total: 0 });
   });
 
   it('GET /kagenti/sandbox/:ns/sessions/:contextId gets session detail', async () => {
@@ -195,5 +196,192 @@ describe('kagentiSandboxRoutes', () => {
     );
     expect(res.status).toBe(200);
     expect(res.body.totalTokens).toBe(100);
+  });
+
+  it('POST /kagenti/sandbox/:ns/sessions/:contextId/kill kills session', async () => {
+    const { app, mockSandboxClient } = createMockRouteContext();
+    const res = await request(app).post(
+      '/kagenti/sandbox/ns1/sessions/c1/kill',
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('cancelled');
+    expect(mockSandboxClient.killSession).toHaveBeenCalledWith('ns1', 'c1');
+  });
+
+  it('POST /kagenti/sandbox/:ns/sessions/:contextId/approve approves session', async () => {
+    const { app, mockSandboxClient } = createMockRouteContext();
+    const res = await request(app).post(
+      '/kagenti/sandbox/ns1/sessions/c1/approve',
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('approved');
+    expect(mockSandboxClient.approveSession).toHaveBeenCalledWith('ns1', 'c1');
+  });
+
+  it('POST /kagenti/sandbox/:ns/sessions/:contextId/deny denies session', async () => {
+    const { app, mockSandboxClient } = createMockRouteContext();
+    const res = await request(app).post(
+      '/kagenti/sandbox/ns1/sessions/c1/deny',
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('denied');
+    expect(mockSandboxClient.denySession).toHaveBeenCalledWith('ns1', 'c1');
+  });
+
+  it('PUT /kagenti/sandbox/:ns/sessions/:contextId/visibility sets visibility', async () => {
+    const { app, mockSandboxClient } = createMockRouteContext();
+    const res = await request(app)
+      .put('/kagenti/sandbox/ns1/sessions/c1/visibility')
+      .send({ visibility: 'namespace' });
+    expect(res.status).toBe(200);
+    expect(res.body.visibility).toBe('namespace');
+    expect(mockSandboxClient.setVisibility).toHaveBeenCalledWith(
+      'ns1',
+      'c1',
+      'namespace',
+    );
+  });
+
+  it('GET /kagenti/sandbox/:ns/agents lists sandbox agents', async () => {
+    const { app } = createMockRouteContext();
+    const res = await request(app).get('/kagenti/sandbox/ns1/agents');
+    expect(res.status).toBe(200);
+    expect(res.body.agents).toEqual([]);
+  });
+
+  it('GET /kagenti/sandbox/:ns/agents/:name/pod-status gets pod status', async () => {
+    const { app } = createMockRouteContext();
+    const res = await request(app).get(
+      '/kagenti/sandbox/ns1/agents/agent1/pod-status',
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.running).toBe(true);
+  });
+
+  it('POST /kagenti/sandbox/:ns/chat rejects empty body', async () => {
+    const { app } = createMockRouteContext();
+    const res = await request(app)
+      .post('/kagenti/sandbox/ns1/chat')
+      .send({});
+    expect(res.status).toBe(500);
+  });
+
+  it('GET /kagenti/sandbox/:ns/sessions/:contextId/chain gets session chain', async () => {
+    const { app } = createMockRouteContext();
+    const res = await request(app).get(
+      '/kagenti/sandbox/ns1/sessions/c1/chain',
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.chain).toEqual([]);
+  });
+
+  it('GET /kagenti/sandbox/:ns/sessions/:contextId/history gets session history', async () => {
+    const { app } = createMockRouteContext();
+    const res = await request(app).get(
+      '/kagenti/sandbox/ns1/sessions/c1/history',
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it('filters private sessions for non-admin users', async () => {
+    const router = express.Router();
+    const logger = createMockLogger();
+
+    const mockSandboxClient = {
+      listSessions: jest.fn().mockResolvedValue({
+        items: [
+          { contextId: 'c1', visibility: 'namespace' },
+          { contextId: 'c2', visibility: 'private' },
+        ],
+        total: 2,
+      }),
+      getSession: jest.fn(),
+      getSessionChain: jest.fn(),
+      getSessionHistory: jest.fn(),
+      deleteSession: jest.fn(),
+      renameSession: jest.fn(),
+      killSession: jest.fn(),
+      approveSession: jest.fn(),
+      denySession: jest.fn(),
+      setVisibility: jest.fn(),
+      cleanupSessions: jest.fn(),
+      listSandboxAgents: jest.fn(),
+      getAgentPodStatus: jest.fn(),
+      getPodMetrics: jest.fn(),
+      getPodEvents: jest.fn(),
+      sandboxChat: jest.fn(),
+      getSandboxDefaults: jest.fn().mockResolvedValue({}),
+      createSandbox: jest.fn(),
+      deleteSandbox: jest.fn(),
+      getSandboxConfig: jest.fn(),
+      updateSandbox: jest.fn(),
+      browseFiles: jest.fn(),
+      listDirectory: jest.fn(),
+      getFileContent: jest.fn(),
+      browseContextFiles: jest.fn(),
+      getStorageStats: jest.fn(),
+      listSidecars: jest.fn(),
+      enableSidecar: jest.fn(),
+      disableSidecar: jest.fn(),
+      updateSidecarConfig: jest.fn(),
+      resetSidecar: jest.fn(),
+      approveSidecar: jest.fn(),
+      denySidecar: jest.fn(),
+      getSessionTokenUsage: jest.fn(),
+      getSessionTreeUsage: jest.fn(),
+      getEvents: jest.fn(),
+      getPaginatedTasks: jest.fn(),
+    };
+
+    const ctx = {
+      router,
+      logger,
+      config: {} as never,
+      provider: {
+        id: 'kagenti',
+        displayName: 'Kagenti',
+        getSandboxClient: () => mockSandboxClient,
+        validateNamespace: jest.fn(),
+        getFeatureFlags: () => ({
+          sandbox: true,
+          integrations: false,
+          triggers: false,
+        }),
+        getConfig: () => ({
+          verboseStreamLogging: false,
+          pagination: { defaultLimit: 50, maxLimit: 200 },
+          sandbox: { defaultSkill: undefined, sidecar: { autoApprove: false } },
+        }),
+      } as never,
+      sessions: undefined,
+      toErrorMessage: (e: unknown) =>
+        e instanceof Error ? e.message : String(e),
+      sendRouteError: jest.fn(
+        (res: express.Response, _err: unknown, _label: string, msg: string) => {
+          res.status(500).json({ error: msg });
+        },
+      ),
+      missingSessions: jest.fn().mockReturnValue(false),
+      missingConversations: jest.fn().mockReturnValue(false),
+      getUserRef: jest.fn().mockResolvedValue('user:default/test'),
+      checkIsAdmin: jest.fn().mockResolvedValue(false),
+      requireAdminAccess: ((
+        _req: express.Request,
+        _res: express.Response,
+        next: express.NextFunction,
+      ) => next()) as express.RequestHandler,
+      parseChatRequest: jest.fn(),
+      parseApprovalRequest: jest.fn(),
+    };
+
+    registerKagentiSandboxRoutes(ctx);
+    const app = express();
+    app.use(express.json());
+    app.use(router);
+
+    const res = await request(app).get('/kagenti/sandbox/ns1/sessions');
+    expect(res.status).toBe(200);
+    expect(res.body.sessions).toHaveLength(1);
+    expect(res.body.sessions[0].contextId).toBe('c1');
   });
 });

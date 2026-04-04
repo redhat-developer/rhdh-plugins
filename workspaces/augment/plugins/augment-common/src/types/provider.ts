@@ -75,6 +75,8 @@ export interface ProviderConfigField {
   readonly options?: readonly string[];
   /** Placeholder text for text inputs */
   readonly placeholder?: string;
+  /** Whether the field value is sensitive (passwords, secrets) and should be masked in UI */
+  readonly sensitive?: boolean;
 }
 
 /**

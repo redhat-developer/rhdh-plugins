@@ -20,6 +20,7 @@ import type { NormalizedStreamEvent } from '../providers';
 import type { ChatMessage } from '../types';
 import type { SafetyChatResponse, EvaluatedChatResponse } from '../types';
 import { createWithRoute } from './routeWrapper';
+import type { KagentiProvider } from '../providers/kagenti/KagentiProvider';
 import type { FlushableResponse, RouteContext } from './types';
 
 function getLastUserContent(messages: ChatMessage[]): string {
@@ -203,7 +204,7 @@ async function resolveConversationId(
     return { resolvedConversationId: session.conversationId, userRef };
   }
 
-  if (!provider.conversations) {
+  if (!provider.conversations || provider.id === 'kagenti') {
     return { resolvedConversationId, userRef };
   }
 
@@ -273,7 +274,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
 
         await provider.refreshDynamicConfig?.();
 
-        const { resolvedConversationId } = await resolveConversationId(
+        const { resolvedConversationId, userRef } = await resolveConversationId(
           conversationId,
           sessionId,
           sessions,
@@ -283,7 +284,24 @@ export function registerChatRoutes(ctx: RouteContext): void {
           logger,
         );
 
+        // Hydrate Kagenti context from DB for non-streaming path
+        if (provider.id === 'kagenti' && sessionId && sessions) {
+          const kagenti = provider as unknown as KagentiProvider;
+          const existingCtx = kagenti.getSessionContextId(sessionId);
+          if (!existingCtx) {
+            const ctxFromDb = resolvedConversationId
+              || (await sessions.getSession(sessionId, userRef))?.conversationId;
+            if (ctxFromDb) {
+              kagenti.hydrateSessionContext(sessionId, ctxFromDb, parsed.model);
+            }
+          }
+        }
+
         const userContent = getLastUserContent(messages);
+
+        if (provider.id === 'kagenti') {
+          (provider as unknown as KagentiProvider).setUserContext(userRef);
+        }
 
         if (provider.safety?.isEnabled()) {
           const safetyResult = await provider.safety.checkInput(userContent);
@@ -301,6 +319,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
           enableRAG,
           previousResponseId,
           conversationId: resolvedConversationId,
+          sessionId,
+          model: parsed.model,
         });
 
         if (provider.safety?.isEnabled()) {
@@ -337,6 +357,22 @@ export function registerChatRoutes(ctx: RouteContext): void {
             }
             res.json(evaluatedResponse);
             return;
+          }
+        }
+
+        // Persist Kagenti context ID for non-streaming path
+        if (provider.id === 'kagenti' && sessionId && sessions) {
+          const ctxId = (
+            provider as unknown as KagentiProvider
+          ).getSessionContextId(sessionId);
+          if (ctxId) {
+            await sessions
+              .setConversationIdIfNull(sessionId, userRef, ctxId)
+              .catch(err =>
+                logger.warn(
+                  `Failed to link Kagenti context for session ${sessionId}: ${err}`,
+                ),
+              );
           }
         }
 
@@ -391,6 +427,25 @@ export function registerChatRoutes(ctx: RouteContext): void {
         logger,
       );
 
+      // Hydrate Kagenti in-memory map from DB so conversation continues
+      // across server restarts. The DB may have a conversation_id from a
+      // previous stream even if the in-memory map was cleared.
+      if (provider.id === 'kagenti' && sessionId && sessions) {
+        const kagenti = provider as unknown as KagentiProvider;
+        const existingCtx = kagenti.getSessionContextId(sessionId);
+        if (!existingCtx) {
+          const ctxFromDb = resolvedConversationId
+            || (await sessions.getSession(sessionId, userRef))?.conversationId;
+          if (ctxFromDb) {
+            kagenti.hydrateSessionContext(sessionId, ctxFromDb, parsedRequest.model);
+          }
+        }
+      }
+
+      if (provider.id === 'kagenti') {
+        (provider as unknown as KagentiProvider).setUserContext(userRef);
+      }
+
       if (provider.safety?.isEnabled()) {
         const userContent = getLastUserContent(messages);
         const safetyResult = await provider.safety.checkInput(userContent);
@@ -419,6 +474,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
           enableRAG,
           previousResponseId,
           conversationId: resolvedConversationId,
+          sessionId,
+          model: parsedRequest.model,
         },
         wrappedForward,
         abortController.signal,
@@ -460,6 +517,25 @@ export function registerChatRoutes(ctx: RouteContext): void {
             }
           }
           await sessions.touch(sessionId, userRef);
+
+          // Persist Kagenti context ID so conversation survives restarts
+          if (provider.id === 'kagenti') {
+            const ctxId = (
+              provider as unknown as KagentiProvider
+            ).getSessionContextId(sessionId);
+            if (ctxId) {
+              const linked = await sessions.setConversationIdIfNull(
+                sessionId,
+                userRef,
+                ctxId,
+              );
+              if (linked) {
+                logger.info(
+                  `Linked session ${sessionId} to Kagenti context ${ctxId}`,
+                );
+              }
+            }
+          }
         } catch (touchErr) {
           logger.warn(
             `Failed to update session ${sessionId} after stream: ${touchErr}`,
@@ -488,7 +564,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'POST /chat/approve',
       'Failed to process approval',
       async (req, res) => {
-        const { responseId, callId, approved, toolName, toolArguments } =
+        const { responseId, callId, approved, toolName, toolArguments, reason } =
           parseApprovalRequest(req.body);
 
         logger.info(
@@ -496,6 +572,29 @@ export function registerChatRoutes(ctx: RouteContext): void {
             approved ? 'approval' : 'rejection'
           } for responseId=${responseId}, callId=${callId}, tool=${toolName}`,
         );
+
+        if (provider.id === 'kagenti') {
+          const kagentiProvider = provider as unknown as KagentiProvider;
+          const result = await kagentiProvider.submitApproval({
+            responseId,
+            callId,
+            approved: approved === true,
+            toolName,
+            toolArguments,
+            reason,
+          });
+          res.json({
+            success: true,
+            rejected: !approved,
+            content: result.content,
+            responseId: result.responseId,
+            toolExecuted: result.toolExecuted,
+            toolOutput: result.toolOutput,
+            pendingApproval: result.pendingApproval,
+            handoff: result.handoff,
+          });
+          return;
+        }
 
         if (!provider.conversations) {
           res.status(501).json({

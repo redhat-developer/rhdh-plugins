@@ -158,4 +158,77 @@ describe('kagentiAdminRoutes', () => {
     const res = await request(app).get('/kagenti/models');
     expect(res.status).toBe(404);
   });
+
+  it('DELETE /kagenti/llm/keys/:ns/:agentName deletes a key', async () => {
+    const { app, mockAdminClient } = createMockRouteContext();
+    const res = await request(app).delete('/kagenti/llm/keys/ns1/agent1');
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(mockAdminClient.deleteKey).toHaveBeenCalledWith('ns1', 'agent1');
+  });
+
+  it('DELETE /kagenti/integrations/:ns/:name deletes integration', async () => {
+    const { app, mockAdminClient } = createMockRouteContext();
+    const res = await request(app).delete('/kagenti/integrations/ns1/int1');
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(mockAdminClient.deleteIntegration).toHaveBeenCalledWith(
+      'ns1',
+      'int1',
+    );
+  });
+
+  it('PUT /kagenti/integrations/:ns/:name updates integration', async () => {
+    const { app, mockAdminClient } = createMockRouteContext();
+    const res = await request(app)
+      .put('/kagenti/integrations/ns1/int1')
+      .send({ config: { key: 'val' } });
+    expect(res.status).toBe(200);
+    expect(mockAdminClient.updateIntegration).toHaveBeenCalled();
+  });
+
+  it('GET /kagenti/integrations/:ns/:name gets integration detail', async () => {
+    const { app } = createMockRouteContext();
+    const res = await request(app).get('/kagenti/integrations/ns1/int1');
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe('int1');
+  });
+
+  it('POST /kagenti/llm/keys creates a key', async () => {
+    const { app } = createMockRouteContext();
+    const res = await request(app)
+      .post('/kagenti/llm/keys')
+      .send({ namespace: 'ns1', agentName: 'a1' });
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+  });
+
+  it('GET /kagenti/llm/teams/:namespace lists teams by namespace', async () => {
+    const { app, mockAdminClient } = createMockRouteContext();
+    const res = await request(app).get('/kagenti/llm/teams/ns1');
+    expect(res.status).toBe(200);
+    expect(mockAdminClient.getTeam).toHaveBeenCalledWith('ns1');
+  });
+
+  it('does not register integration routes when integrations flag is off', async () => {
+    const { app } = createMockRouteContext({
+      sandbox: true,
+      integrations: false,
+      triggers: false,
+    });
+    const res = await request(app).get('/kagenti/integrations');
+    expect(res.status).toBe(404);
+  });
+
+  it('does not register trigger route when triggers flag is off', async () => {
+    const { app } = createMockRouteContext({
+      sandbox: true,
+      integrations: true,
+      triggers: false,
+    });
+    const res = await request(app)
+      .post('/kagenti/sandbox/trigger')
+      .send({ type: 'cron', namespace: 'ns1', schedule: '*/5 * * * *' });
+    expect(res.status).toBe(404);
+  });
 });

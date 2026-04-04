@@ -25,8 +25,18 @@ import PersonIcon from '@mui/icons-material/Person';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import { useMemo } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { ChatSessionSummary } from '../../types';
+
+const SESSION_ITEM_CONTAINER_SX_STATIC = {
+  p: 1.5,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:last-child': {
+    borderBottom: 'none',
+  },
+} as const;
 
 export interface DeleteState {
   confirmDeleteId: string | null;
@@ -80,32 +90,46 @@ export function SessionItem({
   const isDark = theme.palette.mode === 'dark';
   const isConfirming = confirmDeleteId === session.id;
 
+  const containerSx = useMemo(
+    () => ({
+      ...SESSION_ITEM_CONTAINER_SX_STATIC,
+      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+      borderLeft: session.model
+        ? `2px solid ${alpha(theme.palette.primary.main, 0.4)}`
+        : '2px solid transparent',
+      background: isActive
+        ? alpha(theme.palette.primary.main, 0.1)
+        : 'transparent',
+      '&:hover': {
+        background: alpha(
+          theme.palette.primary.main,
+          isActive ? 0.15 : 0.05,
+        ),
+        '& .delete-btn': {
+          opacity: 1,
+        },
+      },
+      '&:focus-visible': {
+        outline: `2px solid ${theme.palette.primary.main}`,
+        outlineOffset: -2,
+      },
+    }),
+    [theme, session.model, isActive],
+  );
+
   return (
     <Fade in timeout={200 + fadeIndex * 50}>
       <Box
         role="listitem"
-        sx={{
-          p: 1.5,
-          cursor: 'pointer',
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-          background: isActive
-            ? alpha(theme.palette.primary.main, 0.1)
-            : 'transparent',
-          transition: 'all 0.2s ease',
-          '&:hover': {
-            background: alpha(
-              theme.palette.primary.main,
-              isActive ? 0.15 : 0.05,
-            ),
-            '& .delete-btn': {
-              opacity: 1,
-            },
-          },
-          '&:last-child': {
-            borderBottom: 'none',
-          },
-        }}
+        tabIndex={0}
+        sx={containerSx}
         onClick={onSelect}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSelect();
+          }
+        }}
       >
         <Box
           sx={{
@@ -158,6 +182,42 @@ export function SessionItem({
                 mt: 0.5,
               }}
             >
+              {session.model && (
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.4,
+                    px: 0.75,
+                    py: 0.15,
+                    borderRadius: 1,
+                    bgcolor: alpha(theme.palette.primary.main, isDark ? 0.12 : 0.06),
+                    mr: 0.5,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: '50%',
+                      bgcolor: theme.palette.success.main,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    noWrap
+                    sx={{
+                      color: theme.palette.primary.main,
+                      fontSize: '0.6rem',
+                      fontWeight: 600,
+                      maxWidth: 80,
+                    }}
+                  >
+                    {session.model.includes('/') ? session.model.split('/').pop() : session.model}
+                  </Typography>
+                </Box>
+              )}
               {showAllUsers && session.userRef && (
                 <>
                   <PersonIcon

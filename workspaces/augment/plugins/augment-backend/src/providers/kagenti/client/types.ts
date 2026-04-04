@@ -197,6 +197,7 @@ export interface FinalizeShipwrightBuildRequest {
   servicePorts?: KagentiServicePort[];
   createHttpRoute?: boolean;
   authBridgeEnabled?: boolean;
+  spireEnabled?: boolean;
   imagePullSecret?: string;
 }
 
@@ -316,6 +317,7 @@ export interface FinalizeToolBuildRequest {
   servicePorts?: KagentiServicePort[];
   createHttpRoute?: boolean;
   authBridgeEnabled?: boolean;
+  spireEnabled?: boolean;
   imagePullSecret?: string;
 }
 
@@ -518,6 +520,46 @@ export interface TriggerResponse {
   sandbox_claim?: string;
   namespace: string;
   [key: string]: unknown;
+}
+
+// -- Contexts API -------------------------------------------------------------
+
+export interface ContextHistoryItem {
+  id: string;
+  context_id: string;
+  created_at: string;
+  kind: 'artifact' | 'message';
+  data: ContextHistoryMessage | ContextHistoryArtifact;
+}
+
+export interface ContextHistoryMessage {
+  role: string;
+  parts: Array<{
+    type?: string;
+    text?: string;
+    [key: string]: unknown;
+  }>;
+  metadata?: Record<string, unknown>;
+  referenceTaskIds?: string[];
+}
+
+export interface ContextHistoryArtifact {
+  artifactId: string;
+  name?: string;
+  description?: string;
+  parts: Array<{
+    type?: string;
+    text?: string;
+    [key: string]: unknown;
+  }>;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ContextHistoryListResponse {
+  total_count: number;
+  has_more: boolean;
+  next_page_token: string | null;
+  items: ContextHistoryItem[];
 }
 
 // -- Keycloak Token -----------------------------------------------------------

@@ -68,7 +68,9 @@ export function registerSessionRoutes(ctx: RouteContext): void {
           title =
             body.title.trim().slice(0, MAX_SESSION_TITLE_LENGTH) || undefined;
         }
-        const session = await sessions!.createSession(userRef, title);
+        const model =
+          typeof body.model === 'string' ? body.model.trim() || undefined : undefined;
+        const session = await sessions!.createSession(userRef, title, model);
         res.json({ session });
       },
     ),

@@ -23,6 +23,7 @@ export interface KagentiDashboardOverrides {
   readonly traces?: string;
   readonly network?: string;
   readonly keycloakConsole?: string;
+  readonly domainName?: string;
 }
 
 export interface KagentiSandboxDefaults {
@@ -41,6 +42,12 @@ export interface KagentiMigrationDefaults {
 export interface KagentiPaginationDefaults {
   readonly defaultLimit: number;
   readonly maxLimit: number;
+}
+
+export interface KagentiFeatureOverrides {
+  readonly sandbox?: boolean;
+  readonly integrations?: boolean;
+  readonly triggers?: boolean;
 }
 
 export interface KagentiConfig {
@@ -62,6 +69,7 @@ export interface KagentiConfig {
   readonly sandbox: KagentiSandboxDefaults;
   readonly migration: KagentiMigrationDefaults;
   readonly pagination: KagentiPaginationDefaults;
+  readonly featureOverrides: KagentiFeatureOverrides;
   readonly auth: {
     readonly tokenEndpoint: string;
     readonly clientId: string;
@@ -82,6 +90,14 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
   if (!baseUrl) {
     throw new InputError('Missing required config: augment.kagenti.baseUrl');
   }
+  try {
+    new URL(baseUrl);
+  } catch {
+    throw new InputError(
+      `Invalid augment.kagenti.baseUrl: "${baseUrl}" is not a valid URL. ` +
+        'Expected format: https://kagenti-api.example.com',
+    );
+  }
 
   const authConfig = kagenti.getOptionalConfig('auth');
   if (!authConfig) {
@@ -95,6 +111,14 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
   if (!tokenEndpoint) {
     throw new InputError(
       'Missing required config: augment.kagenti.auth.tokenEndpoint',
+    );
+  }
+  try {
+    new URL(tokenEndpoint);
+  } catch {
+    throw new InputError(
+      `Invalid augment.kagenti.auth.tokenEndpoint: "${tokenEndpoint}" is not a valid URL. ` +
+        'Expected format: https://keycloak.example.com/realms/kagenti/protocol/openid-connect/token',
     );
   }
 
@@ -112,6 +136,22 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
     );
   }
 
+  const requestTimeoutMs = kagenti.getOptionalNumber('requestTimeoutMs') ?? 30_000;
+  const streamTimeoutMs = kagenti.getOptionalNumber('streamTimeoutMs') ?? 300_000;
+  const maxRetries = kagenti.getOptionalNumber('maxRetries') ?? 3;
+  const retryBaseDelayMs = kagenti.getOptionalNumber('retryBaseDelayMs') ?? 1000;
+  const tokenExpiryBufferSeconds = kagenti.getOptionalNumber('tokenExpiryBufferSeconds') ?? 60;
+
+  if (requestTimeoutMs <= 0) {
+    throw new InputError('augment.kagenti.requestTimeoutMs must be positive');
+  }
+  if (streamTimeoutMs <= 0) {
+    throw new InputError('augment.kagenti.streamTimeoutMs must be positive');
+  }
+  if (maxRetries < 0) {
+    throw new InputError('augment.kagenti.maxRetries must be non-negative');
+  }
+
   const namespacesRaw = kagenti.getOptionalStringArray('namespaces');
 
   const dashboardsCfg = kagenti.getOptionalConfig('dashboards');
@@ -119,6 +159,7 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
   const sidecarCfg = sandboxCfg?.getOptionalConfig('sidecar');
   const migrationCfg = kagenti.getOptionalConfig('migration');
   const paginationCfg = kagenti.getOptionalConfig('pagination');
+  const featureOverridesCfg = kagenti.getOptionalConfig('featureOverrides');
 
   return {
     baseUrl: baseUrl.replace(/\/+$/, ''),
@@ -131,18 +172,18 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
     verboseStreamLogging:
       kagenti.getOptionalBoolean('verboseStreamLogging') ?? false,
     validateResponses: kagenti.getOptionalBoolean('validateResponses') ?? false,
-    requestTimeoutMs: kagenti.getOptionalNumber('requestTimeoutMs') ?? 30_000,
-    streamTimeoutMs: kagenti.getOptionalNumber('streamTimeoutMs') ?? 300_000,
-    maxRetries: kagenti.getOptionalNumber('maxRetries') ?? 3,
-    retryBaseDelayMs: kagenti.getOptionalNumber('retryBaseDelayMs') ?? 1000,
-    tokenExpiryBufferSeconds:
-      kagenti.getOptionalNumber('tokenExpiryBufferSeconds') ?? 60,
+    requestTimeoutMs,
+    streamTimeoutMs,
+    maxRetries,
+    retryBaseDelayMs,
+    tokenExpiryBufferSeconds,
     dashboards: {
       mcpInspector: dashboardsCfg?.getOptionalString('mcpInspector'),
       mcpProxy: dashboardsCfg?.getOptionalString('mcpProxy'),
       traces: dashboardsCfg?.getOptionalString('traces'),
       network: dashboardsCfg?.getOptionalString('network'),
       keycloakConsole: dashboardsCfg?.getOptionalString('keycloakConsole'),
+      domainName: dashboardsCfg?.getOptionalString('domainName'),
     },
     sandbox: {
       sessionTtlMinutes: sandboxCfg?.getOptionalNumber('sessionTtlMinutes'),
@@ -158,6 +199,11 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
     pagination: {
       defaultLimit: paginationCfg?.getOptionalNumber('defaultLimit') ?? 50,
       maxLimit: paginationCfg?.getOptionalNumber('maxLimit') ?? 200,
+    },
+    featureOverrides: {
+      sandbox: featureOverridesCfg?.getOptionalBoolean('sandbox'),
+      integrations: featureOverridesCfg?.getOptionalBoolean('integrations'),
+      triggers: featureOverridesCfg?.getOptionalBoolean('triggers'),
     },
     auth: { tokenEndpoint, clientId, clientSecret },
   };

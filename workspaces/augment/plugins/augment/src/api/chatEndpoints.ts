@@ -198,10 +198,11 @@ export async function chatStream(
   signal?: AbortSignal,
   previousResponseId?: string,
   conversationId?: string,
+  model?: string,
 ): Promise<void> {
   return streamSSE(
     deps,
-    { messages, enableRAG, previousResponseId, conversationId },
+    { messages, enableRAG, previousResponseId, conversationId, model },
     onEvent,
     signal,
   );
@@ -217,8 +218,14 @@ export async function chatStreamWithSession(
   sessionId: string,
   enableRAG: boolean,
   signal?: AbortSignal,
+  model?: string,
 ): Promise<void> {
-  return streamSSE(deps, { messages, enableRAG, sessionId }, onEvent, signal);
+  return streamSSE(
+    deps,
+    { messages, enableRAG, sessionId, model },
+    onEvent,
+    signal,
+  );
 }
 
 /**

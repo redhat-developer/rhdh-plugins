@@ -42,6 +42,7 @@ import { toErrorMessage } from './services/utils';
 import { sanitizeErrorMessage } from './services/utils/errorSanitizer';
 import type { AdminConfigService } from './services/AdminConfigService';
 import { createSecurityMiddleware } from './middleware/security';
+import { createRateLimiter } from './middleware/rateLimiter';
 import {
   parseChatRequest,
   parseApprovalRequest,
@@ -237,10 +238,16 @@ export async function createRouter({
   };
 
   // Public routes (before auth middleware)
-  registerStatusRoutes(ctx, adminConfig);
+  registerStatusRoutes(ctx, adminConfig, providerManager.initializationError);
 
   // Apply plugin-level access control to ALL subsequent routes
   router.use(requirePluginAccess);
+
+  const mutationLimiter = createRateLimiter({
+    windowMs: 60_000,
+    maxRequests: 30,
+  });
+  router.post('/chat/approve', mutationLimiter);
 
   // Authenticated routes
   registerChatRoutes(ctx);

@@ -73,8 +73,9 @@ export interface UseChatSessionsReturn {
   handleSelectSession: (
     sessionId: string,
     adminView?: boolean,
+    sessionModel?: string,
   ) => Promise<void>;
-  guardedSelectSession: (sessionId: string, adminView?: boolean) => void;
+  guardedSelectSession: (sessionId: string, adminView?: boolean, sessionModel?: string) => void;
   handleSwitchConfirm: () => void;
   handleSwitchCancel: () => void;
 }
@@ -96,6 +97,7 @@ export function useChatSessions({
   const pendingSwitchRef = useRef<{
     sessionId: string;
     adminView?: boolean;
+    sessionModel?: string;
   } | null>(null);
 
   // Cancel any in-flight conversation load on unmount
@@ -111,6 +113,7 @@ export function useChatSessions({
       chatContainerRef.current.cancelOngoingRequest();
       chatContainerRef.current.resetConversation();
       chatContainerRef.current.clearInput();
+      chatContainerRef.current.setSelectedModel(undefined);
     }
     setError(null);
     setMessages([]);
@@ -140,7 +143,7 @@ export function useChatSessions({
   }, []);
 
   const handleSelectSession = useCallback(
-    async (sessionId: string, adminView?: boolean) => {
+    async (sessionId: string, adminView?: boolean, sessionModel?: string) => {
       if (loadAbortRef.current) {
         loadAbortRef.current.abort();
       }
@@ -222,6 +225,7 @@ export function useChatSessions({
         chatContainerRef.current?.setPreviousResponseId(undefined);
         chatContainerRef.current?.setConversationId(undefined);
         chatContainerRef.current?.setSessionId(sessionId);
+        chatContainerRef.current?.setSelectedModel(sessionModel);
       } catch (err) {
         if (abortController.signal.aborted) return;
         debugError('Failed to load session:', err);
@@ -243,17 +247,17 @@ export function useChatSessions({
   );
 
   const guardedSelectSession = useCallback(
-    (sessionId: string, adminView?: boolean) => {
+    (sessionId: string, adminView?: boolean, sessionModel?: string) => {
       const streaming =
         typeof isStreaming === 'boolean'
           ? isStreaming
           : (chatContainerRef.current?.isStreaming() ?? false);
       if (streaming) {
-        pendingSwitchRef.current = { sessionId, adminView };
+        pendingSwitchRef.current = { sessionId, adminView, sessionModel };
         setSwitchDialogOpen(true);
         return;
       }
-      handleSelectSession(sessionId, adminView);
+      handleSelectSession(sessionId, adminView, sessionModel);
     },
     [handleSelectSession, isStreaming, chatContainerRef],
   );
@@ -264,9 +268,9 @@ export function useChatSessions({
     chatContainerRef.current?.resetConversation();
     chatContainerRef.current?.clearInput();
     if (pendingSwitchRef.current) {
-      const { sessionId, adminView } = pendingSwitchRef.current;
+      const { sessionId, adminView, sessionModel } = pendingSwitchRef.current;
       pendingSwitchRef.current = null;
-      handleSelectSession(sessionId, adminView);
+      handleSelectSession(sessionId, adminView, sessionModel);
     }
   }, [handleSelectSession, chatContainerRef]);
 

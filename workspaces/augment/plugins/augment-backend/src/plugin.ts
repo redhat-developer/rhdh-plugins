@@ -143,14 +143,16 @@ export const augmentPlugin = createBackendPlugin({
 
         // Create and initialize the initial provider
         const initialProvider = createProvider(providerOptions);
+        let initErrorMessage: string | undefined;
         try {
           await initialProvider.initialize();
           await initialProvider.postInitialize();
         } catch (initError) {
+          initErrorMessage = toErrorMessage(initError);
           logger.error(
-            `Provider initialization failed: ${toErrorMessage(
-              initError,
-            )}. The plugin will start but functionality may be limited.`,
+            `Provider initialization failed: ${initErrorMessage}. ` +
+              'The plugin will start but all provider routes will return 503 until the issue is resolved. ' +
+              'Check your augment.kagenti configuration in app-config.yaml.',
           );
         }
 
@@ -158,6 +160,7 @@ export const augmentPlugin = createBackendPlugin({
           initialProvider,
           providerFactory,
           logger,
+          initErrorMessage,
         );
 
         // Set up periodic document sync if configured and provider supports RAG
