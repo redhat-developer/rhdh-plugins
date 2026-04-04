@@ -21,3 +21,6 @@ export { registerConfigRoutes } from './configRoutes';
 export { registerSessionRoutes } from './sessionRoutes';
 export { registerConversationRoutes } from './conversationRoutes';
 export { registerAdminRoutes } from './adminRoutes';
+export { registerKagentiRoutes } from './kagentiRoutes';
+export { registerKagentiSandboxRoutes } from './kagentiSandboxRoutes';
+export { registerKagentiAdminRoutes } from './kagentiAdminRoutes';

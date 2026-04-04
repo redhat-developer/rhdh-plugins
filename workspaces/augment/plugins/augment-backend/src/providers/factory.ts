@@ -34,6 +34,7 @@ import type { AdminConfigService } from '../services/AdminConfigService';
 import type { AgenticProvider } from './types';
 import type { AgenticProviderFactory } from '../extensions';
 import { ResponsesApiProvider } from './llamastack';
+import { KagentiProvider } from './kagenti';
 
 export type { ProviderType };
 
@@ -104,6 +105,12 @@ export function createProvider(
         adminConfig,
       });
 
+    case 'kagenti':
+      return new KagentiProvider({
+        logger,
+        config,
+      });
+
     case 'googleadk':
       throw new Error(
         'Google ADK provider is not yet implemented. ' +
@@ -118,7 +125,7 @@ export function createProvider(
       throw new Error(
         `Unknown agentic provider: "${providerType}". ` +
           `Check augment.provider in app-config.yaml. ` +
-          `Available providers: llamastack, googleadk${
+          `Available providers: llamastack, kagenti, googleadk${
             dynamicFactories.size > 0
               ? `, ${[...dynamicFactories.keys()].join(', ')}`
               : ''

@@ -34,6 +34,9 @@ import {
   registerSessionRoutes,
   registerConversationRoutes,
   registerAdminRoutes,
+  registerKagentiRoutes,
+  registerKagentiSandboxRoutes,
+  registerKagentiAdminRoutes,
 } from './routes';
 import { toErrorMessage } from './services/utils';
 import { sanitizeErrorMessage } from './services/utils/errorSanitizer';
@@ -248,6 +251,14 @@ export async function createRouter({
 
   // Admin routes (requireAdminAccess is applied inside registerAdminRoutes)
   registerAdminRoutes(ctx, adminConfig, onConfigChanged, providerManager);
+
+  // Kagenti-specific routes (only when provider is kagenti)
+  if (providerManager.provider.id === 'kagenti') {
+    registerKagentiRoutes(ctx);
+    registerKagentiSandboxRoutes(ctx);
+    registerKagentiAdminRoutes(ctx);
+    logger.info('Kagenti provider routes registered');
+  }
 
   return router;
 }

@@ -159,11 +159,82 @@ export interface StreamAgentHandoffEvent {
   reason?: string;
 }
 
+/** A form field descriptor for input-required forms. @public */
+export interface StreamFormField {
+  name: string;
+  type?: string;
+  label?: string;
+  description?: string;
+  required?: boolean;
+  defaultValue?: unknown;
+  options?: Array<{ label: string; value: string }>;
+  [key: string]: unknown;
+}
+
+/** Shape of a form render request from an A2A agent. @public */
+export interface StreamFormDescriptor {
+  title?: string;
+  description?: string;
+  fields?: StreamFormField[];
+  [key: string]: unknown;
+}
+
+/** Agent requests structured form input from the user (A2A INPUT_REQUIRED). @public */
+export interface StreamFormRequestEvent {
+  type: 'stream.form.request';
+  taskId?: string;
+  contextId?: string;
+  form: StreamFormDescriptor;
+}
+
+/** Shape of a secret demand from an A2A agent. @public */
+export interface StreamSecretDemand {
+  name: string;
+  description?: string;
+  [key: string]: unknown;
+}
+
+/** Agent requires authentication (A2A AUTH_REQUIRED -- OAuth or secrets). @public */
+export interface StreamAuthRequiredEvent {
+  type: 'stream.auth.required';
+  taskId?: string;
+  authType: 'oauth' | 'secret';
+  url?: string;
+  demands?: { secrets?: StreamSecretDemand[]; [key: string]: unknown };
+}
+
+/** Agent is streaming an artifact (code, file, document). @public */
+export interface StreamArtifactEvent {
+  type: 'stream.artifact';
+  artifactId: string;
+  name?: string;
+  description?: string;
+  content: string;
+  append?: boolean;
+  lastChunk?: boolean;
+}
+
+/** A single citation reference. @public */
+export interface StreamCitationReference {
+  title?: string;
+  url?: string;
+  snippet?: string;
+  [key: string]: unknown;
+}
+
+/** Agent provides source citations for its response. @public */
+export interface StreamCitationEvent {
+  type: 'stream.citation';
+  citations: StreamCitationReference[];
+}
+
 /** An error occurred during streaming. @public */
 export interface StreamErrorEvent {
   type: 'stream.error';
   error: string;
   code?: string;
+  title?: string;
+  context?: Record<string, unknown>;
 }
 
 /**
@@ -189,5 +260,9 @@ export type NormalizedStreamEvent =
   | StreamBackendToolExecutingEvent
   | StreamRagResultsEvent
   | StreamAgentHandoffEvent
+  | StreamFormRequestEvent
+  | StreamAuthRequiredEvent
+  | StreamArtifactEvent
+  | StreamCitationEvent
   | StreamCompletedEvent
   | StreamErrorEvent;

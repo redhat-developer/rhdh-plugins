@@ -51,9 +51,10 @@ describe('provider registry', () => {
 
   it('getAllProviderDescriptors returns all providers sorted by displayName', () => {
     const all = getAllProviderDescriptors();
-    expect(all).toHaveLength(2);
+    expect(all).toHaveLength(3);
     expect(all[0].displayName).toBe('Google ADK');
-    expect(all[1].displayName).toBe('Llama Stack');
+    expect(all[1].displayName).toBe('Kagenti');
+    expect(all[2].displayName).toBe('Llama Stack');
   });
 
   it('isValidProviderType("llamastack") returns true', () => {
