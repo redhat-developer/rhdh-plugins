@@ -443,27 +443,137 @@ export interface AugmentApi {
   // Kagenti API
   // ===========================================================================
 
-  listKagentiAgents(namespace?: string): Promise<{ agents: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentSummary[] }>;
-  getKagentiAgent(namespace: string, name: string): Promise<import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentDetail & { agentCard?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentCard }>;
-  createKagentiAgent(body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentRequest): Promise<Record<string, unknown>>;
+  listKagentiAgents(
+    namespace?: string,
+    options?: { includeCards?: boolean },
+  ): Promise<{
+    agents: (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentSummary & {
+      agentCard?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentCard;
+    })[];
+  }>;
+  getKagentiAgent(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentDetail & {
+      agentCard?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentCard;
+    }
+  >;
+  getKagentiAgentRouteStatus(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiRouteStatus
+  >;
+  createKagentiAgent(
+    body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentRequest,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentResponse
+  >;
   deleteKagentiAgent(namespace: string, name: string): Promise<void>;
-  listKagentiTools(namespace?: string): Promise<{ tools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary[] }>;
-  getKagentiTool(namespace: string, name: string): Promise<import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolDetail>;
-  createKagentiTool(body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolRequest): Promise<Record<string, unknown>>;
+  listKagentiMigratableAgents(): Promise<{
+    agents: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMigratableAgent[];
+  }>;
+  migrateKagentiAgent(
+    namespace: string,
+    name: string,
+    deleteOld?: boolean,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMigrateAgentResponse
+  >;
+  migrateAllKagentiAgents(options?: {
+    namespace?: string;
+    dryRun?: boolean;
+    deleteOld?: boolean;
+  }): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMigrateAllResponse
+  >;
+  listKagentiTools(
+    namespace?: string,
+  ): Promise<{
+    tools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary[];
+  }>;
+  getKagentiTool(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolDetail
+  >;
+  createKagentiTool(
+    body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolRequest,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolResponse
+  >;
   deleteKagentiTool(namespace: string, name: string): Promise<void>;
-  getKagentiFeatureFlags(): Promise<import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFeatureFlags>;
-  getKagentiDashboards(): Promise<import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiDashboardConfig>;
-  listKagentiNamespaces(enabledOnly?: boolean): Promise<{ namespaces: string[]; defaultNamespace?: string }>;
-  triggerKagentiBuild(namespace: string, name: string): Promise<Record<string, unknown>>;
-  getKagentiBuildInfo(namespace: string, name: string): Promise<import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildInfo>;
-  listKagentiBuildStrategies(): Promise<{ strategies: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildStrategy[] }>;
-  listKagentiShipwrightBuilds(options?: { namespace?: string; allNamespaces?: boolean }): Promise<{ builds: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildListItem[] }>;
-  connectKagentiTool(namespace: string, name: string): Promise<{ tools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMcpToolSchema[] }>;
-  invokeKagentiTool(namespace: string, name: string, toolName: string, args?: Record<string, unknown>): Promise<Record<string, unknown>>;
-  getToolRouteStatus(namespace: string, name: string): Promise<Record<string, unknown>>;
-  getToolBuildInfo(namespace: string, name: string): Promise<import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildInfo>;
-  triggerToolBuild(namespace: string, name: string): Promise<Record<string, unknown>>;
-  finalizeToolBuild(namespace: string, name: string, body?: Record<string, unknown>): Promise<Record<string, unknown>>;
+  getKagentiFeatureFlags(): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFeatureFlags
+  >;
+  getKagentiDashboards(): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiDashboardConfig
+  >;
+  listKagentiNamespaces(
+    enabledOnly?: boolean,
+  ): Promise<{ namespaces: string[]; defaultNamespace?: string }>;
+  triggerKagentiBuild(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiTriggerBuildRunResponse
+  >;
+  getKagentiBuildInfo(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildInfo
+  >;
+  listKagentiBuildStrategies(): Promise<{
+    strategies: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildStrategy[];
+  }>;
+  listKagentiShipwrightBuilds(options?: {
+    namespace?: string;
+    allNamespaces?: boolean;
+  }): Promise<{
+    builds: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildListItem[];
+  }>;
+  connectKagentiTool(
+    namespace: string,
+    name: string,
+  ): Promise<{
+    tools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMcpToolSchema[];
+  }>;
+  invokeKagentiTool(
+    namespace: string,
+    name: string,
+    toolName: string,
+    args?: Record<string, unknown>,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMcpInvokeResponse
+  >;
+  getToolRouteStatus(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiRouteStatus
+  >;
+  getToolBuildInfo(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildInfo
+  >;
+  triggerToolBuild(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiTriggerBuildRunResponse
+  >;
+  finalizeToolBuild(
+    namespace: string,
+    name: string,
+    body?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFinalizeToolBuildRequest,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolResponse
+  >;
 }
 
 /**
@@ -764,7 +874,10 @@ export class AugmentApiClient implements AugmentApi {
     return sessionEndpoints.listSessions(this.sessionDeps, limit, offset);
   }
 
-  async createSession(title?: string, model?: string): Promise<ChatSessionSummary> {
+  async createSession(
+    title?: string,
+    model?: string,
+  ): Promise<ChatSessionSummary> {
     return sessionEndpoints.createSession(this.sessionDeps, title, model);
   }
 
@@ -1041,17 +1154,51 @@ export class AugmentApiClient implements AugmentApi {
     return { fetchJson: this.fetchJson.bind(this) };
   }
 
-  async listKagentiAgents(namespace?: string) {
-    return kagentiEndpoints.listAgents(this.kagentiDeps, namespace);
+  async listKagentiAgents(
+    namespace?: string,
+    options?: { includeCards?: boolean },
+  ) {
+    return kagentiEndpoints.listAgents(this.kagentiDeps, namespace, options);
   }
   async getKagentiAgent(namespace: string, name: string) {
     return kagentiEndpoints.getAgent(this.kagentiDeps, namespace, name);
   }
-  async createKagentiAgent(body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentRequest) {
+  async getKagentiAgentRouteStatus(namespace: string, name: string) {
+    return kagentiEndpoints.getAgentRouteStatus(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
+  }
+  async createKagentiAgent(
+    body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentRequest,
+  ) {
     return kagentiEndpoints.createAgent(this.kagentiDeps, body);
   }
   async deleteKagentiAgent(namespace: string, name: string) {
     return kagentiEndpoints.deleteAgent(this.kagentiDeps, namespace, name);
+  }
+  async listKagentiMigratableAgents() {
+    return kagentiEndpoints.listMigratableAgents(this.kagentiDeps);
+  }
+  async migrateKagentiAgent(
+    namespace: string,
+    name: string,
+    deleteOld?: boolean,
+  ) {
+    return kagentiEndpoints.migrateAgent(
+      this.kagentiDeps,
+      namespace,
+      name,
+      deleteOld,
+    );
+  }
+  async migrateAllKagentiAgents(options?: {
+    namespace?: string;
+    dryRun?: boolean;
+    deleteOld?: boolean;
+  }) {
+    return kagentiEndpoints.migrateAllAgents(this.kagentiDeps, options);
   }
   async listKagentiTools(namespace?: string) {
     return kagentiEndpoints.listTools(this.kagentiDeps, namespace);
@@ -1059,7 +1206,9 @@ export class AugmentApiClient implements AugmentApi {
   async getKagentiTool(namespace: string, name: string) {
     return kagentiEndpoints.getTool(this.kagentiDeps, namespace, name);
   }
-  async createKagentiTool(body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolRequest) {
+  async createKagentiTool(
+    body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolRequest,
+  ) {
     return kagentiEndpoints.createTool(this.kagentiDeps, body);
   }
   async deleteKagentiTool(namespace: string, name: string) {
@@ -1075,25 +1224,51 @@ export class AugmentApiClient implements AugmentApi {
     return kagentiEndpoints.listNamespaces(this.kagentiDeps, enabledOnly);
   }
   async triggerKagentiBuild(namespace: string, name: string) {
-    return kagentiEndpoints.triggerAgentBuild(this.kagentiDeps, namespace, name);
+    return kagentiEndpoints.triggerAgentBuild(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
   }
   async getKagentiBuildInfo(namespace: string, name: string) {
-    return kagentiEndpoints.getAgentBuildInfo(this.kagentiDeps, namespace, name);
+    return kagentiEndpoints.getAgentBuildInfo(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
   }
   async listKagentiBuildStrategies() {
     return kagentiEndpoints.listBuildStrategies(this.kagentiDeps);
   }
-  async listKagentiShipwrightBuilds(options?: { namespace?: string; allNamespaces?: boolean }) {
+  async listKagentiShipwrightBuilds(options?: {
+    namespace?: string;
+    allNamespaces?: boolean;
+  }) {
     return kagentiEndpoints.listShipwrightBuilds(this.kagentiDeps, options);
   }
   async connectKagentiTool(namespace: string, name: string) {
     return kagentiEndpoints.connectTool(this.kagentiDeps, namespace, name);
   }
-  async invokeKagentiTool(namespace: string, name: string, toolName: string, args?: Record<string, unknown>) {
-    return kagentiEndpoints.invokeTool(this.kagentiDeps, namespace, name, toolName, args);
+  async invokeKagentiTool(
+    namespace: string,
+    name: string,
+    toolName: string,
+    args?: Record<string, unknown>,
+  ) {
+    return kagentiEndpoints.invokeTool(
+      this.kagentiDeps,
+      namespace,
+      name,
+      toolName,
+      args,
+    );
   }
   async getToolRouteStatus(namespace: string, name: string) {
-    return kagentiEndpoints.getToolRouteStatus(this.kagentiDeps, namespace, name);
+    return kagentiEndpoints.getToolRouteStatus(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
   }
   async getToolBuildInfo(namespace: string, name: string) {
     return kagentiEndpoints.getToolBuildInfo(this.kagentiDeps, namespace, name);
@@ -1101,7 +1276,16 @@ export class AugmentApiClient implements AugmentApi {
   async triggerToolBuild(namespace: string, name: string) {
     return kagentiEndpoints.triggerToolBuild(this.kagentiDeps, namespace, name);
   }
-  async finalizeToolBuild(namespace: string, name: string, body?: Record<string, unknown>) {
-    return kagentiEndpoints.finalizeToolBuild(this.kagentiDeps, namespace, name, body);
+  async finalizeToolBuild(
+    namespace: string,
+    name: string,
+    body?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFinalizeToolBuildRequest,
+  ) {
+    return kagentiEndpoints.finalizeToolBuild(
+      this.kagentiDeps,
+      namespace,
+      name,
+      body,
+    );
   }
 }

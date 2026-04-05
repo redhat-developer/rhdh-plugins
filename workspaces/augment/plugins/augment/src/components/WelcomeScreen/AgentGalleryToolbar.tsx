@@ -20,13 +20,20 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Chip from '@mui/material/Chip';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import SearchIcon from '@mui/icons-material/Search';
 import StarIcon from '@mui/icons-material/Star';
 import HistoryIcon from '@mui/icons-material/History';
-import { useTheme } from '@mui/material/styles';
+import SortIcon from '@mui/icons-material/Sort';
+import { useTheme, alpha } from '@mui/material/styles';
 import type { FC, SyntheticEvent } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+
+export type SortOption = 'name' | 'status' | 'newest';
 
 export interface AgentGalleryToolbarProps {
   search: string;
@@ -36,6 +43,10 @@ export interface AgentGalleryToolbarProps {
   frameworks: string[];
   recentCount: number;
   pinnedCount: number;
+  totalCount: number;
+  filteredCount: number;
+  sort: SortOption;
+  onSortChange: (value: SortOption) => void;
 }
 
 export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
@@ -46,6 +57,10 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
   frameworks,
   recentCount,
   pinnedCount,
+  totalCount,
+  filteredCount,
+  sort,
+  onSortChange,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -54,10 +69,69 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <SmartToyIcon sx={{ fontSize: 20, color: theme.palette.primary.main }} />
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, flex: 1 }}>
+        <SmartToyIcon
+          sx={{ fontSize: 20, color: theme.palette.primary.main }}
+        />
+        <Typography
+          variant="subtitle2"
+          sx={{
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.75,
+          }}
+        >
           {t('agentGallery.heading')}
+          <Chip
+            label={
+              filteredCount === totalCount
+                ? totalCount
+                : `${filteredCount} / ${totalCount}`
+            }
+            size="small"
+            sx={{
+              height: 20,
+              fontSize: '0.65rem',
+              fontWeight: 600,
+              bgcolor: alpha(theme.palette.primary.main, 0.1),
+              color: theme.palette.primary.main,
+              '& .MuiChip-label': { px: 0.75 },
+            }}
+          />
         </Typography>
+        <Box sx={{ flex: 1 }} />
+        <FormControl size="small" sx={{ minWidth: 0 }}>
+          <Select
+            value={sort}
+            onChange={e => onSortChange(e.target.value as SortOption)}
+            displayEmpty
+            startAdornment={
+              <SortIcon
+                sx={{
+                  fontSize: 14,
+                  mr: 0.5,
+                  color: theme.palette.text.disabled,
+                }}
+              />
+            }
+            sx={{
+              borderRadius: 2,
+              fontSize: '0.75rem',
+              height: 32,
+              '& .MuiSelect-select': { py: 0.5, pl: 0.5 },
+            }}
+          >
+            <MenuItem value="name" sx={{ fontSize: '0.8rem' }}>
+              Name
+            </MenuItem>
+            <MenuItem value="status" sx={{ fontSize: '0.8rem' }}>
+              Status
+            </MenuItem>
+            <MenuItem value="newest" sx={{ fontSize: '0.8rem' }}>
+              Newest
+            </MenuItem>
+          </Select>
+        </FormControl>
         <TextField
           size="small"
           placeholder={t('agentGallery.searchPlaceholder')}
@@ -67,7 +141,9 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: 16, color: theme.palette.text.disabled }} />
+                <SearchIcon
+                  sx={{ fontSize: 16, color: theme.palette.text.disabled }}
+                />
               </InputAdornment>
             ),
           }}

@@ -46,8 +46,13 @@ export const augmentMessages = {
     title: 'Command Center',
     backToChat: 'Back to Chat',
     platform: 'Model & Tools',
-    agents: 'Agents',
+    agents: 'Orchestration',
     branding: 'Branding',
+    home: 'Home',
+    agentCatalog: 'Agents',
+    toolCatalog: 'Tools',
+    observability: 'Observability',
+    administration: 'Administration',
   },
   providerOffline: {
     title: 'Assistant Unavailable',
@@ -88,8 +93,7 @@ export const augmentMessages = {
     stopGeneration: 'Stop generation',
     stopMessageGeneration: 'Stop message generation',
     sendMessage: 'Send message',
-    selectAgentPrompt:
-      'Select an agent above or type to use the default',
+    selectAgentPrompt: 'Select an agent above or type to use the default',
   },
   welcomeScreen: {
     logoAlt: 'Application logo',
@@ -130,6 +134,7 @@ export const augmentMessages = {
     connecting: 'Connecting...',
     ready: 'Ready',
     offline: 'Offline',
+    selectAgentHint: 'Select an agent to see details',
     team: 'Team ({{count}})',
     defaultAgent: 'Default agent',
     vectorRag: 'Vector RAG',
@@ -304,7 +309,7 @@ export const augmentMessages = {
     noAgentsInCategory: 'No agents in this category',
     retry: 'Retry',
     noAgentsTitle: 'No agents available yet',
-    noAgentsHint: 'Ask your administrator to deploy agents via Kagenti',
+    noAgentsHint: 'Ask your administrator to deploy agents',
   },
   agentDetail: {
     closeAriaLabel: 'Close agent details',
@@ -354,7 +359,7 @@ export const augmentMessages = {
     unnamedSource: 'Source {{n}}',
   },
   chatHeader: {
-    changeAgent: 'Change',
+    changeAgent: 'New Chat',
   },
 };
 

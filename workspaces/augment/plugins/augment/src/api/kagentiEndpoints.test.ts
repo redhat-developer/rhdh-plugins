@@ -125,10 +125,9 @@ describe('kagentiEndpoints', () => {
     it('deleteAgent sends DELETE', async () => {
       const deps = createDeps();
       await deleteAgent(deps, 'ns1', 'bot');
-      expect(deps.fetchJson).toHaveBeenCalledWith(
-        '/kagenti/agents/ns1/bot',
-        { method: 'DELETE' },
-      );
+      expect(deps.fetchJson).toHaveBeenCalledWith('/kagenti/agents/ns1/bot', {
+        method: 'DELETE',
+      });
     });
 
     it('getAgentRouteStatus calls correct path', async () => {
@@ -227,9 +226,7 @@ describe('kagentiEndpoints', () => {
     it('getTool calls correct path', async () => {
       const deps = createDeps();
       await getTool(deps, 'ns1', 'my-tool');
-      expect(deps.fetchJson).toHaveBeenCalledWith(
-        '/kagenti/tools/ns1/my-tool',
-      );
+      expect(deps.fetchJson).toHaveBeenCalledWith('/kagenti/tools/ns1/my-tool');
     });
 
     it('createTool sends POST', async () => {
@@ -306,7 +303,7 @@ describe('kagentiEndpoints', () => {
   describe('Shipwright Builds', () => {
     it('listShipwrightBuilds with namespace', async () => {
       const deps = createDeps();
-      await listShipwrightBuilds(deps, 'ns1');
+      await listShipwrightBuilds(deps, { namespace: 'ns1' });
       expect(deps.fetchJson).toHaveBeenCalledWith(
         expect.stringContaining('/kagenti/shipwright/builds'),
       );
@@ -315,9 +312,7 @@ describe('kagentiEndpoints', () => {
     it('listShipwrightBuilds without namespace', async () => {
       const deps = createDeps();
       await listShipwrightBuilds(deps);
-      expect(deps.fetchJson).toHaveBeenCalledWith(
-        '/kagenti/shipwright/builds',
-      );
+      expect(deps.fetchJson).toHaveBeenCalledWith('/kagenti/shipwright/builds');
     });
   });
 

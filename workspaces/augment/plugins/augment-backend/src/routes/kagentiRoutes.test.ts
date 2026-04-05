@@ -27,13 +27,11 @@ function createMockRouteContext() {
   const mockApiClient = {
     health: jest.fn().mockResolvedValue({ status: 'healthy' }),
     ready: jest.fn().mockResolvedValue({ status: 'ready' }),
-    getFeatureFlags: jest
-      .fn()
-      .mockResolvedValue({
-        sandbox: false,
-        integrations: false,
-        triggers: false,
-      }),
+    getFeatureFlags: jest.fn().mockResolvedValue({
+      sandbox: false,
+      integrations: false,
+      triggers: false,
+    }),
     getDashboards: jest.fn().mockResolvedValue({ traces: 'http://traces' }),
     listNamespaces: jest.fn().mockResolvedValue({ namespaces: ['team1'] }),
     listAgents: jest.fn().mockResolvedValue({
@@ -48,144 +46,118 @@ function createMockRouteContext() {
         },
       ],
     }),
-    getAgent: jest
-      .fn()
-      .mockResolvedValue({
-        metadata: {},
-        spec: {},
-        status: {},
-        workloadType: 'deployment',
-      }),
-    getAgentCard: jest
-      .fn()
-      .mockResolvedValue({
-        name: 'bot',
-        description: 'Bot',
-        version: '1.0',
-        url: '',
-        streaming: true,
-        skills: [],
-      }),
+    getAgent: jest.fn().mockResolvedValue({
+      metadata: {},
+      spec: {},
+      status: {},
+      workloadType: 'deployment',
+    }),
+    getAgentCard: jest.fn().mockResolvedValue({
+      name: 'bot',
+      description: 'Bot',
+      version: '1.0',
+      url: '',
+      streaming: true,
+      skills: [],
+    }),
     getAgentRouteStatus: jest.fn().mockResolvedValue({ hasRoute: true }),
-    createAgent: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        name: 'bot',
-        namespace: 'team1',
-        message: 'created',
-      }),
+    createAgent: jest.fn().mockResolvedValue({
+      success: true,
+      name: 'bot',
+      namespace: 'team1',
+      message: 'created',
+    }),
     deleteAgent: jest
       .fn()
       .mockResolvedValue({ success: true, message: 'deleted' }),
     listMigratableAgents: jest
       .fn()
       .mockResolvedValue({ agents: [], total: 0, already_migrated: 0 }),
-    migrateAgent: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        migrated: true,
-        name: 'bot',
-        namespace: 'team1',
-        message: 'migrated',
-        deployment_created: true,
-        service_created: true,
-        agent_crd_deleted: false,
-      }),
-    migrateAllAgents: jest
-      .fn()
-      .mockResolvedValue({
-        namespace: 'team1',
-        dry_run: true,
-        delete_old: false,
-        total: 0,
-        migrated: [],
-        skipped: [],
-        failed: [],
-      }),
+    migrateAgent: jest.fn().mockResolvedValue({
+      success: true,
+      migrated: true,
+      name: 'bot',
+      namespace: 'team1',
+      message: 'migrated',
+      deployment_created: true,
+      service_created: true,
+      agent_crd_deleted: false,
+    }),
+    migrateAllAgents: jest.fn().mockResolvedValue({
+      namespace: 'team1',
+      dry_run: true,
+      delete_old: false,
+      total: 0,
+      migrated: [],
+      skipped: [],
+      failed: [],
+    }),
     listBuildStrategies: jest.fn().mockResolvedValue({ strategies: [] }),
-    getAgentBuildInfo: jest
-      .fn()
-      .mockResolvedValue({
-        name: 'bot',
-        namespace: 'team1',
-        buildRegistered: true,
-        outputImage: '',
-        strategy: '',
-        gitUrl: '',
-        gitRevision: '',
-        contextDir: '',
-        hasBuildRun: false,
-      }),
-    triggerAgentBuildRun: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        buildRunName: 'br1',
-        namespace: 'team1',
-        buildName: 'b1',
-      }),
-    finalizeAgentBuild: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        name: 'bot',
-        namespace: 'team1',
-        message: 'finalized',
-      }),
+    getAgentBuildInfo: jest.fn().mockResolvedValue({
+      name: 'bot',
+      namespace: 'team1',
+      buildRegistered: true,
+      outputImage: '',
+      strategy: '',
+      gitUrl: '',
+      gitRevision: '',
+      contextDir: '',
+      hasBuildRun: false,
+    }),
+    triggerAgentBuildRun: jest.fn().mockResolvedValue({
+      success: true,
+      buildRunName: 'br1',
+      namespace: 'team1',
+      buildName: 'b1',
+    }),
+    finalizeAgentBuild: jest.fn().mockResolvedValue({
+      success: true,
+      name: 'bot',
+      namespace: 'team1',
+      message: 'finalized',
+    }),
     parseEnv: jest.fn().mockResolvedValue({ envVars: [], warnings: [] }),
     fetchEnvUrl: jest.fn().mockResolvedValue({ content: '', url: '' }),
     listTools: jest.fn().mockResolvedValue({ items: [] }),
-    getTool: jest
-      .fn()
-      .mockResolvedValue({
-        metadata: {},
-        spec: {},
-        status: {},
-        workloadType: 'deployment',
-      }),
+    getTool: jest.fn().mockResolvedValue({
+      metadata: {},
+      spec: {},
+      status: {},
+      workloadType: 'deployment',
+    }),
     getToolRouteStatus: jest.fn().mockResolvedValue({ hasRoute: false }),
-    createTool: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        name: 'tool1',
-        namespace: 'team1',
-        message: 'created',
-      }),
+    createTool: jest.fn().mockResolvedValue({
+      success: true,
+      name: 'tool1',
+      namespace: 'team1',
+      message: 'created',
+    }),
     deleteTool: jest
       .fn()
       .mockResolvedValue({ success: true, message: 'deleted' }),
-    getToolBuildInfo: jest
-      .fn()
-      .mockResolvedValue({
-        name: 'tool1',
-        namespace: 'team1',
-        buildRegistered: false,
-        outputImage: '',
-        strategy: '',
-        gitUrl: '',
-        gitRevision: '',
-        contextDir: '',
-        hasBuildRun: false,
-      }),
-    triggerToolBuildRun: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        buildRunName: 'br1',
-        namespace: 'team1',
-        buildName: 'b1',
-      }),
-    finalizeToolBuild: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        name: 'tool1',
-        namespace: 'team1',
-        message: 'finalized',
-      }),
+    getToolBuildInfo: jest.fn().mockResolvedValue({
+      name: 'tool1',
+      namespace: 'team1',
+      buildRegistered: false,
+      outputImage: '',
+      strategy: '',
+      gitUrl: '',
+      gitRevision: '',
+      contextDir: '',
+      hasBuildRun: false,
+    }),
+    triggerToolBuildRun: jest.fn().mockResolvedValue({
+      success: true,
+      buildRunName: 'br1',
+      namespace: 'team1',
+      buildName: 'b1',
+    }),
+    finalizeToolBuild: jest.fn().mockResolvedValue({
+      success: true,
+      name: 'tool1',
+      namespace: 'team1',
+      message: 'finalized',
+    }),
     connectTool: jest.fn().mockResolvedValue({ tools: [{ name: 'search' }] }),
     invokeTool: jest.fn().mockResolvedValue({ result: { data: 'ok' } }),
     listAllBuilds: jest.fn().mockResolvedValue({ items: [] }),
@@ -198,7 +170,14 @@ function createMockRouteContext() {
     setUserContext: jest.fn(),
     validateNamespace: jest.fn(),
     getAgentCardCached: jest.fn().mockResolvedValue({
-      card: { name: 'bot', description: 'Bot', version: '1.0', url: '', streaming: true, skills: [] },
+      card: {
+        name: 'bot',
+        description: 'Bot',
+        version: '1.0',
+        url: '',
+        streaming: true,
+        skills: [],
+      },
       demands: {},
     }),
     getFeatureFlags: () => ({
@@ -298,11 +277,20 @@ describe('kagentiRoutes', () => {
     expect(res.body.namespaces).toEqual(['team1']);
   });
 
-  it('GET /kagenti/agents returns agent list', async () => {
+  it('GET /kagenti/agents returns agent list with namespace', async () => {
     const { app } = createMockRouteContext();
     const res = await request(app).get('/kagenti/agents?namespace=team1');
     expect(res.status).toBe(200);
     expect(res.body.agents).toHaveLength(1);
+  });
+
+  it('GET /kagenti/agents without namespace iterates visible namespaces', async () => {
+    const { app, mockApiClient } = createMockRouteContext();
+    const res = await request(app).get('/kagenti/agents');
+    expect(res.status).toBe(200);
+    expect(res.body.agents).toHaveLength(1);
+    expect(mockApiClient.listNamespaces).toHaveBeenCalled();
+    expect(mockApiClient.listAgents).toHaveBeenCalledWith('team1');
   });
 
   it('GET /kagenti/agents/:ns/:name returns agent detail with card', async () => {
@@ -329,11 +317,20 @@ describe('kagentiRoutes', () => {
     expect(res.body.success).toBe(true);
   });
 
-  it('GET /kagenti/tools returns tool list', async () => {
+  it('GET /kagenti/tools returns tool list with namespace', async () => {
     const { app } = createMockRouteContext();
     const res = await request(app).get('/kagenti/tools?namespace=team1');
     expect(res.status).toBe(200);
     expect(res.body.items).toEqual([]);
+  });
+
+  it('GET /kagenti/tools without namespace iterates visible namespaces', async () => {
+    const { app, mockApiClient } = createMockRouteContext();
+    const res = await request(app).get('/kagenti/tools');
+    expect(res.status).toBe(200);
+    expect(res.body.tools).toEqual([]);
+    expect(mockApiClient.listNamespaces).toHaveBeenCalled();
+    expect(mockApiClient.listTools).toHaveBeenCalledWith('team1');
   });
 
   it('POST /kagenti/tools/:ns/:name/connect discovers MCP tools', async () => {
@@ -477,18 +474,14 @@ describe('kagentiRoutes', () => {
 
   it('GET /kagenti/tools/:ns/:name/build-info returns tool build info', async () => {
     const { app } = createMockRouteContext();
-    const res = await request(app).get(
-      '/kagenti/tools/team1/tool1/build-info',
-    );
+    const res = await request(app).get('/kagenti/tools/team1/tool1/build-info');
     expect(res.status).toBe(200);
     expect(res.body.name).toBe('tool1');
   });
 
   it('POST /kagenti/tools/:ns/:name/buildrun triggers tool build', async () => {
     const { app, mockApiClient } = createMockRouteContext();
-    const res = await request(app).post(
-      '/kagenti/tools/team1/tool1/buildrun',
-    );
+    const res = await request(app).post('/kagenti/tools/team1/tool1/buildrun');
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(mockApiClient.triggerToolBuildRun).toHaveBeenCalledWith(
@@ -522,20 +515,14 @@ describe('kagentiRoutes', () => {
 
   it('GET /kagenti/agents/migration/migratable returns migratable agents', async () => {
     const { app } = createMockRouteContext();
-    const res = await request(app).get(
-      '/kagenti/agents/migration/migratable',
-    );
+    const res = await request(app).get('/kagenti/agents/migration/migratable');
     expect(res.status).toBe(200);
     expect(res.body.agents).toEqual([]);
   });
 
   it('namespace validation rejects disallowed namespace', async () => {
-    const { app } = createMockRouteContext();
-    const mockProvider = (app as any)._router;
+    createMockRouteContext();
     const ctx = createMockRouteContext();
-    const providerWithReject = {
-      ...ctx,
-    };
     const appWithReject = express();
     const routerWithReject = express.Router();
     const loggerWithReject = createMockLogger();
@@ -589,7 +576,14 @@ describe('kagentiRoutes', () => {
       }),
     };
     const sendErr = jest.fn(
-      (res: express.Response, _err: unknown, _label: string, _msg: string, _extra?: Record<string, unknown>, statusCode?: number) => {
+      (
+        res: express.Response,
+        _err: unknown,
+        _label: string,
+        _msg: string,
+        _extra?: Record<string, unknown>,
+        statusCode?: number,
+      ) => {
         res.status(statusCode ?? 500).json({ error: _msg });
       },
     );

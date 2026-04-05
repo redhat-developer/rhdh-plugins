@@ -13,347 +13,193 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import Card from '@mui/material/Card';
+import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Chip from '@mui/material/Chip';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Alert from '@mui/material/Alert';
-import CircularProgress from '@mui/material/CircularProgress';
-import ScienceIcon from '@mui/icons-material/Science';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTheme, alpha } from '@mui/material/styles';
 import type {
-  KagentiCreateIntegrationRequest,
-  KagentiCreateKeyRequest,
-  KagentiCreateTeamRequest,
-  KagentiIntegration,
-  KagentiLlmKey,
-  KagentiLlmTeam,
-  KagentiTriggerRequest,
+  KagentiBuildStrategy,
+  KagentiMigratableAgent,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
-import * as kagentiEndpoints from '../../../api/kagentiEndpoints';
 import { getErrorMessage } from '../../../utils';
-import { ConfirmDialog } from '../shared/ConfirmDialog';
-import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
 
 export interface KagentiAdminPanelProps {
   namespace?: string;
 }
 
-type KagentiFetchJson = (path: string, init?: RequestInit) => Promise<unknown>;
-
-export function KagentiAdminPanel({ namespace: namespaceProp }: KagentiAdminPanelProps) {
+export function KagentiAdminPanel({
+  namespace: _namespace,
+}: KagentiAdminPanelProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
-  const kagentiDeps = useMemo(
-    () => ({
-      fetchJson: (api as unknown as { fetchJson: KagentiFetchJson }).fetchJson.bind(
-        api,
-      ),
-    }),
-    [api],
-  );
 
-  const [flags, setFlags] = useState<{
-    sandbox: boolean;
-    integrations: boolean;
-    triggers: boolean;
+  const [dashboardConfig, setDashboardConfig] = useState<{
+    keycloakConsole?: string;
   } | null>(null);
-  const [flagsError, setFlagsError] = useState<string | null>(null);
-  const [busyOps, setBusyOps] = useState<Set<string>>(new Set());
-  const addBusy = useCallback((op: string) => setBusyOps(prev => new Set(prev).add(op)), []);
-  const removeBusy = useCallback((op: string) => setBusyOps(prev => {
-    const next = new Set(prev);
-    next.delete(op);
-    return next;
-  }), []);
-  const isBusy = useCallback((op: string) => busyOps.has(op), [busyOps]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [modelsJson, setModelsJson] = useState('');
-  const [teams, setTeams] = useState<KagentiLlmTeam[]>([]);
-  const [keys, setKeys] = useState<KagentiLlmKey[]>([]);
-  const [integrations, setIntegrations] = useState<KagentiIntegration[]>([]);
-  const [intFilter, setIntFilter] = useState(namespaceProp ?? '');
+  const [namespaces, setNamespaces] = useState<string[]>([]);
+  const [nsLoading, setNsLoading] = useState(false);
 
-  const [teamNs, setTeamNs] = useState('');
-  const [teamOpen, setTeamOpen] = useState(false);
+  const [migratableAgents, setMigratableAgents] = useState<
+    KagentiMigratableAgent[]
+  >([]);
+  const [migLoading, setMigLoading] = useState(false);
+  const [migrating, setMigrating] = useState<string | null>(null);
 
-  const [keyNs, setKeyNs] = useState('');
-  const [keyAgent, setKeyAgent] = useState('');
-  const [keyOpen, setKeyOpen] = useState(false);
-
-  const [intName, setIntName] = useState('');
-  const [intNs, setIntNs] = useState('');
-  const [intOpen, setIntOpen] = useState(false);
-  const [deleteInt, setDeleteInt] = useState<KagentiIntegration | null>(null);
-  const [deleteKey, setDeleteKey] = useState<KagentiLlmKey | null>(null);
-
-  const [triggerType, setTriggerType] =
-    useState<KagentiTriggerRequest['type']>('cron');
-  const [triggerNs, setTriggerNs] = useState('');
-  const [triggerSkill, setTriggerSkill] = useState('');
-  const [triggerSchedule, setTriggerSchedule] = useState('');
-  const [triggerTtl, setTriggerTtl] = useState('');
-  const [testResult, setTestResult] = useState<string | null>(null);
+  const [strategies, setStrategies] = useState<KagentiBuildStrategy[]>([]);
+  const [bsLoading, setBsLoading] = useState(false);
 
   useEffect(() => {
-    if (namespaceProp !== undefined) setIntFilter(namespaceProp);
-  }, [namespaceProp]);
-
-  useEffect(() => {
+    setLoading(true);
     api
-      .getKagentiFeatureFlags()
-      .then(setFlags)
-      .catch(e => setFlagsError(getErrorMessage(e)));
+      .getKagentiDashboards()
+      .then(d => setDashboardConfig(d))
+      .catch(() => setError('Failed to load dashboard configuration.'))
+      .finally(() => setLoading(false));
   }, [api]);
 
-  const loadModels = useCallback(async () => {
-    addBusy('loadModels');
-    setError(null);
-    try {
-      const data = await kagentiEndpoints.listLlmModels(kagentiDeps);
-      setModelsJson(JSON.stringify(data, null, 2));
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      removeBusy('loadModels');
-    }
-  }, [addBusy, kagentiDeps, removeBusy]);
+  const loadNamespaces = useCallback(() => {
+    setNsLoading(true);
+    api
+      .listKagentiNamespaces(true)
+      .then(r => setNamespaces(r.namespaces ?? []))
+      .catch(e => setError(getErrorMessage(e)))
+      .finally(() => setNsLoading(false));
+  }, [api]);
 
-  const loadTeams = useCallback(async () => {
-    addBusy('loadTeams');
-    setError(null);
-    try {
-      const res = await kagentiEndpoints.listLlmTeams(kagentiDeps);
-      setTeams(res.teams ?? []);
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      removeBusy('loadTeams');
-    }
-  }, [addBusy, kagentiDeps, removeBusy]);
+  const loadMigratable = useCallback(() => {
+    setMigLoading(true);
+    api
+      .listKagentiMigratableAgents()
+      .then(r => setMigratableAgents(r.agents ?? []))
+      .catch(e => setError(getErrorMessage(e)))
+      .finally(() => setMigLoading(false));
+  }, [api]);
 
-  const loadKeys = useCallback(async () => {
-    addBusy('loadKeys');
-    setError(null);
-    try {
-      const res = await kagentiEndpoints.listLlmKeys(kagentiDeps);
-      setKeys(res.keys ?? []);
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      removeBusy('loadKeys');
-    }
-  }, [addBusy, kagentiDeps, removeBusy]);
-
-  const loadIntegrations = useCallback(async () => {
-    addBusy('loadIntegrations');
-    setError(null);
-    try {
-      const res = await kagentiEndpoints.listIntegrations(
-        kagentiDeps,
-        intFilter || undefined,
-      );
-      setIntegrations(res.integrations ?? []);
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      removeBusy('loadIntegrations');
-    }
-  }, [addBusy, intFilter, kagentiDeps, removeBusy]);
+  const loadStrategies = useCallback(() => {
+    setBsLoading(true);
+    api
+      .listKagentiBuildStrategies()
+      .then(r => setStrategies(r.strategies ?? []))
+      .catch(e => setError(getErrorMessage(e)))
+      .finally(() => setBsLoading(false));
+  }, [api]);
 
   useEffect(() => {
-    if (!flags) return;
-    if (flags.sandbox) {
-      loadModels();
-      loadTeams();
-      loadKeys();
-    }
-  }, [flags, loadModels, loadTeams, loadKeys]);
+    loadNamespaces();
+    loadMigratable();
+    loadStrategies();
+  }, [loadNamespaces, loadMigratable, loadStrategies]);
 
-  useEffect(() => {
-    if (flags?.integrations) loadIntegrations();
-  }, [flags?.integrations, intFilter, loadIntegrations]);
-
-  const createTeam = async () => {
-    if (!teamNs.trim()) return;
-    const body: KagentiCreateTeamRequest = { namespace: teamNs.trim() };
-    addBusy('createTeam');
+  const handleMigrate = async (ns: string, name: string) => {
+    setMigrating(`${ns}/${name}`);
     setError(null);
     try {
-      await kagentiEndpoints.createLlmTeam(kagentiDeps, body);
-      setTeamOpen(false);
-      setTeamNs('');
-      loadTeams();
+      await api.migrateKagentiAgent(ns, name, false);
+      loadMigratable();
     } catch (e) {
       setError(getErrorMessage(e));
     } finally {
-      removeBusy('createTeam');
+      setMigrating(null);
     }
   };
 
-  const createKey = async () => {
-    if (!keyNs.trim() || !keyAgent.trim()) return;
-    const body: KagentiCreateKeyRequest = {
-      namespace: keyNs.trim(),
-      agentName: keyAgent.trim(),
-    };
-    addBusy('createKey');
+  const handleMigrateAll = async () => {
+    setMigrating('__all__');
     setError(null);
     try {
-      await kagentiEndpoints.createLlmKey(kagentiDeps, body);
-      setKeyOpen(false);
-      setKeyNs('');
-      setKeyAgent('');
-      loadKeys();
+      await api.migrateAllKagentiAgents({ dryRun: false });
+      loadMigratable();
     } catch (e) {
       setError(getErrorMessage(e));
     } finally {
-      removeBusy('createKey');
+      setMigrating(null);
     }
   };
 
-  const removeKey = async () => {
-    if (!deleteKey) return;
-    const ns = deleteKey.namespace ?? '';
-    const agent = deleteKey.agent ?? '';
-    if (!ns || !agent) return;
-    addBusy('removeKey');
-    try {
-      await kagentiEndpoints.deleteLlmKey(kagentiDeps, ns, agent);
-      setDeleteKey(null);
-      loadKeys();
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      removeBusy('removeKey');
-    }
-  };
-
-  const createIntegration = async () => {
-    if (!intName.trim() || !intNs.trim()) return;
-    const body: KagentiCreateIntegrationRequest = {
-      name: intName.trim(),
-      namespace: intNs.trim(),
-    };
-    addBusy('createIntegration');
-    setError(null);
-    try {
-      await kagentiEndpoints.createIntegration(kagentiDeps, body);
-      setIntOpen(false);
-      setIntName('');
-      setIntNs('');
-      loadIntegrations();
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      removeBusy('createIntegration');
-    }
-  };
-
-  const removeIntegration = async () => {
-    if (!deleteInt) return;
-    addBusy('removeIntegration');
-    try {
-      await kagentiEndpoints.deleteIntegration(
-        kagentiDeps,
-        deleteInt.namespace,
-        deleteInt.name,
+  function loadingOrContent(
+    isLoading: boolean,
+    isEmpty: boolean,
+    emptyText: string,
+    content: ReactNode,
+  ): ReactNode {
+    if (isLoading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+          <CircularProgress size={22} />
+        </Box>
       );
-      setDeleteInt(null);
-      loadIntegrations();
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      removeBusy('removeIntegration');
     }
-  };
-
-  const testIntegration = async (i: KagentiIntegration) => {
-    addBusy('testIntegration');
-    setError(null);
-    try {
-      const res = await kagentiEndpoints.testIntegration(
-        kagentiDeps,
-        i.namespace,
-        i.name,
+    if (isEmpty) {
+      return (
+        <Typography variant="body2" sx={{ color: theme.palette.text.disabled }}>
+          {emptyText}
+        </Typography>
       );
-      setError(null);
-      setTestResult(JSON.stringify(res, null, 2));
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      removeBusy('testIntegration');
     }
-  };
+    return content;
+  }
 
-  const submitTrigger = async () => {
-    if (!triggerNs.trim()) return;
-    const ttlNum = triggerTtl ? Number(triggerTtl) : undefined;
-    const body: KagentiTriggerRequest = {
-      type: triggerType,
-      namespace: triggerNs.trim(),
-      skill: triggerSkill || undefined,
-      schedule: triggerSchedule || undefined,
-      ttl_hours: ttlNum !== undefined && !Number.isNaN(ttlNum) ? ttlNum : undefined,
-    };
-    addBusy('submitTrigger');
-    setError(null);
-    try {
-      await kagentiEndpoints.createTrigger(kagentiDeps, body);
-      setTriggerSkill('');
-      setTriggerSchedule('');
-      setTriggerTtl('');
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      removeBusy('submitTrigger');
-    }
-  };
-
-  const sectionShell = (title: string, children: ReactNode) => (
+  const sectionShell = (
+    title: string,
+    subtitle: string | undefined,
+    actions: ReactNode | undefined,
+    children: ReactNode,
+  ) => (
     <Card
       variant="outlined"
-      sx={{ mb: 2, bgcolor: alpha(theme.palette.background.paper, 0.4) }}
+      sx={{
+        mb: 3,
+        p: 2.5,
+        bgcolor: alpha(theme.palette.background.paper, 0.4),
+      }}
     >
-      <CardContent>
-        <Typography variant="h6" sx={{ fontSize: '1rem', mb: 1.5 }}>
-          {title}
-        </Typography>
-        {children}
-      </CardContent>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2,
+        }}
+      >
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography
+              variant="caption"
+              sx={{ color: theme.palette.text.secondary }}
+            >
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+        {actions}
+      </Box>
+      {children}
     </Card>
   );
 
-  if (flagsError) {
-    return <Alert severity="error">{flagsError}</Alert>;
-  }
-
-  if (!flags) {
+  if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress size={28} />
@@ -362,443 +208,269 @@ export function KagentiAdminPanel({ namespace: namespaceProp }: KagentiAdminPane
   }
 
   return (
-    <Box>
-      {testResult && (
-        <Alert
-          severity="info"
-          sx={{ mb: 2 }}
-          onClose={() => setTestResult(null)}
+    <Box sx={{ maxWidth: 1200 }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+          Administration
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ color: theme.palette.text.secondary }}
         >
-          <Typography variant="caption" component="pre" sx={{ whiteSpace: 'pre-wrap' }}>
-            {testResult}
-          </Typography>
-        </Alert>
-      )}
+          Identity management, namespace oversight, agent migration, and build
+          configuration.
+        </Typography>
+      </Box>
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
 
-      {flags.sandbox &&
-        sectionShell(
-          'LLM models',
-          <Box>
-            <Button
-              size="small"
-              startIcon={isBusy('loadModels') ? <CircularProgress size={16} /> : <RefreshIcon />}
-              onClick={loadModels}
-              disabled={isBusy('loadModels')}
-              sx={{ textTransform: 'none', mb: 1 }}
-            >
-              Refresh
-            </Button>
-            <TextField
-              fullWidth
-              multiline
-              minRows={6}
-              value={modelsJson}
-              InputProps={{ readOnly: true }}
-              size="small"
-            />
-          </Box>,
-        )}
-
-      {flags.sandbox &&
-        sectionShell(
-          'LLM teams',
-          <Box>
-            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-              <Button
-                size="small"
-                variant="contained"
-                onClick={() => setTeamOpen(true)}
-                sx={{ textTransform: 'none' }}
-              >
-                Create team
-              </Button>
-              <Button
-                size="small"
-                startIcon={<RefreshIcon />}
-                onClick={loadTeams}
-                disabled={isBusy('loadTeams')}
-                sx={{ textTransform: 'none' }}
-              >
-                Refresh
-              </Button>
-            </Box>
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Team ID</TableCell>
-                    <TableCell>Namespace</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {teams.length === 0 && !isBusy('loadTeams') ? (
-                    <TableRow>
-                      <TableCell colSpan={2}>
-                        <Typography variant="body2" color="textSecondary">
-                          No teams
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    teams.map(t => (
-                      <TableRow key={`${t.teamId}-${t.namespace}`}>
-                        <TableCell>{t.teamId}</TableCell>
-                        <TableCell>{t.namespace}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>,
-        )}
-
-      {flags.sandbox &&
-        sectionShell(
-          'API keys',
-          <Box>
-            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-              <Button
-                size="small"
-                variant="contained"
-                onClick={() => setKeyOpen(true)}
-                sx={{ textTransform: 'none' }}
-              >
-                Create key
-              </Button>
-              <Button
-                size="small"
-                startIcon={<RefreshIcon />}
-                onClick={loadKeys}
-                disabled={isBusy('loadKeys')}
-                sx={{ textTransform: 'none' }}
-              >
-                Refresh
-              </Button>
-            </Box>
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Alias</TableCell>
-                    <TableCell>Agent</TableCell>
-                    <TableCell>Namespace</TableCell>
-                    <TableCell align="right">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {keys.length === 0 && !isBusy('loadKeys') ? (
-                    <TableRow>
-                      <TableCell colSpan={4}>
-                        <Typography variant="body2" color="textSecondary">
-                          No API keys
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    keys.map((k, idx) => (
-                      <TableRow key={`${k.namespace}-${k.agent}-${idx}`}>
-                        <TableCell>{k.alias ?? '—'}</TableCell>
-                        <TableCell>{k.agent ?? '—'}</TableCell>
-                        <TableCell>{k.namespace ?? '—'}</TableCell>
-                        <TableCell align="right">
-                          <Tooltip title="Delete key">
-                            <span>
-                              <IconButton
-                                size="small"
-                                color="error"
-                                aria-label="Delete key"
-                                onClick={() => setDeleteKey(k)}
-                                disabled={!k.namespace || !k.agent || isBusy('removeKey')}
-                              >
-                                <DeleteOutlineIcon fontSize="small" />
-                              </IconButton>
-                            </span>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>,
-        )}
-
-      {flags.integrations &&
-        sectionShell(
-          'Integrations',
-          <Box>
-            <Box
+      {sectionShell(
+        'Identity Management',
+        'Manage users, roles, and authentication policies via the Keycloak console.',
+        undefined,
+        <Box>
+          <Button
+            variant="contained"
+            size="small"
+            href={dashboardConfig?.keycloakConsole || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            disabled={!dashboardConfig?.keycloakConsole}
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+          >
+            Open Keycloak Console
+          </Button>
+          {!dashboardConfig?.keycloakConsole && (
+            <Typography
+              variant="caption"
               sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 1,
-                mb: 1,
-                alignItems: 'center',
+                display: 'block',
+                mt: 1,
+                color: theme.palette.text.disabled,
               }}
             >
-              <TextField
-                size="small"
-                label="Namespace filter"
-                value={intFilter}
-                onChange={e => setIntFilter(e.target.value)}
-              />
-              <Button
-                size="small"
-                variant="contained"
-                onClick={() => setIntOpen(true)}
-                sx={{ textTransform: 'none' }}
-              >
-                Create
-              </Button>
-              <Button
-                size="small"
-                startIcon={<RefreshIcon />}
-                onClick={loadIntegrations}
-                disabled={isBusy('loadIntegrations')}
-                sx={{ textTransform: 'none' }}
-              >
-                Refresh
-              </Button>
-            </Box>
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Namespace</TableCell>
-                    <TableCell>Conditions</TableCell>
-                    <TableCell align="right">Actions</TableCell>
+              Keycloak console URL not configured.
+            </Typography>
+          )}
+        </Box>,
+      )}
+
+      {sectionShell(
+        'Namespace Management',
+        `${namespaces.length} enabled namespace${namespaces.length !== 1 ? 's' : ''}`,
+        <Tooltip title="Refresh namespaces">
+          <IconButton
+            size="small"
+            onClick={loadNamespaces}
+            disabled={nsLoading}
+          >
+            <RefreshIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>,
+        loadingOrContent(
+          nsLoading,
+          namespaces.length === 0,
+          'No enabled namespaces found.',
+          <TableContainer
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 1 }}
+          >
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Namespace</TableCell>
+                  <TableCell align="right">Status</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {namespaces.map(ns => (
+                  <TableRow key={ns}>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {ns}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Chip
+                        label="Enabled"
+                        size="small"
+                        color="success"
+                        sx={{ height: 22 }}
+                      />
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {integrations.length === 0 && !isBusy('loadIntegrations') ? (
-                    <TableRow>
-                      <TableCell colSpan={4}>
-                        <Typography variant="body2" color="textSecondary">
-                          No integrations
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>,
+        ),
+      )}
+
+      {sectionShell(
+        'Agent Migration',
+        'Migrate agents from Agent CRD to Deployment workload type.',
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {migratableAgents.length > 0 && (
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={handleMigrateAll}
+              disabled={!!migrating}
+              sx={{ textTransform: 'none' }}
+            >
+              {migrating === '__all__' ? (
+                <CircularProgress size={16} sx={{ mr: 0.5 }} />
+              ) : null}
+              Migrate All
+            </Button>
+          )}
+          <Tooltip title="Refresh">
+            <IconButton
+              size="small"
+              onClick={loadMigratable}
+              disabled={migLoading}
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>,
+        loadingOrContent(
+          migLoading,
+          migratableAgents.length === 0,
+          'No agents require migration.',
+          <TableContainer
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 1 }}
+          >
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Agent</TableCell>
+                  <TableCell>Namespace</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Has Deployment</TableCell>
+                  <TableCell align="right">Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {migratableAgents.map(ma => {
+                  const key = `${ma.namespace}/${ma.name}`;
+                  return (
+                    <TableRow key={key}>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {ma.name}
                         </Typography>
                       </TableCell>
+                      <TableCell>{ma.namespace}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={ma.status}
+                          size="small"
+                          sx={{ height: 22 }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {ma.has_deployment ? (
+                          <Chip
+                            label="Yes"
+                            size="small"
+                            color="success"
+                            sx={{ height: 22 }}
+                          />
+                        ) : (
+                          <Chip
+                            label="No"
+                            size="small"
+                            color="default"
+                            sx={{ height: 22 }}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleMigrate(ma.namespace, ma.name)}
+                          disabled={!!migrating}
+                          sx={{ textTransform: 'none' }}
+                        >
+                          {migrating === key ? (
+                            <CircularProgress size={14} sx={{ mr: 0.5 }} />
+                          ) : null}
+                          Migrate
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  ) : (
-                    integrations.map(i => (
-                      <TableRow key={`${i.namespace}/${i.name}`}>
-                        <TableCell>{i.name}</TableCell>
-                        <TableCell>{i.namespace}</TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {(i.conditions ?? []).map((c, cIdx) => (
-                              <Chip
-                                key={`${c.type}-${cIdx}`}
-                                size="small"
-                                label={`${c.type}: ${c.status}`}
-                              />
-                            ))}
-                          </Box>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Tooltip title="Test integration">
-                            <IconButton
-                              size="small"
-                              aria-label="Test integration"
-                              onClick={() => testIntegration(i)}
-                              disabled={isBusy('testIntegration')}
-                            >
-                              <ScienceIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete integration">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              aria-label="Delete integration"
-                              onClick={() => setDeleteInt(i)}
-                              disabled={isBusy('removeIntegration')}
-                            >
-                              <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
+                  );
+                })}
+              </TableBody>
             </Table>
-            </TableContainer>
-          </Box>,
-        )}
+          </TableContainer>,
+        ),
+      )}
 
-      {flags.triggers &&
-        sectionShell(
-          'Triggers',
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 480 }}>
-            <FormControl size="small" fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select
-                label="Type"
-                value={triggerType}
-                onChange={e =>
-                  setTriggerType(e.target.value as KagentiTriggerRequest['type'])
-                }
-                MenuProps={SELECT_MENU_PROPS}
-              >
-                <MenuItem value="cron">cron</MenuItem>
-                <MenuItem value="webhook">webhook</MenuItem>
-                <MenuItem value="alert">alert</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="Namespace"
-              size="small"
-              value={triggerNs}
-              onChange={e => setTriggerNs(e.target.value)}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Skill"
-              size="small"
-              value={triggerSkill}
-              onChange={e => setTriggerSkill(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Schedule"
-              size="small"
-              value={triggerSchedule}
-              onChange={e => setTriggerSchedule(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="TTL (hours)"
-              size="small"
-              type="number"
-              value={triggerTtl}
-              onChange={e => setTriggerTtl(e.target.value)}
-              fullWidth
-            />
-            <Button
-              variant="contained"
-              size="small"
-              onClick={submitTrigger}
-              disabled={isBusy('submitTrigger') || !triggerNs.trim()}
-              sx={{ textTransform: 'none', alignSelf: 'flex-start' }}
-            >
-              Create trigger
-            </Button>
-          </Box>,
-        )}
-
-      <Dialog open={teamOpen} onClose={() => !isBusy('createTeam') && setTeamOpen(false)} fullWidth maxWidth="xs">
-        <DialogTitle>Create team</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Namespace"
-            fullWidth
+      {sectionShell(
+        'Build Strategies',
+        'Available ClusterBuildStrategies for source-to-image agent builds.',
+        <Tooltip title="Refresh">
+          <IconButton
             size="small"
-            value={teamNs}
-            onChange={e => setTeamNs(e.target.value)}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setTeamOpen(false)} sx={{ textTransform: 'none' }}>
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={createTeam} sx={{ textTransform: 'none' }}>
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
+            onClick={loadStrategies}
+            disabled={bsLoading}
+          >
+            <RefreshIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>,
+        loadingOrContent(
+          bsLoading,
+          strategies.length === 0,
+          'No build strategies available.',
+          <TableContainer
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 1 }}
+          >
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Strategy Name</TableCell>
+                  <TableCell>Description</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {strategies.map(bs => (
+                  <TableRow key={bs.name}>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {bs.name}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: theme.palette.text.secondary }}
+                      >
+                        {bs.description || '—'}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>,
+        ),
+      )}
 
-      <Dialog open={keyOpen} onClose={() => !isBusy('createKey') && setKeyOpen(false)} fullWidth maxWidth="xs">
-        <DialogTitle>Create API key</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-          <TextField
-            label="Namespace"
-            size="small"
-            value={keyNs}
-            onChange={e => setKeyNs(e.target.value)}
-            fullWidth
-            required
-          />
-          <TextField
-            label="Agent name"
-            size="small"
-            value={keyAgent}
-            onChange={e => setKeyAgent(e.target.value)}
-            fullWidth
-            required
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setKeyOpen(false)} sx={{ textTransform: 'none' }}>
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={createKey} sx={{ textTransform: 'none' }}>
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={intOpen} onClose={() => !isBusy('createIntegration') && setIntOpen(false)} fullWidth maxWidth="xs">
-        <DialogTitle>Create integration</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-          <TextField
-            label="Name"
-            size="small"
-            value={intName}
-            onChange={e => setIntName(e.target.value)}
-            fullWidth
-            required
-          />
-          <TextField
-            label="Namespace"
-            size="small"
-            value={intNs}
-            onChange={e => setIntNs(e.target.value)}
-            fullWidth
-            required
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIntOpen(false)} sx={{ textTransform: 'none' }}>
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={createIntegration} sx={{ textTransform: 'none' }}>
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <ConfirmDialog
-        open={!!deleteInt}
-        title="Delete integration"
-        message={
-          deleteInt
-            ? `Delete ${deleteInt.namespace}/${deleteInt.name}?`
-            : ''
-        }
-        onConfirm={removeIntegration}
-        onCancel={() => setDeleteInt(null)}
-      />
-
-      <ConfirmDialog
-        open={!!deleteKey}
-        title="Delete API key"
-        message="Delete this API key?"
-        onConfirm={removeKey}
-        onCancel={() => setDeleteKey(null)}
-      />
-
-      {!flags.sandbox && !flags.integrations && !flags.triggers && (
-        <Alert severity="info">No Kagenti admin features are enabled.</Alert>
+      {sectionShell(
+        'Platform Configuration',
+        undefined,
+        undefined,
+        <Alert severity="info" variant="outlined" sx={{ mb: 0 }}>
+          <strong>Coming soon</strong> — Global agent settings, resource quotas,
+          and advanced platform configuration will be available in a future
+          release.
+        </Alert>,
       )}
     </Box>
   );

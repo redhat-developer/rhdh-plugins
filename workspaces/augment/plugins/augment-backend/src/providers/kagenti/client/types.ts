@@ -23,9 +23,13 @@ import type {
   KagentiDashboardConfig,
   KagentiAuthConfig,
   KagentiCreateAgentRequest,
+  KagentiCreateAgentResponse,
   KagentiToolSummary,
   KagentiToolDetail,
   KagentiCreateToolRequest,
+  KagentiCreateToolResponse,
+  KagentiFinalizeToolBuildRequest,
+  KagentiMcpInvokeResponse,
   KagentiEnvVar,
   KagentiServicePort,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -116,12 +120,7 @@ export interface RouteStatusResponse {
 
 export type CreateAgentRequest = KagentiCreateAgentRequest;
 
-export interface CreateAgentResponse {
-  success: boolean;
-  name: string;
-  namespace: string;
-  message: string;
-}
+export type CreateAgentResponse = KagentiCreateAgentResponse;
 
 export interface DeleteResponse {
   success: boolean;
@@ -301,25 +300,9 @@ export type ToolDetailResponse = KagentiToolDetail;
 
 export type CreateToolRequest = KagentiCreateToolRequest;
 
-export interface CreateToolResponse {
-  success: boolean;
-  name: string;
-  namespace: string;
-  message: string;
-}
+export type CreateToolResponse = KagentiCreateToolResponse;
 
-export interface FinalizeToolBuildRequest {
-  protocol?: string;
-  framework?: string;
-  workloadType?: string;
-  persistentStorage?: Record<string, unknown>;
-  envVars?: KagentiEnvVar[];
-  servicePorts?: KagentiServicePort[];
-  createHttpRoute?: boolean;
-  authBridgeEnabled?: boolean;
-  spireEnabled?: boolean;
-  imagePullSecret?: string;
-}
+export type FinalizeToolBuildRequest = KagentiFinalizeToolBuildRequest;
 
 export interface MCPToolsResponse {
   tools: Array<{
@@ -334,9 +317,7 @@ export interface MCPInvokeRequest {
   arguments?: Record<string, unknown>;
 }
 
-export interface MCPInvokeResponse {
-  result: unknown;
-}
+export type MCPInvokeResponse = KagentiMcpInvokeResponse;
 
 // -- Sandbox ------------------------------------------------------------------
 

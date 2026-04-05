@@ -23,10 +23,28 @@
 // /kagenti/* routes and used in UI rendering.
 
 /** @public */
+export interface KagentiSecretKeyRef {
+  name: string;
+  key: string;
+}
+
+/** @public */
+export interface KagentiConfigMapKeyRef {
+  name: string;
+  key: string;
+}
+
+/** @public */
+export interface KagentiEnvVarSource {
+  secretKeyRef?: KagentiSecretKeyRef;
+  configMapKeyRef?: KagentiConfigMapKeyRef;
+}
+
+/** @public */
 export interface KagentiEnvVar {
   name: string;
   value?: string;
-  valueFrom?: Record<string, unknown>;
+  valueFrom?: KagentiEnvVarSource;
 }
 
 /** @public */
@@ -41,7 +59,7 @@ export interface KagentiServicePort {
 
 /** @public */
 export interface KagentiResourceLabels {
-  protocol?: string;
+  protocol?: string | string[];
   framework?: string;
   type?: string;
 }
@@ -65,7 +83,16 @@ export interface KagentiAgentDetail {
   spec: Record<string, unknown>;
   status: Record<string, unknown>;
   workloadType?: string;
+  readyStatus?: string;
   service?: Record<string, unknown>;
+}
+
+/** @public */
+export interface KagentiAgentCardSkill {
+  id?: string;
+  name?: string;
+  description?: string;
+  examples?: string[];
 }
 
 /** @public */
@@ -75,7 +102,16 @@ export interface KagentiAgentCard {
   version: string;
   url: string;
   streaming: boolean;
-  skills: Array<{ id?: string; name?: string; description?: string }>;
+  defaultInputModes?: string[];
+  skills: KagentiAgentCardSkill[];
+}
+
+/** @public */
+export interface KagentiShipwrightConfig {
+  buildStrategy?: string;
+  dockerfile?: string;
+  buildArgs?: string[];
+  buildTimeout?: string;
 }
 
 /** @public */
@@ -100,7 +136,15 @@ export interface KagentiCreateAgentRequest {
   createHttpRoute?: boolean;
   authBridgeEnabled?: boolean;
   spireEnabled?: boolean;
-  shipwrightConfig?: Record<string, unknown>;
+  shipwrightConfig?: KagentiShipwrightConfig;
+}
+
+/** @public */
+export interface KagentiCreateAgentResponse {
+  success: boolean;
+  name: string;
+  namespace: string;
+  message: string;
 }
 
 // -- Tools --------------------------------------------------------------------
@@ -135,7 +179,7 @@ export interface KagentiCreateToolRequest {
   envVars?: KagentiEnvVar[];
   servicePorts?: KagentiServicePort[];
   workloadType?: 'deployment' | 'statefulset';
-  persistentStorage?: Record<string, unknown>;
+  persistentStorage?: KagentiPersistentStorageConfig;
   deploymentMethod?: 'image' | 'source';
   containerImage?: string;
   imagePullSecret?: string;
@@ -145,10 +189,43 @@ export interface KagentiCreateToolRequest {
   registryUrl?: string;
   registrySecret?: string;
   imageTag?: string;
-  shipwrightConfig?: Record<string, unknown>;
+  shipwrightConfig?: KagentiShipwrightConfig;
   createHttpRoute?: boolean;
   authBridgeEnabled?: boolean;
   spireEnabled?: boolean;
+}
+
+/** @public */
+export interface KagentiCreateToolResponse {
+  success: boolean;
+  name: string;
+  namespace: string;
+  message: string;
+}
+
+/** @public */
+export interface KagentiPersistentStorageConfig {
+  enabled: boolean;
+  size: string;
+}
+
+/** @public */
+export interface KagentiFinalizeToolBuildRequest {
+  protocol?: string;
+  framework?: string;
+  workloadType?: string;
+  persistentStorage?: KagentiPersistentStorageConfig;
+  envVars?: KagentiEnvVar[];
+  servicePorts?: KagentiServicePort[];
+  createHttpRoute?: boolean;
+  authBridgeEnabled?: boolean;
+  spireEnabled?: boolean;
+  imagePullSecret?: string;
+}
+
+/** @public */
+export interface KagentiMcpInvokeResponse {
+  result: unknown;
 }
 
 /** @public */
@@ -252,6 +329,24 @@ export interface KagentiBuildStrategy {
   description?: string;
 }
 
+/** @public */
+export interface KagentiRouteStatus {
+  hasRoute: boolean;
+  /** Present when the API exposes a public URL for the route. */
+  url?: string;
+  /** Additional fields returned by the Kagenti API (e.g. ready, status). */
+  [key: string]: unknown;
+}
+
+/** @public */
+export interface KagentiTriggerBuildRunResponse {
+  success: boolean;
+  buildRunName: string;
+  namespace: string;
+  buildName: string;
+  message?: string;
+}
+
 // -- Migration ----------------------------------------------------------------
 
 /** @public */
@@ -262,6 +357,29 @@ export interface KagentiMigratableAgent {
   has_deployment: boolean;
   labels: KagentiResourceLabels;
   description?: string;
+}
+
+/** @public */
+export interface KagentiMigrateAgentResponse {
+  success: boolean;
+  migrated: boolean;
+  name: string;
+  namespace: string;
+  message: string;
+  deployment_created: boolean;
+  service_created: boolean;
+  agent_crd_deleted: boolean;
+}
+
+/** @public */
+export interface KagentiMigrateAllResponse {
+  namespace: string;
+  dry_run: boolean;
+  delete_old: boolean;
+  total: number;
+  migrated: unknown[];
+  skipped: unknown[];
+  failed: unknown[];
 }
 
 // -- Sandbox ------------------------------------------------------------------

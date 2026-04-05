@@ -18,18 +18,18 @@ import { useState, useEffect, useCallback } from 'react';
 
 const STORAGE_KEY_MODE = 'augment:view-mode';
 const STORAGE_KEY_BANNER = 'augment:admin-banner-seen';
+const STORAGE_KEY_PANEL = 'augment:admin-panel';
 
 export type ViewMode = 'chat' | 'admin';
 export type AdminPanel =
   | 'platform'
   | 'agents'
   | 'branding'
+  | 'kagenti-home'
   | 'kagenti-agents'
   | 'kagenti-tools'
-  | 'kagenti-builds'
-  | 'kagenti-sandbox'
-  | 'kagenti-admin'
-  | 'kagenti-dashboards';
+  | 'kagenti-dashboards'
+  | 'kagenti-admin';
 
 export interface UseAdminViewOptions {
   isAdmin: boolean;
@@ -55,7 +55,23 @@ export function useAdminView({
   isAdmin,
 }: UseAdminViewOptions): UseAdminViewReturn {
   const [viewMode, setViewMode] = useState<ViewMode>('chat');
-  const [adminPanel, setAdminPanel] = useState<AdminPanel>('platform');
+  const [adminPanel, setAdminPanelRaw] = useState<AdminPanel>(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY_PANEL);
+      if (saved) return saved as AdminPanel;
+    } catch {
+      /* sessionStorage unavailable */
+    }
+    return 'platform';
+  });
+  const setAdminPanel = useCallback((panel: AdminPanel) => {
+    setAdminPanelRaw(panel);
+    try {
+      sessionStorage.setItem(STORAGE_KEY_PANEL, panel);
+    } catch {
+      /* noop */
+    }
+  }, []);
   const [showAdminBanner, setShowAdminBanner] = useState(false);
 
   useEffect(() => {
@@ -63,7 +79,9 @@ export function useAdminView({
       setViewMode('chat');
       try {
         localStorage.removeItem(STORAGE_KEY_MODE);
-      } catch { /* localStorage unavailable */ }
+      } catch {
+        /* localStorage unavailable */
+      }
       return;
     }
     try {

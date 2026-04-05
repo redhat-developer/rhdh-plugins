@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useRef, useCallback } from 'react';
+import {
+  useMemo,
+  useRef,
+  useCallback,
+  type FC,
+  type Ref,
+  type KeyboardEvent,
+  type ChangeEvent,
+} from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
@@ -58,7 +66,7 @@ export interface ChatInputProps {
   /** Whether file upload is enabled */
   enableFileUpload?: boolean;
   /** Ref to the underlying textarea for programmatic focus */
-  inputRef?: React.Ref<HTMLTextAreaElement>;
+  inputRef?: Ref<HTMLTextAreaElement>;
   /** Name of the currently active agent (multi-agent conversations) */
   activeAgentName?: string;
   /** The selected model/agent ID (e.g. namespace/name) */
@@ -67,13 +75,15 @@ export interface ChatInputProps {
   isKagenti?: boolean;
   /** Called when user clears the agent selection */
   onClearAgent?: () => void;
+  /** When true, sending is blocked until the user selects an agent */
+  requireAgent?: boolean;
 }
 
 /**
  * ChatInput - Input component for the chat interface
  * Handles text input, send/stop buttons, and new chat button
  */
-export const ChatInput: React.FC<ChatInputProps> = ({
+export const ChatInput: FC<ChatInputProps> = ({
   value,
   onChange,
   onSend,
@@ -91,6 +101,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   selectedModel,
   isKagenti = false,
   onClearAgent,
+  requireAgent = false,
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -101,15 +112,18 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     [theme, isTyping],
   );
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+  const hasValue = value.trim().length > 0;
+  const canSend = hasValue && !requireAgent;
+
+  const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      onSend();
+      if (canSend) onSend();
     }
   };
 
   const handleFileChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (file && onFileSelect) {
         onFileSelect(file);
@@ -120,8 +134,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     },
     [onFileSelect],
   );
-
-  const hasValue = value.trim().length > 0;
 
   return (
     <Box sx={styles.container}>
@@ -202,7 +214,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                       }}
                     />
                   }
-                  label={activeAgentName || (selectedModel?.includes('/') ? selectedModel.split('/').pop() : selectedModel)}
+                  label={
+                    activeAgentName ||
+                    (selectedModel?.includes('/')
+                      ? selectedModel.split('/').pop()
+                      : selectedModel)
+                  }
                   size="small"
                   variant="outlined"
                   onDelete={onClearAgent}
@@ -284,14 +301,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 <StopIcon sx={{ fontSize: 18 }} />
               </IconButton>
             ) : (
-              <IconButton
-                sx={styles.createSendButton(hasValue)}
-                onClick={onSend}
-                disabled={!hasValue}
-                aria-label={t('chatInput.sendMessage')}
+              <Tooltip
+                title={requireAgent ? t('chatInput.selectAgentPrompt') : ''}
+                placement="top"
               >
-                <SendIcon sx={{ fontSize: 18 }} />
-              </IconButton>
+                <span>
+                  <IconButton
+                    sx={styles.createSendButton(canSend)}
+                    onClick={onSend}
+                    disabled={!canSend}
+                    aria-label={t('chatInput.sendMessage')}
+                  >
+                    <SendIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </span>
+              </Tooltip>
             )}
           </Box>
         </Box>

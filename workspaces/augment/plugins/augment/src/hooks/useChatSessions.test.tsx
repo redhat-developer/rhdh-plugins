@@ -52,6 +52,7 @@ function createMockChatContainerRef(
     setSessionId: jest.fn(),
     isStreaming: jest.fn().mockReturnValue(false),
     clearInput: jest.fn(),
+    setSelectedModel: jest.fn(),
     ...overrides,
   };
   return { current: ref } as React.RefObject<ChatContainerRef | null>;

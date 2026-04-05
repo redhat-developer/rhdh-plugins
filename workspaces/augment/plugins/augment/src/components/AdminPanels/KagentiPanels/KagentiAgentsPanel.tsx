@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -24,65 +24,76 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
 import Chip from '@mui/material/Chip';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useTheme, alpha } from '@mui/material/styles';
-import type {
-  KagentiAgentSummary,
-  KagentiBuildInfo,
-  KagentiCreateAgentRequest,
-} from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import AddIcon from '@mui/icons-material/Add';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
-import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
+import { CreateAgentWizard } from './CreateAgentWizard';
+import { KagentiAgentDetailView } from './KagentiAgentDetailView';
+
+function agentStatusColor(
+  status: string | undefined,
+): 'success' | 'error' | 'warning' | 'info' | 'default' {
+  if (!status) return 'default';
+  const s = status.toLowerCase();
+  if (s === 'ready' || s === 'running' || s === 'active') return 'success';
+  if (s === 'error' || s === 'failed') return 'error';
+  if (s === 'building' || s === 'pending') return 'info';
+  if (s === 'warning' || s === 'degraded') return 'warning';
+  return 'default';
+}
+
+type SortField = 'name' | 'status' | 'workloadType';
+type SortDir = 'asc' | 'desc';
+
+function compareAgents(
+  a: KagentiAgentSummary,
+  b: KagentiAgentSummary,
+  field: SortField,
+): number {
+  const valA = a[field] ?? '';
+  const valB = b[field] ?? '';
+  return String(valA).localeCompare(String(valB));
+}
 
 export interface KagentiAgentsPanelProps {
   namespace?: string;
+  onChatWithAgent?: (agentId: string) => void;
 }
 
-export function KagentiAgentsPanel({ namespace }: KagentiAgentsPanelProps) {
+export function KagentiAgentsPanel({
+  namespace,
+  onChatWithAgent,
+}: KagentiAgentsPanelProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
   const [agents, setAgents] = useState<KagentiAgentSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<KagentiAgentSummary | null>(
     null,
   );
-  const [buildInfo, setBuildInfo] = useState<Record<string, KagentiBuildInfo>>(
-    {},
-  );
-  const [buildLoading, setBuildLoading] = useState<string | null>(null);
-  const [triggerLoading, setTriggerLoading] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
-    name: '',
-    ns: namespace ?? '',
-    protocol: '',
-    framework: '',
-    workloadType: '' as KagentiCreateAgentRequest['workloadType'] | '',
-    gitUrl: '',
-  });
+  const [selectedAgent, setSelectedAgent] =
+    useState<KagentiAgentSummary | null>(null);
+  const [search, setSearch] = useState('');
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   const loadAgents = useCallback(() => {
     setLoading(true);
@@ -98,69 +109,7 @@ export function KagentiAgentsPanel({ namespace }: KagentiAgentsPanelProps) {
     loadAgents();
   }, [loadAgents]);
 
-  useEffect(() => {
-    setForm(f => ({ ...f, ns: namespace ?? f.ns }));
-  }, [namespace]);
-
   const agentKey = (a: KagentiAgentSummary) => `${a.namespace}/${a.name}`;
-
-  const fetchBuildInfo = async (a: KagentiAgentSummary) => {
-    const key = agentKey(a);
-    setBuildLoading(key);
-    try {
-      const info = await api.getKagentiBuildInfo(a.namespace, a.name);
-      setBuildInfo(prev => ({ ...prev, [key]: info }));
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      setBuildLoading(null);
-    }
-  };
-
-  const handleTriggerBuild = async (a: KagentiAgentSummary) => {
-    const key = agentKey(a);
-    setTriggerLoading(key);
-    try {
-      await api.triggerKagentiBuild(a.namespace, a.name);
-      await fetchBuildInfo(a);
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      setTriggerLoading(null);
-    }
-  };
-
-  const handleCreate = async () => {
-    if (!form.name.trim() || !form.ns.trim()) return;
-    const body: KagentiCreateAgentRequest = {
-      name: form.name.trim(),
-      namespace: form.ns.trim(),
-      protocol: form.protocol || undefined,
-      framework: form.framework || undefined,
-      workloadType: form.workloadType || undefined,
-      gitUrl: form.gitUrl || undefined,
-      deploymentMethod: form.gitUrl ? 'source' : undefined,
-    };
-    setCreating(true);
-    setError(null);
-    try {
-      await api.createKagentiAgent(body);
-      setCreateOpen(false);
-      setForm({
-        name: '',
-        ns: namespace ?? '',
-        protocol: '',
-        framework: '',
-        workloadType: '',
-        gitUrl: '',
-      });
-      loadAgents();
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      setCreating(false);
-    }
-  };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -174,282 +123,313 @@ export function KagentiAgentsPanel({ namespace }: KagentiAgentsPanelProps) {
     }
   };
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
+  const visibleAgents = useMemo(() => {
+    let list = agents;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter(
+        a =>
+          a.name.toLowerCase().includes(q) ||
+          (a.description ?? '').toLowerCase().includes(q),
+      );
+    }
+    const sorted = [...list].sort((a, b) => compareAgents(a, b, sortField));
+    return sortDir === 'desc' ? sorted.reverse() : sorted;
+  }, [agents, search, sortField, sortDir]);
+
+  if (selectedAgent) {
+    return (
+      <KagentiAgentDetailView
+        agent={selectedAgent}
+        onBack={() => {
+          setSelectedAgent(null);
+          loadAgents();
+        }}
+        onChatWithAgent={onChatWithAgent}
+      />
+    );
+  }
+
   return (
-    <Card variant="outlined">
-      <CardContent>
+    <Box sx={{ maxWidth: 1200 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2,
+          flexWrap: 'wrap',
+          gap: 1,
+        }}
+      >
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          Agents
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            size="small"
+            startIcon={<RefreshIcon />}
+            onClick={loadAgents}
+            disabled={loading}
+            sx={{ textTransform: 'none' }}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => setCreateOpen(true)}
+            sx={{ textTransform: 'none' }}
+          >
+            Create Agent
+          </Button>
+        </Box>
+      </Box>
+
+      {!loading && agents.length > 0 && (
+        <TextField
+          size="small"
+          placeholder="Search agents by name or description…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          sx={{ mb: 2, maxWidth: 400 }}
+          fullWidth
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon
+                  fontSize="small"
+                  sx={{ color: theme.palette.text.disabled }}
+                />
+              </InputAdornment>
+            ),
+          }}
+        />
+      )}
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress size={32} />
+        </Box>
+      )}
+      {!loading && agents.length === 0 && (
         <Box
           sx={{
             display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 2,
-            flexWrap: 'wrap',
-            gap: 1,
+            py: 8,
+            border: `1px dashed ${alpha(theme.palette.divider, 0.4)}`,
+            borderRadius: 2,
+            bgcolor: alpha(theme.palette.background.paper, 0.5),
+            gap: 2,
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: '1rem' }}>
-            Kagenti agents
+          <SmartToyIcon
+            sx={{ fontSize: 48, color: theme.palette.text.disabled }}
+          />
+          <Typography
+            variant="body1"
+            sx={{ fontWeight: 600, color: theme.palette.text.secondary }}
+          >
+            No agents found
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              size="small"
-              startIcon={<RefreshIcon />}
-              onClick={loadAgents}
-              disabled={loading}
-              sx={{ textTransform: 'none' }}
-            >
-              Refresh
-            </Button>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={() => setCreateOpen(true)}
-              sx={{ textTransform: 'none' }}
-            >
-              Create agent
-            </Button>
-          </Box>
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.text.disabled,
+              textAlign: 'center',
+              maxWidth: 400,
+            }}
+          >
+            Create your first agent to get started. Agents are Kubernetes-native
+            AI workloads that you can chat with.
+          </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => setCreateOpen(true)}
+            sx={{ textTransform: 'none', mt: 1 }}
+          >
+            Create Agent
+          </Button>
         </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
-
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={32} />
-          </Box>
-        ) : agents.length === 0 ? (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              py: 6,
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 1,
-              bgcolor: alpha(theme.palette.background.paper, 0.5),
-            }}
-          >
-            <Typography variant="body2" color="textSecondary">
-              No agents found in this namespace.
-            </Typography>
-          </Box>
-        ) : (
-          <TableContainer
-            sx={{
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 1,
-              bgcolor: alpha(theme.palette.background.paper, 0.5),
-            }}
-          >
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Namespace</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Protocol</TableCell>
-                  <TableCell>Framework</TableCell>
-                  <TableCell>Workload</TableCell>
-                  <TableCell>Created</TableCell>
-                  <TableCell>Build</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {agents.map(a => {
-                  const key = agentKey(a);
-                  const info = buildInfo[key];
-                  return (
-                    <TableRow key={key}>
-                      <TableCell>{a.name}</TableCell>
-                      <TableCell>{a.namespace}</TableCell>
-                      <TableCell>
-                        <Chip label={a.status} size="small" />
-                      </TableCell>
-                      <TableCell>{a.labels?.protocol ?? '—'}</TableCell>
-                      <TableCell>{a.labels?.framework ?? '—'}</TableCell>
-                      <TableCell>{a.workloadType ?? '—'}</TableCell>
-                      <TableCell>
-                        {a.createdAt
-                          ? new Date(a.createdAt).toLocaleString()
-                          : '—'}
-                      </TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 0.5,
-                            maxWidth: 220,
-                          }}
-                        >
-                          {info ? (
-                            <Typography variant="caption" color="textSecondary">
-                              {info.buildRunPhase ?? info.buildMessage ?? '—'}
-                            </Typography>
-                          ) : (
-                            <Typography variant="caption" color="textSecondary">
-                              —
-                            </Typography>
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Tooltip title="Load build info">
-                          <span>
-                            <IconButton
-                              size="small"
-                              aria-label="Load build info"
-                              onClick={() => fetchBuildInfo(a)}
-                              disabled={buildLoading === key}
-                            >
-                              {buildLoading === key ? (
-                                <CircularProgress size={18} />
-                              ) : (
-                                <RefreshIcon fontSize="small" />
-                              )}
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        <Tooltip title="Trigger build">
-                          <span>
-                            <IconButton
-                              size="small"
-                              aria-label="Trigger build"
-                              onClick={() => handleTriggerBuild(a)}
-                              disabled={triggerLoading === key}
-                            >
-                              {triggerLoading === key ? (
-                                <CircularProgress size={18} />
-                              ) : (
-                                <PlayArrowIcon fontSize="small" />
-                              )}
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        <Tooltip title="Delete agent">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            aria-label="Delete agent"
-                            onClick={() => setDeleteTarget(a)}
-                          >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-
-        <Dialog
-          open={createOpen}
-          onClose={() => !creating && setCreateOpen(false)}
-          maxWidth="sm"
-          fullWidth
+      )}
+      {!loading && agents.length > 0 && (
+        <TableContainer
+          sx={{
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 1,
+            bgcolor: alpha(theme.palette.background.paper, 0.5),
+          }}
         >
-          <DialogTitle>Create agent</DialogTitle>
-          <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <TextField
-              label="Name"
-              size="small"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Namespace"
-              size="small"
-              value={form.ns}
-              onChange={e => setForm(f => ({ ...f, ns: e.target.value }))}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Protocol"
-              size="small"
-              value={form.protocol}
-              onChange={e => setForm(f => ({ ...f, protocol: e.target.value }))}
-              fullWidth
-            />
-            <TextField
-              label="Framework"
-              size="small"
-              value={form.framework}
-              onChange={e => setForm(f => ({ ...f, framework: e.target.value }))}
-              fullWidth
-            />
-            <FormControl size="small" fullWidth>
-              <InputLabel>Workload type</InputLabel>
-              <Select
-                label="Workload type"
-                value={form.workloadType}
-                onChange={e =>
-                  setForm(f => ({
-                    ...f,
-                    workloadType: e.target.value as typeof f.workloadType,
-                  }))
-                }
-                MenuProps={SELECT_MENU_PROPS}
-              >
-                <MenuItem value="">
-                  <em>Default</em>
-                </MenuItem>
-                <MenuItem value="deployment">deployment</MenuItem>
-                <MenuItem value="statefulset">statefulset</MenuItem>
-                <MenuItem value="job">job</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="Git URL (optional)"
-              size="small"
-              value={form.gitUrl}
-              onChange={e => setForm(f => ({ ...f, gitUrl: e.target.value }))}
-              fullWidth
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setCreateOpen(false)}
-              disabled={creating}
-              sx={{ textTransform: 'none' }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleCreate}
-              disabled={creating || !form.name.trim() || !form.ns.trim()}
-              sx={{ textTransform: 'none' }}
-            >
-              {creating ? <CircularProgress size={20} /> : 'Create'}
-            </Button>
-          </DialogActions>
-        </Dialog>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  sortDirection={sortField === 'name' ? sortDir : false}
+                >
+                  <TableSortLabel
+                    active={sortField === 'name'}
+                    direction={sortField === 'name' ? sortDir : 'asc'}
+                    onClick={() => handleSort('name')}
+                  >
+                    Name
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell
+                  sortDirection={sortField === 'status' ? sortDir : false}
+                >
+                  <TableSortLabel
+                    active={sortField === 'status'}
+                    direction={sortField === 'status' ? sortDir : 'asc'}
+                    onClick={() => handleSort('status')}
+                  >
+                    Status
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>Labels</TableCell>
+                <TableCell
+                  sortDirection={sortField === 'workloadType' ? sortDir : false}
+                >
+                  <TableSortLabel
+                    active={sortField === 'workloadType'}
+                    direction={sortField === 'workloadType' ? sortDir : 'asc'}
+                    onClick={() => handleSort('workloadType')}
+                  >
+                    Workload
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {visibleAgents.map(a => {
+                const key = agentKey(a);
+                return (
+                  <TableRow
+                    key={key}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => setSelectedAgent(a)}
+                  >
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 600,
+                          color: theme.palette.primary.main,
+                        }}
+                      >
+                        {a.name}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 300 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: theme.palette.text.secondary }}
+                      >
+                        {a.description || '—'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={a.status}
+                        size="small"
+                        color={agentStatusColor(a.status)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                        {a.labels?.protocol && (
+                          <Chip
+                            label={[a.labels.protocol]
+                              .flat()
+                              .join(', ')
+                              .toUpperCase()}
+                            size="small"
+                            color="primary"
+                            variant="filled"
+                            sx={{ height: 24 }}
+                          />
+                        )}
+                        {a.labels?.framework && (
+                          <Chip
+                            label={a.labels.framework}
+                            size="small"
+                            color="info"
+                            variant="filled"
+                            sx={{ height: 24 }}
+                          />
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={a.workloadType ?? 'Deployment'}
+                        size="small"
+                        variant="outlined"
+                        sx={{ height: 24 }}
+                      />
+                    </TableCell>
+                    <TableCell align="right" onClick={e => e.stopPropagation()}>
+                      <Tooltip title="Delete agent">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          aria-label="Delete agent"
+                          onClick={() => setDeleteTarget(a)}
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-        <ConfirmDialog
-          open={!!deleteTarget}
-          title="Delete agent"
-          message={
-            deleteTarget
-              ? `Delete agent ${deleteTarget.namespace}/${deleteTarget.name}?`
-              : ''
-          }
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      </CardContent>
-    </Card>
+      <CreateAgentWizard
+        open={createOpen}
+        namespace={namespace}
+        onClose={() => setCreateOpen(false)}
+        onCreated={loadAgents}
+      />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete agent"
+        message={
+          deleteTarget
+            ? `Delete agent ${deleteTarget.namespace}/${deleteTarget.name}?`
+            : ''
+        }
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+    </Box>
   );
 }

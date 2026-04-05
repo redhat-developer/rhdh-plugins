@@ -65,3 +65,54 @@ export function getAgentAvatarColor(name: string): string {
   const hue = Math.abs(hash) % 360;
   return `hsl(${hue}, 55%, 50%)`;
 }
+
+const STATUS_PRIORITY: Record<string, number> = {
+  Ready: 0,
+  Running: 0,
+  Active: 0,
+  Pending: 1,
+  Building: 1,
+  'Not Ready': 2,
+  Failed: 3,
+  Error: 3,
+};
+
+export function sortAgents(
+  agents: AgentWithCard[],
+  key: 'name' | 'status' | 'newest',
+): AgentWithCard[] {
+  const sorted = [...agents];
+  switch (key) {
+    case 'name':
+      sorted.sort((a, b) => {
+        const an = (a.agentCard?.name || a.name).toLowerCase();
+        const bn = (b.agentCard?.name || b.name).toLowerCase();
+        return an.localeCompare(bn);
+      });
+      break;
+    case 'status':
+      sorted.sort((a, b) => {
+        const ap = STATUS_PRIORITY[a.status] ?? 9;
+        const bp = STATUS_PRIORITY[b.status] ?? 9;
+        if (ap !== bp) return ap - bp;
+        return (a.agentCard?.name || a.name).localeCompare(
+          b.agentCard?.name || b.name,
+        );
+      });
+      break;
+    case 'newest':
+      sorted.sort((a, b) => {
+        const at = a.createdAt ?? '';
+        const bt = b.createdAt ?? '';
+        return bt.localeCompare(at);
+      });
+      break;
+    default:
+      break;
+  }
+  return sorted;
+}
+
+export function isAgentReady(status: string): boolean {
+  return ['Ready', 'Running', 'Active'].includes(status);
+}

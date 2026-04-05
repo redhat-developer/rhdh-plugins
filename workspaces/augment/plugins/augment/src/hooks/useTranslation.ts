@@ -67,6 +67,9 @@ export const useTranslation = (): { t: AugmentTranslationFunction } => {
           augmentMessages as unknown as NestedMessages,
           key,
         );
+        if (template === key && params?.defaultValue) {
+          return interpolate(String(params.defaultValue), params);
+        }
         return interpolate(template, params);
       },
     [],

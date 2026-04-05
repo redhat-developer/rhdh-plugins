@@ -99,26 +99,54 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
 
     const [inputValue, setInputValue] = useState('');
     const [selectedModel, setSelectedModel] = useState<string | undefined>();
+    const [agentHealthWarning, setAgentHealthWarning] = useState<string | null>(
+      null,
+    );
     const approvalMsgCounter = useRef(0);
     const { workflows, quickActions, promptGroups } = useWelcomeData();
     const { status } = useStatus();
     const isKagenti = status?.providerId === 'kagenti';
+    const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
 
     const handleAgentSelect = useCallback(
       (agentId: string, _agentName: string) => {
         setSelectedModel(agentId);
+        setAgentHealthWarning(null);
         chatInputRef.current?.focus();
+
+        if (isKagenti && agentId.includes('/')) {
+          const [ns, name] = agentId.split('/');
+          api
+            .getKagentiAgent(ns, name)
+            .then(detail => {
+              const statusStr =
+                typeof detail.status === 'string'
+                  ? detail.status
+                  : String(
+                      (detail.status as Record<string, unknown>)?.phase ?? '',
+                    );
+              if (statusStr && statusStr.toLowerCase() !== 'ready') {
+                setAgentHealthWarning(`Agent status: ${statusStr}`);
+              }
+            })
+            .catch(() => {
+              setAgentHealthWarning('Unable to verify agent health');
+            });
+        }
       },
-      [],
+      [api, isKagenti],
     );
 
     const handleChangeAgent = useCallback(() => {
       setSelectedModel(undefined);
-    }, []);
+      setAgentHealthWarning(null);
+      if (messages.length > 0 && onNewChat) {
+        onNewChat();
+      }
+    }, [messages.length, onNewChat]);
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-    const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
 
     const { showScrollFab, scrollToBottom, handleScroll } = useScrollToBottom(
       scrollContainerRef,
@@ -231,8 +259,9 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     }, [isTyping]);
 
     useEffect(() => {
-      onCurrentAgentChange?.(streamingState?.currentAgent);
-    }, [streamingState?.currentAgent, onCurrentAgentChange]);
+      const agentToReport = streamingState?.currentAgent || selectedModel;
+      onCurrentAgentChange?.(agentToReport);
+    }, [streamingState?.currentAgent, selectedModel, onCurrentAgentChange]);
 
     const handleFormSubmit = useCallback(
       async (values: Record<string, unknown>) => {
@@ -262,7 +291,14 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           setIsTyping(false);
         }
       },
-      [api, streamingState, setStreamingState, setIsTyping, messages, onMessagesChange],
+      [
+        api,
+        streamingState,
+        setStreamingState,
+        setIsTyping,
+        messages,
+        onMessagesChange,
+      ],
     );
 
     const handleFormCancel = useCallback(() => {
@@ -304,7 +340,14 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
         setStreamingState(null);
         setIsTyping(false);
       }
-    }, [api, streamingState, setStreamingState, setIsTyping, messages, onMessagesChange]);
+    }, [
+      api,
+      streamingState,
+      setStreamingState,
+      setIsTyping,
+      messages,
+      onMessagesChange,
+    ]);
 
     const handleSecretsSubmit = useCallback(
       async (secrets: Record<string, string>) => {
@@ -334,7 +377,14 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           setIsTyping(false);
         }
       },
-      [api, streamingState, setStreamingState, setIsTyping, messages, onMessagesChange],
+      [
+        api,
+        streamingState,
+        setStreamingState,
+        setIsTyping,
+        messages,
+        onMessagesChange,
+      ],
     );
 
     // Determine what to show in the message area.
@@ -369,12 +419,13 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           minWidth: 0,
         }}
       >
-        {/* Agent Header */}
-        {isKagenti && selectedModel && !showWelcome && (
+        {/* Agent Header -- shown whenever an agent is selected, including on welcome */}
+        {isKagenti && selectedModel && (
           <ChatHeader
             selectedModel={selectedModel}
             currentAgent={streamingState?.currentAgent}
             onChangeAgent={handleChangeAgent}
+            healthWarning={agentHealthWarning ?? undefined}
           />
         )}
 
@@ -505,6 +556,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           selectedModel={selectedModel}
           isKagenti={isKagenti}
           onClearAgent={handleChangeAgent}
+          requireAgent={isKagenti && !selectedModel}
         />
 
         {/* Disclosure Footer */}

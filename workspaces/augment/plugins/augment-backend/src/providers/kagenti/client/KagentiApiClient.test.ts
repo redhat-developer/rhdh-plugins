@@ -170,7 +170,7 @@ describe('KagentiApiClient', () => {
     const client = createClient();
     const result = await client.getAgentCard('team1', 'bot');
     expect(result.name).toBe('bot');
-    expect(result.streaming).toBe(true);
+    expect(result.capabilities.streaming).toBe(true);
   });
 
   it('parses env content', async () => {
