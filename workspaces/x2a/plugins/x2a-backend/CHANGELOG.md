@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 1.3.0
+
+### Minor Changes
+
+- 53a0ccf: Bump all dependencies to match RHDH 1.9.3
+
+### Patch Changes
+
+- 76f016c: Improve error propagation in job script: consolidate error handling into run_x2a function with default message and appended error details, add command logging, and refactor publish-aap to use the shared error handler.
+- de2a283: Fix SCM token leak in committed files: improve URL credential sanitization regex to handle user:token@host patterns and extend file type coverage to include markdown files
+- Updated dependencies [53a0ccf]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.2.0
+
 ## 1.2.0
 
 ### Minor Changes

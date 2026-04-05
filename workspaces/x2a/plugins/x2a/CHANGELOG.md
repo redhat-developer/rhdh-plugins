@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 1.2.0
+
+### Minor Changes
+
+- 53a0ccf: Bump all dependencies to match RHDH 1.9.3
+
+### Patch Changes
+
+- Updated dependencies [53a0ccf]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.2.0
+
 ## 1.1.1
 
 ### Patch Changes
