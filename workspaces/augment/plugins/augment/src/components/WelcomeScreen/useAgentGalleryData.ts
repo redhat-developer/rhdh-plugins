@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AugmentApi } from '../../api';
 import type { AgentWithCard } from './agentUtils';
 
@@ -22,49 +22,37 @@ export function useAgentGalleryData(api: AugmentApi) {
   const [agents, setAgents] = useState<AgentWithCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [refetchNonce, setRefetchNonce] = useState(0);
+  const nonceRef = useRef(0);
 
   const fetchAgents = useCallback(() => {
-    setRefetchNonce(n => n + 1);
-  }, []);
+    nonceRef.current += 1;
+    const myNonce = nonceRef.current;
 
-  useEffect(() => {
-    let cancelled = false;
     (async () => {
       try {
         setLoading(true);
         setError(null);
-        const { agents: agentList } = await api.listKagentiAgents();
-        if (cancelled) return;
-
-        const enriched = await Promise.all(
-          agentList.map(async (agent): Promise<AgentWithCard> => {
-            try {
-              const detail = await api.getKagentiAgent(
-                agent.namespace,
-                agent.name,
-              );
-              return { ...agent, agentCard: detail.agentCard };
-            } catch {
-              return agent;
-            }
-          }),
-        );
-        if (!cancelled) setAgents(enriched);
+        const { agents: agentList } = await api.listKagentiAgents(undefined, {
+          includeCards: true,
+        });
+        if (myNonce !== nonceRef.current) return;
+        setAgents(agentList as AgentWithCard[]);
       } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : 'Failed to load agents',
-          );
-        }
+        if (myNonce !== nonceRef.current) return;
+        setError(err instanceof Error ? err.message : 'Failed to load agents');
       } finally {
-        if (!cancelled) setLoading(false);
+        if (myNonce === nonceRef.current) setLoading(false);
       }
     })();
+
     return () => {
-      cancelled = true;
+      nonceRef.current += 1;
     };
-  }, [api, refetchNonce]);
+  }, [api]);
+
+  useEffect(() => {
+    return fetchAgents();
+  }, [fetchAgents]);
 
   return { agents, loading, error, fetchAgents };
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -28,60 +28,32 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Chip from '@mui/material/Chip';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import LinkIcon from '@mui/icons-material/Link';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import SearchIcon from '@mui/icons-material/Search';
+import BuildIcon from '@mui/icons-material/Build';
+import AddIcon from '@mui/icons-material/Add';
+import InputAdornment from '@mui/material/InputAdornment';
 import { useTheme, alpha } from '@mui/material/styles';
-import type {
-  KagentiMcpToolSchema,
-  KagentiToolSummary,
-} from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type { KagentiToolSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
-import { McpToolCatalog } from './McpToolCatalog';
 import { KagentiToolDetailDrawer } from './KagentiToolDetailDrawer';
 import { CreateToolWizard } from './CreateToolWizard';
-
-type SortField = 'name' | 'namespace' | 'status' | 'workloadType' | 'createdAt';
-type SortDir = 'asc' | 'desc';
-
-function statusChipColor(
-  status: string | undefined,
-): 'success' | 'info' | 'error' | 'warning' | 'default' {
-  if (!status) return 'default';
-  const s = status.toLowerCase();
-  if (s === 'ready' || s === 'running' || s === 'active') return 'success';
-  if (s === 'building' || s === 'pending') return 'info';
-  if (s === 'error' || s === 'failed') return 'error';
-  if (s === 'warning' || s === 'degraded') return 'warning';
-  return 'default';
-}
-
-function formatDateTime(iso?: string): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
-}
-
-function compareTools(a: KagentiToolSummary, b: KagentiToolSummary, field: SortField): number {
-  const valA = a[field] ?? '';
-  const valB = b[field] ?? '';
-  if (field === 'createdAt') {
-    return new Date(valA || 0).getTime() - new Date(valB || 0).getTime();
-  }
-  return String(valA).localeCompare(String(valB));
-}
+import {
+  statusChipColor as toolStatusColor,
+  formatDateTime,
+} from './kagentiDisplayUtils';
+import { ToolConnectDialog } from './ToolConnectDialog';
+import { ToolInvokeDialog } from './ToolInvokeDialog';
+import { useKagentiToolsList, type SortField } from './useKagentiToolsList';
+import { useToolInvoke } from './useToolInvoke';
 
 export interface KagentiToolsPanelProps {
   namespace?: string;
@@ -90,57 +62,36 @@ export interface KagentiToolsPanelProps {
 export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
-  const [tools, setTools] = useState<KagentiToolSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    tools,
+    loading,
+    error: listError,
+    setError: setListError,
+    loadTools,
+    search,
+    setSearch,
+    sortField,
+    sortDir,
+    handleSort,
+    sortedTools,
+  } = useKagentiToolsList(api, namespace);
+
+  const toolInvoke = useToolInvoke(api);
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<KagentiToolSummary | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<KagentiToolSummary | null>(
+    null,
+  );
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const [connectOpen, setConnectOpen] = useState(false);
-  const [connectTool, setConnectTool] = useState<KagentiToolSummary | null>(null);
-  const [connecting, setConnecting] = useState(false);
-  const [connectedSchemas, setConnectedSchemas] = useState<KagentiMcpToolSchema[] | null>(null);
-
-  const [invokeOpen, setInvokeOpen] = useState(false);
-  const [invokeTarget, setInvokeTarget] = useState<KagentiToolSummary | null>(null);
-  const [invokeName, setInvokeName] = useState('');
-  const [invokeArgsJson, setInvokeArgsJson] = useState('{}');
-  const [invoking, setInvoking] = useState(false);
-  const [invokeResult, setInvokeResult] = useState<string | null>(null);
+  const [connectTool, setConnectTool] = useState<KagentiToolSummary | null>(
+    null,
+  );
 
   const [detailTool, setDetailTool] = useState<KagentiToolSummary | null>(null);
 
-  const [sortField, setSortField] = useState<SortField>('name');
-  const [sortDir, setSortDir] = useState<SortDir>('asc');
-
-  const loadTools = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    api
-      .listKagentiTools(namespace || undefined)
-      .then(res => setTools(res.tools ?? []))
-      .catch(e => setError(getErrorMessage(e)))
-      .finally(() => setLoading(false));
-  }, [api, namespace]);
-
-  useEffect(() => {
-    loadTools();
-  }, [loadTools]);
-
-  const sortedTools = useMemo(() => {
-    const sorted = [...tools].sort((a, b) => compareTools(a, b, sortField));
-    return sortDir === 'desc' ? sorted.reverse() : sorted;
-  }, [tools, sortField, sortDir]);
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortField(field);
-      setSortDir('asc');
-    }
-  };
+  const displayError = listError || actionError;
 
   const toolKey = (t: KagentiToolSummary) => `${t.namespace}/${t.name}`;
 
@@ -149,74 +100,16 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
     try {
       await api.deleteKagentiTool(deleteTarget.namespace, deleteTarget.name);
       setDeleteTarget(null);
+      setActionError(null);
       loadTools();
     } catch (e) {
-      setError(getErrorMessage(e));
+      setActionError(getErrorMessage(e));
     }
   };
 
   const openConnect = (t: KagentiToolSummary) => {
     setConnectTool(t);
-    setConnectedSchemas(null);
     setConnectOpen(true);
-  };
-
-  const runConnect = async () => {
-    if (!connectTool) return;
-    setConnecting(true);
-    setError(null);
-    try {
-      const res = await api.connectKagentiTool(connectTool.namespace, connectTool.name);
-      setConnectedSchemas(res.tools ?? []);
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      setConnecting(false);
-    }
-  };
-
-  const openInvokeFromConnect = (toolName: string) => {
-    if (!connectTool) return;
-    setInvokeTarget(connectTool);
-    setInvokeName(toolName);
-    setInvokeArgsJson('{}');
-    setInvokeResult(null);
-    setConnectOpen(false);
-    setInvokeOpen(true);
-  };
-
-  const openInvoke = (t: KagentiToolSummary) => {
-    setInvokeTarget(t);
-    setInvokeName('');
-    setInvokeArgsJson('{}');
-    setInvokeResult(null);
-    setInvokeOpen(true);
-  };
-
-  const runInvoke = async () => {
-    if (!invokeTarget || !invokeName.trim()) return;
-    let args: Record<string, unknown> = {};
-    try {
-      args = JSON.parse(invokeArgsJson || '{}') as Record<string, unknown>;
-    } catch {
-      setError('Arguments must be valid JSON');
-      return;
-    }
-    setInvoking(true);
-    setError(null);
-    try {
-      const res = await api.invokeKagentiTool(
-        invokeTarget.namespace,
-        invokeTarget.name,
-        invokeName.trim(),
-        args,
-      );
-      setInvokeResult(JSON.stringify(res, null, 2));
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      setInvoking(false);
-    }
   };
 
   const sortableHead = (field: SortField, label: string, align?: 'right') => (
@@ -232,278 +125,292 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
   );
 
   return (
-    <Card variant="outlined">
-      <CardContent>
+    <Box sx={{ maxWidth: 1200 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2,
+          flexWrap: 'wrap',
+          gap: 1,
+        }}
+      >
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          Tools
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            size="small"
+            startIcon={<RefreshIcon />}
+            onClick={loadTools}
+            disabled={loading}
+            sx={{ textTransform: 'none' }}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => setCreateOpen(true)}
+            sx={{ textTransform: 'none' }}
+          >
+            Create Tool
+          </Button>
+        </Box>
+      </Box>
+
+      {!loading && tools.length > 0 && (
+        <TextField
+          size="small"
+          placeholder="Search tools by name or description…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          sx={{ mb: 2, maxWidth: 400 }}
+          fullWidth
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon
+                  fontSize="small"
+                  sx={{ color: theme.palette.text.disabled }}
+                />
+              </InputAdornment>
+            ),
+          }}
+        />
+      )}
+
+      {displayError && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
+          onClose={() => {
+            setListError(null);
+            setActionError(null);
+          }}
+        >
+          {displayError}
+        </Alert>
+      )}
+
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress size={32} />
+        </Box>
+      )}
+      {!loading && tools.length === 0 && (
         <Box
           sx={{
             display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 2,
-            flexWrap: 'wrap',
-            gap: 1,
+            py: 8,
+            border: `1px dashed ${alpha(theme.palette.divider, 0.4)}`,
+            borderRadius: 2,
+            bgcolor: alpha(theme.palette.background.paper, 0.5),
+            gap: 2,
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: '1rem' }}>
-            Kagenti tools
+          <BuildIcon
+            sx={{ fontSize: 48, color: theme.palette.text.disabled }}
+          />
+          <Typography
+            variant="body1"
+            sx={{ fontWeight: 600, color: theme.palette.text.secondary }}
+          >
+            No tools found
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              size="small"
-              startIcon={<RefreshIcon />}
-              onClick={loadTools}
-              disabled={loading}
-              sx={{ textTransform: 'none' }}
-            >
-              Refresh
-            </Button>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={() => setCreateOpen(true)}
-              sx={{ textTransform: 'none' }}
-            >
-              Create tool
-            </Button>
-          </Box>
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.text.disabled,
+              textAlign: 'center',
+              maxWidth: 400,
+            }}
+          >
+            Create your first MCP tool to give your agents additional
+            capabilities.
+          </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => setCreateOpen(true)}
+            sx={{ textTransform: 'none', mt: 1 }}
+          >
+            Create Tool
+          </Button>
         </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
-
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={32} />
-          </Box>
-        ) : tools.length === 0 ? (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              py: 6,
-              px: 2,
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 1,
-              bgcolor: alpha(theme.palette.background.paper, 0.5),
-            }}
-          >
-            <Typography variant="body2" color="textSecondary" textAlign="center">
-              No tools found. Create a tool to get started.
-            </Typography>
-          </Box>
-        ) : (
-          <TableContainer
-            sx={{
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 1,
-              bgcolor: alpha(theme.palette.background.paper, 0.5),
-            }}
-          >
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  {sortableHead('name', 'Name')}
-                  {sortableHead('namespace', 'Namespace')}
-                  {sortableHead('status', 'Status')}
-                  {sortableHead('workloadType', 'Workload')}
-                  {sortableHead('createdAt', 'Created')}
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {sortedTools.map(t => (
-                  <TableRow
-                    key={toolKey(t)}
-                    hover
-                    sx={{ cursor: 'pointer' }}
-                    onClick={() => setDetailTool(t)}
-                  >
-                    <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {t.name}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{t.namespace}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={t.status}
+      )}
+      {!loading && tools.length > 0 && (
+        <TableContainer
+          sx={{
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 1,
+            bgcolor: alpha(theme.palette.background.paper, 0.5),
+          }}
+        >
+          <Table>
+            <TableHead>
+              <TableRow>
+                {sortableHead('name', 'Name')}
+                <TableCell>Description</TableCell>
+                {sortableHead('status', 'Status')}
+                <TableCell>Labels</TableCell>
+                {sortableHead('workloadType', 'Workload')}
+                {sortableHead('createdAt', 'Created')}
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sortedTools.map(t => (
+                <TableRow
+                  key={toolKey(t)}
+                  hover
+                  sx={{ cursor: 'pointer' }}
+                  onClick={() => setDetailTool(t)}
+                >
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {t.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {t.namespace}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        maxWidth: 220,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {t.description || '—'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={t.status}
+                      size="small"
+                      color={toolStatusColor(t.status)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {t.labels?.protocol && (
+                        <Chip
+                          label={[t.labels.protocol]
+                            .flat()
+                            .join(', ')
+                            .toUpperCase()}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {t.labels?.framework && (
+                        <Chip
+                          label={t.labels.framework}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell>{t.workloadType ?? '—'}</TableCell>
+                  <TableCell>{formatDateTime(t.createdAt)}</TableCell>
+                  <TableCell align="right">
+                    <Tooltip title="Discover MCP tools">
+                      <IconButton
                         size="small"
-                        color={statusChipColor(t.status)}
-                      />
-                    </TableCell>
-                    <TableCell>{t.workloadType ?? '—'}</TableCell>
-                    <TableCell>{formatDateTime(t.createdAt)}</TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Discover MCP tools">
-                        <IconButton
-                          size="small"
-                          aria-label="Connect tool"
-                          onClick={e => {
-                            e.stopPropagation();
-                            openConnect(t);
-                          }}
-                        >
-                          <LinkIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Invoke tool">
-                        <IconButton
-                          size="small"
-                          aria-label="Invoke tool"
-                          onClick={e => {
-                            e.stopPropagation();
-                            openInvoke(t);
-                          }}
-                        >
-                          <PlayCircleOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete tool">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          aria-label="Delete tool"
-                          onClick={e => {
-                            e.stopPropagation();
-                            setDeleteTarget(t);
-                          }}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+                        aria-label="Connect tool"
+                        onClick={e => {
+                          e.stopPropagation();
+                          openConnect(t);
+                        }}
+                      >
+                        <LinkIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Invoke tool">
+                      <IconButton
+                        size="small"
+                        aria-label="Invoke tool"
+                        onClick={e => {
+                          e.stopPropagation();
+                          toolInvoke.openInvoke(t);
+                        }}
+                      >
+                        <PlayCircleOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete tool">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        aria-label="Delete tool"
+                        onClick={e => {
+                          e.stopPropagation();
+                          setDeleteTarget(t);
+                        }}
+                      >
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-        <CreateToolWizard
-          open={createOpen}
-          namespace={namespace}
-          onClose={() => setCreateOpen(false)}
-          onCreated={loadTools}
-        />
+      <CreateToolWizard
+        open={createOpen}
+        namespace={namespace}
+        onClose={() => setCreateOpen(false)}
+        onCreated={loadTools}
+      />
 
-        <Dialog
-          open={connectOpen}
-          onClose={() => !connecting && setConnectOpen(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>
-            Discover MCP tools — {connectTool ? `${connectTool.namespace}/${connectTool.name}` : ''}
-          </DialogTitle>
-          <DialogContent>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={runConnect}
-              disabled={connecting}
-              sx={{ textTransform: 'none', mb: 2 }}
-            >
-              {connecting ? <CircularProgress size={20} /> : 'Discover MCP tools'}
-            </Button>
-            {connectedSchemas !== null && (
-              <McpToolCatalog
-                tools={connectedSchemas}
-                onInvoke={openInvokeFromConnect}
-              />
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setConnectOpen(false)}
-              sx={{ textTransform: 'none' }}
-            >
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
-          open={invokeOpen}
-          onClose={() => !invoking && setInvokeOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>
-            Invoke {invokeTarget ? `${invokeTarget.namespace}/${invokeTarget.name}` : ''}
-          </DialogTitle>
-          <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <TextField
-              label="Tool name"
-              size="small"
-              value={invokeName}
-              onChange={e => setInvokeName(e.target.value)}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Arguments (JSON)"
-              size="small"
-              value={invokeArgsJson}
-              onChange={e => setInvokeArgsJson(e.target.value)}
-              fullWidth
-              multiline
-              minRows={4}
-            />
-            {invokeResult && (
-              <TextField
-                label="Result"
-                size="small"
-                value={invokeResult}
-                fullWidth
-                multiline
-                minRows={6}
-                InputProps={{ readOnly: true }}
-              />
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setInvokeOpen(false)}
-              disabled={invoking}
-              sx={{ textTransform: 'none' }}
-            >
-              Close
-            </Button>
-            <Button
-              variant="contained"
-              onClick={runInvoke}
-              disabled={invoking || !invokeName.trim()}
-              sx={{ textTransform: 'none' }}
-            >
-              {invoking ? <CircularProgress size={20} /> : 'Invoke'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <ConfirmDialog
-          open={!!deleteTarget}
-          title="Delete tool"
-          message={
-            deleteTarget
-              ? `Delete tool ${deleteTarget.namespace}/${deleteTarget.name}?`
-              : ''
+      <ToolConnectDialog
+        open={connectOpen}
+        tool={connectTool}
+        onClose={() => setConnectOpen(false)}
+        onInvoke={(toolName, inputSchema) => {
+          if (connectTool) {
+            toolInvoke.openInvokePrefilled(connectTool, toolName, inputSchema);
           }
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
+          setConnectOpen(false);
+        }}
+        api={api}
+      />
 
-        <KagentiToolDetailDrawer
-          open={!!detailTool}
-          tool={detailTool}
-          onClose={() => setDetailTool(null)}
-        />
-      </CardContent>
-    </Card>
+      <ToolInvokeDialog invoke={toolInvoke} />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete tool"
+        message={
+          deleteTarget
+            ? `Delete tool ${deleteTarget.namespace}/${deleteTarget.name}?`
+            : ''
+        }
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      <KagentiToolDetailDrawer
+        open={!!detailTool}
+        tool={detailTool}
+        onClose={() => setDetailTool(null)}
+      />
+    </Box>
   );
 }

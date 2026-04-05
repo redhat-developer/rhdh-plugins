@@ -281,7 +281,7 @@ export class KagentiStreamNormalizer {
               type: 'stream.form.request',
               taskId: update.taskId,
               contextId: update.contextId,
-              form: result.form as StreamFormDescriptor,
+              form: result.form as unknown as StreamFormDescriptor,
             });
             break;
 
@@ -374,7 +374,6 @@ export class KagentiStreamNormalizer {
         append: update.append,
         lastChunk: update.lastChunk,
       });
-
     }
 
     if (update.lastChunk) {
@@ -545,7 +544,10 @@ export class KagentiStreamNormalizer {
       events.push({
         type: 'stream.artifact',
         artifactId: `legacy-${Date.now()}`,
-        name: typeof (evt as Record<string, unknown>).name === 'string' ? ((evt as Record<string, unknown>).name as string) : undefined,
+        name:
+          typeof (evt as Record<string, unknown>).name === 'string'
+            ? ((evt as Record<string, unknown>).name as string)
+            : undefined,
         content: payload.content,
         append: false,
         lastChunk: true,

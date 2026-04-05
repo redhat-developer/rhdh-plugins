@@ -27,14 +27,7 @@ import type {
   ChatRequest as AugmentChatRequest,
 } from '../types';
 import type { ChatResponse as AugmentChatResponse } from '../../types';
-import type {
-  ProcessedMessage,
-} from '../responses-api/conversations/conversationTypes';
-import type {
-  FeatureFlagsResponse,
-  AgentCardResponse,
-  ContextHistoryItem,
-} from './client/types';
+import type { FeatureFlagsResponse } from './client/types';
 import { loadKagentiConfig } from './config/KagentiConfigLoader';
 import type { KagentiConfig } from './config/KagentiConfigLoader';
 import { KeycloakTokenManager } from './client/KeycloakTokenManager';
@@ -42,17 +35,12 @@ import { KagentiApiClient } from './client/KagentiApiClient';
 import { KagentiSandboxClient } from './client/KagentiSandboxClient';
 import { KagentiAdminClient } from './client/KagentiAdminClient';
 import { KagentiStreamNormalizer } from './stream/KagentiStreamNormalizer';
-import { handleAgentCard } from '@kagenti/adk/core';
-import { agentCardSchema } from '@kagenti/adk';
-
-interface AgentCardCacheEntry {
-  card: AgentCardResponse;
-  demands: ReturnType<typeof handleAgentCard>['demands'];
-  resolveMetadata: ReturnType<typeof handleAgentCard>['resolveMetadata'];
-  fetchedAt: number;
-}
-
-const AGENT_CARD_CACHE_TTL_MS = 5 * 60 * 1000;
+import { getVisibleNamespaces } from './kagentiNamespaceUtils';
+import { KagentiAgentCardCache } from './KagentiAgentCardCache';
+import type { AgentCardCacheEntry } from './KagentiAgentCardCache';
+import { submitApproval as submitApprovalImpl } from './kagentiApprovalHandler';
+import type { ApprovalRequest, ApprovalResult } from './kagentiApprovalHandler';
+import { buildKagentiConversationCapability } from './kagentiConversationCapability';
 
 export interface KagentiProviderOptions {
   logger: LoggerService;
@@ -76,9 +64,30 @@ export class KagentiProvider implements AgenticProvider {
     triggers: false,
   };
 
-  private readonly agentCardCache = new Map<string, AgentCardCacheEntry>();
+  private static readonly MAX_SESSION_ENTRIES = 10_000;
+  private readonly cardCache: KagentiAgentCardCache;
   private readonly sessionAgentMap = new Map<string, string>();
   private readonly kagentiSessionMap = new Map<string, string>();
+
+  private boundedMapSet(
+    map: Map<string, string>,
+    key: string,
+    value: string,
+  ): void {
+    if (map.size >= KagentiProvider.MAX_SESSION_ENTRIES && !map.has(key)) {
+      const evictCount = Math.ceil(KagentiProvider.MAX_SESSION_ENTRIES * 0.1);
+      const iter = map.keys();
+      for (let i = 0; i < evictCount; i++) {
+        const next = iter.next();
+        if (next.done) break;
+        map.delete(next.value);
+      }
+      this.logger.warn(
+        `Session map hit ${KagentiProvider.MAX_SESSION_ENTRIES} cap, evicted ${evictCount} oldest entries`,
+      );
+    }
+    map.set(key, value);
+  }
 
   readonly conversations: ConversationCapability;
   readonly rag = undefined;
@@ -88,46 +97,11 @@ export class KagentiProvider implements AgenticProvider {
   constructor(options: KagentiProviderOptions) {
     this.logger = options.logger.child({ label: 'kagenti-provider' });
     this.rootConfig = options.config;
-
-    const notSupported = (method: string) => () => {
-      throw new Error(`${method} is not supported by the Kagenti provider`);
-    };
-
-    this.conversations = {
-      getProcessedMessages: async (
-        contextId: string,
-      ): Promise<ProcessedMessage[]> => {
-        const { apiClient } = this.requireInitialized();
-        try {
-          const allItems: ContextHistoryItem[] = [];
-          let pageToken: string | undefined;
-          do {
-            const page = await apiClient.listContextHistory(contextId, {
-              limit: 100,
-              pageToken,
-            });
-            allItems.push(...page.items);
-            pageToken = page.has_more && page.next_page_token
-              ? page.next_page_token
-              : undefined;
-          } while (pageToken);
-
-          return this.convertHistoryToProcessedMessages(allItems);
-        } catch (err) {
-          this.logger.warn(
-            `Failed to fetch context history for ${contextId}: ${err}`,
-          );
-          return [];
-        }
-      },
-      submitApproval: notSupported('submitApproval') as ConversationCapability['submitApproval'],
-      create: notSupported('create') as ConversationCapability['create'],
-      list: notSupported('list') as ConversationCapability['list'],
-      get: notSupported('get') as ConversationCapability['get'],
-      getInputs: notSupported('getInputs') as ConversationCapability['getInputs'],
-      getByResponseChain: notSupported('getByResponseChain') as ConversationCapability['getByResponseChain'],
-      delete: notSupported('delete') as ConversationCapability['delete'],
-    };
+    this.cardCache = new KagentiAgentCardCache(this.logger);
+    this.conversations = buildKagentiConversationCapability(
+      () => this.requireInitialized().apiClient,
+      this.logger,
+    );
   }
 
   private requireInitialized(): {
@@ -151,10 +125,13 @@ export class KagentiProvider implements AgenticProvider {
       `Initializing Kagenti provider: ${this.kagentiConfig.baseUrl}`,
     );
 
-    if (this.kagentiConfig.showAllNamespaces && !this.kagentiConfig.namespaces?.length) {
+    if (
+      this.kagentiConfig.showAllNamespaces &&
+      !this.kagentiConfig.namespaces?.length
+    ) {
       this.logger.warn(
         'showAllNamespaces is enabled with no namespace allowlist — all Kagenti namespaces are accessible. ' +
-        'Consider setting augment.kagenti.namespaces for production.',
+          'Consider setting augment.kagenti.namespaces for production.',
       );
     }
 
@@ -200,10 +177,13 @@ export class KagentiProvider implements AgenticProvider {
       this.featureFlags.triggers = overrides.triggers;
     }
     this.logger.info(
-      `Kagenti features: sandbox=${this.featureFlags.sandbox}, integrations=${this.featureFlags.integrations}, triggers=${this.featureFlags.triggers}` +
-        (overrides.sandbox !== undefined || overrides.integrations !== undefined || overrides.triggers !== undefined
+      `Kagenti features: sandbox=${this.featureFlags.sandbox}, integrations=${this.featureFlags.integrations}, triggers=${this.featureFlags.triggers}${
+        overrides.sandbox !== undefined ||
+        overrides.integrations !== undefined ||
+        overrides.triggers !== undefined
           ? ' (with local overrides applied)'
-          : ''),
+          : ''
+      }`,
     );
 
     if (this.featureFlags.sandbox) {
@@ -303,8 +283,13 @@ export class KagentiProvider implements AgenticProvider {
     );
 
     if (backstageSessionId && response.session_id) {
-      this.kagentiSessionMap.set(backstageSessionId, response.session_id);
-      this.sessionAgentMap.set(
+      this.boundedMapSet(
+        this.kagentiSessionMap,
+        backstageSessionId,
+        response.session_id,
+      );
+      this.boundedMapSet(
+        this.sessionAgentMap,
         response.session_id,
         `${namespace}/${name}`,
       );
@@ -351,14 +336,15 @@ export class KagentiProvider implements AgenticProvider {
         (line: string) => {
           const events = normalizer.normalize(line);
           for (const event of events) {
-            if (
-              event.type === 'stream.started' &&
-              backstageSessionId
-            ) {
+            if (event.type === 'stream.started' && backstageSessionId) {
               const ctxId = (event as { responseId?: string }).responseId;
               if (ctxId) {
-                this.kagentiSessionMap.set(backstageSessionId, ctxId);
-                this.sessionAgentMap.set(ctxId, agentId);
+                this.boundedMapSet(
+                  this.kagentiSessionMap,
+                  backstageSessionId,
+                  ctxId,
+                );
+                this.boundedMapSet(this.sessionAgentMap, ctxId, agentId);
               }
             }
             onEvent(event);
@@ -395,15 +381,11 @@ export class KagentiProvider implements AgenticProvider {
     }
 
     try {
-      const namespaceResp = await apiClient.listNamespaces();
-      let visibleNamespaces = namespaceResp.namespaces;
-
-      if (config.namespaces?.length) {
-        const allowSet = new Set(config.namespaces);
-        visibleNamespaces = visibleNamespaces.filter(ns => allowSet.has(ns));
-      } else if (!config.showAllNamespaces) {
-        visibleNamespaces = [config.namespace];
-      }
+      const visibleNamespaces = await getVisibleNamespaces(
+        apiClient,
+        config,
+        this.logger,
+      );
 
       const allAgents: Array<{
         id: string;
@@ -418,7 +400,10 @@ export class KagentiProvider implements AgenticProvider {
           for (const agent of agents.items) {
             let securityDemands: Record<string, boolean> | undefined;
             try {
-              const cached = await this.getAgentCardCached(agent.namespace, agent.name);
+              const cached = await this.getAgentCardCached(
+                agent.namespace,
+                agent.name,
+              );
               const d = cached.demands;
               if (d.oauthDemands || d.secretDemands) {
                 securityDemands = {
@@ -426,7 +411,9 @@ export class KagentiProvider implements AgenticProvider {
                   requiresSecrets: !!d.secretDemands,
                 };
               }
-            } catch { /* agent card not available */ }
+            } catch {
+              /* agent card not available */
+            }
             allAgents.push({
               id: `${agent.namespace}/${agent.name}`,
               owned_by: 'kagenti',
@@ -488,49 +475,10 @@ export class KagentiProvider implements AgenticProvider {
   async shutdown(): Promise<void> {
     this.tokenManager?.clearCache();
     this.apiClient?.destroy();
-    this.agentCardCache.clear();
+    this.cardCache.clear();
+    this.kagentiSessionMap.clear();
+    this.sessionAgentMap.clear();
     this.logger.info('Kagenti provider shut down');
-  }
-
-  // -- Context History Conversion ---------------------------------------------
-
-  private convertHistoryToProcessedMessages(
-    items: ContextHistoryItem[],
-  ): ProcessedMessage[] {
-    const messages: ProcessedMessage[] = [];
-    for (const item of items) {
-      if (item.kind === 'artifact') {
-        const art = item.data as { parts?: Array<{ text?: string; [k: string]: unknown }> };
-        const textParts = (art.parts ?? [])
-          .filter(p => typeof p.text === 'string')
-          .map(p => p.text as string);
-        const text = textParts.join('');
-        if (text) {
-          messages.push({ role: 'assistant', text, createdAt: item.created_at });
-        }
-        continue;
-      }
-      if (item.kind !== 'message') continue;
-      const msg = item.data as { role?: string; parts?: Array<{ text?: string; [k: string]: unknown }> };
-      if (!msg.role || !msg.parts) continue;
-
-      let role: 'user' | 'assistant' | 'system' = 'assistant';
-      if (msg.role === 'user') role = 'user';
-      else if (msg.role === 'system') role = 'system';
-
-      const textParts = msg.parts
-        .filter(p => typeof p.text === 'string')
-        .map(p => p.text as string);
-      const text = textParts.join('');
-      if (!text) continue;
-
-      messages.push({
-        role,
-        text,
-        createdAt: item.created_at,
-      });
-    }
-    return messages;
   }
 
   // -- Agent Card Cache -------------------------------------------------------
@@ -540,58 +488,12 @@ export class KagentiProvider implements AgenticProvider {
     name: string,
   ): Promise<AgentCardCacheEntry> {
     const { config, apiClient } = this.requireInitialized();
-    const key = `${namespace}/${name}`;
-    const cached = this.agentCardCache.get(key);
-
-    if (cached && Date.now() - cached.fetchedAt < AGENT_CARD_CACHE_TTL_MS) {
-      return cached;
-    }
-
-    const card = await apiClient.getAgentCard(namespace, name);
-
-    if (config.validateResponses) {
-      const result = agentCardSchema.safeParse(card);
-      if (!result.success) {
-        this.logger.warn(
-          `Agent card validation warning for ${key}: ${JSON.stringify(result.error.issues)}`,
-        );
-      }
-    }
-
-    let demands: AgentCardCacheEntry['demands'] = {
-      llmDemands: null,
-      embeddingDemands: null,
-      mcpDemands: null,
-      oauthDemands: null,
-      secretDemands: null,
-      formDemands: null,
-    };
-    let resolveMetadata: AgentCardCacheEntry['resolveMetadata'] =
-      async () => ({});
-
-    try {
-      if (card.capabilities?.extensions?.length) {
-        const adkResult = handleAgentCard(
-          card as Parameters<typeof handleAgentCard>[0],
-        );
-        demands = adkResult.demands;
-        resolveMetadata = adkResult.resolveMetadata;
-        this.logger.debug(
-          `Agent card demands for ${key}: llm=${!!demands.llmDemands}, mcp=${!!demands.mcpDemands}, oauth=${!!demands.oauthDemands}, secrets=${!!demands.secretDemands}`,
-        );
-      }
-    } catch (err) {
-      this.logger.warn(`Failed to parse agent card demands for ${key}: ${err}`);
-    }
-
-    const entry: AgentCardCacheEntry = {
-      card,
-      demands,
-      resolveMetadata,
-      fetchedAt: Date.now(),
-    };
-    this.agentCardCache.set(key, entry);
-    return entry;
+    return this.cardCache.getAgentCardCached(
+      apiClient,
+      config,
+      namespace,
+      name,
+    );
   }
 
   // -- Accessors for routes ---------------------------------------------------
@@ -630,10 +532,14 @@ export class KagentiProvider implements AgenticProvider {
    * Pre-populate the in-memory session map so chatStream can resume a
    * Kagenti conversation that was persisted in the DB across restarts.
    */
-  hydrateSessionContext(backstageSessionId: string, contextId: string, agentId?: string): void {
-    this.kagentiSessionMap.set(backstageSessionId, contextId);
+  hydrateSessionContext(
+    backstageSessionId: string,
+    contextId: string,
+    agentId?: string,
+  ): void {
+    this.boundedMapSet(this.kagentiSessionMap, backstageSessionId, contextId);
     if (agentId) {
-      this.sessionAgentMap.set(contextId, agentId);
+      this.boundedMapSet(this.sessionAgentMap, contextId, agentId);
     }
   }
 
@@ -651,26 +557,7 @@ export class KagentiProvider implements AgenticProvider {
    * For secrets and OAuth responses, uses the proper ADK extension metadata
    * format (secret_fulfillments / oauth redirect_uri) keyed by extension URI.
    */
-  async submitApproval(approval: {
-    responseId: string;
-    callId: string;
-    approved: boolean;
-    toolName?: string;
-    toolArguments?: string;
-    reason?: string;
-  }): Promise<{
-    content: string;
-    responseId: string;
-    toolExecuted: boolean;
-    toolOutput?: string;
-    pendingApproval?: {
-      approvalRequestId: string;
-      toolName: string;
-      serverLabel?: string;
-      arguments?: string;
-    };
-    handoff?: { fromAgent: string; toAgent: string };
-  }> {
+  async submitApproval(approval: ApprovalRequest): Promise<ApprovalResult> {
     const { apiClient } = this.requireInitialized();
     const contextId = approval.responseId;
 
@@ -679,103 +566,7 @@ export class KagentiProvider implements AgenticProvider {
       ? this.parseAgentId(agentId)
       : this.resolveAgent({ messages: [] });
 
-    const approvalMessage = approval.approved
-      ? `Approved: ${approval.toolName ?? 'tool call'}`
-      : `Rejected: ${approval.toolName ?? 'tool call'}`;
-
-    const normalizer = new KagentiStreamNormalizer();
-    let content = '';
-    let pendingApproval:
-      | {
-          approvalRequestId: string;
-          toolName: string;
-          serverLabel?: string;
-          arguments?: string;
-        }
-      | undefined;
-    let handoff: { fromAgent: string; toAgent: string } | undefined;
-    let toolExecuted = false;
-    let toolOutput: string | undefined;
-
-    const SECRETS_URI = 'https://a2a-extensions.adk.kagenti.dev/auth/secrets/v1';
-    const OAUTH_URI = 'https://a2a-extensions.adk.kagenti.dev/auth/oauth/v1';
-
-    let metadata: Record<string, unknown>;
-
-    if (approval.toolName === 'secrets_response' && approval.toolArguments) {
-      let secretValues: Record<string, string>;
-      try {
-        secretValues = JSON.parse(approval.toolArguments) as Record<string, string>;
-      } catch {
-        throw new Error('Invalid JSON in secrets toolArguments');
-      }
-      const fulfillments: Record<string, { secret: string }> = {};
-      for (const [key, value] of Object.entries(secretValues)) {
-        fulfillments[key] = { secret: value };
-      }
-      metadata = { [SECRETS_URI]: { secret_fulfillments: fulfillments } };
-    } else if (approval.toolName === 'oauth_confirm') {
-      metadata = { [OAUTH_URI]: { data: { redirect_uri: 'confirmed' } } };
-    } else {
-      let parsedArgs: unknown;
-      if (approval.toolArguments) {
-        try {
-          parsedArgs = JSON.parse(approval.toolArguments);
-        } catch {
-          throw new Error('Invalid JSON in approval toolArguments');
-        }
-      }
-      metadata = {
-        approval: {
-          callId: approval.callId,
-          approved: approval.approved,
-          toolName: approval.toolName,
-          ...(approval.reason && { reason: approval.reason }),
-          toolArguments: parsedArgs,
-        },
-      };
-    }
-
-    await apiClient.chatStream(
-      namespace,
-      name,
-      approvalMessage,
-      undefined,
-      (line: string) => {
-        const events = normalizer.normalize(line);
-        for (const event of events) {
-          if (event.type === 'stream.text.delta') {
-            content += event.delta;
-          } else if (event.type === 'stream.tool.completed') {
-            toolExecuted = true;
-            toolOutput = (event as { output?: string }).output;
-          } else if (event.type === 'stream.tool.approval') {
-            pendingApproval = {
-              approvalRequestId: event.callId,
-              toolName: event.name,
-              arguments: event.arguments,
-            };
-          } else if (event.type === 'stream.agent.handoff') {
-            const he = event as { fromAgent?: string; toAgent?: string };
-            handoff = {
-              fromAgent: he.fromAgent ?? 'unknown',
-              toAgent: he.toAgent ?? 'unknown',
-            };
-          }
-        }
-      },
-      undefined,
-      { contextId, metadata },
-    );
-
-    return {
-      content,
-      responseId: contextId,
-      toolExecuted,
-      toolOutput,
-      pendingApproval,
-      handoff,
-    };
+    return submitApprovalImpl(apiClient, namespace, name, approval);
   }
 
   /**

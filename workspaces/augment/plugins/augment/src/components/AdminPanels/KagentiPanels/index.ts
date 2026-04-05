@@ -15,15 +15,31 @@
  */
 
 export { NamespacePicker, type NamespacePickerProps } from './NamespacePicker';
-export { KagentiAgentsPanel, type KagentiAgentsPanelProps } from './KagentiAgentsPanel';
-export { KagentiToolsPanel, type KagentiToolsPanelProps } from './KagentiToolsPanel';
 export {
-  KagentiBuildPipelinePanel,
-  type KagentiBuildPipelinePanelProps,
-} from './KagentiBuildPipelinePanel';
-export { KagentiSandboxPanel, type KagentiSandboxPanelProps } from './KagentiSandboxPanel';
-export { KagentiAdminPanel, type KagentiAdminPanelProps } from './KagentiAdminPanel';
+  KagentiAgentsPanel,
+  type KagentiAgentsPanelProps,
+} from './KagentiAgentsPanel';
+export {
+  KagentiToolsPanel,
+  type KagentiToolsPanelProps,
+} from './KagentiToolsPanel';
+export {
+  KagentiAdminPanel,
+  type KagentiAdminPanelProps,
+} from './KagentiAdminPanel';
 export {
   KagentiDashboardLinks,
   type KagentiDashboardLinksProps,
 } from './KagentiDashboardLinks';
+export {
+  KagentiHomeDashboard,
+  type KagentiHomeDashboardProps,
+} from './KagentiHomeDashboard';
+export {
+  KagentiAgentDetailView,
+  type KagentiAgentDetailViewProps,
+} from './KagentiAgentDetailView';
+export {
+  CreateAgentWizard,
+  type CreateAgentWizardProps,
+} from './CreateAgentWizard';

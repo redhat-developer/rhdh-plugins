@@ -17,12 +17,16 @@
 import { useCallback, useMemo, useState, type FC } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useTheme } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
 import type { AgentWithCard } from './agentUtils';
+import { sortAgents } from './agentUtils';
 import { AgentCard } from './AgentCard';
-import { AgentGalleryToolbar } from './AgentGalleryToolbar';
+import { AgentGalleryToolbar, type SortOption } from './AgentGalleryToolbar';
 import {
   AgentGalleryFetchError,
   AgentGalleryNoAgents,
@@ -31,6 +35,8 @@ import {
 import { useAgentGalleryData } from './useAgentGalleryData';
 import { usePinnedRecent } from './usePinnedRecent';
 import { useTranslation } from '../../hooks/useTranslation';
+
+const INITIAL_VISIBLE = 8;
 
 interface AgentGalleryProps {
   onAgentSelect: (agentId: string, agentName: string) => void;
@@ -48,6 +54,8 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
   const { pinnedIds, recentIds, togglePin, addRecent } = usePinnedRecent();
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('all');
+  const [sort, setSort] = useState<SortOption>('name');
+  const [expanded, setExpanded] = useState(false);
 
   const handleSelect = useCallback(
     (agent: AgentWithCard) => {
@@ -79,6 +87,7 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
         const bIdx = recentIds.indexOf(`${b.namespace}/${b.name}`);
         return aIdx - bIdx;
       });
+      return list;
     } else if (tab !== 'all') {
       list = list.filter(a => a.labels?.framework === tab);
     }
@@ -86,15 +95,24 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
       const q = search.toLowerCase();
       list = list.filter(a => {
         const name = (a.agentCard?.name || a.name).toLowerCase();
-        const desc = (a.agentCard?.description || a.description || '').toLowerCase();
+        const desc = (
+          a.agentCard?.description ||
+          a.description ||
+          ''
+        ).toLowerCase();
         const skills = (a.agentCard?.skills || [])
           .map(s => (s.name || '').toLowerCase())
           .join(' ');
         return name.includes(q) || desc.includes(q) || skills.includes(q);
       });
     }
-    return list;
-  }, [agents, tab, search, pinnedIds, recentIds]);
+    return sortAgents(list, sort);
+  }, [agents, tab, search, pinnedIds, recentIds, sort]);
+
+  const visibleAgents = expanded
+    ? filtered
+    : filtered.slice(0, INITIAL_VISIBLE);
+  const hasMore = filtered.length > INITIAL_VISIBLE;
 
   if (error) {
     return <AgentGalleryFetchError error={error} onRetry={fetchAgents} />;
@@ -116,6 +134,10 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
         frameworks={frameworks}
         recentCount={recentIds.length}
         pinnedCount={pinnedIds.length}
+        totalCount={agents.length}
+        filteredCount={filtered.length}
+        sort={sort}
+        onSortChange={setSort}
       />
       <Box role="list" aria-label={t('agentGallery.listAriaLabel')}>
         {filtered.length === 0 ? (
@@ -133,22 +155,44 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
             </Typography>
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            {filtered.map((agent, idx) => {
-              const agentId = `${agent.namespace}/${agent.name}`;
-              return (
-                <AgentCard
-                  key={agentId}
-                  agent={agent}
-                  isPinned={pinnedIds.includes(agentId)}
-                  onSelect={handleSelect}
-                  onTogglePin={togglePin}
-                  onInfo={onAgentInfo}
-                  index={idx}
-                />
-              );
-            })}
-          </Box>
+          <>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))',
+                gap: 2,
+              }}
+            >
+              {visibleAgents.map((agent, idx) => {
+                const agentId = `${agent.namespace}/${agent.name}`;
+                return (
+                  <AgentCard
+                    key={agentId}
+                    agent={agent}
+                    isPinned={pinnedIds.includes(agentId)}
+                    onSelect={handleSelect}
+                    onTogglePin={togglePin}
+                    onInfo={onAgentInfo}
+                    index={idx}
+                  />
+                );
+              })}
+            </Box>
+            {hasMore && (
+              <Box sx={{ textAlign: 'center', mt: 2 }}>
+                <Button
+                  size="small"
+                  onClick={() => setExpanded(prev => !prev)}
+                  endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+                >
+                  {expanded
+                    ? 'Show less'
+                    : `Show all ${filtered.length} agents`}
+                </Button>
+              </Box>
+            )}
+          </>
         )}
       </Box>
     </Box>

@@ -95,7 +95,9 @@ const CATEGORY_ORDER: Array<LinkDef['category']> = [
   'Security',
 ];
 
-export function KagentiDashboardLinks({ namespace }: KagentiDashboardLinksProps) {
+export function KagentiDashboardLinks({
+  namespace,
+}: KagentiDashboardLinksProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
@@ -131,7 +133,13 @@ export function KagentiDashboardLinks({ namespace }: KagentiDashboardLinksProps)
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             {[1, 2, 3].map(i => (
-              <Skeleton key={i} variant="rounded" width={260} height={100} sx={{ borderRadius: 2 }} />
+              <Skeleton
+                key={i}
+                variant="rounded"
+                width={260}
+                height={100}
+                sx={{ borderRadius: 2 }}
+              />
             ))}
           </Box>
         </CardContent>
@@ -170,11 +178,21 @@ export function KagentiDashboardLinks({ namespace }: KagentiDashboardLinksProps)
               borderRadius: 2,
             }}
           >
-            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+            <Typography
+              variant="body2"
+              sx={{ color: theme.palette.text.secondary }}
+            >
               No dashboard URLs configured
             </Typography>
-            <Typography variant="caption" sx={{ color: theme.palette.text.disabled, display: 'block', mt: 0.5 }}>
-              Configure dashboard URLs in the Kagenti backend settings
+            <Typography
+              variant="caption"
+              sx={{
+                color: theme.palette.text.disabled,
+                display: 'block',
+                mt: 0.5,
+              }}
+            >
+              Configure dashboard URLs in the backend settings
             </Typography>
           </Box>
         </CardContent>
@@ -188,94 +206,127 @@ export function KagentiDashboardLinks({ namespace }: KagentiDashboardLinksProps)
   })).filter(g => g.items.length > 0);
 
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Typography variant="h6" sx={{ fontSize: '1rem', mb: 2 }}>
-          Dashboards
+    <Box sx={{ maxWidth: 1200 }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+          Observability Dashboard
         </Typography>
+        <Typography
+          variant="body2"
+          sx={{ color: theme.palette.text.secondary }}
+        >
+          Access various dashboards to monitor the health, performance, traces,
+          and network traffic of your deployed agents and tools.
+        </Typography>
+      </Box>
 
-        {grouped.map(group => (
-          <Box key={group.category} sx={{ mb: 3, '&:last-child': { mb: 0 } }}>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 600,
-                color: theme.palette.text.secondary,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                display: 'block',
-                mb: 1,
-              }}
-            >
-              {group.category}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              {group.items.map(({ key, label, description, href, icon: Icon }) => (
-                <Card
-                  key={String(key)}
-                  variant="outlined"
-                  sx={{
-                    width: 260,
-                    borderRadius: 2,
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      borderColor: theme.palette.primary.main,
-                      boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, isDark ? 0.12 : 0.08)}`,
-                    },
-                  }}
-                >
-                  <CardActionArea
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{ height: '100%' }}
-                  >
-                    <CardContent sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
-                      <Box
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08),
-                          color: theme.palette.primary.main,
-                          flexShrink: 0,
-                        }}
+      <Card variant="outlined">
+        <CardContent>
+          {grouped.map(group => (
+            <Box key={group.category} sx={{ mb: 3, '&:last-child': { mb: 0 } }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.text.secondary,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                  display: 'block',
+                  mb: 1,
+                }}
+              >
+                {group.category}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                {group.items.map(
+                  ({ key, label, description, href, icon: Icon }) => (
+                    <Card
+                      key={String(key)}
+                      variant="outlined"
+                      sx={{
+                        width: 260,
+                        borderRadius: 2,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          borderColor: theme.palette.primary.main,
+                          boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, isDark ? 0.12 : 0.08)}`,
+                        },
+                      }}
+                    >
+                      <CardActionArea
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ height: '100%' }}
                       >
-                        <Icon sx={{ fontSize: 18 }} />
-                      </Box>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Typography
-                            variant="body2"
-                            sx={{ fontWeight: 600, fontSize: '0.85rem' }}
-                          >
-                            {label}
-                          </Typography>
-                          <OpenInNewIcon sx={{ fontSize: 12, color: theme.palette.text.disabled }} />
-                        </Box>
-                        <Typography
-                          variant="caption"
+                        <CardContent
                           sx={{
-                            color: theme.palette.text.secondary,
-                            display: 'block',
-                            lineHeight: 1.4,
-                            mt: 0.25,
+                            display: 'flex',
+                            gap: 1.5,
+                            alignItems: 'flex-start',
                           }}
                         >
-                          {description}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              ))}
+                          <Box
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              bgcolor: alpha(
+                                theme.palette.primary.main,
+                                isDark ? 0.15 : 0.08,
+                              ),
+                              color: theme.palette.primary.main,
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Icon sx={{ fontSize: 18 }} />
+                          </Box>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.5,
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, fontSize: '0.85rem' }}
+                              >
+                                {label}
+                              </Typography>
+                              <OpenInNewIcon
+                                sx={{
+                                  fontSize: 12,
+                                  color: theme.palette.text.disabled,
+                                }}
+                              />
+                            </Box>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: theme.palette.text.secondary,
+                                display: 'block',
+                                lineHeight: 1.4,
+                                mt: 0.25,
+                              }}
+                            >
+                              {description}
+                            </Typography>
+                          </Box>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  ),
+                )}
+              </Box>
             </Box>
-          </Box>
-        ))}
-      </CardContent>
-    </Card>
+          ))}
+        </CardContent>
+      </Card>
+    </Box>
   );
 }

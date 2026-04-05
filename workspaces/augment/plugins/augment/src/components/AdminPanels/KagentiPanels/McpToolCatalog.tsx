@@ -32,7 +32,7 @@ import type { KagentiMcpToolSchema } from '@red-hat-developer-hub/backstage-plug
 
 export interface McpToolCatalogProps {
   tools: KagentiMcpToolSchema[];
-  onInvoke?: (toolName: string) => void;
+  onInvoke?: (toolName: string, inputSchema?: Record<string, unknown>) => void;
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
@@ -53,7 +53,8 @@ function formatJsonSchemaType(prop: Record<string, unknown>): string {
   }
   if (prop.enum !== undefined) return 'enum';
   if (prop.const !== undefined) return 'const';
-  if (prop.properties !== undefined || prop.items !== undefined) return 'object';
+  if (prop.properties !== undefined || prop.items !== undefined)
+    return 'object';
   return 'any';
 }
 
@@ -154,7 +155,7 @@ export function McpToolCatalog({ tools, onInvoke }: McpToolCatalogProps) {
                   startIcon={<PlayCircleOutlineIcon fontSize="small" />}
                   onClick={e => {
                     e.stopPropagation();
-                    onInvoke(tool.name);
+                    onInvoke(tool.name, tool.input_schema ?? undefined);
                   }}
                   sx={{ textTransform: 'none', flexShrink: 0 }}
                 >
@@ -188,7 +189,9 @@ export function McpToolCatalog({ tools, onInvoke }: McpToolCatalogProps) {
                       <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Required</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        Description
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -224,9 +227,18 @@ export function McpToolCatalog({ tools, onInvoke }: McpToolCatalogProps) {
                           </TableCell>
                           <TableCell sx={{ verticalAlign: 'top' }}>
                             {isReq ? (
-                              <Chip label="Required" size="small" color="primary" variant="outlined" />
+                              <Chip
+                                label="Required"
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                              />
                             ) : (
-                              <Chip label="Optional" size="small" variant="outlined" />
+                              <Chip
+                                label="Optional"
+                                size="small"
+                                variant="outlined"
+                              />
                             )}
                           </TableCell>
                           <TableCell

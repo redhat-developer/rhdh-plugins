@@ -160,10 +160,10 @@ describe('KagentiSandboxClient', () => {
   it('gets session token usage', async () => {
     mockApi.request.mockResolvedValue({ totalTokens: 100 });
     const client = createClient();
-    await client.getSessionTokenUsage('ctx1');
+    await client.getSessionTokenUsage('ns1', 'ctx1');
     expect(mockApi.request).toHaveBeenCalledWith(
       'GET',
-      '/api/v1/token-usage/sessions/ctx1',
+      '/api/v1/sandbox/ns1/token-usage/sessions/ctx1',
     );
   });
 

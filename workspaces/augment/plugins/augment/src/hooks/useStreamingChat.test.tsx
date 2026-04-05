@@ -132,7 +132,7 @@ describe('useStreamingChat', () => {
         await result.current.sendMessage('Hello', []);
       });
 
-      expect(mockApi.createSession).toHaveBeenCalledWith('Hello');
+      expect(mockApi.createSession).toHaveBeenCalledWith('Hello', undefined);
       expect(onSessionCreated).toHaveBeenCalledWith('session-1');
     });
 
@@ -154,6 +154,7 @@ describe('useStreamingChat', () => {
         'session-1',
         false,
         expect.any(Object),
+        undefined,
       );
     });
 
@@ -197,7 +198,7 @@ describe('useStreamingChat', () => {
         onMessagesChange.mock.calls[onMessagesChange.mock.calls.length - 1][0];
       const errorMsg = lastCall[lastCall.length - 1];
       expect(errorMsg.isUser).toBe(false);
-      expect(errorMsg.text).toContain('Network error');
+      expect(errorMsg.text).toContain('network error');
     });
 
     it('should not add error message on intentional abort', async () => {

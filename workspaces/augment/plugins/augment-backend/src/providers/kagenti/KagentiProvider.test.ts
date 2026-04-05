@@ -111,9 +111,9 @@ describe('KagentiProvider', () => {
     expect(p.displayName).toBe('Kagenti');
   });
 
-  it('has no optional capabilities', () => {
+  it('has conversations but no other optional capabilities', () => {
     const p = createProvider();
-    expect(p.conversations).toBeUndefined();
+    expect(p.conversations).toBeDefined();
     expect(p.rag).toBeUndefined();
     expect(p.safety).toBeUndefined();
     expect(p.evaluation).toBeUndefined();
