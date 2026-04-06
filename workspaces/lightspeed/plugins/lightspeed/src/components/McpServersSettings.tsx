@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
+
 import { makeStyles } from '@material-ui/core';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
@@ -45,6 +46,7 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
+
 import { lightspeedMcpManagePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
 type ServerStatus = 'tokenRequired' | 'disabled' | 'ok' | 'failed' | 'unknown';
