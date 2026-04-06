@@ -400,7 +400,7 @@ describe('MCP server management endpoints', () => {
       expect(response.body.error).toContain('url and token are required');
     });
 
-    it('sends Bearer prefix when validating directly against MCP server', async () => {
+    it('sends raw token first when validating directly against MCP server', async () => {
       let capturedAuth = '';
       server.use(
         http.post(MOCK_MCP_ADDR, ({ request: req }) => {
@@ -422,7 +422,7 @@ describe('MCP server management endpoints', () => {
         .post('/api/lightspeed/mcp-servers/validate')
         .send({ url: MOCK_MCP_ADDR, token: 'my-raw-token' });
 
-      expect(capturedAuth).toBe('Bearer my-raw-token');
+      expect(capturedAuth).toBe('my-raw-token');
     });
 
     it('rejects unknown URL (SSRF protection)', async () => {
