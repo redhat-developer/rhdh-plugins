@@ -28,6 +28,9 @@ export type AdminPanel =
   | 'kagenti-home'
   | 'kagenti-agents'
   | 'kagenti-tools'
+  | 'kagenti-builds'
+  | 'kagenti-sandbox'
+  | 'kagenti-platform'
   | 'kagenti-dashboards'
   | 'kagenti-admin';
 

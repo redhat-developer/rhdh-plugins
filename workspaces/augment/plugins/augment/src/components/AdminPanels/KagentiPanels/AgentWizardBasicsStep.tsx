@@ -21,6 +21,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
 
 interface AgentWizardBasicsStepProps {
   name: string;
@@ -67,6 +68,7 @@ export const AgentWizardBasicsStep: FC<AgentWizardBasicsStepProps> = ({
           label="Namespace"
           value={namespace}
           onChange={e => setNamespace(e.target.value)}
+          MenuProps={SELECT_MENU_PROPS}
         >
           {availableNamespaces.map(ns => (
             <MenuItem key={ns} value={ns}>
@@ -92,6 +94,7 @@ export const AgentWizardBasicsStep: FC<AgentWizardBasicsStepProps> = ({
         label="Protocol"
         value={protocol}
         onChange={e => setProtocol(e.target.value)}
+        MenuProps={SELECT_MENU_PROPS}
       >
         <MenuItem value="a2a">A2A</MenuItem>
         <MenuItem value="mcp">MCP</MenuItem>

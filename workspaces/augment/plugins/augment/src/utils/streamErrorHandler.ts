@@ -37,6 +37,18 @@ const FRIENDLY_ERROR_MAP: Array<[RegExp, string]> = [
     'The request timed out. The agent may be under heavy load.',
   ],
   [
+    /no healthy upstream|upstream connect error/i,
+    'The agent service has no healthy instances. It may be scaling up or redeploying.',
+  ],
+  [
+    /context_id.*not found|context.*expired/i,
+    'The conversation context has expired. Please start a new chat session.',
+  ],
+  [
+    /agent.*not ready|agent.*unavailable/i,
+    'The agent is not ready to accept requests. It may still be initializing.',
+  ],
+  [
     /network|fetch failed/i,
     'A network error occurred. Check your connection and try again.',
   ],

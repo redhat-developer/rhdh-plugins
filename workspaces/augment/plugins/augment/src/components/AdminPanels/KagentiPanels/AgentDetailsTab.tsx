@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import Collapse from '@mui/material/Collapse';
 import Skeleton from '@mui/material/Skeleton';
 import IconButton from '@mui/material/IconButton';
-import { useTheme, alpha, type Theme } from '@mui/material/styles';
-import StreamIcon from '@mui/icons-material/Stream';
+import { useTheme, alpha } from '@mui/material/styles';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import type {
   KagentiAgentCard,
   KagentiAgentDetail,
@@ -42,7 +37,6 @@ import type {
 export interface AgentDetailsTabProps {
   agent: KagentiAgentSummary;
   agentDetail: (KagentiAgentDetail & { agentCard?: KagentiAgentCard }) | null;
-  agentCard: KagentiAgentCard | null;
   loading: boolean;
   routeStatus: KagentiRouteStatus | null;
   copied: boolean;
@@ -52,14 +46,13 @@ export interface AgentDetailsTabProps {
 export function AgentDetailsTab({
   agent,
   agentDetail,
-  agentCard,
   loading,
   routeStatus,
   copied,
   onCopy,
 }: AgentDetailsTabProps) {
   const theme = useTheme();
-  const agentUrl = agentCard?.url || routeStatus?.url;
+  const agentUrl = agentDetail?.agentCard?.url || routeStatus?.url;
 
   const infoRows = useMemo(() => {
     const rows: Array<{ label: string; value: ReactNode }> = [
@@ -304,184 +297,6 @@ export function AgentDetailsTab({
         )}
       </Card>
 
-      <AgentCardSection agentCard={agentCard} loading={loading} theme={theme} />
     </Box>
-  );
-}
-
-function AgentCardSection({
-  agentCard,
-  loading,
-  theme,
-}: {
-  agentCard: KagentiAgentCard | null;
-  loading: boolean;
-  theme: Theme;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  if (loading) return null;
-  if (!agentCard) return null;
-
-  return (
-    <Card variant="outlined" sx={{ p: 2.5, gridColumn: { md: '1 / -1' } }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          cursor: 'pointer',
-        }}
-        onClick={() => setExpanded(e => !e)}
-      >
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-          Agent Card
-        </Typography>
-        <Button
-          size="small"
-          startIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          sx={{ textTransform: 'none', color: theme.palette.text.secondary }}
-        >
-          {expanded ? 'Hide Agent Card Details' : 'Show Agent Card Details'}
-        </Button>
-      </Box>
-      <Collapse in={expanded}>
-        <Box
-          sx={{
-            mt: 2,
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: 3,
-          }}
-        >
-          <Card variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1.5 }}>
-              Basic Information
-            </Typography>
-            <Table size="small">
-              <TableBody>
-                <TableRow sx={{ '& td': { border: 'none', py: 0.5 } }}>
-                  <TableCell
-                    sx={{ color: theme.palette.text.secondary, width: 80 }}
-                  >
-                    Name
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>
-                    {agentCard.name}
-                  </TableCell>
-                </TableRow>
-                <TableRow sx={{ '& td': { border: 'none', py: 0.5 } }}>
-                  <TableCell sx={{ color: theme.palette.text.secondary }}>
-                    Version
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={agentCard.version || '0.0.0'}
-                      size="small"
-                      variant="outlined"
-                      sx={{ height: 20, fontSize: '0.7rem' }}
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow sx={{ '& td': { border: 'none', py: 0.5 } }}>
-                  <TableCell sx={{ color: theme.palette.text.secondary }}>
-                    URL
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontFamily: 'monospace',
-                      fontSize: '0.75rem',
-                      wordBreak: 'break-all',
-                    }}
-                  >
-                    {agentCard.url || '—'}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </Card>
-
-          <Card variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1.5 }}>
-              Capabilities
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography
-                variant="body2"
-                sx={{ color: theme.palette.text.secondary }}
-              >
-                Streaming
-              </Typography>
-              <Chip
-                icon={<StreamIcon sx={{ fontSize: '14px !important' }} />}
-                label={agentCard.streaming ? 'Enabled' : 'Disabled'}
-                size="small"
-                color={agentCard.streaming ? 'success' : 'default'}
-                sx={{ height: 22 }}
-              />
-            </Box>
-          </Card>
-
-          {agentCard.description && (
-            <Card
-              variant="outlined"
-              sx={{ p: 2, gridColumn: { md: '1 / -1' } }}
-            >
-              <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
-                Description
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: theme.palette.text.secondary, mb: 2 }}
-              >
-                {agentCard.description}
-              </Typography>
-              {agentCard.skills && agentCard.skills.length > 0 && (
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
-                    Skills
-                  </Typography>
-                  {agentCard.skills.map(
-                    (
-                      skill: {
-                        id?: string;
-                        name?: string;
-                        description?: string;
-                      },
-                      idx: number,
-                    ) => (
-                      <Box
-                        key={skill.id || idx}
-                        sx={{
-                          mb: 1.5,
-                          p: 1.5,
-                          border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                          borderRadius: 1,
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {skill.name || skill.id || `Skill ${idx + 1}`}
-                        </Typography>
-                        {skill.description && (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: theme.palette.text.secondary,
-                              display: 'block',
-                              mt: 0.25,
-                            }}
-                          >
-                            {skill.description}
-                          </Typography>
-                        )}
-                      </Box>
-                    ),
-                  )}
-                </Box>
-              )}
-            </Card>
-          )}
-        </Box>
-      </Collapse>
-    </Card>
   );
 }

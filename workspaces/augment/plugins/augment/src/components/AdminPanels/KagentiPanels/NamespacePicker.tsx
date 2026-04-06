@@ -33,6 +33,8 @@ export interface NamespacePickerProps {
   size?: 'small' | 'medium';
   fullWidth?: boolean;
   enabledOnly?: boolean;
+  /** "minimal" renders without a floating InputLabel (suitable for tight spaces like sidebars) */
+  variant?: 'standard' | 'minimal';
 }
 
 export function NamespacePicker({
@@ -42,6 +44,7 @@ export function NamespacePicker({
   size = 'small',
   fullWidth = true,
   enabledOnly = true,
+  variant = 'standard',
 }: NamespacePickerProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
@@ -88,6 +91,31 @@ export function NamespacePicker({
 
   if (error) {
     return <Alert severity="error">{error}</Alert>;
+  }
+
+  if (variant === 'minimal') {
+    return (
+      <Select
+        size={size}
+        fullWidth={fullWidth}
+        value={value ?? ''}
+        onChange={e => onChange(String(e.target.value))}
+        displayEmpty
+        MenuProps={SELECT_MENU_PROPS}
+        renderValue={sel =>
+          sel ? String(sel) : 'All namespaces'
+        }
+      >
+        <MenuItem value="">
+          <em>All namespaces</em>
+        </MenuItem>
+        {namespaces.map(ns => (
+          <MenuItem key={ns} value={ns}>
+            {ns}
+          </MenuItem>
+        ))}
+      </Select>
+    );
   }
 
   return (

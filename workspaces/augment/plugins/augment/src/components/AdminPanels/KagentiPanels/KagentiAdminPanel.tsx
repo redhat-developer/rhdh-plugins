@@ -464,12 +464,11 @@ export function KagentiAdminPanel({
 
       {sectionShell(
         'Platform Configuration',
-        undefined,
+        'Model selection, RAG pipelines, tool registries, MCP servers, and safety guardrails.',
         undefined,
         <Alert severity="info" variant="outlined" sx={{ mb: 0 }}>
-          <strong>Coming soon</strong> — Global agent settings, resource quotas,
-          and advanced platform configuration will be available in a future
-          release.
+          Platform-level settings (LLM model, RAG, MCP, safety) are managed in
+          the <strong>Platform Config</strong> section of the sidebar navigation.
         </Alert>,
       )}
     </Box>

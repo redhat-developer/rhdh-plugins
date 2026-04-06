@@ -21,6 +21,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
 
 interface ToolWizardBasicsStepProps {
   name: string;
@@ -71,6 +72,7 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
           label="Namespace"
           value={namespace}
           onChange={e => setNamespace(e.target.value)}
+          MenuProps={SELECT_MENU_PROPS}
         >
           {availableNamespaces.map(ns => (
             <MenuItem key={ns} value={ns}>
@@ -106,6 +108,7 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
         label="Protocol"
         value={protocol}
         onChange={e => setProtocol(e.target.value)}
+        MenuProps={SELECT_MENU_PROPS}
       >
         <MenuItem value="streamable_http">Streamable HTTP</MenuItem>
         <MenuItem value="mcp">MCP</MenuItem>
@@ -119,6 +122,7 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
         label="Framework"
         value={framework}
         onChange={e => setFramework(e.target.value)}
+        MenuProps={SELECT_MENU_PROPS}
       >
         <MenuItem value="Python">Python</MenuItem>
         <MenuItem value="nodejs">Node.js</MenuItem>
