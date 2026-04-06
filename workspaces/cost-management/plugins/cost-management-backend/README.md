@@ -12,7 +12,7 @@ When a request arrives the handler:
 
 1. **Authenticates** the caller via Backstage `httpAuth` (requires a valid user session).
 2. **Checks permissions** through the Backstage permission framework using the
-   `ros.*` and `cost.*` permission sets (see [docs/rbac.md](../../docs/rbac.md)).
+   `ros.*` / `ros/…` and `cost.*` / `cost/…` permission sets (see [docs/rbac.md](../../docs/rbac.md)).
 3. **Obtains an SSO token** internally via the OAuth2 `client_credentials` grant
    using the `costManagement.clientId` / `costManagement.clientSecret` from
    `app-config`.
@@ -25,10 +25,13 @@ When a request arrives the handler:
 
 ### Endpoints
 
-| Path                               | Auth          | Description                         |
-| ---------------------------------- | ------------- | ----------------------------------- |
-| `GET /api/cost-management/health`  | None          | Health check                        |
-| `ALL /api/cost-management/proxy/*` | `user-cookie` | Secure proxy to Cost Management API |
+| Path                                              | Auth          | Description                                                |
+| ------------------------------------------------- | ------------- | ---------------------------------------------------------- |
+| `GET /api/cost-management/health`                 | None          | Health check                                               |
+| `GET /api/cost-management/proxy/*`                | `user-cookie` | Secure proxy to Cost Management API                        |
+| `GET /api/cost-management/access`                 | `user-cookie` | Check user's Optimizations RBAC access                     |
+| `GET /api/cost-management/access/cost-management` | `user-cookie` | Check user's OpenShift cost RBAC access                    |
+| `POST /api/cost-management/apply-recommendation`  | `user-cookie` | Apply optimization via Orchestrator (requires `ros.apply`) |
 
 ### Configuration
 
@@ -41,6 +44,29 @@ costManagement:
 
 No `proxy` block with `dangerously-allow-unauthenticated` is needed — the
 backend plugin handles upstream communication directly.
+
+### Audit Logging
+
+All backend endpoints emit structured audit log entries with user identity via Backstage's logger. Each entry includes:
+
+- **`actor`** — the authenticated user's entity ref (e.g., `user:default/admin`)
+- **`action`** — the operation performed (`data_access`, `apply_recommendation`, `access_check`)
+- **`decision`** — the RBAC outcome (`ALLOW` or `DENY`)
+- **`resource`** — the upstream API path accessed
+- **`filters`** — the server-injected cluster/project filters (for proxy requests)
+
+Example log entry:
+
+```json
+{
+  "audit": true,
+  "actor": "user:default/admin",
+  "action": "data_access",
+  "resource": "recommendations/openshift",
+  "decision": "ALLOW",
+  "filters": { "clusters": ["cluster73"], "projects": ["rhdh"] }
+}
+```
 
 ## Getting started
 
