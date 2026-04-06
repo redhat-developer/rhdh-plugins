@@ -261,8 +261,25 @@ export class KagentiProvider implements AgenticProvider {
   async getEffectiveConfig(): Promise<Record<string, unknown>> {
     const { config } = this.requireInitialized();
     const ls = this.rootConfig.getOptionalConfig('augment.llamaStack');
+    let model = ls?.getOptionalString('model') ?? '';
+
+    if (!model) {
+      try {
+        const available = await this.listModels();
+        const inference = available.find(
+          m =>
+            m.id.includes('inference') &&
+            !m.id.includes('embed') &&
+            !m.id.includes('MiniLM'),
+        );
+        model = inference?.id ?? available[0]?.id ?? '';
+      } catch {
+        /* keep empty */
+      }
+    }
+
     return {
-      model: ls?.getOptionalString('model') ?? '',
+      model,
       baseUrl: config.baseUrl,
       systemPrompt:
         this.rootConfig.getOptionalString('augment.systemPrompt') ?? '',

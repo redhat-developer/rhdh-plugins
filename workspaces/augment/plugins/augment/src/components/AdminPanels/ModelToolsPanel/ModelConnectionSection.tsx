@@ -92,7 +92,9 @@ export const ModelConnectionSection = ({
   useEffect(() => {
     if (!initialized.model && !modelConfig.loading) {
       const dbValue = modelConfig.entry?.configValue as string | undefined;
-      setModel(dbValue ?? effectiveModel);
+      const isStale =
+        dbValue === 'unused' || dbValue === 'unknown' || dbValue === '';
+      setModel(isStale ? effectiveModel : (dbValue ?? effectiveModel));
       setInitialized(prev => ({ ...prev, model: true }));
     }
   }, [
