@@ -516,10 +516,11 @@ export class KagentiStreamNormalizer {
     }
 
     const evt = payload.event;
+    const normalizedState = evt?.state?.toUpperCase();
 
-    if (evt?.state === 'FAILED') {
+    if (normalizedState === 'FAILED') {
       const msg =
-        typeof evt.message === 'string' ? evt.message : 'Agent task failed';
+        typeof evt?.message === 'string' ? evt.message : 'Agent task failed';
       events.push({
         type: 'stream.error',
         error: msg,
@@ -541,17 +542,22 @@ export class KagentiStreamNormalizer {
     }
 
     if (evt?.type === 'artifact' && payload.content) {
+      const artifactName =
+        typeof (evt as Record<string, unknown>).name === 'string'
+          ? ((evt as Record<string, unknown>).name as string)
+          : undefined;
       events.push({
         type: 'stream.artifact',
         artifactId: `legacy-${Date.now()}`,
-        name:
-          typeof (evt as Record<string, unknown>).name === 'string'
-            ? ((evt as Record<string, unknown>).name as string)
-            : undefined,
+        name: artifactName,
         content: payload.content,
         append: false,
         lastChunk: true,
       });
+      // Legacy Kagenti API delivers response text as artifact events;
+      // also emit as text delta so the content renders in chat.
+      this.accumulatedText += payload.content;
+      events.push({ type: 'stream.text.delta', delta: payload.content });
     }
 
     const handledContent =
@@ -561,7 +567,7 @@ export class KagentiStreamNormalizer {
       events.push({ type: 'stream.text.delta', delta: payload.content });
     }
 
-    const isFinal = evt?.final === true || evt?.state === 'COMPLETED';
+    const isFinal = evt?.final === true || normalizedState === 'COMPLETED';
     const isDone = payload.done === true || payload.is_complete === true;
 
     if ((isFinal || isDone) && !this.completed) {

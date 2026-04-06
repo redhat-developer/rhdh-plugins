@@ -116,6 +116,11 @@ function createStreamEventForwarder(
       streamModelRef.current = (event as { model?: string }).model;
     } else if (event.type === 'stream.text.delta' && event.delta) {
       streamedTextRef.current += event.delta;
+    } else if (
+      event.type === 'stream.artifact' &&
+      (event as { content?: string }).content
+    ) {
+      streamedTextRef.current += (event as { content?: string }).content;
     } else if (event.type === 'stream.completed' && event.usage) {
       const u = event.usage;
       if (u.output_tokens === 0 && !streamedTextRef.current) {
@@ -289,8 +294,9 @@ export function registerChatRoutes(ctx: RouteContext): void {
           const kagenti = provider as unknown as KagentiProvider;
           const existingCtx = kagenti.getSessionContextId(sessionId);
           if (!existingCtx) {
-            const ctxFromDb = resolvedConversationId
-              || (await sessions.getSession(sessionId, userRef))?.conversationId;
+            const ctxFromDb =
+              resolvedConversationId ||
+              (await sessions.getSession(sessionId, userRef))?.conversationId;
             if (ctxFromDb) {
               kagenti.hydrateSessionContext(sessionId, ctxFromDb, parsed.model);
             }
@@ -434,10 +440,15 @@ export function registerChatRoutes(ctx: RouteContext): void {
         const kagenti = provider as unknown as KagentiProvider;
         const existingCtx = kagenti.getSessionContextId(sessionId);
         if (!existingCtx) {
-          const ctxFromDb = resolvedConversationId
-            || (await sessions.getSession(sessionId, userRef))?.conversationId;
+          const ctxFromDb =
+            resolvedConversationId ||
+            (await sessions.getSession(sessionId, userRef))?.conversationId;
           if (ctxFromDb) {
-            kagenti.hydrateSessionContext(sessionId, ctxFromDb, parsedRequest.model);
+            kagenti.hydrateSessionContext(
+              sessionId,
+              ctxFromDb,
+              parsedRequest.model,
+            );
           }
         }
       }
@@ -486,8 +497,12 @@ export function registerChatRoutes(ctx: RouteContext): void {
 
       const durationMs = Date.now() - streamStartMs;
       const ttfbMs = firstEventMs ? firstEventMs - streamStartMs : undefined;
-      const ttfbInfo = ttfbMs !== undefined ? `, ${ttfbMs}ms to first event` : '';
-      const zeroWarn = eventCount === 0 ? ' (WARNING: zero events received from provider)' : '';
+      const ttfbInfo =
+        ttfbMs !== undefined ? `, ${ttfbMs}ms to first event` : '';
+      const zeroWarn =
+        eventCount === 0
+          ? ' (WARNING: zero events received from provider)'
+          : '';
       logger.info(
         `Stream completed: ${eventCount} events, ${durationMs}ms total${ttfbInfo}${zeroWarn}`,
       );
@@ -573,8 +588,14 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'POST /chat/approve',
       'Failed to process approval',
       async (req, res) => {
-        const { responseId, callId, approved, toolName, toolArguments, reason } =
-          parseApprovalRequest(req.body);
+        const {
+          responseId,
+          callId,
+          approved,
+          toolName,
+          toolArguments,
+          reason,
+        } = parseApprovalRequest(req.body);
 
         logger.info(
           `Processing ${
