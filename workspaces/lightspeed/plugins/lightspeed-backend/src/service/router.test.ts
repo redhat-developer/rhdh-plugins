@@ -705,4 +705,30 @@ describe('lightspeed router tests', () => {
       expect(response.statusCode).toEqual(500);
     });
   });
+
+  describe('POST /v1/query/interrupt', () => {
+    it('returns success when interrupt succeeds', async () => {
+      const backendServer = await startBackendServer();
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query/interrupt')
+        .send({ request_id: 'req-123' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({ success: true });
+    });
+
+    it('returns 403 when user lacks permission', async () => {
+      const backendServer = await startBackendServer(
+        undefined,
+        AuthorizeResult.DENY,
+      );
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query/interrupt')
+        .send({ request_id: 'req-123' });
+
+      expect(response.statusCode).toEqual(403);
+    });
+  });
 });

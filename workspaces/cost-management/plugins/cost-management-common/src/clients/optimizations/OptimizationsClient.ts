@@ -16,10 +16,8 @@
 
 import type { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import { deepMapKeys } from '../../util/mod';
-import crossFetch from 'cross-fetch';
 import camelCase from 'lodash/camelCase';
 import snakeCase from 'lodash/snakeCase';
-import merge from 'lodash/merge';
 import { pluginId } from '../../generated/pluginId';
 import {
   DefaultApiClient,
@@ -33,28 +31,18 @@ import type {
 import type {
   GetRecommendationByIdRequest,
   GetRecommendationListRequest,
-  GetTokenResponse,
   OptimizationsApi,
-  GetAccessResponse,
 } from './types';
-import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
-import { AuthorizeResult } from '@backstage/plugin-permission-common';
-
-type DefaultApiClientOpFunc<
-  TRequest = GetRecommendationByIdRequest | GetRecommendationListRequest,
-  TResponse = RecommendationBoxPlots | RecommendationList,
-> = (
-  this: DefaultApiClient,
-  request: TRequest,
-  options?: RequestOptions,
-) => Promise<TypedResponse<TResponse>>;
 
 /**
- * This class is a proxy for the original Optimizations client.
- * It provides the following additional functionality:
- *   1. Routes calls through the backend's proxy.
- *   2. Implements a token renewal mechanism.
- *   3. Handles case conversion
+ * Client for the Optimizations (ROS) API.
+ *
+ * In the frontend, requests are routed through the backend plugin's secure
+ * proxy (`/api/cost-management/proxy/...`), which keeps the SSO token
+ * server-side and enforces RBAC before forwarding to the Cost Management API.
+ *
+ * When a `token` is provided via `RequestOptions` (backend use-case), the
+ * request goes directly to the upstream API.
  *
  * @public
  */
@@ -68,25 +56,33 @@ export class OptimizationsClient implements OptimizationsApi {
     ],
   };
 
-  private readonly discoveryApi: DiscoveryApi;
-  private readonly fetchApi: FetchApi;
-  private readonly defaultClient: DefaultApiClient;
-  private token?: string;
-  private clusterIds?: string[];
-  private projectNames?: string[];
+  /** Used for backend-to-RHCC calls (token provided by caller). */
+  private readonly directClient: DefaultApiClient;
+  /** Used for frontend calls routed through the backend secure proxy. */
+  private readonly proxyClient: DefaultApiClient;
 
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi }) {
-    this.defaultClient = new DefaultApiClient({
+    const outerDiscovery = options.discoveryApi;
+
+    this.directClient = new DefaultApiClient({
       fetchApi: options.fetchApi,
       discoveryApi: {
         async getBaseUrl() {
-          const baseUrl = await options.discoveryApi.getBaseUrl('proxy');
+          const baseUrl = await outerDiscovery.getBaseUrl('proxy');
           return `${baseUrl}/cost-management/v1`;
         },
       },
     });
-    this.discoveryApi = options.discoveryApi;
-    this.fetchApi = options.fetchApi ?? { fetch: crossFetch };
+
+    this.proxyClient = new DefaultApiClient({
+      fetchApi: options.fetchApi,
+      discoveryApi: {
+        async getBaseUrl() {
+          const baseUrl = await outerDiscovery.getBaseUrl(pluginId);
+          return `${baseUrl}/proxy`;
+        },
+      },
+    });
   }
 
   public async getRecommendationById(
@@ -97,10 +93,13 @@ export class OptimizationsClient implements OptimizationsApi {
       skipList: OptimizationsClient.requestKeysToSkip.getRecommendationById,
     }) as GetRecommendationByIdRequest;
 
-    const response = await this.fetchWithToken(
-      this.defaultClient.getRecommendationById,
+    const response = await this.proxyClient.getRecommendationById(
       snakeCaseTransformedRequest,
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
 
     return {
       ...response,
@@ -125,31 +124,17 @@ export class OptimizationsClient implements OptimizationsApi {
       snakeCase as (value: string | number) => string,
     ) as GetRecommendationListRequest;
 
-    // If token is provided in options (backend use case), skip access check
-    if (options?.token) {
-      const response = await this.defaultClient.getRecommendationList(
-        snakeCaseTransformedRequest,
-        options,
-      );
+    // Backend use-case: token provided, call RHCC directly
+    const client = options?.token ? this.directClient : this.proxyClient;
 
-      return {
-        ...response,
-        json: async () => {
-          const data = await response.json();
-          const camelCaseTransformedResponse = deepMapKeys(
-            data,
-            camelCase as (value: string | number) => string,
-          ) as RecommendationList;
-          return camelCaseTransformedResponse;
-        },
-      };
-    }
-
-    // Frontend use case - use fetchWithToken which includes access check
-    const response = await this.fetchWithToken(
-      this.defaultClient.getRecommendationList,
+    const response = await client.getRecommendationList(
       snakeCaseTransformedRequest,
+      options,
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
 
     return {
       ...response,
@@ -160,80 +145,6 @@ export class OptimizationsClient implements OptimizationsApi {
           camelCase as (value: string | number) => string,
         ) as RecommendationList;
         return camelCaseTransformedResponse;
-      },
-    };
-  }
-
-  private async getAccess(): Promise<GetAccessResponse> {
-    const baseUrl = await this.discoveryApi.getBaseUrl(`${pluginId}`);
-    const response = await this.fetchApi.fetch(`${baseUrl}/access`);
-    const data = (await response.json()) as GetAccessResponse;
-    return data;
-  }
-
-  private async getNewToken(): Promise<GetTokenResponse> {
-    const baseUrl = await this.discoveryApi.getBaseUrl(`${pluginId}`);
-    const response = await this.fetchApi.fetch(`${baseUrl}/token`);
-    const data = (await response.json()) as GetTokenResponse;
-    return data;
-  }
-
-  private async fetchWithToken<
-    TRequest = GetRecommendationByIdRequest | GetRecommendationListRequest,
-    TResponse = RecommendationBoxPlots | RecommendationList,
-  >(
-    asyncOp: DefaultApiClientOpFunc<TRequest, TResponse>,
-    request: TRequest,
-  ): Promise<TypedResponse<TResponse>> {
-    const accessAPIResponse = await this.getAccess();
-
-    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
-      const error = new UnauthorizedError();
-      throw error;
-    }
-
-    const { authorizeClusterIds, authorizeProjects } = accessAPIResponse;
-    this.clusterIds = authorizeClusterIds;
-    this.projectNames = authorizeProjects;
-
-    const clusterParams = {
-      query: {
-        cluster: this.clusterIds,
-        project: this.projectNames,
-      },
-    };
-
-    if (!this.token) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
-    }
-
-    let response = await asyncOp.call(
-      this.defaultClient,
-      merge({}, request, clusterParams),
-      {
-        token: this.token,
-      },
-    );
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        const { accessToken } = await this.getNewToken();
-        this.token = accessToken;
-
-        response = await asyncOp.call(this.defaultClient, request, {
-          token: this.token,
-        });
-      } else {
-        throw new Error(response.statusText);
-      }
-    }
-
-    return {
-      ...response,
-      json: async () => {
-        const data = (await response.json()) as TResponse;
-        return data;
       },
     };
   }

@@ -198,11 +198,14 @@ export const OptimizationsBreakdownPage = () => {
     [recommendationsData],
   );
 
+  const [applyError, setApplyError] = useState<Error | undefined>(undefined);
+
   const handleApplyRecommendation = useCallback(() => {
     if (!recommendationsData) {
       return;
     }
 
+    setApplyError(undefined);
     try {
       const workflowId = workflowIdRef.current;
       const data = adaptRecommendationsDataToWorkflowInputData(
@@ -215,8 +218,9 @@ export const OptimizationsBreakdownPage = () => {
         .then(response => {
           navigate(`/orchestrator/instances/${response.id}`);
         })
-        // eslint-disable-next-line no-console
-        .catch(console.error);
+        .catch(err => {
+          setApplyError(err instanceof Error ? err : new Error(String(err)));
+        });
     } catch {
       return;
     }
@@ -260,6 +264,7 @@ export const OptimizationsBreakdownPage = () => {
       pageType="Optimizations"
       pageTypeLink="/cost-management/optimizations"
     >
+      {applyError && <ResponseErrorPanel error={applyError} />}
       <TabbedLayout>
         <TabbedLayout.Route path="/cost?" title="Cost optimizations">
           <OptimizationEngineTab

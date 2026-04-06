@@ -35,25 +35,13 @@ function makePlotsDataPropertyPathWithTerm(
   ];
 }
 
-const MOCK_BASE_URL = 'https://backstage:1234/api/proxy';
+const MOCK_BASE_URL = 'https://backstage:1234/api/cost-management';
 const mockDiscoveryApi: DiscoveryApi = {
   async getBaseUrl(_pluginId: string): Promise<string> {
     return MOCK_BASE_URL;
   },
 };
-const server = setupServer(
-  http.get(`${MOCK_BASE_URL}/token`, _info =>
-    HttpResponse.json({
-      accessToken: 'hereisyourtokensir',
-      expiresAt: 1234567890,
-    }),
-  ),
-  http.get(`${MOCK_BASE_URL}/access`, _info =>
-    HttpResponse.json({
-      decision: 'ALLOW',
-    }),
-  ),
-);
+const server = setupServer();
 
 // eslint-disable-next-line jest/no-disabled-tests
 describe('OptimizationsApiClientProxy.ts', () => {
@@ -77,7 +65,7 @@ describe('OptimizationsApiClientProxy.ts', () => {
         // Arrange
         server.use(
           http.get(
-            `${MOCK_BASE_URL}/cost-management/v1/recommendations/openshift/:id`,
+            `${MOCK_BASE_URL}/proxy/recommendations/openshift/:id`,
             _info => HttpResponse.json(RecommendationMockResponse),
           ),
         );
@@ -112,14 +100,14 @@ describe('OptimizationsApiClientProxy.ts', () => {
         expect.assertions(2);
 
         // Arrange
-        const spyOnDefaultClientGetRecommendationById = jest.spyOn(
-          // @ts-ignore (because defaultClient is private 🤫)
-          client.defaultClient,
+        const spyOnProxyClientGetRecommendationById = jest.spyOn(
+          // @ts-ignore (because proxyClient is private 🤫)
+          client.proxyClient,
           'getRecommendationById',
         );
         server.use(
           http.get(
-            `${MOCK_BASE_URL}/cost-management/v1/recommendations/openshift/:id`,
+            `${MOCK_BASE_URL}/proxy/recommendations/openshift/:id`,
             _info => HttpResponse.json(RecommendationMockResponse),
           ),
         );
@@ -133,10 +121,10 @@ describe('OptimizationsApiClientProxy.ts', () => {
 
         // Assert
         expect(
-          spyOnDefaultClientGetRecommendationById.mock.lastCall?.[0],
+          spyOnProxyClientGetRecommendationById.mock.lastCall?.[0],
         ).toHaveProperty('path.recommendationId');
         expect(
-          spyOnDefaultClientGetRecommendationById.mock.lastCall?.[0],
+          spyOnProxyClientGetRecommendationById.mock.lastCall?.[0],
         ).toHaveProperty('query.cpu_unit');
       });
     });

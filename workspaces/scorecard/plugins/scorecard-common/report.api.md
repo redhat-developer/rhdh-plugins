@@ -163,6 +163,7 @@ export type ThresholdRule = {
   key: string;
   expression: string;
   color?: string;
+  icon?: string;
 };
 
 // (No @packageDocumentation comment for this package)

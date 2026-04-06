@@ -18,6 +18,7 @@ export const AGGREGATED_CARDS_METRIC_IDS = {
   withDeprecatedMetricId: 'jira.open_issues',
   withDefaultAggregation: 'github.open_prs',
   withGithubOpenPrs: 'openPrsKpi',
+  withJiraOpenIssuesKpi: 'openIssuesKpi',
 } as const;
 
 export const AGGREGATED_CARDS_WIDGET_TITLES = {
@@ -25,4 +26,5 @@ export const AGGREGATED_CARDS_WIDGET_TITLES = {
   withDeprecatedMetricId: 'Scorecard: With deprecated metricId property (Jira)',
   withDefaultAggregation: 'Scorecard: With default aggregation config (GitHub)',
   withGithubOpenPrs: 'Scorecard: GitHub open PRs',
+  withJiraOpenIssuesKpi: 'Scorecard: Jira open blocking tickets',
 } as const;

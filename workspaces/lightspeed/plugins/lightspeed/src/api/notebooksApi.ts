@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createApiRef } from '@backstage/core-plugin-api';
+import { createApiRef, type ApiRef } from '@backstage/core-plugin-api';
 
 import { NotebookSession } from '../types';
 
@@ -32,6 +32,8 @@ export type NotebooksAPI = {
  * @public
  * AI Notebooks API interface
  */
-export const notebooksApiRef = createApiRef<NotebooksAPI>({
-  id: 'plugin.lightspeed.notebooks.service',
-});
+export const notebooksApiRef: ApiRef<NotebooksAPI> = createApiRef<NotebooksAPI>(
+  {
+    id: 'plugin.lightspeed.notebooks.service',
+  },
+);

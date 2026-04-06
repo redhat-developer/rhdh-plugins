@@ -9,6 +9,7 @@ Thresholds are evaluated in order and the **first matching** threshold rule is a
 - **`key`**: The threshold category (e.g., `success`, `warning`, `error`, or custom keys)
 - **`expression`**: The condition that determines if a metric value matches this threshold
 - **`color`** (optional): The color to display for this threshold in the UI (see [Threshold Colors](#threshold-colors))
+- **`icon`** (optional): The icon to display for this threshold in the UI (see [Threshold Icons](#threshold-icons))
 
 ## Threshold Configuration Options
 
@@ -286,6 +287,70 @@ If no color is specified for a threshold rule, frontend will use these default c
 | error    | `error.main` (red)             |
 
 **Important:** Custom threshold keys (not `success`, `warning`, or `error`) **must** specify a `color` property. The configuration will fail validation if a custom key is used without a color. This requirement ensures that all thresholds can be properly visualized in the UI.
+
+## Threshold Icons
+
+You can customize the icon displayed for each threshold rule in the scorecard UI by adding an `icon` property.
+
+### Icon Configuration
+
+Add an `icon` property to any threshold rule:
+
+```yaml
+scorecard:
+  plugins:
+    myDatasource:
+      myMetric:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<10'
+              icon: scorecardSuccessStatusIcon
+            - key: warning
+              expression: '10-50'
+              icon: '<svg xmlns="http://www.w3.org/2000/svg">...</svg>'
+            - key: error
+              expression: '>50'
+              icon: 'customIcon'
+```
+
+### Supported Icon Formats
+
+The `icon` value is a string and can be one of:
+
+- **Backstage System Icon**: `kind:component`, `kind:api`, your `customIcon` registered with Backstage
+- **Material Design Icon**: `settings`, `home`, `build`
+- **SVG String**: `<svg xmlns="http://www.w3.org/2000/svg">...</svg>`
+- **Image URL**: `http(s)://...`, `/assets/icon.svg`
+- **Data URI**: `data:image/svg+xml;base64,...`
+
+> [!NOTE]
+> SVG String, Image URL, and Data URI icons are treated as images and do not inherit the threshold status color. You must define the color within the icon itself.
+
+For information on registering custom icons with Backstage, see [Adding Icons](https://backstage.io/docs/conf/user-interface/icons/#adding-icons).
+To use your custom Backstage System icons in RHDH for Scorecard, you will need to add `appIcons` key to the plugin that is exporting them:
+
+```yaml
+dynamicPlugins:
+  rootDirectory: dynamic-plugins-root
+  frontend:
+    example.plugin-custom:
+      appIcons:
+        - name: customIcon
+          importName: CustomIcon
+```
+
+### Default icons
+
+If no icon is specified for a threshold rule, the frontend uses default icons for standard threshold rule keys:
+
+| Rule Key | Default icon constant        | Material Design Icon |
+| -------- | ---------------------------- | -------------------- |
+| success  | `scorecardSuccessStatusIcon` | CheckCircleOutline   |
+| warning  | `scorecardWarningStatusIcon` | WarningAmber         |
+| error    | `scorecardErrorStatusIcon`   | DangerousOutlined    |
+
+**Important:** Custom threshold keys (not `success`, `warning`, or `error`) **must** specify an `icon` property. The configuration will fail validation if a custom key is used without an icon. This requirement ensures that all thresholds can be properly visualized in the UI.
 
 ## ThresholdEvaluator
 

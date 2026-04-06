@@ -22,6 +22,7 @@ import {
 } from '@backstage/backend-test-utils';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
+import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import request from 'supertest';
 
@@ -63,6 +64,26 @@ const MCP_CONFIG = {
 };
 
 const MCP_CONFIG_MULTI = {
+  lightspeed: {
+    ...BASE_CONFIG.lightspeed,
+    mcpServers: [
+      {
+        name: 'static-mcp',
+        token: MOCK_MCP_VALID_TOKEN,
+      },
+      {
+        name: 'no-token-server',
+      },
+    ],
+  },
+};
+
+const MCP_CONFIG_ENCRYPTED = {
+  backend: {
+    auth: {
+      keys: [{ secret: 'EXAMPLE-key-EXAMPLE-key-EXAMPLE!' }], // notsecret
+    },
+  },
   lightspeed: {
     ...BASE_CONFIG.lightspeed,
     mcpServers: [
@@ -379,6 +400,31 @@ describe('MCP server management endpoints', () => {
       expect(response.body.error).toContain('url and token are required');
     });
 
+    it('sends raw token first when validating directly against MCP server', async () => {
+      let capturedAuth = '';
+      server.use(
+        http.post(MOCK_MCP_ADDR, ({ request: req }) => {
+          capturedAuth = req.headers.get('Authorization') || '';
+          return HttpResponse.json({
+            jsonrpc: '2.0',
+            result: {
+              protocolVersion: '2024-11-05',
+              capabilities: { tools: {} },
+              serverInfo: { name: 'mock', version: '1.0.0' },
+            },
+            id: 1,
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer(MCP_CONFIG);
+      await request(backendServer)
+        .post('/api/lightspeed/mcp-servers/validate')
+        .send({ url: MOCK_MCP_ADDR, token: 'my-raw-token' });
+
+      expect(capturedAuth).toBe('my-raw-token');
+    });
+
     it('rejects unknown URL (SSRF protection)', async () => {
       const backendServer = await startBackendServer(MCP_CONFIG);
       const response = await request(backendServer)
@@ -469,6 +515,55 @@ describe('MCP server management endpoints', () => {
       );
 
       expect(response.status).toBe(403);
+    });
+  });
+
+  // ─── Token encryption integration ─────────────────────────────────
+
+  describe('Token encryption (backend.auth.keys configured)', () => {
+    it('stores encrypted token and still validates correctly', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG_ENCRYPTED);
+
+      const patchRes = await request(backendServer)
+        .patch('/api/lightspeed/mcp-servers/static-mcp')
+        .send({ token: MOCK_MCP_VALID_TOKEN });
+
+      expect(patchRes.status).toBe(200);
+      expect(patchRes.body.server.hasUserToken).toBe(true);
+      expect(patchRes.body.server.status).toBe('connected');
+      expect(patchRes.body.validation.valid).toBe(true);
+    });
+
+    it('decrypted token is used for validation, not ciphertext', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG_ENCRYPTED);
+
+      await request(backendServer)
+        .patch('/api/lightspeed/mcp-servers/no-token-server')
+        .send({ token: MOCK_MCP_VALID_TOKEN });
+
+      const validateRes = await request(backendServer).post(
+        '/api/lightspeed/mcp-servers/no-token-server/validate',
+      );
+
+      expect(validateRes.status).toBe(200);
+      expect(validateRes.body.status).toBe('connected');
+      expect(validateRes.body.toolCount).toBe(3);
+    });
+
+    it('clearing token works with encryption enabled', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG_ENCRYPTED);
+
+      await request(backendServer)
+        .patch('/api/lightspeed/mcp-servers/static-mcp')
+        .send({ token: MOCK_MCP_VALID_TOKEN });
+
+      const clearRes = await request(backendServer)
+        .patch('/api/lightspeed/mcp-servers/static-mcp')
+        .send({ token: null });
+
+      expect(clearRes.status).toBe(200);
+      expect(clearRes.body.server.hasUserToken).toBe(false);
+      expect(clearRes.body.server.status).toBe('unknown');
     });
   });
 });

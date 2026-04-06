@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+// Inline default thresholds for e2e mocks (matches scorecard-common DEFAULT_NUMBER_THRESHOLDS)
+const DEFAULT_NUMBER_THRESHOLDS = {
+  rules: [
+    { key: 'success', expression: '<10' },
+    { key: 'warning', expression: '10-50' },
+    { key: 'error', expression: '>50' },
+  ],
+};
 
 export const customScorecardResponse = [
   {
@@ -194,7 +201,21 @@ export const openIssuesKpiMetadataResponse = {
   aggregationType: 'statusGrouped',
 };
 
-// Aggregated scorecard responses (15 GitHub entities, 10 Jira entities)
+// Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
+/** Response for GET /api/scorecard/metrics?metricIds=jira.open_issues (metric metadata only). */
+export const jiraMetricMetadataResponse = {
+  metrics: [
+    {
+      id: 'jira.open_issues',
+      title: 'Jira open blocking tickets',
+      description:
+        'Highlights the number of issues that are currently open in Jira.',
+      type: 'number',
+      history: true,
+    },
+  ],
+};
+
 export const githubAggregatedResponse = {
   id: 'github.open_prs',
   status: 'success',
@@ -208,11 +229,11 @@ export const githubAggregatedResponse = {
   },
   result: {
     values: [
-      { count: 5, name: 'success' },
-      { count: 7, name: 'warning' },
-      { count: 3, name: 'error' },
+      { count: 3, name: 'success' },
+      { count: 5, name: 'warning' },
+      { count: 2, name: 'error' },
     ],
-    total: 15,
+    total: 10,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
   },
@@ -284,5 +305,204 @@ export const emptyGithubAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+  },
+};
+
+/** Mock response for GET .../api/scorecard/metrics/github.open_prs/catalog/aggregations/entities (10 entities, in sync with githubAggregatedResponse) */
+export const githubEntitiesDrillDownResponse = {
+  metricId: 'github.open_prs',
+  metricMetadata: {
+    title: 'GitHub open PRs',
+    description:
+      'Current count of open Pull Requests for a given GitHub repository.',
+    type: 'number',
+  },
+  entities: [
+    {
+      entityRef: 'component:default/all-scorecards-service',
+      entityNamespace: 'default',
+      entityName: 'all-scorecards-service',
+      entityKind: 'Component',
+      owner: 'user:development/guest',
+      metricValue: 46,
+      timestamp: '2026-03-12T08:09:29.732Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/red-hat-developer-hub',
+      entityNamespace: 'default',
+      entityName: 'red-hat-developer-hub',
+      entityKind: 'Component',
+      owner: 'group:default/red-hat',
+      metricValue: 50,
+      timestamp: '2026-03-12T08:09:29.663Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/github-scorecard-only-service',
+      entityNamespace: 'default',
+      entityName: 'github-scorecard-only-service',
+      entityKind: 'Component',
+      owner: 'group:development/guests',
+      metricValue: 46,
+      timestamp: '2026-03-12T08:09:29.652Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/all-scorecards-service-different-owner',
+      entityNamespace: 'default',
+      entityName: 'all-scorecards-service-different-owner',
+      entityKind: 'Component',
+      owner: 'group:default/rhdh-team',
+      metricValue: 46,
+      timestamp: '2026-03-12T08:09:29.630Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/backend-api',
+      entityNamespace: 'default',
+      entityName: 'backend-api',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 12,
+      timestamp: '2026-03-12T07:00:00.000Z',
+      status: 'success',
+    },
+    {
+      entityRef: 'component:default/frontend-app',
+      entityNamespace: 'default',
+      entityName: 'frontend-app',
+      entityKind: 'Component',
+      owner: 'group:default/frontend',
+      metricValue: 28,
+      timestamp: '2026-03-12T06:45:00.000Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/auth-service',
+      entityNamespace: 'default',
+      entityName: 'auth-service',
+      entityKind: 'Component',
+      owner: 'group:default/security',
+      metricValue: 8,
+      timestamp: '2026-03-12T06:30:00.000Z',
+      status: 'success',
+    },
+    {
+      entityRef: 'component:default/notifications-service',
+      entityNamespace: 'default',
+      entityName: 'notifications-service',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 95,
+      timestamp: '2026-03-12T06:15:00.000Z',
+      status: 'error',
+    },
+    {
+      entityRef: 'component:default/search-indexer',
+      entityNamespace: 'default',
+      entityName: 'search-indexer',
+      entityKind: 'Component',
+      owner: 'group:default/data',
+      metricValue: 22,
+      timestamp: '2026-03-12T06:00:00.000Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/payment-gateway',
+      entityNamespace: 'default',
+      entityName: 'payment-gateway',
+      entityKind: 'Component',
+      owner: 'group:default/finance',
+      metricValue: 3,
+      timestamp: '2026-03-12T05:45:00.000Z',
+      status: 'success',
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 10,
+    total: 10,
+    totalPages: 1,
+    isCapped: false,
+  },
+};
+
+/** Mock response for GET .../api/scorecard/metrics/jira.open_issues/catalog/aggregations/entities (in sync with jiraAggregatedResponse) */
+export const jiraEntitiesDrillDownResponse = {
+  metricId: 'jira.open_issues',
+  metricMetadata: {
+    title: 'Jira open blocking tickets',
+    description:
+      'Highlights the number of issues that are currently open in Jira.',
+    type: 'number',
+  },
+  entities: [
+    {
+      entityRef: 'component:default/platform-api',
+      entityNamespace: 'default',
+      entityName: 'platform-api',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 15,
+      timestamp: '2026-03-12T08:00:00.000Z',
+      status: 'error',
+    },
+    {
+      entityRef: 'component:default/backend-svc',
+      entityNamespace: 'default',
+      entityName: 'backend-svc',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 2,
+      timestamp: '2026-03-12T07:00:00.000Z',
+      status: 'success',
+    },
+    {
+      entityRef: 'component:default/frontend-svc',
+      entityNamespace: 'default',
+      entityName: 'frontend-svc',
+      entityKind: 'Component',
+      owner: 'group:default/frontend',
+      metricValue: 12,
+      timestamp: '2026-03-12T06:00:00.000Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/auth-svc',
+      entityNamespace: 'default',
+      entityName: 'auth-svc',
+      entityKind: 'Component',
+      owner: 'group:default/security',
+      metricValue: 8,
+      timestamp: '2026-03-12T05:00:00.000Z',
+      status: 'warning',
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 10,
+    total: 4,
+    totalPages: 1,
+    isCapped: false,
+  },
+};
+
+/** Mock response for Jira entities drill-down when aggregation has no data (empty list). */
+export const jiraEntitiesDrillDownNoDataResponse = {
+  metricId: 'jira.open_issues',
+  metricMetadata: {
+    title: 'Jira open blocking tickets',
+    description:
+      'Highlights the number of issues that are currently open in Jira.',
+    type: 'number',
+  },
+  entities: [],
+  pagination: {
+    page: 1,
+    pageSize: 5,
+    total: 0,
+    totalPages: 0,
+    isCapped: false,
   },
 };

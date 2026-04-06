@@ -57,6 +57,9 @@ import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import {
   ScorecardHomepageCard,
   ScorecardPage,
+  ScorecardErrorStatusIcon,
+  ScorecardSuccessStatusIcon,
+  ScorecardWarningStatusIcon,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
@@ -65,8 +68,8 @@ import {
   DynamicCustomizableHomePage,
   OnboardingSection,
   HomePageCardMountPoint,
-  homepageTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
+import { homepageTranslations } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
 import { ComponentType } from 'react';
 
 const mountPoints: HomePageCardMountPoint[] = [
@@ -340,6 +343,11 @@ const scalprumState: ScalprumState = {
 
 const app = createApp({
   apis,
+  icons: {
+    scorecardSuccessStatusIcon: ScorecardSuccessStatusIcon,
+    scorecardWarningStatusIcon: ScorecardWarningStatusIcon,
+    scorecardErrorStatusIcon: ScorecardErrorStatusIcon,
+  },
   themes: getThemes(),
   __experimentalTranslations: {
     availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],

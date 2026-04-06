@@ -19,6 +19,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
+import { TEMP_CONVERSATION_ID } from '../../const';
 import { getTimestamp } from '../../utils/lightspeed-chatbox-utils';
 import {
   useConversationMessages,
@@ -634,6 +635,70 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
       expect(onComplete).toHaveBeenCalledWith(
         'Hi from conversation 1 (part 1)!Hi from conversation 1 (part 2)!',
       );
+    });
+  });
+
+  it('should handle interrupted event and migrate temp conversation to new id', async () => {
+    const newConversationId = 'interrupted-conv-123';
+    const onComplete = jest.fn();
+    const onStart = jest.fn();
+
+    mockLightspeedApi.getConversationMessages.mockResolvedValue([]);
+
+    const interruptedStream = createSSEStream([
+      { event: 'start', data: { conversation_id: newConversationId } },
+      { event: 'token', data: { id: 0, token: 'Partial ', role: 'inference' } },
+      {
+        event: 'interrupted',
+        data: { conversation_id: newConversationId },
+      },
+    ]);
+
+    const lightSpeedApi = {
+      ...mockLightspeedApi,
+      createMessage: jest.fn().mockResolvedValue({
+        read: jest
+          .fn()
+          .mockResolvedValueOnce({
+            done: false,
+            value: new TextEncoder().encode(interruptedStream),
+          })
+          .mockResolvedValueOnce({ done: true, value: null }),
+      }),
+    };
+
+    (useApi as jest.Mock).mockReturnValue(lightSpeedApi);
+    (getTimestamp as jest.Mock).mockReturnValue('01/01/2024, 10:00:00');
+
+    const { result } = renderHook(
+      () =>
+        useConversationMessages(
+          TEMP_CONVERSATION_ID,
+          'test-user',
+          'gpt-3',
+          'openai',
+          'user.png',
+          onComplete,
+          onStart,
+        ),
+      { wrapper },
+    );
+
+    await act(async () => {
+      await result.current.handleInputPrompt('Hello');
+    });
+
+    await waitFor(() => {
+      expect(onStart).toHaveBeenCalledWith(newConversationId);
+    });
+    expect(onComplete).toHaveBeenCalledWith('Partial ');
+    expect(result.current.conversations[newConversationId]).toBeDefined();
+    expect(result.current.conversations[newConversationId]).toHaveLength(2);
+    // Temp removal is deferred via setTimeout(0); wait for it
+    await waitFor(() => {
+      expect(
+        result.current.conversations[TEMP_CONVERSATION_ID],
+      ).toBeUndefined();
     });
   });
 });

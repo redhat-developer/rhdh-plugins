@@ -126,6 +126,10 @@ export const lcsHandlers: HttpHandler[] = [
     return HttpResponse.json(response);
   }),
 
+  http.post(`${LOCAL_LCS_ADDR}/v1/streaming_query/interrupt`, () => {
+    return HttpResponse.json({ success: true });
+  }),
+
   http.get(
     `${LOCAL_LCS_ADDR}/v2/conversations/:conversation_id`,
     ({ params }) => {

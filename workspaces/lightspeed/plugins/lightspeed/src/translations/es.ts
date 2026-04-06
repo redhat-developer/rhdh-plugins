@@ -101,7 +101,10 @@ const lightspeedTranslationEs = createTranslationMessages({
     'conversation.rename.placeholder': 'Nombre del chat',
     'permission.required.title': 'Permisos faltantes',
     'permission.required.description':
-      'Para ver el plugin de Lightspeed, contacta a tu administrador para que te otorgue los permisos <b>lightspeed.chat.read</b> y <b>lightspeed.chat.create</b>.',
+      'Para ver <subject/>, contacta a tu administrador para que te otorgue el permiso <permissions/>.',
+    'permission.subject.plugin': 'el plugin de Lightspeed',
+    'permission.subject.notebooks': 'los cuadernos de Lightspeed',
+    'permission.notebooks.goBack': 'Volver',
     'disclaimer.withValidation':
       'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
     'disclaimer.withoutValidation':
@@ -151,6 +154,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'conversation.announcement.userMessage':
       'Mensaje del usuario: {{prompt}}. El mensaje del bot se está cargando.',
     'user.guest': 'Invitado',
+    'conversation.announcement.responseStopped': 'Respuesta detenida.',
     'user.loading': '...',
     'tooltip.attach': 'Adjuntar',
     'tooltip.send': 'Enviar',

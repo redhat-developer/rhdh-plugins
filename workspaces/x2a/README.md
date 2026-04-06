@@ -282,9 +282,39 @@ The plugin's `KubeService` provides methods to interact with Kubernetes resource
 Loaded Kubernetes configuration from ~/.kube/config
 ```
 
+## Running Tests with PostgreSQL
+
+By default, `yarn test` runs database tests against SQLite only. The backend
+tests are written to also exercise PostgreSQL (via `TestDatabases` from
+`@backstage/backend-test-utils`), but PostgreSQL is skipped locally because the
+Backstage test tooling disables Docker when the `CI` environment variable is not
+set.
+
+### Quick start — testcontainers (Docker/Podman)
+
+Run tests against both SQLite and PostgreSQL with a single command:
+
+```sh
+yarn test:pg          # unit tests (SQLite + PostgreSQL)
+yarn test:all:pg      # full suite including lint, prettier, coverage
+```
+
+These scripts set `CI=true` so that `testcontainers` automatically pulls and
+starts a `postgres:18` container. **Docker or Podman must be running.**
+
+On Fedora/RHEL with Podman, enable the Docker-compatible socket first:
+
+```sh
+systemctl --user enable --now podman.socket
+export DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock
+```
+
+The first run downloads the `postgres:18` image.
+
 ## Additional Commands
 
-- `yarn test` - Run tests
+- `yarn test` - Run tests (SQLite only)
+- `yarn test:pg` - Run tests (SQLite + PostgreSQL via testcontainers)
 - `yarn lint` - Run linter
 - `yarn prettier:fix` - Fix code formatting
 - `yarn build:all` - Build all packages

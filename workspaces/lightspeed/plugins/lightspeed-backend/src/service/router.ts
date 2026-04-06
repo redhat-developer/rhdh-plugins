@@ -41,6 +41,7 @@ import {
 } from './mcp-server-types';
 import { McpServerValidator } from './mcp-server-validator';
 import { userPermissionAuthorization } from './permission';
+import { createTokenEncryptor } from './token-encryption';
 import {
   DEFAULT_HISTORY_LENGTH,
   QueryRequestBody,
@@ -124,7 +125,8 @@ export async function createRouter(
 
   // Initialize database-backed store for per-user preferences and validator
   const dbClient = await database.getClient();
-  const settingsStore = new McpUserSettingsStore(dbClient);
+  const encryptor = createTokenEncryptor(config, logger);
+  const settingsStore = new McpUserSettingsStore(dbClient, encryptor, logger);
   const mcpValidator = new McpServerValidator(logger);
 
   // URL cache populated from LCS GET /v1/mcp-servers.
@@ -185,6 +187,11 @@ export async function createRouter(
 
       const userSettings = await settingsStore.listByUser(user.userEntityRef);
       const settingsMap = new Map(userSettings.map(s => [s.server_name, s]));
+
+      const hasAllUrls = staticServers.every(s => lcsUrlCache.has(s.name));
+      if (!hasAllUrls) {
+        await refreshLcsUrlCache();
+      }
 
       const servers: McpServerResponse[] = staticServers.map(server => {
         const setting = settingsMap.get(server.name);
@@ -390,7 +397,11 @@ export async function createRouter(
   // ─── Proxy Middleware (existing) ────────────────────────────────────
 
   router.use('/', async (req, res, next) => {
-    const passthroughPaths = ['/v1/query', '/v1/feedback'];
+    const passthroughPaths = [
+      '/v1/query',
+      '/v1/query/interrupt',
+      '/v1/feedback',
+    ];
     // Skip middleware for ai-notebooks routes and specific paths
     if (
       req.path.startsWith('/ai-notebooks') ||
@@ -512,6 +523,47 @@ export async function createRouter(
       }
     }
   });
+
+  router.post('/v1/query/interrupt', async (request, response) => {
+    try {
+      const credentials = await httpAuth.credentials(request);
+      const userEntity = await userInfo.getUserInfo(credentials);
+      const user_id = userEntity.userEntityRef;
+      await authorizer.authorizeUser(
+        lightspeedChatCreatePermission,
+        credentials,
+      );
+      const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+      const requestBody = JSON.stringify(request.body);
+      const fetchResponse = await fetch(
+        `http://0.0.0.0:${port}/v1/streaming_query/interrupt?${userQueryParam}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: requestBody,
+        },
+      );
+      if (!fetchResponse.ok) {
+        const errorBody = await fetchResponse.json();
+        const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
+        logger.error(errormsg);
+        response.status(500).json({ error: errormsg });
+        return;
+      }
+      response.status(fetchResponse.status).json(await fetchResponse.json());
+    } catch (error) {
+      const errormsg = `Error while interrupting query: ${error}`;
+      logger.error(errormsg);
+      if (error instanceof NotAllowedError) {
+        response.status(403).json({ error: error.message });
+      } else {
+        response.status(500).json({ error: error });
+      }
+    }
+  });
+
   router.post(
     '/v1/query',
     validateCompletionsRequest,

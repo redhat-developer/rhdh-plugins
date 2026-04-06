@@ -2,7 +2,27 @@
 
 ## Status
 
-Proposed
+Accepted
+
+### Implementation Notes (PRs #2616, #2618, #2619)
+
+The core decision to use the Orchestrator plugin was implemented as proposed.
+However, based on a security threat model review (FLPATH-3503), the architecture
+was hardened beyond the original design:
+
+- **Backend gateway pattern**: The frontend no longer calls the Orchestrator API
+  directly. Instead, requests route through the cost-management backend
+  (`POST /api/cost-management/apply-recommendation`), which validates inputs,
+  checks `ros.apply` permission, and forwards to Orchestrator using
+  service-to-service authentication.
+- **Input validation**: `resourceType` is validated against a server-side
+  allowlist; all input fields are validated for presence and type.
+- **Audit logging**: Every apply action is logged with user identity, cluster,
+  namespace, workload, and outcome.
+- **Confirmation dialog**: The UI presents a confirmation step before applying.
+
+The architecture diagram below reflects the original proposed flow.
+See [docs/rbac.md](../rbac.md) for current RBAC details.
 
 ## Context
 

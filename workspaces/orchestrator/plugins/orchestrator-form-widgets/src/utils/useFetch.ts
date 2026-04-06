@@ -25,6 +25,7 @@ import { useRetriggerEvaluate } from './useRetriggerEvaluate';
 import { useDebounce } from 'react-use';
 import { DEFAULT_DEBOUNCE_LIMIT } from '../widgets/constants';
 import isEqual from 'lodash/isEqual';
+import { fetchWithRetry } from './retry';
 
 /**
  * Checks if all fetch:retrigger dependencies have non-empty values.
@@ -57,6 +58,10 @@ export const useFetch = (
   const fetchUrl = uiProps['fetch:url'];
   const skipErrorWhenDepsEmpty = uiProps['fetch:error:ignoreUnready'] === true;
   const clearOnRetrigger = uiProps['fetch:clearOnRetrigger'] === true;
+  const retryMaxAttempts = uiProps['fetch:retry:maxAttempts'];
+  const retryDelay = uiProps['fetch:retry:delay'];
+  const retryBackoff = uiProps['fetch:retry:backoff'];
+  const retryStatusCodes = uiProps['fetch:retry:statusCodes'];
   const evaluatedRequestInit = useRequestInit({
     uiProps,
     prefix: 'fetch',
@@ -103,6 +108,12 @@ export const useFetch = (
 
   const hasFetchInputs =
     !!fetchUrl && !!evaluatedFetchUrl && !!evaluatedRequestInit && !!retrigger;
+  const retryOptions = {
+    maxAttempts: retryMaxAttempts,
+    delayMs: retryDelay,
+    backoff: retryBackoff,
+    statusCodes: retryStatusCodes,
+  };
 
   // Set loading immediately on dependency changes so UI shows a spinner during debounce.
   useEffect(() => {
@@ -158,9 +169,9 @@ export const useFetch = (
 
           setLoading(true);
 
-          const response = await fetchApi.fetch(
-            evaluatedFetchUrl,
-            evaluatedRequestInit,
+          const response = await fetchWithRetry(
+            () => fetchApi.fetch(evaluatedFetchUrl, evaluatedRequestInit),
+            retryOptions,
           );
           if (!response.ok) {
             throw new Error(
@@ -204,6 +215,10 @@ export const useFetch = (
       evaluatedRequestInit,
       fetchApi,
       fetchUrl,
+      retryMaxAttempts,
+      retryDelay,
+      retryBackoff,
+      retryStatusCodes,
       // no need to expand the "retrigger" array here since its identity changes only if an item changes
       retrigger,
     ],

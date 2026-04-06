@@ -20,6 +20,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from '@mui/styles';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
+import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { LightspeedFABIcon } from './LightspeedIcon';
 
@@ -41,10 +42,10 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     position: 'fixed',
 
-    // When drawer is docked, adjust margin
-    '.docked-drawer-open &': {
+    // When ApplicationDrawer is docked, match main content inset
+    'body.docked-drawer-open &': {
       transition: 'margin-right 0.3s ease',
-      marginRight: 'var(--docked-drawer-width, 500px) ',
+      marginRight: DOCKED_CONTENT_OFFSET,
     },
   },
 }));

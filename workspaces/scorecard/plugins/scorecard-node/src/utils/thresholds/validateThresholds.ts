@@ -85,6 +85,21 @@ function validateRuleColor(rule: ThresholdRule): void {
   }
 }
 
+/**
+ * Validates the icon format if present in a rule.
+ */
+function validateRuleIcon(rule: ThresholdRule): void {
+  if (!('icon' in rule)) {
+    return;
+  }
+
+  if (typeof rule.icon !== 'string' || rule.icon.trim() === '') {
+    throw new ThresholdConfigFormatError(
+      `Invalid icon format for rule "${rule.key}": icon must be a non-empty string`,
+    );
+  }
+}
+
 function isThresholdRule(rule: unknown): asserts rule is ThresholdRule {
   if (
     typeof rule !== 'object' ||
@@ -127,15 +142,19 @@ export function validateThresholds(
   for (const rule of thresholds.rules) {
     isThresholdRule(rule);
     validateRuleColor(rule);
+    validateRuleIcon(rule);
 
     const standardThresholdRuleKeys = ['success', 'warning', 'error'];
-    if (!standardThresholdRuleKeys.includes(rule.key) && !('color' in rule)) {
+    if (
+      !standardThresholdRuleKeys.includes(rule.key) &&
+      (!('color' in rule) || !('icon' in rule))
+    ) {
       throw new ThresholdConfigFormatError(
         `Custom threshold key "${
           rule.key
-        }" must specify a color property. Only standard keys (${standardThresholdRuleKeys
+        }" must specify a color or icon property. Only standard keys (${standardThresholdRuleKeys
           .map(k => `'${k}'`)
-          .join(', ')}) have default colors.`,
+          .join(', ')}) have default colors and icons.`,
       );
     }
 

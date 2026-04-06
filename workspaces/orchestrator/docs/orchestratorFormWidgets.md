@@ -216,6 +216,10 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:retry:maxAttempts
+- fetch:retry:delay
+- fetch:retry:backoff
+- fetch:retry:statusCodes
 - fetch:error:ignoreUnready
 - fetch:error:silent
 - fetch:response:value
@@ -301,6 +305,10 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:retry:maxAttempts
+- fetch:retry:delay
+- fetch:retry:backoff
+- fetch:retry:statusCodes
 - fetch:error:ignoreUnready
 - fetch:error:silent
 - fetch:skipInitialValue
@@ -349,6 +357,10 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:retry:maxAttempts
+- fetch:retry:delay
+- fetch:retry:backoff
+- fetch:retry:statusCodes
 - fetch:error:ignoreUnready
 - fetch:error:silent
 - fetch:skipInitialValue
@@ -400,6 +412,10 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:retry:maxAttempts
+- fetch:retry:delay
+- fetch:retry:backoff
+- fetch:retry:statusCodes
 - fetch:error:ignoreUnready
 - fetch:error:silent
 - fetch:skipInitialValue
@@ -522,6 +538,10 @@ The widget supports the following `ui:props` (for detailed information on each, 
 - `fetch:body`: HTTP body for the fetch request
 - `fetch:retrigger`: Array of field paths that trigger a refetch when their values change
 - `fetch:clearOnRetrigger`: Clears the field value when retrigger dependencies change
+- `fetch:retry:maxAttempts`: Enables retry logic for the fetch call
+- `fetch:retry:delay`: Initial delay (ms) before the first retry
+- `fetch:retry:backoff`: Backoff multiplier applied to the delay
+- `fetch:retry:statusCodes`: Optional list of status codes to retry
 
 ## Content of `ui:props`
 
@@ -542,6 +562,10 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |         fetch:body          |                                                                                                                                                                                    An object representing the body of an HTTP POST request. Not used with the GET method. Property value can be a string template or an array of strings. templates.                                                                                                                                                                                    | `{“foo”: “bar $${{identityApi.token}}”, "myArray": ["constant", "$${{current.solutionName}}"]}` |
 |       fetch:retrigger       |                                                                                                                                                                                  An array of keys/key families as described in the Backstage API Exposed Parts. If the value referenced by any key from this list is changed, the fetch is triggered.                                                                                                                                                                                   |                      `["current.solutionName", "identityApi.profileName"]`                      |
 |   fetch:clearOnRetrigger    |                                                                                                                                                                               When set to `true`, clears the field value as soon as any `fetch:retrigger` dependency changes, before the fetch completes. Useful to avoid stale values while refetching.                                                                                                                                                                                |                               `true`, `false` (default: `false`)                                |
+|   fetch:retry:maxAttempts   |                                                                                                                                                                                        Enables retry logic for the widget fetch. The value is the maximum number of retries after the initial failure. If not set or `0`, retries are disabled.                                                                                                                                                                                         |                                          `3` (retries)                                          |
+|      fetch:retry:delay      |                                                                                                                                                                                                           Initial delay in milliseconds before the first retry. Combined with `fetch:retry:backoff` for exponential backoff.                                                                                                                                                                                                            |                                           `1000` (ms)                                           |
+|     fetch:retry:backoff     |                                                                                                                                                                                                           Multiplier applied to the delay for each subsequent retry. Use `2` for exponential backoff, or `1` for fixed delay.                                                                                                                                                                                                           |                                               `2`                                               |
+|   fetch:retry:statusCodes   |                                                                                                                                                                                                            Optional list of HTTP status codes that should be retried. If omitted, any non-OK response is eligible for retry.                                                                                                                                                                                                            |                                `[408, 429, 500, 502, 503, 504]`                                 |
 |  fetch:error:ignoreUnready  |                                                                                                                                   When set to `true`, suppresses fetch error display until all `fetch:retrigger` dependencies have non-empty values. This is useful when fetch depends on other fields that are not filled yet, preventing expected errors from being displayed during initial load.                                                                                                                                    |                               `true`, `false` (default: `false`)                                |
 |     fetch:error:silent      |                                                                                                                                                           When set to `true`, suppresses fetch error display when the fetch request returns a non-OK status (4xx/5xx). Use this when you want to handle error states via conditional UI instead of showing the widget error.                                                                                                                                                            |                               `true`, `false` (default: `false`)                                |
 |   fetch:skipInitialValue    |                                                                                                                                                                                          When set to `true`, prevents applying the initial value from `fetch:response:value`, keeping the field empty until the user selects or types a value.                                                                                                                                                                                          |                               `true`, `false` (default: `false`)                                |

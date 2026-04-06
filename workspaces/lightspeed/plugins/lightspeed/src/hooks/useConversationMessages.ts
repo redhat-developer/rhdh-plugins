@@ -103,6 +103,7 @@ export const useConversationMessages = (
   avatar: string = userAvatar,
   onComplete?: (message: string) => void,
   onStart?: (conversation_id: string) => void,
+  onRequestIdReady?: (request_id: string) => void,
 ): UseConversationMessagesReturn => {
   const { mutateAsync: createMessage } = useCreateConversationMessage();
   const scrollToBottomRef = useRef<ScrollContainerHandle>(null);
@@ -144,11 +145,7 @@ export const useConversationMessages = (
     useFetchConversationMessages(currentConversation);
 
   useEffect(() => {
-    if (
-      !Array.isArray(conversationsData) ||
-      (conversationsData.length === 0 &&
-        conversationId !== TEMP_CONVERSATION_ID)
-    )
+    if (!Array.isArray(conversationsData) || conversationsData.length === 0)
       return;
 
     const newConvoIndex: number[] = [];
@@ -218,6 +215,7 @@ export const useConversationMessages = (
   const handleInputPrompt = useCallback(
     async (prompt: string, attachments: Attachment[] = []) => {
       let newConversationId = '';
+      let requestId = '';
 
       const conversationTuple = [
         createUserMessage({
@@ -266,11 +264,14 @@ export const useConversationMessages = (
         });
 
         const decoder = new TextDecoder('utf-8');
-        const keepGoing = true;
+        let streamEnded = false;
 
-        while (keepGoing) {
+        while (!streamEnded) {
           const { value, done } = await reader.read();
-          if (done) break;
+          if (done) {
+            streamEnded = true;
+            break;
+          }
 
           buffer += decoder.decode(value, { stream: true });
 
@@ -289,6 +290,9 @@ export const useConversationMessages = (
             try {
               const { event, data } = JSON.parse(jsonString);
               if (event === 'start') {
+                requestId = data?.request_id;
+                onRequestIdReady?.(requestId);
+
                 if (currentConversation === TEMP_CONVERSATION_ID) {
                   // If the conversation is temp, we need to set the new conversation id
                   newConversationId = data?.conversation_id;
@@ -493,6 +497,38 @@ export const useConversationMessages = (
                 });
               }
 
+              if (event === 'interrupted') {
+                if (
+                  currentConversation === TEMP_CONVERSATION_ID &&
+                  data?.conversation_id
+                ) {
+                  newConversationId = data.conversation_id;
+                }
+                setConversations(prevConversations => {
+                  const conversation =
+                    prevConversations[currentConversation] ?? [];
+                  const lastMessageIndex = conversation.length - 1;
+                  const lastMessage =
+                    conversation.length === 0
+                      ? createBotMessage({
+                          content: '',
+                          isLoading: false,
+                          timestamp: getTimestamp(Date.now()),
+                        })
+                      : { ...conversation[lastMessageIndex], isLoading: false };
+                  const updatedConversation = [
+                    ...conversation.slice(0, lastMessageIndex),
+                    lastMessage,
+                  ];
+                  return {
+                    ...prevConversations,
+                    [currentConversation]: updatedConversation,
+                  };
+                });
+                streamEnded = true;
+                break;
+              }
+
               if (event === 'end') {
                 const documents = data?.referenced_documents || [];
 
@@ -539,6 +575,7 @@ export const useConversationMessages = (
               }
             }
           }
+          if (streamEnded) break;
         }
       } catch (e) {
         setConversations(prevConversations => {
@@ -602,10 +639,13 @@ export const useConversationMessages = (
 
         onStart?.(newConversationId);
 
-        setConversations(prev => {
-          const { temp, ...rest } = prev;
-          return rest;
-        });
+        // Defer removal so it runs after the sync useEffect updates currentConversation.
+        setTimeout(() => {
+          setConversations(prev => {
+            const { [TEMP_CONVERSATION_ID]: _, ...rest } = prev;
+            return rest;
+          });
+        }, 0);
       }
     },
 
@@ -614,6 +654,7 @@ export const useConversationMessages = (
       userName,
       onComplete,
       onStart,
+      onRequestIdReady,
       selectedModel,
       selectedProvider,
       createMessage,

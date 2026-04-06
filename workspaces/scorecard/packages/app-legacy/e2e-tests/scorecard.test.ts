@@ -16,9 +16,17 @@
 
 import { test, expect, Page } from '@playwright/test';
 import { mockApiResponse } from './utils/apiUtils';
+import {
+  mockJiraAggregationResponse,
+  mockScorecardEntitiesDrillDown,
+  mockScorecardEntitiesDrillDownWithSort,
+  mockJiraDrillDownMissingPermission,
+  mockMetricsApi,
+} from './utils/apiUtils';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
 import { HomePage } from './pages/HomePage';
+import { ScorecardDrillDownPage } from './pages/ScorecardDrillDownPage';
 import {
   customScorecardResponse,
   emptyScorecardResponse,
@@ -30,14 +38,20 @@ import {
   emptyJiraAggregatedResponse,
   openPrsKpiMetadataResponse,
   notAllowedAggregationErrorBody,
+  githubEntitiesDrillDownResponse,
+  jiraEntitiesDrillDownResponse,
+  jiraEntitiesDrillDownNoDataResponse,
+  jiraMetricMetadataResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
   evaluateMessage,
+  formatLastUpdatedDate,
   getTranslations,
   getEntityCount,
   getThresholdsSnapshot,
-  formatLastUpdatedDate,
+  getTableFooterSnapshot,
+  getEntitiesTableFooterRowsLabel,
 } from './utils/translationUtils';
 import {
   mockAllDefaultHomepageAggregationsSuccess,
@@ -67,6 +81,7 @@ async function addAggregatedScorecardWidgets(homePage: HomePage) {
   await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withDeprecatedMetricId);
   await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withDefaultAggregation);
   await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withGithubOpenPrs);
+  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withJiraOpenIssuesKpi);
 
   await homePage.saveChanges();
 }
@@ -76,6 +91,7 @@ test.describe('Scorecard Plugin Tests', () => {
   let catalogPage: CatalogPage;
   let scorecardPage: ScorecardPage;
   let homePage: HomePage;
+  let scorecardDrillDownPage: ScorecardDrillDownPage;
   let translations: ScorecardMessages;
   let currentLocale: string;
 
@@ -90,6 +106,7 @@ test.describe('Scorecard Plugin Tests', () => {
     catalogPage = new CatalogPage(page);
     scorecardPage = new ScorecardPage(page, translations);
     homePage = new HomePage(page, translations, currentLocale);
+    scorecardDrillDownPage = new ScorecardDrillDownPage(page, translations);
 
     await catalogPage.loginAndSetLocale(currentLocale);
   });
@@ -311,6 +328,16 @@ test.describe('Scorecard Plugin Tests', () => {
           translations.metric[
             AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId
           ];
+        const githubEntityCount = getEntityCount(
+          translations,
+          currentLocale,
+          '10',
+        );
+        const jiraEntityCount = getEntityCount(
+          translations,
+          currentLocale,
+          '10',
+        );
 
         await expect(card).toBeVisible({ timeout: 20000 });
         await expect(card).toContainText(m.title, { timeout: 15000 });
@@ -433,7 +460,7 @@ test.describe('Scorecard Plugin Tests', () => {
         const githubEntityCount = getEntityCount(
           translations,
           currentLocale,
-          '15',
+          '10',
         );
         const m =
           translations.metric[
@@ -497,16 +524,16 @@ test.describe('Scorecard Plugin Tests', () => {
         await homePage.verifyThresholdTooltip(
           githubCard,
           'success',
-          '5',
-          '33%',
+          '3',
+          '30%',
         );
         await homePage.verifyThresholdTooltip(
           githubCard,
           'warning',
-          '7',
-          '47%',
+          '5',
+          '50%',
         );
-        await homePage.verifyThresholdTooltip(githubCard, 'error', '3', '20%');
+        await homePage.verifyThresholdTooltip(githubCard, 'error', '2', '20%');
         await homePage.verifyLastUpdatedTooltip(
           githubCard,
           lastUpdatedFormatted,
@@ -563,7 +590,7 @@ test.describe('Scorecard Plugin Tests', () => {
         const githubEntityCount = getEntityCount(
           translations,
           currentLocale,
-          '15',
+          '10',
         );
 
         await expect(
@@ -623,17 +650,240 @@ test.describe('Scorecard Plugin Tests', () => {
         await homePage.verifyThresholdTooltip(
           githubCard,
           'success',
-          '5',
-          '33%',
+          '3',
+          '30%',
         );
         await homePage.verifyThresholdTooltip(
           githubCard,
           'warning',
-          '7',
-          '47%',
+          '5',
+          '50%',
         );
-        await homePage.verifyThresholdTooltip(githubCard, 'error', '3', '20%');
+        await homePage.verifyThresholdTooltip(githubCard, 'error', '2', '20%');
         await homePage.verifyLastUpdatedTooltip(githubCard, githubLastUpdated);
+      });
+      test('GitHub scorecard: tooltips, entity drill-down, and metric sort', async () => {
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.OPEN_PRS_KPI_AGGREGATION_ROUTE,
+          githubAggregatedResponse,
+        );
+        await mockScorecardEntitiesDrillDownWithSort(
+          page,
+          githubEntitiesDrillDownResponse,
+          'github.open_prs',
+        );
+
+        await homePage.navigateToHome();
+        await page.reload();
+        await homePage.enterEditMode();
+        await homePage.clearAllCards();
+        await homePage.addCard(
+          AGGREGATED_CARDS_WIDGET_TITLES.withGithubOpenPrs,
+        );
+        await homePage.saveChanges();
+
+        const lastUpdatedFormatted = formatLastUpdatedDate(
+          '2026-01-24T14:10:32.858Z',
+          currentLocale,
+        );
+
+        await test.step('Verify threshold and last updated tooltips', async () => {
+          const githubCard = homePage.getCard(
+            AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
+          );
+          await homePage.verifyThresholdTooltip(
+            githubCard,
+            'success',
+            '3',
+            '30%',
+          );
+          await homePage.verifyThresholdTooltip(
+            githubCard,
+            'warning',
+            '5',
+            '50%',
+          );
+          await homePage.verifyThresholdTooltip(
+            githubCard,
+            'error',
+            '2',
+            '20%',
+          );
+          await homePage.verifyLastUpdatedTooltip(
+            githubCard,
+            lastUpdatedFormatted,
+          );
+        });
+
+        await test.step('Entity drill-down', async () => {
+          await homePage.clickDrillDownLink();
+          await scorecardDrillDownPage.expectOnPage('github.open_prs');
+          await scorecardDrillDownPage.expectPageTitle('github.open_prs');
+          await scorecardDrillDownPage.expectDrillDownCardSnapshot(
+            'github.open_prs',
+          );
+          await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
+          await scorecardDrillDownPage.expectTableHeadersVisible();
+          const rows5Label = getEntitiesTableFooterRowsLabel(translations, 5);
+          await scorecardDrillDownPage.expectTableFooterSnapshot(
+            getTableFooterSnapshot(translations, {
+              start: 1,
+              end: 5,
+              total: 10,
+              rowsLabel: rows5Label,
+              disabled: 'first',
+            }),
+          );
+          await scorecardDrillDownPage.openRowsPerPageDropdown(rows5Label);
+          await scorecardDrillDownPage.expectRowsPerPageListboxSnapshot(`
+          - listbox:
+            - option "${rows5Label}" [selected]
+            - option "${getEntitiesTableFooterRowsLabel(translations, 10)}"
+          `);
+          await scorecardDrillDownPage.closeRowsPerPageDropdown();
+          // First page: only 5 entities (pageSize=5)
+          await scorecardDrillDownPage.expectEntityNamesVisible([
+            'all-scorecards-service',
+            'Red Hat Developer Hub',
+            'github-scorecard-only-service',
+            'all-scorecards-service-different-owner',
+            'backend-api',
+          ]);
+          // Next page: remaining 5 entities
+          await scorecardDrillDownPage.clickNextPage();
+          await scorecardDrillDownPage.expectEntityNamesVisible([
+            'frontend-app',
+            'auth-service',
+            'notifications-service',
+            'search-indexer',
+            'payment-gateway',
+          ]);
+          await scorecardDrillDownPage.expectTableFooterSnapshot(
+            getTableFooterSnapshot(translations, {
+              start: 6,
+              end: 10,
+              total: 10,
+              rowsLabel: rows5Label,
+              disabled: 'last',
+            }),
+          );
+          await scorecardDrillDownPage.clickPreviousPage();
+        });
+
+        await test.step('Verify metric column sort', async () => {
+          await scorecardDrillDownPage.verifyMetricColumnSort();
+        });
+      });
+
+      test('Jira scorecard: tooltips, entity drill-down, and metric sort', async () => {
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.OPEN_ISSUES_KPI_AGGREGATION_ROUTE,
+          jiraAggregatedResponse,
+        );
+        await mockScorecardEntitiesDrillDownWithSort(
+          page,
+          jiraEntitiesDrillDownResponse,
+          'jira.open_issues',
+        );
+
+        await homePage.navigateToHome();
+        await page.reload();
+        await homePage.enterEditMode();
+        await homePage.clearAllCards();
+        await homePage.addCard('Scorecard: Jira open blocking');
+        await homePage.saveChanges();
+
+        const lastUpdatedFormatted = formatLastUpdatedDate(
+          '2026-01-24T14:10:32.776Z',
+          currentLocale,
+        );
+
+        await test.step('Verify threshold and last updated tooltips', async () => {
+          const jiraCard = homePage.getCard(
+            AGGREGATED_CARDS_METRIC_IDS.withJiraOpenIssuesKpi,
+          );
+          await homePage.verifyThresholdTooltip(
+            jiraCard,
+            'success',
+            '6',
+            '60%',
+          );
+          await homePage.verifyThresholdTooltip(
+            jiraCard,
+            'warning',
+            '3',
+            '30%',
+          );
+          await homePage.verifyThresholdTooltip(jiraCard, 'error', '1', '10%');
+          await homePage.verifyLastUpdatedTooltip(
+            jiraCard,
+            lastUpdatedFormatted,
+          );
+        });
+
+        await test.step('Entity drill-down', async () => {
+          await homePage.clickDrillDownLink();
+          await scorecardDrillDownPage.expectOnPage('jira.open_issues');
+          await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
+          await scorecardDrillDownPage.expectDrillDownCardSnapshot(
+            'jira.open_issues',
+          );
+          await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
+          await scorecardDrillDownPage.expectTableHeadersVisible();
+          await scorecardDrillDownPage.expectEntityNamesVisible([
+            'platform-api',
+            'backend-svc',
+            'frontend-svc',
+            'auth-svc',
+          ]);
+          await scorecardDrillDownPage.expectTableFooterSnapshot(
+            getTableFooterSnapshot(translations, {
+              start: 1,
+              end: 4,
+              total: 4,
+              disabled: 'only',
+            }),
+          );
+        });
+
+        await test.step('Verify metric column sort', async () => {
+          await scorecardDrillDownPage.verifyMetricColumnSort();
+        });
+      });
+
+      test('Jira drill-down: missing permission', async () => {
+        await mockJiraDrillDownMissingPermission(
+          page,
+          jiraMetricMetadataResponse,
+        );
+        await page.goto('/scorecard/metrics/jira.open_issues');
+        await scorecardDrillDownPage.expectOnPage('jira.open_issues');
+        await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
+        await scorecardDrillDownPage.expectTableHeadersVisible();
+        await scorecardDrillDownPage.expectCardHasMissingPermission(
+          'jira.open_issues',
+        );
+        await scorecardDrillDownPage.expectTableHasMissingPermission();
+      });
+
+      test('Jira drill-down: no data found', async () => {
+        await mockMetricsApi(page, jiraMetricMetadataResponse);
+        await mockJiraAggregationResponse(page, emptyJiraAggregatedResponse);
+        await mockScorecardEntitiesDrillDown(
+          page,
+          jiraEntitiesDrillDownNoDataResponse,
+          'jira.open_issues',
+        );
+        await page.goto('/scorecard/metrics/jira.open_issues');
+        await scorecardDrillDownPage.expectOnPage('jira.open_issues');
+        await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
+        await scorecardDrillDownPage.expectTableHeadersVisible();
+        await scorecardDrillDownPage.expectTableNoDataFound();
+        await scorecardDrillDownPage.expectCardHasNoDataFound(
+          'jira.open_issues',
+        );
       });
     });
   });

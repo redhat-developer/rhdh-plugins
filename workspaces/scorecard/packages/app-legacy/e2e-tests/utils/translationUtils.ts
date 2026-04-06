@@ -25,6 +25,13 @@ import scorecardTranslationJa from '../../../../plugins/scorecard/src/translatio
 
 export type ScorecardMessages = typeof scorecardMessages;
 
+/** English (ref) metric title – matches API metadata.title used when i18n falls back. */
+export function getMetricTitleEn(
+  metricId: 'jira.open_issues' | 'github.open_prs',
+): string {
+  return scorecardMessages.metric[metricId].title;
+}
+
 function transform(messages: typeof scorecardTranslationDe.messages) {
   const result = Object.keys(messages).reduce((res, key) => {
     // metric.github.open_prs.title -> metric['github.open_prs'].title
@@ -106,6 +113,11 @@ export function evaluateMessage(message: string, value: string) {
   );
 }
 
+/**
+ * Fallbacks in the helpers below are defensive (used only if a key is missing
+ * from the transformed locale object, e.g. unknown locale). All fallbacks use
+ * scorecardMessages (ref) as the single source of truth so they never drift.
+ */
 export function getEntityCount(
   translations: ScorecardMessages,
   locale: string,
@@ -114,8 +126,10 @@ export function getEntityCount(
   const useSingular =
     count === '1' || (locale.startsWith('fr') && count === '0');
   const key = useSingular
-    ? translations.thresholds.entities_one ?? '{{count}} entity'
-    : translations.thresholds.entities_other ?? '{{count}} entities';
+    ? translations.thresholds.entities_one ??
+      scorecardMessages.thresholds.entities_one
+    : translations.thresholds.entities_other ??
+      scorecardMessages.thresholds.entities_other;
   return evaluateMessage(key, count);
 }
 
@@ -137,13 +151,157 @@ export function formatLastUpdatedDate(
   }).format(date);
 }
 
+/** Returns the translated label for "entities" (e.g. "entities", "entités", "Elemente"). */
+export function getEntitiesLabel(translations: ScorecardMessages): string {
+  const template =
+    translations.thresholds.entities_other ??
+    scorecardMessages.thresholds.entities_other;
+  return template.replace(/\{\{count\}\}\s*/, '').trim();
+}
+
+/** Entities table "no data" message for the drill-down page (locale-aware). */
+export function getEntitiesPageNoDataFound(
+  translations: ScorecardMessages,
+): string {
+  return (
+    (translations as { entitiesPage?: { noDataFound?: string } }).entitiesPage
+      ?.noDataFound ?? scorecardMessages.entitiesPage.noDataFound
+  );
+}
+
+/** Entities table "missing permission" message for the drill-down page (locale-aware). */
+export function getEntitiesPageMissingPermission(
+  translations: ScorecardMessages,
+): string {
+  return (
+    (translations as { entitiesPage?: { missingPermission?: string } })
+      .entitiesPage?.missingPermission ??
+    scorecardMessages.entitiesPage.missingPermission
+  );
+}
+
+/** Tooltip text for "some entities not reporting" icon on drill-down card (locale-aware). */
+export function getSomeEntitiesNotReportingTooltip(
+  translations: ScorecardMessages,
+): string {
+  const metric = (
+    translations as { metric?: { someEntitiesNotReportingValues?: string } }
+  ).metric;
+  return (
+    metric?.someEntitiesNotReportingValues ??
+    scorecardMessages.metric.someEntitiesNotReportingValues
+  );
+}
+
+/** Rows-per-page label (e.g. "5 rows", "5 lignes"). Used for dropdown and listbox options. */
+export function getEntitiesTableFooterRowsLabel(
+  translations: ScorecardMessages,
+  count: number,
+): string {
+  const footer = (
+    translations as {
+      entitiesPage?: {
+        entitiesTable?: { footer?: { rows_one?: string; rows_other?: string } };
+      };
+    }
+  ).entitiesPage?.entitiesTable?.footer;
+  const template =
+    count === 1
+      ? footer?.rows_one ??
+        scorecardMessages.entitiesPage.entitiesTable.footer.rows_one
+      : footer?.rows_other ??
+        scorecardMessages.entitiesPage.entitiesTable.footer.rows_other;
+  return template.replace(/\{\{count\}\}/g, String(count));
+}
+
+/**
+ * Locale-aware table footer aria snapshot. Pass start/end/total for range text;
+ * disabled: 'first' | 'last' | 'only' | 'none' controls which pagination buttons are [disabled].
+ */
+export function getTableFooterSnapshot(
+  translations: ScorecardMessages,
+  params: {
+    start: number;
+    end: number;
+    total: number;
+    rowsLabel?: string;
+    disabled: 'first' | 'last' | 'only' | 'none';
+  },
+): string {
+  const footer = (
+    translations as {
+      entitiesPage?: { entitiesTable?: { footer?: { of?: string } } };
+    }
+  ).entitiesPage?.entitiesTable?.footer;
+  const of =
+    footer?.of ?? scorecardMessages.entitiesPage.entitiesTable.footer.of;
+  const rangeText = `${params.start}-${params.end} ${of} ${params.total}`;
+  const { rowsLabel, disabled: d } = params;
+  let first = '';
+  let prev = '';
+  let next = '';
+  let last = '';
+  if (d === 'only') {
+    first = prev = next = last = ' [disabled]';
+  } else if (d === 'first') {
+    first = prev = ' [disabled]';
+  } else if (d === 'last') {
+    next = last = ' [disabled]';
+  }
+  const rowParts = [
+    'first page',
+    'previous page',
+    rangeText,
+    'next page',
+    'last page',
+  ];
+  if (rowsLabel) rowParts.unshift(rowsLabel);
+  const rowName = rowParts.join(' ');
+  const cellContent: string[] = [];
+  if (rowsLabel) {
+    cellContent.push('- paragraph', `- combobox "${rowsLabel}"`);
+  }
+  cellContent.push(
+    `- button "first page"${first}`,
+    `- button "previous page"${prev}`,
+    `- text: ${rangeText}`,
+    `- button "next page"${next}`,
+    `- button "last page"${last}`,
+  );
+  return `
+- rowgroup:
+  - row "${rowName}":
+    - cell "${rowName}":
+${cellContent.map(l => `      ${l}`).join('\n')}
+`;
+}
+
+/** Entities table column header labels for the drill-down page (locale-aware). */
+export function getEntitiesTableHeaderLabels(translations: ScorecardMessages) {
+  const header = (
+    translations as {
+      entitiesPage?: { entitiesTable?: { header?: Record<string, string> } };
+    }
+  ).entitiesPage?.entitiesTable?.header;
+  const h = scorecardMessages.entitiesPage.entitiesTable.header;
+  return {
+    /** First column: status/metric state (ref key `header.status`). */
+    status: header?.status ?? h.status,
+    value: header?.value ?? h.value,
+    entity: header?.entity ?? h.entity,
+    owner: header?.owner ?? h.owner,
+    kind: header?.kind ?? h.kind,
+    lastUpdated: header?.lastUpdated ?? h.lastUpdated,
+  };
+}
+
 export function getLastUpdatedLabel(
   translations: ScorecardMessages,
   formattedTimestamp: string,
 ) {
   const template =
     (translations.metric as { lastUpdated?: string }).lastUpdated ??
-    'Last updated: {{timestamp}}';
+    scorecardMessages.metric.lastUpdated;
   return evaluateMessage(template, formattedTimestamp);
 }
 
@@ -162,6 +320,36 @@ function getSomeEntitiesNotReportingLabel(
     metric.someEntitiesNotReportingValues ??
     scorecardMessages.metric.someEntitiesNotReportingValues
   );
+}
+
+/** Snapshot for the scorecard card on the drill-down page when permission is missing (no entity count in UI). */
+export function getDrillDownMissingPermissionSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - text: "--"
+          - application: ${translations.errors.missingPermission}
+        `;
+}
+
+/** Snapshot for the scorecard card on the drill-down page when there is no data (no entity count in UI). */
+export function getDrillDownNoDataFoundSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - text: "--"
+          - application: ${translations.errors.noDataFound}
+        `;
 }
 
 export function getThresholdsSnapshot(
@@ -185,6 +373,23 @@ export function getThresholdsSnapshot(
           - button
           - separator
           - paragraph: ${cardDescription}
+          - paragraph: ${translations.thresholds.success}
+          - paragraph: ${translations.thresholds.warning}
+          - paragraph: ${translations.thresholds.error}
+          - application
+        `;
+}
+
+/** Snapshot for the scorecard card on the drill-down page (same as thresholds but without the entities link). */
+export function getDrillDownCardSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
           - paragraph: ${translations.thresholds.success}
           - paragraph: ${translations.thresholds.warning}
           - paragraph: ${translations.thresholds.error}

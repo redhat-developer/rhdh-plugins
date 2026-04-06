@@ -99,8 +99,11 @@ const lightspeedTranslationFr = createTranslationMessages({
     'conversation.rename.confirm.action': 'Renommer',
     'conversation.rename.placeholder': 'Nom de la conversation',
     'permission.required.title': 'Autorisations manquantes',
+    'permission.subject.plugin': 'le plugin Lightspeed',
+    'permission.subject.notebooks': 'les carnets Lightspeed',
+    'permission.notebooks.goBack': 'Retour',
     'permission.required.description':
-      'Pour afficher le plugin lightspeed, veuillez contacter votre administrateur pour qu’il vous donne les permissions<b>lightspeed.chat.read</b> et <b>lightspeed.chat.create</b> .',
+      "Pour afficher <subject/>, veuillez contacter votre administrateur pour qu'il vous donne la permission <permissions/>.",
     'disclaimer.withValidation':
       'Cette fonctionnalité utilise la technologie AI. Ne pas inclure d’informations personnelles ou toute autre information sensible dans vos entrées de données. Des interactions pourront être utilisées pour améliorer les produits ou services de Red Hat.',
     'disclaimer.withoutValidation':
@@ -149,6 +152,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'conversation.removeFromPinnedChats': 'Détacher',
     'conversation.announcement.userMessage':
       'Message en provenance de l’utilisateur: {{prompt}}. Message en provenance du Bot en cours de chargement.',
+    'conversation.announcement.responseStopped': 'Réponse arrêtée.',
     'user.guest': 'Invité',
     'user.loading': '...',
     'tooltip.attach': 'Attacher',
