@@ -374,6 +374,12 @@ export class KagentiStreamNormalizer {
         append: update.append,
         lastChunk: update.lastChunk,
       });
+
+      // Mirror the legacy behavior: artifact text also appears in the
+      // main chat bubble so the user sees the response inline, not only
+      // inside a collapsible artifact card.
+      this.accumulatedText += content;
+      events.push({ type: 'stream.text.delta', delta: content });
     }
 
     if (update.lastChunk) {
@@ -480,16 +486,18 @@ export class KagentiStreamNormalizer {
   }
 
   /**
-   * Like extractTextFromStatus but routes to reasoning trace instead of
-   * the main chat bubble. Used for WORKING-state messages that contain
-   * agent-internal progress (e.g. LangGraph state dumps).
+   * Handle WORKING-state status text. Short progress messages
+   * (e.g. "Calling weather tool...") are silently consumed — the UI
+   * "Thinking..." indicator already conveys progress. Only verbose
+   * content (>200 chars, likely LLM reasoning or state dumps) is
+   * routed to the reasoning trace.
    */
   private extractTextAsReasoning(
     status: NonNullable<KagentiStreamPayload['statusUpdate']>['status'],
     events: NormalizedStreamEvent[],
   ): void {
     const text = this.extractStatusText(status);
-    if (text) {
+    if (text && text.length > 200) {
       events.push({ type: 'stream.reasoning.delta', delta: text });
     }
   }
@@ -551,12 +559,13 @@ export class KagentiStreamNormalizer {
           ? evt.message
           : JSON.stringify(evt.message);
       if (text) {
-        // "working" status messages are agent-internal progress dumps
-        // (e.g. LangGraph state with "HumanMessage(content=...)");
-        // route to reasoning trace. Other states (completed, etc.) may
-        // carry the actual response, so keep as chat text.
+        // Short working-state messages (e.g. "Calling weather tool...")
+        // are silently consumed — the "Thinking..." indicator suffices.
+        // Only verbose content (>200 chars) is shown as reasoning trace.
         if (normalizedState === 'WORKING') {
-          events.push({ type: 'stream.reasoning.delta', delta: text });
+          if (text.length > 200) {
+            events.push({ type: 'stream.reasoning.delta', delta: text });
+          }
         } else {
           this.accumulatedText += text;
           events.push({ type: 'stream.text.delta', delta: text });

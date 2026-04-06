@@ -56,6 +56,7 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
   const [tab, setTab] = useState('all');
   const [sort, setSort] = useState<SortOption>('name');
   const [expanded, setExpanded] = useState(false);
+  const [frameworkFilter, setFrameworkFilter] = useState('');
 
   const handleSelect = useCallback(
     (agent: AgentWithCard) => {
@@ -88,8 +89,9 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
         return aIdx - bIdx;
       });
       return list;
-    } else if (tab !== 'all') {
-      list = list.filter(a => a.labels?.framework === tab);
+    }
+    if (frameworkFilter) {
+      list = list.filter(a => a.labels?.framework === frameworkFilter);
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -107,7 +109,7 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
       });
     }
     return sortAgents(list, sort);
-  }, [agents, tab, search, pinnedIds, recentIds, sort]);
+  }, [agents, tab, search, pinnedIds, recentIds, sort, frameworkFilter]);
 
   const visibleAgents = expanded
     ? filtered
@@ -125,7 +127,7 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
   }
 
   return (
-    <Box sx={{ px: 2, pb: 2 }}>
+    <Box>
       <AgentGalleryToolbar
         search={search}
         onSearchChange={setSearch}
@@ -138,6 +140,8 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
         filteredCount={filtered.length}
         sort={sort}
         onSortChange={setSort}
+        frameworkFilter={frameworkFilter}
+        onFrameworkFilterChange={setFrameworkFilter}
       />
       <Box role="list" aria-label={t('agentGallery.listAriaLabel')}>
         {filtered.length === 0 ? (
@@ -159,7 +163,7 @@ export const AgentGallery: FC<AgentGalleryProps> = ({
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
                 gap: 2,
               }}
             >

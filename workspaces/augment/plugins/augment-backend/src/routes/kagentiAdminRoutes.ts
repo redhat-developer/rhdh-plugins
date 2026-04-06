@@ -23,13 +23,13 @@ import type { KagentiProvider } from '../providers/kagenti';
  * integrations, and triggers. Conditionally registered based on feature flags.
  */
 export function registerKagentiAdminRoutes(ctx: RouteContext): void {
-  const { router, logger, provider, sendRouteError, requireAdminAccess } = ctx;
+  const { router, logger, sendRouteError, requireAdminAccess } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
-  if (provider.id !== 'kagenti') {
+  if (ctx.provider.id !== 'kagenti') {
     return;
   }
-  const kagenti = provider as KagentiProvider;
+  const kagenti = ctx.provider as KagentiProvider;
   const flags = kagenti.getFeatureFlags();
 
   const admin = kagenti.getAdminClient();

@@ -251,7 +251,6 @@ export function registerChatRoutes(ctx: RouteContext): void {
   const {
     router,
     logger,
-    provider,
     sessions,
     sendRouteError,
     toErrorMessage,
@@ -268,6 +267,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'POST /chat',
       'Failed to process chat message',
       async (req, res) => {
+        const provider = ctx.provider;
         const parsed = parseChatRequest(req.body);
         const {
           messages,
@@ -388,6 +388,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
   );
 
   router.post('/chat/stream', async (req, res) => {
+    const provider = ctx.provider;
     logger.info('POST /chat/stream - Starting streaming response');
 
     let parsedRequest: ReturnType<typeof parseChatRequest>;
@@ -588,6 +589,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'POST /chat/approve',
       'Failed to process approval',
       async (req, res) => {
+        const provider = ctx.provider;
         const {
           responseId,
           callId,

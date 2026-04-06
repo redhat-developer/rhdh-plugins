@@ -24,13 +24,14 @@ import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme, alpha } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
 import StreamIcon from '@mui/icons-material/Stream';
 import ChatIcon from '@mui/icons-material/Chat';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import {
   getAgentAvatarColor,
   isAgentReady,
+  sanitizeDescription,
   type AgentWithCard,
 } from './agentUtils';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -51,6 +52,16 @@ function agentStatusChipColor(
   return 'default';
 }
 
+const SECTION_LABEL_SX = {
+  fontWeight: 600,
+  color: 'text.secondary',
+  textTransform: 'uppercase' as const,
+  letterSpacing: 0.5,
+  fontSize: '0.6rem',
+  display: 'block',
+  mb: 1,
+};
+
 export const AgentDetailDrawer: React.FC<AgentDetailDrawerProps> = ({
   agent,
   open,
@@ -69,10 +80,10 @@ export const AgentDetailDrawer: React.FC<AgentDetailDrawerProps> = ({
   const skills = card?.skills || [];
   const ready = isAgentReady(agent.status);
   const agentId = `${agent.namespace}/${agent.name}`;
-  const protocol = agent.labels?.protocol;
-  const protocolLabel = protocol
-    ? (Array.isArray(protocol) ? protocol.join(', ') : protocol).toUpperCase()
-    : null;
+
+  const starters = skills.flatMap(s => s.examples || []).slice(0, 4);
+  const rawDesc = card?.description || agent.description || '';
+  const cleanDesc = sanitizeDescription(rawDesc, 400);
 
   const handleStart = () => {
     onStartConversation(agentId, displayName);
@@ -86,7 +97,7 @@ export const AgentDetailDrawer: React.FC<AgentDetailDrawerProps> = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: 400,
+          width: 420,
           maxWidth: '90vw',
           p: 0,
           display: 'flex',
@@ -94,13 +105,14 @@ export const AgentDetailDrawer: React.FC<AgentDetailDrawerProps> = ({
         },
       }}
     >
-      {/* Header */}
+      {/* Header: Avatar + Name + Status */}
       <Box
         sx={{
           p: 3,
+          pb: 2,
           background: isDark
-            ? `linear-gradient(180deg, ${alpha(avatarColor, 0.15)} 0%, transparent 100%)`
-            : `linear-gradient(180deg, ${alpha(avatarColor, 0.08)} 0%, transparent 100%)`,
+            ? `linear-gradient(180deg, ${alpha(avatarColor, 0.12)} 0%, transparent 100%)`
+            : `linear-gradient(180deg, ${alpha(avatarColor, 0.06)} 0%, transparent 100%)`,
           position: 'relative',
         }}
       >
@@ -118,7 +130,7 @@ export const AgentDetailDrawer: React.FC<AgentDetailDrawerProps> = ({
           <CloseIcon sx={{ fontSize: 18 }} />
         </IconButton>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <Box
             sx={{
               width: 56,
@@ -143,12 +155,6 @@ export const AgentDetailDrawer: React.FC<AgentDetailDrawerProps> = ({
             >
               {displayName}
             </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: theme.palette.text.secondary }}
-            >
-              {agent.namespace}
-            </Typography>
             <Box
               sx={{
                 display: 'flex',
@@ -165,246 +171,223 @@ export const AgentDetailDrawer: React.FC<AgentDetailDrawerProps> = ({
                 sx={{ height: 20, fontSize: '0.65rem' }}
               />
               {card?.version && (
-                <Chip
-                  label={`v${card.version}`}
-                  size="small"
-                  variant="outlined"
-                  sx={{ height: 20, fontSize: '0.65rem' }}
-                />
-              )}
-              {protocolLabel && (
-                <Chip
-                  label={protocolLabel}
-                  size="small"
+                <Typography
+                  variant="caption"
                   sx={{
-                    height: 20,
-                    fontSize: '0.6rem',
-                    fontWeight: 700,
-                    bgcolor: alpha(
-                      theme.palette.info.main,
-                      isDark ? 0.15 : 0.08,
-                    ),
-                    color: theme.palette.info.main,
+                    fontSize: '0.65rem',
+                    color: theme.palette.text.disabled,
                   }}
-                />
+                >
+                  v{card.version}
+                </Typography>
               )}
             </Box>
           </Box>
         </Box>
+
+        {/* CTA at top */}
+        <Button
+          variant="contained"
+          fullWidth
+          startIcon={<ChatIcon />}
+          onClick={handleStart}
+          sx={{
+            textTransform: 'none',
+            fontWeight: 600,
+            borderRadius: 2,
+            py: 1.25,
+          }}
+        >
+          {t('agentDetail.startConversation')}
+        </Button>
+        {!ready && (
+          <Typography
+            variant="caption"
+            sx={{
+              display: 'block',
+              textAlign: 'center',
+              mt: 0.75,
+              color: theme.palette.warning.main,
+              fontSize: '0.65rem',
+            }}
+          >
+            This agent is {agent.status.toLowerCase()} and may not respond
+          </Typography>
+        )}
       </Box>
 
-      {/* Content */}
-      <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
-        {/* Description */}
-        {(card?.description || agent.description) && (
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 600,
-                color: theme.palette.text.secondary,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                display: 'block',
-                mb: 0.5,
-              }}
-            >
+      {/* Scrollable content */}
+      <Box sx={{ flex: 1, overflow: 'auto', px: 3, py: 2 }}>
+        {/* Try asking (starters first — they're actionable) */}
+        {starters.length > 0 && (
+          <Box sx={{ mb: 2.5 }}>
+            <Typography variant="caption" sx={SECTION_LABEL_SX}>
+              Try asking
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              {starters.map((example, eidx) => (
+                <Tooltip
+                  key={eidx}
+                  title="Start a conversation with this prompt"
+                  placement="left"
+                >
+                  <Chip
+                    icon={<PlayArrowIcon sx={{ fontSize: 12 }} />}
+                    label={example}
+                    size="small"
+                    variant="outlined"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleStart();
+                    }}
+                    sx={{
+                      height: 'auto',
+                      py: 0.5,
+                      justifyContent: 'flex-start',
+                      '& .MuiChip-label': {
+                        fontSize: '0.75rem',
+                        whiteSpace: 'normal',
+                        lineHeight: 1.4,
+                      },
+                      borderColor: alpha(theme.palette.primary.main, 0.3),
+                      color: theme.palette.text.primary,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.primary.main, 0.06),
+                        borderColor: theme.palette.primary.main,
+                      },
+                    }}
+                  />
+                </Tooltip>
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* About */}
+        {cleanDesc && cleanDesc !== 'No description available' && (
+          <Box sx={{ mb: 2.5 }}>
+            <Typography variant="caption" sx={SECTION_LABEL_SX}>
               {t('agentDetail.about')}
             </Typography>
             <Typography
               variant="body2"
               sx={{ color: theme.palette.text.primary, lineHeight: 1.6 }}
             >
-              {card?.description || agent.description}
+              {cleanDesc}
             </Typography>
           </Box>
         )}
 
-        <Divider sx={{ mb: 2 }} />
-
-        {/* Skills with examples */}
+        {/* Skills */}
         {skills.length > 0 && (
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 600,
-                color: theme.palette.text.secondary,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                display: 'block',
-                mb: 1,
-              }}
-            >
-              {t('agentDetail.skillsWithCount', { count: skills.length })}
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {skills.map((skill, idx) => (
-                <Box
-                  key={skill.id || idx}
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 2,
-                    bgcolor: alpha(
-                      theme.palette.text.primary,
-                      isDark ? 0.04 : 0.02,
-                    ),
-                    border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 600, fontSize: '0.8rem' }}
+          <>
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ mb: 2.5 }}>
+              <Typography variant="caption" sx={SECTION_LABEL_SX}>
+                {t('agentDetail.skillsWithCount', { count: skills.length })}
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {skills.map((skill, idx) => (
+                  <Box
+                    key={skill.id || idx}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: alpha(
+                        theme.palette.text.primary,
+                        isDark ? 0.04 : 0.02,
+                      ),
+                      border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                    }}
                   >
-                    {skill.name ||
-                      skill.id ||
-                      t('agentDetail.skillFallback', { n: idx + 1 })}
-                  </Typography>
-                  {skill.description && (
                     <Typography
-                      variant="caption"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        display: 'block',
-                        mt: 0.25,
-                        lineHeight: 1.4,
-                      }}
+                      variant="body2"
+                      sx={{ fontWeight: 600, fontSize: '0.8rem' }}
                     >
-                      {skill.description}
+                      {skill.name ||
+                        skill.id ||
+                        t('agentDetail.skillFallback', { n: idx + 1 })}
                     </Typography>
-                  )}
-                  {skill.examples && skill.examples.length > 0 && (
-                    <Box
-                      sx={{
-                        mt: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 0.5,
-                      }}
-                    >
+                    {skill.description && (
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.6rem',
-                          color: theme.palette.text.disabled,
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          letterSpacing: 0.5,
+                          color: theme.palette.text.secondary,
+                          display: 'block',
+                          mt: 0.25,
+                          lineHeight: 1.4,
                         }}
                       >
-                        Try asking
+                        {skill.description}
                       </Typography>
-                      {skill.examples.map((example, eidx) => (
-                        <Tooltip
-                          key={eidx}
-                          title="Click to start a conversation with this prompt"
-                          placement="left"
-                        >
-                          <Chip
-                            icon={<PlayArrowIcon sx={{ fontSize: 12 }} />}
-                            label={example}
-                            size="small"
-                            variant="outlined"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleStart();
-                            }}
-                            sx={{
-                              height: 'auto',
-                              py: 0.5,
-                              justifyContent: 'flex-start',
-                              '& .MuiChip-label': {
-                                fontSize: '0.7rem',
-                                whiteSpace: 'normal',
-                                lineHeight: 1.3,
-                              },
-                              borderColor: alpha(
-                                theme.palette.primary.main,
-                                0.3,
-                              ),
-                              color: theme.palette.text.primary,
-                              cursor: 'pointer',
-                              '&:hover': {
-                                bgcolor: alpha(
-                                  theme.palette.primary.main,
-                                  0.06,
-                                ),
-                                borderColor: theme.palette.primary.main,
-                              },
-                            }}
-                          />
-                        </Tooltip>
-                      ))}
-                    </Box>
-                  )}
-                </Box>
-              ))}
+                    )}
+                  </Box>
+                ))}
+              </Box>
             </Box>
-          </Box>
+          </>
         )}
 
         {/* Capabilities */}
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="caption"
-            sx={{
-              fontWeight: 600,
-              color: theme.palette.text.secondary,
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-              display: 'block',
-              mb: 1,
-            }}
-          >
+        <Divider sx={{ mb: 2 }} />
+        <Box sx={{ mb: 2.5 }}>
+          <Typography variant="caption" sx={SECTION_LABEL_SX}>
             {t('agentDetail.capabilities')}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Chip
-              icon={<StreamIcon sx={{ fontSize: 14 }} />}
-              label={
-                card?.streaming
-                  ? t('agentDetail.streaming')
-                  : t('agentDetail.nonStreaming')
-              }
-              size="small"
-              variant="outlined"
-              color={card?.streaming ? 'info' : 'default'}
-              sx={{ height: 24, fontSize: '0.7rem' }}
-            />
-            <Chip
-              icon={<SmartToyIcon sx={{ fontSize: 14 }} />}
-              label={t('agentDetail.a2aProtocol')}
-              size="small"
-              variant="outlined"
-              sx={{ height: 24, fontSize: '0.7rem' }}
-            />
-            {agent.labels?.framework && (
+            {card?.streaming && (
               <Chip
-                label={agent.labels.framework}
+                icon={<StreamIcon sx={{ fontSize: 14 }} />}
+                label="Streaming"
+                size="small"
+                variant="outlined"
+                color="info"
+                sx={{ height: 24, fontSize: '0.7rem' }}
+              />
+            )}
+            {agent.labels?.protocol && (
+              <Chip
+                icon={<SyncAltIcon sx={{ fontSize: 14 }} />}
+                label="A2A Protocol"
                 size="small"
                 variant="outlined"
                 sx={{ height: 24, fontSize: '0.7rem' }}
               />
             )}
+            {!card?.streaming && !agent.labels?.protocol && (
+              <Typography
+                variant="caption"
+                sx={{ color: theme.palette.text.disabled }}
+              >
+                Standard request/response
+              </Typography>
+            )}
           </Box>
         </Box>
 
-        {/* Metadata */}
+        {/* Technical details (at the bottom) */}
+        <Divider sx={{ mb: 2 }} />
         <Box>
-          <Typography
-            variant="caption"
-            sx={{
-              fontWeight: 600,
-              color: theme.palette.text.secondary,
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-              display: 'block',
-              mb: 1,
-            }}
-          >
+          <Typography variant="caption" sx={SECTION_LABEL_SX}>
             {t('agentDetail.details')}
           </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+          <Box
+            sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}
+          >
+            {agent.labels?.framework && (
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{ color: theme.palette.text.disabled, display: 'block' }}
+                >
+                  Framework
+                </Typography>
+                <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                  {agent.labels.framework}
+                </Typography>
+              </Box>
+            )}
             <Box>
               <Typography
                 variant="caption"
@@ -441,7 +424,7 @@ export const AgentDetailDrawer: React.FC<AgentDetailDrawerProps> = ({
               </Box>
             )}
             {card?.url && (
-              <Box>
+              <Box sx={{ gridColumn: '1 / -1' }}>
                 <Typography
                   variant="caption"
                   sx={{ color: theme.palette.text.disabled, display: 'block' }}
@@ -475,38 +458,6 @@ export const AgentDetailDrawer: React.FC<AgentDetailDrawerProps> = ({
             )}
           </Box>
         </Box>
-      </Box>
-
-      {/* Footer CTA */}
-      <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-        <Button
-          variant="contained"
-          fullWidth
-          startIcon={<ChatIcon />}
-          onClick={handleStart}
-          sx={{
-            textTransform: 'none',
-            fontWeight: 600,
-            borderRadius: 2,
-            py: 1.25,
-          }}
-        >
-          {t('agentDetail.startConversation')}
-        </Button>
-        {!ready && (
-          <Typography
-            variant="caption"
-            sx={{
-              display: 'block',
-              textAlign: 'center',
-              mt: 0.75,
-              color: theme.palette.warning.main,
-              fontSize: '0.65rem',
-            }}
-          >
-            This agent is {agent.status.toLowerCase()} and may not respond
-          </Typography>
-        )}
       </Box>
     </Drawer>
   );

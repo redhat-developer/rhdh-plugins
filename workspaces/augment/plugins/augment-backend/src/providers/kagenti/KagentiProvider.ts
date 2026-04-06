@@ -35,7 +35,6 @@ import { KagentiApiClient } from './client/KagentiApiClient';
 import { KagentiSandboxClient } from './client/KagentiSandboxClient';
 import { KagentiAdminClient } from './client/KagentiAdminClient';
 import { KagentiStreamNormalizer } from './stream/KagentiStreamNormalizer';
-import { getVisibleNamespaces } from './kagentiNamespaceUtils';
 import { KagentiAgentCardCache } from './KagentiAgentCardCache';
 import type { AgentCardCacheEntry } from './KagentiAgentCardCache';
 import { submitApproval as submitApprovalImpl } from './kagentiApprovalHandler';
@@ -65,6 +64,11 @@ export class KagentiProvider implements AgenticProvider {
   };
 
   private static readonly MAX_SESSION_ENTRIES = 10_000;
+  private static readonly MODELS_CACHE_TTL_MS = 60_000;
+  private _modelsCache: {
+    data: Array<{ id: string; owned_by?: string; model_type?: string }>;
+    expiresAt: number;
+  } | null = null;
   private readonly cardCache: KagentiAgentCardCache;
   private readonly sessionAgentMap = new Map<string, string>();
   private readonly kagentiSessionMap = new Map<string, string>();
@@ -186,7 +190,7 @@ export class KagentiProvider implements AgenticProvider {
       }`,
     );
 
-    // Admin client is always needed for LLM model listing in Platform Config
+    // Admin client is used for team/key management and other admin operations
     this.adminClient = new KagentiAdminClient(this.apiClient);
 
     if (this.featureFlags.sandbox) {
@@ -251,6 +255,26 @@ export class KagentiProvider implements AgenticProvider {
           reason: 'Kagenti manages MCP tools natively',
         },
       },
+    };
+  }
+
+  async getEffectiveConfig(): Promise<Record<string, unknown>> {
+    const { config } = this.requireInitialized();
+    const ls = this.rootConfig.getOptionalConfig('augment.llamaStack');
+    return {
+      model: ls?.getOptionalString('model') ?? '',
+      baseUrl: config.baseUrl,
+      systemPrompt:
+        this.rootConfig.getOptionalString('augment.systemPrompt') ?? '',
+      toolChoice: ls?.getOptionalString('toolChoice') ?? 'auto',
+      enableWebSearch: ls?.getOptionalBoolean('enableWebSearch') ?? false,
+      enableCodeInterpreter:
+        ls?.getOptionalBoolean('enableCodeInterpreter') ?? false,
+      safetyEnabled: ls?.getOptionalBoolean('safetyEnabled') ?? false,
+      inputShields: ls?.getOptionalStringArray('inputShields') ?? [],
+      outputShields: ls?.getOptionalStringArray('outputShields') ?? [],
+      evaluationEnabled: ls?.getOptionalBoolean('evaluationEnabled') ?? false,
+      scoringFunctions: ls?.getOptionalStringArray('scoringFunctions') ?? [],
     };
   }
 
@@ -330,8 +354,16 @@ export class KagentiProvider implements AgenticProvider {
         userMessage,
         storedContextId,
         (line: string) => {
+          if (config.verboseStreamLogging) {
+            this.logger.info(
+              `KagentiSSE raw (${agentId}): ${line.substring(0, 1000)}`,
+            );
+          }
           const events = normalizer.normalize(line);
           for (const event of events) {
+            if (config.verboseStreamLogging) {
+              this.logger.debug(`KagentiSSE normalized: ${event.type}`);
+            }
             if (event.type === 'stream.started' && backstageSessionId) {
               const ctxId = (event as { responseId?: string }).responseId;
               if (ctxId) {
@@ -359,109 +391,69 @@ export class KagentiProvider implements AgenticProvider {
   }
 
   async listModels(): Promise<
-    Array<{
-      id: string;
-      owned_by?: string;
-      model_type?: string;
-      securityDemands?: Record<string, boolean>;
-    }>
+    Array<{ id: string; owned_by?: string; model_type?: string }>
   > {
-    this.requireInitialized();
-
-    // Fetch actual LLM models from the Kagenti admin API when available.
-    // The admin client calls GET /api/v1/models on the Kagenti server
-    // which returns LLM model identifiers (not agent IDs).
-    if (this.adminClient) {
-      try {
-        const llmModels = await this.adminClient.listLlmModels();
-        if (llmModels.length > 0) {
-          return llmModels
-            .filter(m => typeof m.id === 'string' && m.id.length > 0)
-            .map(m => ({
-              id: m.id,
-              owned_by: 'kagenti',
-              model_type: (m as Record<string, unknown>).model_type as
-                | string
-                | undefined,
-            }));
-        }
-      } catch (err) {
-        this.logger.warn(
-          `Failed to list LLM models from Kagenti admin API, falling back to agent list: ${err instanceof Error ? err.message : err}`,
-        );
-      }
+    if (this._modelsCache && Date.now() < this._modelsCache.expiresAt) {
+      return this._modelsCache.data;
     }
 
-    // Fallback: list deployed agents as selectable model targets
-    const { config, apiClient } = this.requireInitialized();
-
-    if (config.agents?.length) {
-      return config.agents.map(id => ({
-        id,
-        owned_by: 'kagenti',
-        model_type: 'a2a-agent',
-      }));
+    const llamaStackUrl = this.rootConfig.getOptionalString(
+      'augment.llamaStack.baseUrl',
+    );
+    if (!llamaStackUrl) {
+      this.logger.debug(
+        'No augment.llamaStack.baseUrl configured; model list unavailable',
+      );
+      return [];
     }
 
     try {
-      const visibleNamespaces = await getVisibleNamespaces(
-        apiClient,
-        config,
-        this.logger,
-      );
-
-      const allAgents: Array<{
-        id: string;
-        owned_by?: string;
-        model_type?: string;
-        securityDemands?: Record<string, boolean>;
-      }> = [];
-
-      for (const ns of visibleNamespaces) {
-        try {
-          const agents = await apiClient.listAgents(ns);
-          for (const agent of agents.items) {
-            let securityDemands: Record<string, boolean> | undefined;
-            try {
-              const cached = await this.getAgentCardCached(
-                agent.namespace,
-                agent.name,
-              );
-              const d = cached.demands;
-              if (d.oauthDemands || d.secretDemands) {
-                securityDemands = {
-                  requiresOAuth: !!d.oauthDemands,
-                  requiresSecrets: !!d.secretDemands,
-                };
-              }
-            } catch {
-              /* agent card not available */
-            }
-            allAgents.push({
-              id: `${agent.namespace}/${agent.name}`,
-              owned_by: 'kagenti',
-              model_type: 'a2a-agent',
-              ...(securityDemands && { securityDemands }),
-            });
-          }
-        } catch (nsErr) {
-          this.logger.warn(
-            `Failed to list agents in namespace ${ns}: ${nsErr instanceof Error ? nsErr.message : nsErr}`,
-          );
-        }
+      const url = `${llamaStackUrl.replace(/\/+$/, '')}/v1/models`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!res.ok) {
+        this.logger.warn(
+          `LlamaStack /v1/models returned ${res.status}: ${res.statusText}`,
+        );
+        return [];
       }
+      const json = (await res.json()) as {
+        data?: Array<{
+          id: string;
+          owned_by?: string;
+          model_type?: string;
+          custom_metadata?: Record<string, unknown>;
+        }>;
+      };
+      const models = (json.data ?? [])
+        .filter(
+          (m): m is typeof m & { id: string } =>
+            typeof m.id === 'string' && m.id.length > 0,
+        )
+        .map(m => {
+          const modelType =
+            m.model_type ??
+            (m.custom_metadata?.model_type as string | undefined);
+          return {
+            id: m.id,
+            ...(m.owned_by ? { owned_by: m.owned_by } : {}),
+            ...(modelType ? { model_type: modelType } : {}),
+          };
+        });
 
-      return allAgents;
+      this._modelsCache = {
+        data: models,
+        expiresAt: Date.now() + KagentiProvider.MODELS_CACHE_TTL_MS,
+      };
+      return models;
     } catch (err) {
       this.logger.warn(
-        `Failed to list namespaces, falling back to default namespace: ${err instanceof Error ? err.message : err}`,
+        `Failed to fetch models from LlamaStack at ${llamaStackUrl}: ${err instanceof Error ? err.message : err}`,
       );
-      const agents = await apiClient.listAgents(config.namespace);
-      return agents.items.map(a => ({
-        id: `${a.namespace}/${a.name}`,
-        owned_by: 'kagenti',
-        model_type: 'a2a-agent',
-      }));
+      return [];
     }
   }
 

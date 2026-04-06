@@ -22,20 +22,22 @@ import CardActionArea from '@mui/material/CardActionArea';
 import Skeleton from '@mui/material/Skeleton';
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
-import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import { useTheme, alpha } from '@mui/material/styles';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import BuildIcon from '@mui/icons-material/Build';
-import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
-import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
+import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
+import NoteAddOutlinedIcon from '@mui/icons-material/NoteAddOutlined';
+import ExtensionOutlinedIcon from '@mui/icons-material/ExtensionOutlined';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
+import SettingsSuggestOutlinedIcon from '@mui/icons-material/SettingsSuggestOutlined';
+import InsightsIcon from '@mui/icons-material/Insights';
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CloseIcon from '@mui/icons-material/Close';
-import FolderIcon from '@mui/icons-material/Folder';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import TuneIcon from '@mui/icons-material/Tune';
-import ScienceIcon from '@mui/icons-material/Science';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../../api';
 import type { AdminPanel } from '../../../hooks';
@@ -118,25 +120,25 @@ export function KagentiHomeDashboard({
     {
       label: 'Total Agents',
       value: stats?.totalAgents ?? 0,
-      icon: <SmartToyIcon />,
+      icon: <HubOutlinedIcon />,
       accent: theme.palette.primary.main,
     },
     {
       label: 'Ready Agents',
       value: stats?.readyAgents ?? 0,
-      icon: <CheckCircleOutlineIcon />,
+      icon: <TaskAltIcon />,
       accent: theme.palette.success.main,
     },
     {
       label: 'Ready Tools',
       value: stats?.readyTools ?? 0,
-      icon: <BuildIcon />,
+      icon: <HandymanOutlinedIcon />,
       accent: theme.palette.info.main,
     },
     {
-      label: 'Namespaces',
+      label: 'Workspaces',
       value: stats?.namespaceCount ?? 0,
-      icon: <FolderIcon />,
+      icon: <WorkspacesOutlinedIcon />,
       accent: theme.palette.warning.main,
     },
   ];
@@ -145,68 +147,84 @@ export function KagentiHomeDashboard({
     label: string;
     description: string;
     icon: React.ReactNode;
+    accent: string;
     panel: AdminPanel;
   }> = [
     {
       label: 'Create Agent',
       description: 'Import or build a new AI agent',
-      icon: <AddCircleOutlineIcon sx={{ fontSize: 28 }} />,
+      icon: <NoteAddOutlinedIcon sx={{ fontSize: 24 }} />,
+      accent: theme.palette.primary.main,
       panel: 'kagenti-agents' as AdminPanel,
     },
     {
       label: 'Create Tool',
       description: 'Register an MCP tool server',
-      icon: <AddCircleOutlineIcon sx={{ fontSize: 28 }} />,
+      icon: <ExtensionOutlinedIcon sx={{ fontSize: 24 }} />,
+      accent: theme.palette.info.main,
       panel: 'kagenti-tools' as AdminPanel,
     },
   ];
 
-  const navActions: Array<{
+  type NavAction = {
     label: string;
     description: string;
     icon: React.ReactNode;
+    accent: string;
     panel: AdminPanel;
-  }> = [
+  };
+
+  const workloadActions: NavAction[] = [
     {
       label: 'Agents',
       description: 'View and manage agents',
-      icon: <SmartToyIcon sx={{ fontSize: 26 }} />,
+      icon: <HubOutlinedIcon sx={{ fontSize: 24 }} />,
+      accent: theme.palette.primary.main,
       panel: 'kagenti-agents' as AdminPanel,
     },
     {
       label: 'Tools',
       description: 'View and manage tools',
-      icon: <BuildIcon sx={{ fontSize: 26 }} />,
+      icon: <HandymanOutlinedIcon sx={{ fontSize: 24 }} />,
+      accent: theme.palette.info.main,
       panel: 'kagenti-tools' as AdminPanel,
     },
     {
       label: 'Build Pipelines',
       description: 'Shipwright builds and strategies',
-      icon: <RocketLaunchIcon sx={{ fontSize: 26 }} />,
+      icon: <AccountTreeOutlinedIcon sx={{ fontSize: 24 }} />,
+      accent: theme.palette.warning.main,
       panel: 'kagenti-builds' as AdminPanel,
     },
     {
       label: 'Sandbox',
       description: 'Sessions, pods, and token usage',
-      icon: <ScienceIcon sx={{ fontSize: 26 }} />,
+      icon: <ScienceOutlinedIcon sx={{ fontSize: 24 }} />,
+      accent: theme.palette.secondary.main,
       panel: 'kagenti-sandbox' as AdminPanel,
     },
+  ];
+
+  const operationsActions: NavAction[] = [
     {
       label: 'Platform Config',
       description: 'Model, RAG, MCP, and safety',
-      icon: <TuneIcon sx={{ fontSize: 26 }} />,
+      icon: <SettingsSuggestOutlinedIcon sx={{ fontSize: 24 }} />,
+      accent: '#009688',
       panel: 'kagenti-platform' as AdminPanel,
     },
     {
       label: 'Observability',
       description: 'Traces, network, dashboards',
-      icon: <MonitorHeartIcon sx={{ fontSize: 26 }} />,
+      icon: <InsightsIcon sx={{ fontSize: 24 }} />,
+      accent: theme.palette.success.main,
       panel: 'kagenti-dashboards' as AdminPanel,
     },
     {
       label: 'Administration',
       description: 'Identity, namespaces, migration',
-      icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: 26 }} />,
+      icon: <ManageAccountsOutlinedIcon sx={{ fontSize: 24 }} />,
+      accent: theme.palette.text.secondary,
       panel: 'kagenti-admin' as AdminPanel,
     },
   ];
@@ -292,7 +310,7 @@ export function KagentiHomeDashboard({
               >
                 {card.label}
               </Typography>
-              <Box sx={{ color: alpha(card.accent, 0.5) }}>{card.icon}</Box>
+              <Box sx={{ color: alpha(card.accent, 0.7) }}>{card.icon}</Box>
             </Box>
             {loading ? (
               <Skeleton variant="text" width={60} height={48} />
@@ -307,19 +325,23 @@ export function KagentiHomeDashboard({
         ))}
       </Box>
 
-      {/* Create Actions */}
+      {/* Quick Actions */}
       <Typography
         variant="h6"
         sx={{ fontWeight: 700, mb: 2, letterSpacing: '0.01em' }}
       >
-        Create
+        Quick Actions
       </Typography>
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-          gap: 2.5,
-          mb: 4,
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            md: 'repeat(3, 1fr)',
+          },
+          gap: 2,
+          mb: 5,
         }}
       >
         {createActions.map(action => (
@@ -327,18 +349,13 @@ export function KagentiHomeDashboard({
             key={action.label}
             variant="outlined"
             sx={{
-              borderStyle: 'dashed',
-              borderColor: alpha(theme.palette.primary.main, 0.4),
+              borderLeft: `3px solid ${alpha(action.accent, isDark ? 0.5 : 0.4)}`,
               transition:
                 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s, transform 0.2s',
               '&:hover': {
-                borderStyle: 'solid',
-                borderColor: theme.palette.primary.main,
-                bgcolor: alpha(
-                  theme.palette.primary.main,
-                  isDark ? 0.08 : 0.02,
-                ),
-                boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}`,
+                borderColor: action.accent,
+                bgcolor: alpha(action.accent, isDark ? 0.06 : 0.02),
+                boxShadow: `0 4px 16px ${alpha(action.accent, isDark ? 0.12 : 0.08)}`,
                 transform: 'translateY(-1px)',
               },
             }}
@@ -346,68 +363,86 @@ export function KagentiHomeDashboard({
             <CardActionArea
               onClick={() => onNavigate(action.panel)}
               sx={{
-                p: 2.5,
+                p: 2,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 2,
+                gap: 1.5,
               }}
             >
               <Box
                 sx={{
-                  width: 48,
-                  height: 48,
+                  width: 40,
+                  height: 40,
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bgcolor: alpha(
-                    theme.palette.primary.main,
-                    isDark ? 0.15 : 0.08,
-                  ),
-                  color: theme.palette.primary.main,
+                  bgcolor: alpha(action.accent, isDark ? 0.15 : 0.08),
+                  color: action.accent,
                   flexShrink: 0,
                 }}
               >
                 {action.icon}
               </Box>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 600, fontSize: '0.85rem' }}
+                >
                   {action.label}
                 </Typography>
                 <Typography
-                  variant="body2"
-                  sx={{ color: theme.palette.text.secondary, mt: 0.25 }}
+                  variant="caption"
+                  sx={{ color: theme.palette.text.secondary }}
                 >
                   {action.description}
                 </Typography>
               </Box>
+              <ArrowForwardIcon
+                sx={{
+                  fontSize: 16,
+                  color: theme.palette.text.disabled,
+                  flexShrink: 0,
+                }}
+              />
             </CardActionArea>
           </Card>
         ))}
       </Box>
 
-      <Divider sx={{ my: 1 }} />
-
-      {/* Navigate */}
+      {/* Agentic Workloads */}
       <Typography
         variant="h6"
-        sx={{ fontWeight: 700, mb: 2, mt: 4, letterSpacing: '0.01em' }}
+        sx={{ fontWeight: 700, mb: 0.5, letterSpacing: '0.01em' }}
       >
         Navigate
+      </Typography>
+      <Typography
+        variant="caption"
+        sx={{
+          color: theme.palette.text.secondary,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          fontSize: '0.65rem',
+          mb: 2,
+          display: 'block',
+        }}
+      >
+        Agentic Workloads
       </Typography>
       <Box
         sx={{
           display: 'grid',
           gridTemplateColumns: {
             xs: '1fr 1fr',
-            sm: 'repeat(3, 1fr)',
-            lg: 'repeat(4, 1fr)',
+            sm: 'repeat(4, 1fr)',
           },
-          gap: 2.5,
-          mb: 4,
+          gap: 2,
+          mb: 3,
         }}
       >
-        {navActions.map(action => (
+        {workloadActions.map(action => (
           <Card
             key={action.label}
             variant="outlined"
@@ -415,8 +450,8 @@ export function KagentiHomeDashboard({
               borderRadius: 2,
               transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
               '&:hover': {
-                borderColor: theme.palette.primary.main,
-                boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.3)}`,
+                borderColor: action.accent,
+                boxShadow: `0 4px 16px ${alpha(action.accent, isDark ? 0.15 : 0.08)}`,
                 transform: 'translateY(-1px)',
               },
             }}
@@ -439,11 +474,95 @@ export function KagentiHomeDashboard({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bgcolor: alpha(
-                    theme.palette.primary.main,
-                    isDark ? 0.15 : 0.08,
-                  ),
-                  color: theme.palette.primary.main,
+                  bgcolor: alpha(action.accent, isDark ? 0.15 : 0.08),
+                  color: action.accent,
+                }}
+              >
+                {action.icon}
+              </Box>
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+                >
+                  {action.label}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontSize: '0.75rem',
+                    mt: 0.25,
+                  }}
+                >
+                  {action.description}
+                </Typography>
+              </Box>
+            </CardActionArea>
+          </Card>
+        ))}
+      </Box>
+
+      {/* Operations */}
+      <Typography
+        variant="caption"
+        sx={{
+          color: theme.palette.text.secondary,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          fontSize: '0.65rem',
+          mb: 2,
+          display: 'block',
+        }}
+      >
+        Operations
+      </Typography>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr 1fr',
+            sm: 'repeat(3, 1fr)',
+          },
+          gap: 2,
+          mb: 4,
+        }}
+      >
+        {operationsActions.map(action => (
+          <Card
+            key={action.label}
+            variant="outlined"
+            sx={{
+              borderRadius: 2,
+              transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
+              '&:hover': {
+                borderColor: action.accent,
+                boxShadow: `0 4px 16px ${alpha(action.accent, isDark ? 0.15 : 0.08)}`,
+                transform: 'translateY(-1px)',
+              },
+            }}
+          >
+            <CardActionArea
+              onClick={() => onNavigate(action.panel)}
+              sx={{
+                p: 2.5,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                gap: 1.5,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: alpha(action.accent, isDark ? 0.15 : 0.08),
+                  color: action.accent,
                 }}
               >
                 {action.icon}

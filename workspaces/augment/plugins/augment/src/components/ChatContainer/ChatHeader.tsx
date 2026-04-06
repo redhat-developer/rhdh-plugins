@@ -26,7 +26,6 @@ import StreamIcon from '@mui/icons-material/Stream';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
-import { useTranslation } from '../../hooks/useTranslation';
 import { useStatus } from '../../hooks';
 import type { KagentiAgentCard } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ChatAgentConfig } from '../../types';
@@ -54,7 +53,6 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
   healthWarning,
   agentConfig,
 }) {
-  const { t } = useTranslation();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
@@ -257,7 +255,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
             '&:hover': { color: theme.palette.primary.main },
           }}
         >
-          {t('chatHeader.changeAgent')}
+          Browse agents
         </Button>
       )}
     </Box>

@@ -25,8 +25,8 @@ import Tooltip from '@mui/material/Tooltip';
 import Fade from '@mui/material/Fade';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import StreamIcon from '@mui/icons-material/Stream';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
 import type { FC, MouseEvent } from 'react';
@@ -35,6 +35,7 @@ import {
   getAgentAvatarColor,
   STATUS_COLORS,
   isAgentReady,
+  sanitizeDescription,
 } from './agentUtils';
 
 const AVATAR_SX_STATIC = {
@@ -83,19 +84,26 @@ export const AgentCard: FC<AgentCardProps> = ({
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const card = agent.agentCard;
-  const skills = card?.skills || [];
   const statusColor = STATUS_COLORS[agent.status] || 'default';
   const agentId = `${agent.namespace}/${agent.name}`;
   const displayName = card?.name || agent.name;
   const avatarColor = getAgentAvatarColor(displayName);
   const ready = isAgentReady(agent.status);
-  const protocol = agent.labels?.protocol;
-  const protocolLabel = protocol
-    ? (Array.isArray(protocol) ? protocol.join(', ') : protocol).toUpperCase()
-    : null;
+
+  const rawDesc = card?.description || agent.description || '';
+  const cleanDesc = sanitizeDescription(rawDesc, 120);
+
   const starters = (card?.skills || [])
     .flatMap(s => s.examples || [])
     .slice(0, 2);
+
+  const handleCardClick = () => {
+    if (onInfo) {
+      onInfo(agent);
+    } else {
+      onSelect(agent);
+    }
+  };
 
   return (
     <Fade in timeout={200 + index * 50}>
@@ -115,14 +123,13 @@ export const AgentCard: FC<AgentCardProps> = ({
           },
         }}
       >
+        {/* Pin action (top-right) */}
         <Box
           className="agent-actions"
           sx={{
             position: 'absolute',
             top: 8,
             right: 8,
-            display: 'flex',
-            gap: 0.25,
             zIndex: 2,
             opacity: isPinned ? 1 : 0,
             transition: 'opacity 0.15s ease',
@@ -150,25 +157,6 @@ export const AgentCard: FC<AgentCardProps> = ({
               )}
             </IconButton>
           </Tooltip>
-          {onInfo && (
-            <Tooltip title="Agent details">
-              <IconButton
-                size="small"
-                onClick={e => {
-                  e.stopPropagation();
-                  onInfo(agent);
-                }}
-                sx={{
-                  p: 0.5,
-                  color: theme.palette.text.secondary,
-                  bgcolor: alpha(theme.palette.background.paper, 0.9),
-                  '&:hover': { bgcolor: theme.palette.background.paper },
-                }}
-              >
-                <InfoOutlinedIcon sx={{ fontSize: 16 }} />
-              </IconButton>
-            </Tooltip>
-          )}
         </Box>
 
         <Tooltip
@@ -180,8 +168,9 @@ export const AgentCard: FC<AgentCardProps> = ({
           placement="top"
           arrow
         >
-          <CardActionArea onClick={() => onSelect(agent)}>
+          <CardActionArea onClick={handleCardClick}>
             <CardContent sx={CARD_CONTENT_SX}>
+              {/* Avatar + Name */}
               <Box
                 sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}
               >
@@ -206,58 +195,10 @@ export const AgentCard: FC<AgentCardProps> = ({
                   >
                     {displayName}
                   </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        bgcolor: statusDotColor(statusColor, theme),
-                      }}
-                    />
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: '0.65rem',
-                        color: theme.palette.text.secondary,
-                      }}
-                    >
-                      {agent.status}
-                    </Typography>
-                    {card?.version && (
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontSize: '0.6rem',
-                          color: theme.palette.text.disabled,
-                          ml: 0.5,
-                        }}
-                      >
-                        v{card.version}
-                      </Typography>
-                    )}
-                    {card?.streaming && (
-                      <Tooltip title="Supports streaming">
-                        <StreamIcon
-                          sx={{
-                            fontSize: 12,
-                            color: theme.palette.info.main,
-                            ml: 0.5,
-                          }}
-                        />
-                      </Tooltip>
-                    )}
-                  </Box>
                 </Box>
               </Box>
 
+              {/* Clean description */}
               <Typography
                 variant="body2"
                 color="text.secondary"
@@ -265,105 +206,89 @@ export const AgentCard: FC<AgentCardProps> = ({
                   fontSize: '0.75rem',
                   mb: 1,
                   display: '-webkit-box',
-                  WebkitLineClamp: 3,
+                  WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
-                  minHeight: 42,
-                  lineHeight: 1.4,
+                  minHeight: 32,
+                  lineHeight: 1.5,
                 }}
               >
-                {card?.description ||
-                  agent.description ||
-                  'No description available'}
+                {cleanDesc}
               </Typography>
 
-              {skills.length > 0 && (
-                <Box
-                  sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 0.75 }}
-                >
-                  {skills.slice(0, 3).map((skill, sidx) => (
-                    <Chip
-                      key={skill.id || sidx}
-                      label={skill.name || skill.id || 'skill'}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        height: 20,
-                        fontSize: '0.65rem',
-                        borderRadius: 1,
-                        '& .MuiChip-label': { px: 0.75 },
-                      }}
-                    />
-                  ))}
-                  {skills.length > 3 && (
-                    <Chip
-                      label={`+${skills.length - 3}`}
-                      size="small"
-                      sx={{
-                        height: 20,
-                        fontSize: '0.65rem',
-                        borderRadius: 1,
-                        bgcolor: alpha(theme.palette.text.primary, 0.06),
-                        '& .MuiChip-label': { px: 0.75 },
-                      }}
-                    />
-                  )}
-                </Box>
-              )}
-
+              {/* Conversation starters */}
               {starters.length > 0 && (
                 <Box
-                  sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 0.5 }}
+                  sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}
                 >
                   {starters.map((s, si) => (
                     <Chip
                       key={si}
                       label={s}
                       size="small"
-                      variant="outlined"
                       sx={{
-                        height: 18,
-                        fontSize: '0.6rem',
-                        borderRadius: 1,
-                        borderStyle: 'dashed',
+                        height: 22,
+                        fontSize: '0.65rem',
+                        borderRadius: 1.5,
+                        bgcolor: alpha(
+                          theme.palette.text.primary,
+                          isDark ? 0.06 : 0.04,
+                        ),
                         color: theme.palette.text.secondary,
-                        '& .MuiChip-label': { px: 0.5 },
+                        '& .MuiChip-label': { px: 0.75 },
                       }}
                     />
                   ))}
                 </Box>
               )}
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              {/* Status + capabilities footer */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  mt: 'auto',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    bgcolor: statusDotColor(statusColor, theme),
+                    flexShrink: 0,
+                  }}
+                />
                 <Typography
                   variant="caption"
-                  color="text.disabled"
-                  sx={{ fontSize: '0.6rem' }}
+                  sx={{
+                    fontSize: '0.65rem',
+                    color: theme.palette.text.secondary,
+                  }}
                 >
-                  {agent.namespace}
-                  {agent.labels?.framework
-                    ? ` · ${agent.labels.framework}`
-                    : ''}
+                  {agent.status}
                 </Typography>
-                {protocolLabel && (
-                  <Chip
-                    label={protocolLabel}
-                    size="small"
-                    sx={{
-                      height: 16,
-                      fontSize: '0.55rem',
-                      fontWeight: 700,
-                      letterSpacing: 0.5,
-                      borderRadius: 0.75,
-                      ml: 'auto',
-                      bgcolor: alpha(
-                        theme.palette.info.main,
-                        isDark ? 0.15 : 0.08,
-                      ),
-                      color: theme.palette.info.main,
-                      '& .MuiChip-label': { px: 0.5 },
-                    }}
-                  />
+                <Box sx={{ flex: 1 }} />
+                {card?.streaming && (
+                  <Tooltip title="Streaming">
+                    <StreamIcon
+                      sx={{
+                        fontSize: 13,
+                        color: theme.palette.text.disabled,
+                      }}
+                    />
+                  </Tooltip>
+                )}
+                {agent.labels?.protocol && (
+                  <Tooltip title="A2A Protocol">
+                    <SyncAltIcon
+                      sx={{
+                        fontSize: 13,
+                        color: theme.palette.text.disabled,
+                      }}
+                    />
+                  </Tooltip>
                 )}
               </Box>
             </CardContent>

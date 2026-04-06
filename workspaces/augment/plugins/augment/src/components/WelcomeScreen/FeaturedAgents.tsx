@@ -25,8 +25,11 @@ import Fade from '@mui/material/Fade';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { ChatAgentConfig } from '../../types';
 import type { AgentWithCard } from './agentUtils';
-import { getAgentAvatarColor, isAgentReady } from './agentUtils';
-import { stripMarkdown } from './stripMarkdown';
+import {
+  getAgentAvatarColor,
+  isAgentReady,
+  sanitizeDescription,
+} from './agentUtils';
 
 interface FeaturedAgentsProps {
   agents: AgentWithCard[];
@@ -226,7 +229,7 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                               color: theme.palette.text.disabled,
                             }}
                           >
-                            {agent.namespace}
+                            {ready ? 'Ready' : agent.status}
                           </Typography>
                         </Box>
                       </Box>
@@ -246,7 +249,7 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                           lineHeight: 1.5,
                         }}
                       >
-                        {stripMarkdown(description)}
+                        {sanitizeDescription(description)}
                       </Typography>
                     )}
                   </CardContent>

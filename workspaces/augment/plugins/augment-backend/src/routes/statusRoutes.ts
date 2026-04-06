@@ -29,7 +29,7 @@ export function registerStatusRoutes(
   adminConfig?: AdminConfigService,
   initializationError?: string | null,
 ): void {
-  const { router, logger, config, provider, sendRouteError } = ctx;
+  const { router, logger, config, sendRouteError } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
   router.get('/health', (_req, res) => {
@@ -47,9 +47,10 @@ export function registerStatusRoutes(
   router.get(
     '/status',
     withRoute('GET /status', 'Failed to get status', async (req, res) => {
+      const currentProvider = ctx.provider;
       if (initializationError) {
         res.status(503).json({
-          providerId: provider.id,
+          providerId: currentProvider.id,
           initializationError,
           provider: { connected: false, baseUrl: '(not connected)' },
           mcpServers: [],
@@ -57,12 +58,12 @@ export function registerStatusRoutes(
         return;
       }
 
-      const status = await provider.getStatus();
+      const status = await currentProvider.getStatus();
       const isAdmin = await ctx.checkIsAdmin(req);
 
       const redacted = {
         ...status,
-        providerId: provider.id,
+        providerId: currentProvider.id,
         isAdmin,
         provider: {
           ...status.provider,

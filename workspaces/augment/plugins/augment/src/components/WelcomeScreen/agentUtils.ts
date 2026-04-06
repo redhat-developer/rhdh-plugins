@@ -116,3 +116,51 @@ export function sortAgents(
 export function isAgentReady(status: string): boolean {
   return ['Ready', 'Running', 'Active'].includes(status);
 }
+
+/**
+ * Strips markdown formatting and technical headings from agent descriptions,
+ * returning a clean 1-2 sentence summary suitable for card display.
+ */
+export function sanitizeDescription(raw: string, maxLength = 160): string {
+  let text = raw;
+
+  // Remove everything after the first markdown heading (## or #)
+  const headingIdx = text.search(/\n#{1,3}\s/);
+  if (headingIdx > 0) {
+    text = text.slice(0, headingIdx);
+  }
+
+  // Remove markdown bold/italic
+  text = text.replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1');
+  text = text.replace(/_{1,3}([^_]+)_{1,3}/g, '$1');
+
+  // Remove markdown links [text](url) -> text
+  text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+
+  // Remove inline code backticks
+  text = text.replace(/`([^`]+)`/g, '$1');
+
+  // Remove markdown headings at start of line
+  text = text.replace(/^#{1,6}\s+/gm, '');
+
+  // Remove bullet points
+  text = text.replace(/^[\s]*[-*+]\s+/gm, '');
+
+  // Remove "Input Parameters", "Key Features", etc. labels
+  text = text.replace(
+    /\b(Input Parameters|Key Features|Parameters|Usage|Description)\s*[-:·]\s*/gi,
+    '',
+  );
+
+  // Collapse whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+
+  // Truncate to max length at a word boundary
+  if (text.length > maxLength) {
+    const truncated = text.slice(0, maxLength);
+    const lastSpace = truncated.lastIndexOf(' ');
+    text = `${truncated.slice(0, lastSpace > 80 ? lastSpace : maxLength)}...`;
+  }
+
+  return text || 'No description available';
+}
