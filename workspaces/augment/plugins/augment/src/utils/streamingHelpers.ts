@@ -234,6 +234,13 @@ export function buildBotResponse(
     responseText = getFallbackResponseText(toolCallsWithOutput);
   }
 
+  if (!responseText && streamingState.artifacts?.length) {
+    responseText = streamingState.artifacts
+      .map(a => a.content)
+      .filter(Boolean)
+      .join('\n\n');
+  }
+
   if (!responseText && streamingState.toolCalls.length === 0) {
     const isCompleted =
       streamingState.phase === 'completed' && streamingState.completed;
