@@ -56,6 +56,9 @@ export function ProviderSelector({
       setSwitching(true);
       try {
         await onSwitch(value);
+        window.dispatchEvent(
+          new CustomEvent('augment:provider-switched', { detail: value }),
+        );
       } finally {
         setSwitching(false);
       }

@@ -43,6 +43,7 @@ export {
   type UseToolApprovalReturn,
 } from './useToolApproval';
 export { useAdminConfig } from './useAdminConfig';
+export { useChatAgentConfig } from './useChatAgentConfig';
 export { useEffectiveConfig } from './useEffectiveConfig';
 export { useGeneratePrompt } from './useGeneratePrompt';
 export { useModels, type ModelInfo } from './useModels';

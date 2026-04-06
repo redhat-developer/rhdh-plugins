@@ -16,20 +16,29 @@
 import { useMemo, useCallback, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Drawer from '@mui/material/Drawer';
 import { useTheme } from '@mui/material/styles';
+import ExploreIcon from '@mui/icons-material/Explore';
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
+import { useApi } from '@backstage/core-plugin-api';
+import { augmentApiRef } from '../../api';
 import { useBranding } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { sanitizeBrandingUrl } from '../../theme/branding';
+import { useAgentGalleryData } from './useAgentGalleryData';
 import type {
   PromptGroup,
   PromptCard,
   Workflow,
   QuickAction,
+  ChatAgentConfig,
 } from '../../types';
 import { PromptGroupRow } from './PromptGroupRow';
 import { AgentGallery } from './AgentGallery';
+import { FeaturedAgents } from './FeaturedAgents';
 import type { AgentWithCard } from './agentUtils';
-import { OnboardingBanner } from './OnboardingBanner';
 import { AgentDetailDrawer } from './AgentDetailDrawer';
 import { buildEffectivePromptGroups } from './buildEffectivePromptGroups';
 import {
@@ -46,15 +55,8 @@ interface WelcomeScreenProps {
   readonly promptGroups?: readonly PromptGroup[];
   readonly onAgentSelect?: (agentId: string, agentName: string) => void;
   readonly showAgentGallery?: boolean;
+  readonly chatAgentConfigs?: ChatAgentConfig[];
 }
-
-const EMPTY_STATE_SX = {
-  flex: 1,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: 'text.secondary',
-} as const;
 
 const TAGLINE_SX = {
   color: 'text.secondary',
@@ -77,13 +79,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   promptGroups: configPromptGroups,
   onAgentSelect,
   showAgentGallery = false,
+  chatAgentConfigs = [],
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const api = useApi(augmentApiRef);
   const { branding } = useBranding();
   const { t } = useTranslation();
   const [logoError, setLogoError] = useState(false);
   const [drawerAgent, setDrawerAgent] = useState<AgentWithCard | null>(null);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const { agents: allAgents } = useAgentGalleryData(api);
 
   const safeLogoUrl = useMemo(
     () => sanitizeBrandingUrl(branding.logoUrl),
@@ -103,6 +109,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   const handleCardClick = useCallback(
     (card: PromptCard) => {
+      if (card.agentId && onAgentSelect) {
+        const name = card.agentId.includes('/')
+          ? card.agentId.split('/').pop()!
+          : card.agentId;
+        onAgentSelect(card.agentId, name);
+      }
       onQuickActionSelect({
         title: card.title,
         description: card.description,
@@ -110,7 +122,23 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         icon: card.icon,
       });
     },
-    [onQuickActionSelect],
+    [onQuickActionSelect, onAgentSelect],
+  );
+
+  const handleStarterClick = useCallback(
+    (agentId: string, prompt: string) => {
+      if (onAgentSelect) {
+        const name = agentId.includes('/')
+          ? agentId.split('/').pop()!
+          : agentId;
+        onAgentSelect(agentId, name);
+      }
+      onQuickActionSelect({
+        title: prompt,
+        prompt,
+      });
+    },
+    [onAgentSelect, onQuickActionSelect],
   );
 
   const titleSx = useMemo(
@@ -118,8 +146,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     [branding.primaryColor],
   );
 
+  const hasFeatured = showAgentGallery && onAgentSelect;
+
   return (
     <Box sx={getContainerSx(theme)}>
+      {/* Hero */}
       <Box sx={getHeroSx()}>
         {safeLogoUrl && !logoError && (
           <Box
@@ -152,16 +183,104 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         </Typography>
       </Box>
 
-      {showAgentGallery && onAgentSelect && (
+      {/* Featured Agents (replaces the full gallery on the welcome screen) */}
+      {hasFeatured && (
+        <FeaturedAgents
+          agents={allAgents}
+          chatAgentConfigs={chatAgentConfigs}
+          onAgentSelect={onAgentSelect!}
+          onStarterClick={handleStarterClick}
+        />
+      )}
+
+      {/* Prompt Groups */}
+      <Box sx={getPromptGroupsContainerSx(isDark, theme)}>
+        {effectivePromptGroups.length > 0 &&
+          effectivePromptGroups.map(group => (
+            <PromptGroupRow
+              key={group.id}
+              promptGroup={group}
+              onCardClick={handleCardClick}
+              isDark={isDark}
+            />
+          ))}
+        {effectivePromptGroups.length === 0 && !hasFeatured && (
+          <Box
+            sx={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'text.secondary',
+            }}
+          >
+            <Typography variant="body2">
+              {t('welcomeScreen.emptyPromptHint')}
+            </Typography>
+          </Box>
+        )}
+
+        {/* "Explore all agents" link */}
+        {hasFeatured && (
+          <Box sx={{ textAlign: 'center', py: 2 }}>
+            <Button
+              size="small"
+              startIcon={<ExploreIcon sx={{ fontSize: 16 }} />}
+              onClick={() => setGalleryOpen(true)}
+              sx={{
+                textTransform: 'none',
+                fontSize: '0.8rem',
+                color: theme.palette.text.secondary,
+                '&:hover': { color: theme.palette.primary.main },
+              }}
+            >
+              Explore all agents
+            </Button>
+          </Box>
+        )}
+      </Box>
+
+      {/* Full Agent Gallery Drawer */}
+      {hasFeatured && (
         <>
-          <OnboardingBanner
-            appName={branding.appName}
-            primaryColor={branding.primaryColor}
-          />
-          <AgentGallery
-            onAgentSelect={onAgentSelect}
-            onAgentInfo={setDrawerAgent}
-          />
+          <Drawer
+            anchor="right"
+            open={galleryOpen}
+            onClose={() => setGalleryOpen(false)}
+            PaperProps={{
+              sx: {
+                width: { xs: '100%', sm: 520 },
+                bgcolor: theme.palette.background.default,
+              },
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                px: 2,
+                py: 1.5,
+                borderBottom: `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                All Agents
+              </Typography>
+              <IconButton size="small" onClick={() => setGalleryOpen(false)}>
+                <CloseIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Box>
+            <Box sx={{ overflow: 'auto', flex: 1, py: 1 }}>
+              <AgentGallery
+                onAgentSelect={(id, name) => {
+                  setGalleryOpen(false);
+                  onAgentSelect!(id, name);
+                }}
+                onAgentInfo={setDrawerAgent}
+              />
+            </Box>
+          </Drawer>
           <AgentDetailDrawer
             agent={drawerAgent}
             open={!!drawerAgent}
@@ -170,25 +289,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           />
         </>
       )}
-
-      <Box sx={getPromptGroupsContainerSx(isDark, theme)}>
-        {effectivePromptGroups.length > 0 ? (
-          effectivePromptGroups.map(group => (
-            <PromptGroupRow
-              key={group.id}
-              promptGroup={group}
-              onCardClick={handleCardClick}
-              isDark={isDark}
-            />
-          ))
-        ) : (
-          <Box sx={EMPTY_STATE_SX}>
-            <Typography variant="body2">
-              {t('welcomeScreen.emptyPromptHint')}
-            </Typography>
-          </Box>
-        )}
-      </Box>
     </Box>
   );
 };

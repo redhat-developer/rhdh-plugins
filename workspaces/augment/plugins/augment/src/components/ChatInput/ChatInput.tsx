@@ -77,6 +77,10 @@ export interface ChatInputProps {
   onClearAgent?: () => void;
   /** When true, sending is blocked until the user selects an agent */
   requireAgent?: boolean;
+  /** Suggested conversation starters for the active agent */
+  conversationStarters?: string[];
+  /** Callback when a conversation starter is clicked */
+  onStarterClick?: (prompt: string) => void;
 }
 
 /**
@@ -102,6 +106,8 @@ export const ChatInput: FC<ChatInputProps> = ({
   isKagenti = false,
   onClearAgent,
   requireAgent = false,
+  conversationStarters,
+  onStarterClick,
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -145,7 +151,7 @@ export const ChatInput: FC<ChatInputProps> = ({
               title={t('chatInput.newConversationShortcut')}
               placement="top"
             >
-              <span>
+              <Box component="span">
                 <IconButton
                   onClick={onNewChat}
                   disabled={isTyping}
@@ -154,9 +160,47 @@ export const ChatInput: FC<ChatInputProps> = ({
                 >
                   <AddIcon sx={styles.newChatIcon} />
                 </IconButton>
-              </span>
+              </Box>
             </Tooltip>
           )}
+
+          {/* Conversation starters */}
+          {conversationStarters &&
+            conversationStarters.length > 0 &&
+            onStarterClick && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 0.75,
+                  flexWrap: 'wrap',
+                  mb: 0.75,
+                  px: 0.5,
+                }}
+              >
+                {conversationStarters.map((starter, idx) => (
+                  <Chip
+                    key={idx}
+                    label={starter}
+                    size="small"
+                    variant="outlined"
+                    onClick={() => onStarterClick(starter)}
+                    sx={{
+                      fontSize: '0.75rem',
+                      height: 28,
+                      borderRadius: 2,
+                      borderStyle: 'dashed',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      '&:hover': {
+                        borderStyle: 'solid',
+                        borderColor: theme.palette.primary.main,
+                        bgcolor: `${theme.palette.primary.main}08`,
+                      },
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
 
           {/* Input Pill */}
           <Box sx={styles.inputPill}>
@@ -305,7 +349,7 @@ export const ChatInput: FC<ChatInputProps> = ({
                 title={requireAgent ? t('chatInput.selectAgentPrompt') : ''}
                 placement="top"
               >
-                <span>
+                <Box component="span">
                   <IconButton
                     sx={styles.createSendButton(canSend)}
                     onClick={onSend}
@@ -314,7 +358,7 @@ export const ChatInput: FC<ChatInputProps> = ({
                   >
                     <SendIcon sx={{ fontSize: 18 }} />
                   </IconButton>
-                </span>
+                </Box>
               </Tooltip>
             )}
           </Box>

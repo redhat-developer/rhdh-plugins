@@ -342,10 +342,40 @@ export interface PromptCard {
   prompt: string;
   /** Icon name */
   icon?: string;
+  /** Agent to auto-select when this card is clicked (e.g. "namespace/agentName") */
+  agentId?: string;
   /** Whether this feature is coming soon (disabled, non-clickable) */
   comingSoon?: boolean;
   /** Custom coming soon label (defaults to "Coming Soon") */
   comingSoonLabel?: string;
+}
+
+/**
+ * Per-agent chat experience configuration set by admins.
+ * Controls which agents are visible to end users and how they appear.
+ * @public
+ */
+export interface ChatAgentConfig {
+  /** Agent identifier: "namespace/name" */
+  agentId: string;
+  /** Whether this agent appears in end-user chat */
+  visible: boolean;
+  /** Whether this agent is featured prominently on the welcome screen */
+  featured: boolean;
+  /** Display order (lower first) */
+  order?: number;
+  /** Override display name */
+  displayName?: string;
+  /** Override description */
+  description?: string;
+  /** Custom avatar image URL */
+  avatarUrl?: string;
+  /** Per-agent accent color (hex) */
+  accentColor?: string;
+  /** Greeting message shown as first bot message on new conversation */
+  greeting?: string;
+  /** Suggested prompts shown on the agent card and below the input */
+  conversationStarters?: string[];
 }
 
 /**

@@ -186,16 +186,12 @@ export class KagentiProvider implements AgenticProvider {
       }`,
     );
 
+    // Admin client is always needed for LLM model listing in Platform Config
+    this.adminClient = new KagentiAdminClient(this.apiClient);
+
     if (this.featureFlags.sandbox) {
       this.sandboxClient = new KagentiSandboxClient(this.apiClient);
-      this.adminClient = new KagentiAdminClient(this.apiClient);
-      this.logger.info('Sandbox and admin clients initialized');
-    }
-
-    if (this.featureFlags.integrations || this.featureFlags.triggers) {
-      if (!this.adminClient) {
-        this.adminClient = new KagentiAdminClient(this.apiClient);
-      }
+      this.logger.info('Sandbox client initialized');
     }
   }
 
@@ -370,6 +366,33 @@ export class KagentiProvider implements AgenticProvider {
       securityDemands?: Record<string, boolean>;
     }>
   > {
+    this.requireInitialized();
+
+    // Fetch actual LLM models from the Kagenti admin API when available.
+    // The admin client calls GET /api/v1/models on the Kagenti server
+    // which returns LLM model identifiers (not agent IDs).
+    if (this.adminClient) {
+      try {
+        const llmModels = await this.adminClient.listLlmModels();
+        if (llmModels.length > 0) {
+          return llmModels
+            .filter(m => typeof m.id === 'string' && m.id.length > 0)
+            .map(m => ({
+              id: m.id,
+              owned_by: 'kagenti',
+              model_type: (m as Record<string, unknown>).model_type as
+                | string
+                | undefined,
+            }));
+        }
+      } catch (err) {
+        this.logger.warn(
+          `Failed to list LLM models from Kagenti admin API, falling back to agent list: ${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
+
+    // Fallback: list deployed agents as selectable model targets
     const { config, apiClient } = this.requireInitialized();
 
     if (config.agents?.length) {

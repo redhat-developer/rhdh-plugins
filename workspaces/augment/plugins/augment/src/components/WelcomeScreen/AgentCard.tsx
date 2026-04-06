@@ -93,6 +93,9 @@ export const AgentCard: FC<AgentCardProps> = ({
   const protocolLabel = protocol
     ? (Array.isArray(protocol) ? protocol.join(', ') : protocol).toUpperCase()
     : null;
+  const starters = (card?.skills || [])
+    .flatMap(s => s.examples || [])
+    .slice(0, 2);
 
   return (
     <Fade in timeout={200 + index * 50}>
@@ -305,6 +308,29 @@ export const AgentCard: FC<AgentCardProps> = ({
                       }}
                     />
                   )}
+                </Box>
+              )}
+
+              {starters.length > 0 && (
+                <Box
+                  sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 0.5 }}
+                >
+                  {starters.map((s, si) => (
+                    <Chip
+                      key={si}
+                      label={s}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.6rem',
+                        borderRadius: 1,
+                        borderStyle: 'dashed',
+                        color: theme.palette.text.secondary,
+                        '& .MuiChip-label': { px: 0.5 },
+                      }}
+                    />
+                  ))}
                 </Box>
               )}
 

@@ -119,21 +119,25 @@ export function KagentiHomeDashboard({
       label: 'Total Agents',
       value: stats?.totalAgents ?? 0,
       icon: <SmartToyIcon />,
+      accent: theme.palette.primary.main,
     },
     {
       label: 'Ready Agents',
       value: stats?.readyAgents ?? 0,
       icon: <CheckCircleOutlineIcon />,
+      accent: theme.palette.success.main,
     },
     {
       label: 'Ready Tools',
       value: stats?.readyTools ?? 0,
       icon: <BuildIcon />,
+      accent: theme.palette.info.main,
     },
     {
       label: 'Namespaces',
       value: stats?.namespaceCount ?? 0,
       icon: <FolderIcon />,
+      accent: theme.palette.warning.main,
     },
   ];
 
@@ -146,13 +150,13 @@ export function KagentiHomeDashboard({
     {
       label: 'Create Agent',
       description: 'Import or build a new AI agent',
-      icon: <AddCircleOutlineIcon sx={{ fontSize: 24 }} />,
+      icon: <AddCircleOutlineIcon sx={{ fontSize: 28 }} />,
       panel: 'kagenti-agents' as AdminPanel,
     },
     {
       label: 'Create Tool',
       description: 'Register an MCP tool server',
-      icon: <AddCircleOutlineIcon sx={{ fontSize: 24 }} />,
+      icon: <AddCircleOutlineIcon sx={{ fontSize: 28 }} />,
       panel: 'kagenti-tools' as AdminPanel,
     },
   ];
@@ -166,43 +170,43 @@ export function KagentiHomeDashboard({
     {
       label: 'Agents',
       description: 'View and manage agents',
-      icon: <SmartToyIcon sx={{ fontSize: 24 }} />,
+      icon: <SmartToyIcon sx={{ fontSize: 26 }} />,
       panel: 'kagenti-agents' as AdminPanel,
     },
     {
       label: 'Tools',
       description: 'View and manage tools',
-      icon: <BuildIcon sx={{ fontSize: 24 }} />,
+      icon: <BuildIcon sx={{ fontSize: 26 }} />,
       panel: 'kagenti-tools' as AdminPanel,
     },
     {
       label: 'Build Pipelines',
       description: 'Shipwright builds and strategies',
-      icon: <RocketLaunchIcon sx={{ fontSize: 24 }} />,
+      icon: <RocketLaunchIcon sx={{ fontSize: 26 }} />,
       panel: 'kagenti-builds' as AdminPanel,
     },
     {
       label: 'Sandbox',
       description: 'Sessions, pods, and token usage',
-      icon: <ScienceIcon sx={{ fontSize: 24 }} />,
+      icon: <ScienceIcon sx={{ fontSize: 26 }} />,
       panel: 'kagenti-sandbox' as AdminPanel,
     },
     {
       label: 'Platform Config',
       description: 'Model, RAG, MCP, and safety',
-      icon: <TuneIcon sx={{ fontSize: 24 }} />,
+      icon: <TuneIcon sx={{ fontSize: 26 }} />,
       panel: 'kagenti-platform' as AdminPanel,
     },
     {
       label: 'Observability',
       description: 'Traces, network, dashboards',
-      icon: <MonitorHeartIcon sx={{ fontSize: 24 }} />,
+      icon: <MonitorHeartIcon sx={{ fontSize: 26 }} />,
       panel: 'kagenti-dashboards' as AdminPanel,
     },
     {
       label: 'Administration',
       description: 'Identity, namespaces, migration',
-      icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: 24 }} />,
+      icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: 26 }} />,
       panel: 'kagenti-admin' as AdminPanel,
     },
   ];
@@ -229,20 +233,20 @@ export function KagentiHomeDashboard({
   return (
     <Box sx={{ maxWidth: 1200 }}>
       {/* Page Title */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.75 }}>
           Command Center
         </Typography>
         <Typography
-          variant="body2"
-          sx={{ color: theme.palette.text.secondary }}
+          variant="subtitle1"
+          sx={{ color: theme.palette.text.secondary, fontWeight: 400 }}
         >
           Manage, deploy, and observe your AI agents and tools with ease.
         </Typography>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
@@ -252,8 +256,8 @@ export function KagentiHomeDashboard({
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' },
-          gap: 2,
-          mb: 3,
+          gap: 2.5,
+          mb: 4,
         }}
       >
         {statCards.map(card => (
@@ -261,11 +265,12 @@ export function KagentiHomeDashboard({
             key={card.label}
             variant="outlined"
             sx={{
-              p: 2.5,
+              p: 3,
               display: 'flex',
               flexDirection: 'column',
-              gap: 1,
+              gap: 1.5,
               bgcolor: alpha(theme.palette.background.paper, isDark ? 0.5 : 1),
+              borderLeft: `3px solid ${alpha(card.accent, isDark ? 0.6 : 0.5)}`,
             }}
           >
             <Box
@@ -282,17 +287,19 @@ export function KagentiHomeDashboard({
                   color: theme.palette.text.secondary,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  fontSize: '0.6875rem',
+                  fontSize: '0.75rem',
                 }}
               >
                 {card.label}
               </Typography>
-              <Box sx={{ color: theme.palette.text.disabled }}>{card.icon}</Box>
+              <Box sx={{ color: alpha(card.accent, 0.5) }}>{card.icon}</Box>
             </Box>
             {loading ? (
-              <Skeleton variant="text" width={60} height={40} />
+              <Skeleton variant="text" width={60} height={48} />
             ) : (
-              <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1 }}>
+              <Typography
+                sx={{ fontWeight: 800, lineHeight: 1, fontSize: '2rem' }}
+              >
                 {card.value}
               </Typography>
             )}
@@ -302,8 +309,8 @@ export function KagentiHomeDashboard({
 
       {/* Create Actions */}
       <Typography
-        variant="subtitle2"
-        sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.875rem' }}
+        variant="h6"
+        sx={{ fontWeight: 700, mb: 2, letterSpacing: '0.01em' }}
       >
         Create
       </Typography>
@@ -311,8 +318,8 @@ export function KagentiHomeDashboard({
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-          gap: 2,
-          mb: 3,
+          gap: 2.5,
+          mb: 4,
         }}
       >
         {createActions.map(action => (
@@ -322,33 +329,41 @@ export function KagentiHomeDashboard({
             sx={{
               borderStyle: 'dashed',
               borderColor: alpha(theme.palette.primary.main, 0.4),
-              transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s',
+              transition:
+                'border-color 0.2s, box-shadow 0.2s, background-color 0.2s, transform 0.2s',
               '&:hover': {
                 borderStyle: 'solid',
                 borderColor: theme.palette.primary.main,
-                bgcolor: alpha(theme.palette.primary.main, isDark ? 0.08 : 0.02),
+                bgcolor: alpha(
+                  theme.palette.primary.main,
+                  isDark ? 0.08 : 0.02,
+                ),
                 boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}`,
+                transform: 'translateY(-1px)',
               },
             }}
           >
             <CardActionArea
               onClick={() => onNavigate(action.panel)}
               sx={{
-                p: 2,
+                p: 2.5,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1.5,
+                gap: 2,
               }}
             >
               <Box
                 sx={{
-                  width: 40,
-                  height: 40,
+                  width: 48,
+                  height: 48,
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bgcolor: alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08),
+                  bgcolor: alpha(
+                    theme.palette.primary.main,
+                    isDark ? 0.15 : 0.08,
+                  ),
                   color: theme.palette.primary.main,
                   flexShrink: 0,
                 }}
@@ -356,12 +371,12 @@ export function KagentiHomeDashboard({
                 {action.icon}
               </Box>
               <Box sx={{ minWidth: 0 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                   {action.label}
                 </Typography>
                 <Typography
-                  variant="caption"
-                  sx={{ color: theme.palette.text.secondary }}
+                  variant="body2"
+                  sx={{ color: theme.palette.text.secondary, mt: 0.25 }}
                 >
                   {action.description}
                 </Typography>
@@ -371,12 +386,12 @@ export function KagentiHomeDashboard({
         ))}
       </Box>
 
-      <Divider sx={{ mb: 3 }} />
+      <Divider sx={{ my: 1 }} />
 
       {/* Navigate */}
       <Typography
-        variant="subtitle2"
-        sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.875rem' }}
+        variant="h6"
+        sx={{ fontWeight: 700, mb: 2, mt: 4, letterSpacing: '0.01em' }}
       >
         Navigate
       </Typography>
@@ -388,8 +403,8 @@ export function KagentiHomeDashboard({
             sm: 'repeat(3, 1fr)',
             lg: 'repeat(4, 1fr)',
           },
-          gap: 2,
-          mb: 3,
+          gap: 2.5,
+          mb: 4,
         }}
       >
         {navActions.map(action => (
@@ -397,28 +412,30 @@ export function KagentiHomeDashboard({
             key={action.label}
             variant="outlined"
             sx={{
-              transition: 'border-color 0.2s, box-shadow 0.2s',
+              borderRadius: 2,
+              transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
               '&:hover': {
                 borderColor: theme.palette.primary.main,
                 boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.3)}`,
+                transform: 'translateY(-1px)',
               },
             }}
           >
             <CardActionArea
               onClick={() => onNavigate(action.panel)}
               sx={{
-                p: 2,
+                p: 2.5,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-start',
-                gap: 1,
+                gap: 1.5,
               }}
             >
               <Box
                 sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 1.5,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -432,12 +449,19 @@ export function KagentiHomeDashboard({
                 {action.icon}
               </Box>
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+                >
                   {action.label}
                 </Typography>
                 <Typography
-                  variant="caption"
-                  sx={{ color: theme.palette.text.secondary, fontSize: '0.6875rem' }}
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontSize: '0.75rem',
+                    mt: 0.25,
+                  }}
                 >
                   {action.description}
                 </Typography>
@@ -452,8 +476,9 @@ export function KagentiHomeDashboard({
         <Card
           variant="outlined"
           sx={{
-            p: 2.5,
+            p: 3,
             mb: 2,
+            borderRadius: 2,
             background: isDark
               ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`
               : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${theme.palette.background.paper} 100%)`,
@@ -464,14 +489,17 @@ export function KagentiHomeDashboard({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              mb: 2,
+              mb: 2.5,
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <RocketLaunchIcon
-                sx={{ fontSize: 20, color: theme.palette.primary.main }}
+                sx={{ fontSize: 22, color: theme.palette.primary.main }}
               />
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 700, fontSize: '1rem' }}
+              >
                 Getting Started
               </Typography>
             </Box>
@@ -483,7 +511,7 @@ export function KagentiHomeDashboard({
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-              gap: 2,
+              gap: 2.5,
             }}
           >
             {gettingStartedSteps.map(step => (
@@ -493,8 +521,8 @@ export function KagentiHomeDashboard({
               >
                 <Box
                   sx={{
-                    width: 28,
-                    height: 28,
+                    width: 32,
+                    height: 32,
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -505,7 +533,7 @@ export function KagentiHomeDashboard({
                     ),
                     color: theme.palette.primary.main,
                     fontWeight: 700,
-                    fontSize: '0.8rem',
+                    fontSize: '0.85rem',
                     flexShrink: 0,
                   }}
                 >
@@ -513,13 +541,13 @@ export function KagentiHomeDashboard({
                 </Box>
                 <Box>
                   <Typography
-                    variant="body2"
+                    variant="subtitle2"
                     sx={{ fontWeight: 600, mb: 0.25 }}
                   >
                     {step.title}
                   </Typography>
                   <Typography
-                    variant="caption"
+                    variant="body2"
                     sx={{ color: theme.palette.text.secondary }}
                   >
                     {step.description}
