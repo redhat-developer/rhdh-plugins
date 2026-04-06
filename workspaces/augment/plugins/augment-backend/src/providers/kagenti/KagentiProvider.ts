@@ -262,6 +262,7 @@ export class KagentiProvider implements AgenticProvider {
     const { config } = this.requireInitialized();
     const ls = this.rootConfig.getOptionalConfig('augment.llamaStack');
     let model = ls?.getOptionalString('model') ?? '';
+    if (model === 'unused') model = '';
 
     if (!model) {
       try {
