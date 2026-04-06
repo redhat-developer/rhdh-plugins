@@ -159,8 +159,16 @@ export function KagentiAgentDetailView({
           onChange={(_, v) => setTab(v)}
           sx={{
             minHeight: 40,
+            '& .MuiTabs-flexContainer': {
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 0,
+            },
             '& .MuiTab-root': {
+              display: 'inline-flex',
               minHeight: 40,
+              minWidth: 'auto',
+              px: 2,
               textTransform: 'none',
               fontSize: '0.875rem',
             },
