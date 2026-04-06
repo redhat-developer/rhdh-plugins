@@ -14,48 +14,97 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
+import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import { useTheme, alpha } from '@mui/material/styles';
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
 import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 import NoteAddOutlinedIcon from '@mui/icons-material/NoteAddOutlined';
 import ExtensionOutlinedIcon from '@mui/icons-material/ExtensionOutlined';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
-import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
-import SettingsSuggestOutlinedIcon from '@mui/icons-material/SettingsSuggestOutlined';
-import InsightsIcon from '@mui/icons-material/Insights';
-import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CloseIcon from '@mui/icons-material/Close';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../../api';
 import type { AdminPanel } from '../../../hooks';
+import type {
+  KagentiAgentSummary,
+  KagentiToolSummary,
+  KagentiBuildListItem,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 
 export interface KagentiHomeDashboardProps {
   namespace?: string;
   onNavigate: (panel: AdminPanel) => void;
 }
 
-interface DashboardStats {
-  totalAgents: number;
-  readyAgents: number;
-  totalTools: number;
-  readyTools: number;
+interface DashboardData {
+  agents: KagentiAgentSummary[];
+  tools: KagentiToolSummary[];
+  builds: KagentiBuildListItem[];
   namespaceCount: number;
 }
 
 const GETTING_STARTED_KEY = 'augment:kagenti-getting-started-dismissed';
+
+function timeAgo(dateStr?: string): string {
+  if (!dateStr) return '--';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  if (diff < 0) return 'just now';
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+function statusColor(
+  status: string,
+  palette: {
+    success: { main: string };
+    warning: { main: string };
+    error: { main: string };
+    text: { secondary: string };
+  },
+): string {
+  const s = status?.toLowerCase() ?? '';
+  if (s === 'ready' || s === 'succeeded' || s === 'true')
+    return palette.success.main;
+  if (s === 'running' || s === 'pending' || s === 'building')
+    return palette.warning.main;
+  if (s === 'failed' || s === 'error' || s === 'crashloopbackoff')
+    return palette.error.main;
+  return palette.text.secondary;
+}
+
+type HealthRow = {
+  name: string;
+  namespace: string;
+  kind: 'Agent' | 'Tool';
+  status: string;
+  framework?: string;
+  createdAt?: string;
+};
 
 export function KagentiHomeDashboard({
   namespace,
@@ -65,7 +114,7 @@ export function KagentiHomeDashboard({
   const api = useApi(augmentApiRef);
   const isDark = theme.palette.mode === 'dark';
 
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showGettingStarted, setShowGettingStarted] = useState(() => {
@@ -76,24 +125,22 @@ export function KagentiHomeDashboard({
     }
   });
 
-  const loadStats = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [agentsRes, toolsRes, nsRes] = await Promise.all([
+      const [agentsRes, toolsRes, nsRes, buildsRes] = await Promise.all([
         api.listKagentiAgents(namespace || undefined),
         api.listKagentiTools(namespace || undefined),
         api.listKagentiNamespaces(),
+        api
+          .listKagentiShipwrightBuilds(namespace ? { namespace } : undefined)
+          .catch(() => ({ builds: [] as KagentiBuildListItem[] })),
       ]);
-      const agents = agentsRes.agents ?? [];
-      const tools = toolsRes.tools ?? [];
-      setStats({
-        totalAgents: agents.length,
-        readyAgents: agents.filter(a => a.status?.toLowerCase() === 'ready')
-          .length,
-        totalTools: tools.length,
-        readyTools: tools.filter(t => t.status?.toLowerCase() === 'ready')
-          .length,
+      setData({
+        agents: agentsRes.agents ?? [],
+        tools: toolsRes.tools ?? [],
+        builds: buildsRes.builds ?? [],
         namespaceCount: nsRes.namespaces?.length ?? 0,
       });
     } catch (e) {
@@ -104,8 +151,8 @@ export function KagentiHomeDashboard({
   }, [api, namespace]);
 
   useEffect(() => {
-    loadStats();
-  }, [loadStats]);
+    loadData();
+  }, [loadData]);
 
   const dismissGettingStarted = () => {
     setShowGettingStarted(false);
@@ -116,40 +163,88 @@ export function KagentiHomeDashboard({
     }
   };
 
+  const totalAgents = data?.agents.length ?? 0;
+  const readyAgents =
+    data?.agents.filter(a => a.status?.toLowerCase() === 'ready').length ?? 0;
+  const totalTools = data?.tools.length ?? 0;
+  const readyTools =
+    data?.tools.filter(t => t.status?.toLowerCase() === 'ready').length ?? 0;
+  const allAgentsHealthy = totalAgents > 0 && readyAgents === totalAgents;
+  const allToolsHealthy = totalTools > 0 && readyTools === totalTools;
+
+  const healthRows = useMemo<HealthRow[]>(() => {
+    const agents: HealthRow[] = (data?.agents ?? []).map(a => ({
+      name: a.name,
+      namespace: a.namespace,
+      kind: 'Agent',
+      status: a.status,
+      framework: a.labels?.framework,
+      createdAt: a.createdAt,
+    }));
+    const tools: HealthRow[] = (data?.tools ?? []).map(t => ({
+      name: t.name,
+      namespace: t.namespace,
+      kind: 'Tool',
+      status: t.status,
+      createdAt: t.createdAt,
+    }));
+    const all = [...agents, ...tools];
+    all.sort((a, b) => {
+      const aReady = a.status?.toLowerCase() === 'ready' ? 1 : 0;
+      const bReady = b.status?.toLowerCase() === 'ready' ? 1 : 0;
+      if (aReady !== bReady) return aReady - bReady;
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
+    return all;
+  }, [data]);
+
+  const recentBuilds = useMemo(() => {
+    const sorted = [...(data?.builds ?? [])].sort((a, b) => {
+      const aTime = a.creationTimestamp
+        ? new Date(a.creationTimestamp).getTime()
+        : 0;
+      const bTime = b.creationTimestamp
+        ? new Date(b.creationTimestamp).getTime()
+        : 0;
+      return bTime - aTime;
+    });
+    return sorted.slice(0, 5);
+  }, [data]);
+
   const statCards = [
     {
       label: 'Total Agents',
-      value: stats?.totalAgents ?? 0,
+      value: totalAgents,
       icon: <HubOutlinedIcon />,
       accent: theme.palette.primary.main,
     },
     {
       label: 'Ready Agents',
-      value: stats?.readyAgents ?? 0,
-      icon: <TaskAltIcon />,
-      accent: theme.palette.success.main,
+      value: `${readyAgents} / ${totalAgents}`,
+      icon: allAgentsHealthy ? <CheckCircleIcon /> : <WarningAmberIcon />,
+      accent: allAgentsHealthy
+        ? theme.palette.success.main
+        : theme.palette.warning.main,
     },
     {
       label: 'Ready Tools',
-      value: stats?.readyTools ?? 0,
-      icon: <HandymanOutlinedIcon />,
-      accent: theme.palette.info.main,
+      value: `${readyTools} / ${totalTools}`,
+      icon: allToolsHealthy ? <CheckCircleIcon /> : <WarningAmberIcon />,
+      accent: allToolsHealthy
+        ? theme.palette.success.main
+        : theme.palette.warning.main,
     },
     {
       label: 'Workspaces',
-      value: stats?.namespaceCount ?? 0,
+      value: data?.namespaceCount ?? 0,
       icon: <WorkspacesOutlinedIcon />,
-      accent: theme.palette.warning.main,
+      accent: theme.palette.info.main,
     },
   ];
 
-  const createActions: Array<{
-    label: string;
-    description: string;
-    icon: React.ReactNode;
-    accent: string;
-    panel: AdminPanel;
-  }> = [
+  const createActions = [
     {
       label: 'Create Agent',
       description: 'Import or build a new AI agent',
@@ -163,69 +258,6 @@ export function KagentiHomeDashboard({
       icon: <ExtensionOutlinedIcon sx={{ fontSize: 24 }} />,
       accent: theme.palette.info.main,
       panel: 'kagenti-tools' as AdminPanel,
-    },
-  ];
-
-  type NavAction = {
-    label: string;
-    description: string;
-    icon: React.ReactNode;
-    accent: string;
-    panel: AdminPanel;
-  };
-
-  const workloadActions: NavAction[] = [
-    {
-      label: 'Agents',
-      description: 'View and manage agents',
-      icon: <HubOutlinedIcon sx={{ fontSize: 24 }} />,
-      accent: theme.palette.primary.main,
-      panel: 'kagenti-agents' as AdminPanel,
-    },
-    {
-      label: 'Tools',
-      description: 'View and manage tools',
-      icon: <HandymanOutlinedIcon sx={{ fontSize: 24 }} />,
-      accent: theme.palette.info.main,
-      panel: 'kagenti-tools' as AdminPanel,
-    },
-    {
-      label: 'Build Pipelines',
-      description: 'Shipwright builds and strategies',
-      icon: <AccountTreeOutlinedIcon sx={{ fontSize: 24 }} />,
-      accent: theme.palette.warning.main,
-      panel: 'kagenti-builds' as AdminPanel,
-    },
-    {
-      label: 'Sandbox',
-      description: 'Sessions, pods, and token usage',
-      icon: <ScienceOutlinedIcon sx={{ fontSize: 24 }} />,
-      accent: theme.palette.secondary.main,
-      panel: 'kagenti-sandbox' as AdminPanel,
-    },
-  ];
-
-  const operationsActions: NavAction[] = [
-    {
-      label: 'Platform Config',
-      description: 'Model, RAG, MCP, and safety',
-      icon: <SettingsSuggestOutlinedIcon sx={{ fontSize: 24 }} />,
-      accent: '#009688',
-      panel: 'kagenti-platform' as AdminPanel,
-    },
-    {
-      label: 'Observability',
-      description: 'Traces, network, dashboards',
-      icon: <InsightsIcon sx={{ fontSize: 24 }} />,
-      accent: theme.palette.success.main,
-      panel: 'kagenti-dashboards' as AdminPanel,
-    },
-    {
-      label: 'Administration',
-      description: 'Identity, namespaces, migration',
-      icon: <ManageAccountsOutlinedIcon sx={{ fontSize: 24 }} />,
-      accent: theme.palette.text.secondary,
-      panel: 'kagenti-admin' as AdminPanel,
     },
   ];
 
@@ -247,6 +279,224 @@ export function KagentiHomeDashboard({
         'Use the observability dashboards to monitor traces and network traffic.',
     },
   ];
+
+  const thStyle = {
+    fontWeight: 600,
+    fontSize: '0.75rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  } as const;
+
+  function renderLoadingSkeleton() {
+    return (
+      <Box sx={{ p: 3 }}>
+        {[0, 1, 2].map(i => (
+          <Skeleton key={i} variant="text" height={40} sx={{ mb: 1 }} />
+        ))}
+      </Box>
+    );
+  }
+
+  function renderHealthContent() {
+    if (loading) return renderLoadingSkeleton();
+    if (healthRows.length === 0) {
+      return (
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="body2" color="textSecondary">
+            No agents or tools deployed yet. Create one to get started.
+          </Typography>
+        </Box>
+      );
+    }
+    return (
+      <TableContainer>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={thStyle}>Name</TableCell>
+              <TableCell sx={thStyle}>Type</TableCell>
+              <TableCell sx={thStyle}>Status</TableCell>
+              <TableCell sx={thStyle}>Workspace</TableCell>
+              <TableCell sx={thStyle}>Framework</TableCell>
+              <TableCell sx={thStyle}>Created</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {healthRows.map(row => {
+              const kindColor =
+                row.kind === 'Agent'
+                  ? theme.palette.primary.main
+                  : theme.palette.info.main;
+              return (
+                <TableRow
+                  key={`${row.kind}-${row.namespace}-${row.name}`}
+                  hover
+                  sx={{
+                    cursor: 'pointer',
+                    '&:last-child td': { borderBottom: 0 },
+                  }}
+                  onClick={() =>
+                    onNavigate(
+                      (row.kind === 'Agent'
+                        ? 'kagenti-agents'
+                        : 'kagenti-tools') as AdminPanel,
+                    )
+                  }
+                >
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, fontSize: '0.8125rem' }}
+                    >
+                      {row.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={row.kind}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        fontSize: '0.7rem',
+                        height: 22,
+                        borderColor: alpha(kindColor, 0.4),
+                        color: kindColor,
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={row.status || 'Unknown'}
+                      size="small"
+                      sx={{
+                        fontSize: '0.7rem',
+                        height: 22,
+                        fontWeight: 600,
+                        bgcolor: alpha(
+                          statusColor(row.status, theme.palette),
+                          isDark ? 0.15 : 0.1,
+                        ),
+                        color: statusColor(row.status, theme.palette),
+                        border: 'none',
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" color="textSecondary">
+                      {row.namespace}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" color="textSecondary">
+                      {row.framework || '--'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" color="textSecondary">
+                      {timeAgo(row.createdAt)}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  }
+
+  function renderBuildsContent() {
+    if (loading) return renderLoadingSkeleton();
+    if (recentBuilds.length === 0) {
+      return (
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="body2" color="textSecondary">
+            No builds yet. Trigger a build from an agent or tool to see activity
+            here.
+          </Typography>
+        </Box>
+      );
+    }
+    return (
+      <TableContainer>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={thStyle}>Build</TableCell>
+              <TableCell sx={thStyle}>Workspace</TableCell>
+              <TableCell sx={thStyle}>Status</TableCell>
+              <TableCell sx={thStyle}>Strategy</TableCell>
+              <TableCell sx={thStyle}>Started</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {recentBuilds.map(build => {
+              const regColor = build.registered
+                ? theme.palette.success.main
+                : theme.palette.warning.main;
+              return (
+                <TableRow
+                  key={`${build.namespace}-${build.name}`}
+                  hover
+                  sx={{
+                    cursor: 'pointer',
+                    '&:last-child td': { borderBottom: 0 },
+                  }}
+                  onClick={() => onNavigate('kagenti-builds' as AdminPanel)}
+                >
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <BuildCircleOutlinedIcon
+                        sx={{
+                          fontSize: 18,
+                          color: theme.palette.text.secondary,
+                        }}
+                      />
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 600, fontSize: '0.8125rem' }}
+                      >
+                        {build.name}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" color="textSecondary">
+                      {build.namespace}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={build.registered ? 'Registered' : 'Pending'}
+                      size="small"
+                      sx={{
+                        fontSize: '0.7rem',
+                        height: 22,
+                        fontWeight: 600,
+                        bgcolor: alpha(regColor, isDark ? 0.15 : 0.1),
+                        color: regColor,
+                        border: 'none',
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" color="textSecondary">
+                      {build.strategy || '--'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" color="textSecondary">
+                      {timeAgo(build.creationTimestamp)}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  }
 
   return (
     <Box sx={{ maxWidth: 1200 }}>
@@ -338,7 +588,6 @@ export function KagentiHomeDashboard({
           gridTemplateColumns: {
             xs: '1fr',
             sm: 'repeat(2, 1fr)',
-            md: 'repeat(3, 1fr)',
           },
           gap: 2,
           mb: 5,
@@ -410,185 +659,33 @@ export function KagentiHomeDashboard({
         ))}
       </Box>
 
-      {/* Agentic Workloads */}
+      {/* Agent & Tool Health */}
       <Typography
         variant="h6"
-        sx={{ fontWeight: 700, mb: 0.5, letterSpacing: '0.01em' }}
+        sx={{ fontWeight: 700, mb: 2, letterSpacing: '0.01em' }}
       >
-        Navigate
+        Agent &amp; Tool Health
       </Typography>
-      <Typography
-        variant="caption"
-        sx={{
-          color: theme.palette.text.secondary,
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          fontSize: '0.65rem',
-          mb: 2,
-          display: 'block',
-        }}
+      <Card
+        variant="outlined"
+        sx={{ mb: 5, borderRadius: 2, overflow: 'hidden' }}
       >
-        Agentic Workloads
-      </Typography>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr 1fr',
-            sm: 'repeat(4, 1fr)',
-          },
-          gap: 2,
-          mb: 3,
-        }}
-      >
-        {workloadActions.map(action => (
-          <Card
-            key={action.label}
-            variant="outlined"
-            sx={{
-              borderRadius: 2,
-              transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
-              '&:hover': {
-                borderColor: action.accent,
-                boxShadow: `0 4px 16px ${alpha(action.accent, isDark ? 0.15 : 0.08)}`,
-                transform: 'translateY(-1px)',
-              },
-            }}
-          >
-            <CardActionArea
-              onClick={() => onNavigate(action.panel)}
-              sx={{
-                p: 2.5,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: 1.5,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: alpha(action.accent, isDark ? 0.15 : 0.08),
-                  color: action.accent,
-                }}
-              >
-                {action.icon}
-              </Box>
-              <Box>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ fontWeight: 600, fontSize: '0.875rem' }}
-                >
-                  {action.label}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    fontSize: '0.75rem',
-                    mt: 0.25,
-                  }}
-                >
-                  {action.description}
-                </Typography>
-              </Box>
-            </CardActionArea>
-          </Card>
-        ))}
-      </Box>
+        {renderHealthContent()}
+      </Card>
 
-      {/* Operations */}
+      {/* Recent Builds */}
       <Typography
-        variant="caption"
-        sx={{
-          color: theme.palette.text.secondary,
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          fontSize: '0.65rem',
-          mb: 2,
-          display: 'block',
-        }}
+        variant="h6"
+        sx={{ fontWeight: 700, mb: 2, letterSpacing: '0.01em' }}
       >
-        Operations
+        Recent Builds
       </Typography>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr 1fr',
-            sm: 'repeat(3, 1fr)',
-          },
-          gap: 2,
-          mb: 4,
-        }}
+      <Card
+        variant="outlined"
+        sx={{ mb: 5, borderRadius: 2, overflow: 'hidden' }}
       >
-        {operationsActions.map(action => (
-          <Card
-            key={action.label}
-            variant="outlined"
-            sx={{
-              borderRadius: 2,
-              transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
-              '&:hover': {
-                borderColor: action.accent,
-                boxShadow: `0 4px 16px ${alpha(action.accent, isDark ? 0.15 : 0.08)}`,
-                transform: 'translateY(-1px)',
-              },
-            }}
-          >
-            <CardActionArea
-              onClick={() => onNavigate(action.panel)}
-              sx={{
-                p: 2.5,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: 1.5,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: alpha(action.accent, isDark ? 0.15 : 0.08),
-                  color: action.accent,
-                }}
-              >
-                {action.icon}
-              </Box>
-              <Box>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ fontWeight: 600, fontSize: '0.875rem' }}
-                >
-                  {action.label}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    fontSize: '0.75rem',
-                    mt: 0.25,
-                  }}
-                >
-                  {action.description}
-                </Typography>
-              </Box>
-            </CardActionArea>
-          </Card>
-        ))}
-      </Box>
+        {renderBuildsContent()}
+      </Card>
 
       {/* Getting Started */}
       <Collapse in={showGettingStarted}>
