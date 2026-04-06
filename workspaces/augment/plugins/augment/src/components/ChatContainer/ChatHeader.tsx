@@ -29,12 +29,14 @@ import { augmentApiRef } from '../../api';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStatus } from '../../hooks';
 import type { KagentiAgentCard } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type { ChatAgentConfig } from '../../types';
 
 interface ChatHeaderProps {
   selectedModel?: string;
   currentAgent?: string;
   onChangeAgent?: () => void;
   healthWarning?: string;
+  agentConfig?: ChatAgentConfig;
 }
 
 function getAgentAvatarColor(name: string): string {
@@ -50,6 +52,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
   currentAgent,
   onChangeAgent,
   healthWarning,
+  agentConfig,
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -82,16 +85,20 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
 
   if (!selectedModel) return null;
 
-  const displayName =
+  const rawName =
     currentAgent ||
     (selectedModel.includes('/')
       ? selectedModel.split('/').pop()
       : selectedModel) ||
     selectedModel;
+  const displayName = agentConfig?.displayName || agentCard?.name || rawName;
+  const description = agentConfig?.description || agentCard?.description;
   const namespace = selectedModel.includes('/')
     ? selectedModel.split('/')[0]
     : undefined;
-  const avatarColor = getAgentAvatarColor(displayName);
+  const avatarColor =
+    agentConfig?.accentColor || getAgentAvatarColor(displayName);
+  const avatarUrl = agentConfig?.avatarUrl;
   const hasWarning = !!healthWarning;
 
   return (
@@ -109,23 +116,38 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
       }}
     >
       {/* Agent Avatar */}
-      <Box
-        sx={{
-          width: 36,
-          height: 36,
-          borderRadius: 1.5,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
-          color: avatarColor,
-          fontWeight: 700,
-          fontSize: '1rem',
-          flexShrink: 0,
-        }}
-      >
-        {displayName.charAt(0).toUpperCase()}
-      </Box>
+      {avatarUrl ? (
+        <Box
+          component="img"
+          src={avatarUrl}
+          alt={displayName}
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: 1.5,
+            objectFit: 'cover',
+            flexShrink: 0,
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
+            color: avatarColor,
+            fontWeight: 700,
+            fontSize: '1rem',
+            flexShrink: 0,
+          }}
+        >
+          {displayName.charAt(0).toUpperCase()}
+        </Box>
+      )}
 
       {/* Agent Info */}
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -146,7 +168,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
             noWrap
             sx={{ fontWeight: 600, fontSize: '0.85rem' }}
           >
-            {agentCard?.name || displayName}
+            {displayName}
           </Typography>
           {/* Streaming badge */}
           {agentCard && (
@@ -193,7 +215,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
               {namespace}
             </Typography>
           )}
-          {agentCard?.description && (
+          {description && (
             <>
               {namespace && (
                 <Typography
@@ -215,7 +237,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
                   maxWidth: 300,
                 }}
               >
-                {agentCard.description}
+                {description}
               </Typography>
             </>
           )}

@@ -536,8 +536,16 @@ export class KagentiStreamNormalizer {
           ? evt.message
           : JSON.stringify(evt.message);
       if (text) {
-        this.accumulatedText += text;
-        events.push({ type: 'stream.text.delta', delta: text });
+        // "working" status messages are agent-internal progress dumps
+        // (e.g. LangGraph state with "HumanMessage(content=...)");
+        // route to reasoning trace. Other states (completed, etc.) may
+        // carry the actual response, so keep as chat text.
+        if (normalizedState === 'WORKING') {
+          events.push({ type: 'stream.reasoning.delta', delta: text });
+        } else {
+          this.accumulatedText += text;
+          events.push({ type: 'stream.text.delta', delta: text });
+        }
       }
     }
 

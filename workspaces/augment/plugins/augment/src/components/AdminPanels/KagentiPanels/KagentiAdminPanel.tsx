@@ -72,7 +72,11 @@ export function KagentiAdminPanel({
     api
       .getKagentiDashboards()
       .then(d => setDashboardConfig(d))
-      .catch(() => setError('Failed to load dashboard configuration.'))
+      .catch(() => {
+        // Dashboard config endpoint may not exist on all Kagenti deployments;
+        // silently fall back to empty config instead of alarming the user.
+        setDashboardConfig({});
+      })
       .finally(() => setLoading(false));
   }, [api]);
 
@@ -99,7 +103,10 @@ export function KagentiAdminPanel({
     api
       .listKagentiBuildStrategies()
       .then(r => setStrategies(r.strategies ?? []))
-      .catch(e => setError(getErrorMessage(e)))
+      .catch(() => {
+        // Build strategies endpoint may not be available; not critical.
+        setStrategies([]);
+      })
       .finally(() => setBsLoading(false));
   }, [api]);
 
@@ -468,7 +475,8 @@ export function KagentiAdminPanel({
         undefined,
         <Alert severity="info" variant="outlined" sx={{ mb: 0 }}>
           Platform-level settings (LLM model, RAG, MCP, safety) are managed in
-          the <strong>Platform Config</strong> section of the sidebar navigation.
+          the <strong>Platform Config</strong> section of the sidebar
+          navigation.
         </Alert>,
       )}
     </Box>

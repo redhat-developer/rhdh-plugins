@@ -57,7 +57,8 @@ export type AdminConfigKey =
   | 'maxToolCalls'
   | 'maxOutputTokens'
   | 'temperature'
-  | 'safetyIdentifier';
+  | 'safetyIdentifier'
+  | 'chatAgents';
 
 /**
  * A single admin config entry stored in the database.

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Tabs from '@mui/material/Tabs';
@@ -102,6 +102,16 @@ export const AgentConfigPanel = () => {
       ),
     [activeProvider],
   );
+
+  // Reset to a valid tab when capabilities change (e.g. provider switch)
+  useEffect(() => {
+    if (
+      visibleTabs.length > 0 &&
+      !visibleTabs.some(t => t.value === activeTab)
+    ) {
+      setActiveTab('connection');
+    }
+  }, [visibleTabs, activeTab]);
 
   const handleTabChange = useCallback(
     (_: unknown, v: string) => {

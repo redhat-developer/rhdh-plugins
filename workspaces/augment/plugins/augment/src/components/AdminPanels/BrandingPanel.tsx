@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { Progress } from '@backstage/core-components';
-import { useEffectiveConfig } from '../../hooks';
+import { useEffectiveConfig, useStatus } from '../../hooks';
 import { AppearanceSection } from './AppearanceSection';
 import { PromptsPanel } from './PromptsPanel/PromptsPanel';
+import { ChatExperiencePanel } from './ChatExperiencePanel';
 
-type SubTab = 'appearance' | 'promptGroups';
+type SubTab = 'appearance' | 'promptGroups' | 'chatExperience';
 
 const TABS_SX = {
   minHeight: 36,
@@ -40,6 +41,15 @@ const TABS_SX = {
 export const BrandingPanel = () => {
   const [activeTab, setActiveTab] = useState<SubTab>('appearance');
   const { config: effectiveConfig, loading: ecLoading } = useEffectiveConfig();
+  const { status } = useStatus();
+  const isKagenti = status?.providerId === 'kagenti';
+
+  // Reset to a visible tab when the Chat Experience tab disappears
+  useEffect(() => {
+    if (!isKagenti && activeTab === 'chatExperience') {
+      setActiveTab('appearance');
+    }
+  }, [isKagenti, activeTab]);
 
   if (ecLoading) {
     return <Progress />;
@@ -76,6 +86,7 @@ export const BrandingPanel = () => {
         >
           <Tab label="Appearance" value="appearance" />
           <Tab label="Prompt Groups" value="promptGroups" />
+          {isKagenti && <Tab label="Chat Experience" value="chatExperience" />}
         </Tabs>
       </Box>
 
@@ -85,6 +96,7 @@ export const BrandingPanel = () => {
         </Box>
       )}
       {activeTab === 'promptGroups' && <PromptsPanel />}
+      {activeTab === 'chatExperience' && isKagenti && <ChatExperiencePanel />}
     </Box>
   );
 };

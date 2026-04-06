@@ -48,6 +48,7 @@ export type {
   Workflow,
   QuickAction,
   PromptCard,
+  ChatAgentConfig,
   PromptGroup,
   ConversationSummary,
   // Prompt generation types

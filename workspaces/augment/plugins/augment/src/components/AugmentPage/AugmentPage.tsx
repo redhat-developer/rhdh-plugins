@@ -31,6 +31,7 @@ import {
   useStatus,
   useBackendStatus,
   useAdminView,
+  type AdminPanel,
 } from '../../hooks';
 import { sanitizeBrandingUrl } from '../../theme/branding';
 import { AugmentErrorBoundary } from './AugmentErrorBoundary';
@@ -101,27 +102,9 @@ const AugmentPageContent = () => {
     }
   }, []);
 
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem('augment:kagenti-ns')) return undefined;
-    } catch {
-      /* noop */
-    }
-    let cancelled = false;
-    api
-      .listKagentiNamespaces()
-      .then(res => {
-        if (!cancelled && res.defaultNamespace) {
-          setKagentiNamespace(res.defaultNamespace);
-        }
-      })
-      .catch(() => {
-        /* non-critical */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [api]);
+  // Default is "All namespaces" (empty string). Only restore from
+  // sessionStorage if the user previously made an explicit choice.
+  // We no longer auto-select a single namespace on first load.
 
   const chatContainerRef = useRef<ChatContainerRef>(null);
 
@@ -175,11 +158,49 @@ const AugmentPageContent = () => {
     status: liveStatus,
     loading: statusPollLoading,
     error: statusPollError,
+    refresh: refreshStatus,
   } = useStatus();
 
+  // Immediately refresh status when the provider is switched via ProviderSelector
   useEffect(() => {
-    if (liveStatus?.providerId === 'kagenti' && adminPanel === 'platform') {
-      setAdminPanel('kagenti-home');
+    const handler = () => {
+      refreshStatus();
+    };
+    window.addEventListener('augment:provider-switched', handler);
+    return () =>
+      window.removeEventListener('augment:provider-switched', handler);
+  }, [refreshStatus]);
+
+  // Normalize adminPanel when the active provider changes.
+  // Maps between Kagenti-specific and generic panel ids so the UI
+  // never renders an empty content area after a provider switch.
+  const prevProviderRef = useRef(liveStatus?.providerId);
+  useEffect(() => {
+    const currentProvider = liveStatus?.providerId;
+    const prevProvider = prevProviderRef.current;
+    prevProviderRef.current = currentProvider;
+
+    if (!currentProvider || currentProvider === prevProvider) return;
+
+    if (currentProvider === 'kagenti') {
+      const panelMap: Record<string, AdminPanel> = {
+        platform: 'kagenti-platform',
+        agents: 'kagenti-agents',
+        branding: 'kagenti-home',
+      };
+      setAdminPanel(panelMap[adminPanel] ?? 'kagenti-home');
+    } else if (prevProvider === 'kagenti') {
+      const panelMap: Record<string, AdminPanel> = {
+        'kagenti-platform': 'platform',
+        'kagenti-agents': 'agents',
+        'kagenti-home': 'platform',
+        'kagenti-tools': 'platform',
+        'kagenti-builds': 'platform',
+        'kagenti-sandbox': 'platform',
+        'kagenti-dashboards': 'platform',
+        'kagenti-admin': 'platform',
+      };
+      setAdminPanel(panelMap[adminPanel] ?? 'platform');
     }
   }, [liveStatus?.providerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -295,12 +316,9 @@ const AugmentPageContent = () => {
                           namespace={kagentiNamespace || undefined}
                         />
                       )}
-                      {adminPanel === 'kagenti-sandbox' &&
-                        kagentiNamespace && (
-                          <KagentiSandboxPanel
-                            namespace={kagentiNamespace}
-                          />
-                        )}
+                      {adminPanel === 'kagenti-sandbox' && kagentiNamespace && (
+                        <KagentiSandboxPanel namespace={kagentiNamespace} />
+                      )}
                       {adminPanel === 'kagenti-sandbox' &&
                         !kagentiNamespace && (
                           <Box sx={{ py: 4 }}>

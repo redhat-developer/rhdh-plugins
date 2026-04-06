@@ -19,6 +19,7 @@ import {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
   forwardRef,
   useImperativeHandle,
 } from 'react';
@@ -41,6 +42,7 @@ import {
   useChatKeyboardShortcuts,
   useScrollToBottom,
   useStatus,
+  useChatAgentConfig,
 } from '../../hooks';
 import { ThinkingIndicator } from './ThinkingIndicator';
 import { ChatScrollArea } from './ChatScrollArea';
@@ -102,16 +104,41 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     const [agentHealthWarning, setAgentHealthWarning] = useState<string | null>(
       null,
     );
+    const [agentStarters, setAgentStarters] = useState<string[]>([]);
     const approvalMsgCounter = useRef(0);
     const { workflows, quickActions, promptGroups } = useWelcomeData();
     const { status } = useStatus();
     const isKagenti = status?.providerId === 'kagenti';
+    const providerId = status?.providerId;
+    const { configs: chatAgentConfigs } = useChatAgentConfig();
     const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
 
     const handleAgentSelect = useCallback(
       (agentId: string, _agentName: string) => {
         setSelectedModel(agentId);
         setAgentHealthWarning(null);
+
+        // Check admin-configured starters first
+        const adminCfg = chatAgentConfigs.find(c => c.agentId === agentId);
+        if (adminCfg?.conversationStarters?.length) {
+          setAgentStarters(adminCfg.conversationStarters.slice(0, 4));
+        } else {
+          setAgentStarters([]);
+        }
+
+        // Inject greeting as first bot message if conversation is empty
+        if (adminCfg?.greeting && messages.length === 0) {
+          onMessagesChange([
+            {
+              id: `greeting-${Date.now()}`,
+              text: adminCfg.greeting,
+              isUser: false,
+              timestamp: new Date(),
+              agentName: adminCfg.displayName || _agentName,
+            },
+          ]);
+        }
+
         chatInputRef.current?.focus();
 
         if (isKagenti && agentId.includes('/')) {
@@ -128,22 +155,54 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
               if (statusStr && statusStr.toLowerCase() !== 'ready') {
                 setAgentHealthWarning(`Agent status: ${statusStr}`);
               }
+              // Use skill examples as starters if admin didn't configure any
+              if (!adminCfg?.conversationStarters?.length) {
+                const card = (
+                  detail as {
+                    agentCard?: { skills?: Array<{ examples?: string[] }> };
+                  }
+                ).agentCard;
+                if (card?.skills) {
+                  const examples = card.skills
+                    .flatMap(s => s.examples || [])
+                    .slice(0, 4);
+                  if (examples.length > 0) setAgentStarters(examples);
+                }
+              }
             })
             .catch(() => {
               setAgentHealthWarning('Unable to verify agent health');
             });
         }
       },
-      [api, isKagenti],
+      [api, isKagenti, chatAgentConfigs, messages.length, onMessagesChange],
     );
+
+    // Reset chat state when the active provider changes
+    const prevProviderIdRef = useRef(providerId);
+    useEffect(() => {
+      if (providerId && providerId !== prevProviderIdRef.current) {
+        prevProviderIdRef.current = providerId;
+        setSelectedModel(undefined);
+        setAgentStarters([]);
+        setAgentHealthWarning(null);
+        setInputValue('');
+      }
+    }, [providerId]);
 
     const handleChangeAgent = useCallback(() => {
       setSelectedModel(undefined);
       setAgentHealthWarning(null);
+      setAgentStarters([]);
       if (messages.length > 0 && onNewChat) {
         onNewChat();
       }
     }, [messages.length, onNewChat]);
+
+    const handleStarterClick = useCallback((prompt: string) => {
+      setInputValue(prompt);
+      chatInputRef.current?.focus();
+    }, []);
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -405,6 +464,11 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     // Show streaming message during generation OR while waiting for approval
     const showStreaming = !!streamingState;
 
+    const activeAgentConfig = useMemo(
+      () => chatAgentConfigs.find(c => c.agentId === selectedModel),
+      [chatAgentConfigs, selectedModel],
+    );
+
     return (
       <Box
         sx={{
@@ -426,6 +490,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
             currentAgent={streamingState?.currentAgent}
             onChangeAgent={handleChangeAgent}
             healthWarning={agentHealthWarning ?? undefined}
+            agentConfig={activeAgentConfig}
           />
         )}
 
@@ -446,6 +511,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
               promptGroups={promptGroups}
               showAgentGallery={isKagenti}
               onAgentSelect={handleAgentSelect}
+              chatAgentConfigs={chatAgentConfigs}
             />
           ) : showEmptySession ? (
             <Box
@@ -548,7 +614,11 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           onSend={handleSendMessage}
           onStop={handleStopGeneration}
           onNewChat={onNewChat}
-          placeholder={branding.inputPlaceholder}
+          placeholder={
+            activeAgentConfig?.displayName
+              ? `Ask ${activeAgentConfig.displayName} anything...`
+              : branding.inputPlaceholder
+          }
           isTyping={isTyping || loadingConversation}
           showNewChatButton={messages.length > 0}
           inputRef={chatInputRef}
@@ -557,6 +627,10 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           isKagenti={isKagenti}
           onClearAgent={handleChangeAgent}
           requireAgent={isKagenti && !selectedModel}
+          conversationStarters={
+            messages.length === 0 && selectedModel ? agentStarters : undefined
+          }
+          onStarterClick={handleStarterClick}
         />
 
         {/* Disclosure Footer */}

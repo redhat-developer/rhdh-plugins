@@ -36,6 +36,7 @@ export {
   type Workflow,
   type QuickAction,
   type PromptCard,
+  type ChatAgentConfig,
   type PromptGroup,
   type ConversationSummary,
   type ChatResponse,
