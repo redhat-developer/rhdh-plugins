@@ -37,6 +37,7 @@ function renderPanel(api = createAdminMockApi()) {
               mcpTools: true,
               rag: true,
               evaluation: true,
+              tools: true,
             },
             implemented: true,
           },
