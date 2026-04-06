@@ -47,6 +47,7 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
         evaluation: true,
         conversations: true,
         mcpTools: true,
+        tools: true,
       },
       configFields: [
         {
@@ -105,6 +106,7 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
         evaluation: false,
         conversations: true,
         mcpTools: true,
+        tools: false,
       },
       configFields: [],
     },
@@ -122,7 +124,8 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
         safety: false,
         evaluation: false,
         conversations: false,
-        mcpTools: true,
+        mcpTools: false,
+        tools: false,
       },
       configFields: [
         {

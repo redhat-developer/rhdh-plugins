@@ -74,6 +74,7 @@ describe('provider registry', () => {
       evaluation: true,
       conversations: true,
       mcpTools: true,
+      tools: true,
     });
   });
 

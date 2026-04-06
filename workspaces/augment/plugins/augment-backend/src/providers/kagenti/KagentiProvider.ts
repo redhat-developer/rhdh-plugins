@@ -481,6 +481,47 @@ export class KagentiProvider implements AgenticProvider {
     canGenerate: boolean;
     error?: string;
   }> {
+    const llamaStackUrl = this.rootConfig.getOptionalString(
+      'augment.llamaStack.baseUrl',
+    );
+
+    if (llamaStackUrl && model) {
+      try {
+        const url = `${llamaStackUrl.replace(/\/+$/, '')}/v1/models`;
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!res.ok) {
+          return {
+            connected: false,
+            modelFound: false,
+            canGenerate: false,
+            error: `LlamaStack returned ${res.status}: ${res.statusText}`,
+          };
+        }
+        const json = (await res.json()) as {
+          data?: Array<{ id: string }>;
+        };
+        const found = json.data?.some(m => m.id === model) ?? false;
+        return {
+          connected: true,
+          modelFound: found,
+          canGenerate: found,
+          error: found ? undefined : `Model "${model}" not found on LlamaStack`,
+        };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return {
+          connected: false,
+          modelFound: false,
+          canGenerate: false,
+          error: `LlamaStack connection failed: ${msg}`,
+        };
+      }
+    }
+
     const { config, apiClient } = this.requireInitialized();
     try {
       const { namespace, name } = model

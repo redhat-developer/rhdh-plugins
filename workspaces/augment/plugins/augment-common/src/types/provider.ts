@@ -50,6 +50,7 @@ export interface ProviderCapabilities {
   readonly evaluation: boolean;
   readonly conversations: boolean;
   readonly mcpTools: boolean;
+  readonly tools: boolean;
 }
 
 /**

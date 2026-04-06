@@ -46,7 +46,7 @@ interface TabDef {
 
 const ALL_TABS: readonly TabDef[] = [
   { label: 'Model', value: 'connection' },
-  { label: 'Tools', value: 'tools' },
+  { label: 'Tools', value: 'tools', capability: 'tools' },
   { label: 'MCP Servers', value: 'mcp', capability: 'mcpTools' },
   { label: 'RAG', value: 'knowledge', capability: 'rag' },
   { label: 'Safety', value: 'safety', capability: 'safety' },
