@@ -27,6 +27,7 @@ import { QuickstartDrawerContext } from './QuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
+import { useTranslation } from '../hooks/useTranslation';
 
 /**
  * Provider component for the Quickstart Drawer functionality
@@ -40,6 +41,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const [userKey, setUserKey] = useState<string>('guest');
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
+  const { t } = useTranslation();
 
   // Determine role once at provider level to avoid re-fetching on drawer open/close
   const { isLoading: roleLoading, userRole } = useQuickstartRole();
@@ -187,7 +189,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
         autoHideDuration={10000}
         onClose={handleNotificationClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        message="Need help? Visit the Quick Start Guide by clicking on this (?) icon in the header!"
+        message={t('snackbar.helpPrompt')}
         action={
           <IconButton
             size="small"
