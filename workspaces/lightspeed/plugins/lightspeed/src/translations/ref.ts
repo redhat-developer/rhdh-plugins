@@ -64,6 +64,22 @@ export const lightspeedMessages = {
   'notebook.view.sidebar.collapse': 'Collapse sidebar',
   'notebook.view.sidebar.expand': 'Expand sidebar',
   'notebook.view.sidebar.resize': 'Resize sidebar',
+  'notebook.view.documents.uploading': 'Uploading document',
+  'notebook.upload.success': '{{fileName}} Successfully Uploaded.',
+  'notebook.upload.failed': '{{fileName}} Upload Failed.',
+
+  // Notebook upload modal
+  'notebook.upload.modal.title': 'Add a document to Notebook',
+  'notebook.upload.modal.dragDropTitle': 'Drag and drop files here',
+  'notebook.upload.modal.browseButton': 'Upload',
+  'notebook.upload.modal.infoText':
+    'Accepted file types: .md, .txt, .pdf, .json, .yaml, .log',
+  'notebook.upload.error.unsupportedType':
+    'Upload error: Unsupported file type(s) found. Please upload only supported file types.',
+  'notebook.upload.error.fileTooLarge':
+    'Upload error: File size exceeds 25 MB limit.',
+  'notebook.upload.error.tooManyFiles':
+    'Upload error: Maximum of {{max}} files allowed.',
 
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',

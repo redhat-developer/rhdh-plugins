@@ -1254,11 +1254,10 @@ export const LightspeedChat = ({
           hasNotebooksAccess &&
           activeNotebook && (
             <NotebookView
+              sessionId={activeNotebook.session_id}
               notebookName={activeNotebook.name}
               documents={[]}
               onClose={handleCloseNotebook}
-              onUploadClick={() => {}}
-              onAddDocument={() => {}}
             />
           )}
         {showNotebooksPanel &&

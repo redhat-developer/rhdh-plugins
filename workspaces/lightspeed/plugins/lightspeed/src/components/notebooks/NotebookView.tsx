@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { makeStyles } from '@material-ui/core';
 import {
@@ -24,18 +24,27 @@ import {
 } from '@patternfly/chatbot';
 import {
   Alert,
+  AlertActionCloseButton,
+  AlertGroup,
+  AlertVariant,
   Button,
   Drawer,
   DrawerContent,
   DrawerContentBody,
   DrawerPanelContent,
   Tooltip,
+  type AlertProps,
 } from '@patternfly/react-core';
 import { TimesIcon } from '@patternfly/react-icons';
 
 import { UNTITLED_NOTEBOOK_NAME } from '../../const';
+import {
+  useDocumentStatusPolling,
+  type PendingUpload,
+} from '../../hooks/notebooks/useDocumentStatusPolling';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
+import { AddDocumentModal } from './AddDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
@@ -100,28 +109,125 @@ const useStyles = makeStyles(theme => ({
     margin: '0 auto',
     padding: `0 ${theme.spacing(3)}px ${theme.spacing(1)}px`,
   },
+  toastAlertGroup: {
+    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
+  },
+  toastAlert: {
+    maxWidth: '350px',
+    '& .pf-v6-c-alert__title': {
+      margin: 0,
+    },
+  },
 }));
 
 type NotebookViewProps = {
+  sessionId: string;
   notebookName?: string;
   documents?: SessionDocument[];
   onClose: () => void;
-  onUploadClick: () => void;
-  onAddDocument: () => void;
 };
 
 export const NotebookView = ({
+  sessionId,
   notebookName = UNTITLED_NOTEBOOK_NAME,
   documents = [],
   onClose,
-  onUploadClick,
-  onAddDocument,
 }: NotebookViewProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadingFileNames, setUploadingFileNames] = useState<string[]>([]);
+  const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
+  const [toastAlerts, setToastAlerts] = useState<Partial<AlertProps>[]>([]);
+  const processedIds = useRef<Set<string>>(new Set());
 
-  const hasDocuments = documents.length > 0;
+  const handleOpenUploadModal = () => setIsUploadModalOpen(true);
+  const handleCloseUploadModal = () => setIsUploadModalOpen(false);
+
+  const handleFilesUploading = (files: File[]) => {
+    setUploadingFileNames(prev => [...prev, ...files.map(f => f.name)]);
+  };
+
+  const handleUploadStarted = (info: {
+    fileName: string;
+    documentId: string;
+  }) => {
+    setPendingUploads(prev => [
+      ...prev,
+      { fileName: info.fileName, documentId: info.documentId },
+    ]);
+  };
+
+  const handleUploadFailed = (fileName: string) => {
+    setUploadingFileNames(prev => prev.filter(n => n !== fileName));
+    setToastAlerts(prev => [
+      {
+        key: Date.now() + fileName,
+        title: (t as Function)('notebook.upload.failed', {
+          fileName,
+        }) as string,
+        variant: 'danger',
+      },
+      ...prev,
+    ]);
+  };
+
+  const pollingResults = useDocumentStatusPolling(sessionId, pendingUploads);
+
+  useEffect(() => {
+    const completedOrFailed = pollingResults.filter(
+      r =>
+        (r.status === 'completed' ||
+          r.status === 'failed' ||
+          r.status === 'cancelled') &&
+        !processedIds.current.has(r.documentId),
+    );
+
+    if (completedOrFailed.length === 0) return;
+
+    const idsToRemove = new Set<string>();
+    const namesToRemove = new Set<string>();
+    const newAlerts: Partial<AlertProps>[] = [];
+
+    for (const result of completedOrFailed) {
+      processedIds.current.add(result.documentId);
+      idsToRemove.add(result.documentId);
+      namesToRemove.add(result.fileName);
+
+      if (result.status === 'completed') {
+        newAlerts.push({
+          key: Date.now() + result.documentId,
+          title: (t as Function)('notebook.upload.success', {
+            fileName: result.fileName,
+          }) as string,
+          variant: 'success',
+        });
+      } else {
+        newAlerts.push({
+          key: Date.now() + result.documentId,
+          title: (t as Function)('notebook.upload.failed', {
+            fileName: result.fileName,
+          }) as string,
+          variant: 'danger',
+        });
+      }
+    }
+
+    setPendingUploads(prev => prev.filter(u => !idsToRemove.has(u.documentId)));
+    setUploadingFileNames(prev =>
+      prev.filter(name => !namesToRemove.has(name)),
+    );
+    setToastAlerts(prev => [...newAlerts, ...prev]);
+  }, [pollingResults, t]);
+
+  const handleRemoveToastAlert = (key: React.Key) => {
+    setToastAlerts(prev => prev.filter(a => a.key !== key));
+  };
+
+  const hasDocuments = documents.length > 0 || uploadingFileNames.length > 0;
 
   const panelContent = (
     <DrawerPanelContent
@@ -134,15 +240,40 @@ export const NotebookView = ({
       <DocumentSidebar
         notebookName={notebookName}
         documents={documents}
+        uploadingFileNames={uploadingFileNames}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
-        onAddDocument={onAddDocument}
+        onAddDocument={handleOpenUploadModal}
       />
     </DrawerPanelContent>
   );
 
   return (
     <div className={classes.root}>
+      {toastAlerts.length > 0 && (
+        <AlertGroup
+          hasAnimations
+          isToast
+          isLiveRegion
+          className={classes.toastAlertGroup}
+        >
+          {toastAlerts.map(({ key, title, variant }) => (
+            <Alert
+              key={key}
+              variant={AlertVariant[variant ?? 'success']}
+              title={title}
+              className={classes.toastAlert}
+              actionClose={
+                <AlertActionCloseButton
+                  title={title as string}
+                  variantLabel={`${variant ?? 'success'} alert`}
+                  onClose={() => handleRemoveToastAlert(key as React.Key)}
+                />
+              }
+            />
+          ))}
+        </AlertGroup>
+      )}
       <Drawer
         isExpanded={!sidebarCollapsed}
         isInline
@@ -176,7 +307,7 @@ export const NotebookView = ({
                     <Button
                       variant="plain"
                       className={classes.addIconButton}
-                      onClick={onAddDocument}
+                      onClick={handleOpenUploadModal}
                       aria-label={t('notebook.view.documents.add')}
                     >
                       <AddCircleFilledIcon />
@@ -200,7 +331,9 @@ export const NotebookView = ({
 
                 <div className={classes.mainContent}>
                   {!hasDocuments && (
-                    <UploadResourceScreen onUploadClick={onUploadClick} />
+                    <UploadResourceScreen
+                      onUploadClick={handleOpenUploadModal}
+                    />
                   )}
                 </div>
 
@@ -225,6 +358,16 @@ export const NotebookView = ({
           </DrawerContentBody>
         </DrawerContent>
       </Drawer>
+
+      <AddDocumentModal
+        isOpen={isUploadModalOpen}
+        onClose={handleCloseUploadModal}
+        sessionId={sessionId}
+        existingDocumentCount={documents.length}
+        onFilesUploading={handleFilesUploading}
+        onUploadStarted={handleUploadStarted}
+        onUploadFailed={handleUploadFailed}
+      />
     </div>
   );
 };

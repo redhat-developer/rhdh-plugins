@@ -15,8 +15,8 @@
  */
 
 import { makeStyles, Typography } from '@material-ui/core';
-import { Button, Tooltip } from '@patternfly/react-core';
-import { PlusCircleIcon } from '@patternfly/react-icons';
+import { Button, Spinner, Tooltip } from '@patternfly/react-core';
+import { FileIcon, PlusCircleIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
@@ -69,15 +69,40 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(2),
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(1),
+    gap: theme.spacing(0.5),
     overflowY: 'auto',
     flex: 1,
+  },
+  documentItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: `${theme.spacing(1)}px ${theme.spacing(0.5)}px`,
+    borderRadius: 4,
+  },
+  fileIcon: {
+    flexShrink: 0,
+    color: theme.palette.grey[500],
+    fontSize: '1rem',
+  },
+  fileName: {
+    flex: 1,
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: '0.875rem',
+    lineHeight: '1.25rem',
+  },
+  spinnerContainer: {
+    flexShrink: 0,
   },
 }));
 
 type DocumentSidebarProps = {
   notebookName: string;
   documents: SessionDocument[];
+  uploadingFileNames: string[];
   collapsed: boolean;
   onToggleCollapse: () => void;
   onAddDocument: () => void;
@@ -86,6 +111,7 @@ type DocumentSidebarProps = {
 export const DocumentSidebar = ({
   notebookName,
   documents,
+  uploadingFileNames,
   collapsed,
   onToggleCollapse,
   onAddDocument,
@@ -96,6 +122,12 @@ export const DocumentSidebar = ({
   if (collapsed) {
     return null;
   }
+
+  const uploadedNames = new Set(documents.map(d => d.title));
+  const activePending = uploadingFileNames.filter(
+    name => !uploadedNames.has(name),
+  );
+  const totalCount = documents.length + activePending.length;
 
   return (
     <div className={classes.sidebar}>
@@ -116,7 +148,7 @@ export const DocumentSidebar = ({
       <div className={classes.documentsRow}>
         <Typography className={classes.documentCount}>
           {t('notebook.view.documents.count', {
-            count: documents.length,
+            count: totalCount,
           } as any)}
         </Typography>
         <Button
@@ -129,9 +161,26 @@ export const DocumentSidebar = ({
         </Button>
       </div>
 
-      {documents.length > 0 && (
+      {(documents.length > 0 || activePending.length > 0) && (
         <div className={classes.documentsList}>
-          {/* Document list items will be rendered here when documents exist */}
+          {documents.map(doc => (
+            <div key={doc.document_id} className={classes.documentItem}>
+              <FileIcon className={classes.fileIcon} />
+              <Typography className={classes.fileName}>{doc.title}</Typography>
+            </div>
+          ))}
+          {activePending.map(fileName => (
+            <div key={`pending-${fileName}`} className={classes.documentItem}>
+              <FileIcon className={classes.fileIcon} />
+              <Typography className={classes.fileName}>{fileName}</Typography>
+              <div className={classes.spinnerContainer}>
+                <Spinner
+                  size="md"
+                  aria-label={t('notebook.view.documents.uploading')}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

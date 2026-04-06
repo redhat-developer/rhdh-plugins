@@ -54,6 +54,36 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebooks.updated.yesterday': 'Vor 1 Tag aktualisiert',
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',
     'notebooks.updated.on': 'Aktualisiert am',
+
+    // Notebook view
+    'notebook.view.title': 'Unbenanntes Notizbuch',
+    'notebook.view.close': 'Notizbuch schließen',
+    'notebook.view.documents.count': '{{count}} Dokumente',
+    'notebook.view.documents.add': 'Hinzufügen',
+    'notebook.view.upload.heading':
+      'Laden Sie eine Ressource hoch, um zu beginnen',
+    'notebook.view.upload.action': 'Ressource hochladen',
+    'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Dokumenten...',
+    'notebook.view.sidebar.collapse': 'Seitenleiste einklappen',
+    'notebook.view.sidebar.expand': 'Seitenleiste ausklappen',
+    'notebook.view.sidebar.resize': 'Größe der Seitenleiste ändern',
+    'notebook.view.documents.uploading': 'Dokument wird hochgeladen',
+    'notebook.upload.success': '{{fileName}} erfolgreich hochgeladen.',
+    'notebook.upload.failed': 'Hochladen von {{fileName}} fehlgeschlagen.',
+
+    // Notebook upload modal
+    'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
+    'notebook.upload.modal.dragDropTitle': 'Dateien hierher ziehen und ablegen',
+    'notebook.upload.modal.browseButton': 'Hochladen',
+    'notebook.upload.modal.infoText':
+      'Akzeptierte Dateitypen: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.error.unsupportedType':
+      'Upload-Fehler: Nicht unterstützte Dateitypen gefunden. Bitte laden Sie nur unterstützte Dateitypen hoch.',
+    'notebook.upload.error.fileTooLarge':
+      'Upload-Fehler: Dateigröße überschreitet das Limit von 25 MB.',
+    'notebook.upload.error.tooManyFiles':
+      'Upload-Fehler: Maximal {{max}} Dateien erlaubt.',
+
     'prompts.codeReadability.title': 'Hilfe zur Code-Lesbarkeit erhalten',
     'prompts.codeReadability.message':
       'Können Sie mir Techniken vorschlagen, mit denen ich meinen Code lesbarer und wartungsfreundlicher gestalten kann?',
