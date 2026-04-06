@@ -17,10 +17,13 @@ import { useMemo, useCallback, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
 import Drawer from '@mui/material/Drawer';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, alpha } from '@mui/material/styles';
 import ExploreIcon from '@mui/icons-material/Explore';
 import CloseIcon from '@mui/icons-material/Close';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import IconButton from '@mui/material/IconButton';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
@@ -39,14 +42,25 @@ import { PromptGroupRow } from './PromptGroupRow';
 import { AgentGallery } from './AgentGallery';
 import { FeaturedAgents } from './FeaturedAgents';
 import type { AgentWithCard } from './agentUtils';
+import { getAgentAvatarColor } from './agentUtils';
 import { AgentDetailDrawer } from './AgentDetailDrawer';
 import { buildEffectivePromptGroups } from './buildEffectivePromptGroups';
+import { stripMarkdown } from './stripMarkdown';
 import {
   getContainerSx,
   getHeroSx,
   getTitleSx,
   getPromptGroupsContainerSx,
 } from './styles';
+
+export interface SelectedAgentInfo {
+  id: string;
+  name: string;
+  description?: string;
+  starters: string[];
+  avatarColor?: string;
+  avatarUrl?: string;
+}
 
 interface WelcomeScreenProps {
   readonly workflows: readonly Workflow[];
@@ -56,6 +70,9 @@ interface WelcomeScreenProps {
   readonly onAgentSelect?: (agentId: string, agentName: string) => void;
   readonly showAgentGallery?: boolean;
   readonly chatAgentConfigs?: ChatAgentConfig[];
+  readonly selectedAgent?: SelectedAgentInfo;
+  readonly onChangeAgent?: () => void;
+  readonly onStarterSelect?: (prompt: string) => void;
 }
 
 const TAGLINE_SX = {
@@ -80,6 +97,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onAgentSelect,
   showAgentGallery = false,
   chatAgentConfigs = [],
+  selectedAgent,
+  onChangeAgent,
+  onStarterSelect,
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -148,6 +168,157 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   const hasFeatured = showAgentGallery && onAgentSelect;
 
+  // ── State 2: Agent selected, no messages ──────────────────────────────
+  if (selectedAgent) {
+    const avatarColor =
+      selectedAgent.avatarColor || getAgentAvatarColor(selectedAgent.name);
+    const cleanDesc = selectedAgent.description
+      ? stripMarkdown(selectedAgent.description)
+      : undefined;
+
+    return (
+      <Box
+        sx={{
+          ...getContainerSx(theme),
+          justifyContent: 'center',
+          alignItems: 'center',
+          px: 3,
+          gap: 3,
+        }}
+      >
+        {/* Agent identity */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 1.5,
+            maxWidth: 560,
+            textAlign: 'center',
+          }}
+        >
+          {selectedAgent.avatarUrl ? (
+            <Box
+              component="img"
+              src={selectedAgent.avatarUrl}
+              alt={selectedAgent.name}
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: 3,
+                objectFit: 'cover',
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: 3,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: '1.5rem',
+                bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
+                color: avatarColor,
+              }}
+            >
+              {selectedAgent.name.charAt(0).toUpperCase()}
+            </Box>
+          )}
+
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+            {selectedAgent.name}
+          </Typography>
+
+          {cleanDesc && (
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.secondary,
+                lineHeight: 1.6,
+                maxWidth: 480,
+              }}
+            >
+              {cleanDesc}
+            </Typography>
+          )}
+        </Box>
+
+        {/* Conversation starters as large tiles */}
+        {selectedAgent.starters.length > 0 && (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm:
+                  selectedAgent.starters.length === 1
+                    ? '1fr'
+                    : 'repeat(2, 1fr)',
+              },
+              gap: 1.5,
+              maxWidth: 560,
+              width: '100%',
+            }}
+          >
+            {selectedAgent.starters.map((starter: string, idx: number) => (
+              <Card
+                key={idx}
+                variant="outlined"
+                sx={{
+                  borderRadius: 3,
+                  borderColor: alpha(avatarColor, isDark ? 0.2 : 0.15),
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: avatarColor,
+                    boxShadow: `0 4px 16px ${alpha(avatarColor, isDark ? 0.15 : 0.1)}`,
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              >
+                <CardActionArea
+                  onClick={() => onStarterSelect?.(starter)}
+                  sx={{ px: 2.5, py: 2 }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: '0.85rem',
+                      color: theme.palette.text.primary,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {starter}
+                  </Typography>
+                </CardActionArea>
+              </Card>
+            ))}
+          </Box>
+        )}
+
+        {/* Change agent */}
+        {onChangeAgent && (
+          <Button
+            size="small"
+            startIcon={<SwapHorizIcon sx={{ fontSize: 16 }} />}
+            onClick={onChangeAgent}
+            sx={{
+              textTransform: 'none',
+              fontSize: '0.8rem',
+              color: theme.palette.text.secondary,
+              '&:hover': { color: theme.palette.primary.main },
+            }}
+          >
+            Change agent
+          </Button>
+        )}
+      </Box>
+    );
+  }
+
+  // ── State 1: No agent selected ────────────────────────────────────────
   return (
     <Box sx={getContainerSx(theme)}>
       {/* Hero */}

@@ -29,6 +29,7 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { Message } from '../../types';
 import { WelcomeScreen } from '../WelcomeScreen';
+import type { SelectedAgentInfo } from '../WelcomeScreen';
 import { VirtualizedMessageList } from './VirtualizedMessageList';
 import { StreamingMessage } from '../StreamingMessage';
 import { ToolApprovalDialog } from '../ToolApprovalDialog';
@@ -105,6 +106,9 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       null,
     );
     const [agentStarters, setAgentStarters] = useState<string[]>([]);
+    const [agentDescription, setAgentDescription] = useState<
+      string | undefined
+    >();
     const approvalMsgCounter = useRef(0);
     const { workflows, quickActions, promptGroups } = useWelcomeData();
     const { status } = useStatus();
@@ -118,15 +122,17 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
         setSelectedModel(agentId);
         setAgentHealthWarning(null);
 
-        // Check admin-configured starters first
         const adminCfg = chatAgentConfigs.find(c => c.agentId === agentId);
+
+        // Set description from admin config first
+        setAgentDescription(adminCfg?.description);
+
         if (adminCfg?.conversationStarters?.length) {
           setAgentStarters(adminCfg.conversationStarters.slice(0, 4));
         } else {
           setAgentStarters([]);
         }
 
-        // Inject greeting as first bot message if conversation is empty
         if (adminCfg?.greeting && messages.length === 0) {
           onMessagesChange([
             {
@@ -155,19 +161,23 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
               if (statusStr && statusStr.toLowerCase() !== 'ready') {
                 setAgentHealthWarning(`Agent status: ${statusStr}`);
               }
-              // Use skill examples as starters if admin didn't configure any
-              if (!adminCfg?.conversationStarters?.length) {
-                const card = (
-                  detail as {
-                    agentCard?: { skills?: Array<{ examples?: string[] }> };
-                  }
-                ).agentCard;
-                if (card?.skills) {
-                  const examples = card.skills
-                    .flatMap(s => s.examples || [])
-                    .slice(0, 4);
-                  if (examples.length > 0) setAgentStarters(examples);
+              const card = (
+                detail as {
+                  agentCard?: {
+                    description?: string;
+                    skills?: Array<{ examples?: string[] }>;
+                  };
                 }
+              ).agentCard;
+              // Use agent card description if admin didn't configure one
+              if (!adminCfg?.description && card?.description) {
+                setAgentDescription(card.description);
+              }
+              if (!adminCfg?.conversationStarters?.length && card?.skills) {
+                const examples = card.skills
+                  .flatMap(s => s.examples || [])
+                  .slice(0, 4);
+                if (examples.length > 0) setAgentStarters(examples);
               }
             })
             .catch(() => {
@@ -185,6 +195,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
         prevProviderIdRef.current = providerId;
         setSelectedModel(undefined);
         setAgentStarters([]);
+        setAgentDescription(undefined);
         setAgentHealthWarning(null);
         setInputValue('');
       }
@@ -194,6 +205,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       setSelectedModel(undefined);
       setAgentHealthWarning(null);
       setAgentStarters([]);
+      setAgentDescription(undefined);
       if (messages.length > 0 && onNewChat) {
         onNewChat();
       }
@@ -469,6 +481,27 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       [chatAgentConfigs, selectedModel],
     );
 
+    const selectedAgentInfo: SelectedAgentInfo | undefined = useMemo(() => {
+      if (!selectedModel || !isKagenti) return undefined;
+      const shortName = selectedModel.includes('/')
+        ? selectedModel.split('/').pop()!
+        : selectedModel;
+      return {
+        id: selectedModel,
+        name: activeAgentConfig?.displayName || shortName,
+        description: agentDescription,
+        starters: agentStarters,
+        avatarColor: activeAgentConfig?.accentColor,
+        avatarUrl: activeAgentConfig?.avatarUrl,
+      };
+    }, [
+      selectedModel,
+      isKagenti,
+      activeAgentConfig,
+      agentDescription,
+      agentStarters,
+    ]);
+
     return (
       <Box
         sx={{
@@ -512,6 +545,9 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
               showAgentGallery={isKagenti}
               onAgentSelect={handleAgentSelect}
               chatAgentConfigs={chatAgentConfigs}
+              selectedAgent={selectedAgentInfo}
+              onChangeAgent={handleChangeAgent}
+              onStarterSelect={handleStarterClick}
             />
           ) : showEmptySession ? (
             <Box
@@ -627,10 +663,6 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           isKagenti={isKagenti}
           onClearAgent={handleChangeAgent}
           requireAgent={isKagenti && !selectedModel}
-          conversationStarters={
-            messages.length === 0 && selectedModel ? agentStarters : undefined
-          }
-          onStarterClick={handleStarterClick}
         />
 
         {/* Disclosure Footer */}

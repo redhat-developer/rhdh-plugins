@@ -206,7 +206,7 @@ export class KagentiStreamNormalizer {
         break;
 
       case 'TASK_STATE_WORKING':
-        this.extractTextFromStatus(update.status, events);
+        this.extractTextAsReasoning(update.status, events);
         this.extractUiExtensions(update.status.message?.metadata, events);
         break;
 
@@ -476,6 +476,21 @@ export class KagentiStreamNormalizer {
     if (text) {
       this.accumulatedText += text;
       events.push({ type: 'stream.text.delta', delta: text });
+    }
+  }
+
+  /**
+   * Like extractTextFromStatus but routes to reasoning trace instead of
+   * the main chat bubble. Used for WORKING-state messages that contain
+   * agent-internal progress (e.g. LangGraph state dumps).
+   */
+  private extractTextAsReasoning(
+    status: NonNullable<KagentiStreamPayload['statusUpdate']>['status'],
+    events: NormalizedStreamEvent[],
+  ): void {
+    const text = this.extractStatusText(status);
+    if (text) {
+      events.push({ type: 'stream.reasoning.delta', delta: text });
     }
   }
 
