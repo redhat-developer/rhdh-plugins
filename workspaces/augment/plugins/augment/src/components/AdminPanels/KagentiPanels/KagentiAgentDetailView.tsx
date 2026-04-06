@@ -33,6 +33,7 @@ import { statusChipColor as statusColor } from './kagentiDisplayUtils';
 import { AgentDetailsTab } from './AgentDetailsTab';
 import { AgentStatusTab } from './AgentStatusTab';
 import { AgentResourceTab } from './AgentResourceTab';
+import { AgentCardTab } from './AgentCardTab';
 import { useKagentiAgentDetail } from './useKagentiAgentDetail';
 
 export interface KagentiAgentDetailViewProps {
@@ -166,6 +167,7 @@ export function KagentiAgentDetailView({
           }}
         >
           <Tab label="Details" />
+          <Tab label="Agent Card" />
           <Tab label="Status" />
           <Tab label="Resource" />
         </Tabs>
@@ -175,7 +177,6 @@ export function KagentiAgentDetailView({
         <AgentDetailsTab
           agent={agent}
           agentDetail={agentDetail}
-          agentCard={agentCard}
           loading={loading}
           routeStatus={routeStatus}
           copied={copied}
@@ -184,6 +185,10 @@ export function KagentiAgentDetailView({
       )}
 
       {tab === 1 && (
+        <AgentCardTab agentCard={agentCard} loading={loading} />
+      )}
+
+      {tab === 2 && (
         <AgentStatusTab
           agent={agent}
           agentDetail={agentDetail}
@@ -195,7 +200,7 @@ export function KagentiAgentDetailView({
         />
       )}
 
-      {tab === 2 && (
+      {tab === 3 && (
         <AgentResourceTab
           agentDetail={agentDetail}
           loading={loading}

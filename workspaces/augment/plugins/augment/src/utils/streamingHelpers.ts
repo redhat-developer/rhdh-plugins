@@ -165,7 +165,7 @@ export function getFallbackResponseText(
 
 /**
  * Generate an error message when a stream completes with no content at all
- * (no text and no tool calls).
+ * (no text and no tool calls). Provides actionable diagnostic guidance.
  */
 export function getEmptyStreamResponseText(
   completed: boolean,
@@ -173,17 +173,17 @@ export function getEmptyStreamResponseText(
   modelName: string | undefined,
 ): string {
   if (!completed) {
-    return 'The connection ended without a response. Please try again.';
+    return 'The connection ended before a response was received. This can happen when the agent takes too long to start or the connection drops. Please try again.';
   }
 
   const zeroOutput = outputTokens === 0;
   if (zeroOutput && modelName) {
-    return `Model "${modelName}" returned 0 output tokens. This usually means the model does not support the request format or is misconfigured on the server. Try a different model in the Admin Panel → Model & Tools → Model.`;
+    return `Model "${modelName}" returned 0 output tokens. This usually means the model does not support the request format or is misconfigured. Check Platform Config → Model to verify the model name and endpoint.`;
   }
   if (zeroOutput) {
-    return 'The model returned 0 output tokens. It may not support the Responses API format. Check the model configuration in the Admin Panel.';
+    return 'The model returned 0 output tokens. It may not support the current request format. Check Platform Config → Model to verify the configuration.';
   }
-  return 'No response received from the AI provider. This may indicate a configuration issue (wrong model, unreachable server, or missing capabilities). Check the backend logs for details.';
+  return 'No response received from the AI provider. Possible causes: the agent is still starting up, the model endpoint is unreachable, or the Kagenti API returned an empty stream. Check the backend logs for diagnostic details (stream event count, duration, and provider errors).';
 }
 
 /**

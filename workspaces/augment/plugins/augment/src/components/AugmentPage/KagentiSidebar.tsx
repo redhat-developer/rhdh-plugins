@@ -24,6 +24,9 @@ import { useTheme, alpha } from '@mui/material/styles';
 import HomeIcon from '@mui/icons-material/Home';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import BuildIcon from '@mui/icons-material/Build';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import ScienceIcon from '@mui/icons-material/Science';
+import TuneIcon from '@mui/icons-material/Tune';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -93,11 +96,26 @@ export function KagentiSidebar({
             label: t('commandCenter.toolCatalog'),
             icon: <BuildIcon sx={{ fontSize: 20 }} />,
           },
+          {
+            id: 'kagenti-builds' as AdminPanel,
+            label: 'Build Pipelines',
+            icon: <RocketLaunchIcon sx={{ fontSize: 20 }} />,
+          },
+          {
+            id: 'kagenti-sandbox' as AdminPanel,
+            label: 'Sandbox',
+            icon: <ScienceIcon sx={{ fontSize: 20 }} />,
+          },
         ],
       },
       {
         title: 'Operations',
         items: [
+          {
+            id: 'kagenti-platform' as AdminPanel,
+            label: 'Platform Config',
+            icon: <TuneIcon sx={{ fontSize: 20 }} />,
+          },
           {
             id: 'kagenti-dashboards' as AdminPanel,
             label: t('commandCenter.observability'),
@@ -192,6 +210,7 @@ export function KagentiSidebar({
             onChange={onKagentiNamespaceChange}
             size="small"
             fullWidth
+            variant="minimal"
           />
         </Box>
       )}

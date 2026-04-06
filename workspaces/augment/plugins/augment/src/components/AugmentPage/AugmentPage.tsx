@@ -46,6 +46,8 @@ import {
   KagentiAdminPanel,
   KagentiDashboardLinks,
   KagentiHomeDashboard,
+  KagentiBuildPipelinePanel,
+  KagentiSandboxPanel,
 } from '../AdminPanels/KagentiPanels';
 import { KagentiSidebar } from './KagentiSidebar';
 
@@ -287,6 +289,29 @@ const AugmentPageContent = () => {
                         <KagentiToolsPanel
                           namespace={kagentiNamespace || undefined}
                         />
+                      )}
+                      {adminPanel === 'kagenti-builds' && (
+                        <KagentiBuildPipelinePanel
+                          namespace={kagentiNamespace || undefined}
+                        />
+                      )}
+                      {adminPanel === 'kagenti-sandbox' &&
+                        kagentiNamespace && (
+                          <KagentiSandboxPanel
+                            namespace={kagentiNamespace}
+                          />
+                        )}
+                      {adminPanel === 'kagenti-sandbox' &&
+                        !kagentiNamespace && (
+                          <Box sx={{ py: 4 }}>
+                            <Alert severity="info">
+                              Select a namespace from the sidebar to manage
+                              sandbox sessions.
+                            </Alert>
+                          </Box>
+                        )}
+                      {adminPanel === 'kagenti-platform' && (
+                        <AgentConfigPanel />
                       )}
                       {adminPanel === 'kagenti-dashboards' && (
                         <KagentiDashboardLinks

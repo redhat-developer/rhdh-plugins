@@ -463,8 +463,11 @@ export function registerChatRoutes(ctx: RouteContext): void {
       }
 
       let eventCount = 0;
+      const streamStartMs = Date.now();
+      let firstEventMs: number | undefined;
       const wrappedForward = (event: NormalizedStreamEvent) => {
         eventCount++;
+        if (!firstEventMs) firstEventMs = Date.now();
         forward(event);
       };
 
@@ -481,7 +484,13 @@ export function registerChatRoutes(ctx: RouteContext): void {
         abortController.signal,
       );
 
-      logger.debug(`Stream completed with ${eventCount} events`);
+      const durationMs = Date.now() - streamStartMs;
+      const ttfbMs = firstEventMs ? firstEventMs - streamStartMs : undefined;
+      const ttfbInfo = ttfbMs !== undefined ? `, ${ttfbMs}ms to first event` : '';
+      const zeroWarn = eventCount === 0 ? ' (WARNING: zero events received from provider)' : '';
+      logger.info(
+        `Stream completed: ${eventCount} events, ${durationMs}ms total${ttfbInfo}${zeroWarn}`,
+      );
 
       if (
         streamedTextRef.current &&

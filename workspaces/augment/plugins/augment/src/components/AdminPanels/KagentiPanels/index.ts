@@ -43,3 +43,11 @@ export {
   CreateAgentWizard,
   type CreateAgentWizardProps,
 } from './CreateAgentWizard';
+export {
+  KagentiBuildPipelinePanel,
+  type KagentiBuildPipelinePanelProps,
+} from './KagentiBuildPipelinePanel';
+export {
+  KagentiSandboxPanel,
+  type KagentiSandboxPanelProps,
+} from './KagentiSandboxPanel';
