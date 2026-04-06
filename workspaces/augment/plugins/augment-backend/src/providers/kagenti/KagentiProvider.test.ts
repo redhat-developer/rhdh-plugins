@@ -131,17 +131,12 @@ describe('KagentiProvider', () => {
     expect(status.capabilities?.rag?.available).toBe(false);
   });
 
-  it('returns agents as models', async () => {
+  it('returns empty models when no LlamaStack baseUrl is configured', async () => {
     const p = createProvider();
     await p.initialize();
 
     const models = await p.listModels!();
-    expect(models).toHaveLength(1);
-    expect(models[0]).toEqual({
-      id: 'team1/weather-bot',
-      owned_by: 'kagenti',
-      model_type: 'a2a-agent',
-    });
+    expect(models).toHaveLength(0);
   });
 
   it('tests model by fetching agent card', async () => {
@@ -244,7 +239,6 @@ describe('KagentiProvider -- lifecycle guards', () => {
     await expect(
       p.chat({ messages: [{ role: 'user', content: 'hi' }] }),
     ).rejects.toThrow('initialize()');
-    await expect(p.listModels!()).rejects.toThrow('initialize()');
     await expect(p.testModel!()).rejects.toThrow('initialize()');
     expect(() => p.getApiClient()).toThrow('initialize()');
     expect(() => p.getConfig()).toThrow('initialize()');
@@ -288,19 +282,130 @@ describe('KagentiProvider -- testModel failure path', () => {
   });
 });
 
-describe('KagentiProvider -- listModels with namespace allowlists', () => {
-  it('uses configured agents list when available', async () => {
+describe('KagentiProvider -- listModels via LlamaStack', () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  function createProviderWithLlamaStack() {
     const config = new ConfigReader({
       augment: {
         kagenti: {
           baseUrl: 'https://kagenti.example.com',
           namespace: 'team1',
-          agents: ['team1/agent-a', 'team2/agent-b'],
+          agentName: 'weather-bot',
           auth: {
             tokenEndpoint: 'https://kc.example.com/token',
             clientId: 'client',
             clientSecret: 'secret',
           },
+        },
+        llamaStack: {
+          baseUrl: 'https://llamastack.example.com',
+          model: 'meta-llama/Llama-3.3-8B-Instruct',
+        },
+      },
+    });
+    return new KagentiProvider({ logger: createMockLogger(), config });
+  }
+
+  it('fetches models from LlamaStack /v1/models', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [
+            { id: 'meta-llama/Llama-3.3-8B-Instruct', owned_by: 'meta' },
+            { id: 'gpt-120b', model_type: 'llm' },
+          ],
+        }),
+    });
+
+    const p = createProviderWithLlamaStack();
+    await p.initialize();
+
+    const models = await p.listModels!();
+    expect(models).toHaveLength(2);
+    expect(models[0].id).toBe('meta-llama/Llama-3.3-8B-Instruct');
+    expect(models[0].owned_by).toBe('meta');
+    expect(models[1].id).toBe('gpt-120b');
+    expect(models[1].model_type).toBe('llm');
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://llamastack.example.com/v1/models',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('returns empty array when LlamaStack is unreachable', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('ECONNREFUSED'));
+
+    const p = createProviderWithLlamaStack();
+    await p.initialize();
+
+    const models = await p.listModels!();
+    expect(models).toHaveLength(0);
+  });
+
+  it('returns empty array when LlamaStack returns non-ok status', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+
+    const p = createProviderWithLlamaStack();
+    await p.initialize();
+
+    const models = await p.listModels!();
+    expect(models).toHaveLength(0);
+  });
+
+  it('caches models for subsequent calls', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [{ id: 'cached-model' }],
+        }),
+    });
+
+    const p = createProviderWithLlamaStack();
+    await p.initialize();
+
+    const first = await p.listModels!();
+    const second = await p.listModels!();
+    expect(first).toEqual(second);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns empty array when no LlamaStack baseUrl is configured', async () => {
+    const p = createProvider();
+    await p.initialize();
+
+    const models = await p.listModels!();
+    expect(models).toHaveLength(0);
+  });
+});
+
+describe('KagentiProvider -- getEffectiveConfig', () => {
+  it('returns Kagenti baseUrl and LlamaStack model from YAML', async () => {
+    const config = new ConfigReader({
+      augment: {
+        kagenti: {
+          baseUrl: 'https://kagenti.example.com',
+          namespace: 'team1',
+          agentName: 'weather-bot',
+          auth: {
+            tokenEndpoint: 'https://kc.example.com/token',
+            clientId: 'client',
+            clientSecret: 'secret',
+          },
+        },
+        llamaStack: {
+          baseUrl: 'https://llamastack.example.com',
+          model: 'meta-llama/Llama-3.3-8B-Instruct',
         },
       },
     });
@@ -308,23 +413,19 @@ describe('KagentiProvider -- listModels with namespace allowlists', () => {
     const p = new KagentiProvider({ logger: createMockLogger(), config });
     await p.initialize();
 
-    const models = await p.listModels!();
-    expect(models).toHaveLength(2);
-    expect(models[0].id).toBe('team1/agent-a');
-    expect(models[1].id).toBe('team2/agent-b');
+    const ec = await p.getEffectiveConfig!();
+    expect(ec.baseUrl).toBe('https://kagenti.example.com');
+    expect(ec.model).toBe('meta-llama/Llama-3.3-8B-Instruct');
+    expect(ec.toolChoice).toBe('auto');
   });
 
-  it('falls back to default namespace on listNamespaces failure', async () => {
+  it('returns empty model when no LlamaStack config is present', async () => {
     const p = createProvider();
     await p.initialize();
 
-    getLatestMockApiClient().listNamespaces.mockRejectedValueOnce(
-      new Error('Namespace API unavailable'),
-    );
-
-    const models = await p.listModels!();
-    expect(models).toHaveLength(1);
-    expect(models[0].id).toBe('team1/weather-bot');
+    const ec = await p.getEffectiveConfig!();
+    expect(ec.baseUrl).toBe('https://kagenti.example.com');
+    expect(ec.model).toBe('');
   });
 });
 

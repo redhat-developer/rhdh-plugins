@@ -22,7 +22,7 @@ export function registerAdminModelRoutes(
   router: import('express').Router,
   deps: AdminRouteDeps,
 ): void {
-  const { provider, logger, sendRouteError } = deps;
+  const { logger, sendRouteError } = deps;
 
   const withRoute = createWithRoute(logger, sendRouteError);
 
@@ -32,7 +32,7 @@ export function registerAdminModelRoutes(
       'GET /admin/models',
       'Failed to list available models',
       async (_req, res) => {
-        if (!provider.listModels) {
+        if (!deps.provider.listModels) {
           res.status(501).json({
             success: false,
             error: 'Model listing not supported by current provider',
@@ -40,7 +40,7 @@ export function registerAdminModelRoutes(
           return;
         }
 
-        const models = await provider.listModels();
+        const models = await deps.provider.listModels();
         res.json({
           success: true,
           models,
@@ -56,7 +56,7 @@ export function registerAdminModelRoutes(
       'POST /admin/test-model',
       'Failed to test model connection',
       async (req, res) => {
-        if (!provider.testModel) {
+        if (!deps.provider.testModel) {
           res.status(501).json({
             success: false,
             error: 'Model testing not supported by current provider',
@@ -72,7 +72,9 @@ export function registerAdminModelRoutes(
           throw new InputError('model must be a string');
         }
 
-        const result = await provider.testModel(requestedModel || undefined);
+        const result = await deps.provider.testModel(
+          requestedModel || undefined,
+        );
         res.json({
           success: true,
           ...result,
@@ -113,7 +115,7 @@ export function registerAdminModelRoutes(
           throw new InputError('capabilities must be an object');
         }
 
-        if (!provider.generateSystemPrompt) {
+        if (!deps.provider.generateSystemPrompt) {
           res.status(501).json({
             success: false,
             error: 'System prompt generation not supported by current provider',
@@ -121,7 +123,7 @@ export function registerAdminModelRoutes(
           return;
         }
 
-        const prompt = await provider.generateSystemPrompt(
+        const prompt = await deps.provider.generateSystemPrompt(
           description.trim(),
           requestedModel || undefined,
           capabilities || undefined,

@@ -67,7 +67,6 @@ export function registerAdminRoutes(
     router,
     logger,
     config,
-    provider,
     sessions,
     sendRouteError,
     getUserRef,
@@ -84,7 +83,9 @@ export function registerAdminRoutes(
     router,
     logger,
     config,
-    provider,
+    get provider() {
+      return ctx.provider;
+    },
     adminConfig,
     providerManager,
     sendRouteError,
@@ -113,7 +114,7 @@ export function registerAdminRoutes(
       'POST /admin/rag-test',
       'Failed to test RAG query',
       async (req, res) => {
-        if (!provider.rag?.searchVectorStore) {
+        if (!ctx.provider.rag?.searchVectorStore) {
           res.status(501).json({
             success: false,
             error: 'RAG search not supported by current provider',
@@ -151,7 +152,7 @@ export function registerAdminRoutes(
           throw new InputError('vectorStoreIds must be an array of strings');
         }
 
-        const result = await provider.rag.searchVectorStore(
+        const result = await ctx.provider.rag!.searchVectorStore(
           query.trim(),
           maxResults,
           vectorStoreId,
@@ -176,7 +177,7 @@ export function registerAdminRoutes(
       'POST /admin/rag-generate',
       'Failed to generate RAG answer',
       async (req, res) => {
-        if (!provider.rag?.generateAnswer) {
+        if (!ctx.provider.rag?.generateAnswer) {
           res.status(501).json({
             success: false,
             error: 'RAG answer generation not supported by current provider',
@@ -214,7 +215,7 @@ export function registerAdminRoutes(
           throw new InputError('vectorStoreIds must be an array of strings');
         }
 
-        const result = await provider.rag.generateAnswer(
+        const result = await ctx.provider.rag!.generateAnswer(
           query.trim(),
           maxResults,
           vectorStoreId,

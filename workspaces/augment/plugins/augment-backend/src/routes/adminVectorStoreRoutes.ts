@@ -89,14 +89,7 @@ export function registerAdminVectorStoreRoutes(
   router: import('express').Router,
   deps: AdminRouteDeps,
 ): void {
-  const {
-    adminConfig,
-    config,
-    provider,
-    logger,
-    sendRouteError,
-    onConfigChanged,
-  } = deps;
+  const { adminConfig, config, logger, sendRouteError, onConfigChanged } = deps;
 
   const withRoute = createWithRoute(logger, sendRouteError);
   const activeIdsMutex = new ActiveIdsMutex();
@@ -107,6 +100,7 @@ export function registerAdminVectorStoreRoutes(
       'GET /admin/vector-store-config',
       'Failed to get vector store configuration',
       async (_req, res) => {
+        const provider = deps.provider;
         const resolved = provider.rag?.getVectorStoreConfig
           ? await provider.rag.getVectorStoreConfig()
           : null;
@@ -167,6 +161,7 @@ export function registerAdminVectorStoreRoutes(
       'POST /admin/vector-store/create',
       'Failed to create vector store',
       async (req, res) => {
+        const provider = deps.provider;
         if (!provider.rag?.createVectorStoreWithConfig) {
           res.status(501).json({
             success: false,
@@ -326,6 +321,7 @@ export function registerAdminVectorStoreRoutes(
       'GET /admin/vector-store/status',
       'Failed to get vector store status',
       async (_req, res) => {
+        const provider = deps.provider;
         if (!provider.rag?.getVectorStoreStatus) {
           res.status(501).json({
             success: false,
@@ -350,6 +346,7 @@ export function registerAdminVectorStoreRoutes(
       'GET /admin/vector-stores',
       'Failed to list vector stores',
       async (_req, res) => {
+        const provider = deps.provider;
         if (!provider.rag) {
           res.json({
             success: true,
@@ -478,6 +475,7 @@ export function registerAdminVectorStoreRoutes(
       'POST /admin/vector-stores/connect',
       'Failed to connect vector store',
       async (req, res) => {
+        const provider = deps.provider;
         const { vectorStoreId } = req.body;
         if (!vectorStoreId || typeof vectorStoreId !== 'string') {
           throw new InputError('vectorStoreId is required');
@@ -548,6 +546,7 @@ export function registerAdminVectorStoreRoutes(
         })`,
       'Failed to remove vector store',
       async (req, res) => {
+        const provider = deps.provider;
         const { id } = req.params;
         const permanent = req.query.permanent === 'true';
 

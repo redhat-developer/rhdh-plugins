@@ -19,12 +19,11 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
-import Drawer from '@mui/material/Drawer';
+import Collapse from '@mui/material/Collapse';
 import { useTheme, alpha } from '@mui/material/styles';
 import ExploreIcon from '@mui/icons-material/Explore';
-import CloseIcon from '@mui/icons-material/Close';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import IconButton from '@mui/material/IconButton';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
 import { useBranding } from '../../hooks';
@@ -108,7 +107,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { t } = useTranslation();
   const [logoError, setLogoError] = useState(false);
   const [drawerAgent, setDrawerAgent] = useState<AgentWithCard | null>(null);
-  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [catalogExpanded, setCatalogExpanded] = useState(false);
   const { agents: allAgents } = useAgentGalleryData(api);
 
   const safeLogoUrl = useMemo(
@@ -159,6 +158,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       });
     },
     [onAgentSelect, onQuickActionSelect],
+  );
+
+  const handleAgentSelectFromGallery = useCallback(
+    (id: string, name: string) => {
+      if (onAgentSelect) {
+        onAgentSelect(id, name);
+      }
+    },
+    [onAgentSelect],
   );
 
   const titleSx = useMemo(
@@ -354,7 +362,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         </Typography>
       </Box>
 
-      {/* Featured Agents (replaces the full gallery on the welcome screen) */}
+      {/* Featured Agents */}
       {hasFeatured && (
         <FeaturedAgents
           agents={allAgents}
@@ -390,75 +398,75 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             </Typography>
           </Box>
         )}
-
-        {/* "Explore all agents" link */}
-        {hasFeatured && (
-          <Box sx={{ textAlign: 'center', py: 2 }}>
-            <Button
-              size="small"
-              startIcon={<ExploreIcon sx={{ fontSize: 16 }} />}
-              onClick={() => setGalleryOpen(true)}
-              sx={{
-                textTransform: 'none',
-                fontSize: '0.8rem',
-                color: theme.palette.text.secondary,
-                '&:hover': { color: theme.palette.primary.main },
-              }}
-            >
-              Explore all agents
-            </Button>
-          </Box>
-        )}
       </Box>
 
-      {/* Full Agent Gallery Drawer */}
+      {/* Inline Agent Catalog */}
       {hasFeatured && (
-        <>
-          <Drawer
-            anchor="right"
-            open={galleryOpen}
-            onClose={() => setGalleryOpen(false)}
-            PaperProps={{
-              sx: {
-                width: { xs: '100%', sm: 520 },
-                bgcolor: theme.palette.background.default,
-              },
-            }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                px: 2,
-                py: 1.5,
-                borderBottom: `1px solid ${theme.palette.divider}`,
-              }}
-            >
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                All Agents
-              </Typography>
-              <IconButton size="small" onClick={() => setGalleryOpen(false)}>
-                <CloseIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Box>
-            <Box sx={{ overflow: 'auto', flex: 1, py: 1 }}>
-              <AgentGallery
-                onAgentSelect={(id, name) => {
-                  setGalleryOpen(false);
-                  onAgentSelect!(id, name);
+        <Box sx={{ px: 2, pb: 2, maxWidth: 1200, mx: 'auto', width: '100%' }}>
+          {!catalogExpanded ? (
+            <Box sx={{ textAlign: 'center', py: 1 }}>
+              <Button
+                size="small"
+                startIcon={<ExploreIcon sx={{ fontSize: 16 }} />}
+                onClick={() => setCatalogExpanded(true)}
+                sx={{
+                  textTransform: 'none',
+                  fontSize: '0.8rem',
+                  color: theme.palette.text.secondary,
+                  '&:hover': { color: theme.palette.primary.main },
                 }}
-                onAgentInfo={setDrawerAgent}
-              />
+              >
+                Explore all agents
+              </Button>
             </Box>
-          </Drawer>
-          <AgentDetailDrawer
-            agent={drawerAgent}
-            open={!!drawerAgent}
-            onClose={() => setDrawerAgent(null)}
-            onStartConversation={onAgentSelect}
-          />
-        </>
+          ) : (
+            <>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 1,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 600, fontSize: '0.85rem' }}
+                >
+                  All Agents
+                </Typography>
+                <Button
+                  size="small"
+                  startIcon={<ExpandLessIcon sx={{ fontSize: 16 }} />}
+                  onClick={() => setCatalogExpanded(false)}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    color: theme.palette.text.secondary,
+                  }}
+                >
+                  Collapse
+                </Button>
+              </Box>
+              <Collapse in={catalogExpanded}>
+                <AgentGallery
+                  onAgentSelect={handleAgentSelectFromGallery}
+                  onAgentInfo={setDrawerAgent}
+                />
+              </Collapse>
+            </>
+          )}
+        </Box>
+      )}
+
+      {/* Agent Detail Drawer */}
+      {hasFeatured && (
+        <AgentDetailDrawer
+          agent={drawerAgent}
+          open={!!drawerAgent}
+          onClose={() => setDrawerAgent(null)}
+          onStartConversation={onAgentSelect}
+        />
       )}
     </Box>
   );

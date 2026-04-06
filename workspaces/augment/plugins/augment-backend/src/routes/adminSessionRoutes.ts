@@ -22,7 +22,6 @@ export function registerAdminSessionRoutes(
   deps: AdminRouteDeps,
 ): void {
   const {
-    provider,
     logger,
     sendRouteError,
     sessions,
@@ -72,9 +71,10 @@ export function registerAdminSessionRoutes(
         if (missingConversations(res)) return;
 
         try {
-          const messages = await provider.conversations!.getProcessedMessages(
-            session.conversationId,
-          );
+          const messages =
+            await deps.provider.conversations!.getProcessedMessages(
+              session.conversationId,
+            );
           if (messages.length === 0) {
             logger.warn(
               `Admin: session ${req.params.sessionId} has conversationId ${session.conversationId} but returned 0 messages — conversation data may have been lost`,

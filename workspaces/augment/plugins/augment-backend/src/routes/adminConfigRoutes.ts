@@ -32,7 +32,6 @@ export function registerAdminConfigRoutes(
   const {
     adminConfig,
     config,
-    provider,
     logger,
     sendRouteError,
     getUserRef,
@@ -65,7 +64,7 @@ export function registerAdminConfigRoutes(
       async (req, res) => {
         const validKey = AdminConfigService.validateKey(req.params.key);
         const providerId =
-          (req.query.provider as string | undefined) ?? provider.id;
+          (req.query.provider as string | undefined) ?? deps.provider.id;
 
         if (isProviderScopedKey(validKey)) {
           const value = await adminConfig.getScopedValue(
@@ -131,7 +130,7 @@ export function registerAdminConfigRoutes(
 
         const userRef = await getUserRef(req);
         const providerId =
-          (req.query.provider as string | undefined) ?? provider.id;
+          (req.query.provider as string | undefined) ?? deps.provider.id;
 
         if (validKey === 'agents') {
           try {
@@ -171,10 +170,10 @@ export function registerAdminConfigRoutes(
         if (
           validKey === 'model' &&
           typeof value === 'string' &&
-          provider.listModels
+          deps.provider.listModels
         ) {
           try {
-            const models = await provider.listModels();
+            const models = await deps.provider.listModels();
             const found = models.some(m => m.id === value.trim());
             if (!found) {
               warnings.push(
@@ -230,7 +229,7 @@ export function registerAdminConfigRoutes(
       async (req, res) => {
         const validKey = AdminConfigService.validateKey(req.params.key);
         const providerId =
-          (req.query.provider as string | undefined) ?? provider.id;
+          (req.query.provider as string | undefined) ?? deps.provider.id;
 
         let deleted: boolean;
         if (isProviderScopedKey(validKey)) {
@@ -262,8 +261,8 @@ export function registerAdminConfigRoutes(
       async (_req, res) => {
         let effectiveConfig: Record<string, unknown>;
 
-        if (provider.getEffectiveConfig) {
-          effectiveConfig = await provider.getEffectiveConfig();
+        if (deps.provider.getEffectiveConfig) {
+          effectiveConfig = await deps.provider.getEffectiveConfig();
         } else {
           const ls = config.getOptionalConfig('augment.llamaStack');
           const yamlBranding = loadBrandingOverrides(config, logger);

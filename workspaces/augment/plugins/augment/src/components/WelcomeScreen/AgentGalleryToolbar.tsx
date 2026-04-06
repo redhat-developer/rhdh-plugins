@@ -24,11 +24,11 @@ import Chip from '@mui/material/Chip';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
 import SearchIcon from '@mui/icons-material/Search';
 import StarIcon from '@mui/icons-material/Star';
 import HistoryIcon from '@mui/icons-material/History';
 import SortIcon from '@mui/icons-material/Sort';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { FC, SyntheticEvent } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -47,6 +47,8 @@ export interface AgentGalleryToolbarProps {
   filteredCount: number;
   sort: SortOption;
   onSortChange: (value: SortOption) => void;
+  frameworkFilter?: string;
+  onFrameworkFilterChange?: (value: string) => void;
 }
 
 export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
@@ -61,6 +63,8 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
   filteredCount,
   sort,
   onSortChange,
+  frameworkFilter = '',
+  onFrameworkFilterChange,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -68,10 +72,16 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
 
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <SmartToyIcon
-          sx={{ fontSize: 20, color: theme.palette.primary.main }}
-        />
+      {/* Top row: count badge + filters + search */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          mb: 1,
+          flexWrap: 'wrap',
+        }}
+      >
         <Typography
           variant="subtitle2"
           sx={{
@@ -79,9 +89,9 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: 0.75,
+            fontSize: '0.85rem',
           }}
         >
-          {t('agentGallery.heading')}
           <Chip
             label={
               filteredCount === totalCount
@@ -100,6 +110,43 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
           />
         </Typography>
         <Box sx={{ flex: 1 }} />
+
+        {/* Framework filter dropdown (only when frameworks exist) */}
+        {frameworks.length > 0 && onFrameworkFilterChange && (
+          <FormControl size="small" sx={{ minWidth: 0 }}>
+            <Select
+              value={frameworkFilter}
+              onChange={e => onFrameworkFilterChange(e.target.value)}
+              displayEmpty
+              startAdornment={
+                <FilterListIcon
+                  sx={{
+                    fontSize: 14,
+                    mr: 0.5,
+                    color: theme.palette.text.disabled,
+                  }}
+                />
+              }
+              sx={{
+                borderRadius: 2,
+                fontSize: '0.75rem',
+                height: 32,
+                '& .MuiSelect-select': { py: 0.5, pl: 0.5 },
+              }}
+            >
+              <MenuItem value="" sx={{ fontSize: '0.8rem' }}>
+                All frameworks
+              </MenuItem>
+              {frameworks.map(fw => (
+                <MenuItem key={fw} value={fw} sx={{ fontSize: '0.8rem' }}>
+                  {fw}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+
+        {/* Sort dropdown */}
         <FormControl size="small" sx={{ minWidth: 0 }}>
           <Select
             value={sort}
@@ -132,6 +179,8 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
             </MenuItem>
           </Select>
         </FormControl>
+
+        {/* Search */}
         <TextField
           size="small"
           placeholder={t('agentGallery.searchPlaceholder')}
@@ -157,6 +206,8 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
           }}
         />
       </Box>
+
+      {/* Tabs: All / Recent / Pinned (no framework tabs) */}
       <Tabs
         value={tab}
         onChange={handleTabsChange}
@@ -191,9 +242,6 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
           iconPosition="start"
           disabled={pinnedCount === 0}
         />
-        {frameworks.map(fw => (
-          <Tab key={fw} label={fw} value={fw} />
-        ))}
       </Tabs>
     </>
   );
