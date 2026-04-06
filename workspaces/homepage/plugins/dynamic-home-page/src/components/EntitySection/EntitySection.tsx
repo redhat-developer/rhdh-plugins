@@ -44,7 +44,6 @@ import {
   hasEntityIllustrationUserDismissed,
 } from '../../utils/utils';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Trans } from '../Trans';
 import { containerGridItemSx } from '../../utils/GridItem';
 import {
   useContainerQuery,
@@ -321,10 +320,7 @@ export const EntitySection = () => {
         {entities?.length > 0 && (
           <Box sx={{ pt: 2 }}>
             <ViewMoreLink to="/catalog">
-              <Trans
-                message="entities.viewAll"
-                params={{ count: data?.totalItems?.toString() || '' }}
-              />
+              {t('entities.browseTheCatalog')}
             </ViewMoreLink>
           </Box>
         )}

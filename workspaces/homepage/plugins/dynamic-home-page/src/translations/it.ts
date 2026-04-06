@@ -70,7 +70,7 @@ const homepageTranslationIt = createTranslationMessages({
     'entities.emptyDescription':
       "Una volta aggiunti i cataloghi software, in quest'area verranno visualizzati contenuti pertinenti e personalizzati in base all'esperienza dell'utente.",
     'entities.register': 'Registrare un componente',
-    'entities.viewAll': 'Visualizza tutte le {{count}} entità del catalogo',
+    'entities.browseTheCatalog': 'Esplora il catalogo',
   },
 });
 

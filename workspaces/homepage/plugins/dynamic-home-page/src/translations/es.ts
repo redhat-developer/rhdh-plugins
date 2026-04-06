@@ -69,7 +69,7 @@ const homepageTranslationEs = createTranslationMessages({
     'entities.emptyDescription':
       'Una vez que se agreguen catálogos de software, este espacio mostrará contenido relevante adaptado a tu experiencia.',
     'entities.register': 'Registrar un componente',
-    'entities.viewAll': 'Ver todas las {{count}} entidades del catálogo',
+    'entities.browseTheCatalog': 'Explorar el catálogo',
   },
 });
 
