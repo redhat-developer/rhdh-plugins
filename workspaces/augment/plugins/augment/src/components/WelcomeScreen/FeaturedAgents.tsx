@@ -26,6 +26,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 import type { ChatAgentConfig } from '../../types';
 import type { AgentWithCard } from './agentUtils';
 import { getAgentAvatarColor, isAgentReady } from './agentUtils';
+import { stripMarkdown } from './stripMarkdown';
 
 interface FeaturedAgentsProps {
   agents: AgentWithCard[];
@@ -245,7 +246,7 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                           lineHeight: 1.5,
                         }}
                       >
-                        {description}
+                        {stripMarkdown(description)}
                       </Typography>
                     )}
                   </CardContent>
