@@ -377,21 +377,24 @@ const useStyles = makeStyles(theme => ({
     },
   },
   mcpFullscreenLayout: {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
     minHeight: 0,
     height: '100%',
     flex: 1,
     width: '100%',
+    minWidth: 0,
+    overflow: 'hidden',
   },
   mcpChatPane: {
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
-    flex: 1,
+    width: '100%',
     minWidth: 0,
   },
   mcpSettingsPane: {
-    flex: 1,
+    width: '100%',
     minWidth: 0,
     borderLeft: `1px solid ${theme.palette.divider}`,
     backgroundColor:

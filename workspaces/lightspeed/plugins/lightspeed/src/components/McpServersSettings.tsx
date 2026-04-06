@@ -1000,7 +1000,13 @@ export const McpServersSettings = ({
                         isChecked={isChecked}
                         isDisabled={isToggleDisabled}
                         onChange={(_event, checked) => {
-                          void patchServer(server.name, { enabled: checked });
+                          void patchServer(server.name, {
+                            enabled: checked,
+                          }).catch(() => {
+                            // patchServer already updates component error state.
+                            // Swallow here to avoid unhandled promise rejections
+                            // from event-handler fire-and-forget usage.
+                          });
                         }}
                       />
                     );
