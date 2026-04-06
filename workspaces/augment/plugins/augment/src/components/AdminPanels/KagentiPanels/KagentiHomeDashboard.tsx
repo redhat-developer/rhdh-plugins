@@ -19,10 +19,10 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
-import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import { useTheme, alpha } from '@mui/material/styles';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -33,7 +33,9 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import FolderIcon from '@mui/icons-material/Folder';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import AddIcon from '@mui/icons-material/Add';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import TuneIcon from '@mui/icons-material/Tune';
+import ScienceIcon from '@mui/icons-material/Science';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../../api';
 import type { AdminPanel } from '../../../hooks';
@@ -135,29 +137,72 @@ export function KagentiHomeDashboard({
     },
   ];
 
-  const quickActions = [
+  const createActions: Array<{
+    label: string;
+    description: string;
+    icon: React.ReactNode;
+    panel: AdminPanel;
+  }> = [
+    {
+      label: 'Create Agent',
+      description: 'Import or build a new AI agent',
+      icon: <AddCircleOutlineIcon sx={{ fontSize: 24 }} />,
+      panel: 'kagenti-agents' as AdminPanel,
+    },
+    {
+      label: 'Create Tool',
+      description: 'Register an MCP tool server',
+      icon: <AddCircleOutlineIcon sx={{ fontSize: 24 }} />,
+      panel: 'kagenti-tools' as AdminPanel,
+    },
+  ];
+
+  const navActions: Array<{
+    label: string;
+    description: string;
+    icon: React.ReactNode;
+    panel: AdminPanel;
+  }> = [
     {
       label: 'Agents',
       description: 'View and manage agents',
-      icon: <SmartToyIcon sx={{ fontSize: 28 }} />,
+      icon: <SmartToyIcon sx={{ fontSize: 24 }} />,
       panel: 'kagenti-agents' as AdminPanel,
     },
     {
       label: 'Tools',
       description: 'View and manage tools',
-      icon: <BuildIcon sx={{ fontSize: 28 }} />,
+      icon: <BuildIcon sx={{ fontSize: 24 }} />,
       panel: 'kagenti-tools' as AdminPanel,
+    },
+    {
+      label: 'Build Pipelines',
+      description: 'Shipwright builds and strategies',
+      icon: <RocketLaunchIcon sx={{ fontSize: 24 }} />,
+      panel: 'kagenti-builds' as AdminPanel,
+    },
+    {
+      label: 'Sandbox',
+      description: 'Sessions, pods, and token usage',
+      icon: <ScienceIcon sx={{ fontSize: 24 }} />,
+      panel: 'kagenti-sandbox' as AdminPanel,
+    },
+    {
+      label: 'Platform Config',
+      description: 'Model, RAG, MCP, and safety',
+      icon: <TuneIcon sx={{ fontSize: 24 }} />,
+      panel: 'kagenti-platform' as AdminPanel,
     },
     {
       label: 'Observability',
       description: 'Traces, network, dashboards',
-      icon: <MonitorHeartIcon sx={{ fontSize: 28 }} />,
+      icon: <MonitorHeartIcon sx={{ fontSize: 24 }} />,
       panel: 'kagenti-dashboards' as AdminPanel,
     },
     {
       label: 'Administration',
-      description: 'Platform and identity config',
-      icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: 28 }} />,
+      description: 'Identity, namespaces, migration',
+      icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: 24 }} />,
       panel: 'kagenti-admin' as AdminPanel,
     },
   ];
@@ -255,61 +300,62 @@ export function KagentiHomeDashboard({
         ))}
       </Box>
 
-      {/* Quick Actions */}
+      {/* Create Actions */}
       <Typography
         variant="subtitle2"
         sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.875rem' }}
       >
-        Quick Actions
+        Create
       </Typography>
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
           gap: 2,
           mb: 3,
         }}
       >
-        {quickActions.map(action => (
+        {createActions.map(action => (
           <Card
             key={action.label}
             variant="outlined"
             sx={{
-              transition: 'border-color 0.2s, box-shadow 0.2s',
+              borderStyle: 'dashed',
+              borderColor: alpha(theme.palette.primary.main, 0.4),
+              transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s',
               '&:hover': {
+                borderStyle: 'solid',
                 borderColor: theme.palette.primary.main,
-                boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.3)}`,
+                bgcolor: alpha(theme.palette.primary.main, isDark ? 0.08 : 0.02),
+                boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}`,
               },
             }}
           >
             <CardActionArea
               onClick={() => onNavigate(action.panel)}
               sx={{
-                p: 2.5,
+                p: 2,
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: 1,
+                alignItems: 'center',
+                gap: 1.5,
               }}
             >
               <Box
                 sx={{
-                  width: 44,
-                  height: 44,
+                  width: 40,
+                  height: 40,
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bgcolor: alpha(
-                    theme.palette.primary.main,
-                    isDark ? 0.15 : 0.08,
-                  ),
+                  bgcolor: alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08),
                   color: theme.palette.primary.main,
+                  flexShrink: 0,
                 }}
               >
                 {action.icon}
               </Box>
-              <Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
                   {action.label}
                 </Typography>
@@ -325,26 +371,80 @@ export function KagentiHomeDashboard({
         ))}
       </Box>
 
-      {/* Import Buttons */}
-      <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => onNavigate('kagenti-agents' as AdminPanel)}
-          sx={{ textTransform: 'none', fontWeight: 600 }}
-        >
-          Import New Agent
-        </Button>
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => onNavigate('kagenti-tools' as AdminPanel)}
-          sx={{ textTransform: 'none', fontWeight: 600 }}
-        >
-          Import New Tool
-        </Button>
+      <Divider sx={{ mb: 3 }} />
+
+      {/* Navigate */}
+      <Typography
+        variant="subtitle2"
+        sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.875rem' }}
+      >
+        Navigate
+      </Typography>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr 1fr',
+            sm: 'repeat(3, 1fr)',
+            lg: 'repeat(4, 1fr)',
+          },
+          gap: 2,
+          mb: 3,
+        }}
+      >
+        {navActions.map(action => (
+          <Card
+            key={action.label}
+            variant="outlined"
+            sx={{
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+              '&:hover': {
+                borderColor: theme.palette.primary.main,
+                boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.3)}`,
+              },
+            }}
+          >
+            <CardActionArea
+              onClick={() => onNavigate(action.panel)}
+              sx={{
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                gap: 1,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 1.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: alpha(
+                    theme.palette.primary.main,
+                    isDark ? 0.15 : 0.08,
+                  ),
+                  color: theme.palette.primary.main,
+                }}
+              >
+                {action.icon}
+              </Box>
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
+                  {action.label}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{ color: theme.palette.text.secondary, fontSize: '0.6875rem' }}
+                >
+                  {action.description}
+                </Typography>
+              </Box>
+            </CardActionArea>
+          </Card>
+        ))}
       </Box>
 
       {/* Getting Started */}
