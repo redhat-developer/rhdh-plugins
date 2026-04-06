@@ -7325,23 +7325,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:^5.17.1":
-  version: 5.17.1
-  resolution: "@mui/icons-material@npm:5.17.1"
-  dependencies:
-    "@babel/runtime": "npm:^7.23.9"
-  peerDependencies:
-    "@mui/material": ^5.0.0
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10c0/04c6338a0e02a456031b54813dd2f0708f9a8b284feb6859dbe4e3af96cf211d83a1942c8c0a4081fd547b64307ca5213ef9b8f6f7f61e108b6b95cf5146eab5
-  languageName: node
-  linkType: hard
-
-"@mui/icons-material@npm:^6.1.0":
+"@mui/icons-material@npm:^6.1.0, @mui/icons-material@npm:^6.1.8":
   version: 6.5.0
   resolution: "@mui/icons-material@npm:6.5.0"
   dependencies:
@@ -11003,7 +10987,7 @@ __metadata:
     "@backstage/types": "npm:^1.2.2"
     "@backstage/ui": "npm:^0.13.1"
     "@material-ui/icons": "npm:^4.11.3"
-    "@mui/icons-material": "npm:^5.17.1"
+    "@mui/icons-material": "npm:^6.1.8"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/react-hooks": "npm:^8.0.1"
@@ -11015,7 +10999,7 @@ __metadata:
     "@backstage/core-plugin-api": ^1.12.4
     "@backstage/theme": ^0.7.2
     "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.17.1
+    "@mui/icons-material": ^6.1.8
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown

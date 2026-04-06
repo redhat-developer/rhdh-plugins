@@ -50,7 +50,7 @@
     "@backstage/core-plugin-api": "^1.12.4",
     "@backstage/theme": "^0.7.2",
     "@material-ui/icons": "^4.11.3",
-    "@mui/icons-material": "^5.17.1",
+    "@mui/icons-material": "^6.1.8",
     "@mui/material": "^5.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
@@ -98,6 +98,6 @@
     "@divyanshiGupta"
   ],
   "dependencies": {
-    "@mui/icons-material": "^5.17.1"
+    "@mui/icons-material": "^6.1.8"
   }
 }
