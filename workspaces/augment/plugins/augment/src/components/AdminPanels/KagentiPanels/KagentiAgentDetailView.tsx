@@ -88,14 +88,14 @@ export function KagentiAgentDetailView({
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           gap: 2,
           mb: 3,
           flexWrap: 'wrap',
         }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
               {displayName}
             </Typography>
@@ -105,33 +105,48 @@ export function KagentiAgentDetailView({
               color={statusColor(agent.status)}
             />
           </Box>
+          <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
+            {agent.labels?.protocol && (
+              <Chip
+                label={[agent.labels.protocol].flat().join(', ').toUpperCase()}
+                size="small"
+                variant="outlined"
+                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }}
+              />
+            )}
+            {agent.labels?.framework && (
+              <Chip
+                label={agent.labels.framework}
+                size="small"
+                variant="outlined"
+                color="info"
+                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }}
+              />
+            )}
+            {agent.workloadType && (
+              <Chip
+                label={agent.workloadType}
+                size="small"
+                variant="outlined"
+                sx={{ height: 22, fontSize: '0.7rem' }}
+              />
+            )}
+          </Box>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {agent.labels?.protocol && (
-            <Chip
-              label={[agent.labels.protocol].flat().join(', ').toUpperCase()}
-              size="small"
-              color="primary"
-              sx={{ fontWeight: 600 }}
-            />
-          )}
-          {agent.labels?.framework && (
-            <Chip
-              label={agent.labels.framework}
-              size="small"
-              color="info"
-              sx={{ fontWeight: 600 }}
-            />
-          )}
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', pt: 0.5 }}>
           <Button
             size="small"
-            variant="outlined"
+            variant="text"
             startIcon={<PlayArrowIcon />}
             disabled={buildTriggering}
             onClick={() => void handleTriggerBuild()}
-            sx={{ textTransform: 'none' }}
+            sx={{
+              textTransform: 'none',
+              color: theme.palette.text.secondary,
+              '&:hover': { color: theme.palette.text.primary },
+            }}
           >
-            {buildTriggering ? 'Building...' : 'Build'}
+            {buildTriggering ? 'Building...' : 'Rebuild'}
           </Button>
           {onChatWithAgent && (
             <Button
