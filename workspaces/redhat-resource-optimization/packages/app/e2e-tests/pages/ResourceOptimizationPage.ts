@@ -34,6 +34,41 @@ export class ResourceOptimizationPage {
   // ---------------------------------------------------------------------------
 
   /**
+   * Expand the Cost / Resource optimization sidebar group when present (nested nav).
+   * Older RHDH + ROS builds expose destinations as top-level items with no expander.
+   */
+  private async expandCostNavSidebarGroupIfPresent() {
+    const groupToggle = this.page.getByRole('button', {
+      name: /^(cost management|resource optimization)$/i,
+    });
+    const visible = await groupToggle
+      .first()
+      .isVisible({ timeout: 3500 })
+      .catch(() => false);
+    if (visible) {
+      await groupToggle.first().click();
+    }
+  }
+
+  /**
+   * Click a sidebar entry: nested layouts use a link; flat layouts use aria-label (flight-path pattern).
+   */
+  private async clickSidebarNavEntry(linkName: string, labelFallback: string) {
+    const link = this.page.getByRole('link', { name: linkName });
+    const linkVisible = await link
+      .first()
+      .isVisible({ timeout: 2500 })
+      .catch(() => false);
+    if (linkVisible) {
+      await link.first().click();
+      return;
+    }
+    const byLabel = this.page.getByLabel(labelFallback, { exact: true });
+    await expect(byLabel).toBeVisible({ timeout: 15000 });
+    await byLabel.click();
+  }
+
+  /**
    * Navigate to the Resource Optimization page.
    * Automatically detects available login method (guest vs OIDC).
    * Uses sidebar navigation: Cost management > Optimizations.
@@ -61,20 +96,8 @@ export class ResourceOptimizationPage {
    * Assumes the user is already logged in.
    */
   private async navigateViaSidebar() {
-    // Expand "Cost management" in the sidebar
-    const costManagement = this.page.getByRole('button', {
-      name: 'Cost management',
-    });
-    await expect(costManagement).toBeVisible({ timeout: 15000 });
-    await costManagement.click();
-
-    // Click "Optimizations" sub-item
-    const optimizations = this.page.getByRole('link', {
-      name: 'Optimizations',
-    });
-    await expect(optimizations).toBeVisible({ timeout: 5000 });
-    await optimizations.click();
-
+    await this.expandCostNavSidebarGroupIfPresent();
+    await this.clickSidebarNavEntry('Optimizations', 'Optimizations');
     await this.waitForPageLoad();
   }
 
@@ -135,17 +158,8 @@ export class ResourceOptimizationPage {
    * Assumes the user is already logged in.
    */
   async navigateToOpenShiftPage() {
-    // Expand "Cost management" in the sidebar
-    const costManagement = this.page.getByRole('button', {
-      name: 'Cost management',
-    });
-    await expect(costManagement).toBeVisible({ timeout: 15000 });
-    await costManagement.click();
-
-    // Click "OpenShift" sub-item
-    const openShiftLink = this.page.getByRole('link', { name: 'OpenShift' });
-    await expect(openShiftLink).toBeVisible({ timeout: 5000 });
-    await openShiftLink.click();
+    await this.expandCostNavSidebarGroupIfPresent();
+    await this.clickSidebarNavEntry('OpenShift', 'OpenShift');
 
     await this.page.waitForLoadState('networkidle', { timeout: 30000 });
   }
