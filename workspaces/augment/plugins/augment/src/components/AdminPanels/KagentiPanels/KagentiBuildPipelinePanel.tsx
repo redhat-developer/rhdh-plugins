@@ -29,13 +29,14 @@ import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTheme, alpha } from '@mui/material/styles';
 import type {
   KagentiBuildListItem,
-  KagentiBuildStrategy,
+  KagentiBuildInfo,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
@@ -44,48 +45,115 @@ export interface KagentiBuildPipelinePanelProps {
   namespace?: string;
 }
 
+const MAX_BUILD_INFO_FETCH = 20;
+
+function timeAgo(dateStr?: string): string {
+  if (!dateStr) return '--';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  if (diff < 0) return 'just now';
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+function phaseColor(
+  phase: string | undefined,
+  palette: {
+    success: { main: string };
+    warning: { main: string };
+    error: { main: string };
+    info: { main: string };
+    text: { secondary: string };
+  },
+): string {
+  const p = (phase ?? '').toLowerCase();
+  if (p === 'succeeded') return palette.success.main;
+  if (p === 'running' || p === 'pending') return palette.info.main;
+  if (p === 'failed') return palette.error.main;
+  return palette.text.secondary;
+}
+
+function isTool(b: KagentiBuildListItem): boolean {
+  return (b.resourceType ?? '').toLowerCase() === 'tool';
+}
+
 export function KagentiBuildPipelinePanel({
   namespace,
 }: KagentiBuildPipelinePanelProps) {
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
   const [builds, setBuilds] = useState<KagentiBuildListItem[]>([]);
-  const [strategies, setStrategies] = useState<KagentiBuildStrategy[]>([]);
+  const [buildInfoMap, setBuildInfoMap] = useState<
+    Map<string, KagentiBuildInfo>
+  >(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [triggerKey, setTriggerKey] = useState<string | null>(null);
 
-  const loadAll = useCallback(() => {
+  const buildRowKey = useCallback(
+    (b: KagentiBuildListItem) => `${b.namespace}/${b.name}`,
+    [],
+  );
+
+  const fetchBuildInfos = useCallback(
+    async (items: KagentiBuildListItem[]) => {
+      const slice = items.slice(0, MAX_BUILD_INFO_FETCH);
+      const results = await Promise.allSettled(
+        slice.map(b =>
+          isTool(b)
+            ? api.getToolBuildInfo(b.namespace, b.name)
+            : api.getKagentiBuildInfo(b.namespace, b.name),
+        ),
+      );
+      const map = new Map<string, KagentiBuildInfo>();
+      results.forEach((r, i) => {
+        if (r.status === 'fulfilled') {
+          map.set(`${slice[i].namespace}/${slice[i].name}`, r.value);
+        }
+      });
+      return map;
+    },
+    [api],
+  );
+
+  const loadAll = useCallback(async () => {
     setLoading(true);
     setError(null);
-    Promise.all([
-      api.listKagentiShipwrightBuilds({
+    try {
+      const res = await api.listKagentiShipwrightBuilds({
         namespace: namespace || undefined,
         allNamespaces: !namespace,
-      }),
-      api.listKagentiBuildStrategies(),
-    ])
-      .then(([b, s]) => {
-        setBuilds(b.builds ?? []);
-        setStrategies(s.strategies ?? []);
-      })
-      .catch(e => setError(getErrorMessage(e)))
-      .finally(() => setLoading(false));
-  }, [api, namespace]);
+      });
+      const items = res.builds ?? [];
+      setBuilds(items);
+      const infos = await fetchBuildInfos(items);
+      setBuildInfoMap(infos);
+    } catch (e) {
+      setError(getErrorMessage(e));
+    } finally {
+      setLoading(false);
+    }
+  }, [api, namespace, fetchBuildInfos]);
 
   useEffect(() => {
     loadAll();
   }, [loadAll]);
-
-  const buildRowKey = (b: KagentiBuildListItem) =>
-    `${b.namespace}/${b.name}`;
 
   const handleTrigger = async (b: KagentiBuildListItem) => {
     const key = buildRowKey(b);
     setTriggerKey(key);
     setError(null);
     try {
-      await api.triggerKagentiBuild(b.namespace, b.name);
+      if (isTool(b)) {
+        await api.triggerToolBuild(b.namespace, b.name);
+      } else {
+        await api.triggerKagentiBuild(b.namespace, b.name);
+      }
       await loadAll();
     } catch (e) {
       setError(getErrorMessage(e));
@@ -94,10 +162,151 @@ export function KagentiBuildPipelinePanel({
     }
   };
 
-  const statusLabel = (b: KagentiBuildListItem) => {
-    if (b.registered) return 'Registered';
-    return b.resourceType ? `Unregistered (${b.resourceType})` : 'Unregistered';
-  };
+  const thStyle = {
+    fontWeight: 600,
+    fontSize: '0.75rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  } as const;
+
+  function renderTableContent() {
+    if (builds.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={8}>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{ py: 2, textAlign: 'center' }}
+            >
+              No builds found.
+            </Typography>
+          </TableCell>
+        </TableRow>
+      );
+    }
+    return builds.map(b => {
+      const key = buildRowKey(b);
+      const info = buildInfoMap.get(key);
+      const typeLabel = isTool(b) ? 'Tool' : 'Agent';
+      const typeColor = isTool(b)
+        ? theme.palette.info.main
+        : theme.palette.primary.main;
+
+      const regColor = b.registered
+        ? theme.palette.success.main
+        : theme.palette.warning.main;
+
+      const runPhase = info?.buildRunPhase;
+      const runColor = phaseColor(runPhase, theme.palette);
+      let runLabel = '...';
+      if (info) {
+        runLabel = info.hasBuildRun ? runPhase || 'Unknown' : 'No runs';
+      }
+
+      const failMsg = info?.buildRunFailureMessage;
+
+      return (
+        <TableRow key={key} hover>
+          <TableCell>
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 600, fontSize: '0.8125rem' }}
+            >
+              {b.name}
+            </Typography>
+          </TableCell>
+          <TableCell>
+            <Chip
+              label={typeLabel}
+              size="small"
+              variant="outlined"
+              sx={{
+                fontSize: '0.7rem',
+                height: 22,
+                borderColor: alpha(typeColor, 0.4),
+                color: typeColor,
+              }}
+            />
+          </TableCell>
+          <TableCell>
+            <Typography variant="caption" color="textSecondary">
+              {b.namespace}
+            </Typography>
+          </TableCell>
+          <TableCell>
+            <Typography variant="caption" color="textSecondary">
+              {b.strategy ?? '--'}
+            </Typography>
+          </TableCell>
+          <TableCell>
+            <Tooltip title={b.gitUrl || '--'} arrow placement="top">
+              <Typography
+                variant="body2"
+                noWrap
+                sx={{ maxWidth: 200, fontSize: '0.8rem', cursor: 'default' }}
+              >
+                {b.gitUrl ?? '--'}
+              </Typography>
+            </Tooltip>
+          </TableCell>
+          <TableCell>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <Chip
+                label={b.registered ? 'Registered' : 'Unregistered'}
+                size="small"
+                sx={{
+                  fontSize: '0.65rem',
+                  height: 20,
+                  fontWeight: 600,
+                  bgcolor: alpha(regColor, isDark ? 0.15 : 0.1),
+                  color: regColor,
+                  border: 'none',
+                }}
+              />
+              <Tooltip title={failMsg || ''} arrow placement="top">
+                <Chip
+                  label={runLabel}
+                  size="small"
+                  sx={{
+                    fontSize: '0.65rem',
+                    height: 20,
+                    fontWeight: 600,
+                    bgcolor: alpha(runColor, isDark ? 0.15 : 0.1),
+                    color: runColor,
+                    border: 'none',
+                  }}
+                />
+              </Tooltip>
+            </Box>
+          </TableCell>
+          <TableCell>
+            <Typography variant="caption" color="textSecondary">
+              {timeAgo(b.creationTimestamp)}
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
+            <Tooltip title="Trigger build run" arrow>
+              <Box component="span">
+                <IconButton
+                  size="small"
+                  aria-label="Trigger build"
+                  onClick={() => handleTrigger(b)}
+                  disabled={triggerKey === key}
+                >
+                  {triggerKey === key ? (
+                    <CircularProgress size={18} />
+                  ) : (
+                    <PlayArrowIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </Box>
+            </Tooltip>
+          </TableCell>
+        </TableRow>
+      );
+    });
+  }
 
   return (
     <Card variant="outlined">
@@ -105,16 +314,24 @@ export function KagentiBuildPipelinePanel({
         <Box
           sx={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'space-between',
-            mb: 2,
+            mb: 3,
             flexWrap: 'wrap',
             gap: 1,
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: '1rem' }}>
-            Shipwright builds
-          </Typography>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>
+              Build Pipelines
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: theme.palette.text.secondary, mt: 0.25 }}
+            >
+              View and trigger container image builds for your agents and tools.
+            </Typography>
+          </Box>
           <Button
             size="small"
             startIcon={<RefreshIcon />}
@@ -132,26 +349,6 @@ export function KagentiBuildPipelinePanel({
           </Alert>
         )}
 
-        <Typography variant="subtitle2" color="textSecondary" sx={{ mb: 1 }}>
-          Build strategies
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-          {strategies.length === 0 && !loading ? (
-            <Typography variant="body2" color="textSecondary">
-              No build strategies available
-            </Typography>
-          ) : (
-            strategies.map(s => (
-              <Chip
-                key={s.name}
-                label={s.description ? `${s.name}: ${s.description}` : s.name}
-                size="small"
-                variant="outlined"
-              />
-            ))
-          )}
-        </Box>
-
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress size={32} />
@@ -168,64 +365,19 @@ export function KagentiBuildPipelinePanel({
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Namespace</TableCell>
-                  <TableCell>Strategy</TableCell>
-                  <TableCell>Git URL</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Created</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  <TableCell sx={thStyle}>Name</TableCell>
+                  <TableCell sx={thStyle}>Type</TableCell>
+                  <TableCell sx={thStyle}>Workspace</TableCell>
+                  <TableCell sx={thStyle}>Strategy</TableCell>
+                  <TableCell sx={thStyle}>Git URL</TableCell>
+                  <TableCell sx={thStyle}>Status</TableCell>
+                  <TableCell sx={thStyle}>Created</TableCell>
+                  <TableCell sx={thStyle} align="right">
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {builds.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7}>
-                      <Typography variant="body2" color="textSecondary">
-                        No builds found.
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  builds.map(b => {
-                    const key = buildRowKey(b);
-                    return (
-                      <TableRow key={key}>
-                        <TableCell>{b.name}</TableCell>
-                        <TableCell>{b.namespace}</TableCell>
-                        <TableCell>{b.strategy ?? '—'}</TableCell>
-                        <TableCell>
-                          <Typography variant="body2" noWrap sx={{ maxWidth: 240 }}>
-                            {b.gitUrl ?? '—'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip label={statusLabel(b)} size="small" />
-                        </TableCell>
-                        <TableCell>
-                          {b.creationTimestamp
-                            ? new Date(b.creationTimestamp).toLocaleString()
-                            : '—'}
-                        </TableCell>
-                        <TableCell align="right">
-                          <IconButton
-                            size="small"
-                            aria-label="Trigger build"
-                            onClick={() => handleTrigger(b)}
-                            disabled={triggerKey === key}
-                          >
-                            {triggerKey === key ? (
-                              <CircularProgress size={18} />
-                            ) : (
-                              <PlayArrowIcon fontSize="small" />
-                            )}
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
+              <TableBody>{renderTableContent()}</TableBody>
             </Table>
           </TableContainer>
         )}
