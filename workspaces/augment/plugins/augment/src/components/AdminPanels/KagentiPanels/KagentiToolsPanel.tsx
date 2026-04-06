@@ -112,8 +112,15 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
     setConnectOpen(true);
   };
 
+  const thStyle = {
+    fontWeight: 600,
+    fontSize: '0.75rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  } as const;
+
   const sortableHead = (field: SortField, label: string, align?: 'right') => (
-    <TableCell align={align}>
+    <TableCell align={align} sx={thStyle}>
       <TableSortLabel
         active={sortField === field}
         direction={sortField === field ? sortDir : 'asc'}
@@ -129,16 +136,24 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'space-between',
-          mb: 2,
+          mb: 3,
           flexWrap: 'wrap',
           gap: 1,
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Tools
-        </Typography>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+            Tools
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ color: theme.palette.text.secondary, mt: 0.25 }}
+          >
+            Register and manage MCP tool servers for your agents.
+          </Typography>
+        </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             size="small"
@@ -258,12 +273,14 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
             <TableHead>
               <TableRow>
                 {sortableHead('name', 'Name')}
-                <TableCell>Description</TableCell>
+                <TableCell sx={thStyle}>Description</TableCell>
                 {sortableHead('status', 'Status')}
-                <TableCell>Labels</TableCell>
+                <TableCell sx={thStyle}>Labels</TableCell>
                 {sortableHead('workloadType', 'Workload')}
                 {sortableHead('createdAt', 'Created')}
-                <TableCell align="right">Actions</TableCell>
+                <TableCell sx={thStyle} align="right">
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

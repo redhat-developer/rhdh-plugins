@@ -35,29 +35,19 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
+import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { CreateAgentWizard } from './CreateAgentWizard';
 import { KagentiAgentDetailView } from './KagentiAgentDetailView';
+import { statusChipColor, formatDateTime } from './kagentiDisplayUtils';
 
-function agentStatusColor(
-  status: string | undefined,
-): 'success' | 'error' | 'warning' | 'info' | 'default' {
-  if (!status) return 'default';
-  const s = status.toLowerCase();
-  if (s === 'ready' || s === 'running' || s === 'active') return 'success';
-  if (s === 'error' || s === 'failed') return 'error';
-  if (s === 'building' || s === 'pending') return 'info';
-  if (s === 'warning' || s === 'degraded') return 'warning';
-  return 'default';
-}
-
-type SortField = 'name' | 'status' | 'workloadType';
+type SortField = 'name' | 'status' | 'workloadType' | 'createdAt';
 type SortDir = 'asc' | 'desc';
 
 function compareAgents(
@@ -65,10 +55,22 @@ function compareAgents(
   b: KagentiAgentSummary,
   field: SortField,
 ): number {
+  if (field === 'createdAt') {
+    const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return tA - tB;
+  }
   const valA = a[field] ?? '';
   const valB = b[field] ?? '';
   return String(valA).localeCompare(String(valB));
 }
+
+const TH_STYLE = {
+  fontWeight: 600,
+  fontSize: '0.75rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+} as const;
 
 export interface KagentiAgentsPanelProps {
   namespace?: string;
@@ -159,21 +161,45 @@ export function KagentiAgentsPanel({
     );
   }
 
+  const sortableHead = (field: SortField, label: string, align?: 'right') => (
+    <TableCell
+      align={align}
+      sx={TH_STYLE}
+      sortDirection={sortField === field ? sortDir : false}
+    >
+      <TableSortLabel
+        active={sortField === field}
+        direction={sortField === field ? sortDir : 'asc'}
+        onClick={() => handleSort(field)}
+      >
+        {label}
+      </TableSortLabel>
+    </TableCell>
+  );
+
   return (
     <Box sx={{ maxWidth: 1200 }}>
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'space-between',
-          mb: 2,
+          mb: 3,
           flexWrap: 'wrap',
           gap: 1,
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Agents
-        </Typography>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+            Agents
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ color: theme.palette.text.secondary, mt: 0.25 }}
+          >
+            Deploy, manage, and monitor your AI agents.
+          </Typography>
+        </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             size="small"
@@ -242,7 +268,7 @@ export function KagentiAgentsPanel({
             gap: 2,
           }}
         >
-          <SmartToyIcon
+          <HubOutlinedIcon
             sx={{ fontSize: 48, color: theme.palette.text.disabled }}
           />
           <Typography
@@ -282,45 +308,18 @@ export function KagentiAgentsPanel({
             bgcolor: alpha(theme.palette.background.paper, 0.5),
           }}
         >
-          <Table>
+          <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell
-                  sortDirection={sortField === 'name' ? sortDir : false}
-                >
-                  <TableSortLabel
-                    active={sortField === 'name'}
-                    direction={sortField === 'name' ? sortDir : 'asc'}
-                    onClick={() => handleSort('name')}
-                  >
-                    Name
-                  </TableSortLabel>
+                {sortableHead('name', 'Name')}
+                <TableCell sx={TH_STYLE}>Description</TableCell>
+                {sortableHead('status', 'Status')}
+                <TableCell sx={TH_STYLE}>Labels</TableCell>
+                {sortableHead('workloadType', 'Workload')}
+                {sortableHead('createdAt', 'Created')}
+                <TableCell sx={TH_STYLE} align="right">
+                  Actions
                 </TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell
-                  sortDirection={sortField === 'status' ? sortDir : false}
-                >
-                  <TableSortLabel
-                    active={sortField === 'status'}
-                    direction={sortField === 'status' ? sortDir : 'asc'}
-                    onClick={() => handleSort('status')}
-                  >
-                    Status
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>Labels</TableCell>
-                <TableCell
-                  sortDirection={sortField === 'workloadType' ? sortDir : false}
-                >
-                  <TableSortLabel
-                    active={sortField === 'workloadType'}
-                    direction={sortField === 'workloadType' ? sortDir : 'asc'}
-                    onClick={() => handleSort('workloadType')}
-                  >
-                    Workload
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -339,15 +338,23 @@ export function KagentiAgentsPanel({
                         sx={{
                           fontWeight: 600,
                           color: theme.palette.primary.main,
+                          fontSize: '0.8125rem',
                         }}
                       >
                         {a.name}
                       </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {a.namespace}
+                      </Typography>
                     </TableCell>
-                    <TableCell sx={{ maxWidth: 300 }}>
+                    <TableCell sx={{ maxWidth: 260 }}>
                       <Typography
                         variant="body2"
-                        sx={{ color: theme.palette.text.secondary }}
+                        noWrap
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: '0.8125rem',
+                        }}
                       >
                         {a.description || '—'}
                       </Typography>
@@ -356,7 +363,8 @@ export function KagentiAgentsPanel({
                       <Chip
                         label={a.status}
                         size="small"
-                        color={agentStatusColor(a.status)}
+                        color={statusChipColor(a.status)}
+                        sx={{ height: 24 }}
                       />
                     </TableCell>
                     <TableCell>
@@ -370,7 +378,7 @@ export function KagentiAgentsPanel({
                             size="small"
                             color="primary"
                             variant="filled"
-                            sx={{ height: 24 }}
+                            sx={{ height: 22, fontSize: '0.7rem' }}
                           />
                         )}
                         {a.labels?.framework && (
@@ -379,20 +387,38 @@ export function KagentiAgentsPanel({
                             size="small"
                             color="info"
                             variant="filled"
-                            sx={{ height: 24 }}
+                            sx={{ height: 22, fontSize: '0.7rem' }}
                           />
                         )}
                       </Box>
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={a.workloadType ?? 'Deployment'}
+                        label={a.workloadType ?? 'deployment'}
                         size="small"
                         variant="outlined"
-                        sx={{ height: 24 }}
+                        sx={{ height: 22, fontSize: '0.7rem' }}
                       />
                     </TableCell>
+                    <TableCell>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatDateTime(a.createdAt)}
+                      </Typography>
+                    </TableCell>
                     <TableCell align="right" onClick={e => e.stopPropagation()}>
+                      {onChatWithAgent && (
+                        <Tooltip title="Chat with agent">
+                          <IconButton
+                            size="small"
+                            aria-label="Chat with agent"
+                            onClick={() =>
+                              onChatWithAgent(`${a.namespace}/${a.name}`)
+                            }
+                          >
+                            <ChatOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       <Tooltip title="Delete agent">
                         <IconButton
                           size="small"
