@@ -412,12 +412,12 @@ export class CatalogMetricService {
   }
 
   /**
-   * Get the aggregation configs for a given aggregation IDs and metric IDs.
+   * Get the aggregation configs for a given aggregation IDs filtered by metric IDs.
    * If no aggregation IDs are provided, all aggregation configs will be returned.
    * If no metric IDs are provided, all metrics will be included.
    *
    * @param aggregationIds - Optional array of aggregation IDs to fetch the configs for.
-   * @param metricIds - Optional array of metric IDs to filter the configs by.
+   * @param metricIds - Optional array of metric IDs, when provided, only aggregations whose config metricId is in this array will be returned.
    * @returns Aggregation configs
    */
   getAggregationConfigs(
@@ -452,12 +452,12 @@ export class CatalogMetricService {
 
         validateAggregationConfig(config, this.logger);
 
-        if (metricIds.length > 0) {
-          if (metricIds.includes(config.metricId)) {
-            this.registry.getProvider(config.metricId);
-            aggregations.push(config);
-          }
-        } else {
+        if (!this.registry.isProviderValid(config.metricId)) {
+          this.logger.warn(`Invalid provider for metricId: ${config.metricId}`);
+          continue;
+        }
+
+        if (metricIds.length === 0 || metricIds.includes(config.metricId)) {
           aggregations.push(config);
         }
       }

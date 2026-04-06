@@ -40,24 +40,3 @@ export function installWebpackDevOverlayGuards(): void {
     apply();
   }
 }
-
-/**
- * Webpack / react-refresh can inject an iframe overlay on top of the app that
- * intercepts pointer events. Playwright then retries clicks until the test times out.
- * The overlay can be re-injected (e.g. parallel workers + HMR), so we remove it and
- * ensure the hide rule exists (e.g. after in-app navigations that drop init-injected head).
- */
-export async function dismissWebpackDevOverlay(page: Page): Promise<void> {
-  await page.evaluate(
-    ([styleId, css]) => {
-      document.getElementById('react-refresh-overlay')?.remove();
-      if (!document.getElementById(styleId)) {
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.textContent = css;
-        (document.head ?? document.documentElement).appendChild(style);
-      }
-    },
-    [HIDE_OVERLAY_STYLE_ID, HIDE_OVERLAY_CSS] as const,
-  );
-}

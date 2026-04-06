@@ -89,7 +89,7 @@ const mountPoints: HomePageCardMountPoint[] = [
     Component: ScorecardHomepageCard as ComponentType,
     config: {
       id: 'scorecard-deprecated-metric-id',
-      title: 'Scorecard: Deprecated metric id',
+      title: 'Scorecard: With deprecated metricId property (Jira)',
       // Supported card layout
       cardLayout: {
         width: {
@@ -113,9 +113,8 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        // The "metricId" represent old logic and will be removed in the future
+        // The "metricId" represent deprecated logic and will be removed in the future
         metricId: 'jira.open_issues',
-        // aggregationId: 'openIssuesKpi',
       },
     },
   },
@@ -123,7 +122,7 @@ const mountPoints: HomePageCardMountPoint[] = [
     Component: ScorecardHomepageCard as ComponentType,
     config: {
       id: 'scorecard-with-default-aggregation-config',
-      title: 'Scorecard: With default aggregation config',
+      title: 'Scorecard: With default aggregation config (GitHub)',
       // Supported card layout
       cardLayout: {
         width: {
@@ -147,8 +146,6 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        // The "metricId" represent old logic and will be removed in the future
-        // metricId: 'github.open_prs',
         aggregationId: 'github.open_prs',
       },
     },
@@ -181,8 +178,6 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        // The "metricId" represent old logic and will be removed in the future
-        // metricId: 'jira.open_issues',
         aggregationId: 'openIssuesKpi',
       },
     },
@@ -215,8 +210,6 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6, x: 4 },
       },
       props: {
-        // The "metricId" represent old logic and will be removed in the future
-        // metricId: 'github.open_prs',
         aggregationId: 'openPrsKpi',
       },
     },
@@ -272,7 +265,8 @@ const mountPoints: HomePageCardMountPoint[] = [
     Component: ScorecardHomepageCard as ComponentType,
     config: {
       id: 'scorecard-no-metric-id',
-      title: 'Scorecard: No metric id (expected error)',
+      title:
+        'Scorecard: No aggregationId or metricId property (expected error)',
       // Supported card layout
       cardLayout: {
         width: {

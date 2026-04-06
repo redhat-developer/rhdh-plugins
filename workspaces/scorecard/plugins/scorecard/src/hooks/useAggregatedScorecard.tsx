@@ -28,10 +28,6 @@ export const useAggregatedScorecard = (
 ): UseResponseData<AggregatedMetricResult> => {
   const { t } = useTranslation();
 
-  if (aggregationId.trim() === '') {
-    throw new Error(t('errors.aggregationMissingProperties'));
-  }
-
   const scorecardApi = useApi(scorecardApiRef);
 
   const {
@@ -39,6 +35,10 @@ export const useAggregatedScorecard = (
     loading: isLoading,
     value: data,
   } = useAsync(async () => {
+    if (!aggregationId || aggregationId.trim() === '') {
+      throw new Error(t('errors.missingAggregationId'));
+    }
+
     try {
       return await scorecardApi.getAggregatedScorecard(aggregationId);
     } catch (err) {

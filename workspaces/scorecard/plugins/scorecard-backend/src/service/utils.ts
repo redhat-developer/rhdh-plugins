@@ -17,58 +17,8 @@
 import {
   BackstageCredentials,
   BackstageUserPrincipal,
-  PermissionsService,
 } from '@backstage/backend-plugin-api';
-import { AuthenticationError, NotAllowedError } from '@backstage/errors';
-import {
-  AuthorizeResult,
-  BasicPermission,
-  PermissionCondition,
-  PermissionCriteria,
-  PermissionRuleParams,
-  PolicyDecision,
-  ResourcePermission,
-} from '@backstage/plugin-permission-common';
-
-type ScorecardPermission = {
-  decision: PolicyDecision;
-  conditions?: PermissionCriteria<
-    PermissionCondition<string, PermissionRuleParams>
-  >;
-};
-
-export const authorizeConditional = async (
-  credentials: BackstageCredentials,
-  permissions: PermissionsService,
-  permission: ResourcePermission<'scorecard-metric'> | BasicPermission,
-) => {
-  const scorecardPermission = {} as ScorecardPermission;
-
-  if (permission.type === 'resource') {
-    scorecardPermission.decision = (
-      await permissions.authorizeConditional([{ permission }], {
-        credentials,
-      })
-    )[0];
-  } else {
-    scorecardPermission.decision = (
-      await permissions.authorize([{ permission }], {
-        credentials,
-      })
-    )[0];
-  }
-
-  if (scorecardPermission.decision.result === AuthorizeResult.DENY) {
-    throw new NotAllowedError();
-  }
-
-  scorecardPermission.conditions =
-    scorecardPermission.decision.result === AuthorizeResult.CONDITIONAL
-      ? scorecardPermission.decision.conditions
-      : undefined;
-
-  return scorecardPermission;
-};
+import { AuthenticationError } from '@backstage/errors';
 
 export const getUserEntityRef = async (
   credentials: BackstageCredentials<BackstageUserPrincipal>,

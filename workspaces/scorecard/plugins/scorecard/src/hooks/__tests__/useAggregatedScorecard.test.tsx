@@ -170,15 +170,31 @@ describe('useAggregatedScorecard', () => {
     });
   });
 
-  it('should throw when aggregationId is empty string', () => {
-    expect(() => {
-      renderHook(() => useAggregatedScorecard(''));
-    }).toThrow('errors.aggregationMissingProperties');
+  it('should reject when aggregationId is empty string', async () => {
+    mockUseAsync.mockImplementation(() => ({
+      loading: false,
+      error: undefined,
+      value: undefined,
+    }));
+
+    renderHook(() => useAggregatedScorecard(''));
+
+    const asyncFn = mockUseAsync.mock.calls[0][0] as () => Promise<unknown>;
+    await expect(asyncFn()).rejects.toThrow('errors.missingAggregationId');
+    expect(mockScorecardApi.getAggregatedScorecard).not.toHaveBeenCalled();
   });
 
-  it('should throw when aggregationId is whitespace only', () => {
-    expect(() => {
-      renderHook(() => useAggregatedScorecard('   '));
-    }).toThrow('errors.aggregationMissingProperties');
+  it('should reject when aggregationId is whitespace only', async () => {
+    mockUseAsync.mockImplementation(() => ({
+      loading: false,
+      error: undefined,
+      value: undefined,
+    }));
+
+    renderHook(() => useAggregatedScorecard('   '));
+
+    const asyncFn = mockUseAsync.mock.calls[0][0] as () => Promise<unknown>;
+    await expect(asyncFn()).rejects.toThrow('errors.missingAggregationId');
+    expect(mockScorecardApi.getAggregatedScorecard).not.toHaveBeenCalled();
   });
 });

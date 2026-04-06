@@ -39,7 +39,8 @@ import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { AggregatedMetricMapper } from './mappers';
 import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
 import { validateAggregationIdParam } from '../middlewares/validateAggregationIdParam';
-import { authorizeConditional, getUserEntityRef } from './utils';
+import { authorizeConditional } from '../permissions/permissionUtils';
+import { getUserEntityRef } from './utils';
 import {
   aggregationTypes,
   scorecardMetricReadPermission,

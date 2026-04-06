@@ -53,7 +53,7 @@ export interface ScorecardApi {
 
   /**
    * Retrieves aggregated metrics for a specific metric ID.
-   * @param metricId - The ID of the metric to get aggregated metrics for
+   * @param aggregationId - The ID of the aggregation to get aggregated metrics for
    * @returns Promise resolving to an aggregated metric result
    * @throws Error if the request fails or returns invalid data
    */

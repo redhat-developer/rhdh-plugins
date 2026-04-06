@@ -107,7 +107,7 @@ export class ScorecardApiClient implements ScorecardApi {
   async getAggregatedScorecard(
     aggregationId: string,
   ): Promise<AggregatedMetricResult> {
-    if (!aggregationId) {
+    if (!aggregationId || aggregationId.trim() === '') {
       throw new Error('Aggregation ID is required for aggregated scorecards');
     }
 
@@ -265,6 +265,10 @@ export class ScorecardApiClient implements ScorecardApi {
   async getAggregationMetadata(
     aggregationId: string,
   ): Promise<AggregationMetadata> {
+    if (!aggregationId || aggregationId.trim() === '') {
+      throw new Error('Aggregation ID is required for aggregation metadata');
+    }
+
     const baseUrl = await this.getBaseUrl();
     const url = new URL(`${baseUrl}/aggregations/${aggregationId}/metadata`);
 

@@ -15,8 +15,6 @@
  */
 import { Page, expect } from '@playwright/test';
 
-import { dismissWebpackDevOverlay } from '../utils/devOverlays';
-
 const LOCALE_DISPLAY_NAMES: Record<string, string> = {
   en: 'English',
   de: 'Deutsch',
@@ -40,17 +38,14 @@ export class CatalogPage {
 
   async loginAndSetLocale(locale: string) {
     await this.page.goto('/');
-    await dismissWebpackDevOverlay(this.page);
     const enterButton = this.page.getByRole('button', { name: 'Enter' });
     await expect(enterButton).toBeVisible();
     await enterButton.click();
     await expect(this.page.getByText('Welcome back!')).toBeVisible();
-    await dismissWebpackDevOverlay(this.page);
     await this.switchToLocale(locale);
   }
 
   async openCatalog() {
-    await dismissWebpackDevOverlay(this.page);
     await this.page.getByRole('link', { name: 'Catalog', exact: true }).click();
     await this.page.getByTestId('user-picker-all').getByText('All').click();
   }
@@ -68,7 +63,6 @@ export class CatalogPage {
     const baseLocale = locale.split('-')[0];
     if (baseLocale === 'en') return;
 
-    await dismissWebpackDevOverlay(this.page);
     const displayName = getLocaleDisplayName(locale);
     await this.page.getByRole('link', { name: 'Settings' }).click();
     await this.page.getByRole('button', { name: 'English' }).click();

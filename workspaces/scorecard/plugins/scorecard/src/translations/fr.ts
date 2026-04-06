@@ -50,8 +50,8 @@ const scorecardTranslationFr = createTranslationMessages({
     // Error messages
     'errors.entityMissingProperties':
       "Entité manquant les propriétés requises pour la recherche dans la fiche d'évaluation",
-    'errors.aggregationMissingProperties':
-      "L'agrégation ne dispose pas des propriétés nécessaires pour agréger les données.",
+    'errors.missingAggregationId':
+      "La propriété « ID d'agrégation » (ou « ID de métrique ») n'est pas fournie",
     'errors.invalidApiResponse':
       "Format de réponse non valide de l'API de scorecard",
     'errors.fetchError':

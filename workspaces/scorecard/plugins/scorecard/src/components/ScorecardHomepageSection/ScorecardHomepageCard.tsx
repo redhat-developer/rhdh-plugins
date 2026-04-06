@@ -20,7 +20,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ErrorStatePanel } from './ErrorStatePanel';
 import { EmptyStatePanel } from './EmptyStatePanel';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { useTranslatedMetricLabels } from '../../hooks/useTranslatedMetricLabels';
+import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
 import { CardLoading } from '../Common/CardLoading';
 
 export const ScorecardHomepageCard = ({
@@ -50,7 +50,7 @@ export const ScorecardHomepageCard = ({
       } as Pick<Metric, 'id' | 'title' | 'description'>)
     : undefined;
 
-  const { title, description } = useTranslatedMetricLabels(
+  const { title, description } = useMetricDisplayLabels(
     aggregatedMetricDetails,
   );
 

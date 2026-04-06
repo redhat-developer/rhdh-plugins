@@ -21,7 +21,8 @@ export const AGGREGATED_CARDS_METRIC_IDS = {
 } as const;
 
 export const AGGREGATED_CARDS_WIDGET_TITLES = {
-  withDeprecatedMetricId: 'Scorecard: Deprecated metric id',
-  withDefaultAggregation: 'Scorecard: With default aggregation config',
+  /** Must match `title` in App.tsx homepage widget config (Add widget picker). */
+  withDeprecatedMetricId: 'Scorecard: With deprecated metricId property (Jira)',
+  withDefaultAggregation: 'Scorecard: With default aggregation config (GitHub)',
   withGithubOpenPrs: 'Scorecard: GitHub open PRs',
 } as const;

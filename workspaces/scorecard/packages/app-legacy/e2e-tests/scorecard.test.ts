@@ -49,10 +49,7 @@ import {
   AGGREGATED_CARDS_METRIC_IDS,
   AGGREGATED_CARDS_WIDGET_TITLES,
 } from './constants/homepageWidgetTitles';
-import {
-  dismissWebpackDevOverlay,
-  installWebpackDevOverlayGuards,
-} from './utils/devOverlays';
+import { installWebpackDevOverlayGuards } from './utils/devOverlays';
 
 async function addWidgets(homePage: HomePage, widgetTitle: string) {
   await homePage.navigateToHome();
@@ -95,15 +92,10 @@ test.describe('Scorecard Plugin Tests', () => {
     homePage = new HomePage(page, translations, currentLocale);
 
     await catalogPage.loginAndSetLocale(currentLocale);
-    await dismissWebpackDevOverlay(page);
   });
 
   test.afterAll(async () => {
     await page?.context()?.close();
-  });
-
-  test.beforeEach(async () => {
-    await dismissWebpackDevOverlay(page);
   });
 
   test.afterEach(async () => {

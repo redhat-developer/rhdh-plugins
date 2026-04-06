@@ -140,14 +140,14 @@ permission:
 scorecard:
   aggregationKPIs:
     openPrsKpi:
-      title: GitHub open PRs
-      description: Open pull requests across entities you own, grouped by threshold status.
+      title: GitHub Open PRs KPI
       type: statusGrouped
+      description: This KPI is provide information about GitHub open PRs grouped by status.
       metricId: github.open_prs
     openIssuesKpi:
-      title: Jira open issues
-      description: Open Jira issues across entities you own, grouped by threshold status.
+      title: Jira Open Issues KPI
       type: statusGrouped
+      description: This KPI is provide information about Jira open issues grouped by status.
       metricId: jira.open_issues
   plugins:
     jira:

@@ -34,6 +34,10 @@ export const useAggregationMetadata = (
     loading: isLoading,
     value: data,
   } = useAsync(async () => {
+    if (!aggregationId || aggregationId.trim() === '') {
+      throw new Error(t('errors.missingAggregationId'));
+    }
+
     try {
       return await scorecardApi.getAggregationMetadata(aggregationId);
     } catch (err) {

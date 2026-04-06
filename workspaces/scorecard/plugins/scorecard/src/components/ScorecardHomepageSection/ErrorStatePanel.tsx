@@ -18,7 +18,7 @@ import { useMemo } from 'react';
 import { ResponseErrorPanel } from '@backstage/core-components';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyStatePanel } from './EmptyStatePanel';
-import { useTranslatedMetricLabels } from '../../hooks/useTranslatedMetricLabels';
+import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
 import { CardLoading } from '../Common/CardLoading';
 import { useAggregationMetadata } from '../../hooks/useAggregationMetadata';
 
@@ -42,7 +42,7 @@ export const ErrorStatePanel = ({
   } = useAggregationMetadata(aggregationId);
 
   const { title: cardTitle, description: cardDescription } =
-    useTranslatedMetricLabels({
+    useMetricDisplayLabels({
       id: aggregationId,
       title: data?.title ?? '',
       description: data?.description ?? '',

@@ -153,7 +153,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.description': string;
     readonly 'permissionRequired.altText': string;
     readonly 'errors.entityMissingProperties': string;
-    readonly 'errors.aggregationMissingProperties': string;
+    readonly 'errors.missingAggregationId': string;
     readonly 'errors.invalidApiResponse': string;
     readonly 'errors.fetchError': string;
     readonly 'errors.metricDataUnavailable': string;
