@@ -198,7 +198,7 @@ export function CreateAgentWizard({
                 }
                 sx={{ textTransform: 'none' }}
               >
-                {form.submitting ? 'Creating…' : 'Import'}
+                {form.submitting ? 'Creating…' : 'Create'}
               </Button>
             )}
           </Box>
