@@ -41,6 +41,8 @@ export interface BuildProgress {
   outputImage?: string;
   strategy?: string;
   gitUrl?: string;
+  pollErrorCount: number;
+  deployFailedAfterBuild?: boolean;
 }
 
 const DNS_1123_RE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
