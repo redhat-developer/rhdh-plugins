@@ -126,7 +126,7 @@ describe('column filters', () => {
     name: string;
     introspectionFields: IntrospectionField[];
     filter: Filter | undefined;
-    expectedResult: string | any;
+    expectedResult: string | FilterClause;
     expectedFormattedValue: string | boolean | any;
   };
   describe('empty filter testcases', () => {
@@ -135,7 +135,7 @@ describe('column filters', () => {
         name: 'returns empty object when filters are null or undefined',
         introspectionFields: [],
         filter: undefined,
-        expectedResult: {},
+        expectedResult: {} as FilterClause,
         expectedFormattedValue: undefined,
       },
     ];
@@ -379,7 +379,7 @@ describe('column filters', () => {
             filter,
           );
           expect(result).toBeDefined();
-          let formattedClause = expectedResult;
+          let formattedClause = expectedResult as string;
           result.clauseVariable.forEach((item, index) => {
             formattedClause = formattedClause.replace(
               `$variable${index + 1}`,
@@ -491,7 +491,7 @@ describe('column filters', () => {
             filter,
           );
           expect(result).toBeDefined();
-          let formattedClause = expectedResult;
+          let formattedClause = expectedResult as string;
           result.clauseVariable.forEach((item, index) => {
             formattedClause = formattedClause.replace(
               `$variable${index + 1}`,
@@ -691,7 +691,7 @@ describe('column filters', () => {
             filter,
           );
           expect(result).toBeDefined();
-          let formattedClause = expectedResult;
+          let formattedClause = expectedResult as string;
           result.clauseVariable.forEach((item, index) => {
             formattedClause = formattedClause.replace(
               `$variable${index + 1}`,
@@ -736,7 +736,7 @@ describe('column filters', () => {
             filter,
           );
           expect(result).toBeDefined();
-          let formattedClause = expectedResult;
+          let formattedClause = expectedResult as string;
           result.clauseVariable.forEach((item, index) => {
             formattedClause = formattedClause.replace(
               `$variable${index + 1}`,
