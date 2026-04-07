@@ -18,12 +18,7 @@ import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
 
 export interface IBulkImportRESTPathProvider {
   getCreateImportJobsPath(dryRun?: boolean): string | undefined;
-  getDeleteImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool?: string,
-  ): string;
-  getGetImportActionPath(
+  getImportActionPath(
     repo: string,
     defaultBranch: string,
     approvalTool?: string,
@@ -40,19 +35,11 @@ export interface IBulkImportRESTPathProvider {
 
 export abstract class BulkImportRESTPathProviderBase implements IBulkImportRESTPathProvider {
   abstract getCreateImportJobsPath(dryRun?: boolean): string | undefined;
-  abstract getDeleteImportActionPath(
+  abstract getImportActionPath(
     repo: string,
     defaultBranch: string,
     approvalTool?: string,
   ): string;
-
-  getGetImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool?: string,
-  ): string {
-    return this.getDeleteImportActionPath(repo, defaultBranch, approvalTool);
-  }
 
   protected abstract getImportJobsBasePath(): string;
 

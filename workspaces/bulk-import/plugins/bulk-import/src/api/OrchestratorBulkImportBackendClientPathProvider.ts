@@ -23,7 +23,7 @@ export class OrchestratorBulkImportBackendClientPathProvider extends BulkImportR
       : `/api/bulk-import/orchestrator-workflows`;
   }
 
-  getDeleteImportActionPath(
+  getImportActionPath(
     repo: string,
     _defaultBranch: string,
     approvalTool?: string,

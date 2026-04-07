@@ -21,7 +21,7 @@ export class ScaffolderBulkImportBackendClientPathProvider extends BulkImportRES
     return dryRun === true ? undefined : `/api/bulk-import/task-imports`;
   }
 
-  getDeleteImportActionPath(
+  getImportActionPath(
     repo: string,
     _defaultBranch: string,
     approvalTool?: string,

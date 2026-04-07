@@ -23,7 +23,7 @@ export class PRBulkImportBackendClientPathProvider extends BulkImportRESTPathPro
       : `/api/bulk-import/imports`;
   }
 
-  getDeleteImportActionPath(
+  getImportActionPath(
     repo: string,
     defaultBranch: string,
     approvalTool?: string,

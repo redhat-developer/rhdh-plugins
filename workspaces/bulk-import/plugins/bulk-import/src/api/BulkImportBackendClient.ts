@@ -220,7 +220,7 @@ export class BulkImportBackendClient implements BulkImportAPI {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}${this.pathProvider.getDeleteImportActionPath(repo, defaultBranch, approvalTool)}`,
+      `${backendUrl}${this.pathProvider.getImportActionPath(repo, defaultBranch, approvalTool)}`,
       {
         method: 'DELETE',
         headers: {
@@ -244,7 +244,7 @@ export class BulkImportBackendClient implements BulkImportAPI {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}${this.pathProvider.getGetImportActionPath(repo, defaultBranch, approvalTool)}`,
+      `${backendUrl}${this.pathProvider.getImportActionPath(repo, defaultBranch, approvalTool)}`,
       {
         method: 'GET',
         headers: {
