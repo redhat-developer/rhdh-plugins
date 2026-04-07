@@ -17,6 +17,7 @@
 import type { FC } from 'react';
 import type { KagentiBuildStrategy } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
@@ -27,6 +28,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import type { DeploymentMethod } from './toolWizardTypes';
 
 interface ToolWizardDeployStepProps {
@@ -97,12 +99,31 @@ export const ToolWizardDeployStep: FC<ToolWizardDeployStepProps> = ({
         <FormControlLabel
           value="image"
           control={<Radio size="small" />}
-          label="Container Image"
+          label={
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Container Image
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Deploy from a pre-built image. Fastest option.
+              </Typography>
+            </Box>
+          }
         />
         <FormControlLabel
           value="source"
           control={<Radio size="small" />}
-          label="Source Code (Shipwright)"
+          label={
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Source from Git
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Build the image from source via Shipwright, then deploy. Takes a
+                few minutes.
+              </Typography>
+            </Box>
+          }
         />
       </RadioGroup>
     </FormControl>

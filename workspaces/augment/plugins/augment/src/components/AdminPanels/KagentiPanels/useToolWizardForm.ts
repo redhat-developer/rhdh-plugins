@@ -20,6 +20,7 @@ import type { KagentiBuildStrategy } from '@red-hat-developer-hub/backstage-plug
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
+import type { BuildProgress } from './agentWizardTypes';
 import type {
   DeploymentMethod,
   EnvRow,
@@ -37,6 +38,10 @@ import {
   parsePositivePort,
 } from './toolWizardUtils';
 
+const BUILD_POLL_INTERVAL_MS = 4000;
+const BUILD_TIMEOUT_WARN_MS = 10 * 60 * 1000;
+const MAX_CONSECUTIVE_POLL_ERRORS = 5;
+
 export interface UseToolWizardFormReturn {
   activeStep: number;
   submitting: boolean;
@@ -47,6 +52,10 @@ export interface UseToolWizardFormReturn {
   handleNext: () => void;
   handleBack: () => void;
   handleSubmit: () => Promise<void>;
+
+  buildProgress: BuildProgress;
+  handleRetryBuild: () => void;
+  handleCloseBuild: () => void;
 
   name: string;
   setName: (v: string) => void;
@@ -128,6 +137,17 @@ export function useToolWizardForm(
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successOpen, setSuccessOpen] = useState(false);
 
+  const [buildProgress, setBuildProgress] = useState<BuildProgress>({
+    phase: 'idle',
+    elapsedMs: 0,
+    pollErrorCount: 0,
+  });
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollErrorCountRef = useRef(0);
+  const buildNameRef = useRef('');
+  const buildNsRef = useRef('');
+
   const [name, setName] = useState('');
   const [namespace, setNamespace] = useState(namespaceProp ?? '');
   const [description, setDescription] = useState('');
@@ -165,7 +185,21 @@ export function useToolWizardForm(
   const [authBridgeEnabled, setAuthBridgeEnabled] = useState(false);
   const [spireEnabled, setSpireEnabled] = useState(false);
 
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    if (elapsedRef.current) {
+      clearInterval(elapsedRef.current);
+      elapsedRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => stopPolling, [stopPolling]);
+
   const resetForm = useCallback(() => {
+    stopPolling();
     rowIdRef.current = 0;
     setActiveStep(0);
     setSubmitError(null);
@@ -195,7 +229,11 @@ export function useToolWizardForm(
     setCreateHttpRoute(false);
     setAuthBridgeEnabled(false);
     setSpireEnabled(false);
-  }, [namespaceProp]);
+    setBuildProgress({ phase: 'idle', elapsedMs: 0, pollErrorCount: 0 });
+    buildNameRef.current = '';
+    buildNsRef.current = '';
+    pollErrorCountRef.current = 0;
+  }, [namespaceProp, stopPolling]);
 
   useEffect(() => {
     if (open && !wasOpenRef.current) {
@@ -349,6 +387,115 @@ export function useToolWizardForm(
     setActiveStep(s => Math.max(s - 1, 0));
   }, []);
 
+  const startBuildPolling = useCallback(
+    (toolName: string, toolNamespace: string) => {
+      buildNameRef.current = toolName;
+      buildNsRef.current = toolNamespace;
+      pollErrorCountRef.current = 0;
+      const startedAt = Date.now();
+
+      elapsedRef.current = setInterval(() => {
+        const elapsed = Date.now() - startedAt;
+        setBuildProgress(prev => {
+          const next = { ...prev, elapsedMs: elapsed };
+          if (
+            elapsed >= BUILD_TIMEOUT_WARN_MS &&
+            prev.phase === 'building' &&
+            !prev.message?.includes('taking longer')
+          ) {
+            next.message =
+              'Build is taking longer than expected. It will continue in the background if you close this dialog.';
+          }
+          return next;
+        });
+      }, 1000);
+
+      pollRef.current = setInterval(async () => {
+        try {
+          const info = await api.getToolBuildInfo(toolNamespace, toolName);
+          const elapsed = Date.now() - startedAt;
+          const phase = info.buildRunPhase?.toLowerCase() ?? '';
+          pollErrorCountRef.current = 0;
+
+          if (phase === 'succeeded') {
+            stopPolling();
+            setBuildProgress(prev => ({
+              ...prev,
+              phase: 'finalizing',
+              buildRunPhase: info.buildRunPhase ?? undefined,
+              outputImage: info.outputImage,
+              elapsedMs: elapsed,
+              message: 'Build complete. Deploying tool…',
+              pollErrorCount: 0,
+            }));
+
+            try {
+              const result = await api.finalizeToolBuild(
+                toolNamespace,
+                toolName,
+              );
+              setBuildProgress(prev => ({
+                ...prev,
+                phase: 'complete',
+                elapsedMs: Date.now() - startedAt,
+                message: result.message,
+                deployFailedAfterBuild: false,
+              }));
+              setSuccessOpen(true);
+              onCreated();
+            } catch (finErr) {
+              setBuildProgress(prev => ({
+                ...prev,
+                phase: 'failed',
+                elapsedMs: Date.now() - startedAt,
+                failureMessage: `Build succeeded but deployment failed: ${getErrorMessage(finErr)}`,
+                deployFailedAfterBuild: true,
+              }));
+            }
+          } else if (phase === 'failed') {
+            stopPolling();
+            setBuildProgress(prev => ({
+              ...prev,
+              phase: 'failed',
+              buildRunPhase: info.buildRunPhase ?? undefined,
+              elapsedMs: elapsed,
+              failureMessage: info.buildRunFailureMessage ?? 'Build failed.',
+              deployFailedAfterBuild: false,
+            }));
+          } else {
+            setBuildProgress(prev => ({
+              ...prev,
+              buildRunPhase: info.buildRunPhase ?? undefined,
+              buildRunName: info.buildRunName ?? undefined,
+              outputImage: info.outputImage,
+              strategy: info.strategy,
+              gitUrl: info.gitUrl,
+              startTime: info.buildRunStartTime ?? undefined,
+              elapsedMs: elapsed,
+              pollErrorCount: 0,
+            }));
+          }
+        } catch {
+          pollErrorCountRef.current += 1;
+          setBuildProgress(prev => ({
+            ...prev,
+            pollErrorCount: pollErrorCountRef.current,
+          }));
+          if (pollErrorCountRef.current >= MAX_CONSECUTIVE_POLL_ERRORS) {
+            stopPolling();
+            setBuildProgress(prev => ({
+              ...prev,
+              phase: 'failed',
+              failureMessage:
+                'Lost connection to the build service. The build may still be running — check Build Pipelines for status.',
+            }));
+          }
+        }
+      }, BUILD_POLL_INTERVAL_MS);
+    },
+    [api, onCreated, stopPolling],
+  );
+
   const handleSubmit = useCallback(async () => {
     setSubmitError(null);
     if (!validateStep0()) {
@@ -371,17 +518,39 @@ export function useToolWizardForm(
       setSubmitError('Fix invalid service port entries before submitting.');
       return;
     }
+    if (duplicateEnvNames.size > 0) {
+      setSubmitError(
+        `Duplicate environment variable names: ${Array.from(duplicateEnvNames).join(', ')}`,
+      );
+      return;
+    }
     const body = buildToolRequest(formState);
     setSubmitting(true);
+
     try {
-      await api.createKagentiTool(body);
-      setSuccessOpen(true);
-      onCreated();
-      onClose();
+      const result = await api.createKagentiTool(body);
+
+      if (deploymentMethod === 'source') {
+        setSubmitting(false);
+        setActiveStep(TOOL_STEPS.length);
+        setBuildProgress({
+          phase: 'building',
+          elapsedMs: 0,
+          message: result.message,
+          pollErrorCount: 0,
+        });
+        startBuildPolling(body.name, body.namespace);
+      } else {
+        setSuccessOpen(true);
+        onCreated();
+        onClose();
+      }
     } catch (e) {
       setSubmitError(getErrorMessage(e));
     } finally {
-      setSubmitting(false);
+      if (deploymentMethod !== 'source') {
+        setSubmitting(false);
+      }
     }
   }, [
     api,
@@ -392,7 +561,71 @@ export function useToolWizardForm(
     validateStep1,
     deploymentMethod,
     portErrors,
+    duplicateEnvNames,
+    startBuildPolling,
   ]);
+
+  const handleRetryBuild = useCallback(() => {
+    if (!buildNameRef.current || !buildNsRef.current) return;
+    const ns = buildNsRef.current;
+    const toolName = buildNameRef.current;
+    const wasDeployFailure = buildProgress.deployFailedAfterBuild;
+
+    if (wasDeployFailure) {
+      setBuildProgress(prev => ({
+        ...prev,
+        phase: 'finalizing',
+        failureMessage: undefined,
+        message: 'Retrying deployment…',
+        pollErrorCount: 0,
+      }));
+      api
+        .finalizeToolBuild(ns, toolName)
+        .then(result => {
+          setBuildProgress(prev => ({
+            ...prev,
+            phase: 'complete',
+            message: result.message,
+            deployFailedAfterBuild: false,
+          }));
+          setSuccessOpen(true);
+          onCreated();
+        })
+        .catch(err => {
+          setBuildProgress(prev => ({
+            ...prev,
+            phase: 'failed',
+            failureMessage: `Deployment failed: ${getErrorMessage(err)}`,
+            deployFailedAfterBuild: true,
+          }));
+        });
+    } else {
+      setBuildProgress({
+        phase: 'building',
+        elapsedMs: 0,
+        message: 'Retrying build…',
+        pollErrorCount: 0,
+      });
+      api
+        .triggerToolBuild(ns, toolName)
+        .then(() => {
+          startBuildPolling(toolName, ns);
+        })
+        .catch(err => {
+          setBuildProgress(prev => ({
+            ...prev,
+            phase: 'failed',
+            failureMessage: `Retry failed: ${getErrorMessage(err)}`,
+          }));
+        });
+    }
+  }, [api, buildProgress.deployFailedAfterBuild, onCreated, startBuildPolling]);
+
+  const handleCloseBuild = useCallback(() => {
+    stopPolling();
+    setBuildProgress({ phase: 'idle', elapsedMs: 0, pollErrorCount: 0 });
+    onClose();
+  }, [stopPolling, onClose]);
 
   const addEnvRow = useCallback(() => {
     setEnvRows(rows => [
@@ -454,6 +687,10 @@ export function useToolWizardForm(
     handleNext,
     handleBack,
     handleSubmit,
+
+    buildProgress,
+    handleRetryBuild,
+    handleCloseBuild,
 
     name,
     setName,

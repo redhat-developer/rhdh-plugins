@@ -43,6 +43,7 @@ export function useKagentiToolDetail(
   const [buildLoading, setBuildLoading] = useState(false);
   const [buildFetchFailed, setBuildFetchFailed] = useState(false);
 
+  const [hasBuild, setHasBuild] = useState<boolean | null>(null);
   const [triggeringBuild, setTriggeringBuild] = useState(false);
   const [finalizingBuild, setFinalizingBuild] = useState(false);
   const [buildActionError, setBuildActionError] = useState<string | null>(null);
@@ -54,9 +55,11 @@ export function useKagentiToolDetail(
     try {
       const info = await api.getToolBuildInfo(tool.namespace, tool.name);
       setBuildInfo(info);
+      setHasBuild(true);
     } catch {
       setBuildInfo(null);
       setBuildFetchFailed(true);
+      setHasBuild(false);
     } finally {
       setBuildLoading(false);
     }
@@ -127,12 +130,16 @@ export function useKagentiToolDetail(
     api
       .getToolBuildInfo(tool.namespace, tool.name)
       .then(info => {
-        if (!cancelled) setBuildInfo(info);
+        if (!cancelled) {
+          setBuildInfo(info);
+          setHasBuild(true);
+        }
       })
       .catch(() => {
         if (!cancelled) {
           setBuildInfo(null);
           setBuildFetchFailed(true);
+          setHasBuild(false);
         }
       })
       .finally(() => {
@@ -187,6 +194,7 @@ export function useKagentiToolDetail(
     buildInfo,
     buildLoading,
     buildFetchFailed,
+    hasBuild,
     triggeringBuild,
     finalizingBuild,
     buildActionError,
