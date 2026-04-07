@@ -366,8 +366,6 @@ export class DataIndexService {
 
     const whereClause = `and: [{${processIdNotNullCondition}}, {${filterCondition.clause}}]`;
 
-    console.log(`Where Clause: ${whereClause}`);
-
     // Apply a limit to prevent memory exhaustion and network timeouts when entities
     // have thousands of process instances. Entities with more instances than this limit
     // may not see all their associated workflows.
