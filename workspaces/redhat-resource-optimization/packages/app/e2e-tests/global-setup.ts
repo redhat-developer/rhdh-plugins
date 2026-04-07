@@ -36,7 +36,7 @@ async function globalSetup() {
   // eslint-disable-next-line no-console
   console.log('[global-setup] Detecting ROS plugin version via sidebar probe…');
 
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ channel: 'chrome' });
   try {
     const context = await browser.newContext({ ignoreHTTPSErrors: true });
     const page = await context.newPage();
