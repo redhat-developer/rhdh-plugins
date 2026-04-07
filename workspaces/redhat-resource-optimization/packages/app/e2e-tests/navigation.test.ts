@@ -20,8 +20,7 @@ import { performLogin } from './fixtures/auth';
 import {
   listPageUrlPattern,
   openshiftPageUrlPattern,
-  PLUGIN_ROUTE_BASE,
-  OPENSHIFT_ROUTE,
+  isLegacyRos,
 } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
@@ -42,30 +41,37 @@ test.describe('Resource Optimization - Navigation @live @ro', () => {
   // -------------------------------------------------------------------------
 
   test.describe('Sidebar Navigation (FLPATH-3123)', () => {
-    test('should display Cost management parent in the sidebar', async ({
+    test('should display sidebar nav entry for Optimizations', async ({
       page,
     }) => {
       await performLogin(page);
 
-      const costManagement = page.getByRole('button', {
-        name: 'Cost management',
-      });
-      await expect(costManagement).toBeVisible({ timeout: 10000 });
+      if (isLegacyRos) {
+        const optimizations = page.getByLabel('Optimizations', { exact: true });
+        await expect(optimizations).toBeVisible({ timeout: 10000 });
+      } else {
+        const costManagement = page.getByRole('button', {
+          name: 'Cost management',
+        });
+        await expect(costManagement).toBeVisible({ timeout: 10000 });
+      }
     });
 
-    test('should expand Cost management to show Optimizations and OpenShift', async ({
+    test('should expand nav group to show Optimizations sub-item', async ({
       page,
     }) => {
+      test.skip(
+        isLegacyRos,
+        'Legacy 1.2.x has flat sidebar — no expandable group',
+      );
       await performLogin(page);
 
-      // Click to expand the Cost management section
       const costManagement = page.getByRole('button', {
         name: 'Cost management',
       });
       await expect(costManagement).toBeVisible({ timeout: 10000 });
       await costManagement.click();
 
-      // Verify child items
       await expect(
         page.getByRole('link', { name: 'Optimizations' }),
       ).toBeVisible({ timeout: 5000 });
@@ -84,6 +90,7 @@ test.describe('Resource Optimization - Navigation @live @ro', () => {
     });
 
     test('should navigate to OpenShift page via sidebar', async ({ page }) => {
+      test.skip(isLegacyRos, 'OpenShift cost page not available in 1.2.x');
       await performLogin(page);
 
       const costManagement = page.getByRole('button', {
@@ -118,6 +125,7 @@ test.describe('Resource Optimization - Navigation @live @ro', () => {
     test('should navigate directly to OpenShift page via URL', async ({
       page,
     }) => {
+      test.skip(isLegacyRos, 'OpenShift cost page not available in 1.2.x');
       await performLogin(page);
       await rosPage.navigateToOpenShiftPage();
 

@@ -25,27 +25,41 @@
  */
 const isLiveCluster = !!process.env.PLAYWRIGHT_URL;
 
+/**
+ * True when the deployed ROS plugin is the legacy `redhat-resource-optimization`
+ * bundle (1.2.x) rather than the newer `cost-management` bundle (1.3.x+).
+ *
+ * Detection: if ROS_DYNAMIC_PLUGINS_VERSION starts with "1.2" we treat it as
+ * legacy. The env var is already set by the deploy script and can be forwarded
+ * to the Playwright container via the Jenkins pipeline.
+ */
+export const isLegacyRos: boolean = (
+  process.env.ROS_DYNAMIC_PLUGINS_VERSION ?? ''
+).startsWith('1.2');
+
+const useCostManagementRoutes = isLiveCluster && !isLegacyRos;
+
 export const PLUGIN_ROUTE_BASE: string =
   process.env.PLUGIN_ROUTE_BASE ??
-  (isLiveCluster
+  (useCostManagementRoutes
     ? '/cost-management/optimizations'
     : '/redhat-resource-optimization');
 
 export const OPENSHIFT_ROUTE: string =
   process.env.OPENSHIFT_ROUTE_PATH ??
-  (isLiveCluster
+  (useCostManagementRoutes
     ? '/cost-management/openshift'
     : '/redhat-resource-optimization/ocp');
 
 /**
  * The backend API base path.
  *
- * Local dev: `/api/redhat-resource-optimization`
- * Dynamic plugin: `/api/cost-management`
+ * Local dev / legacy: `/api/redhat-resource-optimization`
+ * Dynamic plugin 1.3.x+: `/api/cost-management`
  */
 export const API_BASE: string =
   process.env.API_BASE ??
-  (isLiveCluster
+  (useCostManagementRoutes
     ? '/api/cost-management'
     : '/api/redhat-resource-optimization');
 

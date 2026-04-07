@@ -17,7 +17,7 @@
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
 import { performGuestLogin } from './fixtures/auth';
-import { PLUGIN_ROUTE_BASE } from './utils/routes';
+import { PLUGIN_ROUTE_BASE, isLegacyRos } from './utils/routes';
 
 /**
  * Live cluster tests for the Resource Optimization Plugin.
@@ -297,6 +297,10 @@ test.describe('Resource Optimization - Live Cluster Tests @live @ro', () => {
  * They require the Orchestrator workflow to be properly configured.
  */
 test.describe('Resource Optimization - Apply Recommendation Flow @live @ro @workflow', () => {
+  test.skip(
+    isLegacyRos,
+    'Apply Recommendation requires cost-management 1.3.x+',
+  );
   let optimizationPage: ResourceOptimizationPage;
 
   test.beforeEach(async ({ page }) => {

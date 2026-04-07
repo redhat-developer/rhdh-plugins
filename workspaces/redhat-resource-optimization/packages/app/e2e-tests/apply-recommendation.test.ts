@@ -16,7 +16,7 @@
 
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
-import { PLUGIN_ROUTE_BASE } from './utils/routes';
+import { PLUGIN_ROUTE_BASE, isLegacyRos } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 
@@ -36,8 +36,14 @@ const devMode = !process.env.PLAYWRIGHT_URL;
  * no client-side token or source health probe. Instead we simply try rows
  * from the table and rely on the backend to reject broken sources with an
  * error that the UI surfaces.
+ *
+ * Requires cost-management plugin 1.3.x+ (workflow integration not in 1.2.x).
  */
 test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow', () => {
+  test.skip(
+    isLegacyRos,
+    'Apply Recommendation requires cost-management 1.3.x+',
+  );
   test.skip(devMode, 'Apply Recommendation requires a live RHDH instance');
 
   const MAX_ROWS_TO_TRY = 5;

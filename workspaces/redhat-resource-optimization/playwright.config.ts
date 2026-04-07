@@ -21,6 +21,7 @@ import { generateProjects } from '@backstage/e2e-test-utils/playwright';
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  globalSetup: require.resolve('./packages/app/e2e-tests/global-setup'),
   timeout: 60_000,
 
   expect: {

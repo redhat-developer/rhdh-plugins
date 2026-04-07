@@ -1,0 +1,102 @@
+<testsuites id="" name="" tests="8" failures="1" skipped="0" errors="0" time="124.97219799999999">
+<testsuite name="packages/app/e2e-tests/smoke.test.ts" timestamp="2026-03-25T16:09:20.762Z" hostname="en" tests="8" failures="1" skipped="0" time="119.434" errors="0">
+<testcase name="X2Ansible - UI Smoke Tests @smoke @live › Guest login renders RHDH welcome page" classname="packages/app/e2e-tests/smoke.test.ts" time="12.003">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/smoke-X2Ansible---UI-Smoke-feb5c-n-renders-RHDH-welcome-page-en/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="X2Ansible - UI Smoke Tests @smoke @live › X2A sidebar link is visible and has correct href" classname="packages/app/e2e-tests/smoke.test.ts" time="8.931">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/smoke-X2Ansible---UI-Smoke-913b0-isible-and-has-correct-href-en/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="X2Ansible - UI Smoke Tests @smoke @live › Navigate to Conversion Hub via sidebar" classname="packages/app/e2e-tests/smoke.test.ts" time="11.035">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/smoke-X2Ansible---UI-Smoke-541c4--Conversion-Hub-via-sidebar-en/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="X2Ansible - UI Smoke Tests @smoke @live › Navigate to Conversion Hub via direct URL" classname="packages/app/e2e-tests/smoke.test.ts" time="13.379">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/smoke-X2Ansible---UI-Smoke-c0a6e-nversion-Hub-via-direct-URL-en/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="X2Ansible - UI Smoke Tests @smoke @live › Conversion Hub shows Projects table with expected columns" classname="packages/app/e2e-tests/smoke.test.ts" time="27.442">
+<failure message="smoke.test.ts:330:7 Conversion Hub shows Projects table with expected columns" type="FAILURE">
+<![CDATA[  [en] › packages/app/e2e-tests/smoke.test.ts:330:7 › X2Ansible - UI Smoke Tests @smoke @live › Conversion Hub shows Projects table with expected columns 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Conversion Hub')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('Conversion Hub')
+
+
+       at packages/app/e2e-tests/pages/X2AnsiblePage.ts:58
+
+      56 |   async verifyConversionHubPage() {
+      57 |     const heading = this.page.getByText('Conversion Hub');
+    > 58 |     await expect(heading).toBeVisible({ timeout: 15000 });
+         |                           ^
+      59 |   }
+      60 |
+      61 |   async clickStartConversion() {
+        at X2AnsiblePage.verifyConversionHubPage (/Users/gharden/Desktop/General/repos/forks/rhdh-plugins/workspaces/x2a/packages/app/e2e-tests/pages/X2AnsiblePage.ts:58:27)
+        at /Users/gharden/Desktop/General/repos/forks/rhdh-plugins/workspaces/x2a/packages/app/e2e-tests/smoke.test.ts:335:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-X2Ansible---UI-Smoke-5dbc7-table-with-expected-columns-en/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-X2Ansible---UI-Smoke-5dbc7-table-with-expected-columns-en/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-X2Ansible---UI-Smoke-5dbc7-table-with-expected-columns-en/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/smoke-X2Ansible---UI-Smoke-5dbc7-table-with-expected-columns-en/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/smoke-X2Ansible---UI-Smoke-5dbc7-table-with-expected-columns-en/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="X2Ansible - UI Smoke Tests @smoke @live › New Project / Start first conversion button is visible" classname="packages/app/e2e-tests/smoke.test.ts" time="12.616">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/smoke-X2Ansible---UI-Smoke-3228a-onversion-button-is-visible-en/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="X2Ansible - UI Smoke Tests @smoke @live › Scaffolder wizard loads with correct form fields" classname="packages/app/e2e-tests/smoke.test.ts" time="15.96">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/smoke-X2Ansible---UI-Smoke-76372-ds-with-correct-form-fields-en/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="X2Ansible - UI Smoke Tests @smoke @live › Wizard step navigation — forward and back with field retention" classname="packages/app/e2e-tests/smoke.test.ts" time="18.068">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/smoke-X2Ansible---UI-Smoke-73c1d-d-back-with-field-retention-en/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

@@ -17,7 +17,7 @@
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
 import { performOIDCLogin } from './fixtures/auth';
-import { PLUGIN_ROUTE_BASE } from './utils/routes';
+import { PLUGIN_ROUTE_BASE, isLegacyRos } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 
@@ -33,8 +33,11 @@ const devMode = !process.env.PLAYWRIGHT_URL;
  *   - costmgmt-workflow-only:   workflowReadwrite only (no RORead)
  *
  * All users have password 'test' by default (configurable via env vars).
+ *
+ * Requires cost-management plugin 1.3.x+ (new RBAC permission model).
  */
 test.describe('Resource Optimization - RBAC @live @ro @rbac', () => {
+  test.skip(isLegacyRos, 'RBAC tests require cost-management 1.3.x+');
   // Skip in devMode – RBAC tests require a live RHDH with Keycloak OIDC
   test.skip(devMode, 'RBAC tests require a live RHDH instance with OIDC');
 

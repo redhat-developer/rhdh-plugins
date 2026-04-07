@@ -17,7 +17,11 @@
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
 import { performOIDCLogin } from './fixtures/auth';
-import { PLUGIN_ROUTE_BASE, OPENSHIFT_ROUTE } from './utils/routes';
+import {
+  PLUGIN_ROUTE_BASE,
+  OPENSHIFT_ROUTE,
+  isLegacyRos,
+} from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 
@@ -37,8 +41,11 @@ const devMode = !process.env.PLAYWRIGHT_URL;
  *   - costmgmt-full-access:  RORead + ros.apply + CostRead (full access)
  *   - ro-read-all:           RORead + CostRead (can view both tabs, cannot apply)
  *   - costmgmt-no-access:   No ROS/cost roles
+ *
+ * Requires cost-management plugin 1.3.x+ (secure proxy not available in 1.2.x).
  */
 test.describe('Secure Proxy & RBAC Security @live @ro @security', () => {
+  test.skip(isLegacyRos, 'Secure proxy requires cost-management 1.3.x+');
   test.skip(devMode, 'Security tests require a live RHDH instance with OIDC');
 
   // -------------------------------------------------------------------------

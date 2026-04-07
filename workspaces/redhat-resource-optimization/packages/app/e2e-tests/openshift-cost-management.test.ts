@@ -17,7 +17,7 @@
 import { test, expect } from '@playwright/test';
 import { ResourceOptimizationPage } from './pages/ResourceOptimizationPage';
 import { performLogin, performOIDCLogin } from './fixtures/auth';
-import { openshiftPageUrlPattern } from './utils/routes';
+import { openshiftPageUrlPattern, isLegacyRos } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 const isLiveCluster = !!process.env.PLAYWRIGHT_URL;
@@ -29,8 +29,11 @@ const isLiveCluster = !!process.env.PLAYWRIGHT_URL;
  * On a live cluster with RBAC, the OpenShift cost page requires the
  * `cost.plugin` permission. The default OIDC user (ro-read-no-workflow)
  * only has `ros.plugin`, so we use `ro-read-all` which has both.
+ *
+ * Requires cost-management plugin 1.3.x+ (not available in 1.2.x).
  */
 test.describe('Resource Optimization - OpenShift Cost Management @live @ro', () => {
+  test.skip(isLegacyRos, 'OpenShift cost page requires cost-management 1.3.x+');
   let rosPage: ResourceOptimizationPage;
 
   test.beforeEach(async ({ page }) => {
