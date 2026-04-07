@@ -12,19 +12,13 @@ import { RouteRef } from '@backstage/core-plugin-api';
 import { TranslationApi } from '@backstage/core-plugin-api/alpha';
 import { TranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationRef as TranslationRef_2 } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 import { TranslationSnapshot } from '@backstage/core-plugin-api/alpha';
 
 // @public
-export const ExportTranslationKeys: ({
-  resources,
-}: {
-  resources: TranslationRef<
-    string,
-    {
-      [x: string]: string;
-    }
-  >[];
+export const ExportTranslationKeys: (input: {
+  resources: TranslationRef_2[];
 }) => JSX_2.Element;
 
 // @public (undocumented)
