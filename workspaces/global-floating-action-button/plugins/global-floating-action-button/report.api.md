@@ -71,14 +71,14 @@ export const globalFloatingActionButtonTranslationRef: TranslationRef<
   'plugin.global-floating-action-button',
   {
     readonly 'fab.menu.tooltip': string;
-    readonly 'fab.github.label': string;
-    readonly 'fab.github.tooltip': string;
     readonly 'fab.create.label': string;
     readonly 'fab.create.tooltip': string;
-    readonly 'fab.docs.label': string;
-    readonly 'fab.docs.tooltip': string;
     readonly 'fab.apis.label': string;
     readonly 'fab.apis.tooltip': string;
+    readonly 'fab.github.label': string;
+    readonly 'fab.github.tooltip': string;
+    readonly 'fab.docs.label': string;
+    readonly 'fab.docs.tooltip': string;
     readonly 'fab.bulkImport.label': string;
     readonly 'fab.bulkImport.tooltip': string;
     readonly 'fab.quay.label': string;
