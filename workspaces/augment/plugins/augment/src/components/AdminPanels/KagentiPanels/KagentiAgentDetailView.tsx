@@ -61,6 +61,7 @@ export function KagentiAgentDetailView({
     setError,
     buildTriggering,
     copied,
+    hasBuild,
     loadBuildInfo,
     handleTriggerBuild,
     handleCopy,
@@ -95,7 +96,9 @@ export function KagentiAgentDetailView({
         }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}
+          >
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
               {displayName}
             </Typography>
@@ -105,7 +108,14 @@ export function KagentiAgentDetailView({
               color={statusColor(agent.status)}
             />
           </Box>
-          <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 0.75,
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
             {agent.labels?.protocol && (
               <Chip
                 label={[agent.labels.protocol].flat().join(', ').toUpperCase()}
@@ -134,20 +144,22 @@ export function KagentiAgentDetailView({
           </Box>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', pt: 0.5 }}>
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<PlayArrowIcon />}
-            disabled={buildTriggering}
-            onClick={() => void handleTriggerBuild()}
-            sx={{
-              textTransform: 'none',
-              color: theme.palette.text.secondary,
-              '&:hover': { color: theme.palette.text.primary },
-            }}
-          >
-            {buildTriggering ? 'Building...' : 'Rebuild'}
-          </Button>
+          {hasBuild && (
+            <Button
+              size="small"
+              variant="text"
+              startIcon={<PlayArrowIcon />}
+              disabled={buildTriggering}
+              onClick={() => void handleTriggerBuild()}
+              sx={{
+                textTransform: 'none',
+                color: theme.palette.text.secondary,
+                '&:hover': { color: theme.palette.text.primary },
+              }}
+            >
+              {buildTriggering ? 'Building...' : 'Rebuild'}
+            </Button>
+          )}
           {onChatWithAgent && (
             <Button
               size="small"
@@ -207,9 +219,7 @@ export function KagentiAgentDetailView({
         />
       )}
 
-      {tab === 1 && (
-        <AgentCardTab agentCard={agentCard} loading={loading} />
-      )}
+      {tab === 1 && <AgentCardTab agentCard={agentCard} loading={loading} />}
 
       {tab === 2 && (
         <AgentStatusTab
@@ -218,6 +228,7 @@ export function KagentiAgentDetailView({
           buildInfo={buildInfo}
           loading={loading}
           buildTriggering={buildTriggering}
+          hasBuild={hasBuild}
           onRefreshBuild={() => void loadBuildInfo()}
           onTriggerBuild={() => void handleTriggerBuild()}
         />

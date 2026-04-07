@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   KagentiAgentCard,
   KagentiAgentDetail,
@@ -24,6 +24,8 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { AugmentApi } from '../../../api';
 import { getErrorMessage } from '../../../utils';
+
+const STATUS_POLL_INTERVAL_MS = 15000;
 
 export function useKagentiAgentDetail(
   api: AugmentApi,
@@ -41,6 +43,8 @@ export function useKagentiAgentDetail(
   const [error, setError] = useState<string | null>(null);
   const [buildTriggering, setBuildTriggering] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [hasBuild, setHasBuild] = useState<boolean | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval>>();
 
   const loadDetail = useCallback(async () => {
     setLoading(true);
@@ -64,8 +68,9 @@ export function useKagentiAgentDetail(
     try {
       const info = await api.getKagentiBuildInfo(agent.namespace, agent.name);
       setBuildInfo(info);
+      setHasBuild(true);
     } catch {
-      /* optional */
+      setHasBuild(false);
     }
   }, [api, agent.namespace, agent.name]);
 
@@ -85,6 +90,14 @@ export function useKagentiAgentDetail(
     void loadBuildInfo();
     void loadRouteStatus();
   }, [loadBuildInfo, loadRouteStatus]);
+
+  useEffect(() => {
+    pollRef.current = setInterval(() => {
+      void loadDetail();
+      if (hasBuild) void loadBuildInfo();
+    }, STATUS_POLL_INTERVAL_MS);
+    return () => clearInterval(pollRef.current);
+  }, [loadDetail, loadBuildInfo, hasBuild]);
 
   const handleTriggerBuild = useCallback(async () => {
     setBuildTriggering(true);
@@ -115,6 +128,7 @@ export function useKagentiAgentDetail(
     setError,
     buildTriggering,
     copied,
+    hasBuild,
     loadDetail,
     loadBuildInfo,
     loadRouteStatus,
