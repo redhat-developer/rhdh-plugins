@@ -468,9 +468,9 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
   return (
     <Box
       sx={{
-        height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        maxHeight: '80vh',
         overflow: 'hidden',
       }}
     >
@@ -1210,32 +1210,37 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
             />
 
             {frameworks.length > 0 && (
-              <FormControl size="small" sx={{ minWidth: 0 }}>
+              <FormControl size="small">
                 <Select
                   value={frameworkFilter}
                   onChange={e => setFrameworkFilter(e.target.value)}
                   displayEmpty
-                  startAdornment={
-                    <FilterListIcon
-                      sx={{
-                        fontSize: 13,
-                        mr: 0.5,
-                        color: theme.palette.text.disabled,
-                      }}
-                    />
-                  }
+                  renderValue={v => (
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <FilterListIcon
+                        sx={{
+                          fontSize: 13,
+                          color: theme.palette.text.disabled,
+                        }}
+                      />
+                      <Box component="span">{v || 'All frameworks'}</Box>
+                    </Box>
+                  )}
                   sx={{
                     borderRadius: 2,
-                    fontSize: '0.72rem',
-                    height: 28,
-                    '& .MuiSelect-select': { py: 0.25, pl: 0.5 },
+                    fontSize: '0.75rem',
+                    height: 30,
+                    minWidth: 140,
+                    '& .MuiSelect-select': { py: 0.5, px: 1.25 },
                   }}
                 >
-                  <MenuItem value="" sx={{ fontSize: '0.78rem' }}>
+                  <MenuItem value="" sx={{ fontSize: '0.8rem' }}>
                     All frameworks
                   </MenuItem>
                   {frameworks.map(fw => (
-                    <MenuItem key={fw} value={fw} sx={{ fontSize: '0.78rem' }}>
+                    <MenuItem key={fw} value={fw} sx={{ fontSize: '0.8rem' }}>
                       {fw}
                     </MenuItem>
                   ))}
@@ -1243,161 +1248,152 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
               </FormControl>
             )}
 
-            <FormControl size="small" sx={{ minWidth: 0 }}>
+            <FormControl size="small">
               <Select
                 value={sort}
                 onChange={e => setSort(e.target.value as SortOption)}
                 displayEmpty
-                startAdornment={
-                  <SortIcon
-                    sx={{
-                      fontSize: 13,
-                      mr: 0.5,
-                      color: theme.palette.text.disabled,
-                    }}
-                  />
-                }
+                renderValue={v => {
+                  const labels: Record<string, string> = {
+                    name: 'Name',
+                    status: 'Status',
+                    newest: 'Newest',
+                  };
+                  return (
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <SortIcon
+                        sx={{
+                          fontSize: 13,
+                          color: theme.palette.text.disabled,
+                        }}
+                      />
+                      <Box component="span">
+                        {labels[v as string] || 'Name'}
+                      </Box>
+                    </Box>
+                  );
+                }}
                 sx={{
                   borderRadius: 2,
-                  fontSize: '0.72rem',
-                  height: 28,
-                  '& .MuiSelect-select': { py: 0.25, pl: 0.5 },
+                  fontSize: '0.75rem',
+                  height: 30,
+                  minWidth: 100,
+                  '& .MuiSelect-select': { py: 0.5, px: 1.25 },
                 }}
               >
-                <MenuItem value="name" sx={{ fontSize: '0.78rem' }}>
+                <MenuItem value="name" sx={{ fontSize: '0.8rem' }}>
                   Name
                 </MenuItem>
-                <MenuItem value="status" sx={{ fontSize: '0.78rem' }}>
+                <MenuItem value="status" sx={{ fontSize: '0.8rem' }}>
                   Status
                 </MenuItem>
-                <MenuItem value="newest" sx={{ fontSize: '0.78rem' }}>
+                <MenuItem value="newest" sx={{ fontSize: '0.8rem' }}>
                   Newest
                 </MenuItem>
               </Select>
             </FormControl>
           </Box>
 
-          {/* Split: grid + preview */}
+          {/* Agent grid (full width) */}
           <Box
             sx={{
               flex: 1,
-              display: 'flex',
-              overflow: 'hidden',
+              overflow: 'auto',
+              px: 3,
+              py: 1,
               mt: 1,
             }}
           >
-            {/* Agent grid */}
-            <Box
-              sx={{
-                flex: previewAgent ? '0 0 60%' : 1,
-                overflow: 'auto',
-                px: 3,
-                py: 1,
-                transition: 'flex 0.25s ease',
-              }}
-            >
-              {filtered.length === 0 ? (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    py: 6,
-                    color: theme.palette.text.secondary,
-                  }}
-                >
-                  <Typography variant="body2">
-                    {search
-                      ? 'No agents match your search.'
-                      : 'No agents in this category.'}
-                  </Typography>
-                </Box>
-              ) : (
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns:
-                      'repeat(auto-fill, minmax(240px, 1fr))',
-                    gap: 1.5,
-                    pb: 2,
-                  }}
-                >
-                  {filtered.map((agent, idx) => {
-                    const agentId = `${agent.namespace}/${agent.name}`;
-                    const isSelected = previewAgent
-                      ? `${previewAgent.namespace}/${previewAgent.name}` ===
-                        agentId
-                      : false;
-                    return (
-                      <GridCard
-                        key={agentId}
-                        agent={agent}
-                        isSelected={isSelected}
-                        isPinned={pinnedIds.includes(agentId)}
-                        onSelect={handlePreviewSelect}
-                        onTogglePin={togglePin}
-                        index={idx}
-                      />
-                    );
-                  })}
-                </Box>
-              )}
-            </Box>
-
-            {/* Preview panel */}
-            {previewAgent ? (
-              <Fade in timeout={200}>
-                <Box
-                  sx={{
-                    flex: '0 0 40%',
-                    borderLeft: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                    bgcolor: alpha(
-                      theme.palette.background.paper,
-                      isDark ? 0.5 : 0.6,
-                    ),
-                    overflow: 'hidden',
-                  }}
-                >
-                  <PreviewPanel
-                    agent={previewAgent}
-                    config={previewConfig}
-                    onStart={handlePreviewStart}
-                    onStarterClick={handleStarterClick}
-                  />
-                </Box>
-              </Fade>
+            {filtered.length === 0 ? (
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  py: 6,
+                  color: theme.palette.text.secondary,
+                }}
+              >
+                <Typography variant="body2">
+                  {search
+                    ? 'No agents match your search.'
+                    : 'No agents in this category.'}
+                </Typography>
+              </Box>
             ) : (
               <Box
                 sx={{
-                  flex: '0 0 40%',
-                  borderLeft: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 1.5,
-                  bgcolor: alpha(
-                    theme.palette.background.paper,
-                    isDark ? 0.3 : 0.4,
-                  ),
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: 2,
+                  pb: 2,
                 }}
               >
-                <HubOutlinedIcon
-                  sx={{
-                    fontSize: 40,
-                    color: alpha(theme.palette.text.disabled, 0.4),
-                  }}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: theme.palette.text.disabled,
-                    fontSize: '0.82rem',
-                  }}
-                >
-                  Select an agent to preview
-                </Typography>
+                {filtered.map((agent, idx) => {
+                  const agentId = `${agent.namespace}/${agent.name}`;
+                  return (
+                    <GridCard
+                      key={agentId}
+                      agent={agent}
+                      isSelected={false}
+                      isPinned={pinnedIds.includes(agentId)}
+                      onSelect={handlePreviewSelect}
+                      onTogglePin={togglePin}
+                      index={idx}
+                    />
+                  );
+                })}
               </Box>
             )}
           </Box>
+
+          {/* Agent preview popup (centered overlay) */}
+          <Dialog
+            open={!!previewAgent}
+            onClose={() => setPreviewAgent(null)}
+            maxWidth={false}
+            PaperProps={{
+              sx: {
+                width: 480,
+                maxWidth: '92vw',
+                maxHeight: '80vh',
+                borderRadius: 4,
+                overflow: 'hidden',
+                bgcolor: theme.palette.background.default,
+              },
+            }}
+            slotProps={{
+              backdrop: {
+                sx: { backdropFilter: 'blur(4px)' },
+              },
+            }}
+          >
+            {previewAgent && (
+              <Box sx={{ position: 'relative' }}>
+                <IconButton
+                  onClick={() => setPreviewAgent(null)}
+                  size="small"
+                  sx={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    zIndex: 2,
+                    color: theme.palette.text.secondary,
+                    bgcolor: alpha(theme.palette.background.paper, 0.8),
+                    '&:hover': { bgcolor: theme.palette.background.paper },
+                  }}
+                >
+                  <CloseIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+                <PreviewPanel
+                  agent={previewAgent}
+                  config={previewConfig}
+                  onStart={handlePreviewStart}
+                  onStarterClick={handleStarterClick}
+                />
+              </Box>
+            )}
+          </Dialog>
         </Box>
       )}
     </Dialog>
