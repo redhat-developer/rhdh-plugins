@@ -34,6 +34,7 @@ interface ChatHeaderProps {
   selectedModel?: string;
   currentAgent?: string;
   onChangeAgent?: () => void;
+  onBrowseAgents?: () => void;
   healthWarning?: string;
   agentConfig?: ChatAgentConfig;
 }
@@ -50,6 +51,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
   selectedModel,
   currentAgent,
   onChangeAgent,
+  onBrowseAgents,
   healthWarning,
   agentConfig,
 }) {
@@ -242,12 +244,12 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
         </Box>
       </Box>
 
-      {/* Change Agent */}
-      {onChangeAgent && (
+      {/* Browse / Change Agent */}
+      {(onBrowseAgents || onChangeAgent) && (
         <Button
           size="small"
           startIcon={<SwapHorizIcon sx={{ fontSize: 14 }} />}
-          onClick={onChangeAgent}
+          onClick={onBrowseAgents || onChangeAgent}
           sx={{
             textTransform: 'none',
             fontSize: '0.75rem',

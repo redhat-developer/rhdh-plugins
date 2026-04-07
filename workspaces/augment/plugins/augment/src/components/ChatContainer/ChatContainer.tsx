@@ -28,7 +28,7 @@ import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { Message } from '../../types';
-import { WelcomeScreen } from '../WelcomeScreen';
+import { WelcomeScreen, AgentCatalogDialog } from '../WelcomeScreen';
 import type { SelectedAgentInfo } from '../WelcomeScreen';
 import { VirtualizedMessageList } from './VirtualizedMessageList';
 import { StreamingMessage } from '../StreamingMessage';
@@ -215,6 +215,34 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       setInputValue(prompt);
       chatInputRef.current?.focus();
     }, []);
+
+    // ── Agent Catalog Dialog ──────────────────────────────────
+    const [catalogOpen, setCatalogOpen] = useState(false);
+    const catalogAutoOpened = useRef(false);
+
+    const handleOpenCatalog = useCallback(() => setCatalogOpen(true), []);
+    const handleCloseCatalog = useCallback(() => setCatalogOpen(false), []);
+
+    const handleCatalogAgentSelect = useCallback(
+      (agentId: string, agentName: string) => {
+        handleAgentSelect(agentId, agentName);
+        setCatalogOpen(false);
+      },
+      [handleAgentSelect],
+    );
+
+    const handleCatalogStarterSelect = useCallback(
+      (agentId: string, prompt: string) => {
+        const name = agentId.includes('/')
+          ? agentId.split('/').pop()!
+          : agentId;
+        handleAgentSelect(agentId, name);
+        setInputValue(prompt);
+        setCatalogOpen(false);
+        setTimeout(() => chatInputRef.current?.focus(), 100);
+      },
+      [handleAgentSelect],
+    );
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -476,6 +504,19 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     // Show streaming message during generation OR while waiting for approval
     const showStreaming = !!streamingState;
 
+    // Auto-open catalog on first load when Kagenti provider is active
+    useEffect(() => {
+      if (
+        isKagenti &&
+        showWelcome &&
+        !selectedModel &&
+        !catalogAutoOpened.current
+      ) {
+        catalogAutoOpened.current = true;
+        setCatalogOpen(true);
+      }
+    }, [isKagenti, showWelcome, selectedModel]);
+
     const activeAgentConfig = useMemo(
       () => chatAgentConfigs.find(c => c.agentId === selectedModel),
       [chatAgentConfigs, selectedModel],
@@ -522,6 +563,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
             selectedModel={selectedModel}
             currentAgent={streamingState?.currentAgent}
             onChangeAgent={handleChangeAgent}
+            onBrowseAgents={handleOpenCatalog}
             healthWarning={agentHealthWarning ?? undefined}
             agentConfig={activeAgentConfig}
           />
@@ -548,6 +590,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
               selectedAgent={selectedAgentInfo}
               onChangeAgent={handleChangeAgent}
               onStarterSelect={handleStarterClick}
+              onBrowseCatalog={handleOpenCatalog}
             />
           ) : showEmptySession ? (
             <Box
@@ -684,6 +727,17 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           open={shortcutsOpen}
           onClose={() => setShortcutsOpen(false)}
         />
+
+        {/* Agent Catalog Dialog */}
+        {isKagenti && (
+          <AgentCatalogDialog
+            open={catalogOpen}
+            onClose={handleCloseCatalog}
+            onAgentSelect={handleCatalogAgentSelect}
+            onStarterSelect={handleCatalogStarterSelect}
+            chatAgentConfigs={chatAgentConfigs}
+          />
+        )}
       </Box>
     );
   },
