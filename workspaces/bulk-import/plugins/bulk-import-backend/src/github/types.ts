@@ -20,7 +20,7 @@ import type {
   GithubCredentialsProvider,
 } from '@backstage/integration';
 
-import { RestEndpointMethodTypes } from '@octokit/rest';
+import { type RestEndpointMethodTypes } from '@octokit/rest';
 
 // From https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
 export type GithubOrganization = {
