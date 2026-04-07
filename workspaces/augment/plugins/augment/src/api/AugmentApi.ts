@@ -488,9 +488,7 @@ export interface AugmentApi {
   }): Promise<
     import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMigrateAllResponse
   >;
-  listKagentiTools(
-    namespace?: string,
-  ): Promise<{
+  listKagentiTools(namespace?: string): Promise<{
     tools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary[];
   }>;
   getKagentiTool(
@@ -525,6 +523,13 @@ export interface AugmentApi {
     name: string,
   ): Promise<
     import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildInfo
+  >;
+  finalizeKagentiAgentBuild(
+    namespace: string,
+    name: string,
+    body?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFinalizeAgentBuildRequest,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentResponse
   >;
   listKagentiBuildStrategies(): Promise<{
     strategies: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildStrategy[];
@@ -1235,6 +1240,18 @@ export class AugmentApiClient implements AugmentApi {
       this.kagentiDeps,
       namespace,
       name,
+    );
+  }
+  async finalizeKagentiAgentBuild(
+    namespace: string,
+    name: string,
+    body?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFinalizeAgentBuildRequest,
+  ) {
+    return kagentiEndpoints.finalizeAgentBuild(
+      this.kagentiDeps,
+      namespace,
+      name,
+      body,
     );
   }
   async listKagentiBuildStrategies() {

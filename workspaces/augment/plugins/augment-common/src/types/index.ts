@@ -108,6 +108,7 @@ export type {
   KagentiCreateToolRequest,
   KagentiCreateToolResponse,
   KagentiPersistentStorageConfig,
+  KagentiFinalizeAgentBuildRequest,
   KagentiFinalizeToolBuildRequest,
   KagentiMcpInvokeResponse,
   KagentiMcpToolSchema,

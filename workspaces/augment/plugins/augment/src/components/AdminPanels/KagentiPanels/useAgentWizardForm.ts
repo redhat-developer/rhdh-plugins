@@ -22,6 +22,7 @@ import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import type {
   BuildArgRow,
+  BuildProgress,
   DeploymentMethod,
   EnvRow,
   EnvSource,
@@ -30,13 +31,15 @@ import type {
   ServicePortRow,
   WorkloadType,
 } from './agentWizardTypes';
-import { isValidDns1123, STEPS } from './agentWizardTypes';
+import { isValidDns1123, FORM_STEPS } from './agentWizardTypes';
 import {
   buildRequest,
   getDuplicateEnvNames,
   nextRowId,
   parsePositivePort,
 } from './agentWizardUtils';
+
+const BUILD_POLL_INTERVAL_MS = 4000;
 
 export interface UseAgentWizardFormReturn {
   // Wizard chrome
@@ -49,6 +52,11 @@ export interface UseAgentWizardFormReturn {
   handleNext: () => void;
   handleBack: () => void;
   handleSubmit: () => Promise<void>;
+
+  // Build progress (source deployments)
+  buildProgress: BuildProgress;
+  handleRetryBuild: () => void;
+  handleCloseBuild: () => void;
 
   // Step 0 — Basics
   name: string;
@@ -133,6 +141,18 @@ export function useAgentWizardForm(
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successOpen, setSuccessOpen] = useState(false);
 
+  const INITIAL_BUILD_PROGRESS: BuildProgress = {
+    phase: 'idle',
+    elapsedMs: 0,
+  };
+  const [buildProgress, setBuildProgress] = useState<BuildProgress>(
+    INITIAL_BUILD_PROGRESS,
+  );
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const buildNameRef = useRef('');
+  const buildNsRef = useRef('');
+
   // Step 0
   const [name, setName] = useState('');
   const [namespace, setNamespace] = useState(namespaceProp ?? '');
@@ -172,8 +192,26 @@ export function useAgentWizardForm(
   const [spireEnabled, setSpireEnabled] = useState(false);
 
   // ---------------------------------------------------------------------------
+  // Polling helpers
+  // ---------------------------------------------------------------------------
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    if (elapsedRef.current) {
+      clearInterval(elapsedRef.current);
+      elapsedRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => stopPolling, [stopPolling]);
+
+  // ---------------------------------------------------------------------------
 
   const resetForm = useCallback(() => {
+    stopPolling();
     rowIdRef.current = 0;
     setActiveStep(0);
     setSubmitError(null);
@@ -202,7 +240,10 @@ export function useAgentWizardForm(
     setCreateHttpRoute(false);
     setAuthBridgeEnabled(true);
     setSpireEnabled(false);
-  }, [namespaceProp]);
+    setBuildProgress({ phase: 'idle', elapsedMs: 0 });
+    buildNameRef.current = '';
+    buildNsRef.current = '';
+  }, [namespaceProp, stopPolling]);
 
   useEffect(() => {
     if (open && !wasOpenRef.current) {
@@ -351,7 +392,7 @@ export function useAgentWizardForm(
       );
       return;
     }
-    setActiveStep(s => Math.min(s + 1, STEPS.length - 1));
+    setActiveStep(s => Math.min(s + 1, FORM_STEPS.length - 1));
   }, [
     activeStep,
     validateStep0,
@@ -365,6 +406,85 @@ export function useAgentWizardForm(
     setSubmitError(null);
     setActiveStep(s => Math.max(s - 1, 0));
   }, []);
+
+  const startBuildPolling = useCallback(
+    (agentName: string, agentNamespace: string) => {
+      buildNameRef.current = agentName;
+      buildNsRef.current = agentNamespace;
+      const startedAt = Date.now();
+
+      elapsedRef.current = setInterval(() => {
+        setBuildProgress(prev => ({
+          ...prev,
+          elapsedMs: Date.now() - startedAt,
+        }));
+      }, 1000);
+
+      pollRef.current = setInterval(async () => {
+        try {
+          const info = await api.getKagentiBuildInfo(agentNamespace, agentName);
+          const elapsed = Date.now() - startedAt;
+          const phase = info.buildRunPhase?.toLowerCase() ?? '';
+
+          if (phase === 'succeeded') {
+            stopPolling();
+            setBuildProgress(prev => ({
+              ...prev,
+              phase: 'finalizing',
+              buildRunPhase: info.buildRunPhase ?? undefined,
+              outputImage: info.outputImage,
+              elapsedMs: elapsed,
+              message: 'Build complete. Deploying agent…',
+            }));
+
+            try {
+              const result = await api.finalizeKagentiAgentBuild(
+                agentNamespace,
+                agentName,
+              );
+              setBuildProgress(prev => ({
+                ...prev,
+                phase: 'complete',
+                elapsedMs: Date.now() - startedAt,
+                message: result.message,
+              }));
+              onCreated();
+            } catch (finErr) {
+              setBuildProgress(prev => ({
+                ...prev,
+                phase: 'failed',
+                elapsedMs: Date.now() - startedAt,
+                failureMessage: `Build succeeded but deployment failed: ${getErrorMessage(finErr)}`,
+              }));
+            }
+          } else if (phase === 'failed') {
+            stopPolling();
+            setBuildProgress(prev => ({
+              ...prev,
+              phase: 'failed',
+              buildRunPhase: info.buildRunPhase ?? undefined,
+              elapsedMs: elapsed,
+              failureMessage: info.buildRunFailureMessage ?? 'Build failed.',
+            }));
+          } else {
+            setBuildProgress(prev => ({
+              ...prev,
+              buildRunPhase: info.buildRunPhase ?? undefined,
+              buildRunName: info.buildRunName ?? undefined,
+              outputImage: info.outputImage,
+              strategy: info.strategy,
+              gitUrl: info.gitUrl,
+              startTime: info.buildRunStartTime ?? undefined,
+              elapsedMs: elapsed,
+            }));
+          }
+        } catch {
+          // Transient fetch errors — keep polling
+        }
+      }, BUILD_POLL_INTERVAL_MS);
+    },
+    [api, onCreated, stopPolling],
+  );
 
   const handleSubmit = useCallback(async () => {
     setSubmitError(null);
@@ -390,15 +510,30 @@ export function useAgentWizardForm(
     }
     const body = buildRequest(formState);
     setSubmitting(true);
+
     try {
-      await api.createKagentiAgent(body);
-      setSuccessOpen(true);
-      onCreated();
-      onClose();
+      const result = await api.createKagentiAgent(body);
+
+      if (deploymentMethod === 'source') {
+        setSubmitting(false);
+        setActiveStep(FORM_STEPS.length);
+        setBuildProgress({
+          phase: 'building',
+          elapsedMs: 0,
+          message: result.message,
+        });
+        startBuildPolling(body.name, body.namespace);
+      } else {
+        setSuccessOpen(true);
+        onCreated();
+        onClose();
+      }
     } catch (e) {
       setSubmitError(getErrorMessage(e));
     } finally {
-      setSubmitting(false);
+      if (deploymentMethod !== 'source') {
+        setSubmitting(false);
+      }
     }
   }, [
     api,
@@ -409,7 +544,35 @@ export function useAgentWizardForm(
     validateStep1,
     deploymentMethod,
     portErrors,
+    startBuildPolling,
   ]);
+
+  const handleRetryBuild = useCallback(() => {
+    if (!buildNameRef.current || !buildNsRef.current) return;
+    setBuildProgress({
+      phase: 'building',
+      elapsedMs: 0,
+      message: 'Retrying build…',
+    });
+    api
+      .triggerKagentiBuild(buildNsRef.current, buildNameRef.current)
+      .then(() => {
+        startBuildPolling(buildNameRef.current, buildNsRef.current);
+      })
+      .catch(e => {
+        setBuildProgress(prev => ({
+          ...prev,
+          phase: 'failed',
+          failureMessage: `Retry failed: ${getErrorMessage(e)}`,
+        }));
+      });
+  }, [api, startBuildPolling]);
+
+  const handleCloseBuild = useCallback(() => {
+    stopPolling();
+    setBuildProgress({ phase: 'idle', elapsedMs: 0 });
+    onClose();
+  }, [stopPolling, onClose]);
 
   // ---------------------------------------------------------------------------
   // Row CRUD
@@ -487,6 +650,10 @@ export function useAgentWizardForm(
     handleNext,
     handleBack,
     handleSubmit,
+
+    buildProgress,
+    handleRetryBuild,
+    handleCloseBuild,
 
     name,
     setName,

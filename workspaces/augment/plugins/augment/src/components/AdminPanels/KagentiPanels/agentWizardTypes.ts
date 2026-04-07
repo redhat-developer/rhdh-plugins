@@ -14,12 +14,34 @@
  * limitations under the License.
  */
 
-export const STEPS = ['Basics', 'Deployment', 'Runtime'] as const;
+export const FORM_STEPS = ['Basics', 'Deployment', 'Runtime'] as const;
+export const BUILD_STEP = 'Build & Deploy' as const;
 
 export type DeploymentMethod = 'image' | 'source';
 export type WorkloadType = 'deployment' | 'statefulset' | 'job';
 export type PortProtocol = 'TCP' | 'UDP';
 export type EnvSource = 'direct' | 'secret' | 'configMap';
+
+export type BuildPhase =
+  | 'idle'
+  | 'submitting'
+  | 'building'
+  | 'finalizing'
+  | 'complete'
+  | 'failed';
+
+export interface BuildProgress {
+  phase: BuildPhase;
+  buildRunName?: string;
+  buildRunPhase?: string;
+  startTime?: string;
+  elapsedMs: number;
+  message?: string;
+  failureMessage?: string;
+  outputImage?: string;
+  strategy?: string;
+  gitUrl?: string;
+}
 
 const DNS_1123_RE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
 
