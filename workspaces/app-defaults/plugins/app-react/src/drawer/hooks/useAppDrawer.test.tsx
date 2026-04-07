@@ -16,24 +16,26 @@
 
 import { renderHook, act } from '@testing-library/react';
 
-import { AppDrawerProvider, useAppDrawer } from './AppDrawerContext';
+import { useAppDrawer } from './useAppDrawer';
+import { drawerStore } from '../utils/drawerStore';
 
 function renderDrawerHook() {
-  return renderHook(() => useAppDrawer(), {
-    wrapper: ({ children }) => (
-      <AppDrawerProvider>{children}</AppDrawerProvider>
-    ),
-  });
+  return renderHook(() => useAppDrawer());
 }
 
-describe('AppDrawerContext', () => {
-  describe('useAppDrawer outside provider', () => {
-    it('returns a no-op fallback', () => {
+describe('useAppDrawer', () => {
+  beforeEach(() => drawerStore.reset());
+
+  describe('without provider', () => {
+    it('works without a wrapping provider (global store)', () => {
       const { result } = renderHook(() => useAppDrawer());
 
       expect(result.current.activeDrawerId).toBeNull();
       expect(result.current.isOpen('any')).toBe(false);
       expect(result.current.getWidth('any')).toBe(500);
+
+      act(() => result.current.openDrawer('test'));
+      expect(result.current.activeDrawerId).toBe('test');
     });
   });
 

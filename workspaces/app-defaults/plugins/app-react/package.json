@@ -49,6 +49,7 @@
     "@backstage/core-plugin-api": "^1.12.4",
     "@backstage/frontend-plugin-api": "^0.15.1",
     "@backstage/plugin-app-react": "^0.2.1",
+    "@backstage/version-bridge": "^1.0.12",
     "@mui/material": "5.18.0"
   },
   "peerDependencies": {

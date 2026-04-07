@@ -16,7 +16,7 @@
 
 import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
 
-import type { AppDrawerContent } from '../drawer/types';
+import type { AppDrawerContent } from '../types';
 
 /**
  * Extension data ref carrying drawer content from a plugin to the host.
