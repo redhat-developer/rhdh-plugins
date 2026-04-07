@@ -388,7 +388,11 @@ export async function listAllRepositoriesAccessibleToInstallation(
     pageSize?: number;
   },
 ): Promise<AppInstallationRepositories> {
-  const repositoriesResponse = await octokit.paginate(
+  /**
+   * The octokit pagination smartly extracts data from the response.
+   * Here, repositories array is extracted from the original listReposAccessibleToInstallation.
+   */
+  const repositories = await octokit.paginate(
     octokit.rest.apps.listReposAccessibleToInstallation,
     {
       per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
@@ -396,8 +400,8 @@ export async function listAllRepositoriesAccessibleToInstallation(
   );
 
   return {
-    repositories: repositoriesResponse?.repositories ?? repositoriesResponse,
-    total_count: repositoriesResponse.total_count,
-    repository_selection: repositoriesResponse.repository_selection,
+    repositories,
+    total_count: repositories.length,
+    repository_selection: repositories.repository_selection ?? 'all',
   };
 }
