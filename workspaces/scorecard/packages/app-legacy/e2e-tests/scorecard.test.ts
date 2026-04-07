@@ -15,13 +15,13 @@
  */
 
 import { test, expect, Page } from '@playwright/test';
-import { mockApiResponse } from './utils/apiUtils';
 import {
   mockJiraAggregationResponse,
   mockScorecardEntitiesDrillDown,
   mockScorecardEntitiesDrillDownWithSort,
   mockJiraDrillDownMissingPermission,
   mockMetricsApi,
+  mockApiResponse,
 } from './utils/apiUtils';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
@@ -329,11 +329,6 @@ test.describe('Scorecard Plugin Tests', () => {
             AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId
           ];
         const githubEntityCount = getEntityCount(
-          translations,
-          currentLocale,
-          '10',
-        );
-        const jiraEntityCount = getEntityCount(
           translations,
           currentLocale,
           '10',

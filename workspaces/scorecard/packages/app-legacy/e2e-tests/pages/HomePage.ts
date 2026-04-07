@@ -20,7 +20,6 @@ import {
   getEntitiesLabel,
   getEntityCount,
   getLastUpdatedLabel,
-  getMetricTitleEn,
 } from '../utils/translationUtils';
 
 type ThresholdState = 'success' | 'warning' | 'error';

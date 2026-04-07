@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-import type { Page } from '@playwright/test';
-
-const HIDE_OVERLAY_STYLE_ID = 'scorecard-e2e-hide-react-refresh-overlay';
-
-const HIDE_OVERLAY_CSS = `#react-refresh-overlay { display: none !important; pointer-events: none !important; }`;
-
 /**
  * Run via `context.addInitScript(...)` so every document load hides the overlay early.
  * Use only string literals inside the function body so Playwright's serialization keeps them.

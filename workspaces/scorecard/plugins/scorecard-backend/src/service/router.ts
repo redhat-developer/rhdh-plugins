@@ -31,6 +31,7 @@ import type { CatalogService } from '@backstage/plugin-catalog-node';
 import {
   filterAuthorizedMetrics,
   checkEntityAccess,
+  authorizeConditional,
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { validateMetricIdsQueryParams } from '../middlewares/validateMetricIdsQueryParams';
@@ -39,7 +40,6 @@ import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { AggregatedMetricMapper } from './mappers';
 import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
 import { validateAggregationIdParam } from '../middlewares/validateAggregationIdParam';
-import { authorizeConditional } from '../permissions/permissionUtils';
 import { getUserEntityRef } from './utils';
 import {
   aggregationTypes,
