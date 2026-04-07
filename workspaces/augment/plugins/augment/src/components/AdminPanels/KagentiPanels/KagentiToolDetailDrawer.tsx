@@ -258,31 +258,33 @@ export function KagentiToolDetailDrawer({
           </CardContent>
         </Card>
 
-        <Card variant="outlined" sx={sectionCardSx}>
-          <CardContent sx={{ pb: 2, '&:last-child': { pb: 2 } }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
-              Build pipeline
-            </Typography>
-            {detailState.buildActionError && (
-              <Alert
-                severity="error"
-                sx={{ mb: 1.5 }}
-                onClose={() => detailState.setBuildActionError(null)}
-              >
-                {detailState.buildActionError}
-              </Alert>
-            )}
-            <ToolBuildSection
-              buildLoading={detailState.buildLoading}
-              buildFetchFailed={detailState.buildFetchFailed}
-              buildInfo={detailState.buildInfo}
-              triggeringBuild={detailState.triggeringBuild}
-              finalizingBuild={detailState.finalizingBuild}
-              onTriggerBuild={detailState.handleTriggerBuild}
-              onFinalizeBuild={detailState.handleFinalizeBuild}
-            />
-          </CardContent>
-        </Card>
+        {detailState.hasBuild !== false && (
+          <Card variant="outlined" sx={sectionCardSx}>
+            <CardContent sx={{ pb: 2, '&:last-child': { pb: 2 } }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
+                Build pipeline
+              </Typography>
+              {detailState.buildActionError && (
+                <Alert
+                  severity="error"
+                  sx={{ mb: 1.5 }}
+                  onClose={() => detailState.setBuildActionError(null)}
+                >
+                  {detailState.buildActionError}
+                </Alert>
+              )}
+              <ToolBuildSection
+                buildLoading={detailState.buildLoading}
+                buildFetchFailed={detailState.buildFetchFailed}
+                buildInfo={detailState.buildInfo}
+                triggeringBuild={detailState.triggeringBuild}
+                finalizingBuild={detailState.finalizingBuild}
+                onTriggerBuild={detailState.handleTriggerBuild}
+                onFinalizeBuild={detailState.handleFinalizeBuild}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         <Card variant="outlined" sx={sectionCardSx}>
           <CardContent sx={{ pb: 2, '&:last-child': { pb: 2 } }}>

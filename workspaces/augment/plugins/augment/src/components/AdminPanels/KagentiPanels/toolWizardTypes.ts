@@ -15,6 +15,7 @@
  */
 
 export const TOOL_STEPS = ['Basics', 'Deployment', 'Runtime'] as const;
+export const TOOL_BUILD_STEP = 'Build & Deploy' as const;
 
 export type DeploymentMethod = 'image' | 'source';
 export type WorkloadType = 'deployment' | 'statefulset';

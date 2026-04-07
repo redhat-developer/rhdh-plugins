@@ -31,10 +31,11 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import type { BuildProgress } from './agentWizardTypes';
 
-interface AgentWizardBuildStepProps {
+export interface AgentWizardBuildStepProps {
   progress: BuildProgress;
   onRetry: () => void;
   onClose: () => void;
+  resourceLabel?: string;
 }
 
 interface PhaseStep {
@@ -62,13 +63,18 @@ function stepLabelColor(
   return palette.text.primary;
 }
 
-function derivePhaseSteps(progress: BuildProgress): PhaseStep[] {
+function derivePhaseSteps(
+  progress: BuildProgress,
+  resourceLabel: string,
+): PhaseStep[] {
   const { phase } = progress;
+  const capLabel =
+    resourceLabel.charAt(0).toUpperCase() + resourceLabel.slice(1);
   const steps: PhaseStep[] = [
     { label: 'Build submitted', state: 'done' },
     { label: 'Building container image', state: 'pending' },
-    { label: 'Deploying agent', state: 'pending' },
-    { label: 'Agent ready', state: 'pending' },
+    { label: `Deploying ${resourceLabel}`, state: 'pending' },
+    { label: `${capLabel} ready`, state: 'pending' },
   ];
 
   if (phase === 'building') {
@@ -96,9 +102,13 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
   progress,
   onRetry,
   onClose,
+  resourceLabel = 'agent',
 }) => {
   const theme = useTheme();
-  const steps = useMemo(() => derivePhaseSteps(progress), [progress]);
+  const steps = useMemo(
+    () => derivePhaseSteps(progress, resourceLabel),
+    [progress, resourceLabel],
+  );
 
   const isDone = progress.phase === 'complete';
   const isFailed = progress.phase === 'failed';
@@ -319,7 +329,8 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
           />
           <Box>
             <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-              Agent deployed successfully
+              {resourceLabel.charAt(0).toUpperCase() + resourceLabel.slice(1)}{' '}
+              deployed successfully
             </Typography>
             {progress.message && (
               <Typography variant="caption" color="text.secondary">
