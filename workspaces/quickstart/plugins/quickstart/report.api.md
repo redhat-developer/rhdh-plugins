@@ -130,6 +130,7 @@ export const quickstartTranslationRef: TranslationRef<
     readonly 'steps.findAllLearningPaths.title': string;
     readonly 'steps.findAllLearningPaths.description': string;
     readonly 'steps.findAllLearningPaths.ctaTitle': string;
+    readonly 'snackbar.helpPrompt': string;
     readonly 'dev.pageTitle': string;
     readonly 'dev.pageDescription': string;
     readonly 'dev.drawerControls': string;
