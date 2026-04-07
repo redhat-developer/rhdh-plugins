@@ -198,7 +198,9 @@ function handleBinaryOperator(
     formattedValue = binaryFilter.value.map(v =>
       formatValue(binaryFilter.field, v, fieldDef, type),
     );
-    paramType = '[String!]';
+    paramType = isEnumFilter(binaryFilter.field, type)
+      ? '[ProcessInstanceState!]'
+      : '[String!]';
   } else {
     formattedValue = formatValue(
       binaryFilter.field,
