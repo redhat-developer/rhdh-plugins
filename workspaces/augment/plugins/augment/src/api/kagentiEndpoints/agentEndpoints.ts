@@ -20,6 +20,7 @@ import type {
   KagentiAgentCard,
   KagentiCreateAgentRequest,
   KagentiCreateAgentResponse,
+  KagentiFinalizeAgentBuildRequest,
   KagentiMigratableAgent,
   KagentiBuildInfo,
   KagentiBuildStrategy,
@@ -151,8 +152,8 @@ export async function finalizeAgentBuild(
   deps: KagentiApiDeps,
   namespace: string,
   name: string,
-  body?: Record<string, unknown>,
-): Promise<Record<string, unknown>> {
+  body?: KagentiFinalizeAgentBuildRequest,
+): Promise<KagentiCreateAgentResponse> {
   return deps.fetchJson(
     `/kagenti/agents/${e(namespace)}/${e(name)}/finalize-build`,
     jsonBody(body || {}),

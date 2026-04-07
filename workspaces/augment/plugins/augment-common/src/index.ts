@@ -114,6 +114,7 @@ export type {
   KagentiShipwrightConfig,
   KagentiCreateAgentRequest,
   KagentiCreateAgentResponse,
+  KagentiFinalizeAgentBuildRequest,
   KagentiToolSummary,
   KagentiToolDetail,
   KagentiCreateToolRequest,

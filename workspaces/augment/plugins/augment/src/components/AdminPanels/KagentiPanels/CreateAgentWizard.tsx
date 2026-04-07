@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useId } from 'react';
+import { useCallback, useMemo, useId } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -27,14 +27,26 @@ import Snackbar from '@mui/material/Snackbar';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
+import BuildIcon from '@mui/icons-material/Build';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import SettingsIcon from '@mui/icons-material/Settings';
+import TuneIcon from '@mui/icons-material/Tune';
 import type { CreateAgentWizardProps } from './agentWizardTypes';
-import { STEPS } from './agentWizardTypes';
+import { FORM_STEPS, BUILD_STEP } from './agentWizardTypes';
 import { useAgentWizardForm } from './useAgentWizardForm';
 import { AgentWizardBasicsStep } from './AgentWizardBasicsStep';
 import { AgentWizardDeployStep } from './AgentWizardDeployStep';
 import { AgentWizardRuntimeStep } from './AgentWizardRuntimeStep';
+import { AgentWizardBuildStep } from './AgentWizardBuildStep';
 
 export type { CreateAgentWizardProps } from './agentWizardTypes';
+
+const STEP_ICONS: Record<string, React.ReactElement> = {
+  Basics: <SettingsIcon />,
+  Deployment: <CloudUploadIcon />,
+  Runtime: <TuneIcon />,
+  [BUILD_STEP]: <BuildIcon />,
+};
 
 export function CreateAgentWizard({
   open,
@@ -45,13 +57,30 @@ export function CreateAgentWizard({
   const titleId = useId();
   const form = useAgentWizardForm(open, namespaceProp, onClose, onCreated);
 
+  const isSourceDeploy = form.deploymentMethod === 'source';
+  const isBuildStep = form.activeStep === FORM_STEPS.length;
+  const buildActive =
+    form.buildProgress.phase !== 'idle' &&
+    form.buildProgress.phase !== 'submitting';
+
+  const allSteps = useMemo((): string[] => {
+    const base: string[] = [...FORM_STEPS];
+    if (isSourceDeploy || isBuildStep) {
+      base.push(BUILD_STEP);
+    }
+    return base;
+  }, [isSourceDeploy, isBuildStep]);
+
   const handleDialogClose = useCallback(
     (_: object, reason: 'backdropClick' | 'escapeKeyDown') => {
-      if (form.submitting) return;
+      if (form.submitting || buildActive) return;
       if (reason === 'backdropClick' || reason === 'escapeKeyDown') onClose();
     },
-    [onClose, form.submitting],
+    [onClose, form.submitting, buildActive],
   );
+
+  const submitLabel = isSourceDeploy ? 'Start Build' : 'Create';
+  const submittingLabel = isSourceDeploy ? 'Starting…' : 'Creating…';
 
   return (
     <>
@@ -65,14 +94,20 @@ export function CreateAgentWizard({
         <DialogTitle id={titleId}>Create Agent</DialogTitle>
         <DialogContent sx={{ pt: 1 }}>
           <Stepper activeStep={form.activeStep} sx={{ mb: 3, mt: 1 }}>
-            {STEPS.map(label => (
+            {allSteps.map(label => (
               <Step key={label}>
-                <StepLabel>{label}</StepLabel>
+                <StepLabel
+                  StepIconProps={{
+                    icon: STEP_ICONS[label] ?? undefined,
+                  }}
+                >
+                  {label}
+                </StepLabel>
               </Step>
             ))}
           </Stepper>
 
-          {form.submitError && (
+          {form.submitError && !isBuildStep && (
             <Alert
               severity="error"
               sx={{ mb: 2 }}
@@ -157,52 +192,62 @@ export function CreateAgentWizard({
               setSpireEnabled={form.setSpireEnabled}
             />
           )}
+
+          {isBuildStep && (
+            <AgentWizardBuildStep
+              progress={form.buildProgress}
+              onRetry={form.handleRetryBuild}
+              onClose={form.handleCloseBuild}
+            />
+          )}
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
-          <Button
-            onClick={onClose}
-            disabled={form.submitting}
-            sx={{ textTransform: 'none' }}
-          >
-            Cancel
-          </Button>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {form.activeStep > 0 && (
-              <Button
-                onClick={form.handleBack}
-                disabled={form.submitting}
-                sx={{ textTransform: 'none' }}
-              >
-                Back
-              </Button>
-            )}
-            {form.activeStep < STEPS.length - 1 ? (
-              <Button
-                variant="contained"
-                onClick={form.handleNext}
-                disabled={form.submitting}
-                sx={{ textTransform: 'none' }}
-              >
-                Next
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                onClick={form.handleSubmit}
-                disabled={form.submitting}
-                startIcon={
-                  form.submitting ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : undefined
-                }
-                sx={{ textTransform: 'none' }}
-              >
-                {form.submitting ? 'Creating…' : 'Create'}
-              </Button>
-            )}
-          </Box>
-        </DialogActions>
+        {!isBuildStep && (
+          <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
+            <Button
+              onClick={onClose}
+              disabled={form.submitting}
+              sx={{ textTransform: 'none' }}
+            >
+              Cancel
+            </Button>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {form.activeStep > 0 && (
+                <Button
+                  onClick={form.handleBack}
+                  disabled={form.submitting}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Back
+                </Button>
+              )}
+              {form.activeStep < FORM_STEPS.length - 1 ? (
+                <Button
+                  variant="contained"
+                  onClick={form.handleNext}
+                  disabled={form.submitting}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={form.handleSubmit}
+                  disabled={form.submitting}
+                  startIcon={
+                    form.submitting ? (
+                      <CircularProgress size={18} color="inherit" />
+                    ) : undefined
+                  }
+                  sx={{ textTransform: 'none' }}
+                >
+                  {form.submitting ? submittingLabel : submitLabel}
+                </Button>
+              )}
+            </Box>
+          </DialogActions>
+        )}
       </Dialog>
 
       <Snackbar

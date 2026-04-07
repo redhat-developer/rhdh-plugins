@@ -147,6 +147,17 @@ export interface KagentiCreateAgentResponse {
   message: string;
 }
 
+/** @public */
+export interface KagentiFinalizeAgentBuildRequest {
+  protocol?: string;
+  framework?: string;
+  envVars?: KagentiEnvVar[];
+  servicePorts?: KagentiServicePort[];
+  createHttpRoute?: boolean;
+  authBridgeEnabled?: boolean;
+  imagePullSecret?: string;
+}
+
 // -- Tools --------------------------------------------------------------------
 
 /** @public */
