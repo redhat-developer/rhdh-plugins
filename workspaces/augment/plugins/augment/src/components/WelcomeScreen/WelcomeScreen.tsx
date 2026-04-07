@@ -19,10 +19,8 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
-import Collapse from '@mui/material/Collapse';
 import { useTheme, alpha } from '@mui/material/styles';
 import ExploreIcon from '@mui/icons-material/Explore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
@@ -38,11 +36,8 @@ import type {
   ChatAgentConfig,
 } from '../../types';
 import { PromptGroupRow } from './PromptGroupRow';
-import { AgentGallery } from './AgentGallery';
 import { FeaturedAgents } from './FeaturedAgents';
-import type { AgentWithCard } from './agentUtils';
 import { getAgentAvatarColor } from './agentUtils';
-import { AgentDetailDrawer } from './AgentDetailDrawer';
 import { buildEffectivePromptGroups } from './buildEffectivePromptGroups';
 import { stripMarkdown } from './stripMarkdown';
 import {
@@ -72,6 +67,7 @@ interface WelcomeScreenProps {
   readonly selectedAgent?: SelectedAgentInfo;
   readonly onChangeAgent?: () => void;
   readonly onStarterSelect?: (prompt: string) => void;
+  readonly onBrowseCatalog?: () => void;
 }
 
 const TAGLINE_SX = {
@@ -99,6 +95,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   selectedAgent,
   onChangeAgent,
   onStarterSelect,
+  onBrowseCatalog,
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -106,8 +103,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { branding } = useBranding();
   const { t } = useTranslation();
   const [logoError, setLogoError] = useState(false);
-  const [drawerAgent, setDrawerAgent] = useState<AgentWithCard | null>(null);
-  const [catalogExpanded, setCatalogExpanded] = useState(false);
   const { agents: allAgents } = useAgentGalleryData(api);
 
   const safeLogoUrl = useMemo(
@@ -158,15 +153,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       });
     },
     [onAgentSelect, onQuickActionSelect],
-  );
-
-  const handleAgentSelectFromGallery = useCallback(
-    (id: string, name: string) => {
-      if (onAgentSelect) {
-        onAgentSelect(id, name);
-      }
-    },
-    [onAgentSelect],
   );
 
   const titleSx = useMemo(
@@ -400,73 +386,23 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         )}
       </Box>
 
-      {/* Inline Agent Catalog */}
-      {hasFeatured && (
-        <Box sx={{ px: 2, pb: 2, maxWidth: 1200, mx: 'auto', width: '100%' }}>
-          {!catalogExpanded ? (
-            <Box sx={{ textAlign: 'center', py: 1 }}>
-              <Button
-                size="small"
-                startIcon={<ExploreIcon sx={{ fontSize: 16 }} />}
-                onClick={() => setCatalogExpanded(true)}
-                sx={{
-                  textTransform: 'none',
-                  fontSize: '0.8rem',
-                  color: theme.palette.text.secondary,
-                  '&:hover': { color: theme.palette.primary.main },
-                }}
-              >
-                Explore all agents
-              </Button>
-            </Box>
-          ) : (
-            <>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  mb: 1,
-                }}
-              >
-                <Typography
-                  variant="subtitle2"
-                  sx={{ fontWeight: 600, fontSize: '0.85rem' }}
-                >
-                  All Agents
-                </Typography>
-                <Button
-                  size="small"
-                  startIcon={<ExpandLessIcon sx={{ fontSize: 16 }} />}
-                  onClick={() => setCatalogExpanded(false)}
-                  sx={{
-                    textTransform: 'none',
-                    fontSize: '0.75rem',
-                    color: theme.palette.text.secondary,
-                  }}
-                >
-                  Collapse
-                </Button>
-              </Box>
-              <Collapse in={catalogExpanded}>
-                <AgentGallery
-                  onAgentSelect={handleAgentSelectFromGallery}
-                  onAgentInfo={setDrawerAgent}
-                />
-              </Collapse>
-            </>
-          )}
+      {/* Browse All Agents */}
+      {hasFeatured && onBrowseCatalog && (
+        <Box sx={{ textAlign: 'center', py: 1, pb: 2 }}>
+          <Button
+            size="small"
+            startIcon={<ExploreIcon sx={{ fontSize: 16 }} />}
+            onClick={onBrowseCatalog}
+            sx={{
+              textTransform: 'none',
+              fontSize: '0.8rem',
+              color: theme.palette.text.secondary,
+              '&:hover': { color: theme.palette.primary.main },
+            }}
+          >
+            Browse all agents
+          </Button>
         </Box>
-      )}
-
-      {/* Agent Detail Drawer */}
-      {hasFeatured && (
-        <AgentDetailDrawer
-          agent={drawerAgent}
-          open={!!drawerAgent}
-          onClose={() => setDrawerAgent(null)}
-          onStartConversation={onAgentSelect}
-        />
       )}
     </Box>
   );
