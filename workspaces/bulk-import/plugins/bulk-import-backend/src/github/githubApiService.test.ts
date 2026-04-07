@@ -23,6 +23,9 @@ const octokit = {
   paginate: async (fn: any) => {
     const res = await fn();
     if (res) {
+      if (Array.isArray(res?.data?.repositories)) {
+        return res.data.repositories;
+      }
       return res.data;
     }
     return [];
