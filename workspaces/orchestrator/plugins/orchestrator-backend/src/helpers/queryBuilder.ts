@@ -69,7 +69,7 @@ export function buildOrderByVariables(pagination?: Pagination): {
 
   if (pagination?.sortField !== undefined) {
     orderByVariable[pagination.sortField] =
-      pagination.order !== undefined ? pagination.order?.toUpperCase() : 'ASC';
+      pagination.order?.toUpperCase() ?? 'ASC';
   }
 
   return orderByVariable;
