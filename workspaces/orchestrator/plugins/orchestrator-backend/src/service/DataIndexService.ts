@@ -135,9 +135,23 @@ export class DataIndexService {
   public async fetchWorkflowInfo(
     definitionId: string,
   ): Promise<WorkflowInfo | undefined> {
-    const graphQlQuery = `{ ProcessDefinitions ( where: {id: {equal: "${definitionId}" } } ) { id, name, version, type, endpoint, serviceUrl, source } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($definitionId: String!) {
+        ProcessDefinitions(where: { id: { equal: $definitionId } }) {
+          id
+          name
+          version
+          type
+          endpoint
+          serviceUrl
+          source
+        }
+      }
+    `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(graphQlQuery, {
+      definitionId,
+    });
 
     this.logger.debug(
       `Get workflow definition result: ${JSON.stringify(result)}`,
@@ -423,9 +437,18 @@ export class DataIndexService {
   public async fetchWorkflowSource(
     definitionId: string,
   ): Promise<string | undefined> {
-    const graphQlQuery = `{ ProcessDefinitions ( where: {id: {equal: "${definitionId}" } } ) { id, source } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($definitionId: String!) {
+        ProcessDefinitions(where: { id: { equal: $definitionId } }) {
+          id
+          source
+        }
+      }
+    `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(graphQlQuery, {
+      definitionId,
+    });
 
     this.logger.debug(
       `Fetch workflow source result: ${JSON.stringify(result)}`,
@@ -453,12 +476,25 @@ export class DataIndexService {
     targetEntity?: string;
   }): Promise<ProcessInstance[]> {
     const targetEntityWhereCondition = args.targetEntity
-      ? `, variables: {targetEntity: {equal: "${args.targetEntity}" } }`
+      ? `, variables: {targetEntity: {equal: $targetEntity } }`
       : '';
 
-    const graphQlQuery = `{ ProcessInstances( where: {processId: {equal: "${args.definitionId}" } ${targetEntityWhereCondition} }, orderBy: {start:DESC}, pagination: {limit: ${args.limit}, offset: ${args.offset}}) { id, processName, state, start, end } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($definitionId: String!, $limit: Int!, $offset: Int!) {
+        ProcessInstances(
+          where: {processId: {equal: $definitionId } ${targetEntityWhereCondition} },
+          orderBy: {start:DESC},
+          pagination: {limit: $limit, offset: $offset}
+        ) { id, processName, state, start, end }
+      }
+     `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(graphQlQuery, {
+      definitionId: args.definitionId,
+      limit: args.limit,
+      offset: args.offset,
+      targetEntity: args.targetEntity,
+    });
 
     this.logger.debug(
       `Fetch workflow instances result: ${JSON.stringify(result)}`,
@@ -475,9 +511,17 @@ export class DataIndexService {
   public async fetchInstanceVariables(
     instanceId: string,
   ): Promise<object | undefined> {
-    const graphQlQuery = `{ ProcessInstances (where: { id: {equal: "${instanceId}" } } ) { variables } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($instanceId: String!) {
+        ProcessInstances(where: { id: { equal: $instanceId } }) {
+          variables
+        }
+      }
+    `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(graphQlQuery, {
+      instanceId,
+    });
 
     this.logger.debug(
       `Fetch process instance variables result: ${JSON.stringify(result)}`,
@@ -500,9 +544,17 @@ export class DataIndexService {
   public async fetchDefinitionIdByInstanceId(
     instanceId: string,
   ): Promise<string | undefined> {
-    const graphQlQuery = `{ ProcessInstances (where: { id: {equal: "${instanceId}" } } ) { processId } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($instanceId: String!) {
+        ProcessInstances(where: { id: { equal: $instanceId } }) {
+          processId
+        }
+      }
+    `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(graphQlQuery, {
+      instanceId,
+    });
 
     this.logger.debug(
       `Fetch process id from instance result: ${JSON.stringify(result)}`,
