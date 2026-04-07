@@ -25,16 +25,13 @@ export const translationsTestPlugin: BackstagePlugin<
 export const translationsTestTranslationRef: TranslationRef<
   'plugin.translations-test',
   {
-    readonly 'page.title': string;
-    readonly 'page.subtitle': string;
-    readonly 'objects.tree.res': string;
-    readonly 'context.friend': string;
-    readonly 'context.friend_male': string;
-    readonly 'context.friend_female': string;
     readonly 'interpolation.key': string;
     readonly 'interpolation.nested.key': string;
     readonly 'interpolation.complex.message': string;
     readonly 'interpolation.complex.linkText': string;
+    readonly 'page.title': string;
+    readonly 'page.subtitle': string;
+    readonly 'objects.tree.res': string;
     readonly 'essentials.key': string;
     readonly 'essentials.look.deep': string;
     readonly 'formatting.intlNumber': string;
@@ -51,6 +48,9 @@ export const translationsTestTranslationRef: TranslationRef<
     readonly 'plurals.key_other': string;
     readonly 'plurals.keyWithCount_one': string;
     readonly 'plurals.keyWithCount_other': string;
+    readonly 'context.friend': string;
+    readonly 'context.friend_male': string;
+    readonly 'context.friend_female': string;
     readonly 'arrays.array': string;
   }
 >;
