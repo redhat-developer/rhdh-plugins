@@ -127,7 +127,7 @@ describe('column filters', () => {
     introspectionFields: IntrospectionField[];
     filter: Filter | undefined;
     expectedResult: string | FilterClause;
-    expectedFormattedValue: string | boolean | any;
+    expectedFormattedValue: Array<string | boolean | string[]>;
   };
   describe('empty filter testcases', () => {
     const emptyFilterTestCases: FilterTestCase[] = [
@@ -136,7 +136,7 @@ describe('column filters', () => {
         introspectionFields: [],
         filter: undefined,
         expectedResult: {} as FilterClause,
-        expectedFormattedValue: undefined,
+        expectedFormattedValue: [''],
       },
     ];
     emptyFilterTestCases.forEach(
