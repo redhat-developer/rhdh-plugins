@@ -377,5 +377,5 @@ function getGraphQLOperator(operator: FieldFilterOperatorEnum): string {
 // Function for getting 4 random digits to append to the clause variable name.
 // Not used for any secrets or anything
 function nonSecureRandomAlphaNumeric() {
-  return randomBytes(8).toString('hex').slice(0, 4);
+  return randomBytes(8).toString('hex');
 }

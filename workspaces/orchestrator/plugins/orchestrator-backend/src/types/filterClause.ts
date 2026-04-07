@@ -16,7 +16,7 @@
 
 export interface FilterClauseVariable {
   clauseVariableName: string;
-  formattedValue: string | boolean | any;
+  formattedValue: string | boolean | string[];
   clauseVariableType: string;
 }
 
