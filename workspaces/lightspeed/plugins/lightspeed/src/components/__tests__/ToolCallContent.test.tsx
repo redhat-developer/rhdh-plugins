@@ -179,4 +179,19 @@ describe('ToolCallContent', () => {
     const parentContent = mcpServerText.closest('p');
     expect(parentContent?.querySelector('svg')).toBeInTheDocument();
   });
+
+  test('should show server_label from arguments instead of default MCP Server label', () => {
+    const toolCall: ToolCall = {
+      ...baseToolCall,
+      arguments: {
+        ...baseToolCall.arguments,
+        server_label: 'mcp::backstage',
+      },
+    };
+
+    render(<ToolCallContent toolCall={toolCall} />);
+
+    expect(screen.getByText('mcp::backstage')).toBeInTheDocument();
+    expect(screen.queryByText('MCP Server')).not.toBeInTheDocument();
+  });
 });

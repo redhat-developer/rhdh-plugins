@@ -30,6 +30,7 @@ import { WrenchIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
+import { formatToolResponseForMarkdown } from '../utils/formatToolResponseForMarkdown';
 
 interface ToolCallContentProps {
   toolCall: ToolCall;
@@ -55,7 +56,10 @@ export const ToolCallContent = ({
   const getParameterKeys = (): string[] => {
     if (!toolCall.arguments) return [];
     return Object.keys(toolCall.arguments).filter(
-      key => toolCall.arguments[key] !== '' && toolCall.arguments[key] !== null,
+      key =>
+        key !== 'server_label' &&
+        toolCall.arguments[key] !== '' &&
+        toolCall.arguments[key] !== null,
     );
   };
 
@@ -68,6 +72,14 @@ export const ToolCallContent = ({
 
   const thinkingTime = getThinkingTime();
   const parameterKeys = getParameterKeys();
+
+  const mcpServerTitle = (() => {
+    const label = toolCall.arguments?.server_label;
+    if (typeof label === 'string' && label.trim() !== '') {
+      return label.trim();
+    }
+    return t('toolCall.mcpServer');
+  })();
 
   return (
     <Flex
@@ -120,7 +132,7 @@ export const ToolCallContent = ({
                     marginRight: '0.5em',
                   }}
                 />
-                <strong>{t('toolCall.mcpServer')}</strong>
+                <strong>{mcpServerTitle}</strong>
               </Content>
               {toolCall.executionTime !== undefined && (
                 <Content component={ContentVariants.small}>
@@ -215,12 +227,14 @@ export const ToolCallContent = ({
                       >
                         <FlexItem>
                           <Message
-                            content={toolCall.response}
+                            content={formatToolResponseForMarkdown(
+                              toolCall.response,
+                            )}
                             role={role}
                             codeBlockProps={{
                               isExpandable: true,
                               expandableSectionProps: {
-                                truncateMaxLines: 1,
+                                truncateMaxLines: 12,
                               },
                             }}
                           />

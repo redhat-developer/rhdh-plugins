@@ -560,6 +560,143 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
     expect(onComplete).toHaveBeenCalledWith('Hi from conversation 1!');
   });
 
+  it('should parse MCP-style tool_call and tool_result (name/args and content)', async () => {
+    const toolCallId = 'mcp_list_67d3a067-e262-4bef-b467-6c82f622bd4a';
+    const mcpStream = createSSEStream([
+      {
+        event: 'start',
+        data: { conversation_id: 'conv-mcp' },
+      },
+      {
+        event: 'tool_call',
+        data: {
+          id: toolCallId,
+          name: 'mcp_list_tools',
+          args: { server_label: 'mcp-integration-tools' },
+          type: 'mcp_list_tools',
+        },
+      },
+      {
+        event: 'tool_result',
+        data: {
+          id: toolCallId,
+          status: 'success',
+          content: '{"server_label":"mcp-integration-tools","tools":[]}',
+        },
+      },
+      {
+        event: 'token',
+        data: { id: 0, token: 'Done.' },
+      },
+    ]);
+
+    const mockApi = {
+      createMessage: jest.fn().mockResolvedValue({
+        read: jest
+          .fn()
+          .mockResolvedValueOnce({
+            done: false,
+            value: new TextEncoder().encode(mcpStream),
+          })
+          .mockResolvedValueOnce({ done: true, value: null }),
+      }),
+    };
+    (useApi as jest.Mock).mockReturnValue(mockApi);
+
+    const { result } = renderHook(
+      () =>
+        useConversationMessages(
+          'conv-mcp',
+          'test-user',
+          'gpt-4',
+          'openai',
+          'user.png',
+        ),
+      { wrapper },
+    );
+
+    await act(async () => {
+      await result.current.handleInputPrompt('List MCP tools');
+    });
+
+    await waitFor(() => {
+      const msgs = result.current.conversations['conv-mcp'];
+      const bot = msgs?.[1];
+      expect(bot?.toolCalls).toHaveLength(1);
+      expect(bot?.toolCalls?.[0]).toEqual(
+        expect.objectContaining({
+          id: toolCallId,
+          toolName: 'mcp_list_tools',
+          arguments: { server_label: 'mcp-integration-tools' },
+          response: '{"server_label":"mcp-integration-tools","tools":[]}',
+          isLoading: false,
+        }),
+      );
+      expect(bot?.content).toContain('Done.');
+    });
+  });
+
+  it('should complete legacy tool_result when response field is omitted', async () => {
+    const legacyStream = createSSEStream([
+      {
+        event: 'start',
+        data: { conversation_id: 'conv-legacy-res' },
+      },
+      {
+        event: 'tool_call',
+        data: {
+          id: 1,
+          token: { tool_name: 'fetch-techdocs', arguments: { owner: 'a' } },
+        },
+      },
+      {
+        event: 'tool_result',
+        data: { id: 1, token: { tool_name: 'fetch-techdocs' } },
+      },
+    ]);
+
+    const mockApi = {
+      createMessage: jest.fn().mockResolvedValue({
+        read: jest
+          .fn()
+          .mockResolvedValueOnce({
+            done: false,
+            value: new TextEncoder().encode(legacyStream),
+          })
+          .mockResolvedValueOnce({ done: true, value: null }),
+      }),
+    };
+    (useApi as jest.Mock).mockReturnValue(mockApi);
+
+    const { result } = renderHook(
+      () =>
+        useConversationMessages(
+          'conv-legacy-res',
+          'test-user',
+          'gpt-4',
+          'openai',
+          'user.png',
+        ),
+      { wrapper },
+    );
+
+    await act(async () => {
+      await result.current.handleInputPrompt('techdocs');
+    });
+
+    await waitFor(() => {
+      const msgs = result.current.conversations['conv-legacy-res'];
+      const bot = msgs?.[1];
+      expect(bot?.toolCalls?.[0]).toEqual(
+        expect.objectContaining({
+          toolName: 'fetch-techdocs',
+          response: '',
+          isLoading: false,
+        }),
+      );
+    });
+  });
+
   it('should resume streaming for the first conversation after switching back and complete', async () => {
     const onComplete = jest.fn();
 
