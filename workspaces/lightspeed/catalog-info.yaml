@@ -13,5 +13,5 @@ metadata:
 spec:
   type: backstage-plugin
   lifecycle: active
-  owner: rhdh-team
+  owner: rhdh-ai
   subcomponentOf: rhdh-plugins
