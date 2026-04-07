@@ -24,8 +24,10 @@ import { scorecardTranslations } from '../translations';
 import { scorecardApi } from './extensions/api';
 import { scorecardEntityContent } from './extensions/entityTab';
 import {
-  scorecardHomepageWidget,
-  scorecardJiraHomepageWidget,
+  aggregatedCardWithDeprecatedMetricIdWidget,
+  aggregatedCardWithDefaultAggregationWidget,
+  aggregatedCardWithGithubOpenPrsWidget,
+  aggregatedCardWithJiraOpenIssuesWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/metricPage';
 
@@ -75,7 +77,12 @@ export const scorecardTranslationsModule = createFrontendModule({
  */
 export const scorecardHomeModule = createFrontendModule({
   pluginId: 'home',
-  extensions: [scorecardHomepageWidget, scorecardJiraHomepageWidget],
+  extensions: [
+    aggregatedCardWithDeprecatedMetricIdWidget,
+    aggregatedCardWithDefaultAggregationWidget,
+    aggregatedCardWithJiraOpenIssuesWidget,
+    aggregatedCardWithGithubOpenPrsWidget,
+  ],
 });
 
 /**

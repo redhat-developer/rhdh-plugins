@@ -324,19 +324,14 @@ test.describe('Scorecard Plugin Tests', () => {
         const card = homePage.getCard(
           AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId,
         );
-        const m =
+        const metadata =
           translations.metric[
             AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId
           ];
-        const githubEntityCount = getEntityCount(
-          translations,
-          currentLocale,
-          '10',
-        );
 
-        await expect(card).toBeVisible({ timeout: 20000 });
-        await expect(card).toContainText(m.title, { timeout: 15000 });
-        await expect(card).toContainText(m.description, { timeout: 15000 });
+        await expect(card).toBeVisible();
+        await expect(card).toContainText(metadata.title);
+        await expect(card).toContainText(metadata.description);
       });
 
       test('Verify entity counts with mocked API response', async ({
@@ -351,20 +346,22 @@ test.describe('Scorecard Plugin Tests', () => {
           currentLocale,
           '10',
         );
-        const m =
+        const card = homePage.getCard(
+          AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId,
+        );
+        const metadata =
           translations.metric[
             AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId
           ];
 
-        await expect(
-          homePage.getCard(AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId),
-        ).toMatchAriaSnapshot(
+        await expect(card).toBeVisible();
+        await expect(card).toMatchAriaSnapshot(
           getThresholdsSnapshot(translations, {
             drillDownMetricId:
               AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId,
             entityCount: jiraEntityCount,
-            cardTitle: m.title,
-            cardDescription: m.description,
+            cardTitle: metadata.title,
+            cardDescription: metadata.description,
           }),
         );
 
@@ -435,14 +432,14 @@ test.describe('Scorecard Plugin Tests', () => {
         const card = homePage.getCard(
           AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation,
         );
-        const m =
+        const metadata =
           translations.metric[
             AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation
           ];
 
-        await expect(card).toBeVisible({ timeout: 20000 });
-        await expect(card).toContainText(m.title, { timeout: 15000 });
-        await expect(card).toContainText(m.description, { timeout: 15000 });
+        await expect(card).toBeVisible();
+        await expect(card).toContainText(metadata.title);
+        await expect(card).toContainText(metadata.description);
       });
 
       test('Verify entity counts with mocked API response', async ({
@@ -457,20 +454,22 @@ test.describe('Scorecard Plugin Tests', () => {
           currentLocale,
           '10',
         );
-        const m =
+        const metadata =
           translations.metric[
             AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation
           ];
+        const card = homePage.getCard(
+          AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation,
+        );
 
-        await expect(
-          homePage.getCard(AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation),
-        ).toMatchAriaSnapshot(
+        await expect(card).toBeVisible();
+        await expect(card).toMatchAriaSnapshot(
           getThresholdsSnapshot(translations, {
             drillDownMetricId:
               AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation,
             entityCount: githubEntityCount,
-            cardTitle: m.title,
-            cardDescription: m.description,
+            cardTitle: metadata.title,
+            cardDescription: metadata.description,
           }),
         );
 
@@ -540,11 +539,6 @@ test.describe('Scorecard Plugin Tests', () => {
       test('Verify provided title and description from API metadata', async () => {
         await mockApiResponse(
           page,
-          ScorecardRoutes.OPEN_ISSUES_KPI_AGGREGATION_ROUTE,
-          jiraAggregatedResponse,
-        );
-        await mockApiResponse(
-          page,
           ScorecardRoutes.OPEN_PRS_KPI_AGGREGATION_ROUTE,
           githubAggregatedResponse,
         );
@@ -555,18 +549,13 @@ test.describe('Scorecard Plugin Tests', () => {
         );
         await page.reload();
 
-        const githubKpi = homePage.getCard(
+        const card = homePage.getCard(
           AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
         );
-        await expect(githubKpi).toBeVisible({ timeout: 20000 });
 
-        await expect(githubKpi).toContainText(
-          openPrsKpiMetadataResponse.title,
-          {
-            timeout: 15000,
-          },
-        );
-        await expect(githubKpi).toContainText(
+        await expect(card).toBeVisible();
+        await expect(card).toContainText(openPrsKpiMetadataResponse.title);
+        await expect(card).toContainText(
           openPrsKpiMetadataResponse.description,
           { timeout: 15000 },
         );
@@ -587,10 +576,12 @@ test.describe('Scorecard Plugin Tests', () => {
           currentLocale,
           '10',
         );
+        const card = homePage.getCard(
+          AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
+        );
 
-        await expect(
-          homePage.getCard(AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs),
-        ).toMatchAriaSnapshot(
+        await expect(card).toBeVisible();
+        await expect(card).toMatchAriaSnapshot(
           getThresholdsSnapshot(translations, {
             drillDownMetricId:
               AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation,
@@ -657,6 +648,7 @@ test.describe('Scorecard Plugin Tests', () => {
         await homePage.verifyThresholdTooltip(githubCard, 'error', '2', '20%');
         await homePage.verifyLastUpdatedTooltip(githubCard, githubLastUpdated);
       });
+
       test('GitHub scorecard: tooltips, entity drill-down, and metric sort', async () => {
         await mockApiResponse(
           page,
