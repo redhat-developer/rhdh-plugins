@@ -115,12 +115,31 @@ export const AgentWizardDeployStep: FC<AgentWizardDeployStepProps> = ({
         <FormControlLabel
           value="image"
           control={<Radio size="small" />}
-          label="Container Image"
+          label={
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Container Image
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Deploy from a pre-built image. Fastest option.
+              </Typography>
+            </Box>
+          }
         />
         <FormControlLabel
           value="source"
           control={<Radio size="small" />}
-          label="Source from Git"
+          label={
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Source from Git
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Build the image from source via Shipwright, then deploy. Takes a
+                few minutes.
+              </Typography>
+            </Box>
+          }
         />
       </RadioGroup>
     </FormControl>

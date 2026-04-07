@@ -28,6 +28,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import type { BuildProgress } from './agentWizardTypes';
 
 interface AgentWizardBuildStepProps {
@@ -80,10 +81,11 @@ function derivePhaseSteps(progress: BuildProgress): PhaseStep[] {
     steps[2].state = 'done';
     steps[3].state = 'done';
   } else if (phase === 'failed') {
-    steps[1].state =
-      progress.buildRunPhase?.toLowerCase() === 'succeeded' ? 'done' : 'error';
-    if (steps[1].state === 'done') {
+    if (progress.deployFailedAfterBuild) {
+      steps[1].state = 'done';
       steps[2].state = 'error';
+    } else {
+      steps[1].state = 'error';
     }
   }
 
@@ -101,6 +103,9 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
   const isDone = progress.phase === 'complete';
   const isFailed = progress.phase === 'failed';
   const isActive = !isDone && !isFailed;
+  const retryLabel = progress.deployFailedAfterBuild
+    ? 'Retry Deploy'
+    : 'Retry Build';
 
   return (
     <Stack spacing={3} sx={{ py: 1 }}>
@@ -192,6 +197,31 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
         <Typography variant="caption" color="text.secondary">
           Elapsed: {formatElapsed(progress.elapsedMs)}
         </Typography>
+      )}
+
+      {/* Poll error warning */}
+      {progress.pollErrorCount > 0 && isActive && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            p: 1.5,
+            borderRadius: 1.5,
+            bgcolor: `${theme.palette.warning.main}14`,
+            border: `1px solid ${theme.palette.warning.main}40`,
+          }}
+        >
+          <WarningAmberIcon
+            sx={{ fontSize: 18, color: theme.palette.warning.main }}
+          />
+          <Typography
+            variant="caption"
+            sx={{ color: theme.palette.warning.dark }}
+          >
+            Having trouble reaching the build service. Retrying…
+          </Typography>
+        </Box>
       )}
 
       {/* Build details */}
@@ -301,28 +331,41 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
       )}
 
       {/* Action buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 1 }}>
-        {isFailed && (
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 1 }}>
+        {isActive ? (
           <Button
-            variant="outlined"
-            size="small"
-            startIcon={<RefreshIcon />}
-            onClick={onRetry}
-            sx={{ textTransform: 'none' }}
-          >
-            Retry Build
-          </Button>
-        )}
-        {(isDone || isFailed) && (
-          <Button
-            variant="contained"
             size="small"
             onClick={onClose}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: 'none', color: theme.palette.text.secondary }}
           >
-            {isDone ? 'Done' : 'Close'}
+            Run in background
           </Button>
+        ) : (
+          <Box />
         )}
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {isFailed && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<RefreshIcon />}
+              onClick={onRetry}
+              sx={{ textTransform: 'none' }}
+            >
+              {retryLabel}
+            </Button>
+          )}
+          {(isDone || isFailed) && (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={onClose}
+              sx={{ textTransform: 'none' }}
+            >
+              {isDone ? 'Done' : 'Close'}
+            </Button>
+          )}
+        </Box>
       </Box>
     </Stack>
   );

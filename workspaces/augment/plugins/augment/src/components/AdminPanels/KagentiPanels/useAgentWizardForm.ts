@@ -40,6 +40,8 @@ import {
 } from './agentWizardUtils';
 
 const BUILD_POLL_INTERVAL_MS = 4000;
+const BUILD_TIMEOUT_WARN_MS = 10 * 60 * 1000;
+const MAX_CONSECUTIVE_POLL_ERRORS = 5;
 
 export interface UseAgentWizardFormReturn {
   // Wizard chrome
@@ -141,15 +143,14 @@ export function useAgentWizardForm(
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const INITIAL_BUILD_PROGRESS: BuildProgress = {
+  const [buildProgress, setBuildProgress] = useState<BuildProgress>({
     phase: 'idle',
     elapsedMs: 0,
-  };
-  const [buildProgress, setBuildProgress] = useState<BuildProgress>(
-    INITIAL_BUILD_PROGRESS,
-  );
+    pollErrorCount: 0,
+  });
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollErrorCountRef = useRef(0);
   const buildNameRef = useRef('');
   const buildNsRef = useRef('');
 
@@ -240,9 +241,10 @@ export function useAgentWizardForm(
     setCreateHttpRoute(false);
     setAuthBridgeEnabled(true);
     setSpireEnabled(false);
-    setBuildProgress({ phase: 'idle', elapsedMs: 0 });
+    setBuildProgress({ phase: 'idle', elapsedMs: 0, pollErrorCount: 0 });
     buildNameRef.current = '';
     buildNsRef.current = '';
+    pollErrorCountRef.current = 0;
   }, [namespaceProp, stopPolling]);
 
   useEffect(() => {
@@ -411,13 +413,23 @@ export function useAgentWizardForm(
     (agentName: string, agentNamespace: string) => {
       buildNameRef.current = agentName;
       buildNsRef.current = agentNamespace;
+      pollErrorCountRef.current = 0;
       const startedAt = Date.now();
 
       elapsedRef.current = setInterval(() => {
-        setBuildProgress(prev => ({
-          ...prev,
-          elapsedMs: Date.now() - startedAt,
-        }));
+        const elapsed = Date.now() - startedAt;
+        setBuildProgress(prev => {
+          const next = { ...prev, elapsedMs: elapsed };
+          if (
+            elapsed >= BUILD_TIMEOUT_WARN_MS &&
+            prev.phase === 'building' &&
+            !prev.message?.includes('taking longer')
+          ) {
+            next.message =
+              'Build is taking longer than expected. It will continue in the background if you close this dialog.';
+          }
+          return next;
+        });
       }, 1000);
 
       pollRef.current = setInterval(async () => {
@@ -425,6 +437,7 @@ export function useAgentWizardForm(
           const info = await api.getKagentiBuildInfo(agentNamespace, agentName);
           const elapsed = Date.now() - startedAt;
           const phase = info.buildRunPhase?.toLowerCase() ?? '';
+          pollErrorCountRef.current = 0;
 
           if (phase === 'succeeded') {
             stopPolling();
@@ -435,6 +448,7 @@ export function useAgentWizardForm(
               outputImage: info.outputImage,
               elapsedMs: elapsed,
               message: 'Build complete. Deploying agent…',
+              pollErrorCount: 0,
             }));
 
             try {
@@ -447,7 +461,9 @@ export function useAgentWizardForm(
                 phase: 'complete',
                 elapsedMs: Date.now() - startedAt,
                 message: result.message,
+                deployFailedAfterBuild: false,
               }));
+              setSuccessOpen(true);
               onCreated();
             } catch (finErr) {
               setBuildProgress(prev => ({
@@ -455,6 +471,7 @@ export function useAgentWizardForm(
                 phase: 'failed',
                 elapsedMs: Date.now() - startedAt,
                 failureMessage: `Build succeeded but deployment failed: ${getErrorMessage(finErr)}`,
+                deployFailedAfterBuild: true,
               }));
             }
           } else if (phase === 'failed') {
@@ -465,6 +482,7 @@ export function useAgentWizardForm(
               buildRunPhase: info.buildRunPhase ?? undefined,
               elapsedMs: elapsed,
               failureMessage: info.buildRunFailureMessage ?? 'Build failed.',
+              deployFailedAfterBuild: false,
             }));
           } else {
             setBuildProgress(prev => ({
@@ -476,10 +494,24 @@ export function useAgentWizardForm(
               gitUrl: info.gitUrl,
               startTime: info.buildRunStartTime ?? undefined,
               elapsedMs: elapsed,
+              pollErrorCount: 0,
             }));
           }
         } catch {
-          // Transient fetch errors — keep polling
+          pollErrorCountRef.current += 1;
+          setBuildProgress(prev => ({
+            ...prev,
+            pollErrorCount: pollErrorCountRef.current,
+          }));
+          if (pollErrorCountRef.current >= MAX_CONSECUTIVE_POLL_ERRORS) {
+            stopPolling();
+            setBuildProgress(prev => ({
+              ...prev,
+              phase: 'failed',
+              failureMessage:
+                'Lost connection to the build service. The build may still be running — check Build Pipelines for status.',
+            }));
+          }
         }
       }, BUILD_POLL_INTERVAL_MS);
     },
@@ -508,6 +540,12 @@ export function useAgentWizardForm(
       setSubmitError('Fix invalid service port entries before submitting.');
       return;
     }
+    if (duplicateEnvNames.size > 0) {
+      setSubmitError(
+        `Duplicate environment variable names: ${Array.from(duplicateEnvNames).join(', ')}`,
+      );
+      return;
+    }
     const body = buildRequest(formState);
     setSubmitting(true);
 
@@ -521,6 +559,7 @@ export function useAgentWizardForm(
           phase: 'building',
           elapsedMs: 0,
           message: result.message,
+          pollErrorCount: 0,
         });
         startBuildPolling(body.name, body.namespace);
       } else {
@@ -544,33 +583,69 @@ export function useAgentWizardForm(
     validateStep1,
     deploymentMethod,
     portErrors,
+    duplicateEnvNames,
     startBuildPolling,
   ]);
 
   const handleRetryBuild = useCallback(() => {
     if (!buildNameRef.current || !buildNsRef.current) return;
-    setBuildProgress({
-      phase: 'building',
-      elapsedMs: 0,
-      message: 'Retrying build…',
-    });
-    api
-      .triggerKagentiBuild(buildNsRef.current, buildNameRef.current)
-      .then(() => {
-        startBuildPolling(buildNameRef.current, buildNsRef.current);
-      })
-      .catch(e => {
-        setBuildProgress(prev => ({
-          ...prev,
-          phase: 'failed',
-          failureMessage: `Retry failed: ${getErrorMessage(e)}`,
-        }));
+    const ns = buildNsRef.current;
+    const agentName = buildNameRef.current;
+    const wasDeployFailure = buildProgress.deployFailedAfterBuild;
+
+    if (wasDeployFailure) {
+      setBuildProgress(prev => ({
+        ...prev,
+        phase: 'finalizing',
+        failureMessage: undefined,
+        message: 'Retrying deployment…',
+        pollErrorCount: 0,
+      }));
+      api
+        .finalizeKagentiAgentBuild(ns, agentName)
+        .then(result => {
+          setBuildProgress(prev => ({
+            ...prev,
+            phase: 'complete',
+            message: result.message,
+            deployFailedAfterBuild: false,
+          }));
+          setSuccessOpen(true);
+          onCreated();
+        })
+        .catch(err => {
+          setBuildProgress(prev => ({
+            ...prev,
+            phase: 'failed',
+            failureMessage: `Deployment failed: ${getErrorMessage(err)}`,
+            deployFailedAfterBuild: true,
+          }));
+        });
+    } else {
+      setBuildProgress({
+        phase: 'building',
+        elapsedMs: 0,
+        message: 'Retrying build…',
+        pollErrorCount: 0,
       });
-  }, [api, startBuildPolling]);
+      api
+        .triggerKagentiBuild(ns, agentName)
+        .then(() => {
+          startBuildPolling(agentName, ns);
+        })
+        .catch(err => {
+          setBuildProgress(prev => ({
+            ...prev,
+            phase: 'failed',
+            failureMessage: `Retry failed: ${getErrorMessage(err)}`,
+          }));
+        });
+    }
+  }, [api, buildProgress.deployFailedAfterBuild, onCreated, startBuildPolling]);
 
   const handleCloseBuild = useCallback(() => {
     stopPolling();
-    setBuildProgress({ phase: 'idle', elapsedMs: 0 });
+    setBuildProgress({ phase: 'idle', elapsedMs: 0, pollErrorCount: 0 });
     onClose();
   }, [stopPolling, onClose]);
 

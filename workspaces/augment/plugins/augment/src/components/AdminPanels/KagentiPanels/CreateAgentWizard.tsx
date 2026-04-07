@@ -65,18 +65,25 @@ export function CreateAgentWizard({
 
   const allSteps = useMemo((): string[] => {
     const base: string[] = [...FORM_STEPS];
-    if (isSourceDeploy || isBuildStep) {
+    if (isBuildStep) {
       base.push(BUILD_STEP);
     }
     return base;
-  }, [isSourceDeploy, isBuildStep]);
+  }, [isBuildStep]);
 
+  const { handleCloseBuild, submitting } = form;
   const handleDialogClose = useCallback(
     (_: object, reason: 'backdropClick' | 'escapeKeyDown') => {
-      if (form.submitting || buildActive) return;
-      if (reason === 'backdropClick' || reason === 'escapeKeyDown') onClose();
+      if (submitting) return;
+      if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+        if (buildActive) {
+          handleCloseBuild();
+        } else {
+          onClose();
+        }
+      }
     },
-    [onClose, form.submitting, buildActive],
+    [onClose, submitting, buildActive, handleCloseBuild],
   );
 
   const submitLabel = isSourceDeploy ? 'Start Build' : 'Create';
