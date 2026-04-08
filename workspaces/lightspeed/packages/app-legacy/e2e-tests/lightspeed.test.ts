@@ -43,8 +43,12 @@ import {
   expectChatbotControlsVisible,
   verifyDisplayModeMenuOptions,
   expectChatInputAreaVisible,
+  expectChatInputValue,
+  expectChatStopButtonVisible,
   expectEmptyChatHistory,
   expectConversationArea,
+  chatStopButton,
+  waitForChatMessageLoadingHidden,
 } from './pages/LightspeedPage';
 import {
   uploadFiles,
@@ -267,7 +271,7 @@ test.describe('Lightspeed tests', () => {
     expect(nonEmptyTexts.length).toBe(3);
   });
 
-  test.describe.skip('File Attachment Validation', () => {
+  test.describe('File Attachment Validation', () => {
     const testFiles = [
       { path: '../../package.json', name: 'package.json' },
       { path: __filename, name: 'fileAttachment.spec.ts' },
@@ -446,9 +450,6 @@ test.describe('Lightspeed tests', () => {
 
     test('Stop ends in-progress reply and restores the prompt in the input', async () => {
       const stopFlowPrompt = 'Stop button restores prompt in input';
-      const input = sharedPage.getByRole('textbox', {
-        name: translations['chatbox.message.placeholder'],
-      });
 
       await mockQueryWithResponseDelay(
         sharedPage,
@@ -456,18 +457,11 @@ test.describe('Lightspeed tests', () => {
         conversations,
         5_000,
       );
-      await input.fill(stopFlowPrompt);
-      await sharedPage.getByRole('button', { name: 'Send' }).click();
-
-      const stopButton = sharedPage.getByRole('button', { name: 'Stop' });
-      await expect(stopButton).toBeVisible({ timeout: 10_000 });
-      await stopButton.click();
-
-      await expect(input).toHaveValue(stopFlowPrompt);
-
-      await sharedPage
-        .locator('.pf-chatbot__message-loading')
-        .waitFor({ state: 'hidden', timeout: 7_000 });
+      await sendMessage(stopFlowPrompt, sharedPage, translations, false);
+      await expectChatStopButtonVisible(sharedPage);
+      await chatStopButton(sharedPage).click();
+      await expectChatInputValue(sharedPage, translations, stopFlowPrompt);
+      await waitForChatMessageLoadingHidden(sharedPage);
     });
 
     test.describe('Chat Management', () => {

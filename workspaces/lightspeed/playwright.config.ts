@@ -59,14 +59,8 @@ export default defineConfig({
   projects: LOCALES.map(locale => ({
     name: locale,
     use: {
-      browserName: 'chromium',
+      channel: 'chrome' as const,
       locale,
-      launchOptions: {
-        args: [
-          '--disable-web-security',
-          '--disable-features=BlockInsecurePrivateNetworkRequests,PrivateNetworkAccessSendPreflights',
-        ],
-      },
     },
   })),
 });
