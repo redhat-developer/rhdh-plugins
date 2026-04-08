@@ -257,6 +257,8 @@ export function KagentiToolDetailDrawer({
               detailLoading={detailState.detailLoading}
               detailError={detailState.detailError}
               spec={spec}
+              protocol={tool.labels?.protocol}
+              framework={tool.labels?.framework}
             />
           </CardContent>
         </Card>

@@ -85,8 +85,7 @@ export function McpToolCatalog({ tools, onInvoke }: McpToolCatalogProps) {
         }}
       >
         <Typography variant="body2" color="text.secondary">
-          No MCP tools to display. Run discover to load tool schemas from the
-          server.
+          No MCP tools discovered. The server returned an empty tool list.
         </Typography>
       </Box>
     );

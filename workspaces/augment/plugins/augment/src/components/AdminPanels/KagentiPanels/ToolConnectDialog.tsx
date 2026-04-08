@@ -23,6 +23,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
 import type {
   KagentiMcpToolSchema,
   KagentiToolSummary,
@@ -30,6 +31,7 @@ import type {
 import type { AugmentApi } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { McpToolCatalog } from './McpToolCatalog';
+import { toolSummaryStatusChipColor } from './kagentiDisplayUtils';
 
 export interface ToolConnectDialogProps {
   open: boolean;
@@ -83,7 +85,17 @@ export function ToolConnectDialog({
       fullWidth
     >
       <DialogTitle>
-        Discover MCP tools
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          Discover MCP tools
+          {tool && (
+            <Chip
+              label={tool.status}
+              size="small"
+              color={toolSummaryStatusChipColor(tool.status)}
+              sx={{ height: 22 }}
+            />
+          )}
+        </Box>
         <Typography variant="body2" color="text.secondary">
           Connect to {tool ? `${tool.namespace}/${tool.name}` : ''} and list the
           MCP tools it exposes.
@@ -106,8 +118,9 @@ export function ToolConnectDialog({
           >
             {discoverError}
             <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-              The tool may still be starting up, or its MCP endpoint may not be
-              reachable. Verify the tool is in Ready status and try again.
+              {tool?.name?.endsWith('-mcp')
+                ? `The platform appends "-mcp" to the service name internally. Because this tool is named "${tool.name}", it may be looking for a service called "${tool.name}-mcp" which does not exist. Try recreating the tool without the "-mcp" suffix.`
+                : 'The tool may still be starting up, or its MCP endpoint may not be reachable. Verify the tool is in Ready status and try again.'}
             </Typography>
           </Alert>
         )}

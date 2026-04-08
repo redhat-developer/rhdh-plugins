@@ -92,6 +92,11 @@ export function ToolMcpSection({
       {mcpError && (
         <Alert severity="error" sx={{ mb: 1.5 }} onClose={onDismissMcpError}>
           {mcpError}
+          <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+            {tool.name.endsWith('-mcp')
+              ? `The platform appends "-mcp" to the service name internally. Because this tool is named "${tool.name}", it may be looking for a service called "${tool.name}-mcp" which does not exist. Try recreating the tool without the "-mcp" suffix.`
+              : 'The tool may still be starting up, or its MCP endpoint may not be reachable. Verify the tool is in Ready status and try again.'}
+          </Typography>
         </Alert>
       )}
       <McpToolCatalog tools={mcpTools} onInvoke={handleStartInvoke} />
