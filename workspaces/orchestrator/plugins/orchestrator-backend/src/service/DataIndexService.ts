@@ -31,7 +31,10 @@ import {
 
 import { ErrorBuilder } from '../helpers/errorBuilder';
 import { buildFilterCondition } from '../helpers/filterBuilder';
-import { buildGraphQlQuery } from '../helpers/queryBuilder';
+import {
+  buildGraphQlQuery,
+  buildQueryParamVariable,
+} from '../helpers/queryBuilder';
 import { Pagination } from '../types/pagination';
 import { FETCH_PROCESS_INSTANCES_SORT_FIELD } from './constants';
 
@@ -132,9 +135,23 @@ export class DataIndexService {
   public async fetchWorkflowInfo(
     definitionId: string,
   ): Promise<WorkflowInfo | undefined> {
-    const graphQlQuery = `{ ProcessDefinitions ( where: {id: {equal: "${definitionId}" } } ) { id, name, version, type, endpoint, serviceUrl, source } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($definitionId: String!) {
+        ProcessDefinitions(where: { id: { equal: $definitionId } }) {
+          id
+          name
+          version
+          type
+          endpoint
+          serviceUrl
+          source
+        }
+      }
+    `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(graphQlQuery, {
+      definitionId,
+    });
 
     this.logger.debug(
       `Get workflow definition result: ${JSON.stringify(result)}`,
@@ -225,9 +242,9 @@ export class DataIndexService {
 
     let whereClause: string | undefined;
     if (definitionIdsCondition && filterCondition) {
-      whereClause = `and: [{${definitionIdsCondition}}, {${filterCondition}}]`;
+      whereClause = `and: [{${definitionIdsCondition}}, {${filterCondition?.clause}}]`;
     } else if (definitionIdsCondition || filterCondition) {
-      whereClause = definitionIdsCondition ?? filterCondition;
+      whereClause = definitionIdsCondition ?? filterCondition?.clause;
     } else {
       whereClause = undefined;
     }
@@ -238,9 +255,15 @@ export class DataIndexService {
         'id, name, version, type, endpoint, serviceUrl, source, metadata',
       whereClause,
       pagination,
+      filterCondition: filterCondition,
     });
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
-    const result = await this.client.query(graphQlQuery, {});
+
+    const paramVariables = buildQueryParamVariable(pagination, filterCondition);
+
+    this.logger.debug(`GraphQL query params:`, paramVariables);
+
+    const result = await this.client.query(graphQlQuery, paramVariables);
     this.logger.debug(
       `Get workflow definitions result: ${JSON.stringify(result)}`,
     );
@@ -273,7 +296,7 @@ export class DataIndexService {
           type,
           filter,
         )
-      : '';
+      : undefined;
 
     let whereClause = '';
     const conditions = [];
@@ -286,8 +309,8 @@ export class DataIndexService {
       conditions.push(`{${definitionIdsCondition}}`);
     }
 
-    if (filter) {
-      conditions.push(`{${filterCondition}}`);
+    if (filterCondition) {
+      conditions.push(`{${filterCondition?.clause}}`);
     }
 
     if (conditions.length === 0) {
@@ -304,13 +327,18 @@ export class DataIndexService {
         'id, processName, processId, state, start, end, nodes { id }, variables, executionSummary, parentProcessInstance {id, processName, businessKey}',
       whereClause,
       pagination,
+      filterCondition: filterCondition,
     });
 
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
 
+    const paramVariables = buildQueryParamVariable(pagination, filterCondition);
+
+    this.logger.debug(`GraphQL query params:`, paramVariables);
+
     const result = await this.client.query<{
       ProcessInstances: ProcessInstance[];
-    }>(graphQlQuery, {});
+    }>(graphQlQuery, paramVariables);
     this.logger.debug(
       `Fetch process instances result: ${JSON.stringify(result)}`,
     );
@@ -350,7 +378,7 @@ export class DataIndexService {
       targetEntityFilter,
     );
 
-    const whereClause = `and: [{${processIdNotNullCondition}}, {${filterCondition}}]`;
+    const whereClause = `and: [{${processIdNotNullCondition}}, {${filterCondition.clause}}]`;
 
     // Apply a limit to prevent memory exhaustion and network timeouts when entities
     // have thousands of process instances. Entities with more instances than this limit
@@ -365,13 +393,18 @@ export class DataIndexService {
       queryBody: 'processId',
       whereClause,
       pagination,
+      filterCondition,
     });
 
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
 
+    const paramVariables = buildQueryParamVariable(pagination, filterCondition);
+
+    this.logger.debug(`GraphQL query params:`, paramVariables);
+
     const result = await this.client.query<{
       ProcessInstances: ProcessInstance[];
-    }>(graphQlQuery, {});
+    }>(graphQlQuery, paramVariables);
     this.logger.debug(
       `Fetch definition ids from instances history result: ${JSON.stringify(result)}`,
     );
@@ -404,9 +437,18 @@ export class DataIndexService {
   public async fetchWorkflowSource(
     definitionId: string,
   ): Promise<string | undefined> {
-    const graphQlQuery = `{ ProcessDefinitions ( where: {id: {equal: "${definitionId}" } } ) { id, source } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($definitionId: String!) {
+        ProcessDefinitions(where: { id: { equal: $definitionId } }) {
+          id
+          source
+        }
+      }
+    `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(graphQlQuery, {
+      definitionId,
+    });
 
     this.logger.debug(
       `Fetch workflow source result: ${JSON.stringify(result)}`,
@@ -434,12 +476,34 @@ export class DataIndexService {
     targetEntity?: string;
   }): Promise<ProcessInstance[]> {
     const targetEntityWhereCondition = args.targetEntity
-      ? `, variables: {targetEntity: {equal: "${args.targetEntity}" } }`
+      ? `, variables: {targetEntity: {equal: $targetEntity } }`
       : '';
 
-    const graphQlQuery = `{ ProcessInstances( where: {processId: {equal: "${args.definitionId}" } ${targetEntityWhereCondition} }, orderBy: {start:DESC}, pagination: {limit: ${args.limit}, offset: ${args.offset}}) { id, processName, state, start, end } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($definitionId: String!, $limit: Int!, $offset: Int! ${args.targetEntity ? `, $targetEntity: String` : ''}) {
+        ProcessInstances(
+          where: {processId: {equal: $definitionId } ${targetEntityWhereCondition} },
+          orderBy: {start:DESC},
+          pagination: {limit: $limit, offset: $offset}
+        ) { id, processName, state, start, end }
+      }
+     `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(
+      graphQlQuery,
+      args.targetEntity
+        ? {
+            definitionId: args.definitionId,
+            limit: args.limit,
+            offset: args.offset,
+            targetEntity: args.targetEntity,
+          }
+        : {
+            definitionId: args.definitionId,
+            limit: args.limit,
+            offset: args.offset,
+          },
+    );
 
     this.logger.debug(
       `Fetch workflow instances result: ${JSON.stringify(result)}`,
@@ -456,9 +520,17 @@ export class DataIndexService {
   public async fetchInstanceVariables(
     instanceId: string,
   ): Promise<object | undefined> {
-    const graphQlQuery = `{ ProcessInstances (where: { id: {equal: "${instanceId}" } } ) { variables } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($instanceId: String!) {
+        ProcessInstances(where: { id: { equal: $instanceId } }) {
+          variables
+        }
+      }
+    `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(graphQlQuery, {
+      instanceId,
+    });
 
     this.logger.debug(
       `Fetch process instance variables result: ${JSON.stringify(result)}`,
@@ -481,9 +553,17 @@ export class DataIndexService {
   public async fetchDefinitionIdByInstanceId(
     instanceId: string,
   ): Promise<string | undefined> {
-    const graphQlQuery = `{ ProcessInstances (where: { id: {equal: "${instanceId}" } } ) { processId } }`;
+    const graphQlQuery = gql`
+      query FindProcessInstanceQuery($instanceId: String!) {
+        ProcessInstances(where: { id: { equal: $instanceId } }) {
+          processId
+        }
+      }
+    `;
 
-    const result = await this.client.query(graphQlQuery, {});
+    const result = await this.client.query(graphQlQuery, {
+      instanceId,
+    });
 
     this.logger.debug(
       `Fetch process id from instance result: ${JSON.stringify(result)}`,

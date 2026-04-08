@@ -24,6 +24,10 @@ import {
   TypeName,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { randomBytes } from 'node:crypto';
+
+import { FilterClause, FilterClauseVariable } from '../types/filterClause';
+
 type ProcessType = 'ProcessDefinition' | 'ProcessInstance';
 
 const supportedOperators = [
@@ -73,21 +77,25 @@ function handleLogicalFilter(
   introspection: IntrospectionField[],
   type: ProcessType,
   filter: LogicalFilter,
-): string {
-  if (!filter.operator) return '';
+): FilterClause {
+  if (!filter.operator) return {} as FilterClause;
 
   const subClauses = filter.filters.map(f =>
     buildFilterCondition(introspection, type, f),
   );
 
-  return `${filter.operator.toLowerCase()}: {${subClauses.join(', ')}}`;
+  const filterClause: FilterClause = {
+    clause: `${filter.operator.toLowerCase()}: {${subClauses.map(cl => cl.clause).join(', ')}}`,
+    clauseVariable: subClauses.flatMap(cl => cl.clauseVariable),
+  };
+  return filterClause;
 }
 
 function handleNestedFilter(
   introspection: IntrospectionField[],
   type: ProcessType,
   filter: NestedFilter,
-): string {
+): FilterClause {
   const subClauses = buildFilterCondition(
     introspection,
     type,
@@ -95,22 +103,62 @@ function handleNestedFilter(
     true,
   );
 
-  return `${filter.field}: {${subClauses}}`;
+  const filterClause: FilterClause = {
+    clauseVariable: subClauses.clauseVariable,
+    clause: `${filter.field}: {${subClauses.clause}}`,
+  };
+
+  return filterClause;
 }
 
-function handleBetweenOperator(filter: FieldFilter): string {
+function handleBetweenOperator(filter: FieldFilter): FilterClause {
   if (!Array.isArray(filter.value) || filter.value.length !== 2) {
     throw new Error('Between operator requires an array of two elements');
   }
-  return `${filter.field}: {${getGraphQLOperator(
+  const filterClauseVariableArray: FilterClauseVariable[] = [];
+  const clauseVariableName1 = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
+  const filterClauseVariable1: FilterClauseVariable = {
+    clauseVariableName: clauseVariableName1,
+    formattedValue: filter.value[0],
+    clauseVariableType: 'String',
+  };
+
+  const clauseVariableName2 = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
+  const filterClauseVariable2: FilterClauseVariable = {
+    clauseVariableName: clauseVariableName2,
+    formattedValue: filter.value[1],
+    clauseVariableType: 'String',
+  };
+
+  const clause = `${filter.field}: {${getGraphQLOperator(
     FieldFilterOperatorEnum.Between,
-  )}: {from: "${filter.value[0]}", to: "${filter.value[1]}"}}`;
+  )}: {from: $${clauseVariableName1}, to: $${clauseVariableName2}}}`;
+  filterClauseVariableArray.push(filterClauseVariable1, filterClauseVariable2);
+  const filterClause: FilterClause = {
+    clause: clause,
+    clauseVariable: filterClauseVariableArray,
+  };
+
+  return filterClause;
 }
 
-function handleIsNullOperator(filter: FieldFilter): string {
-  return `${filter.field}: {${getGraphQLOperator(
-    FieldFilterOperatorEnum.IsNull,
-  )}: ${convertToBoolean(filter.value)}}`;
+function handleIsNullOperator(filter: FieldFilter): FilterClause {
+  const clauseVariableName = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
+  const clause = `${filter.field}: {${getGraphQLOperator(FieldFilterOperatorEnum.IsNull)}: $${clauseVariableName}}`;
+
+  const filterClauseVariable: FilterClauseVariable = {
+    clauseVariableName: clauseVariableName,
+    formattedValue: convertToBoolean(filter.value),
+    clauseVariableType: 'Boolean',
+  };
+  const filterClauseVariableArray: FilterClauseVariable[] = [];
+  filterClauseVariableArray.push(filterClauseVariable);
+  const clauseObject: FilterClause = {
+    clauseVariable: filterClauseVariableArray,
+    clause,
+  };
+
+  return clauseObject;
 }
 
 function isEnumFilter(
@@ -136,7 +184,7 @@ function handleBinaryOperator(
   binaryFilter: FieldFilter,
   fieldDef: IntrospectionField | undefined,
   type: 'ProcessDefinition' | 'ProcessInstance',
-): string {
+): FilterClause {
   if (isEnumFilter(binaryFilter.field, type)) {
     if (!isValidEnumOperator(binaryFilter.operator)) {
       throw new Error(
@@ -144,14 +192,40 @@ function handleBinaryOperator(
       );
     }
   }
-  const formattedValue = Array.isArray(binaryFilter.value)
-    ? `[${binaryFilter.value
-        .map(v => formatValue(binaryFilter.field, v, fieldDef, type))
-        .join(', ')}]`
-    : formatValue(binaryFilter.field, binaryFilter.value, fieldDef, type);
-  return `${binaryFilter.field}: {${getGraphQLOperator(
-    binaryFilter.operator,
-  )}: ${formattedValue}}`;
+  let formattedValue: any;
+  let paramType: string;
+  if (Array.isArray(binaryFilter.value)) {
+    formattedValue = binaryFilter.value.map(v =>
+      formatValue(binaryFilter.field, v, fieldDef, type),
+    );
+    paramType = isEnumFilter(binaryFilter.field, type)
+      ? '[ProcessInstanceState!]'
+      : '[String!]';
+  } else {
+    formattedValue = formatValue(
+      binaryFilter.field,
+      binaryFilter.value,
+      fieldDef,
+      type,
+    );
+    paramType = 'String';
+  }
+
+  const clauseVariableName = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
+  const clause = `${binaryFilter.field}: {${getGraphQLOperator(binaryFilter.operator)}: $${clauseVariableName}}`;
+  const filterClauseVariable: FilterClauseVariable = {
+    clauseVariableName: clauseVariableName,
+    formattedValue: formattedValue,
+    clauseVariableType: paramType,
+  };
+  const filterClauseVariableArray: FilterClauseVariable[] = [];
+  filterClauseVariableArray.push(filterClauseVariable);
+  const clauseObject: FilterClause = {
+    clauseVariable: filterClauseVariableArray,
+    clause,
+  };
+
+  return clauseObject;
 }
 
 export function buildFilterCondition(
@@ -159,9 +233,9 @@ export function buildFilterCondition(
   type: ProcessType,
   filters?: Filter,
   isNested?: boolean,
-): string {
+): FilterClause {
   if (!filters) {
-    return '';
+    return {} as FilterClause;
   }
 
   if (isNestedFilter(filters)) {
@@ -255,7 +329,7 @@ function formatValue(
   type: ProcessType,
 ): string {
   if (!fieldDef) {
-    return `"${fieldValue}"`;
+    return `${fieldValue}`;
   }
 
   if (!isFieldFilterSupported) {
@@ -270,7 +344,7 @@ function formatValue(
     fieldDef.type.name === TypeName.Id ||
     fieldDef.type.name === TypeName.Date
   ) {
-    return `"${fieldValue}"`;
+    return `${fieldValue}`;
   }
   throw new Error(
     `Failed to format value for ${fieldName} ${fieldValue} with type ${fieldDef.type.name}`,
@@ -300,4 +374,10 @@ function getGraphQLOperator(operator: FieldFilterOperatorEnum): string {
     default:
       throw new Error(`Operation "${operator}" not supported`);
   }
+}
+
+// Function for getting 4 random digits to append to the clause variable name.
+// Not used for any secrets or anything
+function nonSecureRandomAlphaNumeric() {
+  return randomBytes(8).toString('hex');
 }
