@@ -306,6 +306,10 @@ export class V2 {
         if (currentInstanceToReturn.length > 0) {
           break;
         }
+
+        await new Promise(resolve =>
+          setTimeout(resolve, FETCH_INSTANCE_RETRY_DELAY_MS),
+        );
       }
 
       let currentInstanceIDToReturn;
