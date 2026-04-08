@@ -107,6 +107,32 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
 
     const installButton = page.getByRole('button', { name: /install/i });
     await expect(installButton).toBeVisible({ timeout: 15000 });
+
+    const isDisabled = await installButton.isDisabled();
+    if (isDisabled) {
+      // Plugin already installed (e.g. via OCI injection) — button is disabled
+      test.info().annotations.push({
+        type: 'info',
+        description:
+          'Install button is disabled — plugin is already installed via OCI or a prior marketplace install',
+      });
+      const uninstallButton = page.getByRole('button', {
+        name: /uninstall/i,
+      });
+      const hasUninstall = await uninstallButton
+        .isVisible({ timeout: 3000 })
+        .catch(() => false);
+      if (hasUninstall) {
+        // "Uninstall" visible confirms the plugin is installed
+        return;
+      }
+      // Disabled Install with no Uninstall — check page text for installed state
+      await expect(page.locator('body')).toContainText(/installed|enabled/i, {
+        timeout: 10000,
+      });
+      return;
+    }
+
     await installButton.click();
 
     const successIndicator = page
