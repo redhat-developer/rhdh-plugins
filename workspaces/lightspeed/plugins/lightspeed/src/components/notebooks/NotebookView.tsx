@@ -36,6 +36,7 @@ import {
   type AlertProps,
 } from '@patternfly/react-core';
 import { TimesIcon } from '@patternfly/react-icons';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { UNTITLED_NOTEBOOK_NAME } from '../../const';
 import {
@@ -139,6 +140,7 @@ export const NotebookView = ({
 }: NotebookViewProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const uploadMutation = useUploadDocument();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -270,9 +272,12 @@ export const NotebookView = ({
     );
     if (newCompletedNames.size > 0) {
       setCompletedFileNames(prev => new Set([...prev, ...newCompletedNames]));
+      queryClient.invalidateQueries({
+        queryKey: ['notebooks', 'documents', sessionId],
+      });
     }
     setToastAlerts(prev => [...newAlerts, ...prev]);
-  }, [pollingResults, t]);
+  }, [pollingResults, t, queryClient, sessionId]);
 
   const handleRemoveToastAlert = (key: React.Key) => {
     setToastAlerts(prev => prev.filter(a => a.key !== key));
