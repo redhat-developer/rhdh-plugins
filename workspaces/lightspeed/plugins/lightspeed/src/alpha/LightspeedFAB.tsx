@@ -20,9 +20,9 @@ import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from '@mui/styles';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
+import { LightspeedFABIcon } from '../components/LightspeedIcon';
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
-import { LightspeedFABIcon } from './LightspeedIcon';
 
 const useStyles = makeStyles(theme => ({
   fab: {
@@ -51,7 +51,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 /**
- * @public
+ * @alpha
  * Lightspeed Floating action button to open/close the lightspeed chatbot
  */
 

@@ -64,6 +64,7 @@
     "react": "^18.3.1"
   },
   "resolutions": {
+    "@testing-library/react": "15.0.7",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
