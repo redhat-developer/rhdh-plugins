@@ -20,13 +20,18 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Collapse from '@mui/material/Collapse';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CodeIcon from '@mui/icons-material/Code';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LaptopMacOutlinedIcon from '@mui/icons-material/LaptopMacOutlined';
+import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
+import TerminalOutlinedIcon from '@mui/icons-material/TerminalOutlined';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../../api';
@@ -46,6 +51,52 @@ interface WorkspaceResult {
 }
 
 type FormStatus = 'idle' | 'creating' | 'success' | 'error';
+
+function NextStep({
+  icon,
+  step,
+  title,
+  description,
+}: {
+  icon: React.ReactElement;
+  step: string;
+  title: string;
+  description: React.ReactNode;
+}) {
+  const theme = useTheme();
+
+  return (
+    <Box sx={{ display: 'flex', gap: 1.5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 32,
+          height: 32,
+          borderRadius: 1,
+          bgcolor: alpha(theme.palette.primary.main, 0.08),
+          color: theme.palette.primary.main,
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </Box>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.25 }}>
+          {step}. {title}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ lineHeight: 1.5, display: 'block' }}
+        >
+          {description}
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
 
 export function DevSpacesLaunchForm({
   onBack,
@@ -111,11 +162,113 @@ export function DevSpacesLaunchForm({
       </Typography>
 
       {status === 'success' && result && (
-        <Alert
-          severity="success"
-          icon={<CheckCircleOutlineIcon />}
-          sx={{ mb: 2.5 }}
-          action={
+        <Box>
+          {/* Confirmation */}
+          <Alert
+            severity="success"
+            icon={<CheckCircleOutlineIcon />}
+            sx={{ mb: 2.5 }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.25 }}>
+              Workspace created
+            </Typography>
+            <Typography variant="body2">
+              <strong>{result.name}</strong> in {result.namespace} &mdash;{' '}
+              {result.phase}
+            </Typography>
+            {result.message && (
+              <Typography variant="caption" color="text.secondary">
+                {result.message}
+              </Typography>
+            )}
+          </Alert>
+
+          {/* Next steps */}
+          <Box
+            sx={{
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 2,
+              overflow: 'hidden',
+              mb: 2,
+            }}
+          >
+            <Box
+              sx={{
+                px: 2.5,
+                py: 1.5,
+                bgcolor: alpha(theme.palette.primary.main, 0.04),
+                borderBottom: `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                Next Steps
+              </Typography>
+            </Box>
+
+            <Box sx={{ px: 2.5, py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <NextStep
+                icon={<CodeIcon sx={{ fontSize: 18 }} />}
+                step="1"
+                title="Open your Agent DevSpace"
+                description="Your cloud IDE is ready. Open it to start writing your agent code with full tooling and runtime support."
+              />
+
+              <NextStep
+                icon={<TerminalOutlinedIcon sx={{ fontSize: 18 }} />}
+                step="2"
+                title="Build and push from the IDE"
+                description="Use the integrated terminal in DevSpaces to build your agent container image and push it to your registry."
+              />
+
+              <NextStep
+                icon={<RocketLaunchOutlinedIcon sx={{ fontSize: 18 }} />}
+                step="3"
+                title="Deploy your agent"
+                description={
+                  <>
+                    Once your image is ready, return here and use{' '}
+                    <strong>Create Agent &rarr; Deploy</strong> to deploy it to
+                    the platform.
+                  </>
+                }
+              />
+            </Box>
+
+            <Divider />
+
+            <Box
+              sx={{
+                px: 2.5,
+                py: 1.5,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 1,
+                bgcolor: alpha(theme.palette.info.main, 0.04),
+              }}
+            >
+              <InfoOutlinedIcon
+                sx={{
+                  fontSize: 16,
+                  mt: 0.25,
+                  color: theme.palette.info.main,
+                  flexShrink: 0,
+                }}
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ lineHeight: 1.5 }}
+              >
+                Building and pushing your agent&apos;s container image is done
+                through the IDE terminal in DevSpaces, not from this UI. This
+                gives you full control over your build pipeline, Dockerfile, and
+                registry configuration.
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Actions */}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
             <Button
               size="small"
               onClick={() => {
@@ -126,21 +279,16 @@ export function DevSpacesLaunchForm({
             >
               Create Another
             </Button>
-          }
-        >
-          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-            Workspace created
-          </Typography>
-          <Typography variant="body2">
-            <strong>{result.name}</strong> in {result.namespace} &mdash;{' '}
-            {result.phase}
-          </Typography>
-          {result.message && (
-            <Typography variant="caption" color="text.secondary">
-              {result.message}
-            </Typography>
-          )}
-        </Alert>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={onBack}
+              sx={{ textTransform: 'none' }}
+            >
+              Done
+            </Button>
+          </Box>
+        </Box>
       )}
 
       {status === 'error' && errorMessage && (
