@@ -28,7 +28,7 @@ import {
   mockClusters,
   mockOptimizations,
 } from './fixtures/optimizationResponses';
-import { detailPageUrlPattern } from './utils/routes';
+import { detailPageUrlPattern, isLegacyRos } from './utils/routes';
 
 const devMode = !process.env.PLAYWRIGHT_URL;
 
@@ -232,6 +232,7 @@ test.describe('Resource Optimization Plugin', () => {
   test('should click container link and view details page', async ({
     page,
   }) => {
+    test.skip(isLegacyRos, 'Detail page links differ in ROS 1.2.x');
     if (devMode) {
       await mockOptimizationsResponse(page, mockOptimizations);
     }
