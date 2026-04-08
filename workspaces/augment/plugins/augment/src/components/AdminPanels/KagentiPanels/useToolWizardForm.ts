@@ -69,6 +69,7 @@ export interface UseToolWizardFormReturn {
   setFramework: (v: string) => void;
   availableNamespaces: string[];
   nameError: string | undefined;
+  nameWarning: string | undefined;
 
   deploymentMethod: DeploymentMethod;
   setDeploymentMethod: (v: DeploymentMethod) => void;
@@ -322,6 +323,13 @@ export function useToolWizardForm(
     if (!trimmed) return undefined;
     if (!isValidDns1123(trimmed)) {
       return 'Lowercase alphanumeric and hyphens only. Must start/end with alphanumeric (max 63 chars).';
+    }
+    return undefined;
+  }, [name]);
+
+  const nameWarning = useMemo((): string | undefined => {
+    if (name.trim().endsWith('-mcp')) {
+      return 'Names ending in "-mcp" may cause connection issues. The platform appends "-mcp" to the internal service name automatically.';
     }
     return undefined;
   }, [name]);
@@ -704,6 +712,7 @@ export function useToolWizardForm(
     setFramework,
     availableNamespaces,
     nameError,
+    nameWarning,
 
     deploymentMethod,
     setDeploymentMethod,

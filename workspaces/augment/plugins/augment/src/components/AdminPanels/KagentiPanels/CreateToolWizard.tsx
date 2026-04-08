@@ -143,6 +143,7 @@ export function CreateToolWizard({
               framework={form.framework}
               setFramework={form.setFramework}
               nameError={form.nameError}
+              nameWarning={form.nameWarning}
               availableNamespaces={form.availableNamespaces}
             />
           )}

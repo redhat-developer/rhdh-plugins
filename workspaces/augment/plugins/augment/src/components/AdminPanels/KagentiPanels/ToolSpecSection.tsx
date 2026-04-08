@@ -20,18 +20,78 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import { PropertyRow } from './KagentiPropertyRow';
-import { formatValue, readSpecField } from './kagentiDisplayUtils';
+import { formatValue } from './kagentiDisplayUtils';
 
 export interface ToolSpecSectionProps {
   detailLoading: boolean;
   detailError: string | null;
   spec: Record<string, unknown> | undefined;
+  protocol?: string | null;
+  framework?: string | null;
+}
+
+function dig(obj: unknown, ...path: string[]): unknown {
+  let cur: unknown = obj;
+  for (const key of path) {
+    if (cur == null || typeof cur !== 'object') return undefined;
+    cur = (cur as Record<string, unknown>)[key];
+  }
+  return cur;
+}
+
+function extractContainerImage(spec: Record<string, unknown>): string | undefined {
+  const image = dig(spec, 'template', 'spec', 'containers', '0', 'image') as
+    | string
+    | undefined;
+  if (image) return image;
+
+  const containers = dig(spec, 'template', 'spec', 'containers') as
+    | unknown[]
+    | undefined;
+  if (Array.isArray(containers) && containers.length > 0) {
+    return (containers[0] as Record<string, unknown>)?.image as
+      | string
+      | undefined;
+  }
+  return undefined;
+}
+
+function extractEnvVars(
+  spec: Record<string, unknown>,
+): Array<Record<string, unknown>> {
+  const containers = dig(spec, 'template', 'spec', 'containers') as
+    | unknown[]
+    | undefined;
+  if (!Array.isArray(containers) || containers.length === 0) return [];
+  const env = (containers[0] as Record<string, unknown>)?.env;
+  return Array.isArray(env)
+    ? env.map(e =>
+        typeof e === 'object' && e !== null ? (e as Record<string, unknown>) : {},
+      )
+    : [];
+}
+
+function extractPorts(
+  spec: Record<string, unknown>,
+): Array<Record<string, unknown>> {
+  const containers = dig(spec, 'template', 'spec', 'containers') as
+    | unknown[]
+    | undefined;
+  if (!Array.isArray(containers) || containers.length === 0) return [];
+  const ports = (containers[0] as Record<string, unknown>)?.ports;
+  return Array.isArray(ports)
+    ? ports.map(p =>
+        typeof p === 'object' && p !== null ? (p as Record<string, unknown>) : {},
+      )
+    : [];
 }
 
 export function ToolSpecSection({
   detailLoading,
   detailError,
   spec,
+  protocol,
+  framework,
 }: ToolSpecSectionProps): ReactNode {
   if (detailLoading) {
     return (
@@ -51,31 +111,14 @@ export function ToolSpecSection({
     );
   }
 
-  const envVars = readSpecField(spec, 'envVars', 'env_vars') as
-    | unknown[]
-    | undefined;
-  const servicePorts = readSpecField(spec, 'servicePorts', 'service_ports') as
-    | unknown[]
-    | undefined;
-  const protocol = readSpecField(spec, 'protocol');
-  const framework = readSpecField(spec, 'framework');
-  const image =
-    readSpecField(spec, 'containerImage', 'image', 'container_image') ??
-    readSpecField(spec, 'image');
-  const gitUrl = readSpecField(spec, 'gitUrl', 'git_url');
-  const gitRevision = readSpecField(
-    spec,
-    'gitRevision',
-    'git_revision',
-    'gitBranch',
-  );
+  const image = extractContainerImage(spec);
+  const envVars = extractEnvVars(spec);
+  const ports = extractPorts(spec);
 
   const summaryFields: Array<{ label: string; value: unknown }> = [
     { label: 'Protocol', value: protocol },
     { label: 'Framework', value: framework },
     { label: 'Image', value: image },
-    { label: 'Git URL', value: gitUrl },
-    { label: 'Git revision', value: gitRevision },
   ].filter(
     f => f.value !== undefined && f.value !== null && f.value !== '',
   );
@@ -84,7 +127,11 @@ export function ToolSpecSection({
     <>
       {summaryFields.length > 0 ? (
         summaryFields.map(f => (
-          <PropertyRow key={f.label} label={f.label} value={formatValue(f.value)} />
+          <PropertyRow
+            key={f.label}
+            label={f.label}
+            value={formatValue(f.value)}
+          />
         ))
       ) : (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25 }}>
@@ -97,27 +144,24 @@ export function ToolSpecSection({
           color="text.secondary"
           sx={{ display: 'block', fontWeight: 600 }}
         >
-          Environment variables ({Array.isArray(envVars) ? envVars.length : 0})
+          Environment variables ({envVars.length})
         </Typography>
-        {Array.isArray(envVars) && envVars.length > 0 ? (
+        {envVars.length > 0 ? (
           <Box component="ul" sx={{ m: 0, pl: 2, listStyle: 'disc' }}>
-            {envVars.map((raw: unknown, i: number) => {
-              const ev = (
-                typeof raw === 'object' && raw !== null ? raw : {}
-              ) as Record<string, unknown>;
-              return (
-                <Typography
-                  component="li"
-                  variant="body2"
-                  key={i}
-                  sx={{ wordBreak: 'break-all', fontSize: '0.8rem' }}
-                >
-                  <strong>{String(ev.name ?? '')}</strong>
-                  {ev.value ? ` = ${String(ev.value)}` : ''}
-                  {ev.valueFrom ? ` (ref: ${formatValue(ev.valueFrom)})` : ''}
-                </Typography>
-              );
-            })}
+            {envVars.map((ev, i) => (
+              <Typography
+                component="li"
+                variant="body2"
+                key={i}
+                sx={{ wordBreak: 'break-all', fontSize: '0.8rem' }}
+              >
+                <strong>{String(ev.name ?? '')}</strong>
+                {ev.value ? ` = ${String(ev.value)}` : ''}
+                {ev.value_from || ev.valueFrom
+                  ? ` (ref: ${formatValue(ev.value_from ?? ev.valueFrom)})`
+                  : ''}
+              </Typography>
+            ))}
           </Box>
         ) : (
           <Typography variant="body2" color="text.secondary">
@@ -131,29 +175,22 @@ export function ToolSpecSection({
           color="text.secondary"
           sx={{ display: 'block', fontWeight: 600 }}
         >
-          Service ports ({Array.isArray(servicePorts) ? servicePorts.length : 0}
-          )
+          Container ports ({ports.length})
         </Typography>
-        {Array.isArray(servicePorts) && servicePorts.length > 0 ? (
+        {ports.length > 0 ? (
           <Box component="ul" sx={{ m: 0, pl: 2, listStyle: 'disc' }}>
-            {servicePorts.map((raw: unknown, i: number) => {
-              const sp = (
-                typeof raw === 'object' && raw !== null ? raw : {}
-              ) as Record<string, unknown>;
-              return (
-                <Typography
-                  component="li"
-                  variant="body2"
-                  key={i}
-                  sx={{ fontSize: '0.8rem' }}
-                >
-                  {sp.name ? `${String(sp.name)}: ` : ''}
-                  {String(sp.port ?? '')}
-                  {sp.targetPort ? ` \u2192 ${String(sp.targetPort)}` : ''}
-                  {sp.protocol ? ` (${String(sp.protocol)})` : ''}
-                </Typography>
-              );
-            })}
+            {ports.map((p, i) => (
+              <Typography
+                component="li"
+                variant="body2"
+                key={i}
+                sx={{ fontSize: '0.8rem' }}
+              >
+                {p.name ? `${String(p.name)}: ` : ''}
+                {String(p.container_port ?? p.containerPort ?? '')}
+                {p.protocol ? ` (${String(p.protocol)})` : ''}
+              </Typography>
+            ))}
           </Box>
         ) : (
           <Typography variant="body2" color="text.secondary">

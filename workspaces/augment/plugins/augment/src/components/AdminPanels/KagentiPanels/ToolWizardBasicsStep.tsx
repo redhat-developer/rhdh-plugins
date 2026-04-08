@@ -15,6 +15,7 @@
  */
 
 import type { FC } from 'react';
+import Alert from '@mui/material/Alert';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
@@ -37,6 +38,7 @@ interface ToolWizardBasicsStepProps {
   framework: string;
   setFramework: (v: string) => void;
   nameError: string | undefined;
+  nameWarning: string | undefined;
   availableNamespaces: string[];
 }
 
@@ -52,6 +54,7 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
   framework,
   setFramework,
   nameError,
+  nameWarning,
   availableNamespaces,
 }) => (
   <Stack spacing={2}>
@@ -72,6 +75,11 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
       }
       placeholder="my-weather-tool"
     />
+    {nameWarning && !nameError && (
+      <Alert severity="warning" variant="outlined" sx={{ py: 0.25 }}>
+        <Typography variant="caption">{nameWarning}</Typography>
+      </Alert>
+    )}
     {availableNamespaces.length > 0 ? (
       <FormControl size="small" fullWidth required>
         <InputLabel>Namespace</InputLabel>
