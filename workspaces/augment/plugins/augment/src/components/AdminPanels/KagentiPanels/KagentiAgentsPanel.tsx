@@ -43,9 +43,11 @@ import AddIcon from '@mui/icons-material/Add';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { AgentCreateIntentDialog } from './AgentCreateIntentDialog';
 import { CreateAgentWizard } from './CreateAgentWizard';
 import { KagentiAgentDetailView } from './KagentiAgentDetailView';
 import { statusChipColor, formatDateTime } from './kagentiDisplayUtils';
+import type { DeploymentMethod } from './agentWizardTypes';
 
 type SortField = 'name' | 'status' | 'workloadType' | 'createdAt';
 type SortDir = 'asc' | 'desc';
@@ -86,7 +88,11 @@ export function KagentiAgentsPanel({
   const [agents, setAgents] = useState<KagentiAgentSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [intentOpen, setIntentOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [initialDeployMethod, setInitialDeployMethod] = useState<
+    DeploymentMethod | undefined
+  >(undefined);
   const [deleteTarget, setDeleteTarget] = useState<KagentiAgentSummary | null>(
     null,
   );
@@ -214,7 +220,7 @@ export function KagentiAgentsPanel({
             variant="contained"
             size="small"
             startIcon={<AddIcon />}
-            onClick={() => setCreateOpen(true)}
+            onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none' }}
           >
             Create Agent
@@ -292,7 +298,7 @@ export function KagentiAgentsPanel({
             variant="outlined"
             size="small"
             startIcon={<AddIcon />}
-            onClick={() => setCreateOpen(true)}
+            onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none', mt: 1 }}
           >
             Create Agent
@@ -438,10 +444,24 @@ export function KagentiAgentsPanel({
         </TableContainer>
       )}
 
+      <AgentCreateIntentDialog
+        open={intentOpen}
+        onClose={() => setIntentOpen(false)}
+        onSelectBuildDeploy={method => {
+          setIntentOpen(false);
+          setInitialDeployMethod(method);
+          setCreateOpen(true);
+        }}
+      />
+
       <CreateAgentWizard
         open={createOpen}
         namespace={namespace}
-        onClose={() => setCreateOpen(false)}
+        initialDeploymentMethod={initialDeployMethod}
+        onClose={() => {
+          setCreateOpen(false);
+          setInitialDeployMethod(undefined);
+        }}
         onCreated={loadAgents}
       />
 

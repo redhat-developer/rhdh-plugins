@@ -51,11 +51,18 @@ const STEP_ICONS: Record<string, React.ReactElement> = {
 export function CreateAgentWizard({
   open,
   namespace: namespaceProp,
+  initialDeploymentMethod,
   onClose,
   onCreated,
 }: CreateAgentWizardProps) {
   const titleId = useId();
-  const form = useAgentWizardForm(open, namespaceProp, onClose, onCreated);
+  const form = useAgentWizardForm(
+    open,
+    namespaceProp,
+    onClose,
+    onCreated,
+    initialDeploymentMethod,
+  );
 
   const isSourceDeploy = form.deploymentMethod === 'source';
   const isBuildStep = form.activeStep === FORM_STEPS.length;

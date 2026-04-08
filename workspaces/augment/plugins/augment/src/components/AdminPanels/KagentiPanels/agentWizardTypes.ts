@@ -103,6 +103,7 @@ export interface FormState {
 export interface CreateAgentWizardProps {
   open: boolean;
   namespace?: string;
+  initialDeploymentMethod?: DeploymentMethod;
   onClose: () => void;
   onCreated: () => void;
 }
