@@ -51,7 +51,7 @@ const scorecardTranslationJa = createTranslationMessages({
     'errors.entityMissingProperties':
       'スコアカードの検索に必要なプロパティーがエンティティーにありません',
     'errors.missingAggregationId':
-      '集計ID（またはメトリックID）のプロパティが指定されていません',
+      'スコアカードの構成に誤りがあります。集計ID（またはメトリックID）のプロパティが指定されていません',
     'errors.invalidApiResponse': 'スコアカード API からの応答形式が無効です',
     'errors.fetchError':
       'スコアカードの取得中にエラーが発生しました: {{error}}',

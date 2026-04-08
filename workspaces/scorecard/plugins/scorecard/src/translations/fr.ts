@@ -51,7 +51,7 @@ const scorecardTranslationFr = createTranslationMessages({
     'errors.entityMissingProperties':
       "Entité manquant les propriétés requises pour la recherche dans la fiche d'évaluation",
     'errors.missingAggregationId':
-      "La propriété « ID d'agrégation » (ou « ID de métrique ») n'est pas fournie",
+      "La fiche de suivi est mal configurée ; la propriété « ID d'agrégation » (ou « ID de métrique ») n'est pas fournie",
     'errors.invalidApiResponse':
       "Format de réponse non valide de l'API de scorecard",
     'errors.fetchError':

@@ -51,7 +51,7 @@ const scorecardTranslationEs = createTranslationMessages({
     'errors.entityMissingProperties':
       'Entidad a la que le faltan las propiedades requeridas para la búsqueda en la tarjeta de puntuación',
     'errors.missingAggregationId':
-      'No se ha proporcionado la propiedad «ID de agregación» (o «ID de métrica»)',
+      'El cuadro de mando está mal configurado; no se ha proporcionado la propiedad «ID de agregación» (o «ID de métrica»)',
     'errors.invalidApiResponse':
       'Formato de respuesta no válido de la API de la tarjeta de puntuación',
     'errors.fetchError':
