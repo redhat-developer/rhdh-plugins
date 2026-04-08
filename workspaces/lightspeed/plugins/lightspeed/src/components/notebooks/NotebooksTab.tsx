@@ -31,6 +31,7 @@ type NotebooksTabProps = {
   classes: Record<string, string>;
   openNotebookMenuId: string | null;
   setOpenNotebookMenuId: React.Dispatch<React.SetStateAction<string | null>>;
+  onSelectNotebook: (notebook: NotebookSession) => void;
   onRename: (sessionId: string) => void;
   onDelete: (sessionId: string) => void;
   onCreateNotebook: () => void;
@@ -44,6 +45,7 @@ export const NotebooksTab = ({
   classes,
   openNotebookMenuId,
   setOpenNotebookMenuId,
+  onSelectNotebook,
   onRename,
   onDelete,
   onCreateNotebook,
@@ -96,6 +98,7 @@ export const NotebooksTab = ({
             classes={classes}
             openNotebookMenuId={openNotebookMenuId}
             setOpenNotebookMenuId={setOpenNotebookMenuId}
+            onClick={onSelectNotebook}
             onRename={onRename}
             onDelete={onDelete}
             t={t}

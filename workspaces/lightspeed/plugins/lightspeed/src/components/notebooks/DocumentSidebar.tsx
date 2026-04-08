@@ -16,10 +16,11 @@
 
 import { makeStyles, Typography } from '@material-ui/core';
 import { Button, Spinner, Tooltip } from '@patternfly/react-core';
-import { FileIcon, PlusCircleIcon } from '@patternfly/react-icons';
+import { PlusCircleIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
+import { FileTypeIcon } from './FileTypeIcon';
 import { SidebarCollapseIcon } from './SidebarCollapseIcon';
 
 const useStyles = makeStyles(theme => ({
@@ -103,6 +104,7 @@ type DocumentSidebarProps = {
   notebookName: string;
   documents: SessionDocument[];
   uploadingFileNames: string[];
+  completedFileNames?: Set<string>;
   collapsed: boolean;
   onToggleCollapse: () => void;
   onAddDocument: () => void;
@@ -112,6 +114,7 @@ export const DocumentSidebar = ({
   notebookName,
   documents,
   uploadingFileNames,
+  completedFileNames,
   collapsed,
   onToggleCollapse,
   onAddDocument,
@@ -165,20 +168,22 @@ export const DocumentSidebar = ({
         <div className={classes.documentsList}>
           {documents.map(doc => (
             <div key={doc.document_id} className={classes.documentItem}>
-              <FileIcon className={classes.fileIcon} />
+              <FileTypeIcon fileName={doc.title} />
               <Typography className={classes.fileName}>{doc.title}</Typography>
             </div>
           ))}
           {activePending.map(fileName => (
             <div key={`pending-${fileName}`} className={classes.documentItem}>
-              <FileIcon className={classes.fileIcon} />
+              <FileTypeIcon fileName={fileName} />
               <Typography className={classes.fileName}>{fileName}</Typography>
-              <div className={classes.spinnerContainer}>
-                <Spinner
-                  size="md"
-                  aria-label={t('notebook.view.documents.uploading')}
-                />
-              </div>
+              {!completedFileNames?.has(fileName) && (
+                <div className={classes.spinnerContainer}>
+                  <Spinner
+                    size="md"
+                    aria-label={t('notebook.view.documents.uploading')}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>

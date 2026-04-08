@@ -84,6 +84,12 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebook.upload.error.tooManyFiles':
       'Erreur de chargement : {{max}} fichiers maximum autorisés.',
 
+    // Notebook overwrite modal
+    'notebook.overwrite.modal.title': 'Écraser les fichiers ?',
+    'notebook.overwrite.modal.description':
+      'Les fichiers suivants existent déjà dans ce carnet. Voulez-vous les écraser avec les nouvelles versions ?',
+    'notebook.overwrite.modal.action': 'Écraser',
+
     'prompts.codeReadability.title': 'Obtenir de l’aide pour Décrypter le Code',
     'prompts.codeReadability.message':
       'Pourriez-vous me suggérer des techniques qui puissent rendre mon code plus lisible et facile d’entretien?',

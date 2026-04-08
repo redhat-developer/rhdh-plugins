@@ -90,6 +90,7 @@ import {
   useSortSettings,
 } from '../hooks';
 import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
+import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
@@ -238,6 +239,12 @@ const useStyles = makeStyles(theme => ({
     borderRadius: theme.spacing(1.5),
     display: 'flex',
     flexDirection: 'column',
+    '&:hover': {
+      borderColor: 'var(--pf-t--global--border--color--hover)',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      cursor: 'pointer',
+    },
   },
   notebookCardHeader: {
     padding: theme.spacing(2),
@@ -385,6 +392,9 @@ export const LightspeedChat = ({
     [],
   );
   const createNotebookMutation = useCreateNotebook();
+  const { data: notebookDocuments = [] } = useNotebookDocuments(
+    activeNotebook?.session_id,
+  );
   const [conversationId, setConversationId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
@@ -1256,7 +1266,7 @@ export const LightspeedChat = ({
             <NotebookView
               sessionId={activeNotebook.session_id}
               notebookName={activeNotebook.name}
-              documents={[]}
+              documents={notebookDocuments}
               onClose={handleCloseNotebook}
             />
           )}
@@ -1270,6 +1280,7 @@ export const LightspeedChat = ({
               classes={classes}
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
+              onSelectNotebook={setActiveNotebook}
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}
               onCreateNotebook={handleCreateNotebook}

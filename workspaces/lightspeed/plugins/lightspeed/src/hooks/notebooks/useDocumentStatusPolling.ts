@@ -32,7 +32,7 @@ export type DocumentPollingResult = {
   status: DocumentStatus['status'] | 'polling';
 };
 
-const POLL_INTERVAL_MS = 3000;
+const POLL_INTERVAL_MS = 5000;
 
 export const useDocumentStatusPolling = (
   sessionId: string,
@@ -61,7 +61,7 @@ export const useDocumentStatusPolling = (
         }
         return POLL_INTERVAL_MS;
       },
-      retry: 2,
+      retry: 10,
       enabled: Boolean(upload.documentId),
     })),
   });

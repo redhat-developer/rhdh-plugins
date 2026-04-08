@@ -84,6 +84,12 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.upload.error.tooManyFiles':
       'Upload-Fehler: Maximal {{max}} Dateien erlaubt.',
 
+    // Notebook overwrite modal
+    'notebook.overwrite.modal.title': 'Dateien überschreiben?',
+    'notebook.overwrite.modal.description':
+      'Die folgenden Dateien existieren bereits in diesem Notizbuch. Möchten Sie sie mit den neuen Versionen überschreiben?',
+    'notebook.overwrite.modal.action': 'Überschreiben',
+
     'prompts.codeReadability.title': 'Hilfe zur Code-Lesbarkeit erhalten',
     'prompts.codeReadability.message':
       'Können Sie mir Techniken vorschlagen, mit denen ich meinen Code lesbarer und wartungsfreundlicher gestalten kann?',

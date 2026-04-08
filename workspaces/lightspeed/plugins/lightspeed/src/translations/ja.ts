@@ -84,6 +84,12 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebook.upload.error.tooManyFiles':
       'アップロードエラー: 最大 {{max}} ファイルまで許可されています。',
 
+    // Notebook overwrite modal
+    'notebook.overwrite.modal.title': 'ファイルを上書きしますか？',
+    'notebook.overwrite.modal.description':
+      '以下のファイルはこのノートブックに既に存在します。新しいバージョンで上書きしますか？',
+    'notebook.overwrite.modal.action': '上書き',
+
     'prompts.codeReadability.title': 'コードの可読性に関するヘルプを利用する',
     'prompts.codeReadability.message':
       'コードの可読性と保守性を高めるための手法を提案してくれませんか?',

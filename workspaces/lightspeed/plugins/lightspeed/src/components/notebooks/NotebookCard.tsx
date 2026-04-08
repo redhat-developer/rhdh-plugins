@@ -39,6 +39,7 @@ type NotebookCardProps = {
   classes: Record<string, string>;
   openNotebookMenuId: string | null;
   setOpenNotebookMenuId: React.Dispatch<React.SetStateAction<string | null>>;
+  onClick: (notebook: NotebookSession) => void;
   onRename: (sessionId: string) => void;
   onDelete: (sessionId: string) => void;
   t: TranslationFunction<typeof lightspeedTranslationRef.T>;
@@ -50,12 +51,18 @@ export const NotebookCard = ({
   classes,
   openNotebookMenuId,
   setOpenNotebookMenuId,
+  onClick,
   onRename,
   onDelete,
   t,
   getDocumentsCount,
 }: NotebookCardProps) => (
-  <Card className={classes.notebookCard} isSelectable>
+  <Card
+    className={classes.notebookCard}
+    isSelectable
+    isClickable
+    onClick={() => onClick(notebook)}
+  >
     <CardHeader
       className={classes.notebookCardHeader}
       actions={{
@@ -93,7 +100,8 @@ export const NotebookCard = ({
             <DropdownList className={classes.notebookDropdownList}>
               <DropdownItem
                 className={classes.notebookDropdownItem}
-                onClick={() => {
+                onClick={event => {
+                  event.stopPropagation();
                   onRename(notebook.session_id);
                   setOpenNotebookMenuId(null);
                 }}
@@ -102,7 +110,8 @@ export const NotebookCard = ({
               </DropdownItem>
               <DropdownItem
                 className={classes.notebookDropdownItem}
-                onClick={() => {
+                onClick={event => {
+                  event.stopPropagation();
                   onDelete(notebook.session_id);
                   setOpenNotebookMenuId(null);
                 }}

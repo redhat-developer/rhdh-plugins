@@ -84,6 +84,12 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebook.upload.error.tooManyFiles':
       'Error de carga: se permiten un máximo de {{max}} archivos.',
 
+    // Notebook overwrite modal
+    'notebook.overwrite.modal.title': '¿Sobrescribir archivos?',
+    'notebook.overwrite.modal.description':
+      'Los siguientes archivos ya existen en este cuaderno. ¿Desea sobrescribirlos con las nuevas versiones?',
+    'notebook.overwrite.modal.action': 'Sobrescribir',
+
     'prompts.codeReadability.title':
       'Obtener ayuda sobre la legibilidad del código',
     'prompts.codeReadability.message':

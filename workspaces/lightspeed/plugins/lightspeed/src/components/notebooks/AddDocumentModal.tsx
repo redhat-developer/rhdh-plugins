@@ -70,20 +70,22 @@ type AddDocumentModalProps = {
   isOpen: boolean;
   onClose: () => void;
   sessionId: string;
-  existingDocumentCount: number;
+  existingDocumentNames: string[];
   onFilesUploading?: (files: File[]) => void;
   onUploadStarted?: (info: { fileName: string; documentId: string }) => void;
   onUploadFailed?: (fileName: string) => void;
+  onDuplicatesFound?: (files: File[]) => void;
 };
 
 export const AddDocumentModal = ({
   isOpen,
   onClose,
   sessionId,
-  existingDocumentCount,
+  existingDocumentNames,
   onFilesUploading,
   onUploadStarted,
   onUploadFailed,
+  onDuplicatesFound,
 }: AddDocumentModalProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -93,16 +95,25 @@ export const AddDocumentModal = ({
   const handleFileDrop = (_event: unknown, files: File[]) => {
     setValidationErrors([]);
 
-    const { valid, errors } = validateFiles(files, existingDocumentCount);
+    const { valid, errors } = validateFiles(
+      files,
+      existingDocumentNames.length,
+    );
 
     if (errors.length > 0) {
       setValidationErrors(errors);
       return;
     }
 
-    if (valid.length > 0) {
-      onFilesUploading?.(valid);
-      for (const file of valid) {
+    if (valid.length === 0) return;
+
+    const existingNamesSet = new Set(existingDocumentNames);
+    const newFiles = valid.filter(f => !existingNamesSet.has(f.name));
+    const duplicateFiles = valid.filter(f => existingNamesSet.has(f.name));
+
+    if (newFiles.length > 0) {
+      onFilesUploading?.(newFiles);
+      for (const file of newFiles) {
         uploadMutation
           .mutateAsync({ sessionId, file })
           .then(data => {
@@ -115,9 +126,14 @@ export const AddDocumentModal = ({
             onUploadFailed?.(file.name);
           });
       }
-      setValidationErrors([]);
-      onClose();
     }
+
+    if (duplicateFiles.length > 0) {
+      onDuplicatesFound?.(duplicateFiles);
+    }
+
+    setValidationErrors([]);
+    onClose();
   };
 
   const handleClose = () => {

@@ -81,6 +81,12 @@ export const lightspeedMessages = {
   'notebook.upload.error.tooManyFiles':
     'Upload error: Maximum of {{max}} files allowed.',
 
+  // Notebook overwrite modal
+  'notebook.overwrite.modal.title': 'Overwrite Files?',
+  'notebook.overwrite.modal.description':
+    'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
+  'notebook.overwrite.modal.action': 'Overwrite',
+
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',
   'prompts.codeReadability.message':

@@ -42,10 +42,12 @@ import {
   useDocumentStatusPolling,
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
+import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
+import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
 
@@ -137,12 +139,18 @@ export const NotebookView = ({
 }: NotebookViewProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
+  const uploadMutation = useUploadDocument();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadingFileNames, setUploadingFileNames] = useState<string[]>([]);
   const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [toastAlerts, setToastAlerts] = useState<Partial<AlertProps>[]>([]);
   const processedIds = useRef<Set<string>>(new Set());
+  const [completedFileNames, setCompletedFileNames] = useState<Set<string>>(
+    new Set(),
+  );
+  const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
+  const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
 
   const handleOpenUploadModal = () => setIsUploadModalOpen(true);
   const handleCloseUploadModal = () => setIsUploadModalOpen(false);
@@ -155,6 +163,7 @@ export const NotebookView = ({
     fileName: string;
     documentId: string;
   }) => {
+    processedIds.current.delete(info.documentId);
     setPendingUploads(prev => [
       ...prev,
       { fileName: info.fileName, documentId: info.documentId },
@@ -175,6 +184,39 @@ export const NotebookView = ({
     ]);
   };
 
+  const handleDuplicatesFound = (files: File[]) => {
+    setFilesToOverwrite(files);
+    setIsOverwriteModalOpen(true);
+  };
+
+  const handleOverwriteConfirm = () => {
+    const files = filesToOverwrite;
+    setIsOverwriteModalOpen(false);
+    setFilesToOverwrite([]);
+
+    if (files.length === 0) return;
+
+    setUploadingFileNames(prev => [...prev, ...files.map(f => f.name)]);
+    for (const file of files) {
+      uploadMutation
+        .mutateAsync({ sessionId, file })
+        .then(data => {
+          handleUploadStarted({
+            fileName: file.name,
+            documentId: data.document_id,
+          });
+        })
+        .catch(() => {
+          handleUploadFailed(file.name);
+        });
+    }
+  };
+
+  const handleOverwriteCancel = () => {
+    setIsOverwriteModalOpen(false);
+    setFilesToOverwrite([]);
+  };
+
   const pollingResults = useDocumentStatusPolling(sessionId, pendingUploads);
 
   useEffect(() => {
@@ -192,10 +234,16 @@ export const NotebookView = ({
     const namesToRemove = new Set<string>();
     const newAlerts: Partial<AlertProps>[] = [];
 
+    const newCompletedNames = new Set<string>();
+
     for (const result of completedOrFailed) {
       processedIds.current.add(result.documentId);
-      idsToRemove.add(result.documentId);
-      namesToRemove.add(result.fileName);
+      if (result.status !== 'completed') {
+        idsToRemove.add(result.documentId);
+        namesToRemove.add(result.fileName);
+      } else {
+        newCompletedNames.add(result.fileName);
+      }
 
       if (result.status === 'completed') {
         newAlerts.push({
@@ -220,6 +268,9 @@ export const NotebookView = ({
     setUploadingFileNames(prev =>
       prev.filter(name => !namesToRemove.has(name)),
     );
+    if (newCompletedNames.size > 0) {
+      setCompletedFileNames(prev => new Set([...prev, ...newCompletedNames]));
+    }
     setToastAlerts(prev => [...newAlerts, ...prev]);
   }, [pollingResults, t]);
 
@@ -241,6 +292,7 @@ export const NotebookView = ({
         notebookName={notebookName}
         documents={documents}
         uploadingFileNames={uploadingFileNames}
+        completedFileNames={completedFileNames}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
         onAddDocument={handleOpenUploadModal}
@@ -363,10 +415,18 @@ export const NotebookView = ({
         isOpen={isUploadModalOpen}
         onClose={handleCloseUploadModal}
         sessionId={sessionId}
-        existingDocumentCount={documents.length}
+        existingDocumentNames={documents.map(d => d.title)}
         onFilesUploading={handleFilesUploading}
         onUploadStarted={handleUploadStarted}
         onUploadFailed={handleUploadFailed}
+        onDuplicatesFound={handleDuplicatesFound}
+      />
+
+      <OverwriteConfirmModal
+        isOpen={isOverwriteModalOpen}
+        onClose={handleOverwriteCancel}
+        onConfirm={handleOverwriteConfirm}
+        fileNames={filesToOverwrite.map(f => f.name)}
       />
     </div>
   );
