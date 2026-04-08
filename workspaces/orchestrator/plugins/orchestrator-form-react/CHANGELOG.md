@@ -1,5 +1,137 @@
 ### Dependencies
 
+## 2.2.0
+
+### Minor Changes
+
+- 149804f: Disable Next button when active widgets are fetching and processing data
+  - Add isFetching state tracking to StepperContext using a counter to monitor multiple concurrent async operations
+  - Update OrchestratorFormToolbar to disable Next button when isFetching is true (in addition to existing isValidating check)
+  - Add handleFetchStarted and handleFetchEnded callbacks to OrchestratorFormContextProps to allow widgets to report their loading status
+  - Update useFetchAndEvaluate to track complete loading state (fetch + template evaluation) and notify context
+  - Create useProcessingState custom hook to reduce code duplication across widgets, providing a reusable pattern for tracking both fetch and processing states
+  - Refactor SchemaUpdater, ActiveTextInput, ActiveDropdown, and ActiveMultiSelect to use useProcessingState hook
+  - Track the complete loading lifecycle: fetch → process → ready, ensuring Next button is disabled until all async work completes
+  - Prevents race conditions where Next button becomes enabled before widgets finish processing data
+
+- 5c9f49d: Add dynamic conditional visibility for ui:hidden
+
+  **Conditional Hiding Feature:**
+  - Add `HiddenCondition` type supporting boolean and condition objects
+  - Implement `evaluateHiddenCondition` utility for evaluating hide conditions
+  - Support condition objects with `when`, `is`, `isNot`, and `isEmpty` operators
+  - Support composite conditions with `allOf` (AND) and `anyOf` (OR) logic
+  - Support nested field paths using dot notation (e.g., `config.server.port`)
+  - Update `HiddenFieldTemplate` to dynamically evaluate hide conditions based on form data
+  - Update `generateReviewTableData` to respect conditional hiding in review pages
+  - Hidden field visibility updates in real-time when form data changes
+
+  **Condition Object Patterns:**
+  - `{ when: "field", is: "value" }` - Hide when field equals value
+  - `{ when: "field", is: ["val1", "val2"] }` - Hide when field equals any value (OR)
+  - `{ when: "field", isNot: "value" }` - Hide when field does NOT equal value
+  - `{ when: "field", isEmpty: true }` - Hide when field is empty
+  - `{ allOf: [...] }` - Hide when ALL conditions are true (AND)
+  - `{ anyOf: [...] }` - Hide when ANY condition is true (OR)
+
+  **Documentation:**
+  - Update `orchestratorFormWidgets.md` with comprehensive examples of conditional hiding
+  - Add examples for all condition patterns and composite conditions
+  - Include complete real-world deployment configuration example
+
+  **Testing:**
+  - Add comprehensive unit tests for condition evaluation
+  - Test simple conditions, composite conditions, and nested conditions
+  - Test edge cases (empty values, nested paths)
+
+- 83ce2de: Add fetch:error:ignoreUnready and fetch:response:default options for form widgets
+
+  **Feature 1: fetch:error:ignoreUnready**
+
+  When using widgets with `fetch:retrigger` dependencies, the initial fetch often fails because dependent fields don't have values yet. This results in HTTP errors being displayed during initial load.
+  - Add `fetch:error:ignoreUnready` option to suppress fetch error display until all `fetch:retrigger` dependencies have non-empty values
+  - Errors are only suppressed when dependencies are empty; once filled, real errors are shown
+  - Supported by: ActiveTextInput, ActiveDropdown, ActiveMultiSelect, SchemaUpdater
+
+  **Feature 2: fetch:response:default**
+
+  Widgets previously required `fetch:response:value` for defaults, meaning fetch must succeed. This adds static fallback defaults.
+  - Add `fetch:response:default` option for static default values applied immediately on form initialization
+  - Defaults are applied at form initialization level in `OrchestratorForm`, ensuring controlled components work correctly
+  - Static defaults act as fallback when fetch fails, hasn't completed, or returns empty
+  - Fetched values only override defaults when non-empty
+  - Supported by: ActiveTextInput (string), ActiveDropdown (string), ActiveMultiSelect (string[])
+
+  **Usage Examples:**
+
+  ```json
+  {
+    "action": {
+      "ui:widget": "ActiveTextInput",
+      "ui:props": {
+        "fetch:url": "...",
+        "fetch:retrigger": ["current.appName"],
+        "fetch:error:ignoreUnready": true,
+        "fetch:response:default": "create"
+      }
+    }
+  }
+  ```
+
+- 8d070a8: Fix custom widgets not rendering in dependencies+oneOf (RHIDP-10952)
+
+  **Widget Rendering Fix:**
+  - Fix `generateUiSchema` to extract `ui:` properties from `dependencies` + `oneOf` branches
+  - Custom widgets (ActiveTextInput, ActiveDropdown, etc.) now render correctly in conditional schemas
+  - Resolves issue where widgets fell back to plain text inputs inside dependencies
+
+  **Form Data Management:**
+  - Update `pruneFormData` to correctly handle oneOf schemas with dependencies
+  - Clean up stale form data when switching between oneOf options
+
+- 8b1ce63: Prune obsolete properties from form data before Review and Submit
+  - Update `OrchestratorForm` to prune form data before passing to Review step and execution
+  - Fixes issue where SchemaUpdater dynamically adds/removes fields but old values remain in form state
+  - Ensures only properties that exist in the final schema version are displayed on Review page and submitted
+  - Prevents stale data from previous schema versions from being included in workflow execution
+
+- bd385df: Add ui:hidden property to hide fields while preserving functionality
+
+  **Hidden Fields Feature:**
+  - Add `ui:hidden` property to hide fields while preserving widget functionality
+  - Implement `HiddenFieldTemplate` to render hidden fields with `display: none`
+  - Hidden fields remain active, participate in validation, and are submitted with form data
+  - Hidden fields are automatically excluded from the review page
+  - Update `getSortedStepEntries` to filter out steps marked with `ui:hidden: true`
+  - Automatically hide entire steps when all inputs within the step are hidden
+
+  **Review Page Improvements:**
+  - Add `NestedReviewTable` component for improved hierarchical display of nested objects
+  - Update `generateReviewTableData` to skip hidden fields in review page
+  - Update `generateReviewTableData` to skip entire steps when all fields are hidden
+  - Simplified value rendering for better readability
+
+  **Documentation:**
+  - Update `orchestratorFormWidgets.md` with `ui:hidden` property documentation and usage examples
+
+### Patch Changes
+
+- 9788861: Fixing endless onChange() loop and turning "ui:allowNewItems" from string to boolean type.
+- eb31185: Fix validation errors incorrectly shown on wrong step when navigating back.
+
+  When using widgets with `validate:url`, the `getExtraErrors` callback validates all fields across all steps and returns a nested error object. The previous logic had full error object when the current step had no errors, causing validation errors from other steps to appear on the wrong step.
+
+  This fix:
+  - Sets `extraErrors` to `undefined` when current step has no errors
+  - Updates step navigation to only check current step's errors before proceeding
+
+- be5a42e: Allow `omitFromWorkflowInput` to be conditional using the same expression
+  format as `ui:hidden` so fields can be omitted based on form data.
+- f535bf4: Exclude omitFromWorkflowInput fields from execution payloads and add a review
+  toggle to show hidden parameters.
+- Updated dependencies [149804f]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes

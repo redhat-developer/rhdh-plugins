@@ -1,5 +1,29 @@
 ### Dependencies
 
+## 5.1.1
+
+### Patch Changes
+
+- 0bccd7a: Fix browser tab showing `[object Object]` on workflow instance page
+
+  Replace `<Trans>` component with `t()` function for page title to ensure a string is returned instead of an element, which was causing `[object Object]` to appear in the browser tab title.
+
+- 09a7287: Fix workflow start time displaying `{{ time }}` placeholder instead of actual time
+- f535bf4: Exclude omitFromWorkflowInput fields from execution payloads and add a review
+  toggle to show hidden parameters.
+- Updated dependencies [9788861]
+- Updated dependencies [149804f]
+- Updated dependencies [5c9f49d]
+- Updated dependencies [83ce2de]
+- Updated dependencies [eb31185]
+- Updated dependencies [be5a42e]
+- Updated dependencies [f535bf4]
+- Updated dependencies [8d070a8]
+- Updated dependencies [8b1ce63]
+- Updated dependencies [bd385df]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.2.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.2.0
+
 ## 5.1.0
 
 ### Minor Changes
