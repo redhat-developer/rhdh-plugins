@@ -24,6 +24,7 @@ import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-
 import { scorecardApiRef } from '../api';
 import { useTranslation } from './useTranslation';
 import { UseResponseData } from './types';
+import type { ScorecardApi } from '../api/types';
 
 interface UseScorecardsOptions {
   /**
@@ -37,7 +38,7 @@ export const useScorecards = (
   options: UseScorecardsOptions = {},
 ): UseResponseData<MetricResult[]> => {
   const { entity } = useEntity();
-  const scorecardApi = useApi(scorecardApiRef);
+  const scorecardApi = useApi<ScorecardApi>(scorecardApiRef);
   const { metricIds } = options;
   const { t } = useTranslation();
 

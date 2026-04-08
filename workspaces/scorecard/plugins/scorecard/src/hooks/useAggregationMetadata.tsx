@@ -21,13 +21,14 @@ import { useTranslation } from './useTranslation';
 import { AggregationMetadata } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { useMemo } from 'react';
 import { UseResponseData } from './types';
+import type { ScorecardApi } from '../api/types';
 
 export const useAggregationMetadata = (
   aggregationId: string,
 ): UseResponseData<AggregationMetadata> => {
   const { t } = useTranslation();
 
-  const scorecardApi = useApi(scorecardApiRef);
+  const scorecardApi = useApi<ScorecardApi>(scorecardApiRef);
 
   const {
     error,

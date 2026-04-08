@@ -22,13 +22,14 @@ import { scorecardApiRef } from '../api';
 import { useTranslation } from './useTranslation';
 import { UseResponseData } from './types';
 import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { ScorecardApi } from '../api/types';
 
 export const useAggregatedScorecard = (
   aggregationId: string,
 ): UseResponseData<AggregatedMetricResult> => {
   const { t } = useTranslation();
 
-  const scorecardApi = useApi(scorecardApiRef);
+  const scorecardApi = useApi<ScorecardApi>(scorecardApiRef);
 
   const {
     error,
