@@ -33,6 +33,7 @@ import {
 import userEvent from '@testing-library/user-event';
 
 import { lightspeedApiRef } from '../../api/api';
+import { notebooksApiRef } from '../../api/notebooksApi';
 import { useConversations, useNotebookSessions } from '../../hooks';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
@@ -150,12 +151,24 @@ const mockLightspeedApi = {
   isTopicRestrictionEnabled: jest.fn().mockResolvedValue(false),
 };
 
+const mockNotebooksApi = {
+  createSession: jest.fn().mockResolvedValue({}),
+  listSessions: jest.fn().mockResolvedValue([]),
+  renameSession: jest.fn().mockResolvedValue(undefined),
+  deleteSession: jest.fn().mockResolvedValue(undefined),
+  uploadDocument: jest.fn().mockResolvedValue({}),
+  listDocuments: jest.fn().mockResolvedValue([]),
+  deleteDocument: jest.fn().mockResolvedValue(undefined),
+  getDocumentStatus: jest.fn().mockResolvedValue({}),
+};
+
 const setupLightspeedChat = () => (
   <TestApiProvider
     apis={[
       [identityApiRef, identityApi],
       [configApiRef, configAPi],
       [lightspeedApiRef, mockLightspeedApi],
+      [notebooksApiRef, mockNotebooksApi],
     ]}
   >
     <FileAttachmentContextProvider>
