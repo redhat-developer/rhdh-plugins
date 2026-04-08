@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Page, expect } from '@playwright/test';
+import { Page, expect, type Locator } from '@playwright/test';
 import { LightspeedMessages, evaluateMessage } from '../utils/translations';
 
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
@@ -87,13 +87,52 @@ export async function verifyDisplayModeMenuOptions(
     `);
 }
 
+/** Chat composer message field (matches sendMessage in testHelper). */
+export function chatMessageTextbox(page: Page, t: LightspeedMessages): Locator {
+  return page.getByRole('textbox', { name: t['chatbox.message.placeholder'] });
+}
+
+export function chatSendButton(page: Page): Locator {
+  return page.getByRole('button', { name: 'Send' });
+}
+
+export function chatStopButton(page: Page): Locator {
+  return page.getByRole('button', { name: 'Stop' });
+}
+
+export function chatMessageLoading(page: Page): Locator {
+  return page.locator('.pf-chatbot__message-loading');
+}
+
+export async function expectChatStopButtonVisible(
+  page: Page,
+  options?: { timeout?: number },
+) {
+  await expect(chatStopButton(page)).toBeVisible({
+    timeout: options?.timeout ?? 10_000,
+  });
+}
+
+export async function expectChatInputValue(
+  page: Page,
+  t: LightspeedMessages,
+  value: string,
+) {
+  await expect(chatMessageTextbox(page, t)).toHaveValue(value);
+}
+
+export async function waitForChatMessageLoadingHidden(
+  page: Page,
+  timeout = 7_000,
+) {
+  await chatMessageLoading(page).waitFor({ state: 'hidden', timeout });
+}
+
 export async function expectChatInputAreaVisible(
   page: Page,
   t: LightspeedMessages,
 ) {
-  await expect(
-    page.getByRole('textbox', { name: t['chatbox.message.placeholder'] }),
-  ).toBeVisible();
+  await expect(chatMessageTextbox(page, t)).toBeVisible();
 }
 
 export async function expectEmptyChatHistory(

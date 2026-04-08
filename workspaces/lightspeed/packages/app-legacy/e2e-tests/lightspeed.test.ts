@@ -43,8 +43,12 @@ import {
   expectChatbotControlsVisible,
   verifyDisplayModeMenuOptions,
   expectChatInputAreaVisible,
+  expectChatInputValue,
+  expectChatStopButtonVisible,
   expectEmptyChatHistory,
   expectConversationArea,
+  chatStopButton,
+  waitForChatMessageLoadingHidden,
 } from './pages/LightspeedPage';
 import {
   uploadFiles,
@@ -107,6 +111,7 @@ import {
   mockFeedbackStatus,
   mockModels,
   mockQuery,
+  mockQueryWithResponseDelay,
   mockShields,
 } from './utils/devMode';
 import {
@@ -441,6 +446,22 @@ test.describe('Lightspeed tests', () => {
 
       await expect(userMessage).toContainText(contents[0].messages[0].content);
       await expect(botMessage).toContainText(assistantResponse);
+    });
+
+    test('Stop ends in-progress reply and restores the prompt in the input', async () => {
+      const stopFlowPrompt = 'Stop button restores prompt in input';
+
+      await mockQueryWithResponseDelay(
+        sharedPage,
+        stopFlowPrompt,
+        conversations,
+        5_000,
+      );
+      await sendMessage(stopFlowPrompt, sharedPage, translations, false);
+      await expectChatStopButtonVisible(sharedPage);
+      await chatStopButton(sharedPage).click();
+      await expectChatInputValue(sharedPage, translations, stopFlowPrompt);
+      await waitForChatMessageLoadingHidden(sharedPage);
     });
 
     test.describe('Chat Management', () => {

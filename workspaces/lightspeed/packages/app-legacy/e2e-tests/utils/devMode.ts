@@ -72,6 +72,32 @@ export async function mockQuery(
   });
 }
 
+/** Delays the mock response so Stop stays visible during the wait. */
+export async function mockQueryWithResponseDelay(
+  page: Page,
+  query: string,
+  conversations: any[],
+  delayMs: number,
+) {
+  await page.unroute(`${modelBaseUrl}/v1/query`);
+  await page.route(`${modelBaseUrl}/v1/query`, async route => {
+    await new Promise<void>(resolve => {
+      setTimeout(resolve, delayMs);
+    });
+    const payload = route.request().postDataJSON();
+
+    if (payload.query === query) {
+      conversations[1].conversation_id = payload.conversation_id;
+    }
+    const body = generateQueryResponse(
+      payload.query === query
+        ? conversations[1].conversation_id
+        : conversations[0].conversation_id,
+    );
+    await route.fulfill({ body });
+  });
+}
+
 export async function mockFeedbackStatus(page: Page, enabled = true) {
   await page.route(`${modelBaseUrl}/v1/feedback/status`, async route => {
     await route.fulfill({
