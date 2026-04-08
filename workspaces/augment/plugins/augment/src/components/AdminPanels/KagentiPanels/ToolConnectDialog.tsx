@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { useEffect, useState } from 'react';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -21,6 +22,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import type {
   KagentiMcpToolSchema,
   KagentiToolSummary,
@@ -50,13 +52,6 @@ export function ToolConnectDialog({
   >(null);
   const [discoverError, setDiscoverError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      setConnectedSchemas(null);
-      setDiscoverError(null);
-    }
-  }, [open, tool]);
-
   const runDiscover = async () => {
     if (!tool) return;
     setConnecting(true);
@@ -71,6 +66,15 @@ export function ToolConnectDialog({
     }
   };
 
+  useEffect(() => {
+    if (open && tool) {
+      setConnectedSchemas(null);
+      setDiscoverError(null);
+      runDiscover();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, tool?.namespace, tool?.name]);
+
   return (
     <Dialog
       open={open}
@@ -79,9 +83,21 @@ export function ToolConnectDialog({
       fullWidth
     >
       <DialogTitle>
-        Discover MCP tools — {tool ? `${tool.namespace}/${tool.name}` : ''}
+        Discover MCP tools
+        <Typography variant="body2" color="text.secondary">
+          Connect to {tool ? `${tool.namespace}/${tool.name}` : ''} and list the
+          MCP tools it exposes.
+        </Typography>
       </DialogTitle>
       <DialogContent>
+        {connecting && !connectedSchemas && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+            <CircularProgress size={20} />
+            <Typography variant="body2" color="text.secondary">
+              Connecting to the MCP server...
+            </Typography>
+          </Box>
+        )}
         {discoverError && (
           <Alert
             severity="error"
@@ -89,17 +105,22 @@ export function ToolConnectDialog({
             onClose={() => setDiscoverError(null)}
           >
             {discoverError}
+            <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+              The tool may still be starting up, or its MCP endpoint may not be
+              reachable. Verify the tool is in Ready status and try again.
+            </Typography>
           </Alert>
         )}
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={runDiscover}
-          disabled={connecting}
-          sx={{ textTransform: 'none', mb: 2 }}
-        >
-          {connecting ? <CircularProgress size={20} /> : 'Discover MCP tools'}
-        </Button>
+        {!connecting && discoverError && (
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={runDiscover}
+            sx={{ textTransform: 'none', mb: 2 }}
+          >
+            Retry
+          </Button>
+        )}
         {connectedSchemas !== null && (
           <McpToolCatalog tools={connectedSchemas} onInvoke={onInvoke} />
         )}

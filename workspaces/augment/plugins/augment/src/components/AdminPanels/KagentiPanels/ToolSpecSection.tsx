@@ -70,13 +70,27 @@ export function ToolSpecSection({
     'gitBranch',
   );
 
+  const summaryFields: Array<{ label: string; value: unknown }> = [
+    { label: 'Protocol', value: protocol },
+    { label: 'Framework', value: framework },
+    { label: 'Image', value: image },
+    { label: 'Git URL', value: gitUrl },
+    { label: 'Git revision', value: gitRevision },
+  ].filter(
+    f => f.value !== undefined && f.value !== null && f.value !== '',
+  );
+
   return (
     <>
-      <PropertyRow label="Protocol" value={formatValue(protocol)} />
-      <PropertyRow label="Framework" value={formatValue(framework)} />
-      <PropertyRow label="Image" value={formatValue(image)} />
-      <PropertyRow label="Git URL" value={formatValue(gitUrl)} />
-      <PropertyRow label="Git revision" value={formatValue(gitRevision)} />
+      {summaryFields.length > 0 ? (
+        summaryFields.map(f => (
+          <PropertyRow key={f.label} label={f.label} value={formatValue(f.value)} />
+        ))
+      ) : (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25 }}>
+          No deployment-level spec fields set.
+        </Typography>
+      )}
       <Box sx={{ mb: 1.25 }}>
         <Typography
           variant="caption"
