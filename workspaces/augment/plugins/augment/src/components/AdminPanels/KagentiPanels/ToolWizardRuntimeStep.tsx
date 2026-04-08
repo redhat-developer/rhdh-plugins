@@ -93,23 +93,45 @@ export const ToolWizardRuntimeStep: FC<ToolWizardRuntimeStepProps> = ({
   setSpireEnabled,
 }) => (
   <Stack spacing={3}>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+      Configure the runtime environment. The platform auto-configures port 8000
+      and essential variables — only customize if your tool has specific
+      requirements.
+    </Typography>
     <FormControl>
       <FormLabel id="tool-workload-type-label">Workload type</FormLabel>
       <RadioGroup
         aria-labelledby="tool-workload-type-label"
         value={workloadType}
         onChange={(_, v) => setWorkloadType(v as WorkloadType)}
-        row
       >
         <FormControlLabel
           value="deployment"
           control={<Radio size="small" />}
-          label="Deployment"
+          label={
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Deployment
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Standard for most tools. Stateless, easily scalable.
+              </Typography>
+            </Box>
+          }
         />
         <FormControlLabel
           value="statefulset"
           control={<Radio size="small" />}
-          label="StatefulSet"
+          label={
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                StatefulSet
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Use when the tool needs persistent disk storage across restarts.
+              </Typography>
+            </Box>
+          }
         />
       </RadioGroup>
     </FormControl>
@@ -141,8 +163,16 @@ export const ToolWizardRuntimeStep: FC<ToolWizardRuntimeStepProps> = ({
     )}
 
     <Box>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+      <Typography variant="subtitle2" sx={{ mb: 0.25 }}>
         Environment variables
+      </Typography>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ mb: 1, display: 'block' }}
+      >
+        The platform automatically sets PORT=8000 and HOST=0.0.0.0. Add
+        variables here only if your tool requires additional configuration.
       </Typography>
       <Stack spacing={1.5}>
         {envRows.map(row => {
@@ -233,8 +263,17 @@ export const ToolWizardRuntimeStep: FC<ToolWizardRuntimeStepProps> = ({
     </Box>
 
     <Box>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+      <Typography variant="subtitle2" sx={{ mb: 0.25 }}>
         Service ports
+      </Typography>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ mb: 1, display: 'block' }}
+      >
+        The platform auto-configures port 8000 (TCP) for MCP tools. Only add
+        ports if your tool listens on a different port or exposes multiple
+        endpoints.
       </Typography>
       <Stack spacing={1.5}>
         {portRows.map(row => (
@@ -309,16 +348,22 @@ export const ToolWizardRuntimeStep: FC<ToolWizardRuntimeStepProps> = ({
     </Box>
 
     <Stack spacing={1}>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={createHttpRoute}
-            onChange={e => setCreateHttpRoute(e.target.checked)}
-            size="small"
-          />
-        }
-        label="Create HTTP route"
-      />
+      <Tooltip
+        title="Creates an OpenShift Route so the tool is accessible from outside the cluster. Not needed for agent-to-tool communication within the same namespace."
+        placement="right"
+        arrow
+      >
+        <FormControlLabel
+          control={
+            <Switch
+              checked={createHttpRoute}
+              onChange={e => setCreateHttpRoute(e.target.checked)}
+              size="small"
+            />
+          }
+          label="Create HTTP route"
+        />
+      </Tooltip>
       <Tooltip
         title="Enables identity propagation between services. When enabled, the calling user's identity is forwarded to the tool via the platform auth bridge, allowing the tool to make authenticated calls on behalf of the user."
         placement="right"

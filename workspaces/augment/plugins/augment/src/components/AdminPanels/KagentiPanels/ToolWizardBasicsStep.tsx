@@ -16,11 +16,13 @@
 
 import type { FC } from 'react';
 import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
 
 interface ToolWizardBasicsStepProps {
@@ -53,6 +55,10 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
   availableNamespaces,
 }) => (
   <Stack spacing={2}>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+      Define the identity of your MCP tool. The name and namespace determine
+      where it runs on the cluster.
+    </Typography>
     <TextField
       label="Name"
       value={name}
@@ -64,6 +70,7 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
       helperText={
         nameError ?? 'Lowercase alphanumeric and hyphens (max 63 chars).'
       }
+      placeholder="my-weather-tool"
     />
     {availableNamespaces.length > 0 ? (
       <FormControl size="small" fullWidth required>
@@ -98,9 +105,10 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
       onChange={e => setDescription(e.target.value)}
       fullWidth
       multiline
-      minRows={3}
+      minRows={2}
       size="small"
-      helperText="Describe what this MCP tool does."
+      helperText="Brief description of what this tool does."
+      placeholder="e.g. Weather lookup via Open-Meteo API"
     />
     <FormControl size="small" fullWidth>
       <InputLabel>Protocol</InputLabel>
@@ -115,6 +123,10 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
         <MenuItem value="http">HTTP</MenuItem>
         <MenuItem value="grpc">gRPC</MenuItem>
       </Select>
+      <FormHelperText>
+        Transport protocol for the tool endpoint. Streamable HTTP is recommended
+        for most MCP tools.
+      </FormHelperText>
     </FormControl>
     <FormControl size="small" fullWidth>
       <InputLabel>Framework</InputLabel>
@@ -128,6 +140,10 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
         <MenuItem value="nodejs">Node.js</MenuItem>
         <MenuItem value="">Other</MenuItem>
       </Select>
+      <FormHelperText>
+        Runtime language. Sets a label on the deployment — does not affect the
+        container itself.
+      </FormHelperText>
     </FormControl>
   </Stack>
 );
