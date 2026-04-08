@@ -496,3 +496,21 @@ export interface KagentiTriggerRequest {
   ttl_hours?: number;
   [key: string]: unknown;
 }
+
+// -- Dev Spaces ---------------------------------------------------------------
+
+/** Request body for creating a Dev Spaces workspace. @public */
+export interface DevSpacesCreateWorkspaceRequest {
+  namespace: string;
+  git_repo: string;
+  memory_limit?: string;
+  cpu_limit?: string;
+}
+
+/** Response from the Dev Spaces workspace creation API. @public */
+export interface DevSpacesCreateWorkspaceResponse {
+  name: string;
+  namespace: string;
+  phase: string;
+  message: string;
+}

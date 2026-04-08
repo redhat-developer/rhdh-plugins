@@ -125,6 +125,7 @@ export const GLOBAL_CONFIG_KEYS = [
   'agents',
   'defaultAgent',
   'maxAgentTurns',
+  'devSpacesApiUrl',
 ] as const;
 
 /**

@@ -147,4 +147,6 @@ export type {
   KagentiCreateTeamRequest,
   KagentiCreateKeyRequest,
   KagentiTriggerRequest,
+  DevSpacesCreateWorkspaceRequest,
+  DevSpacesCreateWorkspaceResponse,
 } from './types';

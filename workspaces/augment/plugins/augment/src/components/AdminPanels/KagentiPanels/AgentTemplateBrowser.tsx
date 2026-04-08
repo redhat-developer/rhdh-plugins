@@ -26,9 +26,11 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Skeleton from '@mui/material/Skeleton';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LaptopMacOutlinedIcon from '@mui/icons-material/LaptopMacOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -40,6 +42,8 @@ import { useAgentTemplates } from './useAgentTemplates';
 export interface AgentTemplateBrowserProps {
   onBack: () => void;
   tag?: string;
+  /** Callback to open a template's source repo in an Agent DevSpace. */
+  onOpenInDevSpace?: (gitRepoUrl: string) => void;
 }
 
 function templateTitle(entity: Entity): string {
@@ -69,6 +73,17 @@ function templateType(entity: Entity): string | undefined {
   return typeof spec.type === 'string' ? spec.type : undefined;
 }
 
+function templateSourceRepo(entity: Entity): string | undefined {
+  const annotations = entity.metadata.annotations ?? {};
+  const sourceUrl =
+    annotations['backstage.io/source-location'] ??
+    annotations['backstage.io/techdocs-ref'];
+  if (sourceUrl && sourceUrl.startsWith('url:')) {
+    return sourceUrl.slice(4).replace(/\/catalog-info\.yaml$/i, '');
+  }
+  return undefined;
+}
+
 function buildScaffolderUrl(entity: Entity): string {
   const ns = entity.metadata.namespace ?? 'default';
   const name = entity.metadata.name;
@@ -78,6 +93,7 @@ function buildScaffolderUrl(entity: Entity): string {
 export function AgentTemplateBrowser({
   onBack,
   tag,
+  onOpenInDevSpace,
 }: AgentTemplateBrowserProps) {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -236,6 +252,7 @@ export function AgentTemplateBrowser({
             const tags = templateTags(entity);
             const owner = templateOwner(entity);
             const type = templateType(entity);
+            const sourceRepo = templateSourceRepo(entity);
 
             return (
               <Card
@@ -328,7 +345,15 @@ export function AgentTemplateBrowser({
                     </Typography>
                   )}
                 </CardContent>
-                <Box sx={{ px: 2, pb: 1.5 }}>
+                <Box
+                  sx={{
+                    px: 2,
+                    pb: 1.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
                   <Button
                     size="small"
                     variant="outlined"
@@ -341,6 +366,26 @@ export function AgentTemplateBrowser({
                   >
                     Use Template
                   </Button>
+                  {onOpenInDevSpace && sourceRepo && (
+                    <Tooltip title="Open in Agent DevSpace">
+                      <IconButton
+                        size="small"
+                        onClick={e => {
+                          e.stopPropagation();
+                          onOpenInDevSpace(sourceRepo);
+                        }}
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          '&:hover': {
+                            color: theme.palette.primary.main,
+                          },
+                        }}
+                        aria-label="Open in Agent DevSpace"
+                      >
+                        <LaptopMacOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </Box>
               </Card>
             );

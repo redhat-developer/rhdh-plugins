@@ -24,3 +24,4 @@ export { registerAdminRoutes } from './adminRoutes';
 export { registerKagentiRoutes } from './kagentiRoutes';
 export { registerKagentiSandboxRoutes } from './kagentiSandboxRoutes';
 export { registerKagentiAdminRoutes } from './kagentiAdminRoutes';
+export { registerDevSpacesRoutes } from './devSpacesRoutes';
