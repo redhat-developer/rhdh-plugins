@@ -24,6 +24,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Snackbar from '@mui/material/Snackbar';
+import Typography from '@mui/material/Typography';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
@@ -98,7 +99,12 @@ export function CreateToolWizard({
         fullWidth
         aria-labelledby={titleId}
       >
-        <DialogTitle id={titleId}>Create Tool</DialogTitle>
+        <DialogTitle id={titleId}>
+          Create Tool
+          <Typography variant="body2" color="text.secondary">
+            Deploy an MCP tool to your cluster
+          </Typography>
+        </DialogTitle>
         <DialogContent sx={{ pt: 1 }}>
           <Stepper activeStep={form.activeStep} sx={{ mb: 3, mt: 1 }}>
             {allSteps.map(label => (
