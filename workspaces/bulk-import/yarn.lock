@@ -12410,6 +12410,7 @@ __metadata:
     "@backstage/dev-utils": "npm:^1.1.19"
     "@backstage/frontend-defaults": "npm:^0.3.5"
     "@backstage/frontend-plugin-api": "npm:^0.13.4"
+    "@backstage/integration-react": "npm:^1.2.16"
     "@backstage/plugin-app-react": "npm:^0.1.0"
     "@backstage/plugin-catalog-import": "npm:^0.13.9"
     "@backstage/plugin-catalog-react": "npm:^1.21.6"
