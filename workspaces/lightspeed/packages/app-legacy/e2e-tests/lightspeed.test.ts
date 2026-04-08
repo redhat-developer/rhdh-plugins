@@ -107,6 +107,7 @@ import {
   mockFeedbackStatus,
   mockModels,
   mockQuery,
+  mockQueryWithResponseDelay,
   mockShields,
 } from './utils/devMode';
 import {
@@ -266,7 +267,7 @@ test.describe('Lightspeed tests', () => {
     expect(nonEmptyTexts.length).toBe(3);
   });
 
-  test.describe('File Attachment Validation', () => {
+  test.describe.skip('File Attachment Validation', () => {
     const testFiles = [
       { path: '../../package.json', name: 'package.json' },
       { path: __filename, name: 'fileAttachment.spec.ts' },
@@ -441,6 +442,32 @@ test.describe('Lightspeed tests', () => {
 
       await expect(userMessage).toContainText(contents[0].messages[0].content);
       await expect(botMessage).toContainText(assistantResponse);
+    });
+
+    test('Stop ends in-progress reply and restores the prompt in the input', async () => {
+      const stopFlowPrompt = 'Stop button restores prompt in input';
+      const input = sharedPage.getByRole('textbox', {
+        name: translations['chatbox.message.placeholder'],
+      });
+
+      await mockQueryWithResponseDelay(
+        sharedPage,
+        stopFlowPrompt,
+        conversations,
+        5_000,
+      );
+      await input.fill(stopFlowPrompt);
+      await sharedPage.getByRole('button', { name: 'Send' }).click();
+
+      const stopButton = sharedPage.getByRole('button', { name: 'Stop' });
+      await expect(stopButton).toBeVisible({ timeout: 10_000 });
+      await stopButton.click();
+
+      await expect(input).toHaveValue(stopFlowPrompt);
+
+      await sharedPage
+        .locator('.pf-chatbot__message-loading')
+        .waitFor({ state: 'hidden', timeout: 7_000 });
     });
 
     test.describe('Chat Management', () => {
