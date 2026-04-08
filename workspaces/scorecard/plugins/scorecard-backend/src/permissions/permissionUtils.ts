@@ -24,10 +24,11 @@ import {
   ResourcePermission,
 } from '@backstage/plugin-permission-common';
 import { Request } from 'express';
-import { NotAllowedError } from '@backstage/errors';
+import { AuthenticationError, NotAllowedError } from '@backstage/errors';
 import { catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
 import type {
   BackstageCredentials,
+  BackstageUserPrincipal,
   HttpAuthService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
@@ -35,6 +36,18 @@ import type {
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { rules as scorecardRules } from './rules';
+
+export const getUserEntityRef = async (
+  credentials: BackstageCredentials<BackstageUserPrincipal>,
+) => {
+  const userEntityRef = credentials?.principal?.userEntityRef;
+
+  if (!userEntityRef) {
+    throw new AuthenticationError('User entity reference not found');
+  }
+
+  return userEntityRef;
+};
 
 type ScorecardPermission = {
   decision: PolicyDecision;

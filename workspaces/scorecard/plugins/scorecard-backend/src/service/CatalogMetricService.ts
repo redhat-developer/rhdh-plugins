@@ -452,9 +452,10 @@ export class CatalogMetricService {
 
         validateAggregationConfig(config, this.logger);
 
-        if (!this.registry.isProviderValid(config.metricId)) {
-          this.logger.warn(`Invalid provider for metricId: ${config.metricId}`);
-          continue;
+        if (!this.registry.hasProvider(config.metricId)) {
+          throw new Error(
+            `Metric provider with ID '${config.metricId}' is not registered.`,
+          );
         }
 
         if (metricIds.length === 0 || metricIds.includes(config.metricId)) {

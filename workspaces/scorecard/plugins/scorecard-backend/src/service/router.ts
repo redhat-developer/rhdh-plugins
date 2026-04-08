@@ -32,6 +32,7 @@ import {
   filterAuthorizedMetrics,
   checkEntityAccess,
   authorizeConditional,
+  getUserEntityRef,
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { validateMetricIdsQueryParams } from '../middlewares/validateMetricIdsQueryParams';
@@ -40,7 +41,6 @@ import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { AggregatedMetricMapper } from './mappers';
 import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
 import { validateAggregationIdParam } from '../middlewares/validateAggregationIdParam';
-import { getUserEntityRef } from './utils';
 import {
   aggregationTypes,
   scorecardMetricReadPermission,

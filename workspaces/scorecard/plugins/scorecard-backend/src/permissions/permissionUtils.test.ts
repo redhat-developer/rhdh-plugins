@@ -22,7 +22,7 @@ import {
   AuthorizeResult,
 } from '@backstage/plugin-permission-common';
 import { Request } from 'express';
-import { NotAllowedError } from '@backstage/errors';
+import { AuthenticationError, NotAllowedError } from '@backstage/errors';
 import { catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
 import type {
   HttpAuthService,
@@ -37,6 +37,7 @@ import {
   filterAuthorizedMetrics,
   matches,
   checkEntityAccess,
+  getUserEntityRef,
 } from './permissionUtils';
 import { mockServices } from '@backstage/backend-test-utils';
 
@@ -52,6 +53,31 @@ const createMockMetric = (
 });
 
 describe('permissionUtils', () => {
+  describe('getUserEntityRef', () => {
+    it('should return userEntityRef from credentials', async () => {
+      const ref = await getUserEntityRef({
+        principal: { userEntityRef: 'user:default/alice' },
+      } as any);
+
+      expect(ref).toBe('user:default/alice');
+    });
+
+    it('should throw AuthenticationError when userEntityRef is missing', async () => {
+      await expect(getUserEntityRef({ principal: {} } as any)).rejects.toThrow(
+        AuthenticationError,
+      );
+      await expect(getUserEntityRef({ principal: {} } as any)).rejects.toThrow(
+        'User entity reference not found',
+      );
+    });
+
+    it('should throw AuthenticationError when principal is undefined', async () => {
+      await expect(getUserEntityRef({} as any)).rejects.toThrow(
+        AuthenticationError,
+      );
+    });
+  });
+
   describe('authorizeConditional', () => {
     const credentials = { principal: {} } as any;
 
