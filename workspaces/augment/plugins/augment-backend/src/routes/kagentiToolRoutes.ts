@@ -66,7 +66,7 @@ export function registerKagentiToolRoutes(
             );
           }
         }
-        res.json({ tools: allTools });
+        res.json({ items: allTools });
       },
     ),
   );

@@ -52,10 +52,12 @@ export function ToolBuildSection({
       </Box>
     );
   }
-  if (buildFetchFailed || !buildInfo) {
+  if (!buildInfo) {
     return (
       <Typography variant="body2" color="text.secondary">
-        No build pipeline configured
+        {buildFetchFailed
+          ? 'Could not load build information. The service may be temporarily unavailable.'
+          : 'No build pipeline configured'}
       </Typography>
     );
   }
@@ -68,7 +70,7 @@ export function ToolBuildSection({
   const canTriggerBuild =
     buildInfo.buildRegistered && !buildIsRunning && !triggeringBuild;
   const showFinalize =
-    buildInfo.hasBuildRun && buildInfo.buildRunPhase === 'Succeeded';
+    buildInfo.hasBuildRun && phaseLower === 'succeeded';
 
   return (
     <>

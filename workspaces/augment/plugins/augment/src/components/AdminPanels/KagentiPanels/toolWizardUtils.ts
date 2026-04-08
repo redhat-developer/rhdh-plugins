@@ -17,6 +17,7 @@
 import type {
   KagentiCreateToolRequest,
   KagentiEnvVar,
+  KagentiFinalizeToolBuildRequest,
   KagentiServicePort,
   KagentiShipwrightConfig,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -49,7 +50,8 @@ export function buildEnvVars(rows: EnvRow[]): KagentiEnvVar[] | undefined {
         ev.value = r.value.trim();
       }
       return ev;
-    });
+    })
+    .filter(ev => ev.value !== undefined || ev.valueFrom !== undefined);
   return list.length ? list : undefined;
 }
 
@@ -128,6 +130,29 @@ export function buildToolRequest(s: ToolFormState): KagentiCreateToolRequest {
   const servicePorts = buildServicePorts(s.portRows);
   if (servicePorts) body.servicePorts = servicePorts;
 
+  return body;
+}
+
+export function buildFinalizeBody(
+  s: ToolFormState,
+): KagentiFinalizeToolBuildRequest {
+  const body: KagentiFinalizeToolBuildRequest = {};
+  if (s.protocol.trim()) body.protocol = s.protocol.trim();
+  if (s.framework.trim()) body.framework = s.framework.trim();
+  body.workloadType = s.workloadType;
+  body.createHttpRoute = s.createHttpRoute;
+  body.authBridgeEnabled = s.authBridgeEnabled;
+  if (s.workloadType === 'statefulset' && s.persistentStorageEnabled) {
+    body.persistentStorage = {
+      enabled: true,
+      size: s.persistentStorageSize.trim() || '1Gi',
+    };
+  }
+  const envVars = buildEnvVars(s.envRows);
+  if (envVars) body.envVars = envVars;
+  const servicePorts = buildServicePorts(s.portRows);
+  if (servicePorts) body.servicePorts = servicePorts;
+  if (s.imagePullSecret.trim()) body.imagePullSecret = s.imagePullSecret.trim();
   return body;
 }
 

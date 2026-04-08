@@ -56,10 +56,12 @@ export function useKagentiToolDetail(
       const info = await api.getToolBuildInfo(tool.namespace, tool.name);
       setBuildInfo(info);
       setHasBuild(true);
-    } catch {
+    } catch (err) {
       setBuildInfo(null);
       setBuildFetchFailed(true);
-      setHasBuild(false);
+      const is404 =
+        err instanceof Error && /not found|404/i.test(err.message);
+      if (is404) setHasBuild(false);
     } finally {
       setBuildLoading(false);
     }
@@ -135,11 +137,13 @@ export function useKagentiToolDetail(
           setHasBuild(true);
         }
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (!cancelled) {
           setBuildInfo(null);
           setBuildFetchFailed(true);
-          setHasBuild(false);
+          const is404 =
+            err instanceof Error && /not found|404/i.test(err.message);
+          if (is404) setHasBuild(false);
         }
       })
       .finally(() => {

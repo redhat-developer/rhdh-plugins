@@ -16,7 +16,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
-import type { KagentiBuildStrategy } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  KagentiBuildStrategy,
+  KagentiFinalizeToolBuildRequest,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
@@ -32,6 +35,7 @@ import type {
 } from './toolWizardTypes';
 import { isValidDns1123, TOOL_STEPS } from './toolWizardTypes';
 import {
+  buildFinalizeBody,
   buildToolRequest,
   getDuplicateEnvNames,
   nextRowId,
@@ -40,7 +44,7 @@ import {
 
 const BUILD_POLL_INTERVAL_MS = 4000;
 const BUILD_TIMEOUT_WARN_MS = 10 * 60 * 1000;
-const MAX_CONSECUTIVE_POLL_ERRORS = 5;
+const MAX_CONSECUTIVE_POLL_ERRORS = 8;
 
 export interface UseToolWizardFormReturn {
   activeStep: number;
@@ -148,6 +152,7 @@ export function useToolWizardForm(
   const pollErrorCountRef = useRef(0);
   const buildNameRef = useRef('');
   const buildNsRef = useRef('');
+  const finalizeBodyRef = useRef<KagentiFinalizeToolBuildRequest>({});
 
   const [name, setName] = useState('');
   const [namespace, setNamespace] = useState(namespaceProp ?? '');
@@ -396,9 +401,10 @@ export function useToolWizardForm(
   }, []);
 
   const startBuildPolling = useCallback(
-    (toolName: string, toolNamespace: string) => {
+    (toolName: string, toolNamespace: string, finBody?: KagentiFinalizeToolBuildRequest) => {
       buildNameRef.current = toolName;
       buildNsRef.current = toolNamespace;
+      if (finBody) finalizeBodyRef.current = finBody;
       pollErrorCountRef.current = 0;
       const startedAt = Date.now();
 
@@ -418,7 +424,7 @@ export function useToolWizardForm(
         });
       }, 1000);
 
-      pollRef.current = setInterval(async () => {
+      const doPoll = async () => {
         try {
           const info = await api.getToolBuildInfo(toolNamespace, toolName);
           const elapsed = Date.now() - startedAt;
@@ -441,6 +447,7 @@ export function useToolWizardForm(
               const result = await api.finalizeToolBuild(
                 toolNamespace,
                 toolName,
+                finalizeBodyRef.current,
               );
               setBuildProgress(prev => ({
                 ...prev,
@@ -499,7 +506,10 @@ export function useToolWizardForm(
             }));
           }
         }
-      }, BUILD_POLL_INTERVAL_MS);
+      };
+
+      setTimeout(doPoll, 1000);
+      pollRef.current = setInterval(doPoll, BUILD_POLL_INTERVAL_MS);
     },
     [api, onCreated, stopPolling],
   );
@@ -547,14 +557,15 @@ export function useToolWizardForm(
           message: result.message,
           pollErrorCount: 0,
         });
-        startBuildPolling(body.name, body.namespace);
+        startBuildPolling(body.name, body.namespace, buildFinalizeBody(formState));
       } else {
         setSuccessOpen(true);
         onCreated();
         onClose();
       }
-    } catch (e) {
-      setSubmitError(getErrorMessage(e));
+    } catch (err) {
+      setSubmitError(getErrorMessage(err));
+      setSubmitting(false);
     } finally {
       if (deploymentMethod !== 'source') {
         setSubmitting(false);
@@ -588,7 +599,7 @@ export function useToolWizardForm(
         pollErrorCount: 0,
       }));
       api
-        .finalizeToolBuild(ns, toolName)
+        .finalizeToolBuild(ns, toolName, finalizeBodyRef.current)
         .then(result => {
           setBuildProgress(prev => ({
             ...prev,
