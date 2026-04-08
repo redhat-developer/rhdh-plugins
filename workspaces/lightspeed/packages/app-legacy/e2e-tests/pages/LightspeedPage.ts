@@ -19,6 +19,9 @@ import { LightspeedMessages, evaluateMessage } from '../utils/translations';
 
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
 
+/** Menu label in LightspeedChatBoxHeader (not yet in i18n). */
+export const MCP_SETTINGS_MENU_ITEM = 'MCP settings';
+
 // Actions
 export async function openChatbot(page: Page) {
   await page.getByRole('button', { name: 'lightspeed-close' }).click();
@@ -84,7 +87,70 @@ export async function verifyDisplayModeMenuOptions(
     - separator
     - menu:
       - menuitem "${t['settings.pinned.disable']} ${t['settings.pinned.enabled.description']}"
+      - menuitem "${MCP_SETTINGS_MENU_ITEM}"
     `);
+}
+
+// MCP settings (McpServersSettings — English strings until full i18n)
+
+export async function openMcpSettingsPanel(page: Page, t: LightspeedMessages) {
+  await page.getByRole('button', { name: t['aria.settings.label'] }).click();
+  await expect(
+    page.getByRole('menuitem', { name: MCP_SETTINGS_MENU_ITEM }),
+  ).toBeVisible();
+  await page.getByRole('menuitem', { name: MCP_SETTINGS_MENU_ITEM }).click();
+}
+
+export async function closeMcpSettingsPanel(page: Page) {
+  await page.getByRole('button', { name: 'Close MCP settings' }).click();
+}
+
+/** Waits for list load, asserts MCP panel + table, accessibility snapshots, then closes. */
+export async function verifyMcpSettingsPanel(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await openMcpSettingsPanel(page, t);
+
+  await expect(page.getByText('Loading MCP servers...')).toBeHidden({
+    timeout: 30_000,
+  });
+
+  const table = page.getByLabel('MCP servers table');
+  await expect(table).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'MCP servers', exact: true }),
+  ).toBeVisible();
+  // Scope to MCP grid: Dock/overlay leaves the catalog visible, which also has "Name" sort buttons.
+  await expect(table.getByRole('button', { name: 'Name' })).toBeVisible();
+  await expect(page.getByText(/\d+ of \d+ selected/)).toBeVisible();
+
+  await expect(
+    table.getByRole('columnheader', { name: 'Enabled' }),
+  ).toBeVisible();
+  await expect(
+    table.getByRole('columnheader', { name: 'Status' }),
+  ).toBeVisible();
+  await expect(table.getByRole('columnheader', { name: 'Edit' })).toBeVisible();
+  await page.getByRole('columnheader', { name: 'Status' }).click();
+
+  // Close + selected count live in the MCP header, not always inside <form> (fullscreen omits Settings/form wrapper).
+  await expect(
+    page.getByRole('button', { name: 'Close MCP settings' }),
+  ).toBeVisible();
+
+  const emptyState = page.getByText('No MCP servers available.');
+  const firstDataRow = table.locator('tbody tr').first();
+  await expect(emptyState.or(firstDataRow)).toBeVisible();
+
+  await expect(page.getByLabel('Chatbot', { exact: true }))
+    .toMatchAriaSnapshot(`
+    - button "${t['aria.chatHistoryMenu']}"
+    - button "${t['aria.chatbotSelector']}"
+    - button "${t['aria.settings.label']}"
+    `);
+
+  await closeMcpSettingsPanel(page);
 }
 
 /** Chat composer message field (matches sendMessage in testHelper). */

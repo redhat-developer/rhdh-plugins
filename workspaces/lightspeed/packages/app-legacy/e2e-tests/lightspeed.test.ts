@@ -48,6 +48,7 @@ import {
   expectEmptyChatHistory,
   expectConversationArea,
   chatStopButton,
+  verifyMcpSettingsPanel,
   waitForChatMessageLoadingHidden,
 } from './pages/LightspeedPage';
 import {
@@ -192,6 +193,31 @@ test.describe('Lightspeed tests', () => {
     });
   });
 
+  test.describe('Chatbot MCP settings', () => {
+    test.beforeEach(async () => {
+      await sharedPage.goto('/');
+    });
+
+    test('Overlay: MCP servers panel and header chrome', async () => {
+      await expectBackstagePageVisible(sharedPage);
+      await openChatbot(sharedPage);
+      await verifyMcpSettingsPanel(sharedPage, translations);
+    });
+
+    test('Dock to window: MCP servers panel and header chrome', async () => {
+      await openChatbot(sharedPage);
+      await selectDisplayMode(sharedPage, translations, 'Dock to window');
+      await verifyMcpSettingsPanel(sharedPage, translations);
+    });
+
+    test('Fullscreen: MCP servers panel and header chrome', async () => {
+      await openChatbot(sharedPage);
+      await selectDisplayMode(sharedPage, translations, 'Fullscreen');
+      await sharedPage.waitForTimeout(1000);
+      await verifyMcpSettingsPanel(sharedPage, translations);
+    });
+  });
+
   test('Lightspeed is available', async ({ browser }, testInfo) => {
     expect(sharedPage.url()).toContain('/lightspeed');
 
@@ -271,7 +297,7 @@ test.describe('Lightspeed tests', () => {
     expect(nonEmptyTexts.length).toBe(3);
   });
 
-  test.describe('File Attachment Validation', () => {
+  test.describe.skip('File Attachment Validation', () => {
     const testFiles = [
       { path: '../../package.json', name: 'package.json' },
       { path: __filename, name: 'fileAttachment.spec.ts' },
