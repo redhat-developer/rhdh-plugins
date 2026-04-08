@@ -480,7 +480,7 @@ export class DataIndexService {
       : '';
 
     const graphQlQuery = gql`
-      query FindProcessInstanceQuery($definitionId: String!, $limit: Int!, $offset: Int!) {
+      query FindProcessInstanceQuery($definitionId: String!, $limit: Int!, $offset: Int! ${args.targetEntity ? `, $targetEntity: String` : ''}) {
         ProcessInstances(
           where: {processId: {equal: $definitionId } ${targetEntityWhereCondition} },
           orderBy: {start:DESC},
@@ -489,12 +489,21 @@ export class DataIndexService {
       }
      `;
 
-    const result = await this.client.query(graphQlQuery, {
-      definitionId: args.definitionId,
-      limit: args.limit,
-      offset: args.offset,
-      targetEntity: args.targetEntity,
-    });
+    const result = await this.client.query(
+      graphQlQuery,
+      args.targetEntity
+        ? {
+            definitionId: args.definitionId,
+            limit: args.limit,
+            offset: args.offset,
+            targetEntity: args.targetEntity,
+          }
+        : {
+            definitionId: args.definitionId,
+            limit: args.limit,
+            offset: args.offset,
+          },
+    );
 
     this.logger.debug(
       `Fetch workflow instances result: ${JSON.stringify(result)}`,
