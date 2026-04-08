@@ -20,3 +20,4 @@ export * from './agentEndpoints';
 export * from './toolEndpoints';
 export * from './sandboxEndpoints';
 export * from './adminEndpoints';
+export * from './devSpacesEndpoints';

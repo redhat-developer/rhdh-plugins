@@ -37,6 +37,7 @@ import {
   registerKagentiRoutes,
   registerKagentiSandboxRoutes,
   registerKagentiAdminRoutes,
+  registerDevSpacesRoutes,
 } from './routes';
 import { toErrorMessage } from './services/utils';
 import { sanitizeErrorMessage } from './services/utils/errorSanitizer';
@@ -266,6 +267,15 @@ export async function createRouter({
     registerKagentiAdminRoutes(ctx);
     logger.info('Kagenti provider routes registered');
   }
+
+  // Dev Spaces routes (available for all providers)
+  registerDevSpacesRoutes({
+    router,
+    logger,
+    adminConfig,
+    sendRouteError,
+    requireAdminAccess,
+  });
 
   return router;
 }

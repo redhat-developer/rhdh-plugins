@@ -58,7 +58,8 @@ export type AdminConfigKey =
   | 'maxOutputTokens'
   | 'temperature'
   | 'safetyIdentifier'
-  | 'chatAgents';
+  | 'chatAgents'
+  | 'devSpacesApiUrl';
 
 /**
  * A single admin config entry stored in the database.
