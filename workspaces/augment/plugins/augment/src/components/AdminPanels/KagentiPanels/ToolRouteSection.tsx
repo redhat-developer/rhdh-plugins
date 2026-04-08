@@ -58,9 +58,25 @@ export function ToolRouteSection({
     );
   }
 
+  const hasRoute =
+    'hasRoute' in routeStatus ? (routeStatus as Record<string, unknown>).hasRoute : undefined;
+
+  if (hasRoute === false && Object.keys(routeStatus).length === 1) {
+    return (
+      <Typography variant="body2" color="text.secondary">
+        No external route configured. The tool is accessible only within the
+        cluster via its internal service DNS name.
+      </Typography>
+    );
+  }
+
   const routeReady = 'ready' in routeStatus ? routeStatus.ready : undefined;
   const routeStatusField =
     'status' in routeStatus ? routeStatus.status : undefined;
+
+  const displayEntries = Object.entries(routeStatus).filter(
+    ([key]) => key !== 'hasRoute',
+  );
 
   return (
     <>
@@ -68,22 +84,26 @@ export function ToolRouteSection({
         {routeReady !== undefined && (
           <Chip
             size="small"
-            label={`ready: ${formatValue(routeReady)}`}
+            label={routeReady ? 'Route ready' : 'Route not ready'}
             color={routeReadyChipColor(routeReady)}
           />
         )}
         {routeStatusField !== undefined && routeStatusField !== null && (
           <Chip
             size="small"
-            label={`status: ${formatValue(routeStatusField)}`}
+            label={`${formatValue(routeStatusField)}`}
             color={routeStatusStringChipColor(routeStatusField)}
           />
         )}
       </Box>
-      <Divider sx={{ my: 1.5 }} />
-      {Object.entries(routeStatus).map(([key, val]) => (
-        <PropertyRow key={key} label={key} value={formatValue(val)} />
-      ))}
+      {displayEntries.length > 0 && (
+        <>
+          <Divider sx={{ my: 1.5 }} />
+          {displayEntries.map(([key, val]) => (
+            <PropertyRow key={key} label={key} value={formatValue(val)} />
+          ))}
+        </>
+      )}
     </>
   );
 }

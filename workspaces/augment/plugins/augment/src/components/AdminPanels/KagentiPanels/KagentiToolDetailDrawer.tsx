@@ -99,7 +99,10 @@ export function KagentiToolDetailDrawer({
   const overviewWorkload =
     detailState.detail?.workloadType ?? tool.workloadType ?? '—';
   const overviewDescription = tool.description || '—';
-  const labelEntries = Object.entries(tool.labels ?? {}).filter(([, v]) => v);
+  const HIDDEN_LABEL_KEYS = new Set(['type', 'protocol', 'framework']);
+  const labelEntries = Object.entries(tool.labels ?? {}).filter(
+    ([k, v]) => v && !HIDDEN_LABEL_KEYS.has(k),
+  );
 
   const sectionCardSx = {
     mb: 2,
