@@ -133,6 +133,7 @@ export function useAgentWizardForm(
   namespaceProp: string | undefined,
   onClose: () => void,
   onCreated: () => void,
+  initialDeploymentMethod?: DeploymentMethod,
 ): UseAgentWizardFormReturn {
   const api = useApi(augmentApiRef);
   const rowIdRef = useRef(0);
@@ -220,7 +221,7 @@ export function useAgentWizardForm(
     setNamespace(namespaceProp ?? '');
     setProtocol('a2a');
     setFramework('');
-    setDeploymentMethod('image');
+    setDeploymentMethod(initialDeploymentMethod ?? 'image');
     setContainerImage('');
     setImagePullSecret('');
     setGitUrl('');
@@ -245,7 +246,7 @@ export function useAgentWizardForm(
     buildNameRef.current = '';
     buildNsRef.current = '';
     pollErrorCountRef.current = 0;
-  }, [namespaceProp, stopPolling]);
+  }, [namespaceProp, initialDeploymentMethod, stopPolling]);
 
   useEffect(() => {
     if (open && !wasOpenRef.current) {
