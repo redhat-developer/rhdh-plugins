@@ -16,14 +16,17 @@
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
+import ExtensionOutlinedIcon from '@mui/icons-material/ExtensionOutlined';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { alpha, useTheme } from '@mui/material/styles';
 import type {
   KagentiMcpToolSchema,
   KagentiToolSummary,
@@ -48,6 +51,7 @@ export function ToolConnectDialog({
   onInvoke,
   api,
 }: ToolConnectDialogProps) {
+  const theme = useTheme();
   const [connecting, setConnecting] = useState(false);
   const [connectedSchemas, setConnectedSchemas] = useState<
     KagentiMcpToolSchema[] | null
@@ -77,43 +81,95 @@ export function ToolConnectDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, tool?.namespace, tool?.name]);
 
+  const toolCount = connectedSchemas?.length ?? 0;
+
   return (
     <Dialog
       open={open}
       onClose={() => !connecting && onClose()}
       maxWidth="md"
       fullWidth
+      PaperProps={{
+        sx: { borderRadius: 2, overflow: 'hidden' },
+      }}
     >
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          Discover MCP tools
+      <Box
+        sx={{
+          px: 3,
+          pt: 2.5,
+          pb: 2,
+          background: alpha(theme.palette.primary.main, 0.04),
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            mb: 0.75,
+          }}
+        >
+          <ExtensionOutlinedIcon
+            sx={{ fontSize: 22, color: theme.palette.primary.main }}
+          />
+          <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+            MCP Tool Discovery
+          </Typography>
           {tool && (
             <Chip
               label={tool.status}
               size="small"
               color={toolSummaryStatusChipColor(tool.status)}
-              sx={{ height: 22 }}
+              sx={{ height: 22, ml: 'auto' }}
             />
           )}
         </Box>
-        <Typography variant="body2" color="text.secondary">
-          Connect to {tool ? `${tool.namespace}/${tool.name}` : ''} and list the
-          MCP tools it exposes.
-        </Typography>
-      </DialogTitle>
-      <DialogContent>
+        {tool && (
+          <Typography variant="body2" color="text.secondary">
+            Connecting to{' '}
+            <Typography
+              component="span"
+              variant="body2"
+              sx={{ fontWeight: 600 }}
+            >
+              {tool.name}
+            </Typography>{' '}
+            in{' '}
+            <Typography
+              component="span"
+              variant="body2"
+              sx={{ fontWeight: 600 }}
+            >
+              {tool.namespace}
+            </Typography>{' '}
+            to list the MCP tools it exposes.
+          </Typography>
+        )}
+      </Box>
+
+      <DialogContent sx={{ px: 3, pt: 2.5, pb: 3 }}>
         {connecting && !connectedSchemas && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-            <CircularProgress size={20} />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1.5,
+              py: 5,
+            }}
+          >
+            <CircularProgress size={32} />
             <Typography variant="body2" color="text.secondary">
               Connecting to the MCP server...
             </Typography>
           </Box>
         )}
+
         {discoverError && (
           <Alert
             severity="error"
-            sx={{ mb: 2 }}
+            sx={{ mb: 2, borderRadius: 1 }}
             onClose={() => setDiscoverError(null)}
           >
             {discoverError}
@@ -124,22 +180,59 @@ export function ToolConnectDialog({
             </Typography>
           </Alert>
         )}
+
         {!connecting && discoverError && (
           <Button
             variant="outlined"
             size="small"
             onClick={runDiscover}
+            startIcon={<RefreshIcon fontSize="small" />}
             sx={{ textTransform: 'none', mb: 2 }}
           >
-            Retry
+            Retry discovery
           </Button>
         )}
+
+        {!connecting && connectedSchemas !== null && !discoverError && (
+          <>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 1.5,
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                {toolCount > 0
+                  ? `${toolCount} tool${toolCount > 1 ? 's' : ''} discovered`
+                  : 'No tools discovered'}
+              </Typography>
+              <Button
+                size="small"
+                onClick={runDiscover}
+                disabled={connecting}
+                startIcon={<RefreshIcon fontSize="small" />}
+                sx={{ textTransform: 'none' }}
+              >
+                Refresh
+              </Button>
+            </Box>
+            <Divider sx={{ mb: 2 }} />
+          </>
+        )}
+
         {connectedSchemas !== null && (
           <McpToolCatalog tools={connectedSchemas} onInvoke={onInvoke} />
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} sx={{ textTransform: 'none' }}>
+
+      <DialogActions sx={{ px: 3, pb: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          sx={{ textTransform: 'none' }}
+        >
           Close
         </Button>
       </DialogActions>

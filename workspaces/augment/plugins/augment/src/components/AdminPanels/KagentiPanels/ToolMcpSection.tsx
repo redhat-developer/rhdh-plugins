@@ -18,8 +18,11 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
+import ExtensionOutlinedIcon from '@mui/icons-material/ExtensionOutlined';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { alpha, useTheme } from '@mui/material/styles';
 import type {
   KagentiMcpToolSchema,
@@ -73,24 +76,51 @@ export function ToolMcpSection({
     setInvokeError(null);
   };
 
+  const hasTools = mcpTools.length > 0;
+
   return (
     <>
-      <Button
-        variant="outlined"
-        size="small"
-        onClick={onDiscover}
-        disabled={mcpDiscovering}
-        startIcon={
-          mcpDiscovering ? (
-            <CircularProgress size={18} color="inherit" />
-          ) : undefined
-        }
-        sx={{ textTransform: 'none', mb: 2 }}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 1.5,
+        }}
       >
-        Discover MCP Tools
-      </Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ExtensionOutlinedIcon
+            sx={{ fontSize: 18, color: theme.palette.text.secondary }}
+          />
+          <Typography variant="body2" color="text.secondary">
+            {hasTools
+              ? `${mcpTools.length} tool${mcpTools.length > 1 ? 's' : ''} discovered`
+              : 'Connect to discover available tools'}
+          </Typography>
+        </Box>
+        <Button
+          size="small"
+          onClick={onDiscover}
+          disabled={mcpDiscovering}
+          startIcon={
+            mcpDiscovering ? (
+              <CircularProgress size={14} color="inherit" />
+            ) : (
+              <RefreshIcon fontSize="small" />
+            )
+          }
+          sx={{ textTransform: 'none', minWidth: 0 }}
+        >
+          {mcpDiscovering ? 'Discovering...' : hasTools ? 'Refresh' : 'Discover'}
+        </Button>
+      </Box>
+
       {mcpError && (
-        <Alert severity="error" sx={{ mb: 1.5 }} onClose={onDismissMcpError}>
+        <Alert
+          severity="error"
+          sx={{ mb: 1.5, borderRadius: 1 }}
+          onClose={onDismissMcpError}
+        >
           {mcpError}
           <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
             {tool.name.endsWith('-mcp')
@@ -99,7 +129,11 @@ export function ToolMcpSection({
           </Typography>
         </Alert>
       )}
+
+      {hasTools && <Divider sx={{ mb: 1.5 }} />}
+
       <McpToolCatalog tools={mcpTools} onInvoke={handleStartInvoke} />
+
       {invokeOpen && (
         <Box
           sx={{
