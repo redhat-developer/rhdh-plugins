@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-api
 
+## 2.4.5
+
+### Patch Changes
+
+- 1f5de5a: Scope SchemaUpdater replacements to the originating step and improve scope resolution.
+
 ## 2.4.4
 
 ### Patch Changes

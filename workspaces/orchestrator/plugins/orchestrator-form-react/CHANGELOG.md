@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.5.4
+
+### Patch Changes
+
+- 1f5de5a: Include JSON Schema `default` values when computing initial form data so
+  template expressions can resolve defaults before widgets render.
+- 1f5de5a: Scope async validate:url calls to the active step in multi-step forms.
+- 1f5de5a: Fix `extractUiSchema` so `ui:*` directives on object schemas that define `properties` (for example `ui:hidden` on a `workflowParams` object) are copied into the generated UI schema.
+- Updated dependencies [1f5de5a]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.5
+
 ## 2.5.3
 
 ### Patch Changes

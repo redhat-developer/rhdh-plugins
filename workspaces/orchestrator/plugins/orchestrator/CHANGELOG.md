@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.4.3
+
+### Patch Changes
+
+- 1f5de5a: Scope SchemaUpdater replacements to the originating step and improve scope resolution.
+- 1f5de5a: prepopulate Execute Workflow form from URL query params
+- Updated dependencies [1f5de5a]
+- Updated dependencies [1f5de5a]
+- Updated dependencies [1f5de5a]
+- Updated dependencies [1f5de5a]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.5.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.5
+
 ## 5.4.2
 
 ### Patch Changes
