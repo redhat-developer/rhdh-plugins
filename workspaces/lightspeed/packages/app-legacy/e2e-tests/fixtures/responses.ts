@@ -38,10 +38,6 @@ export const models = [
   },
 ];
 
-export const defaultConversation = {
-  conversation_id: '1348e758-15ed-483a-bca5-b8702bbc79fe',
-};
-
 export const conversations = [
   {
     conversation_id: '1348e758-15ed-483a-bca5-b8702bbc79fe',
@@ -56,11 +52,7 @@ export const conversations = [
 ];
 
 export const moreConversations = [
-  {
-    conversation_id: '1348e758-15ed-483a-bca5-b8702bbc79fe',
-    topic_summary: 'Conversation 1',
-    last_message_timestamp: createdAt,
-  },
+  conversations[0],
   {
     conversation_id: '1348e758-15ed-483a-bca5-b8702bbc79fb',
     topic_summary: 'New Conversation',
@@ -100,6 +92,15 @@ export const mockedShields = [
     provider_resource_id: 'test-shield-id',
   },
 ];
+
+export {
+  getExpectedMcpStatusDetailForMock,
+  mcpServer,
+  mcpServerScenarios,
+  mockedMcpServersResponse,
+  type McpServerMockEntry,
+  type McpServersListMock,
+} from './mcpServerMocks';
 const repeatedSentence =
   'OpenShift deployment is a way to manage applications on the OpenShift platform.';
 const openshiftLongParagraph = `${repeatedSentence} `.repeat(30);
@@ -125,6 +126,9 @@ export const demoChatContent = [
 
 export const botResponse = `This is a placeholder message`;
 
+/** SSE `start.request_id` in {@link generateQueryResponse}. */
+const mockStreamRequestId = '0e3c4cd7-2817-4c34-91a2-6944550364df';
+
 export const generateQueryResponse = (conversationId: string) => {
   const tokens = botResponse.match(/(\s+|[^\s]+)/g) || [];
 
@@ -136,7 +140,10 @@ export const generateQueryResponse = (conversationId: string) => {
 
   events.push({
     event: 'start',
-    data: { conversation_id: conversationId },
+    data: {
+      conversation_id: conversationId,
+      request_id: mockStreamRequestId,
+    },
   });
 
   tokens.forEach((token, index) => {

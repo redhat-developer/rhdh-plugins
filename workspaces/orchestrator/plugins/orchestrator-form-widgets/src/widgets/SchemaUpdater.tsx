@@ -104,7 +104,7 @@ export const SchemaUpdater: Widget<
         });
 
         try {
-          updateSchema(typedData);
+          updateSchema(typedData, props.id);
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error('Error when updating schema', props.id, err);

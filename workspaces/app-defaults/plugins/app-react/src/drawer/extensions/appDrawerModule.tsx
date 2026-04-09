@@ -20,21 +20,16 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
 
-import { AppDrawerProvider } from '../drawer/AppDrawerContext';
-import { ApplicationDrawer } from '../drawer/ApplicationDrawer';
+import { ApplicationDrawer } from '../components/ApplicationDrawer';
 import { appDrawerContentDataRef } from './appDrawerContentDataRef';
 
 /**
- * Wrapper extension that provides the AppDrawerContext **and** renders the
- * ApplicationDrawer inside it.
+ * Wrapper extension that renders the ApplicationDrawer around the app content.
  *
  * Uses AppRootWrapperBlueprint.makeWithOverrides to stay aligned with the
  * blueprint API while adding a custom `drawers` input for content extensions.
- *
- * Because Backstage NFS renders app-root-element extensions as siblings
- * (outside) of app-root-wrapper providers, we cannot use a separate
- * app-root-element for the drawer. Combining both into one wrapper
- * guarantees the drawer lives inside the context provider.
+ * Drawer state is managed by a global singleton store (see drawerStore.ts)
+ * rather than a React context provider.
  */
 const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
   name: 'drawer',
@@ -45,9 +40,7 @@ const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
     const contents = inputs.drawers.map(d => d.get(appDrawerContentDataRef));
     return originalFactory({
       component: ({ children }) => (
-        <AppDrawerProvider>
-          <ApplicationDrawer contents={contents}>{children}</ApplicationDrawer>
-        </AppDrawerProvider>
+        <ApplicationDrawer contents={contents}>{children}</ApplicationDrawer>
       ),
     });
   },
@@ -55,8 +48,8 @@ const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
 
 /**
  * Frontend module that provides the app drawer system.
- * Registers a single wrapper extension that provides context and renders
- * the drawer, plus accepts drawer content contributions via inputs.
+ * Registers a wrapper extension that renders the drawer and accepts
+ * drawer content contributions via inputs.
  *
  * @alpha
  */

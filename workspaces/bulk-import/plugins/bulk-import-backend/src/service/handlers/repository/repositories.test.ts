@@ -29,11 +29,19 @@ import {
   startBackendServer,
 } from '../../../../__fixtures__/testUtils';
 
+// Token header used across repo-listing tests.
+// With user tokens provided for github.com only, the GitHub App path
+// (enterprise.github.com) is skipped — results are scoped to the user's
+// own OAuth credential.
+const GH_USER_TOKENS = JSON.stringify({
+  'https://github.com': 'test-user-token',
+});
+
 describe('repositories', () => {
   const useTestData = setupTest();
 
   describe('GET /repositories', () => {
-    it('returns 200 when repositories are fetched without errors', async () => {
+    it('returns 401 when X-SCM-Tokens header is absent', async () => {
       const { mockCatalogClient } = useTestData();
       const backendServer = await startBackendServer(
         mockCatalogClient,
@@ -44,7 +52,25 @@ describe('repositories', () => {
         '/api/bulk-import/repositories',
       );
 
+      expect(response.status).toEqual(401);
+      expect(response.body).toHaveProperty('error');
+    });
+
+    it('returns 200 when repositories are fetched without errors', async () => {
+      const { mockCatalogClient } = useTestData();
+      const backendServer = await startBackendServer(
+        mockCatalogClient,
+        AuthorizeResult.ALLOW,
+      );
+
+      const response = await request(backendServer)
+        .get('/api/bulk-import/repositories')
+        .set('X-SCM-Tokens', GH_USER_TOKENS);
+
       expect(response.status).toEqual(200);
+      // With user-scoped tokens, only repos accessible via the user's OAuth
+      // credential (GET /user/repos) are returned. The GitHub App path for
+      // enterprise.github.com is intentionally skipped.
       expect(response.body).toEqual({
         errors: [],
         repositories: [
@@ -60,15 +86,6 @@ describe('repositories', () => {
           {
             defaultBranch: 'master',
             errors: [],
-            id: 'octocat/Hello-World',
-            lastUpdate: '2011-01-26T19:14:43Z',
-            name: 'Hello-World',
-            organization: 'octocat',
-            url: 'http://localhost:8765/octocat/Hello-World',
-          },
-          {
-            defaultBranch: 'master',
-            errors: [],
             id: 'my-user/Lorem-Ipsum',
             lastUpdate: '2011-01-26T19:14:43Z',
             name: 'Lorem-Ipsum',
@@ -76,18 +93,17 @@ describe('repositories', () => {
             url: 'http://localhost:8765/my-user/Lorem-Ipsum',
           },
         ],
-        totalCount: 3,
+        totalCount: 2,
       });
     });
 
-    it('returns 200 with the errors in the body when repositories are fetched, but errors have occurred', async () => {
+    it('returns 500 when the user token call fails for all integrations', async () => {
       const { server, mockCatalogClient } = useTestData();
       const backendServer = await startBackendServer(
         mockCatalogClient,
         AuthorizeResult.ALLOW,
       );
-      // change the response to 'GET /user/repos'
-      // to simulate an error retrieving list of orgs from GH Token.
+      // Override GET /user/repos to simulate a failed user-token credential.
       server.use(
         rest.get(`${LOCAL_ADDR}/user/repos`, (_, res, ctx) =>
           res(
@@ -97,25 +113,13 @@ describe('repositories', () => {
         ),
       );
 
-      const response = await request(backendServer).get(
-        '/api/bulk-import/repositories',
-      );
+      const response = await request(backendServer)
+        .get('/api/bulk-import/repositories')
+        .set('X-SCM-Tokens', GH_USER_TOKENS);
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toEqual(500);
       expect(response.body).toEqual({
         errors: ['Github Token auth did not succeed'],
-        repositories: [
-          {
-            defaultBranch: 'master',
-            errors: [],
-            id: 'octocat/Hello-World',
-            lastUpdate: '2011-01-26T19:14:43Z',
-            name: 'Hello-World',
-            organization: 'octocat',
-            url: 'http://localhost:8765/octocat/Hello-World',
-          },
-        ],
-        totalCount: 1,
       });
     });
 
@@ -125,19 +129,18 @@ describe('repositories', () => {
         mockCatalogClient,
         AuthorizeResult.ALLOW,
       );
-      // change the responses to simulate error retrieving list of repos from all GH integrations.
+      // Override all GH integration endpoints to simulate total failure.
       addHandlersForGHTokenAppErrors(server);
 
-      const reposResp = await request(backendServer).get(
-        '/api/bulk-import/repositories',
-      );
+      const reposResp = await request(backendServer)
+        .get('/api/bulk-import/repositories')
+        .set('X-SCM-Tokens', GH_USER_TOKENS);
 
       expect(reposResp.status).toEqual(500);
+      // With user tokens only the user-token path runs; the GitHub App path is
+      // not taken, so only the user-token error is surfaced.
       expect(reposResp.body).toEqual({
-        errors: [
-          'Github App auth returned an error',
-          'Github Token auth did not succeed',
-        ],
+        errors: ['Github Token auth did not succeed'],
       });
     });
 
@@ -404,6 +407,21 @@ describe('repositories', () => {
   });
 
   describe('GET /organizations/{org}/repositories', () => {
+    it('returns 401 when X-SCM-Tokens header is absent', async () => {
+      const { mockCatalogClient } = useTestData();
+      const backendServer = await startBackendServer(
+        mockCatalogClient,
+        AuthorizeResult.ALLOW,
+      );
+
+      const response = await request(backendServer).get(
+        '/api/bulk-import/organizations/my-ent-org-1/repositories',
+      );
+
+      expect(response.status).toEqual(401);
+      expect(response.body).toHaveProperty('error');
+    });
+
     it('returns 200 when repositories are fetched without errors', async () => {
       const { mockCatalogClient } = useTestData();
       const backendServer = await startBackendServer(
@@ -411,9 +429,9 @@ describe('repositories', () => {
         AuthorizeResult.ALLOW,
       );
 
-      let response = await request(backendServer).get(
-        '/api/bulk-import/organizations/my-ent-org-1/repositories',
-      );
+      let response = await request(backendServer)
+        .get('/api/bulk-import/organizations/my-ent-org-1/repositories')
+        .set('X-SCM-Tokens', GH_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -432,9 +450,9 @@ describe('repositories', () => {
         totalCount: 1,
       });
 
-      response = await request(backendServer).get(
-        '/api/bulk-import/organizations/my-ent-org-2/repositories',
-      );
+      response = await request(backendServer)
+        .get('/api/bulk-import/organizations/my-ent-org-2/repositories')
+        .set('X-SCM-Tokens', GH_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -462,9 +480,9 @@ describe('repositories', () => {
         totalCount: 2,
       });
 
-      response = await request(backendServer).get(
-        '/api/bulk-import/organizations/my-ent-org--no-repos/repositories',
-      );
+      response = await request(backendServer)
+        .get('/api/bulk-import/organizations/my-ent-org--no-repos/repositories')
+        .set('X-SCM-Tokens', GH_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -480,12 +498,12 @@ describe('repositories', () => {
         mockCatalogClient,
         AuthorizeResult.ALLOW,
       );
-      // change the response to simulate an error retrieving list from GH Token.
+      // Override GH integration endpoints to simulate failure.
       addHandlersForGHTokenAppErrors(server);
 
-      const orgReposResp = await request(backendServer).get(
-        '/api/bulk-import/organizations/some-org/repositories',
-      );
+      const orgReposResp = await request(backendServer)
+        .get('/api/bulk-import/organizations/some-org/repositories')
+        .set('X-SCM-Tokens', GH_USER_TOKENS);
 
       expect(orgReposResp.status).toEqual(500);
       expect(orgReposResp.body).toEqual({

@@ -19,13 +19,14 @@ import { Page } from '@playwright/test';
  * API route patterns for bulk import endpoints
  */
 export const ApiRoutes = {
+  scmHosts: '**/api/bulk-import/scm-hosts*',
   repositories: '**/api/bulk-import/repositories*',
   importsDryRun: '**/api/bulk-import/imports?dryRun=true*',
   imports: '**/api/bulk-import/imports',
   byRepoBackend:
-    '**/api/bulk-import/import/by-repo?repo=https://github.com/test-org/backend-service*',
+    '**/api/bulk-import/import/by-repo?repo=https%3A%2F%2Fgithub.com%2Ftest-org%2Fbackend-service*',
   byRepoFrontend:
-    '**/api/bulk-import/import/by-repo?repo=https://github.com/test-org/frontend-app*',
+    '**/api/bulk-import/import/by-repo?repo=https%3A%2F%2Fgithub.com%2Ftest-org%2Ffrontend-app*',
 } as const;
 
 type ApiRouteKey = keyof typeof ApiRoutes;
@@ -91,6 +92,12 @@ export const mockBulkImportByRepoFrontendResponse = (
   status = 200,
 ) => mockApiResponse(page, ApiRoutes.byRepoFrontend, responseData, status);
 
+export const mockBulkImportSCMHostsResponse = (
+  page: Page,
+  responseData: object,
+  status = 200,
+) => mockApiResponse(page, ApiRoutes.scmHosts, responseData, status);
+
 // Reusable repository definitions
 const repositories = {
   backendService: {
@@ -134,6 +141,23 @@ const repositories = {
     lastUpdate: '2025-05-16T18:52:04Z',
   },
 } as const;
+
+/**
+ * Mock data for SCM hosts response.
+ * Returns empty host lists so the `useRepositories` hook hits the early-return
+ * path (`!urls?.length → return undefined`) and never attempts token collection.
+ * This means `tokenFetchError` stays `undefined`, the query is enabled, and the
+ * frontend fires a request without `X-SCM-Tokens`.
+ *
+ * In production the backend would reject such a request with HTTP 401, but the
+ * Playwright route mock for `ApiRoutes.repositories` intercepts the request
+ * before it reaches the backend, so the e2e tests still receive the mocked
+ * repository data regardless of the missing header.
+ */
+export const mockSCMHostsData = {
+  github: [],
+  gitlab: [],
+};
 
 /** Mock data for repositories list response */
 export const mockRepositoriesData = {

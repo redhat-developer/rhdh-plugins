@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.6.3
+
+### Patch Changes
+
+- 3d6415d: Avoid layout gaps for `ui:hidden` custom widgets by skipping grid items while
+  keeping hidden widgets mounted.
+- 64fd859: Include JSON Schema `default` values when computing initial form data so
+  template expressions can resolve defaults before widgets render.
+- 60aa6a6: Scope async validate:url calls to the active step in multi-step forms.
+- ac2cbf8: Fix `extractUiSchema` so `ui:*` directives on object schemas that define `properties` (for example `ui:hidden` on a `workflowParams` object) are copied into the generated UI schema.
+- Updated dependencies [5a9d9d8]
+- Updated dependencies [315239c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.3
+
 ## 2.6.2
 
 ### Patch Changes

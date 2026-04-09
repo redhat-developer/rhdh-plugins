@@ -125,6 +125,10 @@ export const DEFAULT_TEST_HANDLERS: RestHandler<
     );
   }),
 
+  rest.get(`${LOCAL_ADDR}/orgs/my-org-1/repos`, (_, res, ctx) => {
+    return res(ctx.status(200), ctx.json([]));
+  }),
+
   rest.get(`${LOCAL_ADDR}/orgs/my-ent-org-1/repos`, (_, res, ctx) => {
     return res(
       ctx.status(200),

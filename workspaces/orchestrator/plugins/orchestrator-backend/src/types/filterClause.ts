@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-export { appDrawerContentDataRef } from './appDrawerContentDataRef';
-export { AppDrawerContentBlueprint } from './AppDrawerContentBlueprint';
-export { appDrawerModule } from './appDrawerModule';
+export interface FilterClauseVariable {
+  clauseVariableName: string;
+  formattedValue: string | boolean | string[];
+  clauseVariableType: string;
+}
+
+export interface FilterClause {
+  clauseVariable: Array<FilterClauseVariable>;
+  clause: string;
+}

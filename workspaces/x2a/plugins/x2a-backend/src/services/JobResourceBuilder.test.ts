@@ -405,6 +405,13 @@ describe('JobResourceBuilder', () => {
         branch: 'main',
       },
     };
+    const ownerReference = {
+      apiVersion: 'batch/v1',
+      kind: 'Job',
+      name: 'job-x2a-init-abc123',
+      uid: 'test-uid-123',
+      blockOwnerDeletion: true,
+    };
 
     it('should include source repository credentials', () => {
       const secret = JobResourceBuilder.buildJobSecret(
@@ -412,6 +419,7 @@ describe('JobResourceBuilder', () => {
         projectId,
         phase,
         gitCredentials,
+        ownerReference,
       );
 
       expect(secret.stringData).toMatchObject({
@@ -427,6 +435,7 @@ describe('JobResourceBuilder', () => {
         projectId,
         phase,
         gitCredentials,
+        ownerReference,
       );
 
       expect(secret.stringData).toMatchObject({
@@ -442,6 +451,7 @@ describe('JobResourceBuilder', () => {
         projectId,
         phase,
         gitCredentials,
+        ownerReference,
       );
 
       // Job secret should only have Git credentials
@@ -457,6 +467,7 @@ describe('JobResourceBuilder', () => {
         projectId,
         phase,
         gitCredentials,
+        ownerReference,
       );
 
       expect(secret.metadata?.labels).toMatchObject({
@@ -475,6 +486,7 @@ describe('JobResourceBuilder', () => {
         projectId,
         phase,
         gitCredentials,
+        ownerReference,
       );
 
       expect(secret.metadata?.name).toBe(`x2a-job-secret-${phase}-${jobId}`);
@@ -486,6 +498,7 @@ describe('JobResourceBuilder', () => {
         projectId,
         phase,
         gitCredentials,
+        ownerReference,
       );
 
       expect(secret.metadata?.annotations).toMatchObject({
@@ -495,12 +508,25 @@ describe('JobResourceBuilder', () => {
       });
     });
 
+    it('should include ownerReferences to the parent Job', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        phase,
+        gitCredentials,
+        ownerReference,
+      );
+
+      expect(secret.metadata?.ownerReferences).toEqual([ownerReference]);
+    });
+
     it('should be Opaque secret type', () => {
       const secret = JobResourceBuilder.buildJobSecret(
         jobId,
         projectId,
         phase,
         gitCredentials,
+        ownerReference,
       );
 
       expect(secret.type).toBe('Opaque');

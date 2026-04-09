@@ -63,6 +63,8 @@ const quickstartTranslationFr = createTranslationMessages({
     'button.openQuickstartGuide': 'Ouvrir le guide de démarrage rapide',
     'button.closeDrawer': 'Fermer le tiroir',
     'button.gotIt': "J'ai compris!",
+    'snackbar.helpPrompt':
+      'Besoin d’aide ? Consultez le guide de démarrage rapide en cliquant sur l’icône (?) dans l’en-tête !',
     'footer.progress': '{{progress}}% de progrès',
     'footer.notStarted': 'Non démarré',
     'footer.hide': 'Cacher',

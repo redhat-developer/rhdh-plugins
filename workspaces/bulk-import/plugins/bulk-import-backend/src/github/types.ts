@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-import type { SerializedError } from '@backstage/errors';
 import type {
   GithubCredentials,
   GithubCredentialsProvider,
 } from '@backstage/integration';
 
 import { type RestEndpointMethodTypes } from '@octokit/rest';
+
+export type {
+  SCMFetchError as GithubFetchError,
+  SCMOrganization as GithubOrganization,
+  SCMOrganizationResponse as GithubOrganizationResponse,
+  SCMRepository as GithubRepository,
+  SCMRepositoryResponse as GithubRepositoryResponse,
+} from '../scm/types';
 
 // From https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
 export type GithubOrganization = {
