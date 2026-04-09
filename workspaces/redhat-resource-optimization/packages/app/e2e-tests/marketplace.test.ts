@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
-import { performGuestLogin } from './fixtures/auth';
+import { test, expect, Page } from '@playwright/test';
+import { performGuestLogin, performLogin } from './fixtures/auth';
 
 /**
  * RHDH Extensions Marketplace — Plugin Installation Tests
@@ -23,7 +23,13 @@ import { performGuestLogin } from './fixtures/auth';
  * JIRA: FLPATH-2458 / FLPATH-2460
  *
  * Verifies that the Resource Optimization / Cost Management plugin can be
- * discovered and installed from the RHDH Extensions Marketplace UI.
+ * discovered and installed from the RHDH Extensions Marketplace UI, and
+ * that the plugin's sidebar items appear after installation.
+ *
+ * Sidebar structure varies by RHDH version:
+ *   - RHDH 1.8 (ROS 1.2.x): flat "Optimizations" sidebar item
+ *   - RHDH 1.9+ (Cost Mgmt 1.3.x): "Cost management" group →
+ *       "OpenShift" + "Optimizations" sub-items
  *
  * Prerequisites:
  *   - RHDH deployed with extensions.installation.enabled: true
@@ -33,6 +39,27 @@ import { performGuestLogin } from './fixtures/auth';
 
 const EXTENSIONS_PATH = '/extensions';
 const PLUGIN_SEARCH_TERM = 'resource optimization';
+
+/**
+ * Detect which sidebar layout the installed plugin exposes.
+ * Returns 'nested' for 1.3.x+ (Cost management group) or 'flat' for 1.2.x
+ * (Optimizations top-level item), or null if neither is found.
+ */
+async function detectSidebarLayout(
+  page: Page,
+): Promise<'nested' | 'flat' | null> {
+  const costMgmt = page.getByRole('button', { name: /^cost management$/i });
+  if (await costMgmt.isVisible({ timeout: 5000 }).catch(() => false)) {
+    return 'nested';
+  }
+
+  const optimizations = page.getByLabel('Optimizations', { exact: true });
+  if (await optimizations.isVisible({ timeout: 3000 }).catch(() => false)) {
+    return 'flat';
+  }
+
+  return null;
+}
 
 test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => {
   test.beforeEach(async ({ page }) => {
@@ -166,12 +193,146 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
         }),
       ).toBeVisible();
     } else {
-      // Plugin may not appear immediately; log for CI visibility
       test.info().annotations.push({
         type: 'info',
         description:
           'ROS plugin not yet visible in Installed packages — may require pod restart',
       });
+    }
+  });
+
+  // -----------------------------------------------------------------------
+  // Post-install sidebar verification
+  //
+  // After marketplace install, verify the plugin registered its sidebar
+  // items and that the page route loads without a 404.
+  // -----------------------------------------------------------------------
+
+  test('FLPATH-2458: Plugin sidebar item appears after install', async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    await performLogin(page);
+
+    // Wait for nav sidebar to fully render
+    await page
+      .locator('nav')
+      .first()
+      .waitFor({ state: 'visible', timeout: 30000 });
+
+    let layout = await detectSidebarLayout(page);
+
+    if (!layout) {
+      // Plugin may not be loaded yet (pod restarting after install).
+      // Poll up to 90 seconds: reload → re-login → check sidebar.
+      const deadline = Date.now() + 90_000;
+      while (!layout && Date.now() < deadline) {
+        await page.waitForTimeout(10_000);
+        // Re-navigate and re-login in case the pod restarted
+        const responded = await page
+          .goto('/', { waitUntil: 'domcontentloaded', timeout: 15000 })
+          .catch(() => null);
+        if (!responded) continue;
+        await performLogin(page);
+        /* eslint-disable testing-library/await-async-utils */
+        await page
+          .locator('nav')
+          .first()
+          .waitFor({ state: 'visible', timeout: 15000 })
+          .catch(() => {});
+        /* eslint-enable testing-library/await-async-utils */
+        layout = await detectSidebarLayout(page);
+      }
+    }
+
+    expect(
+      layout,
+      'Expected either "Cost management" group (1.9+) or "Optimizations" item (1.8) in the sidebar',
+    ).not.toBeNull();
+
+    test.info().annotations.push({
+      type: 'info',
+      description: `Detected sidebar layout: ${layout}`,
+    });
+  });
+
+  test('FLPATH-2458: Plugin sidebar expands and shows sub-items (1.9+) or single item (1.8)', async ({
+    page,
+  }) => {
+    await performLogin(page);
+    await page
+      .locator('nav')
+      .first()
+      .waitFor({ state: 'visible', timeout: 30000 });
+
+    const layout = await detectSidebarLayout(page);
+
+    if (layout === 'nested') {
+      // RHDH 1.9+: "Cost management" group with sub-items
+      const costMgmt = page.getByRole('button', {
+        name: /^cost management$/i,
+      });
+      await expect(costMgmt).toBeVisible({ timeout: 10000 });
+      await costMgmt.click();
+
+      await expect(
+        page.getByRole('link', { name: 'Optimizations' }),
+      ).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('link', { name: 'OpenShift' })).toBeVisible({
+        timeout: 5000,
+      });
+    } else if (layout === 'flat') {
+      // RHDH 1.8: flat "Optimizations" item
+      const optimizations = page.getByLabel('Optimizations', { exact: true });
+      await expect(optimizations).toBeVisible({ timeout: 10000 });
+    } else {
+      test.skip(true, 'Plugin sidebar not detected — pod may need restart');
+    }
+  });
+
+  test('FLPATH-2458: Clicking sidebar item navigates to plugin page', async ({
+    page,
+  }) => {
+    await performLogin(page);
+    await page
+      .locator('nav')
+      .first()
+      .waitFor({ state: 'visible', timeout: 30000 });
+
+    const layout = await detectSidebarLayout(page);
+
+    if (layout === 'nested') {
+      const costMgmt = page.getByRole('button', {
+        name: /^cost management$/i,
+      });
+      await costMgmt.click();
+      await page.getByRole('link', { name: 'Optimizations' }).click();
+    } else if (layout === 'flat') {
+      await page.getByLabel('Optimizations', { exact: true }).click();
+    } else {
+      test.skip(true, 'Plugin sidebar not detected — pod may need restart');
+      return;
+    }
+
+    await page.waitForLoadState('domcontentloaded');
+
+    // Verify the page loaded — not a 404 or error page
+    await expect(page).not.toHaveURL(/.*error.*/);
+    const heading = page.getByRole('heading', {
+      name: /resource optimization/i,
+    });
+    const hasHeading = await heading
+      .isVisible({ timeout: 15000 })
+      .catch(() => false);
+
+    if (hasHeading) {
+      await expect(heading).toBeVisible();
+    } else {
+      // Page loaded but may show empty/error state without backend config —
+      // that's expected. Confirm we're on a plugin route, not a 404.
+      await expect(page).toHaveURL(
+        /cost-management|redhat-resource-optimization/,
+      );
     }
   });
 });
