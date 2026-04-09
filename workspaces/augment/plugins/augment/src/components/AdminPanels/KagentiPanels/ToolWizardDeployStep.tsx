@@ -16,12 +16,16 @@
 
 import { type FC, useState } from 'react';
 import type { KagentiBuildStrategy } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
+import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
 import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
@@ -31,7 +35,7 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { DeploymentMethod } from './toolWizardTypes';
+import type { BuildArgRow, DeploymentMethod } from './toolWizardTypes';
 
 interface ToolWizardDeployStepProps {
   deploymentMethod: DeploymentMethod;
@@ -58,6 +62,10 @@ interface ToolWizardDeployStepProps {
   buildStrategyError: string | null;
   dockerfile: string;
   setDockerfile: (v: string) => void;
+  buildArgRows: BuildArgRow[];
+  addBuildArgRow: () => void;
+  updateBuildArgRow: (id: number, value: string) => void;
+  removeBuildArgRow: (id: number) => void;
   buildTimeout: string;
   setBuildTimeout: (v: string) => void;
 }
@@ -87,6 +95,10 @@ export const ToolWizardDeployStep: FC<ToolWizardDeployStepProps> = ({
   buildStrategyError,
   dockerfile,
   setDockerfile,
+  buildArgRows,
+  addBuildArgRow,
+  updateBuildArgRow,
+  removeBuildArgRow,
   buildTimeout,
   setBuildTimeout,
 }) => {
@@ -270,6 +282,50 @@ export const ToolWizardDeployStep: FC<ToolWizardDeployStepProps> = ({
                   placeholder="Dockerfile"
                   helperText="Path to the Dockerfile relative to the context directory."
                 />
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, display: 'block' }}
+                  >
+                    Build arguments
+                  </Typography>
+                  <Stack spacing={1}>
+                    {buildArgRows.map(row => (
+                      <Stack
+                        key={row.id}
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                      >
+                        <TextField
+                          value={row.value}
+                          onChange={e =>
+                            updateBuildArgRow(row.id, e.target.value)
+                          }
+                          size="small"
+                          fullWidth
+                          placeholder="ARG_NAME=value"
+                        />
+                        <IconButton
+                          aria-label="Remove argument"
+                          onClick={() => removeBuildArgRow(row.id)}
+                          size="small"
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    ))}
+                    <Button
+                      startIcon={<AddIcon />}
+                      onClick={addBuildArgRow}
+                      size="small"
+                      sx={{ alignSelf: 'flex-start', textTransform: 'none' }}
+                    >
+                      Add build argument
+                    </Button>
+                  </Stack>
+                </Box>
                 <TextField
                   label="Build timeout"
                   value={buildTimeout}

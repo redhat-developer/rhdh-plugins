@@ -174,6 +174,10 @@ export function CreateToolWizard({
               buildStrategyError={form.buildStrategyError}
               dockerfile={form.dockerfile}
               setDockerfile={form.setDockerfile}
+              buildArgRows={form.buildArgRows}
+              addBuildArgRow={form.addBuildArgRow}
+              updateBuildArgRow={form.updateBuildArgRow}
+              removeBuildArgRow={form.removeBuildArgRow}
               buildTimeout={form.buildTimeout}
               setBuildTimeout={form.setBuildTimeout}
             />

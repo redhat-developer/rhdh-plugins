@@ -25,6 +25,7 @@ import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import type { BuildProgress } from './agentWizardTypes';
 import type {
+  BuildArgRow,
   DeploymentMethod,
   EnvRow,
   EnvSource,
@@ -99,6 +100,10 @@ export interface UseToolWizardFormReturn {
   buildStrategyError: string | null;
   dockerfile: string;
   setDockerfile: (v: string) => void;
+  buildArgRows: BuildArgRow[];
+  addBuildArgRow: () => void;
+  updateBuildArgRow: (id: number, value: string) => void;
+  removeBuildArgRow: (id: number) => void;
   buildTimeout: string;
   setBuildTimeout: (v: string) => void;
 
@@ -179,6 +184,7 @@ export function useToolWizardForm(
     null,
   );
   const [dockerfile, setDockerfile] = useState('Dockerfile');
+  const [buildArgRows, setBuildArgRows] = useState<BuildArgRow[]>([]);
   const [buildTimeout, setBuildTimeout] = useState('15m');
 
   const [workloadType, setWorkloadType] = useState<WorkloadType>('deployment');
@@ -226,6 +232,7 @@ export function useToolWizardForm(
     setBuildStrategy('');
     setBuildStrategyError(null);
     setDockerfile('Dockerfile');
+    setBuildArgRows([]);
     setBuildTimeout('15m');
     setWorkloadType('deployment');
     setPersistentStorageEnabled(false);
@@ -284,6 +291,7 @@ export function useToolWizardForm(
       imageTag,
       buildStrategy,
       dockerfile,
+      buildArgRows,
       buildTimeout,
       workloadType,
       persistentStorageEnabled,
@@ -311,6 +319,7 @@ export function useToolWizardForm(
       imageTag,
       buildStrategy,
       dockerfile,
+      buildArgRows,
       buildTimeout,
       workloadType,
       persistentStorageEnabled,
@@ -696,6 +705,21 @@ export function useToolWizardForm(
     [updatePortRow],
   );
 
+  const addBuildArgRow = useCallback(() => {
+    setBuildArgRows(rows => [
+      ...rows,
+      { id: nextRowId(rowIdRef), value: '' },
+    ]);
+  }, []);
+  const updateBuildArgRow = useCallback((id: number, value: string) => {
+    setBuildArgRows(rows =>
+      rows.map(r => (r.id === id ? { ...r, value } : r)),
+    );
+  }, []);
+  const removeBuildArgRow = useCallback((id: number) => {
+    setBuildArgRows(rows => rows.filter(r => r.id !== id));
+  }, []);
+
   return {
     activeStep,
     submitting,
@@ -749,6 +773,10 @@ export function useToolWizardForm(
     buildStrategyError,
     dockerfile,
     setDockerfile,
+    buildArgRows,
+    addBuildArgRow,
+    updateBuildArgRow,
+    removeBuildArgRow,
     buildTimeout,
     setBuildTimeout,
 
