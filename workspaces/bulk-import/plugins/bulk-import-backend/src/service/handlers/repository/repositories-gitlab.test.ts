@@ -141,7 +141,8 @@ describe('repositories', () => {
 
         const response = await request(backendServer)
           .get('/api/bulk-import/repositories')
-          .query({ approvalTool: 'GITLAB' });
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({
@@ -196,7 +197,8 @@ describe('repositories', () => {
 
         const response = await request(backendServer)
           .get('/api/bulk-import/repositories')
-          .query({ approvalTool: 'GITLAB' });
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({
@@ -235,7 +237,8 @@ describe('repositories', () => {
 
         const response = await request(backendServer)
           .get('/api/bulk-import/repositories')
-          .query({ approvalTool: 'GITLAB' });
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({
@@ -309,7 +312,8 @@ describe('repositories', () => {
 
         const response = await request(backendServer)
           .get('/api/bulk-import/repositories')
-          .query({ approvalTool: 'GITLAB' });
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({
@@ -348,7 +352,8 @@ describe('repositories', () => {
 
         const response = await request(backendServer)
           .get('/api/bulk-import/repositories')
-          .query({ approvalTool: 'GITLAB' });
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({

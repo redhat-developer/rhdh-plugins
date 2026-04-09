@@ -153,9 +153,9 @@ describe('repositories', () => {
           AuthorizeResult.ALLOW,
         );
 
-        const response = await request(backendServer).get(
-          '/api/bulk-import/repositories',
-        );
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({
@@ -170,15 +170,7 @@ describe('repositories', () => {
               organization: 'octocat',
               url: 'http://localhost:8765/octocat/animated-happiness',
             },
-            {
-              defaultBranch: 'master',
-              errors: [],
-              id: 'octocat/Hello-World',
-              lastUpdate: '2011-01-26T19:14:43Z',
-              name: 'Hello-World',
-              organization: 'octocat',
-              url: 'http://localhost:8765/octocat/Hello-World',
-            },
+
             {
               defaultBranch: 'master',
               errors: [],
@@ -189,7 +181,7 @@ describe('repositories', () => {
               url: 'http://localhost:8765/my-user/Lorem-Ipsum',
             },
           ],
-          totalCount: 3,
+          totalCount: 2,
         });
       });
 
@@ -215,9 +207,9 @@ describe('repositories', () => {
           AuthorizeResult.ALLOW,
         );
 
-        const response = await request(backendServer).get(
-          '/api/bulk-import/repositories',
-        );
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({
@@ -253,9 +245,9 @@ describe('repositories', () => {
           AuthorizeResult.ALLOW,
         );
 
-        const response = await request(backendServer).get(
-          '/api/bulk-import/repositories',
-        );
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({
@@ -326,9 +318,9 @@ describe('repositories', () => {
           AuthorizeResult.ALLOW,
         );
 
-        const response = await request(backendServer).get(
-          '/api/bulk-import/repositories',
-        );
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({
@@ -364,9 +356,9 @@ describe('repositories', () => {
           AuthorizeResult.ALLOW,
         );
 
-        const response = await request(backendServer).get(
-          '/api/bulk-import/repositories',
-        );
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
 
         expect(response.status).toEqual(200);
         expect(response.body).toEqual({
@@ -381,15 +373,7 @@ describe('repositories', () => {
               organization: 'octocat',
               url: 'http://localhost:8765/octocat/animated-happiness',
             },
-            {
-              defaultBranch: 'master',
-              errors: [],
-              id: 'octocat/Hello-World',
-              lastUpdate: '2011-01-26T19:14:43Z',
-              name: 'Hello-World',
-              organization: 'octocat',
-              url: 'http://localhost:8765/octocat/Hello-World',
-            },
+
             {
               defaultBranch: 'master',
               errors: [],
@@ -400,7 +384,7 @@ describe('repositories', () => {
               url: 'http://localhost:8765/my-user/Lorem-Ipsum',
             },
           ],
-          totalCount: 3,
+          totalCount: 2,
         });
       });
     });
