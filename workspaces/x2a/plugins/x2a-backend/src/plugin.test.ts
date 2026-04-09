@@ -55,6 +55,12 @@ const mockInputProject: ProjectsPostRequest = {
 
 const mockUserId = `user: default/user1`;
 const BASE_CONFIG = {
+  backend: {
+    database: {
+      client: 'better-sqlite3',
+      connection: ':memory:',
+    },
+  },
   x2a: {
     kubernetes: {
       namespace: 'test-namespace',

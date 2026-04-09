@@ -13,20 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { x2APlugin as default } from './plugin';
-export { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
-export { kubeServiceRef } from './services/KubeService';
-export type { JobStatusInfo } from './services/KubeService';
-export type {
-  AAPCredentials,
-  GitRepo,
-  JobCreateParams,
-} from './services/types';
-export type { CreateJobInput } from './services/X2ADatabaseService/jobOperations';
-export type { ReconcileJobDeps } from './router/types';
-export {
-  getUserRef,
-  getGroupsOfUser,
-  reconcileJobStatus,
-  generateCallbackToken,
-} from './router/common';
+import { Routes, Route } from 'react-router-dom';
+import { ConsentPage } from './ConsentPage';
+
+export const Router = () => {
+  return (
+    <Routes>
+      <Route path="authorize/:sessionId" element={<ConsentPage />} />
+    </Routes>
+  );
+};

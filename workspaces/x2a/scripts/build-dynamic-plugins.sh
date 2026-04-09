@@ -24,6 +24,8 @@ PUSH_IMAGES=false
 declare -A PLUGIN_IMAGES=(
   ["x2a"]="red-hat-developer-hub-backstage-plugin-x2a"
   ["x2a-backend"]="red-hat-developer-hub-backstage-plugin-x2a-backend"
+  ["x2a-dcr"]="red-hat-developer-hub-backstage-plugin-x2a-dcr"
+  ["x2a-mcp-extras"]="red-hat-developer-hub-backstage-plugin-x2a-mcp-extras"
   ["scaffolder-backend-module-x2a"]="red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a"
 )
 

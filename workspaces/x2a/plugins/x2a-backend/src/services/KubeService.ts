@@ -53,6 +53,7 @@ import { stringifyError } from '../utils';
 
 /**
  * Job status information from Kubernetes
+ * @public
  */
 export interface JobStatusInfo {
   status: 'pending' | 'running' | 'success' | 'error';
@@ -470,6 +471,10 @@ export class KubeService {
   }
 }
 
+/**
+ * The service reference for the KubeService.
+ * @public
+ */
 export const kubeServiceRef = createServiceRef<Expand<KubeService>>({
   id: 'x2a-kubernetes',
   defaultFactory: async service =>

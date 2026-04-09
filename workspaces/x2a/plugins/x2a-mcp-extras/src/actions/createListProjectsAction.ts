@@ -32,6 +32,10 @@ export function createListProjectsAction(options: X2aActionsOptions) {
     description: `List migration projects visible to the current user with optional pagination and sorting.
 Returns projects with their current status, migration plan summary, and init-job state.
 When authenticated via OAuth (DCR), results are scoped to the user's RBAC permissions.`,
+    attributes: {
+      readOnly: true,
+      idempotent: true,
+    },
     schema: {
       input: z =>
         z.object({

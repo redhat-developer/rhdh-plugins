@@ -18,8 +18,12 @@
 import { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { AAPCredentials } from '../schema/openapi/generated/models';
 
+/** @public */
 export type { AAPCredentials };
 
+/**
+ * @public
+ */
 export type GitRepo = {
   url: string;
   branch: string;
@@ -41,6 +45,7 @@ export interface ProjectCredentials {
 
 /**
  * Parameters for creating a Kubernetes job
+ * @public
  */
 export interface JobCreateParams {
   jobId: string;

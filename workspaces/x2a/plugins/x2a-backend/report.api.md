@@ -4,48 +4,114 @@
 
 ```ts
 
-import { Artifact as Artifact_2 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import { BackstageCredentials } from '@backstage/backend-plugin-api';
 import { BackstageUserPrincipal } from '@backstage/backend-plugin-api';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
-import type { DiscoveryService } from '@backstage/backend-plugin-api';
-import type { HttpAuthService } from '@backstage/backend-plugin-api';
-import { Job as Job_2 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { JobStatusEnum as JobStatusEnum_2 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { JobStatusEnum } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import { MigrationPhase as MigrationPhase_2 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import type { PermissionsService } from '@backstage/backend-plugin-api';
 import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import type { RootConfigService } from '@backstage/backend-plugin-api';
+import { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ServiceRef } from '@backstage/backend-plugin-api';
-import { Telemetry as Telemetry_2 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Telemetry } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { V1Job } from '@kubernetes/client-node';
+import type { V1OwnerReference } from '@kubernetes/client-node';
 import type { V1Pod } from '@kubernetes/client-node';
 import type { V1Secret } from '@kubernetes/client-node';
 
-// Warning: (ae-missing-release-tag) "generateCallbackToken" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
+// @public (undocumented)
+export interface AAPCredentials {
+    oauthToken?: string;
+    orgName: string;
+    password?: string;
+    url: string;
+    username?: string;
+}
+
+// @public (undocumented)
+export interface CreateJobInput {
+    // (undocumented)
+    artifacts?: Pick<Artifact, 'type' | 'value'>[];
+    // (undocumented)
+    callbackToken?: string | null;
+    // (undocumented)
+    errorDetails?: string | null;
+    // (undocumented)
+    finishedAt?: Date | null;
+    // (undocumented)
+    k8sJobName?: string | null;
+    // (undocumented)
+    log?: string | null;
+    // (undocumented)
+    moduleId?: string | null;
+    // (undocumented)
+    phase: MigrationPhase;
+    // (undocumented)
+    projectId: string;
+    // (undocumented)
+    startedAt?: Date;
+    // (undocumented)
+    status?: JobStatusEnum;
+}
+
 // @public
 export function generateCallbackToken(): string;
 
-// Warning: (ae-missing-release-tag) "getGroupsOfUser" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
 // @public
 export function getGroupsOfUser(userEntityRef: string, options: {
     catalog: CatalogService;
     credentials: BackstageCredentials;
 }): Promise<string[]>;
 
-// Warning: (ae-missing-release-tag) "getUserRef" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
 // @public
 export function getUserRef(credentials: BackstageCredentials): string;
 
-// Warning: (ae-missing-release-tag) "kubeServiceRef" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
 // @public (undocumented)
+export type GitRepo = {
+    url: string;
+    branch: string;
+    token: string;
+};
+
+// @public
+export interface JobCreateParams {
+    aapCredentials?: AAPCredentials;
+    // (undocumented)
+    callbackToken: string;
+    // (undocumented)
+    callbackUrl: string;
+    // (undocumented)
+    jobId: string;
+    moduleId?: string;
+    moduleName?: string;
+    // (undocumented)
+    phase: MigrationPhase;
+    projectAbbrev: string;
+    // (undocumented)
+    projectId: string;
+    // (undocumented)
+    projectName: string;
+    sourceRepo: GitRepo;
+    targetRepo: GitRepo;
+    // (undocumented)
+    user: string;
+    // (undocumented)
+    userPrompt?: string;
+}
+
+// @public
+export interface JobStatusInfo {
+    // (undocumented)
+    message?: string;
+    // (undocumented)
+    status: 'pending' | 'running' | 'success' | 'error';
+}
+
+// @public
 export const kubeServiceRef: ServiceRef<    {
 createProjectSecret: (projectId: string, aapCredentials?: AAPCredentials) => Promise<void>;
 getProjectSecret: (projectId: string) => Promise<V1Secret | null>;
@@ -53,7 +119,7 @@ deleteProjectSecret: (projectId: string) => Promise<void>;
 createJobSecret: (jobId: string, projectId: string, phase: string, gitCredentials: {
 sourceRepo: GitRepo;
 targetRepo: GitRepo;
-}) => Promise<void>;
+}, ownerReference: V1OwnerReference) => Promise<void>;
 createJob: (params: JobCreateParams) => Promise<{
 k8sJobName: string;
 }>;
@@ -66,15 +132,20 @@ items: V1Pod[];
 }>;
 }, "plugin", "singleton">;
 
-// Warning: (ae-forgotten-export) The symbol "RouterDeps" needs to be exported by the entry point index.d.ts
-// Warning: (ae-missing-release-tag) "reconcileJobStatus" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
-export function reconcileJobStatus(job: Job_2, deps: Pick<RouterDeps, 'kubeService' | 'x2aDatabase' | 'logger'>): Promise<Job_2>;
+// @public
+export interface ReconcileJobDeps {
+    // (undocumented)
+    kubeService: typeof kubeServiceRef.T;
+    // (undocumented)
+    logger: LoggerService;
+    // (undocumented)
+    x2aDatabase: typeof x2aDatabaseServiceRef.T;
+}
 
-// Warning: (ae-missing-release-tag) "x2aDatabaseServiceRef" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
+export function reconcileJobStatus(job: Job, deps: ReconcileJobDeps): Promise<Job>;
+
+// @public
 export const x2aDatabaseServiceRef: ServiceRef<    {
 createProject: (input: {
 name: string;
@@ -126,13 +197,13 @@ projectId: string;
 deleteModule: ({ id }: {
 id: string;
 }) => Promise<number>;
-createJob: (job: CreateJobInput) => Promise<Job_2>;
+createJob: (job: CreateJobInput) => Promise<Job>;
 getJob: ({ id }: {
 id: string;
-}) => Promise<Job_2 | undefined>;
+}) => Promise<Job | undefined>;
 getJobWithLog: ({ id, }: {
 id: string;
-}) => Promise<(Job_2 & {
+}) => Promise<(Job & {
 log?: string | null;
 }) | undefined>;
 getJobLogs: ({ jobId }: {
@@ -140,28 +211,28 @@ jobId: string;
 }) => Promise<string | undefined>;
 listJobsForProject: ({ projectId, }: {
 projectId: string;
-}) => Promise<Job_2[]>;
+}) => Promise<Job[]>;
 listJobsForModule: ({ projectId, moduleId, }: {
 projectId: string;
 moduleId: string;
-}) => Promise<Job_2[]>;
+}) => Promise<Job[]>;
 listJobs: ({ projectId, moduleId, phase, lastJobOnly, }: {
 projectId: string;
 moduleId?: string;
-phase?: MigrationPhase_2;
+phase?: MigrationPhase;
 lastJobOnly?: boolean;
-}) => Promise<Job_2[]>;
+}) => Promise<Job[]>;
 updateJob: (update: {
 id: string;
 log?: string | null;
 finishedAt?: Date | null;
-status?: JobStatusEnum_2;
+status?: JobStatusEnum;
 errorDetails?: string | null;
 k8sJobName?: string | null;
-artifacts?: Artifact_2[];
-telemetry?: Telemetry_2 | null;
+artifacts?: Artifact[];
+telemetry?: Telemetry | null;
 commitId?: string;
-}) => Promise<Job_2 | undefined>;
+}) => Promise<Job | undefined>;
 deleteJob: ({ id }: {
 id: string;
 }) => Promise<number>;
@@ -170,15 +241,6 @@ id: string;
 // @public
 const x2APlugin: BackendFeature;
 export default x2APlugin;
-
-// Warnings were encountered during analysis:
-//
-// src/services/KubeService.d.ts:92:5 - (ae-forgotten-export) The symbol "AAPCredentials" needs to be exported by the entry point index.d.ts
-// src/services/KubeService.d.ts:96:9 - (ae-forgotten-export) The symbol "GitRepo" needs to be exported by the entry point index.d.ts
-// src/services/KubeService.d.ts:99:5 - (ae-forgotten-export) The symbol "JobCreateParams" needs to be exported by the entry point index.d.ts
-// src/services/KubeService.d.ts:102:5 - (ae-forgotten-export) The symbol "JobStatusInfo" needs to be exported by the entry point index.d.ts
-// src/services/X2ADatabaseService/index.d.ts:133:5 - (ae-forgotten-export) The symbol "ProjectsGet" needs to be exported by the entry point index.d.ts
-// src/services/X2ADatabaseService/index.d.ts:171:5 - (ae-forgotten-export) The symbol "CreateJobInput" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

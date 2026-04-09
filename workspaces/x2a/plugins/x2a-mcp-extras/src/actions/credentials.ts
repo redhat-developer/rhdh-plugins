@@ -111,7 +111,7 @@ export async function resolveCredentialsContext(options: {
 
   return {
     // The DB layer is typed for user credentials but getUserRef() safely
-    // falls back to 'user:default/system' for non-user principals.
+    // falls back to 'user:default/system' for non-user principals (means if using static tokens).
     credentials: credentials as BackstageCredentials<BackstageUserPrincipal>,
     userRef: getUserRef(credentials),
     groupsOfUser: [],

@@ -39,7 +39,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
 
-import type { RouterDeps } from './types';
+import type { RouterDeps, ReconcileJobDeps } from './types';
 
 /**
  * Checks if the user has the x2aAdminViewPermission.
@@ -59,6 +59,7 @@ export const isUserOfAdminViewPermission = async (
 
 /**
  * Checks if the user has the x2aAdminWritePermission.
+ * @public
  */
 export const isUserOfAdminWritePermission = async (
   request: Request,
@@ -75,6 +76,7 @@ export const isUserOfAdminWritePermission = async (
 
 /**
  * Checks if the user has the x2aUserPermission.
+ * @public
  */
 export const isUserOfX2AUserPermission = async (
   request: Request,
@@ -91,6 +93,7 @@ export const isUserOfX2AUserPermission = async (
 
 /**
  * Authorizes the user for the given list of permissions.
+ * @public
  */
 export const authorize = async (
   request: Request,
@@ -122,6 +125,7 @@ export const authorize = async (
  * Enforces the x2a permissions for the given request.
  *
  * Throws a NotAllowedError if the user does not have any of the x2a.user or x2a.admin (read or update, depending on the readOnly param)
+ * @public
  */
 export const useEnforceX2APermissions = async ({
   req,
@@ -176,6 +180,7 @@ export const useEnforceX2APermissions = async ({
 
 /**
  * Enforces the user can view or write the project.
+ * @public
  */
 export const useEnforceProjectPermissions = async (
   props: {
@@ -237,6 +242,7 @@ export const useEnforceProjectPermissions = async (
  * Safely extracts user reference from credentials with fallback.
  * Accepts any BackstageCredentials type: returns the real userEntityRef for
  * user principals and 'user:default/system' for service/other principals.
+ * @public
  */
 export function getUserRef(credentials: BackstageCredentials): string {
   const principal = credentials?.principal as
@@ -250,6 +256,7 @@ export function getUserRef(credentials: BackstageCredentials): string {
  * Fetches the user entity from the catalog and extracts targetRef from
  * relations of type RELATION_MEMBER_OF.
  * Returns an empty array if the user is not in the catalog or has no group memberships.
+ * @public
  */
 export async function getGroupsOfUser(
   userEntityRef: string,
@@ -292,9 +299,13 @@ export const removeSensitiveFromJob = (job?: UnsecureJob): Job | undefined => {
 // TODO: Remove once collectArtifacts (or the `report` command) is implemented
 // and jobs update their own status on completion. Until then this is the only
 // mechanism that syncs stale DB records with actual K8s job state.
+/**
+ * Reconciles the job status between the database and the Kubernetes cluster.
+ * @public
+ */
 export async function reconcileJobStatus(
   job: Job,
-  deps: Pick<RouterDeps, 'kubeService' | 'x2aDatabase' | 'logger'>,
+  deps: ReconcileJobDeps,
 ): Promise<Job> {
   if (!['pending', 'running'].includes(job.status)) {
     return job;
@@ -332,7 +343,9 @@ export async function reconcileJobStatus(
   return job;
 }
 
-/** Generate a 256-bit hex callback token to match HMAC-SHA256 strength. */
+/** Generate a 256-bit hex callback token to match HMAC-SHA256 strength.
+ * @public
+ */
 export function generateCallbackToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }

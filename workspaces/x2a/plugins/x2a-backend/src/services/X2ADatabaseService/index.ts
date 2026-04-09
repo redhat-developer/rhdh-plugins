@@ -37,9 +37,8 @@ import {
   DEFAULT_PAGE_ORDER,
   DEFAULT_PAGE_SIZE,
   IN_MEMORY_SORT_WARN_THRESHOLD,
+  ProjectsGet,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-
-import { ProjectsGet } from '../../schema/openapi';
 
 import { JobOperations, CreateJobInput } from './jobOperations';
 import { ModuleOperations } from './moduleOperations';
@@ -461,7 +460,11 @@ export class X2ADatabaseService {
   }
 }
 
-// This service is used by the x2a-backend, x2a-mcp-extras x2a-scaffolder-backend-module-x2a plugins, so it must be a root service.
+/**
+ * The service reference for the X2A database service.
+ * Used by x2a-backend, x2a-mcp-extras, and scaffolder-backend-module-x2a plugins (root-scoped).
+ * @public
+ */
 export const x2aDatabaseServiceRef = createServiceRef<
   Expand<X2ADatabaseService>
 >({

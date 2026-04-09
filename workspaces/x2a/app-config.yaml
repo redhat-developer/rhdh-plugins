@@ -93,10 +93,12 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   environment: development
   # Uncomment to enable OAuth DCR for MCP clients (user-identity auth).
-  # Requires @backstage/plugin-auth frontend plugin.
+  # Narrow allowedRedirectUriPatterns to match your specific needs.
+  # Requires either @backstage/plugin-auth or x2a-dcr frontend plugin.
   experimentalDynamicClientRegistration:
     enabled: true
     allowedRedirectUriPatterns:
+      # Keeping those generic for development. Narrow to specific patterns in production.
       - cursor://*
       - https://*
       - http://*

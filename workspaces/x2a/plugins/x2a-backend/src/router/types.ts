@@ -36,3 +36,13 @@ export interface RouterDeps {
   permissionsSvc: PermissionsService;
   config: RootConfigService;
 }
+
+/**
+ * Dependencies for {@link reconcileJobStatus}.
+ * @public
+ */
+export interface ReconcileJobDeps {
+  kubeService: typeof kubeServiceRef.T;
+  x2aDatabase: typeof x2aDatabaseServiceRef.T;
+  logger: LoggerService;
+}
