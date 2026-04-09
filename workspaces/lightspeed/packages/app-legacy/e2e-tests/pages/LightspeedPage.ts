@@ -15,9 +15,17 @@
  */
 
 import { Page, expect, type Locator } from '@playwright/test';
+import {
+  getExpectedMcpStatusDetailForMock,
+  mockedMcpServersResponse,
+  type McpServersListMock,
+} from '../fixtures/responses';
 import { LightspeedMessages, evaluateMessage } from '../utils/translations';
 
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
+
+/** Menu label in LightspeedChatBoxHeader (not yet in i18n). */
+export const MCP_SETTINGS_MENU_ITEM = 'MCP settings';
 
 // Actions
 export async function openChatbot(page: Page) {
@@ -84,7 +92,119 @@ export async function verifyDisplayModeMenuOptions(
     - separator
     - menu:
       - menuitem "${t['settings.pinned.disable']} ${t['settings.pinned.enabled.description']}"
+      - menuitem "${MCP_SETTINGS_MENU_ITEM}"
     `);
+}
+
+// MCP settings (McpServersSettings — English strings until full i18n)
+
+export async function openMcpSettingsPanel(page: Page, t: LightspeedMessages) {
+  await page.getByRole('button', { name: t['aria.settings.label'] }).click();
+  await expect(
+    page.getByRole('menuitem', { name: MCP_SETTINGS_MENU_ITEM }),
+  ).toBeVisible();
+  await page.getByRole('menuitem', { name: MCP_SETTINGS_MENU_ITEM }).click();
+}
+
+export async function closeMcpSettingsPanel(page: Page) {
+  await page.getByRole('button', { name: 'Close MCP settings' }).click();
+}
+
+export function mcpServersTable(page: Page): Locator {
+  return page.getByLabel('MCP servers table');
+}
+
+export function mcpServersTableBodyRows(page: Page): Locator {
+  return mcpServersTable(page).locator('tbody tr');
+}
+
+export function mcpServerRow(page: Page, serverName: string): Locator {
+  return mcpServersTableBodyRows(page).filter({ hasText: serverName });
+}
+
+export function mcpServerToggle(page: Page, serverName: string): Locator {
+  return mcpServersTable(page)
+    .getByRole('gridcell', { name: `Toggle ${serverName}` })
+    .locator('span');
+}
+
+export async function clickMcpServersStatusColumn(page: Page) {
+  await mcpServersTable(page)
+    .getByRole('columnheader', { name: 'Status' })
+    .click();
+}
+
+export async function clickMcpServersNameColumn(page: Page) {
+  await mcpServersTable(page).getByRole('button', { name: 'Name' }).click();
+}
+
+function mcpServersSettingsHeading(page: Page): Locator {
+  return page.getByRole('heading', { name: 'MCP servers', exact: true });
+}
+
+/** Assert the MCP servers settings heading is shown or dismissed with the panel. */
+export async function expectMcpServersSettingsHeading(
+  page: Page,
+  visible: boolean,
+) {
+  const heading = mcpServersSettingsHeading(page);
+  const assertion = visible ? expect(heading) : expect(heading).not;
+  await assertion.toBeVisible();
+}
+
+/**
+ * @param mcpList Expected GET `/mcp-servers` body — must match what `mockMcpServers` returns for this test.
+ */
+export async function verifyMcpSettingsPanel(
+  page: Page,
+  t: LightspeedMessages,
+  mcpList: McpServersListMock = mockedMcpServersResponse,
+) {
+  await openMcpSettingsPanel(page, t);
+
+  const table = mcpServersTable(page);
+  await expect(table).toBeVisible();
+  await expectMcpServersSettingsHeading(page, true);
+  await expect(page.getByText(/^\d+ of \d+ selected/)).toBeVisible();
+
+  // Scope to MCP grid: Dock/overlay leaves the catalog visible, which also has "Name" sort buttons.
+  await expect(table.getByRole('button', { name: 'Name' })).toBeVisible();
+  await expect(
+    table.getByRole('columnheader', { name: 'Status' }),
+  ).toBeVisible();
+
+  await clickMcpServersStatusColumn(page);
+
+  // Close + selected count live in the MCP header, not always inside <form> (fullscreen omits Settings/form wrapper).
+  await expect(
+    page.getByRole('button', { name: 'Close MCP settings' }),
+  ).toBeVisible();
+
+  if (mcpList.servers.length === 0) {
+    await expect(
+      table.getByText('No MCP servers available.', { exact: true }),
+    ).toBeVisible();
+  } else {
+    for (const server of mcpList.servers) {
+      const row = mcpServerRow(page, server.name);
+      await expect(row.getByText(server.name, { exact: true })).toBeVisible();
+      await expect(
+        row.getByText(getExpectedMcpStatusDetailForMock(server), {
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
+  }
+
+  await expect(page.getByLabel('Chatbot', { exact: true }))
+    .toMatchAriaSnapshot(`
+    - button "${t['aria.chatHistoryMenu']}"
+    - button "${t['aria.chatbotSelector']}"
+    - button "${t['aria.settings.label']}"
+    `);
+
+  await closeMcpSettingsPanel(page);
+  await expectMcpServersSettingsHeading(page, false);
 }
 
 /** Chat composer message field (matches sendMessage in testHelper). */

@@ -23,6 +23,8 @@ import {
   botResponse,
   moreConversations,
   mockedShields,
+  mcpServerScenarios,
+  type McpServersListMock,
   thinkingContent,
   assistantResponse,
 } from './fixtures/responses';
@@ -48,7 +50,15 @@ import {
   expectEmptyChatHistory,
   expectConversationArea,
   chatStopButton,
+  verifyMcpSettingsPanel,
   waitForChatMessageLoadingHidden,
+  openMcpSettingsPanel,
+  closeMcpSettingsPanel,
+  mcpServerToggle,
+  mcpServerRow,
+  clickMcpServersStatusColumn,
+  clickMcpServersNameColumn,
+  mcpServersTableBodyRows,
 } from './pages/LightspeedPage';
 import {
   uploadFiles,
@@ -109,6 +119,7 @@ import {
   mockChatHistory,
   mockConversations,
   mockFeedbackStatus,
+  mockMcpServers,
   mockModels,
   mockQuery,
   mockQueryWithResponseDelay,
@@ -120,6 +131,7 @@ import {
   getTranslations,
 } from './utils/translations';
 import { runAccessibilityTests } from './utils/accessibility';
+import { skipUnlessLocales } from './utils/localeSkip';
 
 test.describe('Lightspeed tests', () => {
   const botQuery = 'Please respond';
@@ -138,6 +150,7 @@ test.describe('Lightspeed tests', () => {
     await mockChatHistory(sharedPage);
     await mockQuery(sharedPage, botQuery, conversations);
     await mockShields(sharedPage, mockedShields);
+    await mockMcpServers(sharedPage);
     await mockFeedbackStatus(sharedPage);
 
     await sharedPage.goto('/');
@@ -192,8 +205,103 @@ test.describe('Lightspeed tests', () => {
     });
   });
 
+  test.describe('Chatbot MCP settings', () => {
+    /** Applies mock + opens chatbot + runs panel assertions (single source for `mcpList` vs mock). */
+    async function runMcpPanelScenario(mcpList: McpServersListMock) {
+      await mockMcpServers(sharedPage, mcpList);
+      await openChatbot(sharedPage);
+      await verifyMcpSettingsPanel(sharedPage, translations, mcpList);
+    }
+
+    test.beforeEach(async ({}, testInfo) => {
+      skipUnlessLocales(
+        testInfo,
+        ['en'],
+        'Chatbot MCP settings uses English-only UI strings.',
+      );
+      await sharedPage.goto('/');
+    });
+
+    test.afterEach(async () => {
+      await mockMcpServers(sharedPage);
+    });
+
+    test('Overlay', async () => {
+      await expectBackstagePageVisible(sharedPage);
+      await openChatbot(sharedPage);
+      await verifyMcpSettingsPanel(sharedPage, translations);
+    });
+
+    test('Dock to Window', async () => {
+      await openChatbot(sharedPage);
+      await selectDisplayMode(sharedPage, translations, 'Dock to window');
+      await verifyMcpSettingsPanel(sharedPage, translations);
+    });
+
+    test('Fullscreen', async () => {
+      await openChatbot(sharedPage);
+      await selectDisplayMode(sharedPage, translations, 'Fullscreen');
+      await verifyMcpSettingsPanel(sharedPage, translations);
+    });
+
+    test('Empty list', async () => {
+      await runMcpPanelScenario(mcpServerScenarios.empty);
+    });
+
+    test.describe('Two-row mocks', () => {
+      test('All healthy', async () => {
+        await runMcpPanelScenario(mcpServerScenarios.allHealthy);
+      });
+
+      test('Failed + OK', async () => {
+        await runMcpPanelScenario(mcpServerScenarios.errorAndOk);
+      });
+
+      test('Disabled + active', async () => {
+        await runMcpPanelScenario(mcpServerScenarios.disabledAndOk);
+      });
+
+      test('Both need token', async () => {
+        await runMcpPanelScenario(mcpServerScenarios.twoTokenRequired);
+      });
+    });
+
+    test('Sort works as expected', async () => {
+      await mockMcpServers(sharedPage, mcpServerScenarios.allHealthy);
+      await openChatbot(sharedPage);
+      await openMcpSettingsPanel(sharedPage, translations);
+
+      const rows = mcpServersTableBodyRows(sharedPage);
+      await expect(rows.nth(0)).toContainText('alpha-mcp');
+      await expect(rows.nth(1)).toContainText('beta-mcp');
+
+      await clickMcpServersNameColumn(sharedPage);
+      await expect(rows.nth(0)).toContainText('beta-mcp');
+      await expect(rows.nth(1)).toContainText('alpha-mcp');
+
+      await closeMcpSettingsPanel(sharedPage);
+    });
+
+    test('Toggle works as expected', async () => {
+      const serverName = 'mcp-integration-tools';
+      await openChatbot(sharedPage);
+      await openMcpSettingsPanel(sharedPage, translations);
+
+      const row = mcpServerRow(sharedPage, serverName);
+      await clickMcpServersStatusColumn(sharedPage);
+      await mcpServerToggle(sharedPage, serverName).click();
+      await expect(row.getByText('Disabled', { exact: true })).toBeVisible();
+
+      await mcpServerToggle(sharedPage, serverName).click();
+      await expect(row.getByText('14 tools', { exact: true })).toBeVisible();
+
+      await closeMcpSettingsPanel(sharedPage);
+    });
+  });
+
   test('Lightspeed is available', async ({ browser }, testInfo) => {
-    expect(sharedPage.url()).toContain('/lightspeed');
+    await openLightspeed(sharedPage);
+    await expect(sharedPage).toHaveURL(/\/lightspeed/);
 
     const headings = sharedPage.getByRole('heading');
     await expect(headings.first()).toContainText(
