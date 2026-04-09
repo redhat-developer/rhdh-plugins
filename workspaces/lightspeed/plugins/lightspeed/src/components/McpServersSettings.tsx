@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
@@ -360,10 +360,10 @@ type McpServersValidateResponse = {
   };
 };
 
-type McpTokenValidateResponse = {
+type McpCredentialsValidateResponse = {
   valid: boolean;
-  toolCount: number;
   error?: string;
+  toolCount: number;
 };
 
 const getStatusIcon = (status: ServerStatus, className: string) => {
@@ -429,12 +429,10 @@ export const McpServersSettings = ({
   const [editingServerId, setEditingServerId] = useState<string | null>(null);
   const [tokenInputValue, setTokenInputValue] = useState('');
   const [hasSavedTokenInModal, setHasSavedTokenInModal] = useState(false);
-  const [hadSavedTokenAtOpen, setHadSavedTokenAtOpen] = useState(false);
+  const [canRemovePersonalToken, setCanRemovePersonalToken] = useState(false);
   const [tokenValidationState, setTokenValidationState] =
     useState<TokenValidationState>('idle');
   const [tokenValidationMessage, setTokenValidationMessage] = useState('');
-  const latestTokenValidationRequest = useRef(0);
-  const latestValidatedTokenKey = useRef<string | null>(null);
 
   const getBaseUrl = useCallback(() => {
     return `${configApi.getString('backend.baseUrl')}/api/lightspeed`;
@@ -495,81 +493,21 @@ export const McpServersSettings = ({
             : server,
         ),
       );
+      return data;
     },
     [fetchJson, getBaseUrl],
   );
 
-  const validateTokenInput = useCallback(
-    async (server: McpServer, token: string, requestId: number) => {
-      if (!server.url) {
-        if (requestId !== latestTokenValidationRequest.current) {
-          return;
-        }
-        setTokenValidationState('error');
-        setTokenValidationMessage('Server URL is not available for validation');
-        return;
-      }
-
-      const toFriendlyErrorMessage = (errorMessage?: string) => {
-        if (!errorMessage) {
-          return 'Authorization failed. Try again.';
-        }
-        if (errorMessage.includes('Invalid credentials')) {
-          return 'Authorization failed. Try again.';
-        }
-        return errorMessage;
-      };
-
-      try {
-        const baseUrl = getBaseUrl();
-        const result = await fetchJson<McpTokenValidateResponse>(
-          `${baseUrl}/mcp-servers/validate`,
-          {
-            method: 'POST',
-            body: JSON.stringify({ url: server.url, token }),
-          },
-        );
-
-        if (requestId !== latestTokenValidationRequest.current) {
-          return;
-        }
-
-        const status = result.valid ? 'connected' : 'error';
-        const validationError = result.valid
-          ? undefined
-          : toFriendlyErrorMessage(result.error);
-
-        setServers(prev =>
-          prev.map(existing =>
-            existing.name === server.name
-              ? {
-                  ...existing,
-                  status,
-                  toolCount: result.toolCount,
-                  validationError,
-                }
-              : existing,
-          ),
-        );
-
-        if (result.valid) {
-          setTokenValidationState('success');
-          setTokenValidationMessage('Connection successful');
-        } else {
-          setTokenValidationState('error');
-          setTokenValidationMessage(validationError ?? 'Authorization failed');
-        }
-      } catch (validationError) {
-        if (requestId !== latestTokenValidationRequest.current) {
-          return;
-        }
-        setTokenValidationState('error');
-        setTokenValidationMessage(
-          validationError instanceof Error
-            ? validationError.message
-            : 'Authorization failed. Try again.',
-        );
-      }
+  const validateCredentials = useCallback(
+    async (url: string, token: string) => {
+      const baseUrl = getBaseUrl();
+      return await fetchJson<McpCredentialsValidateResponse>(
+        `${baseUrl}/mcp-servers/validate`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ url, token }),
+        },
+      );
     },
     [fetchJson, getBaseUrl],
   );
@@ -688,19 +626,17 @@ export const McpServersSettings = ({
     setEditingServerId(null);
     setTokenInputValue('');
     setHasSavedTokenInModal(false);
-    setHadSavedTokenAtOpen(false);
+    setCanRemovePersonalToken(false);
     setTokenValidationState('idle');
     setTokenValidationMessage('');
-    latestValidatedTokenKey.current = null;
   }, []);
 
   const openConfigureModal = (server: McpServer) => {
     setEditingServerId(server.id);
     const hasSavedToken = server.hasToken;
     setHasSavedTokenInModal(hasSavedToken);
-    setHadSavedTokenAtOpen(hasSavedToken);
+    setCanRemovePersonalToken(server.hasUserToken);
     setTokenInputValue(hasSavedToken ? SAVED_TOKEN_MASK : '');
-    latestValidatedTokenKey.current = null;
     if (server.status === 'error' && server.validationError) {
       setTokenValidationState('error');
       setTokenValidationMessage(server.validationError);
@@ -717,68 +653,7 @@ export const McpServersSettings = ({
     setTokenInputValue(value);
     setTokenValidationState('idle');
     setTokenValidationMessage('');
-    latestValidatedTokenKey.current = null;
   };
-
-  useEffect(() => {
-    const isSavedTokenPlaceholder =
-      hasSavedTokenInModal && tokenInputValue === SAVED_TOKEN_MASK;
-    const token = tokenInputValue.trim();
-    const editingServerName = editingServer?.name;
-    const editingServerUrl = editingServer?.url;
-    const tokenKey = editingServerName
-      ? `${editingServerName}::${token}`
-      : null;
-    const shouldValidate =
-      Boolean(editingServerName) &&
-      Boolean(editingServerUrl) &&
-      canManageMcp &&
-      Boolean(token) &&
-      !isSavedTokenPlaceholder &&
-      tokenKey !== latestValidatedTokenKey.current;
-
-    const timeoutId = shouldValidate
-      ? (() => {
-          const requestId = latestTokenValidationRequest.current + 1;
-          latestTokenValidationRequest.current = requestId;
-          latestValidatedTokenKey.current = tokenKey;
-          setTokenValidationState('validating');
-          setTokenValidationMessage('Validating token...');
-          return window.setTimeout(() => {
-            if (!editingServerName || !editingServerUrl) {
-              return;
-            }
-            void validateTokenInput(
-              {
-                id: editingServerName,
-                name: editingServerName,
-                url: editingServerUrl,
-                enabled: true,
-                status: 'unknown',
-                toolCount: 0,
-                hasToken: true,
-                hasUserToken: true,
-              },
-              token,
-              requestId,
-            );
-          }, 500);
-        })()
-      : undefined;
-
-    return () => {
-      if (timeoutId !== undefined) {
-        window.clearTimeout(timeoutId);
-      }
-    };
-  }, [
-    canManageMcp,
-    editingServer?.name,
-    editingServer?.url,
-    hasSavedTokenInModal,
-    tokenInputValue,
-    validateTokenInput,
-  ]);
 
   const clearTokenInput = () => {
     if (hasSavedTokenInModal) {
@@ -787,15 +662,6 @@ export const McpServersSettings = ({
     setTokenInputValue('');
     setTokenValidationState('idle');
     setTokenValidationMessage('');
-    latestValidatedTokenKey.current = null;
-  };
-
-  const forgetSavedToken = () => {
-    setHasSavedTokenInModal(false);
-    setTokenInputValue('');
-    setTokenValidationState('idle');
-    setTokenValidationMessage('');
-    latestValidatedTokenKey.current = null;
   };
 
   let tokenInputStateClass = '';
@@ -852,6 +718,9 @@ export const McpServersSettings = ({
     );
   }
 
+  const isUsingOrganizationCredentialInModal =
+    hasSavedTokenInModal && !canRemovePersonalToken;
+
   const saveServerToken = useCallback(async () => {
     if (!editingServer || !canManageMcp) return;
 
@@ -864,16 +733,48 @@ export const McpServersSettings = ({
     const hasToken = token.length > 0;
 
     setTokenValidationState('validating');
-    setTokenValidationMessage('Saving and validating token...');
+    setTokenValidationMessage('Validating token...');
 
     try {
+      if (hasToken) {
+        if (!editingServer.url) {
+          setTokenValidationState('error');
+          setTokenValidationMessage(
+            'Unable to validate token because server URL is not available.',
+          );
+          return;
+        }
+
+        const credentialValidation = await validateCredentials(
+          editingServer.url,
+          token,
+        );
+        if (!credentialValidation.valid) {
+          setTokenValidationState('error');
+          setTokenValidationMessage(
+            credentialValidation.error ??
+              'Invalid credentials. Check server URL and token.',
+          );
+          return;
+        }
+      }
+
+      setTokenValidationMessage('Saving and validating token...');
       await patchServer(editingServer.name, {
-        enabled: true,
+        enabled: editingServer.enabled,
         token: hasToken ? token : null,
       });
-      if (hasToken) {
-        await validateServer(editingServer.name);
+      const validationResult = await validateServer(editingServer.name);
+      if (validationResult.status === 'error') {
+        setTokenValidationState('error');
+        setTokenValidationMessage(
+          validationResult.validation?.error ??
+            'Validation failed. Check server URL and token.',
+        );
+        return;
       }
+      setTokenValidationState('success');
+      setTokenValidationMessage('Connection successful');
       closeConfigureModal();
     } catch (e) {
       setTokenValidationState('error');
@@ -890,10 +791,17 @@ export const McpServersSettings = ({
     hasSavedTokenInModal,
     patchServer,
     tokenInputValue,
+    validateCredentials,
     validateServer,
   ]);
 
-  const allowEmptyTokenSave = hadSavedTokenAtOpen && !tokenInputValue.trim();
+  const removePersonalToken = () => {
+    setHasSavedTokenInModal(false);
+    setCanRemovePersonalToken(false);
+    setTokenInputValue('');
+    setTokenValidationState('idle');
+    setTokenValidationMessage('');
+  };
 
   return (
     <div
@@ -1118,12 +1026,17 @@ export const McpServersSettings = ({
                 ),
               }}
             />
-            {(!hasSavedTokenInModal || tokenValidationState !== 'idle') && (
+            {(isUsingOrganizationCredentialInModal ||
+              !hasSavedTokenInModal ||
+              tokenValidationState !== 'idle') && (
               <div
                 className={classes.tokenHelper}
                 style={{ color: tokenHelperColor }}
               >
-                {tokenValidationMessage || 'Enter your token'}
+                {tokenValidationMessage ||
+                  (isUsingOrganizationCredentialInModal
+                    ? 'Using Administrator provided credential. Enter a personal token to override for your account.'
+                    : 'Enter your token')}
               </div>
             )}
           </div>
@@ -1135,21 +1048,25 @@ export const McpServersSettings = ({
               isDisabled={
                 !canManageMcp ||
                 Boolean(isSaving[editingServer?.name ?? '']) ||
-                tokenValidationState === 'validating' ||
-                (!tokenInputValue.trim() && !allowEmptyTokenSave)
+                tokenValidationState === 'validating'
               }
               className={classes.modalActionButton}
             >
               Save
             </Button>
-            {hasSavedTokenInModal && (
+            {canRemovePersonalToken && hasSavedTokenInModal && (
               <Button
                 key="forget-token"
                 variant="plain"
-                onClick={forgetSavedToken}
+                onClick={removePersonalToken}
+                isDisabled={
+                  !canManageMcp ||
+                  Boolean(isSaving[editingServer?.name ?? '']) ||
+                  tokenValidationState === 'validating'
+                }
                 className={classes.forgetTokenButton}
               >
-                Forget token
+                Remove personal token
               </Button>
             )}
             <Button
