@@ -71,7 +71,9 @@ export function KagentiAdminPanel({
   const [bsLoading, setBsLoading] = useState(false);
 
   const devSpacesConfig = useAdminConfig('devSpacesApiUrl');
+  const devSpacesTokenConfig = useAdminConfig('devSpacesToken');
   const [devSpacesUrl, setDevSpacesUrl] = useState('');
+  const [devSpacesToken, setDevSpacesToken] = useState('');
   const [devSpacesInitialized, setDevSpacesInitialized] = useState(false);
   const [devSpacesToast, setDevSpacesToast] = useState<{
     message: string;
@@ -79,17 +81,20 @@ export function KagentiAdminPanel({
   } | null>(null);
 
   useEffect(() => {
-    if (!devSpacesInitialized && !devSpacesConfig.loading) {
+    if (!devSpacesInitialized && !devSpacesConfig.loading && !devSpacesTokenConfig.loading) {
       setDevSpacesUrl(
         (devSpacesConfig.entry?.configValue as string | undefined) ?? '',
       );
+      setDevSpacesToken(
+        (devSpacesTokenConfig.entry?.configValue as string | undefined) ?? '',
+      );
       setDevSpacesInitialized(true);
     }
-  }, [devSpacesInitialized, devSpacesConfig.loading, devSpacesConfig.entry]);
+  }, [devSpacesInitialized, devSpacesConfig.loading, devSpacesConfig.entry, devSpacesTokenConfig.loading, devSpacesTokenConfig.entry]);
 
   const handleSaveDevSpaces = useCallback(async () => {
-    const trimmed = devSpacesUrl.trim();
-    if (trimmed && !/^https?:\/\/.+/.test(trimmed)) {
+    const trimmedUrl = devSpacesUrl.trim();
+    if (trimmedUrl && !/^https?:\/\/.+/.test(trimmedUrl)) {
       setDevSpacesToast({
         message: 'URL must start with http:// or https://',
         severity: 'error',
@@ -97,31 +102,34 @@ export function KagentiAdminPanel({
       return;
     }
     try {
-      await devSpacesConfig.save(trimmed || '');
-      setDevSpacesToast({ message: 'Dev Spaces URL saved', severity: 'success' });
+      await devSpacesConfig.save(trimmedUrl || '');
+      await devSpacesTokenConfig.save(devSpacesToken.trim() || '');
+      setDevSpacesToast({ message: 'Dev Spaces configuration saved', severity: 'success' });
     } catch {
       setDevSpacesToast({
-        message: devSpacesConfig.error || 'Failed to save',
+        message: devSpacesConfig.error || devSpacesTokenConfig.error || 'Failed to save',
         severity: 'error',
       });
     }
-  }, [devSpacesUrl, devSpacesConfig]);
+  }, [devSpacesUrl, devSpacesToken, devSpacesConfig, devSpacesTokenConfig]);
 
   const handleResetDevSpaces = useCallback(async () => {
     try {
       await devSpacesConfig.reset();
+      await devSpacesTokenConfig.reset();
       setDevSpacesUrl('');
+      setDevSpacesToken('');
       setDevSpacesToast({
-        message: 'Dev Spaces URL reset to default',
+        message: 'Dev Spaces configuration reset to defaults',
         severity: 'success',
       });
     } catch {
       setDevSpacesToast({
-        message: devSpacesConfig.error || 'Failed to reset',
+        message: devSpacesConfig.error || devSpacesTokenConfig.error || 'Failed to reset',
         severity: 'error',
       });
     }
-  }, [devSpacesConfig]);
+  }, [devSpacesConfig, devSpacesTokenConfig]);
 
   useEffect(() => {
     setLoading(true);
@@ -544,15 +552,30 @@ export function KagentiAdminPanel({
             }
             disabled={devSpacesConfig.saving}
           />
+          <TextField
+            label="OpenShift Token"
+            placeholder="sha256~..."
+            value={devSpacesToken}
+            onChange={e => setDevSpacesToken(e.target.value)}
+            size="small"
+            fullWidth
+            type="password"
+            helperText={
+              devSpacesToken.trim()
+                ? 'An OpenShift bearer token will be used to authenticate with the Kubernetes API when creating workspaces.'
+                : 'Optional — if not set, the platform Keycloak token is used. Set this if the cluster does not use Keycloak as an identity provider.'
+            }
+            disabled={devSpacesTokenConfig.saving}
+          />
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
               size="small"
               variant="contained"
               onClick={handleSaveDevSpaces}
-              disabled={devSpacesConfig.saving || !devSpacesUrl.trim()}
+              disabled={devSpacesConfig.saving || devSpacesTokenConfig.saving || !devSpacesUrl.trim()}
               sx={{ textTransform: 'none', fontWeight: 600 }}
             >
-              {devSpacesConfig.saving ? (
+              {(devSpacesConfig.saving || devSpacesTokenConfig.saving) ? (
                 <CircularProgress size={16} sx={{ mr: 0.5 }} />
               ) : null}
               Save
@@ -563,7 +586,8 @@ export function KagentiAdminPanel({
               onClick={handleResetDevSpaces}
               disabled={
                 devSpacesConfig.saving ||
-                devSpacesConfig.source !== 'database'
+                devSpacesTokenConfig.saving ||
+                (devSpacesConfig.source !== 'database' && devSpacesTokenConfig.source !== 'database')
               }
               sx={{ textTransform: 'none' }}
             >

@@ -79,14 +79,23 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
           throw new InputError('git_repo is required');
         }
 
-        if (!getAuthToken) {
+        const adminToken = (await adminConfig.get(
+          'devSpacesToken',
+        )) as string | undefined;
+
+        let token: string;
+        if (adminToken && typeof adminToken === 'string' && adminToken.trim()) {
+          token = adminToken.trim();
+          logger.info('Using admin-configured OpenShift token for Dev Spaces');
+        } else if (getAuthToken) {
+          token = await getAuthToken();
+          logger.info('Using Keycloak token for Dev Spaces (no admin token configured)');
+        } else {
           throw new InputError(
-            'Dev Spaces requires the Kagenti provider for authentication. ' +
-              'Ensure the active provider is set to kagenti.',
+            'Dev Spaces authentication is not configured. Either set an OpenShift token ' +
+              'in Administration → Dev Spaces, or ensure the Kagenti provider is active.',
           );
         }
-
-        const token = await getAuthToken();
 
         const normalizedUrl = devSpacesApiUrl.replace(/\/+$/, '');
         const targetUrl = `${normalizedUrl}/workspaces/intellij`;
