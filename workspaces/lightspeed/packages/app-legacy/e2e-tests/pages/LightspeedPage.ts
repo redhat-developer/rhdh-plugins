@@ -24,9 +24,6 @@ import { LightspeedMessages, evaluateMessage } from '../utils/translations';
 
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
 
-/** Menu label in LightspeedChatBoxHeader (not yet in i18n). */
-export const MCP_SETTINGS_MENU_ITEM = 'MCP settings';
-
 // Actions
 export async function openChatbot(page: Page) {
   await page.getByRole('button', { name: 'lightspeed-close' }).click();
@@ -82,18 +79,45 @@ export async function verifyDisplayModeMenuOptions(
   t: LightspeedMessages,
 ) {
   await page.getByRole('button', { name: t['aria.settings.label'] }).click();
-  await expect(page.getByLabel('Chatbot', { exact: true }))
-    .toMatchAriaSnapshot(`
-    - menu:
-      - menuitem "${t['settings.displayMode.label']}" [disabled]
-      - menuitem "${t['settings.displayMode.overlay']}"
-      - menuitem "${t['settings.displayMode.docked']}"
-      - menuitem "${t['settings.displayMode.fullscreen']}"
-    - separator
-    - menu:
-      - menuitem "${t['settings.pinned.disable']} ${t['settings.pinned.enabled.description']}"
-      - menuitem "${MCP_SETTINGS_MENU_ITEM}"
-    `);
+  const settingsMenu = page
+    .getByRole('menu')
+    .filter({
+      has: page.getByRole('menuitem', {
+        name: t['settings.displayMode.label'],
+      }),
+    })
+    .first();
+
+  await expect(settingsMenu).toBeVisible();
+  await expect(
+    settingsMenu.getByRole('menuitem', {
+      name: t['settings.displayMode.label'],
+    }),
+  ).toBeDisabled();
+  await expect(
+    settingsMenu.getByRole('menuitem', {
+      name: t['settings.displayMode.overlay'],
+    }),
+  ).toBeVisible();
+  await expect(
+    settingsMenu.getByRole('menuitem', {
+      name: t['settings.displayMode.docked'],
+    }),
+  ).toBeVisible();
+  await expect(
+    settingsMenu.getByRole('menuitem', {
+      name: t['settings.displayMode.fullscreen'],
+    }),
+  ).toBeVisible();
+
+  await expect(
+    settingsMenu.getByRole('menuitem', {
+      name: `${t['settings.pinned.disable']} ${t['settings.pinned.enabled.description']}`,
+    }),
+  ).toBeVisible();
+  await expect(
+    settingsMenu.getByRole('menuitem', { name: t['settings.mcp.label'] }),
+  ).toBeVisible();
 }
 
 // MCP settings (McpServersSettings — English strings until full i18n)
@@ -101,9 +125,9 @@ export async function verifyDisplayModeMenuOptions(
 export async function openMcpSettingsPanel(page: Page, t: LightspeedMessages) {
   await page.getByRole('button', { name: t['aria.settings.label'] }).click();
   await expect(
-    page.getByRole('menuitem', { name: MCP_SETTINGS_MENU_ITEM }),
+    page.getByRole('menuitem', { name: t['settings.mcp.label'] }),
   ).toBeVisible();
-  await page.getByRole('menuitem', { name: MCP_SETTINGS_MENU_ITEM }).click();
+  await page.getByRole('menuitem', { name: t['settings.mcp.label'] }).click();
 }
 
 export async function closeMcpSettingsPanel(page: Page) {
