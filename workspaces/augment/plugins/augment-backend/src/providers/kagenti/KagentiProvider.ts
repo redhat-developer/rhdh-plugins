@@ -365,6 +365,8 @@ export class KagentiProvider implements AgenticProvider {
       ...(storedContextId ? { contextId: storedContextId } : {}),
     };
 
+    let contentEventCount = 0;
+
     try {
       await apiClient.chatStream(
         namespace,
@@ -382,6 +384,14 @@ export class KagentiProvider implements AgenticProvider {
             if (config.verboseStreamLogging) {
               this.logger.debug(`KagentiSSE normalized: ${event.type}`);
             }
+
+            // When the agent rejects streaming (-32603), suppress the
+            // error/started/completed events -- the fallback path will
+            // emit clean events with the actual response content.
+            if (normalizer.hasJsonRpcStreamingError) {
+              continue;
+            }
+
             if (event.type === 'stream.started' && backstageSessionId) {
               const ctxId = (event as { responseId?: string }).responseId;
               if (ctxId) {
@@ -392,6 +402,12 @@ export class KagentiProvider implements AgenticProvider {
                 );
                 this.boundedMapSet(this.sessionAgentMap, ctxId, agentId);
               }
+            }
+            if (
+              event.type === 'stream.text.delta' ||
+              event.type === 'stream.artifact'
+            ) {
+              contentEventCount++;
             }
             onEvent(event);
           }
@@ -405,6 +421,24 @@ export class KagentiProvider implements AgenticProvider {
         return;
       }
       throw err;
+    }
+
+    if (
+      contentEventCount === 0 &&
+      normalizer.hasJsonRpcStreamingError &&
+      !signal?.aborted
+    ) {
+      this.logger.info(
+        `Agent ${agentId} does not support streaming (JSONRPC -32603), falling back to non-streaming`,
+      );
+      const response = await this.chat(request);
+
+      onEvent({ type: 'stream.started', responseId: response.responseId });
+      if (response.content) {
+        onEvent({ type: 'stream.text.delta', delta: response.content });
+        onEvent({ type: 'stream.text.done', text: response.content });
+      }
+      onEvent({ type: 'stream.completed' });
     }
   }
 

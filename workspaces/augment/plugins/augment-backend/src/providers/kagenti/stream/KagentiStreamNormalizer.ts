@@ -119,9 +119,15 @@ export class KagentiStreamNormalizer {
   private completed = false;
   private accumulatedText = '';
   private readonly verboseLogger?: LoggerService;
+  private _hasJsonRpcStreamingError = false;
 
   constructor(verboseLogger?: LoggerService) {
     this.verboseLogger = verboseLogger;
+  }
+
+  /** True if the stream received a JSONRPC -32603 "streaming not supported" error. */
+  get hasJsonRpcStreamingError(): boolean {
+    return this._hasJsonRpcStreamingError;
   }
 
   normalize(jsonLine: string): NormalizedStreamEvent[] {
@@ -397,6 +403,10 @@ export class KagentiStreamNormalizer {
   ): void {
     this.ensureStarted(events);
 
+    if (error.code === -32603) {
+      this._hasJsonRpcStreamingError = true;
+    }
+
     const humanMessage = JSONRPC_ERROR_MESSAGES[error.code];
     const errorText = humanMessage
       ? `${humanMessage}: ${error.message}`
@@ -486,18 +496,16 @@ export class KagentiStreamNormalizer {
   }
 
   /**
-   * Handle WORKING-state status text. Short progress messages
-   * (e.g. "Calling weather tool...") are silently consumed — the UI
-   * "Thinking..." indicator already conveys progress. Only verbose
-   * content (>200 chars, likely LLM reasoning or state dumps) is
-   * routed to the reasoning trace.
+   * Forward all WORKING-state status text as reasoning events.
+   * This keeps the SSE connection alive with real progress and shows
+   * agent status (e.g. "Starting the story pipeline...") in the UI.
    */
   private extractTextAsReasoning(
     status: NonNullable<KagentiStreamPayload['statusUpdate']>['status'],
     events: NormalizedStreamEvent[],
   ): void {
     const text = this.extractStatusText(status);
-    if (text && text.length > 200) {
+    if (text) {
       events.push({ type: 'stream.reasoning.delta', delta: text });
     }
   }
@@ -559,13 +567,8 @@ export class KagentiStreamNormalizer {
           ? evt.message
           : JSON.stringify(evt.message);
       if (text) {
-        // Short working-state messages (e.g. "Calling weather tool...")
-        // are silently consumed — the "Thinking..." indicator suffices.
-        // Only verbose content (>200 chars) is shown as reasoning trace.
         if (normalizedState === 'WORKING') {
-          if (text.length > 200) {
-            events.push({ type: 'stream.reasoning.delta', delta: text });
-          }
+          events.push({ type: 'stream.reasoning.delta', delta: text });
         } else {
           this.accumulatedText += text;
           events.push({ type: 'stream.text.delta', delta: text });

@@ -197,19 +197,20 @@ describe('KagentiStreamNormalizer -- A2A task states', () => {
     expect(events[0].type).toBe('stream.started');
   });
 
-  it('TASK_STATE_WORKING emits text delta', () => {
+  it('TASK_STATE_WORKING emits reasoning delta for all text', () => {
     const n = new KagentiStreamNormalizer();
     const events = n.normalize(
       makeStatusUpdate('TASK_STATE_WORKING', { text: 'Thinking...' }),
     );
     expect(events).toContainEqual({
-      type: 'stream.text.delta',
+      type: 'stream.reasoning.delta',
       delta: 'Thinking...',
     });
   });
 
   it('TASK_STATE_COMPLETED emits text.done and completed', () => {
     const n = new KagentiStreamNormalizer();
+    // WORKING text goes to reasoning, not accumulated text
     n.normalize(makeStatusUpdate('TASK_STATE_WORKING', { text: 'Part 1. ' }));
     const events = n.normalize(
       makeStatusUpdate('TASK_STATE_COMPLETED', { text: 'Part 2.' }),
@@ -220,7 +221,7 @@ describe('KagentiStreamNormalizer -- A2A task states', () => {
     });
     expect(events).toContainEqual({
       type: 'stream.text.done',
-      text: 'Part 1. Part 2.',
+      text: 'Part 2.',
     });
     expect(events).toContainEqual({ type: 'stream.completed' });
   });
@@ -467,8 +468,13 @@ describe('KagentiStreamNormalizer -- UI extensions', () => {
     const reasoningEvents = events.filter(
       e => e.type === 'stream.reasoning.delta',
     );
-    expect(reasoningEvents).toHaveLength(2);
+    // 3 reasoning events: 1 from WORKING text + 2 from trajectory steps
+    expect(reasoningEvents).toHaveLength(3);
     expect(reasoningEvents[0]).toEqual({
+      type: 'stream.reasoning.delta',
+      delta: 'Processing',
+    });
+    expect(reasoningEvents[1]).toEqual({
       type: 'stream.reasoning.delta',
       delta: 'Step 1: Analyzing input\n',
     });
@@ -562,6 +568,33 @@ describe('KagentiStreamNormalizer -- JSONRPC errors', () => {
         error: 'unknown error',
       }),
     );
+  });
+
+  it('sets hasJsonRpcStreamingError flag on -32603', () => {
+    const n = new KagentiStreamNormalizer();
+    expect(n.hasJsonRpcStreamingError).toBe(false);
+    n.normalize(
+      JSON.stringify({
+        error: {
+          code: -32603,
+          message: 'Streaming is not supported by the agent',
+        },
+      }),
+    );
+    expect(n.hasJsonRpcStreamingError).toBe(true);
+  });
+
+  it('does not set hasJsonRpcStreamingError flag on other JSONRPC errors', () => {
+    const n = new KagentiStreamNormalizer();
+    n.normalize(
+      JSON.stringify({
+        error: {
+          code: -32001,
+          message: 'task not found',
+        },
+      }),
+    );
+    expect(n.hasJsonRpcStreamingError).toBe(false);
   });
 });
 
@@ -684,6 +717,33 @@ describe('KagentiStreamNormalizer -- edge cases', () => {
         code: 'kagenti_task_failed',
       }),
     );
+  });
+
+  it('TASK_STATE_WORKING emits reasoning delta for short text (no threshold)', () => {
+    const n = new KagentiStreamNormalizer();
+    const events = n.normalize(
+      makeStatusUpdate('TASK_STATE_WORKING', {
+        text: 'Starting pipeline...',
+      }),
+    );
+    expect(events).toContainEqual({
+      type: 'stream.reasoning.delta',
+      delta: 'Starting pipeline...',
+    });
+  });
+
+  it('TASK_STATE_WORKING does not accumulate text (reasoning only)', () => {
+    const n = new KagentiStreamNormalizer();
+    n.normalize(
+      makeStatusUpdate('TASK_STATE_WORKING', { text: 'Step 1' }),
+    );
+    const events = n.normalize(
+      makeStatusUpdate('TASK_STATE_COMPLETED', { text: 'Result' }),
+    );
+    expect(events).toContainEqual({
+      type: 'stream.text.done',
+      text: 'Result',
+    });
   });
 
   it('empty citation array is not emitted', () => {

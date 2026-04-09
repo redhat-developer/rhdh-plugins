@@ -303,6 +303,18 @@ export function useStreamingChat({
 
         if (!mountedRef.current) return;
 
+        // Safety net: if the stream resolved without error but never
+        // received a stream.completed event, synthesize one so the UI
+        // finalizes properly instead of hanging in a "thinking" state.
+        if (!currentStreamingState.completed) {
+          currentStreamingState = updateStreamingState(
+            currentStreamingState,
+            { type: 'stream.completed' },
+          );
+          scheduleStreamingUpdate(currentStreamingState);
+          flushStreamingState();
+        }
+
         setIsTyping(false);
         abortControllerRef.current = null;
 
