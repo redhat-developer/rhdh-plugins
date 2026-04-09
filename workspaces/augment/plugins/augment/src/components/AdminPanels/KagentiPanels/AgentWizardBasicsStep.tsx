@@ -16,6 +16,7 @@
 
 import type { FC } from 'react';
 import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -101,14 +102,25 @@ export const AgentWizardBasicsStep: FC<AgentWizardBasicsStepProps> = ({
         <MenuItem value="http">HTTP</MenuItem>
       </Select>
     </FormControl>
-    <TextField
-      label="Framework"
-      value={framework}
-      onChange={e => setFramework(e.target.value)}
-      fullWidth
-      size="small"
-      placeholder="e.g. LangGraph, CrewAI, custom"
-      helperText="Agent framework. Defaults to LangGraph if omitted."
-    />
+    <FormControl size="small" fullWidth>
+      <InputLabel>Framework</InputLabel>
+      <Select
+        label="Framework"
+        value={framework}
+        onChange={e => setFramework(e.target.value)}
+        MenuProps={SELECT_MENU_PROPS}
+      >
+        <MenuItem value="LangGraph">LangGraph</MenuItem>
+        <MenuItem value="CrewAI">CrewAI</MenuItem>
+        <MenuItem value="ADK">Google ADK</MenuItem>
+        <MenuItem value="LlamaIndex">LlamaIndex</MenuItem>
+        <MenuItem value="Semantic Kernel">Semantic Kernel</MenuItem>
+        <MenuItem value="Autogen">Autogen</MenuItem>
+        <MenuItem value="custom">Custom</MenuItem>
+      </Select>
+      <FormHelperText>
+        Agent framework. Defaults to LangGraph if omitted.
+      </FormHelperText>
+    </FormControl>
   </Stack>
 );

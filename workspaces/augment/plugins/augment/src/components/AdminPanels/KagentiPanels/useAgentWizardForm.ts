@@ -159,7 +159,7 @@ export function useAgentWizardForm(
   const [name, setName] = useState('');
   const [namespace, setNamespace] = useState(namespaceProp ?? '');
   const [protocol, setProtocol] = useState('a2a');
-  const [framework, setFramework] = useState('');
+  const [framework, setFramework] = useState('ADK');
   const [availableNamespaces, setAvailableNamespaces] = useState<string[]>([]);
 
   // Step 1

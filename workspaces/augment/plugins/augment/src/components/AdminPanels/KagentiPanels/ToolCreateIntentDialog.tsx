@@ -24,7 +24,6 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import LaptopMacOutlinedIcon from '@mui/icons-material/LaptopMacOutlined';
 import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import { useTheme } from '@mui/material/styles';
-import type { DeploymentMethod } from './agentWizardTypes';
 import { AgentTemplateBrowser } from './AgentTemplateBrowser';
 import { DevSpacesLaunchForm } from './DevSpacesLaunchForm';
 import { CardGrid, DialogHeader } from './IntentDialogParts';
@@ -34,10 +33,10 @@ import type { IntentCard } from './IntentDialogParts';
 // Types
 // ---------------------------------------------------------------------------
 
-export interface AgentCreateIntentDialogProps {
+export interface ToolCreateIntentDialogProps {
   open: boolean;
   onClose: () => void;
-  onSelectDeploy: (method?: DeploymentMethod) => void;
+  onSelectDeploy: () => void;
 }
 
 type View = 'intent' | 'develop-sub' | 'templates' | 'devspaces';
@@ -51,17 +50,17 @@ const INTENT_CARDS: IntentCard[] = [
     id: 'develop',
     icon: <CodeIcon />,
     title: 'Develop',
-    subtitle: 'Start building your agent',
+    subtitle: 'Start building your MCP tool',
     description:
-      'Scaffold from a template or launch a cloud workspace to develop your agent with full tooling.',
+      'Scaffold from a template or launch a cloud workspace to develop your tool with full tooling.',
   },
   {
     id: 'deploy',
     icon: <RocketLaunchOutlinedIcon />,
     title: 'Deploy',
-    subtitle: 'Deploy your agent to the platform',
+    subtitle: 'Deploy your tool to the platform',
     description:
-      'Deploy an agent from a container image or a Git repository. The platform handles building, containerizing, and running it.',
+      'Deploy a tool from a container image or a Git repository. The platform handles building, containerizing, and running it.',
   },
 ];
 
@@ -72,15 +71,15 @@ const DEVELOP_SUB_CARDS: IntentCard[] = [
     title: 'From Template',
     subtitle: 'Use a software template',
     description:
-      'Scaffold a new agent project from a pre-configured software template with best-practice structure and dependencies.',
+      'Scaffold a new MCP tool project from a pre-configured software template with best-practice structure and dependencies.',
   },
   {
     id: 'devspaces',
     icon: <LaptopMacOutlinedIcon />,
-    title: 'Agent DevSpace',
+    title: 'Tool DevSpace',
     subtitle: 'Cloud IDE workspace',
     description:
-      'Launch a ready-to-code cloud IDE with your agent\u2019s repository, tools, and runtime pre-configured.',
+      'Launch a cloud IDE to develop your MCP tool with full tooling and runtime support.',
   },
 ];
 
@@ -88,11 +87,11 @@ const DEVELOP_SUB_CARDS: IntentCard[] = [
 // Main Component
 // ---------------------------------------------------------------------------
 
-export function AgentCreateIntentDialog({
+export function ToolCreateIntentDialog({
   open,
   onClose,
   onSelectDeploy,
-}: AgentCreateIntentDialogProps) {
+}: ToolCreateIntentDialogProps) {
   const theme = useTheme();
   const titleId = useId();
   const [view, setView] = useState<View>('intent');
@@ -142,13 +141,12 @@ export function AgentCreateIntentDialog({
         sx: { borderRadius: 2, overflow: 'hidden' },
       }}
     >
-      {/* --- Top-level intent selection --- */}
       {view === 'intent' && (
         <>
           <DialogHeader
             titleId={titleId}
-            title="Create Agent"
-            subtitle="Choose how you want to get started with your new agent."
+            title="Create Tool"
+            subtitle="Choose how you want to get started with your new MCP tool."
           />
           <DialogContent sx={{ px: 3, pt: 3, pb: 3 }}>
             <CardGrid
@@ -171,7 +169,6 @@ export function AgentCreateIntentDialog({
         </>
       )}
 
-      {/* --- Develop sub-options --- */}
       {view === 'develop-sub' && (
         <>
           <DialogHeader
@@ -201,17 +198,20 @@ export function AgentCreateIntentDialog({
         </>
       )}
 
-      {/* --- Template browser --- */}
       {view === 'templates' && (
         <DialogContent sx={{ px: 3, pt: 3, pb: 3 }}>
           <AgentTemplateBrowser
             onBack={() => setView('develop-sub')}
             onOpenInDevSpace={handleOpenInDevSpace}
+            tag="kagenti-tool"
+            title="Tool Templates"
+            description="Choose a software template to scaffold a new MCP tool project. Templates are discovered from the catalog automatically."
+            emptyTitle="No tool templates found"
+            devSpaceLabel="Open in Tool DevSpace"
           />
         </DialogContent>
       )}
 
-      {/* --- DevSpaces launch form --- */}
       {view === 'devspaces' && (
         <DialogContent sx={{ px: 3, pt: 3, pb: 3 }}>
           <DevSpacesLaunchForm
@@ -220,6 +220,7 @@ export function AgentCreateIntentDialog({
               setView('develop-sub');
             }}
             initialGitRepo={devSpacesGitRepo}
+            resourceKind="tool"
           />
         </DialogContent>
       )}

@@ -447,7 +447,7 @@ export function KagentiAgentsPanel({
       <AgentCreateIntentDialog
         open={intentOpen}
         onClose={() => setIntentOpen(false)}
-        onSelectBuildDeploy={method => {
+        onSelectDeploy={method => {
           setIntentOpen(false);
           setInitialDeployMethod(method);
           setCreateOpen(true);
