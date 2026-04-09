@@ -602,6 +602,10 @@ export class KagentiProvider implements AgenticProvider {
     return this.requireInitialized().config;
   }
 
+  getTokenManager(): KeycloakTokenManager {
+    return this.requireInitialized().tokenManager;
+  }
+
   /**
    * Pre-populate the in-memory session map so chatStream can resume a
    * Kagenti conversation that was persisted in the DB across restarts.

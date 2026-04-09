@@ -581,7 +581,6 @@ export interface AugmentApi {
   >;
   createDevSpacesWorkspace(
     request: import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesCreateWorkspaceRequest,
-    token: string,
   ): Promise<
     import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesCreateWorkspaceResponse
   >;
@@ -1313,12 +1312,10 @@ export class AugmentApiClient implements AugmentApi {
   }
   async createDevSpacesWorkspace(
     request: import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesCreateWorkspaceRequest,
-    token: string,
   ) {
     return kagentiEndpoints.createDevSpacesWorkspace(
       this.kagentiDeps,
       request,
-      token,
     );
   }
 }
