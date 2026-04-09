@@ -35,6 +35,8 @@ export interface NamespacePickerProps {
   enabledOnly?: boolean;
   /** "minimal" renders without a floating InputLabel (suitable for tight spaces like sidebars) */
   variant?: 'standard' | 'minimal';
+  /** When true, hides the "All namespaces" option — the user must pick one. */
+  required?: boolean;
 }
 
 export function NamespacePicker({
@@ -45,6 +47,7 @@ export function NamespacePicker({
   fullWidth = true,
   enabledOnly = true,
   variant = 'standard',
+  required = false,
 }: NamespacePickerProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
@@ -103,12 +106,14 @@ export function NamespacePicker({
         displayEmpty
         MenuProps={SELECT_MENU_PROPS}
         renderValue={sel =>
-          sel ? String(sel) : 'All namespaces'
+          sel ? String(sel) : (required ? 'Select a namespace' : 'All namespaces')
         }
       >
-        <MenuItem value="">
-          <em>All namespaces</em>
-        </MenuItem>
+        {!required && (
+          <MenuItem value="">
+            <em>All namespaces</em>
+          </MenuItem>
+        )}
         {namespaces.map(ns => (
           <MenuItem key={ns} value={ns}>
             {ns}
@@ -129,9 +134,11 @@ export function NamespacePicker({
         displayEmpty
         MenuProps={SELECT_MENU_PROPS}
       >
-        <MenuItem value="">
-          <em>All namespaces</em>
-        </MenuItem>
+        {!required && (
+          <MenuItem value="">
+            <em>All namespaces</em>
+          </MenuItem>
+        )}
         {namespaces.map(ns => (
           <MenuItem key={ns} value={ns}>
             {ns}

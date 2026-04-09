@@ -268,13 +268,24 @@ export async function createRouter({
     logger.info('Kagenti provider routes registered');
   }
 
-  // Dev Spaces routes (available for all providers)
+  // Dev Spaces routes — use Kagenti's Keycloak token when available
+  const kagentiTokenFn =
+    providerManager.provider.id === 'kagenti'
+      ? () =>
+          (
+            providerManager.provider as import('./providers/kagenti').KagentiProvider
+          )
+            .getTokenManager()
+            .getToken()
+      : undefined;
+
   registerDevSpacesRoutes({
     router,
     logger,
     adminConfig,
     sendRouteError,
     requireAdminAccess,
+    getAuthToken: kagentiTokenFn,
   });
 
   return router;

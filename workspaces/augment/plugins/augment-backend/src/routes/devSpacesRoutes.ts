@@ -33,15 +33,25 @@ export interface DevSpacesRouteDeps {
     statusCode?: number,
   ) => void;
   requireAdminAccess: express.RequestHandler;
+  /** Acquire a platform auth token (Keycloak client credentials). */
+  getAuthToken?: () => Promise<string>;
 }
 
 /**
  * Registers routes that proxy requests to an external Dev Spaces API.
  * The Dev Spaces API URL is read from admin config (`devSpacesApiUrl`).
+ * Authentication uses the platform's Keycloak token when available,
+ * removing the need for users to supply an OpenShift token.
  */
 export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
-  const { router, logger, adminConfig, sendRouteError, requireAdminAccess } =
-    deps;
+  const {
+    router,
+    logger,
+    adminConfig,
+    sendRouteError,
+    requireAdminAccess,
+    getAuthToken,
+  } = deps;
   const withRoute = createWithRoute(logger, sendRouteError);
 
   router.post(
@@ -69,14 +79,14 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
           throw new InputError('git_repo is required');
         }
 
-        const authHeader = req.headers['x-devspaces-token'] as
-          | string
-          | undefined;
-        if (!authHeader) {
+        if (!getAuthToken) {
           throw new InputError(
-            'OpenShift token is required (x-devspaces-token header)',
+            'Dev Spaces requires the Kagenti provider for authentication. ' +
+              'Ensure the active provider is set to kagenti.',
           );
         }
+
+        const token = await getAuthToken();
 
         const normalizedUrl = devSpacesApiUrl.replace(/\/+$/, '');
         const targetUrl = `${normalizedUrl}/workspaces/intellij`;
@@ -89,7 +99,7 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${authHeader}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             namespace,

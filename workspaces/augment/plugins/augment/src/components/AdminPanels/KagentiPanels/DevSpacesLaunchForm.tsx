@@ -37,6 +37,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import type { DevSpacesCreateWorkspaceResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
+import { NamespacePicker } from './NamespacePicker';
 
 export interface DevSpacesLaunchFormProps {
   onBack: () => void;
@@ -99,9 +100,8 @@ export function DevSpacesLaunchForm({
   const theme = useTheme();
   const api = useApi(augmentApiRef);
 
-  const [namespace, setNamespace] = useState('admin-devspaces');
+  const [namespace, setNamespace] = useState<string | undefined>(undefined);
   const [gitRepo, setGitRepo] = useState(initialGitRepo ?? '');
-  const [token, setToken] = useState('');
   const [memoryLimit, setMemoryLimit] = useState('8Gi');
   const [cpuLimit, setCpuLimit] = useState('2000m');
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -110,31 +110,28 @@ export function DevSpacesLaunchForm({
   const [result, setResult] = useState<DevSpacesCreateWorkspaceResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const isValid = namespace.trim() && gitRepo.trim() && token.trim();
+  const isValid = !!namespace && gitRepo.trim().length > 0;
 
   const handleCreate = useCallback(async () => {
-    if (!isValid) return;
+    if (!isValid || !namespace) return;
     setStatus('creating');
     setErrorMessage('');
     setResult(null);
 
     try {
-      const response = await api.createDevSpacesWorkspace(
-        {
-          namespace: namespace.trim(),
-          git_repo: gitRepo.trim(),
-          memory_limit: memoryLimit.trim() || '8Gi',
-          cpu_limit: cpuLimit.trim() || '2000m',
-        },
-        token.trim(),
-      );
+      const response = await api.createDevSpacesWorkspace({
+        namespace,
+        git_repo: gitRepo.trim(),
+        memory_limit: memoryLimit.trim() || '8Gi',
+        cpu_limit: cpuLimit.trim() || '2000m',
+      });
       setResult(response);
       setStatus('success');
     } catch (err) {
       setErrorMessage(getErrorMessage(err));
       setStatus('error');
     }
-  }, [api, namespace, gitRepo, token, memoryLimit, cpuLimit, isValid]);
+  }, [api, namespace, gitRepo, memoryLimit, cpuLimit, isValid]);
 
   return (
     <Box>
@@ -328,29 +325,13 @@ export function DevSpacesLaunchForm({
             disabled={status === 'creating'}
           />
 
-          <TextField
-            label="OpenShift Token"
-            placeholder="sha256~..."
-            value={token}
-            onChange={e => setToken(e.target.value)}
-            required
-            fullWidth
-            size="small"
-            type="password"
-            helperText="Your OpenShift token for authentication (oc whoami -t)"
-            disabled={status === 'creating'}
-          />
-
-          <TextField
-            label="Namespace"
-            placeholder="admin-devspaces"
+          <NamespacePicker
             value={namespace}
-            onChange={e => setNamespace(e.target.value)}
-            required
-            fullWidth
+            onChange={setNamespace}
+            label="Namespace"
             size="small"
-            helperText="OpenShift namespace where the workspace will run"
-            disabled={status === 'creating'}
+            enabledOnly
+            required
           />
 
           <Box>

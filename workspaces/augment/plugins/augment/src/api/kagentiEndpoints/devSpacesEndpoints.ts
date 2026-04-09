@@ -23,18 +23,12 @@ import { jsonBody } from './types';
 
 /**
  * Create a Dev Spaces workspace via the backend proxy.
- * The OpenShift token is sent as a custom header so the backend
- * can forward it to the Dev Spaces API without storing it.
+ * Authentication is handled server-side using the platform's
+ * Keycloak credentials — no user-supplied token needed.
  */
 export async function createDevSpacesWorkspace(
   deps: KagentiApiDeps,
   request: DevSpacesCreateWorkspaceRequest,
-  token: string,
 ): Promise<DevSpacesCreateWorkspaceResponse> {
-  const init = jsonBody(request);
-  init.headers = {
-    ...(init.headers as Record<string, string>),
-    'x-devspaces-token': token,
-  };
-  return deps.fetchJson('/devspaces/workspaces', init);
+  return deps.fetchJson('/devspaces/workspaces', jsonBody(request));
 }
