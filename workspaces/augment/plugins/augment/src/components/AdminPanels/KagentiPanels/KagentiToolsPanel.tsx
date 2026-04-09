@@ -46,6 +46,7 @@ import { getErrorMessage } from '../../../utils';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { KagentiToolDetailDrawer } from './KagentiToolDetailDrawer';
 import { CreateToolWizard } from './CreateToolWizard';
+import { ToolCreateIntentDialog } from './ToolCreateIntentDialog';
 import {
   statusChipColor as toolStatusColor,
   formatDateTime,
@@ -78,6 +79,7 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
 
   const toolInvoke = useToolInvoke(api);
 
+  const [intentOpen, setIntentOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<KagentiToolSummary | null>(
     null,
@@ -168,7 +170,7 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
             variant="contained"
             size="small"
             startIcon={<AddIcon />}
-            onClick={() => setCreateOpen(true)}
+            onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none' }}
           >
             Create Tool
@@ -253,7 +255,7 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
             variant="outlined"
             size="small"
             startIcon={<AddIcon />}
-            onClick={() => setCreateOpen(true)}
+            onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none', mt: 1 }}
           >
             Create Tool
@@ -388,6 +390,15 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
           </Table>
         </TableContainer>
       )}
+
+      <ToolCreateIntentDialog
+        open={intentOpen}
+        onClose={() => setIntentOpen(false)}
+        onSelectDeploy={() => {
+          setIntentOpen(false);
+          setCreateOpen(true);
+        }}
+      />
 
       <CreateToolWizard
         open={createOpen}

@@ -42,8 +42,18 @@ import { useAgentTemplates } from './useAgentTemplates';
 export interface AgentTemplateBrowserProps {
   onBack: () => void;
   tag?: string;
-  /** Callback to open a template's source repo in an Agent DevSpace. */
+  /** Callback to open a template's source repo in a DevSpace. */
   onOpenInDevSpace?: (gitRepoUrl: string) => void;
+  /** Header title. Defaults to "Agent Templates". */
+  title?: string;
+  /** Descriptive blurb below the header. */
+  description?: string;
+  /** Title shown when no templates match. Defaults to "No agent templates found". */
+  emptyTitle?: string;
+  /** Description shown when no templates match. */
+  emptyDescription?: string;
+  /** Tooltip and aria-label for the DevSpace button. Defaults to "Open in Agent DevSpace". */
+  devSpaceLabel?: string;
 }
 
 function templateTitle(entity: Entity): string {
@@ -94,6 +104,11 @@ export function AgentTemplateBrowser({
   onBack,
   tag,
   onOpenInDevSpace,
+  title: titleLabel = 'Agent Templates',
+  description: descriptionLabel = 'Choose a software template to scaffold a new agent project. Templates are discovered from the catalog automatically.',
+  emptyTitle = 'No agent templates found',
+  emptyDescription,
+  devSpaceLabel = 'Open in Agent DevSpace',
 }: AgentTemplateBrowserProps) {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -129,7 +144,7 @@ export function AgentTemplateBrowser({
           <ArrowBackIcon fontSize="small" />
         </IconButton>
         <Typography variant="h6" sx={{ fontWeight: 700, flex: 1 }}>
-          Agent Templates
+          {titleLabel}
         </Typography>
         <IconButton onClick={reload} size="small" aria-label="Refresh templates">
           <RefreshIcon fontSize="small" />
@@ -137,8 +152,7 @@ export function AgentTemplateBrowser({
       </Box>
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Choose a software template to scaffold a new agent project. Templates
-        are discovered from the catalog automatically.
+        {descriptionLabel}
       </Typography>
 
       {!loading && templates.length > 0 && (
@@ -212,28 +226,32 @@ export function AgentTemplateBrowser({
             variant="body1"
             sx={{ fontWeight: 600, color: theme.palette.text.secondary }}
           >
-            No agent templates found
+            {emptyTitle}
           </Typography>
           <Typography
             variant="body2"
             color="text.disabled"
             sx={{ textAlign: 'center', maxWidth: 400, px: 2 }}
           >
-            Templates with the tag{' '}
-            <Typography
-              component="code"
-              variant="body2"
-              sx={{
-                px: 0.5,
-                bgcolor: alpha(theme.palette.action.hover, 0.1),
-                borderRadius: 0.5,
-                fontFamily: 'monospace',
-              }}
-            >
-              {tag ?? 'kagenti-agent'}
-            </Typography>{' '}
-            will appear here automatically. Add this tag to any Backstage
-            software template to include it.
+            {emptyDescription ?? (
+              <>
+                Templates with the tag{' '}
+                <Typography
+                  component="code"
+                  variant="body2"
+                  sx={{
+                    px: 0.5,
+                    bgcolor: alpha(theme.palette.action.hover, 0.1),
+                    borderRadius: 0.5,
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  {tag ?? 'kagenti-agent'}
+                </Typography>{' '}
+                will appear here automatically. Add this tag to any Backstage
+                software template to include it.
+              </>
+            )}
           </Typography>
         </Box>
       )}
@@ -367,7 +385,7 @@ export function AgentTemplateBrowser({
                     Use Template
                   </Button>
                   {onOpenInDevSpace && sourceRepo && (
-                    <Tooltip title="Open in Agent DevSpace">
+                    <Tooltip title={devSpaceLabel}>
                       <IconButton
                         size="small"
                         onClick={e => {
@@ -380,7 +398,7 @@ export function AgentTemplateBrowser({
                             color: theme.palette.primary.main,
                           },
                         }}
-                        aria-label="Open in Agent DevSpace"
+                        aria-label={devSpaceLabel}
                       >
                         <LaptopMacOutlinedIcon fontSize="small" />
                       </IconButton>

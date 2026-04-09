@@ -237,7 +237,7 @@ export function KagentiHomeDashboard({
         : theme.palette.warning.main,
     },
     {
-      label: 'Workspaces',
+      label: 'Namespaces',
       value: data?.namespaceCount ?? 0,
       icon: <WorkspacesOutlinedIcon />,
       accent: theme.palette.info.main,
@@ -316,7 +316,7 @@ export function KagentiHomeDashboard({
               <TableCell sx={thStyle}>Name</TableCell>
               <TableCell sx={thStyle}>Type</TableCell>
               <TableCell sx={thStyle}>Status</TableCell>
-              <TableCell sx={thStyle}>Workspace</TableCell>
+              <TableCell sx={thStyle}>Namespace</TableCell>
               <TableCell sx={thStyle}>Framework</TableCell>
               <TableCell sx={thStyle}>Created</TableCell>
             </TableRow>
@@ -423,7 +423,7 @@ export function KagentiHomeDashboard({
           <TableHead>
             <TableRow>
               <TableCell sx={thStyle}>Build</TableCell>
-              <TableCell sx={thStyle}>Workspace</TableCell>
+              <TableCell sx={thStyle}>Namespace</TableCell>
               <TableCell sx={thStyle}>Status</TableCell>
               <TableCell sx={thStyle}>Strategy</TableCell>
               <TableCell sx={thStyle}>Started</TableCell>

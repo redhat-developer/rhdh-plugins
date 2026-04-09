@@ -43,6 +43,8 @@ export interface DevSpacesLaunchFormProps {
   onBack: () => void;
   /** Pre-fill the git repo field, e.g. from a template's source URL. */
   initialGitRepo?: string;
+  /** Controls terminology throughout the form. Defaults to 'agent'. */
+  resourceKind?: 'agent' | 'tool';
 }
 
 type FormStatus = 'idle' | 'creating' | 'success' | 'error';
@@ -96,9 +98,12 @@ function NextStep({
 export function DevSpacesLaunchForm({
   onBack,
   initialGitRepo,
+  resourceKind = 'agent',
 }: DevSpacesLaunchFormProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
+  const label = resourceKind === 'tool' ? 'tool' : 'agent';
+  const Label = resourceKind === 'tool' ? 'Tool' : 'Agent';
 
   const [namespace, setNamespace] = useState<string | undefined>(undefined);
   const [gitRepo, setGitRepo] = useState(initialGitRepo ?? '');
@@ -143,12 +148,12 @@ export function DevSpacesLaunchForm({
           sx={{ fontSize: 22, color: theme.palette.primary.main }}
         />
         <Typography variant="h6" sx={{ fontWeight: 700, flex: 1 }}>
-          Agent DevSpace
+          {Label} DevSpace
         </Typography>
       </Box>
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-        Launch a ready-to-code cloud IDE with your agent&apos;s repository,
+        Launch a ready-to-code cloud IDE with your {label}&apos;s repository,
         tools, and runtime pre-configured.
       </Typography>
 
@@ -205,7 +210,7 @@ export function DevSpacesLaunchForm({
               <NextStep
                 icon={<CodeIcon sx={{ fontSize: 18 }} />}
                 step="1"
-                title="Open your Agent DevSpace"
+                title={`Open your ${Label} DevSpace`}
                 description={
                   result.url ? (
                     <>
@@ -218,11 +223,11 @@ export function DevSpacesLaunchForm({
                       >
                         Open DevSpace
                       </a>{' '}
-                      to start writing your agent code with full tooling and
+                      to start writing your {label} code with full tooling and
                       runtime support.
                     </>
                   ) : (
-                    'Your cloud IDE is ready. Open it to start writing your agent code with full tooling and runtime support.'
+                    `Your cloud IDE is ready. Open it to start writing your ${label} code with full tooling and runtime support.`
                   )
                 }
               />
@@ -231,18 +236,18 @@ export function DevSpacesLaunchForm({
                 icon={<TerminalOutlinedIcon sx={{ fontSize: 18 }} />}
                 step="2"
                 title="Build and push from the IDE"
-                description="Use the integrated terminal in DevSpaces to build your agent container image and push it to your registry."
+                description={`Use the integrated terminal in DevSpaces to build your ${label} container image and push it to your registry.`}
               />
 
               <NextStep
                 icon={<RocketLaunchOutlinedIcon sx={{ fontSize: 18 }} />}
                 step="3"
-                title="Deploy your agent"
+                title={`Deploy your ${label}`}
                 description={
                   <>
                     Once your image is ready, return here and use{' '}
-                    <strong>Create Agent &rarr; Deploy</strong> to deploy it to
-                    the platform.
+                    <strong>Create {Label} &rarr; Deploy</strong> to deploy it
+                    to the platform.
                   </>
                 }
               />
@@ -273,7 +278,7 @@ export function DevSpacesLaunchForm({
                 color="text.secondary"
                 sx={{ lineHeight: 1.5 }}
               >
-                Building and pushing your agent&apos;s container image is done
+                Building and pushing your {label}&apos;s container image is done
                 through the IDE terminal in DevSpaces, not from this UI. This
                 gives you full control over your build pipeline, Dockerfile, and
                 registry configuration.
@@ -315,13 +320,13 @@ export function DevSpacesLaunchForm({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             label="Git Repository"
-            placeholder="https://github.com/your-org/agent-repo.git"
+            placeholder={`https://github.com/your-org/${label}-repo.git`}
             value={gitRepo}
             onChange={e => setGitRepo(e.target.value)}
             required
             fullWidth
             size="small"
-            helperText="The repository containing your agent code"
+            helperText={`The repository containing your ${label} code`}
             disabled={status === 'creating'}
           />
 
