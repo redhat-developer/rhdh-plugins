@@ -60,7 +60,12 @@ export async function findAllRepositories(
   const [alreadyImportedRepositories, allRepositoriesResponse] =
     await Promise.all([
       deps.catalogHttpClient.listCatalogUrlLocations(),
-      deps.gitApiService.getRepositoriesFromIntegrations(search, pageNumber, pageSize, userTokens),
+      deps.gitApiService.getRepositoriesFromIntegrations(
+        search,
+        pageNumber,
+        pageSize,
+        userTokens,
+      ),
     ]);
 
   const alreadyImportedRepositoriesLocationTargets = new Set(
@@ -102,9 +107,7 @@ export async function findAllRepositories(
     pageNumber * pageSize,
   );
 
-  const gitRepositoryResponse:
-    | GithubRepositoryResponse
-    | GitlabRepositoryResponse = {
+  const gitRepositoryResponse: SCMRepositoryResponse = {
     repositories: slicedRepositories,
     errors,
     totalCount: notImportedYetRepositories.length,
@@ -133,16 +136,11 @@ export async function findRepositoriesByOrganization(
 
   const glReposByOrg =
     await deps.gitApiService.getOrgRepositoriesFromIntegrations(
-      
       orgName,
-     
       search,
-     
       pageNumber,
-     
       pageSize,
       userTokens,
-    ,
     );
 
   sortRepos(glReposByOrg.repositories);

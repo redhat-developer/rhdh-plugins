@@ -382,6 +382,7 @@ export class GithubApiService implements GitApiService {
    */
   async getRepositoriesFromIntegrations(
     search?: string,
+    pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
     userTokens?: Record<string, string>,
   ): Promise<GithubRepositoryResponse> {

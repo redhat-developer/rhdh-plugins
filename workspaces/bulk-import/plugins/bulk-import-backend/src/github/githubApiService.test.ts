@@ -409,7 +409,7 @@ describe('GithubApiService tests', () => {
       octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
         data: ghRepos,
       });
-      octokit.apps.listReposAccessibleToInstallation.mockReturnValue({
+      octokit.rest.apps.listReposAccessibleToInstallation.mockReturnValue({
         data: [],
       });
 
@@ -443,7 +443,7 @@ describe('GithubApiService tests', () => {
       octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
         data: ghRepos,
       });
-      octokit.apps.listReposAccessibleToInstallation.mockReturnValue({
+      octokit.rest.apps.listReposAccessibleToInstallation.mockReturnValue({
         data: [],
       });
 
@@ -458,7 +458,7 @@ describe('GithubApiService tests', () => {
       octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
         data: ghRepos,
       });
-      octokit.apps.listReposAccessibleToInstallation.mockReturnValue({
+      octokit.rest.apps.listReposAccessibleToInstallation.mockReturnValue({
         data: [],
       });
 
