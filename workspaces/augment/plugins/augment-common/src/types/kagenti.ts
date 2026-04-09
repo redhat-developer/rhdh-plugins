@@ -512,5 +512,7 @@ export interface DevSpacesCreateWorkspaceResponse {
   name: string;
   namespace: string;
   phase: string;
-  message: string;
+  message?: string;
+  url?: string;
+  created_at?: string;
 }

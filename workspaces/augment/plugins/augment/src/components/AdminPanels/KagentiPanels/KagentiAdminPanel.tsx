@@ -23,12 +23,14 @@ import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
+import Snackbar from '@mui/material/Snackbar';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -38,6 +40,7 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
+import { useAdminConfig } from '../../../hooks';
 
 export interface KagentiAdminPanelProps {
   namespace?: string;
@@ -66,6 +69,59 @@ export function KagentiAdminPanel({
 
   const [strategies, setStrategies] = useState<KagentiBuildStrategy[]>([]);
   const [bsLoading, setBsLoading] = useState(false);
+
+  const devSpacesConfig = useAdminConfig('devSpacesApiUrl');
+  const [devSpacesUrl, setDevSpacesUrl] = useState('');
+  const [devSpacesInitialized, setDevSpacesInitialized] = useState(false);
+  const [devSpacesToast, setDevSpacesToast] = useState<{
+    message: string;
+    severity: 'success' | 'error';
+  } | null>(null);
+
+  useEffect(() => {
+    if (!devSpacesInitialized && !devSpacesConfig.loading) {
+      setDevSpacesUrl(
+        (devSpacesConfig.entry?.configValue as string | undefined) ?? '',
+      );
+      setDevSpacesInitialized(true);
+    }
+  }, [devSpacesInitialized, devSpacesConfig.loading, devSpacesConfig.entry]);
+
+  const handleSaveDevSpaces = useCallback(async () => {
+    const trimmed = devSpacesUrl.trim();
+    if (trimmed && !/^https?:\/\/.+/.test(trimmed)) {
+      setDevSpacesToast({
+        message: 'URL must start with http:// or https://',
+        severity: 'error',
+      });
+      return;
+    }
+    try {
+      await devSpacesConfig.save(trimmed || '');
+      setDevSpacesToast({ message: 'Dev Spaces URL saved', severity: 'success' });
+    } catch {
+      setDevSpacesToast({
+        message: devSpacesConfig.error || 'Failed to save',
+        severity: 'error',
+      });
+    }
+  }, [devSpacesUrl, devSpacesConfig]);
+
+  const handleResetDevSpaces = useCallback(async () => {
+    try {
+      await devSpacesConfig.reset();
+      setDevSpacesUrl('');
+      setDevSpacesToast({
+        message: 'Dev Spaces URL reset to default',
+        severity: 'success',
+      });
+    } catch {
+      setDevSpacesToast({
+        message: devSpacesConfig.error || 'Failed to reset',
+        severity: 'error',
+      });
+    }
+  }, [devSpacesConfig]);
 
   useEffect(() => {
     setLoading(true);
@@ -470,6 +526,54 @@ export function KagentiAdminPanel({
       )}
 
       {sectionShell(
+        'Dev Spaces',
+        'Configure the Dev Spaces API endpoint used to provision cloud IDE workspaces for agent development.',
+        undefined,
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            label="Dev Spaces API URL"
+            placeholder="https://devspaces-api.example.com"
+            value={devSpacesUrl}
+            onChange={e => setDevSpacesUrl(e.target.value)}
+            size="small"
+            fullWidth
+            helperText={
+              devSpacesConfig.source === 'database'
+                ? 'Configured via admin settings'
+                : 'Not configured — the Dev Spaces integration will be unavailable until a URL is set.'
+            }
+            disabled={devSpacesConfig.saving}
+          />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={handleSaveDevSpaces}
+              disabled={devSpacesConfig.saving || !devSpacesUrl.trim()}
+              sx={{ textTransform: 'none', fontWeight: 600 }}
+            >
+              {devSpacesConfig.saving ? (
+                <CircularProgress size={16} sx={{ mr: 0.5 }} />
+              ) : null}
+              Save
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={handleResetDevSpaces}
+              disabled={
+                devSpacesConfig.saving ||
+                devSpacesConfig.source !== 'database'
+              }
+              sx={{ textTransform: 'none' }}
+            >
+              Reset to Default
+            </Button>
+          </Box>
+        </Box>,
+      )}
+
+      {sectionShell(
         'Platform Configuration',
         'Model selection, RAG pipelines, tool registries, MCP servers, and safety guardrails.',
         undefined,
@@ -479,6 +583,23 @@ export function KagentiAdminPanel({
           navigation.
         </Alert>,
       )}
+
+      <Snackbar
+        open={!!devSpacesToast}
+        autoHideDuration={4000}
+        onClose={() => setDevSpacesToast(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        {devSpacesToast ? (
+          <Alert
+            severity={devSpacesToast.severity}
+            onClose={() => setDevSpacesToast(null)}
+            variant="filled"
+          >
+            {devSpacesToast.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </Box>
   );
 }
