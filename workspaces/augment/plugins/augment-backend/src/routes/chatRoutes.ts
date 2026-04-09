@@ -20,6 +20,7 @@ import type { NormalizedStreamEvent } from '../providers';
 import type { ChatMessage } from '../types';
 import type { SafetyChatResponse, EvaluatedChatResponse } from '../types';
 import { createWithRoute } from './routeWrapper';
+import { SseHeartbeat } from './sseRouteHelpers';
 import type { KagentiProvider } from '../providers/kagenti/KagentiProvider';
 import type { FlushableResponse, RouteContext } from './types';
 
@@ -420,6 +421,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
       clientDisconnectedRef,
       logger,
     );
+    const heartbeat = new SseHeartbeat(res);
+    heartbeat.start();
 
     try {
       await provider.refreshDynamicConfig?.();
@@ -508,6 +511,16 @@ export function registerChatRoutes(ctx: RouteContext): void {
         `Stream completed: ${eventCount} events, ${durationMs}ms total${ttfbInfo}${zeroWarn}`,
       );
 
+      if (eventCount === 0 && !clientDisconnectedRef.current) {
+        const zeroEventError: NormalizedStreamEvent = {
+          type: 'stream.error',
+          error:
+            'The agent returned no response. It may not support streaming — check agent capabilities.',
+          code: 'empty_stream',
+        };
+        res.write(`data: ${JSON.stringify(zeroEventError)}\n\n`);
+      }
+
       if (
         streamedTextRef.current &&
         provider.safety?.isEnabled() &&
@@ -568,11 +581,13 @@ export function registerChatRoutes(ctx: RouteContext): void {
         }
       }
 
+      heartbeat.stop();
       if (!clientDisconnectedRef.current) {
         res.write('data: [DONE]\n\n');
         res.end();
       }
     } catch (error) {
+      heartbeat.stop();
       handleStreamErrorAndCleanup(
         res,
         clientDisconnectedRef,

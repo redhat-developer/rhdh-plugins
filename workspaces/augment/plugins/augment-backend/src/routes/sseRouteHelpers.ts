@@ -35,6 +35,40 @@ export function clampLimit(
   return Math.min(Math.max(1, val), maxLimit);
 }
 
+const DEFAULT_HEARTBEAT_INTERVAL_MS = 15_000;
+
+/**
+ * Sends SSE comment lines (`: heartbeat`) at a regular interval to prevent
+ * reverse-proxy idle timeouts (e.g. HAProxy / OpenShift route 30s default).
+ * SSE comments are ignored by EventSource clients.
+ */
+export class SseHeartbeat {
+  private timer: ReturnType<typeof setInterval> | undefined;
+
+  constructor(
+    private readonly res: Response,
+    private readonly intervalMs = DEFAULT_HEARTBEAT_INTERVAL_MS,
+  ) {}
+
+  start(): void {
+    if (this.timer) return;
+    this.timer = setInterval(() => {
+      try {
+        this.res.write(': heartbeat\n\n');
+      } catch {
+        this.stop();
+      }
+    }, this.intervalMs);
+  }
+
+  stop(): void {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = undefined;
+    }
+  }
+}
+
 export function setupSse(
   res: Response,
   logger: LoggerService,
@@ -79,6 +113,8 @@ export async function handleSseStream(
   const { disconnected, abortController } = setupSse(res, logger);
   const verboseLog = kagentiCfg.verboseStreamLogging ? logger : undefined;
   const normalizer = new KagentiStreamNormalizer(verboseLog);
+  const heartbeat = new SseHeartbeat(res);
+  heartbeat.start();
 
   try {
     await streamFn((line: string) => {
@@ -86,11 +122,13 @@ export async function handleSseStream(
         writeSse(res, event, disconnected);
       }
     }, abortController.signal);
+    heartbeat.stop();
     if (!disconnected.current) {
       res.write('data: [DONE]\n\n');
       res.end();
     }
   } catch (err) {
+    heartbeat.stop();
     if (abortController.signal.aborted) {
       return;
     }
