@@ -57,7 +57,7 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
 
         if (!devSpacesApiUrl || typeof devSpacesApiUrl !== 'string') {
           throw new InputError(
-            'Dev Spaces API URL is not configured. Set it in Platform Config → Dev Spaces.',
+            'Dev Spaces API URL is not configured. Set it in Administration → Dev Spaces.',
           );
         }
 

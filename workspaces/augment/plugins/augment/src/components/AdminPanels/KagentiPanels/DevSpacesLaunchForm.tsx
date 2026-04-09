@@ -34,6 +34,7 @@ import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import TerminalOutlinedIcon from '@mui/icons-material/TerminalOutlined';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
+import type { DevSpacesCreateWorkspaceResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 
@@ -41,13 +42,6 @@ export interface DevSpacesLaunchFormProps {
   onBack: () => void;
   /** Pre-fill the git repo field, e.g. from a template's source URL. */
   initialGitRepo?: string;
-}
-
-interface WorkspaceResult {
-  name: string;
-  namespace: string;
-  phase: string;
-  message: string;
 }
 
 type FormStatus = 'idle' | 'creating' | 'success' | 'error';
@@ -113,7 +107,7 @@ export function DevSpacesLaunchForm({
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const [status, setStatus] = useState<FormStatus>('idle');
-  const [result, setResult] = useState<WorkspaceResult | null>(null);
+  const [result, setResult] = useState<DevSpacesCreateWorkspaceResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
   const isValid = namespace.trim() && gitRepo.trim() && token.trim();
@@ -176,6 +170,11 @@ export function DevSpacesLaunchForm({
               <strong>{result.name}</strong> in {result.namespace} &mdash;{' '}
               {result.phase}
             </Typography>
+            {result.created_at && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+                Created {new Date(result.created_at).toLocaleString()}
+              </Typography>
+            )}
             {result.message && (
               <Typography variant="caption" color="text.secondary">
                 {result.message}
@@ -210,7 +209,25 @@ export function DevSpacesLaunchForm({
                 icon={<CodeIcon sx={{ fontSize: 18 }} />}
                 step="1"
                 title="Open your Agent DevSpace"
-                description="Your cloud IDE is ready. Open it to start writing your agent code with full tooling and runtime support."
+                description={
+                  result.url ? (
+                    <>
+                      Your cloud IDE is ready.{' '}
+                      <a
+                        href={result.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ fontWeight: 600 }}
+                      >
+                        Open DevSpace
+                      </a>{' '}
+                      to start writing your agent code with full tooling and
+                      runtime support.
+                    </>
+                  ) : (
+                    'Your cloud IDE is ready. Open it to start writing your agent code with full tooling and runtime support.'
+                  )
+                }
               />
 
               <NextStep
