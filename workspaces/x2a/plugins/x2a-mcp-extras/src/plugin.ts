@@ -22,7 +22,7 @@ import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import {
   x2aDatabaseServiceRef,
   kubeServiceRef,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-backend';
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { createX2aActions } from './actions';
 
 /**

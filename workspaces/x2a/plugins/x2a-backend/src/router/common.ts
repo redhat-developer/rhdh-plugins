@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import crypto from 'node:crypto';
 import type { Request } from 'express';
 import type {
   BackstageCredentials,
@@ -22,14 +21,12 @@ import type {
   HttpAuthService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
-import { RELATION_MEMBER_OF } from '@backstage/catalog-model';
 import {
   AuthorizePermissionRequest,
   AuthorizePermissionResponse,
   AuthorizeResult,
   BasicPermission,
 } from '@backstage/plugin-permission-common';
-import type { CatalogService } from '@backstage/plugin-catalog-node';
 import {
   Job,
   Project,
@@ -38,8 +35,21 @@ import {
   x2aUserPermission,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
+import {
+  getUserRef,
+  getGroupsOfUser,
+  reconcileJobStatus,
+  generateCallbackToken,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
-import type { RouterDeps, ReconcileJobDeps } from './types';
+import type { RouterDeps } from './types';
+
+export {
+  getUserRef,
+  getGroupsOfUser,
+  reconcileJobStatus,
+  generateCallbackToken,
+};
 
 /**
  * Checks if the user has the x2aAdminViewPermission.
@@ -238,53 +248,6 @@ export const useEnforceProjectPermissions = async (
   };
 };
 
-/**
- * Safely extracts user reference from credentials with fallback.
- * Accepts any BackstageCredentials type: returns the real userEntityRef for
- * user principals and 'user:default/system' for service/other principals.
- * @public
- */
-export function getUserRef(credentials: BackstageCredentials): string {
-  const principal = credentials?.principal as
-    | BackstageUserPrincipal
-    | undefined;
-  return principal?.userEntityRef ?? 'user:default/system';
-}
-
-/**
- * Returns the list of Backstage group entity refs the user is a member of.
- * Fetches the user entity from the catalog and extracts targetRef from
- * relations of type RELATION_MEMBER_OF.
- * Returns an empty array if the user is not in the catalog or has no group memberships.
- * @public
- */
-export async function getGroupsOfUser(
-  userEntityRef: string,
-  options: {
-    catalog: CatalogService;
-    credentials: BackstageCredentials;
-  },
-): Promise<string[]> {
-  try {
-    const userEntity = await options.catalog.getEntityByRef(userEntityRef, {
-      credentials: options.credentials,
-    });
-
-    if (!userEntity?.relations) {
-      return [];
-    }
-
-    const memberOfRelations =
-      userEntity.relations.filter(
-        relation => relation.type === RELATION_MEMBER_OF,
-      ) ?? [];
-
-    return memberOfRelations.map(relation => relation.targetRef);
-  } catch {
-    return [];
-  }
-}
-
 export type UnsecureJob = Job & { callbackToken?: string };
 export const removeSensitiveFromJob = (job?: UnsecureJob): Job | undefined => {
   if (!job) {
@@ -295,57 +258,3 @@ export const removeSensitiveFromJob = (job?: UnsecureJob): Job | undefined => {
   delete newJob.callbackToken;
   return newJob;
 };
-
-// TODO: Remove once collectArtifacts (or the `report` command) is implemented
-// and jobs update their own status on completion. Until then this is the only
-// mechanism that syncs stale DB records with actual K8s job state.
-/**
- * Reconciles the job status between the database and the Kubernetes cluster.
- * @public
- */
-export async function reconcileJobStatus(
-  job: Job,
-  deps: ReconcileJobDeps,
-): Promise<Job> {
-  if (!['pending', 'running'].includes(job.status)) {
-    return job;
-  }
-  if (!job.k8sJobName) {
-    return job;
-  }
-
-  deps.logger.info(
-    `Reconciling job ${job.id} (k8s: ${job.k8sJobName}), DB status: '${job.status}'`,
-  );
-  const k8sStatus = await deps.kubeService.getJobStatus(job.k8sJobName);
-
-  if (k8sStatus.status === 'success' || k8sStatus.status === 'error') {
-    let log: string | null = null;
-    try {
-      log = (await deps.kubeService.getJobLogs(job.k8sJobName)) as string;
-    } catch {
-      deps.logger.warn(
-        `Could not fetch logs for job ${job.id} (k8s job: ${job.k8sJobName})`,
-      );
-    }
-    const updated = await deps.x2aDatabase.updateJob({
-      id: job.id,
-      status: k8sStatus.status,
-      finishedAt: new Date(),
-      log,
-    });
-    deps.logger.info(
-      `Reconciled job ${job.id}: DB had '${job.status}', K8s reports '${k8sStatus.status}'`,
-    );
-    return updated ?? job;
-  }
-
-  return job;
-}
-
-/** Generate a 256-bit hex callback token to match HMAC-SHA256 strength.
- * @public
- */
-export function generateCallbackToken(): string {
-  return crypto.randomBytes(32).toString('hex');
-}

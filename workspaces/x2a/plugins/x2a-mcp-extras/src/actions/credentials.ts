@@ -30,7 +30,7 @@ import {
 import {
   getUserRef,
   getGroupsOfUser,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-backend';
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
  * Resolved credential context shared by all MCP tool handlers.

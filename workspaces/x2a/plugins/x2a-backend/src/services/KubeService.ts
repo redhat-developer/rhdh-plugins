@@ -17,10 +17,8 @@
 import {
   coreServices,
   createServiceFactory,
-  createServiceRef,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import { Expand } from '@backstage/types';
 import type {
   CoreV1Api,
   BatchV1Api,
@@ -30,9 +28,17 @@ import type {
   V1Secret,
   V1Job,
 } from '@kubernetes/client-node';
+import {
+  kubeServiceRef,
+  type KubeServiceApi,
+  type JobStatusInfo,
+  type AAPCredentials,
+  type GitRepo,
+  type JobCreateParams,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
-import { X2AConfig, JobCreateParams, AAPCredentials, GitRepo } from './types';
+import type { X2AConfig } from './types';
 import {
   DEFAULT_LLM_MODEL,
   DEFAULT_KUBERNETES_NAMESPACE,
@@ -49,15 +55,6 @@ import {
 import * as fs from 'node:fs';
 
 import { stringifyError } from '../utils';
-
-/**
- * Job status information from Kubernetes
- * @public
- */
-export interface JobStatusInfo {
-  status: 'pending' | 'running' | 'success' | 'error';
-  message?: string;
-}
 
 /**
  * Reads the namespace from the in-cluster service account
@@ -100,7 +97,7 @@ export function resolveNamespace(
   return { namespace: defaultNamespace, source: 'default' };
 }
 
-export class KubeService {
+export class KubeService implements KubeServiceApi {
   readonly #logger: LoggerService;
   readonly #coreV1Api: CoreV1Api;
   readonly #batchV1Api: BatchV1Api;
@@ -470,105 +467,99 @@ export class KubeService {
   }
 }
 
+// Re-export the canonical service ref from x2a-node.
+export { kubeServiceRef };
+
 /**
- * The service reference for the KubeService.
+ * Service factory for the Kubernetes service.
+ *
+ * Must be registered explicitly in the backend app via `backend.add(...)`.
  * @public
  */
-export const kubeServiceRef = createServiceRef<Expand<KubeService>>({
-  id: 'x2a-kubernetes',
-  defaultFactory: async service =>
-    createServiceFactory({
-      service,
-      deps: {
-        logger: coreServices.logger,
-        config: coreServices.rootConfig,
+export const kubeServiceFactory = createServiceFactory({
+  service: kubeServiceRef,
+  deps: {
+    logger: coreServices.logger,
+    config: coreServices.rootConfig,
+  },
+  async factory(deps) {
+    const rawConfig = deps.config.getOptional<X2AConfig>('x2a');
+
+    if (!rawConfig) {
+      throw new Error(
+        'X2A configuration is missing. Please add x2a section to app-config.yaml',
+      );
+    }
+
+    const { namespace, source } = resolveNamespace(
+      rawConfig?.kubernetes?.namespace,
+      DEFAULT_KUBERNETES_NAMESPACE,
+    );
+
+    deps.logger.info(
+      `Using namespace '${namespace}' from ${source} configuration`,
+    );
+
+    const x2aConfig: X2AConfig = {
+      kubernetes: {
+        namespace,
+        image: rawConfig?.kubernetes?.image ?? DEFAULT_KUBERNETES_IMAGE,
+        imageTag:
+          rawConfig?.kubernetes?.imageTag ?? DEFAULT_KUBERNETES_IMAGE_TAG,
+        ttlSecondsAfterFinished:
+          rawConfig?.kubernetes?.ttlSecondsAfterFinished ??
+          DEFAULT_TTL_SECONDS_AFTER_FINISHED,
+        resources: {
+          requests: {
+            cpu:
+              rawConfig?.kubernetes?.resources?.requests?.cpu ??
+              DEFAULT_CPU_REQUEST,
+            memory:
+              rawConfig?.kubernetes?.resources?.requests?.memory ??
+              DEFAULT_MEMORY_REQUEST,
+          },
+          limits: {
+            cpu:
+              rawConfig?.kubernetes?.resources?.limits?.cpu ??
+              DEFAULT_CPU_LIMIT,
+            memory:
+              rawConfig?.kubernetes?.resources?.limits?.memory ??
+              DEFAULT_MEMORY_LIMIT,
+          },
+        },
       },
-      async factory(deps) {
-        // Load X2A configuration from app-config.yaml with defaults
-        const rawConfig = deps.config.getOptional<X2AConfig>('x2a');
-
-        if (!rawConfig) {
-          throw new Error(
-            'X2A configuration is missing. Please add x2a section to app-config.yaml',
-          );
-        }
-
-        // Determine namespace: config > in-cluster > default
-        const { namespace, source } = resolveNamespace(
-          rawConfig?.kubernetes?.namespace,
-          DEFAULT_KUBERNETES_NAMESPACE,
-        );
-
-        deps.logger.info(
-          `Using namespace '${namespace}' from ${source} configuration`,
-        );
-
-        // Apply defaults for all optional values
-        const x2aConfig: X2AConfig = {
-          kubernetes: {
-            namespace,
-            image: rawConfig?.kubernetes?.image ?? DEFAULT_KUBERNETES_IMAGE,
-            imageTag:
-              rawConfig?.kubernetes?.imageTag ?? DEFAULT_KUBERNETES_IMAGE_TAG,
-            ttlSecondsAfterFinished:
-              rawConfig?.kubernetes?.ttlSecondsAfterFinished ??
-              DEFAULT_TTL_SECONDS_AFTER_FINISHED,
-            resources: {
-              requests: {
-                cpu:
-                  rawConfig?.kubernetes?.resources?.requests?.cpu ??
-                  DEFAULT_CPU_REQUEST,
-                memory:
-                  rawConfig?.kubernetes?.resources?.requests?.memory ??
-                  DEFAULT_MEMORY_REQUEST,
-              },
-              limits: {
-                cpu:
-                  rawConfig?.kubernetes?.resources?.limits?.cpu ??
-                  DEFAULT_CPU_LIMIT,
-                memory:
-                  rawConfig?.kubernetes?.resources?.limits?.memory ??
-                  DEFAULT_MEMORY_LIMIT,
-              },
-            },
-          },
-          git: {
-            author: {
-              name: rawConfig?.git?.author?.name ?? DEFAULT_GIT_AUTHOR_NAME,
-              email: rawConfig?.git?.author?.email ?? DEFAULT_GIT_AUTHOR_EMAIL,
-            },
-          },
-          credentials: {
-            llm: rawConfig?.credentials?.llm ?? {},
-            aap: rawConfig?.credentials?.aap,
-          },
-        };
-
-        // Ensure LLM_MODEL has a default value
-        if (!x2aConfig.credentials.llm.LLM_MODEL) {
-          x2aConfig.credentials.llm.LLM_MODEL = DEFAULT_LLM_MODEL;
-        }
-
-        // Boot-time validation: fail fast if critical configs are missing
-        if (!x2aConfig.kubernetes.image) {
-          throw new Error(
-            'X2A configuration error: kubernetes.image is required',
-          );
-        }
-        if (!x2aConfig.kubernetes.namespace) {
-          throw new Error(
-            'X2A configuration error: kubernetes.namespace is required',
-          );
-        }
-
-        deps.logger.info(
-          `X2A KubeService initialized with namespace: ${x2aConfig.kubernetes.namespace}, image: ${x2aConfig.kubernetes.image}:${x2aConfig.kubernetes.imageTag}`,
-        );
-
-        return KubeService.create({
-          logger: deps.logger,
-          config: x2aConfig,
-        });
+      git: {
+        author: {
+          name: rawConfig?.git?.author?.name ?? DEFAULT_GIT_AUTHOR_NAME,
+          email: rawConfig?.git?.author?.email ?? DEFAULT_GIT_AUTHOR_EMAIL,
+        },
       },
-    }),
+      credentials: {
+        llm: rawConfig?.credentials?.llm ?? {},
+        aap: rawConfig?.credentials?.aap,
+      },
+    };
+
+    if (!x2aConfig.credentials.llm.LLM_MODEL) {
+      x2aConfig.credentials.llm.LLM_MODEL = DEFAULT_LLM_MODEL;
+    }
+
+    if (!x2aConfig.kubernetes.image) {
+      throw new Error('X2A configuration error: kubernetes.image is required');
+    }
+    if (!x2aConfig.kubernetes.namespace) {
+      throw new Error(
+        'X2A configuration error: kubernetes.namespace is required',
+      );
+    }
+
+    deps.logger.info(
+      `X2A KubeService initialized with namespace: ${x2aConfig.kubernetes.namespace}, image: ${x2aConfig.kubernetes.image}:${x2aConfig.kubernetes.imageTag}`,
+    );
+
+    return KubeService.create({
+      logger: deps.logger,
+      config: x2aConfig,
+    });
+  },
 });

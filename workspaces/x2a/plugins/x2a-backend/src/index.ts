@@ -13,20 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { x2APlugin as default } from './plugin';
+import { createBackendFeatureLoader } from '@backstage/backend-plugin-api';
+import { x2APlugin } from './plugin';
+import { x2aDatabaseServiceFactory } from './services/X2ADatabaseService';
+import { kubeServiceFactory } from './services/KubeService';
+
+/**
+ * Default export: a feature loader that registers the x2a plugin together
+ * with the service factories for x2a-node's canonical service refs.
+ *
+ * Bundling them here ensures RHDH's dynamic plugin loader (which only
+ * reads the default export) picks up the factories alongside the plugin.
+ *
+ * @public
+ */
+export default createBackendFeatureLoader({
+  *loader() {
+    yield x2APlugin;
+    yield x2aDatabaseServiceFactory;
+    yield kubeServiceFactory;
+  },
+});
+
+export { x2APlugin };
 export { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
+export { x2aDatabaseServiceFactory } from './services/X2ADatabaseService';
 export { kubeServiceRef } from './services/KubeService';
-export type { JobStatusInfo } from './services/KubeService';
+export { kubeServiceFactory } from './services/KubeService';
+
+// Re-export from x2a-node for backward compatibility
 export type {
+  JobStatusInfo,
   AAPCredentials,
   GitRepo,
   JobCreateParams,
-} from './services/types';
-export type { CreateJobInput } from './services/X2ADatabaseService/jobOperations';
-export type { ReconcileJobDeps } from './router/types';
+  CreateJobInput,
+  ReconcileJobDeps,
+  X2ADatabaseServiceApi,
+  KubeServiceApi,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 export {
   getUserRef,
   getGroupsOfUser,
   reconcileJobStatus,
   generateCallbackToken,
-} from './router/common';
+  X2A_DATABASE_SERVICE_ID,
+  KUBE_SERVICE_ID,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';

@@ -17,7 +17,7 @@ import { InputError, ConflictError, NotFoundError } from '@backstage/errors';
 import {
   reconcileJobStatus,
   generateCallbackToken,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-backend';
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import type { X2aActionsOptions } from './index';
 import { resolveCredentialsContext } from './credentials';
 

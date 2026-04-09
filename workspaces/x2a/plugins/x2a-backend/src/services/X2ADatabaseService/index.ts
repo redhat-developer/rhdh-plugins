@@ -18,13 +18,11 @@ import { Knex } from 'knex';
 import {
   coreServices,
   createServiceFactory,
-  createServiceRef,
   LoggerService,
   BackstageCredentials,
   BackstageUserPrincipal,
 } from '@backstage/backend-plugin-api';
 import { DatabaseManager } from '@backstage/backend-defaults/database';
-import { Expand } from '@backstage/types';
 import {
   Project,
   Module,
@@ -39,8 +37,13 @@ import {
   IN_MEMORY_SORT_WARN_THRESHOLD,
   ProjectsGet,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  x2aDatabaseServiceRef,
+  type X2ADatabaseServiceApi,
+  type CreateJobInput,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
-import { JobOperations, CreateJobInput } from './jobOperations';
+import { JobOperations } from './jobOperations';
 import { ModuleOperations } from './moduleOperations';
 import { ProjectOperations } from './projectOperations';
 import { isNonDbSortField } from './queryHelpers';
@@ -50,7 +53,7 @@ import { migrate } from '../dbMigrate';
 import { maxConcurrency } from '../../utils';
 import { calculateModuleStatus, calculateProjectStatus } from './status';
 
-export class X2ADatabaseService {
+export class X2ADatabaseService implements X2ADatabaseServiceApi {
   readonly #logger: LoggerService;
   readonly #projectOps: ProjectOperations;
   readonly #moduleOps: ModuleOperations;
@@ -460,39 +463,36 @@ export class X2ADatabaseService {
   }
 }
 
+// Re-export the canonical service ref from x2a-node.
+// All plugins MUST use the same ref object so Backstage can wire deps.
+export { x2aDatabaseServiceRef };
+
 /**
- * The service reference for the X2A database service.
- * Used by x2a-backend, x2a-mcp-extras, and scaffolder-backend-module-x2a plugins (root-scoped).
+ * Service factory for the X2A database service.
+ *
+ * Must be registered explicitly in the backend app via `backend.add(...)`.
  * @public
  */
-export const x2aDatabaseServiceRef = createServiceRef<
-  Expand<X2ADatabaseService>
->({
-  id: 'x2a-database',
-  scope: 'root',
-  multiton: false,
-  defaultFactory: async service =>
-    createServiceFactory({
-      service,
-      deps: {
-        logger: coreServices.rootLogger,
-        config: coreServices.rootConfig,
-        lifecycle: coreServices.rootLifecycle,
-      },
-      async factory(deps) {
-        const dbManager = DatabaseManager.fromConfig(deps.config, {
-          rootLogger: deps.logger,
-          rootLifecycle: deps.lifecycle,
-        });
-        const database = dbManager.forPlugin('x2a', {
-          logger: deps.logger,
-          lifecycle: deps.lifecycle,
-        });
-        await migrate(database);
-        return X2ADatabaseService.create({
-          logger: deps.logger,
-          dbClient: await database.getClient(),
-        });
-      },
-    }),
+export const x2aDatabaseServiceFactory = createServiceFactory({
+  service: x2aDatabaseServiceRef,
+  deps: {
+    logger: coreServices.rootLogger,
+    config: coreServices.rootConfig,
+    lifecycle: coreServices.rootLifecycle,
+  },
+  async factory(deps) {
+    const dbManager = DatabaseManager.fromConfig(deps.config, {
+      rootLogger: deps.logger,
+      rootLifecycle: deps.lifecycle,
+    });
+    const database = dbManager.forPlugin('x2a', {
+      logger: deps.logger,
+      lifecycle: deps.lifecycle,
+    });
+    await migrate(database);
+    return X2ADatabaseService.create({
+      logger: deps.logger,
+      dbClient: await database.getClient(),
+    });
+  },
 });

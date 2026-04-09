@@ -25,7 +25,7 @@ import type { CatalogService } from '@backstage/plugin-catalog-node';
 import type {
   x2aDatabaseServiceRef,
   kubeServiceRef,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-backend';
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import { createListProjectsAction } from './createListProjectsAction';
 import { createCreateProjectAction } from './createCreateProjectAction';

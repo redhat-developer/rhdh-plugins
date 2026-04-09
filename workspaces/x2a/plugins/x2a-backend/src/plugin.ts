@@ -21,6 +21,7 @@ import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { createRouter } from './router';
 import { kubeServiceRef } from './services/KubeService';
+import type { RouterDeps } from './router/types';
 
 /**
  * x2APlugin backend plugin
@@ -63,6 +64,8 @@ export const x2APlugin = createBackendPlugin({
           allow: 'unauthenticated',
         });
 
+        // The refs are typed with the slim x2a-node interfaces, but the
+        // factories return the full class instances. Cast is safe.
         httpRouter.use(
           await createRouter({
             httpAuth,
@@ -70,8 +73,8 @@ export const x2APlugin = createBackendPlugin({
             discoveryApi,
             catalog,
             permissionsSvc,
-            x2aDatabase,
-            kubeService,
+            x2aDatabase: x2aDatabase as unknown as RouterDeps['x2aDatabase'],
+            kubeService: kubeService as unknown as RouterDeps['kubeService'],
             config,
           }),
         );

@@ -11985,7 +11985,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:*, @red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:plugins/x2a-backend":
+"@red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:*, @red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:plugins/x2a-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:plugins/x2a-backend"
   dependencies:
@@ -12007,6 +12007,7 @@ __metadata:
     "@backstage/types": "npm:^1.2.2"
     "@kubernetes/client-node": "npm:^1.4.0"
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
+    "@red-hat-developer-hub/backstage-plugin-x2a-node": "workspace:*"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
     express: "npm:^4.17.1"
@@ -12067,8 +12068,20 @@ __metadata:
     "@backstage/errors": "npm:^1.2.7"
     "@backstage/plugin-catalog-node": "npm:^1.20.0"
     "@backstage/plugin-permission-common": "npm:^0.9.4"
-    "@red-hat-developer-hub/backstage-plugin-x2a-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-x2a-node": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-x2a-node@workspace:*, @red-hat-developer-hub/backstage-plugin-x2a-node@workspace:^, @red-hat-developer-hub/backstage-plugin-x2a-node@workspace:plugins/x2a-node":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-x2a-node@workspace:plugins/x2a-node"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.4.2"
+    "@backstage/catalog-model": "npm:^1.7.5"
+    "@backstage/cli": "npm:^0.34.5"
+    "@backstage/plugin-catalog-node": "npm:^1.20.0"
+    "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
   languageName: unknown
   linkType: soft
 

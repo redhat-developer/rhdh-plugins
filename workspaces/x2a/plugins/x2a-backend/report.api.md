@@ -4,243 +4,69 @@
 
 ```ts
 
-import { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { AAPCredentials } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { BackendFeature } from '@backstage/backend-plugin-api';
-import { BackstageCredentials } from '@backstage/backend-plugin-api';
-import { BackstageUserPrincipal } from '@backstage/backend-plugin-api';
-import type { CatalogService } from '@backstage/plugin-catalog-node';
-import { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { JobStatusEnum } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import type { LoggerService } from '@backstage/backend-plugin-api';
-import { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { ServiceRef } from '@backstage/backend-plugin-api';
-import { Telemetry } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import type { V1Job } from '@kubernetes/client-node';
-import type { V1OwnerReference } from '@kubernetes/client-node';
-import type { V1Pod } from '@kubernetes/client-node';
-import type { V1Secret } from '@kubernetes/client-node';
+import { CreateJobInput } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { generateCallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { getGroupsOfUser } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { getUserRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { GitRepo } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { JobCreateParams } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { JobStatusInfo } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { KUBE_SERVICE_ID } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { KubeServiceApi } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { kubeServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { ReconcileJobDeps } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { reconcileJobStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { ServiceFactory } from '@backstage/backend-plugin-api';
+import { X2A_DATABASE_SERVICE_ID } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { X2ADatabaseServiceApi } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { x2aDatabaseServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
-// @public (undocumented)
-export interface AAPCredentials {
-    oauthToken?: string;
-    orgName: string;
-    password?: string;
-    url: string;
-    username?: string;
-}
+export { AAPCredentials }
 
-// @public (undocumented)
-export interface CreateJobInput {
-    // (undocumented)
-    artifacts?: Pick<Artifact, 'type' | 'value'>[];
-    // (undocumented)
-    callbackToken?: string | null;
-    // (undocumented)
-    errorDetails?: string | null;
-    // (undocumented)
-    finishedAt?: Date | null;
-    // (undocumented)
-    k8sJobName?: string | null;
-    // (undocumented)
-    log?: string | null;
-    // (undocumented)
-    moduleId?: string | null;
-    // (undocumented)
-    phase: MigrationPhase;
-    // (undocumented)
-    projectId: string;
-    // (undocumented)
-    startedAt?: Date;
-    // (undocumented)
-    status?: JobStatusEnum;
-}
+export { CreateJobInput }
 
 // @public
-export function generateCallbackToken(): string;
+const _default: BackendFeature;
+export default _default;
+
+export { generateCallbackToken }
+
+export { getGroupsOfUser }
+
+export { getUserRef }
+
+export { GitRepo }
+
+export { JobCreateParams }
+
+export { JobStatusInfo }
+
+export { KUBE_SERVICE_ID }
+
+export { KubeServiceApi }
 
 // @public
-export function getGroupsOfUser(userEntityRef: string, options: {
-    catalog: CatalogService;
-    credentials: BackstageCredentials;
-}): Promise<string[]>;
+export const kubeServiceFactory: ServiceFactory<KubeServiceApi, "plugin", "singleton">;
+
+export { kubeServiceRef }
+
+export { ReconcileJobDeps }
+
+export { reconcileJobStatus }
+
+export { X2A_DATABASE_SERVICE_ID }
+
+export { X2ADatabaseServiceApi }
 
 // @public
-export function getUserRef(credentials: BackstageCredentials): string;
+export const x2aDatabaseServiceFactory: ServiceFactory<X2ADatabaseServiceApi, "root", "singleton">;
 
-// @public (undocumented)
-export type GitRepo = {
-    url: string;
-    branch: string;
-    token: string;
-};
+export { x2aDatabaseServiceRef }
 
 // @public
-export interface JobCreateParams {
-    aapCredentials?: AAPCredentials;
-    // (undocumented)
-    callbackToken: string;
-    // (undocumented)
-    callbackUrl: string;
-    // (undocumented)
-    jobId: string;
-    moduleId?: string;
-    moduleName?: string;
-    // (undocumented)
-    phase: MigrationPhase;
-    projectAbbrev: string;
-    // (undocumented)
-    projectId: string;
-    // (undocumented)
-    projectName: string;
-    sourceRepo: GitRepo;
-    targetRepo: GitRepo;
-    // (undocumented)
-    user: string;
-    // (undocumented)
-    userPrompt?: string;
-}
-
-// @public
-export interface JobStatusInfo {
-    // (undocumented)
-    message?: string;
-    // (undocumented)
-    status: 'pending' | 'running' | 'success' | 'error';
-}
-
-// @public
-export const kubeServiceRef: ServiceRef<    {
-createProjectSecret: (projectId: string, aapCredentials?: AAPCredentials) => Promise<void>;
-getProjectSecret: (projectId: string) => Promise<V1Secret | null>;
-deleteProjectSecret: (projectId: string) => Promise<void>;
-createJobSecret: (jobId: string, projectId: string, phase: string, gitCredentials: {
-sourceRepo: GitRepo;
-targetRepo: GitRepo;
-}, ownerReference: V1OwnerReference) => Promise<void>;
-createJob: (params: JobCreateParams) => Promise<{
-k8sJobName: string;
-}>;
-getJobStatus: (k8sJobName: string) => Promise<JobStatusInfo>;
-getJobLogs: (k8sJobName: string, streaming?: boolean) => Promise<string | NodeJS.ReadableStream>;
-deleteJob: (k8sJobName: string) => Promise<void>;
-listJobsForProject: (projectId: string) => Promise<V1Job[]>;
-getPods: () => Promise<{
-items: V1Pod[];
-}>;
-}, "plugin", "singleton">;
-
-// @public
-export interface ReconcileJobDeps {
-    // (undocumented)
-    kubeService: typeof kubeServiceRef.T;
-    // (undocumented)
-    logger: LoggerService;
-    // (undocumented)
-    x2aDatabase: typeof x2aDatabaseServiceRef.T;
-}
-
-// @public
-export function reconcileJobStatus(job: Job, deps: ReconcileJobDeps): Promise<Job>;
-
-// @public
-export const x2aDatabaseServiceRef: ServiceRef<    {
-createProject: (input: {
-name: string;
-ownedByGroup?: string;
-abbreviation: string;
-description: string;
-sourceRepoUrl: string;
-targetRepoUrl: string;
-sourceRepoBranch: string;
-targetRepoBranch: string;
-}, options: {
-credentials: BackstageCredentials<BackstageUserPrincipal>;
-}) => Promise<Project>;
-listProjects: (query: ProjectsGet["query"], options: {
-credentials: BackstageCredentials<BackstageUserPrincipal>;
-canViewAll?: boolean;
-groupsOfUser: string[];
-}) => Promise<{
-projects: Project[];
-totalCount: number;
-}>;
-getProject: ({ projectId, skipEnrichment, }: {
-projectId: string;
-skipEnrichment?: boolean;
-}, options: {
-credentials: BackstageCredentials<BackstageUserPrincipal>;
-canViewAll?: boolean;
-groupsOfUser: string[];
-}) => Promise<Project | undefined>;
-deleteProject: ({ projectId }: {
-projectId: string;
-}, options: {
-credentials: BackstageCredentials<BackstageUserPrincipal>;
-canWriteAll?: boolean;
-groupsOfUser: string[];
-}) => Promise<number>;
-createModule: (module: {
-name: string;
-sourcePath: string;
-projectId: string;
-}) => Promise<Module>;
-getModule: ({ id, skipEnrichment, }: {
-id: string;
-skipEnrichment?: boolean;
-}) => Promise<Module | undefined>;
-listModules: ({ projectId }: {
-projectId: string;
-}) => Promise<Module[]>;
-deleteModule: ({ id }: {
-id: string;
-}) => Promise<number>;
-createJob: (job: CreateJobInput) => Promise<Job>;
-getJob: ({ id }: {
-id: string;
-}) => Promise<Job | undefined>;
-getJobWithLog: ({ id, }: {
-id: string;
-}) => Promise<(Job & {
-log?: string | null;
-}) | undefined>;
-getJobLogs: ({ jobId }: {
-jobId: string;
-}) => Promise<string | undefined>;
-listJobsForProject: ({ projectId, }: {
-projectId: string;
-}) => Promise<Job[]>;
-listJobsForModule: ({ projectId, moduleId, }: {
-projectId: string;
-moduleId: string;
-}) => Promise<Job[]>;
-listJobs: ({ projectId, moduleId, phase, lastJobOnly, }: {
-projectId: string;
-moduleId?: string;
-phase?: MigrationPhase;
-lastJobOnly?: boolean;
-}) => Promise<Job[]>;
-updateJob: (update: {
-id: string;
-log?: string | null;
-finishedAt?: Date | null;
-status?: JobStatusEnum;
-errorDetails?: string | null;
-k8sJobName?: string | null;
-artifacts?: Artifact[];
-telemetry?: Telemetry | null;
-commitId?: string;
-}) => Promise<Job | undefined>;
-deleteJob: ({ id }: {
-id: string;
-}) => Promise<number>;
-}, "root", "singleton">;
-
-// @public
-const x2APlugin: BackendFeature;
-export default x2APlugin;
+export const x2APlugin: BackendFeature;
 
 // (No @packageDocumentation comment for this package)
 
