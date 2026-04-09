@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { parseArgs } from 'util';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { format as prettierFormat } from 'prettier';
+import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,8 +56,9 @@ Otherwise it selects a single plugin under workspaces/<workspace>/plugins/
 }
 
 function treeUrlForGitTag(gitTag, workspace) {
-  const encoded = gitTag.replace(/@/g, '%40');
-  return `https://github.com/${REPO_SLUG}/tree/${encoded}/workspaces/${workspace}`;
+  const encodedRef = encodeURIComponent(gitTag);
+  const encodedWorkspace = encodeURIComponent(workspace);
+  return `https://github.com/${REPO_SLUG}/tree/${encodedRef}/workspaces/${encodedWorkspace}`;
 }
 
 function matchesPluginTarget(pluginDir, packageName, target) {
@@ -106,8 +108,9 @@ async function removeWorkspaceFromCodeowners(workspace) {
   console.log(`Removing /workspaces/${workspace} from CODEOWNERS...`);
   const content = await fs.readFile(CODEOWNERS, 'utf8');
   const lines = content.split('\n');
-  const escaped = workspace.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const workspacePattern = new RegExp(`^/workspaces/${escaped}\\s`);
+  const specialChars = new RegExp(String.raw`[.*+?^\${}()|[\]\\]`, 'g');
+  const escaped = workspace.replaceAll(specialChars, '\\$&');
+  const workspacePattern = new RegExp(String.raw`^/workspaces/${escaped}\s`);
   const filteredLines = lines.filter(line => !workspacePattern.test(line));
   await fs.writeFile(CODEOWNERS, filteredLines.join('\n'));
   console.log('Updated CODEOWNERS');
@@ -116,16 +119,37 @@ async function removeWorkspaceFromCodeowners(workspace) {
 async function removeWorkspaceFromRenovateJson(workspace) {
   const presetRef = `github>${REPO_SLUG}//.github/renovate-presets/workspace/rhdh-${workspace}-presets`;
   const content = await fs.readFile(RENOVATE_JSON, 'utf8');
-  const lines = content.split('\n');
-  const filtered = lines.filter(line => !line.includes(presetRef));
-  if (filtered.length === lines.length) {
+  const data = JSON.parse(content);
+  const rule = data.packageRules?.find(
+    r =>
+      r.description === 'all RHDH Plugins workspaces' &&
+      Array.isArray(r.extends),
+  );
+  if (!rule) {
+    console.log(
+      'Could not find "all RHDH Plugins workspaces" packageRules entry in renovate.json (skipping).',
+    );
+    return;
+  }
+  const beforeLen = rule.extends.length;
+  rule.extends = rule.extends.filter(entry => entry !== presetRef);
+  if (rule.extends.length === beforeLen) {
     console.log(
       `No Renovate preset reference found for workspace "${workspace}" (skipping renovate.json).`,
     );
-  } else {
-    await fs.writeFile(RENOVATE_JSON, filtered.join('\n'));
-    console.log('Updated renovate.json');
+    return;
   }
+  const raw = JSON.stringify(data, null, 2);
+  const formatted = await prettierFormat(raw, {
+    filepath: RENOVATE_JSON,
+    parser: 'json',
+  });
+  await fs.writeFile(
+    RENOVATE_JSON,
+    formatted.endsWith('\n') ? formatted : `${formatted}\n`,
+    'utf8',
+  );
+  console.log('Updated renovate.json');
 }
 
 async function removeRenovatePresetFile(workspace) {
