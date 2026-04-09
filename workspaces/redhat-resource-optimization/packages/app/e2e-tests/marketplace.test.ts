@@ -15,7 +15,7 @@
  */
 
 import { test, expect, Page } from '@playwright/test';
-import { performGuestLogin, performLogin } from './fixtures/auth';
+import { performGuestLogin } from './fixtures/auth';
 
 /**
  * RHDH Extensions Marketplace — Plugin Installation Tests
@@ -212,9 +212,9 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
     page,
   }) => {
     test.setTimeout(120_000);
-    await performLogin(page);
 
-    // Wait for nav sidebar to fully render
+    // beforeEach already logged us in via guest; navigate home to see sidebar
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page
       .locator('nav')
       .first()
@@ -224,16 +224,15 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
 
     if (!layout) {
       // Plugin may not be loaded yet (pod restarting after install).
-      // Poll up to 90 seconds: reload → re-login → check sidebar.
+      // Poll up to 90 seconds: reload and check sidebar.
       const deadline = Date.now() + 90_000;
       while (!layout && Date.now() < deadline) {
         await page.waitForTimeout(10_000);
-        // Re-navigate and re-login in case the pod restarted
         const responded = await page
           .goto('/', { waitUntil: 'domcontentloaded', timeout: 15000 })
           .catch(() => null);
         if (!responded) continue;
-        await performLogin(page);
+        await page.waitForLoadState('networkidle').catch(() => {});
         /* eslint-disable testing-library/await-async-utils */
         await page
           .locator('nav')
@@ -259,7 +258,7 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
   test('FLPATH-2458: Plugin sidebar expands and shows sub-items (1.9+) or single item (1.8)', async ({
     page,
   }) => {
-    await performLogin(page);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page
       .locator('nav')
       .first()
@@ -293,7 +292,7 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
   test('FLPATH-2458: Clicking sidebar item navigates to plugin page', async ({
     page,
   }) => {
-    await performLogin(page);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page
       .locator('nav')
       .first()
