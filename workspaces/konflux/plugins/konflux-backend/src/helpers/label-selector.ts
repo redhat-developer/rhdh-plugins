@@ -34,11 +34,12 @@ export const buildLabelSelector = (
 
   const labelSelectors: string[] = [];
 
-  // Add application filter
-  if (
-    combination.applications?.length &&
-    combination.applications?.length > 0
-  ) {
+  // Add application filter (skip if no applications or any contain glob patterns)
+  const hasWildcard =
+    !combination.applications?.length ||
+    combination.applications.some(app => app.includes('*'));
+
+  if (!hasWildcard) {
     if (combination.applications.length === 1) {
       labelSelectors.push(
         `${PipelineRunLabel.APPLICATION}=${combination.applications[0]}`,

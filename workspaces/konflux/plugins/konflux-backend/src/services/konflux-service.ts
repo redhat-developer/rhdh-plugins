@@ -607,8 +607,11 @@ export class KonfluxService {
     labelSelector: string | undefined,
   ): K8sResourceCommonWithClusterInfo[] {
     const needsInMemoryFiltering = !labelSelector;
+    const fetchesAllApplications =
+      !combination.applications?.length ||
+      combination.applications.includes('*');
 
-    if (!needsInMemoryFiltering || !combination.applications?.length) {
+    if (!needsInMemoryFiltering || fetchesAllApplications) {
       return items;
     }
 
