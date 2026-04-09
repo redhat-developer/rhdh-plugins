@@ -52,6 +52,13 @@ import {
   chatStopButton,
   verifyMcpSettingsPanel,
   waitForChatMessageLoadingHidden,
+  openMcpSettingsPanel,
+  closeMcpSettingsPanel,
+  mcpServerToggle,
+  mcpServerRow,
+  clickMcpServersStatusColumn,
+  clickMcpServersNameColumn,
+  mcpServersTableBodyRows,
 } from './pages/LightspeedPage';
 import {
   uploadFiles,
@@ -257,6 +264,38 @@ test.describe('Lightspeed tests', () => {
       test('both servers require a token', async () => {
         await runMcpPanelScenario(mcpServerScenarios.twoTokenRequired);
       });
+    });
+
+    test('MCP settings: Name column toggles sort order', async () => {
+      await mockMcpServers(sharedPage, mcpServerScenarios.allHealthy);
+      await openChatbot(sharedPage);
+      await openMcpSettingsPanel(sharedPage, translations);
+
+      const rows = mcpServersTableBodyRows(sharedPage);
+      await expect(rows.nth(0)).toContainText('alpha-mcp');
+      await expect(rows.nth(1)).toContainText('beta-mcp');
+
+      await clickMcpServersNameColumn(sharedPage);
+      await expect(rows.nth(0)).toContainText('beta-mcp');
+      await expect(rows.nth(1)).toContainText('alpha-mcp');
+
+      await closeMcpSettingsPanel(sharedPage);
+    });
+
+    test('MCP settings: toggle disables server and restores tool count', async () => {
+      const serverName = 'mcp-integration-tools';
+      await openChatbot(sharedPage);
+      await openMcpSettingsPanel(sharedPage, translations);
+
+      const row = mcpServerRow(sharedPage, serverName);
+      await clickMcpServersStatusColumn(sharedPage);
+      await mcpServerToggle(sharedPage, serverName).click();
+      await expect(row.getByText('Disabled', { exact: true })).toBeVisible();
+
+      await mcpServerToggle(sharedPage, serverName).click();
+      await expect(row.getByText('14 tools', { exact: true })).toBeVisible();
+
+      await closeMcpSettingsPanel(sharedPage);
     });
   });
 

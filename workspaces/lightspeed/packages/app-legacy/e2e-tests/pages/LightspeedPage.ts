@@ -110,6 +110,34 @@ export async function closeMcpSettingsPanel(page: Page) {
   await page.getByRole('button', { name: 'Close MCP settings' }).click();
 }
 
+export function mcpServersTable(page: Page): Locator {
+  return page.getByLabel('MCP servers table');
+}
+
+export function mcpServersTableBodyRows(page: Page): Locator {
+  return mcpServersTable(page).locator('tbody tr');
+}
+
+export function mcpServerRow(page: Page, serverName: string): Locator {
+  return mcpServersTableBodyRows(page).filter({ hasText: serverName });
+}
+
+export function mcpServerToggle(page: Page, serverName: string): Locator {
+  return mcpServersTable(page)
+    .getByRole('gridcell', { name: `Toggle ${serverName}` })
+    .locator('span');
+}
+
+export async function clickMcpServersStatusColumn(page: Page) {
+  await mcpServersTable(page)
+    .getByRole('columnheader', { name: 'Status' })
+    .click();
+}
+
+export async function clickMcpServersNameColumn(page: Page) {
+  await mcpServersTable(page).getByRole('button', { name: 'Name' }).click();
+}
+
 function mcpServersSettingsHeading(page: Page): Locator {
   return page.getByRole('heading', { name: 'MCP servers', exact: true });
 }
@@ -138,11 +166,7 @@ export async function verifyMcpSettingsPanel(
   const mcpList = options?.mcpList ?? mockedMcpServersResponse;
   await openMcpSettingsPanel(page, t);
 
-  await expect(page.getByText('Loading MCP servers...')).toBeHidden({
-    timeout: 30_000,
-  });
-
-  const table = page.getByLabel('MCP servers table');
+  const table = mcpServersTable(page);
   await expect(table).toBeVisible();
   await expectMcpServersSettingsHeading(page, true);
   await expect(page.getByText(/\d+ of \d+ selected/)).toBeVisible();
@@ -153,7 +177,7 @@ export async function verifyMcpSettingsPanel(
     table.getByRole('columnheader', { name: 'Status' }),
   ).toBeVisible();
 
-  await table.getByRole('columnheader', { name: 'Status' }).click();
+  await clickMcpServersStatusColumn(page);
 
   // Close + selected count live in the MCP header, not always inside <form> (fullscreen omits Settings/form wrapper).
   await expect(
@@ -166,7 +190,7 @@ export async function verifyMcpSettingsPanel(
     ).toBeVisible();
   } else {
     for (const server of mcpList.servers) {
-      const row = table.locator('tbody tr').filter({ hasText: server.name });
+      const row = mcpServerRow(page, server.name);
       await expect(row.getByText(server.name, { exact: true })).toBeVisible();
       await expect(
         row.getByText(getExpectedMcpStatusDetailForMock(server), {

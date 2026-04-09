@@ -103,22 +103,56 @@ export async function mockQueryWithResponseDelay(
   });
 }
 
+const mcpServersRouteGlob = `${modelBaseUrl}/mcp-servers**`;
+
 /**
- * Mocks GET `/api/lightspeed/mcp-servers`. Non-GET requests are passed through.
- * Call again with a different body to switch scenarios (replaces the previous handler).
- * Use `mcpServerScenarios` from `fixtures/mcpServerMocks` or a custom `McpServersListMock`.
+ * Mocks GET `/api/lightspeed/mcp-servers` and PATCH `/api/lightspeed/mcp-servers/:name`
+ * (toggle enabled). Other methods (e.g. POST validate) pass through to the backend.
  */
 export async function mockMcpServers(
   page: Page,
   json: McpServersListMock = mockedMcpServersResponse,
 ) {
-  await page.unroute(`${modelBaseUrl}/mcp-servers`);
-  await page.route(`${modelBaseUrl}/mcp-servers`, async route => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
+  await page.unroute(mcpServersRouteGlob);
+  await page.route(mcpServersRouteGlob, async route => {
+    const req = route.request();
+    const pathname = new URL(req.url()).pathname;
+    const suffix = pathname.replace(/^.*\/api\/lightspeed\/mcp-servers\/?/, '');
+    const segments = suffix.split('/').filter(Boolean);
+
+    if (req.method() === 'GET' && segments.length === 0) {
+      await route.fulfill({ json });
       return;
     }
-    await route.fulfill({ json });
+
+    if (req.method() === 'PATCH' && segments.length === 1) {
+      const name = decodeURIComponent(segments[0]!);
+      let body: { enabled?: boolean; token?: string | null };
+      try {
+        body = req.postDataJSON();
+      } catch {
+        await route.fulfill({ status: 400, json: { error: 'Invalid JSON' } });
+        return;
+      }
+      const server = json.servers.find(s => s.name === name);
+      if (!server) {
+        await route.fulfill({
+          status: 404,
+          json: {
+            error: `MCP server '${name}' is not configured`,
+          },
+        });
+        return;
+      }
+      const updated = {
+        ...server,
+        enabled: body.enabled !== undefined ? body.enabled : server.enabled,
+      };
+      await route.fulfill({ json: { server: updated } });
+      return;
+    }
+
+    await route.continue();
   });
 }
 
