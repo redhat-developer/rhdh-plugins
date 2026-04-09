@@ -49,6 +49,8 @@ import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
 import { lightspeedMcpManagePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
+import { useTranslation } from '../hooks/useTranslation';
+
 type ServerStatus = 'tokenRequired' | 'disabled' | 'ok' | 'failed' | 'unknown';
 
 type McpServer = {
@@ -382,20 +384,6 @@ const getDisplayStatus = (server: McpServer): ServerStatus => {
   return 'unknown';
 };
 
-const getDisplayDetail = (
-  server: McpServer,
-  displayStatus: ServerStatus,
-): string => {
-  if (displayStatus === 'disabled') return 'Disabled';
-  if (displayStatus === 'tokenRequired') return 'Token required';
-  if (displayStatus === 'failed') return 'Failed';
-  if (displayStatus === 'ok') {
-    const suffix = server.toolCount === 1 ? 'tool' : 'tools';
-    return `${server.toolCount} ${suffix}`;
-  }
-  return 'Unknown';
-};
-
 const toUiServer = (
   server: McpServerResponse,
   validationError?: string,
@@ -415,6 +403,7 @@ export const McpServersSettings = ({
   backgroundColor,
 }: McpServersSettingsProps) => {
   const classes = useStyles();
+  const { t } = useTranslation();
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
   const mcpManagePermission = usePermission({
@@ -622,6 +611,28 @@ export const McpServersSettings = ({
     return next;
   }, [servers, sortAsc]);
 
+  const getDisplayDetail = useCallback(
+    (server: McpServer, displayStatus: ServerStatus): string => {
+      if (displayStatus === 'disabled')
+        return t('mcp.settings.status.disabled');
+      if (displayStatus === 'tokenRequired')
+        return t('mcp.settings.status.tokenRequired');
+      if (displayStatus === 'failed') return t('mcp.settings.status.failed');
+      if (displayStatus === 'ok') {
+        if (server.toolCount === 1) {
+          return t('mcp.settings.status.oneTool' as any, {
+            count: String(server.toolCount),
+          });
+        }
+        return t('mcp.settings.status.manyTools' as any, {
+          count: String(server.toolCount),
+        });
+      }
+      return t('mcp.settings.status.unknown');
+    },
+    [t],
+  );
+
   const closeConfigureModal = useCallback(() => {
     setEditingServerId(null);
     setTokenInputValue('');
@@ -676,7 +687,7 @@ export const McpServersSettings = ({
 
   let tokenInputAdornment = (
     <IconButton
-      aria-label="Clear token input"
+      aria-label={t('mcp.settings.token.clearAriaLabel')}
       size="small"
       className={classes.tokenClearButton}
       onClick={clearTokenInput}
@@ -733,14 +744,14 @@ export const McpServersSettings = ({
     const hasToken = token.length > 0;
 
     setTokenValidationState('validating');
-    setTokenValidationMessage('Validating token...');
+    setTokenValidationMessage(t('mcp.settings.token.validating'));
 
     try {
       if (hasToken) {
         if (!editingServer.url) {
           setTokenValidationState('error');
           setTokenValidationMessage(
-            'Unable to validate token because server URL is not available.',
+            t('mcp.settings.token.urlUnavailableForValidation'),
           );
           return;
         }
@@ -753,13 +764,13 @@ export const McpServersSettings = ({
           setTokenValidationState('error');
           setTokenValidationMessage(
             credentialValidation.error ??
-              'Invalid credentials. Check server URL and token.',
+              t('mcp.settings.token.invalidCredentials'),
           );
           return;
         }
       }
 
-      setTokenValidationMessage('Saving and validating token...');
+      setTokenValidationMessage(t('mcp.settings.token.savingAndValidating'));
       await patchServer(editingServer.name, {
         enabled: editingServer.enabled,
         token: hasToken ? token : null,
@@ -769,12 +780,12 @@ export const McpServersSettings = ({
         setTokenValidationState('error');
         setTokenValidationMessage(
           validationResult.validation?.error ??
-            'Validation failed. Check server URL and token.',
+            t('mcp.settings.token.validationFailed'),
         );
         return;
       }
       setTokenValidationState('success');
-      setTokenValidationMessage('Connection successful');
+      setTokenValidationMessage(t('mcp.settings.token.connectionSuccessful'));
       closeConfigureModal();
     } catch (e) {
       setTokenValidationState('error');
@@ -790,6 +801,7 @@ export const McpServersSettings = ({
     editingServer,
     hasSavedTokenInModal,
     patchServer,
+    t,
     tokenInputValue,
     validateCredentials,
     validateServer,
@@ -811,14 +823,17 @@ export const McpServersSettings = ({
       <div className={classes.headerRow}>
         <div>
           <Title headingLevel="h2" size="xl" className={classes.title}>
-            MCP servers
+            {t('mcp.settings.title')}
           </Title>
           <div className={classes.selectedCount}>
-            {selectedCount} of {servers.length} selected
+            {t('mcp.settings.selectedCount' as any, {
+              selectedCount: String(selectedCount),
+              totalCount: String(servers.length),
+            })}
           </div>
         </div>
         <Button
-          aria-label="Close MCP settings"
+          aria-label={t('mcp.settings.closeAriaLabel')}
           icon={<TimesIcon />}
           variant="plain"
           className={classes.closeButton}
@@ -837,19 +852,19 @@ export const McpServersSettings = ({
         <Alert
           variant="info"
           isInline
-          title="You have read-only access to MCP servers."
+          title={t('mcp.settings.readOnlyAccess')}
           className={classes.alert}
         />
       )}
 
       <Table
         variant="compact"
-        aria-label="MCP servers table"
+        aria-label={t('mcp.settings.tableAriaLabel')}
         className={classes.table}
       >
         <Thead>
           <Tr>
-            <Th width={10} screenReaderText="Enabled" />
+            <Th width={10} screenReaderText={t('mcp.settings.enabled')} />
             <Th>
               <Button
                 variant="link"
@@ -859,23 +874,23 @@ export const McpServersSettings = ({
                 onClick={() => setSortAsc(prev => !prev)}
               >
                 <Typography component="span" className={classes.nameHeaderText}>
-                  Name
+                  {t('mcp.settings.name')}
                 </Typography>
               </Button>
             </Th>
-            <Th className={classes.statusHeader}>Status</Th>
-            <Th screenReaderText="Edit" />
+            <Th className={classes.statusHeader}>{t('mcp.settings.status')}</Th>
+            <Th screenReaderText={t('mcp.settings.edit')} />
           </Tr>
         </Thead>
         <Tbody>
           {isLoading && (
             <Tr>
-              <Td colSpan={4}>Loading MCP servers...</Td>
+              <Td colSpan={4}>{t('mcp.settings.loading')}</Td>
             </Tr>
           )}
           {!isLoading && sortedServers.length === 0 && (
             <Tr>
-              <Td colSpan={4}>No MCP servers available.</Td>
+              <Td colSpan={4}>{t('mcp.settings.noneAvailable')}</Td>
             </Tr>
           )}
           {sortedServers.map(server => {
@@ -904,7 +919,12 @@ export const McpServersSettings = ({
                     const switchControl = (
                       <Switch
                         id={`mcp-switch-${server.id}`}
-                        aria-label={`Toggle ${server.name}`}
+                        aria-label={t(
+                          'mcp.settings.toggleServerAriaLabel' as any,
+                          {
+                            serverName: server.name,
+                          },
+                        )}
                         isChecked={isChecked}
                         isDisabled={isToggleDisabled}
                         onChange={(_event, checked) => {
@@ -947,7 +967,7 @@ export const McpServersSettings = ({
                       <Tooltip
                         content={
                           server.validationError ??
-                          'Validation failed. Check server URL and token.'
+                          t('mcp.settings.token.validationFailed')
                         }
                       >
                         <Typography
@@ -969,7 +989,9 @@ export const McpServersSettings = ({
                 </Td>
                 <Td width={15} isActionCell style={{ textAlign: 'right' }}>
                   <Button
-                    aria-label={`Edit ${server.name}`}
+                    aria-label={t('mcp.settings.editServerAriaLabel' as any, {
+                      serverName: server.name,
+                    })}
                     icon={<ModeEditOutlineOutlinedIcon fontSize="small" />}
                     variant="plain"
                     className={classes.actionButton}
@@ -984,14 +1006,16 @@ export const McpServersSettings = ({
       </Table>
       <Modal
         variant="small"
-        title={`Configure ${editingServer?.name ?? ''} server`}
+        title={t('mcp.settings.configureServerTitle' as any, {
+          serverName: editingServer?.name ?? '',
+        })}
         isOpen={Boolean(editingServer)}
         onClose={closeConfigureModal}
         className={classes.configureModal}
       >
         <div className={classes.modalContent}>
           <IconButton
-            aria-label="Close configure modal"
+            aria-label={t('mcp.settings.closeConfigureModalAriaLabel')}
             size="small"
             className={classes.modalCustomCloseButton}
             onClick={closeConfigureModal}
@@ -1000,11 +1024,14 @@ export const McpServersSettings = ({
           </IconButton>
           <div className={classes.modalHeading}>
             <LockIcon />
-            <Typography component="div">{`Configure ${editingServer?.name ?? ''} server`}</Typography>
+            <Typography component="div">
+              {t('mcp.settings.configureServerTitle' as any, {
+                serverName: editingServer?.name ?? '',
+              })}
+            </Typography>
           </div>
           <div className={classes.modalDescription}>
-            Credentials are encrypted at rest and scoped to your profile.
-            Lightspeed will operate with your exact permissions.
+            {t('mcp.settings.modalDescription')}
           </div>
           <div className={classes.tokenRow}>
             <TextField
@@ -1016,7 +1043,9 @@ export const McpServersSettings = ({
               onChange={event => onTokenInputChange(event.target.value)}
               className={`${classes.tokenInput} ${tokenInputStateClass}`}
               label={
-                hasSavedTokenInModal ? 'Saved token' : 'Personal Access Token'
+                hasSavedTokenInModal
+                  ? t('mcp.settings.savedToken')
+                  : t('mcp.settings.personalAccessToken')
               }
               InputProps={{
                 endAdornment: (
@@ -1035,8 +1064,8 @@ export const McpServersSettings = ({
               >
                 {tokenValidationMessage ||
                   (isUsingOrganizationCredentialInModal
-                    ? 'Using Administrator provided credential. Enter a personal token to override for your account.'
-                    : 'Enter your token')}
+                    ? t('mcp.settings.usingAdminCredential')
+                    : t('mcp.settings.enterToken'))}
               </div>
             )}
           </div>
@@ -1052,7 +1081,7 @@ export const McpServersSettings = ({
               }
               className={classes.modalActionButton}
             >
-              Save
+              {t('modal.save')}
             </Button>
             {canRemovePersonalToken && hasSavedTokenInModal && (
               <Button
@@ -1066,7 +1095,7 @@ export const McpServersSettings = ({
                 }
                 className={classes.forgetTokenButton}
               >
-                Remove personal token
+                {t('mcp.settings.removePersonalToken')}
               </Button>
             )}
             <Button
@@ -1075,7 +1104,7 @@ export const McpServersSettings = ({
               onClick={closeConfigureModal}
               className={classes.modalCancelButton}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </div>
