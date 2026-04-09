@@ -403,6 +403,18 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     minHeight: 0,
   },
+  mcpCollapsedDrawerOrderFix: {
+    '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
+      {
+        order: 'unset',
+      },
+    '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
+      {
+        visibility: 'hidden',
+        opacity: 0,
+        transition: 'none !important',
+      },
+  },
 }));
 
 type LightspeedChatProps = {
@@ -1270,15 +1282,17 @@ export const LightspeedChat = ({
       )}
       <Chatbot
         displayMode={ChatbotDisplayMode.embedded}
-        className={classes.body}
+        className={`${classes.body} ${
+          isMcpSettingsOpen && !isChatHistoryDrawerOpen
+            ? classes.mcpCollapsedDrawerOrderFix
+            : ''
+        }`}
       >
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
             <ChatbotHeaderMenu
               aria-expanded={isChatHistoryDrawerOpen}
-              onMenuToggle={() =>
-                setIsChatHistoryDrawerOpen(!isChatHistoryDrawerOpen)
-              }
+              onMenuToggle={onChatHistoryDrawerToggle}
               className={classes.headerMenu}
               tooltipContent={t('tooltip.chatHistoryMenu')}
               aria-label={t('aria.chatHistoryMenu')}
