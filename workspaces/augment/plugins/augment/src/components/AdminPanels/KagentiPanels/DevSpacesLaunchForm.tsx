@@ -39,6 +39,24 @@ import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { NamespacePicker } from './NamespacePicker';
 
+/**
+ * Extracts a cloneable Git repository URL from GitHub/GitLab blob/tree URLs.
+ * Returns the input unchanged if it is already a plain repo URL.
+ */
+function normalizeGitRepoUrl(url: string): string {
+  const trimmed = url.trim().replace(/\/+$/, '');
+
+  // GitHub / GitLab blob or tree URLs:
+  // https://github.com/org/repo/blob/main/path  →  https://github.com/org/repo
+  // https://github.com/org/repo/tree/branch/...  →  https://github.com/org/repo
+  const match = trimmed.match(
+    /^(https?:\/\/(?:github\.com|gitlab\.com)\/[^/]+\/[^/]+)\/(?:blob|tree)\/.+/i,
+  );
+  if (match) return match[1];
+
+  return trimmed;
+}
+
 export interface DevSpacesLaunchFormProps {
   onBack: () => void;
   /** Pre-fill the git repo field, e.g. from a template's source URL. */
@@ -114,6 +132,7 @@ export function DevSpacesLaunchForm({
   const [status, setStatus] = useState<FormStatus>('idle');
   const [result, setResult] = useState<DevSpacesCreateWorkspaceResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [urlCorrected, setUrlCorrected] = useState(false);
 
   const isValid = !!namespace && gitRepo.trim().length > 0;
 
@@ -122,18 +141,30 @@ export function DevSpacesLaunchForm({
     setStatus('creating');
     setErrorMessage('');
     setResult(null);
+    setUrlCorrected(false);
+
+    const normalized = normalizeGitRepoUrl(gitRepo);
+    if (normalized !== gitRepo.trim()) {
+      setGitRepo(normalized);
+      setUrlCorrected(true);
+    }
 
     try {
       const response = await api.createDevSpacesWorkspace({
         namespace,
-        git_repo: gitRepo.trim(),
+        git_repo: normalized,
         memory_limit: memoryLimit.trim() || '8Gi',
         cpu_limit: cpuLimit.trim() || '2000m',
       });
       setResult(response);
       setStatus('success');
     } catch (err) {
-      setErrorMessage(getErrorMessage(err));
+      let msg = getErrorMessage(err);
+      if (err && typeof err === 'object' && 'body' in err) {
+        const body = (err as { body?: { message?: string } }).body;
+        if (body?.message) msg = body.message;
+      }
+      setErrorMessage(msg);
       setStatus('error');
     }
   }, [api, namespace, gitRepo, memoryLimit, cpuLimit, isValid]);
@@ -318,15 +349,21 @@ export function DevSpacesLaunchForm({
 
       {status !== 'success' && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {urlCorrected && (
+            <Alert severity="info" onClose={() => setUrlCorrected(false)} sx={{ mb: 0 }}>
+              The URL was auto-corrected to a cloneable repository URL.
+            </Alert>
+          )}
+
           <TextField
             label="Git Repository"
-            placeholder={`https://github.com/your-org/${label}-repo.git`}
+            placeholder={`https://github.com/your-org/${label}-repo`}
             value={gitRepo}
             onChange={e => setGitRepo(e.target.value)}
             required
             fullWidth
             size="small"
-            helperText={`The repository containing your ${label} code`}
+            helperText={`Git repository clone URL. Links to specific files or branches will be auto-corrected.`}
             disabled={status === 'creating'}
           />
 
