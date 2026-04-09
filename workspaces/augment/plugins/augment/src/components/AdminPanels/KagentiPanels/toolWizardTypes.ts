@@ -37,6 +37,11 @@ export interface EnvRow {
   refKey: string;
 }
 
+export interface BuildArgRow {
+  id: number;
+  value: string;
+}
+
 export interface ServicePortRow {
   id: number;
   name: string;
@@ -62,6 +67,7 @@ export interface ToolFormState {
   imageTag: string;
   buildStrategy: string;
   dockerfile: string;
+  buildArgRows: BuildArgRow[];
   buildTimeout: string;
   workloadType: WorkloadType;
   persistentStorageEnabled: boolean;

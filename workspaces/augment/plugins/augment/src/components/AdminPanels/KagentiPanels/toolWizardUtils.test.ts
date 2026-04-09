@@ -41,6 +41,7 @@ function baseState(): ToolFormState {
     imageTag: 'v0.0.1',
     buildStrategy: '',
     dockerfile: 'Dockerfile',
+    buildArgRows: [],
     buildTimeout: '15m',
     workloadType: 'deployment',
     persistentStorageEnabled: false,
@@ -189,6 +190,23 @@ describe('buildToolRequest', () => {
     expect(result.shipwrightConfig).toEqual({
       buildStrategy: 'buildpacks-v3',
       buildTimeout: '30m',
+    });
+  });
+
+  it('includes buildArgs in shipwright config', () => {
+    const state = {
+      ...baseState(),
+      deploymentMethod: 'source' as const,
+      gitUrl: 'https://github.com/org/repo',
+      buildArgRows: [
+        { id: 1, value: 'ARG1=val1' },
+        { id: 2, value: 'ARG2=val2' },
+        { id: 3, value: '  ' },
+      ],
+    };
+    const result = buildToolRequest(state);
+    expect(result.shipwrightConfig).toEqual({
+      buildArgs: ['ARG1=val1', 'ARG2=val2'],
     });
   });
 

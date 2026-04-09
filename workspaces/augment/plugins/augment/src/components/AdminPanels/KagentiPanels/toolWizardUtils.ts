@@ -21,7 +21,12 @@ import type {
   KagentiServicePort,
   KagentiShipwrightConfig,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import type { EnvRow, ToolFormState, ServicePortRow } from './toolWizardTypes';
+import type {
+  BuildArgRow,
+  EnvRow,
+  ToolFormState,
+  ServicePortRow,
+} from './toolWizardTypes';
 import type { MutableRefObject } from 'react';
 
 export function nextRowId(ref: MutableRefObject<number>): number {
@@ -112,6 +117,8 @@ export function buildToolRequest(s: ToolFormState): KagentiCreateToolRequest {
     if (s.dockerfile.trim() && s.dockerfile.trim() !== 'Dockerfile') {
       swConfig.dockerfile = s.dockerfile.trim();
     }
+    const args = s.buildArgRows.map(r => r.value.trim()).filter(Boolean);
+    if (args.length) swConfig.buildArgs = args;
     if (s.buildTimeout.trim() && s.buildTimeout.trim() !== '15m') {
       swConfig.buildTimeout = s.buildTimeout.trim();
     }
