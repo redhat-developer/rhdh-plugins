@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.8.0
+
+### Minor Changes
+
+- 775f8f9: Add NFS support in orchestrator and orchestarator-form-widget plugins
+
+### Patch Changes
+
+- 315239c: Scope SchemaUpdater replacements to the originating step and improve scope resolution.
+- 514b83c: add configurable retry options for widget fetch requests
+- Updated dependencies [5a9d9d8]
+- Updated dependencies [315239c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.3
+
 ## 1.7.3
 
 ### Patch Changes
