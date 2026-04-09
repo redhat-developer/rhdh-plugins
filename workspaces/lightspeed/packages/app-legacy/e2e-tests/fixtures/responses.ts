@@ -92,6 +92,15 @@ export const mockedShields = [
     provider_resource_id: 'test-shield-id',
   },
 ];
+
+export {
+  getExpectedMcpStatusDetailForMock,
+  mcpServer,
+  mcpServerScenarios,
+  mockedMcpServersResponse,
+  type McpServerMockEntry,
+  type McpServersListMock,
+} from './mcpServerMocks';
 const repeatedSentence =
   'OpenShift deployment is a way to manage applications on the OpenShift platform.';
 const openshiftLongParagraph = `${repeatedSentence} `.repeat(30);

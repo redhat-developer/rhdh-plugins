@@ -29,3 +29,17 @@ export function skipIfLocales(
     test.skip(true, reason);
   }
 }
+
+/**
+ * Skips the current test unless the Playwright project `name` (locale) is in `locales`.
+ * Use for suites that only run on specific locales (e.g. English-only UI).
+ */
+export function skipUnlessLocales(
+  testInfo: TestInfo,
+  locales: string[],
+  reason: string,
+): void {
+  if (!locales.includes(testInfo.project.name)) {
+    test.skip(true, reason);
+  }
+}

@@ -15,6 +15,11 @@
  */
 
 import { Page, expect, type Locator } from '@playwright/test';
+import {
+  getExpectedMcpStatusDetailForMock,
+  mockedMcpServersResponse,
+  type McpServersListMock,
+} from '../fixtures/responses';
 import { LightspeedMessages, evaluateMessage } from '../utils/translations';
 
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
@@ -105,11 +110,32 @@ export async function closeMcpSettingsPanel(page: Page) {
   await page.getByRole('button', { name: 'Close MCP settings' }).click();
 }
 
+function mcpServersSettingsHeading(page: Page): Locator {
+  return page.getByRole('heading', { name: 'MCP servers', exact: true });
+}
+
+/** Assert the MCP servers settings heading is shown or dismissed with the panel. */
+export async function expectMcpServersSettingsHeading(
+  page: Page,
+  visible: boolean,
+) {
+  const heading = mcpServersSettingsHeading(page);
+  const assertion = visible ? expect(heading) : expect(heading).not;
+  await assertion.toBeVisible();
+}
+
+export type VerifyMcpSettingsPanelOptions = {
+  /** When set, row assertions use this list (must match what `mockMcpServers` returns). */
+  mcpList?: McpServersListMock;
+};
+
 /** Waits for list load, asserts MCP panel + table, accessibility snapshots, then closes. */
 export async function verifyMcpSettingsPanel(
   page: Page,
   t: LightspeedMessages,
+  options?: VerifyMcpSettingsPanelOptions,
 ) {
+  const mcpList = options?.mcpList ?? mockedMcpServersResponse;
   await openMcpSettingsPanel(page, t);
 
   await expect(page.getByText('Loading MCP servers...')).toBeHidden({
@@ -118,30 +144,37 @@ export async function verifyMcpSettingsPanel(
 
   const table = page.getByLabel('MCP servers table');
   await expect(table).toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: 'MCP servers', exact: true }),
-  ).toBeVisible();
-  // Scope to MCP grid: Dock/overlay leaves the catalog visible, which also has "Name" sort buttons.
-  await expect(table.getByRole('button', { name: 'Name' })).toBeVisible();
+  await expectMcpServersSettingsHeading(page, true);
   await expect(page.getByText(/\d+ of \d+ selected/)).toBeVisible();
 
-  await expect(
-    table.getByRole('columnheader', { name: 'Enabled' }),
-  ).toBeVisible();
+  // Scope to MCP grid: Dock/overlay leaves the catalog visible, which also has "Name" sort buttons.
+  await expect(table.getByRole('button', { name: 'Name' })).toBeVisible();
   await expect(
     table.getByRole('columnheader', { name: 'Status' }),
   ).toBeVisible();
-  await expect(table.getByRole('columnheader', { name: 'Edit' })).toBeVisible();
-  await page.getByRole('columnheader', { name: 'Status' }).click();
+
+  await table.getByRole('columnheader', { name: 'Status' }).click();
 
   // Close + selected count live in the MCP header, not always inside <form> (fullscreen omits Settings/form wrapper).
   await expect(
     page.getByRole('button', { name: 'Close MCP settings' }),
   ).toBeVisible();
 
-  const emptyState = page.getByText('No MCP servers available.');
-  const firstDataRow = table.locator('tbody tr').first();
-  await expect(emptyState.or(firstDataRow)).toBeVisible();
+  if (mcpList.servers.length === 0) {
+    await expect(
+      table.getByText('No MCP servers available.', { exact: true }),
+    ).toBeVisible();
+  } else {
+    for (const server of mcpList.servers) {
+      const row = table.locator('tbody tr').filter({ hasText: server.name });
+      await expect(row.getByText(server.name, { exact: true })).toBeVisible();
+      await expect(
+        row.getByText(getExpectedMcpStatusDetailForMock(server), {
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
+  }
 
   await expect(page.getByLabel('Chatbot', { exact: true }))
     .toMatchAriaSnapshot(`
@@ -151,6 +184,7 @@ export async function verifyMcpSettingsPanel(
     `);
 
   await closeMcpSettingsPanel(page);
+  await expectMcpServersSettingsHeading(page, false);
 }
 
 /** Chat composer message field (matches sendMessage in testHelper). */

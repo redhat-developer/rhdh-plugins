@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 import { Page } from '@playwright/test';
-import { generateQueryResponse, modelBaseUrl } from '../fixtures/responses';
+import {
+  generateQueryResponse,
+  mockedMcpServersResponse,
+  modelBaseUrl,
+  type McpServersListMock,
+} from '../fixtures/responses';
 
 export async function mockModels(page: Page, models: any[]) {
   await page.route(`${modelBaseUrl}/v1/models`, async route => {
@@ -95,6 +100,25 @@ export async function mockQueryWithResponseDelay(
         : conversations[0].conversation_id,
     );
     await route.fulfill({ body });
+  });
+}
+
+/**
+ * Mocks GET `/api/lightspeed/mcp-servers`. Non-GET requests are passed through.
+ * Call again with a different body to switch scenarios (replaces the previous handler).
+ * Use `mcpServerScenarios` from `fixtures/mcpServerMocks` or a custom `McpServersListMock`.
+ */
+export async function mockMcpServers(
+  page: Page,
+  json: McpServersListMock = mockedMcpServersResponse,
+) {
+  await page.unroute(`${modelBaseUrl}/mcp-servers`);
+  await page.route(`${modelBaseUrl}/mcp-servers`, async route => {
+    if (route.request().method() !== 'GET') {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({ json });
   });
 }
 

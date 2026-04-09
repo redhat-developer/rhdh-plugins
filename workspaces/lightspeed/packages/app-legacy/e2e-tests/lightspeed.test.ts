@@ -23,6 +23,8 @@ import {
   botResponse,
   moreConversations,
   mockedShields,
+  mcpServerScenarios,
+  type McpServersListMock,
   thinkingContent,
   assistantResponse,
 } from './fixtures/responses';
@@ -110,6 +112,7 @@ import {
   mockChatHistory,
   mockConversations,
   mockFeedbackStatus,
+  mockMcpServers,
   mockModels,
   mockQuery,
   mockQueryWithResponseDelay,
@@ -121,6 +124,7 @@ import {
   getTranslations,
 } from './utils/translations';
 import { runAccessibilityTests } from './utils/accessibility';
+import { skipUnlessLocales } from './utils/localeSkip';
 
 test.describe('Lightspeed tests', () => {
   const botQuery = 'Please respond';
@@ -139,6 +143,7 @@ test.describe('Lightspeed tests', () => {
     await mockChatHistory(sharedPage);
     await mockQuery(sharedPage, botQuery, conversations);
     await mockShields(sharedPage, mockedShields);
+    await mockMcpServers(sharedPage);
     await mockFeedbackStatus(sharedPage);
 
     await sharedPage.goto('/');
@@ -194,8 +199,24 @@ test.describe('Lightspeed tests', () => {
   });
 
   test.describe('Chatbot MCP settings', () => {
-    test.beforeEach(async () => {
+    /** Applies mock + opens chatbot + runs panel assertions (single source for `mcpList` vs mock). */
+    async function runMcpPanelScenario(mcpList: McpServersListMock) {
+      await mockMcpServers(sharedPage, mcpList);
+      await openChatbot(sharedPage);
+      await verifyMcpSettingsPanel(sharedPage, translations, { mcpList });
+    }
+
+    test.beforeEach(async ({}, testInfo) => {
+      skipUnlessLocales(
+        testInfo,
+        ['en'],
+        'Chatbot MCP settings uses English-only UI strings.',
+      );
       await sharedPage.goto('/');
+    });
+
+    test.afterEach(async () => {
+      await mockMcpServers(sharedPage);
     });
 
     test('Overlay: MCP servers panel and header chrome', async () => {
@@ -213,13 +234,35 @@ test.describe('Lightspeed tests', () => {
     test('Fullscreen: MCP servers panel and header chrome', async () => {
       await openChatbot(sharedPage);
       await selectDisplayMode(sharedPage, translations, 'Fullscreen');
-      await sharedPage.waitForTimeout(1000);
       await verifyMcpSettingsPanel(sharedPage, translations);
+    });
+
+    test('MCP settings: empty server list shows empty state', async () => {
+      await runMcpPanelScenario(mcpServerScenarios.empty);
+    });
+
+    test.describe('MCP settings: two-server scenarios', () => {
+      test('two connected servers (tool counts)', async () => {
+        await runMcpPanelScenario(mcpServerScenarios.allHealthy);
+      });
+
+      test('error row plus healthy row', async () => {
+        await runMcpPanelScenario(mcpServerScenarios.errorAndOk);
+      });
+
+      test('disabled row plus active row', async () => {
+        await runMcpPanelScenario(mcpServerScenarios.disabledAndOk);
+      });
+
+      test('both servers require a token', async () => {
+        await runMcpPanelScenario(mcpServerScenarios.twoTokenRequired);
+      });
     });
   });
 
   test('Lightspeed is available', async ({ browser }, testInfo) => {
-    expect(sharedPage.url()).toContain('/lightspeed');
+    await openLightspeed(sharedPage);
+    await expect(sharedPage).toHaveURL(/\/lightspeed/);
 
     const headings = sharedPage.getByRole('heading');
     await expect(headings.first()).toContainText(
@@ -297,7 +340,7 @@ test.describe('Lightspeed tests', () => {
     expect(nonEmptyTexts.length).toBe(3);
   });
 
-  test.describe.skip('File Attachment Validation', () => {
+  test.describe('File Attachment Validation', () => {
     const testFiles = [
       { path: '../../package.json', name: 'package.json' },
       { path: __filename, name: 'fileAttachment.spec.ts' },
