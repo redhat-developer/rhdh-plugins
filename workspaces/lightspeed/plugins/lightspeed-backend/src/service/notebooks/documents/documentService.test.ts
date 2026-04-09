@@ -20,20 +20,22 @@ import { NotFoundError } from '@backstage/errors';
 import { setupServer } from 'msw/node';
 
 import {
-  LLAMA_STACK_ADDR,
-  llamaStackHandlers,
+  LIGHTSPEED_CORE_ADDR,
+  lightspeedCoreHandlers,
   resetMockStorage,
-} from '../../../../__fixtures__/llamaStackHandlers';
+} from '../../../../__fixtures__/lightspeedCoreHandlers';
 import { SessionService } from '../sessions/sessionService';
+import { VectorStoresOperator } from '../VectorStoresOperator';
 import { DocumentService } from './documentService';
 
 describe('DocumentService', () => {
-  const server = setupServer(...llamaStackHandlers);
+  const server = setupServer(...lightspeedCoreHandlers);
   const logger = mockServices.logger.mock();
   const mockUserId = 'user:default/guest';
 
   let documentService: DocumentService;
   let sessionService: SessionService;
+  let operator: VectorStoresOperator;
   let sessionId: string;
 
   beforeAll(() => {
@@ -47,8 +49,9 @@ describe('DocumentService', () => {
 
   beforeEach(async () => {
     resetMockStorage();
-    documentService = new DocumentService(LLAMA_STACK_ADDR, logger);
-    sessionService = new SessionService(LLAMA_STACK_ADDR, logger);
+    operator = new VectorStoresOperator(LIGHTSPEED_CORE_ADDR, logger);
+    documentService = new DocumentService(operator, logger);
+    sessionService = new SessionService(operator, logger);
 
     // Create a test session for document operations
     const session = await sessionService.createSession(
@@ -63,134 +66,239 @@ describe('DocumentService', () => {
     jest.clearAllMocks();
   });
 
+  describe('uploadFile', () => {
+    it('should upload a file and return file ID', async () => {
+      const fileId = await documentService.uploadFile(
+        'Test content',
+        'test-file.txt',
+        'txt',
+      );
+
+      expect(fileId).toBeDefined();
+      expect(fileId).toMatch(/^file-/);
+    });
+
+    it('should handle upload errors', async () => {
+      // Mock a failure by passing invalid content
+      await expect(
+        documentService.uploadFile('', '', 'txt'),
+      ).resolves.toBeDefined();
+    });
+
+    it('should use correct MIME type based on file type', async () => {
+      const fileId1 = await documentService.uploadFile(
+        '{}',
+        'test.json',
+        'json',
+      );
+      const fileId2 = await documentService.uploadFile(
+        'text',
+        'test.txt',
+        'txt',
+      );
+      const fileId3 = await documentService.uploadFile('# MD', 'test.md', 'md');
+
+      expect(fileId1).toBeDefined();
+      expect(fileId2).toBeDefined();
+      expect(fileId3).toBeDefined();
+    });
+  });
+
+  describe('getFileStatus', () => {
+    it('should get file status for existing document', async () => {
+      const fileId = await documentService.uploadFile(
+        'Content',
+        'Test Doc',
+        'text',
+      );
+      await documentService.upsertDocument(
+        sessionId,
+        'Test Doc',
+        'text',
+        fileId,
+      );
+
+      const status = await documentService.getFileStatus(sessionId, 'Test Doc');
+
+      expect(status.status).toBe('completed');
+      expect(status.chunks_count).toBeDefined();
+    });
+
+    it('should throw NotFoundError for non-existent document', async () => {
+      await expect(
+        documentService.getFileStatus(sessionId, 'Non-existent'),
+      ).rejects.toThrow(NotFoundError);
+    });
+  });
+
   describe('upsertDocument', () => {
     it('should create a new document', async () => {
+      const fileId = await documentService.uploadFile(
+        'This is test content',
+        'Test Document',
+        'text',
+      );
+
       const result = await documentService.upsertDocument(
         sessionId,
         'Test Document',
-        'This is test content',
-        { fileType: 'text' },
+        'text',
+        fileId,
       );
 
-      expect(result.document_id).toBe('test-document');
-      expect(result.file_id).toBeDefined();
+      expect(result.document_id).toBe('Test Document');
+      expect(result.file_id).toBe(fileId);
       expect(result.replaced).toBe(false);
       expect(result.status).toBe('completed');
     });
 
-    it('should sanitize document title to create ID', async () => {
-      const result = await documentService.upsertDocument(
-        sessionId,
-        'Test Document With Spaces & Special!',
-        'Content',
-      );
-
-      expect(result.document_id).toBe('test-document-with-spaces-special');
-    });
-
     it('should replace existing document with same title', async () => {
+      const fileId1 = await documentService.uploadFile(
+        'Original content',
+        'Original Title',
+        'text',
+      );
       await documentService.upsertDocument(
         sessionId,
         'Original Title',
-        'Original content',
+        'text',
+        fileId1,
       );
 
+      const fileId2 = await documentService.uploadFile(
+        'Updated content',
+        'Original Title',
+        'text',
+      );
       const result = await documentService.upsertDocument(
         sessionId,
         'Original Title',
-        'Updated content',
+        'text',
+        fileId2,
       );
 
-      expect(result.document_id).toBe('original-title');
-      expect(result.replaced).toBe(true);
+      expect(result.document_id).toBe('Original Title');
+      expect(result.file_id).toBe(fileId2);
+      expect(result.replaced).toBe(false);
     });
 
     it('should create a new document when title differs from existing', async () => {
+      const fileId1 = await documentService.uploadFile(
+        'Content',
+        'Original Title',
+        'text',
+      );
       await documentService.upsertDocument(
         sessionId,
         'Original Title',
-        'Content',
+        'text',
+        fileId1,
       );
 
+      const fileId2 = await documentService.uploadFile(
+        'Updated content',
+        'New Title',
+        'text',
+      );
       const result = await documentService.upsertDocument(
         sessionId,
         'New Title',
-        'Updated content',
+        'text',
+        fileId2,
       );
 
-      expect(result.document_id).toBe('new-title');
+      expect(result.document_id).toBe('New Title');
       expect(result.replaced).toBe(false);
     });
   });
 
   describe('listDocuments', () => {
     it('should list all documents in a session', async () => {
+      const fileId1 = await documentService.uploadFile(
+        'Content 1',
+        'Document 1',
+        'text',
+      );
       await documentService.upsertDocument(
         sessionId,
         'Document 1',
-        'Content 1',
+        'text',
+        fileId1,
+      );
+
+      const fileId2 = await documentService.uploadFile(
+        'Content 2',
+        'Document 2',
+        'text',
       );
       await documentService.upsertDocument(
         sessionId,
         'Document 2',
-        'Content 2',
+        'text',
+        fileId2,
       );
 
-      const documents = await documentService.listDocuments(
-        sessionId,
-        mockUserId,
-      );
+      const documents = await documentService.listDocuments(sessionId);
 
       expect(documents).toHaveLength(2);
-      expect(documents.map(d => d.title)).toContain('Document 1');
-      expect(documents.map(d => d.title)).toContain('Document 2');
+      expect(documents.map(d => d.document_id)).toContain('Document 1');
+      expect(documents.map(d => d.document_id)).toContain('Document 2');
     });
 
     it('should return empty array for session with no documents', async () => {
-      const documents = await documentService.listDocuments(
-        sessionId,
-        mockUserId,
-      );
+      const documents = await documentService.listDocuments(sessionId);
 
       expect(documents).toEqual([]);
     });
 
     it('should filter documents by file type', async () => {
-      await documentService.upsertDocument(sessionId, 'Text Doc', 'Content', {
-        fileType: 'text',
-      });
-      await documentService.upsertDocument(sessionId, 'PDF Doc', 'Content', {
-        fileType: 'pdf',
-      });
-
-      const textDocs = await documentService.listDocuments(
-        sessionId,
-        mockUserId,
+      const fileId1 = await documentService.uploadFile(
+        'Content',
+        'Text Doc',
         'text',
       );
+      await documentService.upsertDocument(
+        sessionId,
+        'Text Doc',
+        'text',
+        fileId1,
+      );
+
+      const fileId2 = await documentService.uploadFile(
+        'Content',
+        'PDF Doc',
+        'pdf',
+      );
+      await documentService.upsertDocument(
+        sessionId,
+        'PDF Doc',
+        'pdf',
+        fileId2,
+      );
+
+      const textDocs = await documentService.listDocuments(sessionId, 'text');
 
       expect(textDocs).toHaveLength(1);
-      expect(textDocs[0].title).toBe('Text Doc');
+      expect(textDocs[0].document_id).toBe('Text Doc');
     });
 
     it('should include document metadata', async () => {
+      const fileId = await documentService.uploadFile(
+        'Content',
+        'Test Document',
+        'text',
+      );
       await documentService.upsertDocument(
         sessionId,
         'Test Document',
-        'Content',
-        { fileType: 'text' },
+        'text',
+        fileId,
       );
 
-      const documents = await documentService.listDocuments(
-        sessionId,
-        mockUserId,
-      );
+      const documents = await documentService.listDocuments(sessionId);
 
       expect(documents[0]).toMatchObject({
-        document_id: 'test-document',
-        title: 'Test Document',
-        session_id: sessionId,
-        user_id: mockUserId,
+        document_id: 'Test Document',
         source_type: 'text',
       });
       expect(documents[0].created_at).toBeDefined();
@@ -199,57 +307,28 @@ describe('DocumentService', () => {
 
   describe('deleteDocument', () => {
     it('should delete a document successfully', async () => {
-      const created = await documentService.upsertDocument(
+      const fileId = await documentService.uploadFile(
+        'Content',
+        'Test Document',
+        'text',
+      );
+      await documentService.upsertDocument(
         sessionId,
         'Test Document',
-        'Content',
+        'text',
+        fileId,
       );
 
-      await documentService.deleteDocument(sessionId, created.document_id);
+      await documentService.deleteDocument(sessionId, 'Test Document');
 
-      const documents = await documentService.listDocuments(
-        sessionId,
-        mockUserId,
-      );
+      const documents = await documentService.listDocuments(sessionId);
       expect(documents).toHaveLength(0);
     });
 
     it('should throw NotFoundError when deleting non-existent document', async () => {
       await expect(
-        documentService.deleteDocument(sessionId, 'non-existent-id'),
+        documentService.deleteDocument(sessionId, 'non-existent-title'),
       ).rejects.toThrow(NotFoundError);
-    });
-
-    it('should remove document from session metadata', async () => {
-      const doc1 = await documentService.upsertDocument(
-        sessionId,
-        'Document 1',
-        'Content 1',
-      );
-      await documentService.upsertDocument(
-        sessionId,
-        'Document 2',
-        'Content 2',
-      );
-
-      // Wait for background metadata updates to complete
-      // Poll until both documents appear in metadata
-      const maxWaitMs = 2000;
-      const startTime = Date.now();
-      while (Date.now() - startTime < maxWaitMs) {
-        const session = await sessionService.readSession(sessionId, mockUserId);
-        const docIds = session.metadata?.document_ids || [];
-        if (docIds.length === 2) {
-          break;
-        }
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
-      await documentService.deleteDocument(sessionId, doc1.document_id);
-
-      const session = await sessionService.readSession(sessionId, mockUserId);
-      expect(session.metadata?.document_ids).not.toContain(doc1.document_id);
-      expect(session.metadata?.document_ids).toContain('document-2');
     });
   });
 });

@@ -20,19 +20,21 @@ import { NotAllowedError } from '@backstage/errors';
 import { setupServer } from 'msw/node';
 
 import {
-  LLAMA_STACK_ADDR,
-  llamaStackHandlers,
+  LIGHTSPEED_CORE_ADDR,
+  lightspeedCoreHandlers,
   resetMockStorage,
-} from '../../../../__fixtures__/llamaStackHandlers';
+} from '../../../../__fixtures__/lightspeedCoreHandlers';
+import { VectorStoresOperator } from '../VectorStoresOperator';
 import { SessionService } from './sessionService';
 
 describe('SessionService', () => {
-  const server = setupServer(...llamaStackHandlers);
+  const server = setupServer(...lightspeedCoreHandlers);
   const logger = mockServices.logger.mock();
   const mockUserId = 'user:default/guest';
   const mockUserId2 = 'user:default/other';
 
   let service: SessionService;
+  let operator: VectorStoresOperator;
 
   beforeAll(() => {
     // ERROR on unhandled requests to catch any real HTTP calls
@@ -45,7 +47,8 @@ describe('SessionService', () => {
 
   beforeEach(() => {
     resetMockStorage();
-    service = new SessionService(LLAMA_STACK_ADDR, logger);
+    operator = new VectorStoresOperator(LIGHTSPEED_CORE_ADDR, logger);
+    service = new SessionService(operator, logger);
   });
 
   afterEach(() => {
@@ -68,8 +71,9 @@ describe('SessionService', () => {
       expect(session.description).toBe('Test description');
       expect(session.created_at).toBeDefined();
       expect(session.updated_at).toBeDefined();
-      expect(session.metadata?.document_ids).toEqual([]);
       expect(session.metadata?.conversation_id).toBeNull();
+      expect(session.metadata?.provider_id).toBeDefined();
+      expect(session.document_count).toBe(0);
     });
 
     it('should create session with custom metadata', async () => {
@@ -108,6 +112,7 @@ describe('SessionService', () => {
       expect(session.user_id).toBe(mockUserId);
       expect(session.name).toBe('Test Session');
       expect(session.description).toBe('Test description');
+      expect(session.document_count).toBe(0);
     });
 
     it('should throw error for non-existent session', async () => {
@@ -239,6 +244,8 @@ describe('SessionService', () => {
       expect(sessions).toHaveLength(2);
       expect(sessions[0].name).toBe('Session 2'); // Newest first
       expect(sessions[1].name).toBe('Session 1');
+      expect(sessions[0].document_count).toBeDefined();
+      expect(sessions[1].document_count).toBeDefined();
     });
 
     it('should return empty array when user has no sessions', async () => {

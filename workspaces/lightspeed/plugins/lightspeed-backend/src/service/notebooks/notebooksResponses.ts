@@ -21,10 +21,13 @@ import type {
   SessionDocument,
   SessionListResponse,
   SessionResponse,
-} from './notebooksTypes';
+} from './types/notebooksTypes';
 
 /**
  * Create a successful session response
+ * @param session - Notebook session object
+ * @param message - Success message
+ * @returns Session response object
  */
 export const createSessionResponse = (
   session: NotebookSession,
@@ -39,6 +42,8 @@ export const createSessionResponse = (
 
 /**
  * Create a successful session list response
+ * @param sessions - Array of notebook sessions
+ * @returns Session list response object
  */
 export const createSessionListResponse = (
   sessions: NotebookSession[],
@@ -52,6 +57,11 @@ export const createSessionListResponse = (
 
 /**
  * Create a successful document response
+ * @param document_id - Document identifier
+ * @param session_id - Session identifier
+ * @param message - Success message
+ * @param options - Optional fields (title, replaced)
+ * @returns Document response object
  */
 export const createDocumentResponse = (
   document_id: string,
@@ -74,6 +84,9 @@ export const createDocumentResponse = (
 
 /**
  * Create a successful document list response
+ * @param session_id - Session identifier
+ * @param documents - Array of session documents
+ * @returns Document list response object
  */
 export const createDocumentListResponse = (
   session_id: string,

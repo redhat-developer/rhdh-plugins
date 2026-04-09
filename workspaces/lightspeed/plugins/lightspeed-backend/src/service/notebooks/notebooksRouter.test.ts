@@ -22,15 +22,15 @@ import { setupServer } from 'msw/node';
 import request from 'supertest';
 
 import {
-  llamaStackHandlers,
+  lightspeedCoreHandlers,
   resetMockStorage,
-} from '../../../__fixtures__/llamaStackHandlers';
+} from '../../../__fixtures__/lightspeedCoreHandlers';
 import { createNotebooksRouter } from './notebooksRouters';
 
 const mockUserId = 'user:default/guest';
 
 describe('Notebooks Router', () => {
-  const server = setupServer(...llamaStackHandlers);
+  const server = setupServer(...lightspeedCoreHandlers);
   let app: express.Application;
 
   beforeAll(() => {
@@ -53,7 +53,6 @@ describe('Notebooks Router', () => {
 
   beforeEach(async () => {
     resetMockStorage();
-
     const logger = mockServices.logger.mock();
     const config = mockServices.rootConfig({
       data: {
@@ -154,7 +153,7 @@ describe('Notebooks Router', () => {
           .send({ name: 'Original Name' });
 
         const sessionId = createResponse.body.session.session_id;
-
+        console.log(createResponse.body, 'createResponse');
         const response = await request(app)
           .put(`/ai-notebooks/v1/sessions/${sessionId}`)
           .send({ name: 'Updated Name' });

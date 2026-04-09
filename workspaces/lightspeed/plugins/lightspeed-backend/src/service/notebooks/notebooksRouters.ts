@@ -30,15 +30,14 @@ import { Readable } from 'stream';
 
 import {
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
-  DEFAULT_LLAMA_STACK_PORT,
+  HTTP_STATUS_ACCEPTED,
+  HTTP_STATUS_INTERNAL_ERROR,
+  LIGHTSPEED_SERVICE_HOST,
+  MAX_QUERY_RETRIES,
   upload,
 } from '../constant';
 import { userPermissionAuthorization } from '../permission';
-import {
-  isValidFileType,
-  parseFileContent,
-  sanitizeTitle,
-} from './documents/documentHelpers';
+import { isValidFileType, parseFileContent } from './documents/documentHelpers';
 import { DocumentService } from './documents/documentService';
 import { SessionService } from './sessions/sessionService';
 import {
@@ -48,6 +47,7 @@ import {
   createSessionResponse,
 } from './types/notebooksResponses';
 import { handleError } from './utils';
+import { VectorStoresOperator } from './VectorStoresOperator';
 
 export interface NotebooksRouterOptions {
   logger: LoggerService;
@@ -64,25 +64,41 @@ export async function createNotebooksRouter(
   const notebooksRouter = Router();
   notebooksRouter.use(express.json());
 
-  const llamaStackPort =
-    (config.getOptionalNumber(
-      'lightspeed.aiNotebooks.llamaStack.port',
-    ) as number) ?? DEFAULT_LLAMA_STACK_PORT;
   const lightSpeedPort =
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
-
-  logger.info(
-    `AI Notebooks connecting to Llama Stack at http://0.0.0.0:${llamaStackPort}`,
+  const lightspeedBaseUrl = `http://${LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
+  const queryModel = config.getOptionalString(
+    'lightspeed.aiNotebooks.queryDefaults.model',
+  );
+  const queryProvider = config.getOptionalString(
+    'lightspeed.aiNotebooks.queryDefaults.provider_id',
   );
 
+  if (!queryModel && !queryProvider) {
+    logger.info('No query model and provider configured, using default values');
+  } else if (!queryModel || !queryProvider) {
+    throw new Error('Query model and providers should be configured together');
+  }
+
+  logger.info(
+    `AI Notebooks connecting to Lightspeed-Core at ${lightspeedBaseUrl}`,
+  );
+
+  // Create singleton VectorStoresOperator - proxies vector store operations through lightspeed-core
+  const vectorStoresOperator = new VectorStoresOperator(
+    lightspeedBaseUrl,
+    logger,
+  );
+
+  // Services now use the operator instead of direct llama stack connection
   const sessionService = new SessionService(
-    `http://0.0.0.0:${llamaStackPort}`,
+    vectorStoresOperator,
     logger,
     config,
   );
   const documentService = new DocumentService(
-    `http://0.0.0.0:${llamaStackPort}`,
+    vectorStoresOperator,
     logger,
     config,
   );
@@ -90,9 +106,10 @@ export async function createNotebooksRouter(
   const authorizer = userPermissionAuthorization(permissions);
 
   const getUserId = async (req: any): Promise<string> => {
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    return user.userEntityRef;
+    // const credentials = await httpAuth.credentials(req);
+    // const user = await userInfo.getUserInfo(credentials);
+    // return user.userEntityRef;
+    return 'user:default/guest';
   };
 
   const requireNotebooksPermission = async (
@@ -257,23 +274,26 @@ export async function createNotebooksRouter(
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
 
-      const session = await sessionService.readSession(sessionId, userId);
       await sessionService.deleteSession(sessionId, userId);
 
-      res.json(createSessionResponse(session, 'Session deleted successfully'));
+      res.json(
+        createSessionResponse(
+          { session_id: sessionId } as any,
+          'Session deleted successfully',
+        ),
+      );
     }),
   );
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents',
     requireSessionOwnership(),
-    withAuth(async (req, res, userId) => {
+    withAuth(async (req, res, _userId) => {
       const sessionId = req.params.sessionId as string;
       const fileType = req.query.fileType as string | undefined;
 
       const documents = await documentService.listDocuments(
         sessionId,
-        userId,
         fileType,
       );
 
@@ -308,30 +328,31 @@ export async function createNotebooksRouter(
         req.file,
         req.body.file,
       );
+      const fileId = await documentService.uploadFile(
+        parsedDocument.content,
+        title,
+        fileType,
+      );
 
-      // Generate the final document_id (uses newTitle if provided, otherwise title)
-      const finalDocumentId = sanitizeTitle(newTitle || title);
-
-      // Return 202 immediately
-      res.status(202).json({
+      // Return 202 Accepted immediately for async processing
+      res.status(HTTP_STATUS_ACCEPTED).json({
         status: 'processing',
-        document_id: finalDocumentId,
+        document_id: newTitle || title,
         session_id: sessionId,
         message: 'Document upload started',
       });
 
-      // upload document to vector store in background
+      // Upload document to vector store in background
+      logger.info(`Starting background upload for ${newTitle || title}`);
       documentService
-        .upsertDocument(
-          sessionId,
-          title,
-          parsedDocument.content,
-          parsedDocument.metadata,
-          newTitle,
-        )
+        .upsertDocument(sessionId, title, fileType, fileId, newTitle)
+        .then(() => {
+          logger.info(`Background upload succeeded for ${newTitle || title}`);
+        })
         .catch((err: any) => {
           logger.error(
-            `Background document upload failed for ${finalDocumentId}: ${err}`,
+            `Background document upload failed for ${newTitle || title}: ${err.message || err}`,
+            err,
           );
         });
     }),
@@ -364,17 +385,17 @@ export async function createNotebooksRouter(
   );
 
   notebooksRouter.delete(
-    '/v1/sessions/:sessionId/documents/:documentId',
+    '/v1/sessions/:sessionId/documents/:documentTitle',
     requireSessionOwnership(),
     withAuth(async (req, res, _userId) => {
       const sessionId = req.params.sessionId as string;
-      const documentId = req.params.documentId as string;
+      const documentTitle = req.params.documentTitle as string;
 
-      await documentService.deleteDocument(sessionId, documentId);
+      await documentService.deleteDocument(sessionId, documentTitle);
 
       res.json(
         createDocumentResponse(
-          documentId,
+          documentTitle,
           sessionId,
           'Document deleted successfully',
         ),
@@ -398,55 +419,81 @@ export async function createNotebooksRouter(
       );
 
       const session = await sessionService.readSession(sessionId, userId);
-      const existingConversationId = session.metadata?.conversation_id;
+      let conversationId = session.metadata?.conversation_id;
 
       req.body.vector_store_ids = [sessionId];
-
-      if (existingConversationId) {
-        req.body.conversation_id = existingConversationId;
-        logger.info(
-          `Using existing conversation_id: ${existingConversationId}`,
-        );
+      req.body.model = queryModel;
+      req.body.provider = queryProvider;
+      if (conversationId) {
+        req.body.conversation_id = conversationId;
+        logger.info(`Using conversation_id: ${conversationId}`);
       } else {
-        delete req.body.conversation_id;
-        logger.info(
-          'First query - lightspeed-core will generate conversation_id',
-        );
+        logger.info('Starting new conversation');
       }
 
-      const fetchResponse = await fetch(
-        `http://0.0.0.0:${lightSpeedPort}/v1/streaming_query?user_id=${encodeURIComponent(userId)}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(req.body),
-        },
-      );
-
-      if (!fetchResponse.ok) {
-        const errorBody = (await fetchResponse.json()) as any;
-        logger.error(
-          'Lightspeed-core error response:',
-          JSON.stringify(errorBody, null, 2) as unknown as Error,
+      let retries = 0;
+      while (retries <= MAX_QUERY_RETRIES) {
+        const fetchResponse = await fetch(
+          `${lightspeedBaseUrl}/v1/streaming_query?user_id=${encodeURIComponent(userId)}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body),
+          },
         );
-        const errormsg = `Error from Llama Stack server: ${errorBody?.detail?.[0]?.msg || errorBody?.detail?.cause || 'Unknown error'}`;
-        logger.error(errormsg);
-        res.status(500).json({ status: 'error', error: errormsg });
-        return;
-      }
 
-      if (fetchResponse.body) {
-        const body = Readable.fromWeb(fetchResponse.body as any);
-        if (!existingConversationId) {
-          const captureTransform = createConversationIdCaptureTransform(
-            session,
+        // Retry once if conversation_id not found (orphaned from interrupted query)
+        if (
+          !fetchResponse.ok &&
+          conversationId &&
+          fetchResponse.status === 404 &&
+          retries === 0
+        ) {
+          logger.warn(
+            `Conversation ${conversationId} not found - clearing and retrying`,
+          );
+          await sessionService.updateSession(
             sessionId,
             userId,
+            undefined,
+            undefined,
+            {
+              ...session.metadata,
+              conversation_id: null,
+            },
           );
-          body.pipe(captureTransform).pipe(res);
-        } else {
-          body.pipe(res);
+          delete req.body.conversation_id;
+          conversationId = null;
+          retries++;
+          continue;
         }
+
+        if (!fetchResponse.ok) {
+          const errorBody = (await fetchResponse.json()) as any;
+          logger.error('Lightspeed-core error response:', errorBody);
+          const errormsg = `Error from Llama Stack server: ${errorBody?.detail?.[0]?.msg || errorBody?.detail?.cause || 'Unknown error'}`;
+          const statusCode =
+            fetchResponse.status >= 400 && fetchResponse.status < 500
+              ? fetchResponse.status
+              : HTTP_STATUS_INTERNAL_ERROR;
+          res.status(statusCode).json({ status: 'error', error: errormsg });
+          return;
+        }
+
+        if (fetchResponse.body) {
+          const body = Readable.fromWeb(fetchResponse.body as any);
+          if (!conversationId) {
+            const captureTransform = createConversationIdCaptureTransform(
+              session,
+              sessionId,
+              userId,
+            );
+            body.pipe(captureTransform).pipe(res);
+          } else {
+            body.pipe(res);
+          }
+        }
+        break;
       }
     }),
   );

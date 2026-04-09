@@ -18,13 +18,91 @@ import multer from 'multer';
 /**
  * Default values for AI Notebooks
  */
-export const DEFAULT_FILE_PROCESSING_TIMEOUT_MS = 30000; // 30 seconds
 export const DEFAULT_CHUNKING_STRATEGY_TYPE = 'auto'; // auto chunking
 export const DEFAULT_MAX_CHUNK_SIZE_TOKENS = 512; // 512 tokens
 export const DEFAULT_CHUNK_OVERLAP_TOKENS = 50; // 50 tokens
 export const DEFAULT_LLAMA_STACK_PORT = 8321; // Llama Stack port
 export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
 export const DEFAULT_MAX_FILE_SIZE_MB = 20 * 1024 * 1024; // 20MB
+
+/**
+ * HTTP and networking constants
+ */
+export const LIGHTSPEED_SERVICE_HOST = '0.0.0.0'; // Lightspeed core service host
+export const URL_FETCH_TIMEOUT_MS = 30000; // 30 second timeout for URL fetching
+export const USER_AGENT = 'RHDH-AI-Notebooks-Bot/1.0'; // User agent for HTTP requests
+export const MAX_URL_CONTENT_SIZE = 10 * 1024 * 1024; // 10MB max for URL fetched content
+
+/**
+ * HTTP status codes
+ */
+export const HTTP_STATUS_ACCEPTED = 202; // Async operation accepted
+export const HTTP_STATUS_BAD_REQUEST = 400; // Bad request
+export const HTTP_STATUS_FORBIDDEN = 403; // Forbidden
+export const HTTP_STATUS_NOT_FOUND = 404; // Not found
+export const HTTP_STATUS_CONFLICT = 409; // Conflict
+export const HTTP_STATUS_INTERNAL_ERROR = 500; // Internal server error
+
+/**
+ * SSRF Protection - Blocked hostnames for security
+ * These hostnames are commonly used for Server-Side Request Forgery attacks
+ */
+export const SSRF_BLOCKED_HOSTNAMES = [
+  'localhost',
+  'metadata.google.internal', // GCP metadata endpoint
+  'kubernetes.default.svc', // Kubernetes internal DNS
+  'host.docker.internal', // Docker host access
+  '169.254.169.254', // AWS/Azure/GCP metadata IP
+  '127.0.0.1', // IPv4 loopback
+  '0.0.0.0', // IPv4 any address
+  '::1', // IPv6 loopback
+  '::', // IPv6 any address
+] as const;
+
+/**
+ * Prompt Injection Protection - Patterns to detect and sanitize
+ * These patterns are commonly used in prompt injection attacks
+ */
+export const PROMPT_INJECTION_PATTERNS = [
+  /ignore\s+(all\s+)?previous\s+(instructions?|prompts?)/gi,
+  /disregard\s+(all\s+)?previous\s+(instructions?|prompts?)/gi,
+  /forget\s+(all\s+)?previous\s+(instructions?|prompts?)/gi,
+  /you\s+are\s+now\s+(a\s+)?different/gi,
+  /new\s+(instructions?|prompts?)\s*:/gi,
+  /system\s*:\s*/gi,
+  /assistant\s*:\s*/gi,
+  /\[INST\]/gi,
+  /\[\/INST\]/gi,
+  /<\|im_start\|>/gi,
+  /<\|im_end\|>/gi,
+  /<\|endoftext\|>/gi,
+  /\[SYSTEM\]/gi,
+  /\[\/SYSTEM\]/gi,
+  /\[ASSISTANT\]/gi,
+  /\[\/ASSISTANT\]/gi,
+] as const;
+
+/**
+ * Content sanitization constants
+ */
+export const MAX_CONSECUTIVE_NEWLINES = 4; // Max consecutive newlines allowed in content
+export const FILTERED_CONTENT_MARKER = '[CONTENT_FILTERED]'; // Marker for filtered content
+
+/**
+ * File type to MIME type mapping
+ */
+export const FILE_TYPE_TO_MIME: Record<string, string> = {
+  txt: 'text/plain',
+  md: 'text/markdown',
+  log: 'text/plain',
+  json: 'application/json',
+  yaml: 'application/x-yaml',
+  yml: 'application/x-yaml',
+  pdf: 'application/pdf',
+  url: 'text/plain', // URLs are stored as plain text content
+};
+
+export const MAX_QUERY_RETRIES = 1; // Max number of retries for query
 
 export const upload = multer({
   storage: multer.memoryStorage(),

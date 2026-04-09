@@ -18,45 +18,53 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
 
-import { LlamaStackClient } from 'llama-stack-client';
-
 import { NotebookSession, SessionMetadata } from '../types/notebooksTypes';
 import { buildVectorStoreMetadata, extractSessionFromMetadata } from '../utils';
+import { VectorStoresOperator } from '../VectorStoresOperator';
 
 /**
  * Service for managing notebook sessions with dedicated vector stores
- * - Session ID is the Llama Stack vector store ID
+ * - Session ID is the vector store ID
  * - Session metadata stored in VectorStore metadata field
- * - Uses ONLY Llama Stack APIs (no direct database access)
+ * - Uses VectorStoresOperator to proxy through lightspeed-core
  */
 export class SessionService {
   private logger: LoggerService;
-  private client: LlamaStackClient;
+  private client: VectorStoresOperator;
+  private providerId: string;
   private embeddingModel: string;
   private embeddingDimension: number;
-  private providerId: string;
 
-  constructor(llamaStackUrl: string, logger: LoggerService, config?: Config) {
-    this.client = new LlamaStackClient({ baseURL: llamaStackUrl });
+  constructor(
+    client: VectorStoresOperator,
+    logger: LoggerService,
+    config?: Config,
+  ) {
+    this.client = client;
     this.logger = logger;
-
-    // Read from config or use Llama Stack 0.5 distribution defaults
-    this.embeddingModel =
-      config?.getOptionalString(
-        'lightspeed.aiNotebooks.llamaStack.embeddingModel',
-      ) || 'sentence-transformers/nomic-ai/nomic-embed-text-v1.5';
-
-    this.embeddingDimension =
-      config?.getOptionalNumber(
-        'lightspeed.aiNotebooks.llamaStack.embeddingDimension',
-      ) || 768;
 
     this.providerId =
       config?.getOptionalString(
-        'lightspeed.aiNotebooks.llamaStack.vectorIo.providerId',
-      ) || 'rhdh-docs';
+        'lightspeed.aiNotebooks.sessionDefaults.provider_id',
+      ) || 'notebooks';
+    this.embeddingModel =
+      config?.getOptionalString(
+        'lightspeed.aiNotebooks.sessionDefaults.embedding_model',
+      ) || 'sentence-transformers/sentence-transformers/all-mpnet-base-v2';
+    this.embeddingDimension =
+      config?.getOptionalNumber(
+        'lightspeed.aiNotebooks.sessionDefaults.embedding_dimension',
+      ) || 768;
   }
 
+  /**
+   * Create a new notebook session
+   * @param userId - User ID creating the session
+   * @param name - Session name
+   * @param description - Optional session description
+   * @param metadata - Optional session metadata
+   * @returns Created notebook session
+   */
   async createSession(
     userId: string,
     name: string,
@@ -69,7 +77,7 @@ export class SessionService {
 
     // Build temporary session object to generate metadata
     const tempSession: NotebookSession = {
-      session_id: 'temp', // Will be replaced with actual ID
+      session_id: 'temp', // Placeholder - will be replaced with vector store ID
       user_id: userId,
       name,
       description: description || '',
@@ -77,17 +85,18 @@ export class SessionService {
       updated_at: now,
       metadata: {
         ...metadata,
-        document_ids: [],
         conversation_id: null,
+        provider_id: this.providerId,
+        embedding_model: this.embeddingModel,
+        embedding_dimension: this.embeddingDimension,
       },
     };
 
-    // Create vector store with embedding config AND metadata in one call
     const vectorStore = await this.client.vectorStores.create({
       name: name || `Session for ${userId}`,
+      provider_id: this.providerId,
       embedding_model: this.embeddingModel,
       embedding_dimension: this.embeddingDimension,
-      provider_id: this.providerId,
       metadata: buildVectorStoreMetadata(tempSession),
     });
 
@@ -97,12 +106,21 @@ export class SessionService {
     const session: NotebookSession = {
       ...tempSession,
       session_id: sessionId,
+      document_count: 0,
     };
 
     this.logger.info(`Created session ${sessionId} for user ${userId}`);
     return session;
   }
 
+  /**
+   * Retrieve a session and verify ownership
+   * @param sessionId - Session ID to retrieve
+   * @param userId - User ID requesting access
+   * @returns Notebook session
+   * @throws NotFoundError if session not found or has no metadata
+   * @throws NotAllowedError if user does not own the session
+   */
   async readSession(
     sessionId: string,
     userId: string,
@@ -126,9 +144,31 @@ export class SessionService {
       );
     }
 
+    // Fetch document count
+    try {
+      const filesResponse =
+        await this.client.vectorStores.files.list(sessionId);
+      session.document_count = filesResponse.data?.length || 0;
+    } catch (error) {
+      this.logger.warn(
+        `Failed to fetch document count for session ${sessionId}: ${error}`,
+      );
+      session.document_count = 0;
+    }
+
     return session;
   }
 
+  /**
+   * Update session details
+   * @param sessionId - Session ID to update
+   * @param userId - User ID performing the update
+   * @param name - New session name (optional)
+   * @param description - New session description (optional)
+   * @param metadata - New session metadata (optional)
+   * @returns Updated notebook session
+   * @throws NotAllowedError if user does not own the session
+   */
   async updateSession(
     sessionId: string,
     userId: string,
@@ -147,14 +187,25 @@ export class SessionService {
       updated_at: new Date().toISOString(),
     };
 
-    // Update vector store metadata
+    // Retrieve vector store to preserve embedding configuration
+    const vectorStore = await this.client.vectorStores.retrieve(sessionId);
+
+    // Update vector store metadata while preserving embedding fields
     await this.client.vectorStores.update(sessionId, {
+      embedding_model: vectorStore.embedding_model,
+      embedding_dimension: vectorStore.embedding_dimension,
       metadata: buildVectorStoreMetadata(updated),
     });
 
     return updated;
   }
 
+  /**
+   * Delete a session
+   * @param sessionId - Session ID to delete
+   * @param userId - User ID performing the deletion
+   * @throws NotAllowedError if user does not own the session
+   */
   async deleteSession(sessionId: string, userId: string): Promise<void> {
     // Verify ownership before deletion
     await this.readSession(sessionId, userId);
@@ -164,14 +215,18 @@ export class SessionService {
     this.logger.info(`Session ${sessionId} deleted`);
   }
 
+  /**
+   * List all sessions for a user
+   * @param userId - User ID to filter sessions
+   * @returns Array of notebook sessions sorted by creation date (newest first)
+   */
   async listSessions(userId: string): Promise<NotebookSession[]> {
-    // List all vector stores - the new API returns a paginated response
     const vectorStoresPage = await this.client.vectorStores.list();
     const vectorStores = vectorStoresPage.data;
-
     const sessions: NotebookSession[] = [];
+
+    // Extract sessions first
     for (const store of vectorStores) {
-      // Filter by user ID from metadata
       const session_user_id = (store.metadata?.user_id as string) || '';
       if (session_user_id === userId && store.metadata) {
         try {
@@ -187,6 +242,23 @@ export class SessionService {
         }
       }
     }
+
+    // Fetch document counts in parallel
+    await Promise.all(
+      sessions.map(async session => {
+        try {
+          const filesResponse = await this.client.vectorStores.files.list(
+            session.session_id,
+          );
+          session.document_count = filesResponse.data?.length || 0;
+        } catch (error) {
+          this.logger.warn(
+            `Failed to fetch document count for session ${session.session_id}: ${error}`,
+          );
+          session.document_count = 0;
+        }
+      }),
+    );
 
     // Sort by created_at descending (newest first)
     return sessions.sort(

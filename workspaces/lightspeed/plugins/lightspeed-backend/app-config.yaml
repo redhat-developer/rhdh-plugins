@@ -6,3 +6,10 @@
 #  # AI Notebooks (Developer Preview) - Disabled by default
 #  aiNotebooks:
 #    enabled: false  # Set to true to enable AI Notebooks feature
+#    queryDefaults:
+#      model: llama3.1-8b-instant # Set the model to use for AI Notebooks
+#      provider_id: ollama # Set the provider ID to use for AI Notebooks
+#    sessionDefaults:
+#      provider_id: notebooks # Set the provider ID to use for AI Notebooks
+#      embedding_model: sentence-transformers/sentence-transformers/all-mpnet-base-v2 # Set the embedding model to use for AI Notebooks
+#      embedding_dimension: 768 # Set the embedding dimension to use for AI Notebooks

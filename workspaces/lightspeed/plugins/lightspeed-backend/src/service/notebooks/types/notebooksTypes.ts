@@ -18,7 +18,6 @@
  * Session metadata for organization
  */
 export interface SessionMetadata {
-  document_ids?: string[]; // Track documents in this session
   conversation_id?: string | null; // Active conversation ID for RAG queries
   embedding_model?: string; // Embedding model used
   embedding_dimension?: number; // Embedding vector dimension
@@ -38,6 +37,7 @@ export interface NotebookSession {
   created_at: string;
   updated_at: string;
   metadata?: SessionMetadata;
+  document_count?: number;
 }
 
 /**
@@ -45,12 +45,9 @@ export interface NotebookSession {
  */
 export interface SessionDocument {
   document_id: string;
-  title: string;
-  session_id: string;
-  user_id: string;
   source_type: 'text' | 'pdf' | 'url' | 'md' | 'json' | 'yaml' | 'log';
   created_at: string;
-  metadata?: Record<string, any>;
+  updated_at: string;
 }
 
 /**
@@ -92,4 +89,11 @@ export interface QueryResponse {
   status: 'success' | 'error';
   chunks?: any[];
   error?: string;
+}
+
+export interface UpsertResult {
+  document_id: string;
+  file_id: string;
+  replaced: boolean;
+  status: 'completed' | 'in_progress' | 'failed' | 'cancelled';
 }

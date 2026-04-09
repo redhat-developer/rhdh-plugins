@@ -28,7 +28,6 @@ import {
   buildVectorStoreMetadata,
   extractSessionFromMetadata,
   handleError,
-  sanitizeTitle,
 } from './utils';
 
 describe('utils', () => {
@@ -260,90 +259,6 @@ describe('utils', () => {
 
         expect(mockStatus).toHaveBeenCalledWith(expectedStatuses[index]);
       });
-    });
-  });
-
-  describe('sanitizeTitle', () => {
-    it('should convert to lowercase', () => {
-      expect(sanitizeTitle('My Title')).toBe('my-title');
-      expect(sanitizeTitle('UPPERCASE')).toBe('uppercase');
-    });
-
-    it('should replace spaces with hyphens', () => {
-      expect(sanitizeTitle('hello world')).toBe('hello-world');
-      expect(sanitizeTitle('one two three')).toBe('one-two-three');
-    });
-
-    it('should replace multiple spaces with single hyphen', () => {
-      expect(sanitizeTitle('hello    world')).toBe('hello-world');
-    });
-
-    it('should remove special characters', () => {
-      expect(sanitizeTitle('hello@world')).toBe('hello-world');
-      expect(sanitizeTitle('test!@#$%^&*()')).toBe('test');
-      expect(sanitizeTitle('my_file.txt')).toBe('my-file-txt');
-    });
-
-    it('should remove leading hyphens', () => {
-      expect(sanitizeTitle('---hello')).toBe('hello');
-      expect(sanitizeTitle('   hello')).toBe('hello');
-    });
-
-    it('should remove trailing hyphens', () => {
-      expect(sanitizeTitle('hello---')).toBe('hello');
-      expect(sanitizeTitle('hello   ')).toBe('hello');
-    });
-
-    it('should remove leading and trailing hyphens', () => {
-      expect(sanitizeTitle('---hello---')).toBe('hello');
-    });
-
-    it('should handle empty string', () => {
-      expect(sanitizeTitle('')).toBe('untitled');
-    });
-
-    it('should handle whitespace-only string', () => {
-      expect(sanitizeTitle('   ')).toBe('untitled');
-    });
-
-    it('should handle string with only special characters', () => {
-      expect(sanitizeTitle('!@#$%^&*()')).toBe('untitled');
-    });
-
-    it('should preserve numbers', () => {
-      expect(sanitizeTitle('test123')).toBe('test123');
-      expect(sanitizeTitle('123test')).toBe('123test');
-    });
-
-    it('should handle mixed alphanumeric with special chars', () => {
-      expect(sanitizeTitle('My Doc v1.2.3')).toBe('my-doc-v1-2-3');
-    });
-
-    it('should handle Unicode characters', () => {
-      expect(sanitizeTitle('café')).toBe('caf');
-      expect(sanitizeTitle('hello 世界')).toBe('hello');
-    });
-
-    it('should trim whitespace before processing', () => {
-      expect(sanitizeTitle('  hello world  ')).toBe('hello-world');
-    });
-
-    it('should handle hyphenated words', () => {
-      expect(sanitizeTitle('hello-world')).toBe('hello-world');
-    });
-
-    it('should collapse multiple hyphens', () => {
-      expect(sanitizeTitle('hello---world')).toBe('hello-world');
-    });
-
-    it('should handle real-world titles', () => {
-      expect(sanitizeTitle('Project Proposal (Final).docx')).toBe(
-        'project-proposal-final-docx',
-      );
-      expect(sanitizeTitle('Meeting Notes - 2024/01/15')).toBe(
-        'meeting-notes-2024-01-15',
-      );
-      expect(sanitizeTitle('README.md')).toBe('readme-md');
     });
   });
 
