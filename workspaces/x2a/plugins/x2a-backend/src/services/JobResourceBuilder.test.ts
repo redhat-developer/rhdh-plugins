@@ -15,7 +15,7 @@
  */
 
 import { JobResourceBuilder } from './JobResourceBuilder';
-import { X2AConfig } from '../../config';
+import { X2AConfig } from './types';
 import { JobCreateParams } from './types';
 
 describe('JobResourceBuilder', () => {

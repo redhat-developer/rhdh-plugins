@@ -32,8 +32,7 @@ import type {
 } from '@kubernetes/client-node';
 import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
-import { X2AConfig } from '../../config';
-import { JobCreateParams, AAPCredentials, GitRepo } from './types';
+import { X2AConfig, JobCreateParams, AAPCredentials, GitRepo } from './types';
 import {
   DEFAULT_LLM_MODEL,
   DEFAULT_KUBERNETES_NAMESPACE,

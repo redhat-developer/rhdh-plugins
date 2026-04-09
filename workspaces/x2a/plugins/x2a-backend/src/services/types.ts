@@ -18,6 +18,47 @@
 import { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { AAPCredentials } from '../schema/openapi/generated/models';
 
+/**
+ * X2A configuration structure
+ * This is the runtime type extracted from app-config.yaml
+ * Defaults for optional values are defined in src/services/constants.ts
+ */
+export interface X2AConfig {
+  kubernetes: {
+    namespace: string;
+    image: string;
+    imageTag: string;
+    ttlSecondsAfterFinished: number;
+    resources: {
+      requests: {
+        cpu: string;
+        memory: string;
+      };
+      limits: {
+        cpu: string;
+        memory: string;
+      };
+    };
+  };
+  git?: {
+    author?: {
+      name: string;
+      email: string;
+    };
+  };
+  credentials: {
+    llm: Record<string, string>;
+    aap?: {
+      url: string;
+      orgName: string;
+      oauthToken?: string;
+      username?: string;
+      password?: string;
+      skipSSLVerification?: boolean;
+    };
+  };
+}
+
 /** @public */
 export type { AAPCredentials };
 
