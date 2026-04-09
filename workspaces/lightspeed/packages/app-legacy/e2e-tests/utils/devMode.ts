@@ -146,7 +146,7 @@ export async function mockMcpServers(
       }
       const updated = {
         ...server,
-        enabled: body.enabled !== undefined ? body.enabled : server.enabled,
+        enabled: body.enabled ?? server.enabled,
       };
       await route.fulfill({ json: { server: updated } });
       return;

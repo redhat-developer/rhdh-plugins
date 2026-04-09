@@ -56,28 +56,13 @@ export function mcpServer(
 export function getExpectedMcpStatusDetailForMock(
   server: McpServerMockEntry,
 ): string {
-  type Display = 'tokenRequired' | 'disabled' | 'failed' | 'ok' | 'unknown';
-  let displayStatus: Display;
-  if (!server.hasToken) {
-    displayStatus = 'tokenRequired';
-  } else if (!server.enabled) {
-    displayStatus = 'disabled';
-  } else if (server.status === 'error') {
-    displayStatus = 'failed';
-  } else if (server.status === 'connected') {
-    displayStatus = 'ok';
-  } else {
-    displayStatus = 'unknown';
-  }
-
-  if (displayStatus === 'disabled') return 'Disabled';
-  if (displayStatus === 'tokenRequired') return 'Token required';
-  if (displayStatus === 'failed') return 'Failed';
-  if (displayStatus === 'ok') {
-    const suffix = server.toolCount === 1 ? 'tool' : 'tools';
-    return `${server.toolCount} ${suffix}`;
-  }
-  return 'Unknown';
+  // Same branch order as McpServersSettings getDisplayStatus + getDisplayDetail.
+  if (!server.hasToken) return 'Token required';
+  if (!server.enabled) return 'Disabled';
+  if (server.status === 'error') return 'Failed';
+  if (server.status === 'unknown') return 'Unknown';
+  const suffix = server.toolCount === 1 ? 'tool' : 'tools';
+  return `${server.toolCount} ${suffix}`;
 }
 
 /** Named presets for Playwright `mockMcpServers(page, scenario)` and panel assertions. */

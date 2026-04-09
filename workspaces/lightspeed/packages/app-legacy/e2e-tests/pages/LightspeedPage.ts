@@ -152,24 +152,20 @@ export async function expectMcpServersSettingsHeading(
   await assertion.toBeVisible();
 }
 
-export type VerifyMcpSettingsPanelOptions = {
-  /** When set, row assertions use this list (must match what `mockMcpServers` returns). */
-  mcpList?: McpServersListMock;
-};
-
-/** Waits for list load, asserts MCP panel + table, accessibility snapshots, then closes. */
+/**
+ * @param mcpList Expected GET `/mcp-servers` body — must match what `mockMcpServers` returns for this test.
+ */
 export async function verifyMcpSettingsPanel(
   page: Page,
   t: LightspeedMessages,
-  options?: VerifyMcpSettingsPanelOptions,
+  mcpList: McpServersListMock = mockedMcpServersResponse,
 ) {
-  const mcpList = options?.mcpList ?? mockedMcpServersResponse;
   await openMcpSettingsPanel(page, t);
 
   const table = mcpServersTable(page);
   await expect(table).toBeVisible();
   await expectMcpServersSettingsHeading(page, true);
-  await expect(page.getByText(/\d+ of \d+ selected/)).toBeVisible();
+  await expect(page.getByText(/^\d+ of \d+ selected/)).toBeVisible();
 
   // Scope to MCP grid: Dock/overlay leaves the catalog visible, which also has "Name" sort buttons.
   await expect(table.getByRole('button', { name: 'Name' })).toBeVisible();

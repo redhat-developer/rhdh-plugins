@@ -210,7 +210,7 @@ test.describe('Lightspeed tests', () => {
     async function runMcpPanelScenario(mcpList: McpServersListMock) {
       await mockMcpServers(sharedPage, mcpList);
       await openChatbot(sharedPage);
-      await verifyMcpSettingsPanel(sharedPage, translations, { mcpList });
+      await verifyMcpSettingsPanel(sharedPage, translations, mcpList);
     }
 
     test.beforeEach(async ({}, testInfo) => {
@@ -226,47 +226,47 @@ test.describe('Lightspeed tests', () => {
       await mockMcpServers(sharedPage);
     });
 
-    test('Overlay: MCP servers panel and header chrome', async () => {
+    test('Overlay', async () => {
       await expectBackstagePageVisible(sharedPage);
       await openChatbot(sharedPage);
       await verifyMcpSettingsPanel(sharedPage, translations);
     });
 
-    test('Dock to window: MCP servers panel and header chrome', async () => {
+    test('Dock to Window', async () => {
       await openChatbot(sharedPage);
       await selectDisplayMode(sharedPage, translations, 'Dock to window');
       await verifyMcpSettingsPanel(sharedPage, translations);
     });
 
-    test('Fullscreen: MCP servers panel and header chrome', async () => {
+    test('Fullscreen', async () => {
       await openChatbot(sharedPage);
       await selectDisplayMode(sharedPage, translations, 'Fullscreen');
       await verifyMcpSettingsPanel(sharedPage, translations);
     });
 
-    test('MCP settings: empty server list shows empty state', async () => {
+    test('Empty list', async () => {
       await runMcpPanelScenario(mcpServerScenarios.empty);
     });
 
-    test.describe('MCP settings: two-server scenarios', () => {
-      test('two connected servers (tool counts)', async () => {
+    test.describe('Two-row mocks', () => {
+      test('All healthy', async () => {
         await runMcpPanelScenario(mcpServerScenarios.allHealthy);
       });
 
-      test('error row plus healthy row', async () => {
+      test('Failed + OK', async () => {
         await runMcpPanelScenario(mcpServerScenarios.errorAndOk);
       });
 
-      test('disabled row plus active row', async () => {
+      test('Disabled + active', async () => {
         await runMcpPanelScenario(mcpServerScenarios.disabledAndOk);
       });
 
-      test('both servers require a token', async () => {
+      test('Both need token', async () => {
         await runMcpPanelScenario(mcpServerScenarios.twoTokenRequired);
       });
     });
 
-    test('MCP settings: Name column toggles sort order', async () => {
+    test('Sort works as expected', async () => {
       await mockMcpServers(sharedPage, mcpServerScenarios.allHealthy);
       await openChatbot(sharedPage);
       await openMcpSettingsPanel(sharedPage, translations);
@@ -282,7 +282,7 @@ test.describe('Lightspeed tests', () => {
       await closeMcpSettingsPanel(sharedPage);
     });
 
-    test('MCP settings: toggle disables server and restores tool count', async () => {
+    test('Toggle works as expected', async () => {
       const serverName = 'mcp-integration-tools';
       await openChatbot(sharedPage);
       await openMcpSettingsPanel(sharedPage, translations);
