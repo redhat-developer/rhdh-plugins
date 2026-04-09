@@ -76,7 +76,7 @@
     "@backstage/plugin-scaffolder-node": "^0.12.1",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^",
-    "@urql/core": "^4.1.4",
+    "@urql/core": "^6.0.1",
     "ajv-formats": "^2.1.1",
     "cloudevents": "^8.0.0",
     "express": "^4.21.2",
