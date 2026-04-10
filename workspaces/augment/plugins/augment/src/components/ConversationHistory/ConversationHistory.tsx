@@ -35,7 +35,11 @@ import { GroupedSessionList } from './GroupedSessionList';
 
 interface ConversationHistoryProps {
   /** Callback when a session is selected */
-  onSelectSession: (sessionId: string, adminView?: boolean, sessionModel?: string) => void;
+  onSelectSession: (
+    sessionId: string,
+    adminView?: boolean,
+    sessionModel?: string,
+  ) => void;
   /** Called when the currently active session is deleted so the parent can clear the chat */
   onActiveSessionDeleted?: () => void;
   /** Currently active session ID */
@@ -44,6 +48,8 @@ interface ConversationHistoryProps {
   refreshTrigger?: number;
   /** Whether the current user has admin privileges */
   isAdmin?: boolean;
+  /** Filter sessions to this provider */
+  providerId?: string;
 }
 
 /**
@@ -57,6 +63,7 @@ export const ConversationHistory = ({
   activeSessionId,
   refreshTrigger,
   isAdmin = false,
+  providerId,
 }: ConversationHistoryProps) => {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
@@ -86,28 +93,34 @@ export const ConversationHistory = ({
       const list =
         isAdmin && showAllUsers
           ? await api.listAllSessions()
-          : await api.listSessions(PAGE_SIZE, 0);
+          : await api.listSessions(PAGE_SIZE, 0, providerId);
       if (loadGenRef.current !== gen) return;
       setSessions(list);
       if (list.length < PAGE_SIZE) setHasMore(false);
     } catch (err) {
       debugError('Failed to load sessions:', err);
       if (loadGenRef.current === gen) {
-        setLoadError(err instanceof Error ? err.message : 'Failed to load conversations');
+        setLoadError(
+          err instanceof Error ? err.message : 'Failed to load conversations',
+        );
       }
     } finally {
       if (loadGenRef.current === gen) {
         setLoading(false);
       }
     }
-  }, [api, isAdmin, showAllUsers]);
+  }, [api, isAdmin, showAllUsers, providerId]);
 
   const loadMore = useCallback(async () => {
     if (loading || loadingMore || !hasMore || (isAdmin && showAllUsers)) return;
     const gen = loadGenRef.current;
     setLoadingMore(true);
     try {
-      const list = await api.listSessions(PAGE_SIZE, sessions.length);
+      const list = await api.listSessions(
+        PAGE_SIZE,
+        sessions.length,
+        providerId,
+      );
       if (loadGenRef.current !== gen) return;
       if (list.length < PAGE_SIZE) setHasMore(false);
       if (list.length > 0) {
@@ -128,6 +141,7 @@ export const ConversationHistory = ({
     hasMore,
     isAdmin,
     showAllUsers,
+    providerId,
   ]);
 
   const handleListScroll = useCallback(() => {
@@ -336,7 +350,11 @@ export const ConversationHistory = ({
             <Alert
               severity="error"
               action={
-                <Button size="small" color="inherit" onClick={() => loadSessions()}>
+                <Button
+                  size="small"
+                  color="inherit"
+                  onClick={() => loadSessions()}
+                >
                   Retry
                 </Button>
               }

@@ -94,6 +94,7 @@ export function updateStreamingState(
       case EVENT_TYPES.STREAM_AUTH_REQUIRED:
       case EVENT_TYPES.STREAM_ARTIFACT:
       case EVENT_TYPES.STREAM_CITATION:
+      case EVENT_TYPES.STREAM_AGENT_HANDOFF:
         break;
       default:
         return state;

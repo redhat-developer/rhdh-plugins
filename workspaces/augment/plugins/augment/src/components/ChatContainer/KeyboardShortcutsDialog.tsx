@@ -100,6 +100,7 @@ export function KeyboardShortcutsDialog({
       },
       { keys: ['Esc'], description: t('keyboardShortcuts.cancelStreaming') },
       { keys: ['?'], description: t('keyboardShortcuts.showHelp') },
+      { keys: ['↑', '↓'], description: 'Navigate between messages' },
     ],
     [t],
   );

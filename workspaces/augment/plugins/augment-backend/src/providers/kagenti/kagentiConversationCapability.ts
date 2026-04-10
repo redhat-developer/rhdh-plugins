@@ -18,54 +18,16 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { ConversationCapability } from '../types';
 import type { ProcessedMessage } from '../responses-api/conversations/conversationTypes';
 import type { KagentiApiClient } from './client/KagentiApiClient';
-import type { ContextHistoryItem } from './client/types';
 
-function convertHistoryToProcessedMessages(
-  items: ContextHistoryItem[],
-): ProcessedMessage[] {
-  const messages: ProcessedMessage[] = [];
-  for (const item of items) {
-    if (item.kind === 'artifact') {
-      const art = item.data as {
-        parts?: Array<{ text?: string; [k: string]: unknown }>;
-      };
-      const textParts = (art.parts ?? [])
-        .filter(p => typeof p.text === 'string')
-        .map(p => p.text as string);
-      const text = textParts.join('');
-      if (text) {
-        messages.push({
-          role: 'assistant',
-          text,
-          createdAt: item.created_at,
-        });
-      }
-      continue;
-    }
-    if (item.kind !== 'message') continue;
-    const msg = item.data as {
-      role?: string;
-      parts?: Array<{ text?: string; [k: string]: unknown }>;
-    };
-    if (!msg.role || !msg.parts) continue;
-
-    let role: 'user' | 'assistant' | 'system' = 'assistant';
-    if (msg.role === 'user') role = 'user';
-    else if (msg.role === 'system') role = 'system';
-
-    const textParts = msg.parts
-      .filter(p => typeof p.text === 'string')
-      .map(p => p.text as string);
-    const text = textParts.join('');
-    if (!text) continue;
-
-    messages.push({ role, text, createdAt: item.created_at });
-  }
-  return messages;
-}
-
+/**
+ * The Kagenti API does not expose a conversation history endpoint
+ * (there is no GET /api/v1/contexts/{id}/history in the OpenAPI spec).
+ * Conversation history is served from the local `augment_session_messages`
+ * table by `sessionRoutes.ts`. This capability returns an empty array
+ * for `getProcessedMessages` as a safe no-op fallback.
+ */
 export function buildKagentiConversationCapability(
-  getApiClient: () => KagentiApiClient,
+  _getApiClient: () => KagentiApiClient,
   logger: LoggerService,
 ): ConversationCapability {
   const notSupported = (method: string) => () => {
@@ -76,27 +38,11 @@ export function buildKagentiConversationCapability(
     getProcessedMessages: async (
       contextId: string,
     ): Promise<ProcessedMessage[]> => {
-      const apiClient = getApiClient();
-      try {
-        const allItems: ContextHistoryItem[] = [];
-        let pageToken: string | undefined;
-        do {
-          const page = await apiClient.listContextHistory(contextId, {
-            limit: 100,
-            pageToken,
-          });
-          allItems.push(...page.items);
-          pageToken =
-            page.has_more && page.next_page_token
-              ? page.next_page_token
-              : undefined;
-        } while (pageToken);
-
-        return convertHistoryToProcessedMessages(allItems);
-      } catch (err) {
-        logger.warn(`Failed to fetch context history for ${contextId}: ${err}`);
-        return [];
-      }
+      logger.info(
+        `Kagenti getProcessedMessages called for context ${contextId} — ` +
+          `the Kagenti API has no history endpoint; history is served from the local message store`,
+      );
+      return [];
     },
     submitApproval: notSupported(
       'submitApproval',

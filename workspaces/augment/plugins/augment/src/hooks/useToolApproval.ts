@@ -19,7 +19,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../api';
 import { PendingApproval } from '../components/ToolApprovalDialog';
 import { StreamingState } from '../components/StreamingMessage';
-import { debugError, stripToolPrefix } from '../utils';
+import { debugError, stripToolPrefix, isAbortError } from '../utils';
 import { getSeverity } from '../utils/toolSeverity';
 import type { Message } from './useStreamingChat';
 
@@ -317,7 +317,7 @@ export function useToolApproval({
         debugError('Error approving tool:', err);
         if (mountedRef.current) {
           let msg: string;
-          if (err instanceof DOMException && err.name === 'AbortError') {
+          if (isAbortError(err)) {
             msg = 'Tool approval timed out after 60 seconds';
           } else if (err instanceof Error) {
             msg = err.message;
@@ -394,7 +394,7 @@ export function useToolApproval({
         debugError('Error rejecting tool:', err);
         if (mountedRef.current) {
           let msg: string;
-          if (err instanceof DOMException && err.name === 'AbortError') {
+          if (isAbortError(err)) {
             msg = 'Tool rejection timed out after 60 seconds';
           } else if (err instanceof Error) {
             msg = err.message;

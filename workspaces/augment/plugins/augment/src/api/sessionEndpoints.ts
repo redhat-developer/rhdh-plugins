@@ -38,10 +38,12 @@ export async function listSessions(
   deps: SessionApiDeps,
   limit?: number,
   offset?: number,
+  providerId?: string,
 ): Promise<ChatSessionSummary[]> {
   const params = new URLSearchParams();
   if (limit !== undefined) params.set('limit', limit.toString());
   if (offset !== undefined) params.set('offset', offset.toString());
+  if (providerId) params.set('providerId', providerId);
   const qs = params.toString();
   const path = qs ? `/sessions?${qs}` : '/sessions';
   const data = await deps.fetchJson<{ sessions?: ChatSessionSummary[] }>(path);
@@ -52,10 +54,11 @@ export async function createSession(
   deps: SessionApiDeps,
   title?: string,
   model?: string,
+  providerId?: string,
 ): Promise<ChatSessionSummary> {
   const data = await deps.fetchJson<{ session: ChatSessionSummary }>(
     '/sessions',
-    jsonBody({ title, model }),
+    jsonBody({ title, model, providerId }),
   );
   return data.session;
 }

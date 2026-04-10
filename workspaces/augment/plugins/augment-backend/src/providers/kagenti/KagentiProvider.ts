@@ -433,12 +433,18 @@ export class KagentiProvider implements AgenticProvider {
       );
       const response = await this.chat(request);
 
-      onEvent({ type: 'stream.started', responseId: response.responseId });
+      onEvent({
+        type: 'stream.started',
+        responseId: response.responseId ?? `kagenti-fallback-${Date.now()}`,
+      });
       if (response.content) {
         onEvent({ type: 'stream.text.delta', delta: response.content });
         onEvent({ type: 'stream.text.done', text: response.content });
       }
-      onEvent({ type: 'stream.completed' });
+      onEvent({
+        type: 'stream.completed',
+        ...(response.usage && { usage: response.usage }),
+      });
     }
   }
 

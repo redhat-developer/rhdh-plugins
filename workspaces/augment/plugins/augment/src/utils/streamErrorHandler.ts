@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { isAbortError } from './isAbortError';
+
 /**
  * Classifies a stream error and returns an error message string if the caller
  * should display an error. Returns undefined when the error should be ignored
@@ -76,7 +78,7 @@ export function handleStreamError(
   _abortControllerRef: { current: AbortController | null },
   mountedRef: { current: boolean },
 ): string | undefined {
-  if (err instanceof DOMException && err.name === 'AbortError') {
+  if (isAbortError(err)) {
     return undefined;
   }
   if (!mountedRef.current) {

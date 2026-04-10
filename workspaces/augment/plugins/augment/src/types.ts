@@ -63,8 +63,14 @@ export type {
   StreamToolCompletedEvent,
   StreamToolFailedEvent,
   StreamToolApprovalEvent,
+  StreamBackendToolExecutingEvent,
   StreamRagResultsEvent,
   StreamCompletedEvent,
+  StreamAgentHandoffEvent,
+  StreamFormRequestEvent,
+  StreamAuthRequiredEvent,
+  StreamArtifactEvent,
+  StreamCitationEvent,
   StreamErrorEvent,
   AdminConfigKey,
   AdminConfigEntry,
@@ -338,4 +344,6 @@ export interface ChatSessionSummary {
   updatedAt: string;
   /** Model or agent identifier associated with this session (e.g. "namespace/agentName") */
   model?: string;
+  /** Provider that created this session (e.g. "llamastack", "kagenti") */
+  providerId?: string;
 }

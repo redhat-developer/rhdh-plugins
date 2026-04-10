@@ -75,6 +75,35 @@ function setupSseStream(
   return { abortController, clientDisconnectedRef };
 }
 
+interface StreamToolCall {
+  id: string;
+  name: string;
+  serverLabel: string;
+  arguments?: string;
+  output?: string;
+  error?: string;
+  status: string;
+}
+
+interface StreamRagSource {
+  filename: string;
+  text?: string;
+  score?: number;
+  fileId?: string;
+}
+
+interface StreamMetadata {
+  agentName?: string;
+  toolCalls: StreamToolCall[];
+  ragSources: StreamRagSource[];
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+    total_tokens?: number;
+  };
+  reasoning: string;
+}
+
 function createStreamEventForwarder(
   res: Response,
   clientDisconnectedRef: { current: boolean },
@@ -83,10 +112,15 @@ function createStreamEventForwarder(
   forward: (event: NormalizedStreamEvent) => void;
   streamedTextRef: { current: string };
   streamModelRef: { current: string | undefined };
+  streamMetadataRef: { current: StreamMetadata };
 } {
   const streamedTextRef = { current: '' };
   const streamModelRef = { current: undefined as string | undefined };
-  const state = { draining: false };
+  const streamMetadataRef: { current: StreamMetadata } = {
+    current: { toolCalls: [], ragSources: [], reasoning: '' },
+  };
+  const MAX_PENDING_EVENTS = 500;
+  const state = { draining: false, terminated: false };
   const pendingQueue: string[] = [];
 
   function onDrain() {
@@ -102,7 +136,11 @@ function createStreamEventForwarder(
   }
 
   function flushQueue() {
-    while (pendingQueue.length > 0 && !clientDisconnectedRef.current) {
+    while (
+      pendingQueue.length > 0 &&
+      !clientDisconnectedRef.current &&
+      !state.terminated
+    ) {
       const next = pendingQueue.shift()!;
       if (!writeAndFlush(next)) {
         state.draining = true;
@@ -123,6 +161,7 @@ function createStreamEventForwarder(
     ) {
       streamedTextRef.current += (event as { content?: string }).content;
     } else if (event.type === 'stream.completed' && event.usage) {
+      streamMetadataRef.current.usage = event.usage;
       const u = event.usage;
       if (u.output_tokens === 0 && !streamedTextRef.current) {
         logger.warn(
@@ -143,11 +182,56 @@ function createStreamEventForwarder(
       logger.info(
         `HITL: Tool approval required for "${event.name}" - waiting for user decision`,
       );
+    } else if (event.type === 'stream.agent.handoff') {
+      const he = event as { toAgent?: string };
+      if (he.toAgent) streamMetadataRef.current.agentName = he.toAgent;
+    } else if (event.type === 'stream.reasoning.delta' && event.delta) {
+      streamMetadataRef.current.reasoning += event.delta;
+    } else if (event.type === 'stream.tool.started') {
+      streamMetadataRef.current.toolCalls.push({
+        id: event.callId,
+        name: event.name,
+        serverLabel: event.serverLabel || '',
+        status: 'running',
+      });
+    } else if (event.type === 'stream.tool.completed') {
+      const tc = streamMetadataRef.current.toolCalls.find(
+        t => t.id === event.callId,
+      );
+      if (tc) {
+        tc.output = event.output;
+        tc.status = 'completed';
+      }
+    } else if (event.type === 'stream.tool.failed') {
+      const tc = streamMetadataRef.current.toolCalls.find(
+        t => t.id === event.callId,
+      );
+      if (tc) {
+        tc.error = event.error;
+        tc.status = 'failed';
+      }
+    } else if (event.type === 'stream.rag.results') {
+      for (const src of event.sources) {
+        streamMetadataRef.current.ragSources.push({
+          filename: src.filename,
+          text: src.text,
+          score: src.score,
+          fileId: src.fileId,
+        });
+      }
     }
 
-    if (!clientDisconnectedRef.current) {
+    if (!clientDisconnectedRef.current && !state.terminated) {
       const payload = `data: ${JSON.stringify(event)}\n\n`;
       if (state.draining) {
+        if (pendingQueue.length >= MAX_PENDING_EVENTS) {
+          logger.warn(
+            `SSE backpressure queue exceeded ${MAX_PENDING_EVENTS} events — terminating slow client`,
+          );
+          state.terminated = true;
+          res.end();
+          return;
+        }
         pendingQueue.push(payload);
         return;
       }
@@ -158,7 +242,7 @@ function createStreamEventForwarder(
     }
   };
 
-  return { forward, streamedTextRef, streamModelRef };
+  return { forward, streamedTextRef, streamModelRef, streamMetadataRef };
 }
 
 function handleStreamErrorAndCleanup(
@@ -383,6 +467,30 @@ export function registerChatRoutes(ctx: RouteContext): void {
           }
         }
 
+        // Persist messages to local store (non-streaming path)
+        if (sessionId && sessions) {
+          try {
+            if (userContent) {
+              await sessions.addMessage({
+                sessionId,
+                role: 'user',
+                content: userContent,
+              });
+            }
+            if (response.content) {
+              await sessions.addMessage({
+                sessionId,
+                role: 'assistant',
+                content: response.content,
+              });
+            }
+          } catch (persistErr) {
+            logger.warn(
+              `Failed to persist messages for session ${sessionId}: ${persistErr}`,
+            );
+          }
+        }
+
         res.json(response);
       },
     ),
@@ -416,11 +524,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
       res,
       logger,
     );
-    const { forward, streamedTextRef } = createStreamEventForwarder(
-      res,
-      clientDisconnectedRef,
-      logger,
-    );
+    const { forward, streamedTextRef, streamMetadataRef } =
+      createStreamEventForwarder(res, clientDisconnectedRef, logger);
     const heartbeat = new SseHeartbeat(res);
     heartbeat.start();
 
@@ -465,6 +570,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
         const userContent = getLastUserContent(messages);
         const safetyResult = await provider.safety.checkInput(userContent);
         if (!safetyResult.safe) {
+          heartbeat.stop();
           const errorEvent: NormalizedStreamEvent = {
             type: 'stream.error',
             error:
@@ -521,6 +627,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
         res.write(`data: ${JSON.stringify(zeroEventError)}\n\n`);
       }
 
+      let outputSafetyBlocked = false;
       if (
         streamedTextRef.current &&
         provider.safety?.isEnabled() &&
@@ -530,6 +637,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
           streamedTextRef.current,
         );
         if (!outputResult.safe) {
+          outputSafetyBlocked = true;
           logger.warn(
             `Streamed output blocked by safety: ${outputResult.violation}`,
           );
@@ -574,6 +682,37 @@ export function registerChatRoutes(ctx: RouteContext): void {
               }
             }
           }
+
+          // Persist user + assistant messages to the local store.
+          // This is the source of truth for conversation history, especially
+          // for Kagenti where the remote API has no history endpoint.
+          // Skip assistant text that was blocked by output safety.
+          if (lastUserContent) {
+            await sessions.addMessage({
+              sessionId,
+              role: 'user',
+              content: lastUserContent,
+            });
+          }
+          const meta = streamMetadataRef.current;
+          if (streamedTextRef.current && !outputSafetyBlocked) {
+            await sessions.addMessage({
+              sessionId,
+              role: 'assistant',
+              content: streamedTextRef.current,
+              agentName: meta.agentName,
+              toolCalls:
+                meta.toolCalls.length > 0
+                  ? JSON.stringify(meta.toolCalls)
+                  : undefined,
+              ragSources:
+                meta.ragSources.length > 0
+                  ? JSON.stringify(meta.ragSources)
+                  : undefined,
+              usage: meta.usage ? JSON.stringify(meta.usage) : undefined,
+              reasoning: meta.reasoning || undefined,
+            });
+          }
         } catch (touchErr) {
           logger.warn(
             `Failed to update session ${sessionId} after stream: ${touchErr}`,
@@ -583,6 +722,9 @@ export function registerChatRoutes(ctx: RouteContext): void {
 
       heartbeat.stop();
       if (!clientDisconnectedRef.current) {
+        // Providers emit stream.completed (consumed by the frontend reducer).
+        // [DONE] is the SSE transport sentinel — the frontend parser ignores
+        // its content but the browser closes the connection cleanly.
         res.write('data: [DONE]\n\n');
         res.end();
       }

@@ -101,10 +101,7 @@ export function SessionItem({
         ? alpha(theme.palette.primary.main, 0.1)
         : 'transparent',
       '&:hover': {
-        background: alpha(
-          theme.palette.primary.main,
-          isActive ? 0.15 : 0.05,
-        ),
+        background: alpha(theme.palette.primary.main, isActive ? 0.15 : 0.05),
         '& .delete-btn': {
           opacity: 1,
         },
@@ -182,6 +179,34 @@ export function SessionItem({
                 mt: 0.5,
               }}
             >
+              {session.providerId && (
+                <Typography
+                  variant="caption"
+                  noWrap
+                  sx={{
+                    px: 0.5,
+                    py: 0.1,
+                    borderRadius: 0.5,
+                    bgcolor: alpha(
+                      session.providerId === 'kagenti'
+                        ? theme.palette.warning.main
+                        : theme.palette.info.main,
+                      isDark ? 0.15 : 0.08,
+                    ),
+                    color:
+                      session.providerId === 'kagenti'
+                        ? theme.palette.warning.dark
+                        : theme.palette.info.dark,
+                    fontSize: '0.55rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.3,
+                    mr: 0.5,
+                  }}
+                >
+                  {session.providerId}
+                </Typography>
+              )}
               {session.model && (
                 <Box
                   sx={{
@@ -191,7 +216,10 @@ export function SessionItem({
                     px: 0.75,
                     py: 0.15,
                     borderRadius: 1,
-                    bgcolor: alpha(theme.palette.primary.main, isDark ? 0.12 : 0.06),
+                    bgcolor: alpha(
+                      theme.palette.primary.main,
+                      isDark ? 0.12 : 0.06,
+                    ),
                     mr: 0.5,
                   }}
                 >
@@ -214,7 +242,9 @@ export function SessionItem({
                       maxWidth: 80,
                     }}
                   >
-                    {session.model.includes('/') ? session.model.split('/').pop() : session.model}
+                    {session.model.includes('/')
+                      ? session.model.split('/').pop()
+                      : session.model}
                   </Typography>
                 </Box>
               )}

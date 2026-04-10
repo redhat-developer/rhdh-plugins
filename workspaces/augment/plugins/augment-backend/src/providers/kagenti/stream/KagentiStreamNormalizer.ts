@@ -120,6 +120,7 @@ export class KagentiStreamNormalizer {
   private accumulatedText = '';
   private readonly verboseLogger?: LoggerService;
   private _hasJsonRpcStreamingError = false;
+  private currentGroupId: string | undefined;
 
   constructor(verboseLogger?: LoggerService) {
     this.verboseLogger = verboseLogger;
@@ -203,6 +204,8 @@ export class KagentiStreamNormalizer {
     events: NormalizedStreamEvent[],
   ): void {
     this.ensureStarted(events, update.contextId);
+
+    this.detectAgentHandoff(update.metadata, events);
 
     const state = update.status.state;
 
@@ -420,6 +423,28 @@ export class KagentiStreamNormalizer {
   }
 
   // ---------------------------------------------------------------------------
+  // Agent Handoff Detection
+  // ---------------------------------------------------------------------------
+
+  private detectAgentHandoff(
+    metadata: Record<string, unknown> | undefined,
+    events: NormalizedStreamEvent[],
+  ): void {
+    if (!metadata) return;
+    const agentId =
+      metadata.agent_name ?? metadata.group_id ?? metadata.agent_id;
+    if (typeof agentId === 'string' && agentId !== this.currentGroupId) {
+      const fromAgent = this.currentGroupId;
+      this.currentGroupId = agentId;
+      events.push({
+        type: 'stream.agent.handoff',
+        fromAgent,
+        toAgent: agentId,
+      } as NormalizedStreamEvent);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // UI Extension Metadata Extraction
   // ---------------------------------------------------------------------------
 
@@ -432,8 +457,21 @@ export class KagentiStreamNormalizer {
     const trajectory = metadata[TRAJECTORY_EXTENSION_URI];
     if (Array.isArray(trajectory)) {
       for (const step of trajectory) {
-        const title = (step as Record<string, unknown>)?.title;
-        const content = (step as Record<string, unknown>)?.content;
+        const s = step as Record<string, unknown>;
+
+        const groupId = s.group_id ?? s.agent_name ?? s.agent;
+        if (typeof groupId === 'string' && groupId !== this.currentGroupId) {
+          const fromAgent = this.currentGroupId;
+          this.currentGroupId = groupId;
+          events.push({
+            type: 'stream.agent.handoff',
+            fromAgent,
+            toAgent: groupId,
+          } as NormalizedStreamEvent);
+        }
+
+        const title = s.title;
+        const content = s.content;
         const text = [title, content].filter(Boolean).join(': ');
         if (text) {
           events.push({ type: 'stream.reasoning.delta', delta: `${text}\n` });

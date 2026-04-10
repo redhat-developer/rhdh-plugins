@@ -505,7 +505,14 @@ export class AdkOrchestrator {
       this.conversationStates.size > AdkOrchestrator.MAX_CONVERSATION_STATES
     ) {
       const oldest = this.conversationStates.keys().next().value;
-      if (oldest) this.conversationStates.delete(oldest);
+      if (oldest) {
+        this.logger.warn(
+          `[AdkOrchestrator] Evicting conversation state for ${oldest} ` +
+            `(map size ${this.conversationStates.size} exceeds cap ${AdkOrchestrator.MAX_CONVERSATION_STATES}). ` +
+            `Follow-up messages for this conversation will restart from the default agent.`,
+        );
+        this.conversationStates.delete(oldest);
+      }
     }
 
     this.logger.debug(

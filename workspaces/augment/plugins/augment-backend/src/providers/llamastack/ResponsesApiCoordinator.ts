@@ -470,4 +470,13 @@ export class ResponsesApiCoordinator {
       agentGraphError: this.agentGraphManager?.getLastResolutionError(),
     });
   }
+
+  async shutdown(): Promise<void> {
+    if (this.backendToolExecutor) {
+      this.logger.info(
+        '[ResponsesApiCoordinator] Shutting down — closing MCP clients',
+      );
+      await this.backendToolExecutor.closeAllClients();
+    }
+  }
 }

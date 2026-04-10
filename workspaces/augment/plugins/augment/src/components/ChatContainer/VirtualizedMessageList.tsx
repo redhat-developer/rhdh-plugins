@@ -26,6 +26,8 @@ interface VirtualizedMessageListProps {
   messages: Message[];
   onRegenerate?: () => void;
   onEditMessage?: (messageId: string, newText: string) => void;
+  /** Index of the message highlighted by keyboard navigation (-1 = none). */
+  selectedMessageIndex?: number;
 }
 
 /**
@@ -42,20 +44,18 @@ export const VirtualizedMessageList = React.memo(
     messages,
     onRegenerate,
     onEditMessage,
+    selectedMessageIndex = -1,
   }: VirtualizedMessageListProps) {
     const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set());
     const heightMapRef = useRef<Map<string, number>>(new Map());
     const observerRef = useRef<IntersectionObserver | null>(null);
     const nodeMapRef = useRef<Map<string, HTMLDivElement>>(new Map());
-    const prevFirstIdRef = useRef<string | undefined>(undefined);
 
-    // Clear stale caches when the message set changes (session switch)
-    const firstId = messages[0]?.id;
-    if (firstId !== prevFirstIdRef.current) {
-      prevFirstIdRef.current = firstId;
-      if (visibleIds.size > 0) setVisibleIds(new Set());
+    const sessionKey = messages[0]?.id;
+    useEffect(() => {
+      setVisibleIds(new Set());
       heightMapRef.current.clear();
-    }
+    }, [sessionKey]);
 
     const lastAssistantIndex = messages.reduce(
       (acc, m, i) => (!m.isUser ? i : acc),
@@ -121,6 +121,14 @@ export const VirtualizedMessageList = React.memo(
       return undefined;
     }
 
+    const highlightSx = {
+      outline: '2px solid',
+      outlineColor: 'primary.main',
+      outlineOffset: 2,
+      borderRadius: 1,
+      transition: 'outline-color 0.15s',
+    };
+
     if (messages.length <= 30) {
       return (
         <>
@@ -131,17 +139,23 @@ export const VirtualizedMessageList = React.memo(
               !message.isUser &&
               !!message.agentName &&
               message.agentName !== getPreviousAssistantAgent(index);
+            const isSelected = index === selectedMessageIndex;
             return (
               <React.Fragment key={message.id}>
                 {showHandoff && (
                   <HandoffDivider agentName={message.agentName!} />
                 )}
-                <ChatMessage
-                  message={message}
-                  isLastAssistantMessage={isLastAssistant}
-                  onRegenerate={isLastAssistant ? onRegenerate : undefined}
-                  onEditMessage={message.isUser ? onEditMessage : undefined}
-                />
+                <Box
+                  data-msg-index={index}
+                  sx={isSelected ? highlightSx : undefined}
+                >
+                  <ChatMessage
+                    message={message}
+                    isLastAssistantMessage={isLastAssistant}
+                    onRegenerate={isLastAssistant ? onRegenerate : undefined}
+                    onEditMessage={message.isUser ? onEditMessage : undefined}
+                  />
+                </Box>
               </React.Fragment>
             );
           })}
@@ -177,14 +191,17 @@ export const VirtualizedMessageList = React.memo(
             !!message.agentName &&
             message.agentName !== getPreviousAssistantAgent(index);
 
+          const isSelected = index === selectedMessageIndex;
           return (
             <React.Fragment key={message.id}>
               {showHandoff && <HandoffDivider agentName={message.agentName!} />}
               <Box
                 data-msg-id={message.id}
+                data-msg-index={index}
                 ref={(node: HTMLDivElement | null) =>
                   observeNode(message.id, node)
                 }
+                sx={isSelected ? highlightSx : undefined}
               >
                 <ChatMessage
                   message={message}

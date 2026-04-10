@@ -26,6 +26,9 @@ import {
 import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { useTheme } from '@mui/material/styles';
 import { Message } from '../../types';
 import { WelcomeScreen, AgentCatalogDialog } from '../WelcomeScreen';
@@ -36,7 +39,7 @@ import { ToolApprovalDialog } from '../ToolApprovalDialog';
 import { ChatInput } from '../ChatInput';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
-import { debugError } from '../../utils';
+import { debugError, exportConversation } from '../../utils';
 import { useBranding, useStreamingChat, useToolApproval } from '../../hooks';
 import {
   useWelcomeData,
@@ -51,6 +54,7 @@ import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
 import { ChatHeader } from './ChatHeader';
 import { useChatActions } from './useChatActions';
 import { useTranslation } from '../../hooks/useTranslation';
+import { ExecutionTracePanel } from '../ExecutionTrace';
 
 // ============================================================================
 // Main Component
@@ -110,6 +114,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       string | undefined
     >();
     const approvalMsgCounter = useRef(0);
+    const kagentiFetchRef = useRef<AbortController | null>(null);
     const { workflows, quickActions, promptGroups } = useWelcomeData();
     const { status } = useStatus();
     const isKagenti = status?.providerId === 'kagenti';
@@ -149,9 +154,13 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
 
         if (isKagenti && agentId.includes('/')) {
           const [ns, name] = agentId.split('/');
+          kagentiFetchRef.current?.abort();
+          const ctrl = new AbortController();
+          kagentiFetchRef.current = ctrl;
           api
             .getKagentiAgent(ns, name)
             .then(detail => {
+              if (ctrl.signal.aborted) return;
               const statusStr =
                 typeof detail.status === 'string'
                   ? detail.status
@@ -169,7 +178,6 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
                   };
                 }
               ).agentCard;
-              // Use agent card description if admin didn't configure one
               if (!adminCfg?.description && card?.description) {
                 setAgentDescription(card.description);
               }
@@ -181,25 +189,13 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
               }
             })
             .catch(() => {
+              if (ctrl.signal.aborted) return;
               setAgentHealthWarning('Unable to verify agent health');
             });
         }
       },
       [api, isKagenti, chatAgentConfigs, messages.length, onMessagesChange],
     );
-
-    // Reset chat state when the active provider changes
-    const prevProviderIdRef = useRef(providerId);
-    useEffect(() => {
-      if (providerId && providerId !== prevProviderIdRef.current) {
-        prevProviderIdRef.current = providerId;
-        setSelectedModel(undefined);
-        setAgentStarters([]);
-        setAgentDescription(undefined);
-        setAgentHealthWarning(null);
-        setInputValue('');
-      }
-    }, [providerId]);
 
     const handleChangeAgent = useCallback(() => {
       setSelectedModel(undefined);
@@ -271,7 +267,34 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       onScrollToBottom: scrollToBottom,
       onSessionCreated,
       model: selectedModel,
+      providerId,
     });
+
+    // Full reset when the active provider changes — clear messages,
+    // cancel in-flight streams, and reset conversation identity so
+    // state from Provider A never leaks into Provider B.
+    const prevProviderIdRef = useRef(providerId);
+    useEffect(() => {
+      if (providerId && providerId !== prevProviderIdRef.current) {
+        prevProviderIdRef.current = providerId;
+        cancelRequest();
+        resetConversation();
+        onMessagesChange([]);
+        setSelectedModel(undefined);
+        setAgentStarters([]);
+        setAgentDescription(undefined);
+        setAgentHealthWarning(null);
+        setInputValue('');
+        onNewChat?.();
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [providerId]);
+
+    // Track last completed streaming state for the execution trace panel.
+    const lastCompletedStateRef = useRef(streamingState);
+    if (streamingState) {
+      lastCompletedStateRef.current = streamingState;
+    }
 
     // Tool approval hook (HITL)
     const {
@@ -332,13 +355,14 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       setInputValue,
     });
 
-    useChatKeyboardShortcuts({
+    const { selectedMessageIndex } = useChatKeyboardShortcuts({
       onNewChat,
       isTyping,
       cancelRequest,
       chatInputRef,
       isApprovalDialogOpen: !!pendingApproval,
       onShowShortcuts: handleShowShortcuts,
+      messageCount: messages.length,
     });
 
     useEffect(() => {
@@ -385,6 +409,14 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           onMessagesChange([...messages, botMsg]);
         } catch (err) {
           debugError('Form submission failed:', err);
+          const errorMsg: Message = {
+            id: `msg-error-${approvalMsgCounter.current++}`,
+            text: `Form submission failed: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`,
+            isUser: false,
+            timestamp: new Date(),
+            errorCode: 'form_submission_error',
+          };
+          onMessagesChange([...messages, errorMsg]);
         } finally {
           setStreamingState(null);
           setIsTyping(false);
@@ -400,18 +432,20 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       ],
     );
 
-    const handleFormCancel = useCallback(() => {
+    const handleFormCancel = useCallback(async () => {
       const pending = streamingState?.pendingForm;
       if (!pending) return;
-      api
-        .submitToolApproval(
+      setStreamingState(null);
+      setIsTyping(false);
+      try {
+        await api.submitToolApproval(
           pending.contextId || streamingState?.responseId || '',
           pending.taskId || '',
           false,
-        )
-        .catch(err => debugError('Form cancellation failed:', err));
-      setStreamingState(null);
-      setIsTyping(false);
+        );
+      } catch (err) {
+        debugError('Form cancellation failed:', err);
+      }
     }, [api, streamingState, setStreamingState, setIsTyping]);
 
     const handleAuthConfirm = useCallback(async () => {
@@ -435,6 +469,14 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
         onMessagesChange([...messages, botMsg]);
       } catch (err) {
         debugError('OAuth confirmation failed:', err);
+        const errorMsg: Message = {
+          id: `msg-error-${approvalMsgCounter.current++}`,
+          text: `Authentication failed: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`,
+          isUser: false,
+          timestamp: new Date(),
+          errorCode: 'auth_confirmation_error',
+        };
+        onMessagesChange([...messages, errorMsg]);
       } finally {
         setStreamingState(null);
         setIsTyping(false);
@@ -471,6 +513,14 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           onMessagesChange([...messages, botMsg]);
         } catch (err) {
           debugError('Secrets submission failed:', err);
+          const errorMsg: Message = {
+            id: `msg-error-${approvalMsgCounter.current++}`,
+            text: `Secrets submission failed: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`,
+            isUser: false,
+            timestamp: new Date(),
+            errorCode: 'secrets_submission_error',
+          };
+          onMessagesChange([...messages, errorMsg]);
         } finally {
           setStreamingState(null);
           setIsTyping(false);
@@ -569,6 +619,45 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           />
         )}
 
+        {/* Conversation toolbar — export, etc. */}
+        {messages.length > 0 && !showWelcome && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              px: { xs: 2, sm: 3, md: 4 },
+              py: 0.25,
+            }}
+          >
+            <Tooltip title="Export conversation as JSON" placement="left">
+              <IconButton
+                size="small"
+                onClick={() =>
+                  exportConversation(messages, activeSessionId ?? undefined)
+                }
+                aria-label="Export conversation"
+                sx={{
+                  p: 0.5,
+                  color: 'text.secondary',
+                  '&:hover': { color: 'primary.main' },
+                }}
+              >
+                <FileDownloadOutlinedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
+
+        {/* Execution Trace — live view of agent steps */}
+        {(streamingState || lastCompletedStateRef.current) &&
+          messages.length > 0 &&
+          !showWelcome && (
+            <ExecutionTracePanel
+              streamingState={streamingState}
+              lastCompletedState={lastCompletedStateRef.current}
+            />
+          )}
+
         {/* Messages Area */}
         <ChatScrollArea
           scrollContainerRef={scrollContainerRef}
@@ -645,6 +734,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
                   messages={messages}
                   onRegenerate={handleRegenerate}
                   onEditMessage={isTyping ? undefined : handleEditMessage}
+                  selectedMessageIndex={selectedMessageIndex}
                 />
                 {showStreaming && (
                   <StreamingMessage
