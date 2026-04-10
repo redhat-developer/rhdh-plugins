@@ -221,6 +221,7 @@ export function mcpConfigureModalCancelButton(
 ): Locator {
   return mcpCredentialConfigureModal(page).getByRole('button', {
     name: t['modal.cancel'],
+    exact: true,
   });
 }
 
