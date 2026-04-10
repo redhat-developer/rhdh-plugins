@@ -6,6 +6,7 @@
 
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
+import type { DatabaseService } from '@backstage/backend-plugin-api';
 import express from 'express';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
 import type { LoggerService } from '@backstage/backend-plugin-api';
@@ -20,9 +21,51 @@ const lightspeedPlugin: BackendFeature;
 export default lightspeedPlugin;
 
 // @public
+export interface McpServerResponse {
+    // (undocumented)
+    enabled: boolean;
+    // (undocumented)
+    hasToken: boolean;
+    // (undocumented)
+    hasUserToken: boolean;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    status: McpServerStatus;
+    // (undocumented)
+    toolCount: number;
+    // (undocumented)
+    url?: string;
+}
+
+// @public (undocumented)
+export type McpServerStatus = 'connected' | 'error' | 'unknown';
+
+// @public (undocumented)
+export interface McpToolInfo {
+    // (undocumented)
+    description: string;
+    // (undocumented)
+    name: string;
+}
+
+// @public (undocumented)
+export interface McpValidationResult {
+    // (undocumented)
+    error?: string;
+    // (undocumented)
+    toolCount: number;
+    // (undocumented)
+    tools: McpToolInfo[];
+    // (undocumented)
+    valid: boolean;
+}
+
+// @public
 export type RouterOptions = {
     logger: LoggerService;
     config: Config;
+    database: DatabaseService;
     httpAuth: HttpAuthService;
     userInfo: UserInfoService;
     permissions: PermissionsService;

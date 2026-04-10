@@ -151,7 +151,7 @@ export interface CostManagementSlimApi {
   >;
 }
 
-// @public (undocumented)
+// @public
 export class CostManagementSlimClient implements CostManagementSlimApi {
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi });
   // (undocumented)
@@ -750,16 +750,16 @@ export interface OrchestratorSlimApi {
 
 // @public (undocumented)
 export class OrchestratorSlimClient implements OrchestratorSlimApi {
+  // @deprecated
   constructor(options: {
     discoveryApi: DiscoveryApi;
     fetchApi: FetchApi;
-    identityApi: IdentityApi;
+    identityApi?: IdentityApi;
   });
   // (undocumented)
   checkWorkflowAvailability(
     workflowId: string,
   ): Promise<WorkflowAvailabilityResult>;
-  // (undocumented)
   executeWorkflow<D = JsonObject>(
     workflowId: string,
     workflowInputData: D,

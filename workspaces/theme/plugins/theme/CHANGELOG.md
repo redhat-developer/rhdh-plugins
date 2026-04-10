@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.14.0
+
+### Minor Changes
+
+- 0b7c442: Add and export RHDH logo components as LogoFull and LogoIcon
+- 0b7c442: Backstage version bump to v1.49.2
+
 ## 0.13.0
 
 ### Minor Changes

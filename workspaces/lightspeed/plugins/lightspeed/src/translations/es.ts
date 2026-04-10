@@ -27,6 +27,33 @@ const lightspeedTranslationEs = createTranslationMessages({
   messages: {
     'page.title': 'Lightspeed',
     'page.subtitle': 'Asistente de desarrollo con tecnología de IA',
+    'tabs.ariaLabel': 'Vistas de Lightspeed',
+    'tabs.chat': 'Chat',
+    'tabs.notebooks': 'Cuadernos',
+    'tabs.notebooks.empty': 'El contenido de los cuadernos va aquí.',
+    'notebooks.title': 'Mis cuadernos',
+    'notebooks.empty.title': 'No hay cuadernos creados',
+    'notebooks.empty.description':
+      'Crea un nuevo cuaderno para organizar tus fuentes y generar información con IA.',
+    'notebooks.empty.action': 'Crear un cuaderno nuevo',
+    'notebooks.documents': 'Documentos',
+    'notebooks.actions.rename': 'Renombrar',
+    'notebooks.actions.delete': 'Eliminar',
+    'notebooks.rename.title': '¿Renombrar {{name}}?',
+    'notebooks.rename.description':
+      'Introduce el nuevo nombre para este cuaderno y haz clic en Enviar para continuar.',
+    'notebooks.rename.label': 'Nuevo nombre',
+    'notebooks.rename.placeholder': 'Nuevo nombre',
+    'notebooks.rename.action': 'Enviar',
+    'notebooks.delete.title': '¿Eliminar {{name}}?',
+    'notebooks.delete.message':
+      'Ya no verás este cuaderno aquí. Esto también eliminará actividad relacionada como solicitudes, respuestas y comentarios de tu actividad de Lightspeed.',
+    'notebooks.delete.action': 'Eliminar',
+    'notebooks.delete.toast': '¡Cuaderno eliminado!',
+    'notebooks.updated.today': 'Actualizado hoy',
+    'notebooks.updated.yesterday': 'Actualizado hace 1 día',
+    'notebooks.updated.days': 'Actualizado hace {{days}} días',
+    'notebooks.updated.on': 'Actualizado el',
     'prompts.codeReadability.title':
       'Obtener ayuda sobre la legibilidad del código',
     'prompts.codeReadability.message':
@@ -53,6 +80,7 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Desmitificar los algoritmos de clasificación',
     'prompts.sortingAlgorithms.message':
       '¿Puedes explicar la diferencia entre un algoritmo de clasificación rápido y un algoritmo de clasificación por combinación, y cuándo utilizar cada uno?',
+    'prompts.eventDriven.title': 'Comprender la arquitectura basada en eventos',
     'prompts.eventDriven.message':
       '¿Puedes explicar qué es la arquitectura basada en eventos y cuándo es beneficioso usarla en el desarrollo de software?',
     'prompts.tekton.title': 'Implementar con Tekton',
@@ -64,8 +92,21 @@ const lightspeedTranslationEs = createTranslationMessages({
     'prompts.rhdh.title': 'Empezar a usar Red Hat Developer Hub',
     'prompts.rhdh.message':
       '¿Puedes explicarme los primeros pasos para usar Developer Hub como desarrollador, por ejemplo, cómo explorar el catálogo de software y agregar mi servicio?',
+    'conversation.delete.confirm.title': '¿Eliminar chat?',
     'conversation.delete.confirm.message':
       'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada, como indicaciones, respuestas y comentarios de la actividad de Lightspeed.',
+    'conversation.delete.confirm.action': 'Eliminar',
+    'conversation.rename.confirm.title': '¿Cambiar el nombre del chat?',
+    'conversation.rename.confirm.action': 'Cambiar el nombre',
+    'conversation.rename.placeholder': 'Nombre del chat',
+    'permission.required.title': 'Permisos faltantes',
+    'permission.required.description':
+      'Para ver <subject/>, contacta a tu administrador para que te otorgue el permiso <permissions/>.',
+    'permission.subject.plugin': 'el plugin de Lightspeed',
+    'permission.subject.notebooks': 'los cuadernos de Lightspeed',
+    'permission.notebooks.goBack': 'Volver',
+    'disclaimer.withValidation':
+      'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
     'disclaimer.withoutValidation':
       'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
     'footer.accuracy.label':
@@ -84,11 +125,13 @@ const lightspeedTranslationEs = createTranslationMessages({
     'chatbox.emptyState.noResults.body':
       'Ajuste su solicitud de búsqueda y vuelva a intentarlo. Revise la ortografía o pruebe con un término más general.',
     'chatbox.welcome.greeting': 'Hola, {{userName}}',
+    'chatbox.welcome.description': '¿Cómo puedo ayudarte hoy?',
     'chatbox.message.placeholder':
       'Envíe un mensaje y, de forma opcional, cargue un archivo JSON, YAML o TXT...',
     'chatbox.fileUpload.failed': 'Error al cargar el archivo',
     'chatbox.fileUpload.infoText':
       'Los tipos de archivo admitidos son .txt, .yaml y .json. El tamaño máximo del archivo es de 25 MB.',
+    'aria.chatbotSelector': 'Selector de chatbot',
     'aria.important': 'Importante',
     'aria.chatHistoryMenu': 'Menú del historial de chat',
     'aria.closeDrawerPanel': 'Cerrar el panel lateral',
@@ -110,6 +153,8 @@ const lightspeedTranslationEs = createTranslationMessages({
     'conversation.removeFromPinnedChats': 'Quitar fijación',
     'conversation.announcement.userMessage':
       'Mensaje del usuario: {{prompt}}. El mensaje del bot se está cargando.',
+    'user.guest': 'Invitado',
+    'conversation.announcement.responseStopped': 'Respuesta detenida.',
     'user.loading': '...',
     'tooltip.attach': 'Adjuntar',
     'tooltip.send': 'Enviar',
@@ -131,8 +176,12 @@ const lightspeedTranslationEs = createTranslationMessages({
     'file.upload.error.multipleFiles': 'Subió más de un archivo.',
     'file.upload.error.unsupportedType':
       'Tipo de archivo no compatible. Los tipos de archivo admitidos son .txt, .yaml y .json.',
+    'file.upload.error.fileTooLarge':
+      'El tamaño del archivo es demasiado grande. Asegúrate de que el archivo sea menor de 25 MB.',
     'file.upload.error.readFailed':
       'No se pudo leer el archivo: {{errorMessage}}',
+    'error.context.fileAttachment':
+      'useFileAttachmentContext debe estar dentro de un FileAttachmentContextProvider',
     'feedback.form.title': '¿Por qué eligió esta calificación?',
     'feedback.form.textAreaPlaceholder':
       'Proporcionar comentarios adicionales opcionales',
@@ -161,6 +210,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'settings.pinned.disabled.description':
       'Los chats fijados están deshabilitados actualmente',
     'toolCall.header': 'Respuesta de la herramienta: {{toolName}}',
+    'toolCall.thinking': 'Pensó durante {{seconds}} segundos',
     'toolCall.executionTime': 'Tiempo de ejecución: ',
     'toolCall.parameters': 'Parámetros',
     'toolCall.response': 'Respuesta',

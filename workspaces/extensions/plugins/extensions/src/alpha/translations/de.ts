@@ -29,6 +29,7 @@ const extensionsTranslationDe = createTranslationMessages({
     'header.catalog': 'Katalog',
     'header.installedPackages': 'Installierte Pakete',
     'header.installedPackagesWithCount': 'Installierte Pakete ({{count}})',
+    'header.pluginsPage': 'Plugins',
     'header.packagesPage': 'Pakete',
     'header.collectionsPage': 'Sammlungen',
     'button.install': 'Installieren',
@@ -41,6 +42,7 @@ const extensionsTranslationDe = createTranslationMessages({
     'button.viewAll': 'Alle Plugins anzeigen',
     'button.viewDocumentation': 'Dokumentation anzeigen',
     'button.viewInstalledPlugins': 'Installierte Plugins ({{count}}) anzeigen',
+    'button.restart': 'Neustart erforderlich',
     'status.notInstalled': 'Nicht installiert',
     'status.installed': 'Installiert',
     'status.disabled': 'Deaktiviert',
@@ -61,10 +63,22 @@ const extensionsTranslationDe = createTranslationMessages({
     'alert.installationDisabled': 'Die Plugin-Installation ist deaktiviert.',
     'alert.missingDynamicArtifact':
       'Dieses Paket kann nicht verwaltet werden. Um Aktionen zu ermöglichen, muss ein Katalogelement mit dem erforderlichen **spec.dynamicArtifact** hinzugefügt werden.',
+    'alert.missingDynamicArtifactTitle': 'Paket kann nicht geändert werden',
     'alert.missingDynamicArtifactForPlugin':
       'Dieses Plugin kann nicht verwaltet werden. Um Aktionen zu ermöglichen, muss allen zugehörigen Paketen ein Katalogelement mit dem erforderlichen **spec.dynamicArtifact** hinzugefügt werden.',
+    'alert.missingDynamicArtifactTitlePlugin':
+      'Plugin kann nicht geändert werden',
     'alert.extensionsExample':
       'Um dies zu aktivieren, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'alert.singlePluginRestart':
+      'Das Plugin **{{pluginName}}** erfordert einen Neustart des Backendsystems, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
+    'alert.multiplePluginRestart':
+      'Sie haben **{{count}}** Plugins, die einen Neustart des Backendsystems erfordern, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
+    'alert.singlePackageRestart':
+      'Das Paket **{{packageName}}** erfordert einen Neustart des Backendsystems, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
+    'alert.multiplePackageRestart':
+      'Sie haben **{{count}}** Pakete, die einen Neustart des Backendsystems erfordern, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
+    'alert.restartRequired': '{{count}} Plugins installiert',
     'alert.backendRestartRequired': 'Neustart des Backends erforderlich',
     'alert.viewPlugins': 'Plugins anzeigen',
     'alert.viewPackages': 'Pakete anzeigen',
@@ -83,11 +97,28 @@ const extensionsTranslationDe = createTranslationMessages({
     'common.links': 'Verknüpfungen',
     'common.by': ' von ',
     'common.comma': ', ',
+    'common.noDescriptionAvailable': 'Keine Beschreibung verfügbar',
     'common.readMore': 'Mehr lesen',
     'common.close': 'Schließen',
     'common.apply': 'Anwenden',
     'common.couldNotApplyYaml':
       'YAML konnte nicht angewendet werden: {{error}}',
+    'dialog.backendRestartRequired': 'Neustart des Backends erforderlich',
+    'dialog.packageRestartMessage':
+      'Um die Paketänderungen abzuschließen, starten Sie Ihr Backendsystem neu.',
+    'dialog.pluginRestartMessage':
+      'Um die Plugin-Änderungen abzuschließen, starten Sie Ihr Backendsystem neu.',
+    'plugin.description': 'Beschreibung',
+    'plugin.documentation': 'Dokumentation',
+    'plugin.repository': 'Repository',
+    'plugin.license': 'Lizenz',
+    'plugin.version': 'Version',
+    'plugin.author': 'Autor',
+    'plugin.authors': 'Autoren',
+    'plugin.tags': 'Tags',
+    'plugin.dependencies': 'Abhängigkeiten',
+    'plugin.configuration': 'Konfiguration',
+    'plugin.installation': 'Installation',
     'package.name': 'Paketname:',
     'package.version': 'Version:',
     'package.dynamicPluginPath': 'Dynamischer Plugin-Pfad:',
@@ -99,6 +130,7 @@ const extensionsTranslationDe = createTranslationMessages({
     'package.highlights': 'Highlights',
     'package.about': 'Info',
     'package.notFound': 'Paket {{namespace}}/{{name}} nicht gefunden!',
+    'package.notAvailable': 'Paket {{name}} ist nicht verfügbar',
     'package.ensureCatalogEntity':
       'Stellen Sie sicher, dass für dieses Paket ein Katalogelement existiert.',
     'table.packageName': 'Paketname',
@@ -113,7 +145,10 @@ const extensionsTranslationDe = createTranslationMessages({
     'table.plugins': 'Plugins',
     'table.packages': 'Pakete',
     'table.pluginsCount': 'Plugins ({{count}})',
+    'table.packagesCount': 'Pakete ({{count}})',
+    'table.pluginsTable': 'Plugin-Tabelle',
     'installedPackages.table.title': 'Installierte Pakete ({{count}})',
+    'installedPackages.table.searchPlaceholder': 'Suchen',
     'installedPackages.table.columns.name': 'Name',
     'installedPackages.table.columns.packageName': 'npm-Paketname',
     'installedPackages.table.columns.role': 'Rolle',
@@ -123,6 +158,8 @@ const extensionsTranslationDe = createTranslationMessages({
       'Das Paket kann in der Produktionsumgebung nicht verwaltet werden.',
     'installedPackages.table.tooltips.installationDisabled':
       'Das Paket kann nicht verwaltet werden, da die Plugin-Installation deaktiviert ist. Um dies zu aktivieren, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'installedPackages.table.tooltips.enableActions':
+      'Um Aktionen zu aktivieren, fügen Sie ein Katalogelement für dieses Paket hinzu',
     'installedPackages.table.tooltips.noDownloadPermissions':
       'Sie haben keine Berechtigung, die Konfiguration herunterzuladen. Wenden Sie sich an den Administrator, um Zugriff oder Unterstützung anzufordern.',
     'installedPackages.table.tooltips.noEditPermissions':
@@ -153,8 +190,11 @@ const extensionsTranslationDe = createTranslationMessages({
     'actions.packageCurrentlyEnabled': 'Paket derzeit aktiviert',
     'actions.packageCurrentlyDisabled': 'Paket derzeit deaktiviert',
     'actions.installTitle': '{{displayName}} installieren',
+    'actions.editTitle': 'Konfigurationen von {{displayName}} bearbeiten',
     'metadata.by': ' von ',
     'metadata.comma': ', ',
+    'metadata.pluginNotFound': 'Plugin {{name}} nicht gefunden!',
+    'metadata.pluginNotAvailable': 'Plugin {{name}} ist nicht verfügbar',
     'metadata.ensureCatalogEntityPlugin':
       'Stellen Sie sicher, dass für dieses Plugin ein Katalogelement existiert.',
     'metadata.highlights': 'Highlights',
@@ -167,6 +207,16 @@ const extensionsTranslationDe = createTranslationMessages({
     'metadata.versions': 'Versionen',
     'metadata.backstageCompatibility': 'Backstage-Kompatibilitätsversion',
     'supportTypes.certifiedBy': 'Zertifiziert von {{value}} ({{count}})',
+    'supportTypes.verifiedBy': 'Verifiziert von {{value}} ({{count}})',
+    'supportTypes.customPlugins': 'Benutzerdefinierte Plugins ({{count}})',
+    'collection.kubernetes': 'Kubernetes',
+    'collection.monitoring': 'Monitoring',
+    'collection.security': 'Sicherheit',
+    'collection.viewMore': 'Mehr anzeigen',
+    'collection.pluginCount': '{{count}} Plugins',
+    'collection.featured.title': 'Hervorgehobene Plugins',
+    'collection.featured.description':
+      'Eine kuratierte Sammlung empfohlener Plugins für die meisten Benutzer',
     'install.title': 'Plugin installieren',
     'install.configurationRequired': 'Konfiguration erforderlich',
     'install.optional': 'Optional',
@@ -223,6 +273,38 @@ const extensionsTranslationDe = createTranslationMessages({
       'Die Plugin-Installation ist in der Produktionsumgebung deaktiviert.',
     'tooltips.extensionsDisabled':
       'Die Plugin-Installation ist deaktiviert. Um dies zu aktivieren, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'tooltips.noPermissions':
+      'Sie haben keine Berechtigung, Plugins zu installieren oder deren Konfigurationen anzuzeigen. Wenden Sie sich an Ihren Administrator, um Zugriff oder Unterstützung anzufordern.',
+    'tooltips.missingDynamicArtifact':
+      'Dieses {{type}} kann nicht verwaltet werden. Um Aktionen zu ermöglichen, muss ein Katalogelement mit dem erforderlichen spec.dynamicArtifact hinzugefügt werden.',
+    'aria.openPlugin': 'Plugin {{name}} öffnen',
+    'aria.closeDialog': 'Dialog schließen',
+    'aria.expandSection': 'Abschnitt erweitern',
+    'aria.collapseSection': 'Abschnitt reduzieren',
+    'aria.sortBy': 'Sortieren nach {{field}}',
+    'aria.filterBy': 'Filtern nach {{field}}',
+    'badges.certified': 'Zertifiziert',
+    'badges.certifiedBy': 'Zertifiziert von {{provider}}',
+    'badges.verified': 'Verifiziert',
+    'badges.verifiedBy': 'Verifiziert von {{provider}}',
+    'badges.customPlugin': 'Benutzerdefiniertes Plugin',
+    'badges.stableAndSecured': 'Stabil und gesichert durch {{provider}}',
+    'badges.generallyAvailable': 'Allgemein verfügbar (GA)',
+    'badges.gaAndSupportedBy':
+      'Allgemein verfügbar (GA) und unterstützt durch {{provider}}',
+    'badges.gaAndSupported': 'Allgemein verfügbar (GA) und unterstützt',
+    'badges.productionReadyBy':
+      'Produktionsreif und unterstützt durch {{provider}}',
+    'badges.productionReady': 'Produktionsreif und unterstützt',
+    'badges.communityPlugin': 'Community-Plugin',
+    'badges.openSourceNoSupport':
+      'Open-Source-Plugins, kein offizieller Support',
+    'badges.techPreview': 'Technologievorschau (TP)',
+    'badges.pluginInDevelopment': 'Plugin noch in Entwicklung',
+    'badges.devPreview': 'Entwicklervorschau (DP)',
+    'badges.earlyStageExperimental':
+      'Ein experimentelles Plugin im Frühstadium',
+    'badges.addedByAdmin': 'Vom Administrator hinzugefügte Plugins',
   },
 });
 

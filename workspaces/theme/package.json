@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "18 || 20"
+    "node": "22 || 24"
   },
   "scripts": {
     "start": "backstage-cli repo start",
@@ -20,8 +20,8 @@
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
     "test:all": "backstage-cli repo test --coverage",
-    "test:legacy": "APP_MODE=legacy playwright test",
-    "test:nfs": "APP_MODE=nfs playwright test",
+    "test:legacy": "APP_MODE=legacy playwright test packages/app-legacy/e2e-tests",
+    "test:nfs": "APP_MODE=nfs playwright test packages/app/e2e-tests",
     "test:e2e:ci": "yarn test:legacy && yarn test:nfs",
     "playwright": "sh -c 'if [ \"$1\" = test ] && [ $# -eq 1 ]; then yarn test:e2e:ci; else exec playwright \"$@\"; fi' _",
     "fix": "backstage-cli repo fix",
@@ -32,12 +32,10 @@
     "new": "backstage-cli new --scope red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
-  "workspaces": {
-    "packages": [
-      "packages/*",
-      "plugins/*"
-    ]
-  },
+  "workspaces": [
+    "packages/*",
+    "plugins/*"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
@@ -45,15 +43,19 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
-    "@backstage/cli": "^0.34.5",
-    "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.16.0",
+    "@backstage/cli": "^0.36.0",
+    "@backstage/cli-defaults": "^0.1.0",
+    "@backstage/e2e-test-utils": "^0.1.2",
+    "@backstage/repo-tools": "^0.17.0",
     "@changesets/cli": "^2.27.1",
+    "@jest/environment-jsdom-abstract": "^30.0.0",
     "@playwright/test": "1.58.2",
-    "@spotify/prettier-config": "^12.0.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "jsdom": "^27.1.0",
     "node-gyp": "^9.0.0",
     "prettier": "^3.4.2",
-    "typescript": "~5.3.0"
+    "typescript": "~5.8.0"
   },
   "dependencies": {
     "knip": "^5.27.4"
@@ -63,7 +65,7 @@
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
-  "prettier": "@spotify/prettier-config",
+  "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
       "eslint --fix",

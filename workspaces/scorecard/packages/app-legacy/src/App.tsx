@@ -54,7 +54,13 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { scorecardTranslations } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import {
+  ScorecardHomepageCard,
+  ScorecardPage,
+  ScorecardErrorStatusIcon,
+  ScorecardSuccessStatusIcon,
+  ScorecardWarningStatusIcon,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
@@ -62,8 +68,8 @@ import {
   DynamicCustomizableHomePage,
   OnboardingSection,
   HomePageCardMountPoint,
-  homepageTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
+import { homepageTranslations } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
 import { ComponentType } from 'react';
 
 const mountPoints: HomePageCardMountPoint[] = [
@@ -271,6 +277,11 @@ const scalprumState: ScalprumState = {
 
 const app = createApp({
   apis,
+  icons: {
+    scorecardSuccessStatusIcon: ScorecardSuccessStatusIcon,
+    scorecardWarningStatusIcon: ScorecardWarningStatusIcon,
+    scorecardErrorStatusIcon: ScorecardErrorStatusIcon,
+  },
   themes: getThemes(),
   __experimentalTranslations: {
     availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
@@ -322,6 +333,7 @@ const routes = (
         </ScalprumContext.Provider>
       }
     />
+    <Route path="/scorecard/metrics/:metricId" element={<ScorecardPage />} />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"

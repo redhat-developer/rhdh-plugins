@@ -18,6 +18,10 @@ export {
   getHeightForCenterLabel,
   getYOffsetForCenterLabel,
 } from './chartLabelUtils';
-export { getThresholdRuleColor, resolveStatusColor } from './colorUtils';
-export { SCORECARD_ERROR_STATE_COLOR } from './constants';
-export { getStatusConfig } from './statusUtils';
+export {
+  SCORECARD_ENTITIES_TABLE_HEADERS,
+  SCORECARD_ERROR_STATE_COLOR,
+} from './constants';
+export { getLastUpdatedLabel } from './entityTableUtils';
+export { getStatusConfig, resolveStatusColor } from './statusUtils';
+export { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';

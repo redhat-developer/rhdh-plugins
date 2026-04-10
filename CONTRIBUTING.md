@@ -32,6 +32,9 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
         - [Dependency Updates](#dependency-updates)
         - [Security Fixes](#security-fixes)
     - [Opt-in to Knip Reports Check](#opt-in-to-knip-reports-check)
+  - [Archiving a plugin or workspace](#archiving-a-plugin-or-workspace)
+    - [When to archive](#when-to-archive)
+    - [Steps](#steps)
 
 ## License
 
@@ -82,7 +85,7 @@ We use [changesets](https://github.com/atlassian/changesets) to help us prepare 
 
 To create a changeset, follow these steps:
 
-1. Make sure you are in the root directory of the workspace for the plugin you want to create a changeset for. For ex: if you are making changes on the `openshift-image-registry` plugin then you should be on `workspaces/openshift-image-registry` dir
+1. Make sure you are in the root directory of the workspace for the plugin you want to create a changeset for. For ex: if you are making changes on the `scorecard` plugin then you should be on `workspaces/scorecard` dir
 
 2. Run the following command to create a new changeset:
 
@@ -136,7 +139,7 @@ From there, once the script has finished, you should have a new `yarn workspace`
 Once you have a workspace setup, the creation of new plugins and packages is just like any other Backstage repository. You can use the `yarn new` command to run the prompt for creating new plugins or packages.
 
 ```bash
-cd workspaces/openshift-image-registry
+cd workspaces/scorecard
 yarn install
 yarn new
 ```
@@ -355,3 +358,48 @@ This repository uses [Renovate](https://docs.renovatebot.com/) to automatically 
 Plugin owners can opt in to Knip reports check in CI by creating a `bcp.json` file in the root of their workspace (`workspaces/${WORKSPACE}/bcp.json`) and adding `{ "knip-reports": true }`. This ensures that knip reports in your workspace stay up to date.
 
 [Knip](https://knip.dev/) is a tool that helps with clean-up and maintenance by identifying unused dependencies within workspaces. Regularly reviewing and addressing these reports can significantly improve code quality and reduce bloat.
+
+## Archiving a plugin or workspace
+
+When a plugin is no longer maintained, archive it rather than leaving stale code in the default branch. The archive script records the last published version in `.github/archived-plugins.json`, documents it in `ARCHIVED_WORKSPACES.md`, and strips repository configuration that referenced the workspace when you archive an entire workspace. You then remove the workspace or plugin tree in the same PR (or a follow-up). After the PR merges, npm deprecation runs via `.github/workflows/deprecate-archived-plugins.yml`.
+
+### When to archive
+
+Consider archiving when the plugin is unmaintained, has no owner, has unfixable security issues, has been superseded, or cannot be updated for current Backstage versions.
+
+### Steps
+
+1. From the repository root, run the archive script (use a branch based on current `main`):
+
+   ```bash
+   # Entire workspace (default reason: "No longer maintained")
+   node scripts/archive.js <workspace-name>
+
+   # Entire workspace with a custom reason
+   node scripts/archive.js <workspace-name> "Custom reason"
+
+   # Single plugin under workspaces/<workspace>/plugins/ (by plugin directory name or package suffix)
+   node scripts/archive.js <workspace-name> <plugin-dir-or-package-suffix> "Custom reason"
+   ```
+
+   The script only considers packages under the `@red-hat-developer-hub` scope. It updates:
+   - `.github/archived-plugins.json`
+   - `ARCHIVED_WORKSPACES.md`
+   - `.github/CODEOWNERS` (full workspace only — removes the `/workspaces/<name>` line)
+   - `.github/renovate.json` and `.github/renovate-presets/workspace/rhdh-<workspace>-presets.json` (full workspace only, when present)
+
+   It does **not** delete source directories; do that in the next step.
+
+2. Dry-run npm deprecation (optional):
+
+   ```bash
+   ./scripts/ci/deprecate-archived-plugins.sh --dry-run
+   ```
+
+3. Delete the workspace or plugin directory from the repository (`workspaces/<name>` for a full workspace, or `workspaces/<workspace>/plugins/<plugin>` when archiving specific plugins). Update any documentation that referenced the removed code.
+
+4. Run `yarn install` at the repository root if your tooling reports workspace or lockfile issues.
+
+5. Open a pull request including the script output and the deletion. Changes to `.github/archived-plugins.json` are sensitive because they drive automated npm deprecation after merge; ensure the usual repository reviewers (see `.github/CODEOWNERS`) approve the PR.
+
+6. After the PR merges, confirm the **Deprecate Archived Plugins** workflow ran successfully for the updated `.github/archived-plugins.json`.

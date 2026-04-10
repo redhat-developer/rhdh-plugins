@@ -72,7 +72,7 @@ const homepageTranslationFr = createTranslationMessages({
     'entities.emptyDescription':
       'Une fois les catalogues de logiciels ajoutés, cet espace présentera du contenu pertinent adapté à votre expérience.',
     'entities.register': 'Enregistrer un composant',
-    'entities.viewAll': 'Afficher toutes les {{count}} entités du catalogue',
+    'entities.browseTheCatalog': 'Parcourir le catalogue',
   },
 });
 

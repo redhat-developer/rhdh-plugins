@@ -8,23 +8,24 @@
 import { AnyApiFactory } from '@backstage/frontend-plugin-api';
 import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
 import { ApiFactory } from '@backstage/frontend-plugin-api';
-import { Entity } from '@backstage/catalog-model';
-import { EntityPredicate } from '@backstage/plugin-catalog-react/alpha';
 import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
-import { RouteRef } from '@backstage/frontend-plugin-api';
-import { RouteRef as RouteRef_2 } from '@backstage/core-plugin-api';
+import { RouteRef } from '@backstage/core-plugin-api';
+import { RouteRef as RouteRef_2 } from '@backstage/frontend-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @alpha
 const _default: OverridableFrontendPlugin<
   {
-    root: RouteRef_2<undefined>;
+    root: RouteRef<undefined>;
+    metric: RouteRef<{
+      metricId: string;
+    }>;
   },
   {},
   {
@@ -45,6 +46,33 @@ const _default: OverridableFrontendPlugin<
         params: ApiFactory<TApi, TImpl, TDeps>,
       ) => ExtensionBlueprintParams<AnyApiFactory>;
     }>;
+    'page:scorecard': OverridableExtensionDefinition<{
+      kind: 'page';
+      name: undefined;
+      config: {
+        path: string | undefined;
+      };
+      configInput: {
+        path?: string | undefined;
+      };
+      output:
+        | ExtensionDataRef<string, 'core.routing.path', {}>
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+        | ExtensionDataRef<
+            RouteRef_2<AnyRouteRefParams>,
+            'core.routing.ref',
+            {
+              optional: true;
+            }
+          >;
+      inputs: {};
+      params: {
+        defaultPath?: [Error: "Use the 'path' param instead"] | undefined;
+        path: string;
+        loader: () => Promise<JSX.Element>;
+        routeRef?: RouteRef_2<AnyRouteRefParams> | undefined;
+      };
+    }>;
   }
 >;
 export default _default;
@@ -53,98 +81,25 @@ export default _default;
 export const scorecardCatalogModule: FrontendModule;
 
 // @alpha
-export const scorecardEntityContent: OverridableExtensionDefinition<{
-  config: {
-    allowedFilters:
-      | {
-          type?: string | undefined;
-          kind?: string | undefined;
-        }[]
-      | undefined;
-    path: string | undefined;
-    title: string | undefined;
-    filter: EntityPredicate | undefined;
-    group: string | false | undefined;
-  };
-  configInput: {
-    allowedFilters?:
-      | {
-          type?: string | undefined;
-          kind?: string | undefined;
-        }[]
-      | undefined;
-    filter?: EntityPredicate | undefined;
-    title?: string | undefined;
-    path?: string | undefined;
-    group?: string | false | undefined;
-  };
-  output:
-    | ExtensionDataRef<string, 'core.routing.path', {}>
-    | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
-    | ExtensionDataRef<
-        RouteRef<AnyRouteRefParams>,
-        'core.routing.ref',
-        {
-          optional: true;
-        }
-      >
-    | ExtensionDataRef<
-        (entity: Entity) => boolean,
-        'catalog.entity-filter-function',
-        {
-          optional: true;
-        }
-      >
-    | ExtensionDataRef<
-        string,
-        'catalog.entity-filter-expression',
-        {
-          optional: true;
-        }
-      >
-    | ExtensionDataRef<string, 'catalog.entity-content-title', {}>
-    | ExtensionDataRef<
-        string,
-        'catalog.entity-content-group',
-        {
-          optional: true;
-        }
-      >;
-  inputs: {};
-  kind: 'entity-content';
-  name: 'entity-content-scorecard';
-  params: {
-    defaultPath?: [Error: "Use the 'path' param instead"] | undefined;
-    path: string;
-    defaultTitle?: [Error: "Use the 'title' param instead"] | undefined;
-    title: string;
-    defaultGroup?: [Error: "Use the 'group' param instead"] | undefined;
-    group?:
-      | (string & {})
-      | 'overview'
-      | 'documentation'
-      | 'development'
-      | 'deployment'
-      | 'operation'
-      | 'observability'
-      | undefined;
-    loader: () => Promise<JSX.Element>;
-    routeRef?: RouteRef<AnyRouteRefParams> | undefined;
-    filter?: EntityPredicate | ((entity: Entity) => boolean) | undefined;
-  };
-}>;
+export const scorecardHomeModule: FrontendModule;
 
 // @public
 export const scorecardTranslationRef: TranslationRef<
   'plugin.scorecard',
   {
-    readonly 'emptyState.button': string;
     readonly 'emptyState.title': string;
     readonly 'emptyState.description': string;
+    readonly 'emptyState.button': string;
     readonly 'emptyState.altText': string;
-    readonly 'permissionRequired.button': string;
+    readonly 'notFound.title': string;
+    readonly 'notFound.description': string;
+    readonly 'notFound.altText': string;
+    readonly 'notFound.readMore': string;
+    readonly 'notFound.goBack': string;
+    readonly 'notFound.contactSupport': string;
     readonly 'permissionRequired.title': string;
     readonly 'permissionRequired.description': string;
+    readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.invalidApiResponse': string;
@@ -158,16 +113,38 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.userNotFoundInCatalogMessage': string;
     readonly 'errors.noDataFoundMessage': string;
     readonly 'errors.authenticationErrorMessage': string;
+    readonly 'errors.noMetricsFound': string;
+    readonly 'errors.multipleMetricsFound': string;
     readonly 'metric.github.open_prs.title': string;
     readonly 'metric.github.open_prs.description': string;
     readonly 'metric.jira.open_issues.title': string;
     readonly 'metric.jira.open_issues.description': string;
+    readonly 'metric.lastUpdated': string;
+    readonly 'metric.lastUpdatedNotAvailable': string;
+    readonly 'metric.someEntitiesNotReportingValues': string;
     readonly 'thresholds.success': string;
-    readonly 'thresholds.error': string;
     readonly 'thresholds.warning': string;
+    readonly 'thresholds.error': string;
     readonly 'thresholds.noEntities': string;
     readonly 'thresholds.entities_one': string;
     readonly 'thresholds.entities_other': string;
+    readonly 'entitiesPage.missingPermission': string;
+    readonly 'entitiesPage.noDataFound': string;
+    readonly 'entitiesPage.unknownMetric': string;
+    readonly 'entitiesPage.metricProviderNotRegistered': string;
+    readonly 'entitiesPage.entitiesTable.title': string;
+    readonly 'entitiesPage.entitiesTable.unavailable': string;
+    readonly 'entitiesPage.entitiesTable.titleWithCount': string;
+    readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
+    readonly 'entitiesPage.entitiesTable.header.status': string;
+    readonly 'entitiesPage.entitiesTable.header.value': string;
+    readonly 'entitiesPage.entitiesTable.header.entity': string;
+    readonly 'entitiesPage.entitiesTable.header.owner': string;
+    readonly 'entitiesPage.entitiesTable.header.kind': string;
+    readonly 'entitiesPage.entitiesTable.footer.of': string;
+    readonly 'entitiesPage.entitiesTable.footer.allRows': string;
+    readonly 'entitiesPage.entitiesTable.footer.rows_one': string;
+    readonly 'entitiesPage.entitiesTable.footer.rows_other': string;
   }
 >;
 

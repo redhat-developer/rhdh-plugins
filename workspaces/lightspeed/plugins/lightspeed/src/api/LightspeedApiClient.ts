@@ -183,6 +183,25 @@ export class LightspeedApiClient implements LightspeedAPI {
     return response.conversations ?? [];
   }
 
+  async stopMessage(requestId: string): Promise<{ success: boolean }> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/v1/query/interrupt`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ request_id: requestId }),
+      },
+    );
+    if (!response.ok) {
+      throw new Error(
+        `failed to stop message, status ${response.status}: ${response.statusText}`,
+      );
+    }
+    return await response.json();
+  }
   async deleteConversation(conversation_id: string) {
     const baseUrl = await this.getBaseUrl();
 

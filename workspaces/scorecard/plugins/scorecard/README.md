@@ -2,7 +2,20 @@
 
 The Scorecard plugin provides a configurable framework to visualize Key Performance Indicators (KPIs) in Backstage. This frontend plugin integrates with the Scorecard backend to deliver Scorecards.
 
-The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. Use the main package for legacy apps and the `/alpha` export for NFS apps. NFS supports only 1 module as of now (the catalog module that adds the Scorecard entity tab).
+The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. Use the main package for legacy apps and the `/alpha` export for NFS apps. For NFS, the plugin currently provides three modules: a catalog module for the Scorecard entity tab, a home module for homepage widgets, and a translations module.
+**Features:**
+
+- **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
+- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues).
+- **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
+
+## Getting started
+
+Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/scorecard](http://localhost:3000/scorecard).
+
+You can also serve the plugin in isolation by running `yarn start` in the plugin directory.
+This method of serving the plugin provides quicker iteration speed and a faster startup and hot reloads.
+It is only meant for local development, and the setup for it can be found inside the [/dev](./dev) directory.
 
 ## For Administrators
 
@@ -36,12 +49,14 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
    // In packages/app/src/App.tsx
    import { createApp } from '@backstage/frontend-defaults';
    import {
+     scorecardHomeModule,
      scorecardTranslationsModule,
      scorecardCatalogModule,
    } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 
    const app = createApp({
      features: [
+       scorecardHomeModule,
        scorecardCatalogModule,
        scorecardTranslationsModule,
        // ... other plugins
@@ -107,6 +122,47 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
 
 5. Start the NFS app (e.g. `yarn start`), go to **Catalog**, open an entity. The **Scorecard** tab appears for entities that match your `allowedFilters` (or all entities if the extension config is omitted or empty).
 
+6. (Optional) Enable homepage Scorecard widgets by adding `scorecardHomeModule` to app features (see step 2) and configuring home page extensions in `app-config.yaml`:
+
+   ```yaml
+   app:
+     extensions:
+       - page:home:
+           config:
+             path: /
+       - api:home/visits: true
+       - app-root-element:home/visit-listener: true
+       - home-page-layout:home/dynamic-homepage-layout:
+           config:
+             customizable: true
+             widgetLayout:
+               ScorecardJiraHomepage:
+                 priority: 240
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               ScorecardGithubHomepage:
+                 priority: 250
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 4 }
+                   lg: { w: 4, h: 6, x: 4 }
+                   md: { w: 4, h: 6, x: 4 }
+                   sm: { w: 4, h: 6, x: 4 }
+                   xs: { w: 4, h: 6, x: 4 }
+                   xxs: { w: 4, h: 6, x: 4 }
+   ```
+
+   The home module contributes two widgets:
+
+   - `ScorecardGithubHomepage` (title: **Scorecard: GitHub open PRs**)
+   - `ScorecardJiraHomepage` (title: **Scorecard: Jira open blocking tickets**)
+
+   These widgets render the same `ScorecardHomepageCard` component used in legacy apps, preconfigured for `github.open_prs` and `jira.open_issues`.
+
 ##### Modules and extensions (NFS)
 
 The following modules and extensions are available from `@red-hat-developer-hub/backstage-plugin-scorecard/alpha` for NFS apps:
@@ -115,6 +171,7 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 
 | Module                        | Description                                                                                                                                                            |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scorecardHomeModule`         | Registers Scorecard homepage widgets for the home plugin (`ScorecardGithubHomepage` and `ScorecardJiraHomepage`).                                                      |
 | `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3). |
 | `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                           |
 
@@ -122,6 +179,8 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 
 - `api:scorecard` — Scorecard API (provided by the plugin; auto-discovered when the plugin is installed).
 - `entity-content:catalog/entity-content-scorecard` — Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type.
+- `home-page-widget:home/scorecard-github-homepage` — Homepage widget showing GitHub open PR metric.
+- `home-page-widget:home/scorecard-jira-homepage` — Homepage widget showing Jira open issues metric.
 
 #### Legacy app
 
@@ -176,7 +235,17 @@ The following modules and extensions are available from `@red-hat-developer-hub/
    );
    ```
 
-3. Optionally use `ScorecardHomepageCard` and `scorecardTranslations` from the main and alpha packages as needed.
+3. (Optional) Add Scorecard homepage cards to your home page:
+
+   ```tsx
+   import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+
+   // GitHub open PRs
+   <ScorecardHomepageCard metricId="github.open_prs" />
+
+   // Jira open issues
+   <ScorecardHomepageCard metricId="jira.open_issues" />
+   ```
 
 4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml` (see discovery snippet under [NFS](#nfs-new-frontend-system--app)).
 

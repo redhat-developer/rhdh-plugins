@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.8.4
+
+### Patch Changes
+
+- afd7a1e: Update translations for Quickstart.
+
 ## 1.8.3
 
 ### Patch Changes

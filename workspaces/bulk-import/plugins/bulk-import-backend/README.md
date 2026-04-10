@@ -301,13 +301,15 @@ The Bulk Import Backend plugin emits audit events for various operations. Events
 
 - **`ping`**: tracks `GET` requests to the `/ping` endpoint, which allows to make sure the bulk import backend is up and running.
 
-- **`org-read`**: tracks `GET` requests to the `/organizations` endpoint, which returns the list of organizations accessible from all configured GitHub Integrations.
+- **`scm-hosts-read`**: tracks `GET` requests to the `/scm-hosts-read` endpoint, which returns the list of configured GitHub and GitLab integration host URLs.
+
+- **`org-read`**: tracks `GET` requests to the `/organizations` endpoint, which returns the list of organizations accessible from all configured SCM Integrations (GitHub and GitLab).
 
   Filter on `queryType`.
   - **`all`**: tracks fetching all organizations. (GET `/organizations`)
   - **`by-query`**: tracks fetching organization filtered by the query parameter 'search'. (GET `/organizations`)
 
-- **`repo-read`**: tracks `GET` requests to the endpoint, which returns the list of repositories accessible from all configured GitHub Integrations.
+- **`repo-read`**: tracks `GET` requests to the endpoint, which returns the list of repositories accessible from all configured SCM Integrations (GitHub and GitLab).
 
   Filter on `queryType`.
   - **`all`**: tracks fetching a list of all repositories accessible by Backstage Github Integrations. (GET `/repositories`)
@@ -343,8 +345,43 @@ Example:
 
 The bulk import backend plugin provides a REST API to bulk import catalog entities into the catalog. The API is available at the `/api/bulk-import` endpoint.
 
-As a prerequisite, you need to add at least one GitHub Integration (using either a GitHub token or a GitHub App or both) in your app-config YAML file (or a local `app-config.local.yaml` file).
-See https://backstage.io/docs/integrations/github/locations/#configuration and https://backstage.io/docs/integrations/github/github-apps/#including-in-integrations-config for more details.
+As a prerequisite, you need to add at least one SCM integration in your app-config YAML file (or a local `app-config.local.yaml` file):
+
+- **GitHub**: Configure a GitHub integration using a GitHub token or a GitHub App (or both). See the [GitHub Locations](https://backstage.io/docs/integrations/github/locations/#configuration) and [GitHub Apps](https://backstage.io/docs/integrations/github/github-apps/#including-in-integrations-config) documentation for details.
+- **GitLab** _(optional)_: Configure a GitLab integration if you want to import from GitLab repositories. See the [GitLab Locations](https://backstage.io/docs/integrations/gitlab/locations/) documentation for details.
+
+### On Behalf of User Access
+
+The plugin supports fetching repository and organization listings **on behalf of the signed-in user**, using their OAuth credentials rather than the server-wide integration credentials (GitHub App, PAT, or GitLab token).
+
+#### How It Works
+
+1. The frontend calls `GET /api/bulk-import/scm-hosts` to retrieve the list of configured SCM integration host URLs, grouped by provider (`github` and `gitlab`).
+2. For each host, the frontend requests an OAuth token from the Backstage `ScmAuthApi` (provided by `@backstage/integration-react`).
+3. The collected tokens are sent to the backend via the **required** `x-scm-tokens` request header — a JSON-encoded string whose value, when parsed, maps each integration base URL to the user's OAuth token (e.g. `{"https://github.com":"ghp_xxx"}`).
+4. The backend uses these user tokens to call the GitHub or GitLab APIs on behalf of the user, so the repository listings reflect what the signed-in user can personally access.
+
+#### Required OAuth Configuration
+
+The `x-scm-tokens` header is **required** for `GET /repositories` and `GET /organizations/{organizationName}/repositories`. Requests that omit the header, supply an empty token map, or send a header that exceeds the allowed size are rejected with **HTTP 401**.
+
+A GitHub and/or GitLab OAuth provider must therefore be configured in the Backstage application for these endpoints to work. Refer to the [Backstage GitHub auth docs](https://backstage.io/docs/auth/github/provider) and [GitLab auth docs](https://backstage.io/docs/auth/gitlab/provider) for setup instructions.
+
+> **Migration note:** Deployments that previously relied solely on server-side credentials (GitHub App, PAT, or GitLab token) for the repository list view must now also configure an SCM OAuth provider. The server-side credentials are still used for all other operations (import creation, status checks, etc.) and are unaffected by this change.
+
+#### Security Note
+
+When user tokens are provided for GitHub, the Octokit response cache is intentionally disabled to prevent cross-user ETag cache leakage. Server-side credential paths are not affected.
+
+The `x-scm-tokens` header is stripped from the request immediately upon receipt — before the permission check and before any audit event is created — so OAuth token values are never persisted in audit logs.
+
+#### New API Endpoint
+
+| Method | Path                         | Description                                                                                 |
+| ------ | ---------------------------- | ------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/bulk-import/scm-hosts` | Returns configured GitHub and GitLab integration host base URLs as an `SCMHostList` object. |
+
+The existing `GET /repositories` and `GET /organizations/{organizationName}/repositories` endpoints now **require** the `x-scm-tokens` header. See the [API documentation](api-docs/README.md) for the full request/response specification.
 
 ## REST API
 

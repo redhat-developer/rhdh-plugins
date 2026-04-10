@@ -39,11 +39,19 @@ import {
 
 type NavItem = { to: string; text: string; icon: IconComponent; title: string };
 
-/** Main nav order: Catalog, My Groups, APIs, Docs, Create, RBAC */
+/** Main nav order: Home, Catalog, My Groups, APIs, Docs, Create, RBAC */
 const MAIN_NAV_ORDER: Array<{
   match: (path: string) => boolean;
   order: number;
 }> = [
+  {
+    match: p => {
+      const [pathWithoutQuery] = p.split('?');
+      const [pathWithoutHash] = pathWithoutQuery.split('#');
+      return pathWithoutHash === '/' || pathWithoutHash === '/home';
+    },
+    order: 0,
+  },
   { match: p => p.includes('/catalog'), order: 1 },
   { match: p => p.includes('scorecard') || p.includes('my-groups'), order: 2 },
   { match: p => p.includes('/api-docs'), order: 3 },

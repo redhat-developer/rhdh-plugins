@@ -33,12 +33,15 @@ const quickstartTranslationDe = createTranslationMessages({
     'steps.configureRbac.title': 'RBAC konfigurieren',
     'steps.configureRbac.description':
       'Weisen Sie Rollen und Berechtigungen zu, um zu steuern, wer Ressourcen anzeigen, erstellen oder bearbeiten darf, und sorgen Sie so für eine sichere und effiziente Zusammenarbeit.',
+    'steps.configureRbac.ctaTitle': 'Zugriff verwalten',
     'steps.configureGit.title': 'Git konfigurieren',
     'steps.configureGit.description':
       'Verbinden Sie Ihre Git-Provider wie z. B. GitHub, um Code zu verwalten, Workflows zu automatisieren und Plattformfunktionen zu integrieren.',
+    'steps.configureGit.ctaTitle': 'Mehr erfahren',
     'steps.managePlugins.title': 'Plugins verwalten',
     'steps.managePlugins.description':
       'Durchsuchen und installieren Sie Erweiterungen, um Funktionen hinzuzufügen, Verbindungen zu externen Tools herzustellen und Ihr Benutzererlebnis individuell anzupassen.',
+    'steps.managePlugins.ctaTitle': 'Plugins entdecken',
     'steps.importApplication.title': 'Anwendung importieren',
     'steps.importApplication.description':
       'Importieren Sie bestehenden Code und Dienste in den Katalog, um sie zu organisieren und über Ihr Entwicklerportal darauf zuzugreifen.',
@@ -46,17 +49,22 @@ const quickstartTranslationDe = createTranslationMessages({
     'steps.learnAboutCatalog.title': 'Informationen zum Katalog',
     'steps.learnAboutCatalog.description':
       'Entdecken Sie alle Softwarekomponenten, Dienste und APIs, und sehen Sie sich deren Eigentümer und Dokumentation an.',
+    'steps.learnAboutCatalog.ctaTitle': 'Katalog anzeigen',
     'steps.exploreSelfServiceTemplates.title':
       'Self-Service-Templates erkunden',
     'steps.exploreSelfServiceTemplates.description':
       'Nutzen Sie unsere Self-Service-Templates, um schnell neue Projekte, Dienste oder Dokumentationen einzurichten.',
+    'steps.exploreSelfServiceTemplates.ctaTitle': 'Templates erkunden',
     'steps.findAllLearningPaths.title': 'Alle Lernpfade suchen',
     'steps.findAllLearningPaths.description':
       'Integrieren Sie maßgeschneiderte E-Learning-Angebote mit Lernpfaden in Ihre Workflows, um das Onboarding zu beschleunigen, Kompetenzlücken zu schließen und bewährte Verfahren zu fördern.',
+    'steps.findAllLearningPaths.ctaTitle': 'Lernpfade anzeigen',
     'button.quickstart': 'Schnellstart',
     'button.openQuickstartGuide': 'Schnellstartanleitung öffnen',
     'button.closeDrawer': 'Drawer schließen',
     'button.gotIt': 'Verstanden!',
+    'snackbar.helpPrompt':
+      'Brauchen Sie Hilfe? Öffnen Sie die Schnellstartanleitung, indem Sie auf das (?) Symbol in der Kopfzeile klicken!',
     'footer.progress': '{{progress}} % Fortschritt',
     'footer.notStarted': 'Nicht gestartet',
     'footer.hide': 'Ausblenden',
@@ -71,6 +79,7 @@ const quickstartTranslationDe = createTranslationMessages({
       'Dies ist eine Testseite für das Schnellstart-Plugin. Verwenden Sie die Schaltflächen unten, um mit dem Schnellstart-Drawer zu interagieren.',
     'dev.drawerControls': 'Drawer-Steuerelemente',
     'dev.currentState': 'Aktueller Drawer-Status: {{state}}',
+    'dev.stateOpen': 'Offen',
     'dev.stateClosed': 'Geschlossen',
     'dev.instructions': 'Anweisungen',
     'dev.step1':

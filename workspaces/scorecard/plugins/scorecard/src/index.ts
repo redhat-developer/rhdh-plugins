@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+/**
+ * Scorecard plugin for Backstage – entity scorecards, metrics, and entities page.
+ * @packageDocumentation
+ */
+
 import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
 ClassNameGenerator.configure(componentName => {
@@ -25,3 +30,7 @@ ClassNameGenerator.configure(componentName => {
 export * from './plugin';
 
 export { scorecardTranslations, scorecardTranslationRef } from './translations';
+
+export { default as ScorecardSuccessStatusIcon } from '@mui/icons-material/CheckCircleOutline';
+export { default as ScorecardWarningStatusIcon } from '@mui/icons-material/WarningAmber';
+export { default as ScorecardErrorStatusIcon } from '@mui/icons-material/DangerousOutlined';

@@ -30,8 +30,7 @@ import {
   type DropEvent as ReactDropzoneDropEvent,
 } from 'react-dropzone';
 
-import { makeStyles } from '@material-ui/core';
-import Divider from '@mui/material/Divider';
+import { Button, makeStyles } from '@material-ui/core';
 import {
   Chatbot,
   ChatbotAlert,
@@ -46,17 +45,25 @@ import {
   FileDropZone,
   MessageBar,
   MessageProps,
+  Settings,
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import {
+  Alert,
+  AlertActionCloseButton,
+  AlertGroup,
+  AlertVariant,
   DropdownItem,
   MenuToggle,
   MenuToggleElement,
   Select,
   SelectList,
   SelectOption,
+  Tab,
+  Tabs,
   Title,
   Tooltip,
+  type AlertProps,
 } from '@patternfly/react-core';
 import {
   PlusIcon,
@@ -74,8 +81,11 @@ import {
   useIsMobile,
   useLastOpenedConversation,
   useLightspeedDeletePermission,
+  useLightspeedNotebooksPermission,
+  useNotebookSessions,
   usePinnedChatsSettings,
   useSortSettings,
+  useStopConversation,
 } from '../hooks';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
@@ -94,6 +104,11 @@ import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
+import { McpServersSettings } from './McpServersSettings';
+import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
+import { NotebooksTab } from './notebooks/NotebooksTab';
+import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
+import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 
 const useStyles = makeStyles(theme => ({
@@ -105,7 +120,9 @@ const useStyles = makeStyles(theme => ({
     },
   },
   header: {
-    padding: `${theme.spacing(3)}px !important`,
+    padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
+      3,
+    )}px !important`,
   },
   errorContainer: {
     padding: theme.spacing(3),
@@ -119,6 +136,160 @@ const useStyles = makeStyles(theme => ({
   },
   headerTitle: {
     justifyContent: 'left !important',
+  },
+  tabs: {
+    padding: `${theme.spacing(2)}px ${theme.spacing(3)}px 0`,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+    '& .pf-v6-c-tabs__item, & .pf-v5-c-tabs__item': {
+      backgroundColor: 'transparent',
+    },
+    '& .pf-v6-c-tabs__item:not(:last-child), & .pf-v5-c-tabs__item:not(:last-child)':
+      {
+        marginRight: theme.spacing(5),
+      },
+    '& .pf-v6-c-tabs__link, & .pf-v5-c-tabs__link': {
+      backgroundColor: 'transparent',
+      paddingBottom: theme.spacing(2),
+      fontWeight: 700,
+      cursor: 'pointer',
+    },
+    '& .pf-v6-c-tabs__item.pf-m-current .pf-v6-c-tabs__link, & .pf-v5-c-tabs__item.pf-m-current .pf-v5-c-tabs__link':
+      {
+        color: 'var(--pf-t--global--text--color--brand--default)',
+      },
+  },
+  tabsDivider: {
+    borderTop: '1px solid var(--pf-t--global--border--color--default)',
+  },
+  notebooksContainer: {
+    padding: theme.spacing(3),
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0,
+    overflowY: 'auto',
+  },
+  notebooksHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing(4),
+  },
+  notebooksHeading: {
+    marginBottom: 0,
+  },
+  notebooksHeadingEmpty: {
+    '&&': {
+      marginBottom: theme.spacing(1),
+      paddingBottom: theme.spacing(1),
+    },
+  },
+  notebooksEmptyState: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+  notebooksIcon: {
+    fontSize: 48,
+    color: 'var(--pf-t--global--icon--color--subtle)',
+    marginBottom: theme.spacing(1.5),
+  },
+  notebooksDescription: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(3),
+    maxWidth: 420,
+  },
+  notebooksAction: {
+    textTransform: 'none',
+    borderRadius: 999,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+  },
+  notebooksActionEmpty: {
+    textTransform: 'none',
+    borderRadius: 999,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    marginTop: theme.spacing(3),
+  },
+  notebooksGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+    gap: theme.spacing(2),
+    width: '100%',
+    maxWidth: '100%',
+    paddingBottom: theme.spacing(3),
+    [theme.breakpoints.down('md')]: {
+      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    },
+    [theme.breakpoints.down('sm')]: {
+      gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
+    },
+  },
+  notebookCard: {
+    borderRadius: theme.spacing(1.5),
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  notebookCardHeader: {
+    padding: theme.spacing(2),
+    paddingBottom: 0,
+    alignItems: 'center',
+  },
+  notebookCardDivider: {
+    borderTop: '1px solid var(--pf-t--global--border--color--default)',
+    marginTop: theme.spacing(1),
+  },
+  notebookCardBody: {
+    padding: theme.spacing(2),
+    paddingTop: theme.spacing(1.5),
+  },
+  notebookDocuments: {
+    paddingTop: theme.spacing(1),
+    paddingLeft: theme.spacing(2),
+  },
+  notebookUpdated: {
+    paddingBottom: theme.spacing(5),
+    paddingLeft: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+  },
+  notebookTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    minWidth: 0,
+    flex: 1,
+  },
+  notebookCardHeaderActions: {
+    marginLeft: theme.spacing(1),
+  },
+  notebookTitleText: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  notebookMenuButton: {
+    color: theme.palette.text.secondary,
+  },
+  notebookDropdownList: {
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingInlineStart: 0,
+  },
+  notebookDropdownMenu: {
+    '--pf-v6-c-menu--PaddingBlockStart': '0',
+    '--pf-v6-c-menu--PaddingBlockEnd': '0',
+  },
+  notebookDropdownItem: {
+    justifyContent: 'flex-start',
+    textAlign: 'left',
+    paddingLeft: theme.spacing(1.5),
+    paddingRight: theme.spacing(1.5),
   },
   footer: {
     '&>.pf-chatbot__footer-container': {
@@ -146,9 +317,87 @@ const useStyles = makeStyles(theme => ({
     overflowY: 'auto',
     WebkitOverflowScrolling: 'touch',
   },
+  toastAlertGroup: {
+    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
+  },
+  toastAlert: {
+    maxWidth: '350px',
+    '& .pf-v6-c-alert__title': {
+      margin: 0,
+    },
+  },
   // When present, pushes welcome content to bottom (zoom out). Scroll up to see important box (zoom in).
   chatbotContentSpacer: {
     flex: 1,
+    minHeight: 0,
+  },
+  settingsFlat: {
+    height: '100%',
+    width: '100%',
+    backgroundColor:
+      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+    '&.pf-chatbot__settings-form-container': {
+      background:
+        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      padding: 0,
+      margin: 0,
+      minHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      maxWidth: 'none',
+    },
+    '& .pf-chatbot__settings-form': {
+      margin: 0,
+      padding: 0,
+      background:
+        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      minHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      maxWidth: 'none',
+    },
+    '& .pf-chatbot__settings-form-row': {
+      background:
+        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      border: 0,
+      margin: 0,
+      padding: 0,
+      minHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      maxWidth: 'none',
+    },
+    '& .pf-chatbot__settings-label': {
+      display: 'none',
+    },
+  },
+  mcpFullscreenLayout: {
+    display: 'flex',
+    minHeight: 0,
+    height: '100%',
+    flex: 1,
+    width: '100%',
+  },
+  mcpChatPane: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+    flex: 1,
+    minWidth: 0,
+  },
+  mcpSettingsPane: {
+    flex: 1,
+    minWidth: 0,
+    borderLeft: `1px solid ${theme.palette.divider}`,
+    backgroundColor:
+      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+    display: 'flex',
+    flexDirection: 'column',
     minHeight: 0,
   },
 }));
@@ -180,7 +429,24 @@ export const LightspeedChat = ({
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<number>(0);
+  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
+    useLightspeedNotebooksPermission();
+  const notebooksPermissionResolved =
+    !notebooksPermissionLoading && hasNotebooksAccess;
+  const { data: notebooks = [], refetch: refetchNotebooks } =
+    useNotebookSessions(activeTab === 1 && notebooksPermissionResolved);
+  const hasNotebooks = notebooks.length > 0;
+  const [openNotebookMenuId, setOpenNotebookMenuId] = useState<string | null>(
+    null,
+  );
+  const [renameNotebookId, setRenameNotebookId] = useState<string | null>(null);
+  const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null);
+  const [notebookAlerts, setNotebookAlerts] = useState<Partial<AlertProps>[]>(
+    [],
+  );
   const [conversationId, setConversationId] = useState<string>('');
+  const [requestId, setRequestId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
@@ -188,8 +454,11 @@ export const LightspeedChat = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
+  const [isMcpSettingsOpen, setIsMcpSettingsOpen] = useState<boolean>(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
+  const [messageBarKey, setMessageBarKey] = useState(0);
+  const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
   const {
@@ -201,9 +470,35 @@ export const LightspeedChat = ({
     setDraftMessage,
   } = useLightspeedDrawerContext();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  const showChatPanel = !isFullscreenMode || activeTab === 0;
+  const showNotebooksPanel = isFullscreenMode && activeTab !== 0;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
 
+  const handleNotebookTabSelect = (
+    _event: React.MouseEvent<any>,
+    tabIndex: number | string,
+  ) => {
+    const nextTab = Number(tabIndex);
+    setActiveTab(nextTab);
+    if (nextTab === 1 && notebooksPermissionResolved) {
+      refetchNotebooks();
+    }
+  };
+
+  const handleNotebookDeleted = () => {
+    const key = Date.now();
+    setNotebookAlerts(prevAlerts => [
+      { title: t('notebooks.delete.toast'), variant: 'success', key },
+      ...prevAlerts,
+    ]);
+  };
+
+  const handleRemoveNotebookAlert = (key: React.Key) => {
+    setNotebookAlerts(prevAlerts =>
+      prevAlerts.filter(alert => alert.key !== key),
+    );
+  };
   // Open the chat history drawer when entering fullscreen mode on desktop
   useEffect(() => {
     if (!isMobile && isFullscreenMode) {
@@ -313,9 +608,16 @@ export const LightspeedChat = ({
     setCurrentConversationId(conv_id);
   };
 
+  const onRequestIdReady = (request_id: string) => {
+    setRequestId(request_id);
+  };
+
   const onComplete = (message: string) => {
     setIsSendButtonDisabled(false);
-    setAnnouncement(`Message from Bot: ${message}`);
+    if (!wasStoppedByUserRef.current) {
+      setAnnouncement(`Message from Bot: ${message}`);
+    }
+    wasStoppedByUserRef.current = false;
     queryClient.invalidateQueries({
       queryKey: ['conversations'],
     });
@@ -334,12 +636,16 @@ export const LightspeedChat = ({
       avatar,
       onComplete,
       onStart,
+      onRequestIdReady,
     );
 
   const [messages, setMessages] =
     useState<MessageProps[]>(conversationMessages);
 
   const sendMessage = (message: string | number) => {
+    if (!message.toString().trim()) return;
+
+    wasStoppedByUserRef.current = false;
     if (conversationId !== TEMP_CONVERSATION_ID) {
       setNewChatCreated(false);
     }
@@ -356,6 +662,7 @@ export const LightspeedChat = ({
 
   const onNewChat = useCallback(() => {
     (async () => {
+      setIsMcpSettingsOpen(false);
       if (conversationId !== TEMP_CONVERSATION_ID) {
         setMessages([]);
         setFileContents([]);
@@ -478,7 +785,7 @@ export const LightspeedChat = ({
       const filteredConversations = Object.entries(categorizedMessages).reduce(
         (acc, [key, items]) => {
           const filteredItems = items.filter(item =>
-            item.text
+            (item.text ?? '')
               .toLocaleLowerCase('en-US')
               .includes(targetValue.toLocaleLowerCase('en-US')),
           );
@@ -547,6 +854,7 @@ export const LightspeedChat = ({
 
   const onSelectActiveItem = useCallback(
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
+      setIsMcpSettingsOpen(false);
       setNewChatCreated(false);
       const newConvId = String(selectedItem);
       setConversationId((c_id: string) => {
@@ -568,6 +876,7 @@ export const LightspeedChat = ({
       setDraftMessage,
       scrollToBottomRef,
       setCurrentConversationId,
+      setIsMcpSettingsOpen,
     ],
   );
 
@@ -723,6 +1032,10 @@ export const LightspeedChat = ({
     ],
   );
 
+  const getDocumentsCount = (documentIds?: string[]) => {
+    return Array.isArray(documentIds) ? documentIds.length : 0;
+  };
+
   const handleAttach = (data: File[], event: ReactDropzoneDropEvent) => {
     if (
       'preventDefault' in event &&
@@ -731,6 +1044,26 @@ export const LightspeedChat = ({
       event.preventDefault();
     }
     handleFileUpload(data);
+  };
+
+  const { mutate: stopConversation } = useStopConversation();
+
+  const handleStopButton = () => {
+    wasStoppedByUserRef.current = true;
+    if (requestId) {
+      stopConversation(requestId);
+      setRequestId('');
+    }
+    setIsSendButtonDisabled(false);
+    setAnnouncement(t('conversation.announcement.responseStopped'));
+    const lastUserMessage = [...conversationMessages]
+      .reverse()
+      .find((m: { role?: string }) => m.role === 'user');
+    const restoredPrompt = (lastUserMessage?.content as string) ?? '';
+    setDraftMessage(restoredPrompt.trim());
+    if (restoredPrompt) setMessageBarKey(k => k + 1);
+    setFileContents([]);
+    setUploadError({ message: null });
   };
 
   const handleDraftMessage = (
@@ -752,8 +1085,136 @@ export const LightspeedChat = ({
     });
   };
 
+  const chatMainContent = (
+    <>
+      <ChatbotContent className={classes.chatbotContent}>
+        <div ref={contentScrollRef} className={classes.chatbotContentScroll}>
+          {welcomePrompts.length > 0 && (
+            <div className={classes.chatbotContentSpacer} aria-hidden />
+          )}
+          <LightspeedChatBox
+            userName={userName}
+            messages={messages}
+            profileLoading={profileLoading}
+            announcement={announcement}
+            ref={scrollToBottomRef}
+            welcomePrompts={welcomePrompts}
+            conversationId={conversationId}
+            isStreaming={isSendButtonDisabled}
+            topicRestrictionEnabled={topicRestrictionEnabled}
+            displayMode={displayMode}
+          />
+          {welcomePrompts.length > 0 && (
+            <div
+              ref={bottomSentinelRef}
+              aria-hidden
+              style={{ height: 0, flexShrink: 0 }}
+            />
+          )}
+        </div>
+      </ChatbotContent>
+      <ChatbotFooter className={classes.footer}>
+        <FilePreview />
+        <MessageBar
+          key={messageBarKey}
+          onSendMessage={sendMessage}
+          isSendButtonDisabled={isSendButtonDisabled}
+          hasAttachButton
+          handleAttach={handleAttach}
+          hasMicrophoneButton
+          value={draftMessage}
+          onChange={handleDraftMessage}
+          hasStopButton={isSendButtonDisabled}
+          handleStopButton={isSendButtonDisabled ? handleStopButton : undefined}
+          buttonProps={{
+            attach: {
+              inputTestId: 'attachment-input',
+              tooltipContent: t('tooltip.attach'),
+            },
+            microphone: {
+              tooltipContent: {
+                active: t('tooltip.microphone.active'),
+                inactive: t('tooltip.microphone.inactive'),
+              },
+            },
+            send: {
+              tooltipContent: t('tooltip.send'),
+            },
+          }}
+          allowedFileTypes={supportedFileTypes}
+          onAttachRejected={onAttachRejected}
+          placeholder={t('chatbox.message.placeholder')}
+        />
+        <ChatbotFootnote {...getFootnoteProps(t)} />
+      </ChatbotFooter>
+    </>
+  );
+
+  const mcpSettingsPanel = (
+    <McpServersSettings onClose={() => setIsMcpSettingsOpen(false)} />
+  );
+
+  const mainPanelContent = (() => {
+    if (!isMcpSettingsOpen) {
+      return <>{chatMainContent}</>;
+    }
+
+    if (isFullscreenMode) {
+      return (
+        <div className={classes.mcpFullscreenLayout}>
+          <div className={classes.mcpChatPane}>{chatMainContent}</div>
+          <div className={classes.mcpSettingsPane}>{mcpSettingsPanel}</div>
+        </div>
+      );
+    }
+
+    return (
+      <Settings
+        className={classes.settingsFlat}
+        fields={[
+          {
+            id: 'mcp-servers-settings',
+            label: '',
+            field: mcpSettingsPanel,
+          },
+        ]}
+      />
+    );
+  })();
+
+  let drawerPanelStyle: { [key: string]: string | number } | undefined;
+  if (!isFullscreenMode) {
+    drawerPanelStyle = { zIndex: 1300 };
+  } else if (isMcpSettingsOpen) {
+    drawerPanelStyle = { width: 320, minWidth: 320, maxWidth: 320 };
+  }
+
   return (
     <>
+      {notebookAlerts.length > 0 && (
+        <AlertGroup
+          hasAnimations
+          isToast
+          isLiveRegion
+          className={classes.toastAlertGroup}
+        >
+          {notebookAlerts.map(({ key, title, variant }) => (
+            <Alert
+              key={key}
+              variant={AlertVariant[variant ?? 'success']}
+              title={title}
+              className={classes.toastAlert}
+              actionClose={
+                <AlertActionCloseButton
+                  title={title as string}
+                  variantLabel={`${variant ?? 'success'} alert`}
+                  onClose={() => handleRemoveNotebookAlert(key as React.Key)}
+                />
+              }
+            />
+          ))}
+        </AlertGroup>
+      )}
       {isDeleteModalOpen && (
         <DeleteModal
           isOpen={isDeleteModalOpen}
@@ -767,6 +1228,27 @@ export const LightspeedChat = ({
           isOpen={isRenameModalOpen}
           onClose={() => setIsRenameModalOpen(false)}
           conversationId={targetConversationId}
+        />
+      )}
+      {renameNotebookId && (
+        <RenameNotebookModal
+          isOpen={Boolean(renameNotebookId)}
+          onClose={() => setRenameNotebookId(null)}
+          sessionId={renameNotebookId}
+          currentName={
+            notebooks.find(n => n.session_id === renameNotebookId)?.name ?? ''
+          }
+        />
+      )}
+      {deleteNotebookId && (
+        <DeleteNotebookModal
+          isOpen={Boolean(deleteNotebookId)}
+          onClose={() => setDeleteNotebookId(null)}
+          onDeleted={handleNotebookDeleted}
+          sessionId={deleteNotebookId}
+          name={
+            notebooks.find(n => n.session_id === deleteNotebookId)?.name ?? ''
+          }
         />
       )}
       <Chatbot
@@ -796,6 +1278,7 @@ export const LightspeedChat = ({
           <LightspeedChatBoxHeader
             selectedModel={selectedModel}
             handleSelectedModel={item => {
+              setIsMcpSettingsOpen(false);
               onNewChat();
               handleSelectedModel(item);
             }}
@@ -805,138 +1288,127 @@ export const LightspeedChat = ({
             setDisplayMode={setDisplayMode}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
+            onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
-        <Divider />
-        <ChatbotConversationHistoryNav
-          drawerPanelContentProps={{
-            isResizable: isFullscreenMode,
-            hasNoBorder: !isFullscreenMode,
-            style: isFullscreenMode ? undefined : { zIndex: 1300 },
-          }}
-          reverseButtonOrder
-          displayMode={displayMode}
-          onDrawerToggle={onChatHistoryDrawerToggle}
-          title=""
-          navTitleIcon={null}
-          isDrawerOpen={isChatHistoryDrawerOpen}
-          drawerCloseButtonProps={{
-            'aria-label': t('aria.closeDrawerPanel'),
-          }}
-          setIsDrawerOpen={setIsChatHistoryDrawerOpen}
-          activeItemId={conversationId}
-          onSelectActiveItem={onSelectActiveItem}
-          conversations={filterConversations(filterValue)}
-          onNewChat={newChatCreated ? undefined : onNewChat}
-          newChatButtonText={t('button.newChat')}
-          newChatButtonProps={{
-            icon: <PlusIcon />,
-          }}
-          handleTextInputChange={handleFilter}
-          searchInputPlaceholder={t('chatbox.search.placeholder')}
-          searchInputAriaLabel={t('aria.search.placeholder')}
-          searchInputProps={{
-            value: filterValue,
-            onClear: () => {
-              setFilterValue('');
-            },
-          }}
-          searchActionEnd={sortDropdown}
-          noResultsState={
-            filterValue &&
-            Object.keys(filterConversations(filterValue)).length === 0
-              ? {
-                  bodyText: t('chatbox.emptyState.noResults.body'),
-                  titleText: t('chatbox.emptyState.noResults.title'),
-                  icon: SearchIcon,
-                }
-              : undefined
-          }
-          drawerContent={
-            <FileDropZone
-              onFileDrop={(e, data) => handleAttach(data, e)}
-              displayMode={ChatbotDisplayMode.embedded}
-              infoText={t('chatbox.fileUpload.infoText')}
-              allowedFileTypes={supportedFileTypes}
-              onAttachRejected={onAttachRejected}
+        {isFullscreenMode && (
+          <>
+            <Tabs
+              activeKey={activeTab}
+              onSelect={handleNotebookTabSelect}
+              aria-label={t('tabs.ariaLabel')}
+              className={classes.tabs}
             >
-              {showAlert && uploadError.message && (
-                <div className={classes.errorContainer}>
-                  <ChatbotAlert
-                    component="h4"
-                    title={t('chatbox.fileUpload.failed')}
-                    variant={uploadError.type ?? 'danger'}
-                    isInline
-                    onClose={() => setUploadError({ message: null })}
-                  >
-                    {uploadError.message}
-                  </ChatbotAlert>
-                </div>
-              )}
-
-              <ChatbotContent className={classes.chatbotContent}>
-                <div
-                  ref={contentScrollRef}
-                  className={classes.chatbotContentScroll}
+              <Tab eventKey={0} title={t('tabs.chat')} />
+              <Tab eventKey={1} title={t('tabs.notebooks')} />
+            </Tabs>
+            <div className={classes.tabsDivider} />
+          </>
+        )}
+        {showChatPanel && (
+          <ChatbotConversationHistoryNav
+            drawerPanelContentProps={{
+              isResizable: isFullscreenMode,
+              hasNoBorder: !isFullscreenMode,
+              style: drawerPanelStyle,
+            }}
+            reverseButtonOrder
+            displayMode={ChatbotDisplayMode.embedded}
+            onDrawerToggle={onChatHistoryDrawerToggle}
+            title=""
+            navTitleIcon={null}
+            isDrawerOpen={isChatHistoryDrawerOpen}
+            drawerCloseButtonProps={{
+              'aria-label': t('aria.closeDrawerPanel'),
+            }}
+            setIsDrawerOpen={setIsChatHistoryDrawerOpen}
+            activeItemId={conversationId}
+            onSelectActiveItem={onSelectActiveItem}
+            conversations={filterConversations(filterValue)}
+            onNewChat={newChatCreated ? undefined : onNewChat}
+            newChatButtonText={t('button.newChat')}
+            newChatButtonProps={{
+              icon: <PlusIcon />,
+            }}
+            handleTextInputChange={handleFilter}
+            searchInputPlaceholder={t('chatbox.search.placeholder')}
+            searchInputAriaLabel={t('aria.search.placeholder')}
+            searchInputProps={{
+              value: filterValue,
+              onClear: () => {
+                setFilterValue('');
+              },
+            }}
+            searchActionEnd={sortDropdown}
+            noResultsState={
+              filterValue &&
+              Object.keys(filterConversations(filterValue)).length === 0
+                ? {
+                    bodyText: t('chatbox.emptyState.noResults.body'),
+                    titleText: t('chatbox.emptyState.noResults.title'),
+                    icon: SearchIcon,
+                  }
+                : undefined
+            }
+            drawerContent={
+              <FileDropZone
+                onFileDrop={(e, data) => handleAttach(data, e)}
+                displayMode={ChatbotDisplayMode.embedded}
+                infoText={t('chatbox.fileUpload.infoText')}
+                allowedFileTypes={supportedFileTypes}
+                onAttachRejected={onAttachRejected}
+              >
+                {showAlert && uploadError.message && (
+                  <div className={classes.errorContainer}>
+                    <ChatbotAlert
+                      component="h4"
+                      title={t('chatbox.fileUpload.failed')}
+                      variant={uploadError.type ?? 'danger'}
+                      isInline
+                      onClose={() => setUploadError({ message: null })}
+                    >
+                      {uploadError.message}
+                    </ChatbotAlert>
+                  </div>
+                )}
+                {mainPanelContent}
+              </FileDropZone>
+            }
+          />
+        )}
+        {showNotebooksPanel &&
+          !notebooksPermissionLoading &&
+          hasNotebooksAccess && (
+            <NotebooksTab
+              notebooks={notebooks}
+              hasNotebooks={hasNotebooks}
+              classes={classes}
+              openNotebookMenuId={openNotebookMenuId}
+              setOpenNotebookMenuId={setOpenNotebookMenuId}
+              onRename={setRenameNotebookId}
+              onDelete={setDeleteNotebookId}
+              t={t}
+              getDocumentsCount={getDocumentsCount}
+            />
+          )}
+        {showNotebooksPanel &&
+          !notebooksPermissionLoading &&
+          !hasNotebooksAccess && (
+            <PermissionRequiredState
+              subject={t('permission.subject.notebooks')}
+              permissions={['lightspeed.notebooks.use']}
+              action={
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  style={{ borderRadius: '20px' }}
+                  onClick={() => setActiveTab(0)}
                 >
-                  {welcomePrompts.length > 0 && (
-                    <div className={classes.chatbotContentSpacer} aria-hidden />
-                  )}
-                  <LightspeedChatBox
-                    userName={userName}
-                    messages={messages}
-                    profileLoading={profileLoading}
-                    announcement={announcement}
-                    ref={scrollToBottomRef}
-                    welcomePrompts={welcomePrompts}
-                    conversationId={conversationId}
-                    isStreaming={isSendButtonDisabled}
-                    topicRestrictionEnabled={topicRestrictionEnabled}
-                    displayMode={displayMode}
-                  />
-                  {welcomePrompts.length > 0 && (
-                    <div
-                      ref={bottomSentinelRef}
-                      aria-hidden
-                      style={{ height: 0, flexShrink: 0 }}
-                    />
-                  )}
-                </div>
-              </ChatbotContent>
-              <ChatbotFooter className={classes.footer}>
-                <FilePreview />
-                <MessageBar
-                  onSendMessage={sendMessage}
-                  isSendButtonDisabled={isSendButtonDisabled}
-                  hasAttachButton
-                  handleAttach={handleAttach}
-                  hasMicrophoneButton
-                  value={draftMessage}
-                  onChange={handleDraftMessage}
-                  buttonProps={{
-                    attach: {
-                      inputTestId: 'attachment-input',
-                      tooltipContent: t('tooltip.attach'),
-                    },
-                    microphone: {
-                      tooltipContent: {
-                        active: t('tooltip.microphone.active'),
-                        inactive: t('tooltip.microphone.inactive'),
-                      },
-                    },
-                    send: {
-                      tooltipContent: t('tooltip.send'),
-                    },
-                  }}
-                  allowedFileTypes={supportedFileTypes}
-                  onAttachRejected={onAttachRejected}
-                  placeholder={t('chatbox.message.placeholder')}
-                />
-                <ChatbotFootnote {...getFootnoteProps(t)} />
-              </ChatbotFooter>
-            </FileDropZone>
-          }
-        />
+                  {t('permission.notebooks.goBack')}
+                </Button>
+              }
+            />
+          )}
       </Chatbot>
       <Attachment />
     </>

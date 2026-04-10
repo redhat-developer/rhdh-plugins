@@ -20,12 +20,19 @@ import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import get from 'lodash/get';
 import set from 'lodash/set';
 
+const isPlainObject = (value: unknown): value is JsonObject => {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+};
+
 /**
- * Extracts static default values from fetch:response:default properties in the schema.
+ * Extracts static default values from the schema in priority order:
+ * 1) ui:props.fetch:response:default
+ * 2) JSON Schema default
+ *
  * These values are applied to formData before widgets render, ensuring defaults
  * are available immediately without waiting for fetch operations.
  *
- * @param schema - The JSON Schema containing ui:props with fetch:response:default
+ * @param schema - The JSON Schema containing ui:props and/or default values
  * @param existingFormData - Existing form data to preserve (won't be overwritten)
  * @returns An object containing the extracted default values merged with existing data
  */
@@ -60,14 +67,26 @@ export function extractStaticDefaults(
 
     // Extract fetch:response:default from ui:props
     const uiProps = (curSchema as Record<string, unknown>)['ui:props'];
+    let staticDefault: unknown;
     if (uiProps && typeof uiProps === 'object') {
-      const staticDefault = (uiProps as Record<string, unknown>)[
+      staticDefault = (uiProps as Record<string, unknown>)[
         'fetch:response:default'
       ];
-      if (staticDefault !== undefined) {
-        // Only set if not already in existing form data
-        const existingValue = get(existingFormData, path);
-        if (existingValue === undefined || existingValue === null) {
+    }
+
+    if (staticDefault === undefined && 'default' in curSchema) {
+      staticDefault = (curSchema as JSONSchema7).default;
+    }
+
+    if (staticDefault !== undefined) {
+      // Only set if not already in existing form data
+      const existingValue = get(existingFormData, path);
+      if (existingValue === undefined || existingValue === null) {
+        if (path === '') {
+          if (isPlainObject(staticDefault)) {
+            Object.assign(defaults, staticDefault);
+          }
+        } else {
           set(defaults, path, staticDefault);
         }
       }

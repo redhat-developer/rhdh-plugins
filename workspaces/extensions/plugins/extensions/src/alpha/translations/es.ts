@@ -29,6 +29,7 @@ const extensionsTranslationEs = createTranslationMessages({
     'header.catalog': 'Catálogo',
     'header.installedPackages': 'Paquetes instalados',
     'header.installedPackagesWithCount': 'Paquetes instalados ({{count}})',
+    'header.pluginsPage': 'Complementos',
     'header.packagesPage': 'Paquetes',
     'header.collectionsPage': 'Colecciones',
     'button.install': 'Instalar',
@@ -41,6 +42,7 @@ const extensionsTranslationEs = createTranslationMessages({
     'button.viewAll': 'Ver todos los complementos',
     'button.viewDocumentation': 'Ver documentación',
     'button.viewInstalledPlugins': 'Ver complementos instalados ({{count}})',
+    'button.restart': 'Se requiere reiniciar',
     'status.notInstalled': 'No instalado',
     'status.installed': 'Instalado',
     'status.disabled': 'Deshabilitado',
@@ -62,10 +64,22 @@ const extensionsTranslationEs = createTranslationMessages({
       'La instalación del complemento está deshabilitada.',
     'alert.missingDynamicArtifact':
       'No se puede gestionar este paquete. Para habilitar acciones, se debe agregar una entidad de Catálogo con el **spec.dynamicArtifact** requerido.',
+    'alert.missingDynamicArtifactTitle': 'El paquete no se puede modificar',
     'alert.missingDynamicArtifactForPlugin':
       'No se puede gestionar este complemento. Para habilitar acciones, se debe agregar una entidad de Catálogo con el **spec.dynamicArtifact** requerido a todos los paquetes asociados.',
+    'alert.missingDynamicArtifactTitlePlugin':
+      'El complemento no se puede modificar',
     'alert.extensionsExample':
       'Para habilitarlo, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
+    'alert.singlePluginRestart':
+      'El complemento **{{pluginName}}** requiere reiniciar el sistema back-end para terminar de instalar, actualizar, habilitar o deshabilitar.',
+    'alert.multiplePluginRestart':
+      'Tiene **{{count}}** complementos que requieren reiniciar el sistema back-end para terminar de instalar, actualizar, habilitar o deshabilitar.',
+    'alert.singlePackageRestart':
+      'El paquete **{{packageName}}** requiere reiniciar el sistema back-end para terminar de instalar, actualizar, habilitar o deshabilitar.',
+    'alert.multiplePackageRestart':
+      'Tiene **{{count}}** paquetes que requieren reiniciar el sistema back-end para terminar de instalar, actualizar, habilitar o deshabilitar.',
+    'alert.restartRequired': '{{count}} complementos instalados',
     'alert.backendRestartRequired': 'Se requiere reiniciar el back-end',
     'alert.viewPlugins': 'Ver complementos',
     'alert.viewPackages': 'Ver paquetes',
@@ -85,10 +99,27 @@ const extensionsTranslationEs = createTranslationMessages({
     'common.links': 'Enlaces',
     'common.by': ' por ',
     'common.comma': ', ',
+    'common.noDescriptionAvailable': 'no hay descripción disponible',
     'common.readMore': 'Leer más',
     'common.close': 'Cerrar',
     'common.apply': 'Aplicar',
     'common.couldNotApplyYaml': 'No se pudo aplicar YAML: {{error}}',
+    'dialog.backendRestartRequired': 'Se requiere reiniciar el back-end',
+    'dialog.packageRestartMessage':
+      'Para terminar las modificaciones del paquete, reinicie el sistema back-end.',
+    'dialog.pluginRestartMessage':
+      'Para terminar las modificaciones del complemento, reinicie el sistema back-end.',
+    'plugin.description': 'Descripción',
+    'plugin.documentation': 'Documentación',
+    'plugin.repository': 'Repositorio',
+    'plugin.license': 'Licencia',
+    'plugin.version': 'Versión',
+    'plugin.author': 'Autor',
+    'plugin.authors': 'Autores',
+    'plugin.tags': 'Etiquetas',
+    'plugin.dependencies': 'Dependencias',
+    'plugin.configuration': 'Configuración',
+    'plugin.installation': 'Instalación',
     'package.name': 'Nombre del paquete:',
     'package.version': 'Versión:',
     'package.dynamicPluginPath': 'Ruta del complemento dinámico:',
@@ -100,6 +131,7 @@ const extensionsTranslationEs = createTranslationMessages({
     'package.highlights': 'Aspectos destacados',
     'package.about': 'Acerca de',
     'package.notFound': 'No se encontró el paquete {{namespace}}/{{name}}',
+    'package.notAvailable': 'El paquete {{name}} no está disponible',
     'package.ensureCatalogEntity':
       'Asegúrese de que exista una entidad de catálogo para este paquete.',
     'table.packageName': 'Nombre del paquete',
@@ -114,7 +146,10 @@ const extensionsTranslationEs = createTranslationMessages({
     'table.plugins': 'Complementos',
     'table.packages': 'Paquetes',
     'table.pluginsCount': 'Complementos ({{count}})',
+    'table.packagesCount': 'Paquetes ({{count}})',
+    'table.pluginsTable': 'Tabla de complementos',
     'installedPackages.table.title': 'Paquetes instalados ({{count}})',
+    'installedPackages.table.searchPlaceholder': 'Buscar',
     'installedPackages.table.columns.name': 'Nombre',
     'installedPackages.table.columns.packageName': 'nombre del paquete npm',
     'installedPackages.table.columns.role': 'Rol',
@@ -124,6 +159,8 @@ const extensionsTranslationEs = createTranslationMessages({
       'No se puede gestionar el paquete en el entorno de producción.',
     'installedPackages.table.tooltips.installationDisabled':
       'No se puede gestionar el paquete porque la instalación del complemento está deshabilitada. Para habilitarlo, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
+    'installedPackages.table.tooltips.enableActions':
+      'Para habilitar acciones, agregue una entidad de catálogo para este paquete',
     'installedPackages.table.tooltips.noDownloadPermissions':
       'No tiene permiso para descargar la configuración. Comuníquese con su administrador para solicitar acceso o asistencia.',
     'installedPackages.table.tooltips.noEditPermissions':
@@ -155,8 +192,11 @@ const extensionsTranslationEs = createTranslationMessages({
     'actions.packageCurrentlyEnabled': 'Paquete actualmente habilitado',
     'actions.packageCurrentlyDisabled': 'Paquete actualmente deshabilitado',
     'actions.installTitle': 'Instalar {{displayName}}',
+    'actions.editTitle': 'Modificar configuraciones de {{displayName}}',
     'metadata.by': ' por ',
     'metadata.comma': ', ',
+    'metadata.pluginNotFound': 'No se encontró el complemento {{name}}',
+    'metadata.pluginNotAvailable': 'El complemento {{name}} no está disponible',
     'metadata.ensureCatalogEntityPlugin':
       'Asegúrese de que exista una entidad de catálogo para este complemento.',
     'metadata.highlights': 'Aspectos destacados',
@@ -169,6 +209,16 @@ const extensionsTranslationEs = createTranslationMessages({
     'metadata.versions': 'Versiones',
     'metadata.backstageCompatibility': 'Versión de compatibilidad de Backstage',
     'supportTypes.certifiedBy': 'Certificado por {{value}} ({{count}})',
+    'supportTypes.verifiedBy': 'Verificado por {{value}} ({{count}})',
+    'supportTypes.customPlugins': 'Complementos personalizados ({{count}})',
+    'collection.kubernetes': 'Kubernetes',
+    'collection.monitoring': 'Monitoreo',
+    'collection.security': 'Seguridad',
+    'collection.viewMore': 'Ver más',
+    'collection.pluginCount': '{{count}} complementos',
+    'collection.featured.title': 'Complementos destacados',
+    'collection.featured.description':
+      'Una colección seleccionada de complementos destacados recomendados para la mayoría de los usuarios',
     'install.title': 'Instalar complemento',
     'install.configurationRequired': 'Se requiere configuración',
     'install.optional': 'Opcional',
@@ -225,6 +275,38 @@ const extensionsTranslationEs = createTranslationMessages({
       'La instalación del complemento está deshabilitada en el entorno de producción.',
     'tooltips.extensionsDisabled':
       'La instalación del complemento está deshabilitada. Para habilitarlo, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
+    'tooltips.noPermissions':
+      'No tiene permiso para instalar complementos ni ver sus configuraciones. Comuníquese con su administrador para solicitar acceso o asistencia.',
+    'tooltips.missingDynamicArtifact':
+      'No se puede gestionar este {{type}}. Para habilitar acciones, se debe agregar una entidad de Catálogo con el spec.dynamicArtifact requerido.',
+    'aria.openPlugin': 'Abrir complemento {{name}}',
+    'aria.closeDialog': 'Cerrar cuadro de diálogo',
+    'aria.expandSection': 'Expandir sección',
+    'aria.collapseSection': 'Contraer sección',
+    'aria.sortBy': 'Ordenar por {{field}}',
+    'aria.filterBy': 'Filtrar por {{field}}',
+    'badges.certified': 'Certificado',
+    'badges.certifiedBy': 'Certificado por {{provider}}',
+    'badges.verified': 'Verificado',
+    'badges.verifiedBy': 'Verificado por {{provider}}',
+    'badges.customPlugin': 'Complemento personalizado',
+    'badges.stableAndSecured': 'Estable y protegido por {{provider}}',
+    'badges.generallyAvailable': 'Disponibilidad general (GA)',
+    'badges.gaAndSupportedBy':
+      'Disponibilidad general (GA) y con soporte de {{provider}}',
+    'badges.gaAndSupported': 'Disponibilidad general (GA) y con soporte',
+    'badges.productionReadyBy':
+      'Listo para producción y con soporte de {{provider}}',
+    'badges.productionReady': 'Listo para producción y con soporte',
+    'badges.communityPlugin': 'Complemento de la comunidad',
+    'badges.openSourceNoSupport':
+      'Complementos de código abierto, sin soporte oficial',
+    'badges.techPreview': 'Vista previa tecnológica (TP)',
+    'badges.pluginInDevelopment': 'Complemento todavía en desarrollo',
+    'badges.devPreview': 'Vista previa de desarrollo (DP)',
+    'badges.earlyStageExperimental':
+      'Complemento experimental en una etapa temprana',
+    'badges.addedByAdmin': 'Complementos agregados por el administrador',
   },
 });
 

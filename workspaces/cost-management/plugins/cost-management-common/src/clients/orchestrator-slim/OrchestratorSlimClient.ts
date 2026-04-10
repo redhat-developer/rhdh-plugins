@@ -29,17 +29,16 @@ import type { JsonObject } from '@backstage/types';
 export class OrchestratorSlimClient implements OrchestratorSlimApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
-  private readonly identityApi: IdentityApi;
   private baseUrl?: string;
 
+  /** @deprecated identityApi is retained for backward compatibility but no longer used. */
   constructor(options: {
     discoveryApi: DiscoveryApi;
     fetchApi: FetchApi;
-    identityApi: IdentityApi;
+    identityApi?: IdentityApi;
   }) {
     this.discoveryApi = options.discoveryApi;
     this.fetchApi = options.fetchApi;
-    this.identityApi = options.identityApi;
   }
 
   async isWorkflowAvailable(workflowId: string): Promise<boolean> {
@@ -122,29 +121,38 @@ export class OrchestratorSlimClient implements OrchestratorSlimApi {
     }
   }
 
-  /** @public */
+  /**
+   * Executes a workflow through the cost-management backend which validates
+   * inputs and checks ros.apply permission before forwarding to orchestrator.
+   * @public
+   */
   async executeWorkflow<D = JsonObject>(
     workflowId: string,
     workflowInputData: D,
   ): Promise<{ id: string }> {
-    if (!this.baseUrl) {
-      this.baseUrl = await this.discoveryApi.getBaseUrl('orchestrator');
-    }
-
-    const { token } = await this.identityApi.getCredentials();
-    const url = `${this.baseUrl}/v2/workflows/${encodeURIComponent(
-      workflowId,
-    )}/execute`;
+    const costManagementBase = await this.discoveryApi.getBaseUrl(
+      'cost-management',
+    );
+    const url = `${costManagementBase}/apply-recommendation`;
     const response = await this.fetchApi.fetch(url, {
       method: 'POST',
-      body: JSON.stringify(workflowInputData),
+      body: JSON.stringify({
+        workflowId,
+        ...(workflowInputData as object),
+      }),
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
     });
-    const payload = (await response.json()) as { id: string };
 
-    return payload;
+    if (!response.ok) {
+      const errorPayload = await response.json().catch(() => ({}));
+      const message =
+        (errorPayload as { error?: string }).error ??
+        `Workflow execution failed (${response.status})`;
+      throw new Error(message);
+    }
+
+    return (await response.json()) as { id: string };
   }
 }

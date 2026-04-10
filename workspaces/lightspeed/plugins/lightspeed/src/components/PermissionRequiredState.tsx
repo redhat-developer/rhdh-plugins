@@ -14,30 +14,53 @@
  * limitations under the License.
  */
 
+import { Fragment } from 'react';
+
 import { EmptyState } from '@backstage/core-components';
 
-import { Button, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { PermissionRequiredIcon } from './PermissionRequiredIcon';
 import { Trans } from './Trans';
 
-const useStyles = makeStyles(() =>
+const useStyles = makeStyles(theme =>
   createStyles({
     permissionError: {
       display: 'flex',
       height: '100%',
       alignItems: 'center',
       padding: '100px',
+      backgroundColor: theme.palette.background.default,
     },
   }),
 );
 
-const PermissionRequiredState = () => {
+interface PermissionRequiredStateProps {
+  subject: string;
+  permissions: string[];
+  action: JSX.Element;
+}
+
+const PermissionRequiredState = ({
+  subject,
+  permissions,
+  action,
+}: PermissionRequiredStateProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
+
+  const permissionsList = (
+    <>
+      {permissions.map((perm, i) => (
+        <Fragment key={perm}>
+          <b>{perm}</b>
+          {i < permissions.length - 1 && ' and '}
+        </Fragment>
+      ))}
+    </>
+  );
 
   return (
     <div className={classes.permissionError}>
@@ -48,23 +71,14 @@ const PermissionRequiredState = () => {
             <Trans
               message="permission.required.description"
               components={{
-                '<b>lightspeed.chat.read</b>': <b>lightspeed.chat.read</b>,
-                '<b>lightspeed.chat.create</b>': <b>lightspeed.chat.create</b>,
+                '<subject/>': <>{subject}</>,
+                '<permissions/>': permissionsList,
               }}
             />
           </Typography>
         }
         missing={{ customImage: <PermissionRequiredIcon /> }}
-        action={
-          <Button
-            variant="outlined"
-            color="primary"
-            target="_blank"
-            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed/README.md#permission-framework-support"
-          >
-            {t('common.readMore')} &nbsp; <OpenInNewIcon />
-          </Button>
-        }
+        action={action}
       />
     </div>
   );

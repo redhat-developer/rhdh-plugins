@@ -514,8 +514,8 @@ describe('lightspeed router tests', () => {
 
       const parsedHeaders = JSON.parse(capturedMcpHeaders!);
       expect(parsedHeaders).toEqual({
-        'mcp-server-1': { Authorization: 'Bearer token-1' },
-        'mcp-server-2': { Authorization: 'Bearer token-2' },
+        'mcp-server-1': { Authorization: 'token-1' },
+        'mcp-server-2': { Authorization: 'token-2' },
       });
     });
 
@@ -617,7 +617,7 @@ describe('lightspeed router tests', () => {
 
       const parsedHeaders = JSON.parse(capturedMcpHeaders!);
       expect(parsedHeaders).toEqual({
-        'single-mcp-server': { Authorization: 'Bearer single-token' },
+        'single-mcp-server': { Authorization: 'single-token' },
       });
     });
 
@@ -703,6 +703,32 @@ describe('lightspeed router tests', () => {
           query: 'Hello',
         });
       expect(response.statusCode).toEqual(500);
+    });
+  });
+
+  describe('POST /v1/query/interrupt', () => {
+    it('returns success when interrupt succeeds', async () => {
+      const backendServer = await startBackendServer();
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query/interrupt')
+        .send({ request_id: 'req-123' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({ success: true });
+    });
+
+    it('returns 403 when user lacks permission', async () => {
+      const backendServer = await startBackendServer(
+        undefined,
+        AuthorizeResult.DENY,
+      );
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query/interrupt')
+        .send({ request_id: 'req-123' });
+
+      expect(response.statusCode).toEqual(403);
     });
   });
 });

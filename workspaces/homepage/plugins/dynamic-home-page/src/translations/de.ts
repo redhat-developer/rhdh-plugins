@@ -72,7 +72,7 @@ const homepageTranslationDe = createTranslationMessages({
     'entities.emptyDescription':
       'Sobald Software-Kataloge hinzugefügt werden, wird dieser Bereich relevante Inhalte anzeigen, die auf Ihre Erfahrung zugeschnitten sind.',
     'entities.register': 'Komponente registrieren',
-    'entities.viewAll': 'Alle {{count}} Katalog-Entitäten anzeigen',
+    'entities.browseTheCatalog': 'Katalog durchsuchen',
   },
 });
 

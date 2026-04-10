@@ -12290,6 +12290,8 @@ __metadata:
     "@backstage/core-components": "npm:^0.16.3"
     "@backstage/core-plugin-api": "npm:^1.10.3"
     "@backstage/dev-utils": "npm:^1.1.6"
+    "@backstage/plugin-permission-common": "npm:^0.8.4"
+    "@backstage/plugin-permission-react": "npm:^0.4.30"
     "@backstage/plugin-search-react": "npm:^1.8.5"
     "@backstage/test-utils": "npm:^1.7.4"
     "@backstage/theme": "npm:^0.6.3"

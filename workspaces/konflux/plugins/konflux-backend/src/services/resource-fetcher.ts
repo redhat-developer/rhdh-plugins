@@ -26,7 +26,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { KubearchiveService } from './kubearchive-service';
 import uniqBy from 'lodash/uniqBy';
-import { createKubeConfig } from '../helpers/client-factory';
+import { getOrCreateClient } from '../helpers/client-factory';
 import { KonfluxLogger } from '../helpers/logger';
 import { getAuthToken } from '../helpers/auth';
 import { getKubeClient } from '../helpers/kube-client';
@@ -125,15 +125,14 @@ export class ResourceFetcherService {
       },
     );
 
-    const kc = await createKubeConfig(
+    const customApi = await getOrCreateClient(
       konfluxConfig,
       cluster,
       this.konfluxLogger,
-      token,
     );
-    if (!kc) {
+    if (!customApi) {
       this.konfluxLogger.error(
-        'Failed to create KubeConfig - cluster not found',
+        'Failed to create API client - cluster not found',
         undefined,
         {
           cluster,
@@ -147,7 +146,7 @@ export class ResourceFetcherService {
     try {
       const { apiGroup, apiVersion, plural } = resourceModel;
 
-      const { CustomObjectsApi, Observable } = await getKubeClient();
+      const { Observable } = await getKubeClient();
 
       const requestHeaders = {
         ...(requiresImpersonation && {
@@ -177,8 +176,6 @@ export class ResourceFetcherService {
             middleware: [headerMiddleware],
           }
         : undefined;
-
-      const customApi = kc.makeApiClient(CustomObjectsApi);
 
       const response = await customApi.listNamespacedCustomObjectWithHttpInfo(
         {
@@ -220,7 +217,13 @@ export class ResourceFetcherService {
           }
         | undefined;
 
-      const items = responseBody?.items || [];
+      const items = (responseBody?.items || []).map(item => {
+        if (item.metadata?.managedFields) {
+          const { managedFields, ...rest } = item.metadata;
+          return { ...item, metadata: rest };
+        }
+        return item;
+      });
       const continueToken = responseBody?.metadata?.continue;
 
       this.konfluxLogger.info('Fetched resources from Kubernetes', {
