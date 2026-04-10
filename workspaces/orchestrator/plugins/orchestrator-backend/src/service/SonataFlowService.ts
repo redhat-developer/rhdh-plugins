@@ -41,6 +41,7 @@ import { DataIndexService } from './DataIndexService';
 
 export class SonataFlowService {
   private readonly orchestratorKafkaImpl?: Kafka;
+  private readonly orchestratorKafkaMessageKey?: string;
   constructor(
     private readonly dataIndexService: DataIndexService,
     private readonly logger: LoggerService,
@@ -48,6 +49,8 @@ export class SonataFlowService {
   ) {
     // If there are kafkaServiceOptions, then do the implemntation
     if (this.kafkaServiceOptions) {
+      this.orchestratorKafkaMessageKey =
+        this.kafkaServiceOptions.messageKey ?? '';
       this.logger.debug(
         `creating orchestrator kafka implementation with options: clientId: ${this.kafkaServiceOptions.clientId} and brokers: ${JSON.stringify(this.kafkaServiceOptions.brokers)}`,
       );
@@ -153,7 +156,7 @@ export class SonataFlowService {
     const lockEventBinding = KafkaCE.binary(triggeringCloudEvent);
     // Create the message event that will be sent to the kafka topic
     const messageEvent = {
-      key: '',
+      key: this.orchestratorKafkaMessageKey,
       value: JSON.stringify(KafkaCE.toEvent(lockEventBinding)),
     };
 

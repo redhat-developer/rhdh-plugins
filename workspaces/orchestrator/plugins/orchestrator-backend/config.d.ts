@@ -38,6 +38,10 @@ export interface Config {
        */
       brokers: string[];
       /**
+       * https://kafka.js.org/docs/producing#message-key
+       */
+      messageKey?: string;
+      /**
        * Optional SSL connection parameters to connect to the cluster. Passed directly to Node tls.connect.
        * See https://nodejs.org/dist/latest-v8.x/docs/api/tls.html#tls_tls_createsecurecontext_options
        */

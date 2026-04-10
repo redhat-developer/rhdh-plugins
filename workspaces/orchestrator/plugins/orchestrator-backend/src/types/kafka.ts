@@ -20,6 +20,7 @@ export type OrchestratorKafkaServiceOptions = {
   clientId: string;
   brokers: string[];
   logLevel?: number;
+  messageKey?: string;
   ssl?: SslConfig;
   sasl?: SaslConfig;
 };

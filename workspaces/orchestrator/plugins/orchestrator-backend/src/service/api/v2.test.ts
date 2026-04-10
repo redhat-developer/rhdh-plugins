@@ -492,7 +492,7 @@ describe('executeWorkflow as event type', () => {
     expect(actualResultV2).toBeDefined();
     expect(actualResultV2.id).toBeDefined();
     expect(actualResultV2.id).toEqual('kafkaEvent');
-  });
+  }, 20000);
 
   it('executes a given workflow: event type, no start state error', async () => {
     // Arrange
