@@ -110,16 +110,11 @@ export async function verifyDisplayModeMenuOptions(
     }),
   ).toBeVisible();
 
-  const pinnedToggleMenuItem = settingsMenu
-    .getByRole('menuitem', {
-      name: t['settings.pinned.disable'],
-    })
-    .or(
-      settingsMenu.getByRole('menuitem', {
-        name: t['settings.pinned.enable'],
-      }),
-    );
-  await expect(pinnedToggleMenuItem.first()).toBeVisible();
+  await expect(
+    settingsMenu.getByRole('menuitem', {
+      name: `${t['settings.pinned.disable']} ${t['settings.pinned.enabled.description']}`,
+    }),
+  ).toBeVisible();
   await expect(
     settingsMenu.getByRole('menuitem', { name: t['settings.mcp.label'] }),
   ).toBeVisible();
