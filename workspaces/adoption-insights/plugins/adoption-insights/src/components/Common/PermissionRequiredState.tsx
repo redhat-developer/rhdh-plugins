@@ -47,7 +47,7 @@ const PermissionRequiredState = () => {
             variant="outlined"
             color="primary"
             target="_blank"
-            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/adoption-insights/plugins/adoption-insights/README.md#permission-framework-support"
+            href="https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/adoption_insights_in_red_hat_developer_hub/assembly-adoption-insights#proc-customize-adoption-insights_title-adoption-insights"
           >
             {t('common.readMore')} &nbsp; <OpenInNewIcon />
           </Button>
