@@ -168,6 +168,16 @@ export async function listSandboxAgents(
   return deps.fetchJson(`/kagenti/sandbox/${e(namespace)}/agents`);
 }
 
+export async function getSandboxAgentCard(
+  deps: KagentiApiDeps,
+  namespace: string,
+  agent: string,
+): Promise<Record<string, unknown>> {
+  return deps.fetchJson(
+    `/kagenti/sandbox/${e(namespace)}/agent-card/${e(agent)}`,
+  );
+}
+
 export async function getSandboxAgentPodStatus(
   deps: KagentiApiDeps,
   namespace: string,

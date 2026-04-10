@@ -158,4 +158,43 @@ describe('KeycloakTokenManager', () => {
     expect(secondToken).toBe('token-2');
     expect(tokenCallCount).toBe(2);
   });
+
+  it('getTokenForStreaming forces refresh when remaining lifetime is insufficient', async () => {
+    const mgr = new KeycloakTokenManager({
+      tokenEndpoint: `http://localhost:${serverPort}/token`,
+      clientId: 'test-client',
+      clientSecret: 'test-secret',
+      logger: createMockLogger(),
+      tokenExpiryBufferSeconds: 60,
+    });
+
+    const t1 = await mgr.getToken();
+    expect(t1).toBe('token-1');
+    expect(tokenCallCount).toBe(1);
+
+    // Request a token with a minimum lifetime longer than the remaining validity.
+    // The token expires in 300s with 60s buffer = 240s effective.
+    // Requesting 999999ms > remaining → forces refresh.
+    const t2 = await mgr.getTokenForStreaming(999_999_000);
+    expect(t2).toBe('token-2');
+    expect(tokenCallCount).toBe(2);
+  });
+
+  it('getTokenForStreaming returns cached token when lifetime is sufficient', async () => {
+    const mgr = new KeycloakTokenManager({
+      tokenEndpoint: `http://localhost:${serverPort}/token`,
+      clientId: 'test-client',
+      clientSecret: 'test-secret',
+      logger: createMockLogger(),
+      tokenExpiryBufferSeconds: 60,
+    });
+
+    const t1 = await mgr.getToken();
+    expect(t1).toBe('token-1');
+
+    // Request token with a very short minimum lifetime — should use cached
+    const t2 = await mgr.getTokenForStreaming(1000);
+    expect(t2).toBe('token-1');
+    expect(tokenCallCount).toBe(1);
+  });
 });

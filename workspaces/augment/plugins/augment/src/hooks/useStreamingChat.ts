@@ -64,6 +64,8 @@ export interface UseStreamingChatOptions {
 export interface UseStreamingChatReturn {
   /** Current streaming state */
   streamingState: StreamingState | null;
+  /** Snapshot of the last completed streaming state (survives React 18 batching) */
+  lastCompletedState: StreamingState | null;
   /** Whether the AI is currently generating */
   isTyping: boolean;
   /** Send a message to the API */
@@ -117,6 +119,7 @@ export function useStreamingChat({
     onFlush: onScrollToBottom,
   });
   const [isTyping, setIsTyping] = useState(false);
+  const lastCompletedStateRef = useRef<StreamingState | null>(null);
   const messageIdCounter = useRef(0);
   const nextMessageId = useCallback(() => {
     const id = messageIdCounter.current;
@@ -157,13 +160,16 @@ export function useStreamingChat({
 
     const partial = pendingStateRef.current as StreamingState | null;
     if (hadActiveStream && partial && partial.text.trim()) {
-      setStreamingState({
+      const stoppedState = {
         ...partial,
         phase: 'completed' as const,
         completed: true,
         text: `${partial.text}\n\n*(stopped)*`,
-      });
+      };
+      lastCompletedStateRef.current = stoppedState;
+      setStreamingState(stoppedState);
     } else {
+      if (partial) lastCompletedStateRef.current = partial;
       setStreamingState(null);
     }
     pendingStateRef.current = null;
@@ -177,6 +183,7 @@ export function useStreamingChat({
     setStreamingState(null);
     setIsTyping(false);
     pendingStateRef.current = null;
+    lastCompletedStateRef.current = null;
   }, [setStreamingState, pendingStateRef]);
 
   const sendMessage = useCallback(
@@ -370,6 +377,7 @@ export function useStreamingChat({
           currentStreamingState.phase === 'auth_required';
 
         if (!isInteractivePhase) {
+          lastCompletedStateRef.current = currentStreamingState;
           setStreamingState(null);
           pendingStateRef.current = null;
         }
@@ -395,6 +403,7 @@ export function useStreamingChat({
           if (partial && partial.text.trim()) {
             flushStreamingState();
             setIsTyping(false);
+            lastCompletedStateRef.current = partial;
             setStreamingState(null);
             pendingStateRef.current = null;
 
@@ -423,6 +432,7 @@ export function useStreamingChat({
             }
           } else {
             setIsTyping(false);
+            lastCompletedStateRef.current = currentStreamingState;
             setStreamingState(null);
             pendingStateRef.current = null;
           }
@@ -433,6 +443,7 @@ export function useStreamingChat({
         if (errorMsg === undefined) return;
 
         setIsTyping(false);
+        lastCompletedStateRef.current = currentStreamingState;
         setStreamingState(null);
 
         const isNetworkError =
@@ -469,6 +480,7 @@ export function useStreamingChat({
 
   return {
     streamingState,
+    lastCompletedState: lastCompletedStateRef.current,
     isTyping,
     sendMessage,
     cancelRequest,

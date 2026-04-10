@@ -429,6 +429,64 @@ describe('KagentiProvider -- getEffectiveConfig', () => {
   });
 });
 
+describe('KagentiProvider -- LRU session map eviction', () => {
+  it('promotes accessed entries and evicts least-recently-used', async () => {
+    const p = createProvider();
+    await p.initialize();
+
+    // Hydrate three sessions
+    p.hydrateSessionContext('bs-1', 'ctx-1', 'ns/a1');
+    p.hydrateSessionContext('bs-2', 'ctx-2', 'ns/a2');
+    p.hydrateSessionContext('bs-3', 'ctx-3', 'ns/a3');
+
+    // Access bs-1 to promote it
+    expect(p.getSessionContextId('bs-1')).toBe('ctx-1');
+
+    // All three should still be accessible
+    expect(p.getSessionContextId('bs-2')).toBe('ctx-2');
+    expect(p.getSessionContextId('bs-3')).toBe('ctx-3');
+  });
+
+  it('getSessionContextId returns undefined for unknown sessions', async () => {
+    const p = createProvider();
+    await p.initialize();
+    expect(p.getSessionContextId('nonexistent')).toBeUndefined();
+  });
+});
+
+describe('KagentiProvider -- conversation capability contract', () => {
+  it('getProcessedMessages returns empty array', async () => {
+    const p = createProvider();
+    await p.initialize();
+    const messages = await p.conversations.getProcessedMessages('ctx-1');
+    expect(messages).toEqual([]);
+  });
+
+  it('list throws with descriptive error', async () => {
+    const p = createProvider();
+    await p.initialize();
+    expect(() => p.conversations.list()).toThrow(
+      'not supported by the Kagenti provider',
+    );
+  });
+
+  it('create throws with descriptive error', async () => {
+    const p = createProvider();
+    await p.initialize();
+    expect(() => p.conversations.create()).toThrow(
+      'not supported by the Kagenti provider',
+    );
+  });
+
+  it('delete throws with descriptive error', async () => {
+    const p = createProvider();
+    await p.initialize();
+    expect(() => p.conversations.delete('some-id')).toThrow(
+      'not supported by the Kagenti provider',
+    );
+  });
+});
+
 describe('KagentiProvider -- resolveAgent', () => {
   it('parses ns/name model format', async () => {
     const p = createProvider();

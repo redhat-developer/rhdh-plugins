@@ -150,11 +150,20 @@ export class KagentiApiClient {
         const status = statusMatch ? Number(statusMatch[1]) : 0;
         if (status === 401 && attempt === 0) {
           this.tokenManager.clearCache();
-          this.logger.warn(`Got 401, cleared token cache and retrying ${method} ${path}`);
+          this.logger.warn(
+            `Got 401, cleared token cache and retrying ${method} ${path}`,
+          );
           continue;
         }
-        const isNetworkError = status === 0 && /ECONNRESET|ECONNREFUSED|EPIPE|ETIMEDOUT|EAI_AGAIN/i.test(lastError.message);
-        if ((!RETRYABLE_STATUS_CODES.has(status) && !isNetworkError) || attempt === maxAttempts) {
+        const isNetworkError =
+          status === 0 &&
+          /ECONNRESET|ECONNREFUSED|EPIPE|ETIMEDOUT|EAI_AGAIN/i.test(
+            lastError.message,
+          );
+        if (
+          (!RETRYABLE_STATUS_CODES.has(status) && !isNetworkError) ||
+          attempt === maxAttempts
+        ) {
           throw lastError;
         }
         const delay = this.retryBaseDelayMs * Math.pow(2, attempt);
@@ -175,7 +184,9 @@ export class KagentiApiClient {
     onLine: (line: string) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    const token = await this.tokenManager.getToken();
+    const token = await this.tokenManager.getTokenForStreaming(
+      this.streamTimeoutMs || 300_000,
+    );
     const url = new URL(`${this.baseUrl}${path}`);
     const transport = this.isHttps ? https : http;
     const payload = JSON.stringify(body);
@@ -347,7 +358,11 @@ export class KagentiApiClient {
               );
               return;
             }
-            if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
+            if (
+              res.statusCode &&
+              res.statusCode >= 300 &&
+              res.statusCode < 400
+            ) {
               reject(
                 new Error(
                   `Kagenti API error: ${method} ${path} unexpected redirect status ${res.statusCode}`,

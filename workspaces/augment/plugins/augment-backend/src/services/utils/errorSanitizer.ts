@@ -44,6 +44,10 @@ export function sanitizeErrorMessage(raw: string): {
     return extractFromMatch(kagentiMatch);
   }
 
+  const MAX_GENERIC_LENGTH = 200;
+  if (raw.length > MAX_GENERIC_LENGTH) {
+    return { message: `${raw.substring(0, MAX_GENERIC_LENGTH)}...` };
+  }
   return { message: raw };
 }
 
@@ -54,7 +58,10 @@ function extractFromMatch(match: RegExpExecArray): {
   const status = Number.parseInt(match[1], 10);
   const body = (match[2] ?? '').trim();
   if (!body) {
-    return { message: `Request failed with status ${status}`, inferredStatus: status };
+    return {
+      message: `Request failed with status ${status}`,
+      inferredStatus: status,
+    };
   }
   try {
     const parsed = JSON.parse(body);

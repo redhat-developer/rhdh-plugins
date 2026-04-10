@@ -17,8 +17,15 @@
 import type { KagentiApiClient } from './client/KagentiApiClient';
 import { KagentiStreamNormalizer } from './stream/KagentiStreamNormalizer';
 
-const SECRETS_URI = 'https://a2a-extensions.adk.kagenti.dev/auth/secrets/v1';
-const OAUTH_URI = 'https://a2a-extensions.adk.kagenti.dev/auth/oauth/v1';
+const DEFAULT_EXTENSION_BASE = 'https://a2a-extensions.adk.kagenti.dev';
+
+function secretsUri(base?: string): string {
+  return `${base ?? DEFAULT_EXTENSION_BASE}/auth/secrets/v1`;
+}
+
+function oauthUri(base?: string): string {
+  return `${base ?? DEFAULT_EXTENSION_BASE}/auth/oauth/v1`;
+}
 
 export interface ApprovalRequest {
   responseId: string;
@@ -45,6 +52,7 @@ export interface ApprovalResult {
 
 function buildApprovalMetadata(
   approval: ApprovalRequest,
+  extensionBaseUrl?: string,
 ): Record<string, unknown> {
   if (approval.toolName === 'secrets_response' && approval.toolArguments) {
     let secretValues: Record<string, string>;
@@ -60,11 +68,15 @@ function buildApprovalMetadata(
     for (const [key, value] of Object.entries(secretValues)) {
       fulfillments[key] = { secret: value };
     }
-    return { [SECRETS_URI]: { secret_fulfillments: fulfillments } };
+    return {
+      [secretsUri(extensionBaseUrl)]: { secret_fulfillments: fulfillments },
+    };
   }
 
   if (approval.toolName === 'oauth_confirm') {
-    return { [OAUTH_URI]: { data: { redirect_uri: 'confirmed' } } };
+    return {
+      [oauthUri(extensionBaseUrl)]: { data: { redirect_uri: 'confirmed' } },
+    };
   }
 
   let parsedArgs: unknown;
@@ -91,13 +103,14 @@ export async function submitApproval(
   namespace: string,
   name: string,
   approval: ApprovalRequest,
+  extensionBaseUrl?: string,
 ): Promise<ApprovalResult> {
   const contextId = approval.responseId;
   const approvalMessage = approval.approved
     ? `Approved: ${approval.toolName ?? 'tool call'}`
     : `Rejected: ${approval.toolName ?? 'tool call'}`;
 
-  const metadata = buildApprovalMetadata(approval);
+  const metadata = buildApprovalMetadata(approval, extensionBaseUrl);
   const normalizer = new KagentiStreamNormalizer();
 
   let content = '';

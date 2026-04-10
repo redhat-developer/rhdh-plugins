@@ -279,5 +279,15 @@ export function buildBotResponse(
           ]
         : undefined,
     outputValidationError: streamingState.outputValidationError,
+    artifacts: streamingState.artifacts?.length
+      ? streamingState.artifacts
+      : undefined,
+    citations: streamingState.citations?.length
+      ? streamingState.citations.map(c => ({
+          title: c.title,
+          url: c.url,
+          snippet: c.snippet,
+        }))
+      : undefined,
   };
 }

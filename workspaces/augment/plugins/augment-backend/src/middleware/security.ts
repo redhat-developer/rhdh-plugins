@@ -60,15 +60,8 @@ export function createSecurityMiddleware(deps: SecurityDeps) {
     if (securityConfig.mode === 'none') {
       return GUEST_USER_REF;
     }
-    try {
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      return credentials.principal.userEntityRef;
-    } catch (err) {
-      logger.warn(
-        `Could not extract user identity, falling back to guest: ${err}`,
-      );
-      return GUEST_USER_REF;
-    }
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    return credentials.principal.userEntityRef;
   }
 
   const requirePluginAccess: express.RequestHandler = async (
@@ -124,7 +117,6 @@ export function createSecurityMiddleware(deps: SecurityDeps) {
       res.status(401).json({
         error: 'Unauthorized',
         message: 'You must be logged in to access Augment',
-        details: errorMessage,
       });
     }
   };

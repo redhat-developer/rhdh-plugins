@@ -283,6 +283,9 @@ const GridCard: FC<GridCardProps> = ({
           borderRadius: 3,
           transition: 'all 0.2s ease',
           position: 'relative',
+          minHeight: 120,
+          display: 'flex',
+          flexDirection: 'column',
           opacity: ready ? 1 : 0.55,
           borderColor: isSelected ? theme.palette.primary.main : undefined,
           bgcolor: isSelected
@@ -329,8 +332,16 @@ const GridCard: FC<GridCardProps> = ({
           </Tooltip>
         </Box>
 
-        <CardActionArea onClick={() => onSelect(agent)}>
-          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        <CardActionArea
+          onClick={() => onSelect(agent)}
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
+          }}
+        >
+          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 }, flex: 1 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -1010,13 +1021,27 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
         />
         <Typography
           variant="h6"
-          sx={{ fontWeight: 700, fontSize: '1rem', mr: 1 }}
+          sx={{ fontWeight: 700, fontSize: '1rem', mr: 0.5 }}
         >
           Agent Catalog
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.disabled',
+            fontSize: '0.75rem',
+            fontWeight: 500,
+            mr: 1,
+          }}
+        >
+          {visibleAgents.length}{' '}
+          {visibleAgents.length === 1 ? 'agent' : 'agents'}
         </Typography>
 
         <TextField
           size="small"
+          // eslint-disable-next-line jsx-a11y/no-autofocus
+          autoFocus
           placeholder="Search agents..."
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -1324,7 +1349,8 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
               <Box
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, 280px)',
+                  justifyContent: 'center',
                   gap: 2,
                   pb: 2,
                 }}

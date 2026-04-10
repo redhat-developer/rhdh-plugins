@@ -112,6 +112,12 @@ export interface ProcessedMessage {
     fileId?: string;
     attributes?: Record<string, unknown>;
   }>;
+  /** Token usage reported by the inference server */
+  usage?: ResponseUsage;
+  /** Model's reasoning/thinking content */
+  reasoning?: string;
+  /** Display name of the agent that produced this response (multi-agent only) */
+  agentName?: string;
   /** ISO 8601 timestamp of when this message was created, if available */
   createdAt?: string;
 }

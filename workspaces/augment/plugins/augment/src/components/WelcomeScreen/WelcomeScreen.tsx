@@ -20,7 +20,6 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import { useTheme, alpha } from '@mui/material/styles';
-import ExploreIcon from '@mui/icons-material/Explore';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
@@ -177,7 +176,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           justifyContent: 'center',
           alignItems: 'center',
           px: 3,
-          gap: 3,
+          gap: 2.5,
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '60%',
+            height: '40%',
+            background: `radial-gradient(ellipse at center top, ${alpha(avatarColor, isDark ? 0.08 : 0.05)}, transparent 70%)`,
+            pointerEvents: 'none',
+          },
         }}
       >
         {/* Agent identity */}
@@ -187,42 +198,64 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             flexDirection: 'column',
             alignItems: 'center',
             gap: 1.5,
-            maxWidth: 560,
+            maxWidth: 600,
             textAlign: 'center',
+            zIndex: 1,
           }}
         >
-          {selectedAgent.avatarUrl ? (
-            <Box
-              component="img"
-              src={selectedAgent.avatarUrl}
-              alt={selectedAgent.name}
-              sx={{
-                width: 64,
-                height: 64,
-                borderRadius: 3,
-                objectFit: 'cover',
-              }}
-            />
-          ) : (
-            <Box
-              sx={{
-                width: 64,
-                height: 64,
-                borderRadius: 3,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: '1.5rem',
-                bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
-                color: avatarColor,
-              }}
-            >
-              {selectedAgent.name.charAt(0).toUpperCase()}
-            </Box>
-          )}
+          {/* Avatar with glow ring */}
+          <Box
+            sx={{
+              position: 'relative',
+              width: 88,
+              height: 88,
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                inset: -4,
+                borderRadius: 4,
+                border: `2px solid ${alpha(avatarColor, isDark ? 0.3 : 0.2)}`,
+                animation: 'pulseRing 2s ease-in-out infinite',
+                '@keyframes pulseRing': {
+                  '0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
+                  '50%': { opacity: 1, transform: 'scale(1.03)' },
+                },
+              },
+            }}
+          >
+            {selectedAgent.avatarUrl ? (
+              <Box
+                component="img"
+                src={selectedAgent.avatarUrl}
+                alt={selectedAgent.name}
+                sx={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 3.5,
+                  objectFit: 'cover',
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 3.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: '2rem',
+                  bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
+                  color: avatarColor,
+                }}
+              >
+                {selectedAgent.name.charAt(0).toUpperCase()}
+              </Box>
+            )}
+          </Box>
 
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
             {selectedAgent.name}
           </Typography>
 
@@ -232,29 +265,49 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               sx={{
                 color: theme.palette.text.secondary,
                 lineHeight: 1.6,
-                maxWidth: 480,
+                maxWidth: 500,
               }}
             >
               {cleanDesc}
             </Typography>
           )}
+
+          {/* Change agent — visible escape hatch above starters */}
+          {onChangeAgent && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<SwapHorizIcon sx={{ fontSize: 16 }} />}
+              onClick={onChangeAgent}
+              sx={{
+                textTransform: 'none',
+                fontSize: '0.8rem',
+                borderColor: alpha(theme.palette.divider, 0.5),
+                color: theme.palette.text.secondary,
+                borderRadius: 5,
+                px: 2,
+                '&:hover': {
+                  color: theme.palette.primary.main,
+                  borderColor: theme.palette.primary.main,
+                },
+              }}
+            >
+              Change agent
+            </Button>
+          )}
         </Box>
 
-        {/* Conversation starters as large tiles */}
+        {/* Conversation starters as uniform tiles */}
         {selectedAgent.starters.length > 0 && (
           <Box
             sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm:
-                  selectedAgent.starters.length === 1
-                    ? '1fr'
-                    : 'repeat(2, 1fr)',
-              },
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
               gap: 1.5,
-              maxWidth: 560,
+              maxWidth: 640,
               width: '100%',
+              zIndex: 1,
             }}
           >
             {selectedAgent.starters.map((starter: string, idx: number) => (
@@ -262,6 +315,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 key={idx}
                 variant="outlined"
                 sx={{
+                  width: 240,
+                  flexShrink: 0,
                   borderRadius: 3,
                   borderColor: alpha(avatarColor, isDark ? 0.2 : 0.15),
                   transition: 'all 0.2s ease',
@@ -291,28 +346,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             ))}
           </Box>
         )}
-
-        {/* Change agent */}
-        {onChangeAgent && (
-          <Button
-            size="small"
-            startIcon={<SwapHorizIcon sx={{ fontSize: 16 }} />}
-            onClick={onChangeAgent}
-            sx={{
-              textTransform: 'none',
-              fontSize: '0.8rem',
-              color: theme.palette.text.secondary,
-              '&:hover': { color: theme.palette.primary.main },
-            }}
-          >
-            Change agent
-          </Button>
-        )}
       </Box>
     );
   }
 
   // ── State 1: No agent selected ────────────────────────────────────────
+  const hasPrompts = effectivePromptGroups.length > 0;
+
   return (
     <Box sx={getContainerSx(theme)}>
       {/* Hero */}
@@ -340,27 +380,75 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             {t('welcomeScreen.logoError')}
           </Typography>
         )}
-        <Typography variant="h5" sx={titleSx}>
+        <Typography variant="h4" sx={titleSx}>
           {branding.appName}
         </Typography>
         <Typography variant="body2" sx={TAGLINE_SX}>
           {branding.tagline}
         </Typography>
+
+        {/* Agent strip — primary CTA, directly below tagline */}
+        {hasFeatured && (
+          <Box sx={{ mt: 3 }}>
+            <FeaturedAgents
+              agents={allAgents}
+              chatAgentConfigs={chatAgentConfigs}
+              onAgentSelect={onAgentSelect!}
+              onStarterClick={handleStarterClick}
+              onBrowseCatalog={onBrowseCatalog}
+            />
+          </Box>
+        )}
       </Box>
 
-      {/* Featured Agents */}
-      {hasFeatured && (
-        <FeaturedAgents
-          agents={allAgents}
-          chatAgentConfigs={chatAgentConfigs}
-          onAgentSelect={onAgentSelect!}
-          onStarterClick={handleStarterClick}
-        />
+      {/* Divider between agents and prompts */}
+      {hasFeatured && hasPrompts && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            px: { xs: 3, sm: 4, md: 6 },
+            py: 1,
+            maxWidth: 960,
+            width: '100%',
+            mx: 'auto',
+            boxSizing: 'border-box',
+          }}
+        >
+          <Box
+            sx={{
+              flex: 1,
+              height: '1px',
+              bgcolor: alpha(theme.palette.divider, 0.4),
+            }}
+          />
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.disabled',
+              fontSize: '0.7rem',
+              fontWeight: 500,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            or start with a prompt
+          </Typography>
+          <Box
+            sx={{
+              flex: 1,
+              height: '1px',
+              bgcolor: alpha(theme.palette.divider, 0.4),
+            }}
+          />
+        </Box>
       )}
 
       {/* Prompt Groups */}
       <Box sx={getPromptGroupsContainerSx(isDark, theme)}>
-        {effectivePromptGroups.length > 0 &&
+        {hasPrompts &&
           effectivePromptGroups.map(group => (
             <PromptGroupRow
               key={group.id}
@@ -369,7 +457,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               isDark={isDark}
             />
           ))}
-        {effectivePromptGroups.length === 0 && !hasFeatured && (
+        {!hasPrompts && !hasFeatured && (
           <Box
             sx={{
               flex: 1,
@@ -385,25 +473,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           </Box>
         )}
       </Box>
-
-      {/* Browse All Agents */}
-      {hasFeatured && onBrowseCatalog && (
-        <Box sx={{ textAlign: 'center', py: 1, pb: 2 }}>
-          <Button
-            size="small"
-            startIcon={<ExploreIcon sx={{ fontSize: 16 }} />}
-            onClick={onBrowseCatalog}
-            sx={{
-              textTransform: 'none',
-              fontSize: '0.8rem',
-              color: theme.palette.text.secondary,
-              '&:hover': { color: theme.palette.primary.main },
-            }}
-          >
-            Browse all agents
-          </Button>
-        </Box>
-      )}
     </Box>
   );
 };

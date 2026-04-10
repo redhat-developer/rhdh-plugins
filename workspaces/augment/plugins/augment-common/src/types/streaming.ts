@@ -153,7 +153,7 @@ export interface StreamCompletedEvent {
 /** An agent handoff occurred during multi-agent streaming. @public */
 export interface StreamAgentHandoffEvent {
   type: 'stream.agent.handoff';
-  fromAgent: string;
+  fromAgent?: string;
   toAgent: string;
   /** Optional reason provided by the model for the handoff */
   reason?: string;

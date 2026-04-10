@@ -150,3 +150,15 @@ export async function listShipwrightBuilds(
   const qs = params.toString() ? `?${params}` : '';
   return deps.fetchJson(`/kagenti/shipwright/builds${qs}`);
 }
+
+export async function listToolBuilds(
+  deps: KagentiApiDeps,
+  namespace?: string,
+  allNamespaces = false,
+): Promise<Record<string, unknown>> {
+  const params = new URLSearchParams();
+  if (namespace) params.set('namespace', namespace);
+  if (allNamespaces) params.set('all_namespaces', 'true');
+  const qs = params.toString() ? `?${params}` : '';
+  return deps.fetchJson(`/kagenti/tools/shipwright-builds${qs}`);
+}

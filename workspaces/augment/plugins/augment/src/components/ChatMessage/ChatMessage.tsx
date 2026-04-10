@@ -63,6 +63,7 @@ import {
 } from './styles';
 import { useMessageEdit } from './useMessageEdit';
 import { MessageActionButtons } from './MessageActionButtons';
+import type { MessageFeedbackData } from './MessageFeedback';
 
 const TIMESTAMP_REFRESH_MS = 30_000;
 
@@ -126,6 +127,7 @@ interface ChatMessageProps {
   message: Message;
   onRegenerate?: () => void;
   onEditMessage?: (messageId: string, newText: string) => void;
+  onFeedback?: (data: MessageFeedbackData) => void;
   isLastAssistantMessage?: boolean;
 }
 
@@ -133,6 +135,7 @@ export const ChatMessage = React.memo(function ChatMessage({
   message,
   onRegenerate,
   onEditMessage,
+  onFeedback,
   isLastAssistantMessage,
 }: ChatMessageProps) {
   const theme = useTheme();
@@ -430,10 +433,12 @@ export const ChatMessage = React.memo(function ChatMessage({
               </Box>
 
               <MessageActionButtons
+                messageId={message.id}
                 isHovered={isHovered}
                 copied={copied}
                 onCopy={handleCopy}
                 onRegenerate={onRegenerate}
+                onFeedback={onFeedback}
                 isLastAssistantMessage={isLastAssistantMessage}
                 theme={theme}
               />

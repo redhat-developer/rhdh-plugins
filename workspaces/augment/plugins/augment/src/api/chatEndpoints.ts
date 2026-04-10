@@ -67,23 +67,53 @@ async function streamSSE(
   const baseUrl = await deps.discoveryApi.getBaseUrl('augment');
 
   let lastError: Error | undefined;
+  let receivedContent = false;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     if (signal?.aborted) return;
 
     if (attempt > 0) {
+      if (receivedContent) {
+        throw lastError || new Error('Stream failed after partial content');
+      }
       onEvent({
         type: 'stream.error',
         error: `Reconnecting... (attempt ${attempt}/${MAX_RETRIES})`,
         code: 'reconnecting',
       } as StreamingEvent);
       const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
-      await new Promise(r => setTimeout(r, delay));
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(resolve, delay);
+        if (signal) {
+          const onAbort = () => {
+            clearTimeout(timer);
+            reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+          };
+          if (signal.aborted) {
+            clearTimeout(timer);
+            reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+            return;
+          }
+          signal.addEventListener('abort', onAbort, { once: true });
+        }
+      });
       if (signal?.aborted) return;
     }
 
     try {
-      await streamSSEAttempt(deps, baseUrl, body, onEvent, signal);
+      // eslint-disable-next-line no-loop-func
+      const wrappedOnEvent: StreamingEventCallback = evt => {
+        const t = (evt as { type?: string }).type;
+        if (
+          t === 'stream.text.delta' ||
+          t === 'stream.completed' ||
+          t === 'stream.tool.completed'
+        ) {
+          receivedContent = true;
+        }
+        onEvent(evt);
+      };
+      await streamSSEAttempt(deps, baseUrl, body, wrappedOnEvent, signal);
       return;
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));

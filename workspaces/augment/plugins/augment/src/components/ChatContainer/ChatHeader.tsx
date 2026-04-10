@@ -20,10 +20,12 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import { useTheme, alpha } from '@mui/material/styles';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import StreamIcon from '@mui/icons-material/Stream';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
 import { useStatus } from '../../hooks';
@@ -37,6 +39,7 @@ interface ChatHeaderProps {
   onBrowseAgents?: () => void;
   healthWarning?: string;
   agentConfig?: ChatAgentConfig;
+  onExport?: () => void;
 }
 
 function getAgentAvatarColor(name: string): string {
@@ -54,6 +57,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
   onBrowseAgents,
   healthWarning,
   agentConfig,
+  onExport,
 }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -244,22 +248,41 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
         </Box>
       </Box>
 
-      {/* Browse / Change Agent */}
-      {(onBrowseAgents || onChangeAgent) && (
-        <Button
-          size="small"
-          startIcon={<SwapHorizIcon sx={{ fontSize: 14 }} />}
-          onClick={onBrowseAgents || onChangeAgent}
-          sx={{
-            textTransform: 'none',
-            fontSize: '0.75rem',
-            color: theme.palette.text.secondary,
-            '&:hover': { color: theme.palette.primary.main },
-          }}
-        >
-          Browse agents
-        </Button>
-      )}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        {/* Export */}
+        {onExport && (
+          <Tooltip title="Export conversation" placement="bottom">
+            <IconButton
+              size="small"
+              onClick={onExport}
+              aria-label="Export conversation"
+              sx={{
+                p: 0.5,
+                color: 'text.secondary',
+                '&:hover': { color: 'primary.main' },
+              }}
+            >
+              <FileDownloadOutlinedIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
+        )}
+        {/* Browse / Change Agent */}
+        {(onBrowseAgents || onChangeAgent) && (
+          <Button
+            size="small"
+            startIcon={<SwapHorizIcon sx={{ fontSize: 14 }} />}
+            onClick={onBrowseAgents || onChangeAgent}
+            sx={{
+              textTransform: 'none',
+              fontSize: '0.75rem',
+              color: theme.palette.text.secondary,
+              '&:hover': { color: theme.palette.primary.main },
+            }}
+          >
+            Browse agents
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 });

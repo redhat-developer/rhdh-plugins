@@ -108,6 +108,7 @@ export const augmentMessages = {
     startChatting: 'Start a conversation to get going',
     noMatchingConversations: 'No conversations matching "{{query}}"',
     deleteConversation: 'Delete conversation',
+    renameConversation: 'Rename',
     delete: 'Delete',
     cancel: 'Cancel',
     searchPlaceholder: 'Search conversations...',
@@ -280,6 +281,7 @@ export const augmentMessages = {
     showHelp: 'Show this help',
     approveTool: 'Approve tool execution',
     rejectTool: 'Reject tool execution',
+    navigateMessages: 'Navigate between messages',
   },
   confirmDialog: {
     confirm: 'Confirm',

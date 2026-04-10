@@ -23,6 +23,7 @@ import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Fade from '@mui/material/Fade';
 import { useTheme, alpha } from '@mui/material/styles';
+import ExploreIcon from '@mui/icons-material/Explore';
 import type { ChatAgentConfig } from '../../types';
 import type { AgentWithCard } from './agentUtils';
 import {
@@ -36,6 +37,7 @@ interface FeaturedAgentsProps {
   chatAgentConfigs: ChatAgentConfig[];
   onAgentSelect: (agentId: string, agentName: string) => void;
   onStarterClick?: (agentId: string, prompt: string) => void;
+  onBrowseCatalog?: () => void;
 }
 
 export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
@@ -43,6 +45,7 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
   chatAgentConfigs,
   onAgentSelect,
   onStarterClick,
+  onBrowseCatalog,
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -97,20 +100,17 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
       }));
   }, [agents, chatAgentConfigs]);
 
-  if (featured.length === 0) return null;
+  const CARD_WIDTH = 280;
+
+  if (featured.length === 0 && !onBrowseCatalog) return null;
 
   return (
-    <Box sx={{ px: 2, pb: 2 }}>
+    <Box sx={{ pb: 1 }}>
       <Box
         sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm:
-              featured.length === 1
-                ? '1fr'
-                : 'repeat(auto-fit, minmax(280px, 1fr))',
-          },
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
           gap: 2,
           maxWidth: 960,
           mx: 'auto',
@@ -135,14 +135,18 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
           const ready = isAgentReady(agent.status);
 
           return (
-            <Fade in timeout={200 + idx * 80} key={agentId}>
+            <Fade in timeout={200 + idx * 100} key={agentId}>
               <Card
                 variant="outlined"
                 sx={{
+                  width: CARD_WIDTH,
+                  flexShrink: 0,
                   borderRadius: 3,
                   transition: 'all 0.2s ease',
                   opacity: ready ? 1 : 0.6,
                   overflow: 'visible',
+                  display: 'flex',
+                  flexDirection: 'column',
                   '&:hover': {
                     borderColor: avatarColor,
                     boxShadow: `0 6px 24px ${alpha(avatarColor, isDark ? 0.2 : 0.12)}`,
@@ -152,9 +156,23 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
               >
                 <CardActionArea
                   onClick={() => onAgentSelect(agentId, displayName)}
-                  sx={{ borderRadius: 3 }}
+                  sx={{
+                    borderRadius: 3,
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
+                  }}
                 >
-                  <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+                  <CardContent
+                    sx={{
+                      p: 2.5,
+                      '&:last-child': { pb: 2.5 },
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
                     <Box
                       sx={{
                         display: 'flex',
@@ -235,67 +253,156 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                       </Box>
                     </Box>
 
-                    {description && (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          fontSize: '0.8rem',
-                          mb: 1.5,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {sanitizeDescription(description)}
-                      </Typography>
-                    )}
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: '0.8rem',
+                        minHeight: 36,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        lineHeight: 1.5,
+                        flex: 1,
+                      }}
+                    >
+                      {description
+                        ? sanitizeDescription(description)
+                        : '\u00A0'}
+                    </Typography>
                   </CardContent>
                 </CardActionArea>
 
-                {starters.length > 0 && (
-                  <Box
-                    sx={{
-                      px: 2.5,
-                      pb: 2,
-                      display: 'flex',
-                      gap: 0.75,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    {starters.map((starter: string, si: number) => (
-                      <Chip
-                        key={si}
-                        label={starter}
-                        size="small"
-                        variant="outlined"
-                        onClick={(e: MouseEvent) => {
-                          e.stopPropagation();
-                          onStarterClick?.(agentId, starter);
-                        }}
-                        sx={{
-                          fontSize: '0.7rem',
-                          height: 26,
-                          borderRadius: 2,
-                          borderStyle: 'dashed',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                          '&:hover': {
-                            borderStyle: 'solid',
-                            borderColor: avatarColor,
-                            bgcolor: alpha(avatarColor, 0.06),
-                          },
-                        }}
-                      />
-                    ))}
-                  </Box>
-                )}
+                <Box
+                  sx={{
+                    px: 2.5,
+                    pb: 2,
+                    pt: 0,
+                    minHeight: 34,
+                    display: 'flex',
+                    gap: 0.75,
+                    flexWrap: 'wrap',
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  {starters.map((starter: string, si: number) => (
+                    <Chip
+                      key={si}
+                      label={starter}
+                      size="small"
+                      variant="outlined"
+                      onClick={(e: MouseEvent) => {
+                        e.stopPropagation();
+                        onStarterClick?.(agentId, starter);
+                      }}
+                      sx={{
+                        fontSize: '0.7rem',
+                        height: 26,
+                        borderRadius: 2,
+                        borderStyle: 'dashed',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        '&:hover': {
+                          borderStyle: 'solid',
+                          borderColor: avatarColor,
+                          bgcolor: alpha(avatarColor, 0.06),
+                        },
+                      }}
+                    />
+                  ))}
+                </Box>
               </Card>
             </Fade>
           );
         })}
+
+        {/* Browse All Agents CTA — integrated as the last card */}
+        {onBrowseCatalog && (
+          <Fade in timeout={200 + featured.length * 100}>
+            <Card
+              variant="outlined"
+              sx={{
+                width: CARD_WIDTH,
+                flexShrink: 0,
+                borderRadius: 3,
+                borderStyle: 'dashed',
+                borderColor: alpha(
+                  theme.palette.primary.main,
+                  isDark ? 0.3 : 0.25,
+                ),
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: featured.length > 0 ? undefined : 120,
+                '&:hover': {
+                  borderStyle: 'solid',
+                  borderColor: theme.palette.primary.main,
+                  bgcolor: alpha(
+                    theme.palette.primary.main,
+                    isDark ? 0.06 : 0.03,
+                  ),
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 6px 24px ${alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08)}`,
+                },
+              }}
+            >
+              <CardActionArea
+                onClick={onBrowseCatalog}
+                sx={{
+                  borderRadius: 3,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1.5,
+                  py: 4,
+                  px: 3,
+                  height: '100%',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: alpha(
+                      theme.palette.primary.main,
+                      isDark ? 0.15 : 0.08,
+                    ),
+                    color: theme.palette.primary.main,
+                  }}
+                >
+                  <ExploreIcon sx={{ fontSize: 24 }} />
+                </Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.primary.main,
+                    textAlign: 'center',
+                  }}
+                >
+                  Browse all agents
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.disabled',
+                    fontSize: '0.7rem',
+                    textAlign: 'center',
+                  }}
+                >
+                  Explore the full catalog
+                </Typography>
+              </CardActionArea>
+            </Card>
+          </Fade>
+        )}
       </Box>
     </Box>
   );

@@ -321,13 +321,15 @@ export class SafetyService {
       return this.runShield(this.availableShields[0].identifier, userMessage);
     }
 
-    for (const shieldId of inputShields) {
-      const violation = await this.runShield(shieldId, userMessage);
-      if (violation) {
+    const results = await Promise.all(
+      inputShields.map(shieldId => this.runShield(shieldId, userMessage)),
+    );
+    for (let i = 0; i < results.length; i++) {
+      if (results[i]) {
         this.logger.info(
-          `Input blocked by shield ${shieldId}: ${violation.user_message}`,
+          `Input blocked by shield ${inputShields[i]}: ${results[i]!.user_message}`,
         );
-        return violation;
+        return results[i];
       }
     }
 
@@ -348,13 +350,15 @@ export class SafetyService {
       return undefined;
     }
 
-    for (const shieldId of outputShields) {
-      const violation = await this.runShield(shieldId, aiResponse);
-      if (violation) {
+    const results = await Promise.all(
+      outputShields.map(shieldId => this.runShield(shieldId, aiResponse)),
+    );
+    for (let i = 0; i < results.length; i++) {
+      if (results[i]) {
         this.logger.info(
-          `Output blocked by shield ${shieldId}: ${violation.user_message}`,
+          `Output blocked by shield ${outputShields[i]}: ${results[i]!.user_message}`,
         );
-        return violation;
+        return results[i];
       }
     }
 
@@ -368,6 +372,8 @@ export class SafetyService {
    * - 'block': Return a synthetic violation (fail-closed, secure default)
    * - 'allow': Return undefined to let the message through (fail-open)
    */
+  private static readonly SHIELD_TIMEOUT_MS = 5_000;
+
   private async runShield(
     shieldId: string,
     content: string,
@@ -384,16 +390,21 @@ export class SafetyService {
 
     try {
       const client = this.getClient();
-      const response = await client.request<RunShieldResponse>(
-        '/v1/safety/run-shield',
-        {
+      const response = await Promise.race([
+        client.request<RunShieldResponse>('/v1/safety/run-shield', {
           method: 'POST',
           body: {
             shield_id: shieldId,
             messages: [{ role: 'user', content }],
           },
-        },
-      );
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`Shield ${shieldId} timed out`)),
+            SafetyService.SHIELD_TIMEOUT_MS,
+          ),
+        ),
+      ]);
 
       return response.violation ?? undefined;
     } catch (error) {

@@ -19,6 +19,7 @@ import {
   MAX_MESSAGES_PER_REQUEST,
   MAX_MESSAGE_CONTENT_LENGTH,
   MAX_APPROVAL_FIELD_LENGTH,
+  MAX_MODEL_LENGTH,
 } from '../constants';
 
 const VALID_ROLES = new Set(['user', 'assistant', 'system']);
@@ -88,6 +89,11 @@ export function parseChatRequest(body: unknown): ChatRequest {
   if (model !== undefined && typeof model !== 'string') {
     throw new InputError('model must be a string');
   }
+  if (typeof model === 'string' && model.length > MAX_MODEL_LENGTH) {
+    throw new InputError(
+      `model exceeds maximum of ${MAX_MODEL_LENGTH} characters`,
+    );
+  }
 
   return {
     messages: messages as ChatRequest['messages'],
@@ -145,9 +151,22 @@ export function parseApprovalRequest(body: unknown): {
   if (toolArguments !== undefined && typeof toolArguments !== 'string') {
     throw new InputError('toolArguments must be a string');
   }
+  if (
+    typeof toolArguments === 'string' &&
+    toolArguments.length > MAX_MESSAGE_CONTENT_LENGTH
+  ) {
+    throw new InputError(
+      `toolArguments exceeds maximum of ${MAX_MESSAGE_CONTENT_LENGTH} characters`,
+    );
+  }
 
   if (reason !== undefined && typeof reason !== 'string') {
     throw new InputError('reason must be a string');
+  }
+  if (typeof reason === 'string' && reason.length > MAX_APPROVAL_FIELD_LENGTH) {
+    throw new InputError(
+      `reason exceeds maximum of ${MAX_APPROVAL_FIELD_LENGTH} characters`,
+    );
   }
 
   return {

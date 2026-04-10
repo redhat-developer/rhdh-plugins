@@ -108,8 +108,8 @@ export const ChatInput: FC<ChatInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const styles = useMemo(
-    () => createChatInputStyles(theme, isTyping),
-    [theme, isTyping],
+    () => createChatInputStyles(theme, isTyping, requireAgent),
+    [theme, isTyping, requireAgent],
   );
 
   const hasValue = value.trim().length > 0;

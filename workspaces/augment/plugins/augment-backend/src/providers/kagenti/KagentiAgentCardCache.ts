@@ -57,9 +57,9 @@ export class KagentiAgentCardCache {
     if (config.validateResponses) {
       const result = agentCardSchema.safeParse(card);
       if (!result.success) {
-        this.logger.warn(
-          `Agent card validation warning for ${key}: ${JSON.stringify(result.error.issues)}`,
-        );
+        const msg = `Agent card validation failed for ${key}: ${JSON.stringify(result.error.issues)}`;
+        this.logger.warn(msg);
+        throw new Error(msg);
       }
     }
 

@@ -45,9 +45,13 @@ export function registerAdminSessionRoutes(
     withRoute(
       'GET /admin/sessions',
       'Failed to list sessions',
-      async (_req, res) => {
+      async (req, res) => {
         if (missingSessions(res)) return;
-        const list = await sessions!.listAllSessions();
+        const rawLimit = parseInt(String(req.query.limit), 10);
+        const limit = Number.isFinite(rawLimit)
+          ? Math.min(Math.max(1, rawLimit), 500)
+          : undefined;
+        const list = await sessions!.listAllSessions(limit);
         res.json({ sessions: list });
       },
     ),

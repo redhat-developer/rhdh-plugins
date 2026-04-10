@@ -205,3 +205,115 @@ describe('KagentiApiClient', () => {
     );
   });
 });
+
+describe('KagentiApiClient -- retry logic', () => {
+  let retryServer: http.Server;
+  let retryPort: number;
+  let requestCount: number;
+
+  const mockTokenManager = {
+    getToken: jest.fn().mockResolvedValue('test-token'),
+    getTokenForStreaming: jest.fn().mockResolvedValue('test-token'),
+    clearCache: jest.fn(),
+  };
+
+  beforeEach(() => {
+    requestCount = 0;
+  });
+
+  afterEach(async () => {
+    if (retryServer) {
+      await new Promise<void>(resolve => retryServer.close(() => resolve()));
+    }
+  });
+
+  async function startRetryServer(
+    handler: (req: http.IncomingMessage, res: http.ServerResponse) => void,
+  ): Promise<number> {
+    retryServer = http.createServer(handler);
+    return new Promise<number>(resolve => {
+      retryServer.listen(0, () => {
+        const addr = retryServer.address();
+        retryPort = typeof addr === 'object' && addr ? addr.port : 0;
+        resolve(retryPort);
+      });
+    });
+  }
+
+  it('retries on 503 and succeeds on second attempt', async () => {
+    await startRetryServer((_req, res) => {
+      requestCount++;
+      if (requestCount === 1) {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ detail: 'Service unavailable' }));
+      } else {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok' }));
+      }
+    });
+
+    const client = new KagentiApiClient({
+      baseUrl: `http://localhost:${retryPort}`,
+      tokenManager: mockTokenManager as never,
+      logger: createMockLogger(),
+      maxRetries: 2,
+      retryBaseDelayMs: 10,
+    });
+
+    const result = await client.requestWithRetry<{ status: string }>(
+      'GET',
+      '/test',
+    );
+    expect(result.status).toBe('ok');
+    expect(requestCount).toBe(2);
+  });
+
+  it('clears token cache and retries on 401', async () => {
+    await startRetryServer((_req, res) => {
+      requestCount++;
+      if (requestCount === 1) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ detail: 'Unauthorized' }));
+      } else {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok' }));
+      }
+    });
+
+    const client = new KagentiApiClient({
+      baseUrl: `http://localhost:${retryPort}`,
+      tokenManager: mockTokenManager as never,
+      logger: createMockLogger(),
+      maxRetries: 2,
+      retryBaseDelayMs: 10,
+    });
+
+    const result = await client.requestWithRetry<{ status: string }>(
+      'GET',
+      '/test',
+    );
+    expect(result.status).toBe('ok');
+    expect(mockTokenManager.clearCache).toHaveBeenCalled();
+  });
+
+  it('throws after exhausting all retries', async () => {
+    await startRetryServer((_req, res) => {
+      requestCount++;
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ detail: 'Service unavailable' }));
+    });
+
+    const client = new KagentiApiClient({
+      baseUrl: `http://localhost:${retryPort}`,
+      tokenManager: mockTokenManager as never,
+      logger: createMockLogger(),
+      maxRetries: 1,
+      retryBaseDelayMs: 10,
+    });
+
+    await expect(client.requestWithRetry('GET', '/test')).rejects.toThrow(
+      /status 503/,
+    );
+    expect(requestCount).toBe(2);
+  });
+});

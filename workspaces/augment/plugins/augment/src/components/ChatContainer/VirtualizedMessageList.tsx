@@ -18,6 +18,7 @@ import Box from '@mui/material/Box';
 import type { Message } from '../../types';
 import { ChatMessage } from '../ChatMessage';
 import { HandoffDivider } from '../HandoffDivider';
+import type { MessageFeedbackData } from '../ChatMessage/MessageFeedback';
 
 const OVERSCAN = 5;
 const PLACEHOLDER_HEIGHT = 80;
@@ -26,8 +27,11 @@ interface VirtualizedMessageListProps {
   messages: Message[];
   onRegenerate?: () => void;
   onEditMessage?: (messageId: string, newText: string) => void;
+  onFeedback?: (data: MessageFeedbackData) => void;
   /** Index of the message highlighted by keyboard navigation (-1 = none). */
   selectedMessageIndex?: number;
+  /** Scroll container ref for IntersectionObserver root. */
+  scrollRoot?: React.RefObject<HTMLElement | null>;
 }
 
 /**
@@ -44,7 +48,9 @@ export const VirtualizedMessageList = React.memo(
     messages,
     onRegenerate,
     onEditMessage,
+    onFeedback,
     selectedMessageIndex = -1,
+    scrollRoot,
   }: VirtualizedMessageListProps) {
     const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set());
     const heightMapRef = useRef<Map<string, number>>(new Map());
@@ -106,13 +112,17 @@ export const VirtualizedMessageList = React.memo(
             return changed ? next : prev;
           });
         },
-        { rootMargin: '200px 0px' },
+        {
+          root: scrollRoot?.current ?? null,
+          rootMargin: '200px 0px',
+        },
       );
 
       return () => {
         observerRef.current?.disconnect();
       };
-    }, []);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [scrollRoot?.current]);
 
     function getPreviousAssistantAgent(index: number): string | undefined {
       for (let i = index - 1; i >= 0; i--) {
@@ -154,6 +164,7 @@ export const VirtualizedMessageList = React.memo(
                     isLastAssistantMessage={isLastAssistant}
                     onRegenerate={isLastAssistant ? onRegenerate : undefined}
                     onEditMessage={message.isUser ? onEditMessage : undefined}
+                    onFeedback={message.isUser ? undefined : onFeedback}
                   />
                 </Box>
               </React.Fragment>
@@ -174,15 +185,23 @@ export const VirtualizedMessageList = React.memo(
           if (!isVisible) {
             const h =
               heightMapRef.current.get(message.id) ?? PLACEHOLDER_HEIGHT;
+            const showPlaceholderHandoff =
+              !message.isUser &&
+              !!message.agentName &&
+              message.agentName !== getPreviousAssistantAgent(index);
             return (
-              <Box
-                key={message.id}
-                data-msg-id={message.id}
-                ref={(node: HTMLDivElement | null) =>
-                  observeNode(message.id, node)
-                }
-                sx={{ height: h, flexShrink: 0 }}
-              />
+              <React.Fragment key={message.id}>
+                {showPlaceholderHandoff && (
+                  <HandoffDivider agentName={message.agentName!} />
+                )}
+                <Box
+                  data-msg-id={message.id}
+                  ref={(node: HTMLDivElement | null) =>
+                    observeNode(message.id, node)
+                  }
+                  sx={{ height: h, flexShrink: 0 }}
+                />
+              </React.Fragment>
             );
           }
 
@@ -208,6 +227,7 @@ export const VirtualizedMessageList = React.memo(
                   isLastAssistantMessage={isLastAssistant}
                   onRegenerate={isLastAssistant ? onRegenerate : undefined}
                   onEditMessage={message.isUser ? onEditMessage : undefined}
+                  onFeedback={message.isUser ? undefined : onFeedback}
                 />
               </Box>
             </React.Fragment>

@@ -130,7 +130,10 @@ export async function createRouter({
   }
 
   function missingConversations(res: express.Response): boolean {
-    if (!providerManager.provider.conversations) {
+    if (
+      !providerManager.provider.conversations ||
+      providerManager.provider.id === 'kagenti'
+    ) {
       res.status(501).json({
         success: false,
         error: 'Conversations not supported by current provider',

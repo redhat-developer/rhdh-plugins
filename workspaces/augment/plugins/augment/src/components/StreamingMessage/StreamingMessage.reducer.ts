@@ -53,6 +53,34 @@ export function createInitialStreamingState(): StreamingState {
 }
 
 // =============================================================================
+// HELPERS
+// =============================================================================
+
+/**
+ * Find a tool call by ID, falling back to name-based matching on in-progress
+ * tools when the ID is synthetic (e.g. `tool-{timestamp}-{idx}`).
+ */
+function findToolCallMatch(
+  toolCalls: ToolCallState[],
+  callId: string,
+  name?: string,
+): ToolCallState | undefined {
+  const exact = toolCalls.find(tc => tc.id === callId);
+  if (exact) return exact;
+  if (name) {
+    return toolCalls.find(
+      tc =>
+        tc.status === TOOL_STATUS.IN_PROGRESS &&
+        tc.name === name &&
+        tc.id.startsWith('tool-'),
+    );
+  }
+  return toolCalls.find(
+    tc => tc.status === TOOL_STATUS.IN_PROGRESS && tc.id.startsWith('tool-'),
+  );
+}
+
+// =============================================================================
 // MAIN REDUCER
 // =============================================================================
 
@@ -119,6 +147,9 @@ export function updateStreamingState(
         reasoning: undefined,
         reasoningDuration: undefined,
         reasoningStartTime: undefined,
+        pendingApproval: undefined,
+        pendingForm: undefined,
+        pendingAuth: undefined,
       };
     }
 
@@ -160,6 +191,9 @@ export function updateStreamingState(
         completed: true,
         errorCode: errorEvent.code,
         text: state.text || `Error: ${errorMessage}`,
+        pendingApproval: undefined,
+        pendingForm: undefined,
+        pendingAuth: undefined,
       };
     }
 
@@ -225,8 +259,10 @@ export function updateStreamingState(
         serverLabel?: string;
         arguments?: string;
       };
+      const toolId =
+        started.callId || `tool-${Date.now()}-${state.toolCalls.length}`;
       const newTool: ToolCallState = {
-        id: started.callId || `tool-${Date.now()}`,
+        id: toolId,
         type: 'tool_call',
         name: started.name,
         status: TOOL_STATUS.IN_PROGRESS,
@@ -243,11 +279,17 @@ export function updateStreamingState(
     case EVENT_TYPES.STREAM_TOOL_DELTA: {
       const delta = event as { callId?: string; delta?: string };
       if (!delta.callId || !delta.delta) return state;
+      const deltaMatch = findToolCallMatch(state.toolCalls, delta.callId);
+      if (!deltaMatch) return state;
       return {
         ...state,
         toolCalls: state.toolCalls.map(tc =>
-          tc.id === delta.callId
-            ? { ...tc, arguments: (tc.arguments || '') + delta.delta }
+          tc.id === deltaMatch.id
+            ? {
+                ...tc,
+                id: delta.callId!,
+                arguments: (tc.arguments || '') + delta.delta,
+              }
             : tc,
         ),
       };
@@ -263,12 +305,19 @@ export function updateStreamingState(
         error?: string;
       };
       if (!completed.callId) return state;
+      const completedMatch = findToolCallMatch(
+        state.toolCalls,
+        completed.callId,
+        completed.name,
+      );
+      if (!completedMatch) return state;
       return {
         ...state,
         toolCalls: state.toolCalls.map(tc =>
-          tc.id === completed.callId
+          tc.id === completedMatch.id
             ? {
                 ...tc,
+                id: completed.callId!,
                 status: TOOL_STATUS.COMPLETED,
                 name: completed.name || tc.name,
                 serverLabel: completed.serverLabel || tc.serverLabel,
@@ -287,12 +336,19 @@ export function updateStreamingState(
         error?: string;
       };
       if (!failed.callId) return state;
+      const failedMatch = findToolCallMatch(
+        state.toolCalls,
+        failed.callId,
+        failed.name,
+      );
+      if (!failedMatch) return state;
       return {
         ...state,
         toolCalls: state.toolCalls.map(tc =>
-          tc.id === failed.callId
+          tc.id === failedMatch.id
             ? {
                 ...tc,
+                id: failed.callId!,
                 status: TOOL_STATUS.FAILED,
                 name: failed.name || tc.name,
                 error: failed.error,
@@ -515,12 +571,17 @@ export function updateStreamingState(
       const existingCitations = state.citations || [];
       const existingRag = state.ragSources || [];
       const seenKeys = new Set(
-        existingCitations.map(c => c.url || c.title || ''),
+        existingCitations.map(
+          (c, i) => c.url || c.title || c.snippet || `cite-${i}`,
+        ),
       );
 
       const newCitations = citationEvent.citations.filter(c => {
-        const key = c.url || c.title || '';
-        return key && !seenKeys.has(key);
+        const key =
+          c.url || c.title || c.snippet || `cite-${existingCitations.length}`;
+        if (seenKeys.has(key)) return false;
+        seenKeys.add(key);
+        return true;
       });
 
       const newRagSources = newCitations.map(c => ({

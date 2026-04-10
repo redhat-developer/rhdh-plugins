@@ -37,7 +37,6 @@ export function registerStatusRoutes(
       res.status(503).json({
         status: 'degraded',
         error: 'Provider initialization failed',
-        message: initializationError,
       });
       return;
     }
@@ -51,7 +50,7 @@ export function registerStatusRoutes(
       if (initializationError) {
         res.status(503).json({
           providerId: currentProvider.id,
-          initializationError,
+          initializationError: 'Provider initialization failed',
           provider: { connected: false, baseUrl: '(not connected)' },
           mcpServers: [],
         });
