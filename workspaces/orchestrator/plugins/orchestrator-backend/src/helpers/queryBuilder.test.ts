@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { Pagination } from '../types/pagination';
 import { buildGraphQlQuery } from './queryBuilder';
 
@@ -32,16 +33,6 @@ describe('buildGraphQlQuery', () => {
     whereClause: 'version: "1.0"',
   };
 
-  const getPaginationString = (pagination: Pagination | undefined) => {
-    const paginationOrder = pagination?.order
-      ? pagination.order.toUpperCase()
-      : 'ASC';
-    if (pagination) {
-      return `orderBy: {${pagination.sortField}: ${paginationOrder}}, pagination: {limit: ${pagination.limit}, offset: ${pagination.offset}})`;
-    }
-    return undefined;
-  };
-
   type TestCase = {
     name: string;
     params: typeof defaultTestParams;
@@ -57,7 +48,7 @@ describe('buildGraphQlQuery', () => {
         whereClause: '',
         pagination: {},
       },
-      expectedResult: `{${defaultTestParams.type} {${defaultTestParams.queryBody} } }`,
+      expectedResult: `query ($paginationInfo: Pagination, $orderByInfo: ${defaultTestParams.type.slice(0, -1)}OrderBy){${defaultTestParams.type} (orderBy: $orderByInfo, pagination: $paginationInfo) {${defaultTestParams.queryBody} } }`,
     },
     {
       name: 'should build a query with a where clause',
@@ -67,7 +58,7 @@ describe('buildGraphQlQuery', () => {
         whereClause: defaultTestParams.whereClause,
         pagination: {},
       },
-      expectedResult: `{${defaultTestParams.type} (where: {${defaultTestParams.whereClause}}) {${defaultTestParams.queryBody} } }`,
+      expectedResult: `query ($paginationInfo: Pagination, $orderByInfo: ${defaultTestParams.type.slice(0, -1)}OrderBy){${defaultTestParams.type} (where: {${defaultTestParams.whereClause}}, orderBy: $orderByInfo, pagination: $paginationInfo) {${defaultTestParams.queryBody} } }`,
     },
     {
       name: 'should build a query with pagination',
@@ -77,18 +68,16 @@ describe('buildGraphQlQuery', () => {
         whereClause: '',
         pagination: defaultTestParams.pagination,
       },
-      expectedResult: `{${defaultTestParams.type} (${getPaginationString(
-        defaultTestParams.pagination,
-      )} {${defaultTestParams.queryBody} } }`,
+      expectedResult: `query ($paginationInfo: Pagination, $orderByInfo: ${defaultTestParams.type.slice(0, -1)}OrderBy){${defaultTestParams.type} (orderBy: $orderByInfo, pagination: $paginationInfo) {${defaultTestParams.queryBody} } }`,
     },
     {
       name: 'should build a query with both where clause and pagination',
       params: {
         ...defaultTestParams,
       },
-      expectedResult: `{${defaultTestParams.type} (where: {${
+      expectedResult: `query ($paginationInfo: Pagination, $orderByInfo: ${defaultTestParams.type.slice(0, -1)}OrderBy){${defaultTestParams.type} (where: {${
         defaultTestParams.whereClause
-      }}, ${getPaginationString(defaultTestParams.pagination)} {${
+      }}, orderBy: $orderByInfo, pagination: $paginationInfo) {${
         defaultTestParams.queryBody
       } } }`,
     },

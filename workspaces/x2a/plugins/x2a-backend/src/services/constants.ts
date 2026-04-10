@@ -77,3 +77,8 @@ export const DEFAULT_GIT_AUTHOR_NAME = 'X2A Migration Bot';
  * Default git commit author email
  */
 export const DEFAULT_GIT_AUTHOR_EMAIL = 'x2a-bot@redhat.com';
+
+/**
+ * Maximum number of projects to enrich concurrently.
+ */
+export const MAX_CONCURRENT_ENRICHMENT_JOBS = 5;

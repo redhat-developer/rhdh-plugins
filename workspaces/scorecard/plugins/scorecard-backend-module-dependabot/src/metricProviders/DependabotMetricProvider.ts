@@ -88,6 +88,7 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
       'metadata.annotations.github.com/project-slug': CATALOG_FILTER_EXISTS,
+      'metadata.annotations.github.com/dependabot': 'true',
     };
   }
 

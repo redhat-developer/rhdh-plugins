@@ -30,6 +30,8 @@ import {
 
 import { lightspeedApiRef } from './api/api';
 import { LightspeedApiClient } from './api/LightspeedApiClient';
+import { notebooksApiRef } from './api/notebooksApi';
+import { NotebooksApiClient } from './api/NotebooksApiClient';
 import { addConversationRouteRef, rootRouteRef } from './routes';
 
 /**
@@ -51,6 +53,15 @@ export const lightspeedPlugin = createPlugin({
       },
       factory: ({ configApi, fetchApi }) =>
         new LightspeedApiClient({ configApi, fetchApi }),
+    }),
+    createApiFactory({
+      api: notebooksApiRef,
+      deps: {
+        configApi: configApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ configApi, fetchApi }) =>
+        new NotebooksApiClient({ configApi, fetchApi }),
     }),
   ],
 });

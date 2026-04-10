@@ -5,11 +5,7 @@ app:
   packages: all
 
   extensions:
-    - nav-item:user-settings: false
-    - nav-item:search: false
-    - nav-item:catalog:
-        config:
-          title: Home
+    # Configure the catalog index page to be the root page, this is normally mounted on /catalog
     - page:catalog:
         config:
           path: /

@@ -22,7 +22,7 @@ import {
 import type { ObservableMiddleware } from '@kubernetes/client-node';
 import { KonfluxLogger } from '../helpers/logger';
 import { getAuthToken } from '../helpers/auth';
-import { createKubeConfig } from '../helpers/client-factory';
+import { getOrCreateClient } from '../helpers/client-factory';
 import { getKubeClient } from '../helpers/kube-client';
 
 /**
@@ -81,16 +81,15 @@ export class KubearchiveService {
         { cluster, namespace, resource },
       );
 
-      const kc = await createKubeConfig(
+      const customApi = await getOrCreateClient(
         konfluxConfig,
         cluster,
         this.logger,
-        token,
         true, // useKubearchiveUrl = true
       );
-      if (!kc) {
+      if (!customApi) {
         this.logger.error(
-          'Failed to create KubeConfig - cluster not found',
+          'Failed to create API client - cluster not found',
           undefined,
           {
             cluster,
@@ -101,7 +100,7 @@ export class KubearchiveService {
         throw new Error(`Cluster '${cluster}' not found`);
       }
 
-      const { CustomObjectsApi, Observable } = await getKubeClient();
+      const { Observable } = await getKubeClient();
 
       const requestHeaders = {
         ...(requiresImpersonation && {
@@ -130,8 +129,6 @@ export class KubearchiveService {
             middleware: [headerMiddleware],
           }
         : undefined;
-
-      const customApi = kc.makeApiClient(CustomObjectsApi);
       const response = await customApi.listNamespacedCustomObjectWithHttpInfo(
         {
           group: apiGroup,
@@ -169,7 +166,13 @@ export class KubearchiveService {
           }
         | undefined;
 
-      const items = responseBody?.items ?? [];
+      const items = (responseBody?.items ?? []).map(item => {
+        if (item.metadata?.managedFields) {
+          const { managedFields, ...rest } = item.metadata;
+          return { ...item, metadata: rest };
+        }
+        return item;
+      });
       const nextPageToken = responseBody?.metadata?.continue;
 
       this.logger.debug('Fetched items from Kubearchive', {

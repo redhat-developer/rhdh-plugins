@@ -18,6 +18,13 @@ import { defineConfig } from '@playwright/test';
 
 const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 
+// APP_MODE: 'legacy' (app-legacy) or 'nfs' (app with new frontend system)
+const appMode = process.env.APP_MODE || 'legacy';
+const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+
+// Config paths (absolute to work from any cwd)
+const baseConfig = `${__dirname}/app-config.yaml`;
+
 export default defineConfig({
   timeout: 2 * 60 * 1000,
 
@@ -28,14 +35,17 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_URL
     ? []
     : {
-        command: 'yarn start',
+        command: `${startCommand} --config ${baseConfig}`,
         port: 3000,
         reuseExistingServer: true,
+        cwd: __dirname,
       },
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
+  ],
 
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
@@ -43,11 +53,12 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
+
+  testDir: 'e2e-tests',
 
   projects: LOCALES.map(locale => ({
     name: locale,
-    testDir: 'packages/app/e2e-tests',
     use: {
       channel: 'chrome' as const,
       locale,

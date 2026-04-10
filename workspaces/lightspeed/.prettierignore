@@ -3,4 +3,6 @@ dist-types
 coverage
 .vscode
 .eslintrc.js
+report.api.md
+report-alpha.api.md
 !.prettierrc.js

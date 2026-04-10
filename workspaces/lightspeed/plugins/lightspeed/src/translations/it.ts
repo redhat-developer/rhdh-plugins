@@ -28,6 +28,33 @@ const lightspeedTranslationIt = createTranslationMessages({
     'page.title': 'Lightspeed',
     'page.subtitle':
       "Assistente allo sviluppo basato sull'intelligenza artificiale",
+    'tabs.ariaLabel': 'Viste di Lightspeed',
+    'tabs.chat': 'Chat',
+    'tabs.notebooks': 'Quaderni',
+    'tabs.notebooks.empty': 'Il contenuto dei quaderni va qui.',
+    'notebooks.title': 'I miei quaderni',
+    'notebooks.empty.title': 'Nessun quaderno creato',
+    'notebooks.empty.description':
+      'Crea un nuovo quaderno per organizzare le tue fonti e generare insight basati su IA.',
+    'notebooks.empty.action': 'Crea un nuovo quaderno',
+    'notebooks.documents': 'Documenti',
+    'notebooks.actions.rename': 'Rinomina',
+    'notebooks.actions.delete': 'Elimina',
+    'notebooks.rename.title': 'Rinominare {{name}}?',
+    'notebooks.rename.description':
+      'Inserisci il nuovo nome per questo quaderno e fai clic su Invia per continuare.',
+    'notebooks.rename.label': 'Nuovo nome',
+    'notebooks.rename.placeholder': 'Nuovo nome',
+    'notebooks.rename.action': 'Invia',
+    'notebooks.delete.title': 'Eliminare {{name}}?',
+    'notebooks.delete.message':
+      'Non vedrai più questo quaderno qui. Questo eliminerà anche le attività correlate come prompt, risposte e feedback dalla tua attività Lightspeed.',
+    'notebooks.delete.action': 'Elimina',
+    'notebooks.delete.toast': 'Quaderno eliminato!',
+    'notebooks.updated.today': 'Aggiornato oggi',
+    'notebooks.updated.yesterday': 'Aggiornato 1 giorno fa',
+    'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',
+    'notebooks.updated.on': 'Aggiornato il',
     'prompts.codeReadability.title':
       'Ottenere aiuto sulla leggibilità del codice',
     'prompts.codeReadability.message':
@@ -75,7 +102,10 @@ const lightspeedTranslationIt = createTranslationMessages({
     'conversation.rename.placeholder': 'Nome della chat',
     'permission.required.title': 'Autorizzazioni mancanti',
     'permission.required.description':
-      "Per visualizzare il plugin Lightspeed, contattare l'amministratore per ottenere le autorizzazioni <b>lightspeed.chat.read</b> e <b>lightspeed.chat.create</b>.",
+      "Per visualizzare <subject/>, contattare l'amministratore per ottenere l'autorizzazione <permissions/>.",
+    'permission.subject.plugin': 'il plugin Lightspeed',
+    'permission.subject.notebooks': 'i quaderni Lightspeed',
+    'permission.notebooks.goBack': 'Torna indietro',
     'disclaimer.withValidation':
       'Questa funzione utilizza una tecnologia AI. Non includere nei dati immessi informazioni personali o altre informazioni sensibili. Le interazioni possono essere utilizzate per migliorare i prodotti o i servizi Red Hat.',
     'disclaimer.withoutValidation':
@@ -112,6 +142,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'aria.scroll.down': 'Torna alla fine',
     'aria.scroll.up': "Torna all'inizio",
     'aria.settings.label': 'Opzioni chatbot',
+    'aria.close': 'Chiudi chatbot',
     'modal.edit': 'Modifica',
     'modal.save': 'Salva',
     'modal.close': 'Chiudi',
@@ -122,6 +153,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'conversation.removeFromPinnedChats': 'Sblocca',
     'conversation.announcement.userMessage':
       "Messaggio dall'utente: {{prompt}}. Caricamento in corso del messaggio del bot.",
+    'conversation.announcement.responseStopped': 'Risposta interrotta.',
     'user.guest': 'Ospite',
     'user.loading': '...',
     'tooltip.attach': 'Allega',
@@ -134,6 +166,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tooltip.backToTop': "Torna all'inizio",
     'tooltip.backToBottom': 'Torna alla fine',
     'tooltip.settings': 'Opzioni chatbot',
+    'tooltip.close': 'Chiudi',
     'modal.title.preview': 'Anteprima allegato',
     'modal.title.edit': 'Modifica allegato',
     'icon.lightspeed.alt': 'icona di lightspeed',

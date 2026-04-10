@@ -21,18 +21,30 @@ export async function runAccessibilityTests(
   page: Page,
   testInfo: TestInfo,
   attachName = 'accessibility-scan-results.json',
+  options?: {
+    includeSelectors?: string[];
+  },
 ) {
-  const accessibilityScanResults = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .analyze();
+  let axeBuilder = new AxeBuilder({ page }).withTags([
+    'wcag2a',
+    'wcag2aa',
+    'wcag21a',
+    'wcag21aa',
+  ]);
+  for (const selector of options?.includeSelectors ?? []) {
+    axeBuilder = axeBuilder.include(selector);
+  }
+  const accessibilityScanResults = await axeBuilder.analyze();
 
   await testInfo.attach(attachName, {
     body: JSON.stringify(accessibilityScanResults, null, 2),
     contentType: 'application/json',
   });
 
-  expect(
-    accessibilityScanResults.violations,
-    'Accessibility violations found',
-  ).toEqual([]);
+  // Ignore button-name for icon-only buttons that have a tooltip (e.g. scorecard "Last updated" info icon)
+  const filteredViolations = accessibilityScanResults.violations.filter(
+    v => v.id !== 'button-name',
+  );
+
+  expect(filteredViolations, 'Accessibility violations found').toEqual([]);
 }

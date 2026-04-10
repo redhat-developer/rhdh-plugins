@@ -20,7 +20,7 @@ createDevApp()
   .registerPlugin(buiTestPlugin)
   .addPage({
     element: <BUITestPage />,
-    title: 'Root Page',
-    path: '/bui-test',
+    title: 'BUI Tests',
+    path: '/bui-tests',
   })
   .render();

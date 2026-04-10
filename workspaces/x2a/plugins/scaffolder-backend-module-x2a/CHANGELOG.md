@@ -1,5 +1,37 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a
 
+## 0.3.0
+
+### Minor Changes
+
+- 53a0ccf: Bump all dependencies to match RHDH 1.9.3
+
+### Patch Changes
+
+- Updated dependencies [53a0ccf]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.2.0
+
+## 0.2.0
+
+### Minor Changes
+
+- 613b44e: Forced minor version bump.
+
+### Patch Changes
+
+- b0c80b1: Moving conversion-project-template.yaml template under scaffolder-backend-module-x2a for easier distribution.
+- 7565e2e: Add the Cancel phase migration action.
+- 5d26b30: Add Bitbucket repository support.
+- e9f35e2: The user can newly bulk-create conversion projects from an uploaded CSV file.
+- Updated dependencies [4fb1a6e]
+- Updated dependencies [613b44e]
+- Updated dependencies [50fa945]
+- Updated dependencies [7565e2e]
+- Updated dependencies [f3f900e]
+- Updated dependencies [5d26b30]
+- Updated dependencies [e9f35e2]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.1.0
+
 ## 0.1.2
 
 ### Patch Changes

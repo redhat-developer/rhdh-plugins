@@ -14,39 +14,26 @@
  * limitations under the License.
  */
 
-import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
-import { IBulkImportRESTPathProvider } from './BulkImportBackendClient';
+import { BulkImportRESTPathProviderBase } from './BulkImportBackendClientBase';
 
-export class OrchestratorBulkImportBackendClientPathProvider implements IBulkImportRESTPathProvider {
+export class OrchestratorBulkImportBackendClientPathProvider extends BulkImportRESTPathProviderBase {
   getCreateImportJobsPath(dryRun?: boolean): string | undefined {
     return dryRun === true
       ? undefined
       : `/api/bulk-import/orchestrator-workflows`;
   }
 
-  getDeleteImportActionPath(
+  getImportActionPath(
     repo: string,
     _defaultBranch: string,
-    approvalTool: string,
+    approvalTool?: string,
   ): string {
-    return `/api/bulk-import/orchestrator-import/by-repo?repo=${repo}&approvalTool=${approvalTool}`;
+    const params = new URLSearchParams({ repo });
+    if (approvalTool) params.set('approvalTool', approvalTool);
+    return `/api/bulk-import/orchestrator-import/by-repo?${params.toString()}`;
   }
 
-  getGetImportActionPath(
-    repo: string,
-    _defaultBranch: string,
-    approvalTool: string,
-  ): string {
-    return `/api/bulk-import/orchestrator-import/by-repo?repo=${repo}&approvalTool=${approvalTool}`;
-  }
-
-  getGetImportJobsPath(
-    page: number,
-    size: number,
-    searchString: string,
-    sortColumn: AddedRepositoryColumnNameEnum,
-    sortOrder: SortingOrderEnum,
-  ): string {
-    return `/api/bulk-import/orchestrator-workflows?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}`;
+  protected getImportJobsBasePath(): string {
+    return `/api/bulk-import/orchestrator-workflows`;
   }
 }

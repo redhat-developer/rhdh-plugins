@@ -5,33 +5,53 @@
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { default as ScorecardErrorStatusIcon } from '@mui/icons-material/DangerousOutlined';
+import { default as ScorecardSuccessStatusIcon } from '@mui/icons-material/CheckCircleOutline';
+import { default as ScorecardWarningStatusIcon } from '@mui/icons-material/WarningAmber';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export const EntityScorecardContent: () => JSX_2.Element;
 
+export { ScorecardErrorStatusIcon };
+
 // @public
 export const ScorecardHomepageCard: ({
   metricId,
+  showSubheader,
+  showInfo,
 }: {
   metricId: string;
+  showSubheader?: boolean | undefined;
+  showInfo?: boolean | undefined;
 }) => JSX_2.Element | null;
 
 // @public
+export const ScorecardPage: () => JSX_2.Element;
+
+// @public
 export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
+
+export { ScorecardSuccessStatusIcon };
 
 // @public
 export const scorecardTranslationRef: TranslationRef<
   'plugin.scorecard',
   {
-    readonly 'emptyState.button': string;
     readonly 'emptyState.title': string;
     readonly 'emptyState.description': string;
+    readonly 'emptyState.button': string;
     readonly 'emptyState.altText': string;
-    readonly 'permissionRequired.button': string;
+    readonly 'notFound.title': string;
+    readonly 'notFound.description': string;
+    readonly 'notFound.altText': string;
+    readonly 'notFound.readMore': string;
+    readonly 'notFound.goBack': string;
+    readonly 'notFound.contactSupport': string;
     readonly 'permissionRequired.title': string;
     readonly 'permissionRequired.description': string;
+    readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.invalidApiResponse': string;
@@ -45,21 +65,45 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.userNotFoundInCatalogMessage': string;
     readonly 'errors.noDataFoundMessage': string;
     readonly 'errors.authenticationErrorMessage': string;
+    readonly 'errors.noMetricsFound': string;
+    readonly 'errors.multipleMetricsFound': string;
     readonly 'metric.github.open_prs.title': string;
     readonly 'metric.github.open_prs.description': string;
     readonly 'metric.jira.open_issues.title': string;
     readonly 'metric.jira.open_issues.description': string;
+    readonly 'metric.lastUpdated': string;
+    readonly 'metric.lastUpdatedNotAvailable': string;
+    readonly 'metric.someEntitiesNotReportingValues': string;
     readonly 'thresholds.success': string;
-    readonly 'thresholds.error': string;
     readonly 'thresholds.warning': string;
+    readonly 'thresholds.error': string;
     readonly 'thresholds.noEntities': string;
     readonly 'thresholds.entities_one': string;
     readonly 'thresholds.entities_other': string;
+    readonly 'entitiesPage.missingPermission': string;
+    readonly 'entitiesPage.noDataFound': string;
+    readonly 'entitiesPage.unknownMetric': string;
+    readonly 'entitiesPage.metricProviderNotRegistered': string;
+    readonly 'entitiesPage.entitiesTable.title': string;
+    readonly 'entitiesPage.entitiesTable.unavailable': string;
+    readonly 'entitiesPage.entitiesTable.titleWithCount': string;
+    readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
+    readonly 'entitiesPage.entitiesTable.header.status': string;
+    readonly 'entitiesPage.entitiesTable.header.value': string;
+    readonly 'entitiesPage.entitiesTable.header.entity': string;
+    readonly 'entitiesPage.entitiesTable.header.owner': string;
+    readonly 'entitiesPage.entitiesTable.header.kind': string;
+    readonly 'entitiesPage.entitiesTable.footer.of': string;
+    readonly 'entitiesPage.entitiesTable.footer.allRows': string;
+    readonly 'entitiesPage.entitiesTable.footer.rows_one': string;
+    readonly 'entitiesPage.entitiesTable.footer.rows_other': string;
   }
 >;
 
 // @public
 export const scorecardTranslations: TranslationResource<'plugin.scorecard'>;
+
+export { ScorecardWarningStatusIcon };
 
 // (No @packageDocumentation comment for this package)
 ```

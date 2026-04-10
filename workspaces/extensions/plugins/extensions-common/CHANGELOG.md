@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-extensions-common
 
+## 0.15.0
+
 ## 0.14.5
 
 ## 0.14.4

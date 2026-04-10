@@ -72,14 +72,6 @@ This method requires vanilla backstage to be used:
    ```yaml
    # app-config.yaml
 
-   proxy:
-     endpoints:
-       '/cost-management/v1':
-         target: https://console.redhat.com/api/cost-management/v1
-         allowedHeaders: ['Authorization']
-         # See: https://backstage.io/docs/releases/v1.28.0/#breaking-proxy-backend-plugin-protected-by-default
-         credentials: dangerously-allow-unauthenticated
-
    # Replace `${RHHCC_SA_CLIENT_ID}` and `${RHHCC_SA_CLIENT_SECRET}` with the service account credentials.
    costManagement:
      clientId: ${RHHCC_SA_CLIENT_ID}

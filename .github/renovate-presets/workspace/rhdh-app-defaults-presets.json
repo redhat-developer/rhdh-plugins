@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all App Defaults minor updates",
+      "matchFileNames": ["workspaces/app-defaults/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(App Defaults)"
+      ],
+      "addLabels": ["team/rhdh", "app-defaults"]
+    },
+    {
+      "description": "all App Defaults patch updates",
+      "matchFileNames": ["workspaces/app-defaults/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(App Defaults)"
+      ],
+      "addLabels": ["team/rhdh", "app-defaults"]
+    },
+    {
+      "description": "all App Defaults dev dependency updates",
+      "matchFileNames": ["workspaces/app-defaults/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(App Defaults)"
+      ],
+      "addLabels": ["team/rhdh", "app-defaults"]
+    }
+  ]
+}

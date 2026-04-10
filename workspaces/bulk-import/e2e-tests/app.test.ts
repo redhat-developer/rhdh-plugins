@@ -22,18 +22,19 @@ import {
   mockBulkImportDryRunResponse,
   mockBulkImportImportsResponse,
   mockBulkImportRepositoriesResponse,
+  mockBulkImportSCMHostsResponse,
   mockImportByRepoData,
   mockImportByRepoFrontendData,
   mockImportsData,
   mockImportsDryRunData,
   mockRepositoriesData,
+  mockSCMHostsData,
 } from './utils/apiUtils';
 import {
   getPreviewSidebarSnapshots,
   PreviewSidebarSnapshotsType,
 } from './utils/ariaSnapshots';
 import { runAccessibilityTests, switchToLocale } from './utils/helpers';
-import { skipIfLocales } from './utils/localeSkip';
 import {
   BulkImportMessages,
   getSelectedRepositoriesHeading,
@@ -52,6 +53,24 @@ test.describe('Bulk Import', () => {
     context = await browser.newContext();
     sharedPage = await context.newPage();
 
+    // The backend's GET /repositories and GET /organizations/{org}/repositories
+    // endpoints require the X-SCM-Tokens header (HTTP 401 otherwise). In a real
+    // deployment, the frontend obtains these tokens from the configured GitHub /
+    // GitLab OAuth provider via ScmAuthApi and sends them with every listing
+    // request. See plugins/bulk-import/README.md → "Required OAuth Configuration".
+    //
+    // In these e2e tests we bypass that requirement in two steps:
+    //   1. Mock GET /api/bulk-import/scm-hosts to return empty host arrays.
+    //      The useRepositories hook hits the `!urls?.length → return undefined`
+    //      early-return path, so tokenFetchError stays undefined and the query
+    //      fires without any X-SCM-Tokens header.
+    //   2. Mock GET /api/bulk-import/repositories* with a 200 response so
+    //      Playwright intercepts the token-free request before it ever reaches
+    //      the real backend's 401 guard.
+    //
+    // This lets us focus on UI behaviour without needing a real OAuth provider
+    // set up in the test environment.
+    await mockBulkImportSCMHostsResponse(sharedPage, mockSCMHostsData);
     await mockBulkImportRepositoriesResponse(sharedPage, mockRepositoriesData);
     await sharedPage.goto('/');
 
@@ -125,11 +144,6 @@ test.describe('Bulk Import', () => {
   test('should render bulk import page with source control options, search, and repositories table', async ({
     browser,
   }, testInfo: TestInfo) => {
-    skipIfLocales(
-      testInfo,
-      ['de', 'es'],
-      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2792',
-    );
     const article = sharedPage.getByRole('article');
 
     await expect(article).toMatchAriaSnapshot(`
@@ -190,11 +204,6 @@ test.describe('Bulk Import', () => {
   });
 
   test('Verify preview sidebar', async ({ browser }, testInfo: TestInfo) => {
-    skipIfLocales(
-      testInfo,
-      ['de', 'es'],
-      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2792',
-    );
     const backendServiceCheckbox = sharedPage
       .getByRole('rowheader', { name: 'backend-service' })
       .getByRole('checkbox');
@@ -249,11 +258,6 @@ test.describe('Bulk Import', () => {
   });
 
   test('Verify Import flow', async ({}, testInfo) => {
-    skipIfLocales(
-      testInfo,
-      ['de', 'es'],
-      'Missing translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2792',
-    );
     const backendServiceCheckbox = sharedPage
       .getByRole('rowheader', { name: 'backend-service' })
       .getByRole('checkbox');

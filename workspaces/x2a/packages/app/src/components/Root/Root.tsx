@@ -43,7 +43,10 @@ import SearchIcon from '@material-ui/icons/Search';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
-import { useX2ATranslation } from '@red-hat-developer-hub/backstage-plugin-x2a';
+import {
+  useX2ATranslation,
+  X2AIcon,
+} from '@red-hat-developer-hub/backstage-plugin-x2a';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -101,11 +104,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           />
           {/* End global nav */}
           <SidebarDivider />
-          <SidebarItem
-            icon={ExtensionIcon}
-            to="x2a"
-            text={t('sidebar.x2a.title')}
-          />
+          <SidebarItem icon={X2AIcon} to="x2a" text={t('sidebar.x2a.title')} />
           <SidebarScrollWrapper>
             {/* Items in this group will be scrollable if they run out of space */}
           </SidebarScrollWrapper>

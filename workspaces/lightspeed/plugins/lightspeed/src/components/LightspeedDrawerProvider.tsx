@@ -27,6 +27,7 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import { ChatbotDisplayMode, ChatbotModal } from '@patternfly/chatbot';
 
+import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useBackstageUserIdentity, useDisplayModeSettings } from '../hooks';
 import { FileContent } from '../types';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
@@ -40,6 +41,10 @@ const useStyles = makeStyles(theme => ({
     right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
     maxWidth: 'min(30rem, calc(100vw - 32px)) !important',
     overflowX: 'hidden' as const,
+    transition: 'margin-right 0.3s ease',
+    'body.docked-drawer-open &': {
+      marginRight: DOCKED_CONTENT_OFFSET,
+    },
   },
 }));
 

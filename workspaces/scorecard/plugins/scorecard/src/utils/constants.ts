@@ -18,3 +18,49 @@
  * Color used when there's an error with scorecard data (e.g., threshold evaluation error, metric fetch error)
  */
 export const SCORECARD_ERROR_STATE_COLOR = 'rhdh.general.cardBorderColor';
+
+interface HeadCell {
+  id: string;
+  label: string;
+  width: string;
+  sortable: boolean;
+}
+
+export const SCORECARD_ENTITIES_TABLE_HEADERS: readonly HeadCell[] = [
+  {
+    id: 'status',
+    label: 'entitiesPage.entitiesTable.header.status',
+    width: '12%',
+    sortable: true,
+  },
+  {
+    id: 'metricValue',
+    label: 'entitiesPage.entitiesTable.header.value',
+    width: '8%',
+    sortable: true,
+  },
+  {
+    id: 'entityName',
+    label: 'entitiesPage.entitiesTable.header.entity',
+    width: '28%',
+    sortable: true,
+  },
+  {
+    id: 'owner',
+    label: 'entitiesPage.entitiesTable.header.owner',
+    width: '20%',
+    sortable: true,
+  },
+  {
+    id: 'entityKind',
+    label: 'entitiesPage.entitiesTable.header.kind',
+    width: '12%',
+    sortable: true,
+  },
+  {
+    id: 'timestamp',
+    label: 'entitiesPage.entitiesTable.header.lastUpdated',
+    width: '20%',
+    sortable: true,
+  },
+];

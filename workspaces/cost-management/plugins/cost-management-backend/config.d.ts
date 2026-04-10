@@ -29,4 +29,13 @@ export interface Config {
     /** @visibility secret */
     clientSecret: string;
   };
+
+  /**
+   * Base URL for the Cost Management API proxy target.
+   *
+   * @default "https://console.redhat.com/api"
+   *
+   * @visibility backend
+   */
+  costManagementProxyBaseUrl?: string;
 }

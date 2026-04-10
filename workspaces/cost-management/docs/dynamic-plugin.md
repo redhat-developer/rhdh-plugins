@@ -33,32 +33,50 @@ The procedure involves the following steps:
    ```yaml
    # Add to dynamic-plugins-rhdh ConfigMap
 
-   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:1.2.0!red-hat-developer-hub-plugin-cost-management
-      disabled: false
-      pluginConfig:
-        dynamicPlugins:
-          frontend:
-            backstage-community.plugin-cost-management:
-              appIcons:
-                - name: costManagementIconOutlined
-                  importName: CostManagementIconOutlined
-              dynamicRoutes:
-                - path: /cost-management/optimizations
-                  importName: ResourceOptimizationPage
-                  menuItem:
-                    icon: costManagementIconOutlined
-                    text: Optimizations
-    - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:1.2.0!red-hat-developer-hub-plugin-cost-management-backend
-      disabled: false
-      pluginConfig:
-        proxy:
-          endpoints:
-            '/cost-management/v1':
-              target: https://console.redhat.com/api/cost-management/v1
-              allowedHeaders: ['Authorization']
-              credentials: dangerously-allow-unauthenticated
-        costManagement:
-          clientId: ${CM_CLIENT_ID}
-          clientSecret: ${CM_CLIENT_SECRET}
-          optimizationWorkflowId: 'patch-k8s-resource'
+   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:latest!red-hat-developer-hub-plugin-cost-management
+     disabled: false
+     pluginConfig:
+       dynamicPlugins:
+         frontend:
+           red-hat-developer-hub.plugin-cost-management:
+             appIcons:
+               - name: costManagementIcon
+                 importName: CostManagementIconOutlined
+             dynamicRoutes:
+               - path: /cost-management/optimizations
+                 importName: ResourceOptimizationPage
+                 menuItem:
+                   icon: costManagementIcon
+                   text: Optimizations
+               - path: /cost-management/openshift
+                 importName: OpenShiftPage
+                 menuItem:
+                   icon: costManagementIcon
+                   text: OpenShift
+             menuItems:
+               cost-management:
+                 icon: costManagementIcon
+                 title: Cost management
+                 priority: 100
+               cost-management.optimizations:
+                 parent: cost-management
+                 priority: 10
+               cost-management.openshift:
+                 parent: cost-management
+                 priority: 20
+   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:latest!red-hat-developer-hub-plugin-cost-management-backend
+     disabled: false
+     pluginConfig:
+       costManagement:
+         clientId: ${CM_CLIENT_ID}
+         clientSecret: ${CM_CLIENT_SECRET}
+         optimizationWorkflowId: 'patch-k8s-resource'
    ```
+
+   > **Note:** No `proxy` configuration is required. Previous versions required a
+   > `proxy.endpoints['/cost-management/v1']` entry that forwarded requests to
+   > `console.redhat.com` — this has been removed. The backend plugin now
+   > communicates with the Red Hat Cost Management API server-side via a secure
+   > proxy. SSO tokens are obtained internally via OAuth2 `client_credentials`
+   > grant and never exposed to the browser. RBAC filtering is enforced
+   > server-side before data is returned. See [rbac.md](./rbac.md) for details.

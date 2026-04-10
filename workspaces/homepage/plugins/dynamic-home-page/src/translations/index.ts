@@ -19,7 +19,8 @@ import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 import { homepageTranslationRef } from './ref';
 
 /**
- * The translation resource for the Homepage plugin.
+ * Translation resource for the Dynamic Home Page plugin (en, de, es, fr, it, ja).
+ *
  * @public
  */
 export const homepageTranslations = createTranslationResource({

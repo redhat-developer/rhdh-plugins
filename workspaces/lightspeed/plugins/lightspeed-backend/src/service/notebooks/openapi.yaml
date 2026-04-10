@@ -1,0 +1,1147 @@
+openapi: 3.0.3
+info:
+  title: AI Notebooks API
+  description: |
+    AI Notebooks API for managing sessions (vector stores) and documents for RAG (Retrieval-Augmented Generation) queries.
+
+    ## Features
+    - **Session Management**: Create, read, update, and delete notebook sessions (vector stores)
+    - **Document Management**: Upload and manage documents in sessions for RAG queries
+    - **Query**: Execute RAG queries against session documents
+    - **File Support**: md, txt, pdf, json, yaml, yml, log, url
+    - **SSRF Protection**: Built-in security against Server-Side Request Forgery attacks
+
+    ## Authentication
+    All endpoints (except `/health`) require Backstage authentication and the `lightspeed.notebooks.use` permission.
+  version: 1.0.0
+  contact:
+    name: Red Hat Developer Hub
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: /api/lightspeed/ai-notebooks
+    description: AI Notebooks API
+
+tags:
+  - name: Health
+    description: Health check endpoint
+  - name: Sessions
+    description: Session (vector store) management operations
+  - name: Documents
+    description: Document management within sessions
+  - name: Query
+    description: RAG query operations
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the AI Notebooks service is running
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+              example:
+                status: ok
+
+  /v1/sessions:
+    post:
+      tags:
+        - Sessions
+      summary: Create a new session
+      description: Create a new notebook session (vector store) for organizing documents
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Session name (required, cannot be empty)
+                  example: My Research Project
+                  minLength: 1
+                description:
+                  type: string
+                  description: Session description (optional)
+                  example: Documents for machine learning research
+                metadata:
+                  type: object
+                  description: Additional custom metadata fields (optional)
+                  additionalProperties: true
+                  example:
+                    custom_field: custom-value
+                    status: active
+      responses:
+        '200':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+              example:
+                status: success
+                session:
+                  session_id: vs-abc123def456
+                  user_id: user:default/johndoe
+                  name: My Research Project
+                  description: Documents for machine learning research
+                  created_at: '2024-01-15T10:30:00.000Z'
+                  updated_at: '2024-01-15T10:30:00.000Z'
+                  metadata:
+                    custom_field: custom-value
+                    status: active
+                    conversation_id: null
+                    document_ids: []
+                message: Session created successfully
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingName:
+                  summary: Missing required name field
+                  value:
+                    status: error
+                    error: name is required
+        '403':
+          description: Forbidden - user lacks lightspeed.notebooks.use permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: User lacks permission
+        '500':
+          description: Internal server error during session creation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Failed to create vector store
+
+    get:
+      tags:
+        - Sessions
+      summary: List all sessions
+      description: Get all notebook sessions for the authenticated user, sorted by created_at (newest first)
+      operationId: listSessions
+      responses:
+        '200':
+          description: Sessions retrieved successfully (returns empty array if user has no sessions)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionListResponse'
+              examples:
+                withSessions:
+                  summary: User has sessions
+                  value:
+                    status: success
+                    sessions:
+                      - session_id: vs-def456
+                        user_id: user:default/johndoe
+                        name: Recent Project
+                        description: Latest work
+                        created_at: '2024-01-16T14:00:00.000Z'
+                        updated_at: '2024-01-16T14:00:00.000Z'
+                        metadata:
+                          conversation_id: conv-xyz
+                          document_ids: [doc-1, doc-2]
+                      - session_id: vs-abc123
+                        user_id: user:default/johndoe
+                        name: Old Project
+                        description: Archived work
+                        created_at: '2024-01-15T10:30:00.000Z'
+                        updated_at: '2024-01-15T10:30:00.000Z'
+                        metadata:
+                          conversation_id: null
+                          document_ids: []
+                    count: 2
+                noSessions:
+                  summary: User has no sessions
+                  value:
+                    status: success
+                    sessions: []
+                    count: 0
+        '403':
+          description: Forbidden - user lacks lightspeed.notebooks.use permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: User lacks permission
+        '500':
+          description: Internal server error during session retrieval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Failed to list vector stores
+
+  /v1/sessions/{sessionId}:
+    put:
+      tags:
+        - Sessions
+      summary: Update a session
+      description: Update session name, description, or metadata (all fields optional)
+      operationId: updateSession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: New session name (optional)
+                  example: Updated Project Name
+                description:
+                  type: string
+                  description: New session description (optional)
+                  example: Updated description
+                metadata:
+                  type: object
+                  description: Updated metadata (optional, merged with existing)
+                  additionalProperties: true
+                  example:
+                    custom_field: updated-value
+                    status: active
+      responses:
+        '200':
+          description: Session updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+              example:
+                status: success
+                session:
+                  session_id: vs-abc123
+                  user_id: user:default/johndoe
+                  name: Updated Project Name
+                  description: Updated description
+                  created_at: '2024-01-15T10:30:00.000Z'
+                  updated_at: '2024-01-16T15:20:00.000Z'
+                  metadata:
+                    custom_field: updated-value
+                    status: active
+                    conversation_id: conv-123
+                    document_ids: [doc-1]
+                message: Session updated successfully
+        '403':
+          description: Forbidden - user does not own this session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: User does not have access to this session
+        '404':
+          description: Not found - session does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Vector store not found
+        '500':
+          description: Internal server error during update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Failed to update vector store
+
+    delete:
+      tags:
+        - Sessions
+      summary: Delete a session
+      description: Permanently delete a session and all its documents
+      operationId: deleteSession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+              example:
+                status: success
+                session:
+                  session_id: vs-abc123
+                  user_id: user:default/johndoe
+                  name: Deleted Session
+                  description: This session was deleted
+                  created_at: '2024-01-15T10:30:00.000Z'
+                  updated_at: '2024-01-15T10:30:00.000Z'
+                  metadata:
+                    conversation_id: null
+                    document_ids: []
+                message: Session deleted successfully
+        '403':
+          description: Forbidden - user does not own this session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: User does not have access to this session
+        '404':
+          description: Not found - session does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Vector store not found
+        '500':
+          description: Internal server error during deletion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Failed to delete vector store
+
+  /v1/sessions/{sessionId}/documents:
+    get:
+      tags:
+        - Documents
+      summary: List documents in a session
+      description: Get all documents in the specified session (optionally filtered by file type)
+      operationId: listDocuments
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - name: fileType
+          in: query
+          required: false
+          description: Filter documents by source type
+          schema:
+            type: string
+            enum: [text, pdf, url, md, json, yaml, log]
+      responses:
+        '200':
+          description: Documents retrieved successfully (returns empty array if no documents match)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentListResponse'
+              examples:
+                withDocuments:
+                  summary: Session has documents
+                  value:
+                    status: success
+                    session_id: vs-abc123
+                    documents:
+                      - document_id: research-paper
+                        title: Research Paper
+                        session_id: vs-abc123
+                        user_id: user:default/johndoe
+                        source_type: pdf
+                        created_at: '2024-01-15T11:00:00.000Z'
+                        metadata:
+                          fileName: paper.pdf
+                          fileType: pdf
+                          pageCount: 25
+                          parseTimestamp: '2024-01-15T11:00:00.000Z'
+                      - document_id: readme
+                        title: README
+                        session_id: vs-abc123
+                        user_id: user:default/johndoe
+                        source_type: md
+                        created_at: '2024-01-15T11:05:00.000Z'
+                        metadata:
+                          fileName: README.md
+                          fileType: md
+                          parseTimestamp: '2024-01-15T11:05:00.000Z'
+                    count: 2
+                noDocuments:
+                  summary: Session has no documents
+                  value:
+                    status: success
+                    session_id: vs-abc123
+                    documents: []
+                    count: 0
+        '403':
+          description: Forbidden - user does not own this session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: User does not have access to this session
+        '404':
+          description: Not found - session does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Vector store not found
+        '500':
+          description: Internal server error during document retrieval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Failed to retrieve documents
+
+    put:
+      tags:
+        - Documents
+      summary: Upload a document
+      description: |
+        Upload a document to the session. Supports multiple file types:
+        - **Text files**: md, txt, log
+        - **Structured data**: json, yaml, yml
+        - **Binary**: pdf
+        - **Web content**: url (fetches and parses remote content)
+
+        **Security**: URLs are validated against SSRF attacks (blocks private IPs, localhost, cloud metadata endpoints)
+
+        **File Size Limit**: Maximum preset limit
+      operationId: uploadDocument
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - fileType
+              properties:
+                title:
+                  type: string
+                  description: Document title (used to generate document_id, must be unique within session)
+                  example: My Research Paper
+                fileType:
+                  $ref: '#/components/schemas/FileType'
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload (required for all types except 'url')
+            encoding:
+              file:
+                contentType: application/octet-stream, text/plain, application/pdf, application/json, text/yaml, text/markdown
+      responses:
+        '202':
+          description: Document upload started (processing asynchronously)
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - file_id
+                  - document_id
+                  - session_id
+                  - message
+                properties:
+                  status:
+                    type: string
+                    enum: [processing]
+                  file_id:
+                    type: string
+                    description: Llama Stack file ID for tracking
+                  document_id:
+                    type: string
+                    description: Document identifier (sanitized from title)
+                  session_id:
+                    type: string
+                    description: Parent session ID
+                  message:
+                    type: string
+              example:
+                status: processing
+                file_id: file_xyz789abc
+                document_id: my-research-paper
+                session_id: vs-abc123
+                message: Document upload started
+        '400':
+          description: Bad request - validation or parsing error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingTitle:
+                  summary: Missing required title
+                  value:
+                    status: error
+                    error: title is required
+                unsupportedFileType:
+                  summary: Unsupported or missing file type
+                  value:
+                    status: error
+                    error: 'Unsupported file type: exe. Supported types: md, txt, pdf, json, yaml, yml, log, url'
+                noFile:
+                  summary: No file uploaded (for non-url types)
+                  value:
+                    status: error
+                    error: No file uploaded
+                fileTooLarge:
+                  summary: File exceeds preset limit
+                  value:
+                    status: error
+                    error: File size exceeds preset limit
+                invalidJSON:
+                  summary: Invalid JSON file
+                  value:
+                    status: error
+                    error: 'Invalid JSON file: SyntaxError: Unexpected token'
+                invalidYAML:
+                  summary: Invalid YAML file
+                  value:
+                    status: error
+                    error: 'Invalid YAML file: YAMLException: bad indentation'
+                invalidURL:
+                  summary: Invalid URL format
+                  value:
+                    status: error
+                    error: 'Invalid URL format: not-a-url'
+                ssrfBlocked:
+                  summary: SSRF attack blocked
+                  value:
+                    status: error
+                    error: Access to private/internal IP addresses is not allowed
+                noURLParam:
+                  summary: Missing URL parameter for url type
+                  value:
+                    status: error
+                    error: URL is required when fileType is "url"
+        '403':
+          description: Forbidden - user lacks permission or does not own session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: User does not have access to this session
+        '404':
+          description: Not found - session does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Vector store not found
+        '409':
+          description: Conflict - document with this title already exists in session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Document with title 'My Research Paper' already exists in this session
+        '500':
+          description: Internal server error during upload or processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                pdfParsingError:
+                  summary: PDF parsing failed
+                  value:
+                    status: error
+                    error: 'Error parsing PDF: Invalid PDF structure'
+                urlFetchError:
+                  summary: Failed to fetch URL
+                  value:
+                    status: error
+                    error: 'Error fetching URL: Failed to fetch URL: 500 Internal Server Error'
+                serverError:
+                  summary: Generic server error
+                  value:
+                    status: error
+                    error: Failed to upload document to vector store
+
+  /v1/sessions/{sessionId}/documents/{documentId}/status:
+    get:
+      tags:
+        - Documents
+      summary: Get document processing status
+      description: Check the status of a document upload/processing operation
+      operationId: getDocumentStatus
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Document status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - document_id
+                  - session_id
+                properties:
+                  status:
+                    type: string
+                    enum: [processing, completed, failed]
+                    description: Current processing status
+                  document_id:
+                    type: string
+                  session_id:
+                    type: string
+                  error:
+                    type: string
+                    description: Error message (only present if status is 'failed')
+              examples:
+                completed:
+                  summary: Document processing completed
+                  value:
+                    status: completed
+                    document_id: my-research-paper
+                    session_id: vs-abc123
+                processing:
+                  summary: Document still processing
+                  value:
+                    status: processing
+                    document_id: my-research-paper
+                    session_id: vs-abc123
+                failed:
+                  summary: Document processing failed
+                  value:
+                    status: failed
+                    document_id: my-research-paper
+                    session_id: vs-abc123
+                    error: Failed to extract text from PDF
+        '400':
+          description: Bad request - missing document_id parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: document_id query parameter is required
+        '403':
+          description: Forbidden - user does not own this session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: User does not have access to this session
+        '404':
+          description: Not found - session or document does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                sessionNotFound:
+                  summary: Session not found
+                  value:
+                    status: error
+                    error: Vector store not found
+                documentNotFound:
+                  summary: Document not found
+                  value:
+                    status: error
+                    error: File not found
+        '500':
+          description: Internal server error during status check
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Failed to retrieve file status
+
+  /v1/sessions/{sessionId}/documents/{documentId}:
+    delete:
+      tags:
+        - Documents
+      summary: Delete a document
+      description: Remove a document from the session's vector store
+      operationId: deleteDocument
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Document deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+              example:
+                status: success
+                document_id: my-research-paper
+                session_id: vs-abc123
+                message: Document deleted successfully
+        '403':
+          description: Forbidden - user does not own this session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: User does not have access to this session
+        '404':
+          description: Not found - session or document does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                sessionNotFound:
+                  summary: Session not found
+                  value:
+                    status: error
+                    error: Vector store not found
+                documentNotFound:
+                  summary: Document not found
+                  value:
+                    status: error
+                    error: Document not found
+        '500':
+          description: Internal server error during deletion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Failed to delete document from vector store
+
+  /v1/sessions/{sessionId}/query:
+    post:
+      tags:
+        - Query
+      summary: Execute RAG query
+      description: |
+        Execute a RAG (Retrieval-Augmented Generation) query against the session's documents.
+        Returns a streaming response (Server-Sent Events) with the AI-generated answer.
+
+        **Conversation Management**:
+        - First query creates a new conversation_id (automatically captured)
+        - Subsequent queries reuse the conversation_id for context continuity
+        - The conversation_id is stored in session metadata
+
+        **Streaming Response**:
+        - Content-Type: text/event-stream
+        - Each chunk sent as SSE format: `data: {JSON}\n\n`
+        - Response includes conversation_id and text chunks
+      operationId: querySession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Question or prompt to ask about the documents
+                  example: What are the main findings in the research papers?
+                  minLength: 1
+      responses:
+        '200':
+          description: Streaming response with query results
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  Server-Sent Events stream. Each event is formatted as:
+                  ```
+                  data: {"data":{"conversation_id":"conv-123","chunk":"text..."}}
+
+                  ```
+                example: |
+                  data: {"data":{"conversation_id":"conv-abc123","chunk":"Based on the research papers,"}}
+
+                  data: {"data":{"conversation_id":"conv-abc123","chunk":" the main findings include:"}}
+
+                  data: {"data":{"conversation_id":"conv-abc123","chunk":" improved accuracy by 15%"}}
+
+                  data: {"data":{"conversation_id":"conv-abc123","chunk":" and reduced latency."}}
+        '400':
+          description: Bad request - missing or invalid query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: query is required
+        '403':
+          description: Forbidden - user lacks permission or does not own session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: User does not have access to this session
+        '404':
+          description: Not found - session does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: Vector store not found
+        '500':
+          description: Internal server error during query processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                lightspeedError:
+                  summary: Error from lightspeed-core service
+                  value:
+                    status: error
+                    error: 'Error from Llama Stack server: validation error'
+                genericError:
+                  summary: Generic server error
+                  value:
+                    status: error
+                    error: Failed to process query
+
+components:
+  parameters:
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      description: Session identifier (Llama Stack vector store ID, format 'vs-{alphanumeric}')
+      schema:
+        type: string
+        example: vs-abc123def456
+        pattern: '^vs-[a-zA-Z0-9]+$'
+
+    DocumentId:
+      name: documentId
+      in: path
+      required: true
+      description: Document identifier (sanitized from title, lowercase with hyphens)
+      schema:
+        type: string
+        example: my-research-paper
+        pattern: '^[a-z0-9-]+$'
+
+  schemas:
+    FileType:
+      type: string
+      enum:
+        - md
+        - txt
+        - pdf
+        - json
+        - yaml
+        - yml
+        - log
+        - url
+      description: |
+        Supported file types:
+        - `md`: Markdown files
+        - `txt`: Plain text files
+        - `pdf`: PDF documents (text extraction)
+        - `json`: JSON files (validated before upload)
+        - `yaml`/`yml`: YAML files (validated before upload)
+        - `log`: Log files
+        - `url`: Remote web content (automatically fetched, SSRF-protected)
+
+    NotebookSession:
+      type: object
+      required:
+        - session_id
+        - user_id
+        - name
+        - description
+        - created_at
+        - updated_at
+      properties:
+        session_id:
+          type: string
+          description: Unique session identifier (Llama Stack vector store ID)
+          example: vs-abc123def456
+        user_id:
+          type: string
+          description: User entity reference (Backstage user)
+          example: user:default/johndoe
+        name:
+          type: string
+          description: Session name
+          example: My Research Project
+        description:
+          type: string
+          description: Session description
+          example: Documents for machine learning research
+        created_at:
+          type: string
+          format: date-time
+          description: Session creation timestamp (ISO 8601)
+          example: '2024-01-15T10:30:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp (ISO 8601)
+          example: '2024-01-16T14:20:00.000Z'
+        metadata:
+          type: object
+          description: Session metadata (all fields optional)
+          properties:
+            document_ids:
+              type: array
+              items:
+                type: string
+              description: List of document IDs in this session
+              example: [doc-1, doc-2]
+            conversation_id:
+              type: string
+              nullable: true
+              description: Active conversation ID for RAG queries (null until first query)
+              example: conv-abc123
+            embedding_model:
+              type: string
+              description: Embedding model used
+              example: text-embedding-ada-002
+            embedding_dimension:
+              type: integer
+              description: Embedding vector dimension
+              example: 1536
+            provider_id:
+              type: string
+              description: AI provider identifier
+              example: openai
+          additionalProperties: true
+          example:
+            document_ids: [doc-1, doc-2]
+            conversation_id: conv-abc123
+            embedding_model: text-embedding-ada-002
+            embedding_dimension: 1536
+            provider_id: openai
+            custom_field: custom-value
+
+    SessionDocument:
+      type: object
+      required:
+        - document_id
+        - title
+        - session_id
+        - user_id
+        - source_type
+        - created_at
+      properties:
+        document_id:
+          type: string
+          description: Document identifier (sanitized from title)
+          example: my-research-paper
+        title:
+          type: string
+          description: Original document title
+          example: My Research Paper
+        session_id:
+          type: string
+          description: Parent session ID
+          example: vs-abc123
+        user_id:
+          type: string
+          description: Document owner (same as session owner)
+          example: user:default/johndoe
+        source_type:
+          type: string
+          enum: [text, pdf, url, md, json, yaml, log]
+          description: Document source/file type
+          example: pdf
+        created_at:
+          type: string
+          format: date-time
+          description: Document creation timestamp (ISO 8601)
+          example: '2024-01-15T10:30:00.000Z'
+        metadata:
+          type: object
+          description: Document metadata from parsing
+          additionalProperties: true
+          example:
+            fileName: research.pdf
+            fileType: pdf
+            pageCount: 25
+            parseTimestamp: '2024-01-15T10:30:00.000Z'
+
+    SessionResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+          example: success
+        session:
+          $ref: '#/components/schemas/NotebookSession'
+        message:
+          type: string
+          description: Success message
+          example: Session created successfully
+        error:
+          type: string
+          description: Error message (only present when status is 'error')
+
+    SessionListResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+          example: success
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotebookSession'
+          description: Array of sessions (empty array if user has no sessions)
+        count:
+          type: integer
+          description: Number of sessions returned
+          example: 5
+        error:
+          type: string
+          description: Error message (only present when status is 'error')
+
+    DocumentResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+          example: success
+        document_id:
+          type: string
+          example: my-research-paper
+        title:
+          type: string
+          example: My Research Paper
+        session_id:
+          type: string
+          example: vs-abc123
+        replaced:
+          type: boolean
+          description: Whether this operation replaced an existing document
+          example: false
+        message:
+          type: string
+          description: Success message
+          example: Document deleted successfully
+        error:
+          type: string
+          description: Error message (only present when status is 'error')
+
+    DocumentListResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+          example: success
+        session_id:
+          type: string
+          example: vs-abc123
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionDocument'
+          description: Array of documents (empty array if session has no documents)
+        count:
+          type: integer
+          description: Number of documents returned
+          example: 3
+        error:
+          type: string
+          description: Error message (only present when status is 'error')
+
+    ErrorResponse:
+      type: object
+      required:
+        - status
+        - error
+      properties:
+        status:
+          type: string
+          enum: [error]
+          example: error
+        error:
+          type: string
+          description: Human-readable error message
+          example: Session not found
+
+  securitySchemes:
+    BackstageAuth:
+      type: http
+      scheme: bearer
+      description: Backstage authentication token. User must have `lightspeed.notebooks.use` permission.
+
+security:
+  - BackstageAuth: []

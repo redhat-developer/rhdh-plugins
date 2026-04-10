@@ -44,6 +44,8 @@ const bulkImportTranslationFr = createTranslationMessages({
     'repositories.addedRepositoriesCount': 'Dépôts ajoutés ({{count}})',
     'repositories.importedEntitiesCount': 'Entités importées ({{count}})',
     'repositories.noRecordsFound': 'Aucun enregistrement trouvé',
+    'repositories.noProjectsFound':
+      "Aucun projet disponible pour l'importation.",
     'repositories.refresh': 'Rafraîchir',
     'repositories.import': 'Importer',
     'repositories.removing': 'Suppression...',
@@ -53,6 +55,8 @@ const bulkImportTranslationFr = createTranslationMessages({
     'repositories.repositoryText': 'Dépôt',
     'repositories.removeRepositoryWarningScaffolder':
       'La suppression d’un référentiel efface toutes les informations de tâches de scaffolding.',
+    'repositories.removeRepositoryWarningOrchestrator':
+      "Supprimer le référentiel et les informations de workflow de l'orchestrateur associées.",
     'repositories.removeRepositoryWarning':
       'La suppression d’un référentiel efface toutes les informations associées de la page Catalogue.',
     'repositories.removeRepositoryWarningGitlab':
@@ -65,6 +69,8 @@ const bulkImportTranslationFr = createTranslationMessages({
       'Ce référentiel a été ajouté au fichier app-config. Pour le supprimer, modifiez directement le fichier',
     'repositories.removeTooltipRepositoryScaffolder':
       'Supprimer le référentiel et toutes les tâches de scaffolding associées',
+    'repositories.removeTooltipRepositoryOrchestrator':
+      "Supprimer le référentiel et les informations de workflow de l'orchestrateur associées",
     'repositories.errorOccuredWhileFetching':
       "Une erreur s'est produite lors de la récupération de la demande d'extraction",
     'repositories.failedToCreatePullRequest':
@@ -80,6 +86,11 @@ const bulkImportTranslationFr = createTranslationMessages({
     'status.waitingForApproval': "En attente d'approbation",
     'status.imported': 'Importé',
     'status.readyToImport': 'Prêt à importer',
+    'status.waitingForPullRequestToStart':
+      "En attente du démarrage de la demande d'extraction",
+    'status.missingConfigurations': 'Configurations manquantes',
+    'status.failedCreatingPR': 'Échec de la création du PR',
+    'status.pullRequestRejected': "Demande d'extraction rejetée",
     'errors.prErrorPermissions':
       "Impossible de créer un nouveau PR en raison d'autorisations insuffisantes. Contactez votre administrateur.",
     'errors.catalogInfoExists':
@@ -93,6 +104,10 @@ const bulkImportTranslationFr = createTranslationMessages({
     'errors.errorOccurred': "Une erreur s'est produite",
     'errors.failedToCreatePullRequest':
       "Échec de la création de la demande d'extraction",
+    'errors.noIntegrationsConfigured':
+      "Aucune intégration GitHub ou GitLab n'est configurée. Veuillez ajouter au moins une intégration pour utiliser la fonctionnalité d'importation en masse.",
+    'errors.addIntegrationsToConfig':
+      'Pour résoudre ce problème, assurez-vous que les intégrations sont ajoutées à votre fichier de configuration Backstage (app-config.yaml).',
     'validation.componentNameInvalid':
       '"{{value}}" n\'est pas valide ; une chaîne contenant des séquences de [a-zA-Z0-9] séparées par l\'un des [-_.] est attendue, soit au maximum 63 caractères au total. Pour en savoir plus sur le format de fichier de catalogue, visitez : https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md',
     'validation.componentNameRequired': 'Le nom du composant est requis',
@@ -109,6 +124,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'table.headers.organizationGroup': 'Organisation/groupe',
     'table.headers.group': 'Groupe',
     'table.headers.status': 'Statut',
+    'table.headers.taskStatus': 'Statut de la tâche',
     'table.headers.lastUpdated': 'Dernière mise à jour',
     'table.headers.actions': 'Actes',
     'table.headers.catalogInfoYaml': 'catalogue-info.yaml',
@@ -161,6 +177,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',
     'common.delete': 'Supprimer',
+    'common.documentation': 'Documentation',
     'common.edit': 'Modifier',
     'common.filter': 'Filtre',
     'common.import': 'Importer',
@@ -222,6 +239,8 @@ const bulkImportTranslationFr = createTranslationMessages({
     'forms.footer.createServiceNowTickets': 'Créer des tickets ServiceNow',
     'forms.footer.createPullRequest': "Créer une demande d'extraction",
     'forms.footer.createPullRequests': "Créer des demandes d'extraction",
+    'forms.footer.selectRepositoryTooltip':
+      'Sélectionner un référentiel à importer.',
     'forms.footer.serviceNowTooltip':
       'Les fichiers Catalog-info.yaml doivent être générés avant de créer un ticket ServiceNow',
     'forms.footer.importTooltip':
