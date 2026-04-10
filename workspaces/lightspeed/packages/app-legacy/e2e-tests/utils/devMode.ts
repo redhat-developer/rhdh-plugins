@@ -15,11 +15,26 @@
  */
 import { Page } from '@playwright/test';
 import {
+  E2E_MCP_VALID_TOKEN,
   generateQueryResponse,
   mockedMcpServersResponse,
   modelBaseUrl,
   type McpServersListMock,
 } from '../fixtures/responses';
+
+let mcpServersMockState: McpServersListMock;
+
+export type MockMcpServersOptions = {
+  failServerValidateFor?: string;
+  /** Shown as `validation.error` when POST validate fails for `failServerValidateFor` (use product i18n, e.g. `mcp.settings.token.validationFailed`). */
+  failServerValidateError?: string;
+};
+
+let mcpMockOptions: MockMcpServersOptions = {};
+
+function cloneMcpServersMock(json: McpServersListMock): McpServersListMock {
+  return JSON.parse(JSON.stringify(json)) as McpServersListMock;
+}
 
 export async function mockModels(page: Page, models: any[]) {
   await page.route(`${modelBaseUrl}/v1/models`, async route => {
@@ -106,13 +121,16 @@ export async function mockQueryWithResponseDelay(
 const mcpServersRouteGlob = `${modelBaseUrl}/mcp-servers**`;
 
 /**
- * Mocks GET `/api/lightspeed/mcp-servers` and PATCH `/api/lightspeed/mcp-servers/:name`
- * (toggle enabled). Other methods (e.g. POST validate) pass through to the backend.
+ * Mocks GET/PATCH `/api/lightspeed/mcp-servers` and POST credential/server validation.
+ * Keeps in-memory state so PATCH (e.g. token) is reflected on subsequent GET.
  */
 export async function mockMcpServers(
   page: Page,
   json: McpServersListMock = mockedMcpServersResponse,
+  options: MockMcpServersOptions = {},
 ) {
+  mcpServersMockState = cloneMcpServersMock(json);
+  mcpMockOptions = options;
   await page.unroute(mcpServersRouteGlob);
   await page.route(mcpServersRouteGlob, async route => {
     const req = route.request();
@@ -121,7 +139,97 @@ export async function mockMcpServers(
     const segments = suffix.split('/').filter(Boolean);
 
     if (req.method() === 'GET' && segments.length === 0) {
-      await route.fulfill({ json });
+      await route.fulfill({ json: mcpServersMockState });
+      return;
+    }
+
+    if (
+      req.method() === 'POST' &&
+      segments.length === 1 &&
+      segments[0] === 'validate'
+    ) {
+      let body: { url?: string; token?: string };
+      try {
+        body = req.postDataJSON();
+      } catch {
+        await route.fulfill({ status: 400, json: { error: 'Invalid JSON' } });
+        return;
+      }
+      const valid = body.token === E2E_MCP_VALID_TOKEN;
+      await route.fulfill({
+        json: valid
+          ? { valid: true, toolCount: 1 }
+          : {
+              valid: false,
+              toolCount: 0,
+            },
+      });
+      return;
+    }
+
+    if (
+      req.method() === 'POST' &&
+      segments.length === 2 &&
+      segments[1] === 'validate'
+    ) {
+      const name = decodeURIComponent(segments[0]!);
+      if (mcpMockOptions.failServerValidateFor === name) {
+        await route.fulfill({
+          json: {
+            name,
+            status: 'error' as const,
+            toolCount: 0,
+            validation: {
+              error:
+                mcpMockOptions.failServerValidateError ??
+                'Upstream MCP validation failed.',
+            },
+          },
+        });
+        return;
+      }
+
+      // Mirror GET list data. The real UI calls validate after load for each server with a
+      // token; a static { toolCount: 5 } here overwrote scenario tool counts (14 tools, etc.).
+      const server = mcpServersMockState.servers.find(s => s.name === name);
+      if (!server) {
+        await route.fulfill({
+          status: 404,
+          json: { error: `MCP server '${name}' is not configured` },
+        });
+        return;
+      }
+
+      const toolCount = server.toolCount;
+      if (server.status === 'error') {
+        await route.fulfill({
+          json: {
+            name,
+            status: 'error' as const,
+            toolCount,
+            validation: { error: 'MCP validation failed' },
+          },
+        });
+        return;
+      }
+      if (server.status === 'unknown') {
+        await route.fulfill({
+          json: {
+            name,
+            status: 'unknown' as const,
+            toolCount,
+          },
+        });
+        return;
+      }
+
+      await route.fulfill({
+        json: {
+          name,
+          status: 'connected' as const,
+          toolCount,
+        },
+      });
       return;
     }
 
@@ -134,7 +242,7 @@ export async function mockMcpServers(
         await route.fulfill({ status: 400, json: { error: 'Invalid JSON' } });
         return;
       }
-      const server = json.servers.find(s => s.name === name);
+      const server = mcpServersMockState.servers.find(s => s.name === name);
       if (!server) {
         await route.fulfill({
           status: 404,
@@ -144,10 +252,26 @@ export async function mockMcpServers(
         });
         return;
       }
-      const updated = {
-        ...server,
-        enabled: body.enabled ?? server.enabled,
-      };
+      const updated = { ...server };
+      if (body.enabled !== undefined) {
+        updated.enabled = body.enabled;
+      }
+      if (Object.prototype.hasOwnProperty.call(body, 'token')) {
+        const tok = body.token;
+        if (tok && String(tok).trim().length > 0) {
+          updated.hasToken = true;
+          updated.hasUserToken = true;
+          updated.status = 'connected';
+          updated.toolCount = 5;
+        } else {
+          updated.hasToken = false;
+          updated.hasUserToken = false;
+          updated.status = 'unknown';
+          updated.toolCount = 0;
+        }
+      }
+      const idx = mcpServersMockState.servers.findIndex(s => s.name === name);
+      mcpServersMockState.servers[idx] = updated;
       await route.fulfill({ json: { server: updated } });
       return;
     }

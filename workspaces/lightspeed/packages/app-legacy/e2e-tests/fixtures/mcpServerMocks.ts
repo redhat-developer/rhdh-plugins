@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import type { LightspeedMessages } from '../utils/translations';
+import { formatMcpToolCountStatus } from '../utils/translations';
+
 /**
  * GET /api/lightspeed/mcp-servers body shape (see McpServersSettings McpServerResponse).
  * Use {@link mcpServer} for defaults; override fields per scenario.
@@ -49,20 +52,55 @@ export function mcpServer(
   };
 }
 
+type MockDisplayStatus =
+  | 'tokenRequired'
+  | 'disabled'
+  | 'failed'
+  | 'ok'
+  | 'unknown';
+
+/** Mirrors McpServersSettings getDisplayStatus. */
+function getDisplayStatusForMock(
+  server: McpServerMockEntry,
+): MockDisplayStatus {
+  if (!server.hasToken) return 'tokenRequired';
+  if (!server.enabled) return 'disabled';
+  if (server.status === 'error') return 'failed';
+  if (server.status === 'connected') return 'ok';
+  return 'unknown';
+}
+
+/**
+ * Expected MCP header “selected” line — mirrors McpServersSettings `selectedCount` useMemo.
+ */
+export function getExpectedMcpSelectedCountForMock(
+  mcpList: McpServersListMock,
+): { selectedCount: number; totalCount: number } {
+  const totalCount = mcpList.servers.length;
+  const selectedCount = mcpList.servers.filter(server => {
+    const displayStatus = getDisplayStatusForMock(server);
+    const isUnavailable =
+      displayStatus === 'failed' || displayStatus === 'tokenRequired';
+    return server.enabled && !isUnavailable;
+  }).length;
+  return { selectedCount, totalCount };
+}
+
 /**
  * Expected Status column text for a mock row — mirrors McpServersSettings getDisplayStatus +
  * getDisplayDetail.
  */
 export function getExpectedMcpStatusDetailForMock(
   server: McpServerMockEntry,
+  t: LightspeedMessages,
 ): string {
-  // Same branch order as McpServersSettings getDisplayStatus + getDisplayDetail.
-  if (!server.hasToken) return 'Token required';
-  if (!server.enabled) return 'Disabled';
-  if (server.status === 'error') return 'Failed';
-  if (server.status === 'unknown') return 'Unknown';
-  const suffix = server.toolCount === 1 ? 'tool' : 'tools';
-  return `${server.toolCount} ${suffix}`;
+  const displayStatus = getDisplayStatusForMock(server);
+  if (displayStatus === 'tokenRequired')
+    return t['mcp.settings.status.tokenRequired'];
+  if (displayStatus === 'disabled') return t['mcp.settings.status.disabled'];
+  if (displayStatus === 'failed') return t['mcp.settings.status.failed'];
+  if (displayStatus === 'unknown') return t['mcp.settings.status.unknown'];
+  return formatMcpToolCountStatus(t, server.toolCount);
 }
 
 /** Named presets for Playwright `mockMcpServers(page, scenario)` and panel assertions. */
@@ -155,3 +193,32 @@ export const mcpServerScenarios = {
 
 export const mockedMcpServersResponse: McpServersListMock =
   mcpServerScenarios.default;
+
+/**
+ * Token accepted by e2e route mocks for `POST .../mcp-servers/validate`
+ * (credential check before PATCH).
+ */
+export const E2E_MCP_VALID_TOKEN = 'e2e-mcp-valid-token';
+
+/** One row with `url` set so the configure modal runs credential + server validation. */
+export const tokenCredentialValidationScenario = {
+  servers: [
+    mcpServer('credential-test-mcp', {
+      hasToken: false,
+      toolCount: 0,
+      status: 'unknown',
+      url: 'http://127.0.0.1:7777/mcp',
+    }),
+  ],
+} satisfies McpServersListMock;
+
+/** Token required but no `url` — UI must not call credential validate (shows URL error). */
+export const tokenCredentialNoUrlScenario = {
+  servers: [
+    mcpServer('no-url-mcp', {
+      hasToken: false,
+      toolCount: 0,
+      status: 'unknown',
+    }),
+  ],
+} satisfies McpServersListMock;

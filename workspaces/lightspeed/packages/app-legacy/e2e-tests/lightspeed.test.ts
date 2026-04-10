@@ -23,7 +23,10 @@ import {
   botResponse,
   moreConversations,
   mockedShields,
+  E2E_MCP_VALID_TOKEN,
   mcpServerScenarios,
+  tokenCredentialNoUrlScenario,
+  tokenCredentialValidationScenario,
   type McpServersListMock,
   thinkingContent,
   assistantResponse,
@@ -59,7 +62,9 @@ import {
   clickMcpServersStatusColumn,
   clickMcpServersNameColumn,
   mcpServersTableBodyRows,
+  type DisplayMode,
 } from './pages/LightspeedPage';
+import { McpConfigureTokenPage } from './pages/McpConfigureTokenPage';
 import {
   uploadFiles,
   uploadAndAssertDuplicate,
@@ -128,10 +133,10 @@ import {
 import {
   LightspeedMessages,
   evaluateMessage,
+  formatMcpToolCountStatus,
   getTranslations,
 } from './utils/translations';
 import { runAccessibilityTests } from './utils/accessibility';
-import { skipUnlessLocales } from './utils/localeSkip';
 
 test.describe('Lightspeed tests', () => {
   const botQuery = 'Please respond';
@@ -213,12 +218,13 @@ test.describe('Lightspeed tests', () => {
       await verifyMcpSettingsPanel(sharedPage, translations, mcpList);
     }
 
-    test.beforeEach(async ({}, testInfo) => {
-      skipUnlessLocales(
-        testInfo,
-        ['en'],
-        'Chatbot MCP settings uses English-only UI strings.',
-      );
+    /** Opens the chatbot and sets display mode before MCP configure-server token flows. */
+    async function openChatbotInDisplayMode(mode: DisplayMode) {
+      await openChatbot(sharedPage);
+      await selectDisplayMode(sharedPage, translations, mode);
+    }
+
+    test.beforeEach(async () => {
       await sharedPage.goto('/');
     });
 
@@ -271,15 +277,15 @@ test.describe('Lightspeed tests', () => {
       await openChatbot(sharedPage);
       await openMcpSettingsPanel(sharedPage, translations);
 
-      const rows = mcpServersTableBodyRows(sharedPage);
+      const rows = mcpServersTableBodyRows(sharedPage, translations);
       await expect(rows.nth(0)).toContainText('alpha-mcp');
       await expect(rows.nth(1)).toContainText('beta-mcp');
 
-      await clickMcpServersNameColumn(sharedPage);
+      await clickMcpServersNameColumn(sharedPage, translations);
       await expect(rows.nth(0)).toContainText('beta-mcp');
       await expect(rows.nth(1)).toContainText('alpha-mcp');
 
-      await closeMcpSettingsPanel(sharedPage);
+      await closeMcpSettingsPanel(sharedPage, translations);
     });
 
     test('Toggle works as expected', async () => {
@@ -287,15 +293,156 @@ test.describe('Lightspeed tests', () => {
       await openChatbot(sharedPage);
       await openMcpSettingsPanel(sharedPage, translations);
 
-      const row = mcpServerRow(sharedPage, serverName);
-      await clickMcpServersStatusColumn(sharedPage);
-      await mcpServerToggle(sharedPage, serverName).click();
-      await expect(row.getByText('Disabled', { exact: true })).toBeVisible();
+      const row = mcpServerRow(sharedPage, serverName, translations);
+      await clickMcpServersStatusColumn(sharedPage, translations);
+      await mcpServerToggle(sharedPage, serverName, translations).click();
+      await expect(
+        row.getByText(translations['mcp.settings.status.disabled'], {
+          exact: true,
+        }),
+      ).toBeVisible();
 
-      await mcpServerToggle(sharedPage, serverName).click();
-      await expect(row.getByText('14 tools', { exact: true })).toBeVisible();
+      await mcpServerToggle(sharedPage, serverName, translations).click();
+      await expect(
+        row.getByText(formatMcpToolCountStatus(translations, 14), {
+          exact: true,
+        }),
+      ).toBeVisible();
 
-      await closeMcpSettingsPanel(sharedPage);
+      await closeMcpSettingsPanel(sharedPage, translations);
+    });
+
+    test.describe('Configure MCP server token', () => {
+      let mcpToken: McpConfigureTokenPage;
+
+      test.beforeEach(() => {
+        mcpToken = new McpConfigureTokenPage(sharedPage, translations);
+      });
+
+      test('Valid token saves and row shows tools — Overlay', async () => {
+        await mcpToken.gotoMcpSettings(
+          tokenCredentialValidationScenario,
+          'Overlay',
+        );
+
+        const serverName = 'credential-test-mcp';
+        await mcpToken.seeRowStatus(
+          serverName,
+          translations['mcp.settings.status.tokenRequired'],
+        );
+
+        await mcpToken.openEditServer(serverName);
+        await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
+        await mcpToken.save();
+
+        await mcpToken.seeTokenHidden();
+        await mcpToken.seeRowStatus(
+          serverName,
+          formatMcpToolCountStatus(translations, 5),
+        );
+
+        await mcpToken.closeMcpPanel();
+      });
+
+      test('Invalid token then valid token — Dock to window', async () => {
+        await mcpToken.gotoMcpSettings(
+          tokenCredentialValidationScenario,
+          'Dock to window',
+        );
+
+        const serverName = 'credential-test-mcp';
+        await mcpToken.openEditServer(serverName);
+
+        await mcpToken.typeToken('bad-token');
+        await mcpToken.save();
+        await mcpToken.seeMessage(
+          translations['mcp.settings.token.invalidCredentials'],
+        );
+
+        await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
+        await mcpToken.save();
+        await mcpToken.seeTokenHidden();
+        await mcpToken.seeRowStatus(
+          serverName,
+          formatMcpToolCountStatus(translations, 5),
+        );
+
+        await mcpToken.closeMcpPanel();
+      });
+
+      test('Cancel discards without saving — Fullscreen', async () => {
+        await mcpToken.gotoMcpSettings(
+          tokenCredentialValidationScenario,
+          'Fullscreen',
+        );
+
+        const serverName = 'credential-test-mcp';
+        await mcpToken.openEditServer(serverName);
+        await mcpToken.typeToken('draft-token');
+        await mcpToken.cancel();
+
+        await mcpToken.seeModalClosed();
+        await mcpToken.seeRowStatus(
+          serverName,
+          translations['mcp.settings.status.tokenRequired'],
+        );
+
+        await mcpToken.closeMcpPanel();
+      });
+
+      test('Server validation failure shows error — Overlay', async () => {
+        await mcpToken.gotoMcpSettings(
+          tokenCredentialValidationScenario,
+          'Overlay',
+          {
+            failServerValidateFor: 'credential-test-mcp',
+            failServerValidateError:
+              translations['mcp.settings.token.validationFailed'],
+          },
+        );
+
+        const serverName = 'credential-test-mcp';
+        await mcpToken.openEditServer(serverName);
+        await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
+        await mcpToken.save();
+
+        await mcpToken.seeMessage(
+          translations['mcp.settings.token.validationFailed'],
+        );
+        await mcpToken.cancel();
+        await mcpToken.closeMcpPanel();
+      });
+
+      test('Missing server URL shows error — Dock to window', async () => {
+        await mcpToken.gotoMcpSettings(
+          tokenCredentialNoUrlScenario,
+          'Dock to window',
+        );
+
+        const serverName = 'no-url-mcp';
+        await mcpToken.openEditServer(serverName);
+        await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
+        await mcpToken.save();
+
+        await mcpToken.seeMessage(
+          translations['mcp.settings.token.urlUnavailableForValidation'],
+        );
+        await mcpToken.cancel();
+        await mcpToken.closeMcpPanel();
+      });
+
+      test('Clear token input empties PAT — Fullscreen', async () => {
+        await mcpToken.gotoMcpSettings(
+          tokenCredentialNoUrlScenario,
+          'Fullscreen',
+        );
+
+        await mcpToken.openEditServer('no-url-mcp');
+        await mcpToken.typeThenClearToken('e2e-draft-personal-access-token');
+
+        await mcpToken.cancel();
+        await mcpToken.closeMcpPanel();
+      });
     });
   });
 

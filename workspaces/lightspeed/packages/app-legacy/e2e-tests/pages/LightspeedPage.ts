@@ -16,11 +16,16 @@
 
 import { Page, expect, type Locator } from '@playwright/test';
 import {
+  getExpectedMcpSelectedCountForMock,
   getExpectedMcpStatusDetailForMock,
   mockedMcpServersResponse,
   type McpServersListMock,
 } from '../fixtures/responses';
-import { LightspeedMessages, evaluateMessage } from '../utils/translations';
+import {
+  LightspeedMessages,
+  evaluateMessage,
+  formatMcpSelectedCount,
+} from '../utils/translations';
 
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
 
@@ -120,7 +125,7 @@ export async function verifyDisplayModeMenuOptions(
   ).toBeVisible();
 }
 
-// MCP settings (McpServersSettings — English strings until full i18n)
+// MCP settings (McpServersSettings — strings from `mcp.settings.*` translations)
 
 export async function openMcpSettingsPanel(page: Page, t: LightspeedMessages) {
   await page.getByRole('button', { name: t['aria.settings.label'] }).click();
@@ -130,48 +135,155 @@ export async function openMcpSettingsPanel(page: Page, t: LightspeedMessages) {
   await page.getByRole('menuitem', { name: t['settings.mcp.label'] }).click();
 }
 
-export async function closeMcpSettingsPanel(page: Page) {
-  await page.getByRole('button', { name: 'Close MCP settings' }).click();
-}
-
-export function mcpServersTable(page: Page): Locator {
-  return page.getByLabel('MCP servers table');
-}
-
-export function mcpServersTableBodyRows(page: Page): Locator {
-  return mcpServersTable(page).locator('tbody tr');
-}
-
-export function mcpServerRow(page: Page, serverName: string): Locator {
-  return mcpServersTableBodyRows(page).filter({ hasText: serverName });
-}
-
-export function mcpServerToggle(page: Page, serverName: string): Locator {
-  return mcpServersTable(page)
-    .getByRole('gridcell', { name: `Toggle ${serverName}` })
-    .locator('span');
-}
-
-export async function clickMcpServersStatusColumn(page: Page) {
-  await mcpServersTable(page)
-    .getByRole('columnheader', { name: 'Status' })
+export async function closeMcpSettingsPanel(page: Page, t: LightspeedMessages) {
+  await page
+    .getByRole('button', { name: t['mcp.settings.closeAriaLabel'] })
     .click();
 }
 
-export async function clickMcpServersNameColumn(page: Page) {
-  await mcpServersTable(page).getByRole('button', { name: 'Name' }).click();
+export function mcpServersTable(page: Page, t: LightspeedMessages): Locator {
+  return page.getByLabel(t['mcp.settings.tableAriaLabel']);
 }
 
-function mcpServersSettingsHeading(page: Page): Locator {
-  return page.getByRole('heading', { name: 'MCP servers', exact: true });
+export function mcpServersTableBodyRows(
+  page: Page,
+  t: LightspeedMessages,
+): Locator {
+  return mcpServersTable(page, t).locator('tbody tr');
+}
+
+export function mcpServerRow(
+  page: Page,
+  serverName: string,
+  t: LightspeedMessages,
+): Locator {
+  return mcpServersTableBodyRows(page, t).filter({ hasText: serverName });
+}
+
+export function mcpServerToggle(
+  page: Page,
+  serverName: string,
+  t: LightspeedMessages,
+): Locator {
+  return mcpServersTable(page, t)
+    .getByRole('gridcell', {
+      name: evaluateMessage(
+        t['mcp.settings.toggleServerAriaLabel'],
+        serverName,
+      ),
+    })
+    .locator('span');
+}
+
+export function mcpEditServerButton(
+  page: Page,
+  serverName: string,
+  t: LightspeedMessages,
+): Locator {
+  return page.getByRole('button', {
+    name: evaluateMessage(t['mcp.settings.editServerAriaLabel'], serverName),
+  });
+}
+
+export function mcpPersonalAccessTokenInput(page: Page): Locator {
+  return page.locator('#mcp-pat-input');
+}
+
+/** Configure-server modal that contains the PAT field (avoids matching other dialogs). */
+export function mcpCredentialConfigureModal(page: Page): Locator {
+  return page
+    .getByRole('dialog')
+    .filter({ has: page.locator('#mcp-pat-input') });
+}
+
+/** Clear (×) control on the PAT field (`mcp.settings.token.clearAriaLabel`). */
+export function mcpClearTokenInputButton(
+  page: Page,
+  t: LightspeedMessages,
+): Locator {
+  return mcpCredentialConfigureModal(page).getByRole('button', {
+    name: t['mcp.settings.token.clearAriaLabel'],
+  });
+}
+
+export function mcpConfigureModalSaveButton(
+  page: Page,
+  t: LightspeedMessages,
+): Locator {
+  return mcpCredentialConfigureModal(page).getByRole('button', {
+    name: t['modal.save'],
+  });
+}
+
+export function mcpConfigureModalCancelButton(
+  page: Page,
+  t: LightspeedMessages,
+): Locator {
+  return mcpCredentialConfigureModal(page).getByRole('button', {
+    name: t['modal.cancel'],
+  });
+}
+
+/** Validation/helper line under the PAT field after Save (matches i18n `mcp.settings.token.*` copy). */
+export function mcpConfigureModalMessage(
+  page: Page,
+  exactText: string,
+): Locator {
+  return mcpCredentialConfigureModal(page).getByText(exactText, {
+    exact: true,
+  });
+}
+
+/**
+ * Asserts configure-server modal is ready: Close, Clear, Save, Cancel, and PAT field.
+ */
+export async function expectMcpConfigureModalReady(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await expect(
+    mcpCredentialConfigureModal(page).getByRole('button', {
+      name: t['mcp.settings.closeConfigureModalAriaLabel'],
+    }),
+  ).toBeVisible();
+  await expect(mcpClearTokenInputButton(page, t)).toBeVisible();
+  await expect(mcpConfigureModalSaveButton(page, t)).toBeVisible();
+  await expect(mcpConfigureModalCancelButton(page, t)).toBeVisible();
+  await expect(mcpPersonalAccessTokenInput(page)).toBeVisible();
+}
+
+export async function clickMcpServersStatusColumn(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await mcpServersTable(page, t)
+    .getByRole('columnheader', { name: t['mcp.settings.status'] })
+    .click();
+}
+
+export async function clickMcpServersNameColumn(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await mcpServersTable(page, t)
+    .getByRole('button', { name: t['mcp.settings.name'] })
+    .click();
+}
+
+function mcpServersSettingsHeading(page: Page, t: LightspeedMessages): Locator {
+  return page.getByRole('heading', {
+    name: t['mcp.settings.title'],
+    exact: true,
+  });
 }
 
 /** Assert the MCP servers settings heading is shown or dismissed with the panel. */
 export async function expectMcpServersSettingsHeading(
   page: Page,
   visible: boolean,
+  t: LightspeedMessages,
 ) {
-  const heading = mcpServersSettingsHeading(page);
+  const heading = mcpServersSettingsHeading(page, t);
   const assertion = visible ? expect(heading) : expect(heading).not;
   await assertion.toBeVisible();
 }
@@ -186,34 +298,42 @@ export async function verifyMcpSettingsPanel(
 ) {
   await openMcpSettingsPanel(page, t);
 
-  const table = mcpServersTable(page);
+  const table = mcpServersTable(page, t);
   await expect(table).toBeVisible();
-  await expectMcpServersSettingsHeading(page, true);
-  await expect(page.getByText(/^\d+ of \d+ selected/)).toBeVisible();
-
-  // Scope to MCP grid: Dock/overlay leaves the catalog visible, which also has "Name" sort buttons.
-  await expect(table.getByRole('button', { name: 'Name' })).toBeVisible();
+  await expectMcpServersSettingsHeading(page, true, t);
+  const { selectedCount, totalCount } =
+    getExpectedMcpSelectedCountForMock(mcpList);
   await expect(
-    table.getByRole('columnheader', { name: 'Status' }),
+    page.getByText(formatMcpSelectedCount(t, selectedCount, totalCount), {
+      exact: true,
+    }),
   ).toBeVisible();
 
-  await clickMcpServersStatusColumn(page);
+  // Scope to MCP grid: Dock/overlay leaves the catalog visible, which also has "Name" sort buttons.
+  await expect(
+    table.getByRole('button', { name: t['mcp.settings.name'] }),
+  ).toBeVisible();
+  await expect(
+    table.getByRole('columnheader', { name: t['mcp.settings.status'] }),
+  ).toBeVisible();
+
+  await clickMcpServersStatusColumn(page, t);
 
   // Close + selected count live in the MCP header, not always inside <form> (fullscreen omits Settings/form wrapper).
   await expect(
-    page.getByRole('button', { name: 'Close MCP settings' }),
+    page.getByRole('button', { name: t['mcp.settings.closeAriaLabel'] }),
   ).toBeVisible();
 
   if (mcpList.servers.length === 0) {
     await expect(
-      table.getByText('No MCP servers available.', { exact: true }),
+      table.getByText(t['mcp.settings.noneAvailable'], { exact: true }),
     ).toBeVisible();
   } else {
     for (const server of mcpList.servers) {
-      const row = mcpServerRow(page, server.name);
+      const row = mcpServerRow(page, server.name, t);
       await expect(row.getByText(server.name, { exact: true })).toBeVisible();
       await expect(
-        row.getByText(getExpectedMcpStatusDetailForMock(server), {
+        row.getByText(getExpectedMcpStatusDetailForMock(server, t), {
           exact: true,
         }),
       ).toBeVisible();
@@ -227,8 +347,8 @@ export async function verifyMcpSettingsPanel(
     - button "${t['aria.settings.label']}"
     `);
 
-  await closeMcpSettingsPanel(page);
-  await expectMcpServersSettingsHeading(page, false);
+  await closeMcpSettingsPanel(page, t);
+  await expectMcpServersSettingsHeading(page, false, t);
 }
 
 /** Chat composer message field (matches sendMessage in testHelper). */
