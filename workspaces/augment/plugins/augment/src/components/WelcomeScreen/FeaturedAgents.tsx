@@ -100,7 +100,7 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
       }));
   }, [agents, chatAgentConfigs]);
 
-  const CARD_WIDTH = 280;
+  const CARD_WIDTH = 300;
 
   if (featured.length === 0 && !onBrowseCatalog) return null;
 
@@ -141,23 +141,41 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                 sx={{
                   width: CARD_WIDTH,
                   flexShrink: 0,
-                  borderRadius: 3,
-                  transition: 'all 0.2s ease',
+                  borderRadius: 4,
+                  transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
                   opacity: ready ? 1 : 0.6,
                   overflow: 'visible',
                   display: 'flex',
                   flexDirection: 'column',
+                  borderColor: alpha(
+                    theme.palette.divider,
+                    isDark ? 0.15 : 0.18,
+                  ),
+                  borderTop: `3px solid ${alpha(avatarColor, isDark ? 0.5 : 0.4)}`,
+                  bgcolor: alpha(
+                    theme.palette.background.paper,
+                    isDark ? 0.6 : 0.9,
+                  ),
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: isDark
+                    ? `0 4px 12px ${alpha('#000', 0.25)}, 0 0 1px ${alpha('#fff', 0.05)} inset`
+                    : `0 4px 12px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.6)} inset`,
                   '&:hover': {
-                    borderColor: avatarColor,
-                    boxShadow: `0 6px 24px ${alpha(avatarColor, isDark ? 0.2 : 0.12)}`,
-                    transform: ready ? 'translateY(-2px)' : undefined,
+                    borderColor: alpha(avatarColor, 0.5),
+                    borderTopColor: avatarColor,
+                    boxShadow: isDark
+                      ? `0 16px 48px ${alpha(avatarColor, 0.22)}, 0 4px 12px ${alpha('#000', 0.3)}, 0 0 1px ${alpha('#fff', 0.08)} inset`
+                      : `0 16px 48px ${alpha(avatarColor, 0.18)}, 0 4px 12px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.8)} inset`,
+                    transform: ready
+                      ? 'translateY(-3px) scale(1.02)'
+                      : undefined,
                   },
                 }}
               >
                 <CardActionArea
                   onClick={() => onAgentSelect(agentId, displayName)}
                   sx={{
-                    borderRadius: 3,
+                    borderRadius: 4,
                     flex: 1,
                     display: 'flex',
                     flexDirection: 'column',
@@ -189,8 +207,9 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                           sx={{
                             width: 44,
                             height: 44,
-                            borderRadius: 2,
+                            borderRadius: 2.5,
                             objectFit: 'cover',
+                            boxShadow: `0 2px 8px ${alpha(avatarColor, 0.25)}`,
                           }}
                         />
                       ) : (
@@ -198,7 +217,7 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                           sx={{
                             width: 44,
                             height: 44,
-                            borderRadius: 2,
+                            borderRadius: 2.5,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -206,6 +225,7 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                             fontSize: '1.1rem',
                             bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
                             color: avatarColor,
+                            boxShadow: `0 2px 8px ${alpha(avatarColor, 0.2)}, 0 0 0 1px ${alpha(avatarColor, 0.1)} inset`,
                           }}
                         >
                           {displayName.charAt(0).toUpperCase()}
@@ -223,33 +243,13 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                         >
                           {displayName}
                         </Typography>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: '50%',
-                              bgcolor: ready
-                                ? theme.palette.success.main
-                                : theme.palette.warning.main,
-                            }}
-                          />
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              fontSize: '0.65rem',
-                              color: theme.palette.text.disabled,
-                            }}
-                          >
-                            {ready ? 'Ready' : agent.status}
-                          </Typography>
-                        </Box>
+                        <Chip
+                          label={ready ? 'Ready' : agent.status}
+                          size="small"
+                          color={ready ? 'success' : 'warning'}
+                          variant="outlined"
+                          sx={{ height: 18, fontSize: '0.7rem', mt: 0.25 }}
+                        />
                       </Box>
                     </Box>
 
@@ -257,10 +257,10 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                       variant="body2"
                       color="text.secondary"
                       sx={{
-                        fontSize: '0.8rem',
-                        minHeight: 36,
+                        fontSize: '0.75rem',
+                        minHeight: 48,
                         display: '-webkit-box',
-                        WebkitLineClamp: 2,
+                        WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
                         lineHeight: 1.5,
@@ -279,9 +279,9 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                     px: 2.5,
                     pb: 2,
                     pt: 0,
-                    minHeight: 34,
+                    minHeight: 40,
                     display: 'flex',
-                    gap: 0.75,
+                    gap: 0.5,
                     flexWrap: 'wrap',
                     alignItems: 'flex-start',
                   }}
@@ -298,8 +298,8 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                       }}
                       sx={{
                         fontSize: '0.7rem',
-                        height: 26,
-                        borderRadius: 2,
+                        height: 24,
+                        borderRadius: 1.5,
                         borderStyle: 'dashed',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease',
@@ -325,17 +325,58 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
               sx={{
                 width: CARD_WIDTH,
                 flexShrink: 0,
-                borderRadius: 3,
+                borderRadius: 4,
                 borderStyle: 'dashed',
                 borderColor: alpha(
                   theme.palette.primary.main,
                   isDark ? 0.3 : 0.25,
                 ),
-                transition: 'all 0.2s ease',
+                transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                bgcolor: alpha(
+                  theme.palette.background.paper,
+                  isDark ? 0.4 : 0.7,
+                ),
+                backdropFilter: 'blur(12px)',
+                boxShadow: isDark
+                  ? `0 2px 8px ${alpha('#000', 0.2)}, 0 0 1px ${alpha('#fff', 0.03)} inset`
+                  : `0 2px 8px ${alpha('#000', 0.04)}, 0 0 1px ${alpha('#fff', 0.5)} inset`,
                 minHeight: featured.length > 0 ? undefined : 120,
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: 4,
+                  border: `2px solid transparent`,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.3)}, transparent 60%) border-box`,
+                  WebkitMask:
+                    'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+                  WebkitMaskComposite: 'xor',
+                  maskComposite: 'exclude',
+                  animation: 'rotateBorder 4s linear infinite',
+                  opacity: 0.5,
+                  '@keyframes rotateBorder': {
+                    '0%': {
+                      background: `linear-gradient(0deg, ${alpha(theme.palette.primary.main, 0.3)}, transparent 60%) border-box`,
+                    },
+                    '25%': {
+                      background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.3)}, transparent 60%) border-box`,
+                    },
+                    '50%': {
+                      background: `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.3)}, transparent 60%) border-box`,
+                    },
+                    '75%': {
+                      background: `linear-gradient(270deg, ${alpha(theme.palette.primary.main, 0.3)}, transparent 60%) border-box`,
+                    },
+                    '100%': {
+                      background: `linear-gradient(360deg, ${alpha(theme.palette.primary.main, 0.3)}, transparent 60%) border-box`,
+                    },
+                  },
+                },
                 '&:hover': {
                   borderStyle: 'solid',
                   borderColor: theme.palette.primary.main,
@@ -343,8 +384,10 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                     theme.palette.primary.main,
                     isDark ? 0.06 : 0.03,
                   ),
-                  transform: 'translateY(-2px)',
-                  boxShadow: `0 6px 24px ${alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08)}`,
+                  transform: 'translateY(-3px) scale(1.02)',
+                  boxShadow: isDark
+                    ? `0 12px 40px ${alpha(theme.palette.primary.main, 0.2)}, 0 0 1px ${alpha('#fff', 0.08)} inset`
+                    : `0 12px 40px ${alpha(theme.palette.primary.main, 0.12)}, 0 0 1px ${alpha('#fff', 0.8)} inset`,
                 },
               }}
             >
@@ -364,9 +407,9 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
               >
                 <Box
                   sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
+                    width: 52,
+                    height: 52,
+                    borderRadius: 2,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -375,16 +418,22 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                       isDark ? 0.15 : 0.08,
                     ),
                     color: theme.palette.primary.main,
+                    animation: 'pulse 2.5s ease-in-out infinite',
+                    '@keyframes pulse': {
+                      '0%, 100%': { transform: 'scale(1)' },
+                      '50%': { transform: 'scale(1.05)' },
+                    },
                   }}
                 >
-                  <ExploreIcon sx={{ fontSize: 24 }} />
+                  <ExploreIcon sx={{ fontSize: 26 }} />
                 </Box>
                 <Typography
                   variant="subtitle2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 700,
                     color: theme.palette.primary.main,
                     textAlign: 'center',
+                    fontSize: '0.9rem',
                   }}
                 >
                   Browse all agents
@@ -392,8 +441,8 @@ export const FeaturedAgents: FC<FeaturedAgentsProps> = ({
                 <Typography
                   variant="caption"
                   sx={{
-                    color: 'text.disabled',
-                    fontSize: '0.7rem',
+                    color: 'text.secondary',
+                    fontSize: '0.75rem',
                     textAlign: 'center',
                   }}
                 >

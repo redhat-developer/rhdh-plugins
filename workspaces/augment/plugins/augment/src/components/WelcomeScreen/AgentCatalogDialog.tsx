@@ -38,7 +38,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Divider from '@mui/material/Divider';
 import Fade from '@mui/material/Fade';
 import Slide from '@mui/material/Slide';
-import CircularProgress from '@mui/material/CircularProgress';
+import Skeleton from '@mui/material/Skeleton';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -114,23 +114,58 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
     <Card
       variant="outlined"
       sx={{
-        minWidth: 280,
-        maxWidth: 340,
+        width: 300,
         flexShrink: 0,
-        borderRadius: 3,
-        transition: 'all 0.2s ease',
-        borderColor: alpha(avatarColor, isDark ? 0.25 : 0.2),
+        borderRadius: 4,
+        transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+        borderColor: alpha(avatarColor, isDark ? 0.2 : 0.18),
+        borderTop: `3px solid ${alpha(avatarColor, isDark ? 0.5 : 0.4)}`,
         opacity: ready ? 1 : 0.6,
+        display: 'flex',
+        flexDirection: 'column',
+        scrollSnapAlign: 'start',
+        bgcolor: alpha(theme.palette.background.paper, isDark ? 0.6 : 0.9),
+        backdropFilter: 'blur(12px)',
+        boxShadow: isDark
+          ? `0 4px 12px ${alpha('#000', 0.25)}, 0 0 1px ${alpha('#fff', 0.05)} inset`
+          : `0 4px 12px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.6)} inset`,
         '&:hover': {
-          borderColor: avatarColor,
-          boxShadow: `0 8px 32px ${alpha(avatarColor, isDark ? 0.2 : 0.12)}`,
-          transform: ready ? 'translateY(-2px)' : undefined,
+          borderColor: alpha(avatarColor, 0.5),
+          borderTopColor: avatarColor,
+          boxShadow: isDark
+            ? `0 16px 48px ${alpha(avatarColor, 0.22)}, 0 4px 12px ${alpha('#000', 0.3)}, 0 0 1px ${alpha('#fff', 0.08)} inset`
+            : `0 16px 48px ${alpha(avatarColor, 0.18)}, 0 4px 12px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.8)} inset`,
+          transform: ready ? 'translateY(-3px) scale(1.02)' : undefined,
         },
       }}
     >
-      <CardActionArea onClick={() => onSelect(agent)} sx={{ borderRadius: 3 }}>
-        <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+      <CardActionArea
+        onClick={() => onSelect(agent)}
+        sx={{
+          borderRadius: 4,
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+        }}
+      >
+        <CardContent
+          sx={{
+            p: 2.5,
+            '&:last-child': { pb: 2 },
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              mb: 1.5,
+            }}
+          >
             {avatarUrl ? (
               <Box
                 component="img"
@@ -139,8 +174,9 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
                 sx={{
                   width: 44,
                   height: 44,
-                  borderRadius: 2,
+                  borderRadius: 2.5,
                   objectFit: 'cover',
+                  boxShadow: `0 2px 8px ${alpha(avatarColor, 0.25)}`,
                 }}
               />
             ) : (
@@ -148,7 +184,7 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
                 sx={{
                   width: 44,
                   height: 44,
-                  borderRadius: 2,
+                  borderRadius: 2.5,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -156,6 +192,7 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
                   fontSize: '1.1rem',
                   bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
                   color: avatarColor,
+                  boxShadow: `0 2px 8px ${alpha(avatarColor, 0.2)}, 0 0 0 1px ${alpha(avatarColor, 0.1)} inset`,
                 }}
               >
                 {displayName.charAt(0).toUpperCase()}
@@ -169,50 +206,44 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
               >
                 {displayName}
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Box
-                  sx={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
-                    bgcolor: ready
-                      ? theme.palette.success.main
-                      : theme.palette.warning.main,
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: '0.6rem',
-                    color: theme.palette.text.disabled,
-                  }}
-                >
-                  {ready ? 'Ready' : agent.status}
-                </Typography>
-              </Box>
+              <Chip
+                label={ready ? 'Ready' : agent.status}
+                size="small"
+                color={ready ? 'success' : 'warning'}
+                variant="outlined"
+                sx={{ height: 18, fontSize: '0.7rem', mt: 0.25 }}
+              />
             </Box>
           </Box>
-          {description && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                fontSize: '0.75rem',
-                lineHeight: 1.5,
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                mb: 0.5,
-              }}
-            >
-              {sanitizeDescription(description, 120)}
-            </Typography>
-          )}
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              fontSize: '0.75rem',
+              lineHeight: 1.5,
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              flex: 1,
+              minHeight: 48,
+            }}
+          >
+            {description ? sanitizeDescription(description, 120) : '\u00A0'}
+          </Typography>
         </CardContent>
       </CardActionArea>
       {starters.length > 0 && (
-        <Box sx={{ px: 2, pb: 2, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <Box
+          sx={{
+            px: 2,
+            pb: 2,
+            display: 'flex',
+            gap: 0.5,
+            flexWrap: 'wrap',
+            minHeight: 34,
+          }}
+        >
           {starters.map((s, i) => (
             <Chip
               key={i}
@@ -224,7 +255,7 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
                 onStarterClick(agentId, s);
               }}
               sx={{
-                fontSize: '0.65rem',
+                fontSize: '0.7rem',
                 height: 24,
                 borderRadius: 1.5,
                 borderStyle: 'dashed',
@@ -276,26 +307,44 @@ const GridCard: FC<GridCardProps> = ({
   const cleanDesc = sanitizeDescription(rawDesc, 90);
 
   return (
-    <Fade in timeout={150 + index * 40}>
+    <Fade in timeout={100 + index * 30}>
       <Card
         variant="outlined"
         sx={{
-          borderRadius: 3,
-          transition: 'all 0.2s ease',
+          borderRadius: 4,
+          transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           position: 'relative',
-          minHeight: 120,
+          height: 180,
           display: 'flex',
           flexDirection: 'column',
           opacity: ready ? 1 : 0.55,
-          borderColor: isSelected ? theme.palette.primary.main : undefined,
+          borderColor: isSelected
+            ? theme.palette.primary.main
+            : alpha(theme.palette.divider, isDark ? 0.15 : 0.18),
+          borderTop: (() => {
+            let opacity = isDark ? 0.4 : 0.3;
+            if (isSelected) opacity = 0.8;
+            return `3px solid ${alpha(avatarColor, opacity)}`;
+          })(),
           bgcolor: isSelected
             ? alpha(theme.palette.primary.main, isDark ? 0.06 : 0.03)
-            : undefined,
+            : alpha(theme.palette.background.paper, isDark ? 0.6 : 0.9),
+          backdropFilter: 'blur(12px)',
+          boxShadow: isDark
+            ? `0 2px 8px ${alpha('#000', 0.3)}, 0 0 1px ${alpha('#fff', 0.05)} inset`
+            : `0 2px 8px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.7)} inset`,
           '&:hover': {
-            borderColor: theme.palette.primary.main,
-            boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, isDark ? 0.12 : 0.08)}`,
-            transform: ready ? 'translateY(-1px)' : undefined,
+            borderColor: alpha(avatarColor, 0.5),
+            borderTopColor: avatarColor,
+            boxShadow: isDark
+              ? `0 12px 40px ${alpha(avatarColor, 0.2)}, 0 4px 12px ${alpha('#000', 0.3)}, 0 0 1px ${alpha('#fff', 0.08)} inset`
+              : `0 12px 40px ${alpha(avatarColor, 0.15)}, 0 4px 12px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.8)} inset`,
+            transform: ready ? 'translateY(-3px) scale(1.02)' : undefined,
             '& .grid-pin': { opacity: 1 },
+          },
+          '&:focus-within': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: 2,
           },
         }}
       >
@@ -306,7 +355,7 @@ const GridCard: FC<GridCardProps> = ({
             top: 6,
             right: 6,
             zIndex: 2,
-            opacity: isPinned ? 1 : 0,
+            opacity: isPinned ? 1 : 0.3,
             transition: 'opacity 0.15s ease',
           }}
         >
@@ -319,8 +368,14 @@ const GridCard: FC<GridCardProps> = ({
                 color: isPinned
                   ? theme.palette.warning.main
                   : theme.palette.text.secondary,
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
-                '&:hover': { bgcolor: theme.palette.background.paper },
+                bgcolor: alpha(theme.palette.background.paper, 0.85),
+                backdropFilter: 'blur(8px)',
+                borderRadius: 2,
+                boxShadow: `0 1px 4px ${alpha('#000', isDark ? 0.3 : 0.1)}`,
+                '&:hover': {
+                  bgcolor: theme.palette.background.paper,
+                  boxShadow: `0 2px 8px ${alpha('#000', isDark ? 0.4 : 0.12)}`,
+                },
               }}
             >
               {isPinned ? (
@@ -341,89 +396,113 @@ const GridCard: FC<GridCardProps> = ({
             alignItems: 'stretch',
           }}
         >
-          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 }, flex: 1 }}>
+          <CardContent
+            sx={{
+              p: 2,
+              '&:last-child': { pb: 2 },
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             <Box
               sx={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.25,
-                mb: 0.75,
+                mb: 1,
               }}
             >
               <Box
                 sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '50%',
+                  width: 40,
+                  height: 40,
+                  borderRadius: 2.5,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 700,
-                  fontSize: '0.9rem',
+                  fontSize: '1rem',
                   bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
                   color: avatarColor,
                   flexShrink: 0,
+                  boxShadow: `0 2px 6px ${alpha(avatarColor, 0.2)}, 0 0 0 1px ${alpha(avatarColor, 0.1)} inset`,
                 }}
               >
                 {displayName.charAt(0).toUpperCase()}
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography
-                  variant="body2"
+                  variant="subtitle2"
                   noWrap
-                  sx={{ fontWeight: 600, fontSize: '0.82rem', lineHeight: 1.3 }}
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                    lineHeight: 1.3,
+                  }}
                 >
                   {displayName}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-                  <Box
-                    sx={{
-                      width: 5,
-                      height: 5,
-                      borderRadius: '50%',
-                      bgcolor: ready
-                        ? theme.palette.success.main
-                        : theme.palette.warning.main,
-                    }}
-                  />
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '0.6rem',
-                      color: theme.palette.text.disabled,
-                    }}
-                  >
-                    {agent.status}
-                  </Typography>
-                  <Box sx={{ flex: 1 }} />
-                  {card?.streaming && (
-                    <StreamIcon
-                      sx={{ fontSize: 11, color: theme.palette.text.disabled }}
-                    />
-                  )}
-                  {agent.labels?.protocol && (
-                    <SyncAltIcon
-                      sx={{ fontSize: 11, color: theme.palette.text.disabled }}
-                    />
-                  )}
-                </Box>
+                <Chip
+                  label={ready ? 'Ready' : agent.status}
+                  size="small"
+                  color={ready ? 'success' : 'warning'}
+                  variant="outlined"
+                  sx={{ height: 18, fontSize: '0.7rem', mt: 0.25 }}
+                />
               </Box>
             </Box>
             <Typography
               variant="body2"
               color="text.secondary"
               sx={{
-                fontSize: '0.7rem',
-                lineHeight: 1.45,
+                fontSize: '0.75rem',
+                lineHeight: 1.5,
                 display: '-webkit-box',
-                WebkitLineClamp: 2,
+                WebkitLineClamp: 3,
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
-                minHeight: 28,
+                flex: 1,
               }}
             >
               {cleanDesc}
             </Typography>
+            {/* Capability badges */}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 0.5,
+                mt: 1,
+                flexWrap: 'wrap',
+              }}
+            >
+              {card?.streaming && (
+                <Chip
+                  icon={<StreamIcon sx={{ fontSize: '12px !important' }} />}
+                  label="Streaming"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    height: 20,
+                    fontSize: '0.7rem',
+                    '& .MuiChip-label': { px: 0.5 },
+                  }}
+                />
+              )}
+              {agent.labels?.protocol && (
+                <Chip
+                  icon={<SyncAltIcon sx={{ fontSize: '12px !important' }} />}
+                  label="A2A"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    height: 20,
+                    fontSize: '0.7rem',
+                    '& .MuiChip-label': { px: 0.5 },
+                  }}
+                />
+              )}
+            </Box>
           </CardContent>
         </CardActionArea>
       </Card>
@@ -471,7 +550,7 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
     color: 'text.secondary',
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
-    fontSize: '0.6rem',
+    fontSize: '0.7rem',
     display: 'block',
     mb: 0.75,
   };
@@ -491,8 +570,10 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
           p: 2.5,
           pb: 2,
           background: isDark
-            ? `linear-gradient(180deg, ${alpha(avatarColor, 0.1)} 0%, transparent 100%)`
-            : `linear-gradient(180deg, ${alpha(avatarColor, 0.05)} 0%, transparent 100%)`,
+            ? `linear-gradient(180deg, ${alpha(avatarColor, 0.12)} 0%, transparent 100%)`
+            : `linear-gradient(180deg, ${alpha(avatarColor, 0.06)} 0%, transparent 100%)`,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, isDark ? 0.08 : 0.12)}`,
+          boxShadow: `0 1px 0 ${alpha('#fff', isDark ? 0.02 : 0.2)} inset`,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -504,8 +585,9 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
               sx={{
                 width: 52,
                 height: 52,
-                borderRadius: '50%',
+                borderRadius: 3,
                 objectFit: 'cover',
+                boxShadow: `0 4px 16px ${alpha(avatarColor, 0.25)}`,
               }}
             />
           ) : (
@@ -513,7 +595,7 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
               sx={{
                 width: 52,
                 height: 52,
-                borderRadius: '50%',
+                borderRadius: 3,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -522,6 +604,7 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                 fontWeight: 700,
                 fontSize: '1.4rem',
                 flexShrink: 0,
+                boxShadow: `0 4px 16px ${alpha(avatarColor, 0.25)}, 0 0 0 1px ${alpha(avatarColor, 0.1)} inset`,
               }}
             >
               {displayName.charAt(0).toUpperCase()}
@@ -547,19 +630,30 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                 label={agent.status}
                 size="small"
                 color={ready ? 'success' : 'warning'}
-                sx={{ height: 20, fontSize: '0.6rem' }}
+                sx={{ height: 20, fontSize: '0.7rem' }}
               />
               {card?.version && (
                 <Typography
                   variant="caption"
                   sx={{
-                    fontSize: '0.6rem',
+                    fontSize: '0.7rem',
                     color: theme.palette.text.disabled,
                   }}
                 >
                   v{card.version}
                 </Typography>
               )}
+              <Chip
+                label={agent.namespace}
+                size="small"
+                variant="outlined"
+                sx={{
+                  height: 18,
+                  fontSize: '0.65rem',
+                  borderColor: alpha(theme.palette.divider, 0.3),
+                  color: theme.palette.text.disabled,
+                }}
+              />
             </Box>
           </Box>
         </Box>
@@ -572,8 +666,12 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
           sx={{
             textTransform: 'none',
             fontWeight: 600,
-            borderRadius: 2,
+            borderRadius: 3,
             py: 1,
+            boxShadow: `0 4px 14px ${alpha(theme.palette.primary.main, 0.35)}`,
+            '&:hover': {
+              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.45)}`,
+            },
           }}
         >
           Start Conversation
@@ -586,7 +684,7 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
               textAlign: 'center',
               mt: 0.5,
               color: theme.palette.warning.main,
-              fontSize: '0.6rem',
+              fontSize: '0.7rem',
             }}
           >
             This agent is {agent.status.toLowerCase()} and may not respond
@@ -597,11 +695,11 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
       {/* Scrollable content */}
       <Box sx={{ flex: 1, overflow: 'auto', px: 2.5, py: 1.5 }}>
         {/* Starters */}
-        {starters.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" sx={LABEL_SX}>
-              Try asking
-            </Typography>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="caption" sx={LABEL_SX}>
+            Try asking
+          </Typography>
+          {starters.length > 0 ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               {starters.map((s, i) => (
                 <Chip
@@ -614,32 +712,46 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                   sx={{
                     height: 'auto',
                     py: 0.5,
+                    borderRadius: 2.5,
                     justifyContent: 'flex-start',
+                    transition: 'all 0.2s ease',
                     '& .MuiChip-label': {
                       fontSize: '0.72rem',
                       whiteSpace: 'normal',
                       lineHeight: 1.4,
                     },
-                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                    borderColor: alpha(theme.palette.primary.main, 0.25),
                     color: theme.palette.text.primary,
                     cursor: 'pointer',
                     '&:hover': {
                       bgcolor: alpha(theme.palette.primary.main, 0.06),
                       borderColor: theme.palette.primary.main,
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}`,
                     },
                   }}
                 />
               ))}
             </Box>
-          </Box>
-        )}
+          ) : (
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.disabled,
+                fontStyle: 'italic',
+                fontSize: '0.75rem',
+              }}
+            >
+              Start a conversation to explore this agent
+            </Typography>
+          )}
+        </Box>
 
         {/* Description */}
-        {cleanDesc && cleanDesc !== 'No description available' && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" sx={LABEL_SX}>
-              About
-            </Typography>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="caption" sx={LABEL_SX}>
+            About
+          </Typography>
+          {cleanDesc && cleanDesc !== 'No description available' ? (
             <Typography
               variant="body2"
               sx={{
@@ -650,13 +762,26 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
             >
               {cleanDesc}
             </Typography>
-          </Box>
-        )}
+          ) : (
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.disabled,
+                fontStyle: 'italic',
+                fontSize: '0.78rem',
+              }}
+            >
+              No description provided
+            </Typography>
+          )}
+        </Box>
 
         {/* Skills */}
         {skills.length > 0 && (
           <>
-            <Divider sx={{ mb: 1.5 }} />
+            <Divider
+              sx={{ mb: 1.5, borderColor: alpha(theme.palette.divider, 0.3) }}
+            />
             <Box sx={{ mb: 2 }}>
               <Typography variant="caption" sx={LABEL_SX}>
                 Skills ({skills.length})
@@ -667,12 +792,21 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                     key={skill.id || idx}
                     sx={{
                       p: 1.25,
-                      borderRadius: 2,
+                      borderRadius: 3,
                       bgcolor: alpha(
-                        theme.palette.text.primary,
-                        isDark ? 0.04 : 0.02,
+                        theme.palette.background.paper,
+                        isDark ? 0.5 : 0.8,
                       ),
-                      border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.12 : 0.15)}`,
+                      boxShadow: isDark
+                        ? `0 1px 4px ${alpha('#000', 0.15)}, 0 0 1px ${alpha('#fff', 0.03)} inset`
+                        : `0 1px 4px ${alpha('#000', 0.04)}, 0 0 1px ${alpha('#fff', 0.4)} inset`,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        boxShadow: isDark
+                          ? `0 2px 8px ${alpha('#000', 0.25)}, 0 0 1px ${alpha('#fff', 0.05)} inset`
+                          : `0 2px 8px ${alpha('#000', 0.08)}, 0 0 1px ${alpha('#fff', 0.6)} inset`,
+                      },
                     }}
                   >
                     <Typography
@@ -702,7 +836,9 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
         )}
 
         {/* Capabilities */}
-        <Divider sx={{ mb: 1.5 }} />
+        <Divider
+          sx={{ mb: 1.5, borderColor: alpha(theme.palette.divider, 0.3) }}
+        />
         <Box sx={{ mb: 2 }}>
           <Typography variant="caption" sx={LABEL_SX}>
             Capabilities
@@ -715,7 +851,12 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                 size="small"
                 variant="outlined"
                 color="info"
-                sx={{ height: 22, fontSize: '0.65rem' }}
+                sx={{
+                  height: 24,
+                  fontSize: '0.7rem',
+                  borderRadius: 2,
+                  boxShadow: `0 1px 3px ${alpha(theme.palette.info.main, 0.15)}`,
+                }}
               />
             )}
             {agent.labels?.protocol && (
@@ -724,111 +865,112 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                 label="A2A Protocol"
                 size="small"
                 variant="outlined"
-                sx={{ height: 22, fontSize: '0.65rem' }}
+                sx={{
+                  height: 24,
+                  fontSize: '0.7rem',
+                  borderRadius: 2,
+                  boxShadow: `0 1px 3px ${alpha(theme.palette.divider, 0.2)}`,
+                }}
               />
             )}
             {!card?.streaming && !agent.labels?.protocol && (
-              <Typography
-                variant="caption"
-                sx={{ color: theme.palette.text.disabled, fontSize: '0.7rem' }}
-              >
-                Standard request/response
-              </Typography>
+              <Chip
+                label="Standard request/response"
+                size="small"
+                variant="outlined"
+                sx={{
+                  height: 24,
+                  fontSize: '0.7rem',
+                  borderRadius: 2,
+                  color: theme.palette.text.disabled,
+                  borderColor: alpha(theme.palette.divider, 0.3),
+                }}
+              />
             )}
           </Box>
         </Box>
 
         {/* Technical details */}
-        <Divider sx={{ mb: 1.5 }} />
+        <Divider
+          sx={{ mb: 1.5, borderColor: alpha(theme.palette.divider, 0.3) }}
+        />
         <Box>
           <Typography variant="caption" sx={LABEL_SX}>
             Details
           </Typography>
-          <Box
-            sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.25 }}
-          >
-            {agent.labels?.framework && (
-              <Box>
-                <Typography
-                  variant="caption"
-                  sx={{ color: theme.palette.text.disabled, display: 'block' }}
-                >
-                  Framework
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.78rem' }}>
-                  {agent.labels.framework}
-                </Typography>
+          {(() => {
+            const DETAIL_CELL_SX = {
+              p: 1,
+              borderRadius: 2,
+              bgcolor: alpha(
+                theme.palette.background.paper,
+                isDark ? 0.4 : 0.6,
+              ),
+              border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.08 : 0.1)}`,
+            } as const;
+            const detailFields = [
+              agent.labels?.framework && {
+                label: 'Framework',
+                value: agent.labels.framework,
+              },
+              { label: 'Workspace', value: agent.namespace },
+              { label: 'Name', value: agent.name },
+              card?.version && { label: 'Version', value: card.version },
+              agent.createdAt && {
+                label: 'Created',
+                value: new Date(agent.createdAt).toLocaleDateString(),
+              },
+            ].filter(Boolean) as { label: string; value: string }[];
+            const cols = detailFields.length <= 2 ? '1fr' : '1fr 1fr';
+            return (
+              <Box sx={{ display: 'grid', gridTemplateColumns: cols, gap: 1 }}>
+                {detailFields.map(f => (
+                  <Box key={f.label} sx={DETAIL_CELL_SX}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: theme.palette.text.disabled,
+                        display: 'block',
+                        fontSize: '0.65rem',
+                      }}
+                    >
+                      {f.label}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontSize: '0.78rem', fontWeight: 500 }}
+                    >
+                      {f.value}
+                    </Typography>
+                  </Box>
+                ))}
+                {card?.url && (
+                  <Box sx={{ ...DETAIL_CELL_SX, gridColumn: '1 / -1' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: theme.palette.text.disabled,
+                        display: 'block',
+                        fontSize: '0.65rem',
+                      }}
+                    >
+                      Endpoint
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: '0.72rem',
+                        wordBreak: 'break-all',
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      {card.url}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
-            )}
-            <Box>
-              <Typography
-                variant="caption"
-                sx={{ color: theme.palette.text.disabled, display: 'block' }}
-              >
-                Workspace
-              </Typography>
-              <Typography variant="body2" sx={{ fontSize: '0.78rem' }}>
-                {agent.namespace}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography
-                variant="caption"
-                sx={{ color: theme.palette.text.disabled, display: 'block' }}
-              >
-                Name
-              </Typography>
-              <Typography variant="body2" sx={{ fontSize: '0.78rem' }}>
-                {agent.name}
-              </Typography>
-            </Box>
-            {card?.version && (
-              <Box>
-                <Typography
-                  variant="caption"
-                  sx={{ color: theme.palette.text.disabled, display: 'block' }}
-                >
-                  Version
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.78rem' }}>
-                  {card.version}
-                </Typography>
-              </Box>
-            )}
-            {card?.url && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Typography
-                  variant="caption"
-                  sx={{ color: theme.palette.text.disabled, display: 'block' }}
-                >
-                  Endpoint
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: '0.72rem',
-                    wordBreak: 'break-all',
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  {card.url}
-                </Typography>
-              </Box>
-            )}
-            {agent.createdAt && (
-              <Box>
-                <Typography
-                  variant="caption"
-                  sx={{ color: theme.palette.text.disabled, display: 'block' }}
-                >
-                  Created
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.78rem' }}>
-                  {new Date(agent.createdAt).toLocaleDateString()}
-                </Typography>
-              </Box>
-            )}
-          </Box>
+            );
+          })()}
         </Box>
       </Box>
     </Box>
@@ -989,16 +1131,26 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
           width: '95vw',
           maxWidth: 1200,
           height: '85vh',
-          borderRadius: 4,
+          borderRadius: 5,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          bgcolor: theme.palette.background.default,
+          bgcolor: isDark
+            ? alpha(theme.palette.background.default, 0.92)
+            : theme.palette.background.default,
+          backdropFilter: 'blur(20px) saturate(1.5)',
+          border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.15 : 0.12)}`,
+          boxShadow: isDark
+            ? `0 24px 80px ${alpha('#000', 0.5)}, 0 0 1px ${alpha('#fff', 0.1)} inset`
+            : `0 24px 80px ${alpha('#000', 0.15)}, 0 0 1px ${alpha('#fff', 0.5)} inset`,
         },
       }}
       slotProps={{
         backdrop: {
-          sx: { backdropFilter: 'blur(6px)' },
+          sx: {
+            backdropFilter: 'blur(10px)',
+            bgcolor: alpha(isDark ? '#000' : '#000', isDark ? 0.5 : 0.3),
+          },
         },
       }}
     >
@@ -1006,37 +1158,52 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
       <Box
         sx={{
           px: 3,
-          py: 2,
+          py: 1.5,
           display: 'flex',
           alignItems: 'center',
           gap: 2,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-          bgcolor: alpha(theme.palette.background.paper, isDark ? 0.6 : 0.85),
-          backdropFilter: 'blur(12px)',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, isDark ? 0.12 : 0.2)}`,
+          bgcolor: alpha(theme.palette.background.paper, isDark ? 0.4 : 0.7),
+          backdropFilter: 'blur(20px) saturate(1.4)',
           flexShrink: 0,
+          boxShadow: `0 1px 0 ${alpha('#fff', isDark ? 0.03 : 0.3)} inset`,
         }}
       >
-        <HubOutlinedIcon
-          sx={{ fontSize: 22, color: theme.palette.primary.main }}
-        />
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: 700, fontSize: '1rem', mr: 0.5 }}
-        >
-          Agent Catalog
-        </Typography>
-        <Typography
-          variant="caption"
+        <Box
           sx={{
-            color: 'text.disabled',
-            fontSize: '0.75rem',
-            fontWeight: 500,
-            mr: 1,
+            width: 36,
+            height: 36,
+            borderRadius: 2.5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08),
+            boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}, 0 0 0 1px ${alpha(theme.palette.primary.main, 0.08)} inset`,
           }}
         >
-          {visibleAgents.length}{' '}
-          {visibleAgents.length === 1 ? 'agent' : 'agents'}
-        </Typography>
+          <HubOutlinedIcon
+            sx={{ fontSize: 20, color: theme.palette.primary.main }}
+          />
+        </Box>
+        <Box>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.2 }}
+          >
+            Agent Catalog
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.disabled',
+              fontSize: '0.7rem',
+              fontWeight: 500,
+            }}
+          >
+            {visibleAgents.length}{' '}
+            {visibleAgents.length === 1 ? 'agent' : 'agents'} available
+          </Typography>
+        </Box>
 
         <TextField
           size="small"
@@ -1064,17 +1231,35 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
           sx={{
             flex: 1,
             maxWidth: 420,
+            ml: 1,
             '& .MuiOutlinedInput-root': {
-              borderRadius: 2.5,
+              borderRadius: 5,
               fontSize: '0.85rem',
               height: 40,
+              bgcolor: alpha(
+                theme.palette.background.default,
+                isDark ? 0.4 : 0.6,
+              ),
+              boxShadow: isDark
+                ? `0 1px 4px ${alpha('#000', 0.2)} inset`
+                : `0 1px 4px ${alpha('#000', 0.04)} inset`,
+              '&.Mui-focused': {
+                boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+              },
             },
           }}
         />
 
         <Box sx={{ flex: 1 }} />
 
-        <IconButton onClick={onClose} size="small">
+        <IconButton
+          onClick={onClose}
+          size="small"
+          sx={{
+            color: theme.palette.text.secondary,
+            '&:hover': { color: theme.palette.text.primary },
+          }}
+        >
           <CloseIcon sx={{ fontSize: 20 }} />
         </IconButton>
       </Box>
@@ -1084,12 +1269,32 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
         <Box
           sx={{
             flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            px: 3,
+            pt: 3,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: 2,
+            alignContent: 'start',
           }}
         >
-          <CircularProgress size={32} />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Box
+              key={i}
+              sx={{
+                height: 180,
+                borderRadius: 3,
+                overflow: 'hidden',
+              }}
+            >
+              <Skeleton
+                variant="rectangular"
+                width="100%"
+                height="100%"
+                sx={{ borderRadius: 3 }}
+                animation="wave"
+              />
+            </Box>
+          ))}
         </Box>
       )}
       {!loading && visibleAgents.length === 0 && (
@@ -1100,14 +1305,50 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 1,
+            gap: 2,
+            px: 3,
           }}
         >
-          <HubOutlinedIcon
-            sx={{ fontSize: 48, color: theme.palette.text.disabled }}
-          />
-          <Typography variant="body2" color="text.secondary">
-            No agents available. Deploy agents via the Command Center first.
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: alpha(theme.palette.primary.main, isDark ? 0.1 : 0.06),
+              animation: 'pulse 2s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%, 100%': { transform: 'scale(1)', opacity: 0.7 },
+                '50%': { transform: 'scale(1.05)', opacity: 1 },
+              },
+            }}
+          >
+            <HubOutlinedIcon
+              sx={{
+                fontSize: 40,
+                color: theme.palette.primary.main,
+                opacity: 0.6,
+              }}
+            />
+          </Box>
+          <Typography
+            variant="body1"
+            sx={{ fontWeight: 600, color: theme.palette.text.primary }}
+          >
+            No agents available
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.text.secondary,
+              textAlign: 'center',
+              maxWidth: 360,
+            }}
+          >
+            Deploy agents via the Command Center to get started. They will
+            appear here automatically.
           </Typography>
         </Box>
       )}
@@ -1133,28 +1374,29 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
               <Typography
                 variant="caption"
                 sx={{
-                  fontWeight: 600,
+                  fontWeight: 700,
                   textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  fontSize: '0.6rem',
+                  letterSpacing: 0.8,
+                  fontSize: '0.7rem',
                   color: theme.palette.text.secondary,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 0.5,
-                  mb: 1,
+                  gap: 0.75,
+                  mb: 1.5,
                 }}
               >
                 <StarIcon
-                  sx={{ fontSize: 12, color: theme.palette.warning.main }}
+                  sx={{ fontSize: 14, color: theme.palette.warning.main }}
                 />
-                Featured
+                Featured Agents
               </Typography>
               <Box
                 sx={{
                   display: 'flex',
                   gap: 2,
                   overflowX: 'auto',
-                  pb: 1,
+                  pb: 1.5,
+                  scrollSnapType: 'x mandatory',
                   '&::-webkit-scrollbar': { height: 4 },
                   '&::-webkit-scrollbar-thumb': {
                     bgcolor: alpha(theme.palette.text.disabled, 0.3),
@@ -1179,26 +1421,28 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
           <Box
             sx={{
               px: 3,
-              pt: 1,
+              pt: 1.5,
+              pb: 0.5,
               display: 'flex',
               alignItems: 'center',
               gap: 1,
               flexShrink: 0,
               flexWrap: 'wrap',
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
             }}
           >
             <Tabs
               value={tab}
               onChange={(_, v) => setTab(v)}
               sx={{
-                minHeight: 30,
+                minHeight: 32,
                 '& .MuiTab-root': {
-                  minHeight: 30,
+                  minHeight: 32,
                   textTransform: 'none',
-                  fontSize: '0.75rem',
+                  fontSize: '0.8rem',
                   fontWeight: 500,
                   minWidth: 'auto',
-                  px: 1.25,
+                  px: 1.5,
                   py: 0.25,
                 },
               }}
@@ -1207,32 +1451,32 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
               <Tab
                 label="Recent"
                 value="recent"
-                icon={<HistoryIcon sx={{ fontSize: 13 }} />}
+                icon={<HistoryIcon sx={{ fontSize: 14 }} />}
                 iconPosition="start"
                 disabled={recentIds.length === 0}
               />
               <Tab
                 label="Pinned"
                 value="pinned"
-                icon={<StarIcon sx={{ fontSize: 13 }} />}
+                icon={<StarIcon sx={{ fontSize: 14 }} />}
                 iconPosition="start"
                 disabled={pinnedIds.length === 0}
               />
             </Tabs>
-
-            <Box sx={{ flex: 1 }} />
 
             <Chip
               label={`${filtered.length} agent${filtered.length !== 1 ? 's' : ''}`}
               size="small"
               sx={{
                 height: 22,
-                fontSize: '0.65rem',
+                fontSize: '0.7rem',
                 fontWeight: 600,
                 bgcolor: alpha(theme.palette.primary.main, 0.1),
                 color: theme.palette.primary.main,
               }}
             />
+
+            <Box sx={{ flex: 1 }} />
 
             {frameworks.length > 0 && (
               <FormControl size="small">
@@ -1240,6 +1484,7 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
                   value={frameworkFilter}
                   onChange={e => setFrameworkFilter(e.target.value)}
                   displayEmpty
+                  MenuProps={{ disablePortal: true }}
                   renderValue={v => (
                     <Box
                       sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
@@ -1278,6 +1523,7 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
                 value={sort}
                 onChange={e => setSort(e.target.value as SortOption)}
                 displayEmpty
+                MenuProps={{ disablePortal: true }}
                 renderValue={v => {
                   const labels: Record<string, string> = {
                     name: 'Name',
@@ -1335,33 +1581,53 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
               <Box
                 sx={{
                   textAlign: 'center',
-                  py: 6,
-                  color: theme.palette.text.secondary,
+                  py: 8,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 1.5,
                 }}
               >
-                <Typography variant="body2">
+                <SearchIcon
+                  sx={{
+                    fontSize: 40,
+                    color: alpha(theme.palette.text.disabled, 0.4),
+                  }}
+                />
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: 600, color: theme.palette.text.primary }}
+                >
+                  {search ? 'No matching agents' : 'No agents here yet'}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: theme.palette.text.secondary, maxWidth: 300 }}
+                >
                   {search
-                    ? 'No agents match your search.'
-                    : 'No agents in this category.'}
+                    ? `No agents match "${search}". Try a different search term.`
+                    : 'No agents in this category. Check back later or browse all agents.'}
                 </Typography>
               </Box>
             ) : (
               <Box
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, 280px)',
-                  justifyContent: 'center',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
                   gap: 2,
                   pb: 2,
                 }}
               >
                 {filtered.map((agent, idx) => {
                   const agentId = `${agent.namespace}/${agent.name}`;
+                  const previewId = previewAgent
+                    ? `${previewAgent.namespace}/${previewAgent.name}`
+                    : '';
                   return (
                     <GridCard
                       key={agentId}
                       agent={agent}
-                      isSelected={false}
+                      isSelected={agentId === previewId}
                       isPinned={pinnedIds.includes(agentId)}
                       onSelect={handlePreviewSelect}
                       onTogglePin={togglePin}
@@ -1383,14 +1649,24 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
                 width: 480,
                 maxWidth: '92vw',
                 maxHeight: '80vh',
-                borderRadius: 4,
+                borderRadius: 5,
                 overflow: 'hidden',
-                bgcolor: theme.palette.background.default,
+                bgcolor: isDark
+                  ? alpha(theme.palette.background.default, 0.92)
+                  : theme.palette.background.default,
+                backdropFilter: 'blur(20px) saturate(1.5)',
+                border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.15 : 0.12)}`,
+                boxShadow: isDark
+                  ? `0 24px 80px ${alpha('#000', 0.5)}, 0 0 1px ${alpha('#fff', 0.1)} inset`
+                  : `0 24px 80px ${alpha('#000', 0.15)}, 0 0 1px ${alpha('#fff', 0.5)} inset`,
               },
             }}
             slotProps={{
               backdrop: {
-                sx: { backdropFilter: 'blur(4px)' },
+                sx: {
+                  backdropFilter: 'blur(10px)',
+                  bgcolor: alpha('#000', isDark ? 0.5 : 0.3),
+                },
               },
             }}
           >
@@ -1405,8 +1681,14 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
                     right: 10,
                     zIndex: 2,
                     color: theme.palette.text.secondary,
-                    bgcolor: alpha(theme.palette.background.paper, 0.8),
-                    '&:hover': { bgcolor: theme.palette.background.paper },
+                    bgcolor: alpha(theme.palette.background.paper, 0.85),
+                    backdropFilter: 'blur(8px)',
+                    borderRadius: 2,
+                    boxShadow: `0 1px 4px ${alpha('#000', isDark ? 0.3 : 0.1)}`,
+                    '&:hover': {
+                      bgcolor: theme.palette.background.paper,
+                      boxShadow: `0 2px 8px ${alpha('#000', isDark ? 0.4 : 0.12)}`,
+                    },
                   }}
                 >
                   <CloseIcon sx={{ fontSize: 16 }} />
