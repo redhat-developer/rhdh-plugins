@@ -166,6 +166,38 @@ export async function listBuildStrategies(
   return deps.fetchJson('/kagenti/agents/build-strategies');
 }
 
+export async function listAgentBuilds(
+  deps: KagentiApiDeps,
+  namespace?: string,
+  allNamespaces = false,
+): Promise<Record<string, unknown>> {
+  const params = new URLSearchParams();
+  if (namespace) params.set('namespace', namespace);
+  if (allNamespaces) params.set('all_namespaces', 'true');
+  const qs = params.toString() ? `?${params}` : '';
+  return deps.fetchJson(`/kagenti/agents/shipwright-builds${qs}`);
+}
+
+export async function getAgentBuildStatus(
+  deps: KagentiApiDeps,
+  namespace: string,
+  name: string,
+): Promise<Record<string, unknown>> {
+  return deps.fetchJson(
+    `/kagenti/agents/${e(namespace)}/${e(name)}/shipwright-build`,
+  );
+}
+
+export async function getAgentBuildRunStatus(
+  deps: KagentiApiDeps,
+  namespace: string,
+  name: string,
+): Promise<Record<string, unknown>> {
+  return deps.fetchJson(
+    `/kagenti/agents/${e(namespace)}/${e(name)}/shipwright-buildrun`,
+  );
+}
+
 export async function parseEnv(
   deps: KagentiApiDeps,
   content: string,

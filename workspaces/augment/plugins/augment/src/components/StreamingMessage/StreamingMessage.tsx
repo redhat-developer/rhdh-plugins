@@ -23,7 +23,7 @@
  * All colors are derived from branding configuration for enterprise customization.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useRef, useEffect, memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { BotAvatarIcon } from '../icons';
@@ -91,6 +91,62 @@ const MARKDOWN_COMPONENTS: Components = {
 };
 
 // =============================================================================
+// MEMOIZED MARKDOWN BODY
+// =============================================================================
+
+const MARKDOWN_DEBOUNCE_MS = 150;
+
+interface MarkdownBodyProps {
+  text: string;
+  completed: boolean;
+}
+
+/**
+ * Debounces expensive markdown re-parses during active streaming.
+ * When completed, renders immediately with the final text.
+ */
+const MarkdownBody = memo(function MarkdownBody({
+  text,
+  completed,
+}: MarkdownBodyProps) {
+  const [renderedText, setRenderedText] = useState(text);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (completed) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setRenderedText(text);
+      return;
+    }
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setRenderedText(text);
+    }, MARKDOWN_DEBOUNCE_MS);
+
+    // eslint-disable-next-line consistent-return
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [text, completed]);
+
+  const formatted = useMemo(
+    () => formatResponseText(sanitizeResponseText(renderedText)),
+    [renderedText],
+  );
+
+  return (
+    <ReactMarkdown
+      remarkPlugins={REMARK_PLUGINS}
+      rehypePlugins={REHYPE_PLUGINS}
+      components={MARKDOWN_COMPONENTS}
+    >
+      {formatted}
+    </ReactMarkdown>
+  );
+});
+
+// =============================================================================
 // COMPONENT PROPS
 // =============================================================================
 
@@ -117,189 +173,195 @@ interface StreamingMessageProps {
  * - Loading states with animated dots
  * - All colors from branding for enterprise customization
  */
-export const StreamingMessage: React.FC<StreamingMessageProps> = ({
-  state,
-  onFormSubmit,
-  onFormCancel,
-  onAuthConfirm,
-  onSecretsSubmit,
-}) => {
-  const theme = useTheme();
-  const { branding } = useBranding();
+export const StreamingMessage: React.FC<StreamingMessageProps> = memo(
+  function StreamingMessage({
+    state,
+    onFormSubmit,
+    onFormCancel,
+    onAuthConfirm,
+    onSecretsSubmit,
+  }) {
+    const theme = useTheme();
+    const { branding } = useBranding();
 
-  // Get phase info from branding colors
-  const phaseLabel = PHASE_LABELS[state.phase] || DEFAULT_PHASE_LABEL;
-  const phaseColor = getPhaseColor(state.phase, branding);
+    // Get phase info from branding colors
+    const phaseLabel = PHASE_LABELS[state.phase] || DEFAULT_PHASE_LABEL;
+    const phaseColor = getPhaseColor(state.phase, branding);
 
-  const statusColors: StatusColors = useMemo(
-    () => ({
-      success: branding.successColor,
-      error: branding.errorColor,
-      primary: branding.primaryColor,
-    }),
-    [branding.successColor, branding.errorColor, branding.primaryColor],
-  );
+    const statusColors: StatusColors = useMemo(
+      () => ({
+        success: branding.successColor,
+        error: branding.errorColor,
+        primary: branding.primaryColor,
+      }),
+      [branding.successColor, branding.errorColor, branding.primaryColor],
+    );
 
-  const showRAG =
-    state.phase === STREAMING_PHASES.SEARCHING ||
-    state.filesSearched.length > 0;
-  const hasToolCalls = state.toolCalls.length > 0;
-  const hasReasoning = !!state.reasoning;
-  const isReasoning = state.phase === STREAMING_PHASES.REASONING;
-  // Don't show generic loading if we have reasoning content to show
-  const showLoading = !state.text && !state.completed && !hasReasoning;
+    const showRAG =
+      state.phase === STREAMING_PHASES.SEARCHING ||
+      state.filesSearched.length > 0;
+    const hasToolCalls = state.toolCalls.length > 0;
+    const hasReasoning = !!state.reasoning;
+    const isReasoning = state.phase === STREAMING_PHASES.REASONING;
+    // Don't show generic loading if we have reasoning content to show
+    const showLoading = !state.text && !state.completed && !hasReasoning;
 
-  // Don't render anything during pending_approval phase with no visible content
-  // The ToolApprovalDialog will handle the UI
-  const isPendingApproval = state.phase === 'pending_approval';
-  const hasPendingForm = state.phase === 'form_input' && !!state.pendingForm;
-  const hasPendingAuth = state.phase === 'auth_required' && !!state.pendingAuth;
-  const hasArtifacts = (state.artifacts?.length ?? 0) > 0;
-  const hasCitations = (state.citations?.length ?? 0) > 0;
-  const hasVisibleContent =
-    showRAG || hasToolCalls || state.text || showLoading || hasReasoning ||
-    hasPendingForm || hasPendingAuth || hasArtifacts || hasCitations;
-  if (isPendingApproval && !hasVisibleContent) {
-    return null;
-  }
+    // Don't render anything during pending_approval phase with no visible content
+    // The ToolApprovalDialog will handle the UI
+    const isPendingApproval = state.phase === 'pending_approval';
+    const hasPendingForm = state.phase === 'form_input' && !!state.pendingForm;
+    const hasPendingAuth =
+      state.phase === 'auth_required' && !!state.pendingAuth;
+    const hasArtifacts = (state.artifacts?.length ?? 0) > 0;
+    const hasCitations = (state.citations?.length ?? 0) > 0;
+    const hasVisibleContent =
+      showRAG ||
+      hasToolCalls ||
+      state.text ||
+      showLoading ||
+      hasReasoning ||
+      hasPendingForm ||
+      hasPendingAuth ||
+      hasArtifacts ||
+      hasCitations;
+    if (isPendingApproval && !hasVisibleContent) {
+      return null;
+    }
 
-  const hasHandoffs = state.handoffs.length > 0;
+    const hasHandoffs = state.handoffs.length > 0;
 
-  return (
-    <>
-      {/* Handoff dividers emitted during this stream */}
-      {hasHandoffs &&
-        state.handoffs.map((h, i) => (
-          <HandoffDivider
-            key={`handoff-${i}`}
-            agentName={h.to}
-            reason={h.reason}
-          />
-        ))}
-
-      <Box sx={getContainerSx()}>
-        {/* Avatar */}
-        <Box sx={getAvatarSx(theme, phaseColor, state.completed)}>
-          <BotAvatarIcon botAvatarUrl={branding.botAvatarUrl} />
-        </Box>
-
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          {/* Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'text.secondary',
-                fontWeight: 600,
-                fontSize: '0.8125rem',
-              }}
-            >
-              {state.currentAgent || branding.appName}
-            </Typography>
-            <PhaseChip
-              phaseLabel={phaseLabel}
-              phaseColor={phaseColor}
-              completed={state.completed}
+    return (
+      <>
+        {/* Handoff dividers emitted during this stream */}
+        {hasHandoffs &&
+          state.handoffs.map((h, i) => (
+            <HandoffDivider
+              key={`handoff-${i}`}
+              agentName={h.to}
+              reason={h.reason}
             />
+          ))}
+
+        <Box sx={getContainerSx()}>
+          {/* Avatar */}
+          <Box sx={getAvatarSx(theme, phaseColor, state.completed)}>
+            <BotAvatarIcon botAvatarUrl={branding.botAvatarUrl} />
           </Box>
 
-          {/* Content Container - aria-live for screen reader announcements */}
-          <Box
-            sx={getContentContainerSx(theme)}
-            aria-live="polite"
-            aria-atomic="false"
-          >
-            {/* Model Reasoning/Thinking (if available) */}
-            {hasReasoning && (
-              <ReasoningDisplay
-                reasoning={state.reasoning!}
-                reasoningDuration={state.reasoningDuration}
-                isStreaming={isReasoning}
-                theme={theme}
-                branding={branding}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            {/* Header */}
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  fontWeight: 600,
+                  fontSize: '0.8125rem',
+                }}
+              >
+                {state.currentAgent || branding.appName}
+              </Typography>
+              <PhaseChip
+                phaseLabel={phaseLabel}
+                phaseColor={phaseColor}
+                completed={state.completed}
               />
-            )}
+            </Box>
 
-            {/* RAG Search Activity */}
-            {showRAG && (
-              <Box sx={{ mb: hasToolCalls || state.text ? 2 : 0 }}>
-                <RAGSearchDisplay
-                  filesSearched={state.filesSearched}
+            {/* Content Container - aria-live for screen reader announcements */}
+            <Box
+              sx={getContentContainerSx(theme)}
+              aria-live="polite"
+              aria-atomic="false"
+            >
+              {/* Model Reasoning/Thinking (if available) */}
+              {hasReasoning && (
+                <ReasoningDisplay
+                  reasoning={state.reasoning!}
+                  reasoningDuration={state.reasoningDuration}
+                  isStreaming={isReasoning}
                   theme={theme}
                   branding={branding}
-                  statusColors={statusColors}
                 />
-              </Box>
-            )}
+              )}
 
-            {/* MCP Tool Activity */}
-            {hasToolCalls && (
-              <Box sx={{ mb: state.text ? 2 : 0 }}>
-                {state.toolCalls.map((tc, index) => (
-                  <ToolCallDisplay
-                    key={tc.id || index}
-                    tc={tc}
+              {/* RAG Search Activity */}
+              {showRAG && (
+                <Box sx={{ mb: hasToolCalls || state.text ? 2 : 0 }}>
+                  <RAGSearchDisplay
+                    filesSearched={state.filesSearched}
                     theme={theme}
                     branding={branding}
                     statusColors={statusColors}
                   />
-                ))}
-              </Box>
-            )}
+                </Box>
+              )}
 
-            {/* Text Content with Markdown */}
-            {state.text && (
-              <Box sx={getMarkdownContentSx(theme)}>
-                <ReactMarkdown
-                  remarkPlugins={REMARK_PLUGINS}
-                  rehypePlugins={REHYPE_PLUGINS}
-                  components={MARKDOWN_COMPONENTS}
-                >
-                  {formatResponseText(sanitizeResponseText(state.text))}
-                </ReactMarkdown>
-                {!state.completed && (
-                  <Box component="span" sx={getTypingCursorSx()} />
-                )}
-              </Box>
-            )}
+              {/* MCP Tool Activity */}
+              {hasToolCalls && (
+                <Box sx={{ mb: state.text ? 2 : 0 }}>
+                  {state.toolCalls.map((tc, index) => (
+                    <ToolCallDisplay
+                      key={tc.id || index}
+                      tc={tc}
+                      theme={theme}
+                      branding={branding}
+                      statusColors={statusColors}
+                    />
+                  ))}
+                </Box>
+              )}
 
-            {/* Form Input Request (A2A) */}
-            {state.phase === 'form_input' && state.pendingForm && (
-              <FormRequestCard
-                form={state.pendingForm.form}
-                onSubmit={onFormSubmit}
-                onCancel={onFormCancel}
-              />
-            )}
+              {/* Text Content with Markdown */}
+              {state.text && (
+                <Box sx={getMarkdownContentSx(theme)}>
+                  <MarkdownBody text={state.text} completed={state.completed} />
+                  {!state.completed && (
+                    <Box component="span" sx={getTypingCursorSx()} />
+                  )}
+                </Box>
+              )}
 
-            {/* Auth Required (A2A) */}
-            {state.phase === 'auth_required' && state.pendingAuth && (
-              <AuthRequiredCard
-                authType={state.pendingAuth.authType}
-                url={state.pendingAuth.url}
-                demands={state.pendingAuth.demands}
-                onOAuthConfirm={onAuthConfirm}
-                onSecretsSubmit={onSecretsSubmit}
-              />
-            )}
+              {/* Form Input Request (A2A) */}
+              {state.phase === 'form_input' && state.pendingForm && (
+                <FormRequestCard
+                  form={state.pendingForm.form}
+                  onSubmit={onFormSubmit}
+                  onCancel={onFormCancel}
+                />
+              )}
 
-            {/* Artifacts */}
-            {state.artifacts && state.artifacts.length > 0 && (
-              <ArtifactRenderer artifacts={state.artifacts} />
-            )}
+              {/* Auth Required (A2A) */}
+              {state.phase === 'auth_required' && state.pendingAuth && (
+                <AuthRequiredCard
+                  authType={state.pendingAuth.authType}
+                  url={state.pendingAuth.url}
+                  demands={state.pendingAuth.demands}
+                  onOAuthConfirm={onAuthConfirm}
+                  onSecretsSubmit={onSecretsSubmit}
+                />
+              )}
 
-            {/* Citations */}
-            {state.citations && state.citations.length > 0 && (
-              <CitationRenderer citations={state.citations} />
-            )}
+              {/* Artifacts */}
+              {state.artifacts && state.artifacts.length > 0 && (
+                <ArtifactRenderer artifacts={state.artifacts} />
+              )}
 
-            {/* Loading state */}
-            {showLoading && (
-              <LoadingIndicator phase={state.phase} phaseColor={phaseColor} />
-            )}
+              {/* Citations */}
+              {state.citations && state.citations.length > 0 && (
+                <CitationRenderer citations={state.citations} />
+              )}
+
+              {/* Loading state */}
+              {showLoading && (
+                <LoadingIndicator phase={state.phase} phaseColor={phaseColor} />
+              )}
+            </Box>
           </Box>
         </Box>
-      </Box>
-    </>
-  );
-};
+      </>
+    );
+  },
+);

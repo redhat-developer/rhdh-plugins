@@ -91,18 +91,26 @@ export function KeyboardShortcutsDialog({
   const theme = useTheme();
   const { t } = useTranslation();
 
+  const isMac =
+    typeof window !== 'undefined' &&
+    /Mac|iPhone|iPad/.test(window.navigator.userAgent);
+  const modKey = isMac ? '⌘' : 'Ctrl';
+
   const chatShortcuts = useMemo<ShortcutEntry[]>(
     () => [
       { keys: ['/'], description: t('keyboardShortcuts.focusChatInput') },
       {
-        keys: ['⌘', 'Shift', 'O'],
+        keys: [modKey, 'Shift', 'O'],
         description: t('keyboardShortcuts.newConversation'),
       },
       { keys: ['Esc'], description: t('keyboardShortcuts.cancelStreaming') },
       { keys: ['?'], description: t('keyboardShortcuts.showHelp') },
-      { keys: ['↑', '↓'], description: 'Navigate between messages' },
+      {
+        keys: ['↑', '↓'],
+        description: t('keyboardShortcuts.navigateMessages'),
+      },
     ],
-    [t],
+    [t, modKey],
   );
 
   const approvalShortcuts = useMemo<ShortcutEntry[]>(

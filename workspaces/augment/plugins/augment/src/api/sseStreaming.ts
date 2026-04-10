@@ -33,6 +33,8 @@ function isValidStreamEvent(event: unknown): event is StreamingEvent {
  * @param onEvent - Callback for each parsed streaming event
  * @param signal - Optional AbortSignal for cancellation
  */
+const MAX_BUFFER_SIZE = 1024 * 1024; // 1 MB
+
 export async function parseSSEStream(
   reader: ReadableStreamDefaultReader<Uint8Array>,
   onEvent: StreamingEventCallback,
@@ -61,6 +63,16 @@ export async function parseSSEStream(
       }
 
       buffer += decoder.decode(value, { stream: true });
+
+      if (buffer.length > MAX_BUFFER_SIZE) {
+        await reader.cancel();
+        onEvent({
+          type: 'stream.error',
+          error: 'Stream buffer exceeded maximum size',
+          code: 'buffer_overflow',
+        } as StreamingEvent);
+        return;
+      }
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
 

@@ -22,7 +22,9 @@ interface ExportedMessage {
   timestamp: string;
   agentName?: string;
   toolCalls?: Array<{
+    id: string;
     name: string;
+    serverLabel?: string;
     arguments?: string;
     output?: string;
     error?: string;
@@ -48,7 +50,9 @@ function serializeMessage(msg: Message): ExportedMessage {
   if (msg.agentName) exported.agentName = msg.agentName;
   if (msg.toolCalls?.length) {
     exported.toolCalls = msg.toolCalls.map(tc => ({
+      id: tc.id,
       name: tc.name,
+      serverLabel: tc.serverLabel,
       arguments: tc.arguments,
       output: tc.output,
       error: tc.error,

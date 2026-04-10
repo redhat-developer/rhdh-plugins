@@ -52,12 +52,14 @@ describe('loadKagentiConfig', () => {
       maxRetries: 3,
       retryBaseDelayMs: 1000,
       tokenExpiryBufferSeconds: 60,
+      extensionBaseUrl: 'https://a2a-extensions.adk.kagenti.dev',
       dashboards: {
         mcpInspector: undefined,
         mcpProxy: undefined,
         traces: undefined,
         network: undefined,
         keycloakConsole: undefined,
+        domainName: undefined,
       },
       sandbox: {
         sessionTtlMinutes: undefined,
@@ -66,6 +68,11 @@ describe('loadKagentiConfig', () => {
       },
       migration: { deleteOld: false, dryRun: false },
       pagination: { defaultLimit: 50, maxLimit: 200 },
+      featureOverrides: {
+        sandbox: undefined,
+        integrations: undefined,
+        triggers: undefined,
+      },
       auth: {
         tokenEndpoint:
           'https://keycloak.example.com/realms/kagenti/protocol/openid-connect/token',
@@ -171,5 +178,47 @@ describe('loadKagentiConfig', () => {
       },
     });
     expect(() => loadKagentiConfig(config)).toThrow(/clientSecret/);
+  });
+
+  it('throws when retryBaseDelayMs is zero', () => {
+    expect(() =>
+      loadKagentiConfig(makeConfig({ retryBaseDelayMs: 0 })),
+    ).toThrow(/retryBaseDelayMs must be positive/);
+  });
+
+  it('throws when tokenExpiryBufferSeconds is zero', () => {
+    expect(() =>
+      loadKagentiConfig(makeConfig({ tokenExpiryBufferSeconds: 0 })),
+    ).toThrow(/tokenExpiryBufferSeconds must be positive/);
+  });
+
+  it('throws when pagination.defaultLimit is zero', () => {
+    expect(() =>
+      loadKagentiConfig(
+        makeConfig({ pagination: { defaultLimit: 0, maxLimit: 100 } }),
+      ),
+    ).toThrow(/defaultLimit must be positive/);
+  });
+
+  it('throws when pagination.maxLimit < defaultLimit', () => {
+    expect(() =>
+      loadKagentiConfig(
+        makeConfig({ pagination: { defaultLimit: 50, maxLimit: 10 } }),
+      ),
+    ).toThrow(/maxLimit must be >= defaultLimit/);
+  });
+
+  it('accepts custom extensionBaseUrl', () => {
+    const result = loadKagentiConfig(
+      makeConfig({ extensionBaseUrl: 'https://custom.example.com/ext/' }),
+    );
+    expect(result.extensionBaseUrl).toBe('https://custom.example.com/ext');
+  });
+
+  it('uses default extensionBaseUrl when not specified', () => {
+    const result = loadKagentiConfig(makeConfig());
+    expect(result.extensionBaseUrl).toBe(
+      'https://a2a-extensions.adk.kagenti.dev',
+    );
   });
 });

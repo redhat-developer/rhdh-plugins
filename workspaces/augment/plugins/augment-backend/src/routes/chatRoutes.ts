@@ -22,6 +22,7 @@ import type { SafetyChatResponse, EvaluatedChatResponse } from '../types';
 import { createWithRoute } from './routeWrapper';
 import { SseHeartbeat } from './sseRouteHelpers';
 import type { KagentiProvider } from '../providers/kagenti/KagentiProvider';
+import { sanitizeErrorMessage } from '../services/utils/errorSanitizer';
 import type { FlushableResponse, RouteContext } from './types';
 
 function getLastUserContent(messages: ChatMessage[]): string {
@@ -255,9 +256,10 @@ function handleStreamErrorAndCleanup(
   const msg = toErrorMessage(error);
   logger.error(`Streaming error: ${msg}`);
   if (!clientDisconnectedRef.current) {
+    const { message: safeMsg } = sanitizeErrorMessage(msg);
     const errorEvent: NormalizedStreamEvent = {
       type: 'stream.error',
-      error: msg,
+      error: safeMsg,
       code: 'stream_error',
     };
     res.write(`data: ${JSON.stringify(errorEvent)}\n\n`);
@@ -281,7 +283,18 @@ async function resolveConversationId(
   const userRef = await getUserRef(req);
   let resolvedConversationId = conversationId;
 
-  if (!sessionId || !sessions || resolvedConversationId) {
+  if (!sessionId || !sessions) {
+    return { resolvedConversationId, userRef };
+  }
+
+  if (resolvedConversationId) {
+    const ownerSession = await sessions.findSessionByConversation(
+      resolvedConversationId,
+      userRef,
+    );
+    if (!ownerSession) {
+      throw new InputError('Conversation not found or access denied');
+    }
     return { resolvedConversationId, userRef };
   }
 
@@ -362,17 +375,18 @@ export function registerChatRoutes(ctx: RouteContext): void {
           sessionId,
         } = parsed;
 
-        await provider.refreshDynamicConfig?.();
-
-        const { resolvedConversationId, userRef } = await resolveConversationId(
-          conversationId,
-          sessionId,
-          sessions,
-          provider,
-          getUserRef,
-          req,
-          logger,
-        );
+        const [, { resolvedConversationId, userRef }] = await Promise.all([
+          provider.refreshDynamicConfig?.(),
+          resolveConversationId(
+            conversationId,
+            sessionId,
+            sessions,
+            provider,
+            getUserRef,
+            req,
+            logger,
+          ),
+        ]);
 
         // Hydrate Kagenti context from DB for non-streaming path
         if (provider.id === 'kagenti' && sessionId && sessions) {
@@ -530,17 +544,18 @@ export function registerChatRoutes(ctx: RouteContext): void {
     heartbeat.start();
 
     try {
-      await provider.refreshDynamicConfig?.();
-
-      const { resolvedConversationId, userRef } = await resolveConversationId(
-        conversationId,
-        sessionId,
-        sessions,
-        provider,
-        getUserRef,
-        req,
-        logger,
-      );
+      const [, { resolvedConversationId, userRef }] = await Promise.all([
+        provider.refreshDynamicConfig?.(),
+        resolveConversationId(
+          conversationId,
+          sessionId,
+          sessions,
+          provider,
+          getUserRef,
+          req,
+          logger,
+        ),
+      ]);
 
       // Hydrate Kagenti in-memory map from DB so conversation continues
       // across server restarts. The DB may have a conversation_id from a
@@ -652,81 +667,96 @@ export function registerChatRoutes(ctx: RouteContext): void {
         }
       }
 
-      if (sessionId && sessions) {
-        try {
-          const lastUserContent = getLastUserContent(messages);
-          if (lastUserContent) {
-            const session = await sessions.getSession(sessionId, userRef);
-            if (session && session.title.startsWith('Chat ')) {
-              const autoTitle = lastUserContent.slice(0, 80) || session.title;
-              await sessions.updateTitle(sessionId, userRef, autoTitle);
-            }
-          }
-          await sessions.touch(sessionId, userRef);
+      // Close the SSE connection immediately so the client is unblocked.
+      // Session bookkeeping runs in the background below.
+      heartbeat.stop();
+      if (!clientDisconnectedRef.current) {
+        res.write('data: [DONE]\n\n');
+        res.end();
+      }
 
-          // Persist Kagenti context ID so conversation survives restarts
-          if (provider.id === 'kagenti') {
-            const ctxId = (
-              provider as unknown as KagentiProvider
-            ).getSessionContextId(sessionId);
-            if (ctxId) {
-              const linked = await sessions.setConversationIdIfNull(
-                sessionId,
-                userRef,
-                ctxId,
+      // Fire-and-forget: persist session metadata without blocking the client.
+      if (sessionId && sessions) {
+        const lastUserContent = getLastUserContent(messages);
+        const meta = streamMetadataRef.current;
+        const streamedText = streamedTextRef.current;
+
+        Promise.resolve()
+          .then(async () => {
+            const titleAndTouch: Promise<void>[] = [];
+
+            if (lastUserContent) {
+              titleAndTouch.push(
+                sessions.getSession(sessionId, userRef).then(async session => {
+                  if (session && session.title.startsWith('Chat ')) {
+                    const autoTitle =
+                      lastUserContent.slice(0, 80) || session.title;
+                    await sessions.updateTitle(sessionId, userRef, autoTitle);
+                  }
+                }),
               );
-              if (linked) {
-                logger.info(
-                  `Linked session ${sessionId} to Kagenti context ${ctxId}`,
+            }
+
+            titleAndTouch.push(sessions.touch(sessionId, userRef));
+
+            if (provider.id === 'kagenti') {
+              const ctxId = (
+                provider as unknown as KagentiProvider
+              ).getSessionContextId(sessionId);
+              if (ctxId) {
+                titleAndTouch.push(
+                  sessions
+                    .setConversationIdIfNull(sessionId, userRef, ctxId)
+                    .then(linked => {
+                      if (linked) {
+                        logger.info(
+                          `Linked session ${sessionId} to Kagenti context ${ctxId}`,
+                        );
+                      }
+                    }),
                 );
               }
             }
-          }
 
-          // Persist user + assistant messages to the local store.
-          // This is the source of truth for conversation history, especially
-          // for Kagenti where the remote API has no history endpoint.
-          // Skip assistant text that was blocked by output safety.
-          if (lastUserContent) {
-            await sessions.addMessage({
-              sessionId,
-              role: 'user',
-              content: lastUserContent,
-            });
-          }
-          const meta = streamMetadataRef.current;
-          if (streamedTextRef.current && !outputSafetyBlocked) {
-            await sessions.addMessage({
-              sessionId,
-              role: 'assistant',
-              content: streamedTextRef.current,
-              agentName: meta.agentName,
-              toolCalls:
-                meta.toolCalls.length > 0
-                  ? JSON.stringify(meta.toolCalls)
-                  : undefined,
-              ragSources:
-                meta.ragSources.length > 0
-                  ? JSON.stringify(meta.ragSources)
-                  : undefined,
-              usage: meta.usage ? JSON.stringify(meta.usage) : undefined,
-              reasoning: meta.reasoning || undefined,
-            });
-          }
-        } catch (touchErr) {
-          logger.warn(
-            `Failed to update session ${sessionId} after stream: ${touchErr}`,
-          );
-        }
-      }
+            await Promise.all(titleAndTouch);
 
-      heartbeat.stop();
-      if (!clientDisconnectedRef.current) {
-        // Providers emit stream.completed (consumed by the frontend reducer).
-        // [DONE] is the SSE transport sentinel — the frontend parser ignores
-        // its content but the browser closes the connection cleanly.
-        res.write('data: [DONE]\n\n');
-        res.end();
+            const messagePersists: Promise<unknown>[] = [];
+            if (lastUserContent) {
+              messagePersists.push(
+                sessions.addMessage({
+                  sessionId,
+                  role: 'user',
+                  content: lastUserContent,
+                }),
+              );
+            }
+            if (streamedText && !outputSafetyBlocked) {
+              messagePersists.push(
+                sessions.addMessage({
+                  sessionId,
+                  role: 'assistant',
+                  content: streamedText,
+                  agentName: meta.agentName,
+                  toolCalls:
+                    meta.toolCalls.length > 0
+                      ? JSON.stringify(meta.toolCalls)
+                      : undefined,
+                  ragSources:
+                    meta.ragSources.length > 0
+                      ? JSON.stringify(meta.ragSources)
+                      : undefined,
+                  usage: meta.usage ? JSON.stringify(meta.usage) : undefined,
+                  reasoning: meta.reasoning || undefined,
+                }),
+              );
+            }
+            await Promise.all(messagePersists);
+          })
+          .catch(bgErr => {
+            logger.warn(
+              `Background session bookkeeping failed for ${sessionId}: ${bgErr}`,
+            );
+          });
       }
     } catch (error) {
       heartbeat.stop();

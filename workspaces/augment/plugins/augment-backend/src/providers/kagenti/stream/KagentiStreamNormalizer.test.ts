@@ -603,7 +603,7 @@ describe('KagentiStreamNormalizer -- JSONRPC errors', () => {
 // =============================================================================
 
 describe('KagentiStreamNormalizer -- edge cases', () => {
-  it('unknown A2A state falls through to default (extracts text)', () => {
+  it('unknown A2A state falls through to default (extracts text and completes)', () => {
     const n = new KagentiStreamNormalizer();
     const events = n.normalize(
       makeStatusUpdate('TASK_STATE_UNKNOWN_FUTURE', { text: 'some text' }),
@@ -612,6 +612,7 @@ describe('KagentiStreamNormalizer -- edge cases', () => {
       type: 'stream.text.delta',
       delta: 'some text',
     });
+    expect(events).toContainEqual({ type: 'stream.completed' });
   });
 
   it('handleInteractiveState catch path logs and falls back to text', () => {
@@ -734,9 +735,7 @@ describe('KagentiStreamNormalizer -- edge cases', () => {
 
   it('TASK_STATE_WORKING does not accumulate text (reasoning only)', () => {
     const n = new KagentiStreamNormalizer();
-    n.normalize(
-      makeStatusUpdate('TASK_STATE_WORKING', { text: 'Step 1' }),
-    );
+    n.normalize(makeStatusUpdate('TASK_STATE_WORKING', { text: 'Step 1' }));
     const events = n.normalize(
       makeStatusUpdate('TASK_STATE_COMPLETED', { text: 'Result' }),
     );
@@ -757,6 +756,77 @@ describe('KagentiStreamNormalizer -- edge cases', () => {
       }),
     );
     expect(events.find(e => e.type === 'stream.citation')).toBeUndefined();
+  });
+});
+
+// =============================================================================
+// Agent handoff tests
+// =============================================================================
+
+describe('agent handoff events', () => {
+  it('emits stream.agent.handoff when agent_name changes', () => {
+    const n = new KagentiStreamNormalizer();
+    const first = n.normalize(
+      makeStatusUpdate('TASK_STATE_WORKING', {
+        text: 'Hello from Agent A',
+        metadata: { agent_name: 'AgentA' },
+      }),
+    );
+    const handoffInFirst = first.find(e => e.type === 'stream.agent.handoff');
+    expect(handoffInFirst).toBeDefined();
+    expect((handoffInFirst as { toAgent: string }).toAgent).toBe('AgentA');
+
+    const second = n.normalize(
+      makeStatusUpdate('TASK_STATE_WORKING', {
+        text: 'Hello from Agent B',
+        metadata: { agent_name: 'AgentB' },
+      }),
+    );
+    const handoffInSecond = second.find(e => e.type === 'stream.agent.handoff');
+    expect(handoffInSecond).toBeDefined();
+    expect((handoffInSecond as { fromAgent?: string }).fromAgent).toBe(
+      'AgentA',
+    );
+    expect((handoffInSecond as { toAgent: string }).toAgent).toBe('AgentB');
+  });
+
+  it('does not emit handoff when agent_name stays the same', () => {
+    const n = new KagentiStreamNormalizer();
+    n.normalize(
+      makeStatusUpdate('TASK_STATE_WORKING', {
+        text: 'first',
+        metadata: { agent_name: 'AgentA' },
+      }),
+    );
+    const second = n.normalize(
+      makeStatusUpdate('TASK_STATE_WORKING', {
+        text: 'second',
+        metadata: { agent_name: 'AgentA' },
+      }),
+    );
+    expect(second.find(e => e.type === 'stream.agent.handoff')).toBeUndefined();
+  });
+
+  it('emits handoff via trajectory extension metadata', () => {
+    const n = new KagentiStreamNormalizer();
+    n.normalize(
+      makeStatusUpdate('TASK_STATE_WORKING', {
+        text: 'start',
+        metadata: { agent_name: 'Root' },
+      }),
+    );
+    const second = n.normalize(
+      makeStatusUpdate('TASK_STATE_WORKING', {
+        metadata: {
+          [TRAJECTORY_URI]: [
+            { agent_name: 'SpecialistAgent', title: 'Handling request' },
+          ],
+        },
+      }),
+    );
+    const handoff = second.find(e => e.type === 'stream.agent.handoff');
+    expect(handoff).toBeDefined();
+    expect((handoff as { toAgent: string }).toAgent).toBe('SpecialistAgent');
   });
 });
 

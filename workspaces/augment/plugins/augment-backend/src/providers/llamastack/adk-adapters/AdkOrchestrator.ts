@@ -98,6 +98,22 @@ export class AdkOrchestrator {
     this.cachedDiscoveryGeneration = -1;
   }
 
+  /**
+   * Eagerly warm the tool metadata cache in the background.
+   * Call after config load/invalidation so the first chat request
+   * does not pay the full MCP discovery cost.
+   */
+  warmUpToolCache(deps: ChatDeps): void {
+    this.ensureToolMetaCached(deps).catch(err => {
+      this.logger.warn(
+        '[AdkOrchestrator] Background tool cache warm-up failed',
+        {
+          error: err instanceof Error ? err.message : String(err),
+        },
+      );
+    });
+  }
+
   async chat(
     request: ChatRequest,
     snapshot: AgentGraphSnapshot,
@@ -287,7 +303,7 @@ export class AdkOrchestrator {
     };
   }
 
-  private static readonly DISCOVERY_TIMEOUT_MS = 30_000;
+  private static readonly DISCOVERY_TIMEOUT_MS = 10_000;
 
   /**
    * Discover MCP tools and build FunctionTool wrappers.
@@ -388,6 +404,13 @@ export class AdkOrchestrator {
         error: msg,
         serverCount: deps.mcpServers.length,
       });
+      if (this.cachedToolMeta) {
+        this.logger.info(
+          '[AdkOrchestrator] Returning stale cached tools after discovery failure',
+          { count: this.cachedToolMeta.length },
+        );
+        return this.cachedToolMeta;
+      }
       return [];
     }
 

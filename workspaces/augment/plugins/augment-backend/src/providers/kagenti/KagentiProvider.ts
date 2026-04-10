@@ -73,12 +73,18 @@ export class KagentiProvider implements AgenticProvider {
   private readonly sessionAgentMap = new Map<string, string>();
   private readonly kagentiSessionMap = new Map<string, string>();
 
+  /**
+   * Set a value in a bounded Map with LRU eviction.
+   * Re-inserting on set moves the key to the end of iteration order.
+   */
   private boundedMapSet(
     map: Map<string, string>,
     key: string,
     value: string,
   ): void {
-    if (map.size >= KagentiProvider.MAX_SESSION_ENTRIES && !map.has(key)) {
+    if (map.has(key)) {
+      map.delete(key);
+    } else if (map.size >= KagentiProvider.MAX_SESSION_ENTRIES) {
       const evictCount = Math.ceil(KagentiProvider.MAX_SESSION_ENTRIES * 0.1);
       const iter = map.keys();
       for (let i = 0; i < evictCount; i++) {
@@ -87,10 +93,25 @@ export class KagentiProvider implements AgenticProvider {
         map.delete(next.value);
       }
       this.logger.warn(
-        `Session map hit ${KagentiProvider.MAX_SESSION_ENTRIES} cap, evicted ${evictCount} oldest entries`,
+        `Session map hit ${KagentiProvider.MAX_SESSION_ENTRIES} cap, evicted ${evictCount} least-recently-used entries`,
       );
     }
     map.set(key, value);
+  }
+
+  /**
+   * Get a value from a bounded Map, promoting the key to most-recently-used.
+   */
+  private boundedMapGet(
+    map: Map<string, string>,
+    key: string,
+  ): string | undefined {
+    const value = map.get(key);
+    if (value !== undefined) {
+      map.delete(key);
+      map.set(key, value);
+    }
+    return value;
   }
 
   readonly conversations: ConversationCapability;
@@ -274,8 +295,10 @@ export class KagentiProvider implements AgenticProvider {
             !m.id.includes('MiniLM'),
         );
         model = inference?.id ?? available[0]?.id ?? '';
-      } catch {
-        /* keep empty */
+      } catch (err) {
+        this.logger.warn(
+          `Failed to auto-detect model via listModels: ${err instanceof Error ? err.message : err}`,
+        );
       }
     }
 
@@ -303,7 +326,7 @@ export class KagentiProvider implements AgenticProvider {
 
     const backstageSessionId = request.sessionId;
     const storedSessionId = backstageSessionId
-      ? this.kagentiSessionMap.get(backstageSessionId)
+      ? this.boundedMapGet(this.kagentiSessionMap, backstageSessionId)
       : undefined;
 
     const a2aMetadata = await this.buildA2AMetadata(namespace, name);
@@ -356,7 +379,7 @@ export class KagentiProvider implements AgenticProvider {
     const agentId = `${namespace}/${name}`;
 
     const storedContextId = backstageSessionId
-      ? this.kagentiSessionMap.get(backstageSessionId)
+      ? this.boundedMapGet(this.kagentiSessionMap, backstageSessionId)
       : undefined;
 
     const a2aMetadata = await this.buildA2AMetadata(namespace, name);
@@ -663,7 +686,7 @@ export class KagentiProvider implements AgenticProvider {
 
   /** Return the Kagenti context ID associated with a Backstage session. */
   getSessionContextId(backstageSessionId: string): string | undefined {
-    return this.kagentiSessionMap.get(backstageSessionId);
+    return this.boundedMapGet(this.kagentiSessionMap, backstageSessionId);
   }
 
   /**
@@ -676,15 +699,21 @@ export class KagentiProvider implements AgenticProvider {
    * format (secret_fulfillments / oauth redirect_uri) keyed by extension URI.
    */
   async submitApproval(approval: ApprovalRequest): Promise<ApprovalResult> {
-    const { apiClient } = this.requireInitialized();
+    const { config, apiClient } = this.requireInitialized();
     const contextId = approval.responseId;
 
-    const agentId = this.sessionAgentMap.get(contextId);
+    const agentId = this.boundedMapGet(this.sessionAgentMap, contextId);
     const { namespace, name } = agentId
       ? this.parseAgentId(agentId)
       : this.resolveAgent({ messages: [] });
 
-    return submitApprovalImpl(apiClient, namespace, name, approval);
+    return submitApprovalImpl(
+      apiClient,
+      namespace,
+      name,
+      approval,
+      config.extensionBaseUrl,
+    );
   }
 
   /**

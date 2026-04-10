@@ -39,6 +39,7 @@ export async function listSessions(
   limit?: number,
   offset?: number,
   providerId?: string,
+  signal?: AbortSignal,
 ): Promise<ChatSessionSummary[]> {
   const params = new URLSearchParams();
   if (limit !== undefined) params.set('limit', limit.toString());
@@ -46,7 +47,10 @@ export async function listSessions(
   if (providerId) params.set('providerId', providerId);
   const qs = params.toString();
   const path = qs ? `/sessions?${qs}` : '/sessions';
-  const data = await deps.fetchJson<{ sessions?: ChatSessionSummary[] }>(path);
+  const data = await deps.fetchJson<{ sessions?: ChatSessionSummary[] }>(
+    path,
+    signal ? { signal } : undefined,
+  );
   return data.sessions || [];
 }
 
@@ -55,10 +59,14 @@ export async function createSession(
   title?: string,
   model?: string,
   providerId?: string,
+  signal?: AbortSignal,
 ): Promise<ChatSessionSummary> {
   const data = await deps.fetchJson<{ session: ChatSessionSummary }>(
     '/sessions',
-    jsonBody({ title, model, providerId }),
+    {
+      ...jsonBody({ title, model, providerId }),
+      ...(signal ? { signal } : {}),
+    },
   );
   return data.session;
 }
@@ -66,11 +74,30 @@ export async function createSession(
 export async function deleteSession(
   deps: SessionApiDeps,
   sessionId: string,
+  signal?: AbortSignal,
 ): Promise<boolean> {
   const data = await deps.fetchJsonSafe<{ success?: boolean }>(
     `/sessions/${sessionId}`,
     { success: false },
-    { method: 'DELETE' },
+    { method: 'DELETE', ...(signal ? { signal } : {}) },
+  );
+  return data.success === true;
+}
+
+export async function renameSession(
+  deps: SessionApiDeps,
+  sessionId: string,
+  title: string,
+  signal?: AbortSignal,
+): Promise<boolean> {
+  const data = await deps.fetchJson<{ success?: boolean }>(
+    `/sessions/${sessionId}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+      ...(signal ? { signal } : {}),
+    },
   );
   return data.success === true;
 }
@@ -78,10 +105,12 @@ export async function deleteSession(
 export async function getSessionMessages(
   deps: SessionApiDeps,
   sessionId: string,
+  signal?: AbortSignal,
 ): Promise<SessionMessagesResponse> {
   const baseUrl = await deps.discoveryApi.getBaseUrl('augment');
   const response = await deps.fetchApi.fetch(
     `${baseUrl}/sessions/${sessionId}/messages`,
+    signal ? { signal } : undefined,
   );
   if (!response.ok) {
     if (response.status === 404) return { messages: [] };
@@ -99,15 +128,62 @@ export async function getSessionMessages(
 }
 
 // ---------------------------------------------------------------------------
+// Session State (debug)
+// ---------------------------------------------------------------------------
+
+export async function getSessionState(
+  deps: SessionApiDeps,
+  sessionId: string,
+  signal?: AbortSignal,
+): Promise<Record<string, unknown>> {
+  return deps.fetchJsonSafe<Record<string, unknown>>(
+    `/sessions/${sessionId}/state`,
+    {},
+    signal ? { signal } : undefined,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Message Feedback
+// ---------------------------------------------------------------------------
+
+export async function submitMessageFeedback(
+  deps: SessionApiDeps,
+  payload: {
+    messageId: string;
+    sessionId?: string;
+    direction: 'positive' | 'negative';
+    reasons?: string[];
+    comment?: string;
+  },
+  signal?: AbortSignal,
+): Promise<boolean> {
+  const data = await deps.fetchJsonSafe<{ success?: boolean }>(
+    '/feedback',
+    { success: false },
+    {
+      ...jsonBody(payload),
+      ...(signal ? { signal } : {}),
+    },
+  );
+  return data.success === true;
+}
+
+// ---------------------------------------------------------------------------
 // Admin Sessions
 // ---------------------------------------------------------------------------
 
 export async function listAllSessions(
   deps: SessionApiDeps,
+  limit?: number,
+  offset?: number,
 ): Promise<ChatSessionSummary[]> {
-  const data = await deps.fetchJson<{ sessions?: ChatSessionSummary[] }>(
-    '/admin/sessions',
-  );
+  const params = new URLSearchParams();
+  if (limit !== undefined) params.set('limit', limit.toString());
+  if (offset !== undefined) params.set('offset', offset.toString());
+  const qs = params.toString();
+  const path = qs ? `/admin/sessions?${qs}` : '/admin/sessions';
+  const data = await deps.fetchJson<{ sessions?: ChatSessionSummary[] }>(path);
   return data.sessions || [];
 }
 

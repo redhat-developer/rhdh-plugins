@@ -39,7 +39,11 @@ function getNewChatButtonHoverBorder(isTyping: boolean, theme: Theme): string {
 /**
  * ChatInput component styles factory
  */
-export const createChatInputStyles = (theme: Theme, isTyping: boolean) => {
+export const createChatInputStyles = (
+  theme: Theme,
+  isTyping: boolean,
+  requireAgent = false,
+) => {
   const isDark = theme.palette.mode === 'dark';
 
   return {
@@ -116,6 +120,22 @@ export const createChatInputStyles = (theme: Theme, isTyping: boolean) => {
           isDark ? 0.2 : 0.12,
         )}`,
       },
+      ...(requireAgent && {
+        borderColor: alpha(theme.palette.primary.main, isDark ? 0.35 : 0.25),
+        animation: 'inputPulse 2.5s ease-in-out infinite',
+        '@keyframes inputPulse': {
+          '0%, 100%': {
+            borderColor: alpha(
+              theme.palette.primary.main,
+              isDark ? 0.35 : 0.25,
+            ),
+          },
+          '50%': {
+            borderColor: alpha(theme.palette.primary.main, isDark ? 0.6 : 0.45),
+            boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, isDark ? 0.1 : 0.06)}`,
+          },
+        },
+      }),
     } as SxProps<Theme>,
 
     /** Sparkle icon */

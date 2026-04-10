@@ -77,6 +77,21 @@ export function registerSandboxAgentRoutes(ctx: SandboxRouteCtx): void {
       },
     ),
   );
+
+  router.get(
+    '/kagenti/sandbox/:namespace/agent-card/:agent',
+    withRoute(
+      'GET /kagenti/sandbox agent card',
+      'Failed to get sandbox agent card',
+      async (req, res) => {
+        const result = await sandbox.getSandboxAgentCard(
+          req.params.namespace,
+          req.params.agent,
+        );
+        res.json(result);
+      },
+    ),
+  );
 }
 
 /** Sandbox create / delete / config / update routes. */

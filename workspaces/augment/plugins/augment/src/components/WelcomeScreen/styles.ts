@@ -32,20 +32,21 @@ export const getContainerSx = (theme: Theme): SxProps<Theme> => ({
   overflow: 'hidden',
 });
 
-/** Hero title + tagline. */
+/** Hero title + tagline + agent strip. */
 export const getHeroSx = (): SxProps<Theme> => ({
   textAlign: 'center',
-  mb: 2.5,
+  mb: 3,
   px: { xs: 2, sm: 3 },
+  pt: 2,
 });
 
-/** Title text. */
+/** Title text — prominent h4. */
 export const getTitleSx = (primaryColor: string): SxProps<Theme> => ({
-  fontWeight: 700,
-  fontSize: { xs: '1.25rem', sm: '1.375rem' },
-  letterSpacing: '-0.01em',
+  fontWeight: 800,
+  fontSize: { xs: '1.5rem', sm: '1.75rem' },
+  letterSpacing: '-0.02em',
   color: primaryColor,
-  mb: 0.25,
+  mb: 0.5,
 });
 
 /** Prompt groups scrollable area -- grows to fill, left-aligned, constrained width. */

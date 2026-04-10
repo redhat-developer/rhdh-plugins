@@ -65,6 +65,7 @@ export interface KagentiConfig {
   readonly maxRetries: number;
   readonly retryBaseDelayMs: number;
   readonly tokenExpiryBufferSeconds: number;
+  readonly extensionBaseUrl: string;
   readonly dashboards: KagentiDashboardOverrides;
   readonly sandbox: KagentiSandboxDefaults;
   readonly migration: KagentiMigrationDefaults;
@@ -91,6 +92,7 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
     throw new InputError('Missing required config: augment.kagenti.baseUrl');
   }
   try {
+    // eslint-disable-next-line no-new
     new URL(baseUrl);
   } catch {
     throw new InputError(
@@ -114,6 +116,7 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
     );
   }
   try {
+    // eslint-disable-next-line no-new
     new URL(tokenEndpoint);
   } catch {
     throw new InputError(
@@ -136,11 +139,19 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
     );
   }
 
-  const requestTimeoutMs = kagenti.getOptionalNumber('requestTimeoutMs') ?? 30_000;
-  const streamTimeoutMs = kagenti.getOptionalNumber('streamTimeoutMs') ?? 300_000;
+  const requestTimeoutMs =
+    kagenti.getOptionalNumber('requestTimeoutMs') ?? 30_000;
+  const streamTimeoutMs =
+    kagenti.getOptionalNumber('streamTimeoutMs') ?? 300_000;
   const maxRetries = kagenti.getOptionalNumber('maxRetries') ?? 3;
-  const retryBaseDelayMs = kagenti.getOptionalNumber('retryBaseDelayMs') ?? 1000;
-  const tokenExpiryBufferSeconds = kagenti.getOptionalNumber('tokenExpiryBufferSeconds') ?? 60;
+  const retryBaseDelayMs =
+    kagenti.getOptionalNumber('retryBaseDelayMs') ?? 1000;
+  const tokenExpiryBufferSeconds =
+    kagenti.getOptionalNumber('tokenExpiryBufferSeconds') ?? 60;
+  const extensionBaseUrl = (
+    kagenti.getOptionalString('extensionBaseUrl') ??
+    'https://a2a-extensions.adk.kagenti.dev'
+  ).replace(/\/+$/, '');
 
   if (requestTimeoutMs <= 0) {
     throw new InputError('augment.kagenti.requestTimeoutMs must be positive');
@@ -151,6 +162,14 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
   if (maxRetries < 0) {
     throw new InputError('augment.kagenti.maxRetries must be non-negative');
   }
+  if (retryBaseDelayMs <= 0) {
+    throw new InputError('augment.kagenti.retryBaseDelayMs must be positive');
+  }
+  if (tokenExpiryBufferSeconds <= 0) {
+    throw new InputError(
+      'augment.kagenti.tokenExpiryBufferSeconds must be positive',
+    );
+  }
 
   const namespacesRaw = kagenti.getOptionalStringArray('namespaces');
 
@@ -160,6 +179,21 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
   const migrationCfg = kagenti.getOptionalConfig('migration');
   const paginationCfg = kagenti.getOptionalConfig('pagination');
   const featureOverridesCfg = kagenti.getOptionalConfig('featureOverrides');
+
+  const paginationDefaultLimit =
+    paginationCfg?.getOptionalNumber('defaultLimit') ?? 50;
+  const paginationMaxLimit =
+    paginationCfg?.getOptionalNumber('maxLimit') ?? 200;
+  if (paginationDefaultLimit <= 0) {
+    throw new InputError(
+      'augment.kagenti.pagination.defaultLimit must be positive',
+    );
+  }
+  if (paginationMaxLimit < paginationDefaultLimit) {
+    throw new InputError(
+      'augment.kagenti.pagination.maxLimit must be >= defaultLimit',
+    );
+  }
 
   return {
     baseUrl: baseUrl.replace(/\/+$/, ''),
@@ -177,6 +211,7 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
     maxRetries,
     retryBaseDelayMs,
     tokenExpiryBufferSeconds,
+    extensionBaseUrl,
     dashboards: {
       mcpInspector: dashboardsCfg?.getOptionalString('mcpInspector'),
       mcpProxy: dashboardsCfg?.getOptionalString('mcpProxy'),
@@ -197,8 +232,8 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
       dryRun: migrationCfg?.getOptionalBoolean('dryRun') ?? false,
     },
     pagination: {
-      defaultLimit: paginationCfg?.getOptionalNumber('defaultLimit') ?? 50,
-      maxLimit: paginationCfg?.getOptionalNumber('maxLimit') ?? 200,
+      defaultLimit: paginationDefaultLimit,
+      maxLimit: paginationMaxLimit,
     },
     featureOverrides: {
       sandbox: featureOverridesCfg?.getOptionalBoolean('sandbox'),

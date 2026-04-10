@@ -139,8 +139,10 @@ export const DEFAULT_CHUNK_OVERLAP = 50;
 /** Default limit for conversation listing. */
 export const DEFAULT_CONVERSATIONS_LIMIT = 50;
 
-/** Cache TTL for RuntimeConfigResolver (ms). */
-export const CONFIG_CACHE_TTL_MS = 5_000;
+/** Cache TTL for RuntimeConfigResolver (ms).
+ *  Admin saves trigger explicit invalidation, so this can be generous
+ *  to avoid redundant DB reads within the same request lifecycle. */
+export const CONFIG_CACHE_TTL_MS = 30_000;
 
 // ---------------------------------------------------------------------------
 // Stream / loop limits

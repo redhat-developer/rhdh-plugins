@@ -71,6 +71,20 @@ export class KeycloakTokenManager {
     return this.pendingRequest;
   }
 
+  /**
+   * Get a token ensuring at least `minLifetimeMs` of remaining validity.
+   * Used before starting long-lived SSE streams where mid-stream refresh
+   * is not possible.
+   */
+  async getTokenForStreaming(minLifetimeMs: number): Promise<string> {
+    if (this.cachedToken && Date.now() + minLifetimeMs < this.expiresAt) {
+      return this.cachedToken;
+    }
+    this.cachedToken = undefined;
+    this.expiresAt = 0;
+    return this.getToken();
+  }
+
   clearCache(): void {
     this.generation++;
     this.cachedToken = undefined;
@@ -108,7 +122,9 @@ export class KeycloakTokenManager {
         const chunks: Buffer[] = [];
         res.on('data', (chunk: Buffer) => chunks.push(chunk));
         res.on('error', err => {
-          this.logger.error(`Keycloak token response stream error: ${err.message}`);
+          this.logger.error(
+            `Keycloak token response stream error: ${err.message}`,
+          );
           reject(err);
         });
         res.on('end', () => {
@@ -128,14 +144,21 @@ export class KeycloakTokenManager {
           try {
             const parsed: KeycloakTokenResponse = JSON.parse(raw);
 
-            if (!parsed.access_token || typeof parsed.access_token !== 'string') {
-              reject(new Error('Keycloak returned empty or missing access_token'));
+            if (
+              !parsed.access_token ||
+              typeof parsed.access_token !== 'string'
+            ) {
+              reject(
+                new Error('Keycloak returned empty or missing access_token'),
+              );
               return;
             }
 
-            const expiresIn = typeof parsed.expires_in === 'number' && Number.isFinite(parsed.expires_in)
-              ? parsed.expires_in
-              : MIN_TOKEN_LIFETIME_SECONDS + this.tokenExpiryBufferSeconds;
+            const expiresIn =
+              typeof parsed.expires_in === 'number' &&
+              Number.isFinite(parsed.expires_in)
+                ? parsed.expires_in
+                : MIN_TOKEN_LIFETIME_SECONDS + this.tokenExpiryBufferSeconds;
 
             if (this.generation !== startGen) {
               resolve(parsed.access_token);

@@ -39,7 +39,7 @@ import { ToolApprovalDialog } from '../ToolApprovalDialog';
 import { ChatInput } from '../ChatInput';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
-import { debugError, exportConversation } from '../../utils';
+import { exportConversation } from '../../utils';
 import { useBranding, useStreamingChat, useToolApproval } from '../../hooks';
 import {
   useWelcomeData,
@@ -48,6 +48,8 @@ import {
   useStatus,
   useChatAgentConfig,
 } from '../../hooks';
+import { useAgentSelection } from '../../hooks/useAgentSelection';
+import { useInteractivePhases } from '../../hooks/useInteractivePhases';
 import { ThinkingIndicator } from './ThinkingIndicator';
 import { ChatScrollArea } from './ChatScrollArea';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
@@ -105,16 +107,6 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     const { branding } = useBranding();
 
     const [inputValue, setInputValue] = useState('');
-    const [selectedModel, setSelectedModel] = useState<string | undefined>();
-    const [agentHealthWarning, setAgentHealthWarning] = useState<string | null>(
-      null,
-    );
-    const [agentStarters, setAgentStarters] = useState<string[]>([]);
-    const [agentDescription, setAgentDescription] = useState<
-      string | undefined
-    >();
-    const approvalMsgCounter = useRef(0);
-    const kagentiFetchRef = useRef<AbortController | null>(null);
     const { workflows, quickActions, promptGroups } = useWelcomeData();
     const { status } = useStatus();
     const isKagenti = status?.providerId === 'kagenti';
@@ -122,90 +114,29 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     const { configs: chatAgentConfigs } = useChatAgentConfig();
     const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const handleAgentSelect = useCallback(
-      (agentId: string, _agentName: string) => {
-        setSelectedModel(agentId);
-        setAgentHealthWarning(null);
-
-        const adminCfg = chatAgentConfigs.find(c => c.agentId === agentId);
-
-        // Set description from admin config first
-        setAgentDescription(adminCfg?.description);
-
-        if (adminCfg?.conversationStarters?.length) {
-          setAgentStarters(adminCfg.conversationStarters.slice(0, 4));
-        } else {
-          setAgentStarters([]);
-        }
-
-        if (adminCfg?.greeting && messages.length === 0) {
-          onMessagesChange([
-            {
-              id: `greeting-${Date.now()}`,
-              text: adminCfg.greeting,
-              isUser: false,
-              timestamp: new Date(),
-              agentName: adminCfg.displayName || _agentName,
-            },
-          ]);
-        }
-
-        chatInputRef.current?.focus();
-
-        if (isKagenti && agentId.includes('/')) {
-          const [ns, name] = agentId.split('/');
-          kagentiFetchRef.current?.abort();
-          const ctrl = new AbortController();
-          kagentiFetchRef.current = ctrl;
-          api
-            .getKagentiAgent(ns, name)
-            .then(detail => {
-              if (ctrl.signal.aborted) return;
-              const statusStr =
-                typeof detail.status === 'string'
-                  ? detail.status
-                  : String(
-                      (detail.status as Record<string, unknown>)?.phase ?? '',
-                    );
-              if (statusStr && statusStr.toLowerCase() !== 'ready') {
-                setAgentHealthWarning(`Agent status: ${statusStr}`);
-              }
-              const card = (
-                detail as {
-                  agentCard?: {
-                    description?: string;
-                    skills?: Array<{ examples?: string[] }>;
-                  };
-                }
-              ).agentCard;
-              if (!adminCfg?.description && card?.description) {
-                setAgentDescription(card.description);
-              }
-              if (!adminCfg?.conversationStarters?.length && card?.skills) {
-                const examples = card.skills
-                  .flatMap(s => s.examples || [])
-                  .slice(0, 4);
-                if (examples.length > 0) setAgentStarters(examples);
-              }
-            })
-            .catch(() => {
-              if (ctrl.signal.aborted) return;
-              setAgentHealthWarning('Unable to verify agent health');
-            });
-        }
-      },
-      [api, isKagenti, chatAgentConfigs, messages.length, onMessagesChange],
-    );
+    const {
+      selectedModel,
+      setSelectedModel,
+      agentHealthWarning,
+      agentStarters,
+      agentDescription,
+      handleAgentSelect,
+      resetAgentSelection,
+    } = useAgentSelection({
+      api,
+      isKagenti,
+      chatAgentConfigs,
+      messages,
+      onMessagesChange,
+      chatInputRef,
+    });
 
     const handleChangeAgent = useCallback(() => {
-      setSelectedModel(undefined);
-      setAgentHealthWarning(null);
-      setAgentStarters([]);
-      setAgentDescription(undefined);
+      resetAgentSelection();
       if (messages.length > 0 && onNewChat) {
         onNewChat();
       }
-    }, [messages.length, onNewChat]);
+    }, [messages.length, onNewChat, resetAgentSelection]);
 
     const handleStarterClick = useCallback((prompt: string) => {
       setInputValue(prompt);
@@ -252,6 +183,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     // Streaming chat hook
     const {
       streamingState,
+      lastCompletedState,
       isTyping,
       sendMessage,
       cancelRequest,
@@ -280,21 +212,12 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
         cancelRequest();
         resetConversation();
         onMessagesChange([]);
-        setSelectedModel(undefined);
-        setAgentStarters([]);
-        setAgentDescription(undefined);
-        setAgentHealthWarning(null);
+        resetAgentSelection();
         setInputValue('');
         onNewChat?.();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [providerId]);
-
-    // Track last completed streaming state for the execution trace panel.
-    const lastCompletedStateRef = useRef(streamingState);
-    if (streamingState) {
-      lastCompletedStateRef.current = streamingState;
-    }
 
     // Tool approval hook (HITL)
     const {
@@ -328,6 +251,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
         clearInput: () => setInputValue(''),
         setSelectedModel,
       }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [
         cancelRequest,
         resetConversation,
@@ -354,6 +278,19 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       inputValue,
       setInputValue,
     });
+
+    const handleFeedback = useCallback(
+      (data: import('../ChatMessage/MessageFeedback').MessageFeedbackData) => {
+        api.submitMessageFeedback({
+          messageId: data.messageId,
+          sessionId: activeSessionId ?? undefined,
+          direction: data.direction,
+          reasons: data.reasons,
+          comment: data.comment,
+        });
+      },
+      [api, activeSessionId],
+    );
 
     const { selectedMessageIndex } = useChatKeyboardShortcuts({
       onNewChat,
@@ -386,155 +323,19 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       onCurrentAgentChange?.(agentToReport);
     }, [streamingState?.currentAgent, selectedModel, onCurrentAgentChange]);
 
-    const handleFormSubmit = useCallback(
-      async (values: Record<string, unknown>) => {
-        const pending = streamingState?.pendingForm;
-        if (!pending) return;
-        try {
-          const result = await api.submitToolApproval(
-            pending.contextId || streamingState?.responseId || '',
-            pending.taskId || '',
-            true,
-            'form_response',
-            JSON.stringify(values),
-          );
-          const text = result?.content || 'Request processed successfully.';
-          const botMsg: Message = {
-            id: `msg-approval-${approvalMsgCounter.current++}`,
-            text,
-            isUser: false,
-            timestamp: new Date(),
-            responseId: result?.responseId,
-          };
-          onMessagesChange([...messages, botMsg]);
-        } catch (err) {
-          debugError('Form submission failed:', err);
-          const errorMsg: Message = {
-            id: `msg-error-${approvalMsgCounter.current++}`,
-            text: `Form submission failed: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`,
-            isUser: false,
-            timestamp: new Date(),
-            errorCode: 'form_submission_error',
-          };
-          onMessagesChange([...messages, errorMsg]);
-        } finally {
-          setStreamingState(null);
-          setIsTyping(false);
-        }
-      },
-      [
-        api,
-        streamingState,
-        setStreamingState,
-        setIsTyping,
-        messages,
-        onMessagesChange,
-      ],
-    );
-
-    const handleFormCancel = useCallback(async () => {
-      const pending = streamingState?.pendingForm;
-      if (!pending) return;
-      setStreamingState(null);
-      setIsTyping(false);
-      try {
-        await api.submitToolApproval(
-          pending.contextId || streamingState?.responseId || '',
-          pending.taskId || '',
-          false,
-        );
-      } catch (err) {
-        debugError('Form cancellation failed:', err);
-      }
-    }, [api, streamingState, setStreamingState, setIsTyping]);
-
-    const handleAuthConfirm = useCallback(async () => {
-      const pending = streamingState?.pendingAuth;
-      if (!pending) return;
-      try {
-        const result = await api.submitToolApproval(
-          streamingState?.responseId || pending.taskId || '',
-          pending.taskId || '',
-          true,
-          'oauth_confirm',
-        );
-        const text = result?.content || 'Authentication confirmed.';
-        const botMsg: Message = {
-          id: `msg-approval-${approvalMsgCounter.current++}`,
-          text,
-          isUser: false,
-          timestamp: new Date(),
-          responseId: result?.responseId,
-        };
-        onMessagesChange([...messages, botMsg]);
-      } catch (err) {
-        debugError('OAuth confirmation failed:', err);
-        const errorMsg: Message = {
-          id: `msg-error-${approvalMsgCounter.current++}`,
-          text: `Authentication failed: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`,
-          isUser: false,
-          timestamp: new Date(),
-          errorCode: 'auth_confirmation_error',
-        };
-        onMessagesChange([...messages, errorMsg]);
-      } finally {
-        setStreamingState(null);
-        setIsTyping(false);
-      }
-    }, [
+    const {
+      handleFormSubmit,
+      handleFormCancel,
+      handleAuthConfirm,
+      handleSecretsSubmit,
+    } = useInteractivePhases({
       api,
       streamingState,
-      setStreamingState,
-      setIsTyping,
       messages,
       onMessagesChange,
-    ]);
-
-    const handleSecretsSubmit = useCallback(
-      async (secrets: Record<string, string>) => {
-        const pending = streamingState?.pendingAuth;
-        if (!pending) return;
-        try {
-          const result = await api.submitToolApproval(
-            streamingState?.responseId || pending.taskId || '',
-            pending.taskId || '',
-            true,
-            'secrets_response',
-            JSON.stringify(secrets),
-          );
-          const text = result?.content || 'Secrets submitted successfully.';
-          const botMsg: Message = {
-            id: `msg-approval-${approvalMsgCounter.current++}`,
-            text,
-            isUser: false,
-            timestamp: new Date(),
-            responseId: result?.responseId,
-          };
-          onMessagesChange([...messages, botMsg]);
-        } catch (err) {
-          debugError('Secrets submission failed:', err);
-          const errorMsg: Message = {
-            id: `msg-error-${approvalMsgCounter.current++}`,
-            text: `Secrets submission failed: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`,
-            isUser: false,
-            timestamp: new Date(),
-            errorCode: 'secrets_submission_error',
-          };
-          onMessagesChange([...messages, errorMsg]);
-        } finally {
-          setStreamingState(null);
-          setIsTyping(false);
-        }
-      },
-      [
-        api,
-        streamingState,
-        setStreamingState,
-        setIsTyping,
-        messages,
-        onMessagesChange,
-      ],
-    );
+      setStreamingState,
+      setIsTyping,
+    });
 
     // Determine what to show in the message area.
     const showWelcome =
@@ -616,46 +417,44 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
             onBrowseAgents={handleOpenCatalog}
             healthWarning={agentHealthWarning ?? undefined}
             agentConfig={activeAgentConfig}
+            onExport={
+              messages.length > 0 && !showWelcome
+                ? () =>
+                    exportConversation(messages, activeSessionId ?? undefined)
+                : undefined
+            }
           />
         )}
 
-        {/* Conversation toolbar — export, etc. */}
-        {messages.length > 0 && !showWelcome && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              px: { xs: 2, sm: 3, md: 4 },
-              py: 0.25,
-            }}
-          >
-            <Tooltip title="Export conversation as JSON" placement="left">
-              <IconButton
-                size="small"
-                onClick={() =>
-                  exportConversation(messages, activeSessionId ?? undefined)
-                }
-                aria-label="Export conversation"
-                sx={{
-                  p: 0.5,
-                  color: 'text.secondary',
-                  '&:hover': { color: 'primary.main' },
-                }}
-              >
-                <FileDownloadOutlinedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        )}
-
-        {/* Execution Trace — live view of agent steps */}
-        {(streamingState || lastCompletedStateRef.current) &&
-          messages.length > 0 &&
-          !showWelcome && (
-            <ExecutionTracePanel
-              streamingState={streamingState}
-              lastCompletedState={lastCompletedStateRef.current}
-            />
+        {/* Standalone export toolbar — only when no ChatHeader is visible */}
+        {messages.length > 0 &&
+          !showWelcome &&
+          !(isKagenti && selectedModel) && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                px: { xs: 2, sm: 3, md: 4 },
+                py: 0.25,
+              }}
+            >
+              <Tooltip title="Export conversation as JSON" placement="left">
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    exportConversation(messages, activeSessionId ?? undefined)
+                  }
+                  aria-label="Export conversation"
+                  sx={{
+                    p: 0.5,
+                    color: 'text.secondary',
+                    '&:hover': { color: 'primary.main' },
+                  }}
+                >
+                  <FileDownloadOutlinedIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
           )}
 
         {/* Messages Area */}
@@ -734,8 +533,17 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
                   messages={messages}
                   onRegenerate={handleRegenerate}
                   onEditMessage={isTyping ? undefined : handleEditMessage}
+                  onFeedback={handleFeedback}
                   selectedMessageIndex={selectedMessageIndex}
                 />
+                {/* Execution Trace — inline with the conversation, above the active response */}
+                {(streamingState || lastCompletedState) && (
+                  <ExecutionTracePanel
+                    streamingState={streamingState}
+                    lastCompletedState={lastCompletedState}
+                    isStreaming={!!streamingState}
+                  />
+                )}
                 {showStreaming && (
                   <StreamingMessage
                     state={streamingState}

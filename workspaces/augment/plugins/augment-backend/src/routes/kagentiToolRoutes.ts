@@ -221,6 +221,20 @@ export function registerKagentiToolRoutes(
   );
 
   router.get(
+    '/kagenti/tools/shipwright-builds',
+    withRoute(
+      'GET /kagenti/tools/shipwright-builds',
+      'Failed to list tool builds',
+      async (req, res) => {
+        const namespace = req.query.namespace as string | undefined;
+        const allNamespaces = req.query.all_namespaces === 'true';
+        const result = await api.listToolBuilds(namespace, allNamespaces);
+        res.json(result);
+      },
+    ),
+  );
+
+  router.get(
     '/kagenti/shipwright/builds',
     withRoute(
       'GET /kagenti/shipwright/builds',

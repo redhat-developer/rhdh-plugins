@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useMemo, memo } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback, memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Collapse from '@mui/material/Collapse';
@@ -42,12 +42,19 @@ interface TraceSpan {
   durationMs?: number;
 }
 
+/**
+ * Build an ordered list of trace spans that approximates the chronological
+ * execution sequence.  The reducer appends handoffs and tool calls in event
+ * order, so we interleave them to produce a timeline rather than grouping
+ * by type.  Reasoning is always first (if present), generation is always
+ * last (if text was produced).
+ */
 function buildTraceSpans(state: StreamingState): TraceSpan[] {
   const spans: TraceSpan[] = [];
 
   if (state.reasoning || state.reasoningDuration) {
     spans.push({
-      id: 'reasoning',
+      id: 'reasoning-initial',
       label: 'Reasoning',
       type: 'reasoning',
       status: state.reasoningDuration ? 'completed' : 'running',
@@ -57,31 +64,44 @@ function buildTraceSpans(state: StreamingState): TraceSpan[] {
     });
   }
 
-  for (const handoff of state.handoffs) {
-    spans.push({
-      id: `handoff-${handoff.from}-${handoff.to}`,
-      label: `${handoff.from} → ${handoff.to}`,
-      type: 'handoff',
-      status: 'completed',
-      agentName: handoff.to,
-      detail: handoff.reason,
-    });
+  let toolIdx = 0;
+  let handoffIdx = 0;
+  const totalSteps = state.toolCalls.length + state.handoffs.length;
+
+  for (let step = 0; step < totalSteps; step++) {
+    const hasHandoff = handoffIdx < state.handoffs.length;
+    const hasTool = toolIdx < state.toolCalls.length;
+
+    if (hasHandoff && (!hasTool || handoffIdx <= toolIdx)) {
+      const handoff = state.handoffs[handoffIdx];
+      spans.push({
+        id: `handoff-${handoffIdx}-${handoff.to}`,
+        label: handoff.from
+          ? `${handoff.from} → ${handoff.to}`
+          : `→ ${handoff.to}`,
+        type: 'handoff',
+        status: 'completed',
+        agentName: handoff.to,
+        detail: handoff.reason,
+      });
+      handoffIdx++;
+    } else if (hasTool) {
+      const tc = state.toolCalls[toolIdx];
+      const failed = tc.status === 'failed' || !!tc.error;
+      const completed = tc.status === 'completed' || !!tc.output || failed;
+      spans.push({
+        id: `tool-${tc.id}`,
+        label: tc.name || tc.type || 'tool',
+        type: 'tool',
+        // eslint-disable-next-line no-nested-ternary
+        status: failed ? 'failed' : completed ? 'completed' : 'running',
+        detail: tc.serverLabel,
+      });
+      toolIdx++;
+    }
   }
 
-  for (const tc of state.toolCalls) {
-    const failed = tc.status === 'failed' || !!tc.error;
-    const completed = tc.status === 'completed' || !!tc.output || failed;
-    spans.push({
-      id: `tool-${tc.id}`,
-      label: tc.name || tc.type || 'tool',
-      type: 'tool',
-      // eslint-disable-next-line no-nested-ternary
-      status: failed ? 'failed' : completed ? 'completed' : 'running',
-      detail: tc.serverLabel,
-    });
-  }
-
-  if (state.text && state.phase !== 'completed') {
+  if (state.text && !state.completed) {
     spans.push({
       id: 'generation',
       label: 'Generating response',
@@ -226,14 +246,40 @@ function TraceSpanRow({ span }: { span: TraceSpan }) {
 interface ExecutionTracePanelProps {
   streamingState: StreamingState | null;
   lastCompletedState?: StreamingState | null;
+  isStreaming?: boolean;
 }
 
 export const ExecutionTracePanel = memo(function ExecutionTracePanel({
   streamingState,
   lastCompletedState,
+  isStreaming: isStreamingProp,
 }: ExecutionTracePanelProps) {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(false);
+  const manualOverrideRef = useRef(false);
+
+  const isStreaming = streamingState !== null;
+  const prevStreamingRef = useRef(isStreaming);
+
+  useEffect(() => {
+    const wasStreaming = prevStreamingRef.current;
+    prevStreamingRef.current = isStreaming;
+
+    if (isStreaming && !wasStreaming) {
+      manualOverrideRef.current = false;
+      setExpanded(true);
+    }
+    if (!isStreaming && wasStreaming && !manualOverrideRef.current) {
+      setExpanded(false);
+    }
+  }, [isStreaming]);
+
+  const toggleExpanded = useCallback(() => {
+    setExpanded(prev => {
+      if (isStreaming) manualOverrideRef.current = true;
+      return !prev;
+    });
+  }, [isStreaming]);
 
   const activeState = streamingState || lastCompletedState;
   const spans = useMemo(
@@ -250,12 +296,18 @@ export const ExecutionTracePanel = memo(function ExecutionTracePanel({
   return (
     <Box
       sx={{
-        mx: { xs: 2, sm: 3, md: 4 },
         mb: 0.5,
+        mt: 1,
         borderRadius: 1.5,
         border: `1px solid ${alpha(theme.palette.divider, 0.4)}`,
         overflow: 'hidden',
-        backgroundColor: alpha(theme.palette.background.paper, 0.5),
+        backgroundColor: alpha(theme.palette.background.paper, 0.85),
+        backdropFilter: 'blur(8px)',
+        ...(isStreamingProp && {
+          position: 'sticky' as const,
+          bottom: 0,
+          zIndex: 5,
+        }),
       }}
     >
       <Box
@@ -263,11 +315,11 @@ export const ExecutionTracePanel = memo(function ExecutionTracePanel({
         tabIndex={0}
         aria-expanded={expanded}
         aria-label={`Execution trace: ${spans.length} steps`}
-        onClick={() => setExpanded(prev => !prev)}
+        onClick={toggleExpanded}
         onKeyDown={(e: React.KeyboardEvent) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            setExpanded(prev => !prev);
+            toggleExpanded();
           }
         }}
         sx={{

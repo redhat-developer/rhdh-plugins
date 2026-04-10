@@ -312,6 +312,8 @@ export function useToolApproval({
             onClearStreamingState();
             onSetTyping(false);
           }
+        } else {
+          setApprovalError('Tool approval was not accepted by the backend');
         }
       } catch (err) {
         debugError('Error approving tool:', err);

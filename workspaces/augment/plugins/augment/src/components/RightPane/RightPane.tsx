@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme, alpha } from '@mui/material/styles';
+import { useApi } from '@backstage/core-plugin-api';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { ConversationHistory } from '../ConversationHistory';
 import { RightPaneHeader } from './RightPaneHeader';
 import { CollapsedSidebar } from './CollapsedSidebar';
 import { useStatus } from '../../hooks';
+import { augmentApiRef } from '../../api';
 import { AgentInfoSection } from './AgentInfoSection';
 import { SessionStateInspector } from '../SessionStateInspector';
 
@@ -63,9 +65,67 @@ export const RightPane = ({
   const { status, loading } = useStatus();
   const isDark = theme.palette.mode === 'dark';
   const [agentExpanded, setAgentExpanded] = useState(false);
+  const api = useApi(augmentApiRef);
+  const [sessionState, setSessionState] = useState<
+    Record<string, unknown> | undefined
+  >();
+
+  const handleRefreshState = useCallback(() => {
+    if (!activeSessionId) return;
+    api.getSessionState(activeSessionId).then(
+      state => setSessionState(state),
+      () => setSessionState(undefined),
+    );
+  }, [api, activeSessionId]);
 
   const providerConnected = status?.provider.connected ?? false;
   const overallReady = !loading && providerConnected;
+
+  // Drag-resizable width
+  const MIN_WIDTH = 280;
+  const MAX_WIDTH = 600;
+  const DEFAULT_WIDTH = 340;
+  const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const startWidth = useRef(DEFAULT_WIDTH);
+
+  const handleDragStart = useCallback(
+    (e: React.MouseEvent) => {
+      if (isMobile || sidebarCollapsed) return;
+      e.preventDefault();
+      isDragging.current = true;
+      startX.current = e.clientX;
+      startWidth.current = panelWidth;
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    },
+    [isMobile, sidebarCollapsed, panelWidth],
+  );
+
+  useEffect(() => {
+    function handleMouseMove(e: MouseEvent) {
+      if (!isDragging.current) return;
+      const delta = startX.current - e.clientX;
+      const newWidth = Math.max(
+        MIN_WIDTH,
+        Math.min(MAX_WIDTH, startWidth.current + delta),
+      );
+      setPanelWidth(newWidth);
+    }
+    function handleMouseUp() {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
   const handleSelectSession = useCallback(
     (sessionId: string, adminView?: boolean, sessionModel?: string) => {
@@ -82,18 +142,24 @@ export const RightPane = ({
     ? 'none'
     : `-2px 0 8px ${alpha(theme.palette.common.black, shadowAlpha)}`;
 
+  const expandedWidth = isMobile ? '300px' : `${panelWidth}px`;
+
   const panelContent = (
     <Box
       sx={{
-        // eslint-disable-next-line no-nested-ternary
-        width: isMobile ? '300px' : sidebarCollapsed ? '56px' : '340px',
+        width: sidebarCollapsed ? '56px' : expandedWidth,
         backgroundColor: theme.palette.background.default,
         borderLeft: isMobile
           ? 'none'
           : `1px solid ${alpha(theme.palette.divider, 0.3)}`,
         display: 'flex',
         flexDirection: 'column',
-        transition: isMobile ? 'none' : 'width 0.3s ease',
+        // eslint-disable-next-line no-nested-ternary
+        transition: isDragging.current
+          ? 'none'
+          : isMobile
+            ? 'none'
+            : 'width 0.3s ease',
         ...(!isMobile && {
           position: 'absolute' as const,
           top: 0,
@@ -106,6 +172,29 @@ export const RightPane = ({
         boxShadow,
       }}
     >
+      {/* Drag handle (left edge) */}
+      {!isMobile && !sidebarCollapsed && (
+        <Box
+          onMouseDown={handleDragStart}
+          sx={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 4,
+            cursor: 'col-resize',
+            zIndex: 20,
+            '&:hover': {
+              bgcolor: alpha(theme.palette.primary.main, 0.25),
+            },
+            '&:active': {
+              bgcolor: alpha(theme.palette.primary.main, 0.4),
+            },
+            transition: 'background-color 0.15s ease',
+          }}
+        />
+      )}
+
       {/* Header */}
       <RightPaneHeader
         sidebarCollapsed={sidebarCollapsed}
@@ -223,6 +312,8 @@ export const RightPane = ({
             activeSessionId={activeSessionId}
             messageCount={messageCount}
             currentAgent={currentAgent}
+            sessionState={sessionState}
+            onRefreshState={activeSessionId ? handleRefreshState : undefined}
           />
         </Box>
       )}

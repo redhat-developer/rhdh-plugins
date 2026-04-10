@@ -263,11 +263,29 @@ export interface AugmentApi {
   /** Delete a chat session */
   deleteSession(sessionId: string): Promise<boolean>;
 
+  /** Rename a chat session */
+  renameSession(sessionId: string, title: string): Promise<boolean>;
+
+  /** Fetch session state for debug inspector */
+  getSessionState(sessionId: string): Promise<Record<string, unknown>>;
+
+  /** Submit per-message feedback (thumbs up/down with optional reasons) */
+  submitMessageFeedback(payload: {
+    messageId: string;
+    sessionId?: string;
+    direction: 'positive' | 'negative';
+    reasons?: string[];
+    comment?: string;
+  }): Promise<boolean>;
+
   /** Get processed messages for a session (server-side grouping) */
   getSessionMessages(sessionId: string): Promise<SessionMessagesResponse>;
 
   /** List all sessions across all users (admin only) */
-  listAllSessions(): Promise<ChatSessionSummary[]>;
+  listAllSessions(
+    limit?: number,
+    offset?: number,
+  ): Promise<ChatSessionSummary[]>;
 
   /** Get messages for any session without ownership check (admin only) */
   getAdminSessionMessages(sessionId: string): Promise<SessionMessagesResponse>;
@@ -635,7 +653,13 @@ export class AugmentApiClient implements AugmentApi {
       ? await this.fetchApi.fetch(url, init)
       : await this.fetchApi.fetch(url);
     if (!response.ok) throw await ResponseError.fromResponse(response);
-    return response.json();
+    try {
+      return await response.json();
+    } catch {
+      throw new Error(
+        `Invalid JSON response from ${path} (status ${response.status})`,
+      );
+    }
   }
 
   /** Like fetchJson but returns `fallback` instead of throwing on non-2xx. */
@@ -915,14 +939,35 @@ export class AugmentApiClient implements AugmentApi {
     return sessionEndpoints.deleteSession(this.sessionDeps, sessionId);
   }
 
+  async renameSession(sessionId: string, title: string): Promise<boolean> {
+    return sessionEndpoints.renameSession(this.sessionDeps, sessionId, title);
+  }
+
+  async getSessionState(sessionId: string): Promise<Record<string, unknown>> {
+    return sessionEndpoints.getSessionState(this.sessionDeps, sessionId);
+  }
+
+  async submitMessageFeedback(payload: {
+    messageId: string;
+    sessionId?: string;
+    direction: 'positive' | 'negative';
+    reasons?: string[];
+    comment?: string;
+  }): Promise<boolean> {
+    return sessionEndpoints.submitMessageFeedback(this.sessionDeps, payload);
+  }
+
   async getSessionMessages(
     sessionId: string,
   ): Promise<SessionMessagesResponse> {
     return sessionEndpoints.getSessionMessages(this.sessionDeps, sessionId);
   }
 
-  async listAllSessions(): Promise<ChatSessionSummary[]> {
-    return sessionEndpoints.listAllSessions(this.sessionDeps);
+  async listAllSessions(
+    limit?: number,
+    offset?: number,
+  ): Promise<ChatSessionSummary[]> {
+    return sessionEndpoints.listAllSessions(this.sessionDeps, limit, offset);
   }
 
   async getAdminSessionMessages(

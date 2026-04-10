@@ -25,6 +25,7 @@ import Button from '@mui/material/Button';
 import { alpha, useTheme } from '@mui/material/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useBranding } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
 import { augmentApiRef } from '../../api';
 import type { ChatSessionSummary } from '../../types';
 import { debugError } from '../../utils';
@@ -66,6 +67,7 @@ export const ConversationHistory = ({
   providerId,
 }: ConversationHistoryProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const api = useApi(augmentApiRef);
   const { branding } = useBranding();
   const [sessions, setSessions] = useState<ChatSessionSummary[]>([]);
@@ -92,7 +94,7 @@ export const ConversationHistory = ({
     try {
       const list =
         isAdmin && showAllUsers
-          ? await api.listAllSessions()
+          ? await api.listAllSessions(PAGE_SIZE)
           : await api.listSessions(PAGE_SIZE, 0, providerId);
       if (loadGenRef.current !== gen) return;
       setSessions(list);
@@ -236,24 +238,35 @@ export const ConversationHistory = ({
     const groups: { label: string; sessions: ChatSessionSummary[] }[] = [];
     const buckets: Record<string, ChatSessionSummary[]> = {};
 
+    const labelToday = t('conversationHistory.today');
+    const labelYesterday = t('conversationHistory.yesterday');
+    const labelThisWeek = t('conversationHistory.thisWeek');
+    const labelOlder = t('conversationHistory.older');
+
     for (const session of filteredSessions) {
       const d = new Date(session.updatedAt);
       let label: string;
-      if (d.toDateString() === today) label = 'Today';
-      else if (d.toDateString() === yesterday) label = 'Yesterday';
-      else if (d >= weekAgo) label = 'This week';
-      else label = 'Older';
+      if (d.toDateString() === today) label = labelToday;
+      else if (d.toDateString() === yesterday) label = labelYesterday;
+      else if (d >= weekAgo) label = labelThisWeek;
+      else label = labelOlder;
 
       if (!buckets[label]) buckets[label] = [];
       buckets[label].push(session);
     }
 
-    for (const label of ['Today', 'Yesterday', 'This week', 'Older']) {
+    for (const label of [
+      labelToday,
+      labelYesterday,
+      labelThisWeek,
+      labelOlder,
+    ]) {
       if (buckets[label]?.length) {
         groups.push({ label, sessions: buckets[label] });
       }
     }
     return groups;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredSessions]);
 
   return (
@@ -287,12 +300,12 @@ export const ConversationHistory = ({
           {sessions.length} conversation
           {sessions.length !== 1 ? 's' : ''} • {branding.appName}
         </Typography>
-        <Tooltip title="Refresh">
+        <Tooltip title={t('conversationHistory.refresh')}>
           <IconButton
             size="small"
             onClick={() => loadSessions()}
             disabled={loading}
-            aria-label="Refresh conversation history"
+            aria-label={t('conversationHistory.refreshAriaLabel')}
             sx={{
               color: theme.palette.text.secondary,
               p: 0.5,

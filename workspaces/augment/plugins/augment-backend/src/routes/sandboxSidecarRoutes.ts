@@ -138,4 +138,39 @@ export function registerSandboxSidecarRoutes(ctx: SandboxRouteCtx): void {
       },
     ),
   );
+
+  router.post(
+    '/kagenti/sandbox/:namespace/sessions/:contextId/sidecars/:type/observations',
+    async (req, res) => {
+      const { namespace, contextId, type } = req.params;
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      });
+
+      const controller = new AbortController();
+      req.on('close', () => controller.abort());
+
+      try {
+        await sandbox.streamObservations(
+          namespace,
+          contextId,
+          type,
+          (line: string) => {
+            res.write(`data: ${line}\n\n`);
+          },
+          controller.signal,
+        );
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          ctx.logger.warn(
+            `streamObservations error: ${err instanceof Error ? err.message : err}`,
+          );
+        }
+      } finally {
+        res.end();
+      }
+    },
+  );
 }

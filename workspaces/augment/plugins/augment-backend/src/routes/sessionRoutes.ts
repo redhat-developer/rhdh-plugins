@@ -171,6 +171,137 @@ export function registerSessionRoutes(ctx: RouteContext): void {
     ),
   );
 
+  router.patch(
+    '/sessions/:sessionId',
+    withRoute(
+      req => `PATCH /sessions/${req.params.sessionId}`,
+      'Failed to update session',
+      async (req, res) => {
+        if (missingSessions(res)) return;
+        validateSessionId(req.params.sessionId);
+        const userRef = await getUserRef(req);
+        const { title } = req.body as { title?: string };
+        if (typeof title !== 'string' || !title.trim()) {
+          res.status(400).json({ error: 'title must be a non-empty string' });
+          return;
+        }
+        const trimmed = title.trim().slice(0, MAX_SESSION_TITLE_LENGTH);
+        const session = await sessions!.getSession(
+          req.params.sessionId,
+          userRef,
+        );
+        if (!session) {
+          notFound(res, 'Session');
+          return;
+        }
+        await sessions!.updateTitle(req.params.sessionId, userRef, trimmed);
+        res.json({ success: true, title: trimmed });
+      },
+    ),
+  );
+
+  // -------------------------------------------------------------------------
+  // Session State (debug view)
+  // -------------------------------------------------------------------------
+
+  router.get(
+    '/sessions/:sessionId/state',
+    withRoute(
+      req => `GET /sessions/${req.params.sessionId}/state`,
+      'Failed to get session state',
+      async (req, res) => {
+        if (missingSessions(res)) return;
+        validateSessionId(req.params.sessionId);
+        const userRef = await getUserRef(req);
+        const session = await sessions!.getSession(
+          req.params.sessionId,
+          userRef,
+        );
+        if (!session) {
+          notFound(res, 'Session');
+          return;
+        }
+        const messages = await sessions!.getMessages(req.params.sessionId);
+        const messagesByRole = {
+          user: messages.filter(m => m.role === 'user').length,
+          assistant: messages.filter(m => m.role === 'assistant').length,
+        };
+        const agents = [
+          ...new Set(
+            messages.filter(m => m.agentName).map(m => m.agentName as string),
+          ),
+        ];
+        const lastActivity =
+          messages.length > 0
+            ? messages[messages.length - 1].createdAt
+            : session.updatedAt;
+
+        res.json({
+          session: {
+            id: session.id,
+            title: session.title,
+            conversationId: session.conversationId,
+            model: session.model,
+            providerId: session.providerId,
+            createdAt: session.createdAt,
+            updatedAt: session.updatedAt,
+          },
+          messages: {
+            total: messages.length,
+            byRole: messagesByRole,
+          },
+          agents,
+          lastActivity,
+        });
+      },
+    ),
+  );
+
+  // -------------------------------------------------------------------------
+  // Message Feedback
+  // -------------------------------------------------------------------------
+
+  router.post(
+    '/feedback',
+    withRoute('POST /feedback', 'Failed to save feedback', async (req, res) => {
+      if (missingSessions(res)) return;
+      const userRef = await getUserRef(req);
+      const body = req.body as Record<string, unknown>;
+      const messageId =
+        typeof body.messageId === 'string' ? body.messageId.trim() : '';
+      const direction = body.direction;
+      if (
+        !messageId ||
+        (direction !== 'positive' && direction !== 'negative')
+      ) {
+        res
+          .status(400)
+          .json({
+            error: 'messageId and direction (positive|negative) are required',
+          });
+        return;
+      }
+      const reasons = Array.isArray(body.reasons)
+        ? (body.reasons as string[]).filter(r => typeof r === 'string')
+        : undefined;
+      const comment =
+        typeof body.comment === 'string' ? body.comment.trim() : undefined;
+      const sessionId =
+        typeof body.sessionId === 'string'
+          ? body.sessionId.trim() || undefined
+          : undefined;
+
+      const id = await sessions!.saveFeedback(userRef, {
+        messageId,
+        sessionId,
+        direction,
+        reasons: reasons && reasons.length > 0 ? reasons : undefined,
+        comment: comment || undefined,
+      });
+      res.json({ success: true, id });
+    }),
+  );
+
   router.get(
     '/sessions/:sessionId/messages',
     withRoute(
@@ -192,7 +323,19 @@ export function registerSessionRoutes(ctx: RouteContext): void {
         // Try local message store first — this is the primary source of
         // truth, especially for Kagenti where the remote API has no
         // history endpoint.
-        const localMessages = await sessions!.getMessages(req.params.sessionId);
+        const rawLimit = parseInt(String(req.query.limit), 10);
+        const rawOffset = parseInt(String(req.query.offset), 10);
+        const msgLimit = Number.isFinite(rawLimit)
+          ? Math.min(Math.max(1, rawLimit), 500)
+          : undefined;
+        const msgOffset = Number.isFinite(rawOffset)
+          ? Math.max(0, rawOffset)
+          : undefined;
+        const localMessages = await sessions!.getMessages(
+          req.params.sessionId,
+          msgLimit,
+          msgOffset,
+        );
 
         if (localMessages.length > 0) {
           const formatted = localMessages.map(m => ({

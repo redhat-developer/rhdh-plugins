@@ -75,6 +75,7 @@ interface SessionMessageRow {
 
 const TABLE_NAME = 'augment_sessions';
 const MESSAGES_TABLE = 'augment_session_messages';
+const FEEDBACK_TABLE = 'augment_message_feedback';
 
 /**
  * Manages chat sessions in a local database (SQLite for dev, Postgres for prod).
@@ -235,6 +236,11 @@ export class ChatSessionService {
           .notNullable()
           .defaultTo(this.db!.fn.now());
         table.index(['session_id', 'created_at']);
+        table
+          .foreign('session_id')
+          .references('id')
+          .inTable(TABLE_NAME)
+          .onDelete('CASCADE');
       });
       this.logger.info(`Created ${MESSAGES_TABLE} table`);
     } catch (createError) {
@@ -242,6 +248,36 @@ export class ChatSessionService {
       if (!existsNow) throw createError;
       this.logger.info(
         `${MESSAGES_TABLE} table was created by another instance`,
+      );
+    }
+
+    await this.initFeedbackTable();
+  }
+
+  private async initFeedbackTable(): Promise<void> {
+    if (!this.db) return;
+    const hasTable = await this.db.schema.hasTable(FEEDBACK_TABLE);
+    if (hasTable) return;
+
+    try {
+      await this.db.schema.createTable(FEEDBACK_TABLE, table => {
+        table.uuid('id').primary();
+        table.string('message_id').notNullable().index();
+        table.string('session_id').nullable().index();
+        table.string('user_ref').notNullable();
+        table.enum('direction', ['positive', 'negative']).notNullable();
+        table.text('reasons').nullable();
+        table.text('comment').nullable();
+        table
+          .timestamp('created_at')
+          .defaultTo(table.client.raw('CURRENT_TIMESTAMP'));
+      });
+      this.logger.info(`Created ${FEEDBACK_TABLE} table`);
+    } catch (createError) {
+      const existsNow = await this.db.schema.hasTable(FEEDBACK_TABLE);
+      if (!existsNow) throw createError;
+      this.logger.info(
+        `${FEEDBACK_TABLE} table was created by another instance`,
       );
     }
   }
@@ -353,6 +389,20 @@ export class ChatSessionService {
       .limit(cappedLimit);
 
     return rows.map(r => this.rowToSession(r));
+  }
+
+  async findSessionByConversation(
+    conversationId: string,
+    userRef: string,
+  ): Promise<ChatSession | null> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const row: ChatSessionRow | undefined = await this.db(TABLE_NAME)
+      .where('conversation_id', conversationId)
+      .where('user_ref', userRef)
+      .first();
+
+    return row ? this.rowToSession(row) : null;
   }
 
   async getSession(
@@ -565,5 +615,37 @@ export class ChatSessionService {
     if (deleted > 0) {
       this.logger.info(`Deleted ${deleted} messages for session ${sessionId}`);
     }
+  }
+
+  /**
+   * Persist per-message feedback (thumbs up/down) with optional reasons and comment.
+   */
+  async saveFeedback(
+    userRef: string,
+    payload: {
+      messageId: string;
+      sessionId?: string;
+      direction: 'positive' | 'negative';
+      reasons?: string[];
+      comment?: string;
+    },
+  ): Promise<string> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const id = randomUUID();
+    await this.db(FEEDBACK_TABLE).insert({
+      id,
+      message_id: payload.messageId,
+      session_id: payload.sessionId ?? null,
+      user_ref: userRef,
+      direction: payload.direction,
+      reasons: payload.reasons ? JSON.stringify(payload.reasons) : null,
+      comment: payload.comment ?? null,
+    });
+
+    this.logger.info(
+      `Saved ${payload.direction} feedback ${id} for message ${payload.messageId}`,
+    );
+    return id;
   }
 }

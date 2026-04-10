@@ -293,6 +293,16 @@ export class ResponsesApiCoordinator {
       });
     }
 
+    // Eagerly discover MCP tools so the first chat request doesn't block
+    if (this.adkOrchestrator && this.mcpServers.length > 0) {
+      warmupTasks.push({
+        name: 'tool-discovery-warmup',
+        task: this.chatDepsBuilder
+          .buildChatDeps()
+          .then(deps => this.adkOrchestrator!.warmUpToolCache(deps)),
+      });
+    }
+
     const results = await Promise.allSettled(warmupTasks.map(w => w.task));
 
     for (let i = 0; i < results.length; i++) {
@@ -333,6 +343,18 @@ export class ResponsesApiCoordinator {
     this.configResolution.invalidateCache();
     this.agentGraphManager?.invalidate();
     this.adkOrchestrator?.invalidateToolCache();
+
+    // Re-warm the tool cache in the background so the next chat request is fast
+    if (this.adkOrchestrator && this.mcpServers.length > 0) {
+      this.chatDepsBuilder
+        .buildChatDeps()
+        .then(deps => this.adkOrchestrator!.warmUpToolCache(deps))
+        .catch(err =>
+          this.logger.warn(
+            `Background tool re-warm after config invalidation failed: ${toErrorMessage(err)}`,
+          ),
+        );
+    }
   }
 
   /**

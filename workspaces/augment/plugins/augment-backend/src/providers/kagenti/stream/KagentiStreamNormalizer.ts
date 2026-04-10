@@ -255,7 +255,11 @@ export class KagentiStreamNormalizer {
         break;
 
       default:
+        this.verboseLogger?.warn(
+          `Unknown A2A task state "${state}", treating as terminal`,
+        );
         this.extractTextFromStatus(update.status, events);
+        this.emitCompleted(events);
         break;
     }
   }

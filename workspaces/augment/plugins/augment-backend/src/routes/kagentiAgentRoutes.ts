@@ -92,7 +92,10 @@ export function registerKagentiAgentRoutes(
                 agent.name,
               );
               enriched[idx] = { ...agent, agentCard: cached.card };
-            } catch {
+            } catch (err) {
+              logger.warn(
+                `Failed to fetch agent card for ${agent.namespace}/${agent.name}: ${err instanceof Error ? err.message : err}`,
+              );
               enriched[idx] = agent;
             }
           }
@@ -310,6 +313,50 @@ export function registerKagentiAgentRoutes(
       async (req, res) => {
         const { namespace, name } = req.params;
         const result = await api.finalizeAgentBuild(namespace, name, req.body);
+        res.json(result);
+      },
+    ),
+  );
+
+  router.get(
+    '/kagenti/agents/shipwright-builds',
+    withRoute(
+      'GET /kagenti/agents/shipwright-builds',
+      'Failed to list agent builds',
+      async (req, res) => {
+        const namespace = req.query.namespace as string | undefined;
+        const allNamespaces = req.query.all_namespaces === 'true';
+        const result = await api.listAgentBuilds(namespace, allNamespaces);
+        res.json(result);
+      },
+    ),
+  );
+
+  router.get(
+    '/kagenti/agents/:namespace/:name/shipwright-build',
+    validateNamespaceParam,
+    withRoute(
+      req =>
+        `GET /kagenti/agents/${req.params.namespace}/${req.params.name}/shipwright-build`,
+      'Failed to get agent build status',
+      async (req, res) => {
+        const { namespace, name } = req.params;
+        const result = await api.getAgentBuild(namespace, name);
+        res.json(result);
+      },
+    ),
+  );
+
+  router.get(
+    '/kagenti/agents/:namespace/:name/shipwright-buildrun',
+    validateNamespaceParam,
+    withRoute(
+      req =>
+        `GET /kagenti/agents/${req.params.namespace}/${req.params.name}/shipwright-buildrun`,
+      'Failed to get agent build run status',
+      async (req, res) => {
+        const { namespace, name } = req.params;
+        const result = await api.getAgentBuildRun(namespace, name);
         res.json(result);
       },
     ),

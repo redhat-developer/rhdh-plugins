@@ -68,8 +68,10 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
     try {
       const userRef = await getUserRef(req);
       kagenti.setUserContext(userRef);
-    } catch {
-      /* non-critical */
+    } catch (err) {
+      logger.warn(
+        `Could not resolve user context for Kagenti request: ${err instanceof Error ? err.message : err}`,
+      );
     }
     next();
   });
