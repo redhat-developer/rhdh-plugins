@@ -201,33 +201,14 @@ export async function mockMcpServers(
       }
 
       const toolCount = server.toolCount;
-      if (server.status === 'error') {
-        await route.fulfill({
-          json: {
-            name,
-            status: 'error' as const,
-            toolCount,
-            validation: { error: 'MCP validation failed' },
-          },
-        });
-        return;
-      }
-      if (server.status === 'unknown') {
-        await route.fulfill({
-          json: {
-            name,
-            status: 'unknown' as const,
-            toolCount,
-          },
-        });
-        return;
-      }
-
       await route.fulfill({
         json: {
           name,
-          status: 'connected' as const,
+          status: server.status,
           toolCount,
+          ...(server.status === 'error'
+            ? { validation: { error: 'MCP validation failed' } }
+            : {}),
         },
       });
       return;
@@ -252,27 +233,24 @@ export async function mockMcpServers(
         });
         return;
       }
-      const updated = { ...server };
       if (body.enabled !== undefined) {
-        updated.enabled = body.enabled;
+        server.enabled = body.enabled;
       }
       if (Object.prototype.hasOwnProperty.call(body, 'token')) {
         const tok = body.token;
         if (tok && String(tok).trim().length > 0) {
-          updated.hasToken = true;
-          updated.hasUserToken = true;
-          updated.status = 'connected';
-          updated.toolCount = 5;
+          server.hasToken = true;
+          server.hasUserToken = true;
+          server.status = 'connected';
+          server.toolCount = 5;
         } else {
-          updated.hasToken = false;
-          updated.hasUserToken = false;
-          updated.status = 'unknown';
-          updated.toolCount = 0;
+          server.hasToken = false;
+          server.hasUserToken = false;
+          server.status = 'unknown';
+          server.toolCount = 0;
         }
       }
-      const idx = mcpServersMockState.servers.findIndex(s => s.name === name);
-      mcpServersMockState.servers[idx] = updated;
-      await route.fulfill({ json: { server: updated } });
+      await route.fulfill({ json: { server } });
       return;
     }
 

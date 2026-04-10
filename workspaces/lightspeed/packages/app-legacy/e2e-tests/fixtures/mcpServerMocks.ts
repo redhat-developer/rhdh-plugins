@@ -52,37 +52,17 @@ export function mcpServer(
   };
 }
 
-type MockDisplayStatus =
-  | 'tokenRequired'
-  | 'disabled'
-  | 'failed'
-  | 'ok'
-  | 'unknown';
-
-/** Mirrors McpServersSettings getDisplayStatus. */
-function getDisplayStatusForMock(
-  server: McpServerMockEntry,
-): MockDisplayStatus {
-  if (!server.hasToken) return 'tokenRequired';
-  if (!server.enabled) return 'disabled';
-  if (server.status === 'error') return 'failed';
-  if (server.status === 'connected') return 'ok';
-  return 'unknown';
-}
-
 /**
- * Expected MCP header “selected” line — mirrors McpServersSettings `selectedCount` useMemo.
+ * Expected MCP header “selected” line — mirrors McpServersSettings `selectedCount` useMemo
+ * (`enabled && !failed && !tokenRequired`).
  */
 export function getExpectedMcpSelectedCountForMock(
   mcpList: McpServersListMock,
 ): { selectedCount: number; totalCount: number } {
   const totalCount = mcpList.servers.length;
-  const selectedCount = mcpList.servers.filter(server => {
-    const displayStatus = getDisplayStatusForMock(server);
-    const isUnavailable =
-      displayStatus === 'failed' || displayStatus === 'tokenRequired';
-    return server.enabled && !isUnavailable;
-  }).length;
+  const selectedCount = mcpList.servers.filter(
+    server => server.enabled && server.hasToken && server.status !== 'error',
+  ).length;
   return { selectedCount, totalCount };
 }
 
@@ -94,12 +74,10 @@ export function getExpectedMcpStatusDetailForMock(
   server: McpServerMockEntry,
   t: LightspeedMessages,
 ): string {
-  const displayStatus = getDisplayStatusForMock(server);
-  if (displayStatus === 'tokenRequired')
-    return t['mcp.settings.status.tokenRequired'];
-  if (displayStatus === 'disabled') return t['mcp.settings.status.disabled'];
-  if (displayStatus === 'failed') return t['mcp.settings.status.failed'];
-  if (displayStatus === 'unknown') return t['mcp.settings.status.unknown'];
+  if (!server.hasToken) return t['mcp.settings.status.tokenRequired'];
+  if (!server.enabled) return t['mcp.settings.status.disabled'];
+  if (server.status === 'error') return t['mcp.settings.status.failed'];
+  if (server.status === 'unknown') return t['mcp.settings.status.unknown'];
   return formatMcpToolCountStatus(t, server.toolCount);
 }
 
