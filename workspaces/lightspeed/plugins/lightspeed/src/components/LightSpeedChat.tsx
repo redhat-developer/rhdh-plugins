@@ -336,8 +336,6 @@ const useStyles = makeStyles(theme => ({
   settingsFlat: {
     height: '100%',
     width: '100%',
-    backgroundColor:
-      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
     '&.pf-chatbot__settings-form-container': {
       background:
         'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',

@@ -75,14 +75,20 @@ type TokenValidationState = 'idle' | 'validating' | 'success' | 'error';
 const SAVED_TOKEN_MASK = '********************';
 
 const useStyles = makeStyles(theme => ({
+  '@global': {
+    '.pf-v6-c-backdrop': {
+      zIndex: '1400 !important',
+    },
+    '.pf-v5-c-backdrop': {
+      zIndex: '1400 !important',
+    },
+  },
   root: {
     padding: 0,
     height: '100%',
     minHeight: '100%',
     width: '100%',
     overflow: 'auto',
-    backgroundColor:
-      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
   },
   headerRow: {
     display: 'flex',
