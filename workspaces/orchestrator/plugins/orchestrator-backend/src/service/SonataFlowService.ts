@@ -133,7 +133,7 @@ export class SonataFlowService {
     contextAttribute: string;
     inputData?: ProcessInstanceVariables;
     authTokens?: Array<AuthToken>;
-    backstageToken?: string | undefined;
+    backstageToken?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
     if (!this.orchestratorKafkaImpl) {
       this.logger.error('No Orchestrator kafka implementation added');

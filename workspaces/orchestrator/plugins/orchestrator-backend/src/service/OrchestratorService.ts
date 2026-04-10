@@ -150,7 +150,7 @@ export class OrchestratorService {
     contextAttribute: string;
     inputData?: ProcessInstanceVariables;
     authTokens?: Array<AuthToken>;
-    backstageToken?: string | undefined;
+    backstageToken?: string;
   }) {
     return await this.sonataFlowService.executeWorkflowAsCloudEvent(args);
   }
