@@ -31,6 +31,10 @@ import bulkImportPlugin, {
   bulkImportTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 
+import orchestratorPlugin, {
+  orchestratorTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator/alpha';
+
 // Import core Backstage plugins (NFS versions)
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
@@ -72,21 +76,23 @@ const signInModule = createFrontendModule({
 /**
  * NFS app: A Backstage app using the New Frontend System (NFS)
  *
- * This app is used to test the migrated bulk-import plugin with:
- * - createFrontendPlugin
- * - PageBlueprint
- * - NavItemBlueprint
- * - ApiBlueprint
- * - SignInPageBlueprint
+ * This app is used to test the migrated bulk-import plugin with the new frontend
+ * system, alongside:
+ * - catalog
+ * - scaffolder
+ * - orchestrator (official /alpha plugin),
+ * - user settings
+ * - SignInPageBlueprint.
  *
  * To run: yarn start (NFS) or yarn start:legacy (legacy app)
  */
 const app = createApp({
   features: [
-    // Core Backstage plugins (order determines sidebar: Catalog, Create, Bulk Import, Settings)
+    // Core Backstage plugins (order determines sidebar: Catalog, Create, Bulk Import, Orchestrator, Settings)
     catalogPlugin,
     scaffolderPlugin,
     bulkImportPlugin,
+    orchestratorPlugin,
     userSettingsPlugin,
     // Sign-in module with GitHub and GitLab providers
     signInModule,
@@ -94,6 +100,7 @@ const app = createApp({
     rhdhThemeModule,
     // Translations module (language selector configured via app-config.yaml)
     bulkImportTranslationsModule,
+    orchestratorTranslationsModule,
     // Custom sidebar with logo
     navModule,
   ],
