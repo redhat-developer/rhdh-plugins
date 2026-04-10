@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 0.0.3
+
+### Patch Changes
+
+- 5e9716e: Replace context based state with global store.
+
 ## 0.0.2
 
 ### Patch Changes

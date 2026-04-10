@@ -89,7 +89,7 @@ export const homepageMessages = {
     emptyDescription:
       'Once software catalogs are added, this space will showcase relevant content tailored to your experience.',
     register: 'Register a component',
-    viewAll: 'View all {{count}} catalog entities',
+    browseTheCatalog: 'Browse the catalog',
   },
 };
 

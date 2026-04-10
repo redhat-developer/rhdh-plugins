@@ -71,11 +71,6 @@ export const appDrawerContentDataRef: ConfigurableExtensionDataRef<
 export const appDrawerModule: FrontendModule;
 
 // @public
-export const AppDrawerProvider: (input: {
-  children: React.ReactNode;
-}) => JSX_2.Element;
-
-// @public
 export const ApplicationDrawer: (
   input: ApplicationDrawerProps,
 ) => JSX_2.Element;

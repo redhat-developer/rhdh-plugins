@@ -54,7 +54,7 @@ export const homepageTranslationRef: TranslationRef<
     readonly 'entities.fetchError': string;
     readonly 'entities.emptyDescription': string;
     readonly 'entities.register': string;
-    readonly 'entities.viewAll': string;
+    readonly 'entities.browseTheCatalog': string;
   }
 >;
 

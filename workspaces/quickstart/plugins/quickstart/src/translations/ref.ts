@@ -82,6 +82,10 @@ export const quickstartMessages = {
     closeDrawer: 'Close Drawer',
     gotIt: 'Got it!',
   },
+  snackbar: {
+    helpPrompt:
+      'Need help? Visit the Quick Start Guide by clicking on this (?) icon in the header!',
+  },
   footer: {
     progress: '{{progress}}% progress',
     notStarted: 'Not started',

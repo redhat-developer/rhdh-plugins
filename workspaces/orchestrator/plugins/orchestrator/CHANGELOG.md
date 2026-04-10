@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.6.0
+
+### Minor Changes
+
+- 775f8f9: Add NFS support in orchestrator and orchestarator-form-widget plugins
+
+### Patch Changes
+
+- 315239c: Scope SchemaUpdater replacements to the originating step and improve scope resolution.
+- 3988b16: prepopulate Execute Workflow form from URL query params
+- Updated dependencies [3d6415d]
+- Updated dependencies [64fd859]
+- Updated dependencies [5a9d9d8]
+- Updated dependencies [315239c]
+- Updated dependencies [60aa6a6]
+- Updated dependencies [ac2cbf8]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.6.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.3
+
 ## 5.5.2
 
 ### Patch Changes

@@ -5,15 +5,15 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"@0no-co/graphql.web@npm:^1.0.1":
-  version: 1.0.9
-  resolution: "@0no-co/graphql.web@npm:1.0.9"
+"@0no-co/graphql.web@npm:^1.0.13":
+  version: 1.2.0
+  resolution: "@0no-co/graphql.web@npm:1.2.0"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
   peerDependenciesMeta:
     graphql:
       optional: true
-  checksum: 10c0/06c1acf62b0945d59f480481bc1a81b1542d5343bfef0e7cc88e4d582d49e242f3321f3a49b9e19f9d2cc270afa5415df7bed4f64ef1294b80c10f6d6b7b8602
+  checksum: 10c0/4eed600962bfab42afb49cddcfb31a47b00502f59707609cf160559920ce0f5cf8874791e4cafc465ede30ae291992f3f892bc757b2a989e80e50e358f71c518
   languageName: node
   linkType: hard
 
@@ -12514,7 +12514,7 @@ __metadata:
     "@types/fs-extra": "npm:11.0.4"
     "@types/json-schema": "npm:7.0.15"
     "@types/luxon": "npm:^3.7.1"
-    "@urql/core": "npm:^4.1.4"
+    "@urql/core": "npm:^6.0.1"
     ajv-formats: "npm:^2.1.1"
     cloudevents: "npm:^8.0.0"
     express: "npm:^4.21.2"
@@ -16575,13 +16575,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@urql/core@npm:^4.1.4":
-  version: 4.3.0
-  resolution: "@urql/core@npm:4.3.0"
+"@urql/core@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "@urql/core@npm:6.0.1"
   dependencies:
-    "@0no-co/graphql.web": "npm:^1.0.1"
+    "@0no-co/graphql.web": "npm:^1.0.13"
     wonka: "npm:^6.3.2"
-  checksum: 10c0/25a50cd11f27abca36ba07a93a393a3b0343d8d0957bf7fef4ddcc49d7582c751bb0c86f26c4f5e9342409237b92da569cfc90745a34539dfe8b5ebc426e112a
+  checksum: 10c0/44ff0d12dcef1e47338a9ff1217759d1124fa66eec1eec21ff9622e44c179b9d66fa78f462f195bfd8b790b04609abbe5a0674cbfcb0bc6d9c6fe6223d7d7b5b
   languageName: node
   linkType: hard
 

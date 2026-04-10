@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 import { Page } from '@playwright/test';
-import { generateQueryResponse, modelBaseUrl } from '../fixtures/responses';
+import {
+  generateQueryResponse,
+  mockedMcpServersResponse,
+  modelBaseUrl,
+  type McpServersListMock,
+} from '../fixtures/responses';
 
 export async function mockModels(page: Page, models: any[]) {
   await page.route(`${modelBaseUrl}/v1/models`, async route => {
@@ -69,6 +74,85 @@ export async function mockQuery(
         : conversations[0].conversation_id,
     );
     await route.fulfill({ body });
+  });
+}
+
+/** Delays the mock response so Stop stays visible during the wait. */
+export async function mockQueryWithResponseDelay(
+  page: Page,
+  query: string,
+  conversations: any[],
+  delayMs: number,
+) {
+  await page.unroute(`${modelBaseUrl}/v1/query`);
+  await page.route(`${modelBaseUrl}/v1/query`, async route => {
+    await new Promise<void>(resolve => {
+      setTimeout(resolve, delayMs);
+    });
+    const payload = route.request().postDataJSON();
+
+    if (payload.query === query) {
+      conversations[1].conversation_id = payload.conversation_id;
+    }
+    const body = generateQueryResponse(
+      payload.query === query
+        ? conversations[1].conversation_id
+        : conversations[0].conversation_id,
+    );
+    await route.fulfill({ body });
+  });
+}
+
+const mcpServersRouteGlob = `${modelBaseUrl}/mcp-servers**`;
+
+/**
+ * Mocks GET `/api/lightspeed/mcp-servers` and PATCH `/api/lightspeed/mcp-servers/:name`
+ * (toggle enabled). Other methods (e.g. POST validate) pass through to the backend.
+ */
+export async function mockMcpServers(
+  page: Page,
+  json: McpServersListMock = mockedMcpServersResponse,
+) {
+  await page.unroute(mcpServersRouteGlob);
+  await page.route(mcpServersRouteGlob, async route => {
+    const req = route.request();
+    const pathname = new URL(req.url()).pathname;
+    const suffix = pathname.replace(/^.*\/api\/lightspeed\/mcp-servers\/?/, '');
+    const segments = suffix.split('/').filter(Boolean);
+
+    if (req.method() === 'GET' && segments.length === 0) {
+      await route.fulfill({ json });
+      return;
+    }
+
+    if (req.method() === 'PATCH' && segments.length === 1) {
+      const name = decodeURIComponent(segments[0]!);
+      let body: { enabled?: boolean; token?: string | null };
+      try {
+        body = req.postDataJSON();
+      } catch {
+        await route.fulfill({ status: 400, json: { error: 'Invalid JSON' } });
+        return;
+      }
+      const server = json.servers.find(s => s.name === name);
+      if (!server) {
+        await route.fulfill({
+          status: 404,
+          json: {
+            error: `MCP server '${name}' is not configured`,
+          },
+        });
+        return;
+      }
+      const updated = {
+        ...server,
+        enabled: body.enabled ?? server.enabled,
+      };
+      await route.fulfill({ json: { server: updated } });
+      return;
+    }
+
+    await route.continue();
   });
 }
 

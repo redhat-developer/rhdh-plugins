@@ -25,11 +25,16 @@ import {
   startBackendServer,
 } from '../../../../__fixtures__/testUtils';
 
+// Token header used across GitLab repo-listing tests.
+const GL_USER_TOKENS = JSON.stringify({
+  'https://gitlab.com': 'test-gl-token',
+});
+
 describe('repositories', () => {
   const useTestData = setupTest();
 
   describe('GET /repositories', () => {
-    it('returns 200 when repositories are fetched without errors', async () => {
+    it('returns 401 when X-SCM-Tokens header is absent', async () => {
       const { mockCatalogClient } = useTestData();
       const backendServer = await startBackendServer(
         mockCatalogClient,
@@ -39,6 +44,22 @@ describe('repositories', () => {
       const response = await request(backendServer)
         .get('/api/bulk-import/repositories')
         .query({ approvalTool: 'GITLAB' });
+
+      expect(response.status).toEqual(401);
+      expect(response.body).toHaveProperty('error');
+    });
+
+    it('returns 200 when repositories are fetched without errors', async () => {
+      const { mockCatalogClient } = useTestData();
+      const backendServer = await startBackendServer(
+        mockCatalogClient,
+        AuthorizeResult.ALLOW,
+      );
+
+      const response = await request(backendServer)
+        .get('/api/bulk-import/repositories')
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -96,7 +117,8 @@ describe('repositories', () => {
 
       const response = await request(backendServer)
         .get('/api/bulk-import/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(500);
       expect(response.body).toEqual({
@@ -107,6 +129,21 @@ describe('repositories', () => {
   });
 
   describe('GET /organizations/{org}/repositories', () => {
+    it('returns 401 when X-SCM-Tokens header is absent', async () => {
+      const { mockCatalogClient } = useTestData();
+      const backendServer = await startBackendServer(
+        mockCatalogClient,
+        AuthorizeResult.ALLOW,
+      );
+
+      const response = await request(backendServer)
+        .get('/api/bulk-import/organizations/my-ent-org-1/repositories')
+        .query({ approvalTool: 'GITLAB' });
+
+      expect(response.status).toEqual(401);
+      expect(response.body).toHaveProperty('error');
+    });
+
     it('returns 200 when repositories are fetched without errors', async () => {
       const { mockCatalogClient } = useTestData();
       const backendServer = await startBackendServer(
@@ -116,7 +153,8 @@ describe('repositories', () => {
 
       let response = await request(backendServer)
         .get('/api/bulk-import/organizations/my-ent-org-1/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -138,7 +176,8 @@ describe('repositories', () => {
 
       response = await request(backendServer)
         .get('/api/bulk-import/organizations/my-ent-org-2/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -169,7 +208,8 @@ describe('repositories', () => {
 
       response = await request(backendServer)
         .get('/api/bulk-import/organizations/my-ent-org--no-repos/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -201,7 +241,8 @@ describe('repositories', () => {
 
       const orgReposResp = await request(backendServer)
         .get('/api/bulk-import/organizations/some-org/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(orgReposResp.status).toEqual(500);
       expect(orgReposResp.body).toEqual({

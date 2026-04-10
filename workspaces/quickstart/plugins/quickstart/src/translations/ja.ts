@@ -63,6 +63,8 @@ const quickstartTranslationJa = createTranslationMessages({
     'button.openQuickstartGuide': 'クイックスタートガイドを開く',
     'button.closeDrawer': 'ドロワーを閉じる',
     'button.gotIt': '了解しました!',
+    'snackbar.helpPrompt':
+      'ヘルプが必要ですか? ヘッダーの (?) アイコンをクリックしてクイックスタートガイドを開いてください。',
     'footer.progress': '進捗 {{progress}}%',
     'footer.notStarted': '開始されていません',
     'footer.hide': '非表示',

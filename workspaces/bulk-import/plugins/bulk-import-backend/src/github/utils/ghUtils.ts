@@ -39,7 +39,7 @@ const RESPONSE_CACHE_TTL_MILLIS = 60 * 60 * 1000;
 export function buildOcto(
   deps: {
     logger: LoggerService;
-    cache: CacheService;
+    cache: CacheService | undefined;
   },
   input: {
     credential: ExtendedGithubCredentials;
@@ -81,7 +81,7 @@ export function buildOcto(
 function registerHooks(
   deps: {
     logger: LoggerService;
-    cache: CacheService;
+    cache: CacheService | undefined;
   },
   octokit: Octokit,
 ) {
@@ -98,7 +98,7 @@ function registerHooks(
     // Use ETag from in-memory cache if available
     const cacheKey = extractCacheKey(options);
     const existingEtag = await deps.cache
-      .get(cacheKey)
+      ?.get(cacheKey)
       ?.then((val?: any) => val?.etag);
     if (existingEtag) {
       options.headers['If-None-Match'] = existingEtag;
@@ -115,7 +115,7 @@ function registerHooks(
     );
     // If we get a successful response, the resource has changed, so update the in-memory cache
     const cacheKey = extractCacheKey(options);
-    await deps.cache.set(
+    await deps.cache?.set(
       cacheKey,
       {
         etag: response.headers.etag,
@@ -136,7 +136,7 @@ function registerHooks(
     }
     // "304 Not Modified" means that the resource hasn't changed,
     // and we should have a version of it in the cache
-    return await deps.cache.get(extractCacheKey(options));
+    return await deps.cache?.get(extractCacheKey(options));
   });
 }
 
