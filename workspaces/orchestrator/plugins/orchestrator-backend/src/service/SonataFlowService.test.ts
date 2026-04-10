@@ -164,16 +164,12 @@ describe('SonataFlowService', () => {
   describe('executeWorkflowAsCloudEvent', () => {
     const runErrorTestAsCloudEventNoKafkaImplementation =
       async (): Promise<void> => {
-        try {
-          await sonataFlowService.executeWorkflowAsCloudEvent({
-            definitionId,
-            workflowSource: 'workflowSource',
-            workflowEventType: 'workflowEventType',
-            contextAttribute: 'contextAttribute',
-          });
-        } catch (error) {
-          throw error;
-        }
+        await sonataFlowService.executeWorkflowAsCloudEvent({
+          definitionId,
+          workflowSource: 'workflowSource',
+          workflowEventType: 'workflowEventType',
+          contextAttribute: 'contextAttribute',
+        });
       };
     beforeEach(() => {
       jest.clearAllMocks();
