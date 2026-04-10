@@ -111,6 +111,9 @@ export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 /** Maximum length for config values in validation. */
 export const MAX_CONFIG_VALUE_SIZE = 100_000;
 
+/** Maximum length for a single message content field (characters). */
+export const MAX_MESSAGE_CONTENT_LENGTH = 100_000;
+
 /** Maximum length for a model identifier. */
 export const MAX_MODEL_LENGTH = 200;
 

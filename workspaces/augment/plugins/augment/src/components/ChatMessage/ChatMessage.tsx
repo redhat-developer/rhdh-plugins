@@ -42,6 +42,7 @@ import {
   formatResponseText,
   formatRelativeTime,
 } from '../../utils';
+import { getAgentColor } from '../../utils/agentColors';
 import { TokenUsageBadge } from '../TokenUsageBadge';
 import { InlineCode, PreBlock } from '../CodeBlock';
 import { ReasoningDisplay } from '../StreamingMessage/ReasoningDisplay';
@@ -218,23 +219,38 @@ export const ChatMessage = React.memo(function ChatMessage({
             >
               {message.isUser ? 'You' : message.agentName || branding.appName}
             </Typography>
-            {!message.isUser && message.agentName && (
-              <Typography
-                variant="caption"
-                sx={{
-                  fontSize: '0.6rem',
-                  px: 0.75,
-                  py: 0.1,
-                  borderRadius: 0.5,
-                  backgroundColor: `${theme.palette.primary.main}14`,
-                  color: theme.palette.primary.main,
-                  fontWeight: 600,
-                  lineHeight: 1.4,
-                }}
-              >
-                Agent
-              </Typography>
-            )}
+            {!message.isUser &&
+              message.agentName &&
+              (() => {
+                const agentColor = getAgentColor(
+                  message.agentName!,
+                  theme.palette.mode,
+                );
+                return (
+                  <Tooltip
+                    title={`Agent: ${message.agentName}`}
+                    arrow
+                    placement="top"
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.6rem',
+                        px: 0.75,
+                        py: 0.1,
+                        borderRadius: 0.5,
+                        backgroundColor: agentColor.bg,
+                        color: agentColor.fg,
+                        fontWeight: 600,
+                        lineHeight: 1.4,
+                        borderLeft: `2px solid ${agentColor.fg}`,
+                      }}
+                    >
+                      {message.agentName}
+                    </Typography>
+                  </Tooltip>
+                );
+              })()}
           </Box>
 
           {/* Handoff path breadcrumb (multi-agent multi-hop) */}

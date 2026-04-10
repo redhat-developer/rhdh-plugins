@@ -25,17 +25,24 @@ import { RightPaneHeader } from './RightPaneHeader';
 import { CollapsedSidebar } from './CollapsedSidebar';
 import { useStatus } from '../../hooks';
 import { AgentInfoSection } from './AgentInfoSection';
+import { SessionStateInspector } from '../SessionStateInspector';
 
 interface RightPaneProps {
   sidebarCollapsed: boolean;
   onToggleSidebar: () => void;
-  onSelectSession?: (sessionId: string, adminView?: boolean, sessionModel?: string) => void;
+  onSelectSession?: (
+    sessionId: string,
+    adminView?: boolean,
+    sessionModel?: string,
+  ) => void;
   onActiveSessionDeleted?: () => void;
   activeSessionId?: string;
   refreshTrigger?: number;
   isAdmin?: boolean;
   onAdminClick?: () => void;
   currentAgent?: string;
+  messageCount?: number;
+  providerId?: string;
 }
 
 export const RightPane = ({
@@ -48,6 +55,8 @@ export const RightPane = ({
   isAdmin = false,
   onAdminClick,
   currentAgent,
+  messageCount,
+  providerId,
 }: RightPaneProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -130,6 +139,7 @@ export const RightPane = ({
               activeSessionId={activeSessionId}
               refreshTrigger={refreshTrigger}
               isAdmin={isAdmin}
+              providerId={providerId}
             />
           </Box>
 
@@ -205,6 +215,13 @@ export const RightPane = ({
           <AgentInfoSection
             expanded={agentExpanded}
             onToggleExpanded={() => setAgentExpanded(prev => !prev)}
+            currentAgent={currentAgent}
+          />
+
+          {/* Session State Inspector — debug info */}
+          <SessionStateInspector
+            activeSessionId={activeSessionId}
+            messageCount={messageCount}
             currentAgent={currentAgent}
           />
         </Box>

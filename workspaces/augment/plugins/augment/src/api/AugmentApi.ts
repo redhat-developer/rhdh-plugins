@@ -246,11 +246,19 @@ export interface AugmentApi {
   // Chat Sessions (local DB — mirrors ai-virtual-agent pattern)
   // ===========================================================================
 
-  /** List chat sessions from local DB, optionally paginated */
-  listSessions(limit?: number, offset?: number): Promise<ChatSessionSummary[]>;
+  /** List chat sessions from local DB, optionally paginated and filtered by provider */
+  listSessions(
+    limit?: number,
+    offset?: number,
+    providerId?: string,
+  ): Promise<ChatSessionSummary[]>;
 
-  /** Create a new chat session */
-  createSession(title?: string, model?: string): Promise<ChatSessionSummary>;
+  /** Create a new chat session, tagged with the active provider */
+  createSession(
+    title?: string,
+    model?: string,
+    providerId?: string,
+  ): Promise<ChatSessionSummary>;
 
   /** Delete a chat session */
   deleteSession(sessionId: string): Promise<boolean>;
@@ -880,15 +888,27 @@ export class AugmentApiClient implements AugmentApi {
   async listSessions(
     limit?: number,
     offset?: number,
+    providerId?: string,
   ): Promise<ChatSessionSummary[]> {
-    return sessionEndpoints.listSessions(this.sessionDeps, limit, offset);
+    return sessionEndpoints.listSessions(
+      this.sessionDeps,
+      limit,
+      offset,
+      providerId,
+    );
   }
 
   async createSession(
     title?: string,
     model?: string,
+    providerId?: string,
   ): Promise<ChatSessionSummary> {
-    return sessionEndpoints.createSession(this.sessionDeps, title, model);
+    return sessionEndpoints.createSession(
+      this.sessionDeps,
+      title,
+      model,
+      providerId,
+    );
   }
 
   async deleteSession(sessionId: string): Promise<boolean> {
@@ -1313,9 +1333,6 @@ export class AugmentApiClient implements AugmentApi {
   async createDevSpacesWorkspace(
     request: import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesCreateWorkspaceRequest,
   ) {
-    return kagentiEndpoints.createDevSpacesWorkspace(
-      this.kagentiDeps,
-      request,
-    );
+    return kagentiEndpoints.createDevSpacesWorkspace(this.kagentiDeps, request);
   }
 }

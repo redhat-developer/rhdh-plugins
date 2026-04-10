@@ -17,6 +17,14 @@
 import type { StreamingEvent, StreamingEventCallback } from '../types';
 import { debugError } from '../utils';
 
+function isValidStreamEvent(event: unknown): event is StreamingEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    typeof (event as Record<string, unknown>).type === 'string'
+  );
+}
+
 /**
  * Parse SSE events from a ReadableStream and invoke the callback for each event.
  * Handles line buffering, "data: " prefix, [DONE] sentinel, and JSON parsing.
@@ -56,14 +64,26 @@ export async function parseSSEStream(
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
 
-      for (const line of lines) {
+      for (const rawLine of lines) {
         if (signal?.aborted) break;
+        const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
         if (line.startsWith('data: ')) {
           const data = line.slice(6).trim();
           if (data && data !== '[DONE]') {
             try {
-              const event: StreamingEvent = JSON.parse(data);
-              onEvent(event);
+              const parsed: unknown = JSON.parse(data);
+              if (isValidStreamEvent(parsed)) {
+                try {
+                  onEvent(parsed);
+                } catch (handlerErr) {
+                  debugError('SSE onEvent handler threw:', handlerErr);
+                }
+              } else {
+                debugError(
+                  'SSE event missing required "type" field:',
+                  data.slice(0, 120),
+                );
+              }
             } catch (parseErr) {
               debugError('Malformed SSE event:', parseErr, data.slice(0, 120));
             }
@@ -72,12 +92,27 @@ export async function parseSSEStream(
       }
     }
 
-    if (!signal?.aborted && buffer.startsWith('data: ')) {
-      const data = buffer.slice(6).trim();
+    const tail = buffer.endsWith('\r') ? buffer.slice(0, -1) : buffer;
+    if (!signal?.aborted && tail.startsWith('data: ')) {
+      const data = tail.slice(6).trim();
       if (data && data !== '[DONE]') {
         try {
-          const event: StreamingEvent = JSON.parse(data);
-          onEvent(event);
+          const parsed: unknown = JSON.parse(data);
+          if (isValidStreamEvent(parsed)) {
+            try {
+              onEvent(parsed);
+            } catch (handlerErr) {
+              debugError(
+                'SSE onEvent handler threw (buffer tail):',
+                handlerErr,
+              );
+            }
+          } else {
+            debugError(
+              'SSE event missing required "type" field (buffer tail):',
+              data.slice(0, 120),
+            );
+          }
         } catch (parseErr) {
           debugError(
             'Malformed SSE event (buffer tail):',

@@ -17,6 +17,15 @@ import { createWithRoute, notFound } from './routeWrapper';
 import { validateSessionId } from './types';
 import type { AdminRouteDeps } from './adminRouteTypes';
 
+function safeJsonParse(value: string): unknown {
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export function registerAdminSessionRoutes(
   router: import('express').Router,
   deps: AdminRouteDeps,
@@ -59,6 +68,32 @@ export function registerAdminSessionRoutes(
           return;
         }
 
+        // Local message store first — same pattern as user route.
+        // Critical for Kagenti where the remote API has no history endpoint.
+        const localMessages = await sessions!.getMessages(req.params.sessionId);
+
+        if (localMessages.length > 0) {
+          const formatted = localMessages.map(m => ({
+            role: m.role,
+            text: m.content,
+            ...(m.agentName ? { agentName: m.agentName } : {}),
+            ...(m.toolCalls ? { toolCalls: safeJsonParse(m.toolCalls) } : {}),
+            ...(m.ragSources
+              ? { ragSources: safeJsonParse(m.ragSources) }
+              : {}),
+            ...(m.usage ? { usage: safeJsonParse(m.usage) } : {}),
+            ...(m.reasoning ? { reasoning: m.reasoning } : {}),
+            createdAt: m.createdAt,
+          }));
+          res.json({
+            messages: formatted,
+            sessionCreatedAt: session.createdAt,
+            hasConversationId: !!session.conversationId,
+            source: 'local',
+          });
+          return;
+        }
+
         if (!session.conversationId) {
           res.json({
             messages: [],
@@ -84,6 +119,7 @@ export function registerAdminSessionRoutes(
             messages,
             sessionCreatedAt: session.createdAt,
             hasConversationId: true,
+            source: 'provider',
           });
         } catch (fetchErr) {
           logger.error(

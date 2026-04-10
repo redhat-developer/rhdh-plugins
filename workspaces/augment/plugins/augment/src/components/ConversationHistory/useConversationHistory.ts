@@ -24,6 +24,8 @@ export interface UseConversationHistoryParams {
   refreshTrigger?: number;
   /** Whether the current user has admin privileges */
   isAdmin?: boolean;
+  /** Filter sessions by provider ID */
+  providerId?: string;
 }
 
 export interface UseConversationHistoryReturn {
@@ -78,6 +80,7 @@ function formatTime(date: Date): string {
 export function useConversationHistory({
   refreshTrigger,
   isAdmin = false,
+  providerId,
 }: UseConversationHistoryParams): UseConversationHistoryReturn {
   const api = useApi(augmentApiRef);
   const [sessions, setSessions] = useState<ChatSessionSummary[]>([]);
@@ -98,7 +101,7 @@ export function useConversationHistory({
       const list =
         isAdmin && showAllUsers
           ? await api.listAllSessions()
-          : await api.listSessions(PAGE_SIZE, 0);
+          : await api.listSessions(PAGE_SIZE, 0, providerId);
       setSessions(list);
       if (list.length < PAGE_SIZE) setHasMore(false);
     } catch (err) {
@@ -106,13 +109,17 @@ export function useConversationHistory({
     } finally {
       setLoading(false);
     }
-  }, [api, isAdmin, showAllUsers]);
+  }, [api, isAdmin, showAllUsers, providerId]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore || (isAdmin && showAllUsers)) return;
     setLoadingMore(true);
     try {
-      const list = await api.listSessions(PAGE_SIZE, sessions.length);
+      const list = await api.listSessions(
+        PAGE_SIZE,
+        sessions.length,
+        providerId,
+      );
       if (list.length < PAGE_SIZE) setHasMore(false);
       if (list.length > 0) {
         setSessions(prev => [...prev, ...list]);
@@ -122,7 +129,15 @@ export function useConversationHistory({
     } finally {
       setLoadingMore(false);
     }
-  }, [api, sessions.length, loadingMore, hasMore, isAdmin, showAllUsers]);
+  }, [
+    api,
+    sessions.length,
+    loadingMore,
+    hasMore,
+    isAdmin,
+    showAllUsers,
+    providerId,
+  ]);
 
   const handleListScroll = useCallback(() => {
     const el = listContainerRef.current;

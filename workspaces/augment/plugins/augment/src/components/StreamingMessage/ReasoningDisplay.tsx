@@ -21,7 +21,6 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
 import { alpha, type Theme } from '@mui/material/styles';
 import type { BrandingConfig } from '../../types';
 
@@ -45,23 +44,14 @@ export function ReasoningDisplay({
 }: ReasoningDisplayProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const durationText =
-    reasoningDuration !== undefined
-      ? `Thought for ${reasoningDuration} second${
-          reasoningDuration !== 1 ? 's' : ''
-        }`
-      : 'Thinking...';
+  const chipLabel = isStreaming ? 'Thinking\u2026' : 'Thought';
+
+  const durationBadge =
+    reasoningDuration !== undefined ? `${reasoningDuration}s` : undefined;
 
   return (
-    <Box
-      sx={{
-        mb: 2,
-        borderRadius: 1,
-        border: `1px solid ${theme.palette.divider}`,
-        overflow: 'hidden',
-        backgroundColor: alpha(theme.palette.text.primary, 0.02),
-      }}
-    >
+    <Box sx={{ mb: 1.5 }}>
+      {/* Compact chip header */}
       <Box
         role="button"
         tabIndex={0}
@@ -75,23 +65,23 @@ export function ReasoningDisplay({
           }
         }}
         sx={{
-          display: 'flex',
+          display: 'inline-flex',
           alignItems: 'center',
-          gap: 1,
-          px: 1.5,
-          py: 1,
+          gap: 0.5,
+          px: 1,
+          py: 0.25,
+          borderRadius: 2,
           cursor: 'pointer',
+          backgroundColor: alpha(theme.palette.text.primary, 0.04),
+          transition: 'background-color 0.15s',
           '&:hover': {
-            backgroundColor: alpha(
-              theme.palette.text.primary,
-              theme.palette.mode === 'dark' ? 0.05 : 0.03,
-            ),
+            backgroundColor: alpha(theme.palette.text.primary, 0.08),
           },
         }}
       >
         <PsychologyIcon
           sx={{
-            fontSize: 18,
+            fontSize: 14,
             color: branding.secondaryColor,
             animation: isStreaming ? 'pulse 1.5s ease-in-out infinite' : 'none',
             '@keyframes pulse': {
@@ -105,27 +95,46 @@ export function ReasoningDisplay({
           sx={{
             color: 'text.secondary',
             fontWeight: 500,
-            flex: 1,
+            fontSize: '0.7rem',
           }}
         >
-          {durationText}
+          {chipLabel}
         </Typography>
-        <IconButton size="small" sx={{ p: 0.25 }}>
-          {isExpanded ? (
-            <ExpandLessIcon sx={{ fontSize: 18 }} />
-          ) : (
-            <ExpandMoreIcon sx={{ fontSize: 18 }} />
-          )}
-        </IconButton>
+        {durationBadge && (
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: '0.6rem',
+              fontWeight: 600,
+              color: branding.secondaryColor,
+              backgroundColor: alpha(
+                branding.secondaryColor || theme.palette.primary.main,
+                0.1,
+              ),
+              px: 0.5,
+              py: 0,
+              borderRadius: 1,
+              lineHeight: 1.6,
+            }}
+          >
+            {durationBadge}
+          </Typography>
+        )}
+        {isExpanded ? (
+          <ExpandLessIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+        ) : (
+          <ExpandMoreIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+        )}
       </Box>
 
-      {/* Collapsible content */}
+      {/* Collapsible reasoning text */}
       <Collapse in={isExpanded}>
         <Box
           sx={{
-            px: 1.5,
-            py: 1,
-            borderTop: `1px solid ${theme.palette.divider}`,
+            mt: 0.5,
+            ml: 0.5,
+            pl: 1.5,
+            borderLeft: `2px solid ${alpha(branding.secondaryColor || theme.palette.primary.main, 0.3)}`,
             maxHeight: 200,
             overflow: 'auto',
           }}

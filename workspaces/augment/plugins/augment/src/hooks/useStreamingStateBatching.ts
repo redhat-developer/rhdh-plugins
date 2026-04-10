@@ -47,6 +47,7 @@ export function useStreamingStateBatching<T>(
           ? { ...pendingStateRef.current }
           : pendingStateRef.current,
       );
+      onFlushRef.current?.();
     }
   }, []);
 

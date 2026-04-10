@@ -40,6 +40,13 @@ export { stripToolPrefix } from './toolNameUtils';
 
 export { handleStreamError } from './streamErrorHandler';
 
+export { getAgentColor } from './agentColors';
+export type { AgentColor } from './agentColors';
+
+export { exportConversation } from './exportConversation';
+
+export { isAbortError } from './isAbortError';
+
 export {
   findJsonBlocks,
   stripEchoedToolOutput,

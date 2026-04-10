@@ -451,6 +451,8 @@ const AugmentPageContent = () => {
                         isAdmin={isAdmin}
                         onAdminClick={switchToAdmin}
                         currentAgent={currentAgent}
+                        messageCount={messages.length}
+                        providerId={liveStatus?.providerId}
                       />
                     </ErrorBoundary>
 

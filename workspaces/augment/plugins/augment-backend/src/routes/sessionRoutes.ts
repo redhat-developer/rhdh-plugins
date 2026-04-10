@@ -17,6 +17,15 @@ import { MAX_SESSION_LIST_LIMIT, MAX_SESSION_TITLE_LENGTH } from '../constants';
 import { createWithRoute, notFound } from './routeWrapper';
 import { type RouteContext, validateSessionId } from './types';
 
+function safeJsonParse(value: string): unknown {
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Registers chat session CRUD endpoints (local DB).
  */
@@ -49,7 +58,17 @@ export function registerSessionRoutes(ctx: RouteContext): void {
         rawOffset && !isNaN(Number(rawOffset))
           ? Math.max(0, Number(rawOffset))
           : undefined;
-      const list = await sessions!.listSessions(userRef, limit, offset);
+      const rawProviderId = req.query.providerId;
+      const providerId =
+        typeof rawProviderId === 'string' && rawProviderId.trim()
+          ? rawProviderId.trim()
+          : undefined;
+      const list = await sessions!.listSessions(
+        userRef,
+        limit,
+        offset,
+        providerId,
+      );
       res.json({ sessions: list });
     }),
   );
@@ -69,8 +88,19 @@ export function registerSessionRoutes(ctx: RouteContext): void {
             body.title.trim().slice(0, MAX_SESSION_TITLE_LENGTH) || undefined;
         }
         const model =
-          typeof body.model === 'string' ? body.model.trim() || undefined : undefined;
-        const session = await sessions!.createSession(userRef, title, model);
+          typeof body.model === 'string'
+            ? body.model.trim() || undefined
+            : undefined;
+        const providerId =
+          typeof body.providerId === 'string'
+            ? body.providerId.trim() || undefined
+            : undefined;
+        const session = await sessions!.createSession(
+          userRef,
+          title,
+          model,
+          providerId,
+        );
         res.json({ session });
       },
     ),
@@ -159,6 +189,35 @@ export function registerSessionRoutes(ctx: RouteContext): void {
           return;
         }
 
+        // Try local message store first — this is the primary source of
+        // truth, especially for Kagenti where the remote API has no
+        // history endpoint.
+        const localMessages = await sessions!.getMessages(req.params.sessionId);
+
+        if (localMessages.length > 0) {
+          const formatted = localMessages.map(m => ({
+            role: m.role,
+            text: m.content,
+            ...(m.agentName ? { agentName: m.agentName } : {}),
+            ...(m.toolCalls ? { toolCalls: safeJsonParse(m.toolCalls) } : {}),
+            ...(m.ragSources
+              ? { ragSources: safeJsonParse(m.ragSources) }
+              : {}),
+            ...(m.usage ? { usage: safeJsonParse(m.usage) } : {}),
+            ...(m.reasoning ? { reasoning: m.reasoning } : {}),
+            createdAt: m.createdAt,
+          }));
+          res.json({
+            messages: formatted,
+            sessionCreatedAt: session.createdAt,
+            hasConversationId: !!session.conversationId,
+            source: 'local',
+          });
+          return;
+        }
+
+        // Fall back to provider API for LlamaStack sessions that predate
+        // local persistence.
         if (!session.conversationId) {
           res.json({
             messages: [],
@@ -183,6 +242,7 @@ export function registerSessionRoutes(ctx: RouteContext): void {
             messages,
             sessionCreatedAt: session.createdAt,
             hasConversationId: true,
+            source: 'provider',
           });
         } catch (fetchErr) {
           logger.error(

@@ -23,6 +23,7 @@ import type {
 } from '../types';
 import { parseSSEStream } from './sseStreaming';
 import { jsonBody } from './fetchHelpers';
+import { isAbortError } from '../utils';
 
 export interface ChatApiDeps {
   fetchJson: <T>(path: string, init?: RequestInit) => Promise<T>;
@@ -88,7 +89,7 @@ async function streamSSE(
       lastError = err instanceof Error ? err : new Error(String(err));
 
       if (signal?.aborted) return;
-      if (err instanceof DOMException && err.name === 'AbortError') throw err;
+      if (isAbortError(err)) throw err;
 
       const isRetryable =
         err instanceof TypeError ||
