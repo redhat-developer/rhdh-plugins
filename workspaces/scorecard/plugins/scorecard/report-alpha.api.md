@@ -23,7 +23,8 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
-    metric: RouteRef<{
+    drillDown: RouteRef<{
+      aggregationId: string;
       metricId: string;
     }>;
   },
