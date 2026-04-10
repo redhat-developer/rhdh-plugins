@@ -15,7 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { InputError, NotFoundError } from '@backstage/errors';
+import { NotFoundError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { CatalogMetricService } from './CatalogMetricService';
@@ -485,6 +485,16 @@ describe('CatalogMetricService', () => {
       it('should call toAggregatedMetric to map aggregated metric to result', async () => {
         expect(toAggregatedMetricSpy).toHaveBeenCalledTimes(1);
         expect(toAggregatedMetricSpy).toHaveBeenCalledWith(aggregatedMetric);
+      });
+
+      it('should throw when aggregation type is not supported', async () => {
+        await expect(
+          service.getAggregatedMetricByEntityRefs(
+            ['component:default/test-component'],
+            'github.important_metric',
+            'unknownAggregation',
+          ),
+        ).rejects.toThrow('Unsupported aggregation type: unknownAggregation');
       });
     });
 
@@ -1235,28 +1245,30 @@ describe('CatalogMetricService', () => {
       expect(result).toEqual([]);
     });
 
-    it('should throw InputError when a KPI entry fails schema validation', () => {
-      const badService = new CatalogMetricService({
+    it('should omit KPI keys that have no nested config', () => {
+      const partialReader = new ConfigReader({
+        scorecard: {
+          aggregationKPIs: {
+            openPrsKpi: {
+              title: 'GitHub PRs',
+              description: 'Open pull requests',
+              type: 'statusGrouped',
+              metricId: 'github.open_prs',
+            },
+          },
+        },
+      });
+      // Request an id that is not present under aggregationKPIs
+      const svc = new CatalogMetricService({
         catalog: mockedCatalog,
         auth: mockedAuth,
         registry: aggRegistry,
         database: mockedDatabase,
         logger: mockedLogger,
-        config: new ConfigReader({
-          scorecard: {
-            aggregationKPIs: {
-              badKpi: {
-                title: 'Valid title',
-                description: 'Valid description',
-                type: 'notARealAggregationType',
-                metricId: 'github.open_prs',
-              },
-            },
-          },
-        }),
+        config: partialReader,
       });
 
-      expect(() => badService.getAggregationConfigs()).toThrow(InputError);
+      expect(svc.getAggregationConfigs(['missingKpi'])).toEqual([]);
     });
   });
 });

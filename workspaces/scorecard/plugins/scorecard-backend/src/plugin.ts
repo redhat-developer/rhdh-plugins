@@ -34,6 +34,7 @@ import {
 import { migrate } from './database/migration';
 import { DatabaseMetricValues } from './database/DatabaseMetricValues';
 import { Scheduler } from './scheduler';
+import { validateAggregationConfig } from './validation/validateAggregationConfig';
 
 /**
  * scorecardPlugin backend plugin
@@ -100,6 +101,11 @@ export const scorecardPlugin = createBackendPlugin({
           database: dbMetricValues,
           logger: logger,
           config,
+        });
+
+        validateAggregationConfig({
+          rootConfig: config,
+          registry: metricProvidersRegistry,
         });
 
         Scheduler.create({

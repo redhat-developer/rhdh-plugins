@@ -14,12 +14,4 @@
  * limitations under the License.
  */
 
-import { AggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-export type AggregationConfig = {
-  id: string;
-  title: string;
-  description: string;
-  type: AggregationType;
-  metricId: string;
-};
+export * from './aggregationKPIs';

@@ -43,8 +43,11 @@ import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProvide
 import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
 import type { Config } from '@backstage/config';
-import { validateAggregationConfig } from '../validation/validateAggregationConfig';
-import { AggregationConfig } from './types';
+import {
+  buildAggregationConfig,
+  type AggregationConfig,
+} from '../utils/buildAggregationConfig';
+import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
 
 type CatalogMetricServiceOptions = {
   catalog: CatalogService;
@@ -424,42 +427,32 @@ export class CatalogMetricService {
     aggregationIds: string[] = [],
     metricIds: string[] = [],
   ): AggregationConfig[] {
-    const aggregationConfigs = this.config.getOptionalConfig(
-      `scorecard.aggregationKPIs`,
+    const aggregationKPIsConfig = this.config.getOptionalConfig(
+      AGGREGATION_KPIS_CONFIG_PATH,
     );
 
-    if (!aggregationConfigs) {
+    if (!aggregationKPIsConfig) {
       return [];
     }
 
     const aggregations: AggregationConfig[] = [];
 
     const aggregationConfigIds =
-      aggregationIds.length > 0 ? aggregationIds : aggregationConfigs.keys();
+      aggregationIds.length > 0 ? aggregationIds : aggregationKPIsConfig.keys();
 
     for (const aggregationId of aggregationConfigIds) {
-      const aggregationConfig =
-        aggregationConfigs.getOptionalConfig(aggregationId);
+      const config = aggregationKPIsConfig.getOptionalConfig(aggregationId);
 
-      if (aggregationConfig) {
-        const config = {
-          id: aggregationId,
-          type: aggregationConfig.getString('type'),
-          title: aggregationConfig.getString('title'),
-          metricId: aggregationConfig.getString('metricId'),
-          description: aggregationConfig.getString('description'),
-        } as AggregationConfig;
+      if (config) {
+        const aggregationConfig = buildAggregationConfig(aggregationId, {
+          config,
+        });
 
-        validateAggregationConfig(config, this.logger);
-
-        if (!this.registry.hasProvider(config.metricId)) {
-          throw new Error(
-            `Metric provider with ID '${config.metricId}' is not registered.`,
-          );
-        }
-
-        if (metricIds.length === 0 || metricIds.includes(config.metricId)) {
-          aggregations.push(config);
+        if (
+          metricIds.length === 0 ||
+          metricIds.includes(aggregationConfig.metricId)
+        ) {
+          aggregations.push(aggregationConfig);
         }
       }
     }

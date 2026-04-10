@@ -15,15 +15,15 @@
  */
 
 import { z } from 'zod';
-import { LoggerService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
-import { AggregationConfig } from '../service/types';
+import type { AggregationConfig } from '../utils/buildAggregationConfig';
 import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { Config } from '@backstage/config';
+import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
+import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
+import { buildAggregationConfig } from '../utils/buildAggregationConfig';
 
-export function validateAggregationConfig(
-  config: unknown,
-  logger: LoggerService,
-): AggregationConfig {
+function parseAggregationConfig(config: unknown): AggregationConfig {
   const aggregationConfigSchema = z.object({
     type: z.nativeEnum(aggregationTypes),
     id: z.string().min(1).max(255),
@@ -39,12 +39,38 @@ export function validateAggregationConfig(
       .map(error => `${error.message} for attribute "${error.path.join('.')}"`)
       .join('; ');
 
-    logger.warn('Invalid aggregation config:', {
-      errors: errorMessage,
-    });
-
     throw new InputError(`${errorMessage}`);
   }
 
   return parsed.data;
+}
+
+export function validateAggregationConfig(options: {
+  rootConfig: Config;
+  registry: MetricProvidersRegistry;
+}): void {
+  const { rootConfig, registry } = options;
+
+  const aggregationKPIsConfig = rootConfig.getOptionalConfig(
+    AGGREGATION_KPIS_CONFIG_PATH,
+  );
+  if (!aggregationKPIsConfig) {
+    return;
+  }
+
+  for (const aggregationId of aggregationKPIsConfig.keys()) {
+    const config = aggregationKPIsConfig.getConfig(aggregationId);
+
+    const aggregationConfig = buildAggregationConfig(aggregationId, {
+      config,
+    });
+
+    parseAggregationConfig(aggregationConfig);
+
+    if (!registry.hasProvider(aggregationConfig.metricId)) {
+      throw new Error(
+        `Metric provider with ID '${aggregationConfig.metricId}' is not registered (${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}).`,
+      );
+    }
+  }
 }

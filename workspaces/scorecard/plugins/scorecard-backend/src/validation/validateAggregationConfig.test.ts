@@ -14,84 +14,111 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
+import { ConfigReader } from '@backstage/config';
 import { InputError } from '@backstage/errors';
 import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { validateAggregationConfig } from './validateAggregationConfig';
-
-const validAggregationConfig = {
-  id: 'openPrsKpi',
-  type: aggregationTypes.statusGrouped,
-  title: 'GitHub PRs',
-  description: 'Open pull requests',
-  metricId: 'github.open_prs',
-};
+import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
+import { MockNumberProvider } from '../../__fixtures__/mockProviders';
+import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
 
 describe('validateAggregationConfig', () => {
-  let logger: ReturnType<typeof mockServices.logger.mock>;
+  it('should not throw error when scorecard.aggregationKPIs is absent', () => {
+    const rootConfig = new ConfigReader({});
+    const registry = new MetricProvidersRegistry();
 
-  beforeEach(() => {
-    logger = mockServices.logger.mock();
+    expect(() =>
+      validateAggregationConfig({ rootConfig, registry }),
+    ).not.toThrow();
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
+  it('should not throw when all KPI entries are valid and metrics are registered', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          openPrsKpi: {
+            title: 'GitHub PRs',
+            description: 'Open pull requests',
+            type: aggregationTypes.statusGrouped,
+            metricId: 'github.open_prs',
+          },
+        },
+      },
+    });
+
+    expect(() =>
+      validateAggregationConfig({ rootConfig, registry }),
+    ).not.toThrow();
   });
 
-  it('should return parsed AggregationConfig for valid input', () => {
-    const result = validateAggregationConfig(validAggregationConfig, logger);
-    expect(result).toEqual(validAggregationConfig);
-    expect(logger.warn).not.toHaveBeenCalled();
-  });
+  it('should throw InputError when a KPI entry fails schema validation', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    const tooLong = 'a'.repeat(256);
 
-  it('should strip unknown keys (Zod object default)', () => {
-    const result = validateAggregationConfig(
-      { ...validAggregationConfig, extraField: 'ignored' } as unknown,
-      logger,
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          badKpi: {
+            title: tooLong,
+            description: 'Valid description',
+            type: aggregationTypes.statusGrouped,
+            metricId: 'github.open_prs',
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      InputError,
     );
-    expect(result).not.toHaveProperty('extraField');
-    expect(result).toEqual(validAggregationConfig);
-    expect(logger.warn).not.toHaveBeenCalled();
   });
 
-  it('should call logger.warn and throw InputError when type is invalid', () => {
-    expect(() =>
-      validateAggregationConfig(
-        { ...validAggregationConfig, type: 'unknownType' },
-        logger,
-      ),
-    ).toThrow(InputError);
+  it('should throw InputError when aggregation type is invalid', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
 
-    expect(logger.warn).toHaveBeenCalledWith(
-      'Invalid aggregation config:',
-      expect.objectContaining({ errors: expect.any(String) }),
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          badKpi: {
+            title: 'Valid title',
+            description: 'Valid description',
+            type: 'notARealAggregationType',
+            metricId: 'github.open_prs',
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      InputError,
     );
   });
 
-  it.each([
-    ['id', { ...validAggregationConfig, id: '' }],
-    ['title', { ...validAggregationConfig, title: '' }],
-    ['description', { ...validAggregationConfig, description: '' }],
-    ['metricId', { ...validAggregationConfig, metricId: '' }],
-  ])('should throw InputError when %s is empty', (_field, config) => {
-    expect(() => validateAggregationConfig(config, logger)).toThrow(InputError);
-    expect(logger.warn).toHaveBeenCalled();
-  });
+  it('should throw when metric provider for metricId is not registered', () => {
+    const registry = new MetricProvidersRegistry();
 
-  it('should throw InputError when a string exceeds max length 255', () => {
-    const long = 'a'.repeat(256);
-    expect(() =>
-      validateAggregationConfig(
-        { ...validAggregationConfig, id: long },
-        logger,
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          openPrsKpi: {
+            title: 'GitHub PRs',
+            description: 'Open pull requests',
+            type: aggregationTypes.statusGrouped,
+            metricId: 'github.open_prs',
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      new Error(
+        `Metric provider with ID 'github.open_prs' is not registered (${AGGREGATION_KPIS_CONFIG_PATH}.openPrsKpi).`,
       ),
-    ).toThrow(InputError);
-  });
-
-  it('should throw InputError when required field is missing', () => {
-    const { metricId: _m, ...withoutMetric } = validAggregationConfig;
-    expect(() =>
-      validateAggregationConfig(withoutMetric as unknown, logger),
-    ).toThrow(InputError);
+    );
   });
 });

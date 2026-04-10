@@ -23,7 +23,7 @@ import {
   aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
-import { AggregationConfig } from './types';
+import type { AggregationConfig } from '../utils/buildAggregationConfig';
 
 export class AggregatedMetricMapper {
   static toAggregatedMetric(
