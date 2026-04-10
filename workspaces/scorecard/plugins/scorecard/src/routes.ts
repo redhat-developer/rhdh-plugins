@@ -20,7 +20,7 @@ export const rootRouteRef = createRouteRef({
   id: 'scorecard',
 });
 
-export const metricRouteRef = createRouteRef({
-  id: 'scorecard-metric',
-  params: ['metricId'],
+export const scorecardDrillDownRouteRef = createRouteRef({
+  id: 'scorecard-drill-down',
+  params: ['aggregationId', 'metricId'],
 });

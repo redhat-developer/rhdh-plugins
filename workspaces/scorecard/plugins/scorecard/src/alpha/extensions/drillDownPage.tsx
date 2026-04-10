@@ -15,16 +15,16 @@
  */
 
 import { PageBlueprint } from '@backstage/frontend-plugin-api';
-import { metricRouteRef } from '../../routes';
+import { scorecardDrillDownRouteRef } from '../../routes';
 
 /**
- * NFS page extension for the Scorecard page.
+ * NFS page extension for the Scorecard drill-down page.
  * @alpha
  */
-export const scorecardPage = PageBlueprint.make({
+export const scorecardDrillDownPage = PageBlueprint.make({
   params: {
-    path: '/scorecard/metrics/:metricId',
-    routeRef: metricRouteRef,
+    path: '/scorecard/aggregations/:aggregationId/metrics/:metricId',
+    routeRef: scorecardDrillDownRouteRef,
     loader: () =>
       import('../../pages/ScorecardPage').then(m => <m.ScorecardPage />),
   },

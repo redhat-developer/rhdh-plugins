@@ -19,7 +19,7 @@ import {
   createFrontendPlugin,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { metricRouteRef, rootRouteRef } from '../routes';
+import { rootRouteRef, scorecardDrillDownRouteRef } from '../routes';
 import { scorecardTranslations } from '../translations';
 import { scorecardApi } from './extensions/api';
 import { scorecardEntityContent } from './extensions/entityTab';
@@ -29,7 +29,7 @@ import {
   aggregatedCardWithGithubOpenPrsWidget,
   aggregatedCardWithJiraOpenIssuesWidget,
 } from './extensions/homePageCards';
-import { scorecardPage } from './extensions/metricPage';
+import { scorecardDrillDownPage } from './extensions/drillDownPage';
 
 /**
  * Extension for Scorecard translations.
@@ -46,10 +46,10 @@ const scorecardTranslation = TranslationBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'scorecard',
-  extensions: [scorecardApi, scorecardPage],
+  extensions: [scorecardApi, scorecardDrillDownPage],
   routes: {
     root: rootRouteRef,
-    metric: metricRouteRef,
+    drillDown: scorecardDrillDownRouteRef,
   },
 });
 

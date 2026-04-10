@@ -36,7 +36,7 @@ export const ScorecardHomepageCard = ({
 }) => {
   const { t } = useTranslation();
 
-  // Deprecated logic to support both metricId and aggregationId. Will be removed in the future.
+  // Deprecated logic to support both metricId and aggregationId. Only aggregationId will be used in the future.
   const resolvedScorecardId = aggregationId || metricId || '';
 
   const { data, isLoading, error } =
@@ -96,6 +96,7 @@ export const ScorecardHomepageCard = ({
       cardTitle={title}
       description={description}
       scorecard={data}
+      aggregationId={resolvedScorecardId}
       dataTestId={cardDataTestId}
     />
   );

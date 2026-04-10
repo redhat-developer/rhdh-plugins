@@ -139,7 +139,7 @@ export async function mockMetricsApi(
 
 /**
  * Mocks Jira drill-down "missing permission" scenario: metrics API 200, aggregations 403, entities 403.
- * Use with direct navigation to /scorecard/metrics/jira.open_issues.
+ * Use with direct navigation to /scorecard/aggregations/jira.open_issues/metrics/jira.open_issues
  */
 export async function mockJiraDrillDownMissingPermission(
   page: Page,

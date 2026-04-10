@@ -212,7 +212,7 @@ createDevApp()
       </ScorecardWrapper>
     ),
     title: 'Scorecard Entities',
-    path: '/scorecard/metrics/github.open_prs',
+    path: '/scorecard/aggregations/github.open_prs/metrics/github.open_prs',
   })
   .addPage({
     element: (

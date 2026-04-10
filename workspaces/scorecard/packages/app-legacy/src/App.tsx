@@ -399,7 +399,10 @@ const routes = (
         </ScalprumContext.Provider>
       }
     />
-    <Route path="/scorecard/metrics/:metricId" element={<ScorecardPage />} />
+    <Route
+      path="/scorecard/aggregations/:aggregationId/metrics/:metricId"
+      element={<ScorecardPage />}
+    />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"

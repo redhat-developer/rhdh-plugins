@@ -85,6 +85,7 @@ export const ScorecardHomepageCardComponent = ({
   scorecard,
   cardTitle,
   description,
+  aggregationId,
   showSubheader = true,
   showInfo = true,
   dataTestId,
@@ -92,6 +93,7 @@ export const ScorecardHomepageCardComponent = ({
   scorecard: AggregatedMetricResult;
   cardTitle: string;
   description: string;
+  aggregationId: string;
   showSubheader?: boolean;
   showInfo?: boolean;
   dataTestId?: string;
@@ -129,7 +131,11 @@ export const ScorecardHomepageCardComponent = ({
                 arrow
                 placement="right"
               >
-                <Link to={`/scorecard/metrics/${scorecard.id}`}>
+                <Link
+                  to={`/scorecard/aggregations/${encodeURIComponent(
+                    aggregationId,
+                  )}/metrics/${encodeURIComponent(scorecard.id)}`}
+                >
                   {t('thresholds.entities', { count: scorecard.result.total })}
                 </Link>
               </Tooltip>

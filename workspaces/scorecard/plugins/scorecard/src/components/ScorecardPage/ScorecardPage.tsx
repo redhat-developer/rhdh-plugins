@@ -30,17 +30,16 @@ import { ScorecardPageHeader } from './ScorecardPageHeader';
 import { EntitiesTable } from './EntitiesTable/EntitiesTable';
 
 export const ScorecardPage = () => {
-  const { metricId } = useParams<{ metricId?: string }>();
-  const { aggregationId } = useParams<{ aggregationId?: string }>();
+  const { aggregationId = '', metricId = '' } = useParams<{
+    aggregationId: string;
+    metricId: string;
+  }>();
   const [metricTitle, setMetricTitle] = useState<string>('');
   const [metricNotFound, setMetricNotFound] = useState<boolean>(false);
 
   const { t } = useTranslation();
 
-  // Deprecated logic to support both metricId and aggregationId. Will be removed in the future.
-  const resolvedScorecardId = aggregationId || metricId || '';
-
-  const titleKey = `metric.${resolvedScorecardId}.title`;
+  const titleKey = `metric.${metricId}.title`;
   const title = t(titleKey as any, {});
   const finalTitle = title === titleKey ? metricTitle : title;
 
@@ -58,7 +57,10 @@ export const ScorecardPage = () => {
     <Page themeId="home">
       <ScorecardPageHeader
         title={
-          finalTitle || resolvedScorecardId || t('entitiesPage.unknownMetric')
+          finalTitle ||
+          metricId ||
+          aggregationId ||
+          t('entitiesPage.unknownMetric')
         }
       />
       <Divider />
@@ -74,7 +76,7 @@ export const ScorecardPage = () => {
         >
           <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 0%' }, minWidth: 0 }}>
             <EntitiesTable
-              metricId={resolvedScorecardId}
+              metricId={metricId}
               setMetricTitle={setMetricTitle}
               setMetricNotFound={setMetricNotFound}
             />
@@ -99,7 +101,8 @@ export const ScorecardPage = () => {
             }}
           >
             <ScorecardHomepageCard
-              aggregationId={resolvedScorecardId}
+              aggregationId={aggregationId}
+              metricId={metricId}
               showSubheader={false}
               showInfo={false}
             />

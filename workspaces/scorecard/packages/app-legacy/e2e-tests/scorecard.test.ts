@@ -585,6 +585,8 @@ test.describe('Scorecard Plugin Tests', () => {
           getThresholdsSnapshot(translations, {
             drillDownMetricId:
               AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation,
+            drillDownAggregationId:
+              AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
             entityCount: githubEntityCount,
             cardTitle: githubAggregatedResponse.metadata.title,
             cardDescription: githubAggregatedResponse.metadata.description,
@@ -705,10 +707,17 @@ test.describe('Scorecard Plugin Tests', () => {
 
         await test.step('Entity drill-down', async () => {
           await homePage.clickDrillDownLink();
-          await scorecardDrillDownPage.expectOnPage('github.open_prs');
+          await scorecardDrillDownPage.expectOnPage('github.open_prs', {
+            aggregationId: AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
+          });
           await scorecardDrillDownPage.expectPageTitle('github.open_prs');
           await scorecardDrillDownPage.expectDrillDownCardSnapshot(
             'github.open_prs',
+            {
+              aggregationId: AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
+              cardTitle: githubAggregatedResponse.metadata.title,
+              cardDescription: githubAggregatedResponse.metadata.description,
+            },
           );
           await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
           await scorecardDrillDownPage.expectTableHeadersVisible();
@@ -812,10 +821,17 @@ test.describe('Scorecard Plugin Tests', () => {
 
         await test.step('Entity drill-down', async () => {
           await homePage.clickDrillDownLink();
-          await scorecardDrillDownPage.expectOnPage('jira.open_issues');
+          await scorecardDrillDownPage.expectOnPage('jira.open_issues', {
+            aggregationId: AGGREGATED_CARDS_METRIC_IDS.withJiraOpenIssuesKpi,
+          });
           await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
           await scorecardDrillDownPage.expectDrillDownCardSnapshot(
             'jira.open_issues',
+            {
+              aggregationId: AGGREGATED_CARDS_METRIC_IDS.withJiraOpenIssuesKpi,
+              cardTitle: jiraAggregatedResponse.metadata.title,
+              cardDescription: jiraAggregatedResponse.metadata.description,
+            },
           );
           await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
           await scorecardDrillDownPage.expectTableHeadersVisible();
@@ -845,7 +861,9 @@ test.describe('Scorecard Plugin Tests', () => {
           page,
           jiraMetricMetadataResponse,
         );
-        await page.goto('/scorecard/metrics/jira.open_issues');
+        await page.goto(
+          '/scorecard/aggregations/jira.open_issues/metrics/jira.open_issues',
+        );
         await scorecardDrillDownPage.expectOnPage('jira.open_issues');
         await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
         await scorecardDrillDownPage.expectTableHeadersVisible();
@@ -863,7 +881,9 @@ test.describe('Scorecard Plugin Tests', () => {
           jiraEntitiesDrillDownNoDataResponse,
           'jira.open_issues',
         );
-        await page.goto('/scorecard/metrics/jira.open_issues');
+        await page.goto(
+          '/scorecard/aggregations/jira.open_issues/metrics/jira.open_issues',
+        );
         await scorecardDrillDownPage.expectOnPage('jira.open_issues');
         await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
         await scorecardDrillDownPage.expectTableHeadersVisible();

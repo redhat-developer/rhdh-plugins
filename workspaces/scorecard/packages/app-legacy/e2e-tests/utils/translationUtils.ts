@@ -356,19 +356,26 @@ export function getThresholdsSnapshot(
   translations: ScorecardMessages,
   options: {
     drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
+    drillDownAggregationId?: string;
     entityCount: string;
     cardTitle: string;
     cardDescription: string;
   },
 ): string {
-  const { drillDownMetricId, entityCount, cardTitle, cardDescription } =
-    options;
+  const {
+    drillDownMetricId,
+    drillDownAggregationId,
+    entityCount,
+    cardTitle,
+    cardDescription,
+  } = options;
+  const aggregationSegment = drillDownAggregationId ?? drillDownMetricId;
   const drillDownLinkName = getSomeEntitiesNotReportingLabel(translations);
   return `
         - article:
           - text: ${cardTitle}
           - link "${drillDownLinkName}":
-            - /url: /scorecard/metrics/${drillDownMetricId}
+            - /url: /scorecard/aggregations/${aggregationSegment}/metrics/${drillDownMetricId}
             - text: ${entityCount}
           - button
           - separator
@@ -384,12 +391,19 @@ export function getThresholdsSnapshot(
 export function getDrillDownCardSnapshot(
   translations: ScorecardMessages,
   metricId: 'jira.open_issues' | 'github.open_prs',
+  options?: {
+    title?: string;
+    description?: string;
+  },
 ) {
+  const title = options?.title ?? translations.metric[metricId].title;
+  const description =
+    options?.description ?? translations.metric[metricId].description;
   return `
         - article:
-          - text: ${translations.metric[metricId].title}
+          - text: ${title}
           - separator
-          - paragraph: ${translations.metric[metricId].description}
+          - paragraph: ${description}
           - paragraph: ${translations.thresholds.success}
           - paragraph: ${translations.thresholds.warning}
           - paragraph: ${translations.thresholds.error}
