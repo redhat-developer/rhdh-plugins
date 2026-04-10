@@ -111,12 +111,12 @@ export async function verifyDisplayModeMenuOptions(
   ).toBeVisible();
 
   await expect(
-    settingsMenu.getByRole('menuitem', {
+    page.getByRole('menuitem', {
       name: `${t['settings.pinned.disable']} ${t['settings.pinned.enabled.description']}`,
     }),
   ).toBeVisible();
   await expect(
-    settingsMenu.getByRole('menuitem', { name: t['settings.mcp.label'] }),
+    page.getByRole('menuitem', { name: t['settings.mcp.label'] }),
   ).toBeVisible();
 }
 
