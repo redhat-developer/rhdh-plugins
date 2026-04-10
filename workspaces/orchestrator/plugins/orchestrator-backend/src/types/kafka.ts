@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ConnectionOptions } from 'tls';
+import { ConnectionOptions } from 'node:tls';
 
 export type OrchestratorKafkaServiceOptions = {
   clientId: string;
