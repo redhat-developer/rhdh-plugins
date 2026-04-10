@@ -307,6 +307,19 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
+    '& .pf-chatbot__jump': {
+      left: '50% !important',
+      right: 'auto !important',
+      transform: 'translateX(-50%)',
+      visibility: 'hidden',
+      pointerEvents: 'none',
+    },
+  },
+  chatbotContentHasOverflow: {
+    '& .pf-chatbot__jump': {
+      visibility: 'visible',
+      pointerEvents: 'auto',
+    },
   },
   // Inner scroll container we control: always scrollable so zoomed-in users see full content.
   chatbotContentScroll: {
@@ -458,6 +471,7 @@ export const LightspeedChat = ({
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
   const [messageBarKey, setMessageBarKey] = useState(0);
+  const [hasChatContentOverflow, setHasChatContentOverflow] = useState(false);
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
@@ -944,6 +958,91 @@ export const LightspeedChat = ({
     };
   }, [welcomePrompts.length]);
 
+  useEffect(() => {
+    const scrollContainer = contentScrollRef.current;
+    if (!scrollContainer) {
+      setHasChatContentOverflow(false);
+      return undefined;
+    }
+
+    const getScrollTarget = () =>
+      (scrollContainer.querySelector(
+        '.pf-chatbot__messagebox',
+      ) as HTMLElement | null) ?? scrollContainer;
+
+    const updateOverflow = () => {
+      const scrollTarget = getScrollTarget();
+      setHasChatContentOverflow(
+        scrollTarget.scrollHeight > scrollTarget.clientHeight + 1,
+      );
+    };
+
+    updateOverflow();
+
+    // Use capture so scroll events from inner messagebox also trigger updates.
+    scrollContainer.addEventListener('scroll', updateOverflow, {
+      passive: true,
+      capture: true,
+    });
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => updateOverflow())
+        : undefined;
+    resizeObserver?.observe(scrollContainer);
+    let observedScrollTarget: HTMLElement | null = getScrollTarget();
+    if (observedScrollTarget !== scrollContainer) {
+      resizeObserver?.observe(observedScrollTarget);
+    }
+
+    const mutationObserver =
+      typeof MutationObserver !== 'undefined'
+        ? new MutationObserver(() => {
+            const nextScrollTarget = getScrollTarget();
+            if (nextScrollTarget !== observedScrollTarget) {
+              if (
+                observedScrollTarget &&
+                observedScrollTarget !== scrollContainer
+              ) {
+                resizeObserver?.unobserve(observedScrollTarget);
+              }
+              if (nextScrollTarget !== scrollContainer) {
+                resizeObserver?.observe(nextScrollTarget);
+              }
+              observedScrollTarget = nextScrollTarget;
+            }
+            updateOverflow();
+          })
+        : undefined;
+    mutationObserver?.observe(scrollContainer, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', updateOverflow);
+    }
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', updateOverflow, true);
+      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
+        resizeObserver?.unobserve(observedScrollTarget);
+      }
+      resizeObserver?.disconnect();
+      mutationObserver?.disconnect();
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateOverflow);
+      }
+    };
+  }, [
+    conversationId,
+    displayMode,
+    isMcpSettingsOpen,
+    messages.length,
+    welcomePrompts.length,
+  ]);
+
   const handleFilter = useCallback((value: string) => {
     setFilterValue(value);
   }, []);
@@ -1087,7 +1186,11 @@ export const LightspeedChat = ({
 
   const chatMainContent = (
     <>
-      <ChatbotContent className={classes.chatbotContent}>
+      <ChatbotContent
+        className={`${classes.chatbotContent} ${
+          hasChatContentOverflow ? classes.chatbotContentHasOverflow : ''
+        }`}
+      >
         <div ref={contentScrollRef} className={classes.chatbotContentScroll}>
           {welcomePrompts.length > 0 && (
             <div className={classes.chatbotContentSpacer} aria-hidden />
