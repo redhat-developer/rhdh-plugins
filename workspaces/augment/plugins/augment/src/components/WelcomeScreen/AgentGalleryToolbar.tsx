@@ -68,6 +68,7 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const handleTabsChange = (_: SyntheticEvent, v: string) => onTabChange(v);
 
   return (
@@ -101,7 +102,7 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
             size="small"
             sx={{
               height: 20,
-              fontSize: '0.65rem',
+              fontSize: '0.7rem',
               fontWeight: 600,
               bgcolor: alpha(theme.palette.primary.main, 0.1),
               color: theme.palette.primary.main,
@@ -128,10 +129,21 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
                 />
               }
               sx={{
-                borderRadius: 2,
+                borderRadius: 3,
                 fontSize: '0.75rem',
                 height: 32,
                 '& .MuiSelect-select': { py: 0.5, pl: 0.5 },
+                transition: 'all 0.2s ease',
+                bgcolor: alpha(
+                  theme.palette.background.default,
+                  isDark ? 0.4 : 0.5,
+                ),
+                '&:hover': {
+                  bgcolor: alpha(
+                    theme.palette.background.default,
+                    isDark ? 0.6 : 0.7,
+                  ),
+                },
               }}
             >
               <MenuItem value="" sx={{ fontSize: '0.8rem' }}>
@@ -162,10 +174,21 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
               />
             }
             sx={{
-              borderRadius: 2,
+              borderRadius: 3,
               fontSize: '0.75rem',
               height: 32,
               '& .MuiSelect-select': { py: 0.5, pl: 0.5 },
+              transition: 'all 0.2s ease',
+              bgcolor: alpha(
+                theme.palette.background.default,
+                isDark ? 0.4 : 0.5,
+              ),
+              '&:hover': {
+                bgcolor: alpha(
+                  theme.palette.background.default,
+                  isDark ? 0.6 : 0.7,
+                ),
+              },
             }}
           >
             <MenuItem value="name" sx={{ fontSize: '0.8rem' }}>
@@ -219,7 +242,7 @@ export const AgentGalleryToolbar: FC<AgentGalleryToolbarProps> = ({
           '& .MuiTab-root': {
             minHeight: 32,
             textTransform: 'none',
-            fontSize: '0.75rem',
+            fontSize: '0.8rem',
             fontWeight: 500,
             minWidth: 'auto',
             px: 1.5,

@@ -28,7 +28,6 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StreamIcon from '@mui/icons-material/Stream';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { useTheme, alpha } from '@mui/material/styles';
-import type { Theme } from '@mui/material/styles';
 import type { FC, MouseEvent } from 'react';
 import {
   type AgentWithCard,
@@ -41,7 +40,7 @@ import {
 const AVATAR_SX_STATIC = {
   width: 40,
   height: 40,
-  borderRadius: '50%',
+  borderRadius: 2.5,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -54,15 +53,6 @@ const CARD_CONTENT_SX = {
   p: 2,
   '&:last-child': { pb: 2 },
 } as const;
-
-function statusDotColor(color: string, theme: Theme): string {
-  const map: Record<string, string> = {
-    success: theme.palette.success.main,
-    warning: theme.palette.warning.main,
-    error: theme.palette.error.main,
-  };
-  return map[color] || theme.palette.text.disabled;
-}
 
 export interface AgentCardProps {
   agent: AgentWithCard;
@@ -93,10 +83,6 @@ export const AgentCard: FC<AgentCardProps> = ({
   const rawDesc = card?.description || agent.description || '';
   const cleanDesc = sanitizeDescription(rawDesc, 120);
 
-  const starters = (card?.skills || [])
-    .flatMap(s => s.examples || [])
-    .slice(0, 2);
-
   const handleCardClick = () => {
     if (onInfo) {
       onInfo(agent);
@@ -106,24 +92,40 @@ export const AgentCard: FC<AgentCardProps> = ({
   };
 
   return (
-    <Fade in timeout={200 + index * 50}>
+    <Fade in timeout={100 + index * 30}>
       <Card
         variant="outlined"
         role="listitem"
         sx={{
-          borderRadius: 3,
-          transition: 'all 0.2s ease',
+          borderRadius: 4,
+          transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           position: 'relative',
+          height: 180,
+          display: 'flex',
+          flexDirection: 'column',
           opacity: ready ? 1 : 0.6,
+          borderColor: alpha(theme.palette.divider, isDark ? 0.15 : 0.18),
+          borderTop: `3px solid ${alpha(avatarColor, isDark ? 0.4 : 0.3)}`,
+          bgcolor: alpha(theme.palette.background.paper, isDark ? 0.6 : 0.9),
+          backdropFilter: 'blur(12px)',
+          boxShadow: isDark
+            ? `0 2px 8px ${alpha('#000', 0.3)}, 0 0 1px ${alpha('#fff', 0.05)} inset`
+            : `0 2px 8px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.7)} inset`,
           '&:hover': {
-            borderColor: theme.palette.primary.main,
-            boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, isDark ? 0.15 : 0.1)}`,
-            transform: ready ? 'translateY(-2px)' : undefined,
+            borderColor: alpha(avatarColor, 0.5),
+            borderTopColor: avatarColor,
+            boxShadow: isDark
+              ? `0 12px 40px ${alpha(avatarColor, 0.2)}, 0 4px 12px ${alpha('#000', 0.3)}, 0 0 1px ${alpha('#fff', 0.08)} inset`
+              : `0 12px 40px ${alpha(avatarColor, 0.15)}, 0 4px 12px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.8)} inset`,
+            transform: ready ? 'translateY(-3px) scale(1.02)' : undefined,
             '& .agent-actions': { opacity: 1 },
+          },
+          '&:focus-within': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: 2,
           },
         }}
       >
-        {/* Pin action (top-right) */}
         <Box
           className="agent-actions"
           sx={{
@@ -131,7 +133,7 @@ export const AgentCard: FC<AgentCardProps> = ({
             top: 8,
             right: 8,
             zIndex: 2,
-            opacity: isPinned ? 1 : 0,
+            opacity: isPinned ? 1 : 0.3,
             transition: 'opacity 0.15s ease',
           }}
         >
@@ -144,9 +146,13 @@ export const AgentCard: FC<AgentCardProps> = ({
                 color: isPinned
                   ? theme.palette.warning.main
                   : theme.palette.text.secondary,
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
+                bgcolor: alpha(theme.palette.background.paper, 0.85),
+                backdropFilter: 'blur(8px)',
+                borderRadius: 2,
+                boxShadow: `0 1px 4px ${alpha('#000', isDark ? 0.3 : 0.1)}`,
                 '&:hover': {
                   bgcolor: theme.palette.background.paper,
+                  boxShadow: `0 2px 8px ${alpha('#000', isDark ? 0.4 : 0.12)}`,
                 },
               }}
             >
@@ -168,9 +174,23 @@ export const AgentCard: FC<AgentCardProps> = ({
           placement="top"
           arrow
         >
-          <CardActionArea onClick={handleCardClick}>
-            <CardContent sx={CARD_CONTENT_SX}>
-              {/* Avatar + Name */}
+          <CardActionArea
+            onClick={handleCardClick}
+            sx={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'stretch',
+            }}
+          >
+            <CardContent
+              sx={{
+                ...CARD_CONTENT_SX,
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
               <Box
                 sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}
               >
@@ -179,6 +199,7 @@ export const AgentCard: FC<AgentCardProps> = ({
                     ...AVATAR_SX_STATIC,
                     bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
                     color: avatarColor,
+                    boxShadow: `0 2px 6px ${alpha(avatarColor, 0.2)}, 0 0 0 1px ${alpha(avatarColor, 0.1)} inset`,
                   }}
                 >
                   {displayName.charAt(0).toUpperCase()}
@@ -195,100 +216,67 @@ export const AgentCard: FC<AgentCardProps> = ({
                   >
                     {displayName}
                   </Typography>
+                  <Chip
+                    label={ready ? 'Ready' : agent.status}
+                    size="small"
+                    color={ready ? 'success' : statusColor}
+                    variant="outlined"
+                    sx={{ height: 18, fontSize: '0.7rem', mt: 0.25 }}
+                  />
                 </Box>
               </Box>
 
-              {/* Clean description */}
               <Typography
                 variant="body2"
                 color="text.secondary"
                 sx={{
                   fontSize: '0.75rem',
-                  mb: 1,
                   display: '-webkit-box',
-                  WebkitLineClamp: 2,
+                  WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
-                  minHeight: 32,
                   lineHeight: 1.5,
+                  flex: 1,
                 }}
               >
                 {cleanDesc}
               </Typography>
 
-              {/* Conversation starters */}
-              {starters.length > 0 && (
-                <Box
-                  sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}
-                >
-                  {starters.map((s, si) => (
-                    <Chip
-                      key={si}
-                      label={s}
-                      size="small"
-                      sx={{
-                        height: 22,
-                        fontSize: '0.65rem',
-                        borderRadius: 1.5,
-                        bgcolor: alpha(
-                          theme.palette.text.primary,
-                          isDark ? 0.06 : 0.04,
-                        ),
-                        color: theme.palette.text.secondary,
-                        '& .MuiChip-label': { px: 0.75 },
-                      }}
-                    />
-                  ))}
-                </Box>
-              )}
-
-              {/* Status + capabilities footer */}
+              {/* Capability badges */}
               <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 0.5,
-                  mt: 'auto',
+                  mt: 1,
+                  flexWrap: 'wrap',
                 }}
               >
-                <Box
-                  sx={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
-                    bgcolor: statusDotColor(statusColor, theme),
-                    flexShrink: 0,
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: '0.65rem',
-                    color: theme.palette.text.secondary,
-                  }}
-                >
-                  {agent.status}
-                </Typography>
-                <Box sx={{ flex: 1 }} />
                 {card?.streaming && (
-                  <Tooltip title="Streaming">
-                    <StreamIcon
-                      sx={{
-                        fontSize: 13,
-                        color: theme.palette.text.disabled,
-                      }}
-                    />
-                  </Tooltip>
+                  <Chip
+                    icon={<StreamIcon sx={{ fontSize: '12px !important' }} />}
+                    label="Streaming"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      height: 20,
+                      fontSize: '0.7rem',
+                      '& .MuiChip-label': { px: 0.5 },
+                    }}
+                  />
                 )}
                 {agent.labels?.protocol && (
-                  <Tooltip title="A2A Protocol">
-                    <SyncAltIcon
-                      sx={{
-                        fontSize: 13,
-                        color: theme.palette.text.disabled,
-                      }}
-                    />
-                  </Tooltip>
+                  <Chip
+                    icon={<SyncAltIcon sx={{ fontSize: '12px !important' }} />}
+                    label="A2A"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      height: 20,
+                      fontSize: '0.7rem',
+                      '& .MuiChip-label': { px: 0.5 },
+                    }}
+                  />
                 )}
               </Box>
             </CardContent>
