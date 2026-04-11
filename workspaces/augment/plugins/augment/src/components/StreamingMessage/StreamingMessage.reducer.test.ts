@@ -697,7 +697,7 @@ describe('StreamingMessage.reducer', () => {
 
         expect(newState.currentAgent).toBe('Billing Agent');
         expect(newState.handoffs).toHaveLength(1);
-        expect(newState.handoffs[0]).toEqual({
+        expect(newState.handoffs[0]).toMatchObject({
           from: 'Triage Agent',
           to: 'Billing Agent',
         });
@@ -718,8 +718,14 @@ describe('StreamingMessage.reducer', () => {
 
         expect(state.currentAgent).toBe('Support');
         expect(state.handoffs).toHaveLength(2);
-        expect(state.handoffs[0]).toEqual({ from: 'Triage', to: 'Sales' });
-        expect(state.handoffs[1]).toEqual({ from: 'Sales', to: 'Support' });
+        expect(state.handoffs[0]).toMatchObject({
+          from: 'Triage',
+          to: 'Sales',
+        });
+        expect(state.handoffs[1]).toMatchObject({
+          from: 'Sales',
+          to: 'Support',
+        });
       });
 
       it('ignores handoff with missing toAgent', () => {

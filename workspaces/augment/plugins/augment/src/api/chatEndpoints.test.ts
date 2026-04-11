@@ -20,7 +20,6 @@ jest.mock('./sseStreaming', () => ({
 
 import type { ChatApiDeps } from './chatEndpoints';
 import {
-  chat,
   chatStream,
   chatStreamWithSession,
   submitToolApproval,
@@ -42,78 +41,6 @@ describe('chatEndpoints', () => {
       ...overrides,
     };
   }
-
-  describe('chat', () => {
-    it('should call fetchJson with correct path and body', async () => {
-      const deps = createDeps();
-      const messages = [{ role: 'user' as const, content: 'Hello' }];
-      const mockResponse = { id: 'resp-1', output: [] };
-
-      (deps.fetchJson as jest.Mock).mockResolvedValue(mockResponse);
-
-      const result = await chat(deps, messages, true);
-
-      expect(deps.fetchJson).toHaveBeenCalledWith(
-        '/chat',
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages,
-            enableRAG: true,
-            previousResponseId: undefined,
-            conversationId: undefined,
-          }),
-        }),
-      );
-      expect(result).toEqual(mockResponse);
-    });
-
-    it('should pass optional previousResponseId and conversationId', async () => {
-      const deps = createDeps();
-      const messages = [{ role: 'user' as const, content: 'Hi' }];
-
-      (deps.fetchJson as jest.Mock).mockResolvedValue({});
-
-      await chat(deps, messages, false, undefined, 'prev-123', 'conv-456');
-
-      expect(deps.fetchJson).toHaveBeenCalledWith(
-        '/chat',
-        expect.objectContaining({
-          body: JSON.stringify({
-            messages,
-            enableRAG: false,
-            previousResponseId: 'prev-123',
-            conversationId: 'conv-456',
-          }),
-        }),
-      );
-    });
-
-    it('should pass AbortSignal when provided', async () => {
-      const deps = createDeps();
-      const signal = new AbortController().signal;
-
-      (deps.fetchJson as jest.Mock).mockResolvedValue({});
-
-      await chat(deps, [], true, signal);
-
-      expect(deps.fetchJson).toHaveBeenCalledWith(
-        '/chat',
-        expect.objectContaining({
-          signal,
-        }),
-      );
-    });
-
-    it('should propagate fetch errors', async () => {
-      const deps = createDeps();
-      const err = new Error('Network error');
-      (deps.fetchJson as jest.Mock).mockRejectedValue(err);
-
-      await expect(chat(deps, [], true)).rejects.toThrow('Network error');
-    });
-  });
 
   describe('chatStream', () => {
     it('should call fetchApi.fetch with stream URL and invoke parseSSEStream', async () => {
@@ -153,7 +80,7 @@ describe('chatEndpoints', () => {
       const { parseSSEStream } = require('./sseStreaming');
       expect(parseSSEStream).toHaveBeenCalledWith(
         mockReader,
-        onEvent,
+        expect.any(Function),
         undefined,
       );
     });

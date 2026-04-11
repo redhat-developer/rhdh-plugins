@@ -31,6 +31,7 @@ import {
   useStatus,
   useBackendStatus,
   useAdminView,
+  ChatViewModeProvider,
   type AdminPanel,
 } from '../../hooks';
 import { sanitizeBrandingUrl } from '../../theme/branding';
@@ -428,32 +429,34 @@ const AugmentPageContent = () => {
                     />
 
                     <ErrorBoundary>
-                      <ChatContainer
-                        ref={chatContainerRef}
-                        rightPaneCollapsed={rightPaneCollapsed}
-                        messages={messages}
-                        onMessagesChange={handleMessagesChange}
-                        onNewChat={handleNewChat}
-                        onSessionCreated={handleSessionCreated}
-                        loadingConversation={loadingConversation}
-                        messagesUnavailable={messagesUnavailable}
-                        onCurrentAgentChange={handleCurrentAgentChange}
-                        activeSessionId={activeSessionId}
-                      />
+                      <ChatViewModeProvider>
+                        <ChatContainer
+                          ref={chatContainerRef}
+                          rightPaneCollapsed={rightPaneCollapsed}
+                          messages={messages}
+                          onMessagesChange={handleMessagesChange}
+                          onNewChat={handleNewChat}
+                          onSessionCreated={handleSessionCreated}
+                          loadingConversation={loadingConversation}
+                          messagesUnavailable={messagesUnavailable}
+                          onCurrentAgentChange={handleCurrentAgentChange}
+                          activeSessionId={activeSessionId}
+                        />
 
-                      <RightPane
-                        sidebarCollapsed={rightPaneCollapsed}
-                        onToggleSidebar={toggleRightPane}
-                        onSelectSession={guardedSelectSession}
-                        onActiveSessionDeleted={handleNewChat}
-                        activeSessionId={activeSessionId}
-                        refreshTrigger={sessionRefreshTrigger}
-                        isAdmin={isAdmin}
-                        onAdminClick={switchToAdmin}
-                        currentAgent={currentAgent}
-                        messageCount={messages.length}
-                        providerId={liveStatus?.providerId}
-                      />
+                        <RightPane
+                          sidebarCollapsed={rightPaneCollapsed}
+                          onToggleSidebar={toggleRightPane}
+                          onSelectSession={guardedSelectSession}
+                          onActiveSessionDeleted={handleNewChat}
+                          activeSessionId={activeSessionId}
+                          refreshTrigger={sessionRefreshTrigger}
+                          isAdmin={isAdmin}
+                          onAdminClick={switchToAdmin}
+                          currentAgent={currentAgent}
+                          messageCount={messages.length}
+                          providerId={liveStatus?.providerId}
+                        />
+                      </ChatViewModeProvider>
                     </ErrorBoundary>
 
                     {/* First-time admin onboarding card */}

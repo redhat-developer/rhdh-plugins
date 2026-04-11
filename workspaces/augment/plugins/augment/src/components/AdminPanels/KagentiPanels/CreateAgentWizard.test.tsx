@@ -33,14 +33,12 @@ function createMockApi(overrides: Partial<Record<string, jest.Mock>> = {}) {
     listKagentiNamespaces: jest.fn().mockResolvedValue({
       namespaces: ['team-a', 'team-b'],
     }),
-    createKagentiAgent: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        name: 'test-agent',
-        namespace: 'team-a',
-        message: 'Agent created',
-      }),
+    createKagentiAgent: jest.fn().mockResolvedValue({
+      success: true,
+      name: 'test-agent',
+      namespace: 'team-a',
+      message: 'Agent created',
+    }),
     ...overrides,
   };
 }
@@ -223,7 +221,7 @@ describe('CreateAgentWizard — step 1 source deployment', () => {
       expect(screen.getByText('Container Image')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByLabelText('Source from Git'));
+    await user.click(screen.getByText('Source from Git'));
 
     await waitFor(() => {
       expect(screen.getByLabelText(/Git URL/)).toBeInTheDocument();
@@ -278,10 +276,10 @@ describe('CreateAgentWizard — step 2 runtime', () => {
     expect(switchEl).not.toBeChecked();
   });
 
-  it('shows Import button instead of Next', async () => {
+  it('shows Create button instead of Next', async () => {
     const user = userEvent.setup();
     await goToStep2(user);
-    expect(screen.getByText('Import')).toBeInTheDocument();
+    expect(screen.getByText('Create')).toBeInTheDocument();
     expect(screen.queryByText('Next')).not.toBeInTheDocument();
   });
 
@@ -339,9 +337,9 @@ describe('CreateAgentWizard — e2e image creation', () => {
 
     await user.type(screen.getByLabelText(/Container image/), 'quay.io/img:v1');
     await user.click(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Import')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Create')).toBeInTheDocument());
 
-    await user.click(screen.getByText('Import'));
+    await user.click(screen.getByText('Create'));
 
     await waitFor(() => {
       expect(api.createKagentiAgent).toHaveBeenCalledTimes(1);
@@ -382,7 +380,7 @@ describe('CreateAgentWizard — e2e source creation', () => {
       expect(screen.getByText('Container Image')).toBeInTheDocument(),
     );
 
-    await user.click(screen.getByLabelText('Source from Git'));
+    await user.click(screen.getByText('Source from Git'));
     await waitFor(() =>
       expect(screen.getByLabelText(/Git URL/)).toBeInTheDocument(),
     );
@@ -392,9 +390,11 @@ describe('CreateAgentWizard — e2e source creation', () => {
       'https://github.com/org/repo',
     );
     await user.click(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Import')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('Start Build')).toBeInTheDocument(),
+    );
 
-    await user.click(screen.getByText('Import'));
+    await user.click(screen.getByText('Start Build'));
 
     await waitFor(() => {
       expect(api.createKagentiAgent).toHaveBeenCalledTimes(1);
@@ -431,9 +431,9 @@ describe('CreateAgentWizard — error handling', () => {
 
     await user.type(screen.getByLabelText(/Container image/), 'quay.io/img:v1');
     await user.click(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Import')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Create')).toBeInTheDocument());
 
-    await user.click(screen.getByText('Import'));
+    await user.click(screen.getByText('Create'));
 
     await waitFor(() => {
       expect(screen.getByText('Conflict')).toBeInTheDocument();

@@ -132,7 +132,11 @@ describe('useStreamingChat', () => {
         await result.current.sendMessage('Hello', []);
       });
 
-      expect(mockApi.createSession).toHaveBeenCalledWith('Hello', undefined);
+      expect(mockApi.createSession).toHaveBeenCalledWith(
+        'Hello',
+        undefined,
+        undefined,
+      );
       expect(onSessionCreated).toHaveBeenCalledWith('session-1');
     });
 

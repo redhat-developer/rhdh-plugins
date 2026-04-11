@@ -40,6 +40,7 @@ const createStreamingStateWithApproval = (): StreamingState => ({
   ragSources: [],
   completed: false,
   handoffs: [],
+  reasoningSpans: [],
   pendingApproval: {
     toolCallId: 'call-123',
     responseId: 'response-456',

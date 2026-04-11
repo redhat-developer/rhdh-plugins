@@ -179,34 +179,6 @@ export function SessionItem({
                 mt: 0.5,
               }}
             >
-              {session.providerId && (
-                <Typography
-                  variant="caption"
-                  noWrap
-                  sx={{
-                    px: 0.5,
-                    py: 0.1,
-                    borderRadius: 0.5,
-                    bgcolor: alpha(
-                      session.providerId === 'kagenti'
-                        ? theme.palette.warning.main
-                        : theme.palette.info.main,
-                      isDark ? 0.15 : 0.08,
-                    ),
-                    color:
-                      session.providerId === 'kagenti'
-                        ? theme.palette.warning.dark
-                        : theme.palette.info.dark,
-                    fontSize: '0.55rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.3,
-                    mr: 0.5,
-                  }}
-                >
-                  {session.providerId}
-                </Typography>
-              )}
               {session.model && (
                 <Box
                   sx={{

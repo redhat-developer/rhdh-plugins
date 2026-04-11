@@ -76,3 +76,8 @@ export { useTranslation } from './useTranslation';
 export type { AugmentTranslationFunction } from './useTranslation';
 export { useAgentSelection } from './useAgentSelection';
 export { useInteractivePhases } from './useInteractivePhases';
+export {
+  useChatViewMode,
+  ChatViewModeProvider,
+  type ChatViewMode,
+} from './useChatViewMode';

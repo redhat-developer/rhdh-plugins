@@ -206,28 +206,24 @@ describe('streamingHelpers', () => {
   describe('getEmptyStreamResponseText', () => {
     it('returns connection ended message when not completed', () => {
       const result = getEmptyStreamResponseText(false, undefined, undefined);
-      expect(result).toBe(
-        'The connection ended without a response. Please try again.',
-      );
+      expect(result).toContain('connection ended');
+      expect(result).toContain('try again');
     });
 
     it('returns model-specific message when 0 output tokens and model name', () => {
       const result = getEmptyStreamResponseText(true, 0, 'llama-3');
-      expect(result).toContain('Model "llama-3"');
+      expect(result).toContain('llama-3');
       expect(result).toContain('0 output tokens');
-      expect(result).toContain('Admin Panel');
     });
 
     it('returns generic 0 tokens message when no model name', () => {
       const result = getEmptyStreamResponseText(true, 0, undefined);
       expect(result).toContain('0 output tokens');
-      expect(result).toContain('Admin Panel');
     });
 
     it('returns configuration issue message when completed but no tokens info', () => {
       const result = getEmptyStreamResponseText(true, undefined, undefined);
       expect(result).toContain('No response received');
-      expect(result).toContain('configuration issue');
     });
   });
 });

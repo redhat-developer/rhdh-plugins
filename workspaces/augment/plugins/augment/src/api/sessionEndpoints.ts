@@ -84,24 +84,6 @@ export async function deleteSession(
   return data.success === true;
 }
 
-export async function renameSession(
-  deps: SessionApiDeps,
-  sessionId: string,
-  title: string,
-  signal?: AbortSignal,
-): Promise<boolean> {
-  const data = await deps.fetchJson<{ success?: boolean }>(
-    `/sessions/${sessionId}`,
-    {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title }),
-      ...(signal ? { signal } : {}),
-    },
-  );
-  return data.success === true;
-}
-
 export async function getSessionMessages(
   deps: SessionApiDeps,
   sessionId: string,

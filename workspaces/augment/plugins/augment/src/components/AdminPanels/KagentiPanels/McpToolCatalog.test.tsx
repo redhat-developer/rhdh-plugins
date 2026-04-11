@@ -35,7 +35,7 @@ function renderCatalog(
 describe('McpToolCatalog — empty', () => {
   it('shows empty state when no tools', () => {
     renderCatalog([]);
-    expect(screen.getByText(/No MCP tools to display/i)).toBeInTheDocument();
+    expect(screen.getByText(/No MCP tools discovered/i)).toBeInTheDocument();
   });
 });
 

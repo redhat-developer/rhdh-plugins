@@ -222,7 +222,6 @@ export function createAdminMockApi(): Partial<AugmentApi> {
     }),
     getPromptGroups: jest.fn().mockResolvedValue([]),
     getQuickActions: jest.fn().mockResolvedValue([]),
-    listDocuments: jest.fn().mockResolvedValue([]),
     listActiveVectorStores: jest.fn().mockResolvedValue({ stores: [] }),
     getVectorStoreConfig: jest.fn().mockResolvedValue({
       config: {},

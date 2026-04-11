@@ -16,7 +16,7 @@
 
 import { renderHook, act } from '@testing-library/react';
 import { useChatActions } from './useChatActions';
-import type { Message, Workflow, QuickAction } from '../../types';
+import type { Message, QuickAction } from '../../types';
 import { createTestMessage } from '../../test-utils/factories';
 
 function createParams(
@@ -43,45 +43,6 @@ function createParams(
 describe('useChatActions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  describe('handleWorkflowSelect', () => {
-    it('sends first step prompt when workflow has steps', () => {
-      const sendMessage = jest.fn();
-      const messages = [createTestMessage({ isUser: true, text: 'Hi' })];
-      const { result } = renderHook(() =>
-        useChatActions(createParams({ sendMessage, messages })),
-      );
-
-      act(() => {
-        result.current.handleWorkflowSelect({
-          id: 'wf-1',
-          name: 'Test',
-          description: '',
-          steps: [{ title: 'Step 1', prompt: 'Run analysis' }],
-        } as Workflow);
-      });
-
-      expect(sendMessage).toHaveBeenCalledWith('Run analysis', messages);
-    });
-
-    it('does nothing when workflow has no steps', () => {
-      const sendMessage = jest.fn();
-      const { result } = renderHook(() =>
-        useChatActions(createParams({ sendMessage })),
-      );
-
-      act(() => {
-        result.current.handleWorkflowSelect({
-          id: 'wf-1',
-          name: 'Empty',
-          description: '',
-          steps: [],
-        } as Workflow);
-      });
-
-      expect(sendMessage).not.toHaveBeenCalled();
-    });
   });
 
   describe('handleQuickActionSelect', () => {

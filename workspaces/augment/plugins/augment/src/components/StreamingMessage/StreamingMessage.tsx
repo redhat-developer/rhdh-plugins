@@ -35,6 +35,7 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 
 import { useBranding } from '../../hooks/useBranding';
+import { useChatViewMode } from '../../hooks/useChatViewMode';
 import { InlineCode, PreBlock } from '../CodeBlock';
 import type { BrandingConfig } from '../../types';
 import { ReasoningDisplay } from './ReasoningDisplay';
@@ -56,7 +57,12 @@ import {
   getTypingCursorSx,
   StatusColors,
 } from './styles';
-import { ToolCallDisplay, RAGSearchDisplay } from './ToolCallDisplay';
+import {
+  ToolCallDisplay,
+  RAGSearchDisplay,
+  CompactToolCallDisplay,
+  CompactRAGDisplay,
+} from './ToolCallDisplay';
 import { PhaseChip, LoadingIndicator } from './StreamingProgress';
 import { FormRequestCard } from './FormRequestCard';
 import { AuthRequiredCard } from './AuthRequiredCard';
@@ -183,6 +189,7 @@ export const StreamingMessage: React.FC<StreamingMessageProps> = memo(
   }) {
     const theme = useTheme();
     const { branding } = useBranding();
+    const { isDev } = useChatViewMode();
 
     // Get phase info from branding colors
     const phaseLabel = PHASE_LABELS[state.phase] || DEFAULT_PHASE_LABEL;
@@ -263,11 +270,13 @@ export const StreamingMessage: React.FC<StreamingMessageProps> = memo(
               >
                 {state.currentAgent || branding.appName}
               </Typography>
-              <PhaseChip
-                phaseLabel={phaseLabel}
-                phaseColor={phaseColor}
-                completed={state.completed}
-              />
+              {isDev && (
+                <PhaseChip
+                  phaseLabel={phaseLabel}
+                  phaseColor={phaseColor}
+                  completed={state.completed}
+                />
+              )}
             </Box>
 
             {/* Content Container - aria-live for screen reader announcements */}
@@ -288,31 +297,49 @@ export const StreamingMessage: React.FC<StreamingMessageProps> = memo(
               )}
 
               {/* RAG Search Activity */}
-              {showRAG && (
-                <Box sx={{ mb: hasToolCalls || state.text ? 2 : 0 }}>
-                  <RAGSearchDisplay
-                    filesSearched={state.filesSearched}
-                    theme={theme}
-                    branding={branding}
-                    statusColors={statusColors}
-                  />
-                </Box>
-              )}
-
-              {/* MCP Tool Activity */}
-              {hasToolCalls && (
-                <Box sx={{ mb: state.text ? 2 : 0 }}>
-                  {state.toolCalls.map((tc, index) => (
-                    <ToolCallDisplay
-                      key={tc.id || index}
-                      tc={tc}
+              {showRAG &&
+                (isDev ? (
+                  <Box sx={{ mb: hasToolCalls || state.text ? 2 : 0 }}>
+                    <RAGSearchDisplay
+                      filesSearched={state.filesSearched}
                       theme={theme}
                       branding={branding}
                       statusColors={statusColors}
                     />
-                  ))}
-                </Box>
-              )}
+                  </Box>
+                ) : (
+                  <CompactRAGDisplay
+                    filesSearched={state.filesSearched}
+                    theme={theme}
+                  />
+                ))}
+
+              {/* MCP Tool Activity */}
+              {hasToolCalls &&
+                (isDev ? (
+                  <Box sx={{ mb: state.text ? 2 : 0 }}>
+                    {state.toolCalls.map((tc, index) => (
+                      <ToolCallDisplay
+                        key={tc.id || index}
+                        tc={tc}
+                        theme={theme}
+                        branding={branding}
+                        statusColors={statusColors}
+                      />
+                    ))}
+                  </Box>
+                ) : (
+                  <Box sx={{ mb: state.text ? 1 : 0 }}>
+                    {state.toolCalls.map((tc, index) => (
+                      <CompactToolCallDisplay
+                        key={tc.id || index}
+                        tc={tc}
+                        theme={theme}
+                        branding={branding}
+                      />
+                    ))}
+                  </Box>
+                ))}
 
               {/* Text Content with Markdown */}
               {state.text && (

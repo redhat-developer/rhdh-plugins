@@ -43,6 +43,10 @@ export interface ToolCallState {
   error?: string;
   requiresApproval?: boolean;
   confirmationMessage?: string;
+  /** Epoch ms when the tool call started */
+  startedAt?: number;
+  /** Epoch ms when the tool call completed or failed */
+  endedAt?: number;
 }
 
 /**
@@ -100,6 +104,20 @@ export interface HandoffInfo {
   from: string;
   to: string;
   reason?: string;
+  /** Epoch ms when the handoff was detected */
+  timestamp?: number;
+}
+
+/**
+ * A completed reasoning segment captured before it gets cleared
+ * (e.g. on agent handoff or stream completion).
+ */
+export interface ReasoningSpanInfo {
+  agentName?: string;
+  text: string;
+  startedAt: number;
+  endedAt: number;
+  durationMs: number;
 }
 
 /**
@@ -119,7 +137,11 @@ export interface StreamingState {
   /** When reasoning started (for calculating duration) */
   reasoningStartTime?: number;
   text: string;
+  /** Epoch ms when the first text delta arrived */
+  textStartedAt?: number;
   completed: boolean;
+  /** Completed reasoning segments (preserved across handoffs) */
+  reasoningSpans: ReasoningSpanInfo[];
   pendingApproval?: PendingApprovalInfo;
   /** Error code from the backend (safety_violation, stream_error, etc.) */
   errorCode?: string;
@@ -144,7 +166,10 @@ export interface StreamingState {
     taskId?: string;
     authType: 'oauth' | 'secret';
     url?: string;
-    demands?: { secrets?: Array<{ name: string; description?: string }>; [key: string]: unknown };
+    demands?: {
+      secrets?: Array<{ name: string; description?: string }>;
+      [key: string]: unknown;
+    };
   };
   /** Accumulated artifacts from streaming */
   artifacts?: Array<{
