@@ -53,10 +53,9 @@ function renderCard(
 }
 
 describe('AgentCard', () => {
-  it('renders agent name and namespace', () => {
+  it('renders agent name', () => {
     renderCard();
     expect(screen.getByText('test-agent')).toBeInTheDocument();
-    expect(screen.getByText(/default/)).toBeInTheDocument();
   });
 
   it('renders agentCard.name when available', () => {
@@ -71,12 +70,11 @@ describe('AgentCard', () => {
     });
     renderCard({ agent });
     expect(screen.getByText('Pretty Name')).toBeInTheDocument();
-    expect(screen.getByText('v2.0')).toBeInTheDocument();
   });
 
-  it('renders status text', () => {
+  it('renders Ready status for running agents', () => {
     renderCard();
-    expect(screen.getByText('Running')).toBeInTheDocument();
+    expect(screen.getByText('Ready')).toBeInTheDocument();
   });
 
   it('renders protocol badge', () => {
@@ -84,53 +82,25 @@ describe('AgentCard', () => {
     expect(screen.getByText('A2A')).toBeInTheDocument();
   });
 
-  it('renders framework in footer', () => {
-    renderCard();
-    expect(screen.getByText(/LangGraph/)).toBeInTheDocument();
-  });
-
-  it('renders skills chips when agentCard has skills', () => {
-    const agent = makeAgent({
-      agentCard: {
-        name: 'Skilled Agent',
-        version: '1',
-        url: '',
-        streaming: false,
-        skills: [
-          { id: 'skill-1', name: 'Weather' },
-          { id: 'skill-2', name: 'Search' },
-        ],
-      },
-    });
-    renderCard({ agent });
-    expect(screen.getByText('Weather')).toBeInTheDocument();
-    expect(screen.getByText('Search')).toBeInTheDocument();
-  });
-
-  it('shows +N chip when more than 3 skills', () => {
-    const agent = makeAgent({
-      agentCard: {
-        name: 'Many Skills',
-        version: '1',
-        url: '',
-        streaming: false,
-        skills: [
-          { id: '1', name: 'A' },
-          { id: '2', name: 'B' },
-          { id: '3', name: 'C' },
-          { id: '4', name: 'D' },
-        ],
-      },
-    });
-    renderCard({ agent });
-    expect(screen.getByText('+1')).toBeInTheDocument();
-  });
-
-  it('calls onSelect when card area is clicked', async () => {
+  it('calls onInfo when card is clicked (onInfo provided)', async () => {
+    const onInfo = jest.fn();
     const onSelect = jest.fn();
-    renderCard({ onSelect });
+    renderCard({ onInfo, onSelect });
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /test-agent/i }));
+    const actionArea = screen.getByRole('button', { name: /test-agent/i });
+    await user.click(actionArea);
+    expect(onInfo).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'test-agent' }),
+    );
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('calls onSelect when card is clicked (no onInfo)', async () => {
+    const onSelect = jest.fn();
+    renderCard({ onSelect, onInfo: undefined });
+    const user = userEvent.setup();
+    const actionArea = screen.getByRole('button', { name: /test-agent/i });
+    await user.click(actionArea);
     expect(onSelect).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'test-agent' }),
     );
@@ -162,14 +132,13 @@ describe('AgentCard', () => {
     expect(card).toBeTruthy();
   });
 
-  it('calls onInfo when info button is clicked', async () => {
-    const onInfo = jest.fn();
-    renderCard({ onInfo });
-    const user = userEvent.setup();
-    const infoButton = screen.getByRole('button', { name: /agent details/i });
-    await user.click(infoButton);
-    expect(onInfo).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'test-agent' }),
-    );
+  it('displays avatar initial from display name', () => {
+    renderCard();
+    expect(screen.getByText('T')).toBeInTheDocument();
+  });
+
+  it('shows description text', () => {
+    renderCard();
+    expect(screen.getByText('A test agent')).toBeInTheDocument();
   });
 });

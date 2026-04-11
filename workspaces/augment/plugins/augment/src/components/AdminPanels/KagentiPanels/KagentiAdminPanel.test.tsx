@@ -39,6 +39,12 @@ const strategy = {
 
 function createAdminMockApi(overrides = {}) {
   return {
+    fetchJson: jest.fn().mockResolvedValue({}),
+    getAdminConfig: jest
+      .fn()
+      .mockResolvedValue({ entry: null, source: 'default' }),
+    setAdminConfig: jest.fn().mockResolvedValue({}),
+    deleteAdminConfig: jest.fn().mockResolvedValue({}),
     getKagentiDashboards: jest.fn().mockResolvedValue({
       keycloakConsole: 'https://keycloak.example/admin',
     }),
@@ -214,15 +220,18 @@ describe('KagentiAdminPanel', () => {
     expect(screen.getByText('Build with buildah')).toBeInTheDocument();
   });
 
-  it('shows error when dashboard config fails to load', async () => {
+  it('falls back gracefully when dashboard config fails to load', async () => {
     renderAdmin({
       getKagentiDashboards: jest.fn().mockRejectedValue(new Error('nope')),
     });
     await waitFor(() => {
       expect(
-        screen.getByText('Failed to load dashboard configuration.'),
+        screen.getByRole('heading', { name: /^Administration$/i }),
       ).toBeInTheDocument();
     });
+    expect(
+      screen.queryByText('Failed to load dashboard configuration.'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows API error when namespace list fails', async () => {
@@ -245,15 +254,18 @@ describe('KagentiAdminPanel', () => {
     });
   });
 
-  it('shows API error when build strategies list fails', async () => {
+  it('falls back gracefully when build strategies list fails', async () => {
     renderAdmin({
       listKagentiBuildStrategies: jest
         .fn()
         .mockRejectedValue(new Error('bs fail')),
     });
     await waitFor(() => {
-      expect(screen.getByText('bs fail')).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /^Administration$/i }),
+      ).toBeInTheDocument();
     });
+    expect(screen.queryByText('bs fail')).not.toBeInTheDocument();
   });
 
   it('dismisses error alert when closed', async () => {

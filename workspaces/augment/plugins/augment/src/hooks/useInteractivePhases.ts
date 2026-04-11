@@ -27,6 +27,7 @@ interface UseInteractivePhasesOptions {
   onMessagesChange: (messages: Message[]) => void;
   setStreamingState: (state: StreamingState | null) => void;
   setIsTyping: (typing: boolean) => void;
+  setLastCompletedState?: (state: StreamingState | null) => void;
 }
 
 export function useInteractivePhases({
@@ -36,6 +37,7 @@ export function useInteractivePhases({
   onMessagesChange,
   setStreamingState,
   setIsTyping,
+  setLastCompletedState,
 }: UseInteractivePhasesOptions) {
   const msgCounter = useRef(0);
 
@@ -71,6 +73,7 @@ export function useInteractivePhases({
         };
         onMessagesChange([...messages, errorMsg]);
       } finally {
+        setLastCompletedState?.(streamingState);
         setStreamingState(null);
         setIsTyping(false);
       }
@@ -80,6 +83,7 @@ export function useInteractivePhases({
       streamingState,
       setStreamingState,
       setIsTyping,
+      setLastCompletedState,
       messages,
       onMessagesChange,
     ],
@@ -88,6 +92,7 @@ export function useInteractivePhases({
   const handleFormCancel = useCallback(async () => {
     const pending = streamingState?.pendingForm;
     if (!pending) return;
+    setLastCompletedState?.(streamingState);
     setStreamingState(null);
     setIsTyping(false);
     try {
@@ -116,6 +121,7 @@ export function useInteractivePhases({
     streamingState,
     setStreamingState,
     setIsTyping,
+    setLastCompletedState,
     messages,
     onMessagesChange,
   ]);
@@ -150,6 +156,7 @@ export function useInteractivePhases({
       };
       onMessagesChange([...messages, errorMsg]);
     } finally {
+      setLastCompletedState?.(streamingState);
       setStreamingState(null);
       setIsTyping(false);
     }
@@ -158,6 +165,7 @@ export function useInteractivePhases({
     streamingState,
     setStreamingState,
     setIsTyping,
+    setLastCompletedState,
     messages,
     onMessagesChange,
   ]);
@@ -194,6 +202,7 @@ export function useInteractivePhases({
         };
         onMessagesChange([...messages, errorMsg]);
       } finally {
+        setLastCompletedState?.(streamingState);
         setStreamingState(null);
         setIsTyping(false);
       }
@@ -203,6 +212,7 @@ export function useInteractivePhases({
       streamingState,
       setStreamingState,
       setIsTyping,
+      setLastCompletedState,
       messages,
       onMessagesChange,
     ],

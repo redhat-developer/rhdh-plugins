@@ -29,7 +29,11 @@ import type {
   StreamFormDescriptor,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { StreamingEvent } from '../../types';
-import { StreamingState, ToolCallState } from './StreamingMessage.types';
+import {
+  StreamingState,
+  ToolCallState,
+  ReasoningSpanInfo,
+} from './StreamingMessage.types';
 import {
   STREAMING_PHASES,
   EVENT_TYPES,
@@ -49,7 +53,32 @@ export function createInitialStreamingState(): StreamingState {
     text: '',
     completed: false,
     handoffs: [],
+    reasoningSpans: [],
   };
+}
+
+/**
+ * Snapshot current reasoning into a ReasoningSpanInfo if there is
+ * active reasoning content, then return the new reasoningSpans array.
+ */
+function snapshotReasoning(state: StreamingState): ReasoningSpanInfo[] {
+  if (!state.reasoning || !state.reasoningStartTime) {
+    return state.reasoningSpans;
+  }
+  const now = Date.now();
+  const durationMs = state.reasoningDuration
+    ? state.reasoningDuration * 1000
+    : now - state.reasoningStartTime;
+  return [
+    ...state.reasoningSpans,
+    {
+      agentName: state.currentAgent,
+      text: state.reasoning,
+      startedAt: state.reasoningStartTime,
+      endedAt: now,
+      durationMs,
+    },
+  ];
 }
 
 // =============================================================================
@@ -163,6 +192,20 @@ export function updateStreamingState(
         completed.agentName && !state.currentAgent
           ? completed.agentName
           : state.currentAgent;
+
+      // Auto-close reasoning if provider never sent stream.reasoning.done
+      const autoReasoningDuration =
+        state.reasoningStartTime && !state.reasoningDuration
+          ? Math.round((Date.now() - state.reasoningStartTime) / 1000)
+          : state.reasoningDuration;
+
+      // Snapshot any remaining reasoning into the spans array
+      const stateWithDuration = {
+        ...state,
+        reasoningDuration: autoReasoningDuration,
+      };
+      const finalReasoningSpans = snapshotReasoning(stateWithDuration);
+
       if (state.phase === STREAMING_PHASES.PENDING_APPROVAL) {
         return {
           ...state,
@@ -170,6 +213,8 @@ export function updateStreamingState(
           usage: completed.usage || state.usage,
           currentAgent: agentFromCompleted,
           outputValidationError: completed.outputValidationError,
+          reasoningDuration: autoReasoningDuration,
+          reasoningSpans: finalReasoningSpans,
         };
       }
       return {
@@ -179,6 +224,8 @@ export function updateStreamingState(
         usage: completed.usage || state.usage,
         currentAgent: agentFromCompleted,
         outputValidationError: completed.outputValidationError,
+        reasoningDuration: autoReasoningDuration,
+        reasoningSpans: finalReasoningSpans,
       };
     }
 
@@ -204,6 +251,7 @@ export function updateStreamingState(
         ...state,
         phase: STREAMING_PHASES.GENERATING,
         text: state.text + ((event as { delta?: string }).delta || ''),
+        textStartedAt: state.textStartedAt || Date.now(),
       };
 
     case EVENT_TYPES.STREAM_TEXT_DONE:
@@ -268,6 +316,7 @@ export function updateStreamingState(
         status: TOOL_STATUS.IN_PROGRESS,
         serverLabel: started.serverLabel,
         arguments: started.arguments,
+        startedAt: Date.now(),
       };
       return {
         ...state,
@@ -323,6 +372,7 @@ export function updateStreamingState(
                 serverLabel: completed.serverLabel || tc.serverLabel,
                 arguments: completed.arguments || tc.arguments,
                 output: completed.output,
+                endedAt: Date.now(),
               }
             : tc,
         ),
@@ -352,6 +402,7 @@ export function updateStreamingState(
                 status: TOOL_STATUS.FAILED,
                 name: failed.name || tc.name,
                 error: failed.error,
+                endedAt: Date.now(),
               }
             : tc,
         ),
@@ -607,6 +658,10 @@ export function updateStreamingState(
         reason?: string;
       };
       if (!handoff.toAgent) return state;
+
+      // Preserve current reasoning before clearing
+      const preservedSpans = snapshotReasoning(state);
+
       return {
         ...state,
         currentAgent: handoff.toAgent,
@@ -616,8 +671,10 @@ export function updateStreamingState(
             from: handoff.fromAgent || '',
             to: handoff.toAgent,
             reason: handoff.reason,
+            timestamp: Date.now(),
           },
         ],
+        reasoningSpans: preservedSpans,
         reasoning: undefined,
         reasoningDuration: undefined,
         reasoningStartTime: undefined,

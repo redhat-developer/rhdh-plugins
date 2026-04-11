@@ -17,7 +17,6 @@
 import type { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import type {
   ChatMessage,
-  ChatResponse,
   StreamingEvent,
   StreamingEventCallback,
 } from '../types';
@@ -29,27 +28,6 @@ export interface ChatApiDeps {
   fetchJson: <T>(path: string, init?: RequestInit) => Promise<T>;
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
-}
-
-/**
- * Non-streaming chat request.
- */
-export async function chat(
-  deps: ChatApiDeps,
-  messages: ChatMessage[],
-  enableRAG: boolean,
-  signal?: AbortSignal,
-  previousResponseId?: string,
-  conversationId?: string,
-): Promise<ChatResponse> {
-  return deps.fetchJson(
-    '/chat',
-    jsonBody(
-      { messages, enableRAG, previousResponseId, conversationId },
-      'POST',
-      { signal },
-    ),
-  );
 }
 
 /**

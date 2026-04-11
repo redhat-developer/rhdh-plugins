@@ -47,6 +47,8 @@ export { exportConversation } from './exportConversation';
 
 export { isAbortError } from './isAbortError';
 
+export { getPreviewSnippet } from './textPreview';
+
 export {
   findJsonBlocks,
   stripEchoedToolOutput,

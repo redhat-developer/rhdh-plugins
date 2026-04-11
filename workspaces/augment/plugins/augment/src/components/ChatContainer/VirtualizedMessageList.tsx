@@ -28,6 +28,7 @@ interface VirtualizedMessageListProps {
   onRegenerate?: () => void;
   onEditMessage?: (messageId: string, newText: string) => void;
   onFeedback?: (data: MessageFeedbackData) => void;
+  onInspect?: (message: Message) => void;
   /** Index of the message highlighted by keyboard navigation (-1 = none). */
   selectedMessageIndex?: number;
   /** Scroll container ref for IntersectionObserver root. */
@@ -49,6 +50,7 @@ export const VirtualizedMessageList = React.memo(
     onRegenerate,
     onEditMessage,
     onFeedback,
+    onInspect,
     selectedMessageIndex = -1,
     scrollRoot,
   }: VirtualizedMessageListProps) {
@@ -165,6 +167,7 @@ export const VirtualizedMessageList = React.memo(
                     onRegenerate={isLastAssistant ? onRegenerate : undefined}
                     onEditMessage={message.isUser ? onEditMessage : undefined}
                     onFeedback={message.isUser ? undefined : onFeedback}
+                    onInspect={onInspect}
                   />
                 </Box>
               </React.Fragment>
@@ -228,6 +231,7 @@ export const VirtualizedMessageList = React.memo(
                   onRegenerate={isLastAssistant ? onRegenerate : undefined}
                   onEditMessage={message.isUser ? onEditMessage : undefined}
                   onFeedback={message.isUser ? undefined : onFeedback}
+                  onInspect={onInspect}
                 />
               </Box>
             </React.Fragment>

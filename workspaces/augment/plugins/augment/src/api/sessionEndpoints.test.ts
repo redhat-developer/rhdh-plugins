@@ -53,7 +53,7 @@ describe('sessionEndpoints', () => {
 
         const result = await listSessions(deps);
 
-        expect(deps.fetchJson).toHaveBeenCalledWith('/sessions');
+        expect(deps.fetchJson).toHaveBeenCalledWith('/sessions', undefined);
         expect(result).toEqual(mockSessions);
       });
 
@@ -65,6 +65,7 @@ describe('sessionEndpoints', () => {
 
         expect(deps.fetchJson).toHaveBeenCalledWith(
           '/sessions?limit=10&offset=5',
+          undefined,
         );
       });
 
@@ -158,6 +159,7 @@ describe('sessionEndpoints', () => {
 
         expect(deps.fetchApi.fetch).toHaveBeenCalledWith(
           `${baseUrl}/sessions/session-1/messages`,
+          undefined,
         );
         expect(result.messages).toEqual(mockData.messages);
         expect(result.sessionCreatedAt).toBe('2025-01-15');

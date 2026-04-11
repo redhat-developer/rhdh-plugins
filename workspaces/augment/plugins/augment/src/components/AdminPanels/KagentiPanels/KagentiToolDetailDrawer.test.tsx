@@ -41,17 +41,31 @@ function createMockApi(overrides: Partial<Record<string, jest.Mock>> = {}) {
       spec: {
         protocol: 'mcp',
         framework: 'Python',
-        containerImage: 'quay.io/weather:v1',
-        envVars: [
-          { name: 'API_KEY', value: 'test-key' },
-          {
-            name: 'DB_PASS',
-            valueFrom: { secretKeyRef: { name: 'db-secret', key: 'pass' } },
+        template: {
+          spec: {
+            containers: [
+              {
+                image: 'quay.io/weather:v1',
+                env: [
+                  { name: 'API_KEY', value: 'test-key' },
+                  {
+                    name: 'DB_PASS',
+                    valueFrom: {
+                      secretKeyRef: { name: 'db-secret', key: 'pass' },
+                    },
+                  },
+                ],
+                ports: [
+                  {
+                    name: 'http',
+                    containerPort: 8080,
+                    protocol: 'TCP',
+                  },
+                ],
+              },
+            ],
           },
-        ],
-        servicePorts: [
-          { name: 'http', port: 8080, targetPort: 8080, protocol: 'TCP' },
-        ],
+        },
       },
       status: {},
     }),
@@ -153,7 +167,7 @@ describe('KagentiToolDetailDrawer — spec display', () => {
   it('shows service ports as expanded list', async () => {
     renderDrawer();
     await waitFor(() => {
-      expect(screen.getByText(/http: 8080/)).toBeInTheDocument();
+      expect(screen.getByText(/http.*8080/)).toBeInTheDocument();
     });
   });
 });
@@ -174,7 +188,7 @@ describe('KagentiToolDetailDrawer — route status', () => {
   it('shows route status chips', async () => {
     renderDrawer();
     await waitFor(() => {
-      expect(screen.getByText(/ready: true/)).toBeInTheDocument();
+      expect(screen.getByText(/Route ready/)).toBeInTheDocument();
     });
   });
 });

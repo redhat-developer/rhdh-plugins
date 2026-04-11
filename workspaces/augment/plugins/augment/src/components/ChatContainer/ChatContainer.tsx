@@ -29,7 +29,9 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-import { useTheme } from '@mui/material/styles';
+import CodeIcon from '@mui/icons-material/Code';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import { useTheme, alpha } from '@mui/material/styles';
 import { Message } from '../../types';
 import { WelcomeScreen, AgentCatalogDialog } from '../WelcomeScreen';
 import type { SelectedAgentInfo } from '../WelcomeScreen';
@@ -40,7 +42,12 @@ import { ChatInput } from '../ChatInput';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
 import { exportConversation } from '../../utils';
-import { useBranding, useStreamingChat, useToolApproval } from '../../hooks';
+import {
+  useBranding,
+  useStreamingChat,
+  useToolApproval,
+  useChatViewMode,
+} from '../../hooks';
 import {
   useWelcomeData,
   useChatKeyboardShortcuts,
@@ -54,6 +61,7 @@ import { ThinkingIndicator } from './ThinkingIndicator';
 import { ChatScrollArea } from './ChatScrollArea';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
 import { ChatHeader } from './ChatHeader';
+import { MessageInspectorPanel } from './MessageInspectorPanel';
 import { useChatActions } from './useChatActions';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ExecutionTracePanel } from '../ExecutionTrace';
@@ -102,11 +110,16 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     ref,
   ) => {
     const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
     const { t } = useTranslation();
     const api = useApi(augmentApiRef);
     const { branding } = useBranding();
+    const { isDev, toggleMode } = useChatViewMode();
 
     const [inputValue, setInputValue] = useState('');
+    const [inspectedMessage, setInspectedMessage] = useState<
+      import('../../types').Message | null
+    >(null);
     const { workflows, quickActions, promptGroups } = useWelcomeData();
     const { status } = useStatus();
     const isKagenti = status?.providerId === 'kagenti';
@@ -193,6 +206,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       setPreviousResponseId,
       setConversationId,
       setSessionId,
+      setLastCompletedState,
     } = useStreamingChat({
       enableRAG: true,
       onMessagesChange,
@@ -230,7 +244,10 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       streamingState,
       messages,
       onMessagesChange,
-      onClearStreamingState: () => setStreamingState(null),
+      onClearStreamingState: () => {
+        setLastCompletedState(streamingState);
+        setStreamingState(null);
+      },
       onSetTyping: setIsTyping,
     });
 
@@ -335,6 +352,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       onMessagesChange,
       setStreamingState,
       setIsTyping,
+      setLastCompletedState,
     });
 
     // Determine what to show in the message area.
@@ -434,10 +452,47 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
               sx={{
                 display: 'flex',
                 justifyContent: 'flex-end',
+                gap: 0.5,
                 px: { xs: 2, sm: 3, md: 4 },
                 py: 0.25,
               }}
             >
+              <Tooltip
+                title={isDev ? 'Switch to User mode' : 'Switch to Dev mode'}
+                placement="bottom"
+              >
+                <IconButton
+                  size="small"
+                  onClick={toggleMode}
+                  aria-label={
+                    isDev ? 'Switch to User mode' : 'Switch to Dev mode'
+                  }
+                  sx={{
+                    p: 0.5,
+                    borderRadius: 1.5,
+                    color: isDev
+                      ? theme.palette.warning.main
+                      : theme.palette.text.secondary,
+                    bgcolor: isDev
+                      ? alpha(theme.palette.warning.main, isDark ? 0.15 : 0.08)
+                      : 'transparent',
+                    '&:hover': {
+                      color: isDev
+                        ? theme.palette.warning.dark
+                        : theme.palette.primary.main,
+                      bgcolor: isDev
+                        ? alpha(theme.palette.warning.main, 0.2)
+                        : alpha(theme.palette.primary.main, 0.08),
+                    },
+                  }}
+                >
+                  {isDev ? (
+                    <CodeIcon sx={{ fontSize: 16 }} />
+                  ) : (
+                    <PersonOutlineIcon sx={{ fontSize: 16 }} />
+                  )}
+                </IconButton>
+              </Tooltip>
               <Tooltip title="Export conversation as JSON" placement="left">
                 <IconButton
                   size="small"
@@ -534,7 +589,9 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
                   onRegenerate={handleRegenerate}
                   onEditMessage={isTyping ? undefined : handleEditMessage}
                   onFeedback={handleFeedback}
+                  onInspect={isDev ? setInspectedMessage : undefined}
                   selectedMessageIndex={selectedMessageIndex}
+                  scrollRoot={scrollContainerRef}
                 />
                 {/* Execution Trace — inline with the conversation, above the active response */}
                 {(streamingState || lastCompletedState) && (
@@ -634,6 +691,15 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
             onAgentSelect={handleCatalogAgentSelect}
             onStarterSelect={handleCatalogStarterSelect}
             chatAgentConfigs={chatAgentConfigs}
+          />
+        )}
+
+        {/* Message Inspector (dev mode only) */}
+        {isDev && (
+          <MessageInspectorPanel
+            message={inspectedMessage}
+            open={!!inspectedMessage}
+            onClose={() => setInspectedMessage(null)}
           />
         )}
       </Box>

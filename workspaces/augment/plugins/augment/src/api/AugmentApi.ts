@@ -24,17 +24,12 @@ import { ResponseError } from '@backstage/errors';
 import { initializeDebug } from '../utils';
 import {
   ChatMessage,
-  ChatResponse,
   DocumentInfo,
   AugmentStatus,
   Workflow,
   QuickAction,
   PromptGroup,
   StreamingEventCallback,
-  ConversationSummary,
-  ConversationDetails,
-  ConversationInputItem,
-  ProcessedMessage,
   SessionMessagesResponse,
   ChatSessionSummary,
   BrandingConfig,
@@ -64,25 +59,6 @@ import * as kagentiEndpoints from './kagentiEndpoints';
  * @public
  */
 export interface AugmentApi {
-  /**
-   * Send a chat message
-   * Vector stores are automatically searched based on backend config
-   * Supports conversation branching via previousResponseId
-   */
-  chat(
-    messages: ChatMessage[],
-    enableRAG?: boolean,
-    signal?: AbortSignal,
-    previousResponseId?: string,
-    conversationId?: string,
-  ): Promise<ChatResponse>;
-
-  /**
-   * List all documents in the knowledge base (read-only)
-   * Documents are automatically synced from configured sources on backend startup
-   */
-  listDocuments(): Promise<DocumentInfo[]>;
-
   /**
    * Get the status of the Augment service
    */
@@ -128,70 +104,10 @@ export interface AugmentApi {
     model?: string,
   ): Promise<void>;
 
-  // ===========================================================================
-  // Conversation History (Responses API - Server-side persistence)
-  // ===========================================================================
-
-  /**
-   * List stored conversations from the provider.
-   * 100% in sync with Responses API - no hardcoding
-   */
-  listConversations(
-    limit?: number,
-    order?: 'asc' | 'desc',
-    after?: string,
-  ): Promise<{
-    conversations: ConversationSummary[];
-    hasMore: boolean;
-    lastId?: string;
-  }>;
-
-  /**
-   * Get a specific conversation by response ID
-   */
-  getConversation(responseId: string): Promise<ConversationDetails | null>;
-
-  /**
-   * Get input items (full conversation context) for a response
-   */
-  getConversationInputs(responseId: string): Promise<{
-    items: ConversationInputItem[];
-    hasMore: boolean;
-  }>;
-
-  /**
-   * Delete a conversation from the provider.
-   * If conversationId is provided, the conversation container is also deleted.
-   */
-  deleteConversation(
-    responseId: string,
-    conversationId?: string,
-  ): Promise<boolean>;
-
   /**
    * Create a new conversation container
    */
   createConversation(): Promise<{ conversationId: string }>;
-
-  /**
-   * Get all items for a conversation (full ordered history)
-   */
-  getConversationItems(
-    conversationId: string,
-  ): Promise<{ items: ConversationInputItem[] }>;
-
-  /**
-   * Get processed messages for a conversation, ready for rendering.
-   * Backend groups tool calls and RAG sources with their assistant messages.
-   */
-  getConversationMessages(conversationId: string): Promise<ProcessedMessage[]>;
-
-  /**
-   * Walk the response chain to get full history (legacy fallback)
-   */
-  walkResponseChain(
-    responseId: string,
-  ): Promise<{ messages: Array<{ role: 'user' | 'assistant'; text: string }> }>;
 
   // ===========================================================================
   // Human-in-the-Loop (HITL) Tool Approval
@@ -262,9 +178,6 @@ export interface AugmentApi {
 
   /** Delete a chat session */
   deleteSession(sessionId: string): Promise<boolean>;
-
-  /** Rename a chat session */
-  renameSession(sessionId: string, title: string): Promise<boolean>;
 
   /** Fetch session state for debug inspector */
   getSessionState(sessionId: string): Promise<Record<string, unknown>>;
@@ -723,27 +636,6 @@ export class AugmentApiClient implements AugmentApi {
     };
   }
 
-  async chat(
-    messages: ChatMessage[],
-    enableRAG = true,
-    signal?: AbortSignal,
-    previousResponseId?: string,
-    conversationId?: string,
-  ): Promise<ChatResponse> {
-    return chatEndpoints.chat(
-      this.chatDeps,
-      messages,
-      enableRAG,
-      signal,
-      previousResponseId,
-      conversationId,
-    );
-  }
-
-  async listDocuments(): Promise<DocumentInfo[]> {
-    return documentEndpoints.listDocuments(this.documentDeps);
-  }
-
   async getStatus(): Promise<AugmentStatus> {
     return this.fetchJson('/status');
   }
@@ -788,82 +680,8 @@ export class AugmentApiClient implements AugmentApi {
     );
   }
 
-  async listConversations(
-    limit: number = 10,
-    order: 'asc' | 'desc' = 'desc',
-    after?: string,
-  ): Promise<{
-    conversations: ConversationSummary[];
-    hasMore: boolean;
-    lastId?: string;
-  }> {
-    return conversationEndpoints.listConversations(
-      this.conversationDeps,
-      limit,
-      order,
-      after,
-    );
-  }
-
-  async getConversation(
-    responseId: string,
-  ): Promise<ConversationDetails | null> {
-    return conversationEndpoints.getConversation(
-      this.conversationDeps,
-      responseId,
-    );
-  }
-
-  async getConversationInputs(responseId: string): Promise<{
-    items: ConversationInputItem[];
-    hasMore: boolean;
-  }> {
-    return conversationEndpoints.getConversationInputs(
-      this.conversationDeps,
-      responseId,
-    );
-  }
-
-  async deleteConversation(
-    responseId: string,
-    conversationId?: string,
-  ): Promise<boolean> {
-    return conversationEndpoints.deleteConversation(
-      this.conversationDeps,
-      responseId,
-      conversationId,
-    );
-  }
-
   async createConversation(): Promise<{ conversationId: string }> {
     return conversationEndpoints.createConversation(this.conversationDeps);
-  }
-
-  async getConversationItems(
-    conversationId: string,
-  ): Promise<{ items: ConversationInputItem[] }> {
-    return conversationEndpoints.getConversationItems(
-      this.conversationDeps,
-      conversationId,
-    );
-  }
-
-  async getConversationMessages(
-    conversationId: string,
-  ): Promise<ProcessedMessage[]> {
-    return conversationEndpoints.getConversationMessages(
-      this.conversationDeps,
-      conversationId,
-    );
-  }
-
-  async walkResponseChain(responseId: string): Promise<{
-    messages: Array<{ role: 'user' | 'assistant'; text: string }>;
-  }> {
-    return conversationEndpoints.walkResponseChain(
-      this.conversationDeps,
-      responseId,
-    );
   }
 
   async submitToolApproval(
@@ -937,10 +755,6 @@ export class AugmentApiClient implements AugmentApi {
 
   async deleteSession(sessionId: string): Promise<boolean> {
     return sessionEndpoints.deleteSession(this.sessionDeps, sessionId);
-  }
-
-  async renameSession(sessionId: string, title: string): Promise<boolean> {
-    return sessionEndpoints.renameSession(this.sessionDeps, sessionId, title);
   }
 
   async getSessionState(sessionId: string): Promise<Record<string, unknown>> {

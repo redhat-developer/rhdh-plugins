@@ -193,16 +193,16 @@ describe('KagentiAgentDetailView', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
-  it('triggers build via triggerKagentiBuild when Build is clicked', async () => {
+  it('triggers build via triggerKagentiBuild when Rebuild is clicked', async () => {
     const user = userEvent.setup();
     const { api } = renderDetail();
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: /^Build$/ }),
+        screen.getByRole('button', { name: /^Rebuild$/ }),
       ).toBeInTheDocument(),
     );
 
-    await user.click(screen.getByRole('button', { name: /^Build$/ }));
+    await user.click(screen.getByRole('button', { name: /^Rebuild$/ }));
 
     await waitFor(() => {
       expect(api.triggerKagentiBuild).toHaveBeenCalledWith(
@@ -226,11 +226,11 @@ describe('KagentiAgentDetailView', () => {
     );
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: /^Build$/ }),
+        screen.getByRole('button', { name: /^Rebuild$/ }),
       ).toBeInTheDocument(),
     );
 
-    await user.click(screen.getByRole('button', { name: /^Build$/ }));
+    await user.click(screen.getByRole('button', { name: /^Rebuild$/ }));
     await waitFor(() =>
       expect(
         screen.getByRole('button', { name: /^Building\.\.\.$/ }),
@@ -294,11 +294,11 @@ describe('KagentiAgentDetailView', () => {
     );
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: /^Build$/ }),
+        screen.getByRole('button', { name: /^Rebuild$/ }),
       ).toBeInTheDocument(),
     );
 
-    await user.click(screen.getByRole('button', { name: /^Build$/ }));
+    await user.click(screen.getByRole('button', { name: /^Rebuild$/ }));
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('build broke');
@@ -373,12 +373,12 @@ describe('KagentiAgentDetailView', () => {
     const { api } = renderDetail({}, { getKagentiBuildInfo });
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: /^Build$/ }),
+        screen.getByRole('button', { name: /^Rebuild$/ }),
       ).toBeInTheDocument(),
     );
     const initialCalls = getKagentiBuildInfo.mock.calls.length;
 
-    await user.click(screen.getByRole('button', { name: /^Build$/ }));
+    await user.click(screen.getByRole('button', { name: /^Rebuild$/ }));
 
     await waitFor(() => {
       expect(getKagentiBuildInfo.mock.calls.length).toBeGreaterThan(

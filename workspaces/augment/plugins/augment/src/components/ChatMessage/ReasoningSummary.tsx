@@ -17,105 +17,87 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Collapse from '@mui/material/Collapse';
+import { alpha, useTheme } from '@mui/material/styles';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import Collapse from '@mui/material/Collapse';
-import { alpha, type Theme } from '@mui/material/styles';
-import type { BrandingConfig } from '../../types';
 import { getPreviewSnippet } from '../../utils';
 
-export interface ReasoningDisplayProps {
+interface ReasoningSummaryProps {
   reasoning: string;
   reasoningDuration?: number;
-  isStreaming: boolean;
-  theme: Theme;
-  branding: BrandingConfig;
 }
 
-/**
- * Renders the model's reasoning/thinking content (collapsible)
- */
-export function ReasoningDisplay({
+export function ReasoningSummary({
   reasoning,
   reasoningDuration,
-  isStreaming,
-  theme,
-  branding,
-}: ReasoningDisplayProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+}: ReasoningSummaryProps) {
+  const theme = useTheme();
+  const [expanded, setExpanded] = useState(false);
 
-  const durationBadge =
-    reasoningDuration !== undefined ? `${reasoningDuration}s` : undefined;
+  if (!reasoning) return null;
 
-  let chipLabel = 'Thought';
-  if (isStreaming) {
-    chipLabel = 'Thinking\u2026';
-  } else if (durationBadge) {
-    chipLabel = `Thought for ${durationBadge}`;
-  }
+  const label =
+    reasoningDuration !== undefined
+      ? `Thought for ${reasoningDuration}s`
+      : 'Thought process';
 
-  const preview = !isExpanded ? getPreviewSnippet(reasoning) : '';
+  const preview = !expanded ? getPreviewSnippet(reasoning) : '';
 
   return (
-    <Box sx={{ mb: 1.5 }}>
-      {/* Compact chip header with preview */}
+    <Box sx={{ mb: 1 }}>
       <Box
         role="button"
         tabIndex={0}
-        aria-expanded={isExpanded}
-        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} reasoning`}
-        onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={expanded}
+        aria-label={`${expanded ? 'Collapse' : 'Expand'} reasoning`}
+        onClick={() => setExpanded(prev => !prev)}
         onKeyDown={(e: React.KeyboardEvent) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            setIsExpanded(prev => !prev);
+            setExpanded(prev => !prev);
           }
         }}
         sx={{
           display: 'inline-flex',
           alignItems: 'center',
           gap: 0.5,
-          px: 1,
+          px: 0.75,
           py: 0.25,
-          borderRadius: 2,
+          borderRadius: 1.5,
           cursor: 'pointer',
-          backgroundColor: alpha(theme.palette.text.primary, 0.04),
+          bgcolor: alpha(theme.palette.text.primary, 0.04),
           transition: 'background-color 0.15s',
           maxWidth: '100%',
           '&:hover': {
-            backgroundColor: alpha(theme.palette.text.primary, 0.08),
+            bgcolor: alpha(theme.palette.text.primary, 0.08),
           },
         }}
       >
         <PsychologyIcon
           sx={{
             fontSize: 14,
-            color: branding.secondaryColor,
+            color: theme.palette.text.disabled,
             flexShrink: 0,
-            animation: isStreaming ? 'pulse 1.5s ease-in-out infinite' : 'none',
-            '@keyframes pulse': {
-              '0%, 100%': { opacity: 1 },
-              '50%': { opacity: 0.5 },
-            },
           }}
         />
         <Typography
           variant="caption"
           sx={{
-            color: 'text.secondary',
+            color: theme.palette.text.secondary,
             fontWeight: 500,
             fontSize: '0.7rem',
             flexShrink: 0,
           }}
         >
-          {chipLabel}
+          {label}
         </Typography>
-        {!isExpanded && preview && (
+        {!expanded && preview && (
           <Typography
             variant="caption"
             sx={{
-              color: 'text.disabled',
+              color: theme.palette.text.disabled,
               fontStyle: 'italic',
               fontSize: '0.65rem',
               overflow: 'hidden',
@@ -127,24 +109,7 @@ export function ReasoningDisplay({
             — {preview}
           </Typography>
         )}
-        {isStreaming && !isExpanded && (
-          <Box
-            component="span"
-            sx={{
-              display: 'inline-block',
-              width: 5,
-              height: 12,
-              ml: 0.25,
-              flexShrink: 0,
-              backgroundColor: branding.secondaryColor,
-              animation: 'blink 1s step-end infinite',
-              '@keyframes blink': {
-                '50%': { opacity: 0 },
-              },
-            }}
-          />
-        )}
-        {isExpanded ? (
+        {expanded ? (
           <ExpandLessIcon
             sx={{ fontSize: 14, color: 'text.disabled', flexShrink: 0 }}
           />
@@ -155,14 +120,13 @@ export function ReasoningDisplay({
         )}
       </Box>
 
-      {/* Collapsible reasoning text */}
-      <Collapse in={isExpanded}>
+      <Collapse in={expanded}>
         <Box
           sx={{
             mt: 0.5,
             ml: 0.5,
             pl: 1.5,
-            borderLeft: `2px solid ${alpha(branding.secondaryColor || theme.palette.primary.main, 0.3)}`,
+            borderLeft: `2px solid ${alpha(theme.palette.text.disabled, 0.3)}`,
             maxHeight: 200,
             overflow: 'auto',
           }}
@@ -170,7 +134,7 @@ export function ReasoningDisplay({
           <Typography
             variant="body2"
             sx={{
-              color: 'text.secondary',
+              color: theme.palette.text.secondary,
               fontStyle: 'italic',
               whiteSpace: 'pre-wrap',
               fontSize: '0.8rem',
@@ -178,22 +142,6 @@ export function ReasoningDisplay({
             }}
           >
             {reasoning}
-            {isStreaming && (
-              <Box
-                component="span"
-                sx={{
-                  display: 'inline-block',
-                  width: 6,
-                  height: 14,
-                  ml: 0.5,
-                  backgroundColor: branding.secondaryColor,
-                  animation: 'blink 1s step-end infinite',
-                  '@keyframes blink': {
-                    '50%': { opacity: 0 },
-                  },
-                }}
-              />
-            )}
           </Typography>
         </Box>
       </Collapse>

@@ -17,7 +17,6 @@
 import { useEffect, useState, memo, type FC } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -26,9 +25,11 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import StreamIcon from '@mui/icons-material/Stream';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import CodeIcon from '@mui/icons-material/Code';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
-import { useStatus } from '../../hooks';
+import { useStatus, useChatViewMode } from '../../hooks';
 import type { KagentiAgentCard } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ChatAgentConfig } from '../../types';
 
@@ -64,6 +65,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
   const api = useApi(augmentApiRef);
   const { status } = useStatus();
   const isKagenti = status?.providerId === 'kagenti';
+  const { isDev, toggleMode } = useChatViewMode();
 
   const [agentCard, setAgentCard] = useState<KagentiAgentCard | null>(null);
 
@@ -249,6 +251,41 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        {/* View mode toggle */}
+        <Tooltip
+          title={isDev ? 'Switch to User mode' : 'Switch to Dev mode'}
+          placement="bottom"
+        >
+          <IconButton
+            size="small"
+            onClick={toggleMode}
+            aria-label={isDev ? 'Switch to User mode' : 'Switch to Dev mode'}
+            sx={{
+              p: 0.5,
+              borderRadius: 1.5,
+              color: isDev
+                ? theme.palette.warning.main
+                : theme.palette.text.secondary,
+              bgcolor: isDev
+                ? alpha(theme.palette.warning.main, isDark ? 0.15 : 0.08)
+                : 'transparent',
+              '&:hover': {
+                color: isDev
+                  ? theme.palette.warning.dark
+                  : theme.palette.primary.main,
+                bgcolor: isDev
+                  ? alpha(theme.palette.warning.main, 0.2)
+                  : alpha(theme.palette.primary.main, 0.08),
+              },
+            }}
+          >
+            {isDev ? (
+              <CodeIcon sx={{ fontSize: 16 }} />
+            ) : (
+              <PersonOutlineIcon sx={{ fontSize: 16 }} />
+            )}
+          </IconButton>
+        </Tooltip>
         {/* Export */}
         {onExport && (
           <Tooltip title="Export conversation" placement="bottom">
@@ -268,19 +305,24 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
         )}
         {/* Browse / Change Agent */}
         {(onBrowseAgents || onChangeAgent) && (
-          <Button
-            size="small"
-            startIcon={<SwapHorizIcon sx={{ fontSize: 14 }} />}
-            onClick={onBrowseAgents || onChangeAgent}
-            sx={{
-              textTransform: 'none',
-              fontSize: '0.75rem',
-              color: theme.palette.text.secondary,
-              '&:hover': { color: theme.palette.primary.main },
-            }}
-          >
-            Browse agents
-          </Button>
+          <Tooltip title="Browse agents" placement="bottom">
+            <IconButton
+              size="small"
+              onClick={onBrowseAgents || onChangeAgent}
+              aria-label="Browse agents"
+              sx={{
+                p: 0.5,
+                borderRadius: 1.5,
+                color: theme.palette.text.secondary,
+                '&:hover': {
+                  color: theme.palette.primary.main,
+                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                },
+              }}
+            >
+              <SwapHorizIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
         )}
       </Box>
     </Box>

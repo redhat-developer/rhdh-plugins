@@ -228,6 +228,109 @@ export function ToolCallDisplay({
 }
 
 /**
+ * Compact tool call display for user mode — single status line per tool
+ */
+export function CompactToolCallDisplay({
+  tc,
+  theme,
+  branding,
+}: {
+  tc: ToolCallState;
+  theme: Theme;
+  branding: BrandingConfig;
+}) {
+  const name = stripToolPrefix(tc.name || tc.type, tc.serverLabel);
+  const isRunning =
+    tc.status !== TOOL_STATUS.COMPLETED && tc.status !== TOOL_STATUS.FAILED;
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.75,
+        py: 0.25,
+      }}
+    >
+      {isRunning && (
+        <CircularProgress
+          size={12}
+          thickness={4}
+          sx={{ color: branding.primaryColor }}
+        />
+      )}
+      {!isRunning && tc.status === TOOL_STATUS.FAILED && (
+        <ErrorIcon sx={{ fontSize: 13, color: branding.errorColor }} />
+      )}
+      {!isRunning && tc.status !== TOOL_STATUS.FAILED && (
+        <CheckCircleIcon sx={{ fontSize: 13, color: branding.successColor }} />
+      )}
+      <BuildIcon sx={{ fontSize: 12, color: theme.palette.text.disabled }} />
+      <Typography
+        variant="caption"
+        sx={{
+          color: theme.palette.text.secondary,
+          fontSize: '0.7rem',
+          fontWeight: 500,
+        }}
+      >
+        {isRunning ? `Using ${name}\u2026` : `Used ${name}`}
+      </Typography>
+    </Box>
+  );
+}
+
+/**
+ * Compact RAG display for user mode
+ */
+export function CompactRAGDisplay({
+  filesSearched,
+  theme,
+}: {
+  filesSearched: string[];
+  theme: Theme;
+}) {
+  const hasResults = filesSearched.length > 0;
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.75,
+        py: 0.25,
+        mb: 0.5,
+      }}
+    >
+      {hasResults ? (
+        <CheckCircleIcon
+          sx={{ fontSize: 13, color: theme.palette.success.main }}
+        />
+      ) : (
+        <CircularProgress
+          size={12}
+          thickness={4}
+          sx={{ color: theme.palette.info.main }}
+        />
+      )}
+      <SearchIcon sx={{ fontSize: 12, color: theme.palette.text.disabled }} />
+      <Typography
+        variant="caption"
+        sx={{
+          color: theme.palette.text.secondary,
+          fontSize: '0.7rem',
+          fontWeight: 500,
+        }}
+      >
+        {hasResults
+          ? `Searched ${filesSearched.length} source${filesSearched.length > 1 ? 's' : ''}`
+          : 'Searching knowledge base\u2026'}
+      </Typography>
+    </Box>
+  );
+}
+
+/**
  * Renders the RAG search activity
  */
 export function RAGSearchDisplay({

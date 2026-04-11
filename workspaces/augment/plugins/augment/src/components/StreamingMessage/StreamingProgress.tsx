@@ -87,22 +87,3 @@ export function LoadingIndicator({
     </Box>
   );
 }
-
-/**
- * Renders the streaming progress indicator.
- * Use PhaseChip for the header and LoadingIndicator for the content area.
- */
-export function StreamingProgress(props: Readonly<StreamingProgressProps>) {
-  return (
-    <>
-      <PhaseChip
-        phaseLabel={props.phaseLabel}
-        phaseColor={props.phaseColor}
-        completed={props.completed}
-      />
-      {props.showLoading && (
-        <LoadingIndicator phase={props.phase} phaseColor={props.phaseColor} />
-      )}
-    </>
-  );
-}
