@@ -160,6 +160,9 @@ const mockNotebooksApi = {
   listDocuments: jest.fn().mockResolvedValue([]),
   deleteDocument: jest.fn().mockResolvedValue(undefined),
   getDocumentStatus: jest.fn().mockResolvedValue({}),
+  querySession: jest.fn().mockResolvedValue({
+    read: jest.fn().mockResolvedValue({ done: true, value: undefined }),
+  }),
 };
 
 const setupLightspeedChat = () => (

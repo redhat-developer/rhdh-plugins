@@ -18,49 +18,30 @@ import { useApi } from '@backstage/core-plugin-api';
 
 import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 
-import { lightspeedApiRef } from '../api/api';
-import { Attachment } from '../types';
+import { notebooksApiRef } from '../../api/notebooksApi';
 
-export type CreateMessageVariables = {
+export type CreateNotebookMessageVariables = {
   prompt: string;
-  selectedModel: string;
-  selectedProvider: string;
-  currentConversation: string;
-  attachments: Attachment[];
+  sessionId: string;
 };
 
-export const useCreateConversationMessage = (): UseMutationResult<
+export const useCreateNotebookMessage = (): UseMutationResult<
   ReadableStreamDefaultReader<Uint8Array>,
   Error,
-  CreateMessageVariables
+  CreateNotebookMessageVariables
 > => {
-  const lightspeedApi = useApi(lightspeedApiRef);
+  const notebooksApi = useApi(notebooksApiRef);
 
   return useMutation({
     mutationFn: async ({
       prompt,
-      selectedModel,
-      selectedProvider,
-      currentConversation,
-      attachments,
-    }: {
-      prompt: string;
-      selectedModel: string;
-      selectedProvider: string;
-      currentConversation: string;
-      attachments: Attachment[];
-    }) => {
-      if (!currentConversation) {
+      sessionId,
+    }: CreateNotebookMessageVariables) => {
+      if (!sessionId) {
         throw new Error('Failed to generate AI response');
       }
 
-      return await lightspeedApi.createMessage(
-        `${prompt}`,
-        selectedModel,
-        selectedProvider,
-        currentConversation,
-        attachments,
-      );
+      return await notebooksApi.querySession(sessionId, prompt);
     },
     onError: error => {
       // eslint-disable-next-line

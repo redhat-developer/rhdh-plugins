@@ -72,6 +72,14 @@ export async function createNotebooksRouter(
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
 
+  const notebookModel =
+    config.getOptionalString('lightspeed.aiNotebooks.queryDefaults.model') ??
+    '';
+  const notebookProvider =
+    config.getOptionalString(
+      'lightspeed.aiNotebooks.queryDefaults.provider_id',
+    ) ?? '';
+
   logger.info(
     `AI Notebooks connecting to Llama Stack at http://0.0.0.0:${llamaStackPort}`,
   );
@@ -400,7 +408,10 @@ export async function createNotebooksRouter(
       const session = await sessionService.readSession(sessionId, userId);
       const existingConversationId = session.metadata?.conversation_id;
 
+      req.body.model = notebookModel;
+      req.body.provider = notebookProvider;
       req.body.vector_store_ids = [sessionId];
+      req.body.media_type = 'application/json';
 
       if (existingConversationId) {
         req.body.conversation_id = existingConversationId;

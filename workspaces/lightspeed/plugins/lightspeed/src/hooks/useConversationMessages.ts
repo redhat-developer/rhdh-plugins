@@ -40,7 +40,10 @@ import {
   getTimestamp,
   transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
-import { useCreateConversationMessage } from './useCreateCoversationMessage';
+import {
+  CreateMessageVariables,
+  useCreateConversationMessage,
+} from './useCreateCoversationMessage';
 
 // Fetch all conversation messages
 export const useFetchConversationMessages = (
@@ -103,8 +106,12 @@ export const useConversationMessages = (
   avatar: string = userAvatar,
   onComplete?: (message: string) => void,
   onStart?: (conversation_id: string) => void,
+  createMessageOverride?: (
+    vars: CreateMessageVariables,
+  ) => Promise<ReadableStreamDefaultReader<Uint8Array>>,
 ): UseConversationMessagesReturn => {
-  const { mutateAsync: createMessage } = useCreateConversationMessage();
+  const { mutateAsync: defaultCreateMessage } = useCreateConversationMessage();
+  const createMessage = createMessageOverride ?? defaultCreateMessage;
   const scrollToBottomRef = useRef<ScrollContainerHandle>(null);
 
   const [currentConversation, setCurrentConversation] =
