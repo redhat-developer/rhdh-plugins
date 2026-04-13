@@ -410,7 +410,6 @@ describe('JobResourceBuilder', () => {
       kind: 'Job',
       name: 'job-x2a-init-abc123',
       uid: 'test-uid-123',
-      blockOwnerDeletion: true,
     };
 
     it('should include source repository credentials', () => {
