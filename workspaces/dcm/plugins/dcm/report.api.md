@@ -5,19 +5,40 @@
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { PathParams } from '@backstage/core-plugin-api';
 import { RouteRef } from '@backstage/core-plugin-api';
+import { SubRouteRef } from '@backstage/core-plugin-api';
+import { Theme } from '@material-ui/core/styles';
 
 // @public
-export const DcmPage: () => JSX_2.Element;
+export const DcmPage: Router;
 
 // @public
 export const dcmPlugin: BackstagePlugin<
   {
     root: RouteRef<undefined>;
+    serviceSpecs: SubRouteRef<undefined>;
+    environmentDetails: SubRouteRef<PathParams<'/environments/:id'>>;
+    serviceSpecDetails: SubRouteRef<PathParams<'/service-specs/:id'>>;
   },
   {},
   {}
 >;
+
+// @public
+export function isDarkMode(theme: Theme): boolean;
+
+// @public
+export const RhdhLogoFull: () => JSX_2.Element;
+
+// @public
+export const RhdhLogoIcon: () => JSX_2.Element;
+
+// @public
+export function Router(): JSX_2.Element;
+
+// @public
+export function useIsDarkMode(): boolean;
 
 // (No @packageDocumentation comment for this package)
 ```

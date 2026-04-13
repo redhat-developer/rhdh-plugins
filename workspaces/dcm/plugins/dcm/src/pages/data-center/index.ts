@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { Router } from './Router';
-export { dcmPlugin, DcmPage } from './plugin';
-export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
-export { RhdhLogoFull } from './components/RhdhLogoFull';
-export { RhdhLogoIcon } from './components/RhdhLogoIcon';
+
+export { DataCenterPage } from './DataCenterPage';
+export { EnvironmentsTabContent } from './EnvironmentsTabContent';
+export { ServiceSpecsTabContent } from '../service-spec';
+export type { Environment } from '../../data/environments';
+export type { ServiceSpec } from '../../data/service-specs';
