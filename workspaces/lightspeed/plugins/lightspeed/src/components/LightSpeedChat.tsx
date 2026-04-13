@@ -965,53 +965,91 @@ export const LightspeedChat = ({
       return undefined;
     }
 
-    const getScrollTarget = () =>
-      (scrollContainer.querySelector(
+    const getMessageBox = () =>
+      scrollContainer.querySelector(
         '.pf-chatbot__messagebox',
-      ) as HTMLElement | null) ?? scrollContainer;
+      ) as HTMLElement | null;
+
+    const messageBoxOwnsScroll = (messageBox: HTMLElement | null) => {
+      if (!messageBox || typeof window === 'undefined') {
+        return false;
+      }
+      const overflowY = window.getComputedStyle(messageBox).overflowY;
+      return (
+        overflowY === 'auto' ||
+        overflowY === 'scroll' ||
+        overflowY === 'overlay'
+      );
+    };
+
+    const getScrollTarget = () => {
+      const messageBox = getMessageBox();
+      return messageBoxOwnsScroll(messageBox) ? messageBox! : scrollContainer;
+    };
+
+    let observedScrollTarget: HTMLElement | null = getScrollTarget();
+    let rafId: number | null = null;
+    let updateScheduled = false;
 
     const updateOverflow = () => {
-      const scrollTarget = getScrollTarget();
+      const scrollTarget = observedScrollTarget ?? scrollContainer;
       setHasChatContentOverflow(
         scrollTarget.scrollHeight > scrollTarget.clientHeight + 1,
       );
     };
 
-    updateOverflow();
+    const scheduleOverflowUpdate = () => {
+      if (updateScheduled) {
+        return;
+      }
+      updateScheduled = true;
+      if (typeof requestAnimationFrame !== 'undefined') {
+        rafId = requestAnimationFrame(() => {
+          updateScheduled = false;
+          updateOverflow();
+        });
+      } else {
+        updateScheduled = false;
+        updateOverflow();
+      }
+    };
+
+    scheduleOverflowUpdate();
 
     // Use capture so scroll events from inner messagebox also trigger updates.
-    scrollContainer.addEventListener('scroll', updateOverflow, {
+    scrollContainer.addEventListener('scroll', scheduleOverflowUpdate, {
       passive: true,
       capture: true,
     });
 
     const resizeObserver =
       typeof ResizeObserver !== 'undefined'
-        ? new ResizeObserver(() => updateOverflow())
+        ? new ResizeObserver(() => scheduleOverflowUpdate())
         : undefined;
     resizeObserver?.observe(scrollContainer);
-    let observedScrollTarget: HTMLElement | null = getScrollTarget();
     if (observedScrollTarget !== scrollContainer) {
       resizeObserver?.observe(observedScrollTarget);
     }
 
+    const syncObservedScrollTarget = () => {
+      const nextScrollTarget = getScrollTarget();
+      if (nextScrollTarget === observedScrollTarget) {
+        return;
+      }
+      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
+        resizeObserver?.unobserve(observedScrollTarget);
+      }
+      if (nextScrollTarget !== scrollContainer) {
+        resizeObserver?.observe(nextScrollTarget);
+      }
+      observedScrollTarget = nextScrollTarget;
+    };
+
     const mutationObserver =
       typeof MutationObserver !== 'undefined'
         ? new MutationObserver(() => {
-            const nextScrollTarget = getScrollTarget();
-            if (nextScrollTarget !== observedScrollTarget) {
-              if (
-                observedScrollTarget &&
-                observedScrollTarget !== scrollContainer
-              ) {
-                resizeObserver?.unobserve(observedScrollTarget);
-              }
-              if (nextScrollTarget !== scrollContainer) {
-                resizeObserver?.observe(nextScrollTarget);
-              }
-              observedScrollTarget = nextScrollTarget;
-            }
-            updateOverflow();
+            syncObservedScrollTarget();
+            scheduleOverflowUpdate();
           })
         : undefined;
     mutationObserver?.observe(scrollContainer, {
@@ -1025,7 +1063,14 @@ export const LightspeedChat = ({
     }
 
     return () => {
-      scrollContainer.removeEventListener('scroll', updateOverflow, true);
+      if (rafId !== null && typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(rafId);
+      }
+      scrollContainer.removeEventListener(
+        'scroll',
+        scheduleOverflowUpdate,
+        true,
+      );
       if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
         resizeObserver?.unobserve(observedScrollTarget);
       }
