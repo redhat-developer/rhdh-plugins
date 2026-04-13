@@ -29,7 +29,7 @@ import {
   aggregatedCardWithGithubOpenPrsWidget,
   aggregatedCardWithJiraOpenIssuesWidget,
 } from './extensions/homePageCards';
-import { scorecardDrillDownPage } from './extensions/drillDownPage';
+import { scorecardPage } from './extensions/drillDownPage';
 
 /**
  * Extension for Scorecard translations.
@@ -46,7 +46,7 @@ const scorecardTranslation = TranslationBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'scorecard',
-  extensions: [scorecardApi, scorecardDrillDownPage],
+  extensions: [scorecardApi, scorecardPage],
   routes: {
     root: rootRouteRef,
     drillDown: scorecardDrillDownRouteRef,

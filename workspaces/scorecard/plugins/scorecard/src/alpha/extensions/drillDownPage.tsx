@@ -21,7 +21,7 @@ import { scorecardDrillDownRouteRef } from '../../routes';
  * NFS page extension for the Scorecard drill-down page.
  * @alpha
  */
-export const scorecardDrillDownPage = PageBlueprint.make({
+export const scorecardPage = PageBlueprint.make({
   params: {
     path: '/scorecard/aggregations/:aggregationId/metrics/:metricId',
     routeRef: scorecardDrillDownRouteRef,

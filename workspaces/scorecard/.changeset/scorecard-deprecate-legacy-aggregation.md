@@ -1,7 +1,7 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend': patch
-'@red-hat-developer-hub/backstage-plugin-scorecard-common': patch
-'@red-hat-developer-hub/backstage-plugin-scorecard': patch
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend': minor
+'@red-hat-developer-hub/backstage-plugin-scorecard-common': minor
+'@red-hat-developer-hub/backstage-plugin-scorecard': minor
 ---
 
 Aggregated scorecards now use **aggregation IDs** and dedicated HTTP routes. The old catalog-aggregations URL still works but is **deprecated** (not removed).
