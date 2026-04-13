@@ -30,8 +30,10 @@ import { ScorecardPageHeader } from './ScorecardPageHeader';
 import { EntitiesTable } from './EntitiesTable/EntitiesTable';
 
 export const ScorecardPage = () => {
-  const { metricId } = useParams<{ metricId?: string }>();
-
+  const { aggregationId = '', metricId = '' } = useParams<{
+    aggregationId: string;
+    metricId: string;
+  }>();
   const [metricTitle, setMetricTitle] = useState<string>('');
   const [metricNotFound, setMetricNotFound] = useState<boolean>(false);
 
@@ -54,7 +56,12 @@ export const ScorecardPage = () => {
   return (
     <Page themeId="home">
       <ScorecardPageHeader
-        title={finalTitle || metricId || t('entitiesPage.unknownMetric')}
+        title={
+          finalTitle ||
+          metricId ||
+          aggregationId ||
+          t('entitiesPage.unknownMetric')
+        }
       />
       <Divider />
       <Content>
@@ -94,7 +101,8 @@ export const ScorecardPage = () => {
             }}
           >
             <ScorecardHomepageCard
-              metricId={metricId as string}
+              aggregationId={aggregationId}
+              metricId={metricId}
               showSubheader={false}
               showInfo={false}
             />

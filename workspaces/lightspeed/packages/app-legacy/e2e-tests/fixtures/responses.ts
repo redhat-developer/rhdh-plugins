@@ -162,3 +162,56 @@ export const generateQueryResponse = (conversationId: string) => {
     .map(({ event, data }) => `data: ${JSON.stringify({ event, data })}\n\n`)
     .join('')}\n`;
 };
+
+const e2eMcpToolCallId = 'mcp_list_e2e-00000000-0000-4000-8000-000000000001';
+
+/** SSE with `tool_call` / `tool_result` then assistant tokens (same wire format as {@link generateQueryResponse}). */
+export function generateQueryResponseWithMcpToolCall(
+  conversationId: string,
+): string {
+  const events: {
+    event: string;
+    data?: Record<string, any>;
+    done?: boolean;
+  }[] = [];
+
+  events.push({
+    event: 'start',
+    data: {
+      conversation_id: conversationId,
+      request_id: mockStreamRequestId,
+    },
+  });
+  events.push({
+    event: 'tool_call',
+    data: {
+      id: e2eMcpToolCallId,
+      name: 'mcp_list_tools',
+      args: { server_label: 'mcp-integration-tools' },
+      type: 'mcp_list_tools',
+    },
+  });
+  events.push({
+    event: 'tool_result',
+    data: {
+      id: e2eMcpToolCallId,
+      status: 'success',
+      content: '{"server_label":"mcp-integration-tools","tools":[]}',
+    },
+  });
+
+  const tokens = assistantResponse.match(/(\s+|[^\s]+)/g) || [
+    assistantResponse,
+  ];
+  tokens.forEach((token, index) => {
+    events.push({
+      event: 'token',
+      data: { id: index, token, role: 'inference' },
+    });
+  });
+  events.push({ event: 'end', done: true });
+
+  return `${events
+    .map(({ event, data }) => `data: ${JSON.stringify({ event, data })}\n\n`)
+    .join('')}\n`;
+}

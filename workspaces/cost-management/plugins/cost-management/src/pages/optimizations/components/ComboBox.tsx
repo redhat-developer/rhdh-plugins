@@ -85,7 +85,8 @@ export function ComboBox<
   FreeSolo extends boolean | undefined = undefined,
 >(props: ComboBoxProps<T, Multiple, DisableClearable, FreeSolo>) {
   const classes = useComboBoxStyles();
-  const [_text, setText] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   return (
     <Box className={classes.root} pb={1} pt={1}>
@@ -94,18 +95,16 @@ export function ComboBox<
       </Typography>
       <Autocomplete<T, Multiple, DisableClearable, FreeSolo>
         {...props}
+        open={isOpen && props.options.length > 0}
+        onOpen={() => setIsOpen(true)}
+        onClose={() => setIsOpen(false)}
+        inputValue={inputValue}
+        onInputChange={(_, value) => setInputValue(value)}
         disableCloseOnSelect={props.multiple}
         includeInputInList
         popupIcon={<ExpandMoreIcon data-testid="expand-icon" />}
         renderInput={params => (
-          <TextField
-            {...params}
-            className={classes.input}
-            onChange={e => {
-              setText(e.currentTarget.value);
-            }}
-            variant="outlined"
-          />
+          <TextField {...params} className={classes.input} variant="outlined" />
         )}
         renderOption={(option, { selected }) =>
           !props.freeSolo ? (

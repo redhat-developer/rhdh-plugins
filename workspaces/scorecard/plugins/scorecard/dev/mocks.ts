@@ -16,21 +16,24 @@
 
 import { InMemoryCatalogClient } from '@backstage/catalog-client/testUtils';
 import type { Entity } from '@backstage/catalog-model';
-import type {
-  MetricResult,
-  AggregatedMetricResult,
-  Metric,
-  EntityMetricDetailResponse,
+import {
+  type MetricResult,
+  type AggregatedMetricResult,
+  type Metric,
+  type EntityMetricDetailResponse,
+  type AggregationMetadata,
+  aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import type { GetAggregatedScorecardEntitiesOptions } from '../src/components/types';
 
 import {
+  mockAggregatedScorecardData,
   mockScorecardErrorData,
   mockScorecardSuccessData,
 } from '../__fixtures__/scorecardData';
-import { mockAggregatedScorecardSuccessData } from '../__fixtures__/aggregatedScorecardData';
 import { mockAggregatedScorecardEntitiesData } from '../__fixtures__/aggregatedScorecardEntitiesData';
+import { ScorecardApi, ScorecardOptions } from '../src/api/types';
 
 /** mock catalog entity so the Catalog shows one entity and the Scorecard tab can be opened. */
 export const mockComponentEntity: Entity = {
@@ -51,15 +54,19 @@ export const mockCatalogApi = new InMemoryCatalogClient({
   entities: [mockComponentEntity],
 });
 
-export class MockScorecardApi {
-  async getScorecards(_entity: Entity): Promise<MetricResult[]> {
+export class MockScorecardApi implements ScorecardApi {
+  async getBaseUrl(): Promise<string> {
+    return 'https://example.com';
+  }
+
+  async getScorecards(_options: ScorecardOptions): Promise<MetricResult[]> {
     return [...mockScorecardSuccessData, ...mockScorecardErrorData];
   }
 
   async getAggregatedScorecard(
-    _metricId: string,
+    _aggregationId: string,
   ): Promise<AggregatedMetricResult> {
-    return mockAggregatedScorecardSuccessData;
+    return mockAggregatedScorecardData[aggregationTypes.statusGrouped];
   }
 
   async getMetrics(_options: {
@@ -86,5 +93,17 @@ export class MockScorecardApi {
       options.page ?? 1,
       options.pageSize ?? 10,
     ) as EntityMetricDetailResponse;
+  }
+
+  async getAggregationMetadata(
+    _aggregationId: string,
+  ): Promise<AggregationMetadata> {
+    return {
+      title: 'GitHub open issues',
+      description: 'GitHub open issues',
+      type: 'number',
+      history: true,
+      aggregationType: aggregationTypes.statusGrouped,
+    };
   }
 }

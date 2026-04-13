@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  AggregatedMetricResult,
+  DEFAULT_NUMBER_THRESHOLDS,
+  MetricResult,
+  aggregationTypes,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const mockScorecardSuccessData = [
   {
@@ -127,3 +132,28 @@ export const mockScorecardErrorData = [
     },
   },
 ] as MetricResult[];
+
+export const mockAggregatedScorecardData = {
+  [aggregationTypes.statusGrouped]: {
+    id: 'github.open_prs',
+    status: 'success',
+    metadata: {
+      title: 'GitHub open PRs',
+      description:
+        'Current count of open Pull Requests for a given GitHub repository.',
+      type: 'number',
+      history: true,
+      aggregationType: aggregationTypes.statusGrouped,
+    },
+    result: {
+      values: [
+        { count: 11, name: 'success' },
+        { count: 14, name: 'warning' },
+        { count: 12, name: 'error' },
+      ],
+      total: 37,
+      timestamp: '2024-01-15T10:30:00Z',
+      thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    },
+  } as AggregatedMetricResult,
+};

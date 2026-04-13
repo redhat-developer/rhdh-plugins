@@ -4,7 +4,9 @@ The Scorecard plugin provides a drill-down endpoint that returns detailed entity
 
 ## Overview
 
-The drill-down endpoint (`/metrics/:metricId/catalog/aggregations/entities`) provides a detailed view of entities and their metric values. It allows managers and platform engineers to:
+High-level aggregation for homepage KPIs uses **`GET /aggregations/:aggregationId`** (see [aggregation.md](./aggregation.md)). Drill-down is **metric-scoped**: the endpoint **`/metrics/:metricId/catalog/aggregations/entities`** lists entities and values for a single **metric id** (not a KPI id).
+
+The drill-down endpoint provides a detailed view of entities and their metric values. It allows managers and platform engineers to:
 
 - See individual entities contributing to aggregated scores
 - Filter entities by status (success/warning/error), owner, kind, namespace, or entity ref substring

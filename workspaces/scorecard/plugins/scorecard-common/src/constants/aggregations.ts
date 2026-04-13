@@ -14,21 +14,8 @@
  * limitations under the License.
  */
 
-import { z } from 'zod';
-import { InputError } from '@backstage/errors';
+const STATUS_GROUPED = 'statusGrouped' as const;
 
-export function validateCatalogMetricsSchema(query: unknown): {
-  metricIds?: string;
-} {
-  const catalogMetricsSchema = z.object({
-    metricIds: z.string().min(1).optional(),
-  });
-
-  const parsed = catalogMetricsSchema.safeParse(query);
-
-  if (!parsed.success) {
-    throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
-  }
-
-  return parsed.data;
-}
+export const aggregationTypes = Object.freeze({
+  statusGrouped: STATUS_GROUPED,
+});

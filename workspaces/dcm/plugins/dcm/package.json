@@ -14,6 +14,7 @@
     "url": "https://github.com/redhat-developer/rhdh-plugins",
     "directory": "workspaces/dcm/plugins/dcm"
   },
+  "configSchema": "config.d.ts",
   "backstage": {
     "role": "frontend-plugin",
     "pluginId": "dcm",
@@ -40,6 +41,7 @@
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "4.0.0-alpha.61",
+    "@red-hat-developer-hub/backstage-plugin-dcm-common": "workspace:^",
     "react-use": "^17.2.4"
   },
   "peerDependencies": {
