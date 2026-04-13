@@ -77,6 +77,9 @@ export type GitRepo = {
     token: string;
 };
 
+// @public
+export function isUserCredentials(credentials: BackstageCredentials): credentials is BackstageCredentials<BackstageUserPrincipal>;
+
 // @public (undocumented)
 export interface JobCreateParams {
     // (undocumented)
@@ -151,7 +154,50 @@ export interface ReconcileJobDeps {
 export function reconcileJobStatus(job: Job, deps: ReconcileJobDeps): Promise<Job>;
 
 // @public (undocumented)
+export const SYSTEM_USER_REF = "user:default/system";
+
+// @public (undocumented)
 export const X2A_DATABASE_SERVICE_ID = "x2a-database";
+
+// @public
+export interface X2AConfig {
+    // (undocumented)
+    credentials: {
+        llm: Record<string, string>;
+        aap?: {
+            url: string;
+            orgName: string;
+            oauthToken?: string;
+            username?: string;
+            password?: string;
+            skipSSLVerification?: boolean;
+        };
+    };
+    // (undocumented)
+    git?: {
+        author?: {
+            name: string;
+            email: string;
+        };
+    };
+    // (undocumented)
+    kubernetes: {
+        namespace: string;
+        image: string;
+        imageTag: string;
+        ttlSecondsAfterFinished: number;
+        resources: {
+            requests: {
+                cpu: string;
+                memory: string;
+            };
+            limits: {
+                cpu: string;
+                memory: string;
+            };
+        };
+    };
+}
 
 // @public
 export interface X2ADatabaseServiceApi {

@@ -99,8 +99,6 @@ backend.add(import('@red-hat-developer-hub/backstage-plugin-x2a-mcp-extras'));
 
 ### 3. Configure MCP action sources
 
-TODO: review following before PR review
-
 In `app-config.yaml`:
 
 ```yaml

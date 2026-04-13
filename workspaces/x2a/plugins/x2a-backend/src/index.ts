@@ -40,23 +40,3 @@ export { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 export { x2aDatabaseServiceFactory } from './services/X2ADatabaseService';
 export { kubeServiceRef } from './services/KubeService';
 export { kubeServiceFactory } from './services/KubeService';
-
-// Re-export from x2a-node for backward compatibility
-export type {
-  JobStatusInfo,
-  AAPCredentials,
-  GitRepo,
-  JobCreateParams,
-  CreateJobInput,
-  ReconcileJobDeps,
-  X2ADatabaseServiceApi,
-  KubeServiceApi,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-export {
-  getUserRef,
-  getGroupsOfUser,
-  reconcileJobStatus,
-  generateCallbackToken,
-  X2A_DATABASE_SERVICE_ID,
-  KUBE_SERVICE_ID,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-node';

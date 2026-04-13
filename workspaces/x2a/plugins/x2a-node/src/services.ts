@@ -31,6 +31,48 @@ import type {
   ProjectsGet,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
+/**
+ * X2A configuration structure.
+ * Runtime type extracted from `app-config.yaml` under the `x2a` key.
+ * Defaults for optional values are defined in `x2a-backend/src/services/constants.ts`.
+ * @public
+ */
+export interface X2AConfig {
+  kubernetes: {
+    namespace: string;
+    image: string;
+    imageTag: string;
+    ttlSecondsAfterFinished: number;
+    resources: {
+      requests: {
+        cpu: string;
+        memory: string;
+      };
+      limits: {
+        cpu: string;
+        memory: string;
+      };
+    };
+  };
+  git?: {
+    author?: {
+      name: string;
+      email: string;
+    };
+  };
+  credentials: {
+    llm: Record<string, string>;
+    aap?: {
+      url: string;
+      orgName: string;
+      oauthToken?: string;
+      username?: string;
+      password?: string;
+      skipSSLVerification?: boolean;
+    };
+  };
+}
+
 /** @public */
 export interface JobStatusInfo {
   status: 'pending' | 'running' | 'success' | 'error';

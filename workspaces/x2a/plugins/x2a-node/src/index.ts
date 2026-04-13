@@ -15,6 +15,7 @@
  */
 
 export type {
+  X2AConfig,
   X2ADatabaseServiceApi,
   KubeServiceApi,
   ReconcileJobDeps,
@@ -33,6 +34,8 @@ export {
 } from './services';
 
 export {
+  SYSTEM_USER_REF,
+  isUserCredentials,
   getUserRef,
   getGroupsOfUser,
   reconcileJobStatus,

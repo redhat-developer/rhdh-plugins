@@ -17,7 +17,7 @@
     "openapi-generate": "cd plugins/x2a-backend && yarn openapi-generate",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
-    "clean": "backstage-cli repo clean",
+    "clean": "backstage-cli repo clean && find plugins -mindepth 2 -maxdepth 2 -type d -name dist-dynamic -exec rm -rf {} +",
     "test": "backstage-cli repo test",
     "test:pg": "CI=true backstage-cli repo test",
     "test:all": "yarn openapi-generate && yarn prettier:check && yarn lint:all && backstage-cli repo test --coverage",

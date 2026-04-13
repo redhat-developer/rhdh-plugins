@@ -25,17 +25,33 @@ import type { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { ReconcileJobDeps } from './services';
 
+/** @public */
+export const SYSTEM_USER_REF = 'user:default/system';
+
+/**
+ * Type guard: narrows generic BackstageCredentials to a user principal.
+ * @public
+ */
+export function isUserCredentials(
+  credentials: BackstageCredentials,
+): credentials is BackstageCredentials<BackstageUserPrincipal> {
+  return (
+    typeof (credentials?.principal as { userEntityRef?: unknown })
+      ?.userEntityRef === 'string'
+  );
+}
+
 /**
  * Safely extracts user reference from credentials with fallback.
- * Accepts any BackstageCredentials type: returns the real userEntityRef for
- * user principals and 'user:default/system' for service/other principals.
+ * Returns the real userEntityRef for user principals and
+ * {@link SYSTEM_USER_REF} for service/other principals.
  * @public
  */
 export function getUserRef(credentials: BackstageCredentials): string {
-  const principal = credentials?.principal as
-    | BackstageUserPrincipal
-    | undefined;
-  return principal?.userEntityRef ?? 'user:default/system';
+  if (isUserCredentials(credentials)) {
+    return credentials.principal.userEntityRef;
+  }
+  return SYSTEM_USER_REF;
 }
 
 /**

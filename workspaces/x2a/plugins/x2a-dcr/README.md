@@ -37,7 +37,7 @@ yarn workspace app add @red-hat-developer-hub/backstage-plugin-x2a-dcr
 import { DcrConsentPage } from '@red-hat-developer-hub/backstage-plugin-x2a-dcr';
 
 // Inside <FlatRoutes>:
-<Route path="/oauth2" element={<DcrConsentPage />} />;
+<Route path="/oauth2/*" element={<DcrConsentPage />} />;
 ```
 
 ### RHDH dynamic plugin deployment

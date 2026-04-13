@@ -4,61 +4,21 @@
 
 ```ts
 
-import { AAPCredentials } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { BackendFeature } from '@backstage/backend-plugin-api';
-import { CreateJobInput } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-import { generateCallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-import { getGroupsOfUser } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-import { getUserRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-import { GitRepo } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-import { JobCreateParams } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-import { JobStatusInfo } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-import { KUBE_SERVICE_ID } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { KubeServiceApi } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { kubeServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-import { ReconcileJobDeps } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-import { reconcileJobStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { ServiceFactory } from '@backstage/backend-plugin-api';
-import { X2A_DATABASE_SERVICE_ID } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { X2ADatabaseServiceApi } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { x2aDatabaseServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-
-export { AAPCredentials }
-
-export { CreateJobInput }
 
 // @public
 const _default: BackendFeature;
 export default _default;
 
-export { generateCallbackToken }
-
-export { getGroupsOfUser }
-
-export { getUserRef }
-
-export { GitRepo }
-
-export { JobCreateParams }
-
-export { JobStatusInfo }
-
-export { KUBE_SERVICE_ID }
-
-export { KubeServiceApi }
-
 // @public
 export const kubeServiceFactory: ServiceFactory<KubeServiceApi, "plugin", "singleton">;
 
 export { kubeServiceRef }
-
-export { ReconcileJobDeps }
-
-export { reconcileJobStatus }
-
-export { X2A_DATABASE_SERVICE_ID }
-
-export { X2ADatabaseServiceApi }
 
 // @public
 export const x2aDatabaseServiceFactory: ServiceFactory<X2ADatabaseServiceApi, "root", "singleton">;

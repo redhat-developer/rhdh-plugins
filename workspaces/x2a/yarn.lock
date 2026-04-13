@@ -3939,7 +3939,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-common@npm:^0.9.1, @backstage/plugin-permission-common@npm:^0.9.3, @backstage/plugin-permission-common@npm:^0.9.4, @backstage/plugin-permission-common@npm:^0.9.5, @backstage/plugin-permission-common@npm:^0.9.6, @backstage/plugin-permission-common@npm:^0.9.7":
+"@backstage/plugin-permission-common@npm:^0.9.1, @backstage/plugin-permission-common@npm:^0.9.3, @backstage/plugin-permission-common@npm:^0.9.5, @backstage/plugin-permission-common@npm:^0.9.6, @backstage/plugin-permission-common@npm:^0.9.7":
   version: 0.9.7
   resolution: "@backstage/plugin-permission-common@npm:0.9.7"
   dependencies:
@@ -11985,7 +11985,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:*, @red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:plugins/x2a-backend":
+"@red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:*, @red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:plugins/x2a-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:plugins/x2a-backend"
   dependencies:
@@ -12067,9 +12067,11 @@ __metadata:
     "@backstage/cli": "npm:^0.34.5"
     "@backstage/errors": "npm:^1.2.7"
     "@backstage/plugin-catalog-node": "npm:^1.20.0"
-    "@backstage/plugin-permission-common": "npm:^0.9.4"
+    "@backstage/plugin-permission-common": "npm:^0.9.3"
+    "@red-hat-developer-hub/backstage-plugin-x2a-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-x2a-node": "workspace:^"
+    better-sqlite3: "npm:^12.0.0"
   languageName: unknown
   linkType: soft
 

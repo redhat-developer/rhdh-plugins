@@ -481,6 +481,10 @@ export const x2aDatabaseServiceFactory = createServiceFactory({
     lifecycle: coreServices.rootLifecycle,
   },
   async factory(deps) {
+    // coreServices.database is plugin-scoped, but this ref is root-scoped
+    // (shared across plugins). We construct DatabaseManager directly so the
+    // factory can be registered at root scope while still targeting the 'x2a'
+    // plugin database.
     const dbManager = DatabaseManager.fromConfig(deps.config, {
       rootLogger: deps.logger,
       rootLifecycle: deps.lifecycle,

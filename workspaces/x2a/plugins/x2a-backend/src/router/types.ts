@@ -22,9 +22,10 @@ import type {
   RootConfigService,
 } from '@backstage/backend-plugin-api';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
-import type { Expand } from '@backstage/types';
-import type { X2ADatabaseService } from '../services/X2ADatabaseService';
-import type { KubeService } from '../services/KubeService';
+import type {
+  X2ADatabaseServiceApi,
+  KubeServiceApi,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 export type { ReconcileJobDeps } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
@@ -32,8 +33,8 @@ export interface RouterDeps {
   httpAuth: HttpAuthService;
   discoveryApi: DiscoveryService;
   catalog: CatalogService;
-  x2aDatabase: Expand<X2ADatabaseService>;
-  kubeService: Expand<KubeService>;
+  x2aDatabase: X2ADatabaseServiceApi;
+  kubeService: KubeServiceApi;
   logger: LoggerService;
   permissionsSvc: PermissionsService;
   config: RootConfigService;
