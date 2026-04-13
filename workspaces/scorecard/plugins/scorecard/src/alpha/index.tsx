@@ -29,7 +29,7 @@ import {
   aggregatedCardWithGithubOpenPrsWidget,
   aggregatedCardWithJiraOpenIssuesWidget,
 } from './extensions/homePageCards';
-import { scorecardPage } from './extensions/drillDownPage';
+import { scorecardPage } from './extensions/scorecardPage';
 
 /**
  * Extension for Scorecard translations.
