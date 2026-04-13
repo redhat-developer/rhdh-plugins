@@ -14,58 +14,91 @@
  * limitations under the License.
  */
 
+import { useMemo } from 'react';
 import { ResponseErrorPanel } from '@backstage/core-components';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyStatePanel } from './EmptyStatePanel';
+import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
+import { CardLoading } from '../Common/CardLoading';
+import { useAggregationMetadata } from '../../hooks/useAggregationMetadata';
 
 export const ErrorStatePanel = ({
   error,
-  metricId,
+  aggregationId,
   showSubheader = true,
+  cardDataTestId,
 }: {
   error: Error;
-  metricId: string;
+  aggregationId: string;
   showSubheader?: boolean;
+  cardDataTestId?: string;
 }) => {
   const { t } = useTranslation();
 
-  const isMissingPermission = error.message?.includes('NotAllowedError');
+  const {
+    data,
+    isLoading,
+    error: metadataError,
+  } = useAggregationMetadata(aggregationId);
 
-  if (isMissingPermission) {
-    return (
-      <EmptyStatePanel
-        metricId={metricId}
-        label={t('errors.missingPermission')}
-        tooltipContent={t('errors.missingPermissionMessage')}
-        showSubheader={showSubheader}
-      />
+  const { title: cardTitle, description: cardDescription } =
+    useMetricDisplayLabels({
+      id: aggregationId,
+      title: data?.title ?? '',
+      description: data?.description ?? '',
+    });
+
+  const getErrorPanelContent = useMemo(() => {
+    const isMissingPermission = error.message?.includes('NotAllowedError');
+    if (isMissingPermission) {
+      return {
+        label: t('errors.missingPermission'),
+        tooltipContent: t('errors.missingPermissionMessage'),
+      };
+    }
+
+    const isUserNotFoundInCatalog =
+      error.message?.includes('NotFoundError') &&
+      error.message?.includes('User entity not found in catalog');
+    if (isUserNotFoundInCatalog) {
+      return {
+        label: t('errors.metricDataUnavailable'),
+        tooltipContent: t('errors.userNotFoundInCatalogMessage'),
+      };
+    }
+
+    const isAuthenticationError = error.message?.includes(
+      'AuthenticationError',
     );
+    if (isAuthenticationError) {
+      return {
+        label: t('errors.authenticationError'),
+        tooltipContent: t('errors.authenticationErrorMessage'),
+      };
+    }
+
+    return { label: '', tooltipContent: '' };
+  }, [error, t]);
+
+  if (isLoading) {
+    return <CardLoading dataTestId={cardDataTestId} />;
   }
 
-  const isUserNotFoundInCatalog =
-    error.message?.includes('NotFoundError') &&
-    error.message?.includes('User entity not found in catalog');
-
-  if (isUserNotFoundInCatalog) {
-    return (
-      <EmptyStatePanel
-        metricId={metricId}
-        label={t('errors.metricDataUnavailable')}
-        tooltipContent={t('errors.userNotFoundInCatalogMessage')}
-        showSubheader={showSubheader}
-      />
-    );
+  if (metadataError) {
+    return <ResponseErrorPanel error={metadataError} />;
   }
 
-  const isAuthenticationError = error.message?.includes('AuthenticationError');
+  const { label, tooltipContent } = getErrorPanelContent;
 
-  if (isAuthenticationError) {
+  if (label && tooltipContent) {
     return (
       <EmptyStatePanel
-        metricId={metricId}
-        label={t('errors.authenticationError')}
-        tooltipContent={t('errors.authenticationErrorMessage')}
+        label={label}
+        cardTitle={cardTitle}
+        cardDescription={cardDescription}
+        tooltipContent={tooltipContent}
         showSubheader={showSubheader}
+        dataTestId={cardDataTestId}
       />
     );
   }

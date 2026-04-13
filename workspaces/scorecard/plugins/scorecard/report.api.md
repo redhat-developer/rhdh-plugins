@@ -19,10 +19,12 @@ export { ScorecardErrorStatusIcon };
 // @public
 export const ScorecardHomepageCard: ({
   metricId,
+  aggregationId,
   showSubheader,
   showInfo,
 }: {
-  metricId: string;
+  metricId?: string | undefined;
+  aggregationId?: string | undefined;
   showSubheader?: boolean | undefined;
   showInfo?: boolean | undefined;
 }) => JSX_2.Element | null;
@@ -54,6 +56,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
     readonly 'errors.entityMissingProperties': string;
+    readonly 'errors.missingAggregationId': string;
     readonly 'errors.invalidApiResponse': string;
     readonly 'errors.fetchError': string;
     readonly 'errors.metricDataUnavailable': string;
