@@ -60,6 +60,12 @@ permission:
 
 scaffolder: {}
 
+dcm:
+  policyPacks:
+    - security-baseline
+    - compliance-pci
+    - audit-logging
+
 catalog:
   import:
     entityFilename: catalog-info.yaml

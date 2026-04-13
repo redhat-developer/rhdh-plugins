@@ -13,8 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { Router } from './Router';
-export { dcmPlugin, DcmPage } from './plugin';
-export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
-export { RhdhLogoFull } from './components/RhdhLogoFull';
-export { RhdhLogoIcon } from './components/RhdhLogoIcon';
+
+import { Theme, useTheme } from '@material-ui/core/styles';
+
+/** Theme-aware dark mode check that supports both v4 `type` and v5-like `mode`. */
+export function isDarkMode(theme: Theme): boolean {
+  const palette = theme.palette as { type?: string; mode?: string };
+  return palette.type === 'dark' || palette.mode === 'dark';
+}
+
+/** Hook wrapper for components that need a boolean dark mode flag. */
+export function useIsDarkMode(): boolean {
+  const theme = useTheme<Theme>();
+  return isDarkMode(theme);
+}
