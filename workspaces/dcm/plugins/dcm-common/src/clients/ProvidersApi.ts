@@ -13,25 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  Header,
-  Page,
-  Content,
-  ContentHeader,
-  HeaderLabel,
-} from '@backstage/core-components';
 
-export const ExampleComponent = () => (
-  <Page themeId="tool">
-    <Header title="Welcome to dcm!" subtitle="Optional subtitle">
-      <HeaderLabel label="Team" value="DCM" />
-      <HeaderLabel label="Developer" value="Red Hat Developer Hub" />
-    </Header>
-    <Content>
-      <ContentHeader
-        title="DCM"
-        description="DCM is a plugin for the Red Hat Developer Hub"
-      />
-    </Content>
-  </Page>
-);
+import type { Provider, ProviderList } from '../types/providers';
+
+/**
+ * Interface for the DCM Providers API client.
+ *
+ * @public
+ */
+export interface ProvidersApi {
+  listProviders(): Promise<ProviderList>;
+  getProvider(providerId: string): Promise<Provider>;
+  createProvider(provider: Provider): Promise<Provider>;
+  applyProvider(providerId: string, provider: Provider): Promise<Provider>;
+  deleteProvider(providerId: string): Promise<void>;
+}

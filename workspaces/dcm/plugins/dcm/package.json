@@ -42,7 +42,9 @@
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "4.0.0-alpha.61",
     "@red-hat-developer-hub/backstage-plugin-dcm-common": "workspace:^",
-    "react-use": "^17.2.4"
+    "js-yaml": "^4.1.1",
+    "react-use": "^17.2.4",
+    "yup": "^1.7.1"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
@@ -57,6 +59,7 @@
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
+    "@types/js-yaml": "^4.0.9",
     "msw": "^1.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.13.1 || ^17.0.0 || ^18.0.0",

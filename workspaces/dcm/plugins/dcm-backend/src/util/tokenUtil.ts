@@ -32,29 +32,26 @@ export const getTokenFromApi = async (
   const now = Date.now();
 
   const cachedToken = (await cache.get(TOKEN_CACHE_KEY)) as
-    | { token: string; expiresAt: number }
+    | TokenResult
     | undefined;
 
   if (cachedToken) {
     const timeUntilExpirySeconds = Math.floor(
       (cachedToken.expiresAt - now) / 1000,
     );
-    logger.info(
-      `Cache check: Token expires in ${timeUntilExpirySeconds}s, needs >60s to be valid`,
+    logger.debug(
+      `DCM token cache: expires in ${timeUntilExpirySeconds}s, needs >60s to be valid`,
     );
   } else {
-    logger.info('Cache check: No cached token exists');
+    logger.debug('DCM token cache: no cached token exists');
   }
 
   if (cachedToken && cachedToken.expiresAt > now + 60000) {
-    logger.info('Using cached access token');
-    return {
-      accessToken: cachedToken.token,
-      expiresAt: cachedToken.expiresAt,
-    };
+    logger.debug('DCM token cache: reusing cached access token');
+    return cachedToken;
   }
 
-  logger.info('Requesting new access token');
+  logger.info('DCM token: requesting new access token from SSO');
 
   const ssoBaseUrl =
     config.getOptionalString('dcm.ssoBaseUrl') ?? DEFAULT_SSO_BASE_URL;
@@ -76,7 +73,10 @@ export const getTokenFromApi = async (
   });
 
   if (!response.ok) {
-    throw new Error(response.statusText);
+    const errorBody = await response.text();
+    throw new Error(
+      `SSO token request failed (${response.status} ${response.statusText}): ${errorBody}`,
+    );
   }
 
   const json = (await response.json()) as {
@@ -86,12 +86,14 @@ export const getTokenFromApi = async (
   const accessToken = json.access_token;
   const expiresAt = Date.now() + json.expires_in * 1000;
 
-  await cache.set(
-    TOKEN_CACHE_KEY,
-    { token: accessToken, expiresAt },
-    { ttl: json.expires_in * 1000 },
-  );
+  const tokenResult: TokenResult = { accessToken, expiresAt };
 
-  logger.info(`Token cached, expires in ${json.expires_in} seconds`);
-  return { accessToken, expiresAt };
+  // Cast to `any` because the Backstage CacheService expects JsonValue but the
+  // token object is retrieved back with a type assertion, making this safe.
+  await cache.set(TOKEN_CACHE_KEY, tokenResult as any, {
+    ttl: json.expires_in * 1000,
+  });
+
+  logger.info(`DCM token: cached new token, expires in ${json.expires_in}s`);
+  return tokenResult;
 };
