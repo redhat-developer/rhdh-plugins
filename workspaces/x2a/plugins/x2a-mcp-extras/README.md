@@ -3,15 +3,36 @@
 Backstage backend plugin that exposes X2A migration project management as
 [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) tools. AI
 clients such as Cursor, Claude Desktop, or any MCP-compatible LLM can list
-projects, create new migration projects, and trigger init/next-phase runs.
+projects, create new migration projects, and get direct links to the
+Backstage UI for operations that require SCM credentials.
+
+## Design: Why URLs Instead of Direct Actions?
+
+Triggering a migration phase requires **source and target SCM (repository)
+authentication tokens**. These tokens are sensitive credentials that the
+Backstage/RHDH UI can collect securely from the user at the time of the
+action, but an LLM calling MCP tools does not have access to them and should
+not be expected to handle them.
+
+For this reason, tools that would otherwise perform write operations
+(`x2a-create-project`, `x2a-trigger-next-phase`) return a **full URL to the
+Project Details page** in the Backstage UI. The LLM is expected to present
+this URL to the user with instructions to:
+
+1. Open the link in their browser.
+2. Trigger the next migration phase from the UI.
+3. Provide the required SCM tokens through the secure UI form.
+
+This keeps secret material out of the MCP transport while still allowing an
+AI assistant to orchestrate the migration workflow end-to-end.
 
 ## MCP Tools
 
-| Tool name                | Description                                                |
-| ------------------------ | ---------------------------------------------------------- |
-| `x2a-list-projects`      | List migration projects with pagination and sorting.       |
-| `x2a-create-project`     | Create a new X2A migration project.                        |
-| `x2a-trigger-next-phase` | Trigger the init (next-phase) Kubernetes job on a project. |
+| Tool name                | Description                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| `x2a-list-projects`      | List migration projects with pagination and sorting.                            |
+| `x2a-create-project`     | Create a new project and return its Project Details URL.                        |
+| `x2a-trigger-next-phase` | Look up a project and return its Project Details URL for triggering next phase. |
 
 ## Authentication Modes
 
@@ -153,6 +174,10 @@ x2a-create-project { "name": "test", "abbreviation": "TST", ... }
 x2a-trigger-next-phase { "projectId": "<uuid>" }
 ```
 
+Both `x2a-create-project` and `x2a-trigger-next-phase` return a
+`projectDetailsUrl` field. Verify the URL points to the correct Backstage
+frontend (it is derived from the `app.baseUrl` config value).
+
 ## Architecture
 
 ```
@@ -165,13 +190,20 @@ MCP Client (Cursor/Claude)
  x2a-mcp-extras plugin  (this plugin)
         │  Direct Service Access
         ▼
- x2aDatabaseServiceRef / kubeServiceRef  (from x2a-backend)
+ x2aDatabaseServiceRef  (from x2a-backend)
+        │
+        ▼
+ Backstage UI  ← user opens the returned URL
+        │        to trigger phases with SCM tokens
+        ▼
+ x2a-backend  → Kubernetes jobs
 ```
 
-The plugin uses **Direct Service Access**: it resolves the `x2aDatabaseServiceRef`
-and `kubeServiceRef` from the Backstage service registry and calls their methods
-directly, the same way the x2a-backend HTTP routes do. No HTTP round-trips
-between plugins.
+The plugin uses **Direct Service Access**: it resolves the
+`x2aDatabaseServiceRef` from the Backstage service registry to read and
+create projects. Write operations that require SCM tokens (triggering
+migration phases) are delegated to the user via the Backstage UI - the MCP
+tools return a direct URL to the Project Details page instead.
 
 ## Limitations
 
@@ -180,6 +212,7 @@ between plugins.
   the x2a workspace's legacy `packages/app`, the Router is loaded via a relative
   path into `node_modules` (bypassing the package's `exports` field). This
   workaround is fragile and may break on package updates.
-- Repository tokens for `x2a-trigger-next-phase` fall back to app-config values
-  (`x2a.git.sourceRepo.token` / `x2a.git.targetRepo.token`). For production,
-  configure these in app-config rather than passing them through MCP.
+- The returned `projectDetailsUrl` is built from the `app.baseUrl` config
+  value. If the Backstage frontend is served behind a different URL (e.g. a
+  reverse proxy with a different hostname), make sure `app.baseUrl` reflects
+  the URL that end users actually access.

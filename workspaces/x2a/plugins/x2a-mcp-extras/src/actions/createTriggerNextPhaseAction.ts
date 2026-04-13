@@ -13,11 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { InputError, ConflictError, NotFoundError } from '@backstage/errors';
-import {
-  reconcileJobStatus,
-  generateCallbackToken,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { NotFoundError } from '@backstage/errors';
 import type { X2aActionsOptions } from './index';
 import { resolveCredentialsContext } from './credentials';
 
@@ -27,8 +23,6 @@ export function createTriggerNextPhaseAction(options: X2aActionsOptions) {
     auth,
     catalog,
     config,
-    discovery,
-    kubeService,
     logger,
     permissionsSvc,
     x2aDatabase,
@@ -36,57 +30,39 @@ export function createTriggerNextPhaseAction(options: X2aActionsOptions) {
 
   actionsRegistry.register({
     name: 'x2a-trigger-next-phase',
-    title: 'Trigger X2A Init / Next Phase',
+    title: 'Get URL to Trigger X2A Next Phase',
     attributes: {
-      destructive: true,
-      readOnly: false,
-      idempotent: false,
+      readOnly: true,
+      idempotent: true,
     },
-    description: `Trigger the init (next-phase) action on an X2A migration project.
-This creates a Kubernetes job that analyses the source repository and generates a migration plan.
-Source and target repository tokens can be provided explicitly or fall back to app-config values.
-Returns a ConflictError if an init job is already running for the project.`,
+    description: `Return the full URL to the Project Details page for an X2A migration project.
+
+IMPORTANT: This tool does NOT trigger the next phase automatically.
+The output includes a projectDetailsUrl that the user must open in their browser.
+On the Project Details page, the user will manually trigger the next migration phase
+and provide source and target SCM (repository) authentication tokens.
+
+Instruct the user to:
+1. Open the returned projectDetailsUrl in their browser.
+2. On the Project Details page, trigger the next phase and enter the required SCM tokens.`,
     schema: {
       input: z =>
         z.object({
           projectId: z
             .string()
-            .describe('UUID of the project to trigger the run for.'),
-          sourceRepoAuthToken: z
-            .string()
-            .optional()
-            .describe(
-              'Source repository auth token. Falls back to configured x2a.git.sourceRepo.token.',
-            ),
-          targetRepoAuthToken: z
-            .string()
-            .optional()
-            .describe(
-              'Target repository auth token. Falls back to configured x2a.git.targetRepo.token.',
-            ),
-          aapCredentials: z
-            .object({
-              url: z.string(),
-              orgName: z.string(),
-              oauthToken: z.string().optional(),
-              username: z.string().optional(),
-              password: z.string().optional(),
-            })
-            .optional()
-            .describe(
-              'Ansible Automation Platform credentials. Falls back to app-config x2a.credentials.aap.',
-            ),
-          userPrompt: z
-            .string()
-            .optional()
-            .describe('Optional prompt/instructions for the migration agent.'),
+            .describe('UUID of the project to get the details page URL for.'),
         }),
       output: z =>
         z.object({
-          status: z
+          projectId: z.string().describe('UUID of the project.'),
+          name: z.string().describe('Name of the project.'),
+          projectDetailsUrl: z
             .string()
-            .describe('Job status after creation (typically "pending").'),
-          jobId: z.string().describe('UUID of the created init job.'),
+            .describe(
+              'Full URL to the Project Details page. ' +
+                'Direct the user to open this URL in their browser to trigger the next migration phase ' +
+                'and provide source and target SCM authentication tokens.',
+            ),
         }),
     },
     action: async ({ input, credentials }) => {
@@ -100,7 +76,7 @@ Returns a ConflictError if an init job is already running for the project.`,
         auth,
         catalog,
         permissionsSvc,
-        readOnly: false,
+        readOnly: true,
       });
 
       const project = await x2aDatabase.getProject(
@@ -117,104 +93,14 @@ Returns a ConflictError if an init job is already running for the project.`,
         );
       }
 
-      const sourceToken =
-        input.sourceRepoAuthToken ??
-        config.getOptionalString('x2a.git.sourceRepo.token');
-      const targetToken =
-        input.targetRepoAuthToken ??
-        config.getOptionalString('x2a.git.targetRepo.token');
-
-      if (!sourceToken) {
-        throw new InputError(
-          'Source repository token is required. Provide it in the request or configure x2a.git.sourceRepo.token.',
-        );
-      }
-      if (!targetToken) {
-        throw new InputError(
-          'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
-        );
-      }
-
-      const existingJobs = await x2aDatabase.listJobsForProject({ projectId });
-      const activeInitJobs = existingJobs.filter(
-        job =>
-          job.phase === 'init' && ['pending', 'running'].includes(job.status),
-      );
-      const reconciledInitJobs = await Promise.all(
-        activeInitJobs.map(job =>
-          reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
-        ),
-      );
-      const hasActiveInitJob = reconciledInitJobs.some(job =>
-        ['pending', 'running'].includes(job.status),
-      );
-
-      if (hasActiveInitJob) {
-        throw new ConflictError(
-          'An init job is already running for this project. ' +
-            'Wait for it to complete or cancel it before starting a new one.',
-        );
-      }
-
-      const callbackToken = generateCallbackToken();
-      const job = await x2aDatabase.createJob({
-        projectId,
-        moduleId: undefined,
-        phase: 'init',
-        status: 'pending',
-        callbackToken,
-      });
-
-      let k8sJobName: string;
-      try {
-        const baseUrl =
-          config.getOptionalString('x2a.callbackBaseUrl') ??
-          (await discovery.getBaseUrl('x2a'));
-        const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
-        ({ k8sJobName } = await kubeService.createJob({
-          jobId: job.id,
-          projectId,
-          projectName: project.name,
-          projectAbbrev: project.abbreviation,
-          phase: 'init',
-          user: ctx.userRef,
-          callbackToken,
-          callbackUrl,
-          sourceRepo: {
-            url: project.sourceRepoUrl,
-            branch: project.sourceRepoBranch,
-            token: sourceToken,
-          },
-          targetRepo: {
-            url: project.targetRepoUrl,
-            branch: project.targetRepoBranch,
-            token: targetToken,
-          },
-          aapCredentials: input.aapCredentials,
-          userPrompt: input.userPrompt,
-        }));
-
-        await x2aDatabase.updateJob({ id: job.id, k8sJobName });
-      } catch (err) {
-        logger.error(
-          `Failed to create/register k8s job for project ${projectId}, marking DB job ${job.id} as error`,
-        );
-        await x2aDatabase.updateJob({
-          id: job.id,
-          status: 'error',
-          errorDetails: String(err),
-        });
-        throw err;
-      }
-
-      logger.info(
-        `Init job created: jobId=${job.id}, k8sJobName=${k8sJobName}`,
-      );
+      const appBaseUrl = config.getString('app.baseUrl');
+      const projectDetailsUrl = `${appBaseUrl}/x2a/projects/${projectId}`;
 
       return {
         output: {
-          status: 'pending',
-          jobId: job.id,
+          projectId: project.id,
+          name: project.name,
+          projectDetailsUrl,
         },
       };
     },
