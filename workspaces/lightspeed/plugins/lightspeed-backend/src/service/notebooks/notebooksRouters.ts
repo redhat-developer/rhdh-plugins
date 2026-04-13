@@ -45,7 +45,7 @@ import {
   createDocumentResponse,
   createSessionListResponse,
   createSessionResponse,
-} from './types/notebooksResponses';
+} from './types/notebooksTypes';
 import { handleError } from './utils';
 import { VectorStoresOperator } from './VectorStoresOperator';
 
@@ -69,10 +69,10 @@ export async function createNotebooksRouter(
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const lightspeedBaseUrl = `http://${LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
   const queryModel = config.getOptionalString(
-    'lightspeed.aiNotebooks.queryDefaults.model',
+    'lightspeed.Notebooks.queryDefaults.model',
   );
   const queryProvider = config.getOptionalString(
-    'lightspeed.aiNotebooks.queryDefaults.provider_id',
+    'lightspeed.Notebooks.queryDefaults.provider_id',
   );
 
   if (!queryModel && !queryProvider) {
@@ -106,10 +106,9 @@ export async function createNotebooksRouter(
   const authorizer = userPermissionAuthorization(permissions);
 
   const getUserId = async (req: any): Promise<string> => {
-    // const credentials = await httpAuth.credentials(req);
-    // const user = await userInfo.getUserInfo(credentials);
-    // return user.userEntityRef;
-    return 'user:default/guest';
+    const credentials = await httpAuth.credentials(req);
+    const user = await userInfo.getUserInfo(credentials);
+    return user.userEntityRef;
   };
 
   const requireNotebooksPermission = async (
@@ -304,7 +303,7 @@ export async function createNotebooksRouter(
   notebooksRouter.put(
     '/v1/sessions/:sessionId/documents',
     upload.single('file') as any,
-    withAuth(async (req, res, _userId) => {
+    withAuth(async (req, res, userId) => {
       const sessionId = req.params.sessionId as string;
       const { fileType, title, newTitle } = req.body;
 
@@ -333,6 +332,11 @@ export async function createNotebooksRouter(
         title,
         fileType,
       );
+      const session = await sessionService.readSession(sessionId, userId);
+      if (!session) {
+        handleError(logger, res, 'Session not found');
+        return;
+      }
 
       // Return 202 Accepted immediately for async processing
       res.status(HTTP_STATUS_ACCEPTED).json({
@@ -385,17 +389,17 @@ export async function createNotebooksRouter(
   );
 
   notebooksRouter.delete(
-    '/v1/sessions/:sessionId/documents/:documentTitle',
+    '/v1/sessions/:sessionId/documents/:documentId',
     requireSessionOwnership(),
     withAuth(async (req, res, _userId) => {
       const sessionId = req.params.sessionId as string;
-      const documentTitle = req.params.documentTitle as string;
+      const documentId = req.params.documentId as string;
 
-      await documentService.deleteDocument(sessionId, documentTitle);
+      await documentService.deleteDocument(sessionId, documentId);
 
       res.json(
         createDocumentResponse(
-          documentTitle,
+          documentId,
           sessionId,
           'Document deleted successfully',
         ),

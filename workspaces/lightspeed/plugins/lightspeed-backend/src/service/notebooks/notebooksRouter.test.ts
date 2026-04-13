@@ -207,7 +207,7 @@ describe('Notebooks Router', () => {
 
         expect(response.status).toBe(202);
         expect(response.body.status).toBe('processing');
-        expect(response.body.document_id).toBe('test-document');
+        expect(response.body.document_id).toBe('Test Document');
         expect(response.body.session_id).toBe(sessionId);
       });
 
@@ -269,7 +269,7 @@ describe('Notebooks Router', () => {
           .attach('file', Buffer.from('Content'), 'test.txt');
 
         const response = await request(app).delete(
-          `/ai-notebooks/v1/sessions/${sessionId}/documents/test-doc`,
+          `/ai-notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Test Doc')}`,
         );
 
         expect(response.status).toBe(200);

@@ -18,8 +18,15 @@ organization:
 
 # Disable AI Notebooks feature by default
 lightspeed:
-  aiNotebooks:
-    enabled: false
+  Notebooks:
+    enabled: true
+    queryDefaults:
+      model: redhataillama-31-8b-instruct
+      provider_id: vllm
+    sessionDefaults:
+      provider_id: notebooks
+      embedding_model: sentence-transformers/sentence-transformers/all-mpnet-base-v2
+      embedding_dimension: 768
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins

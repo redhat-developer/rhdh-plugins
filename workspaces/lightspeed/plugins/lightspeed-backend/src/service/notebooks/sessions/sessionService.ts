@@ -43,18 +43,25 @@ export class SessionService {
     this.client = client;
     this.logger = logger;
 
-    this.providerId =
-      config?.getOptionalString(
-        'lightspeed.aiNotebooks.sessionDefaults.provider_id',
-      ) || 'notebooks';
-    this.embeddingModel =
-      config?.getOptionalString(
-        'lightspeed.aiNotebooks.sessionDefaults.embedding_model',
-      ) || 'sentence-transformers/sentence-transformers/all-mpnet-base-v2';
-    this.embeddingDimension =
-      config?.getOptionalNumber(
-        'lightspeed.aiNotebooks.sessionDefaults.embedding_dimension',
-      ) || 768;
+    const requireConfig = <T>(value: T | undefined, key: string): T => {
+      if (value === undefined) throw new Error(`${key} is required in config`);
+      return value;
+    };
+
+    this.providerId = requireConfig(
+      config?.getString('lightspeed.Notebooks.sessionDefaults.provider_id'),
+      'lightspeed.Notebooks.sessionDefaults.provider_id',
+    );
+    this.embeddingModel = requireConfig(
+      config?.getString('lightspeed.Notebooks.sessionDefaults.embedding_model'),
+      'lightspeed.Notebooks.sessionDefaults.embedding_model',
+    );
+    this.embeddingDimension = requireConfig(
+      config?.getNumber(
+        'lightspeed.Notebooks.sessionDefaults.embedding_dimension',
+      ),
+      'lightspeed.Notebooks.sessionDefaults.embedding_dimension',
+    );
   }
 
   /**

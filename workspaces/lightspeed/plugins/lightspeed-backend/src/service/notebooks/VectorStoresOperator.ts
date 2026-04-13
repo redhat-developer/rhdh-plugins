@@ -36,7 +36,10 @@ function mapHttpStatusToError(
   defaultMessage: string,
   errorDetail?: any,
 ): Error {
-  const message = errorDetail?.detail || defaultMessage;
+  const detail = errorDetail?.detail;
+  const message =
+    (typeof detail === 'string' ? detail : detail?.message || detail?.cause) ||
+    defaultMessage;
 
   switch (status) {
     case 404:
@@ -93,11 +96,17 @@ export class VectorStoresOperator {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        let error;
+        try {
+          error = await response.json();
+        } catch {
+          error = { detail: await response.text() };
+        }
         this.logger.error('Failed to create vector store:', error);
         throw mapHttpStatusToError(
           response.status,
-          `Failed to create vector store: ${error.detail.cause}`,
+          'Failed to create vector store',
+          error,
         );
       }
 
@@ -124,11 +133,17 @@ export class VectorStoresOperator {
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        let error;
+        try {
+          error = await response.json();
+        } catch {
+          error = { detail: await response.text() };
+        }
         this.logger.error('Failed to retrieve vector store:', error);
         throw mapHttpStatusToError(
           response.status,
-          `Failed to retrieve vector store: ${error.detail.cause}`,
+          'Failed to retrieve vector store',
+          error,
         );
       }
 
@@ -164,11 +179,17 @@ export class VectorStoresOperator {
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        let error;
+        try {
+          error = await response.json();
+        } catch {
+          error = { detail: await response.text() };
+        }
         this.logger.error('Failed to update vector store:', error);
         throw mapHttpStatusToError(
           response.status,
-          `Failed to update vector store: ${error.detail.cause}`,
+          'Failed to update vector store',
+          error,
         );
       }
 
@@ -195,11 +216,17 @@ export class VectorStoresOperator {
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        let error;
+        try {
+          error = await response.json();
+        } catch {
+          error = { detail: await response.text() };
+        }
         this.logger.error('Failed to delete vector store:', error);
         throw mapHttpStatusToError(
           response.status,
-          `Failed to delete vector store: ${error.detail.cause}`,
+          'Failed to delete vector store',
+          error,
         );
       }
 
@@ -229,11 +256,17 @@ export class VectorStoresOperator {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        let error;
+        try {
+          error = await response.json();
+        } catch {
+          error = { detail: await response.text() };
+        }
         this.logger.error('Failed to list vector stores:', error);
         throw mapHttpStatusToError(
           response.status,
-          `Failed to list vector stores: ${error.detail.cause}`,
+          'Failed to list vector stores',
+          error,
         );
       }
 
@@ -273,11 +306,17 @@ export class VectorStoresOperator {
         );
 
         if (!response.ok) {
-          const error = await response.json();
+          let error;
+          try {
+            error = await response.json();
+          } catch {
+            error = { detail: await response.text() };
+          }
           this.logger.error('Failed to add file to vector store:', error);
           throw mapHttpStatusToError(
             response.status,
-            `Failed to add file to vector store: ${error.detail.cause}`,
+            'Failed to add file to vector store',
+            error,
           );
         }
 
@@ -304,11 +343,17 @@ export class VectorStoresOperator {
         );
 
         if (!response.ok) {
-          const error = await response.json();
+          let error;
+          try {
+            error = await response.json();
+          } catch {
+            error = { detail: await response.text() };
+          }
           this.logger.error('Failed to list files:', error);
           throw mapHttpStatusToError(
             response.status,
-            `Failed to list files: ${error.detail.cause}`,
+            'Failed to list files',
+            error,
           );
         }
 
@@ -335,11 +380,17 @@ export class VectorStoresOperator {
         );
 
         if (!response.ok) {
-          const error = await response.json();
+          let error;
+          try {
+            error = await response.json();
+          } catch {
+            error = { detail: await response.text() };
+          }
           this.logger.error('Failed to retrieve file:', error);
           throw mapHttpStatusToError(
             response.status,
-            `Failed to retrieve file: ${error.detail.cause}`,
+            'Failed to retrieve file',
+            error,
           );
         }
 
@@ -366,11 +417,17 @@ export class VectorStoresOperator {
         );
 
         if (!response.ok) {
-          const error = await response.json();
+          let error;
+          try {
+            error = await response.json();
+          } catch {
+            error = { detail: await response.text() };
+          }
           this.logger.error('Failed to delete file:', error);
           throw mapHttpStatusToError(
             response.status,
-            `Failed to delete file: ${error.detail.cause}`,
+            'Failed to delete file',
+            error,
           );
         }
 
@@ -432,11 +489,17 @@ export class VectorStoresOperator {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        let error;
+        try {
+          error = await response.json();
+        } catch {
+          error = { detail: await response.text() };
+        }
         this.logger.error('Failed to upload file:', error);
         throw mapHttpStatusToError(
           response.status,
-          `Failed to upload file: ${error.detail.cause}`,
+          'Failed to upload file',
+          error,
         );
       }
 

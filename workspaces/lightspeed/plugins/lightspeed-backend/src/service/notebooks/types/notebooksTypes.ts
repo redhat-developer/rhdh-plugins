@@ -97,3 +97,84 @@ export interface UpsertResult {
   replaced: boolean;
   status: 'completed' | 'in_progress' | 'failed' | 'cancelled';
 }
+
+/**
+ * Response factory functions
+ */
+
+/**
+ * Create a successful session response
+ * @param session - Notebook session object
+ * @param message - Success message
+ * @returns Session response object
+ */
+export const createSessionResponse = (
+  session: NotebookSession,
+  message: string,
+): SessionResponse => {
+  return {
+    status: 'success',
+    session,
+    message,
+  };
+};
+
+/**
+ * Create a successful session list response
+ * @param sessions - Array of notebook sessions
+ * @returns Session list response object
+ */
+export const createSessionListResponse = (
+  sessions: NotebookSession[],
+): SessionListResponse => {
+  return {
+    status: 'success',
+    sessions,
+    count: sessions.length,
+  };
+};
+
+/**
+ * Create a successful document response
+ * @param document_id - Document identifier
+ * @param session_id - Session identifier
+ * @param message - Success message
+ * @param options - Optional fields (title, replaced)
+ * @returns Document response object
+ */
+export const createDocumentResponse = (
+  document_id: string,
+  session_id: string,
+  message: string,
+  options?: {
+    title?: string;
+    replaced?: boolean;
+  },
+): DocumentResponse => {
+  return {
+    status: 'success',
+    document_id,
+    title: options?.title,
+    session_id,
+    replaced: options?.replaced,
+    message,
+  };
+};
+
+/**
+ * Create a successful document list response
+ * @param session_id - Session identifier
+ * @param documents - Array of session documents
+ * @returns Document list response object
+ */
+export const createDocumentListResponse = (
+  session_id: string,
+  documents: SessionDocument[],
+): DocumentListResponse => {
+  return {
+    status: 'success',
+    session_id,
+    documents,
+    count: documents.length,
+  };
+};
