@@ -41,6 +41,13 @@
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.0
   - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.1.0
 
+## 8.6.4
+
+### Patch Changes
+
+- 13159d3: - Update dependecy @urql/core to fix CVE-2026-3118
+  - Reworks the filter and query builder code to use query variables
+
 ## 8.6.3
 
 ### Patch Changes
@@ -127,6 +134,13 @@
 
 - Updated dependencies [fba1136]
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+
+## 8.3.1
+
+### Patch Changes
+
+- 480bde1: - Update dependecy @urql/core to fix CVE-2026-3118
+  - Reworks the filter and query builder code to use query variables
 
 ## 8.3.0
 
