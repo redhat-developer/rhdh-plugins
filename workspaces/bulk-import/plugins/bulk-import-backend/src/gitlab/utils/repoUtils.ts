@@ -129,8 +129,6 @@ export async function addGitlabTokenRepositories(
   errors: Map<number, GitlabFetchError>,
   reqParams?: {
     search?: string;
-    pageNumber?: number;
-    pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
   const lowercaseSearch = reqParams?.search?.toLocaleLowerCase();

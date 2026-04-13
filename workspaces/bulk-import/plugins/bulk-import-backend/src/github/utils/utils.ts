@@ -366,9 +366,6 @@ export async function fetchFromMatchedIntegration<T>(
 
 export async function listAllRepositoriesForAuthenticatedUser(
   octokit: Octokit,
-  options?: {
-    pageSize?: number;
-  },
 ): Promise<AuthenticatedUserRepositoryList> {
   /**
    * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
@@ -376,7 +373,7 @@ export async function listAllRepositoriesForAuthenticatedUser(
    * and repositories that they can access through an organization membership.
    */
   return await octokit.paginate(octokit.rest.repos.listForAuthenticatedUser, {
-    per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
+    per_page: GITHUB_REST_API_MAX_PAGE_SIZE,
     sort: 'full_name',
     direction: 'asc',
   });
@@ -384,9 +381,6 @@ export async function listAllRepositoriesForAuthenticatedUser(
 
 export async function listAllRepositoriesAccessibleToInstallation(
   octokit: Octokit,
-  options?: {
-    pageSize?: number;
-  },
 ): Promise<AppInstallationRepositories> {
   /**
    * The octokit pagination smartly extracts data from the response.
@@ -395,7 +389,7 @@ export async function listAllRepositoriesAccessibleToInstallation(
   const repositories = await octokit.paginate(
     octokit.rest.apps.listReposAccessibleToInstallation,
     {
-      per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
+      per_page: GITHUB_REST_API_MAX_PAGE_SIZE,
     },
   );
 

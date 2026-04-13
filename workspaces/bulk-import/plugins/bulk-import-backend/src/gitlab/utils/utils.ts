@@ -241,9 +241,6 @@ export async function listAllRepositoriesForAuthenticatedUser(
     logger: LoggerService;
   },
   gitlab: InstanceType<typeof Gitlab<false>>,
-  options?: {
-    pageSize?: number;
-  },
 ): Promise<ProjectSchema[]> {
   try {
     /**
@@ -253,7 +250,6 @@ export async function listAllRepositoriesForAuthenticatedUser(
      */
     const allProjects = await gitlab.Projects.all<true, 'keyset'>({
       membership: true,
-      perPage: options?.pageSize,
       showExpanded: true,
       orderBy: 'name',
       sort: 'asc',

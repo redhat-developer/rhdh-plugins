@@ -60,12 +60,7 @@ export async function findAllRepositories(
   const [alreadyImportedRepositories, allRepositoriesResponse] =
     await Promise.all([
       deps.catalogHttpClient.listCatalogUrlLocations(),
-      deps.gitApiService.getRepositoriesFromIntegrations(
-        search,
-        pageNumber,
-        pageSize,
-        userTokens,
-      ),
+      deps.gitApiService.getRepositoriesFromIntegrations(search, userTokens),
     ]);
 
   const alreadyImportedRepositoriesLocationTargets = new Set(

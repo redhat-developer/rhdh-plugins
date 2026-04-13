@@ -415,8 +415,6 @@ describe('GithubApiService tests', () => {
 
       const result = await githubApiService.getRepositoriesFromIntegrations(
         undefined,
-        undefined,
-        undefined,
         { 'https://github.com': 'user-oauth-token' },
       );
 
@@ -428,8 +426,6 @@ describe('GithubApiService tests', () => {
 
     it('returns empty repositories when userTokens is provided but no host matches an integration', async () => {
       const result = await githubApiService.getRepositoriesFromIntegrations(
-        undefined,
-        undefined,
         undefined,
         { 'https://some-other-host.com': 'user-oauth-token' },
       );
@@ -463,8 +459,6 @@ describe('GithubApiService tests', () => {
       });
 
       const result = await githubApiService.getRepositoriesFromIntegrations(
-        undefined,
-        undefined,
         undefined,
         {},
       );

@@ -125,8 +125,6 @@ export async function addGithubAppRepositories(
   errors: Map<number, GithubFetchError>,
   reqParams?: {
     search?: string;
-    pageNumber?: number;
-    pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
   const lowercaseSearch = reqParams?.search?.toLocaleLowerCase();
@@ -182,8 +180,6 @@ export async function addGithubTokenRepositories(
   errors: Map<number, GithubFetchError>,
   reqParams?: {
     search?: string;
-    pageNumber?: number;
-    pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
   const lowercaseSearch = reqParams?.search?.toLocaleLowerCase();
