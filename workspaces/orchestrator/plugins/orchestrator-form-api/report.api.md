@@ -73,6 +73,9 @@ export type ReviewComponentProps = {
   data: JsonObject;
   handleBack: () => void;
   handleExecute: () => void;
+  executeLabel?: string;
+  handleExecuteAsEvent?: () => void;
+  executeAsEventLabel?: string;
 };
 
 // @public

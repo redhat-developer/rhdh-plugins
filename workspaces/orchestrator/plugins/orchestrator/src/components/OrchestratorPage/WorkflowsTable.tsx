@@ -165,17 +165,23 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     [definitionRunsLink, navigate],
   );
 
+  const buildExecuteUrl = useCallback(
+    (workflowId: string) => {
+      const baseUrl = executeWorkflowLink({ workflowId });
+      const params = new URLSearchParams();
+      if (entityRef) {
+        params.set('targetEntity', entityRef);
+      }
+      const query = params.toString();
+      return query ? `${baseUrl}?${query}` : baseUrl;
+    },
+    [executeWorkflowLink, entityRef],
+  );
   const handleExecute = useCallback(
     (rowData: FormattedWorkflowOverview) => {
-      if (entityRef) {
-        navigate(
-          `${executeWorkflowLink({ workflowId: rowData.id })}?targetEntity=${entityRef}`,
-        );
-      } else {
-        navigate(executeWorkflowLink({ workflowId: rowData.id }));
-      }
+      navigate(buildExecuteUrl(rowData.id));
     },
-    [executeWorkflowLink, navigate, entityRef],
+    [buildExecuteUrl, navigate],
   );
 
   const canExecuteWorkflow = useCallback(

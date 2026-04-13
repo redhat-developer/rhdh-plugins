@@ -44,6 +44,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'table.headers.lastRunStatus': 'Statut de la dernière exécution',
     'table.headers.workflowName': 'Nom du flux de travail',
     'table.actions.run': 'Exécution',
+    'table.actions.runAsEvent': "Exécuter en tant qu'événement",
     'table.actions.viewRuns': 'Voir les exécutions',
     'table.actions.viewInputSchema': "Afficher le schéma d'entrée",
     'table.status.running': "En cours d'exécution",
@@ -85,6 +86,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.messages.workflowDown':
       "Le flux de travail est actuellement en panne ou dans un état d'erreur. L'exécuter maintenant peut échouer ou produire des résultats inattendus.",
     'workflow.buttons.run': 'Exécution',
+    'workflow.buttons.runAsEvent': "Exécuter en tant qu'événement",
     'workflow.buttons.runWorkflow': 'Exécuter le flux de travail',
     'workflow.buttons.runAgain': 'Courir à nouveau',
     'workflow.buttons.running': "En cours d'exécution",
@@ -109,6 +111,8 @@ const orchestratorTranslationFr = createTranslationMessages({
     'run.status.completed': 'Exécution terminée',
     'run.status.failed': "L'exécution a échoué {{time}}",
     'run.status.failedAt': "L'exécution a échoué {{time}}",
+    'run.messages.eventTriggered':
+      "Un événement a été envoyé pour déclencher ce workflow. Il apparaîtra une fois l'exécution commencée.",
     'run.status.aborted': "L'exécution a été interrompue",
     'run.status.completedWithMessage':
       'Exécution terminée {{time}} avec message',

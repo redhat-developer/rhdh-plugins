@@ -133,6 +133,12 @@ export type ReviewComponentProps = {
   handleBack: () => void;
   /** Callback to execute the workflow */
   handleExecute: () => void;
+  /** Label for the primary execute button (default review UI falls back to translated "Run") */
+  executeLabel?: string;
+  /** Optional second action to execute as an event-style (e.g. Kafka) workflow */
+  handleExecuteAsEvent?: () => void;
+  /** Label for the event execute control when `handleExecuteAsEvent` is set */
+  executeAsEventLabel?: string;
 };
 
 /**

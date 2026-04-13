@@ -58,8 +58,11 @@ export type OrchestratorFormProps = {
   setAuthTokenDescriptors: OrchestratorFormContextProps['setAuthTokenDescriptors'];
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
+  handleExecuteAsEvent?: (parameters: JsonObject) => Promise<void>;
   initialFormData: JsonObject;
   t: TranslationFunction;
+  executeLabel?: string;
+  executeAsEventLabel?: string;
 };
 
 // @public

@@ -37,6 +37,9 @@ const useStyles = makeStyles()(theme => ({
   backButton: {
     marginRight: theme.spacing(1),
   },
+  executeAsEventButton: {
+    marginLeft: theme.spacing(2),
+  },
   footer: {
     display: 'flex',
     flexDirection: 'row',
@@ -65,6 +68,9 @@ const ReviewStep = ({
   data,
   handleBack,
   handleExecute,
+  executeLabel,
+  handleExecuteAsEvent,
+  executeAsEventLabel,
 }: ReviewComponentProps) => {
   const { t } = useTranslation();
 
@@ -104,8 +110,21 @@ const ReviewStep = ({
             submitting={busy}
             focusOnMount
           >
-            {t('common.run')}
+            {executeLabel ?? t('common.run')}
           </SubmitButton>
+          {handleExecuteAsEvent && executeAsEventLabel && (
+            <Button
+              variant="contained"
+              color="primary"
+              type="button"
+              onClick={handleExecuteAsEvent}
+              disabled={busy}
+              className={classes.executeAsEventButton}
+              disableRipple
+            >
+              {executeAsEventLabel}
+            </Button>
+          )}
         </div>
       </Paper>
     </Content>

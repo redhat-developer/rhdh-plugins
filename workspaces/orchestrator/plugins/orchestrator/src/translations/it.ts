@@ -45,6 +45,7 @@ const orchestratorTranslationIt = createTranslationMessages({
     'table.headers.lastRunStatus': "Stato dell'ultima esecuzione",
     'table.headers.workflowName': 'Nome flusso di lavoro',
     'table.actions.run': 'Esecuzione',
+    'table.actions.runAsEvent': 'Esegui come evento',
     'table.actions.viewRuns': 'Visualizza esecuzioni',
     'table.actions.viewInputSchema': 'Visualizza schema di input',
     'table.status.running': 'In esecuzione',
@@ -86,6 +87,7 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.messages.workflowDown':
       "Al momento lo stato del flusso di lavoro è inattivo o in errore. L'esecuzione potrebbe non riuscire o produrre risultati imprevisti.",
     'workflow.buttons.run': 'Esecuzione',
+    'workflow.buttons.runAsEvent': 'Esegui come evento',
     'workflow.buttons.runWorkflow': 'Esegui flusso di lavoro',
     'workflow.buttons.runAgain': 'Esegui di nuovo',
     'workflow.buttons.running': 'Esecuzione in corso...',
@@ -110,6 +112,8 @@ const orchestratorTranslationIt = createTranslationMessages({
     'run.status.completed': 'Esecuzione completata',
     'run.status.failed': 'Esecuzione non riuscita {{time}}',
     'run.status.failedAt': 'Esecuzione non riuscita {{time}}',
+    'run.messages.eventTriggered':
+      "È stato inviato un evento per attivare questo flusso di lavoro. Apparirà quando l'esecuzione inizierà.",
     'run.status.aborted': 'Esecuzione interrotta',
     'run.status.completedWithMessage':
       'Esecuzione completata {{time}} con messaggio',

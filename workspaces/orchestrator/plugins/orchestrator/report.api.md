@@ -51,6 +51,7 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'table.headers.lastRunStatus': string;
     readonly 'table.headers.workflowName': string;
     readonly 'table.actions.run': string;
+    readonly 'table.actions.runAsEvent': string;
     readonly 'table.actions.viewRuns': string;
     readonly 'table.actions.viewInputSchema': string;
     readonly 'table.filters.status': string;
@@ -108,6 +109,7 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'run.status.workflowIsRunning': string;
     readonly 'run.status.noAdditionalInfo': string;
     readonly 'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete': string;
+    readonly 'run.messages.eventTriggered': string;
     readonly 'run.pageTitle': string;
     readonly 'run.variables': string;
     readonly 'run.inputs': string;
@@ -144,6 +146,7 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.messages.userNotAuthorizedExecute': string;
     readonly 'workflow.messages.workflowDown': string;
     readonly 'workflow.buttons.run': string;
+    readonly 'workflow.buttons.runAsEvent': string;
     readonly 'workflow.buttons.running': string;
     readonly 'workflow.buttons.runWorkflow': string;
     readonly 'workflow.buttons.runAgain': string;

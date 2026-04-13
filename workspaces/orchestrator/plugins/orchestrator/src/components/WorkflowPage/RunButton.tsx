@@ -43,12 +43,17 @@ export const RunButton = ({
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const navigate = useNavigate();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
+  const buildExecuteUrl = () => {
+    const baseUrl = executeWorkflowLink({ workflowId });
+    const params = new URLSearchParams();
+    if (entityRef) {
+      params.set('targetEntity', entityRef);
+    }
+    const query = params.toString();
+    return query ? `${baseUrl}?${query}` : baseUrl;
+  };
   const handleExecute = () => {
-    navigate(
-      entityRef
-        ? `${executeWorkflowLink({ workflowId })}?targetEntity=${entityRef}`
-        : executeWorkflowLink({ workflowId }),
-    );
+    navigate(buildExecuteUrl());
   };
 
   const { loading: loadingPermission, allowed: canRun } =
@@ -65,7 +70,7 @@ export const RunButton = ({
   }
 
   return (
-    <Grid item container justifyContent="flex-end" xs={12} spacing={2}>
+    <Grid item container justifyContent="flex-end" xs={12}>
       <Grid item>
         {loadingPermission ? (
           <Skeleton variant="text" width="5rem" />
