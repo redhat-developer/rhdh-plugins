@@ -30,16 +30,12 @@ import gitUrlParse from 'git-url-parse';
 import { logErrorIfNeeded } from '../../helpers';
 import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import {
-  AppInstallationRepositories,
-  AuthenticatedUserRepositoryList,
   isGithubAppCredential,
   type ExtendedGithubCredentials,
   type GithubFetchError,
 } from '../types';
 import { buildOcto } from './ghUtils';
 import { validateAndBuildRepoData, ValidatedRepo } from './repoUtils';
-
-const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
 
 /**
  * Creates the GithubFetchError to be stored in the returned errors array of the returned GithubRepositoryResponse object
@@ -362,40 +358,4 @@ export async function fetchFromMatchedIntegration<T>(
   }
 
   return { errors: Array.from(errors.values()) };
-}
-
-export async function listAllRepositoriesForAuthenticatedUser(
-  octokit: Octokit,
-): Promise<AuthenticatedUserRepositoryList> {
-  /**
-   * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
-   * These would include repositories they own, repositories where they are a collaborator,
-   * and repositories that they can access through an organization membership.
-   */
-  return await octokit.paginate(octokit.rest.repos.listForAuthenticatedUser, {
-    per_page: GITHUB_REST_API_MAX_PAGE_SIZE,
-    sort: 'full_name',
-    direction: 'asc',
-  });
-}
-
-export async function listAllRepositoriesAccessibleToInstallation(
-  octokit: Octokit,
-): Promise<AppInstallationRepositories> {
-  /**
-   * The octokit pagination smartly extracts data from the response.
-   * Here, repositories array is extracted from the original listReposAccessibleToInstallation.
-   */
-  const repositories = await octokit.paginate(
-    octokit.rest.apps.listReposAccessibleToInstallation,
-    {
-      per_page: GITHUB_REST_API_MAX_PAGE_SIZE,
-    },
-  );
-
-  return {
-    repositories,
-    total_count: repositories.length,
-    repository_selection: repositories.repository_selection ?? 'all',
-  };
 }

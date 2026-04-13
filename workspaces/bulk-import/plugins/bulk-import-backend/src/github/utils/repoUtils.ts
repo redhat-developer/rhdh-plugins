@@ -33,6 +33,8 @@ import {
 } from '../../service/handlers/handlers';
 import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import type {
+  AppInstallationRepositories,
+  AuthenticatedUserRepositoryList,
   ExtendedGithubCredentials,
   GithubAppCredentials,
   GithubFetchError,
@@ -42,9 +44,9 @@ import {
   computeTotalCountFromGitHubToken,
   createCredentialError,
   handleError,
-  listAllRepositoriesAccessibleToInstallation,
-  listAllRepositoriesForAuthenticatedUser,
 } from './utils';
+
+const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
 
 export type ValidatedRepo = {
   ghConfig: GithubIntegrationConfig;
@@ -376,4 +378,40 @@ export async function createOrUpdateFileInBranch(
       throw error;
     }
   }
+}
+
+async function listAllRepositoriesForAuthenticatedUser(
+  octokit: Octokit,
+): Promise<AuthenticatedUserRepositoryList> {
+  /**
+   * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
+   * These would include repositories they own, repositories where they are a collaborator,
+   * and repositories that they can access through an organization membership.
+   */
+  return await octokit.paginate(octokit.rest.repos.listForAuthenticatedUser, {
+    per_page: GITHUB_REST_API_MAX_PAGE_SIZE,
+    sort: 'full_name',
+    direction: 'asc',
+  });
+}
+
+async function listAllRepositoriesAccessibleToInstallation(
+  octokit: Octokit,
+): Promise<AppInstallationRepositories> {
+  /**
+   * The octokit pagination smartly extracts data from the response.
+   * Here, repositories array is extracted from the original listReposAccessibleToInstallation.
+   */
+  const repositories = await octokit.paginate(
+    octokit.rest.apps.listReposAccessibleToInstallation,
+    {
+      per_page: GITHUB_REST_API_MAX_PAGE_SIZE,
+    },
+  );
+
+  return {
+    repositories,
+    total_count: repositories.length,
+    repository_selection: repositories.repository_selection ?? 'all',
+  };
 }

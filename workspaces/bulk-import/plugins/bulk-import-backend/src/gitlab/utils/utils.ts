@@ -24,7 +24,7 @@ import {
   type GitLabIntegrationConfig,
 } from '@backstage/integration';
 
-import { Gitlab, OffsetPagination, ProjectSchema } from '@gitbeaker/rest';
+import { Gitlab, OffsetPagination } from '@gitbeaker/rest';
 
 import { logErrorIfNeeded } from '../../helpers';
 import type { CustomGitlabCredentialsProvider } from '../GitlabAppManager';
@@ -234,32 +234,4 @@ export async function fetchFromAllIntegrations<T>(
   dataErrs.forEach((err, idx) => aggregatedErrors.set(idx, err));
 
   return { data, errors: aggregatedErrors };
-}
-
-export async function listAllRepositoriesForAuthenticatedUser(
-  deps: {
-    logger: LoggerService;
-  },
-  gitlab: InstanceType<typeof Gitlab<false>>,
-): Promise<ProjectSchema[]> {
-  try {
-    /**
-     * The Projects.all method with the membership: true option will grab all the repositories/projects the gitlab token has explicit access to.
-     * These would include repositories they own, repositories where they are a collaborator,
-     * and repositories that they can access through an organization membership.
-     */
-    const allProjects = await gitlab.Projects.all<true, 'keyset'>({
-      membership: true,
-      showExpanded: true,
-      orderBy: 'name',
-      sort: 'asc',
-    });
-
-    return allProjects.data;
-  } catch (error) {
-    deps.logger.error(
-      `Failed to list all repositories for authenticated user: ${error}`,
-    );
-    throw error;
-  }
 }
