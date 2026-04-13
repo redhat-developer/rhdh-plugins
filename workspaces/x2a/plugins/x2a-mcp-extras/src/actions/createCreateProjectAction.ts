@@ -22,6 +22,7 @@ export function createCreateProjectAction(options: X2aActionsOptions) {
     actionsRegistry,
     auth,
     catalog,
+    config,
     logger,
     permissionsSvc,
     x2aDatabase,
@@ -38,7 +39,12 @@ export function createCreateProjectAction(options: X2aActionsOptions) {
     description: `Create a new X2A migration project.
 Requires the source and target repository URLs and branch names.
 The project will be owned by the authenticated user (when using OAuth) or by the system user (when using static tokens).
-An optional ownedByGroup can be specified if the user is a member of that Backstage group.`,
+An optional ownedByGroup can be specified if the user is a member of that Backstage group.
+
+After the project is created, the output includes a projectDetailsUrl.
+IMPORTANT: The next step is to instruct the user to open this URL in their browser.
+On the Project Details page, the user must manually trigger the init phase and provide the source and target SCM (repository) authentication tokens.
+The init phase cannot be started automatically from this tool - the user must visit the page and trigger it themselves to pass down tokens for the source control managers.`,
     schema: {
       input: z =>
         z.object({
@@ -75,6 +81,13 @@ An optional ownedByGroup can be specified if the user is a member of that Backst
           targetRepoBranch: z.string(),
           createdBy: z.string(),
           createdAt: z.string(),
+          projectDetailsUrl: z
+            .string()
+            .describe(
+              'Full URL to the Project Details page. ' +
+                'Direct the user to open this URL in their browser to trigger the init phase ' +
+                'and provide source and target SCM authentication tokens.',
+            ),
         }),
     },
     action: async ({ input, credentials }) => {
@@ -110,6 +123,9 @@ An optional ownedByGroup can be specified if the user is a member of that Backst
         { credentials: ctx.credentials },
       );
 
+      const appBaseUrl = config.getString('app.baseUrl');
+      const projectDetailsUrl = `${appBaseUrl}/x2a/projects/${project.id}`;
+
       return {
         output: {
           id: project.id,
@@ -125,6 +141,7 @@ An optional ownedByGroup can be specified if the user is a member of that Backst
             project.createdAt instanceof Date
               ? project.createdAt.toISOString()
               : String(project.createdAt),
+          projectDetailsUrl,
         },
       };
     },

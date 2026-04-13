@@ -74,6 +74,7 @@ export function buildMocks(overrides?: Partial<X2aActionsOptions>) {
 
   const config = mockServices.rootConfig({
     data: {
+      app: { baseUrl: 'http://localhost:3000' },
       x2a: {
         git: {
           sourceRepo: { token: 'src-token-from-config' },

@@ -59,6 +59,7 @@ describe('x2a-create-project MCP tool', () => {
         targetRepoBranch: 'main',
         createdBy: 'user:default/mock',
         createdAt: NOW.toISOString(),
+        projectDetailsUrl: 'http://localhost:3000/x2a/projects/proj-new-001',
       },
     });
 
