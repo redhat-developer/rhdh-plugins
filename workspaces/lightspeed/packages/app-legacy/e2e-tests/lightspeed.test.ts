@@ -27,6 +27,8 @@ import {
   type McpServersListMock,
   thinkingContent,
   assistantResponse,
+  generateQueryResponseWithMcpToolCall,
+  modelBaseUrl,
 } from './fixtures/responses';
 import {
   openLightspeed,
@@ -686,5 +688,40 @@ test.describe('Lightspeed tests', () => {
         await selectSortOption(sharedPage, 'newest', translations);
       });
     });
+  });
+
+  test('MCP tool calling renders in UI', async () => {
+    const mcpToolCallPrompt = 'test mcp tool call';
+
+    await mockConversations(sharedPage, conversations, true);
+    await mockChatHistory(sharedPage, []);
+    await openLightspeed(sharedPage);
+
+    await sharedPage.unroute(`${modelBaseUrl}/v1/query`);
+    await sharedPage.route(`${modelBaseUrl}/v1/query`, async route => {
+      const payload = route.request().postDataJSON();
+      if (payload.conversation_id) {
+        conversations[1].conversation_id = payload.conversation_id;
+      }
+      const conversationId =
+        conversations[1].conversation_id ?? conversations[0].conversation_id;
+      await route.fulfill({
+        body: generateQueryResponseWithMcpToolCall(conversationId),
+      });
+    });
+
+    await sendMessage(mcpToolCallPrompt, sharedPage, translations);
+
+    await expect(
+      sharedPage.getByRole('button', {
+        name: evaluateMessage(
+          translations['toolCall.header'],
+          'mcp_list_tools',
+        ),
+      }),
+    ).toBeVisible();
+
+    await sharedPage.unroute(`${modelBaseUrl}/v1/query`);
+    await mockQuery(sharedPage, botQuery, conversations);
   });
 });
