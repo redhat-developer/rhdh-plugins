@@ -18,7 +18,12 @@ import {
   createRoutableExtension,
 } from '@backstage/core-plugin-api';
 
-import { rootRouteRef } from './routes';
+import {
+  rootRouteRef,
+  serviceSpecsRouteRef,
+  environmentDetailsRouteRef,
+  serviceSpecDetailsRouteRef,
+} from './routes';
 
 /**
  * DCM plugin instance.
@@ -29,6 +34,9 @@ export const dcmPlugin = createPlugin({
   id: 'dcm',
   routes: {
     root: rootRouteRef,
+    serviceSpecs: serviceSpecsRouteRef,
+    environmentDetails: environmentDetailsRouteRef,
+    serviceSpecDetails: serviceSpecDetailsRouteRef,
   },
 });
 
@@ -40,8 +48,7 @@ export const dcmPlugin = createPlugin({
 export const DcmPage = dcmPlugin.provide(
   createRoutableExtension({
     name: 'DcmPage',
-    component: () =>
-      import('./components/ExampleComponent').then(m => m.ExampleComponent),
+    component: () => import('./Router').then(m => m.Router),
     mountPoint: rootRouteRef,
   }),
 );

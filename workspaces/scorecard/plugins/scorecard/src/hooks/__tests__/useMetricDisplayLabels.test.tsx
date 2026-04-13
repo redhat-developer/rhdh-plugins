@@ -61,7 +61,7 @@ describe('useMetricDisplayLabels', () => {
       return key;
     });
 
-    const { result } = renderHook(() => useMetricDisplayLabels(metric as any));
+    const { result } = renderHook(() => useMetricDisplayLabels(metric));
 
     expect(result.current).toEqual({
       title: 'Translated Title',
@@ -72,7 +72,7 @@ describe('useMetricDisplayLabels', () => {
   it('should fall back to original values when translation does not exist', () => {
     mockT.mockImplementation((key: string) => key);
 
-    const { result } = renderHook(() => useMetricDisplayLabels(metric as any));
+    const { result } = renderHook(() => useMetricDisplayLabels(metric));
 
     expect(result.current).toEqual({
       title: 'GitHub open PRs',
@@ -87,7 +87,7 @@ describe('useMetricDisplayLabels', () => {
       return key;
     });
 
-    const { result } = renderHook(() => useMetricDisplayLabels(metric as any));
+    const { result } = renderHook(() => useMetricDisplayLabels(metric));
 
     expect(result.current).toEqual({
       title: 'Translated Title',

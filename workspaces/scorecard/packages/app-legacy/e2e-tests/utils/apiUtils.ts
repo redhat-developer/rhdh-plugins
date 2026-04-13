@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 import { Page, expect } from '@playwright/test';
+import { ScorecardRoutes } from '../constants/routes';
+
+/** Metric-id aggregation URLs (drill-down uses `github.open_prs` / `jira.open_issues`). */
+const GITHUB_AGGREGATION_ROUTE =
+  ScorecardRoutes.GITHUB_OPEN_PRS_METRIC_AGGREGATION_ROUTE;
+const JIRA_AGGREGATION_ROUTE =
+  ScorecardRoutes.JIRA_OPEN_ISSUES_METRIC_AGGREGATION_ROUTE;
 
 export async function waitUntilApiCallSucceeds(
   page: Page,
@@ -31,16 +38,14 @@ export async function waitUntilApiCallSucceeds(
   expect(response.status()).toBe(200);
 }
 
-const SCORECARD_API_ROUTE =
-  '**/api/scorecard/metrics/catalog/Component/default/red-hat-developer-hub';
-
-export async function mockScorecardResponse(
+export async function mockApiResponse(
   page: Page,
+  route: string,
   responseData: object,
   status = 200,
 ) {
-  await page.route(SCORECARD_API_ROUTE, async route => {
-    await route.fulfill({
+  await page.route(route, async r => {
+    await r.fulfill({
       status,
       contentType: 'application/json',
       body: JSON.stringify(responseData),
@@ -48,30 +53,18 @@ export async function mockScorecardResponse(
   });
 }
 
-const GITHUB_AGGREGATION_ROUTE =
-  '**/api/scorecard/metrics/github.open_prs/catalog/aggregations';
-const JIRA_AGGREGATION_ROUTE =
-  '**/api/scorecard/metrics/jira.open_issues/catalog/aggregations';
-
-export async function mockAggregatedScorecardResponse(
+/** Non-JSON error bodies (e.g. metadata endpoint 500). */
+export async function mockApiTextResponse(
   page: Page,
-  githubResponse: object,
-  jiraResponse: object,
-  status = 200,
+  route: string,
+  body: string,
+  status = 500,
 ) {
-  await page.route(GITHUB_AGGREGATION_ROUTE, async route => {
-    await route.fulfill({
+  await page.route(route, async r => {
+    await r.fulfill({
       status,
-      contentType: 'application/json',
-      body: JSON.stringify(githubResponse),
-    });
-  });
-
-  await page.route(JIRA_AGGREGATION_ROUTE, async route => {
-    await route.fulfill({
-      status,
-      contentType: 'application/json',
-      body: JSON.stringify(jiraResponse),
+      contentType: 'text/plain',
+      body,
     });
   });
 }
@@ -146,7 +139,7 @@ export async function mockMetricsApi(
 
 /**
  * Mocks Jira drill-down "missing permission" scenario: metrics API 200, aggregations 403, entities 403.
- * Use with direct navigation to /scorecard/metrics/jira.open_issues.
+ * Use with direct navigation to /scorecard/aggregations/jira.open_issues/metrics/jira.open_issues
  */
 export async function mockJiraDrillDownMissingPermission(
   page: Page,

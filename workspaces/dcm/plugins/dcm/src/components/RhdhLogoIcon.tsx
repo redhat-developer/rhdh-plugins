@@ -21,12 +21,17 @@ const useStyles = makeStyles({
     width: 'auto',
     height: 28,
   },
-  path: {
-    fill: '#7df3e1',
-  },
 });
 
-const RhdhLogoIcon = () => {
+/**
+ * Compact RHDH icon (hat only) for use as a Backstage sidebar collapsed logo.
+ *
+ * Exported so it can be referenced in RHDH dynamic-plugin frontend wiring:
+ *   `'@red-hat-developer-hub/backstage-plugin-dcm#RhdhLogoIcon'`
+ *
+ * @public
+ */
+export const RhdhLogoIcon = () => {
   const classes = useStyles();
 
   return (
@@ -43,5 +48,3 @@ const RhdhLogoIcon = () => {
     </svg>
   );
 };
-
-export default RhdhLogoIcon;

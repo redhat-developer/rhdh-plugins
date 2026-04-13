@@ -53,3 +53,18 @@ catalog:
       target: ./examples/org.yaml
       rules:
         - allow: [User, Group]
+# Scorecard (uncomment and adjust for production — requires scorecard backend + metric modules)
+# scorecard:
+#   aggregationKPIs:
+#     openPrsKpi:
+#       title: GitHub open PRs
+#       description: Open PRs across owned entities, grouped by status.
+#       type: statusGrouped
+#       metricId: github.open_prs
+#   plugins:
+#     github:
+#       open_prs:
+#         schedule:
+#           frequency: { hours: 1 }
+#           timeout: { minutes: 15 }
+#           initialDelay: { minutes: 1 }

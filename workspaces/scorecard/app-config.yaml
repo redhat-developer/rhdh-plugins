@@ -138,6 +138,10 @@ catalog:
       target: ../../examples/all-scorecards-location.yaml
       rules:
         - allow: [Component]
+    - type: file
+      target: ../../examples/orgs/guest.yaml
+      rules:
+        - allow: [User, Group]
 
     - type: url
       target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/components/showcase.yaml
@@ -161,6 +165,17 @@ permission:
 
 # Scorecard development configuration
 scorecard:
+  aggregationKPIs:
+    openPrsKpi:
+      title: GitHub Open PRs KPI
+      type: statusGrouped
+      description: This KPI is provide information about GitHub open PRs grouped by status.
+      metricId: github.open_prs
+    openIssuesKpi:
+      title: Jira Open Issues KPI
+      type: statusGrouped
+      description: This KPI is provide information about Jira open issues grouped by status.
+      metricId: jira.open_issues
   plugins:
     jira:
       open_issues:

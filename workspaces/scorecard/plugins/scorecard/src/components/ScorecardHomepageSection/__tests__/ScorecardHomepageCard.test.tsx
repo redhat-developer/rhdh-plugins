@@ -121,6 +121,7 @@ const mockScorecard: AggregatedMetricResult = {
     description: 'Open PRs',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     total: 37,
@@ -159,6 +160,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="Current count of open Pull Requests"
       />,
@@ -180,6 +182,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -193,6 +196,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="Test"
         description="desc"
       />,
@@ -217,6 +221,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -230,6 +235,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -253,6 +259,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={emptyScorecard}
+        aggregationId={emptyScorecard.id}
         cardTitle="Empty"
         description="desc"
       />,
@@ -269,6 +276,7 @@ describe('ScorecardHomepageCardComponent', () => {
     const { container } = render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -292,6 +300,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={scorecardWithoutValues}
+        aggregationId={scorecardWithoutValues.id}
         cardTitle="No Values"
         description="desc"
       />,

@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-import { z } from 'zod';
-import { InputError } from '@backstage/errors';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
-export function validateMetricsSchema(query: unknown): {
-  metricIds?: string;
-  datasource?: string;
-} {
-  const catalogMetricsSchema = z.object({
-    metricIds: z.string().min(1).optional(),
-    datasource: z.string().min(1).optional(),
-  });
-
-  const parsed = catalogMetricsSchema.safeParse(query);
-
-  if (!parsed.success) {
-    throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
-  }
-
-  return parsed.data;
-}
+export const CardLoading = ({ dataTestId }: { dataTestId?: string }) => {
+  return (
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      minHeight="200px"
+      data-testid={dataTestId}
+    >
+      <CircularProgress />
+    </Box>
+  );
+};

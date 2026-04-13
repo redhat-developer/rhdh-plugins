@@ -9,8 +9,29 @@ import { BasicPermission } from '@backstage/plugin-permission-common';
 export const DCM_COMMON_PLUGIN_ID: 'dcm';
 
 // @public
+export const DCM_ENTITY_STATUS: {
+  readonly success: 'success';
+  readonly running: 'running';
+};
+
+// @public
+export const DCM_ENTITY_STATUS_VALUES: readonly DcmEntityStatus[];
+
+// @public
+export type DcmEntityStatus = 'success' | 'running';
+
+// @public
 export const dcmPluginPermissions: BasicPermission[];
 
 // @public
 export const dcmPluginReadPermission: BasicPermission;
+
+// @public
+export function displayDcmEntityStatus(status: DcmEntityStatus): string;
+
+// @public
+export function displayDcmEntityStatusLoose(raw: string): string;
+
+// @public
+export function parseDcmEntityStatus(raw: string): DcmEntityStatus | undefined;
 ```
