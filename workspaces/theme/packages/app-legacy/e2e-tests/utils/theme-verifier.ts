@@ -29,8 +29,13 @@ export class ThemeVerifier {
   };
 
   async setTheme(theme: string) {
-    await this.page.getByRole('link', { name: 'Settings' }).click();
-    await expect(this.page.getByText('Settings').first()).toBeVisible();
+    await this.page
+      .locator('nav')
+      .getByRole('link', { name: 'Settings' })
+      .click();
+    await expect(
+      this.page.locator('nav').getByText('Settings').first(),
+    ).toBeVisible();
     await this.page.getByRole('button', { name: `${theme}` }).click();
     const themeButton = this.page.getByRole('button', {
       name: theme,
@@ -38,7 +43,10 @@ export class ThemeVerifier {
     });
 
     // TODO: https://issues.redhat.com/browse/RHDHBUGS-2076 navigating back to settings page is needed until the issue is resolved
-    await this.page.getByRole('link', { name: 'Settings' }).click();
+    await this.page
+      .locator('nav')
+      .getByRole('link', { name: 'Settings' })
+      .click();
 
     await expect(themeButton).toHaveAttribute('aria-pressed', 'true');
   }

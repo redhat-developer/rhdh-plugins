@@ -378,4 +378,104 @@ describe('GithubApiService tests', () => {
       totalCount: 0,
     });
   });
+
+  describe('with userTokens', () => {
+    it('uses the user-token path for getRepositoriesFromIntegrations when a matching host token is provided', async () => {
+      octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
+        data: ghRepos,
+      });
+      octokit.apps.listReposAccessibleToInstallation.mockReturnValue({
+        data: [],
+      });
+
+      const result = await githubApiService.getRepositoriesFromIntegrations(
+        undefined,
+        undefined,
+        undefined,
+        { 'https://github.com': 'user-oauth-token' },
+      );
+
+      expect(result.repositories).toEqual(ghRepos);
+      expect(result.errors).toEqual([]);
+      // getAllCredentials is not called in the user-token path
+      expect(mockGetAllCredentials).not.toHaveBeenCalled();
+    });
+
+    it('returns empty repositories when userTokens is provided but no host matches an integration', async () => {
+      const result = await githubApiService.getRepositoriesFromIntegrations(
+        undefined,
+        undefined,
+        undefined,
+        { 'https://some-other-host.com': 'user-oauth-token' },
+      );
+
+      expect(result.repositories).toEqual([]);
+      expect(result.errors).toEqual([]);
+      expect(mockGetAllCredentials).not.toHaveBeenCalled();
+    });
+
+    it('falls back to server credentials when userTokens is undefined', async () => {
+      octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
+        data: ghRepos,
+      });
+      octokit.apps.listReposAccessibleToInstallation.mockReturnValue({
+        data: [],
+      });
+
+      const result = await githubApiService.getRepositoriesFromIntegrations();
+
+      // Server credentials path is used — getAllCredentials IS called
+      expect(mockGetAllCredentials).toHaveBeenCalled();
+      expect(result.repositories).toEqual(ghRepos);
+    });
+
+    it('falls back to server credentials when userTokens is an empty object', async () => {
+      octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
+        data: ghRepos,
+      });
+      octokit.apps.listReposAccessibleToInstallation.mockReturnValue({
+        data: [],
+      });
+
+      const result = await githubApiService.getRepositoriesFromIntegrations(
+        undefined,
+        undefined,
+        undefined,
+        {},
+      );
+
+      expect(mockGetAllCredentials).toHaveBeenCalled();
+      expect(result.repositories).toEqual(ghRepos);
+    });
+
+    it('uses the user-token path for getOrgRepositoriesFromIntegrations when a matching host token is provided', async () => {
+      octokit.rest.repos.listForOrg.mockReturnValue({ data: ghRepos });
+
+      const result = await githubApiService.getOrgRepositoriesFromIntegrations(
+        'my-org',
+        undefined,
+        undefined,
+        undefined,
+        { 'https://github.com': 'user-oauth-token' },
+      );
+
+      expect(result.repositories).toEqual(ghRepos);
+      expect(result.errors).toEqual([]);
+      expect(mockGetAllCredentials).not.toHaveBeenCalled();
+    });
+
+    it('returns empty org repositories when userTokens provided but no host matches', async () => {
+      const result = await githubApiService.getOrgRepositoriesFromIntegrations(
+        'my-org',
+        undefined,
+        undefined,
+        undefined,
+        { 'https://some-other-host.com': 'user-oauth-token' },
+      );
+
+      expect(result.repositories).toEqual([]);
+      expect(result.errors).toEqual([]);
+      expect(mockGetAllCredentials).not.toHaveBeenCalled();
+    });
+  });
 });

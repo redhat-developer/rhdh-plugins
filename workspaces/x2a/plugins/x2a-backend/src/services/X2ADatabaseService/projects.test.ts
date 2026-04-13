@@ -766,5 +766,547 @@ describe('X2ADatabaseService – projects', () => {
         expect(result.projects[0].migrationPlan?.value).toBe(planUrl);
       },
     );
+
+    describe('sort by status', () => {
+      const credentials = mockCredentials.user();
+      const listOpts = {
+        credentials,
+        canViewAll: true as const,
+        groupsOfUser: [] as string[],
+      };
+
+      async function makeProject(
+        service: ReturnType<typeof createService>,
+        name: string,
+        abbrev: string,
+        initStatus?: 'success' | 'error' | 'running' | 'pending',
+      ) {
+        const project = await service.createProject(
+          {
+            name,
+            abbreviation: abbrev,
+            description: name,
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        if (initStatus) {
+          await service.createJob({
+            projectId: project.id,
+            phase: 'init',
+            status: initStatus,
+          });
+        }
+        return project;
+      }
+
+      async function addModule(
+        service: ReturnType<typeof createService>,
+        projectId: string,
+        name: string,
+        effectiveStatus:
+          | 'finished'
+          | 'waiting'
+          | 'error'
+          | 'pending'
+          | 'running',
+      ) {
+        const mod = await service.createModule({
+          name,
+          sourcePath: `/${name}`,
+          projectId,
+        });
+        if (effectiveStatus === 'finished') {
+          await service.createJob({
+            projectId,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'success',
+          });
+          await service.createJob({
+            projectId,
+            moduleId: mod.id,
+            phase: 'publish',
+            status: 'success',
+          });
+        } else if (effectiveStatus === 'waiting') {
+          await service.createJob({
+            projectId,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'success',
+          });
+        } else if (effectiveStatus === 'error') {
+          await service.createJob({
+            projectId,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'error',
+          });
+        } else if (effectiveStatus === 'running') {
+          await service.createJob({
+            projectId,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'running',
+          });
+        }
+        return mod;
+      }
+
+      it.each(supportedDatabaseIds)(
+        'sorts by state ascending and descending - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          // 'created' (no init), 'failed' (init error), 'initialized' (init success, 0 modules)
+          await makeProject(service, 'P-Created', 'PC');
+          await makeProject(service, 'P-Failed', 'PF', 'error');
+          await makeProject(service, 'P-Initialized', 'PI', 'success');
+
+          // Semantic order: created(0) < initialized(2) < failed(4)
+          const asc = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          expect(asc.projects.map(p => p.status?.state)).toEqual([
+            'created',
+            'initialized',
+            'failed',
+          ]);
+
+          const desc = await service.listProjects(
+            { sort: 'status', order: 'desc' },
+            listOpts,
+          );
+          expect(desc.projects.map(p => p.status?.state)).toEqual([
+            'failed',
+            'initialized',
+            'created',
+          ]);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'uses default order (desc) when order is not specified - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          await makeProject(service, 'P-Created', 'PC');
+          await makeProject(service, 'P-Initialized', 'PI', 'success');
+
+          const result = await service.listProjects(
+            { sort: 'status' },
+            listOpts,
+          );
+          // desc: initialized(2) > created(0)
+          expect(result.projects.map(p => p.status?.state)).toEqual([
+            'initialized',
+            'created',
+          ]);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'breaks ties by modulesSummary finished percentage - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          // Both 'inProgress': init success, mixed modules, no errors
+          // projLow: 1 finished + 1 waiting → finished = 50%
+          const projLow = await makeProject(
+            service,
+            'Low-Finished',
+            'LF',
+            'success',
+          );
+          await addModule(service, projLow.id, 'lf-m1', 'finished');
+          await addModule(service, projLow.id, 'lf-m2', 'waiting');
+
+          // projHigh: 3 finished + 1 waiting → finished = 75%
+          const projHigh = await makeProject(
+            service,
+            'High-Finished',
+            'HF',
+            'success',
+          );
+          await addModule(service, projHigh.id, 'hf-m1', 'finished');
+          await addModule(service, projHigh.id, 'hf-m2', 'finished');
+          await addModule(service, projHigh.id, 'hf-m3', 'finished');
+          await addModule(service, projHigh.id, 'hf-m4', 'waiting');
+
+          const asc = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          // Both 'inProgress'; ascending finished%: 50% < 75%
+          expect(asc.projects.map(p => p.name)).toEqual([
+            'Low-Finished',
+            'High-Finished',
+          ]);
+
+          const desc = await service.listProjects(
+            { sort: 'status', order: 'desc' },
+            listOpts,
+          );
+          expect(desc.projects.map(p => p.name)).toEqual([
+            'High-Finished',
+            'Low-Finished',
+          ]);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'falls through to error percentage when finished percentages match - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          // Both 'failed': init success, 0 finished, different error%
+          // projLowErr: 1 error + 3 pending → error = 25%
+          const projLowErr = await makeProject(
+            service,
+            'Low-Error',
+            'LE',
+            'success',
+          );
+          await addModule(service, projLowErr.id, 'le-m1', 'error');
+          await addModule(service, projLowErr.id, 'le-m2', 'pending');
+          await addModule(service, projLowErr.id, 'le-m3', 'pending');
+          await addModule(service, projLowErr.id, 'le-m4', 'pending');
+
+          // projHighErr: 2 error + 2 pending → error = 50%
+          const projHighErr = await makeProject(
+            service,
+            'High-Error',
+            'HE',
+            'success',
+          );
+          await addModule(service, projHighErr.id, 'he-m1', 'error');
+          await addModule(service, projHighErr.id, 'he-m2', 'error');
+          await addModule(service, projHighErr.id, 'he-m3', 'pending');
+          await addModule(service, projHighErr.id, 'he-m4', 'pending');
+
+          const asc = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          // Both 'failed', 0% finished; ascending error%: 25% < 50%
+          expect(asc.projects.map(p => p.name)).toEqual([
+            'Low-Error',
+            'High-Error',
+          ]);
+
+          const desc = await service.listProjects(
+            { sort: 'status', order: 'desc' },
+            listOpts,
+          );
+          expect(desc.projects.map(p => p.name)).toEqual([
+            'High-Error',
+            'Low-Error',
+          ]);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'treats equivalent fractions as equal (e.g. 1/3 vs 2/6) and falls through to next tiebreaker - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          // Project A: 1 finished + 1 error + 1 pending → finished = 1/3, error = 1/3
+          const projA = await makeProject(service, 'Frac-A', 'FA', 'success');
+          await addModule(service, projA.id, 'fa-m1', 'finished');
+          await addModule(service, projA.id, 'fa-m2', 'error');
+          await addModule(service, projA.id, 'fa-m3', 'pending');
+
+          // Project B: 2 finished + 4 pending → finished = 2/6 = 1/3, error = 0
+          const projB = await makeProject(service, 'Frac-B', 'FB', 'success');
+          await addModule(service, projB.id, 'fb-m1', 'finished');
+          await addModule(service, projB.id, 'fb-m2', 'finished');
+          await addModule(service, projB.id, 'fb-m3', 'pending');
+          await addModule(service, projB.id, 'fb-m4', 'pending');
+          await addModule(service, projB.id, 'fb-m5', 'pending');
+          await addModule(service, projB.id, 'fb-m6', 'pending');
+
+          // Both inProgress with identical finished% (1/3).
+          // Tiebreaker: error% → A has 1/3, B has 0 → B sorts first ascending.
+          const asc = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          expect(asc.projects.map(p => p.name)).toEqual(['Frac-B', 'Frac-A']);
+
+          const desc = await service.listProjects(
+            { sort: 'status', order: 'desc' },
+            listOpts,
+          );
+          expect(desc.projects.map(p => p.name)).toEqual(['Frac-A', 'Frac-B']);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'treats identical fractions with same denominator as tied - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          // Both projects: 1 finished + 2 pending → finished = 1/3
+          // All summary percentages are identical so the comparator returns 0.
+          const projA = await makeProject(service, 'Same-A', 'SA', 'success');
+          await addModule(service, projA.id, 'sa-m1', 'finished');
+          await addModule(service, projA.id, 'sa-m2', 'pending');
+          await addModule(service, projA.id, 'sa-m3', 'pending');
+
+          const projB = await makeProject(service, 'Same-B', 'SB', 'success');
+          await addModule(service, projB.id, 'sb-m1', 'finished');
+          await addModule(service, projB.id, 'sb-m2', 'pending');
+          await addModule(service, projB.id, 'sb-m3', 'pending');
+
+          const result = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          expect(result.totalCount).toBe(2);
+          expect(result.projects).toHaveLength(2);
+          expect(
+            result.projects.every(p => p.status?.state === 'inProgress'),
+          ).toBe(true);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'treats projects with 0 modules as tied on all percentages - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          // Both 'initialized' with 0 modules: all percentages = 0
+          await makeProject(service, 'Init-A', 'IA', 'success');
+          await delay(10);
+          await makeProject(service, 'Init-B', 'IB', 'success');
+
+          const result = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          expect(result.totalCount).toBe(2);
+          expect(result.projects).toHaveLength(2);
+          expect(
+            result.projects.every(p => p.status?.state === 'initialized'),
+          ).toBe(true);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'paginates correctly after in-memory sort - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          await makeProject(service, 'P-Created', 'PC');
+          await makeProject(service, 'P-Failed', 'PF', 'error');
+          await makeProject(service, 'P-Initialized', 'PI', 'success');
+
+          // Semantic asc: created(0), initialized(2), failed(4)
+          const p0 = await service.listProjects(
+            { sort: 'status', order: 'asc', page: 0, pageSize: 2 },
+            listOpts,
+          );
+          expect(p0.totalCount).toBe(3);
+          expect(p0.projects).toHaveLength(2);
+          expect(p0.projects.map(p => p.status?.state)).toEqual([
+            'created',
+            'initialized',
+          ]);
+
+          const p1 = await service.listProjects(
+            { sort: 'status', order: 'asc', page: 1, pageSize: 2 },
+            listOpts,
+          );
+          expect(p1.totalCount).toBe(3);
+          expect(p1.projects).toHaveLength(1);
+          expect(p1.projects.map(p => p.status?.state)).toEqual(['failed']);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'returns empty array for page beyond available data - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          await makeProject(service, 'P-Only', 'PO');
+
+          const result = await service.listProjects(
+            { sort: 'status', order: 'asc', page: 5, pageSize: 10 },
+            listOpts,
+          );
+          expect(result.totalCount).toBe(1);
+          expect(result.projects).toHaveLength(0);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'handles empty project list - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          const result = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          expect(result.totalCount).toBe(0);
+          expect(result.projects).toEqual([]);
+        },
+      );
+
+      it.each(supportedDatabaseIds)(
+        'sorts all six status states in semantic order - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          // created: no init job
+          await makeProject(service, 'P-Created', 'PCR');
+
+          // initializing: init job running
+          await makeProject(service, 'P-Initializing', 'PIG', 'running');
+
+          // initialized: init success, 0 modules
+          await makeProject(service, 'P-Initialized', 'PID', 'success');
+
+          // inProgress: init success, 1 waiting module (beyond pending)
+          const projInProgress = await makeProject(
+            service,
+            'P-InProgress',
+            'PIP',
+            'success',
+          );
+          await addModule(service, projInProgress.id, 'ip-m1', 'waiting');
+
+          // failed: init error
+          await makeProject(service, 'P-Failed', 'PFA', 'error');
+
+          // completed: init success, all modules finished
+          const projCompleted = await makeProject(
+            service,
+            'P-Completed',
+            'PCO',
+            'success',
+          );
+          await addModule(service, projCompleted.id, 'co-m1', 'finished');
+
+          const asc = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            listOpts,
+          );
+          expect(asc.projects.map(p => p.status?.state)).toEqual([
+            'created',
+            'initializing',
+            'initialized',
+            'inProgress',
+            'failed',
+            'completed',
+          ]);
+
+          const desc = await service.listProjects(
+            { sort: 'status', order: 'desc' },
+            listOpts,
+          );
+          expect(desc.projects.map(p => p.status?.state)).toEqual([
+            'completed',
+            'failed',
+            'inProgress',
+            'initialized',
+            'initializing',
+            'created',
+          ]);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'sort by status respects permission filtering (canViewAll=false) - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+
+          const cred1 = mockCredentials.user('user:default/user1');
+          const cred2 = mockCredentials.user('user:default/user2');
+
+          // User1 projects
+          await service.createProject(
+            {
+              name: 'U1-Created',
+              abbreviation: 'U1C',
+              description: 'U1 created',
+              ...defaultProjectRepoFields,
+            },
+            { credentials: cred1 },
+          );
+          const u1Init = await service.createProject(
+            {
+              name: 'U1-Initialized',
+              abbreviation: 'U1I',
+              description: 'U1 initialized',
+              ...defaultProjectRepoFields,
+            },
+            { credentials: cred1 },
+          );
+          await service.createJob({
+            projectId: u1Init.id,
+            phase: 'init',
+            status: 'success',
+          });
+
+          // User2 project (should not appear for user1)
+          const u2Proj = await service.createProject(
+            {
+              name: 'U2-Failed',
+              abbreviation: 'U2F',
+              description: 'U2 failed',
+              ...defaultProjectRepoFields,
+            },
+            { credentials: cred2 },
+          );
+          await service.createJob({
+            projectId: u2Proj.id,
+            phase: 'init',
+            status: 'error',
+          });
+
+          const result = await service.listProjects(
+            { sort: 'status', order: 'asc' },
+            { credentials: cred1, canViewAll: false, groupsOfUser: [] },
+          );
+
+          expect(result.totalCount).toBe(2);
+          expect(result.projects).toHaveLength(2);
+          expect(
+            result.projects.every(p => p.createdBy === 'user:default/user1'),
+          ).toBe(true);
+          // Semantic asc: created(0) < initialized(2)
+          expect(result.projects.map(p => p.status?.state)).toEqual([
+            'created',
+            'initialized',
+          ]);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+    });
   });
 });

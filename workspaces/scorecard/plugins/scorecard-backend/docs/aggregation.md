@@ -4,20 +4,16 @@ The Scorecard plugin provides an aggregation endpoint that returns metrics aggre
 
 ## Overview
 
-The aggregation endpoint (`/metrics/:metricId/catalog/aggregations`) aggregates metrics from multiple entities based on entity ownership. It collects metrics from:
+The aggregation endpoint (`/aggregations/:aggregationId`) aggregates metrics from multiple entities based on entity ownership. It collects metrics from:
 
-- Entities directly owned by the user
-- Entities owned by groups the user is a direct member of
+- Entities **directly owned** by the user
+- Entities owned by **groups the user is a direct member of**
 
-The aggregation counts how many entities fall into each threshold category (`success`, `warning`, `error`) for each metric, providing a high-level overview of the health status across all owned entities.
+### Important limitation: direct parent groups only
 
-### Important Limitation: Direct Parent Groups Only
-
-**Only direct parent groups are considered.** The aggregation does not traverse nested group hierarchies.
+**Only direct parent groups are considered.** The aggregation does not traverse nested group hierarchies by default.
 
 **Example:**
-
-Consider the following group structure:
 
 - User `alice` is a member of `group:default/developers`
 - `group:default/developers` is a member of `group:default/engineering`
@@ -34,9 +30,43 @@ To include entities from all parent groups in the aggregation (not just direct p
 
 ## API Endpoint
 
-### `GET /metrics/:metricId/catalog/aggregations`
+### `GET /aggregations/:aggregationId`
 
-Returns aggregated metrics for a specific metric across all entities owned by the authenticated user. This endpoint is useful when you need to check access to a specific metric and get its aggregation without requiring the `metricIds` query parameter.
+Use this endpoint for all new integrations.
+
+- **`aggregationId`** may be a key under **`scorecard.aggregationKPIs`** in app-config (see the [backend README](../README.md#aggregation-kpis-homepage-and-get-aggregations)), which supplies **title**, **description**, **type**, and **metricId**.
+- If there is **no** KPI entry for that id, the backend treats **`aggregationId` as the metric id** and uses the default **statusGrouped** aggregation.
+
+The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, aggregation type), and **`result`** (counts per threshold rule, total, thresholds).
+
+### `GET /aggregations/:aggregationId/metadata`
+
+Same resolution as above, but returns only metadata fields (no aggregate counts). Useful for UIs that list KPIs without loading full aggregation data.
+
+#### Permissions and errors
+
+- **`scorecard.metric.read`** on the underlying metric, and **`catalog.entity.read`** for each entity included in the aggregation.
+- **Metric access denied**: `403 Forbidden` if the user cannot read the metric.
+- **Missing user entity reference**: `401 Unauthorized` (`AuthenticationError`).
+- **User not in catalog**: `404 Not Found` when applicable.
+- **Per-entity denial**: `403 Forbidden` if the user cannot read a specific owned entity.
+
+#### Empty results
+
+When the user owns no relevant entities, the API returns an aggregation with **zero total** and zeroed bucket counts (not an error).
+
+### **Deprecated API:** `GET /metrics/:metricId/catalog/aggregations`
+
+This route **remains callable** for existing clients. It returns the same aggregation as **`GET /aggregations/<metricId>`** when `<metricId>` is used as the path segment (default status-grouped aggregation for that metric).
+
+**It is deprecated and will be removed in a future release.** Do not use it in new code - call **`GET /aggregations/:aggregationId`** instead (use the metric id as `aggregationId` when you rely on default KPI metadata).
+
+Deprecation signaling (RFC 8594):
+
+- Response header **`Deprecation: true`**
+- Response header **`Link: <…/aggregations/<metricId>>; rel="alternate"`** (successor URL under the scorecard plugin mount, e.g. `/api/scorecard`)
+
+The backend logs a **warning** when this route is used.
 
 #### Path Parameters
 
@@ -68,41 +98,44 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations"
 - **Metric Access Validation**: This endpoint explicitly validates that the user has access to the specified metric and returns `403 Forbidden` if access is denied
 - **Empty Results Handling**: Returns an empty aggregation object (zero counts with a timestamp) when the user owns no entities
 
-## Error Handling
+#### Error Handling
 
-### Missing User Entity Reference
+##### Missing User Entity Reference
 
 If the authenticated user doesn't have an entity reference in the catalog:
 
 - **Status Code**: `401 Unauthorized`
 - **Error**: `AuthenticationError: User entity reference not found`
 
-### User Entity Not Found in the Catalog
+##### User Entity Not Found in the Catalog
 
 If the user entity doesn't exist in the catalog.
 
 - **Status Code**: `404 Not Found`
 - **Error**: `NotFoundError: User entity not found in catalog`
 
-### Permission Denied
+#### Permission Denied
 
 If the user doesn't have permission to read a specific entity:
 
 - **Status Code**: `403 Forbidden`
 - **Error**: Permission denied for the specific entity
 
-### Metric Access Denied (for `/metrics/:metricId/catalog/aggregations`)
+#### Metric Access Denied (for `/metrics/:metricId/catalog/aggregations`)
 
 If the user doesn't have access to the specified metric:
 
 - **Status Code**: `403 Forbidden`
 - **Error**: `NotAllowedError: To view the scorecard metrics, your administrator must grant you the required permission.`
 
-## Best Practices
+## Best practices
 
-1. **Handle Empty Results**: Always handle empty aggregations (zero counts) when the user owns no entities
-
-2. **Group Structure**: Be aware of the direct parent group limitation when designing your group hierarchy. You currently receive scorecard results only for entities you own and those of your immediate parent group. To include results from _all_ parent
+1. **Prefer `GET /aggregations/:aggregationId`** and define stable KPI ids under **`scorecard.aggregationKPIs`** when you need custom titles or multiple logical cards over the same metric.
+2. **Plan for removal** of `GET /metrics/:metricId/catalog/aggregations` - switch clients and proxies to **`GET /aggregations/:aggregationId`** using the same metric id when you do not define a KPI, or your KPI id from app-config (see the **`Link`** header on deprecated responses for the suggested URL).
+3. **Handle Empty Results**: Always handle empty aggregations (zero counts) when the user owns no entities
+4. **Group Structure**: Be aware of the direct parent group limitation when designing your group hierarchy. You currently receive scorecard results only for entities you own and those of your immediate parent group. To include results from _all_ parent
    groups, you can either implement custom logic, restructure your groups, or (if using RHDH), enable transitive parent groups ([see transitive parent group enablement documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.5/html-single/authorization_in_red_hat_developer_hub/index#enabling-transitive-parent-groups)).
 
-3. **Metric Access**: This endpoint validates metric access upfront, so you'll get a clear `403 Forbidden` error if the user doesn't have permission to view the specified metric
+5. **Metric access**: Aggregation routes enforce **`scorecard.metric.read`** for the underlying metric and **`catalog.entity.read`** for each included entity; expect **`403 Forbidden`** when either check fails.
+
+For RBAC, scheduling, and full endpoint reference, see the [Scorecard backend README](../README.md).

@@ -14,75 +14,90 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-
 import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';
-import { resolveMetricTranslation } from '../../utils';
 import { ErrorStatePanel } from './ErrorStatePanel';
 import { EmptyStatePanel } from './EmptyStatePanel';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
+import { CardLoading } from '../Common/CardLoading';
 
-export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
+export const ScorecardHomepageCard = ({
+  metricId,
+  aggregationId,
+  showSubheader = true,
+  showInfo = true,
+}: {
+  metricId?: string;
+  aggregationId?: string;
+  showSubheader?: boolean;
+  showInfo?: boolean;
+}) => {
   const { t } = useTranslation();
 
-  const { aggregatedScorecard, loadingData, error } = useAggregatedScorecard({
-    metricId,
-  });
+  // Deprecated logic to support both metricId and aggregationId. Only aggregationId will be used in the future.
+  const resolvedScorecardId = aggregationId || metricId || '';
 
-  if (loadingData) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
-      >
-        <CircularProgress />
-      </Box>
-    );
+  const { data, isLoading, error } =
+    useAggregatedScorecard(resolvedScorecardId);
+
+  const aggregatedMetricDetails = data
+    ? ({
+        id: resolvedScorecardId,
+        title: data.metadata.title,
+        description: data.metadata.description,
+      } as Pick<Metric, 'id' | 'title' | 'description'>)
+    : undefined;
+
+  const { title, description } = useMetricDisplayLabels(
+    aggregatedMetricDetails,
+  );
+
+  const cardDataTestId = `scorecard-homepage-card-${resolvedScorecardId}`;
+
+  if (isLoading) {
+    return <CardLoading dataTestId={cardDataTestId} />;
   }
 
   if (error) {
-    return <ErrorStatePanel error={error} metricId={metricId} />;
-  }
-
-  if (!aggregatedScorecard) {
-    return null;
-  }
-
-  if (aggregatedScorecard.result?.total === 0) {
     return (
-      <EmptyStatePanel
-        metricId={metricId}
-        label={t('errors.noDataFound')}
-        tooltipContent={t('errors.noDataFoundMessage')}
-        fallbackTitle={aggregatedScorecard.metadata.title}
-        fallbackDescription={aggregatedScorecard.metadata.description}
+      <ErrorStatePanel
+        error={error}
+        showSubheader={showSubheader}
+        aggregationId={resolvedScorecardId}
+        cardDataTestId={cardDataTestId}
       />
     );
   }
 
-  const title = resolveMetricTranslation(
-    t,
-    aggregatedScorecard.id,
-    'title',
-    aggregatedScorecard.metadata.title,
-  );
-  const description = resolveMetricTranslation(
-    t,
-    aggregatedScorecard.id,
-    'description',
-    aggregatedScorecard.metadata.description,
-  );
+  if (!data) {
+    return null;
+  }
+
+  if (data.result?.total === 0) {
+    return (
+      <EmptyStatePanel
+        showSubheader={showSubheader}
+        cardTitle={title}
+        cardDescription={description}
+        label={t('errors.noDataFound')}
+        tooltipContent={t('errors.noDataFoundMessage')}
+        dataTestId={cardDataTestId}
+      />
+    );
+  }
 
   return (
     <ScorecardHomepageCardComponent
-      key={aggregatedScorecard.id}
+      key={data.id}
+      showSubheader={showSubheader}
+      showInfo={showInfo}
       cardTitle={title}
       description={description}
-      scorecard={aggregatedScorecard}
+      scorecard={data}
+      aggregationId={resolvedScorecardId}
+      dataTestId={cardDataTestId}
     />
   );
 };

@@ -24,18 +24,34 @@ import { scorecardTranslationRef } from './ref';
 const scorecardTranslationIt = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
+    // Empty state translations
     'emptyState.title': 'Non è stata ancora aggiunta alcuna scheda punteggio',
     'emptyState.description':
       "Le schede punteggio aiutano a monitorare a colpo d'occhio l'integrità dei componenti. Per iniziare, consultare la documentazione per le linee guida di configurazione.",
     'emptyState.button': 'Visualizza la documentazione',
     'emptyState.altText': 'Nessuna scheda punteggio',
+
+    // Permission required translations
     'permissionRequired.title': 'Autorizzazione mancante',
     'permissionRequired.description':
       "Per visualizzare il plugin Scorecard, contattare l'amministratore per richiedere l'autorizzazione {{permission}}.",
     'permissionRequired.button': 'Per saperne di più',
     'permissionRequired.altText': 'Autorizzazione richiesta',
+
+    // Not found state
+    'notFound.title': '404 Pagina non trovata',
+    'notFound.description':
+      'Prova ad aggiungere un file {{indexFile}} nella root della directory docs di questo repository.',
+    'notFound.readMore': 'Scopri di più',
+    'notFound.goBack': 'Indietro',
+    'notFound.contactSupport': 'Contatta il supporto',
+    'notFound.altText': 'Pagina non trovata',
+
+    // Error messages
     'errors.entityMissingProperties':
       'Entità priva delle proprietà richieste per la ricerca nella scheda punteggio',
+    'errors.missingAggregationId':
+      'La scheda di valutazione non è configurata correttamente; la proprietà ID aggregazione (o ID metrica) non è stata specificata',
     'errors.invalidApiResponse':
       "Formato di risposta non valido dall'API della scheda punteggio",
     'errors.fetchError':
@@ -53,6 +69,12 @@ const scorecardTranslationIt = createTranslationMessages({
       'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano riportando valori relativi a questa metrica.',
     'errors.authenticationErrorMessage':
       'Effettua il login per visualizzare i tuoi dati.',
+    'errors.noMetricsFound':
+      "Nessuna metrica trovata per l'ID di metrica specificato.",
+    'errors.multipleMetricsFound':
+      'Multiple metrics found for the specified metric ID. Expected exactly one.',
+
+    // Metric translations
     'metric.github.open_prs.title': 'Richieste pull aperte su GitHub',
     'metric.github.open_prs.description':
       'Conteggio attuale delle richieste pull aperte per uno specifico repository GitHub.',
@@ -62,6 +84,12 @@ const scorecardTranslationIt = createTranslationMessages({
     'metric.github.files_check.title': 'Verifica file GitHub: {{name}}',
     'metric.github.files_check.description':
       'Verifica se il file {{name}} esiste nel repository.',
+    'metric.lastUpdated': 'Ultimo aggiornamento: {{timestamp}}',
+    'metric.lastUpdatedNotAvailable': 'Ultimo aggiornamento: Non disponibile',
+    'metric.someEntitiesNotReportingValues':
+      'Alcune entità non stanno riportando valori relativi a questa metrica.',
+
+    // Threshold translations
     'thresholds.success': 'Attività riuscita',
     'thresholds.warning': 'Avviso',
     'thresholds.error': 'Errore',
@@ -70,6 +98,28 @@ const scorecardTranslationIt = createTranslationMessages({
     'thresholds.noEntities': 'Nessuna entità con stato {{category}}',
     'thresholds.entities_one': '{{count}} entità',
     'thresholds.entities_other': '{{count}} entità',
+
+    // Entities page translations
+    'entitiesPage.unknownMetric': 'Metrica sconosciuta',
+    'entitiesPage.noDataFound':
+      'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano riportando valori relativi a questa metrica.',
+    'entitiesPage.missingPermission':
+      "Per visualizzare le metriche della scheda punteggio, il tuo amministratore deve concedere l'autorizzazione richiesta.",
+    'entitiesPage.metricProviderNotRegistered':
+      'Provider di metrica con ID {{metricId}} non registrato.',
+    'entitiesPage.entitiesTable.title': 'Entità',
+    'entitiesPage.entitiesTable.unavailable': 'Non disponibile',
+    'entitiesPage.entitiesTable.titleWithCount': 'Entità ({{count}})',
+    'entitiesPage.entitiesTable.header.status': 'Stato',
+    'entitiesPage.entitiesTable.header.value': 'Valore',
+    'entitiesPage.entitiesTable.header.entity': 'Entità',
+    'entitiesPage.entitiesTable.header.owner': 'Proprietario',
+    'entitiesPage.entitiesTable.header.kind': 'Tipo',
+    'entitiesPage.entitiesTable.header.lastUpdated': 'Ultimo aggiornamento',
+    'entitiesPage.entitiesTable.footer.allRows': 'Tutte le righe',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} riga',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} righe',
+    'entitiesPage.entitiesTable.footer.of': 'di',
   },
 });
 

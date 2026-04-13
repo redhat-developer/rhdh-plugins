@@ -14,79 +14,147 @@
  * limitations under the License.
  */
 
-// eslint-disable-next-line
+/**
+ * New Frontend System dev mode for the Scorecard plugin.
+ */
+
+import type { JSX } from 'react';
+
+import '@backstage/cli/asset-types';
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
 import '@backstage/ui/css/styles.css';
 
-import { createDevApp } from '@backstage/dev-utils';
-import { EntityProvider } from '@backstage/plugin-catalog-react';
-import { Page, Header, TabbedLayout } from '@backstage/core-components';
-import { TestApiProvider } from '@backstage/test-utils';
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import type { Entity } from '@backstage/catalog-model';
-import type {
-  MetricResult,
-  AggregatedMetricResult,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import ReactDOM from 'react-dom/client';
 
-import { scorecardPlugin, EntityScorecardContent } from '../src/plugin';
-import { scorecardTranslations } from '../src/translations';
-import { scorecardApiRef, ScorecardApi } from '../src/api';
+import { createApp } from '@backstage/frontend-defaults';
 import {
-  mockScorecardErrorData,
-  mockScorecardSuccessData,
-} from '../__fixtures__/scorecardData';
-import { mockAggregatedScorecardSuccessData } from '../__fixtures__/aggregatedScorecardData';
+  ApiBlueprint,
+  createApiRef,
+  createFrontendModule,
+} from '@backstage/frontend-plugin-api';
+import {
+  Sidebar,
+  SidebarGroup,
+  SidebarItem,
+  SidebarScrollWrapper,
+  SidebarSpace,
+} from '@backstage/core-components';
+import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import {
+  SidebarLanguageSwitcher,
+  SidebarSignOutButton,
+} from '@backstage/dev-utils';
 
-const mockComponentEntity: Entity = {
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
-  metadata: {
-    namespace: 'default',
-    name: 'example-service',
-    description: 'Example service',
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+
+import scorecardPlugin, {
+  scorecardCatalogModule,
+  scorecardHomeModule,
+  scorecardTranslationsModule,
+} from '../src/alpha';
+import { scorecardApiRef } from '../src/api';
+
+import { MockScorecardApi, mockCatalogApi } from './mocks';
+
+const pluginHeaderActionsApiRef = createApiRef<{
+  getPluginHeaderActions(pluginId: string): Array<JSX.Element | null>;
+}>({ id: 'core.plugin-header-actions' });
+
+const appDevModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    ApiBlueprint.make({
+      name: 'plugin-header-actions-mock',
+      params: defineParams =>
+        defineParams({
+          api: pluginHeaderActionsApiRef,
+          deps: {},
+          factory: () => ({
+            getPluginHeaderActions: (_pluginId: string) => [],
+          }),
+        }),
+    }),
+  ],
+});
+
+const catalogDevModule = createFrontendModule({
+  pluginId: 'catalog',
+  extensions: [
+    ApiBlueprint.make({
+      name: 'catalog',
+      params: defineParams =>
+        defineParams({
+          api: catalogApiRef,
+          deps: {},
+          factory: () => mockCatalogApi,
+        }),
+    }),
+  ],
+});
+
+const scorecardDevModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    ApiBlueprint.make({
+      name: 'scorecard',
+      params: defineParams =>
+        defineParams({
+          api: scorecardApiRef,
+          deps: {},
+          factory: () => new MockScorecardApi(),
+        }),
+    }),
+  ],
+});
+
+const devSidebarContent = NavContentBlueprint.make({
+  params: {
+    component: ({ items }) => {
+      const homeItem = items.find(
+        item => item.to === '/' || item.title?.toLowerCase() === 'home',
+      );
+      const orderedItems = homeItem
+        ? [homeItem, ...items.filter(item => item !== homeItem)]
+        : items;
+
+      return (
+        <Sidebar>
+          <SidebarGroup label="Menu">
+            <SidebarScrollWrapper>
+              {orderedItems.map((item, index) => (
+                <SidebarItem {...item} key={index} />
+              ))}
+            </SidebarScrollWrapper>
+          </SidebarGroup>
+          <SidebarSpace />
+          <SidebarLanguageSwitcher />
+          <SidebarSignOutButton />
+        </Sidebar>
+      );
+    },
   },
-  spec: {
-    type: 'service',
-    lifecycle: 'production',
-  },
-};
+});
 
-class MockScorecardApi implements ScorecardApi {
-  async getScorecards(_entity: Entity): Promise<MetricResult[]> {
-    return [...mockScorecardSuccessData, ...mockScorecardErrorData];
-  }
-  async getAggregatedScorecard(
-    _metricId: string,
-  ): Promise<AggregatedMetricResult> {
-    return mockAggregatedScorecardSuccessData;
-  }
-}
+const devNavModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [devSidebarContent],
+});
 
-createDevApp()
-  .registerPlugin(scorecardPlugin)
-  .addTranslationResource(scorecardTranslations)
-  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
-  .setDefaultLanguage('en')
-  .addThemes(getAllThemes())
-  .addPage({
-    element: (
-      <TestApiProvider apis={[[scorecardApiRef, new MockScorecardApi()]]}>
-        <EntityProvider entity={mockComponentEntity}>
-          <Page themeId="tool">
-            <Header
-              type="component — tool"
-              title={mockComponentEntity.metadata.name}
-            />
-            <TabbedLayout>
-              <TabbedLayout.Route path="/" title="Scorecard">
-                <EntityScorecardContent />
-              </TabbedLayout.Route>
-            </TabbedLayout>
-          </Page>
-        </EntityProvider>
-      </TestApiProvider>
-    ),
-    title: 'Scorecard',
-    path: '/scorecard',
-  })
-  .render();
+const app = createApp({
+  features: [
+    devNavModule,
+    scorecardPlugin,
+    scorecardCatalogModule,
+    scorecardHomeModule,
+    scorecardTranslationsModule,
+    appDevModule,
+    catalogDevModule,
+    scorecardDevModule,
+    rhdhThemeModule,
+  ],
+});
+
+const root = app.createRoot();
+
+ReactDOM.createRoot(document.getElementById('root')!).render(root);

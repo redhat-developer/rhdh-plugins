@@ -5,11 +5,16 @@
 ```ts
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { FieldExtensionComponent } from '@backstage/plugin-scaffolder-react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
+import { SvgIconProps } from '@material-ui/core/SvgIcon';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
-import { TranslationRef } from '@backstage/frontend-plugin-api';
-import { TranslationResource } from '@backstage/frontend-plugin-api';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
+
+// @public (undocumented)
+export const RepoAuthenticationExtension: FieldExtensionComponent<string, {}>;
 
 // @public
 export type TFuncX2A = TranslationFunction<typeof x2aPluginTranslationRef.T>;
@@ -18,6 +23,9 @@ export type TFuncX2A = TranslationFunction<typeof x2aPluginTranslationRef.T>;
 export const useX2ATranslation: () => {
     t: TFuncX2A;
 };
+
+// @public
+export const X2AIcon: (props: SvgIconProps) => JSX_2.Element;
 
 // @public (undocumented)
 export const X2APage: () => JSX_2.Element;
@@ -31,10 +39,12 @@ root: RouteRef<undefined>;
 export const x2aPluginTranslationRef: TranslationRef<"plugin.x2a", {
 readonly "table.columns.name": string;
 readonly "table.columns.status": string;
+readonly "table.columns.createdAt": string;
 readonly "table.columns.sourceRepo": string;
 readonly "table.columns.targetRepo": string;
-readonly "table.columns.createdAt": string;
+readonly "table.columns.statusSortDisabledTooltip": string;
 readonly "table.actions.deleteProject": string;
+readonly "table.actions.retriggerInit": string;
 readonly "table.actions.expandAll": string;
 readonly "table.actions.collapseAll": string;
 readonly "table.actions.expandRow": string;
@@ -70,8 +80,8 @@ readonly "projectTable.deleteError": string;
 readonly "projectDetailsCard.title": string;
 readonly "projectDetailsCard.name": string;
 readonly "projectDetailsCard.description": string;
-readonly "projectDetailsCard.abbreviation": string;
 readonly "projectDetailsCard.status": string;
+readonly "projectDetailsCard.abbreviation": string;
 readonly "projectDetailsCard.createdBy": string;
 readonly "projectDetailsCard.sourceRepo": string;
 readonly "projectDetailsCard.targetRepo": string;
@@ -89,18 +99,18 @@ readonly "modulePage.artifacts.migrated_sources": string;
 readonly "modulePage.artifacts.ansible_project": string;
 readonly "modulePage.phases.title": string;
 readonly "modulePage.phases.id": string;
-readonly "modulePage.phases.cancel": string;
 readonly "modulePage.phases.status": string;
+readonly "modulePage.phases.cancel": string;
 readonly "modulePage.phases.duration": string;
 readonly "modulePage.phases.k8sJobName": string;
 readonly "modulePage.phases.startedAt": string;
 readonly "modulePage.phases.errorDetails": string;
 readonly "modulePage.phases.statuses.running": string;
 readonly "modulePage.phases.statuses.error": string;
-readonly "modulePage.phases.statuses.notStarted": string;
 readonly "modulePage.phases.statuses.pending": string;
 readonly "modulePage.phases.statuses.success": string;
 readonly "modulePage.phases.statuses.cancelled": string;
+readonly "modulePage.phases.statuses.notStarted": string;
 readonly "modulePage.phases.resyncMigrationPlanInstructions": string;
 readonly "modulePage.phases.reanalyzeInstructions": string;
 readonly "modulePage.phases.rerunAnalyze": string;
@@ -127,6 +137,13 @@ readonly "modulePage.phases.telemetry.agentName": string;
 readonly "modulePage.phases.telemetry.inputTokens": string;
 readonly "modulePage.phases.telemetry.outputTokens": string;
 readonly "modulePage.phases.telemetry.toolCalls": string;
+readonly "retriggerInit.error": string;
+readonly "retriggerInit.confirm.title": string;
+readonly "retriggerInit.confirm.message": string;
+readonly "retriggerInit.confirm.userPromptLabel": string;
+readonly "retriggerInit.confirm.userPromptPlaceholder": string;
+readonly "retriggerInit.confirm.confirmButton": string;
+readonly "retriggerInit.errorStart": string;
 readonly "project.id": string;
 readonly "project.description": string;
 readonly "project.abbreviation": string;
@@ -154,9 +171,14 @@ readonly "bulkRun.projectConfirm.title": string;
 readonly "bulkRun.projectConfirm.message": string;
 readonly "bulkRun.globalConfirm.title": string;
 readonly "bulkRun.globalConfirm.message": string;
+readonly "bulkRun.globalConfirm.messageInitRetrigger": string;
+readonly "bulkRun.globalConfirm.noInitEligible": string;
+readonly "bulkRun.globalConfirm.userPromptLabel": string;
+readonly "bulkRun.globalConfirm.userPromptPlaceholder": string;
 readonly "bulkRun.projectPageConfirm.title": string;
 readonly "bulkRun.projectPageConfirm.message": string;
 readonly "bulkRun.errorProject": string;
+readonly "bulkRun.errorModuleStart": string;
 readonly "bulkRun.errorGlobal": string;
 readonly "module.summary.running": string;
 readonly "module.summary.total": string;
@@ -192,8 +214,8 @@ readonly "module.sourcePath": string;
 readonly "artifact.types.migration_plan": string;
 readonly "artifact.types.module_migration_plan": string;
 readonly "artifact.types.migrated_sources": string;
-readonly "artifact.types.ansible_project": string;
 readonly "artifact.types.project_metadata": string;
+readonly "artifact.types.ansible_project": string;
 readonly empty: string;
 }>;
 

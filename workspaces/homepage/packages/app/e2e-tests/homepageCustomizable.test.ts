@@ -30,7 +30,8 @@ test.describe.serial('Dynamic Home Page Customization', () => {
     sharedPage = await sharedContext.newPage();
     testUtils = new TestUtils(sharedPage);
     homePageCustomization = new HomePageCustomization(sharedPage);
-    await testUtils.loginAsGuest('/customizable');
+    const loginUrl = process.env.APP_MODE === 'nfs' ? '/' : '/customizable';
+    await testUtils.loginAsGuest(loginUrl);
   });
 
   test.afterAll(async () => {
@@ -46,7 +47,8 @@ test.describe.serial('Dynamic Home Page Customization', () => {
     await runAccessibilityTests(sharedPage, testInfo);
   });
 
-  test('Verify All Cards Can Be Resized in Edit Mode', async ({
+  // Skipping as of now; re-enable after https://github.com/backstage/backstage/issues/33317 is fixed
+  test.skip('Verify All Cards Can Be Resized in Edit Mode', async ({
     browser: _browser,
   }, testInfo) => {
     await homePageCustomization.enterEditMode();
@@ -79,24 +81,12 @@ test.describe.serial('Dynamic Home Page Customization', () => {
   });
 
   test('Verify Add Widget Button Adds Cards', async () => {
-    await homePageCustomization.addWidget('Red Hat Developer Hub - Onboarding');
+    await homePageCustomization.addWidget('Onboarding');
     await expect(
       sharedPage.getByText(/Good (morning|afternoon|evening)/),
     ).toBeVisible();
 
-    await homePageCustomization.addWidget(
-      'Red Hat Developer Hub - Software Catalog',
-    );
-    await expect(
-      sharedPage.getByText('Explore Your Software Catalog'),
-    ).toBeVisible();
-
-    await homePageCustomization.addWidget('Quick Access Card');
+    await homePageCustomization.addWidget('Access');
     await expect(sharedPage.getByText('Quick Access')).toBeVisible();
-
-    await homePageCustomization.addWidget(
-      'Red Hat Developer Hub - Explore templates',
-    );
-    await expect(sharedPage.getByText('Explore Templates')).toBeVisible();
   });
 });

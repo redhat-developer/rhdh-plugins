@@ -31,6 +31,17 @@ export const scorecardMessages = {
     altText: 'No scorecards',
   },
 
+  // Not found state (404)
+  notFound: {
+    title: "404 We couldn't find that page",
+    description:
+      'Try adding an {{indexFile}} file in the root of the docs directory of this repository.',
+    readMore: 'Read more',
+    goBack: 'Go back',
+    contactSupport: 'Contact support',
+    altText: 'Page not found',
+  },
+
   // Permission required state
   permissionRequired: {
     title: 'Missing permission',
@@ -44,6 +55,8 @@ export const scorecardMessages = {
   errors: {
     entityMissingProperties:
       'Entity missing required properties for scorecard lookup',
+    missingAggregationId:
+      'Scorecard misconfigured, aggregation ID (or metric ID) property is not provided', // "or metric ID" will be removed in the future
     invalidApiResponse: 'Invalid response format from scorecard API',
     fetchError: 'Error fetching scorecards: {{error}}',
     metricDataUnavailable: 'Metric data unavailable',
@@ -57,6 +70,9 @@ export const scorecardMessages = {
     noDataFoundMessage:
       'To see your data here, check that your entities are reporting values related to this metric.',
     authenticationErrorMessage: 'Please sign in to view your data.',
+    noMetricsFound: 'No metrics found for the specified metric ID.',
+    multipleMetricsFound:
+      'Multiple metrics found for the specified metric ID. Expected exactly one.',
   },
 
   // Metric translations
@@ -75,6 +91,10 @@ export const scorecardMessages = {
       title: 'GitHub file check: {{name}}',
       description: 'Checks whether the {{name}} file exists in the repository.',
     },
+    lastUpdated: 'Last updated: {{timestamp}}',
+    lastUpdatedNotAvailable: 'Last updated: Not available',
+    someEntitiesNotReportingValues:
+      'Some entities are not reporting values related to this metric.',
   },
 
   // Threshold translations
@@ -87,6 +107,36 @@ export const scorecardMessages = {
     noEntities: 'No entities in {{category}} state',
     entities_one: '{{count}} entity',
     entities_other: '{{count}} entities',
+  },
+
+  // Entities page translations
+  entitiesPage: {
+    unknownMetric: 'Unknown metric',
+    noDataFound:
+      'To see your data here, check that your entities are reporting values related to this metric.',
+    missingPermission:
+      'To view the scorecard metrics, your administrator must grant you the required permission.',
+    metricProviderNotRegistered:
+      'Metric provider with ID {{metricId}} is not registered.',
+    entitiesTable: {
+      title: 'Entities',
+      unavailable: 'Unavailable',
+      titleWithCount: 'Entities ({{count}})',
+      header: {
+        status: 'Status',
+        value: 'Value',
+        entity: 'Entity',
+        owner: 'Owner',
+        kind: 'Kind',
+        lastUpdated: 'Last updated',
+      },
+      footer: {
+        allRows: 'All rows',
+        rows_one: '{{count}} row',
+        rows_other: '{{count}} rows',
+        of: 'of',
+      },
+    },
   },
 };
 

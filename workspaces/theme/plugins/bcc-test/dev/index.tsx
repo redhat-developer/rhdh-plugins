@@ -21,7 +21,7 @@ createDevApp()
   .registerPlugin(bccTestPlugin)
   .addPage({
     element: <BCCTestPage />,
-    title: 'Root Page',
-    path: '/bcc-test',
+    title: 'BCC Tests',
+    path: '/bcc-tests',
   })
   .render();

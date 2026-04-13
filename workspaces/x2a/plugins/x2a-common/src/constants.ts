@@ -42,6 +42,13 @@ export const CREATE_CHEF_PROJECT_TEMPLATE_PATH =
   '/create/templates/default/chef-conversion-project-template';
 
 /**
+ * Prefix for the scaffolder secret keys for the SCM provider tokens.
+ *
+ * @public
+ */
+export const SCAFFOLDER_SECRET_PREFIX = 'OAUTH_TOKEN_';
+
+/**
  * Maximum number of projects to run in parallel for a bulk run.
  * This is a trade-off between performance and resource usage.
  * For every project, we issue one API request per eligible module.
@@ -63,3 +70,19 @@ export const POLLING_INTERVAL_MS = 10 * 1000;
  * @public
  */
 export const MAX_BACKOFF_MS = 5 * 60 * 1000;
+
+/**
+ * When sorting by a computed field loads more projects than this
+ * threshold, a warning is logged on the backend.
+ *
+ * @public
+ */
+export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
+
+/**
+ * When sorting by status, if the number of projects is greater than this
+ * threshold, the sort will not be available on the FE side due to performance reasons.
+ *
+ * @public
+ */
+export const PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD = 500;

@@ -37,6 +37,50 @@ const bulkImportTranslationDe = createTranslationMessages({
     'permissions.title': 'Berechtigung erforderlich',
     'permissions.addRepositoriesMessage':
       "Zum Hinzufügen von Repositorys wenden Sie sich an den Administrator, um die Berechtigung 'bulk.import' zu erhalten.",
+    'permissions.viewRepositoriesMessage':
+      "Zum Anzeigen der hinzugefügten Repositorys wenden Sie sich an den Administrator, um die Berechtigung 'bulk.import' zu erhalten.",
+    'repositories.addedRepositories': 'Hinzugefügte Repositorys',
+    'repositories.importedEntities': 'Importierte Elemente',
+    'repositories.addedRepositoriesCount':
+      'Hinzugefügte Repositorys ({{count}})',
+    'repositories.importedEntitiesCount': 'Importierte Elemente ({{count}})',
+    'repositories.noRecordsFound':
+      'Keine Repositorys zum Importieren verfügbar.',
+    'repositories.noProjectsFound': 'Keine Projekte zum Importieren verfügbar.',
+    'repositories.refresh': 'Aktualisieren',
+    'repositories.import': 'Importieren',
+    'repositories.removing': 'Wird entfernt...',
+    'repositories.deleteRepository': 'Repository löschen',
+    'repositories.removeRepositoryQuestion':
+      '{{repoName}} {{repositoryText}} entfernen?',
+    'repositories.repositoryText': 'Repository',
+    'repositories.removeRepositoryWarningScaffolder':
+      'Durch das Entfernen eines Repositorys werden auch alle zugehörigen Scaffolder-Aufgabeninformationen entfernt.',
+    'repositories.removeRepositoryWarningOrchestrator':
+      'Repository und zugehörige Orchestrator-Workflow-Informationen löschen.',
+    'repositories.removeRepositoryWarning':
+      'Durch das Entfernen eines Repositorys werden alle zugehörigen Informationen von der Katalogseite gelöscht.',
+    'repositories.removeRepositoryWarningGitlab':
+      'Durch das Entfernen werden alle zugehörigen Informationen von der Katalogseite gelöscht.',
+    'repositories.cannotRemoveRepositoryUrl':
+      'Repository kann nicht entfernt werden, da die Repository-URL fehlt.',
+    'repositories.unableToRemoveRepository':
+      'Repository konnte nicht entfernt werden. {{error}}',
+    'repositories.removeTooltipDisabled':
+      'Dieses Repository wurde der app-config-Datei hinzugefügt. Zum Entfernen bearbeiten Sie die Datei direkt',
+    'repositories.removeTooltipRepositoryScaffolder':
+      'Repository und zugehörige Scaffolder-Aufgabeninformationen löschen',
+    'repositories.removeTooltipRepositoryOrchestrator':
+      'Repository und zugehörige Orchestrator-Workflow-Informationen löschen',
+    'repositories.errorOccuredWhileFetching':
+      'Fehler beim Abrufen der Pull-Anforderung',
+    'repositories.failedToCreatePullRequest':
+      'Pull-Anforderung konnte nicht erstellt werden',
+    'repositories.errorOccured': 'Fehler aufgetreten',
+    'repositories.editCatalogInfoTooltip':
+      'catalog-info.yaml Pull-Anforderung bearbeiten',
+    'repositories.viewCatalogInfoTooltip': 'catalog-info.yaml Datei anzeigen',
+    'repositories.pr': 'PR',
     'status.alreadyImported': 'Bereits importiert',
     'status.added': 'Hinzugefügt',
     'status.waitingForApproval': 'Warten auf Genehmigung',
@@ -51,6 +95,28 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Aufgrund unzureichender Berechtigungen konnte keine neue Pull-Anforderung erstellt werden. Wenden Sie sich an den Administrator.',
     'errors.catalogInfoExists':
       "Da 'catalog-info.yaml' bereits im Repository existiert, wird keine neue Pull-Anforderung erstellt. Das Element wird jedoch weiterhin auf der Katalogseite registriert sein.",
+    'errors.catalogEntityConflict':
+      'Konnte keine neue Pull-Anforderung erstellen, da ein Konflikt mit der Katalogentität besteht.',
+    'errors.repoEmpty':
+      'Konnte keine neue Pull-Anforderung erstellen, da das Repository leer ist. Pushen Sie einen ersten Commit in das Repository.',
+    'errors.codeOwnersNotFound':
+      'CODEOWNERS-Datei fehlt im Repository. Fügen Sie eine CODEOWNERS-Datei hinzu, um eine neue Pull-Anforderung zu erstellen.',
+    'errors.errorOccurred': 'Fehler aufgetreten',
+    'errors.failedToCreatePullRequest':
+      'Pull-Anforderung konnte nicht erstellt werden',
+    'errors.noIntegrationsConfigured':
+      'Keine GitHub- oder GitLab-Integrationen konfiguriert. Fügen Sie mindestens eine Integration hinzu, um die Massenimport-Funktion zu verwenden.',
+    'errors.addIntegrationsToConfig':
+      'Um dieses Problem zu beheben, stellen Sie sicher, dass die Integrationen in Ihrer Backstage-Konfigurationsdatei (app-config.yaml) hinzugefügt sind.',
+    'validation.componentNameInvalid':
+      '"{{value}}" ist ungültig; erwartet wird eine Zeichenfolge mit Sequenzen aus [a-zA-Z0-9], getrennt durch eines der Zeichen [-_.], insgesamt maximal 63 Zeichen. Weitere Informationen zum Katalogdateiformat: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md',
+    'validation.componentNameRequired': 'Komponentenname ist erforderlich',
+    'validation.entityOwnerRequired': 'Entitätseigentümer ist erforderlich',
+    'validation.titleRequired': '{{approvalTool}}-Titel ist erforderlich',
+    'validation.descriptionRequired':
+      '{{approvalTool}}-Beschreibung ist erforderlich',
+    'validation.keyValuePairFormat':
+      'Jeder Eintrag muss einen Schlüssel und einen Wert haben, getrennt durch einen Doppelpunkt.',
     'table.headers.name': 'Name',
     'table.headers.url': 'URL',
     'table.headers.repoUrl': 'Repository-URL',
@@ -84,6 +150,7 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Wählen Sie ein Quellcodeverwaltungstool für die Erstellung von Pull-Anforderungen aus',
     'addRepositories.approvalTool.tooltip':
       'Zum Importieren ist eine Genehmigung erforderlich. Nach Genehmigung der Pull-Anforderung werden die Repositorys in die Katalogseite importiert.',
+    'addRepositories.approvalTool.github': 'GitHub',
     'addRepositories.approvalTool.gitlab': 'GitLab',
     'addRepositories.repositoryType.title': 'Repository-Typ',
     'addRepositories.repositoryType.repository': 'Repository',
@@ -133,12 +200,15 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Fehler beim Abrufen der Pull-Anforderung. Unten wurde eine neue YAML-Datei generiert.',
     'previewFile.invalidEntityYaml':
       "Die YAML-Datei des Elements in Ihrer Pull-Anforderung ist ungültig (leere Datei oder fehlende Werte für 'apiVersion', 'kind' oder 'metadata.name'). Unten wurde eine neue YAML-Datei generiert.",
+    'previewFile.pullRequestPendingApproval':
+      'Die [{{pullRequestText}}]({{pullRequestUrl}}) wartet auf Genehmigung',
     'previewFile.pullRequestText': 'Pull-Anforderung',
     'previewFile.viewRepository': 'Repository anzeigen',
     'previewFile.closeDrawer': 'Drawer schließen',
     'previewFile.keyValuePlaceholder': 'Schlüssel1: Wert2; Schlüssel2: Wert2',
     'previewFile.useSemicolonSeparator':
       'Verwenden Sie ein Semikolon zum Trennen von {{label}}',
+    'previewFile.preview': 'Vorschau',
     'previewFile.pullRequest.title': 'Pull-Anforderung',
     'previewFile.pullRequest.mergeRequest': 'Merge-Anforderung',
     'previewFile.pullRequest.serviceNowTicket': 'ServiceNow-Ticket',
@@ -180,6 +250,7 @@ const bulkImportTranslationDe = createTranslationMessages({
     'forms.footer.pullRequestTooltip':
       "Die 'catalog-info.yaml'-Dateien müssen vor der Erstellung einer Pull-Anforderung generiert werden.",
     'tasks.tasksFor': 'Aufgaben für {{importJobStatusId}}',
+    'tasks.taskId': 'Aufgaben-ID',
     'tasks.taskLink': 'Aufgabenverknüpfung',
     'tasks.viewTask': 'Aufgabe anzeigen',
     'tasks.taskCancelled': 'Abgebrochen',
@@ -189,6 +260,7 @@ const bulkImportTranslationDe = createTranslationMessages({
     'tasks.taskProcessing': 'In Verarbeitung',
     'tasks.taskSkipped': 'Übersprungen',
     'workflows.workflowsFor': 'Workflows für {{importJobStatusId}}',
+    'workflows.workflowId': 'Workflow-ID',
     'workflows.workflowLink': 'Workflow-Verknüpfung',
     'workflows.viewWorkflow': 'Workflow anzeigen',
     'workflows.workflowPending': 'Ausstehend',

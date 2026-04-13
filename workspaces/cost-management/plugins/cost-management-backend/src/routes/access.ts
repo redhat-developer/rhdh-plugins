@@ -23,6 +23,7 @@ import {
 import { rosPluginPermissions } from '@red-hat-developer-hub/plugin-cost-management-common/permissions';
 import { getTokenFromApi } from '../util/tokenUtil';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { resolveActor, emitAuditLog } from '../util/auditLog';
 
 export const getAccess: (options: RouterOptions) => RequestHandler =
   options => async (_, response) => {
@@ -42,6 +43,14 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
 
     if (rosPluginDecision.result === AuthorizeResult.ALLOW) {
       finalDecision = AuthorizeResult.ALLOW;
+
+      const actor = await resolveActor(_, options);
+      emitAuditLog(options, {
+        actor,
+        action: 'access_check',
+        resource: '/access',
+        decision: 'ALLOW',
+      });
 
       const body = {
         decision: finalDecision,
@@ -185,6 +194,18 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
     } else {
       finalDecision = AuthorizeResult.DENY;
     }
+
+    const actor = await resolveActor(_, options);
+    emitAuditLog(options, {
+      actor,
+      action: 'access_check',
+      resource: '/access',
+      decision: finalDecision === AuthorizeResult.ALLOW ? 'ALLOW' : 'DENY',
+      filters: {
+        clusters: finalAuthorizedClusterIds,
+        projects: authorizeProjects,
+      },
+    });
 
     const body = {
       decision: finalDecision,

@@ -16,12 +16,7 @@ export type AggregatedMetric = {
 export type AggregatedMetricResult = {
   id: string;
   status: 'success' | 'error';
-  metadata: {
-    title: string;
-    description: string;
-    type: MetricType;
-    history?: boolean;
-  };
+  metadata: AggregationMetadata;
   result: Omit<AggregatedMetric, 'values'> & {
     values: AggregatedMetricValue[];
     thresholds: ThresholdConfig;
@@ -33,6 +28,24 @@ export type AggregatedMetricValue = {
   count: number;
   name: string;
 };
+
+// @public (undocumented)
+export type AggregationMetadata = {
+  title: string;
+  description: string;
+  type: MetricType;
+  history?: boolean;
+  aggregationType: AggregationType;
+};
+
+// @public (undocumented)
+export type AggregationType =
+  (typeof aggregationTypes)[keyof typeof aggregationTypes];
+
+// @public (undocumented)
+export const aggregationTypes: Readonly<{
+  statusGrouped: 'statusGrouped';
+}>;
 
 // @public
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
@@ -150,6 +163,7 @@ export type ThresholdRule = {
   key: string;
   expression: string;
   color?: string;
+  icon?: string;
 };
 
 // (No @packageDocumentation comment for this package)

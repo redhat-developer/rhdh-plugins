@@ -32,6 +32,8 @@ interface CardWrapperProps extends HTMLProps<HTMLDivElement> {
   childrenWidth?: string | number;
   childrenHeight?: string | number;
   role?: string;
+  info?: ReactNode;
+  dataTestId?: string;
 }
 
 export const CardWrapper = ({
@@ -43,6 +45,8 @@ export const CardWrapper = ({
   childrenWidth = '100%',
   childrenHeight = '100%',
   role = 'article',
+  info,
+  dataTestId,
 }: CardWrapperProps) => {
   return (
     <Card
@@ -51,24 +55,31 @@ export const CardWrapper = ({
         width: width ?? '100%',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
+        height: '100%',
       }}
       role={role}
+      data-testid={dataTestId}
     >
-      <CardHeader
-        title={title}
-        subheader={subheader ?? undefined}
-        sx={{
-          '& .v5-MuiCardHeader-title, & .v5-MuiCardHeader-subheader': {
-            fontSize: '1.25rem',
-            fontWeight: 500,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            WebkitLineClamp: 1,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          },
-        }}
-      />
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <CardHeader
+          title={title}
+          subheader={subheader ?? undefined}
+          sx={{
+            '& .v5-MuiCardHeader-title, & .v5-MuiCardHeader-subheader': {
+              fontSize: '1.25rem',
+              fontWeight: 500,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+          }}
+        />
+        {info && (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>{info}</Box>
+        )}
+      </Box>
       <Divider />
       <CardContent
         sx={{

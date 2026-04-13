@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras
 
+## 0.4.0
+
+### Minor Changes
+
+- 5f3bb8b: Adds a new MCP action to list scaffolder task logs
+- ac0904b: migrate execute-template-action.
+
 ## 0.3.0
 
 ### Minor Changes

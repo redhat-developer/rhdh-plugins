@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 
@@ -25,7 +25,6 @@ import {
   getYOffsetForCenterLabel,
   getHeightForCenterLabel,
   resolveStatusColor,
-  resolveMetricTranslation,
 } from '../../utils';
 import CustomLegend from '../Scorecard/CustomLegend';
 import { ErrorTooltip } from '../Common/ErrorTooltip';
@@ -102,32 +101,24 @@ const CenterLabel = ({
 
 export const EmptyStatePanel = ({
   label,
-  metricId,
+  cardTitle,
+  cardDescription,
   tooltipContent,
-  fallbackTitle,
-  fallbackDescription,
+  showSubheader = true,
+  dataTestId,
 }: {
   label: string;
-  metricId: string;
+  cardTitle: string;
+  cardDescription: string;
   tooltipContent: string;
-  fallbackTitle?: string;
-  fallbackDescription?: string;
+  showSubheader?: boolean;
+  dataTestId?: string;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
 
   const [isLabelHovered, setIsLabelHovered] = useState(false);
   const [isInsidePieCircle, setIsInsidePieCircle] = useState(false);
-
-  const cardTitle = useMemo(
-    () => resolveMetricTranslation(t, metricId, 'title', fallbackTitle),
-    [t, metricId, fallbackTitle],
-  );
-  const cardDescription = useMemo(
-    () =>
-      resolveMetricTranslation(t, metricId, 'description', fallbackDescription),
-    [t, metricId, fallbackDescription],
-  );
 
   const statusConfig = getStatusConfig({
     evaluation: 'error',
@@ -144,7 +135,12 @@ export const EmptyStatePanel = ({
     <CardWrapper
       title={cardTitle}
       description={cardDescription}
-      subheader={t('thresholds.entities', { count: 0 })}
+      dataTestId={dataTestId}
+      {...(showSubheader
+        ? {
+            subheader: t('thresholds.entities', { count: 0 }),
+          }
+        : {})}
     >
       <Box
         width="100%"

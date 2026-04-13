@@ -27,6 +27,33 @@ const lightspeedTranslationJa = createTranslationMessages({
   messages: {
     'page.title': 'Lightspeed',
     'page.subtitle': 'AI 搭載開発アシスタント',
+    'tabs.ariaLabel': 'Lightspeed のビュー',
+    'tabs.chat': 'チャット',
+    'tabs.notebooks': 'ノートブック',
+    'tabs.notebooks.empty': 'ノートブックの内容はここに表示されます。',
+    'notebooks.title': 'マイノートブック',
+    'notebooks.empty.title': '作成されたノートブックはありません',
+    'notebooks.empty.description':
+      '新しいノートブックを作成してソースを整理し、AI による洞察を生成します。',
+    'notebooks.empty.action': '新しいノートブックを作成',
+    'notebooks.documents': 'ドキュメント',
+    'notebooks.actions.rename': '名前の変更',
+    'notebooks.actions.delete': '削除',
+    'notebooks.rename.title': '{{name}} の名前を変更しますか?',
+    'notebooks.rename.description':
+      'このノートブックの新しい名前を入力し、送信をクリックして続行してください。',
+    'notebooks.rename.label': '新しい名前',
+    'notebooks.rename.placeholder': '新しい名前',
+    'notebooks.rename.action': '送信',
+    'notebooks.delete.title': '{{name}} を削除しますか?',
+    'notebooks.delete.message':
+      'このノートブックはここに表示されなくなります。Lightspeed アクティビティに関連するプロンプト、応答、フィードバックも削除されます。',
+    'notebooks.delete.action': '削除',
+    'notebooks.delete.toast': 'ノートブックを削除しました！',
+    'notebooks.updated.today': '今日更新',
+    'notebooks.updated.yesterday': '1日前に更新',
+    'notebooks.updated.days': '{{days}}日前に更新',
+    'notebooks.updated.on': '更新日',
     'prompts.codeReadability.title': 'コードの可読性に関するヘルプを利用する',
     'prompts.codeReadability.message':
       'コードの可読性と保守性を高めるための手法を提案してくれませんか?',
@@ -73,7 +100,10 @@ const lightspeedTranslationJa = createTranslationMessages({
     'conversation.rename.placeholder': 'チャット名',
     'permission.required.title': '権限の不足',
     'permission.required.description':
-      'lightspeed プラグインを表示するには、管理者に連絡して <b>lightspeed.chat.read</b> および <b>lightspeed.chat.create</b> 権限を付与してもらうよう依頼してください。',
+      '<subject/> を表示するには、管理者に連絡して <permissions/> 権限を付与してもらうよう依頼してください。',
+    'permission.subject.plugin': 'Lightspeed プラグイン',
+    'permission.subject.notebooks': 'Lightspeed ノートブック',
+    'permission.notebooks.goBack': '戻る',
     'disclaimer.withValidation':
       'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
     'disclaimer.withoutValidation':
@@ -110,6 +140,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'aria.scroll.down': '一番下に戻る',
     'aria.scroll.up': '一番上に戻る',
     'aria.settings.label': 'チャットボットのオプション',
+    'aria.close': 'チャットボットを閉じる',
     'modal.edit': '編集',
     'modal.save': '保存',
     'modal.close': '閉じる',
@@ -120,6 +151,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'conversation.removeFromPinnedChats': '固定解除',
     'conversation.announcement.userMessage':
       'ユーザーからのメッセージ: {{prompt}}。ボットからのメッセージを読み込んでいます。',
+    'conversation.announcement.responseStopped': '応答を停止しました。',
     'user.guest': 'ゲスト',
     'user.loading': '...',
     'tooltip.attach': '割り当て',
@@ -132,6 +164,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'tooltip.backToTop': '一番上に戻る',
     'tooltip.backToBottom': '一番下に戻る',
     'tooltip.settings': 'チャットボットのオプション',
+    'tooltip.close': '閉じる',
     'modal.title.preview': '添付ファイルのプレビュー',
     'modal.title.edit': '添付ファイルの編集',
     'icon.lightspeed.alt': 'lightspeed アイコン',

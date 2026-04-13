@@ -36,7 +36,7 @@ cat <<EOF > "${OPENAPI_DOC_JS_FILE}"
 // prettier-ignore
 EOF
 echo 'const OPENAPI = `' >> "${OPENAPI_DOC_JS_FILE}"
-cat ./src/schema/openapi.json | sed 's/\\n/\\\\n/g' >> "${OPENAPI_DOC_JS_FILE}"
+cat ./src/schema/openapi.json | sed 's/\\n/\\\\n/g' | sed 's/\\"/\\\\"/g' >> "${OPENAPI_DOC_JS_FILE}"
 echo '`' >> "${OPENAPI_DOC_JS_FILE}"
 echo "export const openApiDocument = JSON.parse(OPENAPI);" >> "${OPENAPI_DOC_JS_FILE}"
 rm -f ./src/schema/openapi.json

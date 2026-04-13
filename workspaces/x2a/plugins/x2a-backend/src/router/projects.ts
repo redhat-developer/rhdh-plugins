@@ -71,6 +71,7 @@ export function registerProjectRoutes(
           'createdAt',
           'name',
           'abbreviation',
+          // sorting by status is expensive for large datasets
           'status',
           'description',
           'createdBy',

@@ -30,10 +30,13 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Starten und verfolgen Sie die asynchrone Umwandlung von Chef-Dateien in produktionsreife Ansible Playbooks.',
     'table.columns.name': 'Name',
     'table.columns.status': 'Status',
+    'table.columns.statusSortDisabledTooltip':
+      'Sortierung nach Status ist nicht verfügbar, wenn die Projektanzahl {{threshold}} überschreitet',
     'table.columns.sourceRepo': 'Quell-Repository',
     'table.columns.targetRepo': 'Ziel-Repository',
     'table.columns.createdAt': 'Erstellt am',
     'table.actions.deleteProject': 'Projekt löschen',
+    'table.actions.retriggerInit': 'Projekt-Init-Phase erneut auslösen',
     'table.actions.expandAll': 'Alle Zeilen aufklappen',
     'table.actions.collapseAll': 'Alle Zeilen zuklappen',
     'table.actions.expandRow': 'Zeile aufklappen',
@@ -205,9 +208,18 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Alle Module im Projekt „{{name}}" ausführen?',
     'bulkRun.projectConfirm.message':
       'Dies löst die nächste Migrationsphase für jedes Modul in diesem Projekt aus, dessen aktueller Status dies zulässt. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen. Module, die nicht berechtigt sind, werden übersprungen.',
-    'bulkRun.globalConfirm.title': 'Alle berechtigten Module ausführen?',
+    'bulkRun.globalConfirm.title':
+      'Alle berechtigten Projekte und Module ausführen?',
     'bulkRun.globalConfirm.message':
       'Dies löst die nächste Migrationsphase für alle berechtigten Module in allen Projekten aus, auf die Sie Schreibzugriff haben, einschließlich Projekte, die auf der aktuellen Seite nicht sichtbar sind. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen.',
+    'bulkRun.globalConfirm.messageInitRetrigger':
+      'Einige Projekte sind berechtigt, die Init-Phase erneut auszuführen. Deren Erkennungsphase wird ebenfalls erneut ausgelöst.',
+    'bulkRun.globalConfirm.noInitEligible':
+      'Derzeit sind keine Projekte für eine erneute Ausführung der Init-Phase berechtigt.',
+    'bulkRun.globalConfirm.userPromptLabel':
+      'Benutzeranweisung für Init-Neustart (optional)',
+    'bulkRun.globalConfirm.userPromptPlaceholder':
+      'Falls Projekte ihre Init-Phase erneut durchlaufen müssen, wird diese Anweisung zur Anpassung der Konvertierung verwendet…',
     'bulkRun.projectPageConfirm.title': 'Alle Module in „{{name}}" ausführen?',
     'bulkRun.projectPageConfirm.message':
       'Dies löst die nächste Migrationsphase für jedes Modul in diesem Projekt aus, dessen aktueller Status dies zulässt. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen. Module, die nicht berechtigt sind, werden übersprungen.',
@@ -215,7 +227,20 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'bulkRun.cancel': 'Abbrechen',
     'bulkRun.errorProject':
       'Fehler beim Ausführen der Module im Projekt „{{name}}"',
+    'bulkRun.errorModuleStart':
+      'Fehler beim Starten der Phase „{{phase}}" für Modul „{{moduleName}}"',
     'bulkRun.errorGlobal': 'Fehler bei der Massenausführung',
+    'retriggerInit.confirm.title': 'Init-Phase für „{{name}}" erneut auslösen?',
+    'retriggerInit.confirm.message':
+      'Dies löst die Erkennungsphase für das Projekt erneut aus und startet einen neuen Init-Job. Vorherige Init-Ergebnisse werden ersetzt.',
+    'retriggerInit.confirm.userPromptLabel': 'Benutzeranweisung (optional)',
+    'retriggerInit.confirm.userPromptPlaceholder':
+      'Zusätzliche Anweisungen für die Konvertierung angeben…',
+    'retriggerInit.confirm.confirmButton': 'Erneut auslösen',
+    'retriggerInit.error':
+      'Fehler beim erneuten Auslösen der Init-Phase für Projekt „{{name}}"',
+    'retriggerInit.errorStart':
+      'Fehler beim Starten der Projektinitialisierung',
   },
 });
 

@@ -25,6 +25,33 @@ export const lightspeedMessages = {
   // Page titles and headers
   'page.title': 'Lightspeed',
   'page.subtitle': 'AI-powered development assistant',
+  'tabs.ariaLabel': 'Lightspeed views',
+  'tabs.chat': 'Chat',
+  'tabs.notebooks': 'Notebooks',
+  'tabs.notebooks.empty': 'Notebooks content goes here.',
+  'notebooks.title': 'My Notebooks',
+  'notebooks.empty.title': 'No created notebooks',
+  'notebooks.empty.description':
+    'Start a new notebook to organize your sources and generate AI-powered insights.',
+  'notebooks.empty.action': 'Create a new notebook',
+  'notebooks.documents': 'Documents',
+  'notebooks.actions.rename': 'Rename',
+  'notebooks.actions.delete': 'Delete',
+  'notebooks.rename.title': 'Rename {{name}}?',
+  'notebooks.rename.description':
+    'Please input the new name for this notebook and click submit to proceed.',
+  'notebooks.rename.label': 'New name',
+  'notebooks.rename.placeholder': 'New name',
+  'notebooks.rename.action': 'Submit',
+  'notebooks.delete.title': 'Delete {{name}}?',
+  'notebooks.delete.message':
+    "You'll no longer see this notebook here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
+  'notebooks.delete.action': 'Delete',
+  'notebooks.delete.toast': 'Notebook deleted!',
+  'notebooks.updated.today': 'Updated today',
+  'notebooks.updated.yesterday': 'Updated 1 day ago',
+  'notebooks.updated.days': 'Updated {{days}} days ago',
+  'notebooks.updated.on': 'Updated on',
 
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',
@@ -78,7 +105,10 @@ export const lightspeedMessages = {
   // Permissions
   'permission.required.title': 'Missing permissions',
   'permission.required.description':
-    'To view lightspeed plugin, contact your administrator to give the <b>lightspeed.chat.read</b> and <b>lightspeed.chat.create</b> permissions.',
+    'To view <subject/>, contact your administrator to give the <permissions/> permission.',
+  'permission.subject.plugin': 'the Lightspeed plugin',
+  'permission.subject.notebooks': 'the Lightspeed notebooks',
+  'permission.notebooks.goBack': 'Go back',
 
   // Disclaimers
   'disclaimer.withValidation':
@@ -141,6 +171,7 @@ export const lightspeedMessages = {
   'conversation.removeFromPinnedChats': 'Unpin',
   'conversation.announcement.userMessage':
     'Message from User: {{prompt}}. Message from Bot is loading.',
+  'conversation.announcement.responseStopped': 'Response stopped.',
 
   // User states
   'user.guest': 'Guest',

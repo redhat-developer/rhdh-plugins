@@ -122,7 +122,7 @@ catalog:
         - allow: [User, Group]
     # x2a Create Project template
     - type: file
-      target: ../../templates/conversion-project-template.yaml
+      target: ../../plugins/scaffolder-backend-module-x2a/templates/conversion-project-template.yaml
       rules:
         - allow: [Template]
 

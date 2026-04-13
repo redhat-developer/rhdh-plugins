@@ -118,6 +118,38 @@ Thresholds are evaluated in order, and the first matching rule determines the ca
 
 For comprehensive threshold configuration guide, examples, and best practices, see [thresholds.md](./docs/thresholds.md).
 
+## Aggregation KPIs (homepage and `GET /aggregations`)
+
+Aggregated scorecard data for the authenticated user’s owned entities is exposed under **`GET /aggregations/:aggregationId`**. Optional entries in **`scorecard.aggregationKPIs`** assign a stable **aggregation id** (KPI key), custom **title** and **description**, **type**, and the backing **metricId**.
+
+```yaml
+scorecard:
+  aggregationKPIs:
+    openIssuesKpi:
+      title: 'Jira open issues KPI'
+      description: 'Open issues across entities you own, grouped by status.'
+      type: statusGrouped
+      metricId: jira.open_issues
+    openPrsKpi:
+      title: 'GitHub open PRs KPI'
+      description: 'Open pull requests grouped by status.'
+      type: statusGrouped
+      metricId: github.open_prs
+```
+
+| Field         | Description                                                    |
+| ------------- | -------------------------------------------------------------- |
+| `title`       | Display title for this aggregation (returned in API metadata). |
+| `description` | Display description for this aggregation.                      |
+| `type`        | Aggregation algorithm; currently `statusGrouped`.              |
+| `metricId`    | Metric provider id used to load thresholds and compute counts. |
+
+- **Path**: `scorecard.aggregationKPIs.<aggregationId>`.
+- If **`aggregationKPIs` is omitted** or a given id is not listed, **`GET /aggregations/:aggregationId`** still works when **`aggregationId` equals the metric id** (e.g. `github.open_prs`): the backend uses that metric with the default `statusGrouped` aggregation and metric-defined title/description.
+- Invalid KPI entries may be logged and skipped at runtime; prefer fixing config per backend validation.
+
+**Homepage cards** are configured in the app (for example Dynamic Home Page mount points). They should pass **`aggregationId`** matching a key in `aggregationKPIs` or the metric id for the default case. See the [Scorecard frontend plugin README](../scorecard/README.md#homepage-scorecard-cards).
+
 ## API Endpoints
 
 ### `GET /metrics`
@@ -183,9 +215,52 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service?
   -H "Authorization: Bearer <token>"
 ```
 
-### `GET /metrics/:metricId/catalog/aggregations`
+### `GET /aggregations/:aggregationId`
 
-Returns aggregated metrics for a specific metric across all entities owned by the authenticated user. This endpoint aggregates metrics from:
+Returns aggregated metrics for the authenticated user across all catalog entities they own (same ownership rules as the legacy route; see [aggregation.md](./docs/aggregation.md)).
+
+The **`aggregationId`** is either:
+
+- A key under **`scorecard.aggregationKPIs`** in app-config (KPI-specific title, description, type, and `metricId`), or
+- The **metric id** itself when no KPI entry exists (default **statusGrouped** behavior).
+
+#### Path Parameters
+
+| Parameter       | Type   | Required | Description                                                                           |
+| --------------- | ------ | -------- | ------------------------------------------------------------------------------------- |
+| `aggregationId` | string | Yes      | KPI id from `scorecard.aggregationKPIs` or the metric id for the default aggregation. |
+
+#### Authentication / permissions
+
+Same as the deprecated aggregation route: user authentication, `scorecard.metric.read`, and `catalog.entity.read` for each aggregated entity.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/aggregations/openIssuesKpi" \
+  -H "Authorization: Bearer <token>"
+
+# Default aggregation when no KPI is configured (id equals metric id)
+curl -X GET "{{url}}/api/scorecard/aggregations/github.open_prs" \
+  -H "Authorization: Bearer <token>"
+```
+
+### `GET /aggregations/:aggregationId/metadata`
+
+Returns **title**, **description**, **type**, **history**, and **aggregationType** for the aggregation without computing full aggregate counts. Uses the same resolution rules as `GET /aggregations/:aggregationId` (KPI config vs metric id fallback).
+
+```bash
+curl -X GET "{{url}}/api/scorecard/aggregations/openIssuesKpi/metadata" \
+  -H "Authorization: Bearer <token>"
+```
+
+### `GET /metrics/:metricId/catalog/aggregations` (deprecated; removal planned)
+
+This endpoint **remains available** for backward compatibility and behaves like the default case of **`GET /aggregations/:metricId`** (status-grouped aggregation for that metric). **It will be removed in a future major release** of the plugin - migrate to **`GET /aggregations/:aggregationId`**.
+
+Responses include **RFC 8594** deprecation signals: header **`Deprecation: true`** and **`Link: <…/aggregations/<metricId>>; rel="alternate"`** pointing at the successor URL. The backend also logs a warning when this route is used.
+
+Returns aggregated metrics for a specific metric across all entities owned by the authenticated user:
 
 - Entities directly owned by the user
 - Entities owned by groups the user is a direct member of (only direct parent groups are considered)
@@ -210,7 +285,7 @@ Requires `scorecard.metric.read` permission. Additionally:
 #### Example Request
 
 ```bash
-# Get aggregated metrics for a specific metric
+# Deprecated — prefer GET /aggregations/github.open_prs (or your KPI id)
 curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations" \
   -H "Authorization: Bearer <token>"
 ```

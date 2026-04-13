@@ -17,8 +17,8 @@ import {
   coreServices,
   createBackendModule,
 } from '@backstage/backend-plugin-api';
-import { scaffolderActionsExtensionPoint } from '@backstage/plugin-scaffolder-node/alpha';
-import { createProjectAction } from './actions/createProject';
+import { scaffolderActionsExtensionPoint } from '@backstage/plugin-scaffolder-node';
+import { createProjectAction } from './actions/createProjectAction';
 
 /**
  * A backend module that registers the action into the scaffolder

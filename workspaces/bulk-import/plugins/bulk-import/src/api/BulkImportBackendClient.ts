@@ -33,12 +33,14 @@ import {
   SortingOrderEnum,
 } from '../types';
 import { getApi } from '../utils/repository-utils';
+import { IBulkImportRESTPathProvider } from './BulkImportBackendClientBase';
 import { OrchestratorBulkImportBackendClientPathProvider } from './OrchestratorBulkImportBackendClientPathProvider';
 import { PRBulkImportBackendClientPathProvider } from './PRBulkImportBackendClientPathProvider';
 import { ScaffolderBulkImportBackendClientPathProvider } from './ScaffolderBulkImportBackendClientPathProvider';
 
 // @public
 export type BulkImportAPI = {
+  getSCMHosts(): Promise<{ github: string[]; gitlab: string[] } | Response>;
   dataFetcher: (
     page: number,
     size: number,
@@ -79,27 +81,6 @@ export const bulkImportApiRef = createApiRef<BulkImportAPI>({
   id: 'plugin.bulk-import.service',
 });
 
-export interface IBulkImportRESTPathProvider {
-  getCreateImportJobsPath(dryRun?: boolean): string | undefined;
-  getDeleteImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool?: string,
-  ): string;
-  getGetImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool?: string,
-  ): string;
-  getGetImportJobsPath(
-    page: number,
-    size: number,
-    searchString: string,
-    sortColumn: AddedRepositoryColumnNameEnum,
-    sortOrder: SortingOrderEnum,
-  ): string;
-}
-
 export class BulkImportBackendClient implements BulkImportAPI {
   private readonly configApi: ConfigApi;
   private readonly identityApi: IdentityApi;
@@ -136,6 +117,7 @@ export class BulkImportBackendClient implements BulkImportAPI {
     options?: APITypes,
   ) {
     const { token: idToken } = await this.identityApi.getCredentials();
+
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
       getApi(backendUrl, page, size, searchString, approvalTool, options),
@@ -143,6 +125,9 @@ export class BulkImportBackendClient implements BulkImportAPI {
         headers: {
           'Content-Type': 'application/json',
           ...(idToken && { Authorization: `Bearer ${idToken}` }),
+          ...(options?.scmAuthTokens && {
+            'X-SCM-Tokens': JSON.stringify(options.scmAuthTokens),
+          }),
         },
       },
     );
@@ -208,6 +193,25 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.status === 204 ? null : await jsonResponse.json();
   }
 
+  async getSCMHosts() {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}${this.pathProvider.getSCMHostPath()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+      },
+    );
+    if (jsonResponse.status !== 200 && jsonResponse.status !== 204) {
+      return jsonResponse;
+    }
+    return jsonResponse.json();
+  }
+
   async deleteImportAction(
     repo: string,
     defaultBranch: string,
@@ -216,7 +220,7 @@ export class BulkImportBackendClient implements BulkImportAPI {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}${this.pathProvider.getDeleteImportActionPath(repo, defaultBranch, approvalTool)}`,
+      `${backendUrl}${this.pathProvider.getImportActionPath(repo, defaultBranch, approvalTool)}`,
       {
         method: 'DELETE',
         headers: {
@@ -240,7 +244,7 @@ export class BulkImportBackendClient implements BulkImportAPI {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}${this.pathProvider.getGetImportActionPath(repo, defaultBranch, approvalTool)}`,
+      `${backendUrl}${this.pathProvider.getImportActionPath(repo, defaultBranch, approvalTool)}`,
       {
         method: 'GET',
         headers: {

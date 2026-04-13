@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
+import type { Theme } from '@mui/material/styles';
 import type { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import { SCORECARD_ERROR_STATE_COLOR } from './constants';
-import { ElementType } from 'react';
-import { getThresholdRuleColor } from './colorUtils';
+import { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
 
 export type StatusConfig = {
   color: string;
-  icon?: ElementType;
+  icon?: string;
 };
 
 /**
@@ -54,14 +52,49 @@ export const getStatusConfig = ({
     evaluationColor = getThresholdRuleColor(thresholdRules, evaluation);
   }
   const color = evaluationColor ?? SCORECARD_ERROR_STATE_COLOR;
+  const icon =
+    thresholdRules && evaluation
+      ? getThresholdRuleIcon(thresholdRules, evaluation)
+      : undefined;
+  return { color, icon };
+};
 
-  switch (evaluation) {
-    case 'error':
-    case 'missing':
-      return { color, icon: DangerousOutlinedIcon };
-    case 'warning':
-      return { color, icon: WarningAmberIcon };
-    default:
-      return { color, icon: CheckCircleOutlineIcon };
+/**
+ * Resolves a color value from the theme palette or returns a custom color.
+ * Supports theme palette paths (e.g., 'error.main', 'rhdh.general.cardBorderColor')
+ * and direct color values (e.g., '#FF5733', 'blue', 'rgb(255,0,0)').
+ *
+ * @param theme - The theme configuration object
+ * @param statusColor - Either a theme palette path or a direct color value
+ * @returns The resolved color string
+ */
+export const resolveStatusColor = (
+  theme: Theme,
+  statusColor: string,
+): string => {
+  // Theme palette paths are dot-separated; rgba(...) may include '.' in its alpha value.
+  if (!statusColor.includes('.') || statusColor.includes('rgba')) {
+    return statusColor;
   }
+
+  // Resolve theme palette reference
+  const parts = statusColor.split('.');
+  let value: any = theme.palette;
+
+  for (const part of parts) {
+    value = value?.[part];
+    if (value === undefined) {
+      break;
+    }
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  // Fallback to error state color, then error.main
+  return (
+    (theme as ThemeConfig).palette?.rhdh?.general?.cardBorderColor ??
+    theme.palette.error.main
+  );
 };

@@ -16,10 +16,14 @@
 
 import { useState } from 'react';
 
+import { Link } from '@backstage/core-components';
 import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { CardWrapper } from '../Common/CardWrapper';
 import { CustomTooltip } from './CustomTooltip';
@@ -29,18 +33,70 @@ import {
   getThresholdRuleColor,
   resolveStatusColor,
   SCORECARD_ERROR_STATE_COLOR,
+  getLastUpdatedLabel,
 } from '../../utils';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ResponsivePieChart } from './ResponsivePieChart';
+import { useLanguage } from '../../hooks/useLanguage';
+
+const InfoComponent = ({ timestamp }: { timestamp: string }) => {
+  const theme = useTheme();
+  const { t } = useTranslation();
+  const locale = useLanguage();
+
+  const lastUpdatedLabel = getLastUpdatedLabel(timestamp, locale);
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', mr: 2 }}>
+      <Tooltip
+        title={
+          <Box sx={{ textAlign: 'center' }}>
+            {lastUpdatedLabel !== '--'
+              ? t('metric.lastUpdated' as any, { timestamp: lastUpdatedLabel })
+              : t('metric.lastUpdatedNotAvailable')}
+          </Box>
+        }
+        placement="top"
+        arrow
+        componentsProps={{
+          tooltip: {
+            sx: {
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              color: 'white',
+              fontSize: '0.875rem',
+              p: 1.5,
+            },
+          },
+        }}
+      >
+        <IconButton data-testid="scorecard-homepage-card-info">
+          <InfoOutlinedIcon
+            sx={{ color: theme.palette.text.secondary, fontSize: '1.75rem' }}
+          />
+        </IconButton>
+      </Tooltip>
+    </Box>
+  );
+};
 
 export const ScorecardHomepageCardComponent = ({
   scorecard,
   cardTitle,
   description,
+  aggregationId,
+  showSubheader = true,
+  showInfo = true,
+  dataTestId,
 }: {
   scorecard: AggregatedMetricResult;
   cardTitle: string;
   description: string;
+  aggregationId: string;
+  showSubheader?: boolean;
+  showInfo?: boolean;
+  dataTestId?: string;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -65,8 +121,33 @@ export const ScorecardHomepageCardComponent = ({
   return (
     <CardWrapper
       title={cardTitle}
-      subheader={t('thresholds.entities', { count: scorecard.result.total })}
+      dataTestId={dataTestId}
+      {...(showSubheader
+        ? {
+            subheader: (
+              <Tooltip
+                enterDelay={1500}
+                title={t('metric.someEntitiesNotReportingValues')}
+                arrow
+                placement="right"
+              >
+                <Link
+                  to={`/scorecard/aggregations/${encodeURIComponent(
+                    aggregationId,
+                  )}/metrics/${encodeURIComponent(scorecard.id)}`}
+                >
+                  {t('thresholds.entities', { count: scorecard.result.total })}
+                </Link>
+              </Tooltip>
+            ),
+          }
+        : {})}
       description={description}
+      {...(showInfo
+        ? {
+            info: <InfoComponent timestamp={scorecard.result.timestamp} />,
+          }
+        : {})}
     >
       <Box
         width="100%"

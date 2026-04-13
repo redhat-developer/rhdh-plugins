@@ -25,6 +25,7 @@ import {
   catalogImportPlugin,
 } from '@backstage/plugin-catalog-import';
 import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
+import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react';
 import { orgPlugin } from '@backstage/plugin-org';
 import { SearchPage } from '@backstage/plugin-search';
 import {
@@ -55,6 +56,7 @@ import { SignalsDisplay } from '@backstage/plugin-signals';
 import {
   X2APage,
   x2aPluginTranslations,
+  RepoAuthenticationExtension,
 } from '@red-hat-developer-hub/backstage-plugin-x2a';
 import {
   bitbucketAuthApiRef,
@@ -135,7 +137,6 @@ const routes = (
         <ReportIssue />
       </TechDocsAddons>
     </Route>
-    <Route path="/create" element={<ScaffolderPage />} />
     <Route path="/api-docs" element={<ApiExplorerPage />} />
     <Route
       path="/catalog-import"
@@ -152,6 +153,15 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
+
+    {/* At RHDH runtime, this is replaced by dynamicPlugin configuration:
+      https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/installing_and_viewing_plugins_in_red_hat_developer_hub/assembly-front-end-plugin-wiring.adoc_rhdh-extensions-plugins#con-providing-custom-scaffolder-field-extensions.adoc_assembly-front-end-plugin-wiring
+    */}
+    <Route path="/create" element={<ScaffolderPage />}>
+      <ScaffolderFieldExtensions>
+        <RepoAuthenticationExtension />
+      </ScaffolderFieldExtensions>
+    </Route>
   </FlatRoutes>
 );
 

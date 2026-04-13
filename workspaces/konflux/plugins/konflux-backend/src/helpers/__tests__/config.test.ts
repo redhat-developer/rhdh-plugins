@@ -113,6 +113,7 @@ describe('config', () => {
     mockCatalog = {
       getEntities: jest.fn(),
       getEntityByRef: jest.fn(),
+      getEntitiesByRefs: jest.fn().mockResolvedValue({ items: [] }),
     } as unknown as CatalogService;
 
     mockCredentials = {} as BackstageCredentials;
@@ -269,8 +270,13 @@ describe('config', () => {
 
       mockParseEntityKonfluxConfig.mockReturnValue(clusterConfigs);
 
-      const entity = createMockEntity('test-entity');
-      (mockCatalog.getEntities as jest.Mock).mockResolvedValue({
+      const entity = createMockEntity('test-entity', undefined, [
+        {
+          type: 'hasPart',
+          targetRef: 'component:default/subcomponent1',
+        },
+      ]);
+      (mockCatalog.getEntitiesByRefs as jest.Mock).mockResolvedValue({
         items: [subcomponent1],
       });
 
@@ -502,12 +508,16 @@ describe('config', () => {
         authProvider: 'serviceAccount',
       };
 
-      const entity = createMockEntity('test-entity');
       const subcomponent1 = createMockEntity('sub1', {}, [
         { type: 'partOf', targetRef: 'component:default/test-entity' },
       ]);
       const subcomponent2 = createMockEntity('sub2', {}, [
         { type: 'partOf', targetRef: 'component:default/test-entity' },
+      ]);
+
+      const entity = createMockEntity('test-entity', undefined, [
+        { type: 'hasPart', targetRef: 'component:default/sub1' },
+        { type: 'hasPart', targetRef: 'component:default/sub2' },
       ]);
 
       mockParseSubcomponentClusterConfigurations.mockReturnValue([
@@ -519,7 +529,7 @@ describe('config', () => {
         ]),
       ]);
 
-      (mockCatalog.getEntities as jest.Mock).mockResolvedValue({
+      (mockCatalog.getEntitiesByRefs as jest.Mock).mockResolvedValue({
         items: [subcomponent1, subcomponent2],
       });
 

@@ -95,6 +95,10 @@ export class MetricProvidersRegistry {
     return metricProvider;
   }
 
+  hasProvider(providerId: string): boolean {
+    return this.metricProviders.has(providerId);
+  }
+
   getMetric(metricId: string): Metric {
     const provider = this.getProvider(metricId);
 

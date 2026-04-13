@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.2.1
+
+### Patch Changes
+
+- afd7a1e: Update translations for Bulk Import.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.2.1
+
 ## 7.2.0
 
 ### Minor Changes

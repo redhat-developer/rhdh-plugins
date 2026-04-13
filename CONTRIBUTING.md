@@ -22,7 +22,7 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
     - [Next steps](#next-steps)
     - [Maintenance of older versions](#maintenance-of-older-versions)
   - [API Reports](#api-reports)
-  - [Submitting a Pull Request](#submitting-a-pull-request)
+  - [Submitting a Pull Request](#submitting-a-pull-request-for-a-new-workspace)
   - [Plugin Owner Responsibilities](#plugin-owner-responsibilities)
     - [Responsibilities](#responsibilities)
     - [Keeping Workspaces Up to Date with Backstage](#keeping-workspaces-up-to-date-with-backstage)
@@ -32,6 +32,9 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
         - [Dependency Updates](#dependency-updates)
         - [Security Fixes](#security-fixes)
     - [Opt-in to Knip Reports Check](#opt-in-to-knip-reports-check)
+  - [Archiving a plugin or workspace](#archiving-a-plugin-or-workspace)
+    - [When to archive](#when-to-archive)
+    - [Steps](#steps)
 
 ## License
 
@@ -82,7 +85,7 @@ We use [changesets](https://github.com/atlassian/changesets) to help us prepare 
 
 To create a changeset, follow these steps:
 
-1. Make sure you are in the root directory of the workspace for the plugin you want to create a changeset for. For ex: if you are making changes on the `openshift-image-registry` plugin then you should be on `workspaces/openshift-image-registry` dir
+1. Make sure you are in the root directory of the workspace for the plugin you want to create a changeset for. For ex: if you are making changes on the `scorecard` plugin then you should be on `workspaces/scorecard` dir
 
 2. Run the following command to create a new changeset:
 
@@ -136,7 +139,7 @@ From there, once the script has finished, you should have a new `yarn workspace`
 Once you have a workspace setup, the creation of new plugins and packages is just like any other Backstage repository. You can use the `yarn new` command to run the prompt for creating new plugins or packages.
 
 ```bash
-cd workspaces/openshift-image-registry
+cd workspaces/scorecard
 yarn install
 yarn new
 ```
@@ -201,7 +204,6 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
 1. Prepare your environment by cloning a fork of both the `janus-idp/backstage-plugins` and the `backstage/rhdh-plugins` repositories
 
 2. In both repositories, create a new branch:
-
    - For `janus-idp/backstage-plugins`:
 
      ```bash
@@ -215,7 +217,6 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
      ```
 
 3. In the `backstage/rhdh-plugins` repository, execute the janus-plugin migrate command.- Usage:`yarn rhdh-cli janus-plugin migrate --monorepo-path [path_to_backstage_plugins]--workspace-name [workspace_name] --branch [branch_name] --maintainers [maintainer1],[maintainer2],[maintainer3],...`
-
    - The `path_to_backstage_plugins` is the path to the `backstage-plugins` project where the plugin(s) you want to migrate live.
    - The `workspace-name` is the name of the workspace you wish to create in the `rhdh-plugins` project. All plugins in the `backstage-plugins` that either are exactly or start with `@janus-idp/backstage-plugin-[workspace_name]` will be migrated to this new workspace.
    - The `branch_name` is the name of the branch in the `backstage-plugins` project where the changes to add a deprecate note for the migrated plugins will be made.
@@ -265,35 +266,35 @@ There are two ways you can do this:
 
 Each plugin/package has its own API Report which means you might see more than one file updated or created depending on your changes. These changes will then need to be committed as well.
 
-## Submitting a Pull Request
+## Submitting a Pull Request for a New Workspace
 
 When you've got your contribution working, tested, and committed to your branch it's time to create a Pull Request (PR). If you are unsure how to do this GitHub's [Creating a pull request from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) documentation will help you with that.
 
 For new plugins, it is recommended that your initial PR simply creates the workspace for your plugins. In this PR, be sure to add maintainers to the `CODEOWNERS` file for the new workspace. This will streamline the approval process, and also ensure that you have full autonomy over further development of your plugin.
 
-Please ping @rhdh-cope in #rhdh-plugins-ecosystem on Slack when the PR is ready for review. We will do our best to complete an initial review within 5 working days, and address any subsequent updates within 2 working days.
+Please ping @rhdh-cope in #rhdh-plugins-ecosystem on Slack when the PR is ready for review. We will do our best to complete an initial review within 5 working days, and address any subsequent updates within 2 working days. We will not begin this process until the CI is passing or CI failures are explicitly justified.
 
 ### Checklist to Ensure your Plugin is Ready to Merge
 
-* Workspace `package.json`
-  * `private: true`
-  * Use the correct repository url
-  * Keep workspace-level dependencies minimal
-* Plugin `package.json`
-  * For publishable plugins:
-    * Omit `private: true`
-    * Set `publishConfig.access` to `"public"`
-  * Include a valid `backstage` config with `role`, `pluginId`, and `pluginPackages`
-  * Use the correct repository URL
-* Required files
-  * Changeset is present
-  * README files with relevant documentation
-  * `backstage.json` specifying a compatible Backstage version
-* Configuration (if applicable)
-  * Include `config.d.ts` at the package level
-  * Add proper visibility annotations
-* Ownership
-  * Update `.github/CODEOWNERS` with appropriate maintainers
+- Workspace `package.json`
+  - `private: true`
+  - Use the correct repository url
+  - Keep workspace-level dependencies minimal
+- Plugin `package.json`
+  - For publishable plugins:
+    - Omit `private: true`
+    - Set `publishConfig.access` to `"public"`
+  - Include a valid `backstage` config with `role`, `pluginId`, and `pluginPackages`
+  - Use the correct repository URL
+- Required files
+  - Changeset is present
+  - README files with relevant documentation
+  - `backstage.json` specifying a compatible Backstage version
+- Configuration (if applicable)
+  - Include `config.d.ts` at the package level
+  - Add proper visibility annotations
+- Ownership
+  - Update `.github/CODEOWNERS` with appropriate maintainers
 
 ## Plugin Owner Responsibilities
 
@@ -357,3 +358,48 @@ This repository uses [Renovate](https://docs.renovatebot.com/) to automatically 
 Plugin owners can opt in to Knip reports check in CI by creating a `bcp.json` file in the root of their workspace (`workspaces/${WORKSPACE}/bcp.json`) and adding `{ "knip-reports": true }`. This ensures that knip reports in your workspace stay up to date.
 
 [Knip](https://knip.dev/) is a tool that helps with clean-up and maintenance by identifying unused dependencies within workspaces. Regularly reviewing and addressing these reports can significantly improve code quality and reduce bloat.
+
+## Archiving a plugin or workspace
+
+When a plugin is no longer maintained, archive it rather than leaving stale code in the default branch. The archive script records the last published version in `.github/archived-plugins.json`, documents it in `ARCHIVED_WORKSPACES.md`, and strips repository configuration that referenced the workspace when you archive an entire workspace. You then remove the workspace or plugin tree in the same PR (or a follow-up). After the PR merges, npm deprecation runs via `.github/workflows/deprecate-archived-plugins.yml`.
+
+### When to archive
+
+Consider archiving when the plugin is unmaintained, has no owner, has unfixable security issues, has been superseded, or cannot be updated for current Backstage versions.
+
+### Steps
+
+1. From the repository root, run the archive script (use a branch based on current `main`):
+
+   ```bash
+   # Entire workspace (default reason: "No longer maintained")
+   node scripts/archive.js <workspace-name>
+
+   # Entire workspace with a custom reason
+   node scripts/archive.js <workspace-name> "Custom reason"
+
+   # Single plugin under workspaces/<workspace>/plugins/ (by plugin directory name or package suffix)
+   node scripts/archive.js <workspace-name> <plugin-dir-or-package-suffix> "Custom reason"
+   ```
+
+   The script only considers packages under the `@red-hat-developer-hub` scope. It updates:
+   - `.github/archived-plugins.json`
+   - `ARCHIVED_WORKSPACES.md`
+   - `.github/CODEOWNERS` (full workspace only — removes the `/workspaces/<name>` line)
+   - `.github/renovate.json` and `.github/renovate-presets/workspace/rhdh-<workspace>-presets.json` (full workspace only, when present)
+
+   It does **not** delete source directories; do that in the next step.
+
+2. Dry-run npm deprecation (optional):
+
+   ```bash
+   ./scripts/ci/deprecate-archived-plugins.sh --dry-run
+   ```
+
+3. Delete the workspace or plugin directory from the repository (`workspaces/<name>` for a full workspace, or `workspaces/<workspace>/plugins/<plugin>` when archiving specific plugins). Update any documentation that referenced the removed code.
+
+4. Run `yarn install` at the repository root if your tooling reports workspace or lockfile issues.
+
+5. Open a pull request including the script output and the deletion. Changes to `.github/archived-plugins.json` are sensitive because they drive automated npm deprecation after merge; ensure the usual repository reviewers (see `.github/CODEOWNERS`) approve the PR.
+
+6. After the PR merges, confirm the **Deprecate Archived Plugins** workflow ran successfully for the updated `.github/archived-plugins.json`.

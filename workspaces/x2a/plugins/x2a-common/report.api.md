@@ -32,6 +32,9 @@ export interface AgentMetrics {
     };
 }
 
+// @public
+export const allProviders: ScmProvider[];
+
 // @public (undocumented)
 export interface Artifact {
     id: string;
@@ -65,6 +68,9 @@ export function buildScmHostMap(config: Config): Map<string, ScmProviderName>;
 
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
+
+// @public
+export type CsvProjectRow = ProjectsPost['body'];
 
 // @public
 export const DEFAULT_PAGE_ORDER = "desc";
@@ -110,6 +116,9 @@ export const gitlabProvider: ScmProvider;
 export interface GitRepoAuth {
     token: string;
 }
+
+// @public
+export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
 
 // @public (undocumented)
 export interface Job {
@@ -180,6 +189,9 @@ export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancel
 export function normalizeRepoUrl(url: string): string;
 
 // @public
+export function parseCsvContent(dataUrl: string): CsvProjectRow[];
+
+// @public
 export const POLLING_INTERVAL_MS: number;
 
 // @public (undocumented)
@@ -201,6 +213,9 @@ export interface Project {
     targetRepoBranch: string;
     targetRepoUrl: string;
 }
+
+// @public
+export const PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD = 500;
 
 // @public (undocumented)
 export type ProjectsGet = {
@@ -425,6 +440,9 @@ export function resolveScmProvider(repoUrl: string, hostProviderMap?: Map<string
 
 // @public
 export function resolveScmProviderByName(name: ScmProviderName): ScmProvider;
+
+// @public
+export const SCAFFOLDER_SECRET_PREFIX = "OAUTH_TOKEN_";
 
 // @public
 export interface ScmProvider {

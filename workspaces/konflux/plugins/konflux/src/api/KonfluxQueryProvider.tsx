@@ -24,12 +24,10 @@ function getQueryClient() {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 30 * 1000, // 30 seconds
+          staleTime: 5 * 60 * 1000, // 5 minutes
           gcTime: 5 * 60 * 1000, // 5 minutes
           retry: 1,
-          // TODO: check if the bellow options are really needed
-          refetchOnWindowFocus: true, // refetch when window regains focus
-          refetchOnReconnect: true, // refetch when network reconnects
+          refetchOnWindowFocus: false, // do not refetch when window regains focus
         },
       },
     });

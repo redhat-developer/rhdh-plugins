@@ -41,8 +41,13 @@ import { ProjectModulesCard } from './ProjectModulesCard';
 import { InitPhaseCard } from './InitPhaseCard';
 import { DeleteProjectDialog } from '../DeleteProjectDialog';
 import { BulkRunConfirmDialog } from '../BulkRunConfirmDialog';
+import { RetriggerInitConfirmDialog } from '../RetriggerInitConfirmDialog';
 import { ProjectActions, ProjectActionsProps } from './ProjectActions';
-import { extractResponseError } from '../tools';
+import {
+  extractResponseError,
+  canRunNextPhase,
+  isEligibleForRetriggerInit,
+} from '../tools';
 
 export const ProjectPage = () => {
   const { t } = useTranslation();
@@ -50,12 +55,14 @@ export const ProjectPage = () => {
   const { projectId } = useRouteRefParams(projectRouteRef);
   const rootPath = useRouteRef(rootRouteRef);
   const clientService = useClientService();
-  const { runAllForProject } = useBulkRun();
+  const { runAllForProject, retriggerInit } = useBulkRun();
   const { canWriteProject } = useProjectWriteAccess();
   const [error, setError] = useState<Error | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [retriggerInitModalOpen, setRetriggerInitModalOpen] = useState(false);
+  const [isRetriggeringInit, setIsRetriggeringInit] = useState(false);
   const [bulkRunModalOpen, setBulkRunModalOpen] = useState(false);
   const [isBulkRunning, setIsBulkRunning] = useState(false);
   const menuOpen = Boolean(menuAnchorEl);
@@ -138,6 +145,46 @@ export const ProjectPage = () => {
   const project = pageData?.project;
   const modules = pageData?.modules;
 
+  const handleRetriggerInitClick = useCallback(() => {
+    setError(null);
+    handleMenuClose();
+    setRetriggerInitModalOpen(true);
+  }, [handleMenuClose]);
+
+  const handleRetriggerInitModalClose = useCallback(() => {
+    if (!isRetriggeringInit) {
+      setRetriggerInitModalOpen(false);
+      setError(null);
+    }
+  }, [isRetriggeringInit]);
+
+  const handleRetriggerInitConfirm = useCallback(
+    async (userPrompt: string) => {
+      if (!project) return;
+      setError(null);
+      setIsRetriggeringInit(true);
+
+      try {
+        await retriggerInit(project, userPrompt || undefined);
+        setRetriggerInitModalOpen(false);
+        forceRefresh();
+      } catch (e) {
+        setRetriggerInitModalOpen(false);
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(
+          new Error(
+            `${t('retriggerInit.error' as any, {
+              name: project.name,
+            })}: ${msg}`,
+          ),
+        );
+      } finally {
+        setIsRetriggeringInit(false);
+      }
+    },
+    [project, retriggerInit, forceRefresh, t],
+  );
+
   const handleBulkRunModalClose = useCallback(() => {
     if (!isBulkRunning) {
       setBulkRunModalOpen(false);
@@ -180,6 +227,8 @@ export const ProjectPage = () => {
   }
 
   const projectWritePermitted = !!(project && canWriteProject(project));
+  const hasEligibleModules =
+    !!project && !!modules && modules.some(m => canRunNextPhase(m, project));
   return (
     <Page themeId="tool">
       <Header title={t('projectPage.title')}>
@@ -191,7 +240,11 @@ export const ProjectPage = () => {
             menuAnchorEl={menuAnchorEl}
             handleDeleteClick={handleDeleteClick}
             handleRunAllClick={handleRunAllClick}
-            canRunAll={projectWritePermitted}
+            handleRetriggerInitClick={handleRetriggerInitClick}
+            canRunAll={projectWritePermitted && hasEligibleModules}
+            canRetriggerInit={
+              projectWritePermitted && isEligibleForRetriggerInit(project)
+            }
             canDeleteProject={projectWritePermitted}
           />
         )}
@@ -203,6 +256,14 @@ export const ProjectPage = () => {
         onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}
         projectName={project?.name ?? ''}
+      />
+
+      <RetriggerInitConfirmDialog
+        open={retriggerInitModalOpen}
+        projectName={project?.name ?? ''}
+        isRunning={isRetriggeringInit}
+        onConfirm={handleRetriggerInitConfirm}
+        onClose={handleRetriggerInitModalClose}
       />
 
       <BulkRunConfirmDialog

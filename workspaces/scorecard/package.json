@@ -7,6 +7,7 @@
   },
   "scripts": {
     "start": "backstage-cli repo start",
+    "start:legacy": "backstage-cli repo start packages/app-legacy packages/backend",
     "start-backend": "yarn workspace backend start",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
@@ -20,6 +21,10 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules' backstage-cli repo test",
     "test:all": "NODE_OPTIONS='--experimental-vm-modules' backstage-cli repo test --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:legacy": "APP_MODE=legacy playwright test",
+    "test:e2e:nfs": "APP_MODE=nfs playwright test",
+    "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
+    "playwright": "bash -c 'if [[ \"$*\" == \"test\" ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
@@ -65,5 +70,8 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "changeset": "^0.2.6"
   }
 }

@@ -16,26 +16,21 @@
 
 import {
   createFrontendPlugin,
-  NavItemBlueprint,
+  createRouteRef,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import { rootRouteRef } from '../routes';
-import ExtensionIcon from '@material-ui/icons/Extension';
-import { BCCTestPageComponent } from '..';
+import { RiPuzzleLine } from '@remixicon/react';
+
+const rootRouteRef = createRouteRef();
 
 const bccTestPage = PageBlueprint.make({
   params: {
-    path: '/bcc-test',
-    routeRef: rootRouteRef,
-    loader: async () => <BCCTestPageComponent />,
-  },
-});
-
-const bccTestNavItem = NavItemBlueprint.make({
-  params: {
+    path: '/bcc-tests',
     title: 'BCC Tests',
+    icon: <RiPuzzleLine />,
     routeRef: rootRouteRef,
-    icon: ExtensionIcon,
+    loader: async () =>
+      import('../components/BCCTestPage').then(m => <m.BCCTestPage />),
   },
 });
 
@@ -45,6 +40,6 @@ const bccTestNavItem = NavItemBlueprint.make({
 export default createFrontendPlugin({
   pluginId: 'bcc-test',
   info: { packageJson: () => import('../../package.json') },
-  extensions: [bccTestPage, bccTestNavItem],
+  extensions: [bccTestPage],
   routes: { root: rootRouteRef },
 });

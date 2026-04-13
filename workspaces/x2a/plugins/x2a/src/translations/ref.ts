@@ -137,12 +137,15 @@ export const x2aPluginMessages = {
     columns: {
       name: 'Name',
       status: 'Status',
+      statusSortDisabledTooltip:
+        'Sorting by status is not available when the project count exceeds {{threshold}}',
       sourceRepo: 'Source Repository',
       targetRepo: 'Target Repository',
       createdAt: 'Created At',
     },
     actions: {
       deleteProject: 'Delete project',
+      retriggerInit: 'Retrigger project init phase',
       expandAll: 'Expand all rows',
       collapseAll: 'Collapse all rows',
       expandRow: 'Expand row',
@@ -187,9 +190,16 @@ export const x2aPluginMessages = {
         'This will trigger the next migration phase for every module in this project whose current state allows it. Make sure you have all the necessary artifacts in the target repositories reviewed before running this action. Modules that are not eligible will be skipped.',
     },
     globalConfirm: {
-      title: 'Run all eligible modules?',
+      title: 'Run all eligible projects and modules?',
       message:
         'This will trigger the next migration phase for all eligible modules across every project you have write access to, including projects not visible on the current page. Make sure you have all the necessary artifacts in the target repositories reviewed before running this action.',
+      messageInitRetrigger:
+        'Some projects are eligible for re-running the init phase. Their discovery phase will also be retriggered.',
+      noInitEligible:
+        'No projects are currently eligible for re-running the init phase.',
+      userPromptLabel: 'User prompt for init retrigger (optional)',
+      userPromptPlaceholder:
+        'If any projects need their init phase retriggered, this prompt will be used to customize the conversion…',
     },
     projectPageConfirm: {
       title: 'Run all modules in "{{name}}"?',
@@ -199,7 +209,22 @@ export const x2aPluginMessages = {
     confirm: 'Run all',
     cancel: 'Cancel',
     errorProject: 'Failed to run modules in project "{{name}}"',
+    errorModuleStart:
+      'Failed to start phase "{{phase}}" for module "{{moduleName}}"',
     errorGlobal: 'Failed to run bulk operation',
+  },
+  retriggerInit: {
+    confirm: {
+      title: 'Retrigger init phase for "{{name}}"?',
+      message:
+        'This will retrigger the discovery phase for the project, starting a new init job. Any previous init results will be replaced.',
+      userPromptLabel: 'User prompt (optional)',
+      userPromptPlaceholder:
+        'Provide additional instructions for the conversion…',
+      confirmButton: 'Retrigger',
+    },
+    error: 'Failed to retrigger init for project "{{name}}"',
+    errorStart: 'Failed to start project init',
   },
   module: {
     phases: {

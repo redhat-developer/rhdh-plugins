@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-mui5-test
 
+## 0.4.0
+
+### Minor Changes
+
+- 0b7c442: Backstage version bump to v1.49.2
+
 ## 0.3.0
 
 ### Minor Changes

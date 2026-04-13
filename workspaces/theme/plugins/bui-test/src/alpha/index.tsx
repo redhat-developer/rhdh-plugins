@@ -16,26 +16,21 @@
 
 import {
   createFrontendPlugin,
-  NavItemBlueprint,
+  createRouteRef,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import { rootRouteRef } from '../routes';
-import ExtensionIcon from '@material-ui/icons/Extension';
-import { BUITestPageComponent } from '..';
+import { RiPuzzleLine } from '@remixicon/react';
+
+const rootRouteRef = createRouteRef();
 
 const buiTestPage = PageBlueprint.make({
   params: {
-    path: '/bui-test',
-    routeRef: rootRouteRef,
-    loader: async () => <BUITestPageComponent />,
-  },
-});
-
-const buiTestNavItem = NavItemBlueprint.make({
-  params: {
+    path: '/bui-tests',
     title: 'BUI Tests',
+    icon: <RiPuzzleLine />,
     routeRef: rootRouteRef,
-    icon: ExtensionIcon,
+    loader: async () =>
+      import('../components/BUITestPage').then(m => <m.BUITestPage />),
   },
 });
 
@@ -45,6 +40,6 @@ const buiTestNavItem = NavItemBlueprint.make({
 export default createFrontendPlugin({
   pluginId: 'bui-test',
   info: { packageJson: () => import('../../package.json') },
-  extensions: [buiTestPage, buiTestNavItem],
+  extensions: [buiTestPage],
   routes: { root: rootRouteRef },
 });

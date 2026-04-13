@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
+import type { Theme } from '@mui/material/styles';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
-import {
-  DEFAULT_NUMBER_THRESHOLDS,
-  ScorecardThresholdRuleColors,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { getStatusConfig, SCORECARD_ERROR_STATE_COLOR } from '..';
+import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { getStatusConfig, resolveStatusColor, SCORECARD_ERROR_STATE_COLOR } from '..';
 
 describe('statusUtils', () => {
   describe('getStatusConfig', () => {
@@ -99,7 +95,7 @@ describe('statusUtils', () => {
 
         expect(result).toEqual({
           color: 'error.main',
-          icon: DangerousOutlinedIcon,
+          icon: 'scorecardErrorStatusIcon',
         });
       });
 
@@ -113,7 +109,7 @@ describe('statusUtils', () => {
 
         expect(result).toEqual({
           color: 'warning.main',
-          icon: WarningAmberIcon,
+          icon: 'scorecardWarningStatusIcon',
         });
       });
 
@@ -127,16 +123,26 @@ describe('statusUtils', () => {
 
         expect(result).toEqual({
           color: 'success.main',
-          icon: CheckCircleOutlineIcon,
+          icon: 'scorecardSuccessStatusIcon',
         });
       });
 
-      it('should return custom color from threshold configuration', () => {
+      it('should return custom color and icon from threshold configuration', () => {
         const mockThresholds = {
           rules: [
-            { key: 'critical', expression: '>80', color: '#ff0000' },
+            {
+              key: 'critical',
+              expression: '>80',
+              color: '#ff0000',
+              icon: 'scorecardErrorStatusIcon',
+            },
             { key: 'warning', expression: '40-79', color: '#ffa500' },
-            { key: 'success', expression: '<40', color: '#00ff00' },
+            {
+              key: 'success',
+              expression: '<40',
+              color: '#00ff00',
+              icon: 'customIcon',
+            },
           ],
         };
 
@@ -147,64 +153,14 @@ describe('statusUtils', () => {
 
         expect(result).toEqual({
           color: '#00ff00',
-          icon: CheckCircleOutlineIcon,
+          icon: 'customIcon',
         });
       });
 
-      it('should return default color for default rule keys', () => {
+      it('should return default color and icon for default rule keys', () => {
         const result = getStatusConfig({
           evaluation: 'success',
           thresholdRules: DEFAULT_NUMBER_THRESHOLDS.rules,
-        });
-
-        expect(result).toEqual({
-          color: 'success.main',
-          icon: CheckCircleOutlineIcon,
-        });
-      });
-
-      it('should return DangerousOutlinedIcon for missing evaluation', () => {
-        const result = getStatusConfig({
-          evaluation: 'missing',
-          thresholdStatus: 'success',
-          metricStatus: 'success',
-          thresholdRules: [
-            {
-              key: 'exist',
-              expression: '==true',
-              color: ScorecardThresholdRuleColors.SUCCESS,
-            },
-            {
-              key: 'missing',
-              expression: '==false',
-              color: ScorecardThresholdRuleColors.ERROR,
-            },
-          ],
-        });
-
-        expect(result).toEqual({
-          color: 'error.main',
-          icon: DangerousOutlinedIcon,
-        });
-      });
-
-      it('should return CheckCircleOutlineIcon for exist evaluation', () => {
-        const result = getStatusConfig({
-          evaluation: 'exist',
-          thresholdStatus: 'success',
-          metricStatus: 'success',
-          thresholdRules: [
-            {
-              key: 'exist',
-              expression: '==true',
-              color: ScorecardThresholdRuleColors.SUCCESS,
-            },
-            {
-              key: 'missing',
-              expression: '==false',
-              color: ScorecardThresholdRuleColors.ERROR,
-            },
-          ],
         });
 
         expect(result).toEqual({
@@ -224,7 +180,7 @@ describe('statusUtils', () => {
 
         expect(result).toEqual({
           color: 'error.main',
-          icon: DangerousOutlinedIcon,
+          icon: 'scorecardErrorStatusIcon',
         });
       });
 
@@ -237,7 +193,7 @@ describe('statusUtils', () => {
 
         expect(result).toEqual({
           color: 'warning.main',
-          icon: WarningAmberIcon,
+          icon: 'scorecardWarningStatusIcon',
         });
       });
 
@@ -249,9 +205,68 @@ describe('statusUtils', () => {
 
         expect(result).toEqual({
           color: 'success.main',
-          icon: CheckCircleOutlineIcon,
+          icon: 'scorecardSuccessStatusIcon',
         });
       });
+    });
+  });
+
+  describe('resolveStatusColor', () => {
+    const mockTheme = {
+      palette: {
+        primary: { main: '#0066cc' },
+        success: { main: '#2e7d32' },
+        warning: { main: '#ed6c02' },
+        error: { main: '#d32f2f' },
+        rhdh: {
+          general: {
+            cardBorderColor: '#c7c7c7',
+          },
+        },
+      },
+    } as any as Theme;
+
+    it('should resolve theme palette reference', () => {
+      const color = resolveStatusColor(mockTheme, 'success.main');
+      expect(color).toBe('#2e7d32');
+    });
+
+    it('should resolve theme reference with nested levels', () => {
+      const color = resolveStatusColor(mockTheme, SCORECARD_ERROR_STATE_COLOR);
+      expect(color).toBe('#c7c7c7');
+    });
+
+    it('should return custom hex color directly', () => {
+      const color = resolveStatusColor(mockTheme, '#9933ff');
+      expect(color).toBe('#9933ff');
+    });
+
+    it('should return custom rgb color directly', () => {
+      const color = resolveStatusColor(mockTheme, 'rgb(255, 0, 0)');
+      expect(color).toBe('rgb(255, 0, 0)');
+    });
+
+    it('should return custom rgba color directly', () => {
+      const color = resolveStatusColor(mockTheme, 'rgba(255, 0, 0, 0.7)');
+      expect(color).toBe('rgba(255, 0, 0, 0.7)');
+    });
+
+    it('should fallback to cardBorderColor when theme path not found', () => {
+      const color = resolveStatusColor(mockTheme, 'nonexistent.path');
+      expect(color).toBe('#c7c7c7');
+    });
+
+    it('should fallback to error.main when theme path not found and cardBorderColor is undefined', () => {
+      const themeWithoutCardBorder = {
+        palette: {
+          error: { main: '#d32f2f' },
+        },
+      } as any as Theme;
+      const color = resolveStatusColor(
+        themeWithoutCardBorder,
+        'nonexistent.path',
+      );
+      expect(color).toBe('#d32f2f');
     });
   });
 });

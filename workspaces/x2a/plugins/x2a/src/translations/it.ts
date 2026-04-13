@@ -30,10 +30,14 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Avvia e monitora le conversioni asincrone di file Chef in playbook Ansible pronti per la produzione.',
     'table.columns.name': 'Nome',
     'table.columns.status': 'Stato',
+    'table.columns.statusSortDisabledTooltip':
+      "L'ordinamento per stato non è disponibile quando il numero di progetti supera {{threshold}}",
     'table.columns.sourceRepo': 'Repository sorgente',
     'table.columns.targetRepo': 'Repository di destinazione',
     'table.columns.createdAt': 'Creato il',
     'table.actions.deleteProject': 'Elimina progetto',
+    'table.actions.retriggerInit':
+      'Riavvia la fase di inizializzazione del progetto',
     'table.actions.expandAll': 'Espandi tutte le righe',
     'table.actions.collapseAll': 'Comprimi tutte le righe',
     'table.actions.expandRow': 'Espandi riga',
@@ -208,9 +212,17 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Eseguire tutti i moduli nel progetto "{{name}}"?',
     'bulkRun.projectConfirm.message':
       'Questo attiverà la prossima fase di migrazione per ogni modulo di questo progetto il cui stato attuale lo consente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione. I moduli non idonei verranno saltati.',
-    'bulkRun.globalConfirm.title': 'Eseguire tutti i moduli idonei?',
+    'bulkRun.globalConfirm.title': 'Eseguire tutti i progetti e moduli idonei?',
     'bulkRun.globalConfirm.message':
       'Questo attiverà la prossima fase di migrazione per tutti i moduli idonei in tutti i progetti a cui hai accesso in scrittura, inclusi i progetti non visibili nella pagina corrente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione.',
+    'bulkRun.globalConfirm.messageInitRetrigger':
+      "Alcuni progetti sono idonei per rieseguire la fase di inizializzazione. La loro fase di scoperta verrà anch'essa riattivata.",
+    'bulkRun.globalConfirm.noInitEligible':
+      'Attualmente nessun progetto è idoneo per rieseguire la fase di inizializzazione.',
+    'bulkRun.globalConfirm.userPromptLabel':
+      'Istruzioni utente per il riavvio di init (opzionale)',
+    'bulkRun.globalConfirm.userPromptPlaceholder':
+      'Se alcuni progetti necessitano di riavviare la fase di init, queste istruzioni verranno utilizzate per personalizzare la conversione…',
     'bulkRun.projectPageConfirm.title':
       'Eseguire tutti i moduli in "{{name}}"?',
     'bulkRun.projectPageConfirm.message':
@@ -219,7 +231,21 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'bulkRun.cancel': 'Annulla',
     'bulkRun.errorProject':
       'Errore nell\'esecuzione dei moduli nel progetto "{{name}}"',
+    'bulkRun.errorModuleStart':
+      'Errore nell\'avvio della fase "{{phase}}" per il modulo "{{moduleName}}"',
     'bulkRun.errorGlobal': "Errore nell'operazione di massa",
+    'retriggerInit.confirm.title':
+      'Riavviare la fase di inizializzazione per "{{name}}"?',
+    'retriggerInit.confirm.message':
+      'Questo riavvierà la fase di scoperta del progetto, avviando un nuovo lavoro di inizializzazione. I risultati di inizializzazione precedenti saranno sostituiti.',
+    'retriggerInit.confirm.userPromptLabel': 'Istruzioni utente (opzionale)',
+    'retriggerInit.confirm.userPromptPlaceholder':
+      'Fornire istruzioni aggiuntive per la conversione…',
+    'retriggerInit.confirm.confirmButton': 'Riavvia',
+    'retriggerInit.error':
+      'Errore nel riavvio della fase di inizializzazione del progetto "{{name}}"',
+    'retriggerInit.errorStart':
+      "Errore nell'avvio dell'inizializzazione del progetto",
   },
 });
 

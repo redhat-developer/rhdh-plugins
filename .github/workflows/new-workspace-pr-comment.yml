@@ -1,0 +1,91 @@
+name: Comment on PRs that add a workspace
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  comment-new-workspace:
+    name: Notify new workspace directory
+    if: github.repository == 'redhat-developer/rhdh-plugins' && github.event.pull_request.user.login != 'rhdh-bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Detect new workspace and post comment if needed
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const baseSha = context.payload.pull_request.base.sha;
+            const headSha = context.payload.pull_request.head.sha;
+
+            async function listWorkspaceDirNames(ref) {
+              try {
+                const { data } = await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path: 'workspaces',
+                  ref,
+                });
+                if (!Array.isArray(data)) {
+                  return [];
+                }
+                return data
+                  .filter((entry) => entry.type === 'dir')
+                  .map((entry) => entry.name)
+                  .sort();
+              } catch (e) {
+                if (e.status === 404) {
+                  return [];
+                }
+                throw e;
+              }
+            }
+
+            const baseDirs = await listWorkspaceDirNames(baseSha);
+            const headDirs = await listWorkspaceDirNames(headSha);
+            const baseSet = new Set(baseDirs);
+            const hasNew = headDirs.some((d) => !baseSet.has(d));
+            if (!hasNew) {
+              return;
+            }
+
+            const marker = '<!-- rhdh-new-workspace-pr-comment -->';
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            if (comments.some((c) => c.body?.includes(marker))) {
+              return;
+            }
+
+            const contributing = `https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md#submitting-a-pull-request-for-a-new-workspace`;
+            const body = [
+              marker,
+              '',
+              'This pull request adds a new top-level directory under `workspaces/`. Please follow **[Submitting a Pull Request for a New Workspace](' + contributing + ')** in `CONTRIBUTING.md`.',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body,
+            });

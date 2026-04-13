@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-konflux
 
+## 0.1.5
+
+### Patch Changes
+
+- 061a265: - Increase react-query staleTime from 30s to 5min and disable refetchOnWindowFocus to reduce unnecessary re-fetches.
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

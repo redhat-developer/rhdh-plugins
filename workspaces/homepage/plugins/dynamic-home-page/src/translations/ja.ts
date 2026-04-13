@@ -71,7 +71,7 @@ const homepageTranslationJa = createTranslationMessages({
     'entities.emptyDescription':
       'ソフトウェアカタログが追加されると、利用状況に合わせてカスタマイズされた関連コンテンツがこのスペースに表示されます。',
     'entities.register': 'コンポーネントの登録',
-    'entities.viewAll': '{{count}} 個のカタログエンティティーをすべて表示する',
+    'entities.browseTheCatalog': 'カタログを閲覧',
   },
 });
 

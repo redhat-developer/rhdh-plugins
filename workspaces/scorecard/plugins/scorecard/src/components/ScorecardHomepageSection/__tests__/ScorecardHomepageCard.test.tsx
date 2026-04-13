@@ -16,6 +16,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { BrowserRouter } from 'react-router-dom';
 
 import { ScorecardHomepageCardComponent } from '../ScorecardHomepageCardComponent';
 import {
@@ -35,7 +36,7 @@ jest.mock('../../Common/CardWrapper', () => ({
     children,
   }: {
     title: string;
-    subheader: string;
+    subheader?: React.ReactNode;
     description: string;
     children: React.ReactNode;
   }) => (
@@ -120,6 +121,7 @@ const mockScorecard: AggregatedMetricResult = {
     description: 'Open PRs',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     total: 37,
@@ -134,17 +136,19 @@ const mockScorecard: AggregatedMetricResult = {
 };
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <ThemeProvider
-    theme={createTheme({
-      palette: {
-        success: { main: '#52c41a' },
-        warning: { main: '#F0AB00' },
-        error: { main: '#C9190B' },
-      },
-    })}
-  >
-    {children}
-  </ThemeProvider>
+  <BrowserRouter>
+    <ThemeProvider
+      theme={createTheme({
+        palette: {
+          success: { main: '#52c41a' },
+          warning: { main: '#F0AB00' },
+          error: { main: '#C9190B' },
+        },
+      })}
+    >
+      {children}
+    </ThemeProvider>
+  </BrowserRouter>
 );
 
 // --------------------
@@ -156,6 +160,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="Current count of open Pull Requests"
       />,
@@ -177,6 +182,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -190,22 +196,24 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="Test"
         description="desc"
       />,
+      { wrapper: TestWrapper },
     );
 
     expect(screen.getByTestId('pie-segment-success')).toHaveAttribute(
       'data-color',
-      '#2e7d32',
+      '#52c41a',
     );
     expect(screen.getByTestId('pie-segment-warning')).toHaveAttribute(
       'data-color',
-      '#ed6c02',
+      '#F0AB00',
     );
     expect(screen.getByTestId('pie-segment-error')).toHaveAttribute(
       'data-color',
-      '#d32f2f',
+      '#C9190B',
     );
   });
 
@@ -213,6 +221,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -226,6 +235,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -249,6 +259,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={emptyScorecard}
+        aggregationId={emptyScorecard.id}
         cardTitle="Empty"
         description="desc"
       />,
@@ -265,6 +276,7 @@ describe('ScorecardHomepageCardComponent', () => {
     const { container } = render(
       <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -288,6 +300,7 @@ describe('ScorecardHomepageCardComponent', () => {
     render(
       <ScorecardHomepageCardComponent
         scorecard={scorecardWithoutValues}
+        aggregationId={scorecardWithoutValues.id}
         cardTitle="No Values"
         description="desc"
       />,

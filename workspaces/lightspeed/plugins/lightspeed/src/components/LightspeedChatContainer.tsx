@@ -19,12 +19,15 @@ import { useAsync } from 'react-use';
 
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 
+import { Button } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
 import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
 import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
+import { useTranslation } from '../hooks/useTranslation';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
@@ -41,6 +44,7 @@ const LightspeedChatContainerInner = () => {
   const {
     palette: { type },
   } = useTheme();
+  const { t } = useTranslation();
 
   const identityApi = useApi(identityApiRef);
 
@@ -137,7 +141,22 @@ const LightspeedChatContainerInner = () => {
   }
 
   if (!hasViewAccess) {
-    return <PermissionRequiredState />;
+    return (
+      <PermissionRequiredState
+        subject={t('permission.subject.plugin')}
+        permissions={['lightspeed.chat.read', 'lightspeed.chat.create']}
+        action={
+          <Button
+            variant="outlined"
+            color="primary"
+            target="_blank"
+            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed/README.md#permission-framework-support"
+          >
+            {t('common.readMore')} &nbsp; <OpenInNewIcon />
+          </Button>
+        }
+      />
+    );
   }
 
   return (

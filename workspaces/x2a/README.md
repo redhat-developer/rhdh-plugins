@@ -37,7 +37,7 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
 2. **Optional:** Update `app-config.yaml` based on your environment.
    - **`auth:`**
      - Configure authentication providers for sign-in and SCM access (GitHub, GitLab). See [Backstage auth docs](https://backstage.io/docs/auth/).
-     - Based on your options of auth-providers, mind updating the `conversion-project-template.yaml` for source and target repository URLs.
+     - Based on your options of auth-providers, mind updating the `plugins/scaffolder-backend-module-x2a/templates/conversion-project-template.yaml` for source and target repository URLs.
    - **`integrations:`**
      - Configure SCM integrations for custom-domain hosts (e.g. self-hosted GitHub Enterprise, GitLab, or Bitbucket). The plugin reads the `integrations:` section to detect which SCM provider owns a given repository URL. Only the `host` field is required for this purpose; access tokens in `integrations:` entries are **not** needed by the x2a plugin (authentication is handled via OAuth through the `auth:` providers above). See the [SCM Provider Detection](#scm-provider-detection) section below.
    - **`x2a:`** - Provide LLM credentials, Ansible Automation Platform connection details, and Kubernetes resource limits. See [x2a-convertor technical details](https://github.com/x2ansible/x2a-convertor?tab=readme-ov-file#technical-details).
@@ -282,9 +282,39 @@ The plugin's `KubeService` provides methods to interact with Kubernetes resource
 Loaded Kubernetes configuration from ~/.kube/config
 ```
 
+## Running Tests with PostgreSQL
+
+By default, `yarn test` runs database tests against SQLite only. The backend
+tests are written to also exercise PostgreSQL (via `TestDatabases` from
+`@backstage/backend-test-utils`), but PostgreSQL is skipped locally because the
+Backstage test tooling disables Docker when the `CI` environment variable is not
+set.
+
+### Quick start — testcontainers (Docker/Podman)
+
+Run tests against both SQLite and PostgreSQL with a single command:
+
+```sh
+yarn test:pg          # unit tests (SQLite + PostgreSQL)
+yarn test:all:pg      # full suite including lint, prettier, coverage
+```
+
+These scripts set `CI=true` so that `testcontainers` automatically pulls and
+starts a `postgres:18` container. **Docker or Podman must be running.**
+
+On Fedora/RHEL with Podman, enable the Docker-compatible socket first:
+
+```sh
+systemctl --user enable --now podman.socket
+export DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock
+```
+
+The first run downloads the `postgres:18` image.
+
 ## Additional Commands
 
-- `yarn test` - Run tests
+- `yarn test` - Run tests (SQLite only)
+- `yarn test:pg` - Run tests (SQLite + PostgreSQL via testcontainers)
 - `yarn lint` - Run linter
 - `yarn prettier:fix` - Fix code formatting
 - `yarn build:all` - Build all packages
@@ -301,3 +331,7 @@ Loaded Kubernetes configuration from ~/.kube/config
   - `migrations/` - Database migrations
 - `plugins/x2a-common/` - Shared code between frontend and backend
   - `client/src/schema/openapi/generated/` - Generated client-side API code
+
+## CSV Bulk Project Import
+
+See [CSV Bulk Project Import](./docs/csv-bulk-import.md) for the CSV file format, an example, repository URL conventions, and the `RepoAuthentication` scaffolder extension.

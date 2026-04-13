@@ -24,6 +24,7 @@ import { Expand } from '@backstage/types';
 import type {
   CoreV1Api,
   BatchV1Api,
+  V1OwnerReference,
   V1Pod,
   V1PodList,
   V1Secret,
@@ -211,7 +212,7 @@ export class KubeService {
 
   /**
    * Creates an ephemeral job secret with Git credentials
-   * This secret will be auto-deleted when the job is deleted (via ownerReferences)
+   * This secret is owned by the Job and auto-deleted when the Job is deleted
    */
   async createJobSecret(
     jobId: string,
@@ -221,6 +222,7 @@ export class KubeService {
       sourceRepo: GitRepo;
       targetRepo: GitRepo;
     },
+    ownerReference: V1OwnerReference,
   ): Promise<void> {
     this.#logger.info(`Creating job secret for job: ${jobId}`);
 
@@ -229,6 +231,7 @@ export class KubeService {
       projectId,
       phase,
       gitCredentials,
+      ownerReference,
     );
 
     try {
@@ -247,8 +250,8 @@ export class KubeService {
    * Creates a Kubernetes job for running an X2A migration phase
    * This method orchestrates the creation of both secrets and the job:
    * 1. Creates/updates project secret (LLM + AAP credentials)
-   * 2. Creates ephemeral job secret (Git credentials)
-   * 3. Creates the K8s job
+   * 2. Creates the K8s job
+   * 3. Creates ephemeral job secret (Git credentials) owned by the job
    */
   async createJob(params: JobCreateParams): Promise<{ k8sJobName: string }> {
     this.#logger.info(
@@ -258,85 +261,55 @@ export class KubeService {
     // Step 1: Create/update project secret (LLM + AAP)
     await this.createProjectSecret(params.projectId, params.aapCredentials);
 
-    // Step 2: Create ephemeral job secret (Git credentials)
-    await this.createJobSecret(params.jobId, params.projectId, params.phase, {
-      sourceRepo: params.sourceRepo,
-      targetRepo: params.targetRepo,
-    });
-
-    // Step 3: Create the Kubernetes job
+    // Step 2: Create the Kubernetes job
     const job = JobResourceBuilder.buildJobSpec(params, this.#config);
     const k8sJobName = job.metadata?.name || '';
 
+    const createdJob = await this.#batchV1Api.createNamespacedJob({
+      namespace: this.#namespace,
+      body: job,
+    });
+    this.#logger.info(`Created job: ${k8sJobName}`);
+
+    const jobUid = createdJob.metadata?.uid;
+    if (!jobUid) {
+      this.#logger.error(
+        `Job ${k8sJobName} was created but has no UID, cleaning up`,
+      );
+      await this.deleteJob(k8sJobName);
+      throw new Error(`Job ${k8sJobName} created without UID`);
+    }
+
+    // Step 3: Create ephemeral job secret owned by the job
+    // The pod will wait for the secret to appear before starting
+    const ownerReference: V1OwnerReference = {
+      apiVersion: 'batch/v1',
+      kind: 'Job',
+      name: k8sJobName,
+      uid: jobUid,
+      blockOwnerDeletion: true,
+    };
+
     try {
-      const createdJob = await this.#batchV1Api.createNamespacedJob({
-        namespace: this.#namespace,
-        body: job,
-      });
-      this.#logger.info(`Created job: ${k8sJobName}`);
-
-      // Set ownerReference on the job secret so it is garbage-collected when the Job is deleted
-      const jobUid = createdJob.metadata?.uid;
-      if (jobUid) {
-        await this.setJobSecretOwnerReference(
-          params.jobId,
-          params.phase,
-          k8sJobName,
-          jobUid,
-        );
-      }
-
-      return { k8sJobName };
+      await this.createJobSecret(
+        params.jobId,
+        params.projectId,
+        params.phase,
+        {
+          sourceRepo: params.sourceRepo,
+          targetRepo: params.targetRepo,
+        },
+        ownerReference,
+      );
     } catch (error: any) {
-      this.#logger.error(`Failed to create job: ${error.message}`);
+      this.#logger.error(
+        `Failed to create job secret, cleaning up job ${k8sJobName}: ${error.message}`,
+      );
+      await this.deleteJob(k8sJobName);
       throw error;
     }
-  }
 
-  /**
-   * Sets ownerReference on the job secret so it is garbage-collected when the Job is deleted.
-   * This is non-fatal — if it fails, the job still works but the secret won't be auto-cleaned.
-   */
-  private async setJobSecretOwnerReference(
-    jobId: string,
-    phase: string,
-    k8sJobName: string,
-    jobUid: string,
-  ): Promise<void> {
-    const jobSecretName = `x2a-job-secret-${phase}-${jobId}`;
-
-    try {
-      const secret = await this.#coreV1Api.readNamespacedSecret({
-        name: jobSecretName,
-        namespace: this.#namespace,
-      });
-
-      secret.metadata = secret.metadata || {};
-      secret.metadata.ownerReferences = [
-        {
-          apiVersion: 'batch/v1',
-          kind: 'Job',
-          name: k8sJobName,
-          uid: jobUid,
-          blockOwnerDeletion: true,
-        },
-      ];
-
-      await this.#coreV1Api.replaceNamespacedSecret({
-        name: jobSecretName,
-        namespace: this.#namespace,
-        body: secret,
-      });
-
-      this.#logger.info(
-        `Set ownerReference on secret ${jobSecretName} -> job ${k8sJobName}`,
-      );
-    } catch (error: any) {
-      this.#logger.warn(
-        `Failed to set ownerReference on job secret ${jobSecretName}: ${error.message}. ` +
-          `The job will still run but the secret may not be auto-cleaned.`,
-      );
-    }
+    return { k8sJobName };
   }
 
   /**

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
+import { useMemo } from 'react';
 import {
-  Table,
-  TableHeader,
-  Column,
-  TableBody,
-  Row,
-  Cell,
   CellProfile,
+  CellText,
+  ColumnConfig,
+  Table,
+  TableItem,
+  useTable,
 } from '@backstage/ui';
 
 interface User {
@@ -196,25 +196,76 @@ const users: User[] = [
   },
 ];
 
+interface RowData extends TableItem {
+  user: User;
+}
+
 export const TableExample = () => {
-  return (
-    <Table>
-      <TableHeader>
-        <Column>Avatar</Column>
-        <Column isRowHeader>Lastname</Column>
-        <Column>Firstname</Column>
-        <Column>Email</Column>
-      </TableHeader>
-      <TableBody>
-        {users.map((user, index) => (
-          <Row key={index}>
-            <CellProfile src={user.picture} />
-            <Cell title={user.name.last} />
-            <Cell title={user.name.first} />
-            <Cell title={user.email} />
-          </Row>
-        ))}
-      </TableBody>
-    </Table>
+  const columnConfig = useMemo<ColumnConfig<RowData>[]>(
+    () => [
+      {
+        id: 'lastname',
+        label: 'Lastname',
+        cell: item => (
+          <CellProfile src={item.user.picture} name={item.user.name.last} />
+        ),
+        isRowHeader: true,
+        isSortable: true,
+      },
+      {
+        id: 'firstname',
+        label: 'Firstname',
+        cell: item => <CellText title={item.user.name.first} />,
+        isSortable: true,
+      },
+      {
+        id: 'email',
+        label: 'Email',
+        cell: item => <CellText title={item.user.email} />,
+        isSortable: true,
+      },
+    ],
+    [],
   );
+
+  const data = useMemo<RowData[]>(
+    () =>
+      users.map((user, index) => ({
+        id: String(index),
+        user,
+      })),
+    [],
+  );
+
+  const { tableProps } = useTable({
+    mode: 'complete',
+    data,
+    initialSort: { column: 'lastname', direction: 'ascending' },
+    sortFn: (items, { column, direction }) => {
+      return [...items].sort((a, b) => {
+        let aVal: string;
+        let bVal: string;
+        switch (column) {
+          case 'lastname':
+            aVal = a.user.name.last;
+            bVal = b.user.name.last;
+            break;
+          case 'firstname':
+            aVal = a.user.name.first;
+            bVal = b.user.name.first;
+            break;
+          case 'email':
+            aVal = a.user.email;
+            bVal = b.user.email;
+            break;
+          default:
+            return 0;
+        }
+        const cmp = aVal.localeCompare(bVal);
+        return direction === 'descending' ? -cmp : cmp;
+      });
+    },
+  });
+
+  return <Table columnConfig={columnConfig} {...tableProps} />;
 };

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   Sidebar,
   SidebarDivider,
@@ -22,55 +21,74 @@ import {
   SidebarScrollWrapper,
   SidebarSpace,
 } from '@backstage/core-components';
-import { compatWrapper } from '@backstage/core-compat-api';
-import {
-  NavContentBlueprint,
-  type NavContentComponentProps,
-} from '@backstage/plugin-app-react';
-import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { SidebarLogo } from './SidebarLogo';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import MenuIcon from '@material-ui/icons/Menu';
+import SearchIcon from '@material-ui/icons/Search';
 import ChatIcon from '@material-ui/icons/Chat';
 import HelpIcon from '@material-ui/icons/Help';
-import SettingsIcon from '@material-ui/icons/Settings';
+import { SidebarSearchModal } from '@backstage/plugin-search';
+import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
+import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
-const SidebarNavContent = ({ navItems }: NavContentComponentProps) => {
+const DrawerDemoItems = () => {
   const { toggleDrawer } = useAppDrawer();
-  const nav = navItems.withComponent(item => (
-    <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
-  ));
-  return compatWrapper(
-    <Sidebar>
-      <SidebarLogo />
-      <SidebarDivider />
-      <SidebarGroup label="Menu" icon={<MenuIcon />}>
-        {nav.take('page:catalog')}
-        {nav.take('page:scaffolder')}
-        <SidebarDivider />
-        <SidebarScrollWrapper>
-          {nav.rest({ sortBy: 'title' })}
-        </SidebarScrollWrapper>
-      </SidebarGroup>
-      <SidebarSpace />
-      <SidebarDivider />
+  return (
+    <>
       <SidebarItem
-        icon={ChatIcon}
+        icon={() => <ChatIcon />}
         text="Chat"
         onClick={() => toggleDrawer('demo-chat')}
       />
       <SidebarItem
-        icon={HelpIcon}
+        icon={() => <HelpIcon />}
         text="Help"
         onClick={() => toggleDrawer('demo-help')}
       />
-      <SidebarDivider />
-      <SidebarItem icon={SettingsIcon} text="Settings" to="/settings" />
-    </Sidebar>,
+    </>
   );
 };
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
-    component: SidebarNavContent,
+    component: ({ navItems }) => {
+      const nav = navItems.withComponent(item => (
+        <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
+      ));
+
+      nav.take('page:search');
+
+      return (
+        <Sidebar>
+          <SidebarLogo />
+          <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+            <SidebarSearchModal />
+          </SidebarGroup>
+          <SidebarDivider />
+          <SidebarGroup label="Menu" icon={<MenuIcon />}>
+            {nav.take('page:catalog')}
+            {nav.take('page:scaffolder')}
+            <SidebarDivider />
+            <SidebarScrollWrapper>
+              {nav.rest({ sortBy: 'title' })}
+            </SidebarScrollWrapper>
+          </SidebarGroup>
+          <SidebarSpace />
+          <SidebarDivider />
+          <DrawerDemoItems />
+          <NotificationsSidebarItem />
+          <SidebarDivider />
+          <SidebarGroup
+            label="Settings"
+            icon={<UserSettingsSignInAvatar />}
+            to="/settings"
+          >
+            {nav.take('page:app-visualizer')}
+            {nav.take('page:user-settings')}
+          </SidebarGroup>
+        </Sidebar>
+      );
+    },
   },
 });

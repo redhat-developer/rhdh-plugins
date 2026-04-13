@@ -150,7 +150,7 @@ describe('LightspeedPage', () => {
       'Missing permissions',
     );
     expect(result.current.t('permission.required.description')).toBe(
-      'To view lightspeed plugin, contact your administrator to give the <b>lightspeed.chat.read</b> and <b>lightspeed.chat.create</b> permissions.',
+      'To view <subject/>, contact your administrator to give the <permissions/> permission.',
     );
   });
 

@@ -24,18 +24,34 @@ import { scorecardTranslationRef } from './ref';
 const scorecardTranslationFr = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
+    // Empty state translations
     'emptyState.title': "Aucune carte de score n'a encore été ajoutée",
     'emptyState.description':
       'Les tableaux de bord vous aident à surveiller l’état des composants en un coup d’œil. Pour commencer, explorez notre documentation pour obtenir des instructions de configuration.',
     'emptyState.button': 'Voir la documentation',
     'emptyState.altText': 'Pas de tableau de bord',
+
+    // Permission required translations
     'permissionRequired.title': 'Autorisations manquantes',
     'permissionRequired.description':
       "Pour afficher le plugin Scorecard, contactez votre administrateur pour lui accorder l'autorisation {{permission}}.",
     'permissionRequired.button': 'En savoir plus',
     'permissionRequired.altText': 'Autorisation requise',
+
+    // Not found state
+    'notFound.title': "404 Nous n'avons pas trouvé cette page",
+    'notFound.description':
+      "Essayez d'ajouter un fichier {{indexFile}} à la racine du répertoire docs de ce dépôt.",
+    'notFound.readMore': 'En savoir plus',
+    'notFound.goBack': 'Retour',
+    'notFound.contactSupport': 'Contacter le support',
+    'notFound.altText': 'Page introuvable',
+
+    // Error messages
     'errors.entityMissingProperties':
       "Entité manquant les propriétés requises pour la recherche dans la fiche d'évaluation",
+    'errors.missingAggregationId':
+      "La fiche de suivi est mal configurée ; la propriété « ID d'agrégation » (ou « ID de métrique ») n'est pas fournie",
     'errors.invalidApiResponse':
       "Format de réponse non valide de l'API de scorecard",
     'errors.fetchError':
@@ -53,6 +69,11 @@ const scorecardTranslationFr = createTranslationMessages({
       'Pour voir vos données ici, vérifiez que vos entités communiquent les valeurs liées à cet indicateur.',
     'errors.authenticationErrorMessage':
       'Veuillez vous connecter pour afficher vos données.',
+    'errors.noMetricsFound':
+      "Aucune métrique trouvée pour l'ID de métrique spécifié.",
+    'errors.multipleMetricsFound':
+      "Plusieurs métriques trouvées pour l'ID de métrique spécifié. Une seule attendue.",
+
     // Metric translations
     'metric.github.open_prs.title': 'GitHub ouvre des PR',
     'metric.github.open_prs.description':
@@ -64,6 +85,12 @@ const scorecardTranslationFr = createTranslationMessages({
       'Vérification de fichier GitHub : {{name}}',
     'metric.github.files_check.description':
       'Vérifie si le fichier {{name}} existe dans le dépôt.',
+    'metric.lastUpdated': 'Dernière mise à jour: {{timestamp}}',
+    'metric.lastUpdatedNotAvailable': 'Dernière mise à jour: Non disponible',
+    'metric.someEntitiesNotReportingValues':
+      'Certaines entités ne communiquent pas de valeurs liées à cette métrique.',
+
+    // Threshold translations
     'thresholds.success': 'Succès',
     'thresholds.warning': 'Attention',
     'thresholds.error': 'Erreur',
@@ -72,6 +99,28 @@ const scorecardTranslationFr = createTranslationMessages({
     'thresholds.noEntities': "Aucune entité dans l'état {{category}}",
     'thresholds.entities_one': '{{count}} entité',
     'thresholds.entities_other': '{{count}} entités',
+
+    // Entities page translations
+    'entitiesPage.unknownMetric': 'Métrique inconnue',
+    'entitiesPage.noDataFound':
+      'Pour voir vos données ici, vérifiez que vos entités communiquent les valeurs liées à cet indicateur.',
+    'entitiesPage.missingPermission':
+      'Pour voir les métriques de scorecard, votre administrateur doit vous donner la permission requise.',
+    'entitiesPage.metricProviderNotRegistered':
+      'Fournisseur de métrique avec ID {{metricId}} non enregistré.',
+    'entitiesPage.entitiesTable.title': 'Entités',
+    'entitiesPage.entitiesTable.unavailable': 'Non disponible',
+    'entitiesPage.entitiesTable.titleWithCount': 'Entités ({{count}})',
+    'entitiesPage.entitiesTable.header.status': 'Statut',
+    'entitiesPage.entitiesTable.header.value': 'Valeur',
+    'entitiesPage.entitiesTable.header.entity': 'Entité',
+    'entitiesPage.entitiesTable.header.owner': 'Propriétaire',
+    'entitiesPage.entitiesTable.header.kind': 'Type',
+    'entitiesPage.entitiesTable.header.lastUpdated': 'Dernière mise à jour',
+    'entitiesPage.entitiesTable.footer.allRows': 'Toutes les lignes',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} ligne',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} lignes',
+    'entitiesPage.entitiesTable.footer.of': 'de',
   },
 });
 

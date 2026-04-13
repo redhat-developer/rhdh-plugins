@@ -18,3 +18,9 @@ export { lightspeedPlugin as default } from './plugin';
 export * from './service/router';
 
 export type { RouterOptions } from './service/types';
+export type {
+  McpServerResponse,
+  McpServerStatus,
+  McpToolInfo,
+  McpValidationResult,
+} from './service/mcp-server-types';

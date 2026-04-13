@@ -35,6 +35,7 @@ import { useTheme } from '@mui/material/styles';
 import { useTranslation } from '../../hooks/useTranslation';
 import { CardWrapper } from '../Common/CardWrapper';
 import CustomLegend from './CustomLegend';
+import { ScorecardIcon } from '../ScorecardIcon/ScorecardIcon';
 import {
   getHeightForCenterLabel,
   getYOffsetForCenterLabel,
@@ -47,7 +48,7 @@ interface ScorecardProps {
   cardTitle: string;
   description: string;
   statusColor: string;
-  StatusIcon: React.ElementType;
+  statusIcon: string;
   value: MetricValue | null;
   thresholds?: ThresholdResult;
   isMetricDataError?: boolean;
@@ -59,7 +60,7 @@ interface ScorecardProps {
 const ScorecardCenterLabel = ({
   cx,
   cy,
-  StatusIcon,
+  statusIcon,
   value,
   isErrorState,
   errorLabel,
@@ -69,7 +70,7 @@ const ScorecardCenterLabel = ({
 }: {
   cx: number;
   cy: number;
-  StatusIcon: React.ElementType;
+  statusIcon: string;
   value: MetricValue | null;
   isErrorState: boolean;
   errorLabel: string;
@@ -111,7 +112,9 @@ const ScorecardCenterLabel = ({
         width={24}
         height={24}
       >
-        <StatusIcon
+        <ScorecardIcon
+          icon={statusIcon}
+          size="medium"
           sx={{
             fontSize: 24,
             color,
@@ -164,7 +167,7 @@ const Scorecard = ({
   cardTitle,
   description,
   statusColor,
-  StatusIcon,
+  statusIcon,
   value,
   thresholds,
   isMetricDataError = false,
@@ -267,7 +270,7 @@ const Scorecard = ({
                   <ScorecardCenterLabel
                     cx={Number(cx)}
                     cy={Number(cy)}
-                    StatusIcon={StatusIcon}
+                    statusIcon={statusIcon}
                     value={value}
                     isErrorState={isErrorState}
                     errorLabel={errorLabel}

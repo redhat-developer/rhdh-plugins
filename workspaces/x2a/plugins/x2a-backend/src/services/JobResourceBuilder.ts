@@ -15,7 +15,7 @@
  */
 
 import { resolvePackagePath } from '@backstage/backend-plugin-api';
-import { V1Job, V1Secret } from '@kubernetes/client-node';
+import { V1Job, V1OwnerReference, V1Secret } from '@kubernetes/client-node';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { X2AConfig } from '../../config';
@@ -137,13 +137,14 @@ export class JobResourceBuilder {
   /**
    * Builds a Kubernetes Secret for a specific job containing ephemeral Git credentials
    *
-   * Note: ownerReferences are NOT set here because the job doesn't exist yet at secret
-   * creation time. After job creation, KubeService.createJob() sets the ownerReference
-   * on this secret so it is automatically garbage-collected when the Job is deleted.
+   * The ownerReference links this secret to the Job so it is automatically
+   * garbage-collected when the Job is deleted by the TTL controller.
    *
    * @param jobId - The job UUID
    * @param projectId - The project UUID
+   * @param phase - The migration phase
    * @param gitCredentials - Git repository credentials from the user
+   * @param ownerReference - Owner reference to the parent Job for garbage collection
    * @returns V1Secret resource ready to be created in Kubernetes
    */
   static buildJobSecret(
@@ -154,6 +155,7 @@ export class JobResourceBuilder {
       sourceRepo: GitRepo;
       targetRepo: GitRepo;
     },
+    ownerReference: V1OwnerReference,
   ): V1Secret {
     const secretName = `x2a-job-secret-${phase}-${jobId}`;
 
@@ -175,6 +177,7 @@ export class JobResourceBuilder {
           'x2a.redhat.com/description':
             'Ephemeral Git credentials for X2A job (auto-deleted with job)',
         },
+        ownerReferences: [ownerReference],
       },
       type: 'Opaque',
       stringData: {
