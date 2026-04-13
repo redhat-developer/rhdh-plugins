@@ -86,6 +86,7 @@ export const lightspeedMessages = {
   'notebook.overwrite.modal.description':
     'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
   'notebook.overwrite.modal.action': 'Overwrite',
+  'notebook.document.delete': 'Delete',
 
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',

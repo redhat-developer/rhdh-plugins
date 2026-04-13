@@ -89,6 +89,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.overwrite.modal.description':
       'Die folgenden Dateien existieren bereits in diesem Notizbuch. Möchten Sie sie mit den neuen Versionen überschreiben?',
     'notebook.overwrite.modal.action': 'Überschreiben',
+    'notebook.document.delete': 'Löschen',
 
     'prompts.codeReadability.title': 'Hilfe zur Code-Lesbarkeit erhalten',
     'prompts.codeReadability.message':

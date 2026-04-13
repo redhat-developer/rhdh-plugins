@@ -89,6 +89,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebook.overwrite.modal.description':
       'Los siguientes archivos ya existen en este cuaderno. ¿Desea sobrescribirlos con las nuevas versiones?',
     'notebook.overwrite.modal.action': 'Sobrescribir',
+    'notebook.document.delete': 'Eliminar',
 
     'prompts.codeReadability.title':
       'Obtener ayuda sobre la legibilidad del código',

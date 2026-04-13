@@ -16,6 +16,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useApi } from '@backstage/core-plugin-api';
+
 import { makeStyles, Typography } from '@material-ui/core';
 import {
   ChatbotContent,
@@ -41,6 +43,7 @@ import {
 import { TimesIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { notebooksApiRef } from '../../api/notebooksApi';
 import { TEMP_CONVERSATION_ID, UNTITLED_NOTEBOOK_NAME } from '../../const';
 import { useCreateNotebookMessage } from '../../hooks/notebooks/useCreateNotebookMessage';
 import {
@@ -108,12 +111,15 @@ const useStyles = makeStyles(theme => ({
   drawerContentBody: {
     backgroundColor:
       'var(--pf-t--global--background--color--secondary--default)',
+    height: '100%',
   },
   contentColumn: {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
     minWidth: 0,
+    minHeight: 0,
+    overflow: 'hidden',
   },
   alertContainer: {
     width: '100%',
@@ -177,6 +183,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
+    overflow: 'auto',
   },
 }));
 
@@ -208,6 +215,7 @@ export const NotebookView = ({
   const classes = useStyles();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const notebooksApi = useApi(notebooksApiRef);
   const uploadMutation = useUploadDocument();
   const { mutateAsync: notebookCreateMessage } = useCreateNotebookMessage();
 
@@ -217,6 +225,28 @@ export const NotebookView = ({
   const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
   const [announcement, setAnnouncement] = useState<string | undefined>(
     undefined,
+  );
+  const [deletingDocumentIds, setDeletingDocumentIds] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const handleDeleteDocument = useCallback(
+    async (documentId: string) => {
+      setDeletingDocumentIds(prev => new Set(prev).add(documentId));
+      try {
+        await notebooksApi.deleteDocument(sessionId, documentId);
+        queryClient.invalidateQueries({
+          queryKey: ['notebooks', 'documents', sessionId],
+        });
+      } finally {
+        setDeletingDocumentIds(prev => {
+          const next = new Set(prev);
+          next.delete(documentId);
+          return next;
+        });
+      }
+    },
+    [notebooksApi, sessionId, queryClient],
   );
 
   const onComplete = useCallback(
@@ -443,9 +473,11 @@ export const NotebookView = ({
         documents={documents}
         uploadingFileNames={uploadingFileNames}
         completedFileNames={completedFileNames}
+        deletingDocumentIds={deletingDocumentIds}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
         onAddDocument={handleOpenUploadModal}
+        onDeleteDocument={handleDeleteDocument}
       />
     </DrawerPanelContent>
   );

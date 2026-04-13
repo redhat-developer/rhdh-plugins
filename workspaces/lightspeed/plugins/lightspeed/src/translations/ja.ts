@@ -89,6 +89,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebook.overwrite.modal.description':
       '以下のファイルはこのノートブックに既に存在します。新しいバージョンで上書きしますか？',
     'notebook.overwrite.modal.action': '上書き',
+    'notebook.document.delete': '削除',
 
     'prompts.codeReadability.title': 'コードの可読性に関するヘルプを利用する',
     'prompts.codeReadability.message':

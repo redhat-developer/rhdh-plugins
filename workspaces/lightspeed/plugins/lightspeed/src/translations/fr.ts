@@ -89,6 +89,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebook.overwrite.modal.description':
       'Les fichiers suivants existent déjà dans ce carnet. Voulez-vous les écraser avec les nouvelles versions ?',
     'notebook.overwrite.modal.action': 'Écraser',
+    'notebook.document.delete': 'Supprimer',
 
     'prompts.codeReadability.title': 'Obtenir de l’aide pour Décrypter le Code',
     'prompts.codeReadability.message':
