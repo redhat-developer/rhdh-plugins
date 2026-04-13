@@ -165,34 +165,47 @@ Returns a ConflictError if an init job is already running for the project.`,
         callbackToken,
       });
 
-      const baseUrl =
-        config.getOptionalString('x2a.callbackBaseUrl') ??
-        (await discovery.getBaseUrl('x2a'));
-      const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
-      const { k8sJobName } = await kubeService.createJob({
-        jobId: job.id,
-        projectId,
-        projectName: project.name,
-        projectAbbrev: project.abbreviation,
-        phase: 'init',
-        user: ctx.userRef,
-        callbackToken,
-        callbackUrl,
-        sourceRepo: {
-          url: project.sourceRepoUrl,
-          branch: project.sourceRepoBranch,
-          token: sourceToken,
-        },
-        targetRepo: {
-          url: project.targetRepoUrl,
-          branch: project.targetRepoBranch,
-          token: targetToken,
-        },
-        aapCredentials: input.aapCredentials,
-        userPrompt: input.userPrompt,
-      });
+      let k8sJobName: string;
+      try {
+        const baseUrl =
+          config.getOptionalString('x2a.callbackBaseUrl') ??
+          (await discovery.getBaseUrl('x2a'));
+        const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
+        ({ k8sJobName } = await kubeService.createJob({
+          jobId: job.id,
+          projectId,
+          projectName: project.name,
+          projectAbbrev: project.abbreviation,
+          phase: 'init',
+          user: ctx.userRef,
+          callbackToken,
+          callbackUrl,
+          sourceRepo: {
+            url: project.sourceRepoUrl,
+            branch: project.sourceRepoBranch,
+            token: sourceToken,
+          },
+          targetRepo: {
+            url: project.targetRepoUrl,
+            branch: project.targetRepoBranch,
+            token: targetToken,
+          },
+          aapCredentials: input.aapCredentials,
+          userPrompt: input.userPrompt,
+        }));
 
-      await x2aDatabase.updateJob({ id: job.id, k8sJobName });
+        await x2aDatabase.updateJob({ id: job.id, k8sJobName });
+      } catch (err) {
+        logger.error(
+          `Failed to create/register k8s job for project ${projectId}, marking DB job ${job.id} as error`,
+        );
+        await x2aDatabase.updateJob({
+          id: job.id,
+          status: 'error',
+          errorDetails: String(err),
+        });
+        throw err;
+      }
 
       logger.info(
         `Init job created: jobId=${job.id}, k8sJobName=${k8sJobName}`,

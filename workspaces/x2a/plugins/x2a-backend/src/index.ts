@@ -35,7 +35,7 @@ export default createBackendFeatureLoader({
   },
 });
 
-export { x2APlugin };
+export { x2APlugin } from './plugin';
 export { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 export { x2aDatabaseServiceFactory } from './services/X2ADatabaseService';
 export { kubeServiceRef } from './services/KubeService';

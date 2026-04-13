@@ -20,7 +20,8 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-x2a",
       "@red-hat-developer-hub/backstage-plugin-x2a-backend",
-      "@red-hat-developer-hub/backstage-plugin-x2a-common"
+      "@red-hat-developer-hub/backstage-plugin-x2a-common",
+      "@red-hat-developer-hub/backstage-plugin-x2a-node"
     ],
     "supported-versions": "1.45.0"
   },

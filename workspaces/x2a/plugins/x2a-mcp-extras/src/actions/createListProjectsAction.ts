@@ -41,12 +41,17 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
         z.object({
           page: z
             .number()
+            .int()
+            .min(0)
             .optional()
             .describe('Page number (0-based). Defaults to 0.'),
           pageSize: z
             .number()
+            .int()
+            .min(1)
+            .max(100)
             .optional()
-            .describe('Number of results per page. Defaults to 20.'),
+            .describe('Number of results per page (1-100). Defaults to 20.'),
           sort: z
             .enum([
               'createdAt',

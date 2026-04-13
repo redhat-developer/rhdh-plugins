@@ -34,9 +34,13 @@ the Backstage UI.
 ### 2. Static tokens (fallback / local development)
 
 Static bearer tokens produce a `BackstageServicePrincipal`. The MCP tool
-handlers detect this and fall back to a system-user context with
-admin-level visibility (`canViewAll: true`). Project ownership is attributed
-to `user:default/system`.
+handlers detect this and fall back to a system-user context. Project
+ownership is attributed to `user:default/system`.
+
+Visibility depends on RBAC permissions: granting `x2aAdminViewPermission`
+or `x2aAdminWritePermission` enables `canViewAll`. With only `x2a.user`,
+the service principal sees only its own projects (created by
+`user:default/system`).
 
 This mode is useful for local development or environments where the new
 frontend system is not available.
@@ -44,7 +48,8 @@ frontend system is not available.
 **Requirements:**
 
 - `backend.auth.externalAccess` configured with a static token
-- RBAC policy granting at least `x2a.user` or `x2a.admin` to the
+- RBAC policy granting at least `x2a.user` (own projects) or
+  `x2a.admin.view` / `x2a.admin.write` (all projects) to the
   `mcp-clients` subject
 
 ## Deployment Checklist

@@ -38,8 +38,6 @@ import { NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
   getUserRef,
   getGroupsOfUser,
-  reconcileJobStatus,
-  generateCallbackToken,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import type { RouterDeps } from './types';
@@ -49,7 +47,7 @@ export {
   getGroupsOfUser,
   reconcileJobStatus,
   generateCallbackToken,
-};
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
  * Checks if the user has the x2aAdminViewPermission.

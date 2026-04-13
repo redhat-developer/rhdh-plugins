@@ -465,7 +465,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
 
 // Re-export the canonical service ref from x2a-node.
 // All plugins MUST use the same ref object so Backstage can wire deps.
-export { x2aDatabaseServiceRef };
+export { x2aDatabaseServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
  * Service factory for the X2A database service.

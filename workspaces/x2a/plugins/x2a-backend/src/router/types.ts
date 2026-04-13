@@ -23,12 +23,10 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
 import type { Expand } from '@backstage/types';
-import type { ReconcileJobDeps } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-
 import type { X2ADatabaseService } from '../services/X2ADatabaseService';
 import type { KubeService } from '../services/KubeService';
 
-export type { ReconcileJobDeps };
+export type { ReconcileJobDeps } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 export interface RouterDeps {
   httpAuth: HttpAuthService;

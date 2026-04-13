@@ -468,7 +468,7 @@ export class KubeService implements KubeServiceApi {
 }
 
 // Re-export the canonical service ref from x2a-node.
-export { kubeServiceRef };
+export { kubeServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
  * Service factory for the Kubernetes service.
