@@ -9,14 +9,14 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha.ts",
+    "./alpha": "./src/alpha/index.tsx",
     "./dev": "./dev/CustomDrawer.tsx",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
-        "src/alpha.ts"
+        "src/alpha/index.tsx"
       ],
       "dev": [
         "dev/CustomDrawer.tsx"
@@ -69,6 +69,7 @@
     "@patternfly/react-core": "6.4.1",
     "@patternfly/react-icons": "^6.3.1",
     "@patternfly/react-table": "^6.4.1",
+    "@red-hat-developer-hub/backstage-plugin-app-react": "^0.0.3",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "@tanstack/react-query": "^5.59.15",
@@ -108,7 +109,7 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-lightspeed",
     "exposedModules": {
-      "Alpha": "./src/alpha.ts",
+      "Alpha": "./src/alpha/index.tsx",
       "PluginRoot": "./src/index.ts",
       "LightspeedPlugin": "./src/index.ts"
     }

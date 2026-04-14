@@ -29,7 +29,7 @@ export const MCP_SETTINGS_MENU_ITEM = 'MCP settings';
 
 // Actions
 export async function openChatbot(page: Page) {
-  await page.getByRole('button', { name: 'lightspeed-close' }).click();
+  await page.getByRole('button', { name: 'lightspeed-open' }).click();
 }
 
 export async function selectDisplayMode(
