@@ -90,6 +90,7 @@ export const EntityScorecardContent = () => {
             statusColor={statusConfig.color}
             statusIcon={statusConfig.icon ?? ''}
             value={metric.result?.value}
+            metricType={metric.metadata.type}
             thresholds={metric.result?.thresholdResult}
             isMetricDataError={isMetricDataError}
             metricDataError={metric?.error}

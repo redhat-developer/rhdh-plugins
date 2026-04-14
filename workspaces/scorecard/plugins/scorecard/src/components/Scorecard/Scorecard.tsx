@@ -17,6 +17,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
 import {
+  MetricType,
   MetricValue,
   ThresholdResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -50,6 +51,7 @@ interface ScorecardProps {
   statusColor: string;
   statusIcon: string;
   value: MetricValue | null;
+  metricType: MetricType;
   thresholds?: ThresholdResult;
   isMetricDataError?: boolean;
   metricDataError?: string;
@@ -62,6 +64,7 @@ const ScorecardCenterLabel = ({
   cy,
   statusIcon,
   value,
+  metricType,
   isErrorState,
   errorLabel,
   color,
@@ -72,6 +75,7 @@ const ScorecardCenterLabel = ({
   cy: number;
   statusIcon: string;
   value: MetricValue | null;
+  metricType: MetricType;
   isErrorState: boolean;
   errorLabel: string;
   color: string | undefined;
@@ -102,7 +106,7 @@ const ScorecardCenterLabel = ({
     );
   }, [isErrorState, errorLabel]);
 
-  const hasDisplayableValue = !isErrorState && typeof value === 'number';
+  const hasDisplayableValue = !isErrorState && metricType === 'number';
 
   return (
     <g transform={`translate(${cx}, ${cy})`}>
@@ -169,6 +173,7 @@ const Scorecard = ({
   statusColor,
   statusIcon,
   value,
+  metricType,
   thresholds,
   isMetricDataError = false,
   metricDataError,
@@ -272,6 +277,7 @@ const Scorecard = ({
                     cy={Number(cy)}
                     statusIcon={statusIcon}
                     value={value}
+                    metricType={metricType}
                     isErrorState={isErrorState}
                     errorLabel={errorLabel}
                     color={resolvedStatusColor}

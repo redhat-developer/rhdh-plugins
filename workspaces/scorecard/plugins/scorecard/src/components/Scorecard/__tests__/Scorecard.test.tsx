@@ -88,6 +88,7 @@ describe('Scorecard Component', () => {
     statusColor: 'success.main',
     statusIcon: 'scorecardSuccessStatusIcon',
     value: 8,
+    metricType: 'number' as const,
     thresholds: {
       status: 'success' as const,
       definition: {
