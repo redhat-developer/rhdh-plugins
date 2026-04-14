@@ -81,7 +81,7 @@ const scorecardTranslationDe = createTranslationMessages({
       'Hervorhebt die Anzahl der kritischen, blockierenden Probleme, die derzeit in Jira offen sind.',
     'metric.github.files_check.title': 'GitHub-Dateiprüfung: {{name}}',
     'metric.github.files_check.description':
-        'Prüft, ob die Datei {{name}} im Repository vorhanden ist.',
+      'Prüft, ob die Datei {{name}} im Repository vorhanden ist.',
     'metric.lastUpdated': 'Zuletzt aktualisiert: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Zuletzt aktualisiert: Nicht verfügbar',
     'metric.someEntitiesNotReportingValues':
