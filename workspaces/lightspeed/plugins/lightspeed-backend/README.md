@@ -33,10 +33,28 @@ Add the following lightspeed configurations into your `app-config.yaml` file:
 lightspeed:
   servicePort: <portNumber> # Optional - Change the LS service port nubmer. Defaults to 8080.
   systemPrompt: <system prompt> # Optional - Override the default system prompt.
-  mcpServers: # Optional - only one mcp server is currently supported
+  mcpServers: # Optional - one or more MCP servers
     - name: <mcp server name> # must match the name configured in LCS
       token: ${MCP_TOKEN}
 ```
+
+#### MCP servers settings endpoints
+
+The backend exposes MCP server management endpoints used by the Lightspeed UI
+settings panel:
+
+- `GET /api/lightspeed/mcp-servers` lists configured servers and user-scoped
+  state.
+- `PATCH /api/lightspeed/mcp-servers/:name` updates user settings such as
+  enabled state and token.
+
+- `POST /api/lightspeed/mcp-servers/validate` validates a raw `{ url, token }`
+  pair and returns whether credentials are valid.
+- `POST /api/lightspeed/mcp-servers/:name/validate` validates a configured server
+  by name using the effective token (user token override or configured token).
+
+These endpoints power server selection and token configuration, including inline
+success/error feedback while users enter tokens.
 
 #### Permission Framework Support
 

@@ -336,8 +336,6 @@ const useStyles = makeStyles(theme => ({
   settingsFlat: {
     height: '100%',
     width: '100%',
-    backgroundColor:
-      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
     '&.pf-chatbot__settings-form-container': {
       background:
         'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
@@ -377,21 +375,24 @@ const useStyles = makeStyles(theme => ({
     },
   },
   mcpFullscreenLayout: {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
     minHeight: 0,
     height: '100%',
     flex: 1,
     width: '100%',
+    minWidth: 0,
+    overflow: 'hidden',
   },
   mcpChatPane: {
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
-    flex: 1,
+    width: '100%',
     minWidth: 0,
   },
   mcpSettingsPane: {
-    flex: 1,
+    width: '100%',
     minWidth: 0,
     borderLeft: `1px solid ${theme.palette.divider}`,
     backgroundColor:
@@ -399,6 +400,18 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
+  },
+  mcpCollapsedDrawerOrderFix: {
+    '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
+      {
+        order: 'unset',
+      },
+    '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
+      {
+        visibility: 'hidden',
+        opacity: 0,
+        transition: 'none !important',
+      },
   },
 }));
 
@@ -455,6 +468,7 @@ export const LightspeedChat = ({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
   const [isMcpSettingsOpen, setIsMcpSettingsOpen] = useState<boolean>(false);
+  const [chatHeaderBgColor, setChatHeaderBgColor] = useState<string>();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
   const [messageBarKey, setMessageBarKey] = useState(0);
@@ -505,6 +519,16 @@ export const LightspeedChat = ({
       setIsChatHistoryDrawerOpen(true);
     }
   }, [isMobile, isFullscreenMode]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const headerElement = document.querySelector('.pf-chatbot__header');
+    if (!headerElement) return;
+    const computedBg = window.getComputedStyle(headerElement).backgroundColor;
+    if (computedBg) {
+      setChatHeaderBgColor(computedBg);
+    }
+  }, [displayMode, isMcpSettingsOpen]);
 
   const {
     isPinningChatsEnabled,
@@ -1151,7 +1175,10 @@ export const LightspeedChat = ({
   );
 
   const mcpSettingsPanel = (
-    <McpServersSettings onClose={() => setIsMcpSettingsOpen(false)} />
+    <McpServersSettings
+      onClose={() => setIsMcpSettingsOpen(false)}
+      backgroundColor={chatHeaderBgColor}
+    />
   );
 
   const mainPanelContent = (() => {
@@ -1253,15 +1280,17 @@ export const LightspeedChat = ({
       )}
       <Chatbot
         displayMode={ChatbotDisplayMode.embedded}
-        className={classes.body}
+        className={`${classes.body} ${
+          isMcpSettingsOpen && !isChatHistoryDrawerOpen
+            ? classes.mcpCollapsedDrawerOrderFix
+            : ''
+        }`}
       >
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
             <ChatbotHeaderMenu
               aria-expanded={isChatHistoryDrawerOpen}
-              onMenuToggle={() =>
-                setIsChatHistoryDrawerOpen(!isChatHistoryDrawerOpen)
-              }
+              onMenuToggle={onChatHistoryDrawerToggle}
               className={classes.headerMenu}
               tooltipContent={t('tooltip.chatHistoryMenu')}
               aria-label={t('aria.chatHistoryMenu')}
