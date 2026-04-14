@@ -228,8 +228,8 @@ export function useAgentWizardForm(
     setImagePullSecret('');
     setGitUrl('');
     setGitBranch('main');
-    setGitPath('.');
-    setRegistryUrl('');
+    setGitPath('');
+    setRegistryUrl('image-registry.openshift-image-registry.svc:5000');
     setRegistrySecret('');
     setImageTag('');
     setBuildStrategy('');
