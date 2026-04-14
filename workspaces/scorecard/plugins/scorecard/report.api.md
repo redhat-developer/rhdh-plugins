@@ -18,7 +18,8 @@ export { ScorecardErrorStatusIcon };
 
 // @public
 export const ScorecardHomepageCard: (input: {
-  metricId: string;
+  metricId?: string;
+  aggregationId?: string;
   showSubheader?: boolean;
   showInfo?: boolean;
 }) => JSX_2.Element | null;
