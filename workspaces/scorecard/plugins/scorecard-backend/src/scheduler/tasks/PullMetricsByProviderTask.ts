@@ -145,6 +145,11 @@ export class PullMetricsByProviderTask implements SchedulerTask {
           entitiesResponse.items.map(async entity => {
             // Handle batch providers
             if (isBatchProvider && provider.calculateMetrics) {
+              const entityRef = stringifyEntityRef(entity);
+              const entityKind = normalizeField(entity.kind);
+              const entityNamespace = normalizeField(entity.metadata.namespace);
+              const entityOwner = normalizeOwnerRef(entity?.spec?.owner);
+
               try {
                 const resultsMap = await provider.calculateMetrics(entity);
 
@@ -166,20 +171,26 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                       );
 
                     return {
-                      catalog_entity_ref: stringifyEntityRef(entity),
+                      catalog_entity_ref: entityRef,
                       metric_id: metricId,
                       value,
                       timestamp: new Date(),
                       status,
+                      entity_kind: entityKind,
+                      entity_namespace: entityNamespace,
+                      entity_owner: entityOwner,
                     } as DbMetricValueCreate;
                   } catch (error) {
                     return {
-                      catalog_entity_ref: stringifyEntityRef(entity),
+                      catalog_entity_ref: entityRef,
                       metric_id: metricId,
                       value,
                       timestamp: new Date(),
                       error_message:
                         error instanceof Error ? error.message : String(error),
+                      entity_kind: entityKind,
+                      entity_namespace: entityNamespace,
+                      entity_owner: entityOwner,
                     } as DbMetricValueCreate;
                   }
                 });
@@ -188,12 +199,15 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 return metricIds.map(
                   metricId =>
                     ({
-                      catalog_entity_ref: stringifyEntityRef(entity),
+                      catalog_entity_ref: entityRef,
                       metric_id: metricId,
                       value: undefined,
                       timestamp: new Date(),
                       error_message:
                         error instanceof Error ? error.message : String(error),
+                      entity_kind: entityKind,
+                      entity_namespace: entityNamespace,
+                      entity_owner: entityOwner,
                     } as DbMetricValueCreate),
                 );
               }
