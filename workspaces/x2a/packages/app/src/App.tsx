@@ -57,6 +57,7 @@ import {
   X2APage,
   x2aPluginTranslations,
   RepoAuthenticationExtension,
+  X2ARepoUrlPickerExtension,
 } from '@red-hat-developer-hub/backstage-plugin-x2a';
 import {
   bitbucketAuthApiRef,
@@ -160,6 +161,7 @@ const routes = (
     <Route path="/create" element={<ScaffolderPage />}>
       <ScaffolderFieldExtensions>
         <RepoAuthenticationExtension />
+        <X2ARepoUrlPickerExtension />
       </ScaffolderFieldExtensions>
     </Route>
   </FlatRoutes>
