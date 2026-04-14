@@ -56,6 +56,28 @@ function mapHttpStatusToError(
 }
 
 /**
+ * Handle HTTP error response
+ * @param response - Fetch response object
+ * @param logger - Logger service
+ * @param operation - Operation description for logging
+ * @returns Never (always throws)
+ */
+async function handleHttpError(
+  response: Response,
+  logger: LoggerService,
+  operation: string,
+): Promise<never> {
+  let error;
+  try {
+    error = await response.json();
+  } catch {
+    error = { detail: await response.text() };
+  }
+  logger.error(`Failed to ${operation}:`, error);
+  throw mapHttpStatusToError(response.status, `Failed to ${operation}`, error);
+}
+
+/**
  * VectorStoresOperator - HTTP client wrapper for lightspeed-core vector store endpoints
  *
  * This class provides the same interface as LlamaStackClient but proxies calls through
@@ -96,18 +118,7 @@ export class VectorStoresOperator {
       });
 
       if (!response.ok) {
-        let error;
-        try {
-          error = await response.json();
-        } catch {
-          error = { detail: await response.text() };
-        }
-        this.logger.error('Failed to create vector store:', error);
-        throw mapHttpStatusToError(
-          response.status,
-          'Failed to create vector store',
-          error,
-        );
+        await handleHttpError(response, this.logger, 'create vector store');
       }
 
       return response.json();
@@ -133,18 +144,7 @@ export class VectorStoresOperator {
       );
 
       if (!response.ok) {
-        let error;
-        try {
-          error = await response.json();
-        } catch {
-          error = { detail: await response.text() };
-        }
-        this.logger.error('Failed to retrieve vector store:', error);
-        throw mapHttpStatusToError(
-          response.status,
-          'Failed to retrieve vector store',
-          error,
-        );
+        await handleHttpError(response, this.logger, 'retrieve vector store');
       }
 
       return response.json();
@@ -179,18 +179,7 @@ export class VectorStoresOperator {
       );
 
       if (!response.ok) {
-        let error;
-        try {
-          error = await response.json();
-        } catch {
-          error = { detail: await response.text() };
-        }
-        this.logger.error('Failed to update vector store:', error);
-        throw mapHttpStatusToError(
-          response.status,
-          'Failed to update vector store',
-          error,
-        );
+        await handleHttpError(response, this.logger, 'update vector store');
       }
 
       return response.json();
@@ -216,18 +205,7 @@ export class VectorStoresOperator {
       );
 
       if (!response.ok) {
-        let error;
-        try {
-          error = await response.json();
-        } catch {
-          error = { detail: await response.text() };
-        }
-        this.logger.error('Failed to delete vector store:', error);
-        throw mapHttpStatusToError(
-          response.status,
-          'Failed to delete vector store',
-          error,
-        );
+        await handleHttpError(response, this.logger, 'delete vector store');
       }
 
       // DELETE may return 204 No Content or empty body
@@ -256,18 +234,7 @@ export class VectorStoresOperator {
       });
 
       if (!response.ok) {
-        let error;
-        try {
-          error = await response.json();
-        } catch {
-          error = { detail: await response.text() };
-        }
-        this.logger.error('Failed to list vector stores:', error);
-        throw mapHttpStatusToError(
-          response.status,
-          'Failed to list vector stores',
-          error,
-        );
+        await handleHttpError(response, this.logger, 'list vector stores');
       }
 
       return response.json();
@@ -306,17 +273,10 @@ export class VectorStoresOperator {
         );
 
         if (!response.ok) {
-          let error;
-          try {
-            error = await response.json();
-          } catch {
-            error = { detail: await response.text() };
-          }
-          this.logger.error('Failed to add file to vector store:', error);
-          throw mapHttpStatusToError(
-            response.status,
-            'Failed to add file to vector store',
-            error,
+          await handleHttpError(
+            response,
+            this.logger,
+            'add file to vector store',
           );
         }
 
@@ -343,18 +303,7 @@ export class VectorStoresOperator {
         );
 
         if (!response.ok) {
-          let error;
-          try {
-            error = await response.json();
-          } catch {
-            error = { detail: await response.text() };
-          }
-          this.logger.error('Failed to list files:', error);
-          throw mapHttpStatusToError(
-            response.status,
-            'Failed to list files',
-            error,
-          );
+          await handleHttpError(response, this.logger, 'list files');
         }
 
         return response.json();
@@ -380,18 +329,7 @@ export class VectorStoresOperator {
         );
 
         if (!response.ok) {
-          let error;
-          try {
-            error = await response.json();
-          } catch {
-            error = { detail: await response.text() };
-          }
-          this.logger.error('Failed to retrieve file:', error);
-          throw mapHttpStatusToError(
-            response.status,
-            'Failed to retrieve file',
-            error,
-          );
+          await handleHttpError(response, this.logger, 'retrieve file');
         }
 
         return response.json();
@@ -417,18 +355,7 @@ export class VectorStoresOperator {
         );
 
         if (!response.ok) {
-          let error;
-          try {
-            error = await response.json();
-          } catch {
-            error = { detail: await response.text() };
-          }
-          this.logger.error('Failed to delete file:', error);
-          throw mapHttpStatusToError(
-            response.status,
-            'Failed to delete file',
-            error,
-          );
+          await handleHttpError(response, this.logger, 'delete file');
         }
 
         // DELETE may return 204 No Content or empty body
@@ -489,18 +416,35 @@ export class VectorStoresOperator {
       });
 
       if (!response.ok) {
-        let error;
-        try {
-          error = await response.json();
-        } catch {
-          error = { detail: await response.text() };
-        }
-        this.logger.error('Failed to upload file:', error);
-        throw mapHttpStatusToError(
-          response.status,
-          'Failed to upload file',
-          error,
-        );
+        await handleHttpError(response, this.logger, 'upload file');
+      }
+
+      return response.json();
+    },
+
+    /**
+     * Delete a file
+     * DELETE /v1/files/{file_id}
+     */
+    delete: async (fileId: string): Promise<any> => {
+      this.logger.debug(`VectorStoresOperator: Deleting file ${fileId}`);
+
+      const response = await fetch(`${this.baseURL}/v1/files/${fileId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        await handleHttpError(response, this.logger, 'delete file');
+      }
+
+      if (
+        response.status === 204 ||
+        response.headers.get('content-length') === '0'
+      ) {
+        return { deleted: true };
       }
 
       return response.json();

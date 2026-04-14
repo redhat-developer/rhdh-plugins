@@ -79,7 +79,7 @@ export class DocumentService {
    * @param documentTitle - Document title to search for
    * @returns File object if found, null otherwise
    */
-  private async findFileByTitle(
+  async findFileByTitle(
     sessionId: string,
     documentTitle: string,
   ): Promise<any | null> {
@@ -274,7 +274,7 @@ export class DocumentService {
   }
 
   /**
-   * Delete a document from the vector store
+   * Delete a document from the vector store and Files API
    * @param sessionId - Vector store ID
    * @param documentTitle - Document title to delete
    * @throws NotFoundError if document not found
@@ -291,8 +291,21 @@ export class DocumentService {
       throw new NotFoundError(`Document not found: ${documentTitle}`);
     }
 
-    // Delete file completely
+    // Delete from vector store first
     await this.client.vectorStores.files.delete(sessionId, file.id);
+
+    // Also delete the underlying file from Files API to prevent orphaned files
+    try {
+      await this.client.files.delete(file.file_id);
+      this.logger.info(
+        `Deleted underlying file ${file.file_id} from Files API`,
+      );
+    } catch (error) {
+      // Log but don't fail if file already deleted or not found
+      this.logger.warn(
+        `Failed to delete file ${file.file_id} from Files API: ${error}`,
+      );
+    }
 
     this.logger.info(
       `Deleted document ${documentTitle} (file ${file.id}) from session ${sessionId}`,

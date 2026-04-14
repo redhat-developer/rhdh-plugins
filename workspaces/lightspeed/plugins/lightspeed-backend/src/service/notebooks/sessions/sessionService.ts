@@ -208,7 +208,7 @@ export class SessionService {
   }
 
   /**
-   * Delete a session
+   * Delete a session and all associated files
    * @param sessionId - Session ID to delete
    * @param userId - User ID performing the deletion
    * @throws NotAllowedError if user does not own the session
@@ -217,7 +217,29 @@ export class SessionService {
     // Verify ownership before deletion
     await this.readSession(sessionId, userId);
 
-    // Unregister the vector store
+    // Delete all underlying files from Files API to prevent orphans
+    try {
+      const filesResponse =
+        await this.client.vectorStores.files.list(sessionId);
+      const fileIds = filesResponse.data?.map((f: any) => f.file_id) || [];
+
+      await Promise.all(
+        fileIds.map(async (fileId: string) => {
+          try {
+            await this.client.files.delete(fileId);
+            this.logger.info(`Deleted file ${fileId} from Files API`);
+          } catch (error) {
+            this.logger.warn(`Failed to delete file ${fileId}: ${error}`);
+          }
+        }),
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Failed to clean up files for session ${sessionId}: ${error}`,
+      );
+    }
+
+    // Delete the vector store (cascade deletes vector store files)
     await this.client.vectorStores.delete(sessionId);
     this.logger.info(`Session ${sessionId} deleted`);
   }

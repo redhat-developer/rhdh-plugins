@@ -47,8 +47,21 @@ describe('SessionService', () => {
 
   beforeEach(() => {
     resetMockStorage();
+    const config = mockServices.rootConfig({
+      data: {
+        lightspeed: {
+          Notebooks: {
+            sessionDefaults: {
+              provider_id: 'test-notebooks',
+              embedding_model: 'test-embedding-model',
+              embedding_dimension: 768,
+            },
+          },
+        },
+      },
+    });
     operator = new VectorStoresOperator(LIGHTSPEED_CORE_ADDR, logger);
-    service = new SessionService(operator, logger);
+    service = new SessionService(operator, logger, config);
   });
 
   afterEach(() => {

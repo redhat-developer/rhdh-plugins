@@ -58,9 +58,16 @@ describe('Notebooks Router', () => {
       data: {
         lightspeed: {
           servicePort: 7007,
-          aiNotebooks: {
-            llamaStack: {
-              port: 8321,
+          Notebooks: {
+            enabled: true,
+            queryDefaults: {
+              model: 'test-model',
+              provider_id: 'test-provider',
+            },
+            sessionDefaults: {
+              provider_id: 'test-notebooks',
+              embedding_model: 'test-embedding-model',
+              embedding_dimension: 768,
             },
           },
         },

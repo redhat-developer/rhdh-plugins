@@ -19,13 +19,13 @@ organization:
 # Disable AI Notebooks feature by default
 lightspeed:
   Notebooks:
-    enabled: true
+    enabled: false
     queryDefaults:
       model: redhataillama-31-8b-instruct
       provider_id: vllm
     sessionDefaults:
       provider_id: notebooks
-      embedding_model: sentence-transformers/sentence-transformers/all-mpnet-base-v2
+      embedding_model: ${LLAMA_STACK_EMBEDDING_MODEL}
       embedding_dimension: 768
 
 backend:
