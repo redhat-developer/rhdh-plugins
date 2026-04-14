@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { ComponentProps } from 'react';
-
 import { ScorecardQueryProvider } from '../../api';
 import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
@@ -111,9 +109,12 @@ export const ScorecardHomepageCard = ({
  * ScorecardHomepageCard wrapped with QueryClientProvider so it works
  * when rendered outside a tree that already has a provider (e.g. on the homepage).
  */
-export const ScorecardHomepageCardWithProvider = (
-  props: ComponentProps<typeof ScorecardHomepageCard>,
-) => (
+export const ScorecardHomepageCardWithProvider = (props: {
+  metricId?: string;
+  aggregationId?: string;
+  showSubheader?: boolean;
+  showInfo?: boolean;
+}) => (
   <ScorecardQueryProvider>
     <ScorecardHomepageCard {...props} />
   </ScorecardQueryProvider>
