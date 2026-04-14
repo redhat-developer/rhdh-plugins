@@ -14,30 +14,54 @@
  * limitations under the License.
  */
 
-import { MemoryRouter } from 'react-router-dom';
-
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
+import type { LightspeedDrawerContextType } from '../LightspeedDrawerContext';
 import { LightspeedDrawerProvider } from '../LightspeedDrawerProvider';
 
-const mockSetPersistedDisplayMode = jest.fn();
-const mockUseDisplayModeSettings = jest.fn(() => ({
-  displayMode: ChatbotDisplayMode.default,
-  setDisplayMode: mockSetPersistedDisplayMode,
+const mockUseLightspeedProviderState = jest.fn();
+
+jest.mock('../../hooks/useLightspeedProviderState', () => ({
+  useLightspeedProviderState: () => mockUseLightspeedProviderState(),
 }));
 
-const mockUser = 'user:default/test';
-const mockUseBackstageUserIdentity = jest.fn(() => mockUser);
-
-jest.mock('../../hooks/useDisplayModeSettings', () => ({
-  useDisplayModeSettings: () => mockUseDisplayModeSettings(),
-}));
-
-jest.mock('../../hooks/useBackstageUserIdentity', () => ({
-  useBackstageUserIdentity: () => mockUseBackstageUserIdentity(),
-}));
+jest.mock('@patternfly/chatbot', () => {
+  const actual = jest.requireActual('@patternfly/chatbot');
+  return {
+    ...actual,
+    ChatbotModal: ({
+      children,
+      onClose,
+      displayMode,
+      className,
+      ouiaId,
+      'aria-labelledby': ariaLabelledBy,
+    }: {
+      children: React.ReactNode;
+      onClose: () => void;
+      displayMode: ChatbotDisplayMode;
+      className?: string;
+      ouiaId?: string;
+      'aria-labelledby'?: string;
+    }) => (
+      <div
+        data-testid="chatbot-modal"
+        data-ouia-id={ouiaId}
+        data-aria-labelledby={ariaLabelledBy}
+        data-display-mode={displayMode}
+        className={className}
+      >
+        <button type="button" data-testid="modal-close" onClick={onClose}>
+          Close
+        </button>
+        {children}
+      </div>
+    ),
+  };
+});
 
 jest.mock('../LightspeedChatContainer', () => ({
   LightspeedChatContainer: () => (
@@ -45,237 +69,125 @@ jest.mock('../LightspeedChatContainer', () => ({
   ),
 }));
 
+function baseContextValue(): LightspeedDrawerContextType {
+  return {
+    isChatbotActive: false,
+    toggleChatbot: jest.fn(),
+    displayMode: ChatbotDisplayMode.default,
+    setDisplayMode: jest.fn(),
+    drawerWidth: 400,
+    setDrawerWidth: jest.fn(),
+    currentConversationId: undefined,
+    setCurrentConversationId: jest.fn(),
+    draftMessage: '',
+    setDraftMessage: jest.fn(),
+    draftFileContents: [],
+    setDraftFileContents: jest.fn(),
+  };
+}
+
 describe('LightspeedDrawerProvider', () => {
-  const TestComponent = () => {
-    const context = useLightspeedDrawerContext();
-    return (
-      <div>
-        <div data-testid="display-mode">{context.displayMode}</div>
-        <div data-testid="is-open">
-          {context.isChatbotActive ? 'open' : 'closed'}
-        </div>
-        <button data-testid="toggle-button" onClick={context.toggleChatbot}>
-          Toggle
-        </button>
-        <button
-          data-testid="set-mode-button"
-          onClick={() => context.setDisplayMode(ChatbotDisplayMode.docked)}
-        >
-          Set Docked
-        </button>
-      </div>
-    );
+  const ContextReader = () => {
+    const ctx = useLightspeedDrawerContext();
+    return <span data-testid="context-display-mode">{ctx.displayMode}</span>;
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseDisplayModeSettings.mockReturnValue({
-      displayMode: ChatbotDisplayMode.default,
-      setDisplayMode: mockSetPersistedDisplayMode,
+    const closeChatbot = jest.fn();
+    mockUseLightspeedProviderState.mockReturnValue({
+      contextValue: baseContextValue(),
+      shouldRenderOverlayModal: false,
+      closeChatbot,
     });
   });
 
-  const renderWithRouter = (initialEntries = ['/']) => {
-    return render(
-      <MemoryRouter initialEntries={initialEntries}>
-        <LightspeedDrawerProvider>
-          <TestComponent />
-        </LightspeedDrawerProvider>
-      </MemoryRouter>,
+  it('renders children', () => {
+    render(
+      <LightspeedDrawerProvider>
+        <div>child content</div>
+      </LightspeedDrawerProvider>,
     );
-  };
+    expect(screen.getByText('child content')).toBeInTheDocument();
+  });
 
-  describe('initialization', () => {
-    it('should initialize with persisted display mode', () => {
-      mockUseDisplayModeSettings.mockReturnValue({
+  it('exposes hook contextValue to consumers', () => {
+    mockUseLightspeedProviderState.mockReturnValue({
+      contextValue: {
+        ...baseContextValue(),
         displayMode: ChatbotDisplayMode.docked,
-        setDisplayMode: mockSetPersistedDisplayMode,
-      });
-
-      renderWithRouter();
-
-      expect(screen.getByTestId('display-mode')).toHaveTextContent(
-        ChatbotDisplayMode.docked,
-      );
+      },
+      shouldRenderOverlayModal: false,
+      closeChatbot: jest.fn(),
     });
 
-    it('should initialize with default mode for first-time users', () => {
-      mockUseDisplayModeSettings.mockReturnValue({
+    render(
+      <LightspeedDrawerProvider>
+        <ContextReader />
+      </LightspeedDrawerProvider>,
+    );
+
+    expect(screen.getByTestId('context-display-mode')).toHaveTextContent(
+      ChatbotDisplayMode.docked,
+    );
+  });
+
+  it('does not render overlay ChatbotModal when shouldRenderOverlayModal is false', () => {
+    render(
+      <LightspeedDrawerProvider>
+        <div />
+      </LightspeedDrawerProvider>,
+    );
+    expect(screen.queryByTestId('chatbot-modal')).not.toBeInTheDocument();
+  });
+
+  it('renders ChatbotModal with LightspeedChatContainer when shouldRenderOverlayModal is true', () => {
+    const closeChatbot = jest.fn();
+    mockUseLightspeedProviderState.mockReturnValue({
+      contextValue: {
+        ...baseContextValue(),
         displayMode: ChatbotDisplayMode.default,
-        setDisplayMode: mockSetPersistedDisplayMode,
-      });
-
-      renderWithRouter();
-
-      expect(screen.getByTestId('display-mode')).toHaveTextContent(
-        ChatbotDisplayMode.default,
-      );
+      },
+      shouldRenderOverlayModal: true,
+      closeChatbot,
     });
 
-    it('should start with chatbot closed', () => {
-      renderWithRouter();
+    render(
+      <LightspeedDrawerProvider>
+        <div />
+      </LightspeedDrawerProvider>,
+    );
 
-      expect(screen.getByTestId('is-open')).toHaveTextContent('closed');
-    });
+    const modal = screen.getByTestId('chatbot-modal');
+    expect(modal).toHaveAttribute(
+      'data-display-mode',
+      ChatbotDisplayMode.default,
+    );
+    expect(modal).toHaveAttribute('data-ouia-id', 'LightspeedChatbotModal');
+    expect(modal).toHaveAttribute(
+      'data-aria-labelledby',
+      'lightspeed-chatpopup-modal',
+    );
+    expect(modal.className).toBeTruthy();
+    expect(screen.getByTestId('lightspeed-chat-container')).toBeInTheDocument();
   });
 
-  describe('opening chatbot', () => {
-    it('should open chatbot in persisted overlay mode', async () => {
-      mockUseDisplayModeSettings.mockReturnValue({
-        displayMode: ChatbotDisplayMode.default,
-        setDisplayMode: mockSetPersistedDisplayMode,
-      });
-
-      renderWithRouter();
-
-      const toggleButton = screen.getByTestId('toggle-button');
-      toggleButton.click();
-
-      await waitFor(() => {
-        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
-      });
-
-      expect(screen.getByTestId('display-mode')).toHaveTextContent(
-        ChatbotDisplayMode.default,
-      );
+  it('wires ChatbotModal onClose to closeChatbot from the hook', async () => {
+    const user = userEvent.setup();
+    const closeChatbot = jest.fn();
+    mockUseLightspeedProviderState.mockReturnValue({
+      contextValue: baseContextValue(),
+      shouldRenderOverlayModal: true,
+      closeChatbot,
     });
 
-    it('should open chatbot in persisted docked mode', async () => {
-      mockUseDisplayModeSettings.mockReturnValue({
-        displayMode: ChatbotDisplayMode.docked,
-        setDisplayMode: mockSetPersistedDisplayMode,
-      });
+    render(
+      <LightspeedDrawerProvider>
+        <div />
+      </LightspeedDrawerProvider>,
+    );
 
-      renderWithRouter();
-
-      const toggleButton = screen.getByTestId('toggle-button');
-      toggleButton.click();
-
-      await waitFor(() => {
-        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
-      });
-
-      expect(screen.getByTestId('display-mode')).toHaveTextContent(
-        ChatbotDisplayMode.docked,
-      );
-    });
-  });
-
-  describe('closing chatbot', () => {
-    it('should close chatbot without resetting display mode', async () => {
-      mockUseDisplayModeSettings.mockReturnValue({
-        displayMode: ChatbotDisplayMode.docked,
-        setDisplayMode: mockSetPersistedDisplayMode,
-      });
-
-      renderWithRouter();
-
-      const toggleButton = screen.getByTestId('toggle-button');
-      toggleButton.click();
-
-      await waitFor(() => {
-        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
-      });
-
-      toggleButton.click();
-
-      await waitFor(() => {
-        expect(screen.getByTestId('is-open')).toHaveTextContent('closed');
-      });
-
-      expect(screen.getByTestId('display-mode')).toHaveTextContent(
-        ChatbotDisplayMode.docked,
-      );
-    });
-  });
-
-  describe('setting display mode', () => {
-    it('should persist display mode when user changes it', async () => {
-      renderWithRouter();
-
-      const setModeButton = screen.getByTestId('set-mode-button');
-      setModeButton.click();
-
-      await waitFor(() => {
-        expect(mockSetPersistedDisplayMode).toHaveBeenCalledWith(
-          ChatbotDisplayMode.docked,
-        );
-      });
-    });
-
-    it('should update display mode in context', async () => {
-      renderWithRouter();
-
-      const setModeButton = screen.getByTestId('set-mode-button');
-      setModeButton.click();
-
-      await waitFor(() => {
-        expect(screen.getByTestId('display-mode')).toHaveTextContent(
-          ChatbotDisplayMode.default,
-        );
-      });
-    });
-  });
-
-  describe('lightspeed route handling', () => {
-    it('should set embedded mode when on /lightspeed route', async () => {
-      mockUseDisplayModeSettings.mockReturnValue({
-        displayMode: ChatbotDisplayMode.default,
-        setDisplayMode: mockSetPersistedDisplayMode,
-      });
-
-      renderWithRouter(['/lightspeed']);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('display-mode')).toHaveTextContent(
-          ChatbotDisplayMode.embedded,
-        );
-        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
-      });
-    });
-
-    it('should preserve docked mode when on /lightspeed route if persisted', async () => {
-      mockUseDisplayModeSettings.mockReturnValue({
-        displayMode: ChatbotDisplayMode.docked,
-        setDisplayMode: mockSetPersistedDisplayMode,
-      });
-
-      renderWithRouter(['/lightspeed']);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('display-mode')).toHaveTextContent(
-          ChatbotDisplayMode.embedded,
-        );
-      });
-    });
-
-    it('should restore persisted mode when leaving /lightspeed route', async () => {
-      mockUseDisplayModeSettings.mockReturnValue({
-        displayMode: ChatbotDisplayMode.docked,
-        setDisplayMode: mockSetPersistedDisplayMode,
-      });
-
-      const { rerender } = renderWithRouter(['/lightspeed']);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('display-mode')).toHaveTextContent(
-          ChatbotDisplayMode.embedded,
-        );
-      });
-
-      rerender(
-        <MemoryRouter initialEntries={['/catalog']}>
-          <LightspeedDrawerProvider>
-            <TestComponent />
-          </LightspeedDrawerProvider>
-        </MemoryRouter>,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('display-mode')).toHaveTextContent(
-          ChatbotDisplayMode.embedded,
-        );
-      });
-    });
+    await user.click(screen.getByTestId('modal-close'));
+    expect(closeChatbot).toHaveBeenCalledTimes(1);
   });
 });

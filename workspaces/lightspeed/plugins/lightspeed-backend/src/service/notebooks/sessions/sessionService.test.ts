@@ -33,8 +33,8 @@ describe('SessionService', () => {
   const mockUserId = 'user:default/guest';
   const mockUserId2 = 'user:default/other';
 
-  let service: SessionService;
-  let operator: VectorStoresOperator;
+  let operator!: VectorStoresOperator;
+  let service!: SessionService;
 
   beforeAll(() => {
     // ERROR on unhandled requests to catch any real HTTP calls

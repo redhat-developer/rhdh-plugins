@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-export * from './translations';
+/**
+ * Stub package root export for API reporting and bundlers. This plugin targets
+ * the new frontend system only; use `./alpha` for public APIs.
+ *
+ * @packageDocumentation
+ */
+export default {};
