@@ -151,9 +151,9 @@ export async function createRouter({
         scorecardMetricReadPermission,
       );
 
-    const provider = metricProvidersRegistry.getProvider(metricId);
-    const metric = metricProvidersRegistry.getMetric(metricId);
-    const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
+      const provider = metricProvidersRegistry.getProvider(metricId);
+      const metric = metricProvidersRegistry.getMetric(metricId);
+      const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
 
       if (authorizedMetrics.length === 0) {
         throw new NotAllowedError(
@@ -282,7 +282,9 @@ export async function createRouter({
       const provider = metricProvidersRegistry.getProvider(
         aggregationConfig?.metricId ?? aggregationId,
       );
-      const metric = provider.getMetric();
+      const metric = metricProvidersRegistry.getMetric(
+        aggregationConfig?.metricId ?? aggregationId,
+      );
 
       const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
         catalog,
@@ -329,10 +331,9 @@ export async function createRouter({
         aggregationId,
       ]);
 
-      const provider = metricProvidersRegistry.getProvider(
+      const metric = metricProvidersRegistry.getMetric(
         aggregationConfig?.metricId ?? aggregationId,
       );
-      const metric = provider.getMetric();
 
       res.json(
         AggregatedMetricMapper.toAggregationMetadata(metric, aggregationConfig),
