@@ -170,7 +170,9 @@ export function useAgentWizardForm(
   const [gitUrl, setGitUrl] = useState('');
   const [gitBranch, setGitBranch] = useState('main');
   const [gitPath, setGitPath] = useState('');
-  const [registryUrl, setRegistryUrl] = useState('');
+  const [registryUrl, setRegistryUrl] = useState(
+    'image-registry.openshift-image-registry.svc:5000',
+  );
   const [registrySecret, setRegistrySecret] = useState('');
   const [imageTag, setImageTag] = useState('');
   const [buildStrategy, setBuildStrategy] = useState('');
