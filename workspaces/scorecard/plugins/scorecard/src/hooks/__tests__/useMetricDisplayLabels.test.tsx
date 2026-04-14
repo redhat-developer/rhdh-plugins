@@ -95,4 +95,63 @@ describe('useMetricDisplayLabels', () => {
         'Current count of open Pull Requests for a given GitHub repository.',
     });
   });
+
+  describe('parent key cascading lookup', () => {
+    const fileCheckMetric = {
+      id: 'github.files_check.readme',
+      title: 'GitHub File: README.md',
+      description: 'Checks if README.md exists in the repository.',
+    };
+
+    it('should resolve via parent key when exact key has no translation', () => {
+      mockT.mockImplementation((key: string, params?: { name?: string }) => {
+        if (key === 'metric.github.files_check.title')
+          return `File Check: ${params?.name}`;
+        if (key === 'metric.github.files_check.description')
+          return `Checks if ${params?.name} exists`;
+        return key;
+      });
+
+      const { result } = renderHook(() =>
+        useMetricDisplayLabels(fileCheckMetric),
+      );
+
+      expect(result.current).toEqual({
+        title: 'File Check: readme',
+        description: 'Checks if readme exists',
+      });
+    });
+
+    it('should prefer exact key over parent key', () => {
+      mockT.mockImplementation((key: string, params?: { name?: string }) => {
+        if (key === 'metric.github.files_check.readme.title')
+          return 'Exact README Title';
+        if (key === 'metric.github.files_check.title')
+          return `File Check: ${params?.name}`;
+        return key;
+      });
+
+      const { result } = renderHook(() =>
+        useMetricDisplayLabels(fileCheckMetric),
+      );
+
+      expect(result.current).toEqual({
+        title: 'Exact README Title',
+        description: 'Checks if README.md exists in the repository.',
+      });
+    });
+
+    it('should fall back to original values when neither exact nor parent key has translation', () => {
+      mockT.mockImplementation((key: string) => key);
+
+      const { result } = renderHook(() =>
+        useMetricDisplayLabels(fileCheckMetric),
+      );
+
+      expect(result.current).toEqual({
+        title: 'GitHub File: README.md',
+        description: 'Checks if README.md exists in the repository.',
+      });
+    });
+  });
 });
