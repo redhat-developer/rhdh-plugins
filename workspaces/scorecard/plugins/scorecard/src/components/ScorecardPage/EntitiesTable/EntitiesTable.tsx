@@ -80,10 +80,11 @@ export const EntitiesTable = ({
     enabled: !ownershipLoading,
   });
 
-  const { aggregatedScorecard } = useAggregatedScorecard({
-    metricId: metricId as string,
+  const { data: aggregatedScorecard } = useAggregatedScorecard({
+    aggregationId: metricId as string,
     enabled: !!metricId && !ownershipLoading && !loadingDataEntities,
   });
+
   const thresholdRules = aggregatedScorecard?.result?.thresholds?.rules ?? [];
 
   useEffect(() => {

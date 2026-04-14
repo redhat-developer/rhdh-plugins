@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import useAsync from 'react-use/lib/useAsync';
 import { renderHook } from '@testing-library/react';
 import { useApi } from '@backstage/core-plugin-api';
+import { useQuery } from '@tanstack/react-query';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   type AggregatedMetricResult,
@@ -26,15 +26,16 @@ import { useAggregatedScorecard } from '../useAggregatedScorecard';
 import { useTranslation } from '../useTranslation';
 
 jest.mock('@backstage/core-plugin-api');
-jest.mock('react-use/lib/useAsync');
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(),
+}));
 jest.mock('../useTranslation', () => ({
   useTranslation: jest.fn(),
 }));
 
 const mockUseApi = useApi as jest.MockedFunction<typeof useApi>;
-const mockUseAsync = useAsync as jest.MockedFunction<typeof useAsync>;
-
-const useTranslationMock = useTranslation as jest.Mock;
+const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
 describe('useAggregatedScorecard', () => {
   const mockScorecardApi = {
@@ -61,25 +62,25 @@ describe('useAggregatedScorecard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
     mockUseApi.mockReturnValue(mockScorecardApi);
-
-    useTranslationMock.mockReturnValue({
+    (useTranslation as jest.Mock).mockImplementation(() => ({
       t: (key: string, opts?: { error?: string }) =>
         key === 'errors.fetchError' && opts?.error !== undefined
           ? `fetch:${opts.error}`
           : key,
-    });
+    }));
   });
 
   it('should return aggregated data when API succeeds', () => {
-    mockUseAsync.mockReturnValue({
-      loading: false,
-      error: undefined,
-      value: mockAggregated,
-    });
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: mockAggregated,
+    } as any);
 
-    const { result } = renderHook(() => useAggregatedScorecard('kpi1'));
+    const { result } = renderHook(() =>
+      useAggregatedScorecard({ aggregationId: 'kpi1' }),
+    );
 
     expect(result.current).toEqual({
       data: mockAggregated,
@@ -88,80 +89,16 @@ describe('useAggregatedScorecard', () => {
     });
   });
 
-  it('should register useAsync with aggregationId and scorecard API in deps', () => {
-    mockUseAsync.mockReturnValue({
-      loading: false,
-      error: undefined,
-      value: mockAggregated,
-    });
+  it('should return loading state from useQuery', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: true,
+      error: null,
+      data: undefined,
+    } as any);
 
-    renderHook(() => useAggregatedScorecard('myAgg'));
-
-    expect(mockUseAsync).toHaveBeenCalledWith(expect.any(Function), [
-      mockScorecardApi,
-      'myAgg',
-      expect.any(Function),
-    ]);
-  });
-
-  it('should call getAggregatedScorecard with aggregationId from async callback', async () => {
-    mockScorecardApi.getAggregatedScorecard.mockResolvedValue(mockAggregated);
-
-    mockUseAsync.mockImplementation(() => ({
-      loading: false,
-      error: undefined,
-      value: undefined,
-    }));
-
-    renderHook(() => useAggregatedScorecard('aggX'));
-
-    const asyncFn = mockUseAsync.mock.calls[0][0] as () => Promise<unknown>;
-    await asyncFn();
-
-    expect(mockScorecardApi.getAggregatedScorecard).toHaveBeenCalledWith(
-      'aggX',
+    const { result } = renderHook(() =>
+      useAggregatedScorecard({ aggregationId: 'kpi1' }),
     );
-  });
-
-  it('should propagate Error instances from the API', async () => {
-    const apiError = new Error('backend failed');
-
-    mockScorecardApi.getAggregatedScorecard.mockRejectedValue(apiError);
-    mockUseAsync.mockImplementation(() => ({
-      loading: false,
-      error: undefined,
-      value: undefined,
-    }));
-
-    renderHook(() => useAggregatedScorecard('kpi1'));
-
-    const asyncFn = mockUseAsync.mock.calls[0][0] as () => Promise<unknown>;
-
-    await expect(asyncFn()).rejects.toBe(apiError);
-  });
-
-  it('should wrap non-Error rejections with translated fetch error', async () => {
-    mockScorecardApi.getAggregatedScorecard.mockRejectedValue('not an error');
-    mockUseAsync.mockImplementation(() => ({
-      loading: false,
-      error: undefined,
-      value: undefined,
-    }));
-
-    renderHook(() => useAggregatedScorecard('kpi1'));
-
-    const asyncFn = mockUseAsync.mock.calls[0][0] as () => Promise<unknown>;
-    await expect(asyncFn()).rejects.toThrow('fetch:not an error');
-  });
-
-  it('should expose loading state from useAsync', () => {
-    mockUseAsync.mockReturnValue({
-      loading: true,
-      error: undefined,
-      value: undefined,
-    });
-
-    const { result } = renderHook(() => useAggregatedScorecard('kpi1'));
 
     expect(result.current).toEqual({
       data: undefined,
@@ -170,31 +107,139 @@ describe('useAggregatedScorecard', () => {
     });
   });
 
-  it('should reject when aggregationId is empty string', async () => {
-    mockUseAsync.mockImplementation(() => ({
-      loading: false,
-      error: undefined,
-      value: undefined,
-    }));
+  it('should return error when useQuery has error', () => {
+    const apiError = new Error('backend failed');
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: apiError,
+      data: undefined,
+    } as any);
 
-    renderHook(() => useAggregatedScorecard(''));
+    const { result } = renderHook(() =>
+      useAggregatedScorecard({ aggregationId: 'kpi1' }),
+    );
 
-    const asyncFn = mockUseAsync.mock.calls[0][0] as () => Promise<unknown>;
-    await expect(asyncFn()).rejects.toThrow('errors.missingAggregationId');
-    expect(mockScorecardApi.getAggregatedScorecard).not.toHaveBeenCalled();
+    expect(result.current).toEqual({
+      data: undefined,
+      isLoading: false,
+      error: apiError,
+    });
   });
 
-  it('should reject when aggregationId is whitespace only', async () => {
-    mockUseAsync.mockImplementation(() => ({
-      loading: false,
-      error: undefined,
-      value: undefined,
-    }));
+  it('should call useQuery with the correct queryKey and enabled flag', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: undefined,
+    } as any);
 
-    renderHook(() => useAggregatedScorecard('   '));
+    renderHook(() => useAggregatedScorecard({ aggregationId: 'myAgg' }));
 
-    const asyncFn = mockUseAsync.mock.calls[0][0] as () => Promise<unknown>;
-    await expect(asyncFn()).rejects.toThrow('errors.missingAggregationId');
-    expect(mockScorecardApi.getAggregatedScorecard).not.toHaveBeenCalled();
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: ['aggregatedScorecard', 'myAgg'],
+        enabled: true,
+      }),
+    );
+  });
+
+  it('should disable the query when aggregationId is empty', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: undefined,
+    } as any);
+
+    renderHook(() => useAggregatedScorecard({ aggregationId: '' }));
+
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: false,
+      }),
+    );
+  });
+
+  it('should disable the query when aggregationId is whitespace only', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: undefined,
+    } as any);
+
+    renderHook(() => useAggregatedScorecard({ aggregationId: '   ' }));
+
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: false,
+      }),
+    );
+  });
+
+  it('should respect the enabled option', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: undefined,
+    } as any);
+
+    renderHook(() =>
+      useAggregatedScorecard({ aggregationId: 'kpi1', enabled: false }),
+    );
+
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: false,
+      }),
+    );
+  });
+
+  it('should call getAggregatedScorecard with aggregationId in queryFn', async () => {
+    mockScorecardApi.getAggregatedScorecard.mockResolvedValue(mockAggregated);
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: undefined,
+    } as any);
+
+    renderHook(() => useAggregatedScorecard({ aggregationId: 'aggX' }));
+
+    const queryFn = mockUseQuery.mock.calls[0][0]
+      .queryFn as () => Promise<unknown>;
+    await queryFn();
+
+    expect(mockScorecardApi.getAggregatedScorecard).toHaveBeenCalledWith(
+      'aggX',
+    );
+  });
+
+  it('should propagate Error instances from the API', async () => {
+    const apiError = new Error('backend failed');
+    mockScorecardApi.getAggregatedScorecard.mockRejectedValue(apiError);
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: undefined,
+    } as any);
+
+    renderHook(() => useAggregatedScorecard({ aggregationId: 'kpi1' }));
+
+    const queryFn = mockUseQuery.mock.calls[0][0]
+      .queryFn as () => Promise<unknown>;
+    await expect(queryFn()).rejects.toBe(apiError);
+  });
+
+  it('should wrap non-Error rejections with translated fetch error', async () => {
+    mockScorecardApi.getAggregatedScorecard.mockRejectedValue('not an error');
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: undefined,
+    } as any);
+
+    renderHook(() => useAggregatedScorecard({ aggregationId: 'kpi1' }));
+
+    const queryFn = mockUseQuery.mock.calls[0][0]
+      .queryFn as () => Promise<unknown>;
+    await expect(queryFn()).rejects.toThrow('fetch:not an error');
   });
 });

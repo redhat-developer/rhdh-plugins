@@ -42,8 +42,10 @@ export const ScorecardHomepageCard = ({
   // Deprecated logic to support both metricId and aggregationId. Only aggregationId will be used in the future.
   const resolvedScorecardId = aggregationId || metricId || '';
 
-  const { data, isLoading, error } =
-    useAggregatedScorecard(resolvedScorecardId);
+  const { data, isLoading, error } = useAggregatedScorecard({
+    aggregationId: resolvedScorecardId,
+    enabled: !!resolvedScorecardId,
+  });
 
   const aggregatedMetricDetails = data
     ? ({
