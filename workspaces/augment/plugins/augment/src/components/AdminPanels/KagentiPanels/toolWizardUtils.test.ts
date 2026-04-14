@@ -35,7 +35,7 @@ function baseState(): ToolFormState {
     imagePullSecret: '',
     gitUrl: '',
     gitRevision: 'main',
-    contextDir: '.',
+    contextDir: '',
     registryUrl: '',
     registrySecret: '',
     imageTag: 'v0.0.1',

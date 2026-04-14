@@ -59,7 +59,7 @@ function baseFormState(overrides: Partial<FormState> = {}): FormState {
     imagePullSecret: '',
     gitUrl: '',
     gitBranch: 'main',
-    gitPath: '.',
+    gitPath: '',
     registryUrl: '',
     registrySecret: '',
     imageTag: '',
@@ -360,6 +360,37 @@ describe('buildRequest', () => {
         buildArgs: ['ARG1=val1'],
         buildTimeout: '30m',
       });
+    });
+
+    it('normalizes gitPath by stripping leading dot-slash', () => {
+      const result = buildRequest({
+        ...sourceBase,
+        gitPath: './a2a/a2a_currency_converter',
+      });
+      expect(result.gitPath).toBe('a2a/a2a_currency_converter');
+    });
+
+    it('omits gitPath when it is only a dot', () => {
+      const result = buildRequest({ ...sourceBase, gitPath: '.' });
+      expect(result).not.toHaveProperty('gitPath');
+    });
+
+    it('omits gitPath when it is dots only', () => {
+      const result = buildRequest({ ...sourceBase, gitPath: '..' });
+      expect(result).not.toHaveProperty('gitPath');
+    });
+
+    it('omits gitPath when empty', () => {
+      const result = buildRequest({ ...sourceBase, gitPath: '' });
+      expect(result).not.toHaveProperty('gitPath');
+    });
+
+    it('keeps gitPath as-is when it is a clean subdirectory', () => {
+      const result = buildRequest({
+        ...sourceBase,
+        gitPath: 'agents/weather',
+      });
+      expect(result.gitPath).toBe('agents/weather');
     });
 
     it('omits shipwrightConfig when all values are defaults', () => {

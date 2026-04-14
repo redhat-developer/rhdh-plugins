@@ -99,7 +99,11 @@ export function buildRequest(s: FormState): KagentiCreateAgentRequest {
   } else {
     body.gitUrl = s.gitUrl.trim();
     if (s.gitBranch.trim()) body.gitBranch = s.gitBranch.trim();
-    if (s.gitPath.trim()) body.gitPath = s.gitPath.trim();
+    const normalizedPath = s.gitPath
+      .trim()
+      .replace(/^\.\/+/, '')
+      .replace(/^\.+$/, '');
+    if (normalizedPath) body.gitPath = normalizedPath;
     if (s.registryUrl.trim()) body.registryUrl = s.registryUrl.trim();
     if (s.registrySecret.trim()) body.registrySecret = s.registrySecret.trim();
     if (s.imageTag.trim()) body.imageTag = s.imageTag.trim();

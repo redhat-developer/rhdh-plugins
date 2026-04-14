@@ -172,7 +172,7 @@ export function useToolWizardForm(
   const [imagePullSecret, setImagePullSecret] = useState('');
   const [gitUrl, setGitUrl] = useState('');
   const [gitRevision, setGitRevision] = useState('main');
-  const [contextDir, setContextDir] = useState('.');
+  const [contextDir, setContextDir] = useState('');
   const [registryUrl, setRegistryUrl] = useState('');
   const [registrySecret, setRegistrySecret] = useState('');
   const [imageTag, setImageTag] = useState('v0.0.1');
@@ -410,7 +410,11 @@ export function useToolWizardForm(
   }, []);
 
   const startBuildPolling = useCallback(
-    (toolName: string, toolNamespace: string, finBody?: KagentiFinalizeToolBuildRequest) => {
+    (
+      toolName: string,
+      toolNamespace: string,
+      finBody?: KagentiFinalizeToolBuildRequest,
+    ) => {
       buildNameRef.current = toolName;
       buildNsRef.current = toolNamespace;
       if (finBody) finalizeBodyRef.current = finBody;
@@ -566,7 +570,11 @@ export function useToolWizardForm(
           message: result.message,
           pollErrorCount: 0,
         });
-        startBuildPolling(body.name, body.namespace, buildFinalizeBody(formState));
+        startBuildPolling(
+          body.name,
+          body.namespace,
+          buildFinalizeBody(formState),
+        );
       } else {
         setSuccessOpen(true);
         onCreated();
@@ -706,15 +714,10 @@ export function useToolWizardForm(
   );
 
   const addBuildArgRow = useCallback(() => {
-    setBuildArgRows(rows => [
-      ...rows,
-      { id: nextRowId(rowIdRef), value: '' },
-    ]);
+    setBuildArgRows(rows => [...rows, { id: nextRowId(rowIdRef), value: '' }]);
   }, []);
   const updateBuildArgRow = useCallback((id: number, value: string) => {
-    setBuildArgRows(rows =>
-      rows.map(r => (r.id === id ? { ...r, value } : r)),
-    );
+    setBuildArgRows(rows => rows.map(r => (r.id === id ? { ...r, value } : r)));
   }, []);
   const removeBuildArgRow = useCallback((id: number) => {
     setBuildArgRows(rows => rows.filter(r => r.id !== id));

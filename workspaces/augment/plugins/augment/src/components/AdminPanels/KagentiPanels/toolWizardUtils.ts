@@ -107,7 +107,11 @@ export function buildToolRequest(s: ToolFormState): KagentiCreateToolRequest {
   } else {
     body.gitUrl = s.gitUrl.trim();
     if (s.gitRevision.trim()) body.gitRevision = s.gitRevision.trim();
-    if (s.contextDir.trim()) body.contextDir = s.contextDir.trim();
+    const normalizedDir = s.contextDir
+      .trim()
+      .replace(/^\.\/+/, '')
+      .replace(/^\.+$/, '');
+    if (normalizedDir) body.contextDir = normalizedDir;
     if (s.registryUrl.trim()) body.registryUrl = s.registryUrl.trim();
     if (s.registrySecret.trim()) body.registrySecret = s.registrySecret.trim();
     if (s.imageTag.trim()) body.imageTag = s.imageTag.trim();

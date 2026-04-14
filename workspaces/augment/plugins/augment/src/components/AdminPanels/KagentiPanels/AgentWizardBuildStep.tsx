@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-import type { FC } from 'react';
-import { useMemo } from 'react';
+import type { FC, ReactNode } from 'react';
+import { useMemo, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ErrorIcon from '@mui/icons-material/Error';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
@@ -279,6 +282,9 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
           {progress.gitUrl && (
             <DetailRow label="Git" value={progress.gitUrl} mono />
           )}
+          {progress.contextDir && (
+            <DetailRow label="Context" value={progress.contextDir} mono />
+          )}
           {progress.outputImage && (
             <DetailRow label="Image" value={progress.outputImage} mono />
           )}
@@ -292,23 +298,12 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
         </Typography>
       )}
 
-      {/* Failure message */}
+      {/* Failure message + kubectl hint */}
       {isFailed && progress.failureMessage && (
-        <Box
-          sx={{
-            p: 2,
-            borderRadius: 2,
-            bgcolor: `${theme.palette.error.main}12`,
-            border: `1px solid ${theme.palette.error.main}40`,
-          }}
-        >
-          <Typography
-            variant="body2"
-            sx={{ color: theme.palette.error.main, wordBreak: 'break-word' }}
-          >
-            {progress.failureMessage}
-          </Typography>
-        </Box>
+        <FailureBlock
+          failureMessage={progress.failureMessage}
+          palette={theme.palette}
+        />
       )}
 
       {/* Success banner */}
@@ -388,7 +383,7 @@ function DetailRow({
   mono,
 }: {
   label: string;
-  value: React.ReactNode;
+  value: ReactNode;
   mono?: boolean;
 }) {
   return (
@@ -419,6 +414,86 @@ function DetailRow({
         </Typography>
       ) : (
         value
+      )}
+    </Box>
+  );
+}
+
+const KUBECTL_RE = /kubectl\s+--namespace\s+\S+\s+logs\s+\S+\s+--container=\S+/;
+
+function extractKubectlCommand(msg: string): string | null {
+  const match = msg.match(KUBECTL_RE);
+  return match ? match[0] : null;
+}
+
+function FailureBlock({
+  failureMessage,
+  palette,
+}: {
+  failureMessage: string;
+  palette: {
+    error: { main: string };
+    background: { paper: string };
+    divider: string;
+    text: { secondary: string };
+  };
+}) {
+  const kubectlCmd = extractKubectlCommand(failureMessage);
+  const displayMsg = kubectlCmd
+    ? failureMessage.replace(`, for detailed information: ${kubectlCmd}`, '')
+    : failureMessage;
+
+  const handleCopy = useCallback(() => {
+    if (kubectlCmd) {
+      window.navigator.clipboard.writeText(kubectlCmd).catch(() => {});
+    }
+  }, [kubectlCmd]);
+
+  return (
+    <Box
+      sx={{
+        p: 2,
+        borderRadius: 2,
+        bgcolor: `${palette.error.main}12`,
+        border: `1px solid ${palette.error.main}40`,
+      }}
+    >
+      <Typography
+        variant="body2"
+        sx={{ color: palette.error.main, wordBreak: 'break-word' }}
+      >
+        {displayMsg}
+      </Typography>
+      {kubectlCmd && (
+        <Box
+          sx={{
+            mt: 1.5,
+            p: 1.5,
+            borderRadius: 1,
+            bgcolor: palette.background.paper,
+            border: `1px solid ${palette.divider}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              fontFamily: 'monospace',
+              fontSize: '0.7rem',
+              flex: 1,
+              wordBreak: 'break-all',
+            }}
+          >
+            {kubectlCmd}
+          </Typography>
+          <Tooltip title="Copy command">
+            <IconButton size="small" onClick={handleCopy}>
+              <ContentCopyIcon sx={{ fontSize: 14 }} />
+            </IconButton>
+          </Tooltip>
+        </Box>
       )}
     </Box>
   );

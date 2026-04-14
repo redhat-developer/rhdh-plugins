@@ -99,7 +99,7 @@ describe('useToolWizardForm — initialization', () => {
     expect(result.current.dockerfile).toBe('Dockerfile');
     expect(result.current.buildTimeout).toBe('15m');
     expect(result.current.gitRevision).toBe('main');
-    expect(result.current.contextDir).toBe('.');
+    expect(result.current.contextDir).toBe('');
     expect(result.current.imageTag).toBe('v0.0.1');
   });
 
