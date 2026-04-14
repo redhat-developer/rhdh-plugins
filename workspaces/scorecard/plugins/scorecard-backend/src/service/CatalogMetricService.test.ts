@@ -506,6 +506,7 @@ describe('CatalogMetricService', () => {
         registry: mockedRegistry,
         database: mockedDatabase,
         logger: mockedLogger,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       const results = await service.getLatestEntityMetrics(
