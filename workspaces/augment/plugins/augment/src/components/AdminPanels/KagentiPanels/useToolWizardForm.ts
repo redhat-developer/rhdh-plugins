@@ -173,7 +173,9 @@ export function useToolWizardForm(
   const [gitUrl, setGitUrl] = useState('');
   const [gitRevision, setGitRevision] = useState('main');
   const [contextDir, setContextDir] = useState('');
-  const [registryUrl, setRegistryUrl] = useState('');
+  const [registryUrl, setRegistryUrl] = useState(
+    'image-registry.openshift-image-registry.svc:5000',
+  );
   const [registrySecret, setRegistrySecret] = useState('');
   const [imageTag, setImageTag] = useState('v0.0.1');
   const [buildStrategy, setBuildStrategy] = useState('');
