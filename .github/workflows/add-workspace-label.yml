@@ -11,15 +11,13 @@ on:
       - synchronize
       - reopened
 
-permissions:
-  issues: write
-  contents: read
-  pull-requests: write
-
 jobs:
   triage-issues:
     if: github.event_name == 'issues'
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
@@ -34,6 +32,9 @@ jobs:
 
   label-prs:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
