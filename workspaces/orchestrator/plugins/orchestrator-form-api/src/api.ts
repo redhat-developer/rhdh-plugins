@@ -129,6 +129,8 @@ export type ReviewComponentProps = {
   schema: JSONSchema7;
   /** The form data to be reviewed before submission */
   data: JsonObject;
+  /** Go back to the previous wizard step (same behavior as the default review page) */
+  handleBack: () => void;
   /** Callback to execute the workflow */
   handleExecute: () => void;
 };

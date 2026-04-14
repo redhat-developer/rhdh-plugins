@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Fragment, useCallback, useMemo, useState } from 'react';
+import { ComponentType, Fragment, useCallback, useMemo, useState } from 'react';
 
 import { JsonObject } from '@backstage/types';
 
@@ -25,6 +25,7 @@ import get from 'lodash/get';
 
 import {
   OrchestratorFormContextProps,
+  ReviewComponentProps,
   useOrchestratorFormApiOrDefault,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
@@ -32,7 +33,10 @@ import { TranslationFunction } from '../hooks/useTranslation';
 import extractStaticDefaults from '../utils/extractStaticDefaults';
 import generateUiSchema from '../utils/generateUiSchema';
 import { omitFromWorkflowInput, pruneFormData } from '../utils/pruneFormData';
-import { StepperContextProvider } from '../utils/StepperContext';
+import {
+  StepperContextProvider,
+  useStepperContext,
+} from '../utils/StepperContext';
 import OrchestratorFormWrapper from './OrchestratorFormWrapper';
 import ReviewStep from './ReviewStep';
 import SingleStepForm from './SingleStepForm';
@@ -99,6 +103,34 @@ const removeHiddenSteps = (schema: JSONSchema7): JSONSchema7 => {
   }
 
   return schema;
+};
+
+type ReviewStepHostProps = {
+  ReviewComponent: ComponentType<ReviewComponentProps>;
+  busy: boolean;
+  schema: JSONSchema7;
+  data: JsonObject;
+  handleExecute: () => void;
+};
+
+/** Supplies `handleBack` from stepper context to the default or custom review component. */
+const ReviewStepHost = ({
+  ReviewComponent,
+  busy,
+  schema,
+  data,
+  handleExecute,
+}: ReviewStepHostProps) => {
+  const { handleBack } = useStepperContext();
+  return (
+    <ReviewComponent
+      busy={busy}
+      schema={schema}
+      data={data}
+      handleBack={handleBack}
+      handleExecute={handleExecute}
+    />
+  );
 };
 
 /**
@@ -179,10 +211,10 @@ const OrchestratorForm = ({
   }, [orchestratorFormApi]);
 
   const reviewStep = useMemo(() => {
-    // Use custom review component if provided, otherwise use default
     const ReviewComponent = CustomReviewComponent || ReviewStep;
     return (
-      <ReviewComponent
+      <ReviewStepHost
+        ReviewComponent={ReviewComponent}
         data={prunedFormData}
         schema={schema}
         busy={isExecuting}

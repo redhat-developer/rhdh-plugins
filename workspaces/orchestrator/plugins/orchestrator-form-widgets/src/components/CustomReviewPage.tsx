@@ -20,6 +20,9 @@
  * This is a reference implementation showing how to create a custom review page.
  * It is NOT actively used by default - the default review page is used instead.
  *
+ * It follows the same data rules as the built-in `ReviewStep`: `generateReviewTableData`
+ * for display (including `ui:hidden` handling) and the optional hidden-fields toggle.
+ *
  * To use this custom review page:
  * 1. Import this component in FormWidgetsApi.tsx
  * 2. Return it from the getReviewComponent() method:
@@ -28,19 +31,29 @@
  *      return CustomReviewPage;
  *    }
  *
- * Or create your own custom review component following this pattern.
+ * Or create your own custom component following this pattern.
  *
  * See docs/extensibleForm.md for more details.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Content } from '@backstage/core-components';
+import { JsonObject } from '@backstage/types';
 import { ReviewComponentProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import {
+  generateReviewTableData,
+  NestedReviewTable,
+  schemaHasUiHiddenFields,
+  useTranslation,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Paper from '@mui/material/Paper';
+import Switch from '@mui/material/Switch';
+import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 const useStyles = makeStyles()(theme => ({
@@ -55,19 +68,6 @@ const useStyles = makeStyles()(theme => ({
   section: {
     marginBottom: theme.spacing(2),
   },
-  label: {
-    fontWeight: 600,
-    color: theme.palette.text.secondary,
-    marginRight: theme.spacing(1),
-  },
-  value: {
-    color: theme.palette.text.primary,
-  },
-  row: {
-    display: 'flex',
-    padding: theme.spacing(1.5, 0),
-    borderBottom: `1px solid ${theme.palette.divider}`,
-  },
   footer: {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -79,63 +79,42 @@ const useStyles = makeStyles()(theme => ({
   customBadge: {
     marginLeft: theme.spacing(1),
   },
+  hiddenFieldsAlert: {
+    marginBottom: theme.spacing(2),
+  },
+  hiddenFieldsAction: {
+    marginLeft: theme.spacing(2),
+  },
+  hiddenFieldsText: {
+    fontSize: theme.typography.body1.fontSize,
+  },
 }));
 
-const renderValue = (value: any): React.ReactNode => {
-  if (value === null || value === undefined) {
-    return (
-      <Typography variant="body2" color="textSecondary">
-        N/A
-      </Typography>
-    );
-  }
-  if (typeof value === 'object') {
-    return (
-      <Typography
-        variant="body2"
-        component="pre"
-        sx={{ whiteSpace: 'pre-wrap' }}
-      >
-        {JSON.stringify(value, null, 2)}
-      </Typography>
-    );
-  }
-  return <Typography variant="body2">{String(value)}</Typography>;
-};
-
 /**
- * Custom review page component with enhanced styling
- * This demonstrates how to create a custom review page for the orchestrator form
+ * Custom review page component with enhanced styling.
+ * Uses the same review data pipeline as the default `ReviewStep` for predictable behavior.
  */
 export const CustomReviewPage: React.FC<ReviewComponentProps> = ({
   data,
-  schema: _schema,
+  schema,
   busy,
+  handleBack,
   handleExecute,
 }) => {
+  const { t } = useTranslation();
   const { classes } = useStyles();
+  const [showHiddenFields, setShowHiddenFields] = useState(false);
 
-  const flattenedData = useMemo(() => {
-    const result: Array<{ key: string; value: any; path: string }> = [];
+  const displayData = useMemo<JsonObject>(() => {
+    return generateReviewTableData(schema, data, {
+      includeHiddenFields: showHiddenFields,
+    });
+  }, [schema, data, showHiddenFields]);
 
-    const flatten = (obj: any, prefix = '', displayPrefix = '') => {
-      Object.entries(obj).forEach(([key, value]) => {
-        const newPath = prefix ? `${prefix}.${key}` : key;
-        const newDisplayPrefix = displayPrefix
-          ? `${displayPrefix} > ${key}`
-          : key;
-
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
-          flatten(value, newPath, newDisplayPrefix);
-        } else {
-          result.push({ key: newDisplayPrefix, value, path: newPath });
-        }
-      });
-    };
-
-    flatten(data);
-    return result;
-  }, [data]);
+  const showHiddenFieldsNote = useMemo(
+    () => schemaHasUiHiddenFields(schema),
+    [schema],
+  );
 
   return (
     <Content noPadding>
@@ -165,22 +144,43 @@ export const CustomReviewPage: React.FC<ReviewComponentProps> = ({
           </Typography>
         </Box>
 
+        {showHiddenFieldsNote && (
+          <Alert
+            severity="info"
+            className={classes.hiddenFieldsAlert}
+            action={
+              <FormControlLabel
+                className={classes.hiddenFieldsAction}
+                control={
+                  <Switch
+                    checked={showHiddenFields}
+                    onChange={event =>
+                      setShowHiddenFields(event.target.checked)
+                    }
+                    color="primary"
+                  />
+                }
+                label={
+                  <Typography className={classes.hiddenFieldsText}>
+                    {t('reviewStep.showHiddenParameters')}
+                  </Typography>
+                }
+              />
+            }
+          >
+            <Typography className={classes.hiddenFieldsText}>
+              {t('reviewStep.hiddenFieldsNote')}
+            </Typography>
+          </Alert>
+        )}
+
         <Box sx={{ mt: 3 }}>
-          {flattenedData.map(({ key, value }) => (
-            <Box key={key} className={classes.row}>
-              <Typography className={classes.label} sx={{ minWidth: '200px' }}>
-                {key}:
-              </Typography>
-              <Box className={classes.value} sx={{ flex: 1 }}>
-                {renderValue(value)}
-              </Box>
-            </Box>
-          ))}
+          <NestedReviewTable data={displayData} />
         </Box>
 
         <Box className={classes.footer}>
-          <Button variant="outlined" disabled={busy}>
-            Back
+          <Button variant="outlined" onClick={handleBack} disabled={busy}>
+            {t('common.back')}
           </Button>
           <Button
             variant="contained"
@@ -188,7 +188,7 @@ export const CustomReviewPage: React.FC<ReviewComponentProps> = ({
             onClick={handleExecute}
             disabled={busy}
           >
-            {busy ? 'Executing...' : 'Run Workflow'}
+            {busy ? 'Executing...' : t('common.run')}
           </Button>
         </Box>
       </Paper>

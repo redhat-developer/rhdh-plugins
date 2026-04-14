@@ -11,7 +11,8 @@ Add custom review page API support
 - Add `ReviewComponentProps` type to define props for custom review components
 - Add optional `getReviewComponent()` method to `OrchestratorFormApi` interface
 - Update `OrchestratorForm` to support custom review page components from plugins
-- Add `CustomReviewPage` example component in orchestrator-form-widgets plugin
+- Add `CustomReviewPage` example component in orchestrator-form-widgets plugin (aligned with `ReviewStep`: `generateReviewTableData`, hidden-fields toggle, `NestedReviewTable`)
+- Export `generateReviewTableData`, `schemaHasUiHiddenFields`, and `NestedReviewTable` from orchestrator-form-react for custom review implementations
 - Falls back to default review page when `getReviewComponent()` returns `undefined`
 
 **Documentation:**

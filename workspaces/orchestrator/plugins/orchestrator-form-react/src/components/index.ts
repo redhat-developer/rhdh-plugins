@@ -16,4 +16,6 @@
 
 export type { OrchestratorFormProps } from './OrchestratorForm';
 export { default as OrchestratorForm } from './OrchestratorForm';
+export type { NestedReviewTableProps } from './NestedReviewTable';
+export { NestedReviewTable } from './NestedReviewTable';
 export { default as SubmitButton } from './SubmitButton';

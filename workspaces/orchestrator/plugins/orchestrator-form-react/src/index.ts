@@ -24,9 +24,12 @@
 // that are useful to other plugins or modules.
 
 export * from './components';
+export type { NestedReviewTableProps } from './components/NestedReviewTable';
 export * from './hooks';
 export type {
   HiddenCondition,
   HiddenConditionObject,
   HiddenConditionComposite,
 } from './types/HiddenCondition';
+export { default as generateReviewTableData } from './utils/generateReviewTableData';
+export { schemaHasUiHiddenFields } from './utils/schemaHasUiHiddenFields';
