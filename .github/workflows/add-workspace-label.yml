@@ -1,0 +1,18 @@
+# PR-only workspace path labels (workspace/<dir>) for search and triage.
+# Based on: https://github.com/backstage/community-plugins/blob/main/.github/workflows/add-workspace-label.yml
+name: Add Workspace Label to PRs
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  label-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          configuration-path: .github/pr-labeler.yml
