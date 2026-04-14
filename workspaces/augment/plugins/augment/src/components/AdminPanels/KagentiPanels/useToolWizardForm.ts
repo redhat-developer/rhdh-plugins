@@ -227,8 +227,8 @@ export function useToolWizardForm(
     setImagePullSecret('');
     setGitUrl('');
     setGitRevision('main');
-    setContextDir('.');
-    setRegistryUrl('');
+    setContextDir('');
+    setRegistryUrl('image-registry.openshift-image-registry.svc:5000');
     setRegistrySecret('');
     setImageTag('v0.0.1');
     setBuildStrategy('');
