@@ -12755,7 +12755,7 @@ __metadata:
     "@serverlessworkflow/sdk-typescript": "npm:^0.8.4"
     "@types/js-yaml": "npm:^4.0.0"
     "@types/json-schema": "npm:7.0.15"
-    axios: "npm:^1.11.0"
+    axios: "npm:^1.15.0"
     js-yaml: "npm:^4.1.0"
     js-yaml-cli: "npm:^0.6.0"
   languageName: unknown
@@ -12905,7 +12905,7 @@ __metadata:
     "@types/react": "npm:^18.2.58"
     "@types/react-dom": "npm:^18.2.19"
     "@types/uuid": "npm:^9.0.0"
-    axios: "npm:^1.11.0"
+    axios: "npm:^1.15.0"
     json-schema: "npm:^0.4.0"
     json-schema-library: "npm:^9.0.0"
     lodash: "npm:^4.17.21"
@@ -12943,7 +12943,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@types/js-yaml": "npm:^4.0.0"
-    axios: "npm:^1.11.0"
+    axios: "npm:^1.15.0"
     js-yaml: "npm:^4.1.0"
   languageName: unknown
   linkType: soft
@@ -18097,14 +18097,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.0.0, axios@npm:^1.11.0, axios@npm:^1.12.0, axios@npm:^1.12.2, axios@npm:^1.13.6":
-  version: 1.14.0
-  resolution: "axios@npm:1.14.0"
+"axios@npm:^1.0.0, axios@npm:^1.12.0, axios@npm:^1.12.2, axios@npm:^1.13.6, axios@npm:^1.15.0":
+  version: 1.15.0
+  resolution: "axios@npm:1.15.0"
   dependencies:
     follow-redirects: "npm:^1.15.11"
     form-data: "npm:^4.0.5"
     proxy-from-env: "npm:^2.1.0"
-  checksum: 10c0/2541f4aa215a7d1842429dad006fc682d82bc0e74bd14500823f7d8cce3bbae0e0a8c328c8538946718f366ab8ce5a4c12e9ad40e5a0f3482ff8bff0cd115d45
+  checksum: 10c0/47e0f860e98d4d7aa145e89ce0cae00e1fb0f1d2485f065c21fce955ddb1dba4103a46bd0e47acd18a27208a7f62c96249e620db575521b92a968619ab133409
   languageName: node
   linkType: hard
 
