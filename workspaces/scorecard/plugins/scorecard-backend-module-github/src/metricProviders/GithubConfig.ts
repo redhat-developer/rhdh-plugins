@@ -25,11 +25,13 @@ export const DEFAULT_FILE_CHECK_THRESHOLDS: ThresholdConfig = {
       key: 'exist',
       expression: '==true',
       color: ScorecardThresholdRuleColors.SUCCESS,
+      icon: 'scorecardSuccessStatusIcon',
     },
     {
       key: 'missing',
       expression: '==false',
       color: ScorecardThresholdRuleColors.ERROR,
+      icon: 'scorecardErrorStatusIcon',
     },
   ],
 };

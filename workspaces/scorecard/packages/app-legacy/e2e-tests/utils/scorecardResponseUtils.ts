@@ -506,3 +506,74 @@ export const jiraEntitiesDrillDownNoDataResponse = {
     isCapped: false,
   },
 };
+
+export const fileCheckScorecardResponse = [
+  {
+    id: 'github.files_check.readme',
+    status: 'success',
+    metadata: {
+      title: 'GitHub File: README.md',
+      description: 'Checks if README.md exists in the repository.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: true,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: 'success.main',
+              icon: 'scorecardSuccessStatusIcon',
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: 'error.main',
+              icon: 'scorecardErrorStatusIcon',
+            },
+          ],
+        },
+        status: 'success',
+        evaluation: 'exist',
+      },
+    },
+  },
+  {
+    id: 'github.files_check.codeowners',
+    status: 'success',
+    metadata: {
+      title: 'GitHub File: CODEOWNERS',
+      description: 'Checks if CODEOWNERS exists in the repository.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: false,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: 'success.main',
+              icon: 'scorecardSuccessStatusIcon',
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: 'error.main',
+              icon: 'scorecardErrorStatusIcon',
+            },
+          ],
+        },
+        status: 'success',
+        evaluation: 'missing',
+      },
+    },
+  },
+];

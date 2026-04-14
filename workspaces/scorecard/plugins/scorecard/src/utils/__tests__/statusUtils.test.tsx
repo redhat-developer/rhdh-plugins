@@ -17,8 +17,15 @@
 import type { Theme } from '@mui/material/styles';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
-import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { getStatusConfig, resolveStatusColor, SCORECARD_ERROR_STATE_COLOR } from '..';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  ScorecardThresholdRuleColors,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  getStatusConfig,
+  resolveStatusColor,
+  SCORECARD_ERROR_STATE_COLOR,
+} from '..';
 
 describe('statusUtils', () => {
   describe('getStatusConfig', () => {
@@ -166,6 +173,60 @@ describe('statusUtils', () => {
         expect(result).toEqual({
           color: 'success.main',
           icon: CheckCircleOutlineIcon,
+        });
+      });
+
+      it('should return icon for missing evaluation with boolean threshold rules', () => {
+        const result = getStatusConfig({
+          evaluation: 'missing',
+          thresholdStatus: 'success',
+          metricStatus: 'success',
+          thresholdRules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: ScorecardThresholdRuleColors.SUCCESS,
+              icon: 'scorecardSuccessStatusIcon',
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: ScorecardThresholdRuleColors.ERROR,
+              icon: 'scorecardErrorStatusIcon',
+            },
+          ],
+        });
+
+        expect(result).toEqual({
+          color: 'error.main',
+          icon: 'scorecardErrorStatusIcon',
+        });
+      });
+
+      it('should return icon for exist evaluation with boolean threshold rules', () => {
+        const result = getStatusConfig({
+          evaluation: 'exist',
+          thresholdStatus: 'success',
+          metricStatus: 'success',
+          thresholdRules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: ScorecardThresholdRuleColors.SUCCESS,
+              icon: 'scorecardSuccessStatusIcon',
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: ScorecardThresholdRuleColors.ERROR,
+              icon: 'scorecardErrorStatusIcon',
+            },
+          ],
+        });
+
+        expect(result).toEqual({
+          color: 'success.main',
+          icon: 'scorecardSuccessStatusIcon',
         });
       });
     });
