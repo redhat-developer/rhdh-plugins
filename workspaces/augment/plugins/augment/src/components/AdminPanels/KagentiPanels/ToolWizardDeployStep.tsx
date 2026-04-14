@@ -221,7 +221,8 @@ export const ToolWizardDeployStep: FC<ToolWizardDeployStepProps> = ({
                   onChange={e => setRegistryUrl(e.target.value)}
                   fullWidth
                   size="small"
-                  helperText="Target container registry for the built image."
+                  placeholder="e.g. image-registry.openshift-image-registry.svc:5000"
+                  helperText="Container registry for the built image. If empty, uses the cluster default."
                 />
                 <TextField
                   label="Registry secret"

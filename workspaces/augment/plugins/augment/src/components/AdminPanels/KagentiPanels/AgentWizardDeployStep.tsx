@@ -201,7 +201,8 @@ export const AgentWizardDeployStep: FC<AgentWizardDeployStepProps> = ({
             onChange={e => setRegistryUrl(e.target.value)}
             size="small"
             sx={{ flex: 1 }}
-            helperText="Container registry for the built image."
+            placeholder="e.g. image-registry.openshift-image-registry.svc:5000"
+            helperText="Container registry for the built image. If empty, uses the cluster default."
           />
           <TextField
             label="Registry secret"
