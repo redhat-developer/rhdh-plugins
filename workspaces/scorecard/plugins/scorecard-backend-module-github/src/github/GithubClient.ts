@@ -83,7 +83,7 @@ export class GithubClient {
    * eg. "github.files_check.readme-correct" -> "github_files_check_readme_correct"
    */
   private sanitizeGraphQLAlias(alias: string): string {
-    return alias.replace(/[^_0-9A-Za-z]/g, '_');
+    return alias.replaceAll(/\W/g, '_');
   }
 
   async checkFilesExist(

@@ -24,6 +24,20 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
+const BOOLEAN_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    { key: 'success', expression: '==true' },
+    { key: 'error', expression: '==false' },
+  ],
+};
+
+const MOCK_CATALOG_FILTER: Record<
+  string,
+  string | symbol | (string | symbol)[]
+> = {
+  'metadata.annotations.mock/key': CATALOG_FILTER_EXISTS,
+};
+
 abstract class MockMetricProvider<T extends MetricType>
   implements MetricProvider<T>
 {
@@ -39,9 +53,7 @@ abstract class MockMetricProvider<T extends MetricType>
   abstract getMetricThresholds(): ThresholdConfig;
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
-    return {
-      'metadata.annotations.mock/key': CATALOG_FILTER_EXISTS,
-    };
+    return MOCK_CATALOG_FILTER;
   }
 
   getProviderDatasourceId(): string {
@@ -107,12 +119,7 @@ export class MockBooleanProvider extends MockMetricProvider<'boolean'> {
     super('boolean', providerId, datasourceId, title, description, value);
   }
   getMetricThresholds(): ThresholdConfig {
-    return {
-      rules: [
-        { key: 'success', expression: '==true' },
-        { key: 'error', expression: '==false' },
-      ],
-    };
+    return BOOLEAN_THRESHOLDS;
   }
 }
 export const githubNumberProvider = new MockNumberProvider(
@@ -184,18 +191,11 @@ export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
   }
 
   getMetricThresholds(): ThresholdConfig {
-    return {
-      rules: [
-        { key: 'success', expression: '==true' },
-        { key: 'error', expression: '==false' },
-      ],
-    };
+    return BOOLEAN_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
-    return {
-      'metadata.annotations.mock/key': CATALOG_FILTER_EXISTS,
-    };
+    return MOCK_CATALOG_FILTER;
   }
 
   async calculateMetric(_entity: Entity): Promise<boolean> {

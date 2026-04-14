@@ -71,7 +71,7 @@ describe('GithubFilesProvider', () => {
       const provider = GithubFilesProvider.fromConfig(config);
 
       expect(provider).toBeDefined();
-      expect(provider!.getMetricIds()).toEqual([
+      expect(provider?.getMetricIds()).toEqual([
         'github.files_check.readme',
         'github.files_check.license',
       ]);
