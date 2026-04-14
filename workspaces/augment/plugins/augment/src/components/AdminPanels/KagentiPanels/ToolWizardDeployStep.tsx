@@ -212,8 +212,8 @@ export const ToolWizardDeployStep: FC<ToolWizardDeployStepProps> = ({
                   onChange={e => setContextDir(e.target.value)}
                   fullWidth
                   size="small"
-                  placeholder="."
-                  helperText="Subdirectory containing the Dockerfile."
+                  placeholder="e.g. tools/my_tool"
+                  helperText="Subdirectory containing the Dockerfile. Leave empty for repo root."
                 />
                 <TextField
                   label="Registry URL"

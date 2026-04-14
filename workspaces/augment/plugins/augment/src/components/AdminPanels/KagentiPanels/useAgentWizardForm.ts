@@ -169,7 +169,7 @@ export function useAgentWizardForm(
   const [imagePullSecret, setImagePullSecret] = useState('');
   const [gitUrl, setGitUrl] = useState('');
   const [gitBranch, setGitBranch] = useState('main');
-  const [gitPath, setGitPath] = useState('.');
+  const [gitPath, setGitPath] = useState('');
   const [registryUrl, setRegistryUrl] = useState('');
   const [registrySecret, setRegistrySecret] = useState('');
   const [imageTag, setImageTag] = useState('');
@@ -493,6 +493,7 @@ export function useAgentWizardForm(
               outputImage: info.outputImage,
               strategy: info.strategy,
               gitUrl: info.gitUrl,
+              contextDir: info.contextDir ?? undefined,
               startTime: info.buildRunStartTime ?? undefined,
               elapsedMs: elapsed,
               pollErrorCount: 0,

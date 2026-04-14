@@ -41,6 +41,7 @@ export interface BuildProgress {
   outputImage?: string;
   strategy?: string;
   gitUrl?: string;
+  contextDir?: string;
   pollErrorCount: number;
   deployFailedAfterBuild?: boolean;
 }

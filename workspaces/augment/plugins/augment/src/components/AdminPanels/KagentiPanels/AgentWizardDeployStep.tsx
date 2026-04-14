@@ -190,7 +190,8 @@ export const AgentWizardDeployStep: FC<AgentWizardDeployStepProps> = ({
             onChange={e => setGitPath(e.target.value)}
             size="small"
             sx={{ flex: 1 }}
-            helperText="Subdirectory within the repo."
+            placeholder="e.g. agents/my_agent"
+            helperText="Subdirectory containing the Dockerfile. Leave empty for repo root."
           />
         </Stack>
         <Stack direction="row" spacing={2}>
