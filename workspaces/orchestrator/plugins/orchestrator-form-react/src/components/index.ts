@@ -18,4 +18,6 @@ export type { OrchestratorFormProps } from './OrchestratorForm';
 export { default as OrchestratorForm } from './OrchestratorForm';
 export type { NestedReviewTableProps } from './NestedReviewTable';
 export { NestedReviewTable } from './NestedReviewTable';
+export type { ReviewHiddenParametersAlertProps } from './ReviewHiddenParametersAlert';
+export { ReviewHiddenParametersAlert } from './ReviewHiddenParametersAlert';
 export { default as SubmitButton } from './SubmitButton';

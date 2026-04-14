@@ -87,7 +87,7 @@ export type ReviewComponentProps = {
 A complete example implementation is available at:
 [`plugins/orchestrator-form-widgets/src/components/CustomReviewPage.tsx`](../plugins/orchestrator-form-widgets/src/components/CustomReviewPage.tsx)
 
-> **Not a blind drop-in:** Older or minimal examples may only restyle raw `data`. For parity with the built-in [`ReviewStep`](../plugins/orchestrator-form-react/src/components/ReviewStep.tsx), a custom review should use **`generateReviewTableData`** from `@red-hat-developer-hub/backstage-plugin-orchestrator-form-react` (respects `ui:hidden`, password masking, and nesting) and, when the schema uses hidden fields, the same **“show hidden parameters”** pattern as `ReviewStep` (see **`schemaHasUiHiddenFields`** in that package). You can also render the structured output with **`NestedReviewTable`** if you want the default table layout without copying markup.
+> **Not a blind drop-in:** Older or minimal examples may only restyle raw `data`. For parity with the built-in [`ReviewStep`](../plugins/orchestrator-form-react/src/components/ReviewStep.tsx), a custom review should use **`generateReviewTableData`** from `@red-hat-developer-hub/backstage-plugin-orchestrator-form-react` (respects `ui:hidden`, password masking, and nesting) and, when the schema uses hidden fields, the same **“show hidden parameters”** pattern as `ReviewStep` (see **`schemaHasUiHiddenFields`** and **`ReviewHiddenParametersAlert`** in that package). You can also render the structured output with **`NestedReviewTable`** if you want the default table layout without copying markup.
 
 This example shows:
 

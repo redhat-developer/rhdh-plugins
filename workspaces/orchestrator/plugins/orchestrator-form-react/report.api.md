@@ -63,6 +63,17 @@ export type OrchestratorFormProps = {
 };
 
 // @public
+export const ReviewHiddenParametersAlert: (
+  input: ReviewHiddenParametersAlertProps,
+) => JSX_2.Element;
+
+// @public (undocumented)
+export type ReviewHiddenParametersAlertProps = {
+  showHiddenFields: boolean;
+  onShowHiddenFieldsChange: (includeHidden: boolean) => void;
+};
+
+// @public
 export function schemaHasUiHiddenFields(schema: JSONSchema7): boolean;
 
 // @public
@@ -87,6 +98,7 @@ export const useTranslation: () => {
 
 // Warnings were encountered during analysis:
 //
+// src/components/ReviewHiddenParametersAlert.d.ts:4:1 - (ae-undocumented) Missing documentation for "ReviewHiddenParametersAlertProps".
 // src/hooks/useTranslation.d.ts:1:1 - (ae-undocumented) Missing documentation for "TranslationFunction".
 // src/hooks/useTranslation.d.ts:2:22 - (ae-undocumented) Missing documentation for "useTranslation".
 ```

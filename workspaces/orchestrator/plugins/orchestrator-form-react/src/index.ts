@@ -25,6 +25,7 @@
 
 export * from './components';
 export type { NestedReviewTableProps } from './components/NestedReviewTable';
+export type { ReviewHiddenParametersAlertProps } from './components/ReviewHiddenParametersAlert';
 export * from './hooks';
 export type {
   HiddenCondition,

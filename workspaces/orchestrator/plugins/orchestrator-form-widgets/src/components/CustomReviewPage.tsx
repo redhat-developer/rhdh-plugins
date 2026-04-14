@@ -43,16 +43,14 @@ import { ReviewComponentProps } from '@red-hat-developer-hub/backstage-plugin-or
 import {
   generateReviewTableData,
   NestedReviewTable,
+  ReviewHiddenParametersAlert,
   schemaHasUiHiddenFields,
   useTranslation,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
-import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
@@ -78,15 +76,6 @@ const useStyles = makeStyles()(theme => ({
   },
   customBadge: {
     marginLeft: theme.spacing(1),
-  },
-  hiddenFieldsAlert: {
-    marginBottom: theme.spacing(2),
-  },
-  hiddenFieldsAction: {
-    marginLeft: theme.spacing(2),
-  },
-  hiddenFieldsText: {
-    fontSize: theme.typography.body1.fontSize,
   },
 }));
 
@@ -145,33 +134,10 @@ export const CustomReviewPage: React.FC<ReviewComponentProps> = ({
         </Box>
 
         {showHiddenFieldsNote && (
-          <Alert
-            severity="info"
-            className={classes.hiddenFieldsAlert}
-            action={
-              <FormControlLabel
-                className={classes.hiddenFieldsAction}
-                control={
-                  <Switch
-                    checked={showHiddenFields}
-                    onChange={event =>
-                      setShowHiddenFields(event.target.checked)
-                    }
-                    color="primary"
-                  />
-                }
-                label={
-                  <Typography className={classes.hiddenFieldsText}>
-                    {t('reviewStep.showHiddenParameters')}
-                  </Typography>
-                }
-              />
-            }
-          >
-            <Typography className={classes.hiddenFieldsText}>
-              {t('reviewStep.hiddenFieldsNote')}
-            </Typography>
-          </Alert>
+          <ReviewHiddenParametersAlert
+            showHiddenFields={showHiddenFields}
+            onShowHiddenFieldsChange={setShowHiddenFields}
+          />
         )}
 
         <Box sx={{ mt: 3 }}>
