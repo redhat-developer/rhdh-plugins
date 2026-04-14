@@ -1,5 +1,15 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.6.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- 665a75c: fix: update axios for CVE-2026-40175
+
 ## 3.5.3
 
 ### Patch Changes
