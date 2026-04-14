@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.14.1
+
+### Patch Changes
+
+- 8d1eee2: Add missing font css reference so that the Red Hat font is used again.
+
 ## 0.14.0
 
 ### Minor Changes
