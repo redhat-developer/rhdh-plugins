@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-node
 
+## 1.2.1
+
+### Patch Changes
+
+- Updated dependencies [16d41c2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.1
+
 ## 1.2.0
 
 ### Minor Changes
