@@ -42,7 +42,6 @@ export const ScorecardHomepageCard = ({
 
   const { data, isLoading, error } = useAggregatedScorecard({
     aggregationId: resolvedScorecardId,
-    enabled: !!resolvedScorecardId,
   });
 
   const aggregatedMetricDetails = data

@@ -49,7 +49,7 @@ export const useAggregatedScorecard = ({
         );
       }
     },
-    enabled: Boolean(aggregationId?.trim()) && enabled,
+    enabled: enabled,
   });
 
   return {

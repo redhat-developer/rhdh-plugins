@@ -143,7 +143,7 @@ describe('useAggregatedScorecard', () => {
     );
   });
 
-  it('should disable the query when aggregationId is empty', () => {
+  it('should not disable the query when aggregationId is empty', () => {
     mockUseQuery.mockReturnValue({
       isLoading: false,
       error: null,
@@ -154,23 +154,7 @@ describe('useAggregatedScorecard', () => {
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        enabled: false,
-      }),
-    );
-  });
-
-  it('should disable the query when aggregationId is whitespace only', () => {
-    mockUseQuery.mockReturnValue({
-      isLoading: false,
-      error: null,
-      data: undefined,
-    } as any);
-
-    renderHook(() => useAggregatedScorecard({ aggregationId: '   ' }));
-
-    expect(mockUseQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        enabled: false,
+        enabled: true,
       }),
     );
   });
