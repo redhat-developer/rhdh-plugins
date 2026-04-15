@@ -22,6 +22,7 @@ describe('downloadLogFile', () => {
   let anchorClickMock: jest.Mock;
 
   beforeEach(() => {
+    jest.useFakeTimers();
     createObjectURLMock = jest.fn().mockReturnValue('blob:mock-url');
     revokeObjectURLMock = jest.fn();
     URL.createObjectURL = createObjectURLMock;
@@ -36,6 +37,7 @@ describe('downloadLogFile', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.restoreAllMocks();
   });
 
@@ -69,6 +71,8 @@ describe('downloadLogFile', () => {
   it('revokes the object URL after download', () => {
     downloadLogFile('log content', 'test');
 
+    expect(revokeObjectURLMock).not.toHaveBeenCalled();
+    jest.runAllTimers();
     expect(revokeObjectURLMock).toHaveBeenCalledWith('blob:mock-url');
   });
 });

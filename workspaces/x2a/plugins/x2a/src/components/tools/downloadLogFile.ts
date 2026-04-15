@@ -21,5 +21,5 @@ export const downloadLogFile = (text: string, name: string): void => {
   anchor.href = url;
   anchor.download = `${name}.log`;
   anchor.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 };
