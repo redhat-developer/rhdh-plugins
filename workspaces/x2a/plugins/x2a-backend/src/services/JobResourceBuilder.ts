@@ -19,6 +19,7 @@ import { V1Job, V1OwnerReference, V1Secret } from '@kubernetes/client-node';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { X2AConfig } from '../../config';
+import { Project } from './Project';
 import { JobCreateParams, AAPCredentials, GitRepo } from './types';
 
 /**
@@ -202,6 +203,7 @@ export class JobResourceBuilder {
    * @returns V1Job resource ready to be created in Kubernetes
    */
   static buildJobSpec(params: JobCreateParams, config: X2AConfig): V1Job {
+    const project = new Project(params.projectId, params.projectName);
     const shortId = crypto.randomBytes(4).toString('hex');
     const jobName = `job-x2a-${params.phase}-${shortId}`;
     const projectSecretName = `x2a-project-secret-${params.projectId}`;
@@ -302,6 +304,10 @@ export class JobResourceBuilder {
                   {
                     name: 'PROJECT_NAME',
                     value: params.projectName,
+                  },
+                  {
+                    name: 'PROJECT_DIR',
+                    value: project.dirName,
                   },
                   {
                     name: 'JOB_ID',
