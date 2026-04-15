@@ -47,6 +47,14 @@ function AggregatedCardWithGithubOpenPrsContent() {
   return <ScorecardHomepageCard aggregationId="openPrsKpi" />;
 }
 
+function AggregatedCardWithGithubFilesCheckReadmeContent() {
+  return <ScorecardHomepageCard aggregationId="github.files_check.readme" />;
+}
+
+function AggregatedCardWithGithubFilesCheckI18guideContent() {
+  return <ScorecardHomepageCard aggregationId="github.files_check.i18guide" />;
+}
+
 function BorderlessHomeWidgetRenderer({ Content }: RendererProps) {
   return <Content />;
 }
@@ -131,6 +139,48 @@ export const aggregatedCardWithGithubOpenPrsWidget =
       components: () =>
         Promise.resolve({
           Content: AggregatedCardWithGithubOpenPrsContent,
+        }),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithGithubFilesCheckReadme.
+ * @alpha
+ */
+export const aggregatedCardWithGithubFilesCheckReadmeWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-github-files-check-readme',
+    params: {
+      name: 'AggregatedCardWithGithubFilesCheckReadme',
+      title: 'Scorecard: README file exists',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: () =>
+        Promise.resolve({
+          Content: AggregatedCardWithGithubFilesCheckReadmeContent,
+        }),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithGithubFilesCheckI18guide.
+ * @alpha
+ */
+export const aggregatedCardWithGithubFilesCheckI18guideWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-github-files-check-i18guide',
+    params: {
+      name: 'AggregatedCardWithGithubFilesCheckI18guide',
+      title: 'Scorecard: i18n guide file exists',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: () =>
+        Promise.resolve({
+          Content: AggregatedCardWithGithubFilesCheckI18guideContent,
         }),
     },
   });

@@ -28,6 +28,8 @@ import {
   aggregatedCardWithDefaultAggregationWidget,
   aggregatedCardWithGithubOpenPrsWidget,
   aggregatedCardWithJiraOpenIssuesWidget,
+  aggregatedCardWithGithubFilesCheckReadmeWidget,
+  aggregatedCardWithGithubFilesCheckI18guideWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
 
@@ -82,6 +84,8 @@ export const scorecardHomeModule = createFrontendModule({
     aggregatedCardWithDefaultAggregationWidget,
     aggregatedCardWithJiraOpenIssuesWidget,
     aggregatedCardWithGithubOpenPrsWidget,
+    aggregatedCardWithGithubFilesCheckReadmeWidget,
+    aggregatedCardWithGithubFilesCheckI18guideWidget,
   ],
 });
 
