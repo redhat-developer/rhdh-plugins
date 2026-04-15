@@ -16,15 +16,21 @@
 
 import { useSearchParams } from 'react-router-dom';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import {
   GetEntitiesRequest,
   ExtensionsAnnotation,
+  ExtensionsPlugin,
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useExtensionsApi } from './useExtensionsApi';
-import { AnyQueryResult } from './types';
+
+export type FilteredPluginsData = {
+  items: ExtensionsPlugin[];
+  filteredItems: number;
+  totalItems: number;
+};
 
 const filteredPluginsRequest: GetEntitiesRequest = {
   orderFields: [
@@ -39,7 +45,7 @@ const filteredPluginsRequest: GetEntitiesRequest = {
   ],
 };
 
-export const useFilteredPlugins = (): AnyQueryResult => {
+export const useFilteredPlugins = (): UseQueryResult<FilteredPluginsData> => {
   const [searchParams] = useSearchParams();
   const fullTextSearch = searchParams.get('q');
   const filters = searchParams.getAll('filter');

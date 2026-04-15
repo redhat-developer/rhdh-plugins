@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { ComponentProps } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { mockApis, MockErrorApi, TestApiProvider } from '@backstage/test-utils';
@@ -29,7 +30,7 @@ import { useNodeEnvironment } from '../../hooks/useNodeEnvironment';
 
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
-  useRouteRef: () => (params: any) =>
+  useRouteRef: () => (params: { namespace: string; name: string }) =>
     `/packages/${params.namespace}/${params.name}`,
 }));
 
@@ -39,15 +40,23 @@ jest.mock('../../hooks/useNodeEnvironment', () => ({
 
 const useNodeEnvironmentMock = useNodeEnvironment as jest.Mock;
 
+type TestApiProviderApis = NonNullable<
+  ComponentProps<typeof TestApiProvider>['apis']
+>;
+
 describe('InstalledPackagesTable', () => {
-  const renderWithProviders = (apis: any) =>
+  const renderWithProviders = (
+    apis: ReadonlyArray<readonly [unknown, unknown]>,
+  ) =>
     render(
       <TestApiProvider
-        apis={[
-          ...apis,
-          [errorApiRef, new MockErrorApi()],
-          [translationApiRef, mockApis.translation()],
-        ]}
+        apis={
+          [
+            ...(apis as unknown as TestApiProviderApis),
+            [errorApiRef, new MockErrorApi()],
+            [translationApiRef, mockApis.translation()],
+          ] as TestApiProviderApis
+        }
       >
         <BrowserRouter>
           <QueryClientProvider client={queryClient}>

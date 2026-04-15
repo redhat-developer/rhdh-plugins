@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
-import { GetEntitiesRequest } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+import {
+  GetEntitiesRequest,
+  GetEntitiesResponse,
+  ExtensionsCollection,
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useExtensionsApi } from './useExtensionsApi';
-import { AnyQueryResult } from './types';
 
-export const useCollections = (request: GetEntitiesRequest): AnyQueryResult => {
+export const useCollections = (
+  request: GetEntitiesRequest,
+): UseQueryResult<GetEntitiesResponse<ExtensionsCollection>> => {
   const extensionsApi = useExtensionsApi();
   return useQuery({
     queryKey: ['extensionsApi', 'getCollections', request],

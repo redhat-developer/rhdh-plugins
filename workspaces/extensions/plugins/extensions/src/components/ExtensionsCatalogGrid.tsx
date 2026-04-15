@@ -15,6 +15,7 @@
  */
 
 import Typography from '@mui/material/Typography';
+
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
 
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
@@ -39,7 +40,7 @@ export const ExtensionsCatalogGrid = () => {
 
   return (
     <PluginCardGrid>
-      {filteredPlugins.data?.items.map((plugin: any) => (
+      {filteredPlugins.data?.items.map(plugin => (
         <PluginCard
           key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}
           plugin={plugin}

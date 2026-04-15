@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+
+import { extensionsTranslationRef } from './ref';
+
 /**
  * Helper function to get translated or fallback text for collection keys
  * @param fallbackText - The fallback text to use if translation is not available
@@ -24,7 +28,7 @@
 export const getTranslatedText = (
   fallbackText: string | undefined,
   translationKey: string | undefined,
-  t: (key: string, options?: any) => string,
+  t: TranslationFunction<typeof extensionsTranslationRef.T>,
 ): string => {
   if (translationKey && translationKey.startsWith('collection.')) {
     try {

@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+
+import { ConfigurationResponse } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+
 import { useExtensionsApi } from './useExtensionsApi';
-import { AnyQueryResult } from './types';
 
 export const usePluginConfig = (
   namespace: string,
   name: string,
-): AnyQueryResult => {
+): UseQueryResult<ConfigurationResponse | undefined> => {
   const extensionsApi = useExtensionsApi();
   return useQuery({
     queryKey: ['extensionsApi', 'getPluginConfigByName', namespace, name],

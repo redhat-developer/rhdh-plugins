@@ -32,43 +32,38 @@ import {
   Settings as SidebarSettings,
 } from '@backstage/plugin-user-settings';
 
-export const SidebarContent: ReturnType<typeof NavContentBlueprint.make> =
-  NavContentBlueprint.make({
-    params: {
-      component: ({ navItems }) => {
-        const nav = navItems.withComponent(item => (
-          <SidebarItem
-            icon={() => item.icon}
-            to={item.href}
-            text={item.title}
-          />
-        ));
-        return (
-          <Sidebar>
-            <SidebarLogo />
-            <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-              <SidebarSearchModal />
-            </SidebarGroup>
+export const SidebarContent = NavContentBlueprint.make({
+  params: {
+    component: ({ navItems }) => {
+      const nav = navItems.withComponent(item => (
+        <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
+      ));
+      return (
+        <Sidebar>
+          <SidebarLogo />
+          <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+            <SidebarSearchModal />
+          </SidebarGroup>
+          <SidebarDivider />
+          <SidebarGroup label="Menu" icon={<MenuIcon />}>
+            {nav.take('page:home')}
+            {nav.take('page:scaffolder')}
             <SidebarDivider />
-            <SidebarGroup label="Menu" icon={<MenuIcon />}>
-              {nav.take('page:home')}
-              {nav.take('page:scaffolder')}
-              <SidebarDivider />
-              <SidebarScrollWrapper>
-                {nav.rest({ sortBy: 'title' })}
-              </SidebarScrollWrapper>
-            </SidebarGroup>
-            <SidebarSpace />
-            <SidebarDivider />
-            <SidebarGroup
-              label="Settings"
-              icon={<UserSettingsSignInAvatar />}
-              to="/settings"
-            >
-              <SidebarSettings />
-            </SidebarGroup>
-          </Sidebar>
-        );
-      },
+            <SidebarScrollWrapper>
+              {nav.rest({ sortBy: 'title' })}
+            </SidebarScrollWrapper>
+          </SidebarGroup>
+          <SidebarSpace />
+          <SidebarDivider />
+          <SidebarGroup
+            label="Settings"
+            icon={<UserSettingsSignInAvatar />}
+            to="/settings"
+          >
+            <SidebarSettings />
+          </SidebarGroup>
+        </Sidebar>
+      );
     },
-  });
+  },
+});

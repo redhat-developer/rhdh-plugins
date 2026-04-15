@@ -25,6 +25,7 @@ import {
   TableColumn,
 } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
@@ -69,7 +70,7 @@ import { usePluginPackages } from '../hooks/usePluginPackages';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
-import { getPluginActionTooltipMessage } from '../utils';
+import { apiErrorMessage, getPluginActionTooltipMessage } from '../utils';
 import { Permission } from '../types';
 
 import { BadgeChip } from './Badges';
@@ -84,12 +85,13 @@ import {
   useInstallationContext,
 } from './InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { extensionsTranslationRef } from '../alpha/translations';
 
 const PluginMetadataSection = ({
   value,
   title,
 }: {
-  value: any;
+  value: unknown;
   title: string;
 }) => {
   if (!value) return null;
@@ -191,7 +193,9 @@ export const ExtensionsPluginContentSkeleton = () => {
   );
 };
 
-const getColumns = (t: any): TableColumn<ExtensionsPackage>[] => [
+const getColumns = (
+  t: TranslationFunction<typeof extensionsTranslationRef.T>,
+): TableColumn<ExtensionsPackage>[] => [
   {
     title: t('table.packageName'),
     field: 'spec.packageName',
@@ -349,7 +353,7 @@ export const ExtensionsPluginContent = ({
         // eslint-disable-next-line no-console
         console.warn(
           `[${subString} Toggle] ${subString} toggle responded with non-OK status:`,
-          (res as any)?.error?.message ?? res,
+          apiErrorMessage(res) ?? res,
         );
       } else {
         let message = '';
@@ -371,11 +375,11 @@ export const ExtensionsPluginContent = ({
         handleClose();
         navigate(isPackage ? '/extensions' : '/extensions/installed-plugins');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // eslint-disable-next-line no-console
       console.error(
         `[${subString} Toggle] Failed to toggle ${subString.toLowerCase()}:`,
-        err?.error?.message ?? err,
+        apiErrorMessage(err) ?? err,
       );
     }
   };
@@ -396,7 +400,7 @@ export const ExtensionsPluginContent = ({
 
   const missingDynamicArtifact = isExtensionsPackage(plugin)
     ? !plugin.spec?.dynamicArtifact
-    : packages?.data?.some((p: any) => !p.spec?.dynamicArtifact);
+    : packages?.data?.some(p => !p.spec?.dynamicArtifact);
 
   const pluginActionButton = () => {
     const disablePluginActions =

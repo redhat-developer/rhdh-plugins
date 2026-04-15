@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import { ExtensionsAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
+import type { GetEntityFacetsResponse } from '@backstage/catalog-client';
+
 import { useExtensionsApi } from './useExtensionsApi';
-import { AnyQueryResult } from './types';
+
+type FacetBuckets = GetEntityFacetsResponse['facets'][string];
 
 /**
  * Hook to get plugin facets filtered by current active filters
@@ -30,7 +33,7 @@ import { AnyQueryResult } from './types';
 export const useFilteredPluginFacet = (
   facet: string,
   excludeFilterType?: string,
-): AnyQueryResult => {
+): UseQueryResult<FacetBuckets | undefined> => {
   const [searchParams] = useSearchParams();
   const extensionsApi = useExtensionsApi();
 
@@ -164,7 +167,7 @@ export const useFilteredPluginFacet = (
       const facetValues: Record<string, number> = {};
 
       filteredPlugins.forEach(plugin => {
-        let values: any[] = [];
+        let values: string[] = [];
 
         // Extract values based on facet path
         if (facet === 'spec.categories') {
@@ -175,7 +178,7 @@ export const useFilteredPluginFacet = (
               .map(author =>
                 typeof author === 'string' ? author : author.name,
               )
-              .filter(Boolean);
+              .filter((v): v is string => Boolean(v));
           } else if (plugin.spec?.author) {
             values = [plugin.spec.author];
           }

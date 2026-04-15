@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, type SyntheticEvent } from 'react';
 
 import { useSearchParams } from 'react-router-dom';
 
@@ -37,7 +37,7 @@ const CategoryFilter = () => {
 
   const items = useMemo(() => {
     if (!categories) return [];
-    return categories.map((category: any) => ({
+    return categories.map(category => ({
       label: category.value,
       value: category.value,
       count: category.count,
@@ -45,7 +45,7 @@ const CategoryFilter = () => {
   }, [categories]);
 
   const handleChange = useCallback(
-    (_e: any, value: CustomSelectItem[]) => {
+    (_e: SyntheticEvent, value: CustomSelectItem[]) => {
       const newSelection = value.map(v => v.value);
       filter.set(newSelection);
     },
@@ -70,7 +70,7 @@ const AuthorFilter = () => {
 
   const items = useMemo(() => {
     if (!authors) return [];
-    return authors.map((author: any) => ({
+    return authors.map(author => ({
       label: author.value,
       value: author.value,
       count: author.count,
@@ -78,7 +78,7 @@ const AuthorFilter = () => {
   }, [authors]);
 
   const handleChange = useCallback(
-    (_e: any, value: CustomSelectItem[]) => {
+    (_e: SyntheticEvent, value: CustomSelectItem[]) => {
       const newSelection = value.map(v => v.value);
       filter.set(newSelection);
     },

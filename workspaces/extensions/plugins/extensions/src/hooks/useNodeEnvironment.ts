@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+
+import { NodeEnvironmentType } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useExtensionsApi } from './useExtensionsApi';
-import { AnyQueryResult } from './types';
 
-export const useNodeEnvironment = (): AnyQueryResult => {
+export const useNodeEnvironment = (): UseQueryResult<
+  { nodeEnv: NodeEnvironmentType } | undefined
+> => {
   const extensionsApi = useExtensionsApi();
 
   return useQuery({
