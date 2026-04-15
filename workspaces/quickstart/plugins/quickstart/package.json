@@ -35,7 +35,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-common": "^1.19.0",
+    "@backstage-community/plugin-rbac-common": "^1.26.0",
     "@backstage/core-components": "^0.18.8",
     "@backstage/core-plugin-api": "^1.12.4",
     "@backstage/plugin-permission-react": "^0.4.41",
