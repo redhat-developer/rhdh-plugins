@@ -235,9 +235,7 @@ git_clone_repos
 # Define paths
 TARGET_BASE="/workspace/target"
 SOURCE_BASE="/workspace/source"
-SANITIZED_NAME=$(echo "${PROJECT_NAME}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
-SHORT_UUID="${PROJECT_ID:0:6}"
-PROJECT_DIR="${SANITIZED_NAME}-${SHORT_UUID}"
+# PROJECT_DIR is pre-computed by the backend (sanitized name + short UUID)
 PROJECT_PATH="${TARGET_BASE}/${PROJECT_DIR}"
 
 # Create project directory in target
