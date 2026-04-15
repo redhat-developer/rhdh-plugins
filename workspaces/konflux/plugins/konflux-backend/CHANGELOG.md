@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-konflux-backend
 
+## 0.1.6
+
+### Patch Changes
+
+- dff3b21: Feat: add wildcard (_) and glob pattern support (e.g. my-app-_, \*-backend) for the applications field in konflux-ci.dev/clusters annotation.
+  Feat: allow omitting applications to fetch all applications from a namespace.
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.6
+
 ## 0.1.5
 
 ### Patch Changes
