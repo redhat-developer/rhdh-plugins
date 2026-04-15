@@ -73,6 +73,9 @@ export type ReviewComponentProps = {
   data: JsonObject;
   handleBack: () => void;
   handleExecute: () => void;
+  executeLabel?: string;
+  handleExecuteAsEvent?: () => void;
+  executeAsEventLabel?: string;
 };
 
 // @public
@@ -87,7 +90,7 @@ export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
 
 // Warnings were encountered during analysis:
 //
-// src/api.d.ts:125:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
+// src/api.d.ts:131:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 ```

@@ -59,8 +59,11 @@ export type OrchestratorFormProps = {
   setAuthTokenDescriptors: OrchestratorFormContextProps['setAuthTokenDescriptors'];
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
+  handleExecuteAsEvent?: (parameters: JsonObject) => Promise<void>;
   initialFormData: JsonObject;
   t: TranslationFunction;
+  executeLabel?: string;
+  executeAsEventLabel?: string;
 };
 
 /**
@@ -111,6 +114,9 @@ type ReviewStepHostProps = {
   schema: JSONSchema7;
   data: JsonObject;
   handleExecute: () => void;
+  executeLabel?: string;
+  handleExecuteAsEvent?: () => void;
+  executeAsEventLabel?: string;
 };
 
 /** Supplies `handleBack` from stepper context to the default or custom review component. */
@@ -120,6 +126,9 @@ const ReviewStepHost = ({
   schema,
   data,
   handleExecute,
+  executeLabel,
+  handleExecuteAsEvent,
+  executeAsEventLabel,
 }: ReviewStepHostProps) => {
   const { handleBack } = useStepperContext();
   return (
@@ -129,6 +138,9 @@ const ReviewStepHost = ({
       data={data}
       handleBack={handleBack}
       handleExecute={handleExecute}
+      executeLabel={executeLabel}
+      handleExecuteAsEvent={handleExecuteAsEvent}
+      executeAsEventLabel={executeAsEventLabel}
     />
   );
 };
@@ -141,10 +153,13 @@ const OrchestratorForm = ({
   schema: rawSchema,
   updateSchema,
   handleExecute,
+  handleExecuteAsEvent,
   isExecuting,
   initialFormData,
   setAuthTokenDescriptors,
   t,
+  executeLabel,
+  executeAsEventLabel,
 }: OrchestratorFormProps) => {
   // Extract static defaults from fetch:response:default in schema and merge with initialFormData
   // This ensures defaults are available before widgets render
@@ -192,6 +207,11 @@ const OrchestratorForm = ({
     // Use pruned data for execution to avoid submitting stale properties
     handleExecute(workflowInputData);
   }, [workflowInputData, handleExecute]);
+  const _handleExecuteAsEvent = useCallback(() => {
+    if (handleExecuteAsEvent) {
+      handleExecuteAsEvent(workflowInputData);
+    }
+  }, [workflowInputData, handleExecuteAsEvent]);
 
   const onSubmit = useCallback(
     (_formData: JsonObject) => {
@@ -219,6 +239,11 @@ const OrchestratorForm = ({
         schema={schema}
         busy={isExecuting}
         handleExecute={_handleExecute}
+        executeLabel={executeLabel}
+        handleExecuteAsEvent={
+          handleExecuteAsEvent ? _handleExecuteAsEvent : undefined
+        }
+        executeAsEventLabel={executeAsEventLabel}
       />
     );
   }, [
@@ -227,6 +252,10 @@ const OrchestratorForm = ({
     schema,
     isExecuting,
     _handleExecute,
+    executeLabel,
+    handleExecuteAsEvent,
+    _handleExecuteAsEvent,
+    executeAsEventLabel,
   ]);
 
   return (
