@@ -23,6 +23,7 @@
 // scmIntegrationsApi within the component's React context.
 //
 // Remove once upstream fixes RepoUrlPicker to handle the new type strings.
+// See https://redhat.atlassian.net/browse/FLPATH-4033
 
 import { createElement, useMemo } from 'react';
 import {
@@ -68,7 +69,8 @@ const BITBUCKET_TYPES = new Set(['bitbucketCloud', 'bitbucketServer']);
  * "bitbucketServer" to "bitbucket", making the upstream RepoUrlPicker render
  * the BitbucketRepoPicker component.
  */
-function wrapIntegrationsApi(api: IntegrationsApi): IntegrationsApi {
+/** @internal Exported for testing only. */
+export function wrapIntegrationsApi(api: IntegrationsApi): IntegrationsApi {
   return new Proxy(api, {
     get(target, prop, receiver) {
       if (prop !== 'byHost') {
@@ -81,6 +83,9 @@ function wrapIntegrationsApi(api: IntegrationsApi): IntegrationsApi {
           return integration;
         }
 
+        // TODO: Remove this type remapping once upstream decouples
+        // "bitbucketCloud" / "bitbucketServer" in RepoUrlPicker.
+        // See https://redhat.atlassian.net/browse/FLPATH-4033
         return new Proxy(integration, {
           get(innerTarget, innerProp, innerReceiver) {
             if (innerProp === 'type') {
