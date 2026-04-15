@@ -35,12 +35,16 @@ export const ScorecardPage = () => {
     aggregationId: string;
     metricId: string;
   }>();
+
+  // TODO: Remove metricId once we deprecate it. We need to keep it for backward compatibility.
+  const resolvedMetricId = aggregationId || metricId || '';
+
   const [metricTitle, setMetricTitle] = useState<string>('');
   const [metricNotFound, setMetricNotFound] = useState<boolean>(false);
 
   const { t } = useTranslation();
 
-  const titleKey = `metric.${metricId}.title`;
+  const titleKey = `metric.${resolvedMetricId}.title`;
   const title = t(titleKey as any, {});
   const finalTitle = title === titleKey ? metricTitle : title;
 
@@ -78,6 +82,7 @@ export const ScorecardPage = () => {
           <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 0%' }, minWidth: 0 }}>
             <EntitiesTable
               metricId={metricId}
+              aggregationId={aggregationId}
               setMetricTitle={setMetricTitle}
               setMetricNotFound={setMetricNotFound}
             />

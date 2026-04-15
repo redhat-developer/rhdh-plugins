@@ -40,12 +40,14 @@ import { EntitiesRow } from './EntitiesRow';
 
 interface EntitiesTableProps {
   metricId?: string;
+  aggregationId?: string;
   setMetricTitle: (title: string) => void;
   setMetricNotFound?: (notFound: boolean) => void;
 }
 
 export const EntitiesTable = ({
   metricId,
+  aggregationId,
   setMetricTitle,
   setMetricNotFound,
 }: EntitiesTableProps) => {
@@ -66,6 +68,9 @@ export const EntitiesTable = ({
   const { ownershipEntityRefs, loading: ownershipLoading } =
     useOwnershipEntityRefs();
 
+  // TODO: Remove metricId once we deprecate it. We need to keep it for backward compatibility.
+  const resolvedMetricId = aggregationId || metricId || '';
+
   const {
     aggregatedScorecardEntities,
     loadingData: loadingDataEntities,
@@ -81,7 +86,7 @@ export const EntitiesTable = ({
   });
 
   const { data: aggregatedScorecard } = useAggregatedScorecard({
-    aggregationId: metricId as string,
+    aggregationId: resolvedMetricId,
     enabled: !!metricId && !ownershipLoading && !loadingDataEntities,
   });
 
@@ -94,8 +99,8 @@ export const EntitiesTable = ({
   }, [entitiesError, setMetricNotFound]);
 
   useEffect(() => {
-    setMetricTitle(aggregatedScorecardEntities?.metricMetadata?.title ?? '');
-  }, [aggregatedScorecardEntities?.metricMetadata?.title, setMetricTitle]);
+    setMetricTitle(aggregatedScorecard?.metadata?.title ?? '');
+  }, [aggregatedScorecard?.metadata?.title, setMetricTitle]);
 
   const handleChangeRowsPerPage = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
