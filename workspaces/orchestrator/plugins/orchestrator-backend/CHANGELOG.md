@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.8.2
+
+### Patch Changes
+
+- f96e4f2: fix: updating lodash for cve fixes
+
 ## 8.8.1
 
 ### Patch Changes
