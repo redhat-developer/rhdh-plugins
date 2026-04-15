@@ -173,7 +173,10 @@ const LightspeedChatContainerInner = () => {
     return <LightspeedChatModelsLoading />;
   }
 
-  if (modelsError) {
+  // TanStack Query can keep the last successful `data` while `isError` is true after a
+  // failed refetch. Prefer showing chat when we still have LLM rows; only use the full-page
+  // error state when there is nothing usable to render.
+  if (modelsError && modelsItems.length === 0) {
     return <ModelsLoadErrorEmptyState onRetry={() => refetchModels()} />;
   }
 

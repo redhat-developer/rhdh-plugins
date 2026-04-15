@@ -266,6 +266,41 @@ describe('LightspeedPage', () => {
     expect(refetch).toHaveBeenCalled();
   });
 
+  it('should show chat when models query errored but cached LLM data exists', async () => {
+    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+    const { useAllModels } = require('../../hooks/useAllModels');
+    (useAllModels as jest.Mock).mockReturnValue({
+      data: [
+        {
+          provider_resource_id: 'cached-model',
+          provider_id: 'provider-1',
+          model_type: 'llm',
+        },
+      ],
+      isLoading: false,
+      isError: true,
+      refetch: jest.fn(),
+    });
+
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [lightspeedApiRef, mockLightspeedApi],
+        ]}
+      >
+        <LightspeedPage />
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
+    });
+    expect(
+      screen.queryByTestId('lightspeed-models-load-error'),
+    ).not.toBeInTheDocument();
+  });
+
   describe('localStorage model persistence', () => {
     const LAST_SELECTED_MODEL_KEY = 'lastSelectedModel';
     const mockModels = [
