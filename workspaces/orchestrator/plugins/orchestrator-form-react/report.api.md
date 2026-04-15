@@ -8,7 +8,17 @@ import type { JSONSchema7 } from 'json-schema';
 import { JsonValue } from '@backstage/types';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { default as React_2 } from 'react';
 import { ReactNode } from 'react';
+
+// @public
+export function generateReviewTableData(
+  schema: JSONSchema7,
+  data: JsonObject,
+  options?: {
+    includeHiddenFields?: boolean;
+  },
+): JsonObject;
 
 // @public
 export type HiddenCondition =
@@ -31,6 +41,14 @@ export interface HiddenConditionObject {
 }
 
 // @public
+export const NestedReviewTable: React_2.FC<NestedReviewTableProps>;
+
+// @public
+export interface NestedReviewTableProps {
+  data: JsonObject;
+}
+
+// @public
 export const OrchestratorForm: (input: OrchestratorFormProps) => JSX_2.Element;
 
 // @public
@@ -40,9 +58,26 @@ export type OrchestratorFormProps = {
   setAuthTokenDescriptors: OrchestratorFormContextProps['setAuthTokenDescriptors'];
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
+  handleExecuteAsEvent?: (parameters: JsonObject) => Promise<void>;
   initialFormData: JsonObject;
   t: TranslationFunction;
+  executeLabel?: string;
+  executeAsEventLabel?: string;
 };
+
+// @public
+export const ReviewHiddenParametersAlert: (
+  input: ReviewHiddenParametersAlertProps,
+) => JSX_2.Element;
+
+// @public (undocumented)
+export type ReviewHiddenParametersAlertProps = {
+  showHiddenFields: boolean;
+  onShowHiddenFieldsChange: (includeHidden: boolean) => void;
+};
+
+// @public
+export function schemaHasUiHiddenFields(schema: JSONSchema7): boolean;
 
 // @public
 export const SubmitButton: (input: {
@@ -66,6 +101,7 @@ export const useTranslation: () => {
 
 // Warnings were encountered during analysis:
 //
+// src/components/ReviewHiddenParametersAlert.d.ts:4:1 - (ae-undocumented) Missing documentation for "ReviewHiddenParametersAlertProps".
 // src/hooks/useTranslation.d.ts:1:1 - (ae-undocumented) Missing documentation for "TranslationFunction".
 // src/hooks/useTranslation.d.ts:2:22 - (ae-undocumented) Missing documentation for "useTranslation".
 ```

@@ -87,6 +87,25 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 1. Open your Backstage application and select a Lightspeed nav item from the **Navigation**.
 2. Ask you questions to the Lightspeed chatbot.
 
+### MCP servers settings
+
+Lightspeed includes an MCP servers settings panel where users can:
+
+- View configured MCP servers and current status
+- Enable or disable eligible servers
+- Configure a personal token per server
+- See inline status and validation feedback
+
+#### Token validation behavior
+
+When configuring a server token in the settings modal, the token is validated
+automatically after typing stops briefly. The input shows inline feedback:
+
+- Success: `Connection successful`
+- Error: `Authorization failed. Try again.`
+
+Users can then save the configuration after validation feedback is displayed.
+
 ### AI Notebooks (Developer Preview)
 
 AI Notebooks is an experimental feature that enables **document-based conversations with Retrieval-Augmented Generation (RAG)**. This feature allows you to:

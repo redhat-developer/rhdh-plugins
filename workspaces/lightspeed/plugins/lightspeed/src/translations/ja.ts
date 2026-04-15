@@ -206,6 +206,48 @@ const lightspeedTranslationJa = createTranslationMessages({
     'settings.pinned.disable': 'チャットの固定の無効化',
     'settings.pinned.enabled.description': 'チャットの固定は現在有効です',
     'settings.pinned.disabled.description': 'チャットの固定は現在無効です',
+    'settings.mcp.label': 'MCP 設定',
+    'mcp.settings.title': 'MCP サーバー',
+    'mcp.settings.selectedCount':
+      '{{totalCount}} 件中 {{selectedCount}} 件を選択',
+    'mcp.settings.closeAriaLabel': 'MCP 設定を閉じる',
+    'mcp.settings.readOnlyAccess':
+      'MCP サーバーへのアクセスは読み取り専用です。',
+    'mcp.settings.tableAriaLabel': 'MCP サーバーの表',
+    'mcp.settings.enabled': '有効',
+    'mcp.settings.name': '名前',
+    'mcp.settings.status': 'ステータス',
+    'mcp.settings.edit': '編集',
+    'mcp.settings.loading': 'MCP サーバーを読み込み中...',
+    'mcp.settings.noneAvailable': '利用可能な MCP サーバーはありません。',
+    'mcp.settings.status.disabled': '無効',
+    'mcp.settings.status.tokenRequired': 'トークンが必要',
+    'mcp.settings.status.failed': '失敗',
+    'mcp.settings.status.oneTool': '{{count}} 件のツール',
+    'mcp.settings.status.manyTools': '{{count}} 件のツール',
+    'mcp.settings.status.unknown': '不明',
+    'mcp.settings.toggleServerAriaLabel': '{{serverName}} を切り替える',
+    'mcp.settings.editServerAriaLabel': '{{serverName}} を編集',
+    'mcp.settings.configureServerTitle': '{{serverName}} サーバーを設定',
+    'mcp.settings.closeConfigureModalAriaLabel': '設定モーダルを閉じる',
+    'mcp.settings.modalDescription':
+      '認証情報は保存時に暗号化され、あなたのプロファイルに限定されます。Lightspeed はあなたの権限で動作します。',
+    'mcp.settings.savedToken': '保存済みトークン',
+    'mcp.settings.personalAccessToken': '個人アクセストークン',
+    'mcp.settings.usingAdminCredential':
+      '管理者が提供した認証情報を使用しています。アカウント用に上書きするには個人トークンを入力してください。',
+    'mcp.settings.enterToken': 'トークンを入力してください',
+    'mcp.settings.removePersonalToken': '個人トークンを削除',
+    'mcp.settings.token.clearAriaLabel': 'トークン入力をクリア',
+    'mcp.settings.token.validating': 'トークンを検証中...',
+    'mcp.settings.token.savingAndValidating': 'トークンを保存して検証中...',
+    'mcp.settings.token.urlUnavailableForValidation':
+      'サーバー URL が利用できないため、トークンを検証できません。',
+    'mcp.settings.token.invalidCredentials':
+      '認証情報が無効です。サーバー URL とトークンを確認してください。',
+    'mcp.settings.token.validationFailed':
+      '検証に失敗しました。サーバー URL とトークンを確認してください。',
+    'mcp.settings.token.connectionSuccessful': '接続に成功しました',
     // Display modes
     'settings.displayMode.label': '表示モード',
     'settings.displayMode.overlay': 'オーバーレイ',

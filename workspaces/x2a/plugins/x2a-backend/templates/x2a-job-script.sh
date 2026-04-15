@@ -122,7 +122,7 @@ cleanup() {
     # Sanitize secrets from output files before committing
     sanitize_secrets "${PROJECT_PATH:-/workspace/target}"
 
-    git add "${PROJECT_DIR:-${PROJECT_ID}.${PROJECT_ABBREV}}" 2>/dev/null || git add -A || true
+    git add "${PROJECT_DIR}" 2>/dev/null || git add -A || true
     git commit -m "x2a: ${PHASE} phase for ${MODULE_NAME:-project}
 
 Phase: ${PHASE}
@@ -203,7 +203,7 @@ trap 'TERMINATED=true' SIGTERM SIGINT
 # │   ├── [source code]    # Original Chef/Puppet/etc code
 # │   └── [x2a outputs]    # x2a tool writes here (migration-plan.md, etc)
 # └── target/              # Cloned target repo (output, committed to git)
-#     └── [PROJECT_ID].[PROJECT_ABBREV]/
+#     └── [SANITIZED_NAME]-[SHORT_UUID]/   # e.g. my-chef-migration-0d52e6
 #         ├── migration-plan.md
 #         └── modules/[MODULE_NAME]/
 #             ├── migration-plan-{module_name}.md
@@ -235,7 +235,7 @@ git_clone_repos
 # Define paths
 TARGET_BASE="/workspace/target"
 SOURCE_BASE="/workspace/source"
-PROJECT_DIR="${PROJECT_ID}.${PROJECT_ABBREV}"
+# PROJECT_DIR is pre-computed by the backend (sanitized name + short UUID)
 PROJECT_PATH="${TARGET_BASE}/${PROJECT_DIR}"
 
 # Create project directory in target

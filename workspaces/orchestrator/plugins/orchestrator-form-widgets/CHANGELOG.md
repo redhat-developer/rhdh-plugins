@@ -1,5 +1,44 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.10.0
+
+### Minor Changes
+
+- f45fe5a: Add custom review page API support
+
+  **Custom Review Page API:**
+  - Add `ReviewComponentProps` type to define props for custom review components
+  - Add optional `getReviewComponent()` method to `OrchestratorFormApi` interface
+  - Update `OrchestratorForm` to support custom review page components from plugins
+  - Add `CustomReviewPage` example component in orchestrator-form-widgets plugin (aligned with `ReviewStep`: `generateReviewTableData`, hidden-fields toggle, `NestedReviewTable`)
+  - Export `generateReviewTableData`, `schemaHasUiHiddenFields`, and `NestedReviewTable` from orchestrator-form-react for custom review implementations
+  - Falls back to default review page when `getReviewComponent()` returns `undefined`
+
+  **Documentation:**
+  - Update `extensibleForm.md` with custom review page implementation guide
+  - Add example showing how to implement and use custom review components
+
+### Patch Changes
+
+- Updated dependencies [f45fe5a]
+- Updated dependencies [16d41c2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.1
+
+## 1.9.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- Updated dependencies [665a75c]
+- Updated dependencies [2212e8d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.6.0
+
 ## 1.8.0
 
 ### Minor Changes

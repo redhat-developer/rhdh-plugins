@@ -13,10 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { createApp } from '@backstage/frontend-defaults';
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import {
+  lightspeedFABModule,
+  lightspeedTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
+
 import { navModule } from './modules/nav';
 import { signInModule } from './modules/signIn';
 
 export default createApp({
-  features: [signInModule, navModule],
+  features: [
+    appDrawerModule,
+    lightspeedFABModule,
+    lightspeedTranslationsModule,
+    signInModule,
+    navModule,
+  ],
 });

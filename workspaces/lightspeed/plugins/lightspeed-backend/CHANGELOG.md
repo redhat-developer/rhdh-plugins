@@ -1,5 +1,37 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.0.0
+
+### Major Changes
+
+- 7db4bed: Implement AI Notebooks session, document, and query service
+
+### Minor Changes
+
+- 024d5a8: Added MCP Server management backend APIs with per-user preferences, on-demand validation, and new permissions (lightspeed.mcp.read, lightspeed.mcp.manage)
+- 0277bd0: Added the MCP servers selector/settings feature in Lightspeed with backend
+  integration for listing servers, per-user token updates, and validation.
+
+  In the settings panel, users can review server status, enable or disable
+  eligible servers, configure personal tokens, and get inline token validation
+  feedback. Token validation now runs automatically after typing stops and shows
+  success (`Connection successful`) or error (`Authorization failed. Try again.`)
+  before save.
+
+- 01241c2: Backstage version bump to v1.49.2
+  moved existing app to app-legacy
+  app now runs the NFS model
+
+### Patch Changes
+
+- a98cbba: Encrypt MCP user tokens at rest using AES-256-GCM when backend.auth.keys is configured, fix Bearer prefix for direct MCP server validation
+- c45aa19: Add stop button to interrupt a streaming conversation
+- 7f44387: remove bearer from mcp header to adhere to LCORE standard
+- Updated dependencies [024d5a8]
+- Updated dependencies [7db4bed]
+- Updated dependencies [01241c2]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.0.0
+
 ## 1.4.0
 
 ### Minor Changes

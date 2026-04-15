@@ -680,6 +680,7 @@ describe('JobResourceBuilder', () => {
             { name: 'PHASE', value: 'init' },
             { name: 'PROJECT_ID', value: 'proj-123' },
             { name: 'PROJECT_NAME', value: 'Test Project' },
+            { name: 'PROJECT_DIR', value: 'test-project-proj-1' },
             { name: 'JOB_ID', value: 'job-123' },
             { name: 'USER', value: 'user:default/test' },
             {

@@ -47,7 +47,7 @@ export interface JobCreateParams {
   projectId: string;
   projectName: string;
   /**
-   * Project abbreviation - used for directory naming in target repository
+   * Project abbreviation
    */
   projectAbbrev: string;
   phase: MigrationPhase;

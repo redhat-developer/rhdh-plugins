@@ -1,5 +1,31 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 2.5.0
+
+### Minor Changes
+
+- d706601: Backstage version bump to v1.49.3
+- 55226c2: Introduces custom threshold rule icons that can be configured in `app-config.yaml`.
+- 243ad0a: Aggregated scorecards now use **aggregation IDs** and dedicated HTTP routes. The old catalog-aggregations URL still works but is **deprecated** (not removed).
+
+  **Backend (`@red-hat-developer-hub/backstage-plugin-scorecard-backend`)**
+
+  - **Deprecated:** `GET /metrics/:metricId/catalog/aggregations` — responses are unchanged, but the handler emits [RFC 8594](https://datatracker.ietf.org/doc/html/rfc8594) `Deprecation` and `Link` headers (alternate successor: `GET .../aggregations/:aggregationId`) and logs a warning. Prefer **`GET /aggregations/:aggregationId`** for new integrations.
+  - **Added:** `GET /aggregations/:aggregationId` for aggregated results using configured aggregation.
+  - **Added:** `GET /aggregations/:aggregationId/metadata` for KPI titles, descriptions, and aggregation metadata consumed by the UI.
+
+  **Common (`@red-hat-developer-hub/backstage-plugin-scorecard-common`)**
+
+  - Types and constants aligned with the aggregation config and new API shapes.
+
+  **Frontend (`@red-hat-developer-hub/backstage-plugin-scorecard`)**
+
+  - Homepage and aggregated flows resolve cards via **`aggregationId`**, fetch metadata from the new endpoint, and keep localized threshold and error strings where translation keys exist.
+
+  **Action for adopters:** Configure aggregated scorecards with `aggregationId` values that match backend aggregation config, replace direct calls to `GET /metrics/:metricId/catalog/aggregations` with `GET /aggregations/:aggregationId` (and metadata if you need the same labels as the plugin UI).
+
+- c83b206: Adds the ability to drill down from aggregated scorecard KPIs to view the individual entities that contribute to the overall score. This enables managers and platform engineers to identify specific services impacting metrics and troubleshoot issues at the entity level.
+
 ## 2.4.0
 
 ### Minor Changes

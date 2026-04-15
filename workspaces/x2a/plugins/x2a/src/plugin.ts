@@ -20,7 +20,12 @@ import {
 import { createScaffolderFieldExtension } from '@backstage/plugin-scaffolder-react';
 
 import { rootRouteRef } from './routes';
-import { RepoAuthentication, repoAuthenticationValidation } from './scaffolder';
+import {
+  RepoAuthentication,
+  repoAuthenticationValidation,
+  RepoUrlPickerWithBitbucketFix,
+} from './scaffolder';
+import { repoPickerValidation } from '@backstage/plugin-scaffolder';
 
 /** @public */
 export const x2APlugin = createPlugin({
@@ -45,5 +50,20 @@ export const RepoAuthenticationExtension = x2APlugin.provide(
     component: RepoAuthentication,
     name: 'RepoAuthentication', // name used in ui:field in templates
     validation: repoAuthenticationValidation,
+  }),
+);
+
+/**
+ * Scaffolder field extension that wraps the built-in RepoUrlPicker with a fix
+ * for Bitbucket Cloud/Server type resolution. Use `ui:field: X2ARepoUrlPicker`
+ * in templates instead of `RepoUrlPicker` when bitbucket.org is an allowed host.
+ *
+ * @public
+ */
+export const X2ARepoUrlPickerExtension = x2APlugin.provide(
+  createScaffolderFieldExtension({
+    component: RepoUrlPickerWithBitbucketFix,
+    name: 'X2ARepoUrlPicker',
+    validation: repoPickerValidation,
   }),
 );
