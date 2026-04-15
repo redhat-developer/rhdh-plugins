@@ -38,6 +38,7 @@
     "@backstage/backend-plugin-api": "^1.4.2",
     "@backstage/catalog-model": "^1.7.5",
     "@backstage/plugin-catalog-node": "^1.20.0",
+    "@backstage/plugin-permission-common": "^0.9.3",
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
   },
   "devDependencies": {

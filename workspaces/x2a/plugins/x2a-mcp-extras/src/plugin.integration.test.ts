@@ -28,7 +28,6 @@ import { createServiceFactory } from '@backstage/backend-plugin-api';
 import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
-import { kubeServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { x2aDatabaseServiceFactory } from '@red-hat-developer-hub/backstage-plugin-x2a-backend';
 import { x2aMcpExtrasPlugin } from './plugin';
 
@@ -89,18 +88,6 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
             register: (opts: any) => {
               actions.push({ name: opts.name, action: opts.action });
             },
-          }),
-        }),
-        createServiceFactory({
-          service: kubeServiceRef,
-          deps: {},
-          factory: () => ({
-            createJob: jest
-              .fn()
-              .mockResolvedValue({ k8sJobName: 'x2a-init-abc' }),
-            getJobStatus: jest.fn().mockResolvedValue({ status: 'pending' }),
-            getJobLogs: jest.fn().mockResolvedValue(''),
-            deleteJob: jest.fn(),
           }),
         }),
         createServiceFactory({

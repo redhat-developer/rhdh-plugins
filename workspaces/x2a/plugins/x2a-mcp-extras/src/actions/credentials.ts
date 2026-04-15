@@ -20,16 +20,11 @@ import type {
   PermissionsService,
 } from '@backstage/backend-plugin-api';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
-import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { NotAllowedError } from '@backstage/errors';
-import {
-  x2aAdminViewPermission,
-  x2aAdminWritePermission,
-  x2aUserPermission,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import {
   getUserRef,
   getGroupsOfUser,
+  resolveX2aPermissionFlags,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
@@ -60,23 +55,11 @@ export async function resolveCredentialsContext(options: {
 
   const isUser = auth.isPrincipal(credentials, 'user');
 
-  const [userResult, viewResult, writeResult] = await Promise.all([
-    permissionsSvc.authorize([{ permission: x2aUserPermission }], {
+  const { isX2AUser, canViewAll, canWriteAll } =
+    await resolveX2aPermissionFlags({
       credentials,
-    }),
-    permissionsSvc.authorize([{ permission: x2aAdminViewPermission }], {
-      credentials,
-    }),
-    readOnly
-      ? Promise.resolve([{ result: AuthorizeResult.DENY }])
-      : permissionsSvc.authorize([{ permission: x2aAdminWritePermission }], {
-          credentials,
-        }),
-  ]);
-
-  const isX2AUser = userResult[0]?.result === AuthorizeResult.ALLOW;
-  const canViewAll = viewResult[0]?.result === AuthorizeResult.ALLOW;
-  const canWriteAll = writeResult[0]?.result === AuthorizeResult.ALLOW;
+      permissionsSvc,
+    });
 
   if (isUser) {
     if (readOnly && !isX2AUser && !canViewAll) {
@@ -101,10 +84,16 @@ export async function resolveCredentialsContext(options: {
     };
   }
 
-  // Static-token / service-principal fallback
-  if (!isX2AUser && !canViewAll && !canWriteAll) {
+  // Static-token / service-principal: same read vs write gates as users
+  if (readOnly && !isX2AUser && !canViewAll) {
     throw new NotAllowedError(
-      'The MCP service principal is not allowed to access x2a projects. ' +
+      'The MCP service principal is not allowed to read x2a projects. ' +
+        'Configure RBAC permissions for the MCP client subject.',
+    );
+  }
+  if (!readOnly && !isX2AUser && !canWriteAll) {
+    throw new NotAllowedError(
+      'The MCP service principal is not allowed to write x2a projects. ' +
         'Configure RBAC permissions for the MCP client subject.',
     );
   }
@@ -115,7 +104,7 @@ export async function resolveCredentialsContext(options: {
     credentials: credentials as BackstageCredentials<BackstageUserPrincipal>,
     userRef: getUserRef(credentials),
     groupsOfUser: [],
-    canViewAll: canViewAll || canWriteAll,
+    canViewAll,
     canWriteAll,
   };
 }

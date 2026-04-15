@@ -168,9 +168,10 @@ describe('resolveCredentialsContext', () => {
       ).rejects.toThrow(NotAllowedError);
     });
 
-    it('skips write permission check when readOnly is true', async () => {
+    it('evaluates admin write for readOnly and treats it as full list scope', async () => {
       const deps = buildDeps({
-        userResult: AuthorizeResult.ALLOW,
+        userResult: AuthorizeResult.DENY,
+        viewResult: AuthorizeResult.DENY,
         writeResult: AuthorizeResult.ALLOW,
       });
       const ctx = await resolveCredentialsContext({
@@ -179,7 +180,8 @@ describe('resolveCredentialsContext', () => {
         ...deps,
       });
 
-      expect(ctx.canWriteAll).toBe(false);
+      expect(ctx.canWriteAll).toBe(true);
+      expect(ctx.canViewAll).toBe(true);
     });
   });
 
@@ -212,6 +214,26 @@ describe('resolveCredentialsContext', () => {
       });
 
       expect(ctx.canViewAll).toBe(true);
+    });
+
+    it('rejects a service principal with admin view only for write (readOnly false)', async () => {
+      const deps = buildDeps({
+        isUser: false,
+        userResult: AuthorizeResult.DENY,
+        viewResult: AuthorizeResult.ALLOW,
+        writeResult: AuthorizeResult.DENY,
+      });
+
+      await expect(
+        resolveCredentialsContext({
+          credentials: mockCredentials.service(),
+          readOnly: false,
+          ...deps,
+        }),
+      ).rejects.toMatchObject({
+        name: 'NotAllowedError',
+        message: expect.stringContaining('not allowed to write'),
+      });
     });
 
     it('grants canViewAll when service has admin write', async () => {

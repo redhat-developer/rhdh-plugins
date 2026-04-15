@@ -13,6 +13,7 @@ import type { JobStatusEnum } from '@red-hat-developer-hub/backstage-plugin-x2a-
 import { LoggerService } from '@backstage/backend-plugin-api';
 import type { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ServiceRef } from '@backstage/backend-plugin-api';
@@ -152,6 +153,12 @@ export interface ReconcileJobDeps {
 
 // @public
 export function reconcileJobStatus(job: Job, deps: ReconcileJobDeps): Promise<Job>;
+
+// @public
+export function resolveX2aPermissionFlags(options: {
+    credentials: BackstageCredentials;
+    permissionsSvc: PermissionsService;
+}): Promise<X2aPermissionFlags>;
 
 // @public (undocumented)
 export const SYSTEM_USER_REF = "user:default/system";
@@ -311,6 +318,15 @@ export interface X2ADatabaseServiceApi {
 
 // @public
 export const x2aDatabaseServiceRef: ServiceRef<X2ADatabaseServiceApi, "root", "singleton">;
+
+// @public
+export interface X2aPermissionFlags {
+    canViewAll: boolean;
+    // (undocumented)
+    canWriteAll: boolean;
+    // (undocumented)
+    isX2AUser: boolean;
+}
 
 // (No @packageDocumentation comment for this package)
 

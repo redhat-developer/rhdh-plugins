@@ -41,3 +41,6 @@ export {
   reconcileJobStatus,
   generateCallbackToken,
 } from './utils';
+
+export type { X2aPermissionFlags } from './permissions';
+export { resolveX2aPermissionFlags } from './permissions';

@@ -15,17 +15,13 @@
  */
 import type {
   AuthService,
-  DiscoveryService,
   LoggerService,
   PermissionsService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
 import type { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
-import type {
-  x2aDatabaseServiceRef,
-  kubeServiceRef,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import type { x2aDatabaseServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import { createListProjectsAction } from './createListProjectsAction';
 import { createCreateProjectAction } from './createCreateProjectAction';
@@ -40,8 +36,6 @@ export interface X2aActionsOptions {
   auth: AuthService;
   catalog: CatalogService;
   config: RootConfigService;
-  discovery: DiscoveryService;
-  kubeService: typeof kubeServiceRef.T;
   logger: LoggerService;
   permissionsSvc: PermissionsService;
   x2aDatabase: typeof x2aDatabaseServiceRef.T;

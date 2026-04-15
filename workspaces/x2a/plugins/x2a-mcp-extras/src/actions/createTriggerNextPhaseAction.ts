@@ -83,7 +83,7 @@ Instruct the user to:
         { projectId, skipEnrichment: true },
         {
           credentials: ctx.credentials,
-          canViewAll: ctx.canWriteAll || ctx.canViewAll,
+          canViewAll: ctx.canViewAll,
           groupsOfUser: ctx.groupsOfUser,
         },
       );

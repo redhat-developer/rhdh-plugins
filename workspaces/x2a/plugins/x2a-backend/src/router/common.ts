@@ -22,7 +22,6 @@ import type {
   PermissionsService,
 } from '@backstage/backend-plugin-api';
 import {
-  AuthorizePermissionRequest,
   AuthorizePermissionResponse,
   AuthorizeResult,
   BasicPermission,
@@ -38,6 +37,7 @@ import { NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
   getUserRef,
   getGroupsOfUser,
+  resolveX2aPermissionFlags,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import type { RouterDeps } from './types';
@@ -132,7 +132,10 @@ export const authorize = async (
 /**
  * Enforces the x2a permissions for the given request.
  *
- * Throws a NotAllowedError if the user does not have any of the x2a.user or x2a.admin (read or update, depending on the readOnly param)
+ * Delegates RBAC evaluation to {@link resolveX2aPermissionFlags} in x2a-node
+ * (shared with MCP `resolveCredentialsContext`).
+ *
+ * Throws NotAllowedError if the caller may not read (readOnly) or write (!readOnly).
  * @public
  */
 export const useEnforceX2APermissions = async ({
@@ -149,27 +152,11 @@ export const useEnforceX2APermissions = async ({
   credentials: BackstageCredentials<BackstageUserPrincipal>;
 }> => {
   const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-  const permissionsRequests: AuthorizePermissionRequest[] = [
-    { permission: x2aUserPermission },
-    { permission: x2aAdminViewPermission },
-  ];
-  if (!readOnly) {
-    permissionsRequests.push({ permission: x2aAdminWritePermission });
-  }
-
-  // Future versions should support passing an array of requests to the permissionsSvc.authorize() but this does not work yet.
-  const result = await Promise.all(
-    permissionsRequests.map(request => {
-      return permissionsSvc.authorize([request], {
-        credentials,
-      });
-    }),
-  );
-
-  const isX2AUser = result[0][0]?.result === AuthorizeResult.ALLOW;
-  const canViewAll = result[1][0]?.result === AuthorizeResult.ALLOW;
-  const canWriteAll =
-    !readOnly && result[2]?.[0]?.result === AuthorizeResult.ALLOW;
+  const { isX2AUser, canViewAll, canWriteAll } =
+    await resolveX2aPermissionFlags({
+      credentials,
+      permissionsSvc,
+    });
 
   if (readOnly) {
     if (!isX2AUser && !canViewAll) {

@@ -84,23 +84,6 @@ export function buildMocks(overrides?: Partial<X2aActionsOptions>) {
     },
   });
 
-  const discovery = {
-    getBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007/api/x2a'),
-    getExternalBaseUrl: jest
-      .fn()
-      .mockResolvedValue('http://localhost:7007/api/x2a'),
-  };
-
-  const kubeService = {
-    createJob: jest.fn().mockResolvedValue({ k8sJobName: 'x2a-init-abc123' }),
-    getJobStatus: jest.fn().mockResolvedValue({ status: 'pending' }),
-    getJobLogs: jest.fn().mockResolvedValue(''),
-    deleteJob: jest.fn(),
-    listPods: jest.fn(),
-    createProjectSecret: jest.fn(),
-    createJobSecret: jest.fn(),
-  };
-
   const logger = mockServices.logger.mock();
 
   const permissionsSvc = {
@@ -132,8 +115,6 @@ export function buildMocks(overrides?: Partial<X2aActionsOptions>) {
     auth: auth as any,
     catalog: catalog as any,
     config,
-    discovery: discovery as any,
-    kubeService: kubeService as any,
     logger,
     permissionsSvc: permissionsSvc as any,
     x2aDatabase: x2aDatabase as any,
@@ -160,8 +141,6 @@ export function buildMocks(overrides?: Partial<X2aActionsOptions>) {
     auth,
     catalog,
     config,
-    discovery,
-    kubeService,
     logger,
     permissionsSvc,
     x2aDatabase,
