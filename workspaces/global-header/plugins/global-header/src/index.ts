@@ -23,4 +23,4 @@ ClassNameGenerator.configure(componentName => {
 
 export * from './plugin';
 
-export * from './alpha';
+export * from './translations';

@@ -13,10 +13,80 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { createApp } from '@backstage/frontend-defaults';
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import {
+  createFrontendModule,
+  createFrontendPlugin,
+} from '@backstage/frontend-plugin-api';
+import { SignInPageBlueprint } from '@backstage/plugin-app-react';
+import { SignInPage } from '@backstage/core-components';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import {
+  globalHeaderModule,
+  globalHeaderTranslationsModule,
+  GlobalHeaderMenuItemBlueprint,
+  GlobalHeaderMenuItem,
+} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 import { navModule } from './modules/nav';
 
+const signInModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    SignInPageBlueprint.make({
+      params: {
+        loader: async () => props =>
+          (
+            <SignInPage
+              {...props}
+              auto
+              providers={[
+                'guest',
+                {
+                  id: 'github-auth-provider',
+                  title: 'GitHub',
+                  message: 'Sign in using GitHub',
+                  apiRef: githubAuthApiRef,
+                },
+              ]}
+            />
+          ),
+      },
+    }),
+  ],
+});
+
+const CustomHelpMenuItem = ({ handleClose }: { handleClose?: () => void }) => (
+  <GlobalHeaderMenuItem
+    to="https://backstage.io/docs"
+    title="Backstage Docs"
+    icon="menu_book"
+    onClick={handleClose}
+  />
+);
+
+const headerExamplesPlugin = createFrontendPlugin({
+  pluginId: 'header-examples',
+  extensions: [
+    GlobalHeaderMenuItemBlueprint.make({
+      name: 'custom-help-docs',
+      params: {
+        target: 'help',
+        component: CustomHelpMenuItem,
+        priority: 50,
+      },
+    }),
+  ],
+});
+
 export default createApp({
-  features: [catalogPlugin, navModule],
+  features: [
+    rhdhThemeModule,
+    navModule,
+    signInModule,
+    globalHeaderModule,
+    globalHeaderTranslationsModule,
+    headerExamplesPlugin,
+  ],
 });
