@@ -149,7 +149,7 @@ describe('EntitiesTable', () => {
       error: undefined,
     });
     mockUseAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: { metadata: { title: 'Open PRs' } },
+      data: { metadata: { title: 'Open PRs' } },
       loadingData: false,
       error: undefined,
     });
