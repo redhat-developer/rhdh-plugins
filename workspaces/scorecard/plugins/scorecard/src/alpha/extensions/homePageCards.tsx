@@ -47,12 +47,14 @@ function AggregatedCardWithGithubOpenPrsContent() {
   return <ScorecardHomepageCard aggregationId="openPrsKpi" />;
 }
 
-function AggregatedCardWithGithubFilesCheckReadmeContent() {
-  return <ScorecardHomepageCard aggregationId="github.files_check.readme" />;
+function AggregatedCardWithGithubFilesCheckLicenseContent() {
+  return <ScorecardHomepageCard aggregationId="github.files_check.license" />;
 }
 
-function AggregatedCardWithGithubFilesCheckI18guideContent() {
-  return <ScorecardHomepageCard aggregationId="github.files_check.i18guide" />;
+function AggregatedCardWithGithubFilesCheckCodeownersContent() {
+  return (
+    <ScorecardHomepageCard aggregationId="github.files_check.codeowners" />
+  );
 }
 
 function BorderlessHomeWidgetRenderer({ Content }: RendererProps) {
@@ -144,43 +146,43 @@ export const aggregatedCardWithGithubOpenPrsWidget =
   });
 
 /**
- * NFS widget: AggregatedCardWithGithubFilesCheckReadme.
+ * NFS widget: AggregatedCardWithGithubFilesCheckLicense.
  * @alpha
  */
-export const aggregatedCardWithGithubFilesCheckReadmeWidget =
+export const aggregatedCardWithGithubFilesCheckLicenseWidget =
   HomePageWidgetBlueprint.make({
-    name: 'scorecard-github-files-check-readme',
+    name: 'scorecard-github-files-check-license',
     params: {
-      name: 'AggregatedCardWithGithubFilesCheckReadme',
-      title: 'Scorecard: README file exists',
+      name: 'AggregatedCardWithGithubFilesCheckLicense',
+      title: 'Scorecard: LICENSE file exists',
       layout: defaultCardLayout,
       componentProps: {
         Renderer: BorderlessHomeWidgetRenderer,
       },
       components: () =>
         Promise.resolve({
-          Content: AggregatedCardWithGithubFilesCheckReadmeContent,
+          Content: AggregatedCardWithGithubFilesCheckLicenseContent,
         }),
     },
   });
 
 /**
- * NFS widget: AggregatedCardWithGithubFilesCheckI18guide.
+ * NFS widget: AggregatedCardWithGithubFilesCheckCodeowners.
  * @alpha
  */
-export const aggregatedCardWithGithubFilesCheckI18guideWidget =
+export const aggregatedCardWithGithubFilesCheckCodeownersWidget =
   HomePageWidgetBlueprint.make({
-    name: 'scorecard-github-files-check-i18guide',
+    name: 'scorecard-github-files-check-codeowners',
     params: {
-      name: 'AggregatedCardWithGithubFilesCheckI18guide',
-      title: 'Scorecard: i18n guide file exists',
+      name: 'AggregatedCardWithGithubFilesCheckCodeowners',
+      title: 'Scorecard: CODEOWNERS file exists',
       layout: defaultCardLayout,
       componentProps: {
         Renderer: BorderlessHomeWidgetRenderer,
       },
       components: () =>
         Promise.resolve({
-          Content: AggregatedCardWithGithubFilesCheckI18guideContent,
+          Content: AggregatedCardWithGithubFilesCheckCodeownersContent,
         }),
     },
   });

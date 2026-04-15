@@ -220,8 +220,8 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-github.files_check.readme',
-      title: 'Scorecard: README file exists',
+      id: 'scorecard-github.files_check.license',
+      title: 'Scorecard: LICENSE file exists',
       cardLayout: {
         width: {
           minColumns: 3,
@@ -243,15 +243,15 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'github.files_check.readme',
+        aggregationId: 'github.files_check.license',
       },
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-github.files_check.i18guide',
-      title: 'Scorecard: i18n guide file exists',
+      id: 'scorecard-github.files_check.codeowners',
+      title: 'Scorecard: CODEOWNERS file exists',
       cardLayout: {
         width: {
           minColumns: 3,
@@ -273,7 +273,7 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6, x: 4 },
       },
       props: {
-        aggregationId: 'github.files_check.i18guide',
+        aggregationId: 'github.files_check.codeowners',
       },
     },
   },
@@ -310,12 +310,11 @@ const mountPoints: HomePageCardMountPoint[] = [
             metricId: {
               title: 'Metric (Needs currently a page reload after change!)',
               type: 'string',
-              default: 'jira.open_issues',
+              default: 'github.open_prs',
               enum: [
-                'jira.open_issues',
                 'github.open_prs',
-                'github.files_check.readme',
-                'github.files_check.i18guide',
+                'github.files_check.license',
+                'github.files_check.codeowners',
               ],
             },
           },
@@ -324,10 +323,9 @@ const mountPoints: HomePageCardMountPoint[] = [
           metricId: {
             'ui:widget': 'RadioWidget',
             'ui:enumNames': [
-              'Jira Open Issues',
               'GitHub Open PRs',
-              'README file exists',
-              'i18n guide file exists',
+              'LICENSE file exists',
+              'CODEOWNERS file exists',
             ],
           },
         },

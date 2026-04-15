@@ -191,8 +191,8 @@ scorecard:
           initialDelay: { seconds: 5 }
       files_check:
         files:
-          - readme: 'README.md'
-          - i18guide: 'docs/backstage-i18n-guide.md'
+          - license: 'LICENSE'
+          - codeowners: 'CODEOWNERS'
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
