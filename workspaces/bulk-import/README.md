@@ -2,6 +2,8 @@
 
 This is your newly scaffolded Backstage App, Good Luck!
 
+Some minor change
+
 To start the app, run:
 
 ```sh
