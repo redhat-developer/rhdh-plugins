@@ -16,7 +16,7 @@
 
 import { useSearchParams } from 'react-router-dom';
 
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import {
   GetEntitiesRequest,
@@ -45,7 +45,7 @@ const filteredPluginsRequest: GetEntitiesRequest = {
   ],
 };
 
-export const useFilteredPlugins = (): UseQueryResult<FilteredPluginsData> => {
+export const useFilteredPlugins = () => {
   const [searchParams] = useSearchParams();
   const fullTextSearch = searchParams.get('q');
   const filters = searchParams.getAll('filter');

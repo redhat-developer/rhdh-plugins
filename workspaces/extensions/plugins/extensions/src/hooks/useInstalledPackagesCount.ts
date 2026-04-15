@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@backstage/core-plugin-api';
 import { dynamicPluginsInfoApiRef } from '../api';
 // Count should reflect all records from dynamic-plugins-info
 
-export const useInstalledPackagesCount = (): UseQueryResult<number> => {
+export const useInstalledPackagesCount = () => {
   const dynamicPluginInfo = useApi(dynamicPluginsInfoApiRef);
 
   return useQuery({

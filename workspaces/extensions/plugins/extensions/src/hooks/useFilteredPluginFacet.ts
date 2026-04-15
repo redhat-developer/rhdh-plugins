@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import { ExtensionsAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
-import type { GetEntityFacetsResponse } from '@backstage/catalog-client';
-
 import { useExtensionsApi } from './useExtensionsApi';
-
-type FacetBuckets = GetEntityFacetsResponse['facets'][string];
 
 /**
  * Hook to get plugin facets filtered by current active filters
@@ -33,7 +29,7 @@ type FacetBuckets = GetEntityFacetsResponse['facets'][string];
 export const useFilteredPluginFacet = (
   facet: string,
   excludeFilterType?: string,
-): UseQueryResult<FacetBuckets | undefined> => {
+) => {
   const [searchParams] = useSearchParams();
   const extensionsApi = useExtensionsApi();
 

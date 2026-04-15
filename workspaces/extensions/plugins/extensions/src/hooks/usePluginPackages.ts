@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-
-import { ExtensionsPackage } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+import { useQuery } from '@tanstack/react-query';
 
 import { useExtensionsApi } from './useExtensionsApi';
 
-export const usePluginPackages = (
-  namespace: string,
-  name: string,
-): UseQueryResult<ExtensionsPackage[]> => {
+export const usePluginPackages = (namespace: string, name: string) => {
   const extensionsApi = useExtensionsApi();
   return useQuery({
     queryKey: ['extensionsApi', 'getPluginPackages', namespace, name],

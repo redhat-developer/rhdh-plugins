@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import type { GetEntityFacetsResponse } from '@backstage/catalog-client';
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { useExtensionsApi } from './useExtensionsApi';
 
-type FacetBuckets = GetEntityFacetsResponse['facets'][string];
-
-export const usePluginFacet = (
-  facet: string,
-): UseQueryResult<FacetBuckets | undefined> => {
+export const usePluginFacet = (facet: string) => {
   const extensionsApi = useExtensionsApi();
   return useQuery({
     queryKey: ['extensionsApi', 'getPluginFacet', facet],

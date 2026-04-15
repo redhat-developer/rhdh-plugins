@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMutation, type UseMutationResult } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
 import { useExtensionsApi } from './useExtensionsApi';
 
@@ -24,11 +24,7 @@ type InstallPluginVariables = {
   configYaml: string;
 };
 
-export const useInstallPlugin = (): UseMutationResult<
-  { status: string } | undefined,
-  Error,
-  InstallPluginVariables
-> => {
+export const useInstallPlugin = () => {
   const extensionsApi = useExtensionsApi();
 
   return useMutation({

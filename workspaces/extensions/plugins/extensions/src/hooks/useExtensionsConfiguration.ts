@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { useExtensionsApi } from './useExtensionsApi';
 
-export const useExtensionsConfiguration = (): UseQueryResult<
-  { enabled: boolean } | undefined
-> => {
+export const useExtensionsConfiguration = () => {
   const extensionsApi = useExtensionsApi();
 
   return useQuery({
