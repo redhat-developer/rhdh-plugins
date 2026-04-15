@@ -24,6 +24,8 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
+type CatalogFilterValue = string | symbol | (string | symbol)[];
+
 const BOOLEAN_THRESHOLDS: ThresholdConfig = {
   rules: [
     { key: 'success', expression: '==true' },
@@ -31,10 +33,7 @@ const BOOLEAN_THRESHOLDS: ThresholdConfig = {
   ],
 };
 
-const MOCK_CATALOG_FILTER: Record<
-  string,
-  string | symbol | (string | symbol)[]
-> = {
+const MOCK_CATALOG_FILTER: Record<string, CatalogFilterValue> = {
   'metadata.annotations.mock/key': CATALOG_FILTER_EXISTS,
 };
 
@@ -52,7 +51,7 @@ abstract class MockMetricProvider<T extends MetricType>
 
   abstract getMetricThresholds(): ThresholdConfig;
 
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+  getCatalogFilter(): Record<string, CatalogFilterValue> {
     return MOCK_CATALOG_FILTER;
   }
 
@@ -194,7 +193,7 @@ export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
     return BOOLEAN_THRESHOLDS;
   }
 
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+  getCatalogFilter(): Record<string, CatalogFilterValue> {
     return MOCK_CATALOG_FILTER;
   }
 
