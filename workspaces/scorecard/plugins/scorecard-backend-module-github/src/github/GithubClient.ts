@@ -114,6 +114,8 @@ export class GithubClient {
     repository: GithubRepository,
     files: Map<string, string>,
   ): Promise<Map<string, boolean>> {
+    if (files.size === 0) return new Map();
+
     const octokit = await this.getOctokitClient(url);
 
     const aliasToMetricId = this.buildUniqueAliases([...files.keys()]);

@@ -151,14 +151,10 @@ describe('GithubClient', () => {
       const url = 'https://github.com/owner/repo';
       const files = new Map<string, string>();
 
-      const response = {
-        repository: {},
-      };
-      mockedGraphqlClient.mockResolvedValue(response);
-
       const result = await githubClient.checkFilesExist(url, repository, files);
 
       expect(result.size).toBe(0);
+      expect(mockedGraphqlClient).not.toHaveBeenCalled();
     });
 
     it('should safely escape paths containing quotes in the GraphQL query', async () => {
