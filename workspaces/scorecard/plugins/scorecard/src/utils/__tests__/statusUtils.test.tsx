@@ -15,7 +15,6 @@
  */
 
 import type { Theme } from '@mui/material/styles';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 import {
   DEFAULT_NUMBER_THRESHOLDS,
@@ -172,7 +171,7 @@ describe('statusUtils', () => {
 
         expect(result).toEqual({
           color: 'success.main',
-          icon: CheckCircleOutlineIcon,
+          icon: 'scorecardSuccessStatusIcon',
         });
       });
 
