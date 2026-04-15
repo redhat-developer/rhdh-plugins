@@ -122,7 +122,8 @@ export class GithubClient {
     const fileChecksParts: string[] = [];
 
     for (const [alias, metricId] of aliasToMetricId) {
-      const path = files.get(metricId)!;
+      const path = files.get(metricId);
+      if (!path) continue;
       const expr = `HEAD:${path}`;
       fileChecksParts.push(
         `${alias}: object(expression: ${JSON.stringify(expr)}) { id }`,

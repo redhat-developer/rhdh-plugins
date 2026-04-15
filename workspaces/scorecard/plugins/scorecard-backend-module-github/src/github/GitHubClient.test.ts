@@ -174,7 +174,7 @@ describe('GithubClient', () => {
 
       const queryArg = mockedGraphqlClient.mock.calls[0][0] as string;
       expect(queryArg).toContain(
-        'object(expression: "HEAD:path/with\\"quote.txt")',
+        String.raw`object(expression: "HEAD:path/with\"quote.txt")`,
       );
       expect(queryArg).not.toContain('object(expression: "HEAD:path/with"');
     });
@@ -196,7 +196,7 @@ describe('GithubClient', () => {
 
       const queryArg = mockedGraphqlClient.mock.calls[0][0] as string;
       expect(queryArg).toContain(
-        'object(expression: "HEAD:path/with\\nnewline.txt")',
+        String.raw`object(expression: "HEAD:path/with\nnewline.txt")`,
       );
     });
 

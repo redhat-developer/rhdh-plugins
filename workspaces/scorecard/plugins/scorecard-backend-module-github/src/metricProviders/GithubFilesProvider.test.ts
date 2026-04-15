@@ -119,7 +119,7 @@ describe('GithubFilesProvider', () => {
           plugins: {
             github: {
               files_check: {
-                files: [{ bad: 'path\\file.txt' }],
+                files: [{ bad: String.raw`path\file.txt` }],
               },
             },
           },
