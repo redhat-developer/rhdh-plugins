@@ -141,6 +141,14 @@ const lightspeedTranslationJa = createTranslationMessages({
     'permission.subject.plugin': 'Lightspeed プラグイン',
     'permission.subject.notebooks': 'Lightspeed ノートブック',
     'permission.notebooks.goBack': '戻る',
+    'lcore.notConfigured.title': 'Lightspeed 用に LLM を構成する',
+    'lcore.notConfigured.description':
+      'LCORE と Llama Stack は言語モデルなしで起動できます。Llama Stack のデプロイに OpenAI 互換の LLM を登録するか（LCORE のモデル構成を完了するか）してから、このページを再読み込みしてください。',
+    'lcore.notConfigured.llamaStackDocs': 'Llama Stack ドキュメント',
+    'lcore.notConfigured.backendDocs': 'Lightspeed バックエンドの README',
+    'lcore.loadError.title': 'モデルを読み込めませんでした',
+    'lcore.loadError.description':
+      'Lightspeed バックエンドがモデル一覧を返しませんでした。サービスが実行中で到達可能か確認してから、もう一度お試しください。',
     'disclaimer.withValidation':
       'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
     'disclaimer.withoutValidation':
@@ -150,6 +158,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'common.cancel': 'キャンセル',
     'common.close': '閉じる',
     'common.readMore': 'さらに表示する',
+    'common.retry': '再試行',
     'common.noSearchResults': '検索に一致する結果がありません',
     'menu.newConversation': '新しいチャット',
     'chatbox.header.title': 'Developer Lightspeed',

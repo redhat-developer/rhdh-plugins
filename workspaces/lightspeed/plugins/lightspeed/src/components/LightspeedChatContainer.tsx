@@ -31,6 +31,11 @@ import { useTranslation } from '../hooks/useTranslation';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
+import {
+  LcoreNotConfiguredEmptyState,
+  LightspeedChatModelsLoading,
+  ModelsLoadErrorEmptyState,
+} from './LightspeedChatModelsState';
 import PermissionRequiredState from './PermissionRequiredState';
 
 const THEME_DARK = 'dark';
@@ -48,7 +53,12 @@ const LightspeedChatContainerInner = () => {
 
   const identityApi = useApi(identityApiRef);
 
-  const { data: models } = useAllModels();
+  const {
+    data: models,
+    isLoading: modelsLoading,
+    isError: modelsError,
+    refetch: refetchModels,
+  } = useAllModels();
 
   const { allowed: hasViewAccess, loading } = useLightspeedViewPermission();
 
@@ -157,6 +167,18 @@ const LightspeedChatContainerInner = () => {
         }
       />
     );
+  }
+
+  if (modelsLoading) {
+    return <LightspeedChatModelsLoading />;
+  }
+
+  if (modelsError) {
+    return <ModelsLoadErrorEmptyState onRetry={() => refetchModels()} />;
+  }
+
+  if (modelsItems.length === 0) {
+    return <LcoreNotConfiguredEmptyState />;
   }
 
   return (

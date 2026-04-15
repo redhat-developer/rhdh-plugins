@@ -139,6 +139,14 @@ const lightspeedTranslationFr = createTranslationMessages({
     'permission.subject.plugin': 'le plugin Lightspeed',
     'permission.subject.notebooks': 'les carnets Lightspeed',
     'permission.notebooks.goBack': 'Retour',
+    'lcore.notConfigured.title': 'Configurer un LLM pour Lightspeed',
+    'lcore.notConfigured.description':
+      'LCORE et Llama Stack peuvent fonctionner sans modèle de langage. Enregistrez un LLM compatible OpenAI dans votre déploiement Llama Stack (ou terminez la configuration du modèle LCORE), puis rechargez cette page.',
+    'lcore.notConfigured.llamaStackDocs': 'Documentation Llama Stack',
+    'lcore.notConfigured.backendDocs': 'README du backend Lightspeed',
+    'lcore.loadError.title': 'Impossible de charger les modèles',
+    'lcore.loadError.description':
+      "Le backend Lightspeed n'a pas renvoyé de liste de modèles. Vérifiez que le service est démarré et joignable, puis réessayez.",
     'permission.required.description':
       "Pour afficher <subject/>, veuillez contacter votre administrateur pour qu'il vous donne la permission <permissions/>.",
     'disclaimer.withValidation':
@@ -150,6 +158,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',
     'common.readMore': 'En savoir plus',
+    'common.retry': 'Réessayer',
     'common.noSearchResults': 'Aucun résultat ne correspond à cette demande',
     'menu.newConversation': 'Nouvelle Conversation',
     'chatbox.header.title': 'Developer Lightspeed',

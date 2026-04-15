@@ -68,9 +68,7 @@ jest.mock('@mui/material', () => ({
 }));
 
 jest.mock('../../hooks/useAllModels', () => ({
-  useAllModels: jest.fn().mockResolvedValue({
-    data: [],
-  }),
+  useAllModels: jest.fn(),
 }));
 
 jest.mock('../../hooks/useTranslation', () => ({
@@ -84,6 +82,19 @@ const mockUsePermission = usePermission as jest.MockedFunction<
 describe('LightspeedPage', () => {
   beforeEach(() => {
     localStorage.clear();
+    const { useAllModels } = require('../../hooks/useAllModels');
+    (useAllModels as jest.Mock).mockReturnValue({
+      data: [
+        {
+          provider_resource_id: 'model-1',
+          provider_id: 'provider-1',
+          model_type: 'llm',
+        },
+      ],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    });
   });
 
   it('should not display chatbot if permission checks are in loading phase', async () => {
@@ -165,6 +176,96 @@ describe('LightspeedPage', () => {
     );
   });
 
+  it('should show a loading state while models are fetched', async () => {
+    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+    const { useAllModels } = require('../../hooks/useAllModels');
+    (useAllModels as jest.Mock).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+      refetch: jest.fn(),
+    });
+
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [lightspeedApiRef, mockLightspeedApi],
+        ]}
+      >
+        <LightspeedPage />
+      </TestApiProvider>,
+    );
+
+    expect(screen.getByTestId('lightspeed-models-loading')).toBeInTheDocument();
+  });
+
+  it('should show LCORE not configured empty state when no LLM models', async () => {
+    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+    const { useAllModels } = require('../../hooks/useAllModels');
+    (useAllModels as jest.Mock).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    });
+
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [lightspeedApiRef, mockLightspeedApi],
+        ]}
+      >
+        <LightspeedPage />
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('lightspeed-lcore-not-configured'),
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole('heading', { name: 'Configure an LLM for Lightspeed' }),
+    ).toBeInTheDocument();
+  });
+
+  it('should show models load error state with retry', async () => {
+    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+    const refetch = jest.fn();
+    const { useAllModels } = require('../../hooks/useAllModels');
+    (useAllModels as jest.Mock).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      refetch,
+    });
+
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [lightspeedApiRef, mockLightspeedApi],
+        ]}
+      >
+        <LightspeedPage />
+      </TestApiProvider>,
+    );
+
+    expect(
+      screen.getByTestId('lightspeed-models-load-error'),
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'Could not load models' }),
+      ).toBeInTheDocument();
+    });
+
+    screen.getByRole('button', { name: 'Try again' }).click();
+    expect(refetch).toHaveBeenCalled();
+  });
+
   describe('localStorage model persistence', () => {
     const LAST_SELECTED_MODEL_KEY = 'lastSelectedModel';
     const mockModels = [
@@ -193,6 +294,7 @@ describe('LightspeedPage', () => {
         isLoading: false,
         isError: false,
         error: null,
+        refetch: jest.fn(),
       });
     });
 
