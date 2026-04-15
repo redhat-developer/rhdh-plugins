@@ -161,6 +161,76 @@ describe('GithubClient', () => {
       expect(result.size).toBe(0);
     });
 
+    it('should safely escape paths containing quotes in the GraphQL query', async () => {
+      const url = 'https://github.com/owner/repo';
+      const files = new Map<string, string>([
+        ['github.files_check.tricky', 'path/with"quote.txt'],
+      ]);
+
+      const response = {
+        repository: {
+          github_files_check_tricky: { id: 'abc' },
+        },
+      };
+      mockedGraphqlClient.mockResolvedValue(response);
+
+      await githubClient.checkFilesExist(url, repository, files);
+
+      const queryArg = mockedGraphqlClient.mock.calls[0][0] as string;
+      expect(queryArg).toContain(
+        'object(expression: "HEAD:path/with\\"quote.txt")',
+      );
+      expect(queryArg).not.toContain('object(expression: "HEAD:path/with"');
+    });
+
+    it('should safely escape paths containing newlines in the GraphQL query', async () => {
+      const url = 'https://github.com/owner/repo';
+      const files = new Map<string, string>([
+        ['github.files_check.newline', 'path/with\nnewline.txt'],
+      ]);
+
+      const response = {
+        repository: {
+          github_files_check_newline: null,
+        },
+      };
+      mockedGraphqlClient.mockResolvedValue(response);
+
+      await githubClient.checkFilesExist(url, repository, files);
+
+      const queryArg = mockedGraphqlClient.mock.calls[0][0] as string;
+      expect(queryArg).toContain(
+        'object(expression: "HEAD:path/with\\nnewline.txt")',
+      );
+    });
+
+    it('should handle alias collisions from metric IDs that differ only in non-word characters', async () => {
+      const url = 'https://github.com/owner/repo';
+      const files = new Map<string, string>([
+        ['github.files_check.read-me', 'READ-ME.md'],
+        ['github.files_check.read_me', 'README.md'],
+      ]);
+
+      mockedGraphqlClient.mockImplementation(async (query: string) => {
+        const hasDeduplicatedAlias = query.includes(
+          'github_files_check_read_me__2',
+        );
+        expect(hasDeduplicatedAlias).toBe(true);
+        return {
+          repository: {
+            github_files_check_read_me: null,
+            github_files_check_read_me__2: { id: 'abc123' },
+          },
+        };
+      });
+
+      const result = await githubClient.checkFilesExist(url, repository, files);
+
+      expect(result.size).toBe(2);
+      expect(result.get('github.files_check.read-me')).toBe(false);
+      expect(result.get('github.files_check.read_me')).toBe(true);
+    });
+
     it('should throw error when GitHub integration for URL is missing', async () => {
       const unknownUrl = 'https://unknown-host/owner/repo';
       const files = new Map<string, string>([

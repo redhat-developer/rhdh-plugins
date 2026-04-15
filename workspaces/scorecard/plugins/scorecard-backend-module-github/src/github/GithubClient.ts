@@ -79,11 +79,34 @@ export class GithubClient {
   }
 
   /**
-   * Sanitize a string to be a valid GraphQL alias.
-   * eg. "github.files_check.readme-correct" -> "github_files_check_readme_correct"
+   * Build a unique GraphQL alias for each metric ID.
+   *
+   * GraphQL aliases must be valid identifiers (only [a-zA-Z0-9_]) and unique
+   * within a query. Metric IDs are sanitized by replacing non-word characters
+   * with underscores, but this is lossy — e.g. "read-me" and "read_me" both
+   * become "read_me". To avoid alias collisions (which would cause silent data
+   * loss), a numeric suffix is appended when a duplicate is detected.
    */
-  private sanitizeGraphQLAlias(alias: string): string {
-    return alias.replaceAll(/\W/g, '_');
+  private buildUniqueAliases(metricIds: string[]): Map<string, string> {
+    const aliasToMetricId = new Map<string, string>();
+    const usedAliases = new Set<string>();
+
+    for (const metricId of metricIds) {
+      let alias = metricId.replaceAll(/\W/g, '_');
+
+      if (usedAliases.has(alias)) {
+        let counter = 2;
+        while (usedAliases.has(`${alias}__${counter}`)) {
+          counter++;
+        }
+        alias = `${alias}__${counter}`;
+      }
+
+      usedAliases.add(alias);
+      aliasToMetricId.set(alias, metricId);
+    }
+
+    return aliasToMetricId;
   }
 
   async checkFilesExist(
@@ -93,15 +116,14 @@ export class GithubClient {
   ): Promise<Map<string, boolean>> {
     const octokit = await this.getOctokitClient(url);
 
-    const aliasToMetricId = new Map<string, string>();
+    const aliasToMetricId = this.buildUniqueAliases([...files.keys()]);
     const fileChecksParts: string[] = [];
 
-    for (const [metricId, path] of files) {
-      const sanitizedAlias = this.sanitizeGraphQLAlias(metricId);
-
-      aliasToMetricId.set(sanitizedAlias, metricId);
+    for (const [alias, metricId] of aliasToMetricId) {
+      const path = files.get(metricId)!;
+      const expr = `HEAD:${path}`;
       fileChecksParts.push(
-        `${sanitizedAlias}: object(expression: "HEAD:${path}") { id }`,
+        `${alias}: object(expression: ${JSON.stringify(expr)}) { id }`,
       );
     }
 

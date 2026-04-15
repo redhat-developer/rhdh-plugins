@@ -77,6 +77,96 @@ describe('GithubFilesProvider', () => {
       ]);
     });
 
+    it('should throw error when file path contains a double quote', () => {
+      const config = new ConfigReader({
+        scorecard: {
+          plugins: {
+            github: {
+              files_check: {
+                files: [{ bad: 'path/with"quote.txt' }],
+              },
+            },
+          },
+        },
+      });
+
+      expect(() => GithubFilesProvider.fromConfig(config)).toThrow(
+        "Invalid file path for 'bad': path must not contain newlines, quotes, or backslashes",
+      );
+    });
+
+    it('should throw error when file path contains a newline', () => {
+      const config = new ConfigReader({
+        scorecard: {
+          plugins: {
+            github: {
+              files_check: {
+                files: [{ bad: 'path/with\nnewline' }],
+              },
+            },
+          },
+        },
+      });
+
+      expect(() => GithubFilesProvider.fromConfig(config)).toThrow(
+        "Invalid file path for 'bad': path must not contain newlines, quotes, or backslashes",
+      );
+    });
+
+    it('should throw error when file path contains a backslash', () => {
+      const config = new ConfigReader({
+        scorecard: {
+          plugins: {
+            github: {
+              files_check: {
+                files: [{ bad: 'path\\file.txt' }],
+              },
+            },
+          },
+        },
+      });
+
+      expect(() => GithubFilesProvider.fromConfig(config)).toThrow(
+        "Invalid file path for 'bad': path must not contain newlines, quotes, or backslashes",
+      );
+    });
+
+    it('should throw error when file path starts with /', () => {
+      const config = new ConfigReader({
+        scorecard: {
+          plugins: {
+            github: {
+              files_check: {
+                files: [{ bad: '/absolute/path.txt' }],
+              },
+            },
+          },
+        },
+      });
+
+      expect(() => GithubFilesProvider.fromConfig(config)).toThrow(
+        "Invalid file path for 'bad': path must be relative without leading './' or '/'",
+      );
+    });
+
+    it('should throw error when file path starts with ./', () => {
+      const config = new ConfigReader({
+        scorecard: {
+          plugins: {
+            github: {
+              files_check: {
+                files: [{ bad: './relative/path.txt' }],
+              },
+            },
+          },
+        },
+      });
+
+      expect(() => GithubFilesProvider.fromConfig(config)).toThrow(
+        "Invalid file path for 'bad': path must be relative without leading './' or '/'",
+      );
+    });
+
     it('should throw error when file config entry has multiple key-value pairs', () => {
       const invalidConfig = new ConfigReader({
         scorecard: {

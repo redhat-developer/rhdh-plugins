@@ -600,6 +600,148 @@ describe('PullMetricsByProviderTask', () => {
         );
       });
 
+      it('should skip all batch metrics for an entity when all metric IDs are disabled by annotation', async () => {
+        const disabledEntity = {
+          apiVersion: '1.0.0',
+          kind: 'Component',
+          metadata: {
+            name: 'disabled-all',
+            annotations: {
+              'scorecard.io/disabled-metrics':
+                'github.files_check.readme,github.files_check.license',
+            },
+          },
+        };
+
+        mockCatalog.queryEntities.mockReset().mockResolvedValueOnce({
+          items: [disabledEntity],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 1,
+        });
+
+        const calculateMetricsSpy = jest.spyOn(
+          mockBatchProvider,
+          'calculateMetrics',
+        );
+        const createMetricValuesSpy = jest.spyOn(
+          mockDatabaseMetricValues,
+          'createMetricValues',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        expect(calculateMetricsSpy).not.toHaveBeenCalled();
+        expect(createMetricValuesSpy).toHaveBeenCalledWith([]);
+      });
+
+      it('should only create records for enabled metrics when some are disabled by annotation', async () => {
+        const partiallyDisabledEntity = {
+          apiVersion: '1.0.0',
+          kind: 'Component',
+          metadata: {
+            name: 'partial-disabled',
+            annotations: {
+              'scorecard.io/disabled-metrics': 'github.files_check.license',
+            },
+          },
+        };
+
+        mockCatalog.queryEntities.mockReset().mockResolvedValueOnce({
+          items: [partiallyDisabledEntity],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 1,
+        });
+
+        const createMetricValuesSpy = jest.spyOn(
+          mockDatabaseMetricValues,
+          'createMetricValues',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        expect(createMetricValuesSpy).toHaveBeenCalledWith([
+          expect.objectContaining({
+            catalog_entity_ref: 'component:default/partial-disabled',
+            metric_id: 'github.files_check.readme',
+            value: true,
+          }),
+        ]);
+      });
+
+      it('should skip batch metrics disabled via scorecard.disabledMetrics app-config', async () => {
+        const configWithDisabled = mockServices.rootConfig({
+          data: {
+            scorecard: {
+              schedule: scheduleConfig,
+              disabledMetrics: ['github.files_check.license'],
+            },
+          },
+        });
+
+        task = new PullMetricsByProviderTask(
+          {
+            scheduler: mockScheduler,
+            logger: mockLogger,
+            database: mockDatabaseMetricValues,
+            config: configWithDisabled,
+            catalog: mockCatalog,
+            auth: mockAuth,
+            thresholdEvaluator: mockThresholdEvaluator,
+          },
+          mockBatchProvider,
+        );
+
+        const createMetricValuesSpy = jest.spyOn(
+          mockDatabaseMetricValues,
+          'createMetricValues',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        const savedRecords = createMetricValuesSpy.mock.calls[0][0];
+        const metricIds = savedRecords.map(
+          (r: { metric_id: string }) => r.metric_id,
+        );
+        expect(metricIds).not.toContain('github.files_check.license');
+        expect(metricIds).toContain('github.files_check.readme');
+      });
+
+      it('should create error records only for enabled metrics when batch calculation fails and some metrics are disabled', async () => {
+        jest
+          .spyOn(mockBatchProvider, 'calculateMetrics')
+          .mockRejectedValue(new Error('GitHub API error'));
+
+        const partiallyDisabledEntity = {
+          apiVersion: '1.0.0',
+          kind: 'Component',
+          metadata: {
+            name: 'partial-disabled',
+            annotations: {
+              'scorecard.io/disabled-metrics': 'github.files_check.license',
+            },
+          },
+        };
+
+        mockCatalog.queryEntities.mockReset().mockResolvedValueOnce({
+          items: [partiallyDisabledEntity],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 1,
+        });
+
+        const createMetricValuesSpy = jest.spyOn(
+          mockDatabaseMetricValues,
+          'createMetricValues',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        expect(createMetricValuesSpy).toHaveBeenCalledWith([
+          expect.objectContaining({
+            catalog_entity_ref: 'component:default/partial-disabled',
+            metric_id: 'github.files_check.readme',
+            error_message: 'GitHub API error',
+          }),
+        ]);
+        const savedRecords = createMetricValuesSpy.mock.calls[0][0];
+        expect(savedRecords).toHaveLength(1);
+      });
+
       it('should get schedule from correct config path for batch provider', async () => {
         (task as any).getScheduleFromConfig = jest
           .fn()

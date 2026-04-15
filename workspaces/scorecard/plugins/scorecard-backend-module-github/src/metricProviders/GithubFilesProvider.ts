@@ -27,6 +27,21 @@ import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
 import { GithubFile, GithubFilesConfig } from '../github/types';
 
+const INVALID_PATH_CHARS = /[\n\r"\\]/;
+
+function validateFilePath(id: string, path: string): void {
+  if (INVALID_PATH_CHARS.test(path)) {
+    throw new Error(
+      `Invalid file path for '${id}': path must not contain newlines, quotes, or backslashes`,
+    );
+  }
+  if (path.startsWith('/') || path.startsWith('./')) {
+    throw new Error(
+      `Invalid file path for '${id}': path must be relative without leading './' or '/'`,
+    );
+  }
+}
+
 export class GithubFilesProvider implements MetricProvider<'boolean'> {
   private readonly githubClient: GithubClient;
   private readonly thresholds: ThresholdConfig;
@@ -123,6 +138,7 @@ export class GithubFilesProvider implements MetricProvider<'boolean'> {
       }
       const id = keys[0];
       const path = fileConfig.getString(id);
+      validateFilePath(id, path);
       return { id, path };
     });
 

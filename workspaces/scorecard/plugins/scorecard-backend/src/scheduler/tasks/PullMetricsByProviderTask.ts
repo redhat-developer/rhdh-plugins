@@ -150,11 +150,19 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               const entityNamespace = normalizeField(entity.metadata.namespace);
               const entityOwner = normalizeOwnerRef(entity?.spec?.owner);
 
+              const enabledMetricIds = metricIds.filter(
+                metricId =>
+                  !isMetricIdDisabled(this.config, metricId, entity, logger),
+              );
+
+              if (enabledMetricIds.length === 0) {
+                return undefined;
+              }
+
               try {
                 const resultsMap = await provider.calculateMetrics(entity);
 
-                // Create a result for each metric ID
-                return metricIds.map(metricId => {
+                return enabledMetricIds.map(metricId => {
                   const value = resultsMap.get(metricId)!;
 
                   try {
@@ -195,8 +203,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                   }
                 });
               } catch (error) {
-                // If batch calculation fails, create error records for all metrics
-                return metricIds.map(
+                return enabledMetricIds.map(
                   metricId =>
                     ({
                       catalog_entity_ref: entityRef,
@@ -280,19 +287,10 @@ export class PullMetricsByProviderTask implements SchedulerTask {
           }, [] as DbMetricValueCreate[]),
         );
 
-        // Log summary of batch results for debugging, will remove before final PR
         if (batchResults.length > 0) {
-          const summary = batchResults.map(r => ({
-            entity: r.catalog_entity_ref,
-            metric: r.metric_id,
-            value: r.value,
-            status: r.status,
-            ...(r.error_message && { error: r.error_message }),
-          }));
-          logger.info(
-            `Storing ${batchResults.length} metric values: ${JSON.stringify(
-              summary,
-            )}`,
+          const errorCount = batchResults.filter(r => r.error_message).length;
+          logger.debug(
+            `Storing ${batchResults.length} metric values (${errorCount} errors)`,
           );
         }
 
