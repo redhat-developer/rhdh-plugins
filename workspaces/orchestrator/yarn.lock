@@ -12833,6 +12833,7 @@ __metadata:
     "@mui/styles": "npm:5.18.0"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^"
     "@rjsf/material-ui": "npm:^5.21.2"
     "@rjsf/utils": "npm:^5.21.2"
     "@testing-library/jest-dom": "npm:^6.0.0"

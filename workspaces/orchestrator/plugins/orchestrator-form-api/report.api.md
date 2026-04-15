@@ -30,6 +30,7 @@ export type FormDecoratorProps = Pick<
 // @public
 export interface OrchestratorFormApi {
   getFormDecorator(): OrchestratorFormDecorator;
+  getReviewComponent?(): React.ComponentType<ReviewComponentProps> | undefined;
 }
 
 // @public
@@ -66,6 +67,15 @@ export type OrchestratorFormSchemaUpdater = (
 ) => void;
 
 // @public
+export type ReviewComponentProps = {
+  busy: boolean;
+  schema: JSONSchema7;
+  data: JsonObject;
+  handleBack: () => void;
+  handleExecute: () => void;
+};
+
+// @public
 export type SchemaChunksResponse = {
   [key: string]: JsonObject;
 };
@@ -77,7 +87,7 @@ export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
 
 // Warnings were encountered during analysis:
 //
-// src/api.d.ts:100:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
+// src/api.d.ts:125:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 ```
