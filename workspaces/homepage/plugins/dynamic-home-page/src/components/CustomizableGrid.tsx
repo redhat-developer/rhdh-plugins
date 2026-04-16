@@ -21,7 +21,7 @@
 // but without the drag and drop functionality.
 
 import type { ReactElement } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 import {
   CustomHomepageGrid,
@@ -41,6 +41,7 @@ import 'react-grid-layout/css/styles.css';
 import { HomePageCardMountPoint } from '../types';
 import { dynamicHomePagePlugin } from '../plugin';
 import { useTranslation } from '../hooks/useTranslation';
+import { useContainerQuery } from '../hooks/useContainerQuery';
 import {
   isCardADefaultConfiguration,
   getCardTitle,
@@ -60,6 +61,8 @@ export interface CustomizableGridProps {
 export const CustomizableGrid = ({ mountPoints }: CustomizableGridProps) => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  useContainerQuery(gridContainerRef, { notifyWindowResize: true });
 
   const { children, config } = useMemo(() => {
     // Children contains the additional / available cards a user can add.
@@ -153,14 +156,19 @@ export const CustomizableGrid = ({ mountPoints }: CustomizableGridProps) => {
           },
         }}
       />
-      <CustomHomepageGrid
-        config={config}
-        preventCollision={false}
-        compactType="vertical"
-        style={{ margin: '-10px' }}
+      <div
+        ref={gridContainerRef}
+        style={{ width: '100%', minWidth: 0, boxSizing: 'border-box' }}
       >
-        {children}
-      </CustomHomepageGrid>
+        <CustomHomepageGrid
+          config={config}
+          preventCollision={false}
+          compactType="vertical"
+          style={{ margin: '-10px' }}
+        >
+          {children}
+        </CustomHomepageGrid>
+      </div>
     </>
   );
 };

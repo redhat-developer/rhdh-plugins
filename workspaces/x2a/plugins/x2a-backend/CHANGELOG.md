@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 1.3.1
+
+### Patch Changes
+
+- cc4e98e: Removed blockOwnerDeletion: true from the ownerReference in KubeService.ts. This field is unnecessary for our use case - it only controls whether the garbage collector should block deletion of the owner (Job) until the dependent (Secret) is removed first.
+
 ## 1.3.0
 
 ### Minor Changes

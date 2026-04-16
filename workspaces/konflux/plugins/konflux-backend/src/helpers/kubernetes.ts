@@ -19,7 +19,29 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 /**
- * Filter resources by application names
+ * Convert a glob pattern (e.g. "app-*", "*api*") to a RegExp
+ */
+const globToRegex = (pattern: string): RegExp => {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+  const regexStr = escaped.replace(/\*/g, '.*');
+  return new RegExp(`^${regexStr}$`);
+};
+
+/**
+ * Check if a name matches any of the given application patterns.
+ * Supports exact matches and glob patterns with "*".
+ */
+export const matchesApplicationPattern = (
+  name: string,
+  patterns: string[],
+): boolean => {
+  return patterns.some(pattern =>
+    pattern.includes('*') ? globToRegex(pattern).test(name) : pattern === name,
+  );
+};
+
+/**
+ * Filter resources by application names or glob patterns
  */
 export const filterResourcesByApplication = (
   items: K8sResourceCommonWithClusterInfo[],
@@ -39,14 +61,21 @@ export const filterResourcesByApplication = (
     const applicationName = getApplicationFromResource(item);
     switch (resourceType) {
       case 'applications':
-        return applicationNames.includes(item.metadata?.name || '');
+        return matchesApplicationPattern(
+          item.metadata?.name || '',
+          applicationNames,
+        );
       case 'components':
-        return applicationNames.includes(
+        return matchesApplicationPattern(
           (item.spec?.application as string) || '',
+          applicationNames,
         );
       case 'releases':
       case 'pipelineruns':
-        return applicationNames.includes(applicationName || '');
+        return matchesApplicationPattern(
+          applicationName || '',
+          applicationNames,
+        );
       default:
         return true;
     }

@@ -25,6 +25,7 @@ describe('App', () => {
         {
           data: {
             app: { title: 'Test' },
+            auth: { environment: 'development' },
             backend: { baseUrl: 'http://localhost:7007' },
             techdocs: {
               storageUrl: 'http://localhost:7007/api/techdocs/static/docs',

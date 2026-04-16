@@ -14,15 +14,6 @@
     "lib": ["DOM", "DOM.Iterable", "ScriptHost", "ES2022"],
     "target": "ES2022",
     "useUnknownInCatchVariables": false,
-    "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "@backstage/frontend-plugin-api": [
-        "node_modules/@backstage/frontend-plugin-api"
-      ],
-      "@backstage/frontend-plugin-api/*": [
-        "node_modules/@backstage/frontend-plugin-api/*"
-      ]
-    }
+    "jsx": "react-jsx"
   }
 }

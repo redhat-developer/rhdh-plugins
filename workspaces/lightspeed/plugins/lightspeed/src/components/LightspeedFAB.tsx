@@ -79,7 +79,7 @@ export const LightspeedFAB = () => {
           variant="circular"
           size="small"
           onClick={toggleChatbot}
-          aria-label={isChatbotActive ? 'lightspeed-open' : 'lightspeed-close'}
+          aria-label={isChatbotActive ? 'lightspeed-close' : 'lightspeed-open'}
           className={fabButton.fab}
           sx={{ borderRadius: '100% !important' }}
         >

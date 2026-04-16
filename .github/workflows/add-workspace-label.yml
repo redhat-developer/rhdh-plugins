@@ -1,0 +1,47 @@
+# PR and issue workspace path labels (workspace/<dir>) for search and triage.
+# Based on: https://github.com/backstage/community-plugins/blob/main/.github/workflows/add-workspace-label.yml
+name: Add workspace labels to PRs
+
+on:
+  issues:
+    types: [opened, edited]
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  triage-issues:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        with:
+          egress-policy: audit
+
+      - uses: github/issue-labeler@c1b0f9f52a63158c4adc09425e858e87b32e9685 #v3.4
+        with:
+          configuration-path: .github/labeler.yml
+          enable-versioned-regex: 0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  label-prs:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/labeler@8558fd74291d67161a8a78ce36a881fa63b766a9 # v5.0.0
+        with:
+          configuration-path: .github/pr-labeler.yml
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

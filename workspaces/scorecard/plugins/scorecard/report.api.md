@@ -17,16 +17,11 @@ export const EntityScorecardContent: () => JSX_2.Element;
 export { ScorecardErrorStatusIcon };
 
 // @public
-export const ScorecardHomepageCard: ({
-  metricId,
-  aggregationId,
-  showSubheader,
-  showInfo,
-}: {
-  metricId?: string | undefined;
-  aggregationId?: string | undefined;
-  showSubheader?: boolean | undefined;
-  showInfo?: boolean | undefined;
+export const ScorecardHomepageCard: (input: {
+  metricId?: string;
+  aggregationId?: string;
+  showSubheader?: boolean;
+  showInfo?: boolean;
 }) => JSX_2.Element | null;
 
 // @public

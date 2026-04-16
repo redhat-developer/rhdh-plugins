@@ -261,6 +261,74 @@ describe('kubernetes', () => {
       expect(result).toHaveLength(1);
       expect(result[0].metadata?.name).toBe('app1');
     });
+
+    it('should filter applications using glob pattern with prefix', () => {
+      const items = [
+        createMockApplication('my-app-frontend'),
+        createMockApplication('my-app-backend'),
+        createMockApplication('other-app'),
+      ];
+      const result = filterResourcesByApplication(items, 'applications', [
+        'my-app-*',
+      ]);
+      expect(result).toHaveLength(2);
+      expect(result[0].metadata?.name).toBe('my-app-frontend');
+      expect(result[1].metadata?.name).toBe('my-app-backend');
+    });
+
+    it('should filter applications using glob pattern with suffix', () => {
+      const items = [
+        createMockApplication('my-app-backend'),
+        createMockApplication('other-backend'),
+        createMockApplication('my-app-frontend'),
+      ];
+      const result = filterResourcesByApplication(items, 'applications', [
+        '*-backend',
+      ]);
+      expect(result).toHaveLength(2);
+      expect(result[0].metadata?.name).toBe('my-app-backend');
+      expect(result[1].metadata?.name).toBe('other-backend');
+    });
+
+    it('should filter applications using glob pattern with contains', () => {
+      const items = [
+        createMockApplication('my-api-service'),
+        createMockApplication('other-app'),
+        createMockApplication('test-api-backend'),
+      ];
+      const result = filterResourcesByApplication(items, 'applications', [
+        '*-api-*',
+      ]);
+      expect(result).toHaveLength(2);
+      expect(result[0].metadata?.name).toBe('my-api-service');
+      expect(result[1].metadata?.name).toBe('test-api-backend');
+    });
+
+    it('should filter with mix of exact and glob patterns', () => {
+      const items = [
+        createMockApplication('my-app-frontend'),
+        createMockApplication('my-app-backend'),
+        createMockApplication('special-app'),
+        createMockApplication('other-app'),
+      ];
+      const result = filterResourcesByApplication(items, 'applications', [
+        'my-app-*',
+        'special-app',
+      ]);
+      expect(result).toHaveLength(3);
+    });
+
+    it('should filter components using glob pattern', () => {
+      const items = [
+        createMockComponent('comp1', 'my-app-frontend'),
+        createMockComponent('comp2', 'my-app-backend'),
+        createMockComponent('comp3', 'other-app'),
+      ];
+      const result = filterResourcesByApplication(items, 'components', [
+        'my-app-*',
+      ]);
+      expect(result).toHaveLength(2);
+    });
   });
 
   describe('createResourceWithClusterInfo', () => {

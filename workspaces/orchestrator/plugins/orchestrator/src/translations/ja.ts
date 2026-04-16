@@ -44,6 +44,7 @@ const orchestratorTranslationJa = createTranslationMessages({
     'table.headers.lastRunStatus': '最終実行のステータス',
     'table.headers.workflowName': 'ワークフロー名',
     'table.actions.run': '実行',
+    'table.actions.runAsEvent': 'イベントとして実行',
     'table.actions.viewRuns': '実行の表示',
     'table.actions.viewInputSchema': '入力スキーマの表示',
     'table.status.running': '実行中',
@@ -85,6 +86,7 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.messages.workflowDown':
       'ワークフローは現在停止しているかエラー状態です。今実行すると、失敗や予期しない結果が生じる可能性があります。',
     'workflow.buttons.run': '実行',
+    'workflow.buttons.runAsEvent': 'イベントとして実行',
     'workflow.buttons.runWorkflow': 'ワークフローの実行',
     'workflow.buttons.runAgain': '再実行',
     'workflow.buttons.running': '実行中...',
@@ -107,6 +109,8 @@ const orchestratorTranslationJa = createTranslationMessages({
       '実行はすでに完了しているため、中止することはできません。',
     'run.status.completed': '実行は完了しました',
     'run.status.failed': '実行は {{time}} に失敗しました',
+    'run.messages.eventTriggered':
+      'このワークフローを起動するためのイベントが送信されました。実行が開始すると一覧に表示されます。',
     'run.status.aborted': '実行は中止されました',
     'run.status.completedWithMessage':
       '実行は {{time}} に完了しました。メッセージ:',

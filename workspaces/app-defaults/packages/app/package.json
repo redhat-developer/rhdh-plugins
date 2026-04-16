@@ -11,6 +11,9 @@
   "backstage": {
     "role": "frontend"
   },
+  "jest": {
+    "testEnvironment": "@internal/jest-environment-jsdom-suppress-css"
+  },
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
@@ -44,6 +47,8 @@
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@mui/material": "^5.18.0",
+    "@red-hat-developer-hub/backstage-plugin-app-auth": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-app-integrations": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
@@ -52,13 +57,15 @@
   },
   "devDependencies": {
     "@backstage/frontend-test-utils": "^0.5.1",
-    "@playwright/test": "^1.32.3",
-    "@testing-library/dom": "^9.0.0",
+    "@internal/jest-environment-jsdom-suppress-css": "workspace:^",
+    "@playwright/test": "^1.58.2",
+    "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^14.0.0",
+    "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.0.0",
     "@types/react-dom": "*",
-    "cross-env": "^7.0.0"
+    "cross-env": "^10.0.0",
+    "cross-fetch": "^4.0.0"
   },
   "browserslist": {
     "production": [
