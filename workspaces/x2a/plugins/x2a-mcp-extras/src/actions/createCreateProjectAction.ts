@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { NotAllowedError } from '@backstage/errors';
+import { RUN_INIT_DEEP_LINK_HASH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { X2aActionsOptions } from './index';
 import { resolveCredentialsContext } from './credentials';
 
@@ -41,10 +42,10 @@ Requires the source and target repository URLs and branch names.
 The project will be owned by the authenticated user (when using OAuth) or by the system user (when using static tokens).
 An optional ownedByGroup can be specified if the user is a member of that Backstage group.
 
-After the project is created, the output includes a projectDetailsUrl.
+After the project is created, the output includes a projectDetailsUrl (including a URL fragment that opens the init re-run confirmation when the project is eligible).
 IMPORTANT: The next step is to instruct the user to open this URL in their browser.
-On the Project Details page, the user must manually trigger the init phase and provide the source and target SCM (repository) authentication tokens.
-The init phase cannot be started automatically from this tool - the user must visit the page and trigger it themselves to pass down tokens for the source control managers.`,
+On the Project Details page, the user confirms in the dialog and provides the source and target SCM (repository) authentication tokens.
+The init phase cannot be started automatically from this tool - the user must visit the page to pass down tokens for the source control managers.`,
     schema: {
       input: z =>
         z.object({
@@ -84,9 +85,8 @@ The init phase cannot be started automatically from this tool - the user must vi
           projectDetailsUrl: z
             .string()
             .describe(
-              'Full URL to the Project Details page. ' +
-                'Direct the user to open this URL in their browser to trigger the init phase ' +
-                'and provide source and target SCM authentication tokens.',
+              'Full URL to the Project Details page, ending with a hash that opens the init re-run confirmation when eligible. ' +
+                'Direct the user to open this URL in their browser to confirm init and provide source and target SCM authentication tokens.',
             ),
         }),
     },
@@ -124,7 +124,7 @@ The init phase cannot be started automatically from this tool - the user must vi
       );
 
       const appBaseUrl = config.getString('app.baseUrl');
-      const projectDetailsUrl = `${appBaseUrl}/x2a/projects/${project.id}`;
+      const projectDetailsUrl = `${appBaseUrl}/x2a/projects/${project.id}${RUN_INIT_DEEP_LINK_HASH}`;
 
       return {
         output: {

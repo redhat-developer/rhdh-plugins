@@ -16,6 +16,7 @@
 import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { NotAllowedError } from '@backstage/errors';
+import { RUN_INIT_DEEP_LINK_HASH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { buildMocks, NOW } from './__testUtils__';
 
@@ -59,7 +60,7 @@ describe('x2a-create-project MCP tool', () => {
         targetRepoBranch: 'main',
         createdBy: 'user:default/mock',
         createdAt: NOW.toISOString(),
-        projectDetailsUrl: 'http://localhost:3000/x2a/projects/proj-new-001',
+        projectDetailsUrl: `http://localhost:3000/x2a/projects/proj-new-001${RUN_INIT_DEEP_LINK_HASH}`,
       },
     });
 

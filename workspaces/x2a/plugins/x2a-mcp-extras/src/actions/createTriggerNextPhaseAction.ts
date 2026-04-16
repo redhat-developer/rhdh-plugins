@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { NotFoundError } from '@backstage/errors';
+import { RUN_NEXT_DEEP_LINK_HASH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { X2aActionsOptions } from './index';
 import { resolveCredentialsContext } from './credentials';
 
@@ -38,13 +39,13 @@ export function createTriggerNextPhaseAction(options: X2aActionsOptions) {
     description: `Return the full URL to the Project Details page for an X2A migration project.
 
 IMPORTANT: This tool does NOT trigger the next phase automatically.
-The output includes a projectDetailsUrl that the user must open in their browser.
-On the Project Details page, the user will manually trigger the next migration phase
-and provide source and target SCM (repository) authentication tokens.
+The output includes a projectDetailsUrl (with a URL fragment) that the user must open in their browser.
+On the Project Details page, the user confirms bulk “run next phase” for eligible modules
+and provides source and target SCM (repository) authentication tokens when prompted.
 
 Instruct the user to:
 1. Open the returned projectDetailsUrl in their browser.
-2. On the Project Details page, trigger the next phase and enter the required SCM tokens.`,
+2. On the Project Details page, confirm the action and enter the required SCM tokens.`,
     schema: {
       input: z =>
         z.object({
@@ -59,9 +60,8 @@ Instruct the user to:
           projectDetailsUrl: z
             .string()
             .describe(
-              'Full URL to the Project Details page. ' +
-                'Direct the user to open this URL in their browser to trigger the next migration phase ' +
-                'and provide source and target SCM authentication tokens.',
+              'Full URL to the Project Details page, ending with a hash that opens the bulk run-next-phase confirmation when eligible modules exist. ' +
+                'Direct the user to open this URL in their browser to confirm and provide source and target SCM authentication tokens.',
             ),
         }),
     },
@@ -94,7 +94,7 @@ Instruct the user to:
       }
 
       const appBaseUrl = config.getString('app.baseUrl');
-      const projectDetailsUrl = `${appBaseUrl}/x2a/projects/${projectId}`;
+      const projectDetailsUrl = `${appBaseUrl}/x2a/projects/${projectId}${RUN_NEXT_DEEP_LINK_HASH}`;
 
       return {
         output: {

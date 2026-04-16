@@ -242,6 +242,16 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'retriggerInit.confirm.userPromptPlaceholder':
       'Fournir des instructions supplémentaires pour la conversion…',
     'retriggerInit.confirm.confirmButton': 'Relancer',
+    'retriggerInit.firstTrigger.title':
+      "Lancer la phase d'initialisation pour « {{name}} » ?",
+    'retriggerInit.firstTrigger.message':
+      "Après confirmation, la phase de découverte de ce projet sera lancée. Il se peut qu'on vous demande vos jetons SCM source et cible.",
+    'retriggerInit.firstTrigger.userPromptLabel':
+      'Instructions utilisateur (optionnel)',
+    'retriggerInit.firstTrigger.userPromptPlaceholder':
+      'Fournir des instructions supplémentaires pour la conversion…',
+    'retriggerInit.firstTrigger.confirmButton':
+      "Lancer la phase d'initialisation",
     'retriggerInit.error':
       "Erreur lors de la relance de la phase d'initialisation du projet « {{name}} »",
     'retriggerInit.errorStart':

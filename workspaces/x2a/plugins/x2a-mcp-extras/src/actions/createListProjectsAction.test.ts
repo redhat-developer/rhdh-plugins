@@ -37,6 +37,7 @@ describe('x2a-list-projects MCP tool', () => {
     expect(result).toEqual({
       output: {
         totalCount: 1,
+        projectListUrl: 'http://localhost:3000/x2a/projects',
         items: [
           expect.objectContaining({
             id: 'proj-001',

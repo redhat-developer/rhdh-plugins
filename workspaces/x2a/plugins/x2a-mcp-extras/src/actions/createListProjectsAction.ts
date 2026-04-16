@@ -21,6 +21,7 @@ export function createListProjectsAction(options: X2aActionsOptions) {
     actionsRegistry,
     auth,
     catalog,
+    config,
     logger,
     permissionsSvc,
     x2aDatabase,
@@ -31,6 +32,7 @@ export function createListProjectsAction(options: X2aActionsOptions) {
     title: 'List X2A Migration Projects',
     description: `List migration projects visible to the current user with optional pagination and sorting.
 Returns projects with their current status, migration plan summary, and init-job state.
+The output includes projectListUrl, a full URL to the X2A projects list in the UI.
 When authenticated via OAuth (DCR), results are scoped to the user's RBAC permissions.`,
     attributes: {
       readOnly: true,
@@ -71,6 +73,11 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
       output: z =>
         z.object({
           totalCount: z.number().describe('Total number of matching projects.'),
+          projectListUrl: z
+            .string()
+            .describe(
+              'Full URL to the X2A projects list page in the Backstage UI (app base URL + /x2a/projects).',
+            ),
           items: z
             .array(
               z.object({
@@ -89,6 +96,7 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
                     state: z.string(),
                   })
                   .optional(),
+                projectDetailsUrl: z.string(),
               }),
             )
             .describe('List of projects on this page.'),
@@ -119,9 +127,13 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
         },
       );
 
+      const appBaseUrl = config.getString('app.baseUrl');
+      const projectListUrl = `${appBaseUrl}/x2a/projects`;
+
       return {
         output: {
           totalCount,
+          projectListUrl,
           items: projects.map(p => ({
             id: p.id,
             name: p.name,
@@ -137,6 +149,7 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
                 ? p.createdAt.toISOString()
                 : String(p.createdAt),
             status: p.status ? { state: p.status.state } : undefined,
+            projectDetailsUrl: `${appBaseUrl}/x2a/projects/${p.id}`,
           })),
         },
       };

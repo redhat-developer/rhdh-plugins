@@ -27,10 +27,16 @@ import {
 } from '@material-ui/core';
 import { useTranslation } from '../hooks/useTranslation';
 
+export type RetriggerInitConfirmDialogCopyVariant =
+  | 'retrigger'
+  | 'firstTrigger';
+
 export type RetriggerInitConfirmDialogProps = {
   open: boolean;
   projectName: string;
   isRunning: boolean;
+  /** Use firstTrigger when opening from the project URL hash (first-time init flow). */
+  copyVariant?: RetriggerInitConfirmDialogCopyVariant;
   onConfirm: (userPrompt: string) => void;
   onClose: () => void;
 };
@@ -39,10 +45,15 @@ export const RetriggerInitConfirmDialog = ({
   open,
   projectName,
   isRunning,
+  copyVariant = 'retrigger',
   onConfirm,
   onClose,
 }: RetriggerInitConfirmDialogProps) => {
   const { t } = useTranslation();
+  const copyPrefix =
+    copyVariant === 'firstTrigger'
+      ? 'retriggerInit.firstTrigger'
+      : 'retriggerInit.confirm';
   const [userPrompt, setUserPrompt] = useState('');
   const confirmingRef = useRef(false);
 
@@ -71,7 +82,7 @@ export const RetriggerInitConfirmDialog = ({
       maxWidth="sm"
     >
       <DialogTitle id="retrigger-init-modal-title">
-        {t('retriggerInit.confirm.title' as any, { name: projectName })}
+        {t(`${copyPrefix}.title` as any, { name: projectName })}
       </DialogTitle>
       <DialogContent>
         <Typography
@@ -79,11 +90,11 @@ export const RetriggerInitConfirmDialog = ({
           variant="body1"
           gutterBottom
         >
-          {t('retriggerInit.confirm.message')}
+          {t(`${copyPrefix}.message` as any, {})}
         </Typography>
         <TextField
-          label={t('retriggerInit.confirm.userPromptLabel')}
-          placeholder={t('retriggerInit.confirm.userPromptPlaceholder')}
+          label={t(`${copyPrefix}.userPromptLabel` as any, {})}
+          placeholder={t(`${copyPrefix}.userPromptPlaceholder` as any, {})}
           multiline
           minRows={3}
           maxRows={8}
@@ -107,7 +118,7 @@ export const RetriggerInitConfirmDialog = ({
             isRunning ? <CircularProgress size={16} color="inherit" /> : null
           }
         >
-          {t('retriggerInit.confirm.confirmButton')}
+          {t(`${copyPrefix}.confirmButton` as any, {})}
         </Button>
         <Button variant="outlined" onClick={onClose} disabled={isRunning}>
           {t('bulkRun.cancel')}

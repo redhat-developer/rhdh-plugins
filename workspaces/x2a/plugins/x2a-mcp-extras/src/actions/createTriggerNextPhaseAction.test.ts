@@ -17,6 +17,8 @@ import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
 
+import { RUN_NEXT_DEEP_LINK_HASH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 import { buildMocks, MOCK_PROJECT } from './__testUtils__';
 
 describe('x2a-trigger-next-phase MCP tool', () => {
@@ -35,7 +37,7 @@ describe('x2a-trigger-next-phase MCP tool', () => {
       output: {
         projectId: 'proj-001',
         name: 'Legacy EAP Migration',
-        projectDetailsUrl: 'http://localhost:3000/x2a/projects/proj-001',
+        projectDetailsUrl: `http://localhost:3000/x2a/projects/proj-001${RUN_NEXT_DEEP_LINK_HASH}`,
       },
     });
   });

@@ -29,6 +29,7 @@ import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { x2aDatabaseServiceFactory } from '@red-hat-developer-hub/backstage-plugin-x2a-backend';
+import { RUN_NEXT_DEEP_LINK_HASH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { x2aMcpExtrasPlugin } from './plugin';
 
 type RegisteredAction = {
@@ -175,6 +176,9 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
     });
 
     expect(listResult.output.totalCount).toBe(1);
+    expect(listResult.output.projectListUrl).toBe(
+      'http://localhost:3000/x2a/projects',
+    );
     expect(listResult.output.items[0]).toMatchObject({
       id: projectId,
       name: 'Integration Test Project',
@@ -190,7 +194,7 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
     expect(triggerResult.output).toMatchObject({
       projectId,
       name: 'Integration Test Project',
-      projectDetailsUrl: `http://localhost:3000/x2a/projects/${projectId}`,
+      projectDetailsUrl: `http://localhost:3000/x2a/projects/${projectId}${RUN_NEXT_DEEP_LINK_HASH}`,
     });
   });
 });

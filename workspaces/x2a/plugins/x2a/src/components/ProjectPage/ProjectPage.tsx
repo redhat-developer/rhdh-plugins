@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import {
   Content,
@@ -27,6 +27,8 @@ import { Box, Grid } from '@material-ui/core';
 import {
   Module,
   Project,
+  RUN_INIT_DEEP_LINK_HASH,
+  RUN_NEXT_DEEP_LINK_HASH,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useClientService } from '../../ClientService';
@@ -41,10 +43,14 @@ import { ProjectModulesCard } from './ProjectModulesCard';
 import { InitPhaseCard } from './InitPhaseCard';
 import { DeleteProjectDialog } from '../DeleteProjectDialog';
 import { BulkRunConfirmDialog } from '../BulkRunConfirmDialog';
-import { RetriggerInitConfirmDialog } from '../RetriggerInitConfirmDialog';
+import {
+  RetriggerInitConfirmDialog,
+  RetriggerInitConfirmDialogCopyVariant,
+} from '../RetriggerInitConfirmDialog';
 import { ProjectActions, ProjectActionsProps } from './ProjectActions';
 import {
   extractResponseError,
+  isHttpSuccessResponse,
   canRunNextPhase,
   isEligibleForRetriggerInit,
 } from '../tools';
@@ -52,16 +58,21 @@ import {
 export const ProjectPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { projectId } = useRouteRefParams(projectRouteRef);
   const rootPath = useRouteRef(rootRouteRef);
   const clientService = useClientService();
   const { runAllForProject, retriggerInit } = useBulkRun();
   const { canWriteProject } = useProjectWriteAccess();
+  const runInitDeepLinkHandledRef = useRef(false);
+  const runNextDeepLinkHandledRef = useRef(false);
   const [error, setError] = useState<Error | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [retriggerInitModalOpen, setRetriggerInitModalOpen] = useState(false);
+  const [retriggerInitDialogCopyVariant, setRetriggerInitDialogCopyVariant] =
+    useState<RetriggerInitConfirmDialogCopyVariant>('retrigger');
   const [isRetriggeringInit, setIsRetriggeringInit] = useState(false);
   const [bulkRunModalOpen, setBulkRunModalOpen] = useState(false);
   const [isBulkRunning, setIsBulkRunning] = useState(false);
@@ -82,12 +93,6 @@ export const ProjectPage = () => {
     setError(null);
     handleMenuClose();
     setDeleteModalOpen(true);
-  }, [handleMenuClose]);
-
-  const handleRunAllClick = useCallback(() => {
-    setError(null);
-    handleMenuClose();
-    setBulkRunModalOpen(true);
   }, [handleMenuClose]);
 
   const handleDeleteModalClose = useCallback(() => {
@@ -136,24 +141,104 @@ export const ProjectPage = () => {
       clientService.projectsProjectIdGet({ path: { projectId } }),
       clientService.projectsProjectIdModulesGet({ path: { projectId } }),
     ]);
+
+    if (!isHttpSuccessResponse(projectResponse)) {
+      throw new Error(
+        await extractResponseError(projectResponse, 'Failed to load project'),
+      );
+    }
+    if (!isHttpSuccessResponse(modulesResponse)) {
+      throw new Error(
+        await extractResponseError(modulesResponse, 'Failed to load project'),
+      );
+    }
+
+    const modulesBody = await modulesResponse.json();
+    if (!Array.isArray(modulesBody)) {
+      throw new Error('Failed to load project modules');
+    }
+
     return {
       project: (await projectResponse.json()) as Project,
-      modules: (await modulesResponse.json()) as Module[],
+      modules: modulesBody as Module[],
     };
   }, [projectId, clientService]);
 
   const project = pageData?.project;
   const modules = pageData?.modules;
 
-  const handleRetriggerInitClick = useCallback(() => {
+  useEffect(() => {
+    runInitDeepLinkHandledRef.current = false;
+    runNextDeepLinkHandledRef.current = false;
+  }, [projectId]);
+
+  const openBulkRunDialog = useCallback(() => {
     setError(null);
     handleMenuClose();
-    setRetriggerInitModalOpen(true);
+    setBulkRunModalOpen(true);
   }, [handleMenuClose]);
+
+  const handleRunAllClick = useCallback(() => {
+    openBulkRunDialog();
+  }, [openBulkRunDialog]);
+
+  const openRetriggerInitDialog = useCallback(
+    (opts?: { copyVariant?: RetriggerInitConfirmDialogCopyVariant }) => {
+      setError(null);
+      handleMenuClose();
+      setRetriggerInitDialogCopyVariant(opts?.copyVariant ?? 'retrigger');
+      setRetriggerInitModalOpen(true);
+    },
+    [handleMenuClose],
+  );
+
+  useEffect(() => {
+    if (isLoading || !project) return;
+
+    const { hash, pathname, search } = location;
+    if (hash !== RUN_INIT_DEEP_LINK_HASH && hash !== RUN_NEXT_DEEP_LINK_HASH) {
+      return;
+    }
+
+    if (hash === RUN_INIT_DEEP_LINK_HASH) {
+      if (runInitDeepLinkHandledRef.current) return;
+      runInitDeepLinkHandledRef.current = true;
+    } else {
+      if (runNextDeepLinkHandledRef.current) return;
+      runNextDeepLinkHandledRef.current = true;
+    }
+
+    navigate({ pathname, search, hash: '' }, { replace: true });
+
+    if (hash === RUN_INIT_DEEP_LINK_HASH) {
+      if (canWriteProject(project) && isEligibleForRetriggerInit(project)) {
+        openRetriggerInitDialog({ copyVariant: 'firstTrigger' });
+      }
+    } else if (
+      canWriteProject(project) &&
+      (modules ?? []).some(m => canRunNextPhase(m, project))
+    ) {
+      openBulkRunDialog();
+    }
+  }, [
+    isLoading,
+    project,
+    modules,
+    location,
+    navigate,
+    canWriteProject,
+    openRetriggerInitDialog,
+    openBulkRunDialog,
+  ]);
+
+  const handleRetriggerInitClick = useCallback(() => {
+    openRetriggerInitDialog();
+  }, [openRetriggerInitDialog]);
 
   const handleRetriggerInitModalClose = useCallback(() => {
     if (!isRetriggeringInit) {
       setRetriggerInitModalOpen(false);
+      setRetriggerInitDialogCopyVariant('retrigger');
       setError(null);
     }
   }, [isRetriggeringInit]);
@@ -167,9 +252,11 @@ export const ProjectPage = () => {
       try {
         await retriggerInit(project, userPrompt || undefined);
         setRetriggerInitModalOpen(false);
+        setRetriggerInitDialogCopyVariant('retrigger');
         forceRefresh();
       } catch (e) {
         setRetriggerInitModalOpen(false);
+        setRetriggerInitDialogCopyVariant('retrigger');
         const msg = e instanceof Error ? e.message : String(e);
         setError(
           new Error(
@@ -262,6 +349,7 @@ export const ProjectPage = () => {
         open={retriggerInitModalOpen}
         projectName={project?.name ?? ''}
         isRunning={isRetriggeringInit}
+        copyVariant={retriggerInitDialogCopyVariant}
         onConfirm={handleRetriggerInitConfirm}
         onClose={handleRetriggerInitModalClose}
       />
