@@ -73,6 +73,35 @@ frontend system is not available.
   `x2a.admin.view` / `x2a.admin.write` (all projects) to the
   `mcp-clients` subject
 
+### Credential resolution in MCP tools
+
+All MCP tools share one code path (`resolveCredentialsContext` in
+`src/actions/credentials.ts`) before they touch the database. Two points
+from that helper are easy to miss from the high-level “OAuth vs static
+token” split above:
+
+1. **RBAC is evaluated the same way for users and for static-token service
+   principals.** The handler always calls `resolveX2aPermissionFlags`, which
+   checks `x2a.user`, `x2a.admin` (read), and `x2a.admin` (write) against the
+   **actual** `BackstageCredentials` on the request. Tools that only read the
+   database (`x2a-list-projects`, `x2a-trigger-next-phase`) require ordinary
+   read access (`x2a.user`, or admin read/write that implies seeing all
+   projects). `x2a-create-project` is gated as a write path and needs `x2a.user`
+   or admin write. A static bearer token does **not** bypass those rules - if
+   the token’s subject has no matching policy, the tool responds with
+   `NotAllowedError` and a message that points you at RBAC for the MCP client
+   subject.
+
+2. **Only identity and catalog context differ by mode.** DCR OAuth carries a
+   `BackstageUserPrincipal`, so the handler uses the real user ref and loads
+   `groupsOfUser` from the catalog (same idea as the UI). A static token
+   carries a `BackstageServicePrincipal`. RBAC still runs on that subject, but
+   the normalized context passed to the DB layer uses `getUserRef()`’s
+   fallback (`user:default/system`) and an **empty** group list. That is why
+   “own projects” for a token means projects owned by that synthetic identity
+   unless you grant admin view/write - **not** because service principals skip
+   permission checks.
+
 ## Deployment Checklist
 
 ### 1. Install backend dependencies
