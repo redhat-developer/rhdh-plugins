@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { ThemeBlueprint } from '@backstage/plugin-app-react';
-import { getAllThemes } from '../themes';
-
 /**
  * RHDH themes as NFS extensions (ThemeBlueprint).
  * Only the app can register ThemeBlueprint; we use the same theme definitions
@@ -25,6 +21,14 @@ import { getAllThemes } from '../themes';
  *
  * @packageDocumentation
  */
+
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { ThemeBlueprint } from '@backstage/plugin-app-react';
+
+import '../assets/fonts/font.min.css';
+
+import { getAllThemes } from '../themes';
+
 const rhdhThemeExtensions = getAllThemes().map(appTheme =>
   ThemeBlueprint.make({
     name: appTheme.id,

@@ -94,10 +94,14 @@ export const mockedShields = [
 ];
 
 export {
+  E2E_MCP_VALID_TOKEN,
+  getExpectedMcpSelectedCountForMock,
   getExpectedMcpStatusDetailForMock,
   mcpServer,
   mcpServerScenarios,
   mockedMcpServersResponse,
+  tokenCredentialNoUrlScenario,
+  tokenCredentialValidationScenario,
   type McpServerMockEntry,
   type McpServersListMock,
 } from './mcpServerMocks';

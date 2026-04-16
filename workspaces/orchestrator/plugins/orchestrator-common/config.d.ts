@@ -79,6 +79,30 @@ export interface Config {
       url: string;
     };
     /**
+     * Kafka configuration for event-triggered workflows (KafkaJS-style).
+     * When present, the UI can show actions such as "Run as Event".
+     * @visibility frontend
+     */
+    kafka?: {
+      /**
+       * Logical identifier of the Kafka client application.
+       * @see https://kafka.js.org/docs/configuration#client-id
+       * @visibility frontend
+       */
+      clientId: string;
+      /**
+       * Kafka broker addresses (`host:port`).
+       * @visibility frontend
+       */
+      brokers: string[];
+      /**
+       * Log level for orchestrator Kafka services. Defaults to INFO (4); e.g. use 5 for DEBUG.
+       * @see https://kafka.js.org/docs/configuration#logging
+       * @visibility frontend
+       */
+      logLevel?: number;
+    };
+    /**
      * Configuration for the workflow log provider.
      * If configured, the "View Logs" button will be shown in the workflow instance results.
      * @visibility frontend

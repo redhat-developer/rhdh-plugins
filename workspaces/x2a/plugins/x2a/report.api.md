@@ -222,6 +222,9 @@ readonly empty: string;
 // @public
 export const x2aPluginTranslations: TranslationResource<"plugin.x2a">;
 
+// @public
+export const X2ARepoUrlPickerExtension: FieldExtensionComponent<string, {}>;
+
 // (No @packageDocumentation comment for this package)
 
 ```

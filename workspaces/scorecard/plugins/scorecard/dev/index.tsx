@@ -94,10 +94,10 @@ const catalogDevModule = createFrontendModule({
 });
 
 const scorecardDevModule = createFrontendModule({
-  pluginId: 'app',
+  pluginId: 'scorecard',
   extensions: [
     ApiBlueprint.make({
-      name: 'scorecard',
+      name: 'scorecard-mock',
       params: defineParams =>
         defineParams({
           api: scorecardApiRef,

@@ -15,7 +15,7 @@
  */
 
 import type { Config } from '@backstage/config';
-import { AggregationType } from 'plugins/scorecard-common/src/types/aggregation';
+import { AggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export type AggregationConfig = {
   id: string;

@@ -239,7 +239,7 @@ export const LightspeedChatBoxHeader = ({
               icon={<McpSettingsIcon />}
               onClick={onMcpSettingsClick}
             >
-              MCP settings
+              {t('settings.mcp.label')}
             </DropdownItem>
           </DropdownList>
         </DropdownGroup>

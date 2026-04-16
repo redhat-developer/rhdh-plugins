@@ -1,5 +1,39 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.2
+
+### Patch Changes
+
+- f96e4f2: fix: updating lodash for cve fixes
+- Updated dependencies [f96e4f2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.1
+
+## 5.7.1
+
+### Patch Changes
+
+- 16d41c2: Add Run as Event when `orchestrator.kafka` is configured: send `isEvent` with execute input, redirect to workflow runs with a notice when the response id is `kafkaEvent`.
+- Updated dependencies [f45fe5a]
+- Updated dependencies [16d41c2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.1
+
+## 5.7.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- 665a75c: fix: update axios for CVE-2026-40175
+- Updated dependencies [665a75c]
+- Updated dependencies [2212e8d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.7.0
+
 ## 5.6.0
 
 ### Minor Changes

@@ -58,3 +58,26 @@ export function evaluateMessage(message: string, value: string) {
     message.substring(0, startIndex) + value + message.substring(endIndex + 2)
   );
 }
+
+/** Renders `mcp.settings.selectedCount` for assertions (matches i18n placeholder order per locale). */
+export function formatMcpSelectedCount(
+  t: LightspeedMessages,
+  selectedCount: number,
+  totalCount: number,
+): string {
+  return t['mcp.settings.selectedCount']
+    .replace(/\{\{selectedCount\}\}/g, String(selectedCount))
+    .replace(/\{\{totalCount\}\}/g, String(totalCount));
+}
+
+/** Status cell detail for a connected server tool count (singular vs plural). */
+export function formatMcpToolCountStatus(
+  t: LightspeedMessages,
+  toolCount: number,
+): string {
+  const key =
+    toolCount === 1
+      ? 'mcp.settings.status.oneTool'
+      : 'mcp.settings.status.manyTools';
+  return t[key].replace(/\{\{count\}\}/g, String(toolCount));
+}

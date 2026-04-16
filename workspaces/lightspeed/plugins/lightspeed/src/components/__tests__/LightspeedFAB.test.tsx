@@ -66,7 +66,7 @@ describe('LightspeedFAB', () => {
     );
 
     expect(screen.getByTestId('lightspeed-fab')).toBeInTheDocument();
-    expect(screen.getByLabelText('lightspeed-close')).toBeInTheDocument();
+    expect(screen.getByLabelText('lightspeed-open')).toBeInTheDocument();
   });
 
   it('should render FAB button when displayMode is docked', () => {
@@ -77,7 +77,7 @@ describe('LightspeedFAB', () => {
     );
 
     expect(screen.getByTestId('lightspeed-fab')).toBeInTheDocument();
-    expect(screen.getByLabelText('lightspeed-close')).toBeInTheDocument();
+    expect(screen.getByLabelText('lightspeed-open')).toBeInTheDocument();
   });
 
   it('should not render FAB button when displayMode is embedded', () => {
@@ -97,7 +97,7 @@ describe('LightspeedFAB', () => {
       }),
     );
 
-    const fabButton = screen.getByLabelText('lightspeed-close');
+    const fabButton = screen.getByLabelText('lightspeed-open');
     fireEvent.click(fabButton);
 
     expect(mockToggleChatbot).toHaveBeenCalledTimes(1);

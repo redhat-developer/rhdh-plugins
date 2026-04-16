@@ -337,8 +337,17 @@ export async function createRouter(
         return;
       }
 
-      const { enabled, token } = req.body;
-      if (enabled === undefined && token === undefined) {
+      const body = (req.body ?? {}) as {
+        enabled?: boolean;
+        token?: string | null;
+      };
+      const hasEnabledField = Object.prototype.hasOwnProperty.call(
+        body,
+        'enabled',
+      );
+      const hasTokenField = Object.prototype.hasOwnProperty.call(body, 'token');
+      const { enabled, token } = body;
+      if (!hasEnabledField && !hasTokenField) {
         res.status(400).json({
           error: 'At least one of enabled or token must be provided',
         });
@@ -346,8 +355,8 @@ export async function createRouter(
       }
 
       const setting = await settingsStore.upsert(name, user.userEntityRef, {
-        enabled,
-        token,
+        enabled: hasEnabledField ? enabled : undefined,
+        token: hasTokenField ? token : undefined,
       });
 
       let validation: McpValidationResult | undefined;

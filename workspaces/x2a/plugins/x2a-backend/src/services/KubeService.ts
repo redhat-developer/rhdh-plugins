@@ -287,7 +287,6 @@ export class KubeService {
       kind: 'Job',
       name: k8sJobName,
       uid: jobUid,
-      blockOwnerDeletion: true,
     };
 
     try {
