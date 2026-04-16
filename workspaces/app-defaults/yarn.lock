@@ -15063,13 +15063,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
-  version: 0.0.0-use.local
-  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
-  languageName: node
-  linkType: soft
-
-"app@workspace:packages/app":
+"app@workspace:^, app@workspace:packages/app":
   version: 0.0.0-use.local
   resolution: "app@workspace:packages/app"
   dependencies:
@@ -15667,7 +15661,7 @@ __metadata:
     "@backstage/plugin-search-backend-node": "npm:^1.4.2"
     "@backstage/plugin-signals-backend": "npm:^0.3.13"
     "@backstage/plugin-techdocs-backend": "npm:^2.1.6"
-    app: "link:../app"
+    app: "workspace:^"
     better-sqlite3: "npm:^12.0.0"
     node-gyp: "npm:^10.0.0"
     pg: "npm:^8.11.3"
