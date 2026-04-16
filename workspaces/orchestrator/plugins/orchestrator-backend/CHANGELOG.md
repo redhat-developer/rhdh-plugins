@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 8.3.2
+
+### Patch Changes
+
+- 0bba7fa: fix: updating lodash for cve fixes
+- Updated dependencies [0bba7fa]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.1.1
+
 ## 8.3.1
 
 ### Patch Changes

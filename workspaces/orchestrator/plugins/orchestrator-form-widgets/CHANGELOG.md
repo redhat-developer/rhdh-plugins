@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.2.1
+
+### Patch Changes
+
+- 0bba7fa: fix: updating lodash for cve fixes
+- Updated dependencies [0bba7fa]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.1.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.1.1
+
 ## 1.2.0
 
 ### Minor Changes
