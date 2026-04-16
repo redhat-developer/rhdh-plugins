@@ -48,7 +48,7 @@ function AggregatedCardWithGithubOpenPrsContent() {
 }
 
 function AggregatedCardWithGithubFilesCheckLicenseContent() {
-  return <ScorecardHomepageCard aggregationId="github.files_check.license" />;
+  return <ScorecardHomepageCard aggregationId="licenseFileExistsKpi" />;
 }
 
 function AggregatedCardWithGithubFilesCheckCodeownersContent() {

@@ -176,6 +176,11 @@ scorecard:
       type: statusGrouped
       description: This KPI is provide information about Jira open issues grouped by status.
       metricId: jira.open_issues
+    licenseFileExistsKpi:
+      title: License File Exists KPI
+      type: statusGrouped
+      description: This KPI is provide information about whether the license file exists in the repository.
+      metricId: github.files_check.license
   plugins:
     jira:
       open_issues:
