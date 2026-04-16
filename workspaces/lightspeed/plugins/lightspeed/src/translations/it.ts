@@ -143,11 +143,11 @@ const lightspeedTranslationIt = createTranslationMessages({
     'permission.subject.plugin': 'il plugin Lightspeed',
     'permission.subject.notebooks': 'i quaderni Lightspeed',
     'permission.notebooks.goBack': 'Torna indietro',
-    'lcore.notConfigured.title': 'Configura un LLM per Lightspeed',
+    'lcore.notConfigured.title': 'Collega un LLM per iniziare',
     'lcore.notConfigured.description':
-      'LCORE e Llama Stack possono essere avviati senza un modello linguistico. Registra un LLM compatibile con OpenAI nella distribuzione Llama Stack (o completa la configurazione del modello LCORE), quindi ricarica questa pagina.',
-    'lcore.notConfigured.llamaStackDocs': 'Documentazione di Llama Stack',
-    'lcore.notConfigured.backendDocs': 'README del backend Lightspeed',
+      'Per usare le funzionalità di intelligenza artificiale di Lightspeed, devi registrare un LLM compatibile con OpenAI nella tua distribuzione Llama Stack.',
+    'lcore.notConfigured.llamaStackDocs': 'Configura Llama Stack',
+    'lcore.notConfigured.backendDocs': 'Configurazione backend Lightspeed',
     'lcore.loadError.title': 'Impossibile caricare i modelli',
     'lcore.loadError.description':
       'Il backend Lightspeed non ha restituito un elenco di modelli. Verifica che il servizio sia in esecuzione e raggiungibile, quindi riprova.',
@@ -161,6 +161,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'common.close': 'Chiudi',
     'common.readMore': 'Per saperne di più',
     'common.retry': 'Riprova',
+    'common.loading': 'Caricamento in corso',
     'common.noSearchResults': 'Nessun risultato corrisponde alla ricerca',
     'menu.newConversation': 'Nuova chat',
     'chatbox.header.title': 'Sviluppatore Lightspeed',

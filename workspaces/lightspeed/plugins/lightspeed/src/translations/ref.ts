@@ -146,11 +146,11 @@ export const lightspeedMessages = {
   'permission.notebooks.goBack': 'Go back',
 
   // LCORE / LLM (no models registered)
-  'lcore.notConfigured.title': 'Configure an LLM for Lightspeed',
+  'lcore.notConfigured.title': 'Connect an LLM to get started',
   'lcore.notConfigured.description':
-    'LCORE and Llama Stack can run without a language model. Register an OpenAI-compatible LLM with your Llama Stack deployment (or finish LCORE model configuration), then reload this page.',
-  'lcore.notConfigured.llamaStackDocs': 'Llama Stack documentation',
-  'lcore.notConfigured.backendDocs': 'Lightspeed backend README',
+    "To use Lightspeed's AI capabilities, you'll need to register an OpenAI-compatible LLM with your Llama Stack deployment.",
+  'lcore.notConfigured.llamaStackDocs': 'Configure Llama Stack',
+  'lcore.notConfigured.backendDocs': 'Lightspeed Backend Setup',
   'lcore.loadError.title': 'Could not load models',
   'lcore.loadError.description':
     'The Lightspeed backend did not return a model list. Check that the service is running and reachable, then try again.',
@@ -169,6 +169,7 @@ export const lightspeedMessages = {
   'common.close': 'Close',
   'common.readMore': 'Read more',
   'common.retry': 'Try again',
+  'common.loading': 'Loading',
   'common.noSearchResults': 'No result matches the search',
 
   // Menu items

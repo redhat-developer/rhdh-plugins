@@ -132,7 +132,14 @@ export function useLightspeedProviderState(): {
 
   const openChatbot = useCallback(() => {
     openedViaFABRef.current = true;
-    const modeToUse = persistedDisplayMode || ChatbotDisplayMode.default;
+    const rawMode = persistedDisplayMode || ChatbotDisplayMode.default;
+    // Full-page (/lightspeed) mode is tied to the route, not the FAB. If the user last used
+    // fullscreen there, persisted mode can still be "embedded" — opening from the FAB should
+    // use the compact overlay instead unless they chose docked.
+    const modeToUse =
+      rawMode === ChatbotDisplayMode.embedded
+        ? ChatbotDisplayMode.default
+        : rawMode;
     setDisplayModeState(modeToUse);
 
     if (modeToUse === ChatbotDisplayMode.docked) {
@@ -141,18 +148,8 @@ export function useLightspeedProviderState(): {
       closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
     }
 
-    if (modeToUse === ChatbotDisplayMode.embedded) {
-      navigate(lightspeedRoutePath(currentConversationIdState));
-    }
-
     setIsOpen(true);
-  }, [
-    closeDrawer,
-    currentConversationIdState,
-    navigate,
-    openDrawer,
-    persistedDisplayMode,
-  ]);
+  }, [closeDrawer, openDrawer, persistedDisplayMode]);
 
   const closeChatbot = useCallback(() => {
     dockedAfterLeavingFullscreenRef.current = false;

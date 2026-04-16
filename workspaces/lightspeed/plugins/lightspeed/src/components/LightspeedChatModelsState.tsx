@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { Box, Button, CircularProgress, Typography } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Link,
+  Typography,
+} from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -66,10 +72,17 @@ const useStyles = makeStyles(theme =>
     },
     actions: {
       display: 'flex',
-      flexWrap: 'wrap',
+      flexDirection: 'column',
+      alignItems: 'center',
       gap: theme.spacing(1.5),
-      justifyContent: 'center',
       marginTop: theme.spacing(1),
+    },
+    backendLink: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.5),
+      fontSize: theme.typography.body1.fontSize,
+      fontWeight: 500,
     },
   }),
 );
@@ -79,9 +92,16 @@ const useStyles = makeStyles(theme =>
  */
 export const LightspeedChatModelsLoading = () => {
   const classes = useStyles();
+  const { t } = useTranslation();
   return (
-    <div className={classes.root} data-testid="lightspeed-models-loading">
-      <CircularProgress aria-label="Loading models" />
+    <div
+      className={classes.root}
+      data-testid="lightspeed-models-loading"
+      role="status"
+      aria-busy="true"
+      aria-label={t('common.loading')}
+    >
+      <CircularProgress aria-hidden />
     </div>
   );
 };
@@ -130,16 +150,17 @@ export const LcoreNotConfiguredEmptyState = () => {
             {t('lcore.notConfigured.llamaStackDocs')} &nbsp;{' '}
             <OpenInNewIcon fontSize="small" aria-hidden />
           </Button>
-          <Button
-            variant="outlined"
+          <Link
+            className={classes.backendLink}
+            component="a"
             color="primary"
+            href={LIGHTSPEED_BACKEND_README_URL}
             target="_blank"
             rel="noopener noreferrer"
-            href={LIGHTSPEED_BACKEND_README_URL}
           >
-            {t('lcore.notConfigured.backendDocs')} &nbsp;{' '}
+            {t('lcore.notConfigured.backendDocs')}
             <OpenInNewIcon fontSize="small" aria-hidden />
-          </Button>
+          </Link>
         </Box>
       </Box>
     </div>

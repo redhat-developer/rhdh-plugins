@@ -147,7 +147,10 @@ const LightspeedChatContainerInner = () => {
   }, [selectedModel, selectedProvider]);
 
   if (loading) {
-    return null;
+    // Never return null inside the overlay modal: PatternFly's focus-trap requires at least
+    // one tabbable node (e.g. after removing the modal close button). Locale switches can
+    // briefly re-enter this loading state.
+    return <LightspeedChatModelsLoading />;
   }
 
   if (!hasViewAccess) {

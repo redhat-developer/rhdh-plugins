@@ -183,6 +183,27 @@ describe('useLightspeedProviderState', () => {
       );
       expect(mockOpenDrawer).toHaveBeenCalledWith(LIGHTSPEED_APP_DRAWER_ID);
     });
+
+    it('opens FAB in overlay when persisted mode is embedded', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/catalog']);
+
+      screen.getByTestId('toggle-button').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
+      });
+
+      expect(screen.getByTestId('display-mode')).toHaveTextContent(
+        ChatbotDisplayMode.default,
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('overlay-modal-flag')).toHaveTextContent(
+          'yes',
+        );
+      });
+    });
   });
 
   describe('closing chatbot', () => {

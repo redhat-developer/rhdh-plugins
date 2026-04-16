@@ -227,7 +227,7 @@ describe('LightspeedPage', () => {
       ).toBeInTheDocument();
     });
     expect(
-      screen.getByRole('heading', { name: 'Configure an LLM for Lightspeed' }),
+      screen.getByRole('heading', { name: 'Connect an LLM to get started' }),
     ).toBeInTheDocument();
   });
 
