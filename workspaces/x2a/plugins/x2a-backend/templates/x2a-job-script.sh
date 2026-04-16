@@ -109,6 +109,22 @@ run_x2a() {
   ERROR_MESSAGE=""
 }
 
+# Authenticated git wrappers.
+# Use url.<auth>.insteadOf to inject the token at the transport layer only.
+# The -c flag is transient (applies only to that git invocation), so the
+# token never appears in remote URLs, git config, or generated files like
+# Policyfile.lock.json. This works across GitHub, GitLab, and Bitbucket
+# because git natively handles the https://token@host URL format.
+git_source_repo() {
+  local auth_url="https://${SOURCE_REPO_TOKEN}@${SOURCE_REPO_URL#https://}"
+  git -c "url.${auth_url}.insteadOf=${SOURCE_REPO_URL}" "$@"
+}
+
+git_target_repo() {
+  local auth_url="https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}"
+  git -c "url.${auth_url}.insteadOf=${TARGET_REPO_URL}" "$@"
+}
+
 # Cleanup trap: fires on every exit (success or failure).
 # Guarantees exactly one report_result call regardless of how the script ends.
 cleanup() {
@@ -132,9 +148,9 @@ Job: ${JOB_ID}
 
 Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 " || true
-    git pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
+    git_target_repo pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
     COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
-    if ! git push origin "${TARGET_REPO_BRANCH}"; then
+    if ! git_target_repo push origin "${TARGET_REPO_BRANCH}"; then
       PUSH_FAILED="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
       echo "ERROR: ${PUSH_FAILED}"
     fi
@@ -154,25 +170,17 @@ Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 git_clone_repos() {
   echo "=== Cloning source repository ==="
   ERROR_MESSAGE="Failed to clone source repository from ${SOURCE_REPO_URL}"
-  git clone --depth=1 --single-branch --branch="${SOURCE_REPO_BRANCH}" \
-    "https://${SOURCE_REPO_TOKEN}@${SOURCE_REPO_URL#https://}" \
-    /workspace/source
-
-  # Strip the token from the git remote URL so that tools like Chef's
-  # CookbookProfiler::Git (which reads `git config --get remote.origin.url`)
-  # never see the credential. This prevents tokens from leaking into
-  # generated files such as Policyfile.lock.json.
-  git -C /workspace/source remote set-url origin "${SOURCE_REPO_URL}"
+  git_source_repo clone --depth=1 --single-branch \
+    --branch="${SOURCE_REPO_BRANCH}" "${SOURCE_REPO_URL}" /workspace/source
 
   echo "=== Cloning target repository ==="
-  local target_auth_url="https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}"
-
   ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
-  if git clone --depth=1 --single-branch --branch="${TARGET_REPO_BRANCH}" \
-      "${target_auth_url}" /workspace/target 2>/dev/null; then
+  if git_target_repo clone --depth=1 --single-branch \
+      --branch="${TARGET_REPO_BRANCH}" "${TARGET_REPO_URL}" /workspace/target 2>/dev/null; then
     # Repo and branch exist — cloned successfully
     :
-  elif git clone --depth=1 "${target_auth_url}" /workspace/target 2>/dev/null; then
+  elif git_target_repo clone --depth=1 \
+      "${TARGET_REPO_URL}" /workspace/target 2>/dev/null; then
     # Repo exists but branch doesn't — create target branch locally
     echo "Branch '${TARGET_REPO_BRANCH}' not found on remote, creating it"
     cd /workspace/target
@@ -184,7 +192,7 @@ git_clone_repos() {
     cd /workspace/target
     git init
     git checkout -b "${TARGET_REPO_BRANCH}"
-    git remote add origin "${target_auth_url}"
+    git remote add origin "${TARGET_REPO_URL}"
   fi
 
   ERROR_MESSAGE=""
