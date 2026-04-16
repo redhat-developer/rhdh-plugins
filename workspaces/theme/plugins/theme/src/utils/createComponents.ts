@@ -111,6 +111,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             fontWeight: 'normal',
           },
         },
+        button: {
+          textTransform: 'none',
+        },
       },
     };
   }
@@ -748,6 +751,13 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               },
             },
           },
+        },
+      },
+    };
+    components.BackstageIconLinkVertical = {
+      styleOverrides: {
+        label: {
+          textTransform: 'none',
         },
       },
     };
