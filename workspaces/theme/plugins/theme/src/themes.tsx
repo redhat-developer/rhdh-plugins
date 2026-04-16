@@ -55,7 +55,7 @@ export const getAllThemes = (): AppTheme[] => {
       title: 'RHDH Light (customized)',
       variant: 'light',
       icon: <LightIcon />,
-      Provider: createThemeProviderForThemeConfig({
+      Provider: createThemeProviderForThemeConfig('light-customized', {
         mode: 'light',
         variant: 'rhdh',
         palette: {
@@ -69,7 +69,7 @@ export const getAllThemes = (): AppTheme[] => {
       title: 'RHDH Dark (customized)',
       variant: 'dark',
       icon: <DarkIcon />,
-      Provider: createThemeProviderForThemeConfig({
+      Provider: createThemeProviderForThemeConfig('dark-customized', {
         mode: 'dark',
         variant: 'rhdh',
         palette: {
@@ -83,14 +83,14 @@ export const getAllThemes = (): AppTheme[] => {
       title: 'Backstage Light',
       variant: 'light',
       icon: <LightIcon />,
-      Provider: createThemeProvider(themes.light),
+      Provider: createThemeProvider('backstage-light', themes.light),
     },
     {
       id: 'backstage-dark',
       title: 'Backstage Dark',
       variant: 'dark',
       icon: <DarkIcon />,
-      Provider: createThemeProvider(themes.dark),
+      Provider: createThemeProvider('backstage-dark', themes.dark),
     },
   ];
 };

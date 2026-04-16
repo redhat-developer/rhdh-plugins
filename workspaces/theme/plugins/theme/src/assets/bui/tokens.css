@@ -1,0 +1,349 @@
+body[data-theme-name='light'][data-theme-mode='light'],
+body[data-theme-name='dark'][data-theme-mode='dark'] {
+  /*
+   * Override BUI tokens with PatternFly tokens. In this storybook and in ui-docs the fallback is always used.
+   * These tokens are used here for documentation purposes to show how the BUI tokens map to PatternFly tokens.
+   */
+
+  /* Font families */
+  --bui-font-regular: var(
+    --pf-t--global--font--family--body,
+    'Red Hat Text',
+    'RedHatText',
+    'Noto Sans Arabic',
+    'Noto Sans Hebrew',
+    'Noto Sans JP',
+    'Noto Sans KR',
+    'Noto Sans Malayalam',
+    'Noto Sans SC',
+    'Noto Sans TC',
+    'Noto Sans Thai',
+    Helvetica,
+    Arial,
+    sans-serif
+  );
+  /* This `--bui-redhat-` prefixed variable does NOT exist in BUI but is used only in this theme by some components below */
+  --bui-redhat-theme-font-heading: var(
+    --pf-t--global--font--family--heading,
+    'Red Hat Display',
+    'RedHatDisplay',
+    'Noto Sans Arabic',
+    'Noto Sans Hebrew',
+    'Noto Sans JP',
+    'Noto Sans KR',
+    'Noto Sans Malayalam',
+    'Noto Sans SC',
+    'Noto Sans TC',
+    'Noto Sans Thai',
+    Helvetica,
+    Arial,
+    sans-serif
+  );
+  --bui-font-monospace: var(
+    --pf-t--global--font--family--mono,
+    'Red Hat Mono',
+    'RedHatMono',
+    'Courier New',
+    Courier,
+    monospace
+  );
+
+  /* Font weights */
+  --bui-font-weight-regular: var(
+    --pf-t--global--font--weight--body--default,
+    400
+  );
+  --bui-font-weight-bold: var(--pf-t--global--font--weight--body--bold, 600);
+  /* This `--bui-redhat-` prefixed variable does NOT exist in BUI but is used only in this theme by some components below */
+  --bui-redhat-theme-font-weight-heading-regular: var(
+    --pf-t--global--font--weight--heading--default,
+    400
+  );
+  /* This `--bui-redhat-` prefixed variable does NOT exist in BUI but is used only in this theme by some components below */
+  --bui-redhat-theme-font-weight-heading-bold: var(
+    --pf-t--global--font--weight--heading--bold,
+    600
+  );
+
+  /*
+  * Font sizes are mostly similar between BUI and this theme. We used a slightly bigger font size.
+  *
+  * BUI "Body Medium" = --bui-font-size-3 is 0.875rem but we aligned with --pf-t--global--font--size--md which is 1rem.
+  *
+  * TODO: Check line height.
+  */
+  --bui-font-size-1: var(
+    --pf-t--global--font--size--xs,
+    0.75rem
+  ); /* BUI default 0.625rem = 10px */
+  --bui-font-size-2: var(
+    --pf-t--global--font--size--sm,
+    0.875rem
+  ); /* BUI default 0.75rem = 12px */
+  --bui-font-size-3: var(
+    --pf-t--global--font--size--md,
+    14px /*1rem*/
+  ); /* BUI default 0.875rem = 14px */
+  --bui-font-size-4: var(
+    --pf-t--global--font--size--lg,
+    1.125rem
+  ); /* BUI default 1rem = 16px */
+  --bui-font-size-5: var(
+    --pf-t--global--font--size--xl,
+    1.25rem
+  ); /* BUI default 1.25rem = 20px */
+  --bui-font-size-6: var(
+    --pf-t--global--font--size--2xl,
+    1.5rem
+  ); /* BUI default 1.5rem = 24px */
+  --bui-font-size-7: var(
+    --pf-t--global--font--size--3xl,
+    1.75rem
+  ); /* BUI default 2rem = 32px */
+  --bui-font-size-8: var(
+    --pf-t--global--font--size--4xl,
+    2.25rem
+  ); /* BUI default 3rem = 48px */
+  --bui-font-size-9: var(
+    --pf-t--global--font--size--5xl,
+    3rem
+  ); /* BUI default 4rem = 64px */
+  --bui-font-size-10: var(
+    --pf-t--global--font--size--6xl,
+    4rem
+  ); /* BUI default 5.75rem = 92px */
+
+  /*
+   * Spacing
+   *
+   * Use default BUI spacing tokens because they are matching mostly the PatternFly tokens.
+   * 
+   * For example `--bui-space: 0.25rem` is same as `pf-t--global--spacer--xs: 0.25rem`
+   */
+
+  /*
+   * Radius
+   *
+   * While BUI has 6 radius tokens and a `full` token, PatternFly has just 4 radius tokens and a `sharp` (0px) and a `pill` token.
+   * We mapped the BUI tokens to the closest PatternFly tokens and used custom values in the middle between `small` and `medium`
+   * so that BUI component users can still expect different radius options.
+   *
+   * The `full` token is mapped to the `pill` token in PatternFly but we kept 9999px instead of 999px from PF.
+   */
+  --bui-radius-1: var(
+    --pf-t--global--border--radius--tiny,
+    4px
+  ); /* default: 0.125rem */
+  --bui-radius-2: var(
+    --pf-t--global--border--radius--small,
+    6px
+  ); /* default: 0.25rem */
+  --bui-radius-3: 8px; /* default: 0.5rem */
+  --bui-radius-4: 12px; /* default: 0.75rem */
+  --bui-radius-5: var(
+    --pf-t--global--border--radius--medium,
+    16px
+  ); /* default: 1rem */
+  --bui-radius-6: var(
+    --pf-t--global--border--radius--large,
+    24px
+  ); /* default: 1.25rem */
+  --bui-radius-full: var(
+    --pf-t--global--border--radius--pill,
+    9999px
+  ); /* default: 9999px */
+}
+
+body[data-theme-name='light'][data-theme-mode='light'] {
+  /* Base Colors */
+  --bui-black: #151515;
+  --bui-white: #ffffff;
+
+  /* Solid background colors */
+  --bui-bg-solid: var(--pf-t--global--icon--color--brand--default, #0066cc);
+  --bui-bg-solid-hover: var(--pf-t--global--icon--color--brand--hover, #004d99);
+  --bui-bg-solid-pressed: var(
+    --pf-t--global--icon--color--brand--clicked,
+    #004d99
+  );
+  --bui-bg-solid-disabled: var(
+    --pf-t--global--background--color--disabled--default,
+    #c7c7c7
+  );
+
+  /* Neutral background colors */
+  /* --bui-bg-app: #f8f8f8; */
+
+  --bui-bg-neutral-1: #fff;
+  --bui-bg-neutral-1-hover: oklch(0% 0 0 / 6%);
+  --bui-bg-neutral-1-pressed: oklch(0% 0 0 / 12%);
+  --bui-bg-neutral-1-disabled: oklch(0% 0 0 / 6%);
+
+  --bui-bg-neutral-2: oklch(0% 0 0 / 6%);
+  --bui-bg-neutral-2-hover: oklch(0% 0 0 / 12%);
+  --bui-bg-neutral-2-pressed: oklch(0% 0 0 / 16%);
+  --bui-bg-neutral-2-disabled: oklch(0% 0 0 / 6%);
+
+  --bui-bg-neutral-3: oklch(0% 0 0 / 6%);
+  --bui-bg-neutral-3-hover: oklch(0% 0 0 / 12%);
+  --bui-bg-neutral-3-pressed: oklch(0% 0 0 / 16%);
+  --bui-bg-neutral-3-disabled: oklch(0% 0 0 / 6%);
+
+  --bui-bg-neutral-4: oklch(0% 0 0 / 6%);
+  --bui-bg-neutral-4-hover: oklch(0% 0 0 / 12%);
+  --bui-bg-neutral-4-pressed: oklch(0% 0 0 / 16%);
+  --bui-bg-neutral-4-disabled: oklch(0% 0 0 / 6%);
+
+  /* Status background colors */
+  --bui-bg-danger: #ffe2e2;
+  --bui-bg-warning: #ffedd5;
+  --bui-bg-success: #dcfce7;
+  --bui-bg-info: #dbeafe;
+
+  /* Foreground colors */
+  --bui-fg-primary: var(--bui-black);
+  --bui-fg-secondary: oklch(0% 0 0 / 50%);
+  --bui-fg-disabled: oklch(0% 0 0 / 28%);
+  --bui-fg-solid: var(--bui-white);
+  --bui-fg-solid-disabled: var(
+    --pf-t--global--text--color--on-disabled,
+    #4d4d4d
+  );
+
+  /* Foreground Statuses */
+  --bui-fg-danger-on-bg: #991919;
+  --bui-fg-warning-on-bg: #92310a;
+  --bui-fg-success-on-bg: #116932;
+  --bui-fg-info-on-bg: #173da6;
+  --bui-fg-danger: #ec3b18;
+  --bui-fg-warning: #ef7a32;
+  --bui-fg-success: #1aaf4f;
+  --bui-fg-info: #0d74ce;
+
+  /* Border colors */
+  --bui-border-1: #d5d5d5;
+  --bui-border-2: #bababa;
+  --bui-border-info: var(
+    --pf-t--global--border--color--status--info--default,
+    #5e40be
+  );
+  --bui-border-danger: var(
+    --pf-t--global--border--color--status--danger--default,
+    #b1380b
+  );
+  --bui-border-warning: var(
+    --pf-t--global--border--color--status--warning--default,
+    #ffcc17
+  );
+  --bui-border-success: var(
+    --pf-t--global--border--color--status--success--default,
+    #3d7317
+  );
+
+  /* Special colors */
+  --bui-ring: #1f5493;
+  --bui-scrollbar: #a0a0a03b;
+  --bui-scrollbar-thumb: #a0a0a0;
+
+  /* Shadows */
+  --bui-shadow: rgba(41, 41, 41, 0.15) 0px 10px 20px 0px;
+
+  --bui-animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+body[data-theme-name='dark'][data-theme-mode='dark'] {
+  /* Base Colors */
+  --bui-black: #151515;
+  --bui-white: #ffffff;
+
+  /* Solid background colors */
+  --bui-bg-solid: var(--pf-t--global--icon--color--brand--default, #b9dafc);
+  --bui-bg-solid-hover: var(--pf-t--global--icon--color--brand--hover, #e0f0ff);
+  --bui-bg-solid-pressed: var(
+    --pf-t--global--icon--color--brand--clicked,
+    #e0f0ff
+  );
+  --bui-bg-solid-disabled: var(
+    --pf-t--global--background--color--disabled--default,
+    #a3a3a3
+  );
+
+  /* Neutral background colors */
+  /* --bui-bg-app: #f8f8f8; */
+
+  --bui-bg-neutral-1: oklch(100% 0 0 / 10%);
+  --bui-bg-neutral-1-hover: oklch(100% 0 0 / 14%);
+  --bui-bg-neutral-1-pressed: oklch(100% 0 0 / 20%);
+  --bui-bg-neutral-1-disabled: oklch(100% 0 0 / 10%);
+
+  --bui-bg-neutral-2: oklch(100% 0 0 / 6%);
+  --bui-bg-neutral-2-hover: oklch(100% 0 0 / 10%);
+  --bui-bg-neutral-2-pressed: oklch(100% 0 0 / 16%);
+  --bui-bg-neutral-2-disabled: oklch(100% 0 0 / 6%);
+
+  --bui-bg-neutral-3: oklch(100% 0 0 / 8%);
+  --bui-bg-neutral-3-hover: oklch(100% 0 0 / 12%);
+  --bui-bg-neutral-3-pressed: oklch(100% 0 0 / 20%);
+  --bui-bg-neutral-3-disabled: oklch(100% 0 0 / 8%);
+
+  --bui-bg-neutral-4: oklch(100% 0 0 / 8%);
+  --bui-bg-neutral-4-hover: oklch(100% 0 0 / 12%);
+  --bui-bg-neutral-4-pressed: oklch(100% 0 0 / 20%);
+  --bui-bg-neutral-4-disabled: oklch(100% 0 0 / 8%);
+
+  /* Status background colors */
+  --bui-bg-danger: #ffe2e2;
+  --bui-bg-warning: #ffedd5;
+  --bui-bg-success: #dcfce7;
+  --bui-bg-info: #dbeafe;
+
+  /* Foreground colors */
+  --bui-fg-primary: var(--bui-white);
+  --bui-fg-secondary: oklch(100% 0 0 / 50%);
+  --bui-fg-disabled: oklch(100% 0 0 / 28%);
+  --bui-fg-solid: #101821;
+  --bui-fg-solid-disabled: var(
+    --pf-t--global--text--color--on-disabled,
+    #383838
+  );
+
+  /* Foreground Statuses */
+  --bui-fg-danger-on-bg: #991919;
+  --bui-fg-warning-on-bg: #92310a;
+  --bui-fg-success-on-bg: #116932;
+  --bui-fg-info-on-bg: #173da6;
+  --bui-fg-danger: #ec3b18;
+  --bui-fg-warning: #ef7a32;
+  --bui-fg-success: #1aaf4f;
+  --bui-fg-info: #0d74ce;
+
+  /* Border colors */
+  --bui-border-1: #d5d5d5;
+  --bui-border-2: #bababa;
+  --bui-border-info: var(
+    --pf-t--global--border--color--status--info--default,
+    #5e40be
+  );
+  --bui-border-danger: var(
+    --pf-t--global--border--color--status--danger--default,
+    #b1380b
+  );
+  --bui-border-warning: var(
+    --pf-t--global--border--color--status--warning--default,
+    #ffcc17
+  );
+  --bui-border-success: var(
+    --pf-t--global--border--color--status--success--default,
+    #3d7317
+  );
+
+  /* Special colors */
+  --bui-ring: #1f5493;
+  --bui-scrollbar: #a0a0a03b;
+  --bui-scrollbar-thumb: #a0a0a0;
+
+  /* Shadows */
+  --bui-shadow: rgba(0, 0, 0, 0.5) 0px 10px 20px 0px;
+
+  --bui-animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

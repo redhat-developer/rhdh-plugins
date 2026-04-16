@@ -18,6 +18,8 @@ export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
 export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
 
 import './assets/fonts/font.min.css';
+import './assets/bui/tokens.css';
+import './assets/bui/component-overrides.css';
 
 export * from './hooks';
 export * from './themes';

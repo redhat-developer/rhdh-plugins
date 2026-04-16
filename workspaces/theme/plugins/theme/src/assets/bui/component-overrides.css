@@ -1,0 +1,307 @@
+body[data-theme-name='light'][data-theme-mode='light'],
+body[data-theme-name='dark'][data-theme-mode='dark'] {
+  /*
+   * Override some Backstage UI component styles to match the PatternFly design.
+   */
+
+  /*
+   * Align Accordion to https://www.patternfly.org/components/accordion
+   *
+   * Remove the padding from the accordion and put it on the button and
+   * panel to increase the click size -- and align it visually with PatternFly
+   */
+  .bui-Accordion {
+    padding: 0;
+  }
+  .bui-AccordionTriggerButton {
+    border-top-left-radius: var(--bui-radius-3);
+    border-top-right-radius: var(--bui-radius-3);
+    padding: var(--bui-space-3);
+  }
+  .bui-Accordion[data-expanded='true'] > .bui-AccordionPanel {
+    margin: var(--bui-space-3);
+    margin-top: 0px;
+    padding: var(--bui-space-3);
+  }
+
+  .bui-Accordion[data-expanded='true'][data-bg='neutral-1'] {
+    background-color: var(--bui-bg-neutral-2);
+  }
+  .bui-AccordionTriggerButton:hover,
+  .bui-AccordionTriggerButton:focus {
+    background-color: var(--bui-bg-neutral-3);
+  }
+  .bui-Accordion[data-expanded='true'][data-bg='neutral-1']
+    > .bui-AccordionPanel {
+    background-color: var(--bui-bg-neutral-1);
+    /* padding: var(--bui-space-2); */
+    border-radius: var(--bui-radius-3);
+  }
+
+  /*
+   * Align Alert to https://www.patternfly.org/components/alert
+   */
+  .bui-Alert {
+    --alert-border-color: var(--bui-border-1);
+
+    background-color: var(--bui-bg-neutral-1);
+    color: var(--bui-fg-primar);
+    border: 2px solid var(--alert-border-color);
+    border-radius: var(--bui-radius-5);
+    box-shadow: var(--bui-shadow);
+  }
+
+  .bui-Alert[data-status='info'] {
+    --alert-border-color: var(--bui-border-info);
+  }
+  .bui-Alert[data-status='success'] {
+    --alert-border-color: var(--bui-border-success);
+  }
+  .bui-Alert[data-status='warning'] {
+    --alert-border-color: var(--bui-border-warning);
+  }
+  .bui-Alert[data-status='danger'] {
+    --alert-border-color: var(--bui-border-danger);
+  }
+  .bui-AlertIcon {
+    color: var(--alert-border-color);
+  }
+
+  /*
+   * Align Button to https://www.patternfly.org/components/button/
+   */
+  .bui-Button {
+    background: var(--bg)
+      radial-gradient(
+        circle,
+        transparent 1%,
+        color-mix(in srgb, currentcolor 15%, transparent) 2%
+      )
+      center/15000% 15000%;
+    border-radius: var(--bui-radius-full);
+    font-weight: var(--bui-font-weight-normal);
+    padding: 8px 24px;
+  }
+  .bui-Button:active {
+    background-size: 100% 100%;
+    transition-duration: 0s;
+  }
+
+  .bui-Button[data-variant='primary'] {
+    --bg: var(--bui-bg-solid);
+    --bg-hover: var(--bui-bg-solid-hover);
+    --bg-active: var(--bui-bg-solid-pressed);
+    --fg: var(--bui-fg-solid);
+  }
+  .bui-Button[data-variant='secondary'] {
+    --bg: transparent;
+    --bg-hover: transparent;
+    --bg-active: transparent;
+    --fg: var(--bui-bg-solid);
+    border: 1px solid var(--bui-bg-solid);
+    &:hover {
+      border-color: var(--bui-bg-solid-hover);
+      outline: 1px solid var(--bui-bg-solid-hover);
+    }
+  }
+  .bui-Button[data-variant='tertiary'] {
+    --bg: transparent;
+    --bg-hover: transparent;
+    --bg-active: transparent;
+    --fg: var(--bui-bg-solid);
+    border: 1px solid var(--pf-v6-c-button--m-tertiary--BorderColor, #c7c7c7);
+    &:hover {
+      border-color: var(--pf-v6-c-button--hover--BorderColor, #c7c7c7);
+      outline: 1px solid var(--bui-bg-solid-hover);
+    }
+  }
+
+  .bui-Button[data-variant='primary'][data-destructive='true'] {
+    --bg: var(--pf-v6-c-button--m-danger--BackgroundColor, #f0561d);
+  }
+  .bui-Button[data-variant='secondary'][data-destructive='true'] {
+    --fg: var(--pf-v6-c-button--m-danger--Color, #f89b78);
+    border: 1px solid var(--pf-v6-c-button--m-secondary--m-danger--BorderColor, #f0561d);
+  }
+  .bui-Button[data-variant='tertiary'][data-destructive='true'] {
+    --fg: var(--pf-v6-c-button--m-danger--Color, #f89b78);
+  }
+
+  .bui-Button[data-variant='primary'][data-disabled='true'],
+  .bui-Button[data-variant='secondary'][data-disabled='true'],
+  .bui-Button[data-variant='tertiary'][data-disabled='true'] {
+    --bg: var(--bui-bg-solid-disabled);
+    --bg-hover: var(--bui-bg-solid-disabled);
+    --bg-active: var(--bui-bg-solid-disabled);
+    --fg: var(--bui-fg-solid-disabled);
+    border: 1px solid var(--bg);
+    &:hover {
+      border-color: var(--bg);
+      outline: none;
+    }
+  }
+
+  /*
+   * Align ButtonLink to https://www.patternfly.org/components/button/
+   *
+   * By default they look in Backstage UI more like buttons but in PatternFly they look more like links.
+   */
+  .bui-ButtonLink,
+  .bui-ButtonLink[data-variant='primary'] {
+    --bg: transparent;
+    --bg-hover: var(--bui-bg-neutral-1-hover);
+    --bg-active: transparent;
+    --fg: var(--pf-t--global--icon--color--brand--default, #0066cc);
+
+    font-weight: var(--bui-font-weight-normal);
+  }
+  .bui-ButtonLink[data-variant='primary'] {
+    font-weight: var(--bui-font-weight-bold);
+  }
+  .bui-ButtonLink[data-disabled='true'] {
+    --bg: transparent;
+    --bg-hover: transparent;
+    --bg-active: transparent;
+    --fg: var(--bui-fg-solid-disabled);
+  }
+
+  /*
+   * Align Card to https://www.patternfly.org/components/card
+   */
+  .bui-Card {
+    border: 1px solid var(--pf-t--global--border--color--default, #c7c7c7);
+    border-radius: var(
+      --bui-radius-5
+    ); /* pf-t--global--border--radius--medium is use for moderately rounded corners, like cards. */
+    padding: var(--bui-space-4);
+  }
+  /* TODO: improve scroll gradient in Card.module.css. For now, we have disabled that gradient shadow. */
+  /* https://www.bram.us/2023/09/16/solved-by-css-scroll-driven-animations-detect-if-an-element-can-scroll-or-not/ */
+  .bui-Card:has(.bui-CardHeader) .bui-CardBody {
+    &::before {
+      background: none;
+    }
+  }
+  .bui-Card:has(.bui-CardFooter) .bui-CardBody {
+    &::after {
+      background: none;
+    }
+  }
+  .bui-CardBody::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 7px;
+  }
+  .bui-CardBody::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+  }
+
+  /*
+   * Disable max-width until common pages are aligned.
+   * max-width might be a good idea but the catalog table and buttons should be still aligned.
+   */
+  .bui-Container {
+    max-width: none;
+  }
+
+  /*
+   * Align the Dialog with PatternFly Modal https://www.patternfly.org/components/modal
+   */
+  .bui-Dialog {
+    --dialog-border-radius: var(--bui-radius-6);
+  }
+  .bui-DialogHeader {
+    padding-inline-start: var(--bui-space-5);
+    padding-block-start: var(--bui-space-4);
+    border-bottom: none;
+  }
+  .bui-DialogHeader > .bui-Button[slot='close'] {
+    border: none;
+    border-radius: var(--bui-radius-3);
+    color: var(--bui-black);
+    background-color: transparent;
+    padding: var(--bui-space-2);
+  }
+  .bui-DialogHeader > .bui-Button[slot='close']:hover {
+    background-color: var(--bui-bg-neutral-1-hover);
+    border: none;
+    outline: none;
+  }
+  .bui-DialogHeader > .bui-Button[slot='close'] > span > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .bui-DialogBody {
+    padding: var(--bui-space-5);
+  }
+  .bui-DialogFooter {
+    padding-inline-start: var(--bui-space-5);
+    padding-block-end: var(--bui-space-5);
+    border-top: none;
+    /* This is probably a bit "dangerous" ... swap buttons to the left and also change their order. */
+    justify-content: start;
+    flex-direction: row-reverse;
+  }
+
+  /*
+   * Header nav item is aliged with tabs https://www.patternfly.org/components/tabs
+   */
+  .bui-HeaderNavList {
+    border-bottom: 1px solid var(--bui-border-1);
+  }
+  .bui-HeaderNavActive {
+    bottom: 1px;
+    height: 3px;
+    --bui-fg-primary: var(--bui-bg-solid);
+  }
+
+  /*
+   * Align Tabs to https://www.patternfly.org/components/tabs
+   */
+  .bui-TabList {
+    border-bottom: 1px solid var(--bui-border-1);
+  }
+  .bui-Tab {
+    margin-block: var(--bui-space-1);
+  }
+  .bui-TabActive {
+    bottom: 1px;
+    height: 3px;
+    --bui-fg-primary: var(--bui-bg-solid);
+  }
+
+  /*
+   * Aligned Tags to PatternFly Label https://www.patternfly.org/components/label
+   */
+  .bui-Tag {
+    border-radius: var(--bui-radius-full);
+  }
+
+  /*
+   * Aligned ToggleButton to PatternFly ToggleGroup https://www.patternfly.org/components/toggle-group
+   */
+  .bui-ToggleButton {
+    border: 1px solid var(--bui-border-1);
+    font-weight: var(--bui-font-weight-normal);
+    padding: var(--bui-space-4) var(--bui-space-4);
+  }
+}
+
+body[data-theme-name='light'][data-theme-mode='light'] {
+  .bui-DialogContent {
+    background-color: var(--pf-v6-c-modal-box--BackgroundColor, ##ffffff);
+  }
+  .bui-DialogHeader > .bui-Button[slot='close'] {
+    color: var(--bui-black);
+  }
+}
+
+body[data-theme-name='dark'][data-theme-mode='dark'] {
+  .bui-DialogContent {
+    background-color: var(--pf-v6-c-modal-box--BackgroundColor, #383838);
+  }
+  .bui-DialogHeader > .bui-Button[slot='close'] {
+    color: var(--bui-dark);
+  }
+}
