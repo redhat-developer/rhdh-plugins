@@ -97,13 +97,8 @@ export async function findAllRepositories(
 
   sortRepos(notImportedYetRepositories);
 
-  const slicedRepositories = notImportedYetRepositories.slice(
-    (pageNumber - 1) * pageSize,
-    pageNumber * pageSize,
-  );
-
   const gitRepositoryResponse: SCMRepositoryResponse = {
-    repositories: slicedRepositories,
+    repositories: notImportedYetRepositories,
     errors,
     totalCount: notImportedYetRepositories.length,
   };
