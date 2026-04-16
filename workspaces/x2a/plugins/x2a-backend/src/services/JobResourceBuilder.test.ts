@@ -15,8 +15,7 @@
  */
 
 import { JobResourceBuilder } from './JobResourceBuilder';
-import { X2AConfig } from '../../config';
-import { JobCreateParams } from './types';
+import { X2AConfig, JobCreateParams } from './types';
 
 describe('JobResourceBuilder', () => {
   let mockConfig: X2AConfig;

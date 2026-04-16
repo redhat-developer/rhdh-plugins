@@ -242,6 +242,15 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'retriggerInit.confirm.userPromptPlaceholder':
       'Proporcione instrucciones adicionales para la conversión…',
     'retriggerInit.confirm.confirmButton': 'Reiniciar',
+    'retriggerInit.firstTrigger.title':
+      '¿Activar la fase de inicio para "{{name}}"?',
+    'retriggerInit.firstTrigger.message':
+      'Una vez confirmado, se iniciará la fase de descubrimiento de este proyecto. Es posible que se le soliciten los tokens SCM de origen y destino.',
+    'retriggerInit.firstTrigger.userPromptLabel':
+      'Instrucciones del usuario (opcional)',
+    'retriggerInit.firstTrigger.userPromptPlaceholder':
+      'Proporcione instrucciones adicionales para la conversión…',
+    'retriggerInit.firstTrigger.confirmButton': 'Activar fase de inicio',
     'retriggerInit.error':
       'Error al reiniciar la fase de inicio del proyecto "{{name}}"',
     'retriggerInit.errorStart':
