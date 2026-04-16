@@ -294,19 +294,6 @@ export class DocumentService {
     // Delete from vector store first
     await this.client.vectorStores.files.delete(sessionId, file.id);
 
-    // Also delete the underlying file from Files API to prevent orphaned files
-    try {
-      await this.client.files.delete(file.file_id);
-      this.logger.info(
-        `Deleted underlying file ${file.file_id} from Files API`,
-      );
-    } catch (error) {
-      // Log but don't fail if file already deleted or not found
-      this.logger.warn(
-        `Failed to delete file ${file.file_id} from Files API: ${error}`,
-      );
-    }
-
     this.logger.info(
       `Deleted document ${documentTitle} (file ${file.id}) from session ${sessionId}`,
     );

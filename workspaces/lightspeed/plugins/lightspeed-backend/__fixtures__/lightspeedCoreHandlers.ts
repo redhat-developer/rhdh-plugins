@@ -16,9 +16,9 @@
 
 import { http, HttpResponse, type HttpHandler } from 'msw';
 
-import { DEFAULT_LIGHTSPEED_SERVICE_PORT } from '../src/service/constant';
-
-export const LIGHTSPEED_CORE_ADDR = `http://0.0.0.0:${DEFAULT_LIGHTSPEED_SERVICE_PORT}`;
+// Use port 7007 for tests (matches notebooksRouter.test.ts config)
+const TEST_LIGHTSPEED_SERVICE_PORT = 7007;
+export const LIGHTSPEED_CORE_ADDR = `http://0.0.0.0:${TEST_LIGHTSPEED_SERVICE_PORT}`;
 
 // Mock session data
 export const mockSession1 = {
