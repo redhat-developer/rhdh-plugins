@@ -202,9 +202,12 @@ export async function createBackendRouter(
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
     permissions: orchestratorPermissions,
   });
-  router.use(express.json());
+  const contentLengthLimit = config.getOptionalString(
+    'orchestrator.contentLengthLimit',
+  );
+  router.use(express.json({ limit: contentLengthLimit }));
   router.use(permissionsIntegrationRouter);
-  router.use('/workflows', express.text());
+  router.use('/workflows', express.text({ limit: contentLengthLimit }));
   router.get('/health', (_, response) => {
     logger.info('PONG!');
     response.json({ status: 'ok' });
