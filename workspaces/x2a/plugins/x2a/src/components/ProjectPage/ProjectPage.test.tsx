@@ -36,9 +36,17 @@ jest.mock('@backstage/core-plugin-api', () => ({
   useRouteRefParams: () => ({ projectId: 'proj-1' }),
 }));
 
+const mockNavigate = jest.fn();
+let mockLocation = {
+  pathname: '/projects/proj-1',
+  search: '',
+  hash: '',
+};
+
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
+  useNavigate: () => mockNavigate,
+  useLocation: () => mockLocation,
 }));
 
 const mockRetriggerInit = jest.fn().mockResolvedValue('job-1');
@@ -102,10 +110,14 @@ jest.mock('../BulkRunConfirmDialog', () => ({
 jest.mock('../RetriggerInitConfirmDialog', () => ({
   RetriggerInitConfirmDialog: (props: {
     open: boolean;
+    copyVariant?: string;
     onConfirm: (userPrompt: string) => void;
   }) =>
     props.open ? (
-      <div data-testid="confirm-dialog-retrigger-init-page">
+      <div
+        data-testid="confirm-dialog-retrigger-init-page"
+        data-copy-variant={props.copyVariant ?? 'retrigger'}
+      >
         <button
           data-testid="confirm-btn-retrigger-init-page"
           onClick={() => props.onConfirm('test prompt')}
@@ -164,7 +176,11 @@ import {
   act,
   fireEvent,
 } from '@testing-library/react';
-import { POLLING_INTERVAL_MS } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  POLLING_INTERVAL_MS,
+  RUN_INIT_DEEP_LINK_HASH,
+  RUN_NEXT_DEEP_LINK_HASH,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ProjectPage } from './ProjectPage';
 
 const mockProject = {
@@ -185,6 +201,14 @@ const mockModules = [
   { name: 'module-b', id: 'mod-b' },
 ];
 
+function mockOkJsonResponse<T>(body: T) {
+  return {
+    ok: true as const,
+    status: 200,
+    json: async () => body,
+  };
+}
+
 describe('ProjectPage', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -192,6 +216,8 @@ describe('ProjectPage', () => {
     mockModulesGet.mockReset();
     mockCanRunNextPhase.mockReset();
     mockRetriggerInit.mockReset().mockResolvedValue('job-1');
+    mockNavigate.mockReset();
+    mockLocation = { pathname: '/projects/proj-1', search: '', hash: '' };
   });
 
   afterEach(() => {
@@ -208,8 +234,8 @@ describe('ProjectPage', () => {
   });
 
   it('renders project data after successful fetch', async () => {
-    mockProjectGet.mockResolvedValue({ json: async () => mockProject });
-    mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+    mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+    mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
 
     render(<ProjectPage />);
 
@@ -223,7 +249,7 @@ describe('ProjectPage', () => {
 
   it('shows error panel when fetch fails', async () => {
     mockProjectGet.mockRejectedValue(new Error('API failure'));
-    mockModulesGet.mockResolvedValue({ json: async () => [] });
+    mockModulesGet.mockResolvedValue(mockOkJsonResponse([]));
 
     render(<ProjectPage />);
 
@@ -234,9 +260,30 @@ describe('ProjectPage', () => {
     expect(screen.getByText(/API failure/)).toBeInTheDocument();
   });
 
+  it('shows error panel when project API returns 404', async () => {
+    mockProjectGet.mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => ({ error: { message: 'Project not found' } }),
+    });
+    mockModulesGet.mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => ({ error: { message: 'Modules not found' } }),
+    });
+
+    render(<ProjectPage />);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Project not found/)).toBeInTheDocument();
+  });
+
   it('polls for data after POLLING_INTERVAL_MS', async () => {
-    mockProjectGet.mockResolvedValue({ json: async () => mockProject });
-    mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+    mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+    mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
 
     render(<ProjectPage />);
 
@@ -262,8 +309,8 @@ describe('ProjectPage', () => {
   });
 
   it('does not show loading indicator during polling refresh', async () => {
-    mockProjectGet.mockResolvedValue({ json: async () => mockProject });
-    mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+    mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+    mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
 
     render(<ProjectPage />);
 
@@ -301,8 +348,8 @@ describe('ProjectPage', () => {
     expect(mockProjectGet).toHaveBeenCalledTimes(1);
     expect(mockModulesGet).toHaveBeenCalledTimes(1);
 
-    projectResolve!({ json: async () => mockProject });
-    modulesResolve!({ json: async () => mockModules });
+    projectResolve!(mockOkJsonResponse(mockProject));
+    modulesResolve!(mockOkJsonResponse(mockModules));
 
     await waitFor(() => {
       expect(screen.getByText('Test Project')).toBeInTheDocument();
@@ -311,7 +358,7 @@ describe('ProjectPage', () => {
 
   it('recovers from error on next successful poll', async () => {
     mockProjectGet.mockRejectedValueOnce(new Error('Temporary failure'));
-    mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+    mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
 
     render(<ProjectPage />);
 
@@ -319,7 +366,7 @@ describe('ProjectPage', () => {
       expect(screen.getByText(/Temporary failure/)).toBeInTheDocument();
     });
 
-    mockProjectGet.mockResolvedValue({ json: async () => mockProject });
+    mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
 
     // After first error, backoff = POLLING_INTERVAL_MS * 2
     await act(async () => {
@@ -346,13 +393,13 @@ describe('ProjectPage', () => {
 
     unmount();
 
-    projectResolve!({ json: async () => mockProject });
+    projectResolve!(mockOkJsonResponse(mockProject));
   });
 
   describe('canRunAll prop', () => {
     it('is false when modules list is empty', async () => {
-      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
-      mockModulesGet.mockResolvedValue({ json: async () => [] });
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse([]));
 
       render(<ProjectPage />);
 
@@ -369,8 +416,8 @@ describe('ProjectPage', () => {
 
     it('is false when no module is eligible for next phase', async () => {
       mockCanRunNextPhase.mockReturnValue(false);
-      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
-      mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
 
       render(<ProjectPage />);
 
@@ -392,8 +439,8 @@ describe('ProjectPage', () => {
       mockCanRunNextPhase.mockImplementation(
         (m: { id: string }) => m.id === 'mod-a',
       );
-      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
-      mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
 
       render(<ProjectPage />);
 
@@ -414,8 +461,8 @@ describe('ProjectPage', () => {
 
   describe('canRetriggerInit prop', () => {
     it('is true when project has no modules and no running init', async () => {
-      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
-      mockModulesGet.mockResolvedValue({ json: async () => [] });
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse([]));
 
       render(<ProjectPage />);
 
@@ -445,10 +492,8 @@ describe('ProjectPage', () => {
           },
         },
       };
-      mockProjectGet.mockResolvedValue({
-        json: async () => projectWithModules,
-      });
-      mockModulesGet.mockResolvedValue({ json: async () => mockModules });
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(projectWithModules));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
 
       render(<ProjectPage />);
 
@@ -467,10 +512,10 @@ describe('ProjectPage', () => {
         ...mockProject,
         initJob: { id: 'j1', status: 'running' },
       };
-      mockProjectGet.mockResolvedValue({
-        json: async () => projectWithRunningInit,
-      });
-      mockModulesGet.mockResolvedValue({ json: async () => [] });
+      mockProjectGet.mockResolvedValue(
+        mockOkJsonResponse(projectWithRunningInit),
+      );
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse([]));
 
       render(<ProjectPage />);
 
@@ -487,8 +532,8 @@ describe('ProjectPage', () => {
 
   describe('retrigger init action', () => {
     it('opens confirmation dialog and calls retriggerInit on confirm', async () => {
-      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
-      mockModulesGet.mockResolvedValue({ json: async () => [] });
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse([]));
 
       render(<ProjectPage />);
 
@@ -506,6 +551,10 @@ describe('ProjectPage', () => {
         ).toBeInTheDocument();
       });
 
+      expect(
+        screen.getByTestId('confirm-dialog-retrigger-init-page'),
+      ).toHaveAttribute('data-copy-variant', 'retrigger');
+
       await act(async () => {
         fireEvent.click(screen.getByTestId('confirm-btn-retrigger-init-page'));
       });
@@ -518,8 +567,8 @@ describe('ProjectPage', () => {
 
     it('shows error when retriggerInit fails', async () => {
       mockRetriggerInit.mockRejectedValue(new Error('init failed'));
-      mockProjectGet.mockResolvedValue({ json: async () => mockProject });
-      mockModulesGet.mockResolvedValue({ json: async () => [] });
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse([]));
 
       render(<ProjectPage />);
 
@@ -544,6 +593,143 @@ describe('ProjectPage', () => {
       await waitFor(() => {
         expect(screen.getByText(/init failed/)).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('#runinit deep link', () => {
+    it('opens retrigger init dialog when hash is #runinit and project is eligible', async () => {
+      mockLocation = {
+        pathname: '/projects/proj-1',
+        search: '',
+        hash: RUN_INIT_DEEP_LINK_HASH,
+      };
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse([]));
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('confirm-dialog-retrigger-init-page'),
+        ).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByTestId('confirm-dialog-retrigger-init-page'),
+      ).toHaveAttribute('data-copy-variant', 'firstTrigger');
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        {
+          pathname: '/projects/proj-1',
+          search: '',
+          hash: '',
+        },
+        { replace: true },
+      );
+    });
+
+    it('does not open dialog when hash is #runinit but project is not eligible', async () => {
+      mockLocation = {
+        pathname: '/projects/proj-1',
+        search: '',
+        hash: RUN_INIT_DEEP_LINK_HASH,
+      };
+      const projectWithModules = {
+        ...mockProject,
+        status: {
+          state: 'inProgress',
+          modulesSummary: {
+            total: 2,
+            finished: 0,
+            waiting: 1,
+            pending: 1,
+            running: 0,
+            error: 0,
+            cancelled: 0,
+          },
+        },
+      };
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(projectWithModules));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('project-actions')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('confirm-dialog-retrigger-init-page'),
+      ).not.toBeInTheDocument();
+      expect(mockNavigate).toHaveBeenCalledWith(
+        {
+          pathname: '/projects/proj-1',
+          search: '',
+          hash: '',
+        },
+        { replace: true },
+      );
+    });
+  });
+
+  describe('#runnext deep link', () => {
+    it('opens bulk run dialog when hash is #runnext and at least one module is eligible', async () => {
+      mockLocation = {
+        pathname: '/projects/proj-1',
+        search: '',
+        hash: RUN_NEXT_DEEP_LINK_HASH,
+      };
+      mockCanRunNextPhase.mockImplementation(
+        (m: { id: string }) => m.id === 'mod-a',
+      );
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('confirm-dialog-project-page'),
+        ).toBeInTheDocument();
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        {
+          pathname: '/projects/proj-1',
+          search: '',
+          hash: '',
+        },
+        { replace: true },
+      );
+    });
+
+    it('does not open bulk run dialog when hash is #runnext but no module is eligible', async () => {
+      mockLocation = {
+        pathname: '/projects/proj-1',
+        search: '',
+        hash: RUN_NEXT_DEEP_LINK_HASH,
+      };
+      mockCanRunNextPhase.mockReturnValue(false);
+      mockProjectGet.mockResolvedValue(mockOkJsonResponse(mockProject));
+      mockModulesGet.mockResolvedValue(mockOkJsonResponse(mockModules));
+
+      render(<ProjectPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('project-actions')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('confirm-dialog-project-page'),
+      ).not.toBeInTheDocument();
+      expect(mockNavigate).toHaveBeenCalledWith(
+        {
+          pathname: '/projects/proj-1',
+          search: '',
+          hash: '',
+        },
+        { replace: true },
+      );
     });
   });
 });

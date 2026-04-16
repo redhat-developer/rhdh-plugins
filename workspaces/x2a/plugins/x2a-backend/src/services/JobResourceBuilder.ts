@@ -18,9 +18,8 @@ import { resolvePackagePath } from '@backstage/backend-plugin-api';
 import { V1Job, V1OwnerReference, V1Secret } from '@kubernetes/client-node';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
-import { X2AConfig } from '../../config';
 import { Project } from './Project';
-import { JobCreateParams, AAPCredentials, GitRepo } from './types';
+import { X2AConfig, JobCreateParams, AAPCredentials, GitRepo } from './types';
 
 /**
  * Builds Kubernetes Job and Secret resources for X2A migration jobs
