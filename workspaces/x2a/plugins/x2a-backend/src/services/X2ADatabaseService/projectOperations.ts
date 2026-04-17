@@ -26,9 +26,8 @@ import {
   DEFAULT_PAGE_ORDER,
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGE_SORT,
+  ProjectsGet,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-
-import { ProjectsGet } from '../../schema/openapi';
 
 import { mapRowToProject } from './mappers';
 import { filterPermissions, mapSortToDatabaseColumn } from './queryHelpers';

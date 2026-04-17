@@ -759,6 +759,57 @@ describe('createRouter – projects', () => {
         },
         LONG_TEST_TIMEOUT,
       );
+
+      it.each(supportedDatabaseIds)(
+        'should allow GET /projects when user has x2a admin write only (no user, no admin read) - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const app = await createApp(
+            client,
+            AuthorizeResult.DENY,
+            AuthorizeResult.ALLOW,
+            undefined,
+            AuthorizeResult.DENY,
+          );
+
+          const response = await request(app).get('/projects').send();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toHaveProperty('items');
+          expect(response.body).toHaveProperty('totalCount');
+        },
+      );
+
+      it.each(supportedDatabaseIds)(
+        'should allow GET /projects/:projectId when user has x2a admin write only - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const appWithUser = await createApp(client);
+          const createResponse = await request(appWithUser)
+            .post('/projects')
+            .send(mockInputProject);
+          expect(createResponse.status).toBe(200);
+          const projectId = createResponse.body.id;
+
+          const appAdminWriteOnly = await createApp(
+            client,
+            AuthorizeResult.DENY,
+            AuthorizeResult.ALLOW,
+            undefined,
+            AuthorizeResult.DENY,
+          );
+          const response = await request(appAdminWriteOnly)
+            .get(`/projects/${projectId}`)
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toMatchObject({
+            id: projectId,
+            ...mockInputProject,
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
     });
   });
 });

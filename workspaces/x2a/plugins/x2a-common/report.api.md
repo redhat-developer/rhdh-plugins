@@ -442,6 +442,12 @@ export function resolveScmProvider(repoUrl: string, hostProviderMap?: Map<string
 export function resolveScmProviderByName(name: ScmProviderName): ScmProvider;
 
 // @public
+export const RUN_INIT_DEEP_LINK_HASH = "#runinit";
+
+// @public
+export const RUN_NEXT_DEEP_LINK_HASH = "#runnext";
+
+// @public
 export const SCAFFOLDER_SECRET_PREFIX = "OAUTH_TOKEN_";
 
 // @public

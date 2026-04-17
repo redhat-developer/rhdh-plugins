@@ -86,3 +86,18 @@ export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
  * @public
  */
 export const PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD = 500;
+
+/**
+ * URL hash for the project details page deep link that opens the init re-run confirmation flow.
+ *
+ * @public
+ */
+export const RUN_INIT_DEEP_LINK_HASH = '#runinit';
+
+/**
+ * URL hash for the project details page deep link that opens the bulk “run all
+ * eligible modules” confirmation (next phase where possible).
+ *
+ * @public
+ */
+export const RUN_NEXT_DEEP_LINK_HASH = '#runnext';
