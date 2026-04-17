@@ -19,6 +19,11 @@ export interface Config {
    * Configuration for the Orchestrator plugin.
    */
   orchestrator?: {
+    /**
+     * Set the content length limit for the requests.
+     * Defaults to 102400 bytes (100kb)
+     */
+    contentLengthLimit?: string;
     sonataFlowService: {
       /**
        * Base URL of the Sonata Flow service.
