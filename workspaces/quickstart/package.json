@@ -23,7 +23,12 @@
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install",
-    "test:e2e": "playwright test"
+    "test:e2e": "yarn test:e2e:all",
+    "test:e2e:legacy": "APP_MODE=legacy playwright test",
+    "test:e2e:nfs": "APP_MODE=nfs playwright test",
+    "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
+    "test:e2e:ci": "yarn test:e2e:all",
+    "playwright": "bash -c 'if [[ $@ == test ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _"
   },
   "workspaces": {
     "packages": [
