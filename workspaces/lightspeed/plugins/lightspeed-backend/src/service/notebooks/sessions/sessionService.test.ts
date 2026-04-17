@@ -50,7 +50,7 @@ describe('SessionService', () => {
     const config = mockServices.rootConfig({
       data: {
         lightspeed: {
-          Notebooks: {
+          notebooks: {
             sessionDefaults: {
               provider_id: 'test-notebooks',
               embedding_model: 'test-embedding-model',

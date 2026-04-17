@@ -58,7 +58,7 @@ describe('Notebooks Router', () => {
       data: {
         lightspeed: {
           servicePort: 7007,
-          Notebooks: {
+          notebooks: {
             enabled: true,
             queryDefaults: {
               model: 'test-model',

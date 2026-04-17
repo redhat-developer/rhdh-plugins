@@ -51,7 +51,7 @@ export class DocumentService {
 
     // Chunking strategy configuration
     const chunkingType =
-      config?.getOptionalString('lightspeed.Notebooks.chunkingStrategy.type') ||
+      config?.getOptionalString('lightspeed.notebooks.chunkingStrategy.type') ||
       DEFAULT_CHUNKING_STRATEGY_TYPE;
 
     if (chunkingType === 'static') {
@@ -60,11 +60,11 @@ export class DocumentService {
         static: {
           max_chunk_size_tokens:
             config?.getOptionalNumber(
-              'lightspeed.Notebooks.chunkingStrategy.maxChunkSizeTokens',
+              'lightspeed.notebooks.chunkingStrategy.maxChunkSizeTokens',
             ) || DEFAULT_MAX_CHUNK_SIZE_TOKENS,
           chunk_overlap_tokens:
             config?.getOptionalNumber(
-              'lightspeed.Notebooks.chunkingStrategy.chunkOverlapTokens',
+              'lightspeed.notebooks.chunkingStrategy.chunkOverlapTokens',
             ) || DEFAULT_CHUNK_OVERLAP_TOKENS,
         },
       };

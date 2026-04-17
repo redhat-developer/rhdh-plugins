@@ -49,18 +49,18 @@ export class SessionService {
     };
 
     this.providerId = requireConfig(
-      config?.getString('lightspeed.Notebooks.sessionDefaults.provider_id'),
-      'lightspeed.Notebooks.sessionDefaults.provider_id',
+      config?.getString('lightspeed.notebooks.sessionDefaults.provider_id'),
+      'lightspeed.notebooks.sessionDefaults.provider_id',
     );
     this.embeddingModel = requireConfig(
-      config?.getString('lightspeed.Notebooks.sessionDefaults.embedding_model'),
-      'lightspeed.Notebooks.sessionDefaults.embedding_model',
+      config?.getString('lightspeed.notebooks.sessionDefaults.embedding_model'),
+      'lightspeed.notebooks.sessionDefaults.embedding_model',
     );
     this.embeddingDimension = requireConfig(
       config?.getNumber(
-        'lightspeed.Notebooks.sessionDefaults.embedding_dimension',
+        'lightspeed.notebooks.sessionDefaults.embedding_dimension',
       ),
-      'lightspeed.Notebooks.sessionDefaults.embedding_dimension',
+      'lightspeed.notebooks.sessionDefaults.embedding_dimension',
     );
   }
 
