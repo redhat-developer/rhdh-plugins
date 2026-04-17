@@ -269,6 +269,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'common.close': string;
     readonly 'common.readMore': string;
     readonly 'common.retry': string;
+    readonly 'common.loading': string;
     readonly 'common.noSearchResults': string;
     readonly 'menu.newConversation': string;
     readonly 'chatbox.header.title': string;
