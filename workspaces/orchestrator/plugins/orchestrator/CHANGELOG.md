@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.4.5
+
+### Patch Changes
+
+- ba48e23: fix: updating lodash for cve fixes
+- Updated dependencies [ba48e23]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.5.6
+
 ## 5.4.4
 
 ### Patch Changes
