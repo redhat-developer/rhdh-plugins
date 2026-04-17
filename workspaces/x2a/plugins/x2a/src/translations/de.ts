@@ -237,6 +237,14 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'retriggerInit.confirm.userPromptPlaceholder':
       'Zusätzliche Anweisungen für die Konvertierung angeben…',
     'retriggerInit.confirm.confirmButton': 'Erneut auslösen',
+    'retriggerInit.firstTrigger.title': 'Init-Phase für „{{name}}" starten?',
+    'retriggerInit.firstTrigger.message':
+      'Nach der Bestätigung wird die Erkennungsphase für dieses Projekt gestartet. Möglicherweise werden Sie nach Ihren SCM-Tokens für Quelle und Ziel gefragt.',
+    'retriggerInit.firstTrigger.userPromptLabel':
+      'Benutzeranweisung (optional)',
+    'retriggerInit.firstTrigger.userPromptPlaceholder':
+      'Zusätzliche Anweisungen für die Konvertierung angeben…',
+    'retriggerInit.firstTrigger.confirmButton': 'Init-Phase starten',
     'retriggerInit.error':
       'Fehler beim erneuten Auslösen der Init-Phase für Projekt „{{name}}"',
     'retriggerInit.errorStart':

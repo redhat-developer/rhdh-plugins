@@ -223,6 +223,15 @@ export const x2aPluginMessages = {
         'Provide additional instructions for the conversion…',
       confirmButton: 'Retrigger',
     },
+    firstTrigger: {
+      title: 'Trigger init phase for "{{name}}"?',
+      message:
+        'When confirmed, the discovery phase for this project will be started. You might be asked for your source and target SCM tokens.',
+      userPromptLabel: 'User prompt (optional)',
+      userPromptPlaceholder:
+        'Provide additional instructions for the conversion…',
+      confirmButton: 'Trigger init phase',
+    },
     error: 'Failed to retrigger init for project "{{name}}"',
     errorStart: 'Failed to start project init',
   },

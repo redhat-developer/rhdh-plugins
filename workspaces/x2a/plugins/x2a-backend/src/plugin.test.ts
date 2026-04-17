@@ -23,7 +23,10 @@ import {
   createServiceFactory,
 } from '@backstage/backend-plugin-api';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
-import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
+import {
+  x2aDatabaseServiceRef,
+  x2aDatabaseServiceFactory,
+} from './services/X2ADatabaseService';
 import { kubeServiceRef } from './services/KubeService';
 import { x2APlugin } from './plugin';
 import request from 'supertest';
@@ -55,6 +58,12 @@ const mockInputProject: ProjectsPostRequest = {
 
 const mockUserId = `user: default/user1`;
 const BASE_CONFIG = {
+  backend: {
+    database: {
+      client: 'better-sqlite3',
+      connection: ':memory:',
+    },
+  },
   x2a: {
     kubernetes: {
       namespace: 'test-namespace',
@@ -161,6 +170,7 @@ async function startBackendServer(
       ],
     }).factory,
     mockServices.userInfo.factory(),
+    x2aDatabaseServiceFactory,
     createServiceFactory({
       service: kubeServiceRef,
       deps: {},

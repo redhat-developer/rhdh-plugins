@@ -1,0 +1,68 @@
+workspace/adoption-insights:
+  - 'Workspace\\s*adoption-insights'
+
+workspace/ai-integrations:
+  - 'Workspace\\s*ai-integrations'
+
+workspace/app-defaults:
+  - 'Workspace\\s*app-defaults'
+
+workspace/augment:
+  - 'Workspace\\s*augment'
+
+workspace/bulk-import:
+  - 'Workspace\\s*bulk-import'
+
+workspace/cost-management:
+  - 'Workspace\\s*cost-management'
+
+workspace/dcm:
+  - 'Workspace\\s*dcm'
+
+workspace/extensions:
+  - 'Workspace\\s*extensions'
+
+workspace/global-floating-action-button:
+  - 'Workspace\\s*global-floating-action-button'
+
+workspace/global-header:
+  - 'Workspace\\s*global-header'
+
+workspace/homepage:
+  - 'Workspace\\s*homepage'
+
+workspace/konflux:
+  - 'Workspace\\s*konflux'
+
+workspace/lightspeed:
+  - 'Workspace\\s*lightspeed'
+
+workspace/mcp-integrations:
+  - 'Workspace\\s*mcp-integrations'
+
+workspace/noop:
+  - 'Workspace\\s*noop'
+
+workspace/orchestrator:
+  - 'Workspace\\s*orchestrator'
+
+workspace/quickstart:
+  - 'Workspace\\s*quickstart'
+
+workspace/repo-tools:
+  - 'Workspace\\s*repo-tools'
+
+workspace/sandbox:
+  - 'Workspace\\s*sandbox'
+
+workspace/scorecard:
+  - 'Workspace\\s*scorecard'
+
+workspace/theme:
+  - 'Workspace\\s*theme'
+
+workspace/translations:
+  - 'Workspace\\s*translations'
+
+workspace/x2a:
+  - 'Workspace\\s*x2a'

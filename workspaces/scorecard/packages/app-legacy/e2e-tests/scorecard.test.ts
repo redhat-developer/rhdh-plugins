@@ -710,7 +710,10 @@ test.describe('Scorecard Plugin Tests', () => {
           await scorecardDrillDownPage.expectOnPage('github.open_prs', {
             aggregationId: AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
           });
-          await scorecardDrillDownPage.expectPageTitle('github.open_prs');
+          await scorecardDrillDownPage.expectPageTitle(
+            'github.open_prs',
+            githubAggregatedResponse.metadata.title,
+          );
           await scorecardDrillDownPage.expectDrillDownCardSnapshot(
             'github.open_prs',
             {
@@ -824,7 +827,10 @@ test.describe('Scorecard Plugin Tests', () => {
           await scorecardDrillDownPage.expectOnPage('jira.open_issues', {
             aggregationId: AGGREGATED_CARDS_METRIC_IDS.withJiraOpenIssuesKpi,
           });
-          await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
+          await scorecardDrillDownPage.expectPageTitle(
+            'jira.open_issues',
+            jiraAggregatedResponse.metadata.title,
+          );
           await scorecardDrillDownPage.expectDrillDownCardSnapshot(
             'jira.open_issues',
             {

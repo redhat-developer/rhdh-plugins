@@ -1,0 +1,91 @@
+workspace/adoption-insights:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/adoption-insights/**']
+
+workspace/ai-integrations:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/ai-integrations/**']
+
+workspace/app-defaults:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/app-defaults/**']
+
+workspace/augment:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/augment/**']
+
+workspace/bulk-import:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/bulk-import/**']
+
+workspace/cost-management:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/cost-management/**']
+
+workspace/dcm:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/dcm/**']
+
+workspace/extensions:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/extensions/**']
+
+workspace/global-floating-action-button:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/global-floating-action-button/**']
+
+workspace/global-header:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/global-header/**']
+
+workspace/homepage:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/homepage/**']
+
+workspace/konflux:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/konflux/**']
+
+workspace/lightspeed:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/lightspeed/**']
+
+workspace/mcp-integrations:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/mcp-integrations/**']
+
+workspace/noop:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/noop/**']
+
+workspace/orchestrator:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/orchestrator/**']
+
+workspace/quickstart:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/quickstart/**']
+
+workspace/repo-tools:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/repo-tools/**']
+
+workspace/sandbox:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/sandbox/**']
+
+workspace/scorecard:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/scorecard/**']
+
+workspace/theme:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/theme/**']
+
+workspace/translations:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/translations/**']
+
+workspace/x2a:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/x2a/**']
