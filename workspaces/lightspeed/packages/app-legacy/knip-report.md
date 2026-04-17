@@ -17,6 +17,6 @@
 
 ## Unlisted dependencies (1)
 
-| Name       | Location                      | Severity |
-| :--------- | :---------------------------- | :------- |
-| playwright | e2e-tests/utils/testHelper.ts | error    |
+| Name       | Location                            | Severity |
+| :--------- | :---------------------------------- | :------- |
+| playwright | ../../e2e-tests/utils/testHelper.ts | error    |

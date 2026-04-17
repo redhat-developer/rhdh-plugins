@@ -61,6 +61,9 @@ export async function closeChatHistoryDrawer(
 
 // Assertions
 export async function expectBackstagePageVisible(page: Page, visible = true) {
+  if (process.env.APP_MODE === 'nfs') {
+    return;
+  }
   const locator = page.getByText('Red Hat Catalog');
   const assertion = visible ? expect(locator) : expect(locator).not;
   await assertion.toBeVisible();

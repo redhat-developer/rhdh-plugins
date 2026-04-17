@@ -16,12 +16,12 @@
 
 // These translation files are not exported by the package, so relative imports are necessary for e2e tests
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { lightspeedMessages } from '../../../../plugins/lightspeed/src/translations/ref';
-import lightspeedTranslationDe from '../../../../plugins/lightspeed/src/translations/de.js';
-import lightspeedTranslationFr from '../../../../plugins/lightspeed/src/translations/fr.js';
-import lightspeedTranslationEs from '../../../../plugins/lightspeed/src/translations/es.js';
-import lightspeedTranslationIt from '../../../../plugins/lightspeed/src/translations/it.js';
-import lightspeedTranslationJa from '../../../../plugins/lightspeed/src/translations/ja.js';
+import { lightspeedMessages } from '../../plugins/lightspeed/src/translations/ref';
+import lightspeedTranslationDe from '../../plugins/lightspeed/src/translations/de.js';
+import lightspeedTranslationFr from '../../plugins/lightspeed/src/translations/fr.js';
+import lightspeedTranslationEs from '../../plugins/lightspeed/src/translations/es.js';
+import lightspeedTranslationIt from '../../plugins/lightspeed/src/translations/it.js';
+import lightspeedTranslationJa from '../../plugins/lightspeed/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type LightspeedMessages = typeof lightspeedMessages;
