@@ -16,7 +16,7 @@
 
 import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
 import type { RendererProps } from '@backstage/plugin-home-react';
-import { ScorecardHomepageCard } from '../../components/ScorecardHomepageSection';
+import { ScorecardHomepageCardWithProvider } from '../../components/ScorecardHomepageSection';
 
 const defaultCardLayout = {
   width: {
@@ -32,19 +32,19 @@ const defaultCardLayout = {
 } as const;
 
 function AggregatedCardWithDeprecatedMetricIdContent() {
-  return <ScorecardHomepageCard metricId="jira.open_issues" />;
+  return <ScorecardHomepageCardWithProvider metricId="jira.open_issues" />;
 }
 
 function AggregatedCardWithDefaultAggregationContent() {
-  return <ScorecardHomepageCard aggregationId="github.open_prs" />;
+  return <ScorecardHomepageCardWithProvider aggregationId="github.open_prs" />;
 }
 
 function AggregatedCardWithJiraOpenIssuesContent() {
-  return <ScorecardHomepageCard aggregationId="openIssuesKpi" />;
+  return <ScorecardHomepageCardWithProvider aggregationId="openIssuesKpi" />;
 }
 
 function AggregatedCardWithGithubOpenPrsContent() {
-  return <ScorecardHomepageCard aggregationId="openPrsKpi" />;
+  return <ScorecardHomepageCardWithProvider aggregationId="openPrsKpi" />;
 }
 
 function BorderlessHomeWidgetRenderer({ Content }: RendererProps) {

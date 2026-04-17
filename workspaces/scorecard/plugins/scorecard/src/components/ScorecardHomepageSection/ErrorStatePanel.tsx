@@ -39,7 +39,7 @@ export const ErrorStatePanel = ({
     data,
     isLoading,
     error: metadataError,
-  } = useAggregationMetadata(aggregationId);
+  } = useAggregationMetadata({ aggregationId });
 
   const { title: cardTitle, description: cardDescription } =
     useMetricDisplayLabels({

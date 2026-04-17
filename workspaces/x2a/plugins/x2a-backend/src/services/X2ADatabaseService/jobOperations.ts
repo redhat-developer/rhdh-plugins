@@ -27,6 +27,7 @@ import {
 
 import { mapRowToJob, mapRowToArtifact } from './mappers';
 
+/** @public */
 export interface CreateJobInput {
   projectId: string;
   moduleId?: string | null;

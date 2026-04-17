@@ -35,9 +35,15 @@ import { OrchestratorService } from '../OrchestratorService';
 import { mapToWorkflowOverviewDTO } from './mapping/V2Mappings';
 import {
   generateProcessInstance,
+  generateProcessInstanceForEventType,
   generateProcessInstances,
   generateTestExecuteWorkflowResponse,
   generateTestWorkflowInfo,
+  generateTestWorkflowInfoForEventype,
+  generateTestWorkflowInfoForEventypeNoEventRef,
+  generateTestWorkflowInfoForEventypeNoStartStateForEventRef,
+  generateTestWorkflowInfoForEventypeNoStartStates,
+  generateTestWorkflowInfoForEventypeWithNoCorrelationContextAttribute,
   generateTestWorkflowOverview,
   generateTestWorkflowOverviewList,
   generateWorkflowDefinition,
@@ -69,6 +75,7 @@ const createMockOrchestratorService = (): OrchestratorService => {
   mockOrchestratorService.fetchInstances = jest.fn();
   mockOrchestratorService.fetchInstance = jest.fn();
   mockOrchestratorService.executeWorkflow = jest.fn();
+  mockOrchestratorService.executeWorkflowAsCloudEvent = jest.fn();
   mockOrchestratorService.abortWorkflowInstance = jest.fn();
   mockOrchestratorService.pingWorkflowService = jest.fn();
   mockOrchestratorService.fetchWorkflowLogsByInstance = jest.fn();
@@ -397,6 +404,223 @@ describe('executeWorkflow', () => {
   });
 });
 
+describe('executeWorkflow as event type', () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+  });
+  it('executes a given workflow: event type', async () => {
+    // Arrange
+    const correlationContextAttributeId = '12345';
+    const workflowInfo = generateTestWorkflowInfoForEventype();
+    const execResponse = generateTestExecuteWorkflowResponse(
+      correlationContextAttributeId,
+    );
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+    (
+      mockOrchestratorService.pingWorkflowService as jest.Mock
+    ).mockResolvedValue(workflowInfo);
+
+    const processInstance = generateProcessInstanceForEventType(
+      1,
+      correlationContextAttributeId,
+    );
+
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([
+      processInstance,
+    ]);
+
+    (
+      mockOrchestratorService.executeWorkflowAsCloudEvent as jest.Mock
+    ).mockResolvedValue(execResponse);
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    const actualResultV2: ExecuteWorkflowResponseDTO = await v2.executeWorkflow(
+      {
+        inputData: workflowData,
+        targetEntity: 'someEntity',
+      },
+      workflowInfo.id,
+      'someUserEntity',
+      'someToken',
+    );
+
+    // Assert
+    expect(actualResultV2).toBeDefined();
+    expect(actualResultV2.id).toBeDefined();
+  });
+
+  it('executes a given workflow: event type, no instance, not an error', async () => {
+    // Arrange
+    const correlationContextAttributeId = '12345';
+    const workflowInfo = generateTestWorkflowInfoForEventype();
+    const execResponse = generateTestExecuteWorkflowResponse(
+      correlationContextAttributeId,
+    );
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+    (
+      mockOrchestratorService.pingWorkflowService as jest.Mock
+    ).mockResolvedValue(workflowInfo);
+
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([]);
+
+    (
+      mockOrchestratorService.executeWorkflowAsCloudEvent as jest.Mock
+    ).mockResolvedValue(execResponse);
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    const actualResultV2: ExecuteWorkflowResponseDTO = await v2.executeWorkflow(
+      {
+        inputData: workflowData,
+        targetEntity: 'someEntity',
+      },
+      workflowInfo.id,
+      'someUserEntity',
+      'someToken',
+    );
+
+    // Assert
+    expect(actualResultV2).toBeDefined();
+    expect(actualResultV2.id).toBeDefined();
+    expect(actualResultV2.id).toEqual('kafkaEvent');
+  }, 20000);
+
+  it('executes a given workflow: event type, no start state error', async () => {
+    // Arrange
+    const workflowInfo = generateTestWorkflowInfoForEventypeNoStartStates();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    try {
+      await v2.executeWorkflow(
+        {
+          inputData: workflowData,
+          targetEntity: 'someEntity',
+        },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      );
+    } catch (err) {
+      // Assert
+      // eslint-disable-next-line jest/no-conditional-expect
+      expect(err.message).toEqual(
+        'Error executing workflow with id test_workflowId, No States that match the start state',
+      );
+    }
+  });
+
+  it('executes a given workflow: event type, no event ref error', async () => {
+    // Arrange
+    const workflowInfo = generateTestWorkflowInfoForEventypeNoEventRef();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    try {
+      await v2.executeWorkflow(
+        {
+          inputData: workflowData,
+          targetEntity: 'someEntity',
+        },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      );
+    } catch (err) {
+      // Assert
+      // eslint-disable-next-line jest/no-conditional-expect
+      expect(err.message).toEqual(
+        'Error executing workflow with id test_workflowId, No event ref',
+      );
+    }
+  });
+
+  it('executes a given workflow: event type, no start event for event ref error', async () => {
+    // Arrange
+    const workflowInfo =
+      generateTestWorkflowInfoForEventypeNoStartStateForEventRef();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    try {
+      await v2.executeWorkflow(
+        {
+          inputData: workflowData,
+          targetEntity: 'someEntity',
+        },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      );
+    } catch (err) {
+      // Assert
+      // eslint-disable-next-line jest/no-conditional-expect
+      expect(err.message).toEqual(
+        'Error executing workflow with id test_workflowId, No Events that match the start state eventRef',
+      );
+    }
+  });
+
+  it('executes a given workflow: event type, no correlation context attribute', async () => {
+    // Arrange
+    const workflowInfo =
+      generateTestWorkflowInfoForEventypeWithNoCorrelationContextAttribute();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    try {
+      await v2.executeWorkflow(
+        {
+          inputData: workflowData,
+          targetEntity: 'someEntity',
+        },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      );
+    } catch (err) {
+      // Assert
+      // eslint-disable-next-line jest/no-conditional-expect
+      expect(err.message).toEqual(
+        'Error executing workflow with id test_workflowId, No correlation context attribute name found in event with event name lock-event',
+      );
+    }
+  });
+});
+
 describe('getInstances', () => {
   const mockRequest: any = {
     query: {},
@@ -525,6 +749,10 @@ describe('abortWorkflow', () => {
   it('aborts workflows', async () => {
     // Arrange
     const workflowId = 'testInstanceId';
+    const workflowInfo = generateTestWorkflowInfo();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
     (
       mockOrchestratorService.abortWorkflowInstance as jest.Mock
     ).mockResolvedValue({} as any);

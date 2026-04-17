@@ -20,7 +20,7 @@
 // https://github.com/backstage/backstage/blob/master/plugins/home/src/components/CustomHomepage/CustomHomepageGrid.tsx
 // but without the drag and drop functionality.
 
-import { Fragment, useMemo } from 'react';
+import { Fragment, useMemo, useRef } from 'react';
 
 import {
   CustomHomepageGrid,
@@ -29,6 +29,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import { HomePageCardConfig } from '../../types';
+import { useContainerQuery } from '../../hooks/useContainerQuery';
 
 import 'react-grid-layout/css/styles.css';
 import { isCardADefaultConfiguration } from '../utils';
@@ -50,6 +51,8 @@ export const CustomizableGridLayout = ({
   homepageCards,
 }: CustomizableGridLayoutProps) => {
   const theme = useTheme();
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  useContainerQuery(gridContainerRef, { notifyWindowResize: true });
 
   const config = useMemo(() => {
     const defaultConfig: LayoutConfiguration[] = [];
@@ -90,16 +93,21 @@ export const CustomizableGridLayout = ({
           },
         }}
       />
-      <CustomHomepageGrid
-        config={config}
-        preventCollision={false}
-        compactType="vertical"
-        style={{ margin: '-10px' }}
+      <div
+        ref={gridContainerRef}
+        style={{ width: '100%', minWidth: 0, boxSizing: 'border-box' }}
       >
-        {homepageCards.map((card, index) => (
-          <Fragment key={card.name ?? index}>{card.component}</Fragment>
-        ))}
-      </CustomHomepageGrid>
+        <CustomHomepageGrid
+          config={config}
+          preventCollision={false}
+          compactType="vertical"
+          style={{ margin: '-10px' }}
+        >
+          {homepageCards.map((card, index) => (
+            <Fragment key={card.name ?? index}>{card.component}</Fragment>
+          ))}
+        </CustomHomepageGrid>
+      </div>
     </>
   );
 };

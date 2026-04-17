@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.12.0
+
+### Minor Changes
+
+- e8780ce: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- 7ea283a: fixes the responsiveness issue of the customizable home-page
+- 4e40bf1: Fix misleading entity count in EntitySection card link
+
 ## 1.11.0
 
 ### Minor Changes

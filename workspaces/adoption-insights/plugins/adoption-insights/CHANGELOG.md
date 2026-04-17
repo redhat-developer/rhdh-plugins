@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.7.1
+
+### Patch Changes
+
+- fcc50b6: The Adoption Insights "Missing Permission" page was linking to GitHub repository documentation. This has been updated to point to the official Red Hat Developer Hub product documentation instead.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.1
+
 ## 0.7.0
 
 ### Minor Changes

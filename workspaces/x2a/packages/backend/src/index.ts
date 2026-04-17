@@ -84,9 +84,16 @@ backend.add(import('@backstage/plugin-kubernetes-backend'));
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
+// x2a-backend's default export is a feature loader that yields the plugin
+// together with service factories for the x2a-node canonical refs.
 backend.add(import('@red-hat-developer-hub/backstage-plugin-x2a-backend'));
 
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a'),
 );
+
+// MCP server + x2a MCP tools
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
+backend.add(import('@red-hat-developer-hub/backstage-plugin-x2a-mcp-extras'));
+
 backend.start();

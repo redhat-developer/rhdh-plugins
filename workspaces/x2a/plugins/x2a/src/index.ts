@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { x2APlugin, X2APage, RepoAuthenticationExtension } from './plugin';
+export {
+  x2APlugin,
+  X2APage,
+  RepoAuthenticationExtension,
+  X2ARepoUrlPickerExtension,
+} from './plugin';
 export { x2aPluginTranslations, x2aPluginTranslationRef } from './translations';
 export {
   useTranslation as useX2ATranslation,

@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.9.0
+
+### Minor Changes
+
+- 9ab62e3: feature: add the ability to trigger kafka based workflows from the plugin
+
+## 8.8.2
+
+### Patch Changes
+
+- f96e4f2: fix: updating lodash for cve fixes
+
+## 8.8.1
+
+### Patch Changes
+
+- Updated dependencies [16d41c2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.1
+
 ## 8.8.0
 
 ### Minor Changes

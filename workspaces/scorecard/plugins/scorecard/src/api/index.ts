@@ -29,6 +29,8 @@ import type {
 
 import type { GetAggregatedScorecardEntitiesOptions } from '../components/types';
 
+export { ScorecardQueryProvider } from './ScorecardQueryProvider';
+
 import type {
   ScorecardApi,
   ScorecardApiClientOptions,

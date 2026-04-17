@@ -16,6 +16,8 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 
+import { CloudEvent, Kafka as KafkaCE } from 'cloudevents';
+import { Kafka } from 'kafkajs';
 import capitalize from 'lodash/capitalize';
 
 import {
@@ -31,14 +33,35 @@ import {
   WorkflowOverview,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { randomUUID } from 'node:crypto';
+
+import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
 
 export class SonataFlowService {
+  private readonly orchestratorKafkaImpl?: Kafka;
+  private readonly orchestratorKafkaMessageKey?: string;
   constructor(
     private readonly dataIndexService: DataIndexService,
     private readonly logger: LoggerService,
-  ) {}
+    private readonly kafkaServiceOptions?: OrchestratorKafkaServiceOptions,
+  ) {
+    // If there are kafkaServiceOptions, then do the implemntation
+    if (this.kafkaServiceOptions) {
+      this.orchestratorKafkaMessageKey =
+        this.kafkaServiceOptions.messageKey ?? '';
+      this.logger.debug(
+        `creating orchestrator kafka implementation with options: clientId: ${this.kafkaServiceOptions.clientId} and brokers: ${JSON.stringify(this.kafkaServiceOptions.brokers)}`,
+      );
+      // It looks like that the community plugin just passes the whole options from the app-config to the kafkajs constructor
+      this.orchestratorKafkaImpl = new Kafka(this.kafkaServiceOptions);
+    }
+  }
+
+  getOrchestratorKafkaImpl() {
+    return this.orchestratorKafkaImpl;
+  }
 
   public async fetchWorkflowInfoOnService(args: {
     definitionId: string;
@@ -101,6 +124,70 @@ export class SonataFlowService {
         ),
     );
     return items.filter((item): item is WorkflowOverview => !!item);
+  }
+
+  public async executeWorkflowAsCloudEvent(args: {
+    definitionId: string;
+    workflowSource: string;
+    workflowEventType: string;
+    contextAttribute: string;
+    inputData?: ProcessInstanceVariables;
+    authTokens?: Array<AuthToken>;
+    backstageToken?: string;
+  }): Promise<WorkflowExecutionResponse | undefined> {
+    if (!this.orchestratorKafkaImpl) {
+      this.logger.error('No Orchestrator kafka implementation added');
+      throw new Error('No Orchestrator kafka implementation added');
+    }
+    const contextAttributeId = randomUUID();
+
+    const triggeringCloudEvent = new CloudEvent({
+      datacontenttype: 'application/json',
+      type: args.workflowEventType,
+      source: args.workflowSource,
+      [args.contextAttribute]: contextAttributeId,
+      data: {
+        ...args.inputData,
+        [args.contextAttribute]: contextAttributeId, // Need this to be able to correlate the workflow run somehow
+      },
+    });
+
+    // Put the CE in the format needed to send as a Kafka message
+    const lockEventBinding = KafkaCE.binary(triggeringCloudEvent);
+    // Create the message event that will be sent to the kafka topic
+    const messageEvent = {
+      key: this.orchestratorKafkaMessageKey,
+      value: JSON.stringify(KafkaCE.toEvent(lockEventBinding)),
+    };
+
+    const kfk = this.orchestratorKafkaImpl;
+    const producer = kfk.producer();
+    try {
+      // Connect the producer
+      await producer.connect();
+
+      // Send the message
+      await producer.send({
+        topic: args.workflowEventType,
+        messages: [messageEvent],
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error with Kafka client connection. Options: clientId: ${this.kafkaServiceOptions?.clientId} and broker: ${JSON.stringify(this.kafkaServiceOptions?.brokers)}`,
+      );
+      throw new Error(
+        `Error with Kafka client with connection Options: clientId: ${this.kafkaServiceOptions?.clientId} and broker: ${JSON.stringify(this.kafkaServiceOptions?.brokers)}`,
+      );
+    } finally {
+      // Disconnect the producer
+      await producer.disconnect();
+    }
+
+    // Since sending to kafka doesn't return anything, send back the contextAttributeId here
+    // Then we will query the workflow instances to see if it showed up yet
+    return {
+      id: contextAttributeId,
+    };
   }
 
   public async executeWorkflow(args: {

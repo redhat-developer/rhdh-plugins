@@ -450,6 +450,33 @@ describe('common', () => {
       });
     });
 
+    it('returns canViewAll and canWriteAll when readOnly and user has admin write only', async () => {
+      const permissionsSvc = createMockPermissionsSvc(
+        AuthorizeResult.DENY,
+        AuthorizeResult.DENY,
+        AuthorizeResult.ALLOW,
+      );
+      const httpAuth = createMockHttpAuth();
+      const req = createMockRequest();
+
+      const result = await useEnforceX2APermissions({
+        req,
+        readOnly: true,
+        permissionsSvc: permissionsSvc as any,
+        httpAuth: httpAuth as any,
+      });
+      expect(result).toMatchObject({
+        canViewAll: true,
+        canWriteAll: true,
+        credentials: {
+          principal: {
+            type: 'user',
+            userEntityRef: 'user:default/mock',
+          },
+        },
+      });
+    });
+
     it('returns canWriteAll when readOnly false and user has admin write', async () => {
       const permissionsSvc = createMockPermissionsSvc(
         AuthorizeResult.DENY,
@@ -466,7 +493,7 @@ describe('common', () => {
         httpAuth: httpAuth as any,
       });
       expect(result).toMatchObject({
-        canViewAll: false,
+        canViewAll: true,
         canWriteAll: true,
         credentials: {
           principal: {

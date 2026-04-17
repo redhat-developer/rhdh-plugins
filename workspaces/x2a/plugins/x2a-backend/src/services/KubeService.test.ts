@@ -15,7 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { X2AConfig } from '../../config';
+import { X2AConfig } from './types';
 import { KubeService } from './KubeService';
 
 // Mock the Kubernetes client

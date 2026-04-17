@@ -136,8 +136,8 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
            config:
              customizable: true
              widgetLayout:
-               ScorecardJiraHomepage:
-                 priority: 240
+               AggregatedCardWithDeprecatedMetricId:
+                 priority: 410
                  breakpoints:
                    xl: { w: 4, h: 6 }
                    lg: { w: 4, h: 6 }
@@ -145,8 +145,26 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    sm: { w: 4, h: 6 }
                    xs: { w: 4, h: 6 }
                    xxs: { w: 4, h: 6 }
-               ScorecardGithubHomepage:
-                 priority: 250
+               AggregatedCardWithDefaultAggregation:
+                 priority: 420
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 4 }
+                   lg: { w: 4, h: 6, x: 4 }
+                   md: { w: 4, h: 6, x: 4 }
+                   sm: { w: 4, h: 6, x: 4 }
+                   xs: { w: 4, h: 6, x: 4 }
+                   xxs: { w: 4, h: 6, x: 4 }
+               AggregatedCardWithJiraOpenIssues:
+                 priority: 430
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithGithubOpenPrs:
+                 priority: 440
                  breakpoints:
                    xl: { w: 4, h: 6, x: 4 }
                    lg: { w: 4, h: 6, x: 4 }
@@ -156,12 +174,14 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    xxs: { w: 4, h: 6, x: 4 }
    ```
 
-   The home module contributes two widgets:
+   The home module contributes four widgets:
 
-   - `ScorecardGithubHomepage` (title: **Scorecard: GitHub open PRs**)
-   - `ScorecardJiraHomepage` (title: **Scorecard: Jira open blocking tickets**)
+   - `AggregatedCardWithDeprecatedMetricId` (title: **Scorecard: With deprecated metricId property (Jira)**)
+   - `AggregatedCardWithDefaultAggregation` (title: **Scorecard: With default aggregation config (GitHub)**)
+   - `AggregatedCardWithJiraOpenIssues` (title: **Scorecard: Jira open blocking tickets**)
+   - `AggregatedCardWithGithubOpenPrs` (title: **Scorecard: GitHub open PRs**)
 
-   These widgets render the same `ScorecardHomepageCard` component used in legacy apps, preconfigured for `github.open_prs` and `jira.open_issues`.
+   These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
 
 ##### Modules and extensions (NFS)
 
@@ -169,18 +189,20 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 
 **Modules**
 
-| Module                        | Description                                                                                                                                                            |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scorecardHomeModule`         | Registers Scorecard homepage widgets for the home plugin (`ScorecardGithubHomepage` and `ScorecardJiraHomepage`).                                                      |
-| `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3). |
-| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                           |
+| Module                        | Description                                                                                                                                                                                                           |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scorecardHomeModule`         | Registers Scorecard homepage widgets for the home plugin (`AggregatedCardWithDeprecatedMetricId`, `AggregatedCardWithDefaultAggregation`, `AggregatedCardWithJiraOpenIssues`, and `AggregatedCardWithGithubOpenPrs`). |
+| `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3).                                                |
+| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                                                                          |
 
 **Extensions**
 
 - `api:scorecard` — Scorecard API (provided by the plugin; auto-discovered when the plugin is installed).
 - `entity-content:catalog/entity-content-scorecard` — Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type.
-- `home-page-widget:home/scorecard-github-homepage` — Homepage widget showing GitHub open PR metric.
-- `home-page-widget:home/scorecard-jira-homepage` — Homepage widget showing Jira open issues metric.
+- `home-page-widget:home/scorecard-deprecated-metric-id` — Homepage widget using deprecated metricId property (Jira open issues).
+- `home-page-widget:home/scorecard-default-aggregation` — Homepage widget using default aggregation config (GitHub open PRs).
+- `home-page-widget:home/scorecard-jira-open-issues` — Homepage widget showing Jira open blocking tickets.
+- `home-page-widget:home/scorecard-github-open-prs` — Homepage widget showing GitHub open PRs.
 
 #### Legacy app
 

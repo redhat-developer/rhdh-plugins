@@ -88,6 +88,12 @@ export function processSchema(
   return { [name]: value };
 }
 
+/**
+ * Builds review display data from form values and schema (respects `ui:hidden`, passwords, nesting).
+ * Pair with `schemaHasUiHiddenFields` and a user toggle when you need parity with the default review step.
+ *
+ * @public
+ */
 function generateReviewTableData(
   schema: JSONSchema7,
   data: JsonObject,

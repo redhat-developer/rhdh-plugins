@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Fragment, useCallback, useMemo, useState } from 'react';
+import { ComponentType, Fragment, useCallback, useMemo, useState } from 'react';
 
 import { JsonObject } from '@backstage/types';
 
@@ -23,13 +23,20 @@ import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import cloneDeep from 'lodash/cloneDeep';
 import get from 'lodash/get';
 
-import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import {
+  OrchestratorFormContextProps,
+  ReviewComponentProps,
+  useOrchestratorFormApiOrDefault,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 import { TranslationFunction } from '../hooks/useTranslation';
 import extractStaticDefaults from '../utils/extractStaticDefaults';
 import generateUiSchema from '../utils/generateUiSchema';
 import { omitFromWorkflowInput, pruneFormData } from '../utils/pruneFormData';
-import { StepperContextProvider } from '../utils/StepperContext';
+import {
+  StepperContextProvider,
+  useStepperContext,
+} from '../utils/StepperContext';
 import OrchestratorFormWrapper from './OrchestratorFormWrapper';
 import ReviewStep from './ReviewStep';
 import SingleStepForm from './SingleStepForm';
@@ -52,8 +59,11 @@ export type OrchestratorFormProps = {
   setAuthTokenDescriptors: OrchestratorFormContextProps['setAuthTokenDescriptors'];
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
+  handleExecuteAsEvent?: (parameters: JsonObject) => Promise<void>;
   initialFormData: JsonObject;
   t: TranslationFunction;
+  executeLabel?: string;
+  executeAsEventLabel?: string;
 };
 
 /**
@@ -98,6 +108,43 @@ const removeHiddenSteps = (schema: JSONSchema7): JSONSchema7 => {
   return schema;
 };
 
+type ReviewStepHostProps = {
+  ReviewComponent: ComponentType<ReviewComponentProps>;
+  busy: boolean;
+  schema: JSONSchema7;
+  data: JsonObject;
+  handleExecute: () => void;
+  executeLabel?: string;
+  handleExecuteAsEvent?: () => void;
+  executeAsEventLabel?: string;
+};
+
+/** Supplies `handleBack` from stepper context to the default or custom review component. */
+const ReviewStepHost = ({
+  ReviewComponent,
+  busy,
+  schema,
+  data,
+  handleExecute,
+  executeLabel,
+  handleExecuteAsEvent,
+  executeAsEventLabel,
+}: ReviewStepHostProps) => {
+  const { handleBack } = useStepperContext();
+  return (
+    <ReviewComponent
+      busy={busy}
+      schema={schema}
+      data={data}
+      handleBack={handleBack}
+      handleExecute={handleExecute}
+      executeLabel={executeLabel}
+      handleExecuteAsEvent={handleExecuteAsEvent}
+      executeAsEventLabel={executeAsEventLabel}
+    />
+  );
+};
+
 /**
  * @public
  * The component contains the react-json-schema-form and serves as an extensible form. It allows loading a custom plugin decorator to override the default react-json-schema-form properties.
@@ -106,10 +153,13 @@ const OrchestratorForm = ({
   schema: rawSchema,
   updateSchema,
   handleExecute,
+  handleExecuteAsEvent,
   isExecuting,
   initialFormData,
   setAuthTokenDescriptors,
   t,
+  executeLabel,
+  executeAsEventLabel,
 }: OrchestratorFormProps) => {
   // Extract static defaults from fetch:response:default in schema and merge with initialFormData
   // This ensures defaults are available before widgets render
@@ -157,6 +207,11 @@ const OrchestratorForm = ({
     // Use pruned data for execution to avoid submitting stale properties
     handleExecute(workflowInputData);
   }, [workflowInputData, handleExecute]);
+  const _handleExecuteAsEvent = useCallback(() => {
+    if (handleExecuteAsEvent) {
+      handleExecuteAsEvent(workflowInputData);
+    }
+  }, [workflowInputData, handleExecuteAsEvent]);
 
   const onSubmit = useCallback(
     (_formData: JsonObject) => {
@@ -169,17 +224,39 @@ const OrchestratorForm = ({
     return generateUiSchema(schema, isMultiStep);
   }, [schema, isMultiStep]);
 
+  // Get custom review component from API if available
+  const orchestratorFormApi = useOrchestratorFormApiOrDefault();
+  const CustomReviewComponent = useMemo(() => {
+    return orchestratorFormApi.getReviewComponent?.();
+  }, [orchestratorFormApi]);
+
   const reviewStep = useMemo(() => {
+    const ReviewComponent = CustomReviewComponent || ReviewStep;
     return (
-      <ReviewStep
+      <ReviewStepHost
+        ReviewComponent={ReviewComponent}
         data={prunedFormData}
         schema={schema}
         busy={isExecuting}
         handleExecute={_handleExecute}
-        // no schema update here
+        executeLabel={executeLabel}
+        handleExecuteAsEvent={
+          handleExecuteAsEvent ? _handleExecuteAsEvent : undefined
+        }
+        executeAsEventLabel={executeAsEventLabel}
       />
     );
-  }, [prunedFormData, schema, isExecuting, _handleExecute]);
+  }, [
+    CustomReviewComponent,
+    prunedFormData,
+    schema,
+    isExecuting,
+    _handleExecute,
+    executeLabel,
+    handleExecuteAsEvent,
+    _handleExecuteAsEvent,
+    executeAsEventLabel,
+  ]);
 
   return (
     <StepperContextProvider reviewStep={reviewStep} t={t}>

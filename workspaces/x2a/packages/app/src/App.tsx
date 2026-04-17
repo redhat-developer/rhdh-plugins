@@ -57,7 +57,9 @@ import {
   X2APage,
   x2aPluginTranslations,
   RepoAuthenticationExtension,
+  X2ARepoUrlPickerExtension,
 } from '@red-hat-developer-hub/backstage-plugin-x2a';
+import { DcrConsentPage } from '@red-hat-developer-hub/backstage-plugin-x2a-dcr';
 import {
   bitbucketAuthApiRef,
   githubAuthApiRef,
@@ -153,6 +155,7 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
+    <Route path="/oauth2/*" element={<DcrConsentPage />} />
 
     {/* At RHDH runtime, this is replaced by dynamicPlugin configuration:
       https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/installing_and_viewing_plugins_in_red_hat_developer_hub/assembly-front-end-plugin-wiring.adoc_rhdh-extensions-plugins#con-providing-custom-scaffolder-field-extensions.adoc_assembly-front-end-plugin-wiring
@@ -160,6 +163,7 @@ const routes = (
     <Route path="/create" element={<ScaffolderPage />}>
       <ScaffolderFieldExtensions>
         <RepoAuthenticationExtension />
+        <X2ARepoUrlPickerExtension />
       </ScaffolderFieldExtensions>
     </Route>
   </FlatRoutes>

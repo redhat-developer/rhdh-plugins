@@ -82,7 +82,9 @@ export const WorkflowPage = () => {
           >
             <Grid container spacing={2}>
               <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
-              <WorkflowRunsTabContent />
+              <Grid item xs={12}>
+                <WorkflowRunsTabContent />
+              </Grid>
             </Grid>
           </TabbedLayout.Route>
         </TabbedLayout>

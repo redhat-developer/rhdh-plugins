@@ -123,7 +123,11 @@ spec:
                     description: |
                       The Owner should be your SCM (Source Code Management) username. The repository name should be a name that already exists in your SCM account and contains a Chef cookbook or directory to convert.
                     type: string
-                    ui:field: RepoUrlPicker
+                    # HACK: X2ARepoUrlPicker wraps the default RepoUrlPicker to
+                    # fix a Bitbucket Cloud/Server type mismatch in Backstage
+                    # scaffolder. Replace with RepoUrlPicker once upstream is fixed.
+                    # See https://redhat.atlassian.net/browse/FLPATH-4033
+                    ui:field: X2ARepoUrlPicker
                     ui:options:
                       requestUserCredentials:
                         secretsKey: SRC_USER_OAUTH_TOKEN
@@ -177,7 +181,11 @@ spec:
                     description: |
                       The Owner should be your SCM (Source Code Management) username. The repository name should be a name that already exists in your SCM account. It will be populated by converted Ansible sources and intermediary artifacts.
                     type: string
-                    ui:field: RepoUrlPicker
+                    # HACK: X2ARepoUrlPicker wraps the default RepoUrlPicker to
+                    # fix a Bitbucket Cloud/Server type mismatch in Backstage
+                    # scaffolder. Replace with RepoUrlPicker once upstream is fixed.
+                    # See https://redhat.atlassian.net/browse/FLPATH-4033
+                    ui:field: X2ARepoUrlPicker
                     ui:options:
                       requestUserCredentials:
                         secretsKey: TGT_USER_OAUTH_TOKEN
