@@ -112,12 +112,21 @@ export function useLightspeedProviderState(): {
       if (!dockedAfterLeavingFullscreenRef.current) {
         closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
       }
-    } else if (persistedDisplayMode === ChatbotDisplayMode.embedded) {
+    } else if (
+      persistedDisplayMode === ChatbotDisplayMode.embedded &&
+      !isOpen
+    ) {
       setDisplayModeState(ChatbotDisplayMode.default);
     } else {
       setDisplayModeState(persistedDisplayMode);
     }
-  }, [closeDrawer, conversationId, isLightspeedRoute, persistedDisplayMode]);
+  }, [
+    closeDrawer,
+    conversationId,
+    isLightspeedRoute,
+    isOpen,
+    persistedDisplayMode,
+  ]);
 
   useEffect(() => {
     if (
@@ -133,23 +142,34 @@ export function useLightspeedProviderState(): {
   const openChatbot = useCallback(() => {
     openedViaFABRef.current = true;
     const rawMode = persistedDisplayMode || ChatbotDisplayMode.default;
-    // Full-page (/lightspeed) mode is tied to the route, not the FAB. If the user last used
-    // fullscreen there, persisted mode can still be "embedded" — opening from the FAB should
-    // use the compact overlay instead unless they chose docked.
-    const modeToUse =
-      rawMode === ChatbotDisplayMode.embedded
-        ? ChatbotDisplayMode.default
-        : rawMode;
-    setDisplayModeState(modeToUse);
 
-    if (modeToUse === ChatbotDisplayMode.docked) {
+    if (rawMode === ChatbotDisplayMode.embedded) {
+      if (!isLightspeedRoute) {
+        navigate(lightspeedRoutePath(currentConversationIdState));
+      }
+      setDisplayModeState(ChatbotDisplayMode.embedded);
+      closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
+      setIsOpen(true);
+      return;
+    }
+
+    setDisplayModeState(rawMode);
+
+    if (rawMode === ChatbotDisplayMode.docked) {
       openDrawer(LIGHTSPEED_APP_DRAWER_ID);
     } else {
       closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
     }
 
     setIsOpen(true);
-  }, [closeDrawer, openDrawer, persistedDisplayMode]);
+  }, [
+    closeDrawer,
+    currentConversationIdState,
+    isLightspeedRoute,
+    navigate,
+    openDrawer,
+    persistedDisplayMode,
+  ]);
 
   const closeChatbot = useCallback(() => {
     dockedAfterLeavingFullscreenRef.current = false;

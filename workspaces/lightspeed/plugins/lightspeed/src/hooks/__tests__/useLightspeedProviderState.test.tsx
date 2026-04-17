@@ -184,7 +184,7 @@ describe('useLightspeedProviderState', () => {
       expect(mockOpenDrawer).toHaveBeenCalledWith(LIGHTSPEED_APP_DRAWER_ID);
     });
 
-    it('opens FAB in overlay when persisted mode is embedded', async () => {
+    it('opens chatbot in persisted fullscreen (embedded) by navigating to /lightspeed', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
 
       renderWithRouter(['/catalog']);
@@ -196,13 +196,9 @@ describe('useLightspeedProviderState', () => {
       });
 
       expect(screen.getByTestId('display-mode')).toHaveTextContent(
-        ChatbotDisplayMode.default,
+        ChatbotDisplayMode.embedded,
       );
-      await waitFor(() => {
-        expect(screen.getByTestId('overlay-modal-flag')).toHaveTextContent(
-          'yes',
-        );
-      });
+      expect(screen.getByTestId('overlay-modal-flag')).toHaveTextContent('no');
     });
   });
 
