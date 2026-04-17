@@ -29,9 +29,12 @@ const useStyles = makeStyles<{ isDarkMode: boolean; maxHeight?: number }>()(
       position: 'relative',
       paddingTop: theme.spacing(2),
       paddingBottom: theme.spacing(2),
-      backgroundColor: isDarkMode ? '#151515' : '#F0F0F0',
       maxWidth: 600,
       marginTop: '0.6rem',
+      '&&': {
+        outline: 'unset',
+        backgroundColor: isDarkMode ? '#151515' : '#F0F0F0',
+      },
     },
     iconButton: {
       position: 'absolute',
