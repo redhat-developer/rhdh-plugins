@@ -205,6 +205,14 @@ export async function createBackendRouter(
   const contentLengthLimit = config.getOptionalString(
     'orchestrator.contentLengthLimit',
   );
+  /**
+   * Set the content length limit for the requests.
+   * Defaults to 102400 bytes (100kb)
+   *
+   * There is a possiblity that some workflows will have a very large payload, which could cause a 413 error.
+   * Increasing this value will allow larger payloads to be processed.
+   *
+   */
   router.use(express.json({ limit: contentLengthLimit }));
   router.use(permissionsIntegrationRouter);
   router.use('/workflows', express.text());
