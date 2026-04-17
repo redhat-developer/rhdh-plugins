@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 export interface Config {
   /**
    * Configuration for the Orchestrator plugin.
    */
   orchestrator?: {
+    /**
+     * Set the content length limit for the requests.
+     * Defaults to 102400 bytes (100kb)
+     */
+    contentLengthLimit?: string;
     sonataFlowService: {
       /**
        * Base URL of the Sonata Flow service.

@@ -147,6 +147,8 @@ catalog:
 dynamicPlugins:
   frontend: {}
 orchestrator:
+  # Uncomment to set the content length limit for the requests. Defaults to 102400 bytes (100kb)
+  # contentLengthLimit: 10mb
   sonataFlowService:
     # uncomment the next line to use podman instead of docker
     # runtime: podman
