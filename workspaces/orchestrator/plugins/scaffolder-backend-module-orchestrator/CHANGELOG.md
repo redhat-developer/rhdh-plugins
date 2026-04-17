@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 1.3.5
+
+### Patch Changes
+
+- 1bd539f: fix: update axios for CVE-2026-40175
+- Updated dependencies [1bd539f]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.3
+
 ## 1.3.4
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.4.4
+
+### Patch Changes
+
+- 1bd539f: fix: update axios for CVE-2026-40175
+- Updated dependencies [1bd539f]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.6
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.5.5
+
 ## 5.4.3
 
 ### Patch Changes
