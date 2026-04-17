@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { ScorecardQueryProvider } from '../../api';
 import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -39,8 +40,9 @@ export const ScorecardHomepageCard = ({
   // Deprecated logic to support both metricId and aggregationId. Only aggregationId will be used in the future.
   const resolvedScorecardId = aggregationId || metricId || '';
 
-  const { data, isLoading, error } =
-    useAggregatedScorecard(resolvedScorecardId);
+  const { data, isLoading, error } = useAggregatedScorecard({
+    aggregationId: resolvedScorecardId,
+  });
 
   const aggregatedMetricDetails = data
     ? ({
@@ -101,3 +103,18 @@ export const ScorecardHomepageCard = ({
     />
   );
 };
+
+/**
+ * ScorecardHomepageCard wrapped with QueryClientProvider so it works
+ * when rendered outside a tree that already has a provider (e.g. on the homepage).
+ */
+export const ScorecardHomepageCardWithProvider = (props: {
+  metricId?: string;
+  aggregationId?: string;
+  showSubheader?: boolean;
+  showInfo?: boolean;
+}) => (
+  <ScorecardQueryProvider>
+    <ScorecardHomepageCard {...props} />
+  </ScorecardQueryProvider>
+);

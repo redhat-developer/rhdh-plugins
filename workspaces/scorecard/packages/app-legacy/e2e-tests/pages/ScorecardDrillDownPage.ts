@@ -65,10 +65,10 @@ export class ScorecardDrillDownPage {
     }
   }
 
-  async expectPageTitle(metricId: MetricId) {
+  async expectPageTitle(metricId: MetricId, customTitle?: string) {
     await expect(
       this.page.getByRole('heading', {
-        name: this.translations.metric[metricId].title,
+        name: customTitle ?? this.translations.metric[metricId].title,
         level: 1,
       }),
     ).toBeVisible();

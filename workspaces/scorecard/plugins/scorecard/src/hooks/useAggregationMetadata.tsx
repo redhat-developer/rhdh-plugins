@@ -14,51 +14,48 @@
  * limitations under the License.
  */
 
+import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@backstage/core-plugin-api';
-import useAsync from 'react-use/lib/useAsync';
+
 import { scorecardApiRef } from '../api';
 import { useTranslation } from './useTranslation';
-import { AggregationMetadata } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { useMemo } from 'react';
 import { UseResponseData } from './types';
-import type { ScorecardApi } from '../api/types';
+import { AggregationMetadata } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export const useAggregationMetadata = (
-  aggregationId: string,
-): UseResponseData<AggregationMetadata> => {
+interface UseAggregationMetadataOptions {
+  aggregationId: string;
+  enabled?: boolean;
+}
+
+export const useAggregationMetadata = ({
+  aggregationId,
+  enabled = true,
+}: UseAggregationMetadataOptions): UseResponseData<AggregationMetadata> => {
   const { t } = useTranslation();
+  const scorecardApi = useApi(scorecardApiRef);
 
-  const scorecardApi = useApi<ScorecardApi>(scorecardApiRef);
-
-  const {
-    error,
-    loading: isLoading,
-    value: data,
-  } = useAsync(async () => {
-    if (!aggregationId || aggregationId.trim() === '') {
-      throw new Error(t('errors.missingAggregationId'));
-    }
-
-    try {
-      return await scorecardApi.getAggregationMetadata(aggregationId);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw err;
+  const { error, isLoading, data } = useQuery({
+    queryKey: ['aggregationMetadata', aggregationId],
+    queryFn: async () => {
+      try {
+        return await scorecardApi.getAggregationMetadata(aggregationId);
+      } catch (err) {
+        if (err instanceof Error) {
+          throw err;
+        }
+        throw new Error(
+          t('errors.fetchError' as any, {
+            error: String(err),
+          }),
+        );
       }
-      throw new Error(
-        t('errors.fetchError' as any, {
-          error: String(err),
-        }),
-      );
-    }
-  }, [scorecardApi, aggregationId, t]);
+    },
+    enabled: Boolean(aggregationId?.trim()) && enabled,
+  });
 
-  return useMemo(
-    () => ({
-      data,
-      isLoading,
-      error,
-    }),
-    [data, isLoading, error],
-  );
+  return {
+    data,
+    isLoading,
+    error: error ?? undefined,
+  };
 };

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
-
-import useAsync from 'react-use/lib/useAsync';
+import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@backstage/core-plugin-api';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
@@ -30,38 +28,34 @@ interface UseMetricOptions {
 export const useMetric = (options: UseMetricOptions) => {
   const { metricId } = options;
   const { t } = useTranslation();
-
   const scorecardApi = useApi(scorecardApiRef);
 
-  const { error, loading, value } = useAsync(async () => {
-    try {
-      const { metrics } = await scorecardApi.getMetrics({
-        metricIds: [metricId],
-      });
+  const { error, isLoading, data } = useQuery({
+    queryKey: ['metric', metricId],
+    queryFn: async () => {
+      try {
+        const { metrics } = await scorecardApi.getMetrics({
+          metricIds: [metricId],
+        });
 
-      if (!Array.isArray(metrics) || metrics.length === 0) {
-        throw new Error(t('errors.invalidApiResponse'));
+        if (!Array.isArray(metrics) || metrics.length === 0) {
+          throw new Error(t('errors.invalidApiResponse'));
+        }
+
+        return metrics[0] as Metric;
+      } catch (err) {
+        if (err instanceof Error) {
+          throw err;
+        }
+        throw new Error(t('errors.fetchError' as any, { error: String(err) }));
       }
+    },
+    enabled: Boolean(metricId),
+  });
 
-      return metrics[0] as Metric;
-    } catch (err) {
-      if (err instanceof Error) {
-        throw err;
-      }
-      throw new Error(
-        t('errors.fetchError' as any, {
-          error: String(err),
-        }),
-      );
-    }
-  }, [scorecardApi, metricId, t]);
-
-  return useMemo(
-    () => ({
-      metric: value as Metric,
-      loadingData: loading,
-      error,
-    }),
-    [value, loading, error],
-  );
+  return {
+    metric: data as Metric,
+    loadingData: isLoading,
+    error,
+  };
 };
