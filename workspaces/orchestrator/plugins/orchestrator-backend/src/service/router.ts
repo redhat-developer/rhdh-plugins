@@ -207,7 +207,7 @@ export async function createBackendRouter(
   );
   router.use(express.json({ limit: contentLengthLimit }));
   router.use(permissionsIntegrationRouter);
-  router.use('/workflows', express.text({ limit: contentLengthLimit }));
+  router.use('/workflows', express.text());
   router.get('/health', (_, response) => {
     logger.info('PONG!');
     response.json({ status: 'ok' });
