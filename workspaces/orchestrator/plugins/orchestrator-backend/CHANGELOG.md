@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.9.0
+
+### Minor Changes
+
+- 9ab62e3: feature: add the ability to trigger kafka based workflows from the plugin
+
 ## 8.8.2
 
 ### Patch Changes
