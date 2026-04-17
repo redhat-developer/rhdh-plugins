@@ -135,6 +135,13 @@ const useStyles = makeStyles(theme => ({
   errorContainer: {
     padding: theme.spacing(3),
   },
+  drawerFileDropZone: {
+    gap: 0,
+    rowGap: 0,
+    columnGap: 0,
+    '--pf-v6-c-multiple-file-upload--Gap': '0',
+    '--pf-v5-c-multiple-file-upload--Gap': '0',
+  },
   headerMenu: {
     // align hamburger icon with title
     '& .pf-v6-c-button': {
@@ -1577,6 +1584,7 @@ export const LightspeedChat = ({
             }
             drawerContent={
               <FileDropZone
+                className={classes.drawerFileDropZone}
                 onFileDrop={(e, data) => handleAttach(data, e)}
                 displayMode={ChatbotDisplayMode.embedded}
                 infoText={t('chatbox.fileUpload.infoText')}
