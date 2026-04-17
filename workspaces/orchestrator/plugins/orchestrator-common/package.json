@@ -58,7 +58,7 @@
     "@backstage/plugin-permission-common": "^0.9.3",
     "@backstage/types": "^1.2.2",
     "@serverlessworkflow/sdk-typescript": "^0.8.4",
-    "axios": "^1.11.0",
+    "axios": "^1.15.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
