@@ -18,8 +18,15 @@ organization:
 
 # Disable AI Notebooks feature by default
 lightspeed:
-  aiNotebooks:
+  notebooks:
     enabled: false
+    queryDefaults:
+      model: redhataillama-31-8b-instruct
+      provider_id: vllm
+    sessionDefaults:
+      provider_id: notebooks
+      embedding_model: ${LLAMA_STACK_EMBEDDING_MODEL}
+      embedding_dimension: 768
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
