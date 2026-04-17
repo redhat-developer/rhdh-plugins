@@ -104,7 +104,7 @@ To enable AI Notebooks, add the following configuration to your `app-config.yaml
 lightspeed:
   servicePort: 8080 # Optional: Lightspeed Core service port (default: 8080)
 
-  Notebooks:
+  notebooks:
     enabled: false # Enable AI Notebooks feature (default: false)
 
     # Required: Query defaults for RAG queries

@@ -70,10 +70,10 @@ export async function createNotebooksRouter(
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const lightspeedBaseUrl = `http://${LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
   const queryModel = config.getOptionalString(
-    'lightspeed.Notebooks.queryDefaults.model',
+    'lightspeed.notebooks.queryDefaults.model',
   );
   const queryProvider = config.getOptionalString(
-    'lightspeed.Notebooks.queryDefaults.provider_id',
+    'lightspeed.notebooks.queryDefaults.provider_id',
   );
   const systemPrompt = NOTEBOOKS_SYSTEM_PROMPT;
 
