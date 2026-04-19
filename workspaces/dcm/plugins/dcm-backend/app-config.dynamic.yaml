@@ -1,0 +1,10 @@
+dcm:
+  # Base URL of the DCM API Gateway (required).
+  # Example: https://api-gateway.example.com
+  apiGatewayUrl: ${DCM_API_GATEWAY_URL}
+
+  # SSO configuration for the backend to obtain bearer tokens via
+  # OAuth2 client_credentials flow (required when the gateway enforces SSO).
+  ssoBaseUrl: ${DCM_SSO_BASE_URL}
+  clientId: ${DCM_CLIENT_ID}
+  clientSecret: ${DCM_CLIENT_SECRET}
