@@ -21,6 +21,8 @@
  */
 export * from '../client/src/schema/openapi';
 export * from './permissions';
+export * from './x2aJobStatusLiterals';
+export * from './x2aArtifactTypeLiterals';
 export * from './constants';
 export * from './utils';
 export * from './scm';

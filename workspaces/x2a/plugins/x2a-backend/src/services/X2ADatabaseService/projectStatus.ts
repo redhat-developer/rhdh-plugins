@@ -21,9 +21,7 @@ import {
   ProjectStatusState,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { calculateModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
-
-export { calculateModuleStatus };
+export { calculateModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
  * Project status is calculated from its modules.
