@@ -18,7 +18,6 @@ const mockSetSecrets = jest.fn();
 const mockAuthenticate = jest.fn();
 
 jest.mock('@backstage/plugin-scaffolder-react', () => ({
-  ...jest.requireActual('@backstage/plugin-scaffolder-react'),
   useTemplateSecrets: () => ({
     secrets: {},
     setSecrets: mockSetSecrets,

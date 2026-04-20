@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-app-auth",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "license": "Apache-2.0",
   "description": "RHDH sign-in page and OIDC/Auth0/SAML frontend auth APIs for the new frontend system",
   "main": "src/alpha.ts",

@@ -45,8 +45,6 @@ export interface GitApiService {
 
   getRepositoriesFromIntegrations(
     search?: string,
-    pageNumber?: number,
-    pageSize?: number,
     userTokens?: Record<string, string>,
   ): Promise<SCMRepositoryResponse>;
 

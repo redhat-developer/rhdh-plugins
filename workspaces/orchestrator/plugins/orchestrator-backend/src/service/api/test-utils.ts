@@ -81,6 +81,234 @@ export function generateTestWorkflowInfo(
   };
 }
 
+export function generateTestWorkflowInfoForEventypeNoStartStates(
+  id: string = 'test_workflowId',
+): WorkflowInfo {
+  return {
+    id: id,
+    source: `# yaml-language-server: $schema=https://raw.githubusercontent.com/serverlessworkflow/specification/refs/heads/0.8.x/schema/workflow.json
+id: lock-flow
+specVersion: "0.8"
+key: lock-flow
+version: "1.0.0"
+events:
+  - type: notify-event
+    kind: produced
+    name: notify-event
+    correlation:
+      - contextAttributeName: lockid
+functions:
+  - name: sysLog
+    type: custom
+    operation: sysout:INFO
+start: listenToLock
+states:
+  - name: notifyLock
+    type: operation
+    actions:
+      - eventRef:
+          triggerEventRef: notify-event
+      - functionRef:
+          refName: sysLog
+          arguments:
+    transition: waitForRelease
+    end:
+      produceEvents:
+        - eventRef: released-event
+          data: '{test: "testYOOOOOOOOOOOOOOOO"}'`,
+  };
+}
+
+export function generateTestWorkflowInfoForEventypeNoEventRef(
+  id: string = 'test_workflowId',
+): WorkflowInfo {
+  return {
+    id: id,
+    source: `# yaml-language-server: $schema=https://raw.githubusercontent.com/serverlessworkflow/specification/refs/heads/0.8.x/schema/workflow.json
+id: lock-flow
+specVersion: "0.8"
+key: lock-flow
+version: "1.0.0"
+events:
+  - type: lock-event
+    kind: consumed
+    name: lock-event
+    source: local
+    correlation:
+      - contextAttributeName: lockid
+functions:
+  - name: sysLog
+    type: custom
+    operation: sysout:INFO
+start: listenToLock
+states:
+  - name: listenToLock
+    type: event
+    end:
+      produceEvents:
+        - eventRef: released-event
+          data: '{test: "testYOOOOOOOOOOOOOOOO"}'`,
+  };
+}
+
+export function generateTestWorkflowInfoForEventypeNoStartStateForEventRef(
+  id: string = 'test_workflowId',
+): WorkflowInfo {
+  return {
+    id: id,
+    source: `# yaml-language-server: $schema=https://raw.githubusercontent.com/serverlessworkflow/specification/refs/heads/0.8.x/schema/workflow.json
+id: lock-flow
+specVersion: "0.8"
+key: lock-flow
+version: "1.0.0"
+events:
+  - type: released-event
+    kind: produced
+    name: released-event
+    correlation:
+      - contextAttributeName: lockid
+functions:
+  - name: sysLog
+    type: custom
+    operation: sysout:INFO
+start: listenToLock
+states:
+  - name: listenToLock
+    type: event
+    onEvents:
+      - eventRefs:
+          - lock-event
+        actions:
+          - functionRef:
+              refName: sysLog
+              arguments:
+    transition: notifyLock
+    end:
+      produceEvents:
+        - eventRef: released-event
+          data: '{test: "testYOOOOOOOOOOOOOOOO"}'`,
+  };
+}
+
+export function generateTestWorkflowInfoForEventypeWithNoCorrelationContextAttribute(
+  id: string = 'test_workflowId',
+): WorkflowInfo {
+  return {
+    id: id,
+    source: `# yaml-language-server: $schema=https://raw.githubusercontent.com/serverlessworkflow/specification/refs/heads/0.8.x/schema/workflow.json
+id: lock-flow
+specVersion: "0.8"
+key: lock-flow
+version: "1.0.0"
+events:
+  - type: lock-event
+    kind: consumed
+    name: lock-event
+    source: local
+functions:
+  - name: sysLog
+    type: custom
+    operation: sysout:INFO
+start: listenToLock
+states:
+  - name: listenToLock
+    type: event
+    onEvents:
+      - eventRefs:
+          - lock-event
+        actions:
+          - functionRef:
+              refName: sysLog
+              arguments:
+    transition: notifyLock
+    end:
+      produceEvents:
+        - eventRef: released-event
+          data: '{test: "testYOOOOOOOOOOOOOOOO"}'`,
+  };
+}
+
+export function generateTestWorkflowInfoForEventype(
+  id: string = 'test_workflowId',
+): WorkflowInfo {
+  return {
+    id: id,
+    source: `# yaml-language-server: $schema=https://raw.githubusercontent.com/serverlessworkflow/specification/refs/heads/0.8.x/schema/workflow.json
+id: lock-flow
+specVersion: "0.8"
+key: lock-flow
+version: "1.0.0"
+events:
+  - type: lock-event
+    kind: consumed
+    name: lock-event
+    source: local
+    correlation:
+      - contextAttributeName: lockid
+  - type: release-event
+    kind: consumed
+    name: release-event
+    source: local
+    correlation:
+      - contextAttributeName: lockid
+  - type: notify-event
+    kind: produced
+    name: notify-event
+    correlation:
+      - contextAttributeName: lockid
+  - type: released-event
+    kind: produced
+    name: released-event
+    correlation:
+      - contextAttributeName: lockid
+functions:
+  - name: sysLog
+    type: custom
+    operation: sysout:INFO
+start: listenToLock
+states:
+  - name: listenToLock
+    type: event
+    onEvents:
+      - eventRefs:
+          - lock-event
+        actions:
+          - functionRef:
+              refName: sysLog
+              arguments:
+    transition: notifyLock
+  - name: notifyLock
+    type: operation
+    actions:
+      - eventRef:
+          triggerEventRef: notify-event
+      - functionRef:
+          refName: sysLog
+          arguments:
+    transition: waitForRelease
+  - name: waitForRelease
+    type: callback
+    action:
+      functionRef:
+        refName: sysLog
+        arguments:
+    eventRef: release-event
+    timeouts:
+      eventTimeout: PT3M
+    transition: releaseLock
+  - name: releaseLock
+    type: operation
+    actions:
+      - functionRef:
+          refName: sysLog
+          arguments:
+    end:
+      produceEvents:
+        - eventRef: released-event
+          data: '{test: "testYOOOOOOOOOOOOOOOO"}'`,
+  };
+}
+
 export function generateTestExecuteWorkflowResponse(
   id: string = 'test_execId',
 ): WorkflowExecutionResponse {
@@ -152,6 +380,23 @@ export function generateProcessInstance(id: number): ProcessInstance {
             },
           ],
         },
+      },
+    },
+  };
+}
+
+export function generateProcessInstanceForEventType(
+  id: number,
+  correlationContextAttributeId: string,
+): ProcessInstance {
+  return {
+    id: `processInstance${id}`,
+    processId: `proceesId${id}`,
+    nodes: [],
+    endpoint: 'enpoint/foo',
+    variables: {
+      workflowdata: {
+        lockid: correlationContextAttributeId,
       },
     },
   };

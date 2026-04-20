@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.5.1
+
+### Patch Changes
+
+- f6f7bcf: add threshold-based status colors to entities table
+- 0fda0c7: fixed the scorecard-homepage-cards default layout for nfs
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.1
+
 ## 2.5.0
 
 ### Minor Changes

@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-import useAsync from 'react-use/lib/useAsync';
 import { renderHook } from '@testing-library/react';
 import { useApi } from '@backstage/core-plugin-api';
+import { useQuery } from '@tanstack/react-query';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { useMetric } from '../useMetric';
 
 jest.mock('@backstage/core-plugin-api');
-jest.mock('react-use/lib/useAsync');
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(),
+}));
 jest.mock('../useTranslation', () => ({
   useTranslation: jest.fn(),
 }));
 
 const mockUseApi = useApi as jest.MockedFunction<typeof useApi>;
-const mockUseAsync = useAsync as jest.MockedFunction<typeof useAsync>;
+const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
 import { useTranslation } from '../useTranslation';
 
@@ -53,12 +56,12 @@ describe('useMetric', () => {
     }));
   });
 
-  it('should return loading state when useAsync is loading', () => {
-    mockUseAsync.mockReturnValue({
-      loading: true,
-      error: undefined,
-      value: undefined,
-    });
+  it('should return loading state when useQuery is loading', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: true,
+      error: null,
+      data: undefined,
+    } as any);
 
     const { result } = renderHook(() =>
       useMetric({ metricId: 'github.open_prs' }),
@@ -67,16 +70,16 @@ describe('useMetric', () => {
     expect(result.current).toEqual({
       metric: undefined,
       loadingData: true,
-      error: undefined,
+      error: null,
     });
   });
 
   it('should return metric when API call succeeds', () => {
-    mockUseAsync.mockReturnValue({
-      loading: false,
-      error: undefined,
-      value: mockMetric,
-    });
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: mockMetric,
+    } as any);
 
     const { result } = renderHook(() =>
       useMetric({ metricId: 'github.open_prs' }),
@@ -85,17 +88,17 @@ describe('useMetric', () => {
     expect(result.current).toEqual({
       metric: mockMetric,
       loadingData: false,
-      error: undefined,
+      error: null,
     });
   });
 
-  it('should return error when useAsync has error', () => {
+  it('should return error when useQuery has error', () => {
     const apiError = new Error('Failed to fetch metric');
-    mockUseAsync.mockReturnValue({
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
       error: apiError,
-      value: undefined,
-    });
+      data: undefined,
+    } as any);
 
     const { result } = renderHook(() =>
       useMetric({ metricId: 'github.open_prs' }),
@@ -108,21 +111,20 @@ describe('useMetric', () => {
     });
   });
 
-  it('should call getMetrics with the provided metricId', () => {
-    mockScorecardApi.getMetrics.mockResolvedValue({ metrics: [mockMetric] });
-    mockUseAsync.mockImplementation(fn => {
-      fn().catch(() => {});
-      return {
-        loading: false,
-        error: undefined,
-        value: undefined,
-      };
-    });
+  it('should call useQuery with the correct queryKey and enabled flag', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: undefined,
+    } as any);
 
     renderHook(() => useMetric({ metricId: 'jira.blocking_tickets' }));
 
-    expect(mockScorecardApi.getMetrics).toHaveBeenCalledWith({
-      metricIds: ['jira.blocking_tickets'],
-    });
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: ['metric', 'jira.blocking_tickets'],
+        enabled: true,
+      }),
+    );
   });
 });

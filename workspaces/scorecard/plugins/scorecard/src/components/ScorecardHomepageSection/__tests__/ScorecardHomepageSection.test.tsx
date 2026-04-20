@@ -154,7 +154,9 @@ describe('ScorecardHomepageCard', () => {
       },
     );
 
-    expect(useAggregatedScorecard).toHaveBeenCalledWith('github.open_prs');
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'github.open_prs',
+    });
   });
 
   it('should prefer non-empty aggregationId over metricId for useAggregatedScorecard', () => {
@@ -174,7 +176,9 @@ describe('ScorecardHomepageCard', () => {
       },
     );
 
-    expect(useAggregatedScorecard).toHaveBeenCalledWith('agg.primary');
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'agg.primary',
+    });
   });
 
   it('should pass only aggregationId to useAggregatedScorecard when metricId is omitted', () => {
@@ -188,7 +192,9 @@ describe('ScorecardHomepageCard', () => {
       wrapper: TestWrapper,
     });
 
-    expect(useAggregatedScorecard).toHaveBeenCalledWith('kpi.only');
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'kpi.only',
+    });
   });
 
   it('should pass only metricId to useAggregatedScorecard when aggregationId is omitted', () => {
@@ -202,7 +208,9 @@ describe('ScorecardHomepageCard', () => {
       wrapper: TestWrapper,
     });
 
-    expect(useAggregatedScorecard).toHaveBeenCalledWith('github.open_prs');
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'github.open_prs',
+    });
   });
 
   it('should render empty state panel when NotAllowedError occurs', () => {

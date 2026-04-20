@@ -143,6 +143,11 @@ readonly "retriggerInit.confirm.message": string;
 readonly "retriggerInit.confirm.userPromptLabel": string;
 readonly "retriggerInit.confirm.userPromptPlaceholder": string;
 readonly "retriggerInit.confirm.confirmButton": string;
+readonly "retriggerInit.firstTrigger.title": string;
+readonly "retriggerInit.firstTrigger.message": string;
+readonly "retriggerInit.firstTrigger.userPromptLabel": string;
+readonly "retriggerInit.firstTrigger.userPromptPlaceholder": string;
+readonly "retriggerInit.firstTrigger.confirmButton": string;
 readonly "retriggerInit.errorStart": string;
 readonly "project.id": string;
 readonly "project.description": string;
@@ -221,9 +226,6 @@ readonly empty: string;
 
 // @public
 export const x2aPluginTranslations: TranslationResource<"plugin.x2a">;
-
-// @public
-export const X2ARepoUrlPickerExtension: FieldExtensionComponent<string, {}>;
 
 // (No @packageDocumentation comment for this package)
 

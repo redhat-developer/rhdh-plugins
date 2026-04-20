@@ -35,6 +35,23 @@ export const useDcmStyles = makeStyles(theme => ({
     fontSize: '23px',
   },
 
+  /** Name/ID cell — prevents TruncatedText from overflowing a flex table column. */
+  nameCellBox: {
+    minWidth: 0,
+  },
+
+  /** Chip used for API version badges — clamps long version strings. */
+  apiVersionChip: {
+    maxWidth: 140,
+  },
+
+  truncatedText: {
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    cursor: 'default',
+  },
+
   // ─── Shared table infrastructure (tab-list pages AND detail sub-tabs) ───────
 
   /** Outer wrapper that corrects table cell/pagination colours. */
@@ -197,6 +214,10 @@ export const useDcmStyles = makeStyles(theme => ({
     '& .MuiOutlinedInput-input': {
       padding: theme.spacing(1.5, 2),
     },
+  },
+
+  dialogErrorBanner: {
+    marginTop: theme.spacing(2),
   },
 
   dialogActions: {

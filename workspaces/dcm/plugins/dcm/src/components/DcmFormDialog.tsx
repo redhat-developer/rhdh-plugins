@@ -16,6 +16,7 @@
 
 import {
   Box,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -23,6 +24,7 @@ import {
   IconButton,
   Typography,
 } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 import CloseIcon from '@material-ui/icons/Close';
 import { useDcmStyles } from './dcmStyles';
 
@@ -35,6 +37,10 @@ export type DcmFormDialogProps = Readonly<{
   /** Footer row (typically primary + cancel buttons) */
   actions: React.ReactNode;
   maxWidth?: React.ComponentProps<typeof Dialog>['maxWidth'];
+  /** When set, renders an error banner between the form and the action buttons */
+  error?: string | null;
+  /** When true, the X close button is disabled (request in-flight) */
+  submitting?: boolean;
 }>;
 
 /**
@@ -47,6 +53,8 @@ export function DcmFormDialog({
   children,
   actions,
   maxWidth = 'sm',
+  error,
+  submitting = false,
 }: DcmFormDialogProps) {
   const classes = useDcmStyles();
   return (
@@ -69,6 +77,7 @@ export function DcmFormDialog({
             aria-label="Close"
             onClick={onClose}
             size="small"
+            disabled={submitting}
             className={classes.dialogTitleCloseBtn}
           >
             <CloseIcon />
@@ -77,6 +86,11 @@ export function DcmFormDialog({
       </DialogTitle>
       <DialogContent className={classes.dialogContent}>
         {children}
+        <Collapse in={Boolean(error)} className={classes.dialogErrorBanner}>
+          <MuiAlert severity="error" variant="outlined">
+            {error}
+          </MuiAlert>
+        </Collapse>
       </DialogContent>
       <DialogActions className={classes.dialogActions}>{actions}</DialogActions>
     </Dialog>

@@ -74,21 +74,6 @@ export const handleError = (
 };
 
 /**
- * Sanitize title to create a valid document ID
- * Converts title to lowercase, replaces spaces/special chars with hyphens
- */
-export const sanitizeTitle = (title: string): string => {
-  return (
-    title
-      .trim()
-      .toLocaleLowerCase('en-US')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+/g, '')
-      .replace(/-$/g, '') || 'untitled'
-  );
-};
-
-/**
  * Build VectorStore metadata object from session data
  * @param session - Notebook session
  * @returns Metadata object for vector store
@@ -117,8 +102,18 @@ export const extractSessionFromMetadata = (
   metadata: Record<string, any>,
 ): NotebookSession => {
   // Extract session-level fields
-  const { user_id, name, description, created_at, updated_at, ...rest } =
-    metadata;
+  const {
+    user_id,
+    name,
+    description,
+    created_at,
+    updated_at,
+    provider_id,
+    conversation_id,
+    embedding_dimension,
+    ...customMetadata
+  } = metadata;
+  delete customMetadata.provider_vector_store_id;
 
   return {
     session_id: sessionId,
@@ -127,6 +122,11 @@ export const extractSessionFromMetadata = (
     description: description as string,
     created_at: created_at as string,
     updated_at: updated_at as string,
-    metadata: rest,
+    metadata: {
+      ...customMetadata,
+      provider_id: provider_id as string,
+      conversation_id: conversation_id as string | null,
+      embedding_dimension: embedding_dimension as number,
+    },
   };
 };

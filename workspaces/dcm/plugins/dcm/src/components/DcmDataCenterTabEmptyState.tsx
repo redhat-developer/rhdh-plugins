@@ -57,8 +57,8 @@ const useStyles = makeStyles(theme => ({
 export type DcmDataCenterTabEmptyStateProps = Readonly<{
   title: string;
   description: string;
-  primaryActionLabel: string;
-  onPrimaryAction: () => void;
+  primaryActionLabel?: string;
+  onPrimaryAction?: () => void;
   /** Bundled image URL (e.g. `import x from '...png'`) */
   illustrationSrc: string;
 }>;
@@ -84,9 +84,15 @@ export function DcmDataCenterTabEmptyState({
           <Typography variant="body2" className={classes.body}>
             {description}
           </Typography>
-          <Button variant="contained" color="primary" onClick={onPrimaryAction}>
-            {primaryActionLabel}
-          </Button>
+          {primaryActionLabel && onPrimaryAction && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={onPrimaryAction}
+            >
+              {primaryActionLabel}
+            </Button>
+          )}
         </Grid>
         <Grid item xs={12} md={6} className={classes.illustrationWrap}>
           <img src={illustrationSrc} alt="" className={classes.illustration} />

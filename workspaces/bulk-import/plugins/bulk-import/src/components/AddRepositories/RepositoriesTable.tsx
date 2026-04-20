@@ -95,9 +95,6 @@ export const RepositoriesTable = ({
   const { loading, data, error } = useRepositories({
     showOrganizations,
     orgName: drawerOrganization,
-    page: (drawerOrganization ? drawerPage : localPage) + 1,
-    querySize: rowsPerPage,
-    searchString,
     approvalTool: values.approvalTool,
   });
 
@@ -135,12 +132,21 @@ export const RepositoriesTable = ({
       ? evaluateRowForRepo(tableData, values.repositories)
       : evaluateRowForOrg(tableData, values.repositories);
 
+    if (searchString) {
+      filteredRows = filteredRows?.filter(row => {
+        const targetToSearch = showOrganizations ? row.orgName : row.repoName;
+        return targetToSearch
+          ?.toLowerCase()
+          .includes(searchString.toLowerCase());
+      });
+    }
+
     filteredRows = [...(filteredRows || [])]?.sort(
       getComparator('asc', 'repoName'),
     );
 
     return filteredRows;
-  }, [tableData, values?.repositories, showOrganizations]);
+  }, [tableData, values?.repositories, showOrganizations, searchString]);
 
   const updateSelectedRepositories = useCallback(
     (newSelected: AddedRepositories) => {
@@ -153,14 +159,20 @@ export const RepositoriesTable = ({
   );
 
   const effectivePage = drawerOrganization ? drawerPage : page || 0;
+
+  const paginatedData = useMemo(() => {
+    const startIndex = effectivePage * rowsPerPage;
+    return filteredData?.slice(startIndex, startIndex + rowsPerPage) || [];
+  }, [filteredData, effectivePage, rowsPerPage]);
+
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    effectivePage > 0 ? Math.max(0, rowsPerPage - tableData.length) : 0;
+    effectivePage > 0 ? Math.max(0, rowsPerPage - paginatedData.length) : 0;
 
   const handleClickAllForRepositoriesTable = (drawer?: boolean) => {
     let newSelectedRows: AddedRepositories = { ...selected };
 
-    const rowsEligibleForSelection = filteredData.filter(
+    const rowsEligibleForSelection = paginatedData.filter(
       r => !values.excludedRepositories[r.id],
     );
     const isAllSelected = rowsEligibleForSelection.every(
@@ -269,8 +281,8 @@ export const RepositoriesTable = ({
     [tableData, selected],
   );
   const selectedRepositoriesOnActivePage = useMemo(
-    () => filterSelectedRepositoriesOnActivePage(filteredData, selected),
-    [filteredData, selected],
+    () => filterSelectedRepositoriesOnActivePage(paginatedData, selected),
+    [paginatedData, selected],
   );
   const getRowCount = () => {
     if (drawerOrganization) {
@@ -330,7 +342,7 @@ export const RepositoriesTable = ({
           <RepositoriesTableBody
             loading={loading}
             ariaLabel={ariaLabel()}
-            rows={filteredData}
+            rows={paginatedData}
             emptyRows={emptyRows}
             onOrgRowSelected={handleOrgRowSelected}
             onClick={handleClick}
@@ -351,11 +363,7 @@ export const RepositoriesTable = ({
               { value: 100, label: t('table.pagination.rows100') },
             ]}
             component="div"
-            count={
-              (showOrganizations
-                ? data?.totalOrganizations
-                : data?.totalRepositories) || 0
-            }
+            count={filteredData?.length || 0}
             rowsPerPage={rowsPerPage}
             page={effectivePage}
             onPageChange={handleChangePage}

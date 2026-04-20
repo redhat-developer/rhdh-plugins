@@ -63,7 +63,7 @@ export const lightspeedPlugin = createBackendPlugin({
         );
 
         const aiNotebooksEnabled =
-          config.getOptionalBoolean('lightspeed.aiNotebooks.enabled') ?? false;
+          config.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
         if (aiNotebooksEnabled) {
           http.use(
             await createNotebooksRouter({

@@ -5879,7 +5879,7 @@ __metadata:
     "@types/jest": "npm:^30.0.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
-    prettier: "npm:3.8.1"
+    prettier: "npm:3.8.3"
     react: "npm:^18.3.1"
     typescript: "npm:~5.8.0"
   languageName: unknown
@@ -10869,6 +10869,7 @@ __metadata:
     "@types/multer": "npm:^1.4.12"
     "@types/supertest": "npm:2.0.16"
     express: "npm:^4.21.1"
+    form-data: "npm:^4.0.5"
     htmlparser2: "npm:^9.1.0"
     http-proxy-middleware: "npm:^3.0.2"
     js-yaml: "npm:^4.1.1"
@@ -10877,7 +10878,7 @@ __metadata:
     msw: "npm:2.12.10"
     multer: "npm:^1.4.5-lts.1"
     pdfjs-dist: "npm:^4.10.38"
-    prettier: "npm:3.8.1"
+    prettier: "npm:3.8.3"
     supertest: "npm:6.3.4"
   languageName: unknown
   linkType: soft
@@ -10890,7 +10891,7 @@ __metadata:
     "@backstage/plugin-permission-common": "npm:^0.9.7"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.0"
     "@spotify/prettier-config": "npm:^15.0.0"
-    prettier: "npm:3.8.1"
+    prettier: "npm:3.8.3"
   peerDependencies:
     "@backstage/plugin-permission-common": ^0.9.7
   languageName: unknown
@@ -10933,7 +10934,7 @@ __metadata:
     "@testing-library/user-event": "npm:14.6.1"
     monaco-editor: "npm:^0.55.0"
     msw: "npm:1.3.5"
-    prettier: "npm:3.8.1"
+    prettier: "npm:3.8.3"
     react: "npm:16.13.1 || ^17.0.0 || ^18.0.0"
     react-dom: "npm:16.13.1 || ^17.0.0 || ^18.0.0"
     react-dropzone: "npm:^14.4.0"
@@ -29712,12 +29713,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.8.1":
-  version: 3.8.1
-  resolution: "prettier@npm:3.8.1"
+"prettier@npm:3.8.3":
+  version: 3.8.3
+  resolution: "prettier@npm:3.8.3"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/33169b594009e48f570471271be7eac7cdcf88a209eed39ac3b8d6d78984039bfa9132f82b7e6ba3b06711f3bfe0222a62a1bfb87c43f50c25a83df1b78a2c42
+  checksum: 10c0/754816fd7593eb80f6376d7476d463e832c38a12f32775a82683adb6e35b772b1f484d65f19401507b983a8c8a7cd5a4a9f12006bd56491e8f35503473f77473
   languageName: node
   linkType: hard
 
