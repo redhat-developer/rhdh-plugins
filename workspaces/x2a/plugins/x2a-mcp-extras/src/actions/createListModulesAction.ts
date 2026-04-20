@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 import { NotFoundError } from '@backstage/errors';
-import { RUN_NEXT_DEEP_LINK_HASH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { listModulesWithReconciledStatuses } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
 import type { X2aActionsOptions } from './index';
 import { resolveCredentialsContext } from './credentials';
 
-export function createTriggerNextPhaseAction(options: X2aActionsOptions) {
+export function createListModulesAction(options: X2aActionsOptions) {
   const {
     actionsRegistry,
     auth,
@@ -27,49 +28,44 @@ export function createTriggerNextPhaseAction(options: X2aActionsOptions) {
     logger,
     permissionsSvc,
     x2aDatabase,
+    kubeService,
   } = options;
 
   actionsRegistry.register({
-    name: 'x2a-trigger-next-phase',
-    title: 'Get URL to Trigger X2A Next Phase',
+    name: 'x2a-list-modules',
+    title: 'List X2A Project Modules',
+    description: `List all migration modules for an X2A project identified by projectId, including aggregate status and last job per phase (analyze, migrate, publish).`,
     attributes: {
       readOnly: true,
       idempotent: true,
+      destructive: false,
     },
-    description: `Return the full URL to the Project Details page for an X2A migration project for the user to run next migrations on all eligible modules.
-
-IMPORTANT: This tool does NOT trigger the next phase automatically.
-The output includes a projectDetailsUrl (with a URL fragment) that the user must open in their browser.
-On the Project Details page, the user confirms bulk “run next phase” for eligible modules
-and provides source and target SCM (repository) authentication tokens when prompted.
-
-Instruct the user to:
-1. Open the returned projectDetailsUrl in their browser.
-2. On the Project Details page, confirm the action and enter the required SCM tokens.`,
     schema: {
       input: z =>
         z.object({
           projectId: z
             .string()
-            .describe('UUID of the project to get the details page URL for.'),
+            .describe('UUID of the project whose modules should be listed.'),
         }),
       output: z =>
         z.object({
-          projectId: z.string().describe('UUID of the project.'),
-          name: z.string().describe('Name of the project.'),
+          projectId: z.string(),
+          projectName: z.string(),
           projectDetailsUrl: z
             .string()
             .describe(
-              'Full URL to the Project Details page, ending with a hash that opens the bulk run-next-phase confirmation when eligible modules exist. ' +
-                'Direct the user to open this URL in their browser to confirm and provide source and target SCM authentication tokens.',
+              'Full URL to the Project Details page in the Backstage UI.',
+            ),
+          items: z
+            .array(z.record(z.string(), z.unknown()))
+            .describe(
+              'Modules with statuses and optional phase jobs, same JSON shape as GET /projects/:projectId/modules plus augmented for the moduleDetailsUrl where the user can see module details and trigger next phase.',
             ),
         }),
     },
     action: async ({ input, credentials }) => {
       const { projectId } = input;
-      logger.info(
-        `MCP tool x2a-trigger-next-phase invoked for project ${projectId}`,
-      );
+      logger.info(`MCP tool x2a-list-modules invoked for project ${projectId}`);
 
       const ctx = await resolveCredentialsContext({
         credentials,
@@ -93,14 +89,29 @@ Instruct the user to:
         );
       }
 
+      const modules = await x2aDatabase.listModules({ projectId });
+      await listModulesWithReconciledStatuses(modules, {
+        kubeService,
+        x2aDatabase,
+        logger,
+      });
+
       const appBaseUrl = config.getString('app.baseUrl');
-      const projectDetailsUrl = `${appBaseUrl}/x2a/projects/${projectId}${RUN_NEXT_DEEP_LINK_HASH}`;
+      const serialized = JSON.parse(
+        JSON.stringify(
+          modules.map(module => ({
+            ...module,
+            moduleDetailsUrl: `${appBaseUrl}/x2a/projects/${project.id}/modules/${module.id}`,
+          })),
+        ),
+      ) as Record<string, unknown>[];
 
       return {
         output: {
           projectId: project.id,
-          name: project.name,
-          projectDetailsUrl,
+          projectName: project.name,
+          projectDetailsUrl: `${appBaseUrl}/x2a/projects/${project.id}`,
+          items: serialized,
         },
       };
     },

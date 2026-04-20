@@ -51,7 +51,8 @@ import { removeSensitiveFromJob } from '../../router/common';
 import { MAX_CONCURRENT_ENRICHMENT_JOBS } from '../constants';
 import { migrate } from '../dbMigrate';
 import { maxConcurrency } from '../../utils';
-import { calculateModuleStatus, calculateProjectStatus } from './status';
+import { calculateModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { calculateProjectStatus } from './projectStatus';
 
 export class X2ADatabaseService implements X2ADatabaseServiceApi {
   readonly #logger: LoggerService;

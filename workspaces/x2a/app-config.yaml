@@ -121,6 +121,7 @@ auth:
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
         signIn:
           resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
             - resolver: usernameMatchingUserEntityName
     bitbucket:
       # Follow https://backstage.io/docs/auth/bitbucket/provider/
