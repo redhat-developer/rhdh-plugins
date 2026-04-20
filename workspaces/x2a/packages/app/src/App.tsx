@@ -57,7 +57,6 @@ import {
   X2APage,
   x2aPluginTranslations,
   RepoAuthenticationExtension,
-  X2ARepoUrlPickerExtension,
 } from '@red-hat-developer-hub/backstage-plugin-x2a';
 import { DcrConsentPage } from '@red-hat-developer-hub/backstage-plugin-x2a-dcr';
 import {
@@ -163,7 +162,6 @@ const routes = (
     <Route path="/create" element={<ScaffolderPage />}>
       <ScaffolderFieldExtensions>
         <RepoAuthenticationExtension />
-        <X2ARepoUrlPickerExtension />
       </ScaffolderFieldExtensions>
     </Route>
   </FlatRoutes>
