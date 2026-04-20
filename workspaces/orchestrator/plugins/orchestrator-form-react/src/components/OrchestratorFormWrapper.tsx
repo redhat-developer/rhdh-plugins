@@ -35,6 +35,7 @@ import {
 import { useTranslation } from '../hooks/useTranslation';
 import { getActiveStepKey } from '../utils/getSortedStepEntries';
 import { useStepperContext } from '../utils/StepperContext';
+import { toRootExtraErrors } from '../utils/toRootExtraErrors';
 import useValidator from '../utils/useValidator';
 import { AuthRequester } from './AuthRequester';
 import HiddenObjectFieldTemplate from './HiddenObjectFieldTemplate';
@@ -102,15 +103,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           extraErrorsUiSchema,
         );
 
-        if (activeKey) {
-          setExtraErrors(
-            _extraErrors?.[activeKey]
-              ? (_extraErrors[activeKey] as ErrorSchema<JsonObject>)
-              : undefined,
-          );
-        } else {
-          setExtraErrors(_extraErrors);
-        }
+        setExtraErrors(toRootExtraErrors(activeKey, _extraErrors));
       } catch (err) {
         _validationError = err as Error;
       } finally {
