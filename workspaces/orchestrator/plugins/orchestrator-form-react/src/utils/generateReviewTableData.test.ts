@@ -351,4 +351,21 @@ describe('mapSchemaToData', () => {
     const result = generateReviewTableData(schema, data);
     expect(result).toEqual(expectedResult);
   });
+
+  it('returns an empty object when form data is empty (e.g. display-only ActiveText)', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      title: 'Access request',
+      properties: {
+        infoMessage: {
+          type: 'string',
+          title: 'Info',
+          'ui:widget': 'ActiveText',
+        } as JSONSchema7,
+      },
+    };
+
+    const result = generateReviewTableData(schema, {});
+    expect(result).toEqual({});
+  });
 });
