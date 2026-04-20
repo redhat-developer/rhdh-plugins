@@ -18,6 +18,13 @@ import assert from 'assert';
 import { RouterOptions } from '../models/RouterOptions';
 import { DEFAULT_SSO_BASE_URL } from './constant';
 
+export class SsoAuthenticationError extends Error {
+  constructor(message: string, public readonly statusCode: number) {
+    super(message);
+    this.name = 'SsoAuthenticationError';
+  }
+}
+
 // Cache key for token storage
 const TOKEN_CACHE_KEY = 'sso_access_token';
 
@@ -111,7 +118,7 @@ export const getTokenFromApi = async (options: RouterOptions) => {
       ? `SSO authentication failed: ${detail}`
       : `SSO authentication failed with status ${rhSsoResponse.status} (${rhSsoResponse.statusText})`;
     logger.error(message);
-    throw new Error(message);
+    throw new SsoAuthenticationError(message, rhSsoResponse.status);
   }
 
   return accessToken;
