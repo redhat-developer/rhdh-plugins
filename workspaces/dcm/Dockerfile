@@ -109,6 +109,12 @@ COPY --from=build /app/packages/app/dist packages/app/dist
 # Runtime config files — app-config.production.yaml overrides app-config.yaml.
 COPY app-config.yaml app-config.production.yaml ./
 
+# Transfer ownership of the entire application tree to the unprivileged
+# built-in `node` user (uid 1000) that ships with the official Node.js image,
+# then switch to that user so the process never runs as root.
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 7007
 
 # node resolves `packages/backend` → packages/backend/dist/index.cjs.js via
