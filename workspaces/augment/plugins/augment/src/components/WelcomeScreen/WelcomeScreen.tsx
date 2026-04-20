@@ -21,6 +21,7 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import { useTheme, alpha } from '@mui/material/styles';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
 import { useBranding } from '../../hooks';
@@ -138,22 +139,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     [onQuickActionSelect, onAgentSelect],
   );
 
-  const handleStarterClick = useCallback(
-    (agentId: string, prompt: string) => {
-      if (onAgentSelect) {
-        const name = agentId.includes('/')
-          ? agentId.split('/').pop()!
-          : agentId;
-        onAgentSelect(agentId, name);
-      }
-      onQuickActionSelect({
-        title: prompt,
-        prompt,
-      });
-    },
-    [onAgentSelect, onQuickActionSelect],
-  );
-
   const titleSx = useMemo(
     () => getTitleSx(branding.primaryColor),
     [branding.primaryColor],
@@ -203,49 +188,30 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             zIndex: 1,
           }}
         >
-          {/* Avatar with glow ring */}
-          <Box
-            sx={{
-              position: 'relative',
-              width: 88,
-              height: 88,
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                inset: -4,
-                borderRadius: 4,
-                border: `2px solid ${alpha(avatarColor, isDark ? 0.3 : 0.2)}`,
-                animation: 'pulseRing 2s ease-in-out infinite',
-                '@keyframes pulseRing': {
-                  '0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
-                  '50%': { opacity: 1, transform: 'scale(1.03)' },
-                },
-              },
-            }}
-          >
+          <Box>
             {selectedAgent.avatarUrl ? (
               <Box
                 component="img"
                 src={selectedAgent.avatarUrl}
                 alt={selectedAgent.name}
                 sx={{
-                  width: 88,
-                  height: 88,
-                  borderRadius: 3.5,
+                  width: 56,
+                  height: 56,
+                  borderRadius: 3,
                   objectFit: 'cover',
                 }}
               />
             ) : (
               <Box
                 sx={{
-                  width: 88,
-                  height: 88,
-                  borderRadius: 3.5,
+                  width: 56,
+                  height: 56,
+                  borderRadius: 3,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 700,
-                  fontSize: '2rem',
+                  fontSize: '1.5rem',
                   bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
                   color: avatarColor,
                 }}
@@ -305,7 +271,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               flexWrap: 'wrap',
               justifyContent: 'center',
               gap: 1.5,
-              maxWidth: 640,
+              maxWidth: 860,
               width: '100%',
               zIndex: 1,
             }}
@@ -315,7 +281,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 key={idx}
                 variant="outlined"
                 sx={{
-                  width: 240,
+                  width: 200,
                   flexShrink: 0,
                   borderRadius: 3,
                   borderColor: alpha(avatarColor, isDark ? 0.2 : 0.15),
@@ -329,18 +295,34 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               >
                 <CardActionArea
                   onClick={() => onStarterSelect?.(starter)}
-                  sx={{ px: 2.5, py: 2 }}
+                  sx={{ px: 2, py: 1.75 }}
                 >
-                  <Typography
-                    variant="body2"
+                  <Box
                     sx={{
-                      fontSize: '0.85rem',
-                      color: theme.palette.text.primary,
-                      lineHeight: 1.5,
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 1,
                     }}
                   >
-                    {starter}
-                  </Typography>
+                    <ChatBubbleOutlineIcon
+                      sx={{
+                        fontSize: 14,
+                        color: alpha(avatarColor, 0.5),
+                        mt: 0.25,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: '0.82rem',
+                        color: theme.palette.text.primary,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {starter}
+                    </Typography>
+                  </Box>
                 </CardActionArea>
               </Card>
             ))}
@@ -394,7 +376,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               agents={allAgents}
               chatAgentConfigs={chatAgentConfigs}
               onAgentSelect={onAgentSelect!}
-              onStarterClick={handleStarterClick}
               onBrowseCatalog={onBrowseCatalog}
             />
           </Box>
