@@ -209,10 +209,10 @@ scorecard:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
-          initialDelay: { minutes: 1 }
+          initialDelay: { seconds: 10 }
     github:
       open_prs:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
-          initialDelay: { minutes: 1 }
+          initialDelay: { seconds: 10 }
