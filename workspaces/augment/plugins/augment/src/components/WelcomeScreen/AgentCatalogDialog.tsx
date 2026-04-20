@@ -52,6 +52,7 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import HistoryIcon from '@mui/icons-material/History';
 import SortIcon from '@mui/icons-material/Sort';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import StreamIcon from '@mui/icons-material/Stream';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -87,62 +88,50 @@ interface FeaturedCardProps {
   agent: AgentWithCard;
   config?: ChatAgentConfig;
   onSelect: (agent: AgentWithCard) => void;
-  onStarterClick: (agentId: string, prompt: string) => void;
 }
 
-const FeaturedCard: FC<FeaturedCardProps> = ({
-  agent,
-  config,
-  onSelect,
-  onStarterClick,
-}) => {
+const FeaturedCard: FC<FeaturedCardProps> = ({ agent, config, onSelect }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const agentId = `${agent.namespace}/${agent.name}`;
   const displayName =
     config?.displayName || agent.agentCard?.name || agent.name;
   const description =
     config?.description || agent.agentCard?.description || agent.description;
   const avatarColor = config?.accentColor || getAgentAvatarColor(displayName);
   const avatarUrl = config?.avatarUrl;
-  const starters =
-    config?.conversationStarters ||
-    (agent.agentCard?.skills || []).flatMap(s => s.examples || []).slice(0, 3);
   const ready = isAgentReady(agent.status);
 
   return (
     <Card
       variant="outlined"
       sx={{
-        width: 300,
+        width: 240,
+        minHeight: 110,
         flexShrink: 0,
-        borderRadius: 4,
-        transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-        borderColor: alpha(avatarColor, isDark ? 0.2 : 0.18),
-        borderTop: `3px solid ${alpha(avatarColor, isDark ? 0.5 : 0.4)}`,
+        borderRadius: 3,
+        transition: 'all 0.2s ease',
         opacity: ready ? 1 : 0.6,
         display: 'flex',
         flexDirection: 'column',
         scrollSnapAlign: 'start',
+        borderColor: alpha(theme.palette.divider, isDark ? 0.15 : 0.18),
         bgcolor: alpha(theme.palette.background.paper, isDark ? 0.6 : 0.9),
-        backdropFilter: 'blur(12px)',
         boxShadow: isDark
-          ? `0 4px 12px ${alpha('#000', 0.25)}, 0 0 1px ${alpha('#fff', 0.05)} inset`
-          : `0 4px 12px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.6)} inset`,
+          ? `0 2px 8px ${alpha('#000', 0.2)}`
+          : `0 2px 8px ${alpha('#000', 0.05)}`,
         '&:hover': {
-          borderColor: alpha(avatarColor, 0.5),
-          borderTopColor: avatarColor,
+          borderColor: alpha(avatarColor, 0.4),
           boxShadow: isDark
-            ? `0 16px 48px ${alpha(avatarColor, 0.22)}, 0 4px 12px ${alpha('#000', 0.3)}, 0 0 1px ${alpha('#fff', 0.08)} inset`
-            : `0 16px 48px ${alpha(avatarColor, 0.18)}, 0 4px 12px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.8)} inset`,
-          transform: ready ? 'translateY(-3px) scale(1.02)' : undefined,
+            ? `0 8px 24px ${alpha(avatarColor, 0.15)}`
+            : `0 8px 24px ${alpha(avatarColor, 0.1)}`,
+          transform: ready ? 'translateY(-2px)' : undefined,
         },
       }}
     >
       <CardActionArea
         onClick={() => onSelect(agent)}
         sx={{
-          borderRadius: 4,
+          borderRadius: 3,
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
@@ -151,7 +140,7 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
       >
         <CardContent
           sx={{
-            p: 2.5,
+            p: 2,
             '&:last-child': { pb: 2 },
             flex: 1,
             display: 'flex',
@@ -162,8 +151,8 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1.5,
-              mb: 1.5,
+              gap: 1.25,
+              mb: 1,
             }}
           >
             {avatarUrl ? (
@@ -172,27 +161,25 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
                 src={avatarUrl}
                 alt={displayName}
                 sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 2.5,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 2,
                   objectFit: 'cover',
-                  boxShadow: `0 2px 8px ${alpha(avatarColor, 0.25)}`,
                 }}
               />
             ) : (
               <Box
                 sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 2.5,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 700,
-                  fontSize: '1.1rem',
+                  fontSize: '0.95rem',
                   bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
                   color: avatarColor,
-                  boxShadow: `0 2px 8px ${alpha(avatarColor, 0.2)}, 0 0 0 1px ${alpha(avatarColor, 0.1)} inset`,
                 }}
               >
                 {displayName.charAt(0).toUpperCase()}
@@ -202,75 +189,42 @@ const FeaturedCard: FC<FeaturedCardProps> = ({
               <Typography
                 variant="subtitle2"
                 noWrap
-                sx={{ fontWeight: 700, fontSize: '0.9rem', lineHeight: 1.3 }}
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  lineHeight: 1.3,
+                }}
               >
                 {displayName}
               </Typography>
-              <Chip
-                label={ready ? 'Ready' : agent.status}
-                size="small"
-                color={ready ? 'success' : 'warning'}
-                variant="outlined"
-                sx={{ height: 18, fontSize: '0.7rem', mt: 0.25 }}
-              />
+              {!ready && (
+                <Chip
+                  label={agent.status}
+                  size="small"
+                  color="warning"
+                  variant="outlined"
+                  sx={{ height: 16, fontSize: '0.65rem', mt: 0.25 }}
+                />
+              )}
             </Box>
           </Box>
           <Typography
             variant="body2"
             color="text.secondary"
             sx={{
-              fontSize: '0.75rem',
-              lineHeight: 1.5,
+              fontSize: '0.72rem',
               display: '-webkit-box',
-              WebkitLineClamp: 3,
+              WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
+              lineHeight: 1.4,
               flex: 1,
-              minHeight: 48,
             }}
           >
-            {description ? sanitizeDescription(description, 120) : '\u00A0'}
+            {description ? sanitizeDescription(description, 80) : '\u00A0'}
           </Typography>
         </CardContent>
       </CardActionArea>
-      {starters.length > 0 && (
-        <Box
-          sx={{
-            px: 2,
-            pb: 2,
-            display: 'flex',
-            gap: 0.5,
-            flexWrap: 'wrap',
-            minHeight: 34,
-          }}
-        >
-          {starters.map((s, i) => (
-            <Chip
-              key={i}
-              label={s}
-              size="small"
-              variant="outlined"
-              onClick={(e: MouseEvent) => {
-                e.stopPropagation();
-                onStarterClick(agentId, s);
-              }}
-              sx={{
-                fontSize: '0.7rem',
-                height: 24,
-                borderRadius: 1.5,
-                borderStyle: 'dashed',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                '&:hover': {
-                  borderStyle: 'solid',
-                  borderColor: avatarColor,
-                  bgcolor: alpha(avatarColor, 0.06),
-                },
-              }}
-            />
-          ))}
-        </Box>
-      )}
     </Card>
   );
 };
@@ -284,6 +238,7 @@ interface GridCardProps {
   isSelected: boolean;
   isPinned: boolean;
   onSelect: (agent: AgentWithCard) => void;
+  onInfo: (agent: AgentWithCard) => void;
   onTogglePin: (agentId: string, e: MouseEvent) => void;
   index: number;
 }
@@ -293,6 +248,7 @@ const GridCard: FC<GridCardProps> = ({
   isSelected,
   isPinned,
   onSelect,
+  onInfo,
   onTogglePin,
   index,
 }) => {
@@ -304,43 +260,35 @@ const GridCard: FC<GridCardProps> = ({
   const avatarColor = getAgentAvatarColor(displayName);
   const ready = isAgentReady(agent.status);
   const rawDesc = card?.description || agent.description || '';
-  const cleanDesc = sanitizeDescription(rawDesc, 90);
+  const cleanDesc = sanitizeDescription(rawDesc, 70);
 
   return (
-    <Fade in timeout={100 + index * 30}>
+    <Fade in timeout={80 + index * 20}>
       <Card
         variant="outlined"
         sx={{
-          borderRadius: 4,
-          transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+          borderRadius: 3,
+          transition: 'all 0.2s ease',
           position: 'relative',
-          height: 180,
+          height: 132,
           display: 'flex',
           flexDirection: 'column',
           opacity: ready ? 1 : 0.55,
           borderColor: isSelected
             ? theme.palette.primary.main
             : alpha(theme.palette.divider, isDark ? 0.15 : 0.18),
-          borderTop: (() => {
-            let opacity = isDark ? 0.4 : 0.3;
-            if (isSelected) opacity = 0.8;
-            return `3px solid ${alpha(avatarColor, opacity)}`;
-          })(),
           bgcolor: isSelected
             ? alpha(theme.palette.primary.main, isDark ? 0.06 : 0.03)
             : alpha(theme.palette.background.paper, isDark ? 0.6 : 0.9),
-          backdropFilter: 'blur(12px)',
           boxShadow: isDark
-            ? `0 2px 8px ${alpha('#000', 0.3)}, 0 0 1px ${alpha('#fff', 0.05)} inset`
-            : `0 2px 8px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.7)} inset`,
+            ? `0 1px 4px ${alpha('#000', 0.2)}`
+            : `0 1px 4px ${alpha('#000', 0.06)}`,
           '&:hover': {
-            borderColor: alpha(avatarColor, 0.5),
-            borderTopColor: avatarColor,
+            borderColor: alpha(avatarColor, 0.4),
             boxShadow: isDark
-              ? `0 12px 40px ${alpha(avatarColor, 0.2)}, 0 4px 12px ${alpha('#000', 0.3)}, 0 0 1px ${alpha('#fff', 0.08)} inset`
-              : `0 12px 40px ${alpha(avatarColor, 0.15)}, 0 4px 12px ${alpha('#000', 0.06)}, 0 0 1px ${alpha('#fff', 0.8)} inset`,
-            transform: ready ? 'translateY(-3px) scale(1.02)' : undefined,
-            '& .grid-pin': { opacity: 1 },
+              ? `0 4px 16px ${alpha(avatarColor, 0.15)}`
+              : `0 4px 16px ${alpha(avatarColor, 0.1)}`,
+            transform: ready ? 'translateY(-2px)' : undefined,
           },
           '&:focus-within': {
             outline: `2px solid ${theme.palette.primary.main}`,
@@ -352,36 +300,59 @@ const GridCard: FC<GridCardProps> = ({
           className="grid-pin"
           sx={{
             position: 'absolute',
-            top: 6,
-            right: 6,
+            top: 4,
+            right: 4,
             zIndex: 2,
-            opacity: isPinned ? 1 : 0.3,
+            display: 'flex',
+            gap: 0.25,
             transition: 'opacity 0.15s ease',
           }}
         >
+          <Tooltip title="Details">
+            <IconButton
+              size="small"
+              onClick={e => {
+                e.stopPropagation();
+                onInfo(agent);
+              }}
+              sx={{
+                p: 0.3,
+                color: alpha(theme.palette.text.secondary, 0.5),
+                borderRadius: 1.5,
+                '&:hover': {
+                  color: theme.palette.text.secondary,
+                  bgcolor: alpha(theme.palette.background.paper, 0.85),
+                },
+              }}
+            >
+              <InfoOutlinedIcon sx={{ fontSize: 14 }} />
+            </IconButton>
+          </Tooltip>
           <Tooltip title={isPinned ? 'Unpin' : 'Pin'}>
             <IconButton
               size="small"
               onClick={e => onTogglePin(agentId, e)}
               sx={{
-                p: 0.4,
+                p: 0.3,
                 color: isPinned
                   ? theme.palette.warning.main
-                  : theme.palette.text.secondary,
-                bgcolor: alpha(theme.palette.background.paper, 0.85),
-                backdropFilter: 'blur(8px)',
-                borderRadius: 2,
-                boxShadow: `0 1px 4px ${alpha('#000', isDark ? 0.3 : 0.1)}`,
+                  : alpha(theme.palette.text.secondary, 0.35),
+                opacity: isPinned ? 1 : 0,
+                borderRadius: 1.5,
+                transition: 'all 0.15s ease',
+                '.MuiCard-root:hover &': { opacity: 1 },
                 '&:hover': {
-                  bgcolor: theme.palette.background.paper,
-                  boxShadow: `0 2px 8px ${alpha('#000', isDark ? 0.4 : 0.12)}`,
+                  color: isPinned
+                    ? theme.palette.warning.main
+                    : theme.palette.text.secondary,
+                  bgcolor: alpha(theme.palette.background.paper, 0.85),
                 },
               }}
             >
               {isPinned ? (
-                <StarIcon sx={{ fontSize: 14 }} />
+                <StarIcon sx={{ fontSize: 13 }} />
               ) : (
-                <StarBorderIcon sx={{ fontSize: 14 }} />
+                <StarBorderIcon sx={{ fontSize: 13 }} />
               )}
             </IconButton>
           </Tooltip>
@@ -398,8 +369,8 @@ const GridCard: FC<GridCardProps> = ({
         >
           <CardContent
             sx={{
-              p: 2,
-              '&:last-child': { pb: 2 },
+              p: 1.5,
+              '&:last-child': { pb: 1.5 },
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
@@ -409,24 +380,23 @@ const GridCard: FC<GridCardProps> = ({
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1.25,
-                mb: 1,
+                gap: 1,
+                mb: 0.75,
               }}
             >
               <Box
                 sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 2.5,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 700,
-                  fontSize: '1rem',
+                  fontSize: '0.85rem',
                   bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
                   color: avatarColor,
                   flexShrink: 0,
-                  boxShadow: `0 2px 6px ${alpha(avatarColor, 0.2)}, 0 0 0 1px ${alpha(avatarColor, 0.1)} inset`,
                 }}
               >
                 {displayName.charAt(0).toUpperCase()}
@@ -437,19 +407,21 @@ const GridCard: FC<GridCardProps> = ({
                   noWrap
                   sx={{
                     fontWeight: 600,
-                    fontSize: '0.875rem',
+                    fontSize: '0.82rem',
                     lineHeight: 1.3,
                   }}
                 >
                   {displayName}
                 </Typography>
-                <Chip
-                  label={ready ? 'Ready' : agent.status}
-                  size="small"
-                  color={ready ? 'success' : 'warning'}
-                  variant="outlined"
-                  sx={{ height: 18, fontSize: '0.7rem', mt: 0.25 }}
-                />
+                {!ready && (
+                  <Chip
+                    label={agent.status}
+                    size="small"
+                    color="warning"
+                    variant="outlined"
+                    sx={{ height: 16, fontSize: '0.65rem', mt: 0.25 }}
+                  />
+                )}
               </Box>
             </Box>
             <Typography
@@ -457,9 +429,9 @@ const GridCard: FC<GridCardProps> = ({
               color="text.secondary"
               sx={{
                 fontSize: '0.75rem',
-                lineHeight: 1.5,
+                lineHeight: 1.45,
                 display: '-webkit-box',
-                WebkitLineClamp: 3,
+                WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
                 flex: 1,
@@ -467,42 +439,6 @@ const GridCard: FC<GridCardProps> = ({
             >
               {cleanDesc}
             </Typography>
-            {/* Capability badges */}
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 0.5,
-                mt: 1,
-                flexWrap: 'wrap',
-              }}
-            >
-              {card?.streaming && (
-                <Chip
-                  icon={<StreamIcon sx={{ fontSize: '12px !important' }} />}
-                  label="Streaming"
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    height: 20,
-                    fontSize: '0.7rem',
-                    '& .MuiChip-label': { px: 0.5 },
-                  }}
-                />
-              )}
-              {agent.labels?.protocol && (
-                <Chip
-                  icon={<SyncAltIcon sx={{ fontSize: '12px !important' }} />}
-                  label="A2A"
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    height: 20,
-                    fontSize: '0.7rem',
-                    '& .MuiChip-label': { px: 0.5 },
-                  }}
-                />
-              )}
-            </Box>
           </CardContent>
         </CardActionArea>
       </Card>
@@ -564,16 +500,15 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
         overflow: 'hidden',
       }}
     >
-      {/* Header gradient */}
+      {/* Header */}
       <Box
         sx={{
           p: 2.5,
           pb: 2,
           background: isDark
-            ? `linear-gradient(180deg, ${alpha(avatarColor, 0.12)} 0%, transparent 100%)`
-            : `linear-gradient(180deg, ${alpha(avatarColor, 0.06)} 0%, transparent 100%)`,
+            ? `linear-gradient(180deg, ${alpha(avatarColor, 0.08)} 0%, transparent 100%)`
+            : `linear-gradient(180deg, ${alpha(avatarColor, 0.04)} 0%, transparent 100%)`,
           borderBottom: `1px solid ${alpha(theme.palette.divider, isDark ? 0.08 : 0.12)}`,
-          boxShadow: `0 1px 0 ${alpha('#fff', isDark ? 0.02 : 0.2)} inset`,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -583,28 +518,26 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
               src={avatarUrl}
               alt={displayName}
               sx={{
-                width: 52,
-                height: 52,
+                width: 48,
+                height: 48,
                 borderRadius: 3,
                 objectFit: 'cover',
-                boxShadow: `0 4px 16px ${alpha(avatarColor, 0.25)}`,
               }}
             />
           ) : (
             <Box
               sx={{
-                width: 52,
-                height: 52,
+                width: 48,
+                height: 48,
                 borderRadius: 3,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                bgcolor: alpha(avatarColor, isDark ? 0.25 : 0.15),
+                bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
                 color: avatarColor,
                 fontWeight: 700,
-                fontSize: '1.4rem',
+                fontSize: '1.3rem',
                 flexShrink: 0,
-                boxShadow: `0 4px 16px ${alpha(avatarColor, 0.25)}, 0 0 0 1px ${alpha(avatarColor, 0.1)} inset`,
               }}
             >
               {displayName.charAt(0).toUpperCase()}
@@ -668,10 +601,6 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
             fontWeight: 600,
             borderRadius: 3,
             py: 1,
-            boxShadow: `0 4px 14px ${alpha(theme.palette.primary.main, 0.35)}`,
-            '&:hover': {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.45)}`,
-            },
           }}
         >
           Start Conversation
@@ -792,21 +721,12 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                     key={skill.id || idx}
                     sx={{
                       p: 1.25,
-                      borderRadius: 3,
+                      borderRadius: 2,
                       bgcolor: alpha(
                         theme.palette.background.paper,
                         isDark ? 0.5 : 0.8,
                       ),
-                      border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.12 : 0.15)}`,
-                      boxShadow: isDark
-                        ? `0 1px 4px ${alpha('#000', 0.15)}, 0 0 1px ${alpha('#fff', 0.03)} inset`
-                        : `0 1px 4px ${alpha('#000', 0.04)}, 0 0 1px ${alpha('#fff', 0.4)} inset`,
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        boxShadow: isDark
-                          ? `0 2px 8px ${alpha('#000', 0.25)}, 0 0 1px ${alpha('#fff', 0.05)} inset`
-                          : `0 2px 8px ${alpha('#000', 0.08)}, 0 0 1px ${alpha('#fff', 0.6)} inset`,
-                      },
+                      border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.1 : 0.12)}`,
                     }}
                   >
                     <Typography
@@ -855,7 +775,6 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                   height: 24,
                   fontSize: '0.7rem',
                   borderRadius: 2,
-                  boxShadow: `0 1px 3px ${alpha(theme.palette.info.main, 0.15)}`,
                 }}
               />
             )}
@@ -869,7 +788,6 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                   height: 24,
                   fontSize: '0.7rem',
                   borderRadius: 2,
-                  boxShadow: `0 1px 3px ${alpha(theme.palette.divider, 0.2)}`,
                 }}
               />
             )}
@@ -914,7 +832,6 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                 value: agent.labels.framework,
               },
               { label: 'Workspace', value: agent.namespace },
-              { label: 'Name', value: agent.name },
               card?.version && { label: 'Version', value: card.version },
               agent.createdAt && {
                 label: 'Created',
@@ -944,30 +861,6 @@ const PreviewPanel: FC<PreviewPanelProps> = ({
                     </Typography>
                   </Box>
                 ))}
-                {card?.url && (
-                  <Box sx={{ ...DETAIL_CELL_SX, gridColumn: '1 / -1' }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: theme.palette.text.disabled,
-                        display: 'block',
-                        fontSize: '0.65rem',
-                      }}
-                    >
-                      Endpoint
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontSize: '0.72rem',
-                        wordBreak: 'break-all',
-                        fontFamily: 'monospace',
-                      }}
-                    >
-                      {card.url}
-                    </Typography>
-                  </Box>
-                )}
               </Box>
             );
           })()}
@@ -1098,6 +991,15 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
     [onAgentSelect, onStarterSelect, onClose, addRecent],
   );
 
+  const handleDirectSelect = useCallback(
+    (agent: AgentWithCard) => {
+      const agentId = `${agent.namespace}/${agent.name}`;
+      const displayName = agent.agentCard?.name || agent.name;
+      handleAgentSelect(agentId, displayName);
+    },
+    [handleAgentSelect],
+  );
+
   const handlePreviewSelect = useCallback(
     (agent: AgentWithCard) => setPreviewAgent(agent),
     [],
@@ -1131,25 +1033,21 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
           width: '95vw',
           maxWidth: 1200,
           height: '85vh',
-          borderRadius: 5,
+          borderRadius: 4,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          bgcolor: isDark
-            ? alpha(theme.palette.background.default, 0.92)
-            : theme.palette.background.default,
-          backdropFilter: 'blur(20px) saturate(1.5)',
+          bgcolor: theme.palette.background.default,
           border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.15 : 0.12)}`,
           boxShadow: isDark
-            ? `0 24px 80px ${alpha('#000', 0.5)}, 0 0 1px ${alpha('#fff', 0.1)} inset`
-            : `0 24px 80px ${alpha('#000', 0.15)}, 0 0 1px ${alpha('#fff', 0.5)} inset`,
+            ? `0 24px 80px ${alpha('#000', 0.5)}`
+            : `0 24px 80px ${alpha('#000', 0.12)}`,
         },
       }}
       slotProps={{
         backdrop: {
           sx: {
-            backdropFilter: 'blur(10px)',
-            bgcolor: alpha(isDark ? '#000' : '#000', isDark ? 0.5 : 0.3),
+            bgcolor: alpha('#000', isDark ? 0.5 : 0.25),
           },
         },
       }}
@@ -1162,11 +1060,9 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
           display: 'flex',
           alignItems: 'center',
           gap: 2,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, isDark ? 0.12 : 0.2)}`,
-          bgcolor: alpha(theme.palette.background.paper, isDark ? 0.4 : 0.7),
-          backdropFilter: 'blur(20px) saturate(1.4)',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, isDark ? 0.12 : 0.15)}`,
+          bgcolor: alpha(theme.palette.background.paper, isDark ? 0.5 : 0.8),
           flexShrink: 0,
-          boxShadow: `0 1px 0 ${alpha('#fff', isDark ? 0.03 : 0.3)} inset`,
         }}
       >
         <Box
@@ -1178,7 +1074,6 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             bgcolor: alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08),
-            boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}, 0 0 0 1px ${alpha(theme.palette.primary.main, 0.08)} inset`,
           }}
         >
           <HubOutlinedIcon
@@ -1240,11 +1135,8 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
                 theme.palette.background.default,
                 isDark ? 0.4 : 0.6,
               ),
-              boxShadow: isDark
-                ? `0 1px 4px ${alpha('#000', 0.2)} inset`
-                : `0 1px 4px ${alpha('#000', 0.04)} inset`,
               '&.Mui-focused': {
-                boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.15)}`,
               },
             },
           }}
@@ -1272,16 +1164,16 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
             px: 3,
             pt: 3,
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: 2,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: 1.5,
             alignContent: 'start',
           }}
         >
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 8 }).map((_, i) => (
             <Box
               key={i}
               sx={{
-                height: 180,
+                height: 132,
                 borderRadius: 3,
                 overflow: 'hidden',
               }}
@@ -1311,18 +1203,13 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
         >
           <Box
             sx={{
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               bgcolor: alpha(theme.palette.primary.main, isDark ? 0.1 : 0.06),
-              animation: 'pulse 2s ease-in-out infinite',
-              '@keyframes pulse': {
-                '0%, 100%': { transform: 'scale(1)', opacity: 0.7 },
-                '50%': { transform: 'scale(1.05)', opacity: 1 },
-              },
             }}
           >
             <HubOutlinedIcon
@@ -1409,8 +1296,7 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
                     key={`${agent.namespace}/${agent.name}`}
                     agent={agent}
                     config={config}
-                    onSelect={handlePreviewSelect}
-                    onStarterClick={handleStarterClick}
+                    onSelect={handleDirectSelect}
                   />
                 ))}
               </Box>
@@ -1613,8 +1499,8 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
               <Box
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: 2,
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                  gap: 1.5,
                   pb: 2,
                 }}
               >
@@ -1629,7 +1515,8 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
                       agent={agent}
                       isSelected={agentId === previewId}
                       isPinned={pinnedIds.includes(agentId)}
-                      onSelect={handlePreviewSelect}
+                      onSelect={handleDirectSelect}
+                      onInfo={handlePreviewSelect}
                       onTogglePin={togglePin}
                       index={idx}
                     />
@@ -1646,26 +1533,22 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
             maxWidth={false}
             PaperProps={{
               sx: {
-                width: 480,
+                width: 440,
                 maxWidth: '92vw',
                 maxHeight: '80vh',
-                borderRadius: 5,
+                borderRadius: 4,
                 overflow: 'hidden',
-                bgcolor: isDark
-                  ? alpha(theme.palette.background.default, 0.92)
-                  : theme.palette.background.default,
-                backdropFilter: 'blur(20px) saturate(1.5)',
+                bgcolor: theme.palette.background.default,
                 border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.15 : 0.12)}`,
                 boxShadow: isDark
-                  ? `0 24px 80px ${alpha('#000', 0.5)}, 0 0 1px ${alpha('#fff', 0.1)} inset`
-                  : `0 24px 80px ${alpha('#000', 0.15)}, 0 0 1px ${alpha('#fff', 0.5)} inset`,
+                  ? `0 24px 80px ${alpha('#000', 0.5)}`
+                  : `0 24px 80px ${alpha('#000', 0.12)}`,
               },
             }}
             slotProps={{
               backdrop: {
                 sx: {
-                  backdropFilter: 'blur(10px)',
-                  bgcolor: alpha('#000', isDark ? 0.5 : 0.3),
+                  bgcolor: alpha('#000', isDark ? 0.4 : 0.2),
                 },
               },
             }}
@@ -1682,12 +1565,9 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
                     zIndex: 2,
                     color: theme.palette.text.secondary,
                     bgcolor: alpha(theme.palette.background.paper, 0.85),
-                    backdropFilter: 'blur(8px)',
                     borderRadius: 2,
-                    boxShadow: `0 1px 4px ${alpha('#000', isDark ? 0.3 : 0.1)}`,
                     '&:hover': {
                       bgcolor: theme.palette.background.paper,
-                      boxShadow: `0 2px 8px ${alpha('#000', isDark ? 0.4 : 0.12)}`,
                     },
                   }}
                 >
