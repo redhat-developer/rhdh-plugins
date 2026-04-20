@@ -87,6 +87,14 @@ const legacyToolResultToString = (response: unknown): string => {
   }
 };
 
+/**
+ * Tool-call metadata is not always present on messages refetched from the API.
+ * A ref inside this hook is cleared when the chat UI remounts (e.g. embedded → overlay),
+ * so we keep this cache at module scope so the same conversation id still resolves
+ * after display-mode switches.
+ */
+const sharedToolCallsCache: { [key: string]: ToolCall[] } = {};
+
 // Fetch all conversation messages
 export const useFetchConversationMessages = (
   currentConversation: string,
@@ -169,10 +177,6 @@ export const useConversationMessages = (
   // Track pending tool calls during streaming
   const pendingToolCalls = useRef<Record<string, ToolCall>>({});
 
-  // Cache tool calls by conversation ID and message index to persist across refetches
-  // Key format: `${conversationId}-${messageIndex}`
-  const toolCallsCache = useRef<{ [key: string]: ToolCall[] }>({});
-
   useEffect(() => {
     if (currentConversation !== conversationId) {
       setCurrentConversation(conversationId);
@@ -232,7 +236,7 @@ export const useConversationMessages = (
 
         // Merge cached tool calls if available
         const cacheKey = `${currentConversation}-${i}`;
-        const cachedToolCalls = toolCallsCache.current[cacheKey];
+        const cachedToolCalls = sharedToolCallsCache[cacheKey];
         if (cachedToolCalls && cachedToolCalls.length > 0) {
           botMsg.toolCalls = cachedToolCalls;
         }
@@ -418,7 +422,7 @@ export const useConversationMessages = (
                     // Cache tool calls for this message (message pair index)
                     const messageIndex = Math.floor(lastMessageIndex / 2);
                     const cacheKey = `${currentConversation}-${messageIndex}`;
-                    toolCallsCache.current[cacheKey] = nextToolCalls;
+                    sharedToolCallsCache[cacheKey] = nextToolCalls;
 
                     const updatedConversation = [
                       ...conversation.slice(0, lastMessageIndex),
@@ -525,7 +529,7 @@ export const useConversationMessages = (
                     // Update cache with completed tool call
                     const messageIndex = Math.floor(lastMessageIndex / 2);
                     const cacheKey = `${currentConversation}-${messageIndex}`;
-                    toolCallsCache.current[cacheKey] = updatedToolCalls;
+                    sharedToolCallsCache[cacheKey] = updatedToolCalls;
 
                     const updatedConversation = [
                       ...conversation.slice(0, lastMessageIndex),
@@ -743,12 +747,12 @@ export const useConversationMessages = (
 
       if (currentConversation === TEMP_CONVERSATION_ID && newConversationId) {
         // Migrate tool calls cache from temp to new conversation ID
-        Object.keys(toolCallsCache.current).forEach(key => {
+        Object.keys(sharedToolCallsCache).forEach(key => {
           if (key.startsWith(`${TEMP_CONVERSATION_ID}-`)) {
             const messageIndex = key.replace(`${TEMP_CONVERSATION_ID}-`, '');
             const newKey = `${newConversationId}-${messageIndex}`;
-            toolCallsCache.current[newKey] = toolCallsCache.current[key];
-            delete toolCallsCache.current[key];
+            sharedToolCallsCache[newKey] = sharedToolCallsCache[key];
+            delete sharedToolCallsCache[key];
           }
         });
 
