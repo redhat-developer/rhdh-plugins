@@ -114,7 +114,7 @@
     "@types/react": "^18.2.58",
     "@types/react-dom": "^18.2.19",
     "@types/uuid": "^9.0.0",
-    "prettier": "3.8.1",
+    "prettier": "3.8.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.3.0"
