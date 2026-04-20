@@ -16,45 +16,38 @@
 
 import { test, expect, Page } from '@playwright/test';
 import {
+  bootstrapLightspeedE2ePage,
+  clickMcpServersNameColumn,
+  clickMcpServersStatusColumn,
+  closeMcpSettingsPanel,
   conversations,
   E2E_MCP_VALID_TOKEN,
-  mcpServerScenarios,
-  tokenCredentialNoUrlScenario,
-  tokenCredentialValidationScenario,
-  type McpServersListMock,
-  generateQueryResponseWithMcpToolCall,
-  modelBaseUrl,
-} from './fixtures/responses';
-import { openLightspeed, sendMessage } from './utils/testHelper';
-import {
-  openChatbot,
-  selectDisplayMode,
+  evaluateMessage,
   expectBackstagePageVisible,
-  verifyMcpSettingsPanel,
-  openMcpSettingsPanel,
-  closeMcpSettingsPanel,
-  mcpServerToggle,
+  formatMcpToolCountStatus,
+  generateQueryResponseWithMcpToolCall,
+  LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
+  McpConfigureTokenPage,
   mcpServerRow,
-  clickMcpServersStatusColumn,
-  clickMcpServersNameColumn,
   mcpServersTableBodyRows,
-} from './pages/LightspeedPage';
-import { McpConfigureTokenPage } from './pages/McpConfigureTokenPage';
-import {
+  mcpServerScenarios,
+  mcpServerToggle,
   mockChatHistory,
   mockConversations,
   mockMcpServers,
   mockQuery,
-} from './utils/devMode';
-import {
-  LightspeedMessages,
-  evaluateMessage,
-  formatMcpToolCountStatus,
-} from './utils/translations';
-import {
-  bootstrapLightspeedE2ePage,
-  LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
-} from './utils/lightspeedE2eSetup';
+  modelBaseUrl,
+  type McpServersListMock,
+  openChatbot,
+  openLightspeed,
+  openMcpSettingsPanel,
+  selectDisplayMode,
+  sendMessage,
+  tokenCredentialNoUrlScenario,
+  tokenCredentialValidationScenario,
+  verifyMcpSettingsPanel,
+} from '@red-hat-developer-hub/lightspeed-playwright-e2e';
+import { getTranslations, type LightspeedMessages } from './utils/translations';
 
 test.describe('Lightspeed MCP', () => {
   let translations: LightspeedMessages;
@@ -63,7 +56,7 @@ test.describe('Lightspeed MCP', () => {
   test.beforeAll(async ({ browser }) => {
     const boot = await bootstrapLightspeedE2ePage(browser);
     sharedPage = boot.page;
-    translations = boot.translations;
+    translations = getTranslations(boot.locale);
   });
 
   test.describe('Chatbot MCP settings', () => {

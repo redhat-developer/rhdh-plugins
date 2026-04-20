@@ -5875,8 +5875,10 @@ __metadata:
     "@changesets/cli": "npm:^2.27.1"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.0"
     "@playwright/test": "npm:1.58.2"
+    "@red-hat-developer-hub/lightspeed-playwright-e2e": "github:redhat-developer/lightspeed-playwright-e2e#5ca15ca43914d677b3d71bfafdbe3e9ef5dcc09c"
     "@spotify/prettier-config": "npm:^12.0.0"
     "@types/jest": "npm:^30.0.0"
+    "@types/node": "npm:^22.0.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
     prettier: "npm:3.8.1"
@@ -10963,6 +10965,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/lightspeed-playwright-e2e@github:redhat-developer/lightspeed-playwright-e2e#5ca15ca43914d677b3d71bfafdbe3e9ef5dcc09c":
+  version: 0.1.0
+  resolution: "@red-hat-developer-hub/lightspeed-playwright-e2e@https://github.com/redhat-developer/lightspeed-playwright-e2e.git#commit=5ca15ca43914d677b3d71bfafdbe3e9ef5dcc09c"
+  dependencies:
+    "@axe-core/playwright": "npm:^4.10.0"
+    "@backstage/core-plugin-api": "npm:^1.12.4"
+  peerDependencies:
+    "@playwright/test": ^1.58.0
+  checksum: 10c0/b20dcf3ec6cfdc006d459e44f560928815a5dda19d782247a696784640fed47edfa2e353c54d2550a48982a6cf238cac1cdbe20acc146f7b81e36b219dd400ef
+  languageName: node
+  linkType: hard
+
 "@redis/bloom@npm:1.2.0":
   version: 1.2.0
   resolution: "@redis/bloom@npm:1.2.0"
@@ -14346,6 +14360,15 @@ __metadata:
   dependencies:
     undici-types: "npm:~6.21.0"
   checksum: 10c0/8420353aee776ae5c1e9720058949909a0e908fa2af85501e9db2645bb9f9acd7d767890f8aaee34d375e6f8b5f550a9a169e908d2d8cf7d5daf63dce64092a0
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^22.0.0":
+  version: 22.19.17
+  resolution: "@types/node@npm:22.19.17"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/b66c484c0a9f6d88b1ef360b0f487717234ee1a482cb2551ff73d9f3c43a42a777daf4c8a5eee970960728f8fe1f3877d3d8c6ffabcbca74cb401a59db700fa4
   languageName: node
   linkType: hard
 

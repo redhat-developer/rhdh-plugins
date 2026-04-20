@@ -16,78 +16,68 @@
 
 import { test, expect, Page } from '@playwright/test';
 import {
-  conversations,
-  contents,
-  demoChatContent,
-  botResponse,
-  moreConversations,
-  thinkingContent,
-  assistantResponse,
-} from './fixtures/responses';
-import {
-  sendMessage,
-  verifyFeedbackButtons,
-  submitFeedback,
   assertClipboardContains,
-} from './utils/testHelper';
-import {
+  assistantResponse,
+  bootstrapLightspeedE2ePage,
+  botResponse,
+  cancelChatDeletion,
+  chatStopButton,
+  clearSearch,
+  closeSortDropdown,
+  confirmChatDeletion,
+  contents,
+  conversations,
+  demoChatContent,
   expectChatInputValue,
   expectChatStopButtonVisible,
-  chatStopButton,
-  waitForChatMessageLoadingHidden,
-} from './pages/LightspeedPage';
-import { verifySidePanelConversation } from './utils/sidebar';
-import {
-  openChatContextMenu,
-  openChatContextMenuByName,
-  verifyChatContextMenuOptions,
-  selectRenameAction,
-  verifyRenameChatForm,
-  submitChatRename,
-  verifyChatRenamed,
-  verifyEmptyPinnedChatsMessage,
-  verifyPinnedChatsNotEmpty,
-  selectPinAction,
-  verifyChatPinned,
-  verifyPinActionAvailable,
-  selectDeleteAction,
-  verifyDeleteConfirmation,
-  cancelChatDeletion,
-  confirmChatDeletion,
-  verifyChatDeleted,
-  openChatbotSettings,
-  verifyChatbotSettingsVisible,
-  verifyPinnedSectionVisible,
-  verifyPinnedSectionHidden,
-  verifyDisablePinnedChatsOption,
-  verifyEnablePinnedChatsOption,
-  selectDisablePinnedChats,
-  selectEnablePinnedChats,
-  verifyUnpinActionAvailable,
-  selectUnpinAction,
-  searchChats,
-  verifyEmptySearchResults,
-  verifyNoResultsFoundMessage,
-  verifyChatUnpinned,
-  clearSearch,
-  openSortDropdown,
-  verifySortDropdownOptions,
-  selectSortOption,
-  verifySortDropdownVisible,
-  closeSortDropdown,
-  verifyConversationsSortedAlphabetically,
-} from './utils/chatManagement';
-import {
+  LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
   mockChatHistory,
   mockConversations,
   mockQueryWithResponseDelay,
-} from './utils/devMode';
-import { LightspeedMessages } from './utils/translations';
-import { runAccessibilityTests } from './utils/accessibility';
-import {
-  bootstrapLightspeedE2ePage,
-  LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
-} from './utils/lightspeedE2eSetup';
+  moreConversations,
+  openChatbotSettings,
+  openChatContextMenu,
+  openChatContextMenuByName,
+  openSortDropdown,
+  runAccessibilityTests,
+  searchChats,
+  selectDeleteAction,
+  selectDisablePinnedChats,
+  selectEnablePinnedChats,
+  selectPinAction,
+  selectRenameAction,
+  selectSortOption,
+  selectUnpinAction,
+  sendMessage,
+  submitChatRename,
+  submitFeedback,
+  thinkingContent,
+  verifyChatContextMenuOptions,
+  verifyChatDeleted,
+  verifyChatPinned,
+  verifyChatRenamed,
+  verifyChatUnpinned,
+  verifyChatbotSettingsVisible,
+  verifyConversationsSortedAlphabetically,
+  verifyDeleteConfirmation,
+  verifyDisablePinnedChatsOption,
+  verifyEmptyPinnedChatsMessage,
+  verifyEmptySearchResults,
+  verifyEnablePinnedChatsOption,
+  verifyFeedbackButtons,
+  verifyNoResultsFoundMessage,
+  verifyPinActionAvailable,
+  verifyPinnedChatsNotEmpty,
+  verifyPinnedSectionHidden,
+  verifyPinnedSectionVisible,
+  verifyRenameChatForm,
+  verifySidePanelConversation,
+  verifySortDropdownOptions,
+  verifySortDropdownVisible,
+  verifyUnpinActionAvailable,
+  waitForChatMessageLoadingHidden,
+} from '@red-hat-developer-hub/lightspeed-playwright-e2e';
+import { getTranslations, type LightspeedMessages } from './utils/translations';
 
 test.describe('Lightspeed conversation', () => {
   let translations: LightspeedMessages;
@@ -96,7 +86,7 @@ test.describe('Lightspeed conversation', () => {
   test.beforeAll(async ({ browser }) => {
     const boot = await bootstrapLightspeedE2ePage(browser);
     sharedPage = boot.page;
-    translations = boot.translations;
+    translations = getTranslations(boot.locale);
   });
 
   test.describe('Conversation', () => {

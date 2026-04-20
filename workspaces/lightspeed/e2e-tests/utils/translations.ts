@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-// These translation files are not exported by the package, so relative imports are necessary for e2e tests
+// Message objects are not re-exported from the plugin package; load the same modules as the UI.
 /* eslint-disable @backstage/no-relative-monorepo-imports */
 import { lightspeedMessages } from '../../plugins/lightspeed/src/translations/ref';
-import lightspeedTranslationDe from '../../plugins/lightspeed/src/translations/de.js';
-import lightspeedTranslationFr from '../../plugins/lightspeed/src/translations/fr.js';
-import lightspeedTranslationEs from '../../plugins/lightspeed/src/translations/es.js';
-import lightspeedTranslationIt from '../../plugins/lightspeed/src/translations/it.js';
-import lightspeedTranslationJa from '../../plugins/lightspeed/src/translations/ja.js';
+import lightspeedTranslationDe from '../../plugins/lightspeed/src/translations/de';
+import lightspeedTranslationEs from '../../plugins/lightspeed/src/translations/es';
+import lightspeedTranslationFr from '../../plugins/lightspeed/src/translations/fr';
+import lightspeedTranslationIt from '../../plugins/lightspeed/src/translations/it';
+import lightspeedTranslationJa from '../../plugins/lightspeed/src/translations/ja';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type LightspeedMessages = typeof lightspeedMessages;
 
-export function getTranslations(locale: string) {
-  switch (locale) {
-    case 'en':
-      return lightspeedMessages;
-    case 'fr':
-      return lightspeedTranslationFr.messages;
+/** Locale messages from `plugins/lightspeed/src/translations` (same source as the running app). */
+export function getTranslations(locale: string): LightspeedMessages {
+  const lang = locale.split('-')[0]?.toLowerCase() ?? 'en';
+  switch (lang) {
     case 'de':
       return lightspeedTranslationDe.messages;
     case 'es':
       return lightspeedTranslationEs.messages;
+    case 'fr':
+      return lightspeedTranslationFr.messages;
     case 'it':
       return lightspeedTranslationIt.messages;
     case 'ja':
@@ -43,41 +43,4 @@ export function getTranslations(locale: string) {
     default:
       return lightspeedMessages;
   }
-}
-
-export function evaluateMessage(message: string, value: string) {
-  const startIndex = message.indexOf('{{');
-  if (startIndex === -1) {
-    return message;
-  }
-  const endIndex = message.indexOf('}}', startIndex + 2);
-  if (endIndex === -1) {
-    return message;
-  }
-  return (
-    message.substring(0, startIndex) + value + message.substring(endIndex + 2)
-  );
-}
-
-/** Renders `mcp.settings.selectedCount` for assertions (matches i18n placeholder order per locale). */
-export function formatMcpSelectedCount(
-  t: LightspeedMessages,
-  selectedCount: number,
-  totalCount: number,
-): string {
-  return t['mcp.settings.selectedCount']
-    .replace(/\{\{selectedCount\}\}/g, String(selectedCount))
-    .replace(/\{\{totalCount\}\}/g, String(totalCount));
-}
-
-/** Status cell detail for a connected server tool count (singular vs plural). */
-export function formatMcpToolCountStatus(
-  t: LightspeedMessages,
-  toolCount: number,
-): string {
-  const key =
-    toolCount === 1
-      ? 'mcp.settings.status.oneTool'
-      : 'mcp.settings.status.manyTools';
-  return t[key].replace(/\{\{count\}\}/g, String(toolCount));
 }

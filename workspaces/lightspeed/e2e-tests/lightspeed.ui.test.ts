@@ -14,37 +14,51 @@
  * limitations under the License.
  */
 
+/// <reference types="node" />
+
+import path from 'path';
+
 import { test, expect, Page } from '@playwright/test';
-import { models } from './fixtures/responses';
-import { openLightspeed } from './utils/testHelper';
-import {
-  openChatbot,
-  selectDisplayMode,
-  openChatHistoryDrawer,
-  closeChatHistoryDrawer,
-  expectBackstagePageVisible,
-  expectChatbotControlsVisible,
-  verifyDisplayModeMenuOptions,
-  expectChatInputAreaVisible,
-  expectEmptyChatHistory,
-  expectConversationArea,
-} from './pages/LightspeedPage';
 import {
   assertChatDialogInitialState,
-  closeChatDrawer,
-  openChatDrawer,
   assertDrawerState,
-} from './utils/sidebar';
-import {
-  uploadFiles,
-  uploadAndAssertDuplicate,
-  supportedFileTypes,
-  validateFailedUpload,
   assertVisibilityState,
-} from './utils/fileUpload';
-import { LightspeedMessages, evaluateMessage } from './utils/translations';
-import { runAccessibilityTests } from './utils/accessibility';
-import { bootstrapLightspeedE2ePage } from './utils/lightspeedE2eSetup';
+  bootstrapLightspeedE2ePage,
+  closeChatDrawer,
+  closeChatHistoryDrawer,
+  evaluateMessage,
+  expectBackstagePageVisible,
+  expectChatbotControlsVisible,
+  expectChatInputAreaVisible,
+  expectConversationArea,
+  expectEmptyChatHistory,
+  models,
+  openChatbot,
+  openChatDrawer,
+  openChatHistoryDrawer,
+  openLightspeed,
+  runAccessibilityTests,
+  selectDisplayMode,
+  supportedFileTypes,
+  uploadAndAssertDuplicate,
+  uploadFiles,
+  validateFailedUpload,
+  verifyDisplayModeMenuOptions,
+} from '@red-hat-developer-hub/lightspeed-playwright-e2e';
+import { getTranslations, type LightspeedMessages } from './utils/translations';
+
+function lightspeedE2eUploadFixturePath(locale: string, n: 1 | 2): string {
+  return path.join(
+    process.cwd(),
+    'node_modules',
+    '@red-hat-developer-hub',
+    'lightspeed-playwright-e2e',
+    'dist',
+    'fixtures',
+    'uploads',
+    `${locale}.upload${n}.json`,
+  );
+}
 
 test.describe('Lightspeed UI', () => {
   let translations: LightspeedMessages;
@@ -55,7 +69,7 @@ test.describe('Lightspeed UI', () => {
     const boot = await bootstrapLightspeedE2ePage(browser);
     sharedPage = boot.page;
     locale = boot.locale;
-    translations = boot.translations;
+    translations = getTranslations(locale);
   });
 
   test.describe('Chatbot Display Modes', () => {
@@ -218,8 +232,8 @@ test.describe('Lightspeed UI', () => {
     }
 
     test(`Multiple file upload`, async () => {
-      const file1 = `e2e-tests/fixtures/uploads/${locale}.upload1.json`;
-      const file2 = `e2e-tests/fixtures/uploads/${locale}.upload2.json`;
+      const file1 = lightspeedE2eUploadFixturePath(locale, 1);
+      const file2 = lightspeedE2eUploadFixturePath(locale, 2);
       await uploadFiles(sharedPage, [file1, file2]);
 
       const heading = sharedPage.getByRole('heading', {
