@@ -23,8 +23,6 @@ import {
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
-import Grid from '@mui/material/Grid';
-
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
@@ -65,13 +63,7 @@ export const WorkflowsTabContent = ({
     <Content noPadding>
       {loading ? <Progress /> : null}
       {error ? <ResponseErrorPanel error={error} /> : null}
-      {isReady ? (
-        <Grid container direction="column">
-          <Grid item xs={12}>
-            <WorkflowsTable items={value ?? []} />
-          </Grid>
-        </Grid>
-      ) : null}
+      {isReady ? <WorkflowsTable items={value ?? []} /> : null}
     </Content>
   );
 };
