@@ -409,7 +409,17 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
       res.set('Content-Type', contentType);
       return res.send(await upstreamResponse.text());
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       options.logger.error('Secure proxy error', error);
+
+      if (message.startsWith('SSO authentication failed')) {
+        return res.status(502).json({
+          error:
+            'Unable to authenticate with the hybrid cloud console. ' +
+            'Please check your service account credentials (clientId/clientSecret) in the RHDH Cost Management configuration.',
+        });
+      }
+
       return res.status(500).json({ error: 'Internal proxy error' });
     }
   };

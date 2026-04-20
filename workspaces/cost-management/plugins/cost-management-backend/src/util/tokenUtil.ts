@@ -100,7 +100,18 @@ export const getTokenFromApi = async (options: RouterOptions) => {
 
     logger.info(`Token cached, expires in ${expires_in} seconds`);
   } else {
-    throw new Error(rhSsoResponse.statusText);
+    let detail = '';
+    try {
+      const body = await rhSsoResponse.json();
+      detail = body.error_description || body.error || '';
+    } catch {
+      // response may not be JSON
+    }
+    const message = detail
+      ? `SSO authentication failed: ${detail}`
+      : `SSO authentication failed with status ${rhSsoResponse.status} (${rhSsoResponse.statusText})`;
+    logger.error(message);
+    throw new Error(message);
   }
 
   return accessToken;
