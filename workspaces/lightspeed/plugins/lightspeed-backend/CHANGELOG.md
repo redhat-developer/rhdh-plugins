@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.1.0
+
+### Minor Changes
+
+- cc98168: Migrated AI Notebooks from direct Llama Stack server to Lightspeed-Core integration
+
+### Patch Changes
+
+- 4379c1a: change casing of notebooks to lowercase
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.1.0
+
 ## 2.0.0
 
 ### Major Changes
