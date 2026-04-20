@@ -1,8 +1,4 @@
 # ── Yarn install state ────────────────────────────────────────────────────────
-# install-state.gz encodes host-machine workspace paths; copying it into the
-# container causes "Workspace not found" errors during `yarn install`.
-# The cache directory is intentionally kept so packages do not need to be
-# re-downloaded on every build.
 .yarn/install-state.gz
 .pnp.*
 

@@ -1,50 +1,30 @@
-# Production overrides used when running inside a container.
-# Values here take precedence over app-config.yaml.
-# All sensitive values are injected via environment variables.
-
 app:
-  # The URL the browser uses to reach Backstage. In the compose setup the
-  # backend serves both the API and the bundled React app on the same port,
-  # so both baseUrls are identical.
   baseUrl: ${APP_BASE_URL:-http://localhost:7007}
 
 backend:
   baseUrl: ${APP_BASE_URL:-http://localhost:7007}
-  # Bind to all interfaces so the container port mapping works.
   listen: ':7007'
   cors:
-    # Allow the same origin (frontend served by the backend itself).
     origin: ${APP_BASE_URL:-http://localhost:7007}
   database:
-    # Use in-memory SQLite for the Backstage catalog — no extra DB service required.
     client: better-sqlite3
     connection: ':memory:'
 
 dcm:
-  # URL of the DCM API gateway (Traefik) running in the compose network.
-  # Set DCM_API_GATEWAY_URL when running the container (e.g. http://gateway:9080).
   apiGatewayUrl: ${DCM_API_GATEWAY_URL:-}
-  # SSO / OAuth2 client-credentials config for the backend proxy.
   ssoBaseUrl: ${DCM_SSO_BASE_URL:-}
-  # clientId and clientSecret are declared required in config.d.ts but can be
-  # left empty if SSO is not configured; the backend will skip token exchange.
   clientId: ${DCM_CLIENT_ID:-}
   clientSecret: ${DCM_CLIENT_SECRET:-}
 
 auth:
   providers:
     guest:
-      # Allow the guest provider to work outside the development environment.
-      # The app uses auto sign-in with guest so there is no login screen.
       dangerouslyAllowOutsideDevelopment: true
       userEntityRef: user:default/guest
 
 catalog:
-  # Remove the local-file catalog locations from app-config.yaml; they are
-  # not mounted inside the container.
   locations: []
 
 techdocs:
   generator:
-    # Disable Docker-in-Docker for TechDocs inside the container.
     runIn: local

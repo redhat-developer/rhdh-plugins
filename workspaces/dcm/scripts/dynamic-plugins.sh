@@ -52,6 +52,7 @@ Sub-commands:
                     \$REGISTRY_URL/\$ORG_ID/\$REPO:\$VERSION.
                     Pass --push to also push the image to the registry.
 EOF
+  return 0
 }
 
 # Prefer podman; fall back to docker.
@@ -64,6 +65,7 @@ function _export_plugin {
   npx @red-hat-developer-hub/cli@latest plugin export \
     --embed-package @red-hat-developer-hub/backstage-plugin-dcm-common
   cd "$workspace_dir"
+  return 0
 }
 
 function _package_dynamic_plugins {
@@ -72,6 +74,7 @@ function _package_dynamic_plugins {
     args+=( --container-tool docker )
   fi
   npx @red-hat-developer-hub/cli@latest plugin package "${args[@]}" "$@"
+  return 0
 }
 
 function clean {
@@ -80,6 +83,7 @@ function clean {
   rm -rf "$workspace_dir"/plugins/*/dist-dynamic
   rm -rf "$workspace_dir"/plugins/*/dist
   rm -rf "$workspace_dir"/packages/*/dist
+  return 0
 }
 
 function _update_version {
@@ -89,23 +93,26 @@ function _update_version {
     yarn version "$VERSION" --immediate
     cd - > /dev/null
   done
+  return 0
 }
 
 function _assert_version_is_set {
   if [[ -z "$VERSION" ]]; then
-    echo "Error: The VERSION environment variable must be provided"
+    echo "Error: The VERSION environment variable must be provided" >&2
     exit 1
   fi
 
   if [[ ! ($VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+) ]]; then
-    echo "Error: VERSION must follow semver — e.g. 0.1.0 or 1.2.3-rc1"
+    echo "Error: VERSION must follow semver — e.g. 0.1.0 or 1.2.3-rc1" >&2
     exit 2
   fi
+  return 0
 }
 
 function _is_prerelease_version {
   # Pre-release versions contain a hyphen suffix (e.g. 0.1.0-rc1, 1.0.0-alpha).
   [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[a-zA-Z] ]]
+  return $?
 }
 
 function oci {
@@ -135,12 +142,14 @@ function oci {
     echo "Production version detected ($VERSION). Keep package.json files updated."
     echo "Remember to commit: git commit -am 'Release v$VERSION' && git tag v$VERSION"
   fi
+  return 0
 }
 
 function push {
   _assert_version_is_set
   echo "Pushing image: $REGISTRY_URL/$ORG_ID/$REPO:$VERSION"
   "$_pocker" push "$REGISTRY_URL/$ORG_ID/$REPO:$VERSION"
+  return 0
 }
 
 function tgz {
@@ -179,6 +188,7 @@ ${artifact_name}-backend.tgz $be_checksum
 EOF
 
   cd "$workspace_dir"
+  return 0
 }
 
 function backstage-image {
@@ -220,6 +230,7 @@ function backstage-image {
     echo "Image built. Run with --push to push to the registry, or use:"
     echo "  $_pocker push $image_tag"
   fi
+  return 0
 }
 
 if [[ $# -eq 0 || $1 =~ -h|--help ]]; then
