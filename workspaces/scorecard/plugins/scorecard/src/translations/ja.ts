@@ -23,6 +23,7 @@ import { scorecardTranslationRef } from './ref';
  */
 const scorecardTranslationJa = createTranslationMessages({
   ref: scorecardTranslationRef,
+  full: true,
   messages: {
     // Empty state translations
     'emptyState.title': 'スコアカードはまだ追加されていません',
@@ -81,6 +82,48 @@ const scorecardTranslationJa = createTranslationMessages({
       'Jira のオープン状態の進行を妨げているチケット',
     'metric.jira.open_issues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
+    'metric.sonarqube.quality_gate.title':
+      'SonarQube クオリティゲートのステータス',
+    'metric.sonarqube.quality_gate.description':
+      'プロジェクトが SonarQube のクオリティゲートに合格しているかどうか。',
+    'metric.sonarqube.open_issues.title': 'SonarQube のオープンな課題',
+    'metric.sonarqube.open_issues.description':
+      'SonarQube におけるオープンな課題 (OPEN、CONFIRMED、REOPENED) の数。',
+    'metric.sonarqube.security_rating.title': 'SonarQube セキュリティ評価',
+    'metric.sonarqube.security_rating.description':
+      'SonarQube のセキュリティ評価。',
+    'metric.sonarqube.security_issues.title':
+      'SonarQube のセキュリティ上の課題',
+    'metric.sonarqube.security_issues.description':
+      'SonarQube におけるオープンなセキュリティ脆弱性の数。',
+    'metric.sonarqube.security_review_rating.title':
+      'SonarQube セキュリティレビュー評価',
+    'metric.sonarqube.security_review_rating.description':
+      'SonarQube のセキュリティレビュー評価。',
+    'metric.sonarqube.security_hotspots.title':
+      'SonarQube セキュリティホットスポット',
+    'metric.sonarqube.security_hotspots.description':
+      'SonarQube でレビューが必要なセキュリティホットスポットの数。',
+    'metric.sonarqube.reliability_rating.title': 'SonarQube 信頼性評価',
+    'metric.sonarqube.reliability_rating.description':
+      'SonarQube の信頼性評価。',
+    'metric.sonarqube.reliability_issues.title':
+      'SonarQube の信頼性に関する課題',
+    'metric.sonarqube.reliability_issues.description':
+      'SonarQube におけるオープンなバグの数。',
+    'metric.sonarqube.maintainability_rating.title': 'SonarQube 保守性評価',
+    'metric.sonarqube.maintainability_rating.description':
+      'SonarQube の保守性評価。',
+    'metric.sonarqube.maintainability_issues.title':
+      'SonarQube の保守性に関する課題',
+    'metric.sonarqube.maintainability_issues.description':
+      'SonarQube におけるオープンなコードスメルの数。',
+    'metric.sonarqube.code_coverage.title': 'SonarQube コードカバレッジ',
+    'metric.sonarqube.code_coverage.description':
+      'SonarQube における全体のコードカバレッジの割合。',
+    'metric.sonarqube.code_duplications.title': 'SonarQube コードの重複',
+    'metric.sonarqube.code_duplications.description':
+      'SonarQube における重複した行の割合。',
     'metric.lastUpdated': '最終更新日: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': '最終更新日: 利用不可',
     'metric.someEntitiesNotReportingValues':

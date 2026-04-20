@@ -23,6 +23,7 @@ import { scorecardTranslationRef } from './ref';
  */
 const scorecardTranslationDe = createTranslationMessages({
   ref: scorecardTranslationRef,
+  full: true,
   messages: {
     // Empty state translations
     'emptyState.title': 'Noch keine Scorecards hinzugefügt',
@@ -79,6 +80,48 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.jira.open_issues.title': 'Jira offene blockierende Tickets',
     'metric.jira.open_issues.description':
       'Hervorhebt die Anzahl der kritischen, blockierenden Probleme, die derzeit in Jira offen sind.',
+    'metric.sonarqube.quality_gate.title': 'SonarQube Quality-Gate-Status',
+    'metric.sonarqube.quality_gate.description':
+      'Gibt an, ob das Projekt sein SonarQube-Quality-Gate besteht.',
+    'metric.sonarqube.open_issues.title': 'SonarQube offene Probleme',
+    'metric.sonarqube.open_issues.description':
+      'Anzahl der offenen Probleme (OPEN, CONFIRMED, REOPENED) in SonarQube.',
+    'metric.sonarqube.security_rating.title': 'SonarQube Sicherheitsbewertung',
+    'metric.sonarqube.security_rating.description':
+      'SonarQube Sicherheitsbewertung.',
+    'metric.sonarqube.security_issues.title': 'SonarQube Sicherheitsprobleme',
+    'metric.sonarqube.security_issues.description':
+      'Anzahl der offenen Sicherheitslücken in SonarQube.',
+    'metric.sonarqube.security_review_rating.title':
+      'SonarQube Bewertung der Sicherheitsüberprüfung',
+    'metric.sonarqube.security_review_rating.description':
+      'SonarQube Bewertung der Sicherheitsüberprüfung.',
+    'metric.sonarqube.security_hotspots.title':
+      'SonarQube Sicherheits-Hotspots',
+    'metric.sonarqube.security_hotspots.description':
+      'Anzahl der zu überprüfenden Sicherheits-Hotspots in SonarQube.',
+    'metric.sonarqube.reliability_rating.title':
+      'SonarQube Zuverlässigkeitsbewertung',
+    'metric.sonarqube.reliability_rating.description':
+      'SonarQube Zuverlässigkeitsbewertung.',
+    'metric.sonarqube.reliability_issues.title':
+      'SonarQube Zuverlässigkeitsprobleme',
+    'metric.sonarqube.reliability_issues.description':
+      'Anzahl der offenen Fehler in SonarQube.',
+    'metric.sonarqube.maintainability_rating.title':
+      'SonarQube Wartbarkeitsbewertung',
+    'metric.sonarqube.maintainability_rating.description':
+      'SonarQube Wartbarkeitsbewertung.',
+    'metric.sonarqube.maintainability_issues.title':
+      'SonarQube Wartbarkeitsprobleme',
+    'metric.sonarqube.maintainability_issues.description':
+      'Anzahl der offenen Code Smells in SonarQube.',
+    'metric.sonarqube.code_coverage.title': 'SonarQube Code-Abdeckung',
+    'metric.sonarqube.code_coverage.description':
+      'Gesamtprozentsatz der Code-Abdeckung in SonarQube.',
+    'metric.sonarqube.code_duplications.title': 'SonarQube Code-Duplikate',
+    'metric.sonarqube.code_duplications.description':
+      'Prozentsatz der duplizierten Zeilen in SonarQube.',
     'metric.lastUpdated': 'Zuletzt aktualisiert: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Zuletzt aktualisiert: Nicht verfügbar',
     'metric.someEntitiesNotReportingValues':

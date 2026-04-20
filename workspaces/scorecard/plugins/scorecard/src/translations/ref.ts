@@ -87,6 +87,55 @@ export const scorecardMessages = {
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
     },
+    'sonarqube.quality_gate': {
+      title: 'SonarQube Quality Gate Status',
+      description: 'Whether the project passes its SonarQube quality gate.',
+    },
+    'sonarqube.open_issues': {
+      title: 'SonarQube Open Issues',
+      description:
+        'Count of open issues (OPEN, CONFIRMED, REOPENED) in SonarQube.',
+    },
+    'sonarqube.security_rating': {
+      title: 'SonarQube Security Rating',
+      description: 'SonarQube security rating.',
+    },
+    'sonarqube.security_issues': {
+      title: 'SonarQube Security Issues',
+      description: 'Count of open security vulnerabilities in SonarQube.',
+    },
+    'sonarqube.security_review_rating': {
+      title: 'SonarQube Security Review Rating',
+      description: 'SonarQube security review rating.',
+    },
+    'sonarqube.security_hotspots': {
+      title: 'SonarQube Security Hotspots',
+      description: 'Count of security hotspots to review in SonarQube.',
+    },
+    'sonarqube.reliability_rating': {
+      title: 'SonarQube Reliability Rating',
+      description: 'SonarQube reliability rating.',
+    },
+    'sonarqube.reliability_issues': {
+      title: 'SonarQube Reliability Issues',
+      description: 'Count of open bugs in SonarQube.',
+    },
+    'sonarqube.maintainability_rating': {
+      title: 'SonarQube Maintainability Rating',
+      description: 'SonarQube maintainability rating.',
+    },
+    'sonarqube.maintainability_issues': {
+      title: 'SonarQube Maintainability Issues',
+      description: 'Count of open code smells in SonarQube.',
+    },
+    'sonarqube.code_coverage': {
+      title: 'SonarQube Code Coverage',
+      description: 'Overall code coverage percentage in SonarQube.',
+    },
+    'sonarqube.code_duplications': {
+      title: 'SonarQube Code Duplications',
+      description: 'Percentage of duplicated lines in SonarQube.',
+    },
     lastUpdated: 'Last updated: {{timestamp}}',
     lastUpdatedNotAvailable: 'Last updated: Not available',
     someEntitiesNotReportingValues:
