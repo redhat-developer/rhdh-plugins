@@ -728,7 +728,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         root: {
           // Controls the page inset as in PF6 -- only in desktop view
           '@media (min-width: 600px)': {
-            backgroundColor: general.sidebarBackgroundColor,
+            backgroundColor: general.appBarBackgroundColor,
             // Prevents the main content from scrolling weird
             overflowY: 'auto',
             // Cancel out the spacing produced by the page inset border when
