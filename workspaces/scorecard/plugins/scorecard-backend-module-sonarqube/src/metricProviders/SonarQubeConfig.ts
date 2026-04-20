@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const SONARQUBE_PROJECT_KEY_ANNOTATION = 'sonarqube.org/project-key';
@@ -29,9 +30,16 @@ export type SonarQubeAnnotation = {
  *   - `my-project`              → { projectKey: 'my-project' }
  *   - `my-instance/my-project`  → { instanceName: 'my-instance', projectKey: 'my-project' }
  */
-export function parseProjectKeyAnnotation(
-  annotation: string,
-): SonarQubeAnnotation {
+export function parseProjectKeyAnnotation(entity: Entity): SonarQubeAnnotation {
+  const annotation =
+    entity.metadata.annotations?.[SONARQUBE_PROJECT_KEY_ANNOTATION];
+  if (!annotation) {
+    throw new Error(
+      `Missing annotation '${SONARQUBE_PROJECT_KEY_ANNOTATION}' for entity ${stringifyEntityRef(
+        entity,
+      )}`,
+    );
+  }
   const slashIndex = annotation.indexOf('/');
   if (slashIndex === -1) {
     return { projectKey: annotation };
@@ -59,6 +67,11 @@ export const SONARQUBE_METRICS = [
 
 export type SonarQubeMetricId = (typeof SONARQUBE_METRICS)[number];
 
+export const SONARQUBE_BOOLEAN_METRICS = ['quality_gate'] as const;
+
+export type SonarQubeBooleanMetricId =
+  (typeof SONARQUBE_BOOLEAN_METRICS)[number];
+
 export const SONARQUBE_NUMBER_METRICS = [
   'open_issues',
   'security_rating',
@@ -74,11 +87,6 @@ export const SONARQUBE_NUMBER_METRICS = [
 ] as const;
 
 export type SonarQubeNumberMetricId = (typeof SONARQUBE_NUMBER_METRICS)[number];
-
-export const SONARQUBE_BOOLEAN_METRICS = ['quality_gate'] as const;
-
-export type SonarQubeBooleanMetricId =
-  (typeof SONARQUBE_BOOLEAN_METRICS)[number];
 
 export const SONARQUBE_METRIC_CONFIG: Record<
   SonarQubeMetricId,
@@ -152,10 +160,11 @@ export const SONARQUBE_METRIC_CONFIG: Record<
  * `open_issues` uses a dedicated API endpoint, so it has no measures key.
  */
 export const SONARQUBE_API_METRIC_KEYS: Record<
-  SonarQubeNumberMetricId,
-  { apiKey: string } | { useIssuesApi: true }
+  SonarQubeMetricId,
+  { apiKey: string } | { useQualityGateApi: true } | { useOpenIssuesApi: true }
 > = {
-  open_issues: { useIssuesApi: true },
+  quality_gate: { useQualityGateApi: true },
+  open_issues: { useOpenIssuesApi: true },
   security_rating: { apiKey: 'security_rating' },
   security_issues: { apiKey: 'vulnerabilities' },
   security_review_rating: { apiKey: 'security_review_rating' },

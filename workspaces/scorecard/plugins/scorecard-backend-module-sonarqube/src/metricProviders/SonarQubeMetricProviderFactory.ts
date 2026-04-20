@@ -21,31 +21,41 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 import { SonarQubeBooleanMetricProvider } from './SonarQubeBooleanMetricProvider';
 import { SonarQubeNumberMetricProvider } from './SonarQubeNumberMetricProvider';
 import {
+  SONARQUBE_METRICS,
+  type SonarQubeBooleanMetricId,
   type SonarQubeMetricId,
   type SonarQubeNumberMetricId,
-  SONARQUBE_METRICS,
 } from './SonarQubeConfig';
 
-export function createSonarQubeMetricProvider(
-  config: Config,
-  logger: LoggerService,
-  metricId: SonarQubeMetricId,
-): MetricProvider {
-  if (metricId === 'quality_gate') {
-    return new SonarQubeBooleanMetricProvider(config, logger);
-  }
-  return new SonarQubeNumberMetricProvider(
-    config,
-    logger,
-    metricId as SonarQubeNumberMetricId,
-  );
-}
+export class SonarQubeMetricProviderFactory {
+  private constructor() {}
 
-export function createSonarQubeMetricProviders(
-  config: Config,
-  logger: LoggerService,
-): MetricProvider[] {
-  return SONARQUBE_METRICS.map(id =>
-    createSonarQubeMetricProvider(config, logger, id),
-  );
+  static createMetricProvider(
+    config: Config,
+    logger: LoggerService,
+    metricId: SonarQubeMetricId,
+  ): MetricProvider {
+    if (metricId === 'quality_gate') {
+      return SonarQubeBooleanMetricProvider.fromConfig(
+        config,
+        logger,
+        metricId as SonarQubeBooleanMetricId,
+      );
+    }
+    return SonarQubeNumberMetricProvider.fromConfig(
+      config,
+      logger,
+      metricId as SonarQubeNumberMetricId,
+    );
+  }
+
+  static fromConfig(config: Config, logger: LoggerService): MetricProvider[] {
+    return SONARQUBE_METRICS.map(metricId =>
+      SonarQubeMetricProviderFactory.createMetricProvider(
+        config,
+        logger,
+        metricId,
+      ),
+    );
+  }
 }

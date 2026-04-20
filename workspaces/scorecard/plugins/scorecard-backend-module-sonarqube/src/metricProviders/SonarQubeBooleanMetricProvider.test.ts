@@ -16,6 +16,9 @@
 
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
+
+import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 import { SonarQubeBooleanMetricProvider } from './SonarQubeBooleanMetricProvider';
 
 jest.mock('../clients/SonarQubeClient');
@@ -53,9 +56,10 @@ function entity(projectKey = 'my-project'): Entity {
 describe('SonarQubeBooleanMetricProvider', () => {
   describe('getProviderDatasourceId', () => {
     it('returns sonarqube', () => {
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
       expect(provider.getProviderDatasourceId()).toBe('sonarqube');
     });
@@ -63,9 +67,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
 
   describe('getProviderId', () => {
     it('returns sonarqube.quality_gate', () => {
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
       expect(provider.getProviderId()).toBe('sonarqube.quality_gate');
     });
@@ -73,9 +78,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
 
   describe('getMetricType', () => {
     it('returns boolean', () => {
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
       expect(provider.getMetricType()).toBe('boolean');
     });
@@ -83,9 +89,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
 
   describe('getMetric', () => {
     it('returns quality gate metric metadata', () => {
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
       const metric = provider.getMetric();
       expect(metric.id).toBe('sonarqube.quality_gate');
@@ -97,20 +104,36 @@ describe('SonarQubeBooleanMetricProvider', () => {
 
   describe('getMetricThresholds', () => {
     it('returns default thresholds when none provided', () => {
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
       expect(provider.getMetricThresholds()).toBeDefined();
       expect(provider.getMetricThresholds().rules).toHaveLength(2);
     });
 
     it('returns custom thresholds when provided', () => {
-      const custom = { rules: [{ key: 'ok', expression: '==true' }] };
-      const provider = new SonarQubeBooleanMetricProvider(
-        mockConfig,
+      const custom: ThresholdConfig = {
+        rules: [
+          { key: 'ok', expression: '==true', color: '#00ff00', icon: 'ok' },
+        ],
+      };
+      const mockConfiWithCustomThresholds = new ConfigReader({
+        scorecard: {
+          plugins: {
+            sonarqube: {
+              quality_gate: {
+                thresholds: custom,
+              },
+            },
+          },
+        },
+      });
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
+        mockConfiWithCustomThresholds,
         mockLogger,
-        custom,
+        'quality_gate',
       );
       expect(provider.getMetricThresholds()).toEqual(custom);
     });
@@ -118,9 +141,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
 
   describe('getCatalogFilter', () => {
     it('requires sonarqube.org/project-key annotation', () => {
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
       const filter = provider.getCatalogFilter();
       expect(
@@ -132,9 +156,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
   describe('calculateMetric', () => {
     it('returns true when quality gate passes', async () => {
       mockGetQualityGateStatus.mockResolvedValue(true);
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
 
       const result = await provider.calculateMetric(entity());
@@ -148,9 +173,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
 
     it('returns false when quality gate fails', async () => {
       mockGetQualityGateStatus.mockResolvedValue(false);
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
 
       const result = await provider.calculateMetric(entity());
@@ -160,9 +186,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
 
     it('passes instanceName when annotation has instance prefix', async () => {
       mockGetQualityGateStatus.mockResolvedValue(true);
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
 
       await provider.calculateMetric(entity('internal/my-project'));
@@ -174,9 +201,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
     });
 
     it('throws when annotation is missing', async () => {
-      const provider = new SonarQubeBooleanMetricProvider(
+      const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
+        'quality_gate',
       );
       const e = entity();
       delete e.metadata.annotations!['sonarqube.org/project-key'];

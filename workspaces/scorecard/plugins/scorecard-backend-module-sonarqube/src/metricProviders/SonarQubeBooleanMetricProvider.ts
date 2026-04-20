@@ -18,14 +18,19 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  getThresholdsFromConfig,
+  MetricProvider,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
+import { type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 import { SonarQubeClient } from '../clients/SonarQubeClient';
 import {
+  type SonarQubeBooleanMetricId,
+  SONARQUBE_API_METRIC_KEYS,
   SONARQUBE_BOOLEAN_THRESHOLDS,
   SONARQUBE_METRIC_CONFIG,
   SONARQUBE_PROJECT_KEY_ANNOTATION,
@@ -36,15 +41,17 @@ export class SonarQubeBooleanMetricProvider
   implements MetricProvider<'boolean'>
 {
   private readonly client: SonarQubeClient;
+  private readonly metricId: SonarQubeBooleanMetricId;
   private readonly thresholds: ThresholdConfig;
 
   constructor(
-    config: Config,
-    logger: LoggerService,
-    thresholds?: ThresholdConfig,
+    client: SonarQubeClient,
+    metricId: SonarQubeBooleanMetricId,
+    thresholds: ThresholdConfig,
   ) {
-    this.client = new SonarQubeClient(config, logger);
-    this.thresholds = thresholds ?? SONARQUBE_BOOLEAN_THRESHOLDS;
+    this.client = client;
+    this.metricId = metricId;
+    this.thresholds = thresholds;
   }
 
   getProviderDatasourceId(): string {
@@ -52,7 +59,7 @@ export class SonarQubeBooleanMetricProvider
   }
 
   getProviderId(): string {
-    return SONARQUBE_METRIC_CONFIG.quality_gate.id;
+    return SONARQUBE_METRIC_CONFIG[this.metricId].id;
   }
 
   getMetricType(): 'boolean' {
@@ -60,7 +67,7 @@ export class SonarQubeBooleanMetricProvider
   }
 
   getMetric(): Metric<'boolean'> {
-    const meta = SONARQUBE_METRIC_CONFIG.quality_gate;
+    const meta = SONARQUBE_METRIC_CONFIG[this.metricId];
     return {
       id: meta.id,
       title: meta.title,
@@ -82,16 +89,30 @@ export class SonarQubeBooleanMetricProvider
   }
 
   async calculateMetric(entity: Entity): Promise<boolean> {
-    const annotation =
-      entity.metadata.annotations?.[SONARQUBE_PROJECT_KEY_ANNOTATION];
-    if (!annotation) {
-      throw new Error(
-        `Missing annotation '${SONARQUBE_PROJECT_KEY_ANNOTATION}' for entity ${stringifyEntityRef(
-          entity,
-        )}`,
-      );
+    const { instanceName, projectKey } = parseProjectKeyAnnotation(entity);
+    const mapping = SONARQUBE_API_METRIC_KEYS[this.metricId];
+
+    if ('useQualityGateApi' in mapping) {
+      return this.client.getQualityGateStatus(projectKey, instanceName);
     }
-    const { instanceName, projectKey } = parseProjectKeyAnnotation(annotation);
-    return this.client.getQualityGateStatus(projectKey, instanceName);
+
+    throw new Error(`Unsupported metric ID: ${this.metricId}`);
+  }
+
+  static fromConfig(
+    config: Config,
+    logger: LoggerService,
+    metricId: SonarQubeBooleanMetricId,
+  ): SonarQubeBooleanMetricProvider {
+    const client = new SonarQubeClient(config, logger);
+
+    const thresholds =
+      getThresholdsFromConfig(
+        config,
+        `scorecard.plugins.sonarqube.${metricId}.thresholds`,
+        'boolean',
+      ) ?? SONARQUBE_BOOLEAN_THRESHOLDS;
+
+    return new SonarQubeBooleanMetricProvider(client, metricId, thresholds);
   }
 }

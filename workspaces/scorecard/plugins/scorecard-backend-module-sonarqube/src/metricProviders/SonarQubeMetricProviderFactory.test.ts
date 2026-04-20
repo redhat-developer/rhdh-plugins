@@ -15,10 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import {
-  createSonarQubeMetricProvider,
-  createSonarQubeMetricProviders,
-} from './SonarQubeMetricProviderFactory';
+import { SonarQubeMetricProviderFactory } from './SonarQubeMetricProviderFactory';
 
 jest.mock('../clients/SonarQubeClient');
 
@@ -31,9 +28,9 @@ const mockLogger = {
   error: jest.fn(),
 } as any;
 
-describe('createSonarQubeMetricProvider', () => {
+describe('createMetricProvider', () => {
   it('returns a boolean provider for quality_gate', () => {
-    const provider = createSonarQubeMetricProvider(
+    const provider = SonarQubeMetricProviderFactory.createMetricProvider(
       mockConfig,
       mockLogger,
       'quality_gate',
@@ -44,7 +41,7 @@ describe('createSonarQubeMetricProvider', () => {
   });
 
   it('returns a number provider for open_issues', () => {
-    const provider = createSonarQubeMetricProvider(
+    const provider = SonarQubeMetricProviderFactory.createMetricProvider(
       mockConfig,
       mockLogger,
       'open_issues',
@@ -54,7 +51,7 @@ describe('createSonarQubeMetricProvider', () => {
   });
 
   it('returns a number provider for security_rating', () => {
-    const provider = createSonarQubeMetricProvider(
+    const provider = SonarQubeMetricProviderFactory.createMetricProvider(
       mockConfig,
       mockLogger,
       'security_rating',
@@ -64,7 +61,7 @@ describe('createSonarQubeMetricProvider', () => {
   });
 
   it('returns a number provider for security_issues', () => {
-    const provider = createSonarQubeMetricProvider(
+    const provider = SonarQubeMetricProviderFactory.createMetricProvider(
       mockConfig,
       mockLogger,
       'security_issues',
@@ -74,9 +71,12 @@ describe('createSonarQubeMetricProvider', () => {
   });
 });
 
-describe('createSonarQubeMetricProviders', () => {
+describe('fromConfig', () => {
   it('returns twelve providers with correct IDs', () => {
-    const providers = createSonarQubeMetricProviders(mockConfig, mockLogger);
+    const providers = SonarQubeMetricProviderFactory.fromConfig(
+      mockConfig,
+      mockLogger,
+    );
     expect(providers).toHaveLength(12);
     expect(providers.map(p => p.getProviderId())).toEqual([
       'sonarqube.quality_gate',
@@ -95,7 +95,10 @@ describe('createSonarQubeMetricProviders', () => {
   });
 
   it('returns 1 boolean and 11 number providers', () => {
-    const providers = createSonarQubeMetricProviders(mockConfig, mockLogger);
+    const providers = SonarQubeMetricProviderFactory.fromConfig(
+      mockConfig,
+      mockLogger,
+    );
     const types = providers.map(p => p.getMetricType());
     expect(types.filter(t => t === 'boolean')).toHaveLength(1);
     expect(types.filter(t => t === 'number')).toHaveLength(11);

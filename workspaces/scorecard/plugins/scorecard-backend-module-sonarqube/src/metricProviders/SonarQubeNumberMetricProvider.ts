@@ -18,10 +18,13 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  getThresholdsFromConfig,
+  MetricProvider,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
+import { type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 import { SonarQubeClient } from '../clients/SonarQubeClient';
@@ -40,14 +43,13 @@ export class SonarQubeNumberMetricProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
 
   constructor(
-    config: Config,
-    logger: LoggerService,
+    client: SonarQubeClient,
     metricId: SonarQubeNumberMetricId,
-    thresholds?: ThresholdConfig,
+    thresholds: ThresholdConfig,
   ) {
-    this.client = new SonarQubeClient(config, logger);
+    this.client = client;
     this.metricId = metricId;
-    this.thresholds = thresholds ?? SONARQUBE_NUMBER_THRESHOLDS[metricId];
+    this.thresholds = thresholds;
   }
 
   getProviderDatasourceId(): string {
@@ -84,35 +86,40 @@ export class SonarQubeNumberMetricProvider implements MetricProvider<'number'> {
     };
   }
 
-  private getAnnotation(entity: Entity): {
-    instanceName?: string;
-    projectKey: string;
-  } {
-    const annotation =
-      entity.metadata.annotations?.[SONARQUBE_PROJECT_KEY_ANNOTATION];
-    if (!annotation) {
-      throw new Error(
-        `Missing annotation '${SONARQUBE_PROJECT_KEY_ANNOTATION}' for entity ${stringifyEntityRef(
-          entity,
-        )}`,
-      );
-    }
-    return parseProjectKeyAnnotation(annotation);
-  }
-
   async calculateMetric(entity: Entity): Promise<number> {
-    const { instanceName, projectKey } = this.getAnnotation(entity);
+    const { instanceName, projectKey } = parseProjectKeyAnnotation(entity);
     const mapping = SONARQUBE_API_METRIC_KEYS[this.metricId];
 
-    if ('useIssuesApi' in mapping) {
+    if ('useOpenIssuesApi' in mapping) {
       return this.client.getOpenIssuesCount(projectKey, instanceName);
     }
 
-    const measures = await this.client.getMeasures(
-      projectKey,
-      [mapping.apiKey],
-      instanceName,
-    );
-    return measures[mapping.apiKey];
+    if ('apiKey' in mapping) {
+      const measures = await this.client.getMeasures(
+        projectKey,
+        [mapping.apiKey],
+        instanceName,
+      );
+      return measures[mapping.apiKey];
+    }
+
+    throw new Error(`Unsupported metric ID: ${this.metricId}`);
+  }
+
+  static fromConfig(
+    config: Config,
+    logger: LoggerService,
+    metricId: SonarQubeNumberMetricId,
+  ): SonarQubeNumberMetricProvider {
+    const client = new SonarQubeClient(config, logger);
+
+    const thresholds =
+      getThresholdsFromConfig(
+        config,
+        `scorecard.plugins.sonarqube.${metricId}.thresholds`,
+        'number',
+      ) ?? SONARQUBE_NUMBER_THRESHOLDS[metricId];
+
+    return new SonarQubeNumberMetricProvider(client, metricId, thresholds);
   }
 }

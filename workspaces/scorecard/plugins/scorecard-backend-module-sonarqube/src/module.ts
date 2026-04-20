@@ -18,7 +18,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { createSonarQubeMetricProviders } from './metricProviders/SonarQubeMetricProviderFactory';
+import { SonarQubeMetricProviderFactory } from './metricProviders/SonarQubeMetricProviderFactory';
 
 export const scorecardModuleSonarqube = createBackendModule({
   pluginId: 'scorecard',
@@ -32,7 +32,10 @@ export const scorecardModuleSonarqube = createBackendModule({
       },
 
       async init({ metrics, config, logger }) {
-        const providers = createSonarQubeMetricProviders(config, logger);
+        const providers = SonarQubeMetricProviderFactory.fromConfig(
+          config,
+          logger,
+        );
         for (const provider of providers) {
           metrics.addMetricProvider(provider);
         }

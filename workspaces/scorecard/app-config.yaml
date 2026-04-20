@@ -186,9 +186,16 @@ permission:
         - name: user:development/guest
 
 # SonarQube configuration (optional - defaults to https://sonarcloud.io, no auth for public projects)
-# sonarqube:
-#   baseUrl: https://sonarcloud.io
-#   token: ${SONARQUBE_TOKEN}
+sonarqube:
+  baseUrl: https://sonarcloud.io
+  apiKey: ${SONARQUBE_TOKEN}
+  instances:
+    - name: internal
+      baseUrl: https://sonarcloud.io
+      apiKey: ${SONARQUBE_INTERNAL_KEY}
+      authType: Basic # optional, defaults to Basic
+    - name: cloud
+      baseUrl: https://sonarcloud.io
 
 # Scorecard development configuration
 scorecard:
