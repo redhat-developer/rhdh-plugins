@@ -16,7 +16,13 @@
 
 import type { Dispatch, SetStateAction } from 'react';
 import type { TableColumn } from '@backstage/core-components';
-import { Box, IconButton, InputAdornment, TextField } from '@material-ui/core';
+import {
+  Box,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Tooltip,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -79,12 +85,16 @@ function ActionsCell({ onEdit, onDelete }: ActionsCellProps) {
   const classes = useStyles();
   return (
     <Box className={classes.flexRowTight}>
-      <IconButton size="small" aria-label="Edit" onClick={onEdit}>
-        <EditIcon fontSize="small" />
-      </IconButton>
-      <IconButton size="small" aria-label="Delete" onClick={onDelete}>
-        <DeleteIcon fontSize="small" />
-      </IconButton>
+      <Tooltip title="Edit" placement="top">
+        <IconButton size="small" aria-label="Edit" onClick={onEdit}>
+          <EditIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Delete" placement="top">
+        <IconButton size="small" aria-label="Delete" onClick={onDelete}>
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 }

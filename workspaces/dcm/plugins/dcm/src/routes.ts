@@ -42,3 +42,41 @@ export const DCM_DETAILS_TABS = {
   entities: '/entities',
   requestHistory: '/request-history',
 } as const;
+
+// ── API-aligned tab route refs ─────────────────────────────────────────────
+
+export const providersRouteRef = createSubRouteRef({
+  id: 'dcm-providers',
+  parent: rootRouteRef,
+  path: '/providers',
+});
+
+export const policiesRouteRef = createSubRouteRef({
+  id: 'dcm-policies',
+  parent: rootRouteRef,
+  path: '/policies',
+});
+
+export const serviceTypesRouteRef = createSubRouteRef({
+  id: 'dcm-service-types',
+  parent: rootRouteRef,
+  path: '/service-types',
+});
+
+export const catalogItemsRouteRef = createSubRouteRef({
+  id: 'dcm-catalog-items',
+  parent: rootRouteRef,
+  path: '/catalog-items',
+});
+
+export const catalogItemInstancesRouteRef = createSubRouteRef({
+  id: 'dcm-catalog-item-instances',
+  parent: rootRouteRef,
+  path: '/catalog-item-instances',
+});
+
+export const resourcesRouteRef = createSubRouteRef({
+  id: 'dcm-resources',
+  parent: rootRouteRef,
+  path: '/resources',
+});

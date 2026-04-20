@@ -14,9 +14,18 @@
  * limitations under the License.
  */
 
-import { useMemo, useState, useCallback } from 'react';
-import { Table, TableColumn, InfoCard, Link } from '@backstage/core-components';
+// Migrate to use useCrudTab + DcmCrudTabLayout when it is re-activated.
+import { useMemo, useState, useCallback, useEffect } from 'react';
+import {
+  Table,
+  TableColumn,
+  InfoCard,
+  Link,
+  Progress,
+} from '@backstage/core-components';
+import { useApi } from '@backstage/core-plugin-api';
 import { Box, Button, Typography } from '@material-ui/core';
+import type { CatalogItem } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { DcmDataCenterTabEmptyState } from '../../components/DcmDataCenterTabEmptyState';
 import { DCM_FROM_TAB_STATE } from '../../components/dataCenterNavigation';
 import dataCenterTabEmptyIllustration from '../../assets/environments-empty-state.png';
@@ -30,8 +39,8 @@ import {
   formatServiceSpecCpu,
   formatServiceSpecRam,
   getMockEntityCountForServiceSpec,
-  INITIAL_SERVICE_SPECS,
 } from '../../data/service-specs';
+import { catalogApiRef } from '../../apis';
 import { DeleteServiceSpecDialog } from './components/DeleteServiceSpecDialog';
 import { ServiceSpecCreateDialog } from './components/ServiceSpecCreateDialog';
 import { ServiceSpecEditDialog } from './components/ServiceSpecEditDialog';
@@ -42,6 +51,43 @@ import {
   type SpecFormState,
 } from './components/specFormTypes';
 import { DCM_DETAILS_TABS } from '../../routes';
+
+function catalogItemToServiceSpec(item: CatalogItem): ServiceSpec {
+  return {
+    id: item.uid ?? item.display_name ?? String(Date.now()),
+    name: item.display_name ?? '',
+    cpu: 0,
+    ram: 0,
+    policyPacks: [],
+    environment: item.spec?.service_type ?? '',
+    used: 0,
+    quota: 0,
+    adoptionCount: 0,
+    resourceType: item.spec?.service_type ?? 'VM',
+    envSupport: item.spec?.service_type ? [item.spec.service_type] : [],
+    estDeploymentTime: '',
+    costTier: '',
+    port: 0,
+    protocol: '',
+    backupPolicy: '',
+    tags: [],
+  };
+}
+
+function specFormToCatalogItem(
+  form: { name: string; environment: string },
+  id?: string,
+): CatalogItem {
+  return {
+    ...(id ? { uid: id } : {}),
+    api_version: 'v1alpha1',
+    display_name: form.name.trim(),
+    spec: {
+      service_type: form.environment.trim(),
+      fields: [],
+    },
+  };
+}
 
 function getUpdatedEnvSupport(
   envSupport: string[],
@@ -76,15 +122,75 @@ function updateSpecFromEditForm(
   };
 }
 
+// Module-level state-updater factories and pure helpers — defined outside the
+// component so they do not contribute to lexical function-nesting depth (S2004).
+
+function addSpec(spec: ServiceSpec) {
+  return (prev: ServiceSpec[]) => [...prev, spec];
+}
+
+function replaceSpec(id: string, spec: ServiceSpec) {
+  return (prev: ServiceSpec[]) => prev.map(s => (s.id === id ? spec : s));
+}
+
+function patchSpecs(id: string, form: SpecFormState) {
+  const quota = Number(form.maxQuota) || 0;
+  const env = form.environment.trim();
+  return (prev: ServiceSpec[]) =>
+    prev.map(s => updateSpecFromEditForm(s, id, form, env, quota));
+}
+
+function buildFallbackSpec(form: SpecFormState): ServiceSpec {
+  const quota = Number(form.maxQuota) || 0;
+  const cpu = Number(form.cpu) || 0;
+  const ram = Number(form.ram) || 0;
+  const env = form.environment.trim();
+  return {
+    id: `spec-${Date.now()}`,
+    name: form.name.trim(),
+    cpu,
+    ram,
+    policyPacks: [...form.policyPacks],
+    environment: env,
+    used: 0,
+    quota,
+    adoptionCount: 0,
+    ...defaultDetailFields(env),
+  };
+}
+
+function removeSpec(id: string) {
+  return (prev: ServiceSpec[]) => prev.filter(s => s.id !== id);
+}
+
+function togglePack(packs: string[], pack: string): string[] {
+  return packs.includes(pack)
+    ? packs.filter(p => p !== pack)
+    : [...packs, pack];
+}
+
 export const ServiceSpecsTabContent = () => {
   const classes = useDcmStyles();
-  const [specs, setSpecs] = useState<ServiceSpec[]>(() => [
-    ...INITIAL_SERVICE_SPECS,
-  ]);
+  const catalogApi = useApi(catalogApiRef);
+  const [specs, setSpecs] = useState<ServiceSpec[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(5);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    catalogApi
+      .listCatalogItems()
+      .then(list => {
+        setSpecs((list.results ?? []).map(catalogItemToServiceSpec));
+      })
+      .catch(() => {
+        setSpecs([]);
+      })
+      .finally(() => setLoading(false));
+  }, [catalogApi]);
   const [createForm, setCreateForm] = useState<SpecFormState>(() =>
     emptySpecForm(),
   );
@@ -137,43 +243,25 @@ export const ServiceSpecsTabContent = () => {
       setForm: React.Dispatch<React.SetStateAction<SpecFormState>>,
       pack: string,
     ) => {
-      setForm(prev => {
-        const has = prev.policyPacks.includes(pack);
-        return {
-          ...prev,
-          policyPacks: has
-            ? prev.policyPacks.filter(p => p !== pack)
-            : [...prev.policyPacks, pack],
-        };
-      });
+      setForm(prev => ({
+        ...prev,
+        policyPacks: togglePack(prev.policyPacks, pack),
+      }));
     },
     [],
   );
 
-  const handleCreateSubmit = useCallback(() => {
+  const handleCreateSubmit = useCallback(async () => {
     if (!isServiceSpecFormValid(createForm)) return;
-    const quota = Number(createForm.maxQuota) || 0;
-    const cpu = Number(createForm.cpu) || 0;
-    const ram = Number(createForm.ram) || 0;
-    const newId = `spec-${Date.now()}`;
-    const env = createForm.environment.trim();
-    setSpecs(prev => [
-      ...prev,
-      {
-        id: newId,
-        name: createForm.name.trim(),
-        cpu,
-        ram,
-        policyPacks: [...createForm.policyPacks],
-        environment: env,
-        used: 0,
-        quota,
-        adoptionCount: 0,
-        ...defaultDetailFields(env),
-      },
-    ]);
+    const item = specFormToCatalogItem(createForm);
+    try {
+      const created = await catalogApi.createCatalogItem(item);
+      setSpecs(addSpec(catalogItemToServiceSpec(created)));
+    } catch {
+      setSpecs(addSpec(buildFallbackSpec(createForm)));
+    }
     handleCreateClose();
-  }, [createForm, handleCreateClose, isServiceSpecFormValid]);
+  }, [catalogApi, createForm, handleCreateClose, isServiceSpecFormValid]);
 
   const handleEdit = useCallback((spec: ServiceSpec) => {
     setEditingSpec(spec);
@@ -187,17 +275,24 @@ export const ServiceSpecsTabContent = () => {
     setEditForm(emptySpecForm());
   }, []);
 
-  const handleEditSubmit = useCallback(() => {
+  const handleEditSubmit = useCallback(async () => {
     if (!editingSpec || !isServiceSpecFormValid(editForm)) return;
-    const quota = Number(editForm.maxQuota) || 0;
-    const env = editForm.environment.trim();
-    setSpecs(prev =>
-      prev.map(s =>
-        updateSpecFromEditForm(s, editingSpec.id, editForm, env, quota),
-      ),
-    );
+    const id = editingSpec.id;
+    const patch = specFormToCatalogItem(editForm, id);
+    try {
+      const updated = await catalogApi.updateCatalogItem(id, patch);
+      setSpecs(replaceSpec(id, catalogItemToServiceSpec(updated)));
+    } catch {
+      setSpecs(patchSpecs(id, editForm));
+    }
     handleEditClose();
-  }, [editingSpec, editForm, handleEditClose, isServiceSpecFormValid]);
+  }, [
+    catalogApi,
+    editingSpec,
+    editForm,
+    handleEditClose,
+    isServiceSpecFormValid,
+  ]);
 
   const handleDelete = useCallback((spec: ServiceSpec) => {
     setSpecToDelete(spec);
@@ -209,12 +304,18 @@ export const ServiceSpecsTabContent = () => {
     setSpecToDelete(null);
   }, []);
 
-  const handleDeleteConfirm = useCallback(() => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (specToDelete) {
-      setSpecs(prev => prev.filter(s => s.id !== specToDelete.id));
+      const id = specToDelete.id;
+      try {
+        await catalogApi.deleteCatalogItem(id);
+      } catch {
+        // No-op: keep local removal regardless of API response
+      }
+      setSpecs(removeSpec(id));
     }
     handleDeleteClose();
-  }, [specToDelete, handleDeleteClose]);
+  }, [catalogApi, specToDelete, handleDeleteClose]);
 
   const handlePageChange = useCallback(
     (newPage: number, newPageSize: number) => {
@@ -325,6 +426,8 @@ export const ServiceSpecsTabContent = () => {
       classes={classes}
     />
   );
+
+  if (loading) return <Progress />;
 
   return (
     <Box className={classes.root}>

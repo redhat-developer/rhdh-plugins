@@ -13,4 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export {};
+
+export type { CatalogApi } from './CatalogApi';
+export type { PlacementApi } from './PlacementApi';
+export type { PolicyManagerApi } from './PolicyManagerApi';
+export type { ProvidersApi } from './ProvidersApi';
+
+export { DcmBaseClient } from './DcmBaseClient';
+export { CatalogClient } from './CatalogClient';
+export { PlacementClient } from './PlacementClient';
+export { PolicyManagerClient } from './PolicyManagerClient';
+export { ProvidersClient } from './ProvidersClient';

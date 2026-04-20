@@ -13,4 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { ExampleComponent } from './ExampleComponent';
+
+import type { Policy, PolicyList } from '../types/policy-manager';
+
+/**
+ * Interface for the DCM Policy Manager API client.
+ *
+ * @public
+ */
+export interface PolicyManagerApi {
+  listPolicies(): Promise<PolicyList>;
+  getPolicy(policyId: string): Promise<Policy>;
+  createPolicy(policy: Policy): Promise<Policy>;
+  updatePolicy(policyId: string, patch: Partial<Policy>): Promise<Policy>;
+  deletePolicy(policyId: string): Promise<void>;
+}
