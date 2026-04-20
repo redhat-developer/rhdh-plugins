@@ -48,12 +48,14 @@ function AggregatedCardWithGithubOpenPrsContent() {
 }
 
 function AggregatedCardWithGithubFilesCheckLicenseContent() {
-  return <ScorecardHomepageCard aggregationId="licenseFileExistsKpi" />;
+  return (
+    <ScorecardHomepageCardWithProvider aggregationId="licenseFileExistsKpi" />
+  );
 }
 
 function AggregatedCardWithGithubFilesCheckCodeownersContent() {
   return (
-    <ScorecardHomepageCard aggregationId="github.files_check.codeowners" />
+    <ScorecardHomepageCardWithProvider aggregationId="github.files_check.codeowners" />
   );
 }
 
