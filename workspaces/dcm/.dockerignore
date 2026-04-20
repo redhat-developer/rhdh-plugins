@@ -1,8 +1,20 @@
-.git
-.yarn/cache
+# ── Yarn install state ────────────────────────────────────────────────────────
+# install-state.gz encodes host-machine workspace paths; copying it into the
+# container causes "Workspace not found" errors during `yarn install`.
+# The cache directory is intentionally kept so packages do not need to be
+# re-downloaded on every build.
 .yarn/install-state.gz
+.pnp.*
+
+# ── Local build artefacts ─────────────────────────────────────────────────────
 node_modules
-packages/*/src
-packages/*/node_modules
-plugins
+dist
+dist-types
+dist-dynamic
+dynamic-plugins-root
+
+# ── Dev / editor files ────────────────────────────────────────────────────────
 *.local.yaml
+.env
+.env.*
+.cursor
