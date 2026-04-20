@@ -14,66 +14,25 @@
  * limitations under the License.
  */
 
-// Import and re-export types generated from OpenAPI spec
-import { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import type { AAPCredentials } from '../schema/openapi/generated/models';
+// Canonical shared types live in x2a-node; re-export for local convenience.
+export type {
+  X2AConfig,
+  AAPCredentials,
+  GitRepo,
+  JobCreateParams,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
-export type { AAPCredentials };
-
-export type GitRepo = {
-  url: string;
-  branch: string;
-  token: string;
-};
+import type {
+  AAPCredentials,
+  GitRepo,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
- * Project credentials provided by user at project creation
+ * Project credentials provided by user at project creation.
+ * Internal to x2a-backend.
  */
 export interface ProjectCredentials {
   sourceRepo: GitRepo;
   targetRepo: GitRepo;
-  /**
-   * Optional: AAP credentials provided by user at runtime
-   * If not provided, will use credentials from app-config.yaml
-   */
-  aapCredentials?: AAPCredentials;
-}
-
-/**
- * Parameters for creating a Kubernetes job
- */
-export interface JobCreateParams {
-  jobId: string;
-  projectId: string;
-  projectName: string;
-  /**
-   * Project abbreviation - used for directory naming in target repository
-   */
-  projectAbbrev: string;
-  phase: MigrationPhase;
-  user: string;
-  userPrompt?: string;
-  callbackToken: string;
-  callbackUrl: string;
-  /**
-   * Module ID - required for analyze, migrate, and publish phases
-   */
-  moduleId?: string;
-  /**
-   * Module name - required for analyze, migrate, and publish phases
-   */
-  moduleName?: string;
-  /**
-   * Git source repository credentials - will be stored in ephemeral job secret
-   */
-  sourceRepo: GitRepo;
-  /**
-   * Git target repository credentials - will be stored in ephemeral job secret
-   */
-  targetRepo: GitRepo;
-  /**
-   * Optional AAP credentials override - will be stored in project secret
-   * If not provided, AAP credentials from app-config.yaml will be used
-   */
   aapCredentials?: AAPCredentials;
 }

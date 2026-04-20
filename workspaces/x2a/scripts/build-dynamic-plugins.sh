@@ -17,13 +17,24 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 RHDH_CLI_VERSION="1.9.1"
-EMBED_PACKAGE="@red-hat-developer-hub/backstage-plugin-x2a-common"
+EMBED_COMMON="@red-hat-developer-hub/backstage-plugin-x2a-common"
+EMBED_NODE="@red-hat-developer-hub/backstage-plugin-x2a-node"
 IMAGE_REGISTRY="quay.io/x2ansible"
 PUSH_IMAGES=false
+
+# Per-plugin embed packages. Plugins that depend on x2a-node (workspace dep)
+# must embed it alongside x2a-common so the RHDH CLI moves shared deps to
+# peerDependencies. Plugins not listed here get only x2a-common.
+declare -A PLUGIN_EMBED_PACKAGES=(
+  ["x2a-backend"]="${EMBED_COMMON} ${EMBED_NODE}"
+  ["x2a-mcp-extras"]="${EMBED_COMMON} ${EMBED_NODE}"
+)
 
 declare -A PLUGIN_IMAGES=(
   ["x2a"]="red-hat-developer-hub-backstage-plugin-x2a"
   ["x2a-backend"]="red-hat-developer-hub-backstage-plugin-x2a-backend"
+  ["x2a-dcr"]="red-hat-developer-hub-backstage-plugin-x2a-dcr"
+  ["x2a-mcp-extras"]="red-hat-developer-hub-backstage-plugin-x2a-mcp-extras"
   ["scaffolder-backend-module-x2a"]="red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a"
 )
 
@@ -86,9 +97,15 @@ export_plugin() {
 
   clean_dist_dynamic "$plugin_dir"
 
+  local embed_list="${PLUGIN_EMBED_PACKAGES[$plugin_dir]:-$EMBED_COMMON}"
+  local embed_args=()
+  for pkg in $embed_list; do
+    embed_args+=(--embed-package "$pkg")
+  done
+
   log "Exporting dynamic plugin: ${plugin_dir}"
   (cd "$plugin_path" && npx "@red-hat-developer-hub/cli@${RHDH_CLI_VERSION}" plugin export \
-    --embed-package "$EMBED_PACKAGE")
+    "${embed_args[@]}")
 }
 
 package_plugin() {

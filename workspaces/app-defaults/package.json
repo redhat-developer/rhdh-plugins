@@ -22,6 +22,7 @@
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
+    "prettier:fix": "prettier --write .",
     "prettier:check": "prettier --check .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
@@ -51,14 +52,5 @@
     "@types/react": "^18",
     "@types/react-dom": "^18"
   },
-  "prettier": "@spotify/prettier-config",
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
-  }
+  "prettier": "@spotify/prettier-config"
 }

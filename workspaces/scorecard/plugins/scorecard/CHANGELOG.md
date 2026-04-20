@@ -1,5 +1,53 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.5.1
+
+### Patch Changes
+
+- f6f7bcf: add threshold-based status colors to entities table
+- 0fda0c7: fixed the scorecard-homepage-cards default layout for nfs
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.1
+
+## 2.5.0
+
+### Minor Changes
+
+- d706601: Backstage version bump to v1.49.3
+- 55226c2: Introduces custom threshold rule icons that can be configured in `app-config.yaml`.
+- f13f583: Adding scorecardHomepage and metric page extension, also added e2e support in nfs
+- 0d64361: Adds a Scorecard Entities page that allows users to drill down from aggregated scorecard KPIs to view the individual entities contributing to the overall score. The page displays entity-level metric values and status, enabling users to identify services impacting the metric and investigate issues more effectively.
+- 243ad0a: Aggregated scorecards now use **aggregation IDs** and dedicated HTTP routes. The old catalog-aggregations URL still works but is **deprecated** (not removed).
+
+  **Backend (`@red-hat-developer-hub/backstage-plugin-scorecard-backend`)**
+
+  - **Deprecated:** `GET /metrics/:metricId/catalog/aggregations` — responses are unchanged, but the handler emits [RFC 8594](https://datatracker.ietf.org/doc/html/rfc8594) `Deprecation` and `Link` headers (alternate successor: `GET .../aggregations/:aggregationId`) and logs a warning. Prefer **`GET /aggregations/:aggregationId`** for new integrations.
+  - **Added:** `GET /aggregations/:aggregationId` for aggregated results using configured aggregation.
+  - **Added:** `GET /aggregations/:aggregationId/metadata` for KPI titles, descriptions, and aggregation metadata consumed by the UI.
+
+  **Common (`@red-hat-developer-hub/backstage-plugin-scorecard-common`)**
+
+  - Types and constants aligned with the aggregation config and new API shapes.
+
+  **Frontend (`@red-hat-developer-hub/backstage-plugin-scorecard`)**
+
+  - Homepage and aggregated flows resolve cards via **`aggregationId`**, fetch metadata from the new endpoint, and keep localized threshold and error strings where translation keys exist.
+
+  **Action for adopters:** Configure aggregated scorecards with `aggregationId` values that match backend aggregation config, replace direct calls to `GET /metrics/:metricId/catalog/aggregations` with `GET /aggregations/:aggregationId` (and metadata if you need the same labels as the plugin UI).
+
+- 99aa8ff: Added support for the New Frontend System (NFS), including an alpha export for NFS apps and a new `app-next` package.
+
+### Patch Changes
+
+- 6bd7c38: Enable sorting for all other columns in entities table
+- ff005a3: add translation for the scorecard entities table status column
+- afd7a1e: Update translations for Scorecard.
+- 2667f70: Fix scorecard entity table column header Metric to Status
+- Updated dependencies [d706601]
+- Updated dependencies [55226c2]
+- Updated dependencies [243ad0a]
+- Updated dependencies [c83b206]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.0
+
 ## 2.4.0
 
 ### Minor Changes

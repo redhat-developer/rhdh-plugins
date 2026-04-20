@@ -83,6 +83,40 @@ annotations:
         - application-2
 ```
 
+To fetch all applications from a namespace, you can either omit the `applications` field or use a wildcard:
+
+```yaml
+annotations:
+  konflux-ci.dev/clusters: |
+    - cluster: cluster-name
+      namespace: namespace-name
+      applications:
+        - "*"
+```
+
+Glob patterns are also supported for partial matching:
+
+```yaml
+annotations:
+  konflux-ci.dev/clusters: |
+    - cluster: cluster-name
+      namespace: namespace-name
+      applications:
+        - "my-app-*"
+        - "*-backend"
+```
+
+> **Note:** Patterns starting with `*` (e.g., `*-backend`) **must be quoted** in YAML. An unquoted `*` at the start of a value is interpreted as a YAML alias reference, which will cause a parsing error. Always use quotes: `"*-backend"`, not `*-backend`.
+
+Or simply omit `applications` to fetch everything:
+
+```yaml
+annotations:
+  konflux-ci.dev/clusters: |
+    - cluster: cluster-name
+      namespace: namespace-name
+```
+
 ### 2. Resource Fetching Flow
 
 ```
@@ -387,6 +421,24 @@ metadata:
         namespace: namespace2
         applications:
           - app3
+spec:
+  subcomponentOf: my-component
+  type: service
+---
+# Subcomponent C - all applications from a namespace (wildcard)
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: my-component-subcomponent-c
+  description: Subcomponent C
+  title: Subcomponent C
+  annotations:
+    konflux-ci.dev/overview: 'true'
+    konflux-ci.dev/konflux: 'true'
+    konflux-ci.dev/ci: 'true'
+    konflux-ci.dev/clusters: |
+      - cluster: cluster3
+        namespace: namespace3
 spec:
   subcomponentOf: my-component
   type: service

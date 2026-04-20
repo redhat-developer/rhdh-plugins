@@ -23,11 +23,16 @@ import {
   getEntitiesPageMissingPermission,
   getEntitiesPageNoDataFound,
   getEntitiesTableHeaderLabels,
-  getMetricTitleEn,
   getSomeEntitiesNotReportingTooltip,
 } from '../utils/translationUtils';
 
 type MetricId = 'github.open_prs' | 'jira.open_issues';
+
+export type DrillDownCardLocatorOptions = {
+  aggregationId?: string;
+  cardTitle?: string;
+  cardDescription?: string;
+};
 
 function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -42,30 +47,39 @@ export class ScorecardDrillDownPage {
     this.translations = translations;
   }
 
-  async expectOnPage(metricId: MetricId) {
-    await expect(this.page).toHaveURL(
-      new RegExp(`/scorecard/metrics/${metricId.replace('.', '\\.')}`),
-    );
+  async expectOnPage(metricId: MetricId, options?: { aggregationId?: string }) {
+    const parsedMetricId = escapeRegex(metricId);
+    if (options?.aggregationId) {
+      const parsedAggregationId = escapeRegex(options.aggregationId);
+      await expect(this.page).toHaveURL(
+        new RegExp(
+          `/scorecard/aggregations/${parsedAggregationId}/metrics/${parsedMetricId}`,
+        ),
+      );
+    } else {
+      await expect(this.page).toHaveURL(
+        new RegExp(
+          `/scorecard/aggregations/${parsedMetricId}/metrics/${parsedMetricId}|/scorecard/metrics/${parsedMetricId}`,
+        ),
+      );
+    }
   }
 
-  async expectPageTitle(metricId: MetricId) {
+  async expectPageTitle(metricId: MetricId, customTitle?: string) {
     await expect(
       this.page.getByRole('heading', {
-        name: this.translations.metric[metricId].title,
+        name: customTitle ?? this.translations.metric[metricId].title,
         level: 1,
       }),
     ).toBeVisible();
   }
 
-  /** Inner article (the scorecard card); on drill-down page the card is nested inside a wrapper article. */
-  getDrillDownCard(metricId: MetricId): Locator {
-    const translatedTitle = this.translations.metric[metricId].title;
-    const enTitle = getMetricTitleEn(metricId);
-    const pattern =
-      translatedTitle === enTitle
-        ? translatedTitle
-        : new RegExp(`${escapeRegex(translatedTitle)}|${escapeRegex(enTitle)}`);
-    return this.page.locator('article').filter({ hasText: pattern });
+  getDrillDownCard(
+    metricId: MetricId,
+    options?: DrillDownCardLocatorOptions,
+  ): Locator {
+    const scorecardId = options?.aggregationId ?? metricId;
+    return this.page.getByTestId(`scorecard-homepage-card-${scorecardId}`);
   }
 
   getEntitiesTable(): Locator {
@@ -102,15 +116,24 @@ export class ScorecardDrillDownPage {
     await this.page.keyboard.press('Escape');
   }
 
-  async expectDrillDownCardSnapshot(metricId: MetricId) {
-    const card = this.getDrillDownCard(metricId);
+  async expectDrillDownCardSnapshot(
+    metricId: MetricId,
+    options?: DrillDownCardLocatorOptions,
+  ) {
+    const card = this.getDrillDownCard(metricId, options);
     await expect(card).toMatchAriaSnapshot(
-      getDrillDownCardSnapshot(this.translations, metricId),
+      getDrillDownCardSnapshot(this.translations, metricId, {
+        title: options?.cardTitle,
+        description: options?.cardDescription,
+      }),
     );
   }
 
-  async expectCardHasMissingPermission(metricId: MetricId) {
-    const card = this.getDrillDownCard(metricId);
+  async expectCardHasMissingPermission(
+    metricId: MetricId,
+    options?: DrillDownCardLocatorOptions,
+  ) {
+    const card = this.getDrillDownCard(metricId, options);
     await expect(card).toContainText(
       this.translations.errors.missingPermission,
     );
@@ -124,8 +147,11 @@ export class ScorecardDrillDownPage {
     await expect(this.page.locator('tbody')).toContainText(msg);
   }
 
-  async expectCardHasNoDataFound(metricId: MetricId) {
-    const card = this.getDrillDownCard(metricId);
+  async expectCardHasNoDataFound(
+    metricId: MetricId,
+    options?: DrillDownCardLocatorOptions,
+  ) {
+    const card = this.getDrillDownCard(metricId, options);
     await expect(card).toContainText(this.translations.errors.noDataFound);
     await expect(card).toMatchAriaSnapshot(
       getDrillDownNoDataFoundSnapshot(this.translations, metricId),

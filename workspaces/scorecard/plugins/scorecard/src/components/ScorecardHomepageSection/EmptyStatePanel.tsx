@@ -101,26 +101,24 @@ const CenterLabel = ({
 
 export const EmptyStatePanel = ({
   label,
-  metricId,
+  cardTitle,
+  cardDescription,
   tooltipContent,
   showSubheader = true,
+  dataTestId,
 }: {
   label: string;
-  metricId: string;
+  cardTitle: string;
+  cardDescription: string;
   tooltipContent: string;
   showSubheader?: boolean;
+  dataTestId?: string;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
 
   const [isLabelHovered, setIsLabelHovered] = useState(false);
   const [isInsidePieCircle, setIsInsidePieCircle] = useState(false);
-
-  const titleKey = `metric.${metricId}.title`;
-  const descriptionKey = `metric.${metricId}.description`;
-
-  const cardTitle = t(titleKey as any, {});
-  const cardDescription = t(descriptionKey as any, {});
 
   const statusConfig = getStatusConfig({
     evaluation: 'error',
@@ -137,6 +135,7 @@ export const EmptyStatePanel = ({
     <CardWrapper
       title={cardTitle}
       description={cardDescription}
+      dataTestId={dataTestId}
       {...(showSubheader
         ? {
             subheader: t('thresholds.entities', { count: 0 }),

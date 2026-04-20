@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights
 
+## 0.7.1
+
 ## 0.7.0
 
 ### Minor Changes

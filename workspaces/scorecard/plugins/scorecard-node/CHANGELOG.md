@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 2.5.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.1
+
+## 2.5.0
+
+### Minor Changes
+
+- d706601: Backstage version bump to v1.49.3
+- 55226c2: Introduces custom threshold rule icons that can be configured in `app-config.yaml`.
+
+### Patch Changes
+
+- Updated dependencies [d706601]
+- Updated dependencies [55226c2]
+- Updated dependencies [243ad0a]
+- Updated dependencies [c83b206]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.0
+
 ## 2.4.0
 
 ### Minor Changes

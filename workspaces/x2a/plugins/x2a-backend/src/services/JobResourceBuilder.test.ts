@@ -15,8 +15,7 @@
  */
 
 import { JobResourceBuilder } from './JobResourceBuilder';
-import { X2AConfig } from '../../config';
-import { JobCreateParams } from './types';
+import { X2AConfig, JobCreateParams } from './types';
 
 describe('JobResourceBuilder', () => {
   let mockConfig: X2AConfig;
@@ -410,7 +409,6 @@ describe('JobResourceBuilder', () => {
       kind: 'Job',
       name: 'job-x2a-init-abc123',
       uid: 'test-uid-123',
-      blockOwnerDeletion: true,
     };
 
     it('should include source repository credentials', () => {
@@ -681,6 +679,7 @@ describe('JobResourceBuilder', () => {
             { name: 'PHASE', value: 'init' },
             { name: 'PROJECT_ID', value: 'proj-123' },
             { name: 'PROJECT_NAME', value: 'Test Project' },
+            { name: 'PROJECT_DIR', value: 'test-project-proj-1' },
             { name: 'JOB_ID', value: 'job-123' },
             { name: 'USER', value: 'user:default/test' },
             {

@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 1.4.0
+
+### Minor Changes
+
+- ff39f9a: Add x2a-mcp-extras backend plugin exposing MCP tools for AI clients, x2a-dcr frontend plugin for RHDH 1.9 DCR OAuth consent flow, and x2a-node shared node-library. Refactor x2a-backend to use shared service refs from x2a-node via a feature loader.
+
+### Patch Changes
+
+- 1f6770f: Move project directory naming logic from bash to TypeScript Project value object
+- 5413f1d: Fix git push for new target branches by tracking branch creation state
+- Updated dependencies [ff39f9a]
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@0.2.0
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.2.1
+
+## 1.3.1
+
+### Patch Changes
+
+- cc4e98e: Removed blockOwnerDeletion: true from the ownerReference in KubeService.ts. This field is unnecessary for our use case - it only controls whether the garbage collector should block deletion of the owner (Job) until the dependent (Secret) is removed first.
+
 ## 1.3.0
 
 ### Minor Changes

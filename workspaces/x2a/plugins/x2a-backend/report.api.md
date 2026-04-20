@@ -5,10 +5,28 @@
 ```ts
 
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import { KubeServiceApi } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { kubeServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { ServiceFactory } from '@backstage/backend-plugin-api';
+import { X2ADatabaseServiceApi } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { x2aDatabaseServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 // @public
-const x2APlugin: BackendFeature;
-export default x2APlugin;
+const _default: BackendFeature;
+export default _default;
+
+// @public
+export const kubeServiceFactory: ServiceFactory<KubeServiceApi, "plugin", "singleton">;
+
+export { kubeServiceRef }
+
+// @public
+export const x2aDatabaseServiceFactory: ServiceFactory<X2ADatabaseServiceApi, "root", "singleton">;
+
+export { x2aDatabaseServiceRef }
+
+// @public
+export const x2APlugin: BackendFeature;
 
 // (No @packageDocumentation comment for this package)
 

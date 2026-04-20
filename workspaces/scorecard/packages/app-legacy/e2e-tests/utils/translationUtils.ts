@@ -34,20 +34,36 @@ export function getMetricTitleEn(
 
 function transform(messages: typeof scorecardTranslationDe.messages) {
   const result = Object.keys(messages).reduce((res, key) => {
-    // Special handling for metric keys: metric.github.open_prs.title -> metric['github.open_prs'].title
-    if (key.startsWith('metric.') && key.split('.').length >= 4) {
+    // metric.github.open_prs.title -> metric['github.open_prs'].title
+    // metric.openPrsKpi.title -> metric['openPrsKpi'].title (KPI / aggregation id)
+    if (key.startsWith('metric.')) {
       const parts = key.split('.');
-      const metricId = `${parts[1]}.${parts[2]}`;
-      const property = parts[3];
+      let metricId: string;
+      let property: string;
+      if (parts.length >= 4) {
+        metricId = `${parts[1]}.${parts[2]}`;
+        property = parts[3];
+      } else if (parts.length === 3) {
+        metricId = parts[1];
+        property = parts[2];
+      } else {
+        metricId = '';
+        property = '';
+      }
 
-      if (!res.metric) {
-        res.metric = {};
+      if (metricId && property) {
+        if (!res.metric) {
+          res.metric = {};
+        }
+        if (!res.metric[metricId]) {
+          res.metric[metricId] = {};
+        }
+        res.metric[metricId][property] = messages[key];
+        return res;
       }
-      if (!res.metric[metricId]) {
-        res.metric[metricId] = {};
-      }
-      res.metric[metricId][property] = messages[key];
-    } else {
+    }
+
+    {
       // Standard path handling for other keys
       const path = key.split('.');
       const lastIndex = path.length - 1;
@@ -289,19 +305,21 @@ export function getLastUpdatedLabel(
   return evaluateMessage(template, formattedTimestamp);
 }
 
-export function getMissingPermissionSnapshot(
+/**
+ * Homepage KPI cards use aggregationIds (e.g. openPrsKpi); labels fall back to API/config
+ * metadata in English, not `metric.github.open_prs` locale keys. Use ref copy for title
+ * / description; keep localized errors, thresholds, and entity-count strings.
+ */
+function getSomeEntitiesNotReportingLabel(
   translations: ScorecardMessages,
-  metricId: 'jira.open_issues' | 'github.open_prs',
-  entityCount: string,
-) {
-  return `
-        - article:
-          - text: ${translations.metric[metricId].title} ${entityCount}
-          - separator
-          - paragraph: ${translations.metric[metricId].description}
-          - text: "--"
-          - application: ${translations.errors.missingPermission}
-        `;
+): string {
+  const metric = translations.metric as {
+    someEntitiesNotReportingValues?: string;
+  };
+  return (
+    metric.someEntitiesNotReportingValues ??
+    scorecardMessages.metric.someEntitiesNotReportingValues
+  );
 }
 
 /** Snapshot for the scorecard card on the drill-down page when permission is missing (no entity count in UI). */
@@ -336,17 +354,32 @@ export function getDrillDownNoDataFoundSnapshot(
 
 export function getThresholdsSnapshot(
   translations: ScorecardMessages,
-  metricId: 'jira.open_issues' | 'github.open_prs',
-  entityCount: string,
-) {
+  options: {
+    drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
+    drillDownAggregationId?: string;
+    entityCount: string;
+    cardTitle: string;
+    cardDescription: string;
+  },
+): string {
+  const {
+    drillDownMetricId,
+    drillDownAggregationId,
+    entityCount,
+    cardTitle,
+    cardDescription,
+  } = options;
+  const aggregationSegment = drillDownAggregationId ?? drillDownMetricId;
+  const drillDownLinkName = getSomeEntitiesNotReportingLabel(translations);
   return `
         - article:
-          - text: ${translations.metric[metricId].title}
-          - link:
-            - /url: /scorecard/metrics/${metricId}
+          - text: ${cardTitle}
+          - link "${drillDownLinkName}":
+            - /url: /scorecard/aggregations/${aggregationSegment}/metrics/${drillDownMetricId}
             - text: ${entityCount}
+          - button
           - separator
-          - paragraph: ${translations.metric[metricId].description}
+          - paragraph: ${cardDescription}
           - paragraph: ${translations.thresholds.success}
           - paragraph: ${translations.thresholds.warning}
           - paragraph: ${translations.thresholds.error}
@@ -358,12 +391,19 @@ export function getThresholdsSnapshot(
 export function getDrillDownCardSnapshot(
   translations: ScorecardMessages,
   metricId: 'jira.open_issues' | 'github.open_prs',
+  options?: {
+    title?: string;
+    description?: string;
+  },
 ) {
+  const title = options?.title ?? translations.metric[metricId].title;
+  const description =
+    options?.description ?? translations.metric[metricId].description;
   return `
         - article:
-          - text: ${translations.metric[metricId].title}
+          - text: ${title}
           - separator
-          - paragraph: ${translations.metric[metricId].description}
+          - paragraph: ${description}
           - paragraph: ${translations.thresholds.success}
           - paragraph: ${translations.thresholds.warning}
           - paragraph: ${translations.thresholds.error}

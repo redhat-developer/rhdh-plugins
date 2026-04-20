@@ -244,6 +244,15 @@ module.exports = {
   },
   overrides: [
     {
+      // .cjs is not matched by **/*.[jt]s?(x); without this, espree defaults to ES5 and
+      // modern syntax (const, class fields) in e.g. jest-environment-*.cjs fails parsing.
+      files: ['**/*.cjs'],
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'script',
+      },
+    },
+    {
       files: ['**/*.[jt]s?(x)'],
       excludedFiles: '**/*.{test,spec}.[jt]s?(x)',
       rules: {

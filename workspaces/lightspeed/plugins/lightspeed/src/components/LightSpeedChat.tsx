@@ -307,6 +307,19 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
+    '& .pf-chatbot__jump': {
+      left: '50% !important',
+      right: 'auto !important',
+      transform: 'translateX(-50%)',
+      visibility: 'hidden',
+      pointerEvents: 'none',
+    },
+  },
+  chatbotContentHasOverflow: {
+    '& .pf-chatbot__jump': {
+      visibility: 'visible',
+      pointerEvents: 'auto',
+    },
   },
   // Inner scroll container we control: always scrollable so zoomed-in users see full content.
   chatbotContentScroll: {
@@ -336,8 +349,6 @@ const useStyles = makeStyles(theme => ({
   settingsFlat: {
     height: '100%',
     width: '100%',
-    backgroundColor:
-      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
     '&.pf-chatbot__settings-form-container': {
       background:
         'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
@@ -377,21 +388,24 @@ const useStyles = makeStyles(theme => ({
     },
   },
   mcpFullscreenLayout: {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
     minHeight: 0,
     height: '100%',
     flex: 1,
     width: '100%',
+    minWidth: 0,
+    overflow: 'hidden',
   },
   mcpChatPane: {
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
-    flex: 1,
+    width: '100%',
     minWidth: 0,
   },
   mcpSettingsPane: {
-    flex: 1,
+    width: '100%',
     minWidth: 0,
     borderLeft: `1px solid ${theme.palette.divider}`,
     backgroundColor:
@@ -399,6 +413,18 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
+  },
+  mcpCollapsedDrawerOrderFix: {
+    '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
+      {
+        order: 'unset',
+      },
+    '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
+      {
+        visibility: 'hidden',
+        opacity: 0,
+        transition: 'none !important',
+      },
   },
 }));
 
@@ -455,9 +481,11 @@ export const LightspeedChat = ({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
   const [isMcpSettingsOpen, setIsMcpSettingsOpen] = useState<boolean>(false);
+  const [chatHeaderBgColor, setChatHeaderBgColor] = useState<string>();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
   const [messageBarKey, setMessageBarKey] = useState(0);
+  const [hasChatContentOverflow, setHasChatContentOverflow] = useState(false);
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
@@ -505,6 +533,16 @@ export const LightspeedChat = ({
       setIsChatHistoryDrawerOpen(true);
     }
   }, [isMobile, isFullscreenMode]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const headerElement = document.querySelector('.pf-chatbot__header');
+    if (!headerElement) return;
+    const computedBg = window.getComputedStyle(headerElement).backgroundColor;
+    if (computedBg) {
+      setChatHeaderBgColor(computedBg);
+    }
+  }, [displayMode, isMcpSettingsOpen]);
 
   const {
     isPinningChatsEnabled,
@@ -944,6 +982,136 @@ export const LightspeedChat = ({
     };
   }, [welcomePrompts.length]);
 
+  useEffect(() => {
+    const scrollContainer = contentScrollRef.current;
+    if (!scrollContainer) {
+      setHasChatContentOverflow(false);
+      return undefined;
+    }
+
+    const getMessageBox = () =>
+      scrollContainer.querySelector(
+        '.pf-chatbot__messagebox',
+      ) as HTMLElement | null;
+
+    const messageBoxOwnsScroll = (messageBox: HTMLElement | null) => {
+      if (!messageBox || typeof window === 'undefined') {
+        return false;
+      }
+      const overflowY = window.getComputedStyle(messageBox).overflowY;
+      return (
+        overflowY === 'auto' ||
+        overflowY === 'scroll' ||
+        overflowY === 'overlay'
+      );
+    };
+
+    const getScrollTarget = () => {
+      const messageBox = getMessageBox();
+      return messageBoxOwnsScroll(messageBox) ? messageBox! : scrollContainer;
+    };
+
+    let observedScrollTarget: HTMLElement | null = getScrollTarget();
+    let rafId: number | null = null;
+    let updateScheduled = false;
+
+    const updateOverflow = () => {
+      const scrollTarget = observedScrollTarget ?? scrollContainer;
+      setHasChatContentOverflow(
+        scrollTarget.scrollHeight > scrollTarget.clientHeight + 1,
+      );
+    };
+
+    const scheduleOverflowUpdate = () => {
+      if (updateScheduled) {
+        return;
+      }
+      updateScheduled = true;
+      if (typeof requestAnimationFrame !== 'undefined') {
+        rafId = requestAnimationFrame(() => {
+          updateScheduled = false;
+          updateOverflow();
+        });
+      } else {
+        updateScheduled = false;
+        updateOverflow();
+      }
+    };
+
+    scheduleOverflowUpdate();
+
+    // Use capture so scroll events from inner messagebox also trigger updates.
+    scrollContainer.addEventListener('scroll', scheduleOverflowUpdate, {
+      passive: true,
+      capture: true,
+    });
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => scheduleOverflowUpdate())
+        : undefined;
+    resizeObserver?.observe(scrollContainer);
+    if (observedScrollTarget !== scrollContainer) {
+      resizeObserver?.observe(observedScrollTarget);
+    }
+
+    const syncObservedScrollTarget = () => {
+      const nextScrollTarget = getScrollTarget();
+      if (nextScrollTarget === observedScrollTarget) {
+        return;
+      }
+      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
+        resizeObserver?.unobserve(observedScrollTarget);
+      }
+      if (nextScrollTarget !== scrollContainer) {
+        resizeObserver?.observe(nextScrollTarget);
+      }
+      observedScrollTarget = nextScrollTarget;
+    };
+
+    const mutationObserver =
+      typeof MutationObserver !== 'undefined'
+        ? new MutationObserver(() => {
+            syncObservedScrollTarget();
+            scheduleOverflowUpdate();
+          })
+        : undefined;
+    mutationObserver?.observe(scrollContainer, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', updateOverflow);
+    }
+
+    return () => {
+      if (rafId !== null && typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(rafId);
+      }
+      scrollContainer.removeEventListener(
+        'scroll',
+        scheduleOverflowUpdate,
+        true,
+      );
+      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
+        resizeObserver?.unobserve(observedScrollTarget);
+      }
+      resizeObserver?.disconnect();
+      mutationObserver?.disconnect();
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateOverflow);
+      }
+    };
+  }, [
+    conversationId,
+    displayMode,
+    isMcpSettingsOpen,
+    messages.length,
+    welcomePrompts.length,
+  ]);
+
   const handleFilter = useCallback((value: string) => {
     setFilterValue(value);
   }, []);
@@ -1087,7 +1255,11 @@ export const LightspeedChat = ({
 
   const chatMainContent = (
     <>
-      <ChatbotContent className={classes.chatbotContent}>
+      <ChatbotContent
+        className={`${classes.chatbotContent} ${
+          hasChatContentOverflow ? classes.chatbotContentHasOverflow : ''
+        }`}
+      >
         <div ref={contentScrollRef} className={classes.chatbotContentScroll}>
           {welcomePrompts.length > 0 && (
             <div className={classes.chatbotContentSpacer} aria-hidden />
@@ -1151,7 +1323,10 @@ export const LightspeedChat = ({
   );
 
   const mcpSettingsPanel = (
-    <McpServersSettings onClose={() => setIsMcpSettingsOpen(false)} />
+    <McpServersSettings
+      onClose={() => setIsMcpSettingsOpen(false)}
+      backgroundColor={chatHeaderBgColor}
+    />
   );
 
   const mainPanelContent = (() => {
@@ -1253,15 +1428,17 @@ export const LightspeedChat = ({
       )}
       <Chatbot
         displayMode={ChatbotDisplayMode.embedded}
-        className={classes.body}
+        className={`${classes.body} ${
+          isMcpSettingsOpen && !isChatHistoryDrawerOpen
+            ? classes.mcpCollapsedDrawerOrderFix
+            : ''
+        }`}
       >
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
             <ChatbotHeaderMenu
               aria-expanded={isChatHistoryDrawerOpen}
-              onMenuToggle={() =>
-                setIsChatHistoryDrawerOpen(!isChatHistoryDrawerOpen)
-              }
+              onMenuToggle={onChatHistoryDrawerToggle}
               className={classes.headerMenu}
               tooltipContent={t('tooltip.chatHistoryMenu')}
               aria-label={t('aria.chatHistoryMenu')}

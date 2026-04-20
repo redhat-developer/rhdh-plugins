@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
-export { ScorecardHomepageCard } from './ScorecardHomepageCard';
+export {
+  ScorecardHomepageCard,
+  ScorecardHomepageCardWithProvider,
+} from './ScorecardHomepageCard';

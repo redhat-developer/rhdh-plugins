@@ -22,6 +22,7 @@ import { Content, Page } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 
+import { ScorecardQueryProvider } from '../../api';
 import { ScorecardHomepageCard } from '../ScorecardHomepageSection/ScorecardHomepageCard';
 import NotFoundState from '../Common/NotFoundState';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -30,14 +31,20 @@ import { ScorecardPageHeader } from './ScorecardPageHeader';
 import { EntitiesTable } from './EntitiesTable/EntitiesTable';
 
 export const ScorecardPage = () => {
-  const { metricId } = useParams<{ metricId?: string }>();
+  const { aggregationId = '', metricId = '' } = useParams<{
+    aggregationId: string;
+    metricId: string;
+  }>();
+
+  // TODO: Remove metricId once we deprecate it. We need to keep it for backward compatibility.
+  const resolvedMetricId = aggregationId || metricId || '';
 
   const [metricTitle, setMetricTitle] = useState<string>('');
   const [metricNotFound, setMetricNotFound] = useState<boolean>(false);
 
   const { t } = useTranslation();
 
-  const titleKey = `metric.${metricId}.title`;
+  const titleKey = `metric.${resolvedMetricId}.title`;
   const title = t(titleKey as any, {});
   const finalTitle = title === titleKey ? metricTitle : title;
 
@@ -54,7 +61,12 @@ export const ScorecardPage = () => {
   return (
     <Page themeId="home">
       <ScorecardPageHeader
-        title={finalTitle || metricId || t('entitiesPage.unknownMetric')}
+        title={
+          finalTitle ||
+          metricId ||
+          aggregationId ||
+          t('entitiesPage.unknownMetric')
+        }
       />
       <Divider />
       <Content>
@@ -70,6 +82,7 @@ export const ScorecardPage = () => {
           <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 0%' }, minWidth: 0 }}>
             <EntitiesTable
               metricId={metricId}
+              aggregationId={aggregationId}
               setMetricTitle={setMetricTitle}
               setMetricNotFound={setMetricNotFound}
             />
@@ -94,7 +107,8 @@ export const ScorecardPage = () => {
             }}
           >
             <ScorecardHomepageCard
-              metricId={metricId as string}
+              aggregationId={aggregationId}
+              metricId={metricId}
               showSubheader={false}
               showInfo={false}
             />
@@ -104,3 +118,13 @@ export const ScorecardPage = () => {
     </Page>
   );
 };
+
+/**
+ * ScorecardPage wrapped with QueryClientProvider so it works
+ * when rendered outside a tree that already has a provider (e.g. on the homepage).
+ */
+export const ScorecardPageWithProvider = () => (
+  <ScorecardQueryProvider>
+    <ScorecardPage />
+  </ScorecardQueryProvider>
+);

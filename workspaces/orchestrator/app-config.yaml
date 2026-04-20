@@ -158,6 +158,8 @@ catalog:
 dynamicPlugins:
   frontend: {}
 orchestrator:
+  # Uncomment to set the content length limit for the requests. Defaults to 102400 bytes (100kb)
+  # contentLengthLimit: 10mb
   # Uncomment and configure to use the log viewer
   # workflowLogProvider:
   #   loki:
@@ -166,6 +168,18 @@ orchestrator:
   # logStreamSelectors:
   #   - label: 'selector'
   #     value: 'value'
+  kafka:
+    # A logical identifier of an application.
+    # https://kafka.js.org/docs/configuration#client-id
+    clientId: orchestratorKafka
+    # logLevel override for the orchestrator kafka services. Defaults to INFO which is 4
+    # logLevel values based on KafkaJS values https://kafka.js.org/docs/configuration#logging
+    # logLevel: 5 // DEBUG
+    brokers:
+      - localhost:9092
+    # https://kafka.js.org/docs/producing#message-key
+    # Optional and will just default to an empty string
+    # messageKey: messageKey
   sonataFlowService:
     # uncomment the next line to use podman instead of docker
     # runtime: podman

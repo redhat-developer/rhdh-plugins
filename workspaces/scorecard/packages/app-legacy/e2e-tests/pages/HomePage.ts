@@ -20,7 +20,6 @@ import {
   getEntitiesLabel,
   getEntityCount,
   getLastUpdatedLabel,
-  getMetricTitleEn,
 } from '../utils/translationUtils';
 
 type ThresholdState = 'success' | 'warning' | 'error';
@@ -74,26 +73,16 @@ export class HomePage {
     await this.page.getByRole('button', { name: 'Save' }).click();
   }
 
-  async expectCardVisible(metricId: 'github.open_prs' | 'jira.open_issues') {
-    await expect(
-      this.page.getByText(this.translations.metric[metricId].title),
-    ).toBeVisible();
+  async expectCardVisible(instanceId: string) {
+    await expect(this.getCard(instanceId)).toBeVisible();
   }
 
-  async expectCardNotVisible(metricId: 'github.open_prs' | 'jira.open_issues') {
-    await expect(
-      this.page.getByText(this.translations.metric[metricId].title),
-    ).not.toBeVisible();
+  async expectCardNotVisible(instanceId: string) {
+    await expect(this.getCard(instanceId)).not.toBeVisible();
   }
 
-  getCard(metricId: 'github.open_prs' | 'jira.open_issues'): Locator {
-    const translatedTitle = this.translations.metric[metricId].title;
-    const enTitle = getMetricTitleEn(metricId);
-    const pattern =
-      translatedTitle === enTitle
-        ? translatedTitle
-        : new RegExp(`${escapeRegex(translatedTitle)}|${escapeRegex(enTitle)}`);
-    return this.page.locator('article').filter({ hasText: pattern });
+  getCard(instanceId: string): Locator {
+    return this.page.getByTestId(`scorecard-homepage-card-${instanceId}`);
   }
 
   async verifyThresholdTooltip(
@@ -103,7 +92,7 @@ export class HomePage {
     percentage: string,
   ) {
     const stateLabel = this.translations.thresholds[state];
-    await card.getByText(stateLabel, { exact: true }).hover();
+    await card.getByText(stateLabel, { exact: true }).first().hover();
     await expect(
       this.page.getByText(
         getEntityCount(this.translations, this.locale, entityCount),
@@ -115,25 +104,21 @@ export class HomePage {
     ).toBeVisible();
   }
 
-  async expectCardHasMissingPermission(
-    metricId: 'github.open_prs' | 'jira.open_issues',
-  ) {
-    const card = this.getCard(metricId);
+  async expectCardHasMissingPermission(instanceId: string) {
+    const card = this.getCard(instanceId);
     await expect(card).toContainText(
       this.translations.errors.missingPermission,
     );
   }
 
-  async expectCardHasNoDataFound(
-    metricId: 'github.open_prs' | 'jira.open_issues',
-  ) {
-    const card = this.getCard(metricId);
+  async expectCardHasNoDataFound(instanceId: string) {
+    const card = this.getCard(instanceId);
     await expect(card).toContainText(this.translations.errors.noDataFound);
   }
 
   async verifyLastUpdatedTooltip(card: Locator, formattedTimestamp: string) {
     const label = getLastUpdatedLabel(this.translations, formattedTimestamp);
-    const infoIcon = card.locator('[data-testid="InfoOutlinedIcon"]');
+    const infoIcon = card.getByTestId('scorecard-homepage-card-info');
     await expect(infoIcon).toBeVisible();
     await infoIcon.hover();
     await expect(this.page.getByText(label)).toBeVisible();

@@ -30,9 +30,12 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-// Mock the child components
 jest.mock('../../../hooks/useAggregatedScorecard', () => ({
   useAggregatedScorecard: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useAggregationMetadata', () => ({
+  useAggregationMetadata: jest.fn(),
 }));
 
 jest.mock('../../../hooks/useTranslation', () => ({
@@ -54,16 +57,19 @@ jest.mock('../ScorecardHomepageCardComponent', () => ({
 jest.mock('../EmptyStatePanel', () => ({
   EmptyStatePanel: ({
     label,
-    metricId,
+    cardTitle,
+    cardDescription,
     tooltipContent,
   }: {
     label: string;
-    metricId: string;
+    cardTitle: string;
+    cardDescription: string;
     tooltipContent: string;
   }) => (
     <div data-testid="empty-state-panel">
       <div data-testid="empty-state-label">{label}</div>
-      <div data-testid="metric-id">{metricId}</div>
+      <div data-testid="card-title">{cardTitle}</div>
+      <div data-testid="card-description">{cardDescription}</div>
       <div data-testid="tooltip-content">{tooltipContent}</div>
     </div>
   ),
@@ -72,6 +78,9 @@ jest.mock('../EmptyStatePanel', () => ({
 const {
   useAggregatedScorecard,
 } = require('../../../hooks/useAggregatedScorecard');
+const {
+  useAggregationMetadata,
+} = require('../../../hooks/useAggregationMetadata');
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <ThemeProvider theme={createTheme()}>{children}</ThemeProvider>
@@ -85,6 +94,7 @@ const mockScorecard: AggregatedMetricResult = {
     description: 'Open PR count',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     total: 8,
@@ -97,12 +107,100 @@ const mockScorecard: AggregatedMetricResult = {
 describe('ScorecardHomepageCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    useAggregationMetadata.mockReturnValue({
+      data: {
+        title: 'Jira Open Issues KPI',
+        description: 'KPI description',
+        type: 'number',
+        history: true,
+        aggregationType: 'statusGrouped',
+      },
+      isLoading: false,
+      error: undefined,
+    });
   });
 
   it('should render loading spinner when data is loading', () => {
     useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: undefined,
-      loadingData: true,
+      data: undefined,
+      isLoading: true,
+      error: undefined,
+    });
+
+    render(
+      <ScorecardHomepageCard
+        metricId="github.open_prs"
+        aggregationId="openPrsKpi"
+      />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
+
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+
+  it('should treat empty aggregationId as unset and pass metricId to useAggregatedScorecard', () => {
+    useAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: undefined,
+    });
+
+    render(
+      <ScorecardHomepageCard metricId="github.open_prs" aggregationId="" />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
+
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'github.open_prs',
+    });
+  });
+
+  it('should prefer non-empty aggregationId over metricId for useAggregatedScorecard', () => {
+    useAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: undefined,
+    });
+
+    render(
+      <ScorecardHomepageCard
+        metricId="metric.fallback"
+        aggregationId="agg.primary"
+      />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
+
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'agg.primary',
+    });
+  });
+
+  it('should pass only aggregationId to useAggregatedScorecard when metricId is omitted', () => {
+    useAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: undefined,
+    });
+
+    render(<ScorecardHomepageCard aggregationId="kpi.only" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'kpi.only',
+    });
+  });
+
+  it('should pass only metricId to useAggregatedScorecard when aggregationId is omitted', () => {
+    useAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: true,
       error: undefined,
     });
 
@@ -110,23 +208,31 @@ describe('ScorecardHomepageCard', () => {
       wrapper: TestWrapper,
     });
 
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'github.open_prs',
+    });
   });
 
   it('should render empty state panel when NotAllowedError occurs', () => {
     useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: undefined,
-      loadingData: false,
+      data: undefined,
+      isLoading: false,
       error: new Error('NotAllowedError: missing permission'),
     });
 
-    render(<ScorecardHomepageCard metricId="jira.open_issues" />, {
-      wrapper: TestWrapper,
-    });
+    render(
+      <ScorecardHomepageCard
+        metricId="jira.open_issues"
+        aggregationId="openIssuesKpi"
+      />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
 
     expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
-    expect(screen.getByTestId('metric-id')).toHaveTextContent(
-      'jira.open_issues',
+    expect(screen.getByTestId('card-title')).toHaveTextContent(
+      'Jira Open Issues KPI',
     );
     expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
       'errors.missingPermission',
@@ -136,16 +242,22 @@ describe('ScorecardHomepageCard', () => {
     );
   });
 
-  it('should render empty state panel for non-permission errors', () => {
+  it('should render response error panel for non-permission errors', () => {
     useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: undefined,
-      loadingData: false,
+      data: undefined,
+      isLoading: false,
       error: new Error('Something went wrong'),
     });
 
-    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
-      wrapper: TestWrapper,
-    });
+    render(
+      <ScorecardHomepageCard
+        metricId="github.open_prs"
+        aggregationId="openPrsKpi"
+      />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
 
     expect(screen.getByTestId('response-error-panel')).toBeInTheDocument();
     expect(screen.getByTestId('response-error-panel')).toHaveTextContent(
@@ -155,14 +267,20 @@ describe('ScorecardHomepageCard', () => {
 
   it('should render empty state panel when authentication error occurs', () => {
     useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: undefined,
-      loadingData: false,
+      data: undefined,
+      isLoading: false,
       error: new Error('AuthenticationError: User entity reference not found'),
     });
 
-    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
-      wrapper: TestWrapper,
-    });
+    render(
+      <ScorecardHomepageCard
+        metricId="github.open_prs"
+        aggregationId="openPrsKpi"
+      />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
 
     expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
     expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
@@ -175,14 +293,20 @@ describe('ScorecardHomepageCard', () => {
 
   it('should render empty state panel when user entity is not found in catalog', () => {
     useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: undefined,
-      loadingData: false,
+      data: undefined,
+      isLoading: false,
       error: new Error('NotFoundError: User entity not found in catalog'),
     });
 
-    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
-      wrapper: TestWrapper,
-    });
+    render(
+      <ScorecardHomepageCard
+        metricId="github.open_prs"
+        aggregationId="openPrsKpi"
+      />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
 
     expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
     expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
@@ -193,27 +317,34 @@ describe('ScorecardHomepageCard', () => {
     );
   });
 
-  it('should render empty state panel when aggregation data is found', () => {
+  it('should render empty state panel when aggregation total is zero', () => {
     useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: {
+      data: {
         ...mockScorecard,
         result: {
           total: 0,
           values: [],
           timestamp: '2024-01-01T00:00:00Z',
+          thresholds: DEFAULT_NUMBER_THRESHOLDS,
         },
       },
-      loadingData: false,
+      isLoading: false,
       error: undefined,
     });
 
-    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
-      wrapper: TestWrapper,
-    });
+    render(
+      <ScorecardHomepageCard
+        metricId="github.open_prs"
+        aggregationId="openPrsKpi"
+      />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
 
     expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
-    expect(screen.getByTestId('metric-id')).toHaveTextContent(
-      'github.open_prs',
+    expect(screen.getByTestId('card-title')).toHaveTextContent(
+      'GitHub open PRs',
     );
     expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
       'errors.noDataFound',
@@ -225,14 +356,20 @@ describe('ScorecardHomepageCard', () => {
 
   it('should render scorecard homepage card when data loads successfully', () => {
     useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: mockScorecard,
-      loadingData: false,
+      data: mockScorecard,
+      isLoading: false,
       error: undefined,
     });
 
-    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
-      wrapper: TestWrapper,
-    });
+    render(
+      <ScorecardHomepageCard
+        metricId="github.open_prs"
+        aggregationId="openPrsKpi"
+      />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
 
     expect(screen.getByTestId('scorecard-homepage-card')).toBeInTheDocument();
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();

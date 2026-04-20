@@ -179,7 +179,29 @@ export const invalidThresholdResponse = [
   },
 ];
 
-// Aggregated scorecard responses (10 GitHub entities, 10 Jira entities)
+export const notAllowedAggregationErrorBody = {
+  error: { name: 'NotAllowedError', message: 'Permission denied' },
+};
+
+export const openPrsKpiMetadataResponse = {
+  title: 'GitHub open PRs',
+  description:
+    'Current count of open Pull Requests for a given GitHub repository.',
+  type: 'number',
+  history: true,
+  aggregationType: 'statusGrouped',
+};
+
+export const openIssuesKpiMetadataResponse = {
+  title: 'Jira open blocking tickets',
+  description:
+    'Highlights the number of critical, blocking issues that are currently open in Jira.',
+  type: 'number',
+  history: true,
+  aggregationType: 'statusGrouped',
+};
+
+// Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
 /** Response for GET /api/scorecard/metrics?metricIds=jira.open_issues (metric metadata only). */
 export const jiraMetricMetadataResponse = {
   metrics: [
@@ -203,6 +225,7 @@ export const githubAggregatedResponse = {
       'Current count of open Pull Requests for a given GitHub repository.',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     values: [
@@ -222,9 +245,10 @@ export const jiraAggregatedResponse = {
   metadata: {
     title: 'Jira open blocking tickets',
     description:
-      'Highlights the number of issues that are currently open in Jira.',
+      'Highlights the number of critical, blocking issues that are currently open in Jira.',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     values: [
@@ -247,6 +271,7 @@ export const emptyJiraAggregatedResponse = {
       'Highlights the number of critical, blocking issues that are currently open in Jira.',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     total: 0,
@@ -269,6 +294,7 @@ export const emptyGithubAggregatedResponse = {
       'Current count of open Pull Requests for a given GitHub repository.',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     total: 0,

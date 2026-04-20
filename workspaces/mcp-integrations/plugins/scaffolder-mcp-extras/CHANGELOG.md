@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras
 
+## 0.4.1
+
+### Patch Changes
+
+- b337751: Upgrade workspace to Backstage 1.49.4
+
 ## 0.4.0
 
 ### Minor Changes

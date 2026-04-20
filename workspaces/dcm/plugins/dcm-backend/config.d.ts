@@ -39,18 +39,16 @@ export interface Config {
 
     /**
      * SSO client ID used to obtain a bearer token for upstream API calls.
-     * Leave empty to disable SSO token exchange.
      *
      * @visibility secret
      */
-    clientId?: string;
+    clientId: string;
 
     /**
      * SSO client secret used to obtain a bearer token for upstream API calls.
-     * Leave empty to disable SSO token exchange.
      *
      * @visibility secret
      */
-    clientSecret?: string;
+    clientSecret: string;
   };
 }

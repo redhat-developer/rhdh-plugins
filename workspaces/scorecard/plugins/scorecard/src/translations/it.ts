@@ -50,6 +50,8 @@ const scorecardTranslationIt = createTranslationMessages({
     // Error messages
     'errors.entityMissingProperties':
       'Entità priva delle proprietà richieste per la ricerca nella scheda punteggio',
+    'errors.missingAggregationId':
+      'La scheda di valutazione non è configurata correttamente; la proprietà ID aggregazione (o ID metrica) non è stata specificata',
     'errors.invalidApiResponse':
       "Formato di risposta non valido dall'API della scheda punteggio",
     'errors.fetchError':

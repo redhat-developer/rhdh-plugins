@@ -17,6 +17,7 @@
 import {
   createPermissionResourceRef,
   createPermissionRule,
+  type PermissionRule,
 } from '@backstage/plugin-permission-node';
 import { z } from 'zod';
 import {
@@ -43,6 +44,8 @@ export const scorecardMetricPermissionResourceRef = createPermissionResourceRef<
   resourceType: RESOURCE_TYPE_SCORECARD_METRIC,
 });
 
+type HasMetricIdParams = { metricIds?: string[] | undefined };
+
 const hasMetricId = createPermissionRule({
   name: 'HAS_METRIC_ID',
   description: 'Should allow users to access metrics with specified metric IDs',
@@ -55,12 +58,20 @@ const hasMetricId = createPermissionRule({
       .optional()
       .describe('List of metric IDs to match on'),
   }),
-  apply: (metric: Metric, { metricIds }) => {
+  apply: (metric: Metric, { metricIds }: HasMetricIdParams) => {
     return metricIds && metricIds.length > 0
       ? metricIds.includes(metric.id)
       : true;
   },
-  toQuery: ({ metricIds }) => ({ key: 'metricId', values: metricIds }),
-});
+  toQuery: ({ metricIds }: HasMetricIdParams) => ({
+    key: 'metricId',
+    values: metricIds,
+  }),
+} as any) as unknown as PermissionRule<
+  Metric,
+  ScorecardFilter,
+  typeof RESOURCE_TYPE_SCORECARD_METRIC,
+  HasMetricIdParams
+>;
 
 export const rules = { hasMetricId };

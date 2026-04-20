@@ -1,3 +1,4 @@
 playwright.config.ts
+e2e-tests/
 !.eslintrc.js
 !.prettierrc.js

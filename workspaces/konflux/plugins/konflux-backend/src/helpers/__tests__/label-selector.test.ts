@@ -144,5 +144,45 @@ describe('label-selector', () => {
 
       expect(result).toBe(`${PipelineRunLabel.APPLICATION}=app1`);
     });
+
+    it('should skip application label selector when wildcard is used', () => {
+      const combination = createMockCombination({ applications: ['*'] });
+      const filters = createMockFilters();
+
+      const result = buildLabelSelector('pipelineruns', combination, filters);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should only include component filter when wildcard is used with component', () => {
+      const combination = createMockCombination({ applications: ['*'] });
+      const filters = createMockFilters({ component: 'comp1' });
+
+      const result = buildLabelSelector('pipelineruns', combination, filters);
+
+      expect(result).toBe(`${PipelineRunLabel.COMPONENT}=comp1`);
+    });
+
+    it('should skip application label selector when glob pattern is used', () => {
+      const combination = createMockCombination({
+        applications: ['app-*'],
+      });
+      const filters = createMockFilters();
+
+      const result = buildLabelSelector('pipelineruns', combination, filters);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should skip application label selector when mix of exact and glob patterns', () => {
+      const combination = createMockCombination({
+        applications: ['app1', '*-backend'],
+      });
+      const filters = createMockFilters();
+
+      const result = buildLabelSelector('pipelineruns', combination, filters);
+
+      expect(result).toBeUndefined();
+    });
   });
 });

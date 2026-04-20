@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import {
   ErrorPanel,
@@ -29,7 +30,8 @@ import {
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
 
-import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import TablePagination from '@mui/material/TablePagination';
 
 import {
@@ -74,6 +76,20 @@ const makeSelectItemsFromProcessInstanceValues = (t: any): SelectItem[] => [
 
 export const WorkflowRunsTabContent = () => {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const eventTriggered = searchParams.get('eventTriggered') === 'true';
+  const [showEventAlert, setShowEventAlert] = useState(eventTriggered);
+
+  useEffect(() => {
+    setShowEventAlert(eventTriggered);
+  }, [eventTriggered]);
+
+  const handleCloseEventAlert = () => {
+    setShowEventAlert(false);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('eventTriggered');
+    setSearchParams(nextParams, { replace: true });
+  };
 
   const statuses = makeSelectItemsFromProcessInstanceValues(t);
   const started = [
@@ -355,87 +371,120 @@ export const WorkflowRunsTabContent = () => {
   return error ? (
     <ErrorPanel error={error} />
   ) : (
-    <Grid container item xs={12} spacing={2}>
-      <Grid item>
-        <Selector
-          label={t('table.filters.status')}
-          items={statuses}
-          onChange={value_ => {
-            setStatusSelectorValue(value_);
-            setPage(0);
-          }}
-          selected={statusSelectorValue}
-        />
-        <Selector
-          label={t('table.filters.started')}
-          items={started}
-          onChange={value_ => {
-            setStartedSelectorValue(value_);
-            setPage(0);
-          }}
-          selected={startedSelectorValue}
-        />
-      </Grid>
-      <Grid item xs style={{ flexGrow: 1 }}>
-        <InfoCard
-          noPadding
-          title={
-            workflowId ? (
-              <Trans
-                message="table.title.allWorkflowRuns"
-                params={{ count: data.length }}
-              />
-            ) : (
-              <Trans
-                message="table.title.allRuns"
-                params={{ count: data.length }}
-              />
-            )
-          }
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        width: '100%',
+        maxWidth: '100%',
+      }}
+    >
+      {showEventAlert && (
+        <Alert
+          severity="info"
+          onClose={handleCloseEventAlert}
+          sx={{ width: '100%', boxSizing: 'border-box' }}
         >
-          <OverrideBackstageTable
-            removeOutline
-            isLoading={loading}
-            columns={columns}
-            data={data}
-            options={{
-              paging: false,
+          {t('run.messages.eventTriggered')}
+        </Alert>
+      )}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: 'flex-start',
+          gap: 2,
+          width: '100%',
+        }}
+      >
+        <Box sx={{ flexShrink: 0 }}>
+          <Selector
+            label={t('table.filters.status')}
+            items={statuses}
+            onChange={value_ => {
+              setStatusSelectorValue(value_);
+              setPage(0);
             }}
-            onOrderChange={(
-              orderBy_: number,
-              orderDirection_: 'asc' | 'desc',
-            ) => {
-              const field = columns[orderBy_].field;
-              if (!field) {
-                throw new Error(`Failed to find column number ${orderBy_}`);
-              }
-              setOrderByField(field);
-              setOrderDirection(orderDirection_);
-            }}
-            components={{
-              Toolbar: () => <></>, // this removes the search filter, which isn't applicable for most fields
-            }}
+            selected={statusSelectorValue}
           />
-          {enablePaging && (
-            <TablePagination
-              component="div"
-              count={-1}
-              page={page}
-              onPageChange={(_, page_) => setPage(page_)}
-              onRowsPerPageChange={e => {
-                setPageSize(parseInt(e.target.value, 10));
-                setPage(0);
+          <Selector
+            label={t('table.filters.started')}
+            items={started}
+            onChange={value_ => {
+              setStartedSelectorValue(value_);
+              setPage(0);
+            }}
+            selected={startedSelectorValue}
+          />
+        </Box>
+        <Box
+          sx={{
+            flex: '1 1 auto',
+            minWidth: 0,
+            width: { xs: '100%', sm: 'auto' },
+          }}
+        >
+          <InfoCard
+            noPadding
+            title={
+              workflowId ? (
+                <Trans
+                  message="table.title.allWorkflowRuns"
+                  params={{ count: data.length }}
+                />
+              ) : (
+                <Trans
+                  message="table.title.allRuns"
+                  params={{ count: data.length }}
+                />
+              )
+            }
+          >
+            <OverrideBackstageTable
+              removeOutline
+              isLoading={loading}
+              columns={columns}
+              data={data}
+              options={{
+                paging: false,
               }}
-              rowsPerPage={pageSize}
-              labelDisplayedRows={({ from }) => {
-                return `${from}-${from + data.length - 1}`;
+              onOrderChange={(
+                orderBy_: number,
+                orderDirection_: 'asc' | 'desc',
+              ) => {
+                const field = columns[orderBy_].field;
+                if (!field) {
+                  throw new Error(`Failed to find column number ${orderBy_}`);
+                }
+                setOrderByField(field);
+                setOrderDirection(orderDirection_);
               }}
-              rowsPerPageOptions={[5, 10, 20]}
-              nextIconButtonProps={{ disabled: !hasNextPage }}
+              components={{
+                Toolbar: () => <></>, // this removes the search filter, which isn't applicable for most fields
+              }}
             />
-          )}
-        </InfoCard>
-      </Grid>
-    </Grid>
+            {enablePaging && (
+              <TablePagination
+                component="div"
+                count={-1}
+                page={page}
+                onPageChange={(_, page_) => setPage(page_)}
+                onRowsPerPageChange={e => {
+                  setPageSize(parseInt(e.target.value, 10));
+                  setPage(0);
+                }}
+                rowsPerPage={pageSize}
+                labelDisplayedRows={({ from }) => {
+                  return `${from}-${from + data.length - 1}`;
+                }}
+                rowsPerPageOptions={[5, 10, 20]}
+                nextIconButtonProps={{ disabled: !hasNextPage }}
+              />
+            )}
+          </InfoCard>
+        </Box>
+      </Box>
+    </Box>
   );
 };

@@ -57,6 +57,7 @@ import {
 
 import { WorkflowLogsProvidersRegistry } from '../providers/WorkflowLogsProvidersRegistry';
 import { RouterOptions } from '../routerWrapper';
+import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { buildPagination } from '../types/pagination';
 import { V2 } from './api/v2';
 import { DataIndexService } from './DataIndexService';
@@ -201,7 +202,18 @@ export async function createBackendRouter(
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
     permissions: orchestratorPermissions,
   });
-  router.use(express.json());
+  const contentLengthLimit = config.getOptionalString(
+    'orchestrator.contentLengthLimit',
+  );
+  /**
+   * Set the content length limit for the requests.
+   * Defaults to 102400 bytes (100kb)
+   *
+   * There is a possiblity that some workflows will have a very large payload, which could cause a 413 error.
+   * Increasing this value will allow larger payloads to be processed.
+   *
+   */
+  router.use(express.json({ limit: contentLengthLimit }));
   router.use(permissionsIntegrationRouter);
   router.use('/workflows', express.text());
   router.get('/health', (_, response) => {
@@ -259,8 +271,14 @@ function initPublicServices(
   workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry,
 ): PublicServices {
   const dataIndexUrl = config.getString('orchestrator.dataIndexService.url');
+  const orchestratorKafka: OrchestratorKafkaServiceOptions | undefined =
+    config.getOptional('orchestrator.kafka');
   const dataIndexService = new DataIndexService(dataIndexUrl, logger);
-  const sonataFlowService = new SonataFlowService(dataIndexService, logger);
+  const sonataFlowService = new SonataFlowService(
+    dataIndexService,
+    logger,
+    orchestratorKafka,
+  );
 
   const workflowCacheService = new WorkflowCacheService(
     logger,
