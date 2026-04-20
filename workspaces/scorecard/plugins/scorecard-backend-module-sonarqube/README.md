@@ -8,13 +8,13 @@ Adds SonarQube / SonarCloud metrics to the scorecard plugin.
 | ---------------------------------- | ------- | ------------------------------------------------ |
 | `sonarqube.quality_gate`           | boolean | Whether the project passes its quality gate      |
 | `sonarqube.open_issues`            | number  | Count of open issues (OPEN, CONFIRMED, REOPENED) |
-| `sonarqube.security_rating`        | number  | Security rating (A=1, B=2, C=3, D=4, E=5)        |
+| `sonarqube.security_rating`        | number  | Security rating                                  |
 | `sonarqube.security_issues`        | number  | Count of open security vulnerabilities           |
-| `sonarqube.security_review_rating` | number  | Security review rating (A=1, B=2, C=3, D=4, E=5) |
+| `sonarqube.security_review_rating` | number  | Security review rating                           |
 | `sonarqube.security_hotspots`      | number  | Count of security hotspots to review             |
-| `sonarqube.reliability_rating`     | number  | Reliability rating (A=1, B=2, C=3, D=4, E=5)     |
+| `sonarqube.reliability_rating`     | number  | Reliability rating                               |
 | `sonarqube.reliability_issues`     | number  | Count of open bugs                               |
-| `sonarqube.maintainability_rating` | number  | Maintainability rating (A=1, B=2, C=3, D=4, E=5) |
+| `sonarqube.maintainability_rating` | number  | Maintainability rating                           |
 | `sonarqube.maintainability_issues` | number  | Count of open code smells                        |
 | `sonarqube.code_coverage`          | number  | Overall code coverage percentage                 |
 | `sonarqube.code_duplications`      | number  | Percentage of duplicated lines                   |

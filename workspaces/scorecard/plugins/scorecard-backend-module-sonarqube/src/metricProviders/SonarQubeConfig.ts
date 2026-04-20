@@ -106,7 +106,7 @@ export const SONARQUBE_METRIC_CONFIG: Record<
   security_rating: {
     id: 'sonarqube.security_rating',
     title: 'SonarQube Security Rating',
-    description: 'SonarQube security rating (A=1, B=2, C=3, D=4, E=5).',
+    description: 'SonarQube security rating.',
   },
   security_issues: {
     id: 'sonarqube.security_issues',
@@ -116,7 +116,7 @@ export const SONARQUBE_METRIC_CONFIG: Record<
   security_review_rating: {
     id: 'sonarqube.security_review_rating',
     title: 'SonarQube Security Review Rating',
-    description: 'SonarQube security review rating (A=1, B=2, C=3, D=4, E=5).',
+    description: 'SonarQube security review rating.',
   },
   security_hotspots: {
     id: 'sonarqube.security_hotspots',
@@ -126,7 +126,7 @@ export const SONARQUBE_METRIC_CONFIG: Record<
   reliability_rating: {
     id: 'sonarqube.reliability_rating',
     title: 'SonarQube Reliability Rating',
-    description: 'SonarQube reliability rating (A=1, B=2, C=3, D=4, E=5).',
+    description: 'SonarQube reliability rating.',
   },
   reliability_issues: {
     id: 'sonarqube.reliability_issues',
@@ -136,7 +136,7 @@ export const SONARQUBE_METRIC_CONFIG: Record<
   maintainability_rating: {
     id: 'sonarqube.maintainability_rating',
     title: 'SonarQube Maintainability Rating',
-    description: 'SonarQube maintainability rating (A=1, B=2, C=3, D=4, E=5).',
+    description: 'SonarQube maintainability rating.',
   },
   maintainability_issues: {
     id: 'sonarqube.maintainability_issues',
@@ -186,9 +186,36 @@ export const SONARQUBE_BOOLEAN_THRESHOLDS: ThresholdConfig = {
 
 const RATING_THRESHOLDS: ThresholdConfig = {
   rules: [
-    { key: 'success', expression: '<2' },
-    { key: 'warning', expression: '2-3' },
-    { key: 'error', expression: '>3' },
+    {
+      key: 'A',
+      expression: '==1',
+      color: 'success.main',
+      icon: 'scorecardSuccessStatusIcon',
+    },
+    {
+      key: 'B',
+      expression: '==2',
+      color: '#bdcb28',
+      icon: 'scorecardSuccessStatusIcon',
+    },
+    {
+      key: 'C',
+      expression: '==3',
+      color: 'warning.main',
+      icon: 'scorecardWarningStatusIcon',
+    },
+    {
+      key: 'D',
+      expression: '==4',
+      color: '#cf5813',
+      icon: 'scorecardErrorStatusIcon',
+    },
+    {
+      key: 'E',
+      expression: '==5',
+      color: 'error.main',
+      icon: 'scorecardErrorStatusIcon',
+    },
   ],
 };
 

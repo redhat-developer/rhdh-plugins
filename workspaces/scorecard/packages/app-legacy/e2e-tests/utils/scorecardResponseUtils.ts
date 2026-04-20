@@ -242,9 +242,16 @@ function sonarqubeNumberMetric(
 }
 
 const ratingRules = [
-  { key: 'success', expression: '<2' },
-  { key: 'warning', expression: '2-3' },
-  { key: 'error', expression: '>3' },
+  { key: 'a', expression: '<2' },
+  { key: 'b', expression: '2-3' },
+  { key: 'c', expression: '>3' },
+  { key: 'd', expression: '>3' },
+  { key: 'e', expression: '>3' },
+];
+
+const securityRules = [
+  { key: 'success', expression: '==0' },
+  { key: 'error', expression: '>=1' },
 ];
 
 const issueRules = [
@@ -293,7 +300,7 @@ export const sonarqubeScorecardResponse = [
   sonarqubeNumberMetric(
     'sonarqube.security_rating',
     'SonarQube Security Rating',
-    'SonarQube security rating (A=1, B=2, C=3, D=4, E=5).',
+    'SonarQube security rating.',
     1,
     ratingRules,
     'success',
@@ -303,13 +310,13 @@ export const sonarqubeScorecardResponse = [
     'SonarQube Security Issues',
     'Count of open security vulnerabilities in SonarQube.',
     0,
-    issueRules,
+    securityRules,
     'success',
   ),
   sonarqubeNumberMetric(
     'sonarqube.security_review_rating',
     'SonarQube Security Review Rating',
-    'SonarQube security review rating (A=1, B=2, C=3, D=4, E=5).',
+    'SonarQube security review rating.',
     1,
     ratingRules,
     'success',
@@ -325,7 +332,7 @@ export const sonarqubeScorecardResponse = [
   sonarqubeNumberMetric(
     'sonarqube.reliability_rating',
     'SonarQube Reliability Rating',
-    'SonarQube reliability rating (A=1, B=2, C=3, D=4, E=5).',
+    'SonarQube reliability rating.',
     1,
     ratingRules,
     'success',
@@ -341,7 +348,7 @@ export const sonarqubeScorecardResponse = [
   sonarqubeNumberMetric(
     'sonarqube.maintainability_rating',
     'SonarQube Maintainability Rating',
-    'SonarQube maintainability rating (A=1, B=2, C=3, D=4, E=5).',
+    'SonarQube maintainability rating.',
     1,
     ratingRules,
     'success',
