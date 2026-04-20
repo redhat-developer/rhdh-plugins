@@ -143,8 +143,9 @@ const lightspeedTranslationJa = createTranslationMessages({
     'permission.notebooks.goBack': '戻る',
     'lcore.notConfigured.title': 'LLM に接続して始める',
     'lcore.notConfigured.description':
-      'Lightspeed の AI 機能を使用するには、Llama Stack のデプロイに OpenAI 互換の LLM を登録する必要があります。',
-    'lcore.notConfigured.llamaStackDocs': 'Llama Stack を構成',
+      'Lightspeed を使用するには登録済みの LLM が必要です。セットアップを完了するには、組織のプラットフォーム管理者にお問い合わせください。',
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Developer Lightspeed を構成中',
     'lcore.notConfigured.backendDocs': 'Lightspeed バックエンドのセットアップ',
     'lcore.loadError.title': 'モデルを読み込めませんでした',
     'lcore.loadError.description':

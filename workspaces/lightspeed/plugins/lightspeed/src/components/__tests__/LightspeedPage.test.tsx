@@ -229,6 +229,11 @@ describe('LightspeedPage', () => {
     expect(
       screen.getByRole('heading', { name: 'Connect an LLM to get started' }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Lightspeed requires a registered LLM. Contact your organization's platform administrator to complete the setup.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it('should show models load error state with retry', async () => {

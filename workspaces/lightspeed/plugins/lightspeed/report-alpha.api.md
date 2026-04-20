@@ -260,7 +260,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'permission.notebooks.goBack': string;
     readonly 'lcore.notConfigured.title': string;
     readonly 'lcore.notConfigured.description': string;
-    readonly 'lcore.notConfigured.llamaStackDocs': string;
+    readonly 'lcore.notConfigured.developerLightspeedDocs': string;
     readonly 'lcore.notConfigured.backendDocs': string;
     readonly 'lcore.loadError.title': string;
     readonly 'lcore.loadError.description': string;

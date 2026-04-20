@@ -145,8 +145,9 @@ const lightspeedTranslationIt = createTranslationMessages({
     'permission.notebooks.goBack': 'Torna indietro',
     'lcore.notConfigured.title': 'Collega un LLM per iniziare',
     'lcore.notConfigured.description':
-      'Per usare le funzionalità di intelligenza artificiale di Lightspeed, devi registrare un LLM compatibile con OpenAI nella tua distribuzione Llama Stack.',
-    'lcore.notConfigured.llamaStackDocs': 'Configura Llama Stack',
+      "Lightspeed richiede un LLM registrato. Contattare l'amministratore della piattaforma dell'organizzazione per completare la configurazione.",
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Configurazione di Developer Lightspeed',
     'lcore.notConfigured.backendDocs': 'Configurazione backend Lightspeed',
     'lcore.loadError.title': 'Impossibile caricare i modelli',
     'lcore.loadError.description':

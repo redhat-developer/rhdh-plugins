@@ -28,7 +28,8 @@ import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 
 import { useTranslation } from '../hooks/useTranslation';
 
-const LLAMA_STACK_DOCS_URL = 'https://github.com/llamastack/llama-stack';
+const LLAMA_STACK_CONFIGURE_DOCS_URL =
+  'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/interacting_with_red_hat_developer_lightspeed_for_red_hat_developer_hub/developer-lightspeed#proc-installing-and-configuring-lightspeed_developer-lightspeed';
 const LIGHTSPEED_BACKEND_README_URL =
   'https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md';
 
@@ -145,9 +146,9 @@ export const LcoreNotConfiguredEmptyState = () => {
             color="primary"
             target="_blank"
             rel="noopener noreferrer"
-            href={LLAMA_STACK_DOCS_URL}
+            href={LLAMA_STACK_CONFIGURE_DOCS_URL}
           >
-            {t('lcore.notConfigured.llamaStackDocs')} &nbsp;{' '}
+            {t('lcore.notConfigured.developerLightspeedDocs')} &nbsp;{' '}
             <OpenInNewIcon fontSize="small" aria-hidden />
           </Button>
           <Link

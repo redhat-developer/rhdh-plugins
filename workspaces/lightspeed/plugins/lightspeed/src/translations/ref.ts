@@ -148,8 +148,9 @@ export const lightspeedMessages = {
   // LCORE / LLM (no models registered)
   'lcore.notConfigured.title': 'Connect an LLM to get started',
   'lcore.notConfigured.description':
-    "To use Lightspeed's AI capabilities, you'll need to register an OpenAI-compatible LLM with your Llama Stack deployment.",
-  'lcore.notConfigured.llamaStackDocs': 'Configure Llama Stack',
+    "Lightspeed requires a registered LLM. Contact your organization's platform administrator to complete the setup.",
+  'lcore.notConfigured.developerLightspeedDocs':
+    'Configuring Developer Lightspeed',
   'lcore.notConfigured.backendDocs': 'Lightspeed Backend Setup',
   'lcore.loadError.title': 'Could not load models',
   'lcore.loadError.description':
