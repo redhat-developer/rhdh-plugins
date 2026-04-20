@@ -21,8 +21,25 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Copy the entire workspace so yarn can resolve all workspace packages.
-COPY . .
+# Copy only the files needed to install dependencies and build the app.
+# Sensitive files (*.local.yaml, .env) and dev-only files (scripts/, docs/,
+# examples/, coverage/, .changeset/) are intentionally omitted.
+
+# Yarn workspace manifests, lockfile and Berry configuration
+COPY package.json yarn.lock .yarnrc.yml backstage.json ./
+COPY .yarn ./.yarn
+
+# TypeScript and ESLint configuration
+COPY tsconfig.json .eslintrc.js .eslintignore ./
+
+# Source packages and plugins
+COPY packages/ ./packages/
+COPY plugins/ ./plugins/
+
+# app-config.yaml is read by Webpack during the frontend build to inject
+# config values into the React bundle. Only the base config is needed here;
+# app-config.production.yaml is applied at runtime in the production stage.
+COPY app-config.yaml ./
 
 # YARN_ENABLE_SCRIPTS=0 prevents lifecycle hooks (postinstall etc.) from running.
 # The workspace root postinstall does `cd ../../ && yarn install` which is only
