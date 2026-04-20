@@ -16,8 +16,13 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 
+import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { DataIndexService } from './DataIndexService';
 import { SonataFlowService } from './SonataFlowService';
+
+jest.mock('node:crypto', () => ({
+  randomUUID: () => '12345',
+}));
 
 describe('SonataFlowService', () => {
   let loggerMock: jest.Mocked<LoggerService>;
@@ -155,6 +160,112 @@ describe('SonataFlowService', () => {
       );
     });
   });
+
+  describe('executeWorkflowAsCloudEvent', () => {
+    const runErrorTestAsCloudEventNoKafkaImplementation =
+      async (): Promise<void> => {
+        await sonataFlowService.executeWorkflowAsCloudEvent({
+          definitionId,
+          workflowSource: 'workflowSource',
+          workflowEventType: 'workflowEventType',
+          contextAttribute: 'contextAttribute',
+        });
+      };
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return the an error when no orchestrator kafka config is implemented', async () => {
+      let result;
+      try {
+        await runErrorTestAsCloudEventNoKafkaImplementation();
+      } catch (error: any) {
+        result = error;
+      }
+
+      expect(result).toBeDefined();
+      expect(result.message).toEqual(
+        'No Orchestrator kafka implementation added',
+      );
+    });
+    it('should return the contextAttributeId on successful send', async () => {
+      const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
+        clientId: 'kafkaClientId',
+        brokers: ['localhost:9091'],
+      };
+      const sonataFlowServiceWithKafka = new SonataFlowService(
+        dataIndexServiceMock,
+        loggerMock,
+        kafkaServiceOptionsMock,
+      );
+      const spy = jest
+        .spyOn(
+          sonataFlowServiceWithKafka.getOrchestratorKafkaImpl() as any,
+          'producer',
+        )
+        .mockImplementation(() => {
+          return {
+            connect: jest.fn(),
+            send: jest.fn(),
+            disconnect: jest.fn(),
+          };
+        });
+      const result =
+        await sonataFlowServiceWithKafka.executeWorkflowAsCloudEvent({
+          definitionId,
+          workflowSource: 'workflowSource',
+          workflowEventType: 'workflowEventType',
+          contextAttribute: 'lockid',
+        });
+      expect(spy).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(result?.id).toBeDefined();
+      expect(result?.id).toEqual('12345');
+    });
+
+    it('should error on a bad connection', async () => {
+      const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
+        clientId: 'kafkaClientId',
+        brokers: ['localhost:9091'],
+      };
+      const sonataFlowServiceWithKafka = new SonataFlowService(
+        dataIndexServiceMock,
+        loggerMock,
+        kafkaServiceOptionsMock,
+      );
+      jest
+        .spyOn(
+          sonataFlowServiceWithKafka.getOrchestratorKafkaImpl() as any,
+          'producer',
+        )
+        .mockImplementation(() => {
+          return {
+            connect: jest
+              .fn()
+              .mockRejectedValue(new Error('Wrong Connection Info')),
+            send: jest.fn(),
+            disconnect: jest.fn(),
+          };
+        });
+      let result;
+      try {
+        result = await sonataFlowServiceWithKafka.executeWorkflowAsCloudEvent({
+          definitionId,
+          workflowSource: 'workflowSource',
+          workflowEventType: 'workflowEventType',
+          contextAttribute: 'lockid',
+        });
+      } catch (error: any) {
+        result = error;
+      }
+
+      expect(result).toBeDefined();
+      expect(result.message).toEqual(
+        'Error with Kafka client with connection Options: clientId: kafkaClientId and broker: ["localhost:9091"]',
+      );
+    });
+  });
+
   describe('executeWorkflow', () => {
     const inputData = { var1: 'value1' };
     const urlToFetch = 'http://example.com/workflows/workflow-123';

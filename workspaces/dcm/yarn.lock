@@ -6855,6 +6855,7 @@ __metadata:
     node-gyp: "npm:^9.0.0"
     prettier: "npm:^2.3.2"
     typescript: "npm:~5.3.0"
+    yup: "npm:^1.7.1"
   languageName: unknown
   linkType: soft
 
@@ -11984,7 +11985,6 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-dcm-common": "workspace:^"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
-    assert: "npm:^2.1.0"
     express: "npm:^4.17.1"
     express-promise-router: "npm:^4.1.0"
     supertest: "npm:^6.2.4"
@@ -12019,11 +12019,14 @@ __metadata:
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
+    "@types/js-yaml": "npm:^4.0.9"
+    js-yaml: "npm:^4.1.1"
     msw: "npm:^1.0.0"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-dom: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-router-dom: "npm:^6.0.0"
     react-use: "npm:^17.2.4"
+    yup: "npm:^1.7.1"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
@@ -15017,7 +15020,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:^4.0.1":
+"@types/js-yaml@npm:^4.0.1, @types/js-yaml@npm:^4.0.9":
   version: 4.0.9
   resolution: "@types/js-yaml@npm:4.0.9"
   checksum: 10/a0ce595db8a987904badd21fc50f9f444cb73069f4b95a76cc222e0a17b3ff180669059c763ec314bc4c3ce284379177a9da80e83c5f650c6c1310cafbfaa8e6
@@ -16757,7 +16760,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"assert@npm:^2.0.0, assert@npm:^2.1.0":
+"assert@npm:^2.0.0":
   version: 2.1.0
   resolution: "assert@npm:2.1.0"
   dependencies:
@@ -35711,7 +35714,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yup@npm:^1.0.0, yup@npm:^1.3.2":
+"yup@npm:^1.0.0, yup@npm:^1.3.2, yup@npm:^1.7.1":
   version: 1.7.1
   resolution: "yup@npm:1.7.1"
   dependencies:

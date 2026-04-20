@@ -33,3 +33,8 @@ export {
   parseDcmEntityStatus,
   type DcmEntityStatus,
 } from './entityStatus';
+
+export * from './types';
+export * from './clients';
+export { DcmClientError } from './errors/DcmClientError';
+export { extractApiError } from './utils/extractApiError';

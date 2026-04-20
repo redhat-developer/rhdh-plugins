@@ -59,6 +59,19 @@ jest.mock('./documentHelpers', () => ({
   }),
 }));
 
+// Helper function to create a mock ReadableStream from a string
+function createMockReadableStream(content: string): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  const encodedContent = encoder.encode(content);
+
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(encodedContent);
+      controller.close();
+    },
+  });
+}
+
 describe('fileParser', () => {
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
   const mockGetDocument = pdfjsLib.getDocument as jest.MockedFunction<
@@ -465,13 +478,12 @@ special: "Line 1\nLine 2"
     });
 
     it('should fetch and parse HTML content from URL', async () => {
+      const htmlContent = '<html><body><p>Test content</p></body></html>';
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/html' }),
-        text: jest
-          .fn()
-          .mockResolvedValue('<html><body><p>Test content</p></body></html>'),
+        body: createMockReadableStream(htmlContent),
       } as any);
 
       stripHtmlTags.mockReturnValue('Test content');
@@ -501,7 +513,7 @@ special: "Line 1\nLine 2"
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/plain' }),
-        text: jest.fn().mockResolvedValue('Plain text response'),
+        body: createMockReadableStream('Plain text response'),
       } as any);
 
       const result = await parseFile(
@@ -518,7 +530,7 @@ special: "Line 1\nLine 2"
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/markdown' }),
-        text: jest.fn().mockResolvedValue('# Markdown Title'),
+        body: createMockReadableStream('# Markdown Title'),
       } as any);
 
       const result = await parseFile(
@@ -536,7 +548,7 @@ special: "Line 1\nLine 2"
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'application/json' }),
-        text: jest.fn().mockResolvedValue(jsonContent),
+        body: createMockReadableStream(jsonContent),
       } as any);
 
       const result = await parseFile(
@@ -553,7 +565,7 @@ special: "Line 1\nLine 2"
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'application/json' }),
-        text: jest.fn().mockResolvedValue('invalid json'),
+        body: createMockReadableStream('invalid json'),
       } as any);
 
       await expect(
@@ -566,7 +578,7 @@ special: "Line 1\nLine 2"
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'application/octet-stream' }),
-        text: jest.fn().mockResolvedValue('Unknown content'),
+        body: createMockReadableStream('Unknown content'),
       } as any);
 
       const result = await parseFile(
@@ -631,7 +643,7 @@ special: "Line 1\nLine 2"
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/html' }),
-        text: jest.fn().mockResolvedValue('   '),
+        body: createMockReadableStream('   '),
       } as any);
 
       stripHtmlTags.mockReturnValue('');
@@ -646,7 +658,7 @@ special: "Line 1\nLine 2"
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/plain' }),
-        text: jest.fn().mockResolvedValue('Content'),
+        body: createMockReadableStream('Content'),
       } as any);
 
       const result = await parseFile(
@@ -663,7 +675,7 @@ special: "Line 1\nLine 2"
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/plain' }),
-        text: jest.fn().mockResolvedValue('Content'),
+        body: createMockReadableStream('Content'),
       } as any);
 
       await parseFile(Buffer.from(''), 'https://example.com', 'url');
@@ -801,7 +813,7 @@ special: "Line 1\nLine 2"
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/plain' }),
-        text: jest.fn().mockResolvedValue('Content'),
+        body: createMockReadableStream('Content'),
       } as any);
 
       const result = await parseFile(

@@ -21,6 +21,7 @@ import Router from 'express-promise-router';
 import type { RouterOptions } from './models/RouterOptions';
 import { getToken } from './routes/token';
 import { getAccess } from './routes/access';
+import { createDcmProxy } from './routes/proxy';
 
 export async function createRouter(
   options: RouterOptions,
@@ -40,6 +41,8 @@ export async function createRouter(
 
   router.get('/token', getToken(options));
   router.get('/access', getAccess(options));
+
+  router.all('/proxy/*', createDcmProxy(options));
 
   return router;
 }

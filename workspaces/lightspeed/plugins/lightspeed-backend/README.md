@@ -89,7 +89,10 @@ For user-facing feature documentation, see the [Lightspeed Frontend README](../l
 
 #### Prerequisites
 
-AI Notebooks requires a **Llama Stack service** to be running. Llama Stack provides the vector database, embeddings, and RAG capabilities.
+AI Notebooks requires:
+
+- **Lightspeed Core service** to be running (provides the backend API proxy)
+- **Llama Stack service** to be accessible from Lightspeed Core (provides vector database, embeddings, and RAG capabilities)
 
 For Llama Stack setup and configuration, refer to the [Llama Stack documentation](https://github.com/llamastack/llama-stack).
 
@@ -99,21 +102,23 @@ To enable AI Notebooks, add the following configuration to your `app-config.yaml
 
 ```yaml
 lightspeed:
-  aiNotebooks:
-    enabled: true # Enable AI Notebooks feature (default: false)
+  servicePort: 8080 # Optional: Lightspeed Core service port (default: 8080)
 
-    # Required when enabled: Llama Stack service configuration
-    llamaStack:
-      port: 8321 # Llama Stack API endpoint (required, commonly 8321)
+  notebooks:
+    enabled: false # Enable AI Notebooks feature (default: false)
 
-      # Optional embedding configuration
-      embeddingModel: sentence-transformers/nomic-ai/nomic-embed-text-v1.5 # (default shown)
-      embeddingDimension: 768 # Embedding vector dimension (default: 768)
-      vectorIo:
-        providerId: rhdh-docs # Vector store provider ID (default: rhdh-docs)
+    # Required: Query defaults for RAG queries
+    # Both model and provider_id must be configured together
+    queryDefaults:
+      model: llama3.1-8b-instruct # Model to use for answering queries
+      provider_id: ollama # AI provider for the query model
 
-    # Optional: File processing timeout (default: 30000ms = 30 seconds)
-    fileProcessingTimeoutMs: 30000
+    # Required: Session defaults for creating vector stores
+    # All three fields are required when Notebooks is enabled
+    sessionDefaults:
+      provider_id: notebooks # Vector store provider ID (must match Llama Stack config)
+      embedding_model: sentence-transformers/all-mpnet-base-v2 # Model for generating embeddings
+      embedding_dimension: 768 # Embedding vector dimension (must match model output)
 
     # Optional: Chunking strategy for document processing
     chunkingStrategy:
@@ -125,15 +130,37 @@ lightspeed:
 
 **Configuration Options**:
 
-- **`enabled`**: Enable or disable the AI Notebooks feature (default: `false`)
-- **`llamaStack.port`**: Port of the Llama Stack service (default: `8321`)
-- **`llamaStack.embeddingModel`**: Model used for generating embeddings (default: `sentence-transformers/nomic-ai/nomic-embed-text-v1.5`)
-- **`llamaStack.embeddingDimension`**: Dimension of embedding vectors (default: `768`)
-- **`llamaStack.vectorIo.providerId`**: Vector store provider in Llama Stack config (default: `rhdh-docs`)
-- **`fileProcessingTimeoutMs`**: Timeout for file processing in milliseconds (default: `30000`)
-- **`chunkingStrategy.type`**: Document chunking strategy - `auto` (automatic) or `static` (fixed size) (default: `auto`)
-- **`chunkingStrategy.maxChunkSizeTokens`**: Maximum chunk size in tokens for static chunking (default: `512`)
-- **`chunkingStrategy.chunkOverlapTokens`**: Token overlap between chunks for static chunking (default: `50`)
+**Core Settings**:
+
+- **`lightspeed.servicePort`** _(optional)_: Port where Lightspeed Core service is running (default: `8080`). The backend connects to Lightspeed Core at `http://0.0.0.0:{servicePort}` to proxy vector store operations.
+
+**Notebooks Settings**:
+
+- **`Notebooks.enabled`** _(optional)_: Enable or disable the AI Notebooks feature (default: `false`)
+
+**Query Defaults** _(required when enabled)_:
+
+- **`queryDefaults.model`** _(required)_: The LLM model to use for answering RAG queries. Must be available in the configured provider.
+- **`queryDefaults.provider_id`** _(required)_: The AI provider identifier for the query model (e.g., `ollama`, `vllm`). Both `model` and `provider_id` must be configured together.
+
+**Session Defaults** _(required when enabled)_:
+
+- **`sessionDefaults.provider_id`** _(required)_: Vector store provider identifier. Must match a provider configured in your Llama Stack instance (e.g., `notebooks`, `chromadb`). This determines where document embeddings are stored.
+- **`sessionDefaults.embedding_model`** _(required)_: The embedding model to use for converting documents to vectors (e.g., `sentence-transformers/all-mpnet-base-v2`). Must be available in Llama Stack.
+- **`sessionDefaults.embedding_dimension`** _(required)_: Dimension of the embedding vectors produced by the embedding model. Must match the model's output dimension (commonly `768`, `384`, or `1536`).
+
+**Chunking Strategy** _(optional)_:
+
+- **`chunkingStrategy.type`** _(optional)_: Document chunking strategy - `auto` (automatic, default) or `static` (fixed size)
+- **`chunkingStrategy.maxChunkSizeTokens`** _(optional)_: Maximum chunk size in tokens for static chunking (default: `512`)
+- **`chunkingStrategy.chunkOverlapTokens`** _(optional)_: Token overlap between chunks for static chunking (default: `50`)
+
+**Where to Find These Values**:
+
+- **Provider IDs**: Check your Llama Stack configuration file for configured providers (both for models and vector stores)
+- **Model names**: Available models are listed in your Llama Stack provider configuration
+- **Embedding dimensions**: Refer to the embedding model's documentation (e.g., `all-mpnet-base-v2` outputs 768 dimensions)
+- **Lightspeed Core port**: Check your Lightspeed Core service deployment configuration
 
 #### API Endpoints
 
@@ -144,19 +171,25 @@ When enabled, AI Notebooks exposes the following REST API endpoints:
 
 - **Sessions**:
   - `POST /lightspeed/ai-notebooks/v1/sessions` - Create a new session
-  - `GET /lightspeed/ai-notebooks/v1/sessions` - List all sessions
-  - `GET /lightspeed/ai-notebooks/v1/sessions/:sessionId` - Get session details
-  - `PUT /lightspeed/ai-notebooks/v1/sessions/:sessionId` - Update session
+  - `GET /lightspeed/ai-notebooks/v1/sessions` - List all sessions for the current user
+  - `PUT /lightspeed/ai-notebooks/v1/sessions/:sessionId` - Update session details
   - `DELETE /lightspeed/ai-notebooks/v1/sessions/:sessionId` - Delete session
 
 - **Documents**:
-  - `POST /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents/upload` - Upload document
-  - `GET /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents` - List documents
-  - `PUT /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents/:documentId` - Update document
-  - `DELETE /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents/:documentId` - Delete document
+  - `PUT /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents` - Upload or update a document (multipart/form-data)
+  - `GET /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents` - List all documents in a session
+  - `GET /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents/:documentId/status` - Get document processing status
+  - `DELETE /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents/:documentId` - Delete a document
 
 - **Queries**:
   - `POST /lightspeed/ai-notebooks/v1/sessions/:sessionId/query` - Query documents with RAG
+
+**Notes**:
+
+- All endpoints require authentication (user context is automatically provided by Backstage)
+- All `/v1/*` endpoints require the `lightspeed.notebooks.use` permission
+- Document endpoints verify session ownership before allowing operations
+- `documentId` in paths is the document title (URL-encoded for special characters)
 
 #### Permission Framework Support for AI Notebooks
 

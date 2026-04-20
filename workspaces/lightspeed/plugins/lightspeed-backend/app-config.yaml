@@ -1,8 +1,27 @@
 # OPTIONAL: Backend-only configurations
 #lightspeed:
-#  servicePort: 8080 # OPTIONAL: Port for lightspeed service (default: 8080)
-#  systemPrompt: <custom_system_prompt>   # OPTIONAL: Override default RHDH system prompt
+#  servicePort: 8080 # OPTIONAL: Port for lightspeed-core service (default: 8080)
+#  systemPrompt: <custom_system_prompt> # OPTIONAL: Override default RHDH system prompt
 #
 #  # AI Notebooks (Developer Preview) - Disabled by default
-#  aiNotebooks:
-#    enabled: false  # Set to true to enable AI Notebooks feature
+#  notebooks:
+#    enabled: false # Set to true to enable AI Notebooks feature
+#
+#    # REQUIRED when enabled: Query defaults for RAG queries
+#    # Both model and provider_id must be configured together
+#    queryDefaults:
+#      provider_id: ollama # AI provider for query model (e.g., ollama, vllm)
+#      model: llama3.1-8b-instruct # Model to use for answering queries
+#
+#    # REQUIRED when enabled: Session defaults for vector stores
+#    # All three fields are required
+#    sessionDefaults:
+#      provider_id: notebooks # Vector store provider ID (must match Llama Stack config)
+#      embedding_model: sentence-transformers/all-mpnet-base-v2 # Embedding model for documents
+#      embedding_dimension: 768 # Vector dimension (must match embedding model output)
+#
+#    # OPTIONAL: Chunking strategy for document processing
+#    chunkingStrategy:
+#      type: auto # 'auto' (default) or 'static'
+#      maxChunkSizeTokens: 512 # Max tokens per chunk for 'static' mode (default: 512)
+#      chunkOverlapTokens: 50 # Overlap between chunks for 'static' mode (default: 50)

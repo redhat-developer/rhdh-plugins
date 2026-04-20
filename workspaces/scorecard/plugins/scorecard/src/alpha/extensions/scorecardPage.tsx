@@ -26,6 +26,8 @@ export const scorecardPage = PageBlueprint.make({
     path: '/scorecard/aggregations/:aggregationId/metrics/:metricId',
     routeRef: scorecardDrillDownRouteRef,
     loader: () =>
-      import('../../pages/ScorecardPage').then(m => <m.ScorecardPage />),
+      import('../../pages/ScorecardPage').then(m => (
+        <m.ScorecardPageWithProvider />
+      )),
   },
 });

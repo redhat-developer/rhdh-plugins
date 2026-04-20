@@ -18,52 +18,41 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { ConflictError, NotFoundError } from '@backstage/errors';
 
-import { LlamaStackClient, toFile } from 'llama-stack-client';
-
 import {
   DEFAULT_CHUNK_OVERLAP_TOKENS,
   DEFAULT_CHUNKING_STRATEGY_TYPE,
-  DEFAULT_FILE_PROCESSING_TIMEOUT_MS,
   DEFAULT_MAX_CHUNK_SIZE_TOKENS,
-  POLL_INTERVAL_MS,
+  FILE_TYPE_TO_MIME,
 } from '../../constant';
-import { NotebookSession, SessionDocument } from '../types/notebooksTypes';
-import { buildVectorStoreMetadata, extractSessionFromMetadata } from '../utils';
-import { sanitizeTitle } from './documentHelpers';
-
-interface UpsertResult {
-  document_id: string;
-  file_id: string;
-  replaced: boolean;
-  status: 'completed' | 'in_progress' | 'failed' | 'cancelled';
-}
+import { SessionDocument, UpsertResult } from '../types/notebooksTypes';
+import { VectorStoresOperator } from '../VectorStoresOperator';
+import { toFile } from './fileParser';
 
 /**
  * Service for managing documents within notebook sessions using File-Based API
  * Each session has its own dedicated vector store
- * Uses Llama Stack File API for automatic chunking, embedding, and indexing
+ * Uses VectorStoresOperator to proxy through lightspeed-core
  */
 export class DocumentService {
   private logger: LoggerService;
-  private client: LlamaStackClient;
-  private fileProcessingTimeoutMs: number;
-  private chunkingStrategy: any;
+  private client: VectorStoresOperator;
+  private chunkingStrategy: {
+    type: string;
+    static?: { max_chunk_size_tokens: number; chunk_overlap_tokens: number };
+  };
 
-  constructor(llamaStackUrl: string, logger: LoggerService, config?: Config) {
-    this.client = new LlamaStackClient({ baseURL: llamaStackUrl });
+  constructor(
+    client: VectorStoresOperator,
+    logger: LoggerService,
+    config?: Config,
+  ) {
+    this.client = client;
     this.logger = logger;
-
-    // File processing timeout
-    this.fileProcessingTimeoutMs =
-      config?.getOptionalNumber(
-        'lightspeed.aiNotebooks.fileProcessingTimeoutMs',
-      ) || DEFAULT_FILE_PROCESSING_TIMEOUT_MS;
 
     // Chunking strategy configuration
     const chunkingType =
-      config?.getOptionalString(
-        'lightspeed.aiNotebooks.chunkingStrategy.type',
-      ) || DEFAULT_CHUNKING_STRATEGY_TYPE;
+      config?.getOptionalString('lightspeed.notebooks.chunkingStrategy.type') ||
+      DEFAULT_CHUNKING_STRATEGY_TYPE;
 
     if (chunkingType === 'static') {
       this.chunkingStrategy = {
@@ -71,11 +60,11 @@ export class DocumentService {
         static: {
           max_chunk_size_tokens:
             config?.getOptionalNumber(
-              'lightspeed.aiNotebooks.chunkingStrategy.maxChunkSizeTokens',
+              'lightspeed.notebooks.chunkingStrategy.maxChunkSizeTokens',
             ) || DEFAULT_MAX_CHUNK_SIZE_TOKENS,
           chunk_overlap_tokens:
             config?.getOptionalNumber(
-              'lightspeed.aiNotebooks.chunkingStrategy.chunkOverlapTokens',
+              'lightspeed.notebooks.chunkingStrategy.chunkOverlapTokens',
             ) || DEFAULT_CHUNK_OVERLAP_TOKENS,
         },
       };
@@ -85,230 +74,96 @@ export class DocumentService {
   }
 
   /**
-   * Retrieve session metadata from vector store metadata field
+   * Find a file by title in vector store
+   * @param sessionId - Vector store ID
+   * @param documentTitle - Document title to search for
+   * @returns File object if found, null otherwise
    */
-  private async retrieveSessionMetadata(
+  async findFileByTitle(
     sessionId: string,
-  ): Promise<NotebookSession | null> {
-    try {
-      const vectorStore = await this.client.vectorStores.retrieve(sessionId);
-
-      if (!vectorStore.metadata) {
-        return null;
-      }
-
-      return extractSessionFromMetadata(
-        sessionId,
-        vectorStore.metadata as Record<string, any>,
-      );
-    } catch (error) {
-      throw new Error(`Failed to retrieve session metadata: ${error}`);
-    }
-  }
-
-  /**
-   * Store session metadata in vector store metadata field
-   */
-  private async storeSessionMetadata(session: NotebookSession): Promise<void> {
-    await this.client.vectorStores.update(session.session_id, {
-      metadata: buildVectorStoreMetadata(session),
-    });
-  }
-
-  /**
-   * Find a file by document_id in vector store
-   */
-  private async findFileByDocumentId(
-    sessionId: string,
-    documentId: string,
+    documentTitle: string,
   ): Promise<any | null> {
     const filesResponse = await this.client.vectorStores.files.list(sessionId);
     return (
-      filesResponse.data.find(f => f.attributes?.document_id === documentId) ||
-      null
+      filesResponse.data.find(
+        (f: any) => f.attributes?.title === documentTitle,
+      ) || null
     );
   }
 
   /**
-   * Update session metadata document IDs
+   * Upload a file to the Files API
+   * @param content - File content as string
+   * @param title - File title/name
+   * @returns File ID from the Files API
+   * @throws Error if upload fails
    */
-  private async updateSessionDocumentIds(
-    sessionId: string,
-    documentId: string,
-    operation: 'add' | 'replace' | 'remove',
-    oldDocumentId?: string,
-  ): Promise<void> {
-    const session = await this.retrieveSessionMetadata(sessionId);
-    if (!session) {
-      return;
-    }
-
-    // For remove operation, only proceed if document_ids exists
-    if (operation === 'remove' && !session.metadata?.document_ids) {
-      return;
-    }
-
-    const documentIds = session.metadata?.document_ids || [];
-
-    if (
-      operation === 'replace' &&
-      oldDocumentId &&
-      oldDocumentId !== documentId
-    ) {
-      const index = documentIds.indexOf(oldDocumentId);
-      if (index !== -1) {
-        documentIds[index] = documentId;
-      }
-    } else if (operation === 'add' && !documentIds.includes(documentId)) {
-      documentIds.push(documentId);
-    } else if (operation === 'remove') {
-      const filteredIds = documentIds.filter(id => id !== documentId);
-      session.metadata = {
-        ...session.metadata,
-        document_ids: filteredIds,
-      };
-      session.updated_at = new Date().toISOString();
-      await this.storeSessionMetadata(session);
-      return;
-    }
-
-    session.metadata = {
-      ...session.metadata,
-      document_ids: documentIds,
-    };
-    session.updated_at = new Date().toISOString();
-    await this.storeSessionMetadata(session);
-  }
-
   /**
-   * Wait for file processing to complete
+   * Upload a file to the Files API
+   * @param content - File content as string
+   * @param title - File title/name
+   * @param fileType - Optional file type for MIME type detection
+   * @returns File ID from the Files API
+   * @throws Error if upload fails
    */
-  private async waitForFileProcessing(
-    sessionId: string,
-    fileId: string,
-  ): Promise<void> {
-    const startTime = Date.now();
-
-    while (Date.now() - startTime < this.fileProcessingTimeoutMs) {
-      const file = await this.client.vectorStores.files.retrieve(
-        sessionId,
-        fileId,
-      );
-
-      if (file.status === 'completed') {
-        this.logger.info(`File ${fileId} processing completed`);
-        return;
-      }
-
-      if (file.status === 'failed') {
-        this.logger.error(
-          `File ${fileId} processing failed: ${file.last_error?.message}`,
-        );
-        throw new Error(`File processing failed: ${file.last_error}`);
-      }
-
-      if (file.status === 'cancelled') {
-        this.logger.error(
-          `File ${fileId} processing was cancelled: ${file.last_error?.message}`,
-        );
-        throw new Error('File processing was cancelled');
-      }
-      console.log('File still processing, waiting...', file.status);
-      // Still in_progress, wait and retry
-      this.logger.debug(`File ${fileId} still processing, waiting...`);
-      await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
-    }
-
-    throw new Error(
-      `File processing timeout after ${this.fileProcessingTimeoutMs}ms`,
-    );
-  }
-
-  /**
-   * Upsert a document - create if it doesn't exist, update if it does
-   * Efficient single method for both create and update operations
-   */
-  async upsertDocument(
-    sessionId: string,
-    title: string,
+  async uploadFile(
     content: string,
-    metadata?: Record<string, any>,
-    newTitle?: string,
-  ): Promise<UpsertResult> {
-    const documentId = sanitizeTitle(title);
-    const newDocumentId: string = sanitizeTitle(newTitle || title);
-
-    // Find existing file by document_id
-    const existingFile = await this.findFileByDocumentId(sessionId, documentId);
-
-    // If document doesn't exist, create it
-    if (!existingFile) {
-      this.logger.info(`Creating new document: "${newTitle || title}"`);
+    title: string,
+    fileType?: string,
+  ): Promise<string> {
+    try {
+      // Determine MIME type from file type or default to text/plain
+      const mimeType = fileType
+        ? FILE_TYPE_TO_MIME[fileType] || 'text/plain'
+        : 'text/plain';
 
       const file = await this.client.files.create({
-        file: await toFile(
-          Buffer.from(content, 'utf-8'),
-          `${newDocumentId}.txt`,
-          {
-            type: 'text/plain',
-          },
-        ),
+        file: await toFile(Buffer.from(content, 'utf-8'), title, {
+          type: mimeType,
+        }),
         purpose: 'assistants',
       });
 
       this.logger.info(
-        `File uploaded: ${file.id} for document ${newDocumentId}`,
+        `File created - id: ${file.id}, filename: ${file.filename}`,
       );
-
-      const vectorStoreFile = await this.client.vectorStores.files.create(
-        sessionId,
-        {
-          file_id: file.id,
-          attributes: {
-            document_id: newDocumentId,
-            title: newTitle || title,
-            source_type: metadata?.fileType || 'text',
-            created_at: new Date().toISOString(),
-            ...(metadata || {}),
-          },
-          chunking_strategy: this.chunkingStrategy,
-        },
-      );
-
-      // Start background process to update session metadata
-      this.updateSessionMetadataWhenComplete(
-        sessionId,
-        file.id,
-        newDocumentId,
-        false,
-        undefined,
-      ).catch(error => {
-        this.logger.error(`Background metadata update failed: ${error}`);
-      });
-
-      this.logger.info(
-        `Document "${newTitle || title}" (ID: ${newDocumentId}) upload started with file ${file.id}`,
-      );
-
-      return {
-        document_id: newDocumentId,
-        file_id: file.id,
-        replaced: false,
-        status: vectorStoreFile.status,
-      };
+      return file.id;
+    } catch (error) {
+      // Preserve the original error type and message
+      if (error instanceof Error) {
+        throw error;
+      }
+      // For non-Error objects, wrap with context
+      throw new Error(`Failed to upload file: ${String(error)}`);
     }
+  }
 
-    // Document exists - determine if we can just update or need to recreate
+  /**
+   * Upsert a document - create if it doesn't exist, update if it does
+   * @param sessionId - Vector store ID
+   * @param title - Original document title
+   * @param fileType - Document source type (text, pdf, url, etc.)
+   * @param fileId - File ID from Files API
+   * @param newTitle - New title for rename operation (optional)
+   * @returns Upsert result with document ID and status
+   * @throws ConflictError if newTitle conflicts with existing document
+   */
+  async upsertDocument(
+    sessionId: string,
+    title: string,
+    fileType: string,
+    fileId: string,
+    newTitle?: string,
+  ): Promise<UpsertResult> {
+    // Find existing file by document_id
+    const existingFile = await this.findFileByTitle(sessionId, title);
     const createdAt =
-      (existingFile.attributes?.created_at as string) ||
+      (existingFile?.attributes?.created_at as string) ||
       new Date().toISOString();
 
-    // Check for title conflicts when renaming
-    if (documentId !== newDocumentId) {
-      const conflictingFile = await this.findFileByDocumentId(
-        sessionId,
-        newDocumentId,
-      );
+    if (newTitle && title !== newTitle) {
+      // Check for title conflicts when renaming
+      const conflictingFile = await this.findFileByTitle(sessionId, newTitle);
 
       if (conflictingFile) {
         throw new ConflictError(
@@ -316,121 +171,71 @@ export class DocumentService {
         );
       }
     }
-
-    // Delete old file and create new one with updated content
-    await this.deleteDocument(sessionId, documentId);
-    this.logger.info(`Updating document: "${title}" -> "${newTitle || title}"`);
-
-    const file = await this.client.files.create({
-      file: await toFile(
-        Buffer.from(content, 'utf-8'),
-        `${newDocumentId}.txt`,
-        {
-          type: 'text/plain',
-        },
-      ),
-      purpose: 'assistants',
-    });
-
-    this.logger.info(`File uploaded: ${file.id} for document ${newDocumentId}`);
+    if (existingFile) {
+      await this.deleteDocument(sessionId, title);
+    }
 
     const vectorStoreFile = await this.client.vectorStores.files.create(
       sessionId,
       {
-        file_id: file.id,
+        file_id: fileId,
+        chunking_strategy: this.chunkingStrategy,
         attributes: {
-          document_id: newDocumentId,
           title: newTitle || title,
-          source_type: metadata?.fileType || 'text',
+          source_type: fileType,
           created_at: createdAt,
           updated_at: new Date().toISOString(),
-          ...(metadata || {}),
         },
-        chunking_strategy: this.chunkingStrategy,
       },
     );
 
-    // Start background process
-    this.updateSessionMetadataWhenComplete(
-      sessionId,
-      file.id,
-      newDocumentId,
-      true,
-      documentId,
-    ).catch(error => {
-      this.logger.error(`Background metadata update failed: ${error}`);
-    });
-
     this.logger.info(
-      `Document "${newTitle || title}" (ID: ${newDocumentId}) upload started with file ${file.id}`,
+      `Document "${newTitle || title}" (ID: ${title}) upload started with file ${fileId}`,
     );
 
     return {
-      document_id: newDocumentId,
-      file_id: file.id,
-      replaced: true,
+      document_id: newTitle || title,
+      file_id: fileId,
+      replaced: false,
       status: vectorStoreFile.status,
     };
   }
 
   /**
-   * Update session metadata in background after file processing completes
-   */
-  private async updateSessionMetadataWhenComplete(
-    sessionId: string,
-    fileId: string,
-    documentId: string,
-    replaced: boolean,
-    oldDocumentId?: string,
-  ): Promise<void> {
-    try {
-      // Wait for file processing in background (non-blocking for HTTP)
-      await this.waitForFileProcessing(sessionId, fileId);
-
-      // Update session metadata after processing completes
-      const operation = replaced ? 'replace' : 'add';
-      await this.updateSessionDocumentIds(
-        sessionId,
-        documentId,
-        operation,
-        oldDocumentId,
-      );
-
-      this.logger.info(
-        `Background metadata update completed for document ${documentId}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to update metadata for ${documentId}: ${error}`,
-      );
-    }
-  }
-
-  /**
-   * Get file processing status from Llama Stack
+   * Get file processing status
+   * @param sessionId - Vector store ID
+   * @param documentTitle - Document title
+   * @returns File status including processing state, chunk count, and error if any
+   * @throws NotFoundError if document not found
    */
   async getFileStatus(
     sessionId: string,
-    documentId: string,
+    documentTitle: string,
   ): Promise<{
     status: 'in_progress' | 'completed' | 'failed' | 'cancelled';
+    chunks_count: number;
     error?: string;
   }> {
-    const file = await this.findFileByDocumentId(sessionId, documentId);
+    const file = await this.findFileByTitle(sessionId, documentTitle);
 
     if (!file) {
-      throw new NotFoundError(`Document not found: ${documentId}`);
+      throw new NotFoundError(`Document not found: ${documentTitle}`);
     }
-
     return {
       status: file.status,
+      chunks_count: file.chunks_count,
       error: file.last_error?.message,
     };
   }
 
+  /**
+   * List all documents in a session
+   * @param sessionId - Vector store ID
+   * @param fileTypeFilter - Optional filter by source type (text, pdf, url, etc.)
+   * @returns Array of session documents
+   */
   async listDocuments(
     sessionId: string,
-    userId: string,
     fileTypeFilter?: string,
   ): Promise<SessionDocument[]> {
     this.logger.info(`Listing documents for session ${sessionId}`);
@@ -444,26 +249,21 @@ export class DocumentService {
 
     // Map files to SessionDocument format
     const documents = filesResponse.data
-      .filter(file => {
+      .filter((file: any) => {
         // Apply file type filter if provided
         if (fileTypeFilter && file.attributes?.source_type !== fileTypeFilter) {
           return false;
         }
         return true;
       })
-      .map(file => {
+      .map((file: any) => {
         const attrs = file.attributes || {};
-
         return {
-          document_id: (attrs.document_id as string) || file.id,
-          title: (attrs.title as string) || file.id,
-          session_id: (attrs.session_id as string) || sessionId,
-          user_id: (attrs.user_id as string) || userId,
+          document_id: attrs.title,
           source_type:
             (attrs.source_type as SessionDocument['source_type']) || 'text',
-          created_at: attrs.created_at
-            ? (attrs.created_at as string)
-            : new Date(file.created_at * 1000).toISOString(),
+          created_at: attrs.created_at,
+          updated_at: attrs.updated_at,
         };
       });
 
@@ -474,28 +274,28 @@ export class DocumentService {
   }
 
   /**
-   * Delete a document from the vector store
+   * Delete a document from the vector store and Files API
+   * @param sessionId - Vector store ID
+   * @param documentTitle - Document title to delete
+   * @throws NotFoundError if document not found
    */
   async deleteDocument(
     sessionId: string,
     documentTitle: string,
   ): Promise<void> {
-    const documentId = sanitizeTitle(documentTitle);
-    this.logger.info(`Deleting document ${documentId} from ${sessionId}`);
+    this.logger.info(`Deleting document ${documentTitle} from ${sessionId}`);
 
-    const file = await this.findFileByDocumentId(sessionId, documentId);
+    const file = await this.findFileByTitle(sessionId, documentTitle);
 
     if (!file) {
-      throw new NotFoundError(`Document not found: ${documentId}`);
+      throw new NotFoundError(`Document not found: ${documentTitle}`);
     }
 
-    // Delete file completely
+    // Delete from vector store first
     await this.client.vectorStores.files.delete(sessionId, file.id);
 
-    this.logger.info(`Deleted file ${file.id} from vector store and Files API`);
-
-    // Update session metadata to remove document
-    await this.updateSessionDocumentIds(sessionId, documentId, 'remove');
-    this.logger.info(`Deleted document ${documentTitle} from ${sessionId}`);
+    this.logger.info(
+      `Deleted document ${documentTitle} (file ${file.id}) from session ${sessionId}`,
+    );
   }
 }

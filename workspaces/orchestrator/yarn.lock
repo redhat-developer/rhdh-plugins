@@ -12727,11 +12727,13 @@ __metadata:
     "@types/luxon": "npm:^3.7.1"
     "@urql/core": "npm:^6.0.1"
     ajv-formats: "npm:^2.1.1"
-    cloudevents: "npm:^8.0.0"
+    cloudevents: "npm:^10.0.0"
     express: "npm:^4.21.2"
     express-promise-router: "npm:^4.1.1"
     fs-extra: "npm:^10.1.0"
     isomorphic-git: "npm:^1.23.0"
+    js-yaml: "npm:^4.1.0"
+    kafkajs: "npm:^2.2.4"
     lodash: "npm:^4.18.1"
     luxon: "npm:^3.7.2"
     openapi-backend: "npm:^5.10.5"
@@ -19345,9 +19347,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cloudevents@npm:^8.0.0":
-  version: 8.0.2
-  resolution: "cloudevents@npm:8.0.2"
+"cloudevents@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "cloudevents@npm:10.0.0"
   dependencies:
     ajv: "npm:^8.11.0"
     ajv-formats: "npm:^2.1.1"
@@ -19355,7 +19357,7 @@ __metadata:
     process: "npm:^0.11.10"
     util: "npm:^0.12.4"
     uuid: "npm:^8.3.2"
-  checksum: 10c0/18fe538a37d6446dda6cbae15868e6a1dfa34baee8f63f018dd2f924048785c959c803452a78a46e215c5139d9aa56dd625f1eea4431ca2b645fcbfc06baa99b
+  checksum: 10c0/a0355db0c35495477241cf10c9fbb0e27e10ad34705e33ed221bd1fad94537ec787034c57aee5b9f63c74e4f843328766bcc53ef96bc5cc24700bc11d884a0ef
   languageName: node
   linkType: hard
 
@@ -26846,6 +26848,13 @@ __metadata:
     jwa: "npm:^2.0.1"
     safe-buffer: "npm:^5.0.1"
   checksum: 10c0/6be1ed93023aef570ccc5ea8d162b065840f3ef12f0d1bb3114cade844de7a357d5dc558201d9a65101e70885a6fa56b17462f520e6b0d426195510618a154d0
+  languageName: node
+  linkType: hard
+
+"kafkajs@npm:^2.2.4":
+  version: 2.2.4
+  resolution: "kafkajs@npm:2.2.4"
+  checksum: 10c0/6eece1f682a257955f647b6142430e87681d11bf01e9ebe0a73b4bc0653b8f970c48ba72a3b25fdbb4205cfbb36e5ef93d954b8f8c5f7767ae2b4693bdec9d88
   languageName: node
   linkType: hard
 
@@ -38165,11 +38174,11 @@ __metadata:
   linkType: hard
 
 "zod-to-json-schema@npm:^3.20.4, zod-to-json-schema@npm:^3.24.5, zod-to-json-schema@npm:^3.25.1":
-  version: 3.25.1
-  resolution: "zod-to-json-schema@npm:3.25.1"
+  version: 3.25.2
+  resolution: "zod-to-json-schema@npm:3.25.2"
   peerDependencies:
-    zod: ^3.25 || ^4
-  checksum: 10c0/711b30e34d1f1211f1afe64bf457f0d799234199dc005cca720b236ea808804c03164039c232f5df33c46f462023874015a8a0b3aab1585eca14124c324db7e2
+    zod: ^3.25.28 || ^4
+  checksum: 10c0/dd300554393903022487688af14fbda5c719ba8179702bb55b3aa86318830467f0f7beb7d654036975ac963dc4843b72e59636448bfff9a0608f277bb6a14939
   languageName: node
   linkType: hard
 
