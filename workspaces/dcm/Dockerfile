@@ -49,38 +49,69 @@ FROM node:20-bookworm-slim
 
 RUN corepack enable
 
+# Build tools are required to compile native Node.js addons (isolated-vm,
+# better-sqlite3, etc.) when yarn installs production dependencies.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy workspace config so yarn can re-run with --production.
+# skeleton.tar.gz contains only the package.json files needed by
+# `yarn workspaces focus` to resolve the production dependency graph.
+COPY --from=build /app/packages/backend/dist/skeleton.tar.gz ./
+RUN tar xzf skeleton.tar.gz && rm skeleton.tar.gz
+
+# Copy root Yarn workspace config (required for yarn workspaces focus).
 COPY --from=build /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
 COPY --from=build /app/.yarn ./.yarn
 
-# Copy per-package package.json files (needed by yarn workspaces focus).
-COPY --from=build /app/packages/app/package.json     packages/app/package.json
-COPY --from=build /app/packages/backend/package.json packages/backend/package.json
-COPY --from=build /app/plugins/dcm/package.json        plugins/dcm/package.json
-COPY --from=build /app/plugins/dcm-backend/package.json plugins/dcm-backend/package.json
-COPY --from=build /app/plugins/dcm-common/package.json  plugins/dcm-common/package.json
+# Neutralise the monorepo postinstall hook. The original script does
+# `cd ../../ && yarn install`, which is only valid inside the full monorepo
+# and would fail (or re-run an unnecessary full install) in this container.
+RUN node -e " \
+  const fs = require('fs'); \
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); \
+  if (pkg.scripts) pkg.scripts.postinstall = 'true'; \
+  fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); \
+"
 
-# Install only production dependencies; purge the yarn cache afterwards.
-RUN YARN_ENABLE_SCRIPTS=0 \
-    YARN_ENABLE_IMMUTABLE_INSTALLS=false \
+# Install only production dependencies. Scripts are intentionally enabled here
+# so that native addons (isolated-vm, better-sqlite3) can compile their
+# platform-specific binaries via node-gyp.
+# NOTE: packages/app/package.json is intentionally NOT present at this point.
+# It has workspace:^ deps on frontend plugins that are not part of the backend
+# production bundle. Copying it before focus would cause a resolution error.
+RUN YARN_ENABLE_IMMUTABLE_INSTALLS=false \
     YARN_CACHE_FOLDER=/root/.yarn/berry/cache \
     yarn workspaces focus --all --production && rm -rf "$(yarn cache dir)"
 
-# Copy built output from the build stage.
-COPY --from=build /app/packages/app/dist     packages/app/dist
-COPY --from=build /app/packages/backend/dist packages/backend/dist
-COPY --from=build /app/plugins/dcm/dist        plugins/dcm/dist
-COPY --from=build /app/plugins/dcm-backend/dist plugins/dcm-backend/dist
-COPY --from=build /app/plugins/dcm-common/dist  plugins/dcm-common/dist
+# Copy packages/app/package.json and create the node_modules/app symlink AFTER
+# yarn focus so Yarn does not try to resolve its workspace:^ frontend deps.
+# The symlink is required because @backstage/backend-plugin-api resolves
+# `require('app/package.json')` via node_modules/app to locate the app plugin.
+COPY --from=build /app/packages/app/package.json packages/app/package.json
+RUN ln -sf ../packages/app node_modules/app
+
+# bundle.tar.gz contains the full workspace structure plus all compiled dist/
+# files (packages/backend/dist/index.cjs.js, plugins/*/dist/, etc.).
+COPY --from=build /app/packages/backend/dist/bundle.tar.gz ./
+RUN tar xzf bundle.tar.gz && rm bundle.tar.gz
+
+# config.d.ts is referenced by the plugin's package.json "configSchema" field.
+# Backstage's config-loader reads this file at startup to build the schema
+# and validate app-config values; it is not part of the dist bundle.
+COPY --from=build /app/plugins/dcm-backend/config.d.ts plugins/dcm-backend/config.d.ts
+
+# The frontend static files are built separately and served by the backend.
+COPY --from=build /app/packages/app/dist packages/app/dist
 
 # Runtime config files — app-config.production.yaml overrides app-config.yaml.
 COPY app-config.yaml app-config.production.yaml ./
 
 EXPOSE 7007
 
-# `node packages/backend` resolves to packages/backend/dist/index.cjs.js via
+# node resolves `packages/backend` → packages/backend/dist/index.cjs.js via
 # the "main" field in packages/backend/package.json.
 CMD ["node", "packages/backend", \
      "--config", "app-config.yaml", \
