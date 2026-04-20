@@ -143,7 +143,12 @@ export const useGetExtraErrors = () => {
       '',
     );
 
-    await Promise.all(promises);
+    // Run sequentially so concurrent async callbacks cannot interleave
+    // `safeSet` mutations on the shared `errors` object (lost updates under
+    // the same path prefix, e.g. `step.xParams.fieldA` vs `fieldB`).
+    for (const p of promises) {
+      await p;
+    }
     return errors;
   };
 };
