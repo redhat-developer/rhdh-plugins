@@ -468,8 +468,6 @@ describe('GitlabApiService tests', () => {
 
       const result = await gitlabApiService.getRepositoriesFromIntegrations(
         undefined,
-        undefined,
-        undefined,
         { 'https://gitlab.com': 'user-gitlab-oauth-token' },
       );
 
@@ -480,8 +478,6 @@ describe('GitlabApiService tests', () => {
 
     it('returns empty repositories when userTokens is provided but no host matches an integration', async () => {
       const result = await gitlabApiService.getRepositoriesFromIntegrations(
-        undefined,
-        undefined,
         undefined,
         { 'https://some-other-host.com': 'user-gitlab-oauth-token' },
       );
@@ -509,12 +505,7 @@ describe('GitlabApiService tests', () => {
         paginationInfo: { total: 2 },
       });
 
-      await gitlabApiService.getRepositoriesFromIntegrations(
-        undefined,
-        undefined,
-        undefined,
-        {},
-      );
+      await gitlabApiService.getRepositoriesFromIntegrations(undefined, {});
 
       expect(mockGetAllCredentials).toHaveBeenCalled();
     });

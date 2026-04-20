@@ -319,8 +319,6 @@ export class GitlabApiService implements GitApiService {
    */
   async getRepositoriesFromIntegrations(
     search?: string,
-    pageNumber: number = DefaultPageNumber,
-    pageSize: number = DefaultPageSize,
     userTokens?: Record<string, string>,
   ): Promise<GitlabRepositoryResponse> {
     const repositories = new Map<string, GitlabRepository>();
@@ -336,7 +334,7 @@ export class GitlabApiService implements GitApiService {
               userCredential,
               repositories,
               dataFetchErrors,
-              { search, pageNumber, pageSize },
+              { search },
             ),
         );
       const repoList = Array.from(repositories.values());
@@ -367,8 +365,6 @@ export class GitlabApiService implements GitApiService {
             dataFetchErrors,
             {
               search,
-              pageNumber,
-              pageSize,
             },
           );
           this.logger.debug(
@@ -383,7 +379,11 @@ export class GitlabApiService implements GitApiService {
     );
 
     const repoList = Array.from(repositories.values());
-    const totalCount = computeTotalCount(repoList, result.data, pageSize);
+    const totalCount = computeTotalCount(
+      repoList,
+      result.data,
+      DefaultPageSize,
+    );
     return {
       repositories: repoList,
       errors: Array.from(result.errors?.values() ?? []),
