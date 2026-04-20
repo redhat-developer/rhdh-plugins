@@ -123,9 +123,10 @@ export const NestedReviewTable: React.FC<NestedReviewTableProps> = ({
   data,
 }) => {
   const { classes } = useStyles();
+  const safeData = data ?? {};
 
   // Group top-level sections
-  const sections: [string, JsonValue][] = Object.entries(data).filter(
+  const sections: [string, JsonValue][] = Object.entries(safeData).filter(
     ([_, value]) => value !== undefined,
   ) as [string, JsonValue][];
 
