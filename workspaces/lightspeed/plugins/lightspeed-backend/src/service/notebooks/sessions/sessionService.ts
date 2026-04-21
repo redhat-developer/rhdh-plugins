@@ -259,10 +259,14 @@ export class SessionService {
       }),
     );
 
-    // Sort by created_at descending (newest first)
-    return sessions.sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    );
+    // Sort by created_at descending (newest first), then session_id for stable ties
+    return sessions.sort((a, b) => {
+      const byTime =
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (byTime !== 0) {
+        return byTime;
+      }
+      return b.session_id.localeCompare(a.session_id);
+    });
   }
 }
