@@ -43,6 +43,7 @@ import { extensionsTranslationRef } from './alpha/translations';
 export const extensionsPlugin = createPlugin({
   id: 'extensions',
   routes: allRoutes,
+  // @ts-expect-error __experimentalTranslations is not yet on the public PluginConfig type
   __experimentalTranslations: {
     availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [extensionsTranslationRef],
@@ -77,7 +78,7 @@ export const extensionsPlugin = createPlugin({
         }),
     }),
   ],
-} as any);
+});
 
 /**
  * @public

@@ -15,6 +15,7 @@
  */
 
 import {
+  Document,
   isMap,
   Pair,
   parse,
@@ -139,7 +140,7 @@ export const applyContent = (
         const newPlugin: {
           package: string;
           disabled: boolean;
-          pluginConfig?: ReturnType<typeof parseDocument> | JsonObject;
+          pluginConfig?: Document | JsonObject;
         } = {
           package: packagePath,
           disabled: false,
@@ -158,7 +159,7 @@ export const applyContent = (
       const newPlugin: {
         package: string;
         disabled: boolean;
-        pluginConfig?: ReturnType<typeof parseDocument> | JsonObject;
+        pluginConfig?: Document | JsonObject;
       } = {
         package: packagePath,
         disabled: false,
@@ -174,9 +175,7 @@ export const applyContent = (
   return content.toString();
 };
 
-export function getPluginConfigResponseError(
-  data: unknown,
-): { message?: string; reason?: ExtensionsStatus } | undefined {
+export function getPluginConfigResponseError(data: unknown) {
   if (data && typeof data === 'object' && 'error' in data) {
     return (data as { error?: { message?: string; reason?: ExtensionsStatus } })
       .error;
@@ -184,7 +183,7 @@ export function getPluginConfigResponseError(
   return undefined;
 }
 
-export function apiErrorMessage(value: unknown): string | undefined {
+export function apiErrorMessage(value: unknown) {
   if (value && typeof value === 'object' && 'error' in value) {
     const e = (value as { error?: { message?: string } }).error;
     return e?.message;

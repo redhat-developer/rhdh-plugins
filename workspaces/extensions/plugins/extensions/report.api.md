@@ -7,6 +7,9 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { FunctionComponent } from 'react';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { PathParams } from '@backstage/core-plugin-api';
+import { RouteRef } from '@backstage/core-plugin-api';
+import { SubRouteRef } from '@backstage/core-plugin-api';
 
 // @public (undocumented)
 export const DynamicExtensionsPluginContent: () => JSX_2.Element;
@@ -27,7 +30,29 @@ export const ExtensionsFullPageRouter: () => JSX_2.Element;
 export const ExtensionsIcon: IconComponent;
 
 // @public
-export const extensionsPlugin: BackstagePlugin<{}, {}, {}>;
+export const extensionsPlugin: BackstagePlugin<
+  {
+    rootRouteRef: RouteRef<undefined>;
+    pluginsRouteRef: SubRouteRef<undefined>;
+    pluginRouteRef: SubRouteRef<PathParams<'/plugins/:namespace/:name'>>;
+    pluginInstallRouteRef: SubRouteRef<
+      PathParams<'/plugins/:namespace/:name/install'>
+    >;
+    packagesRouteRef: SubRouteRef<undefined>;
+    packageRouteRef: SubRouteRef<PathParams<'/packages/:namespace/:name'>>;
+    packageInstallRouteRef: SubRouteRef<
+      PathParams<'/packages/:namespace/:name/install'>
+    >;
+    collectionsRouteRef: SubRouteRef<undefined>;
+    collectionRouteRef: SubRouteRef<
+      PathParams<'/collections/:namespace/:name'>
+    >;
+    catalogTabRouteRef: SubRouteRef<undefined>;
+    installedTabRouteRef: SubRouteRef<undefined>;
+  },
+  {},
+  {}
+>;
 
 // @public
 export const ExtensionsTabbedPageRouter: () => JSX_2.Element;
@@ -44,7 +69,29 @@ export const MarketplaceIcon: FunctionComponent<{
 }>;
 
 // @public @deprecated (undocumented)
-export const marketplacePlugin: BackstagePlugin<{}, {}, {}>;
+export const marketplacePlugin: BackstagePlugin<
+  {
+    rootRouteRef: RouteRef<undefined>;
+    pluginsRouteRef: SubRouteRef<undefined>;
+    pluginRouteRef: SubRouteRef<PathParams<'/plugins/:namespace/:name'>>;
+    pluginInstallRouteRef: SubRouteRef<
+      PathParams<'/plugins/:namespace/:name/install'>
+    >;
+    packagesRouteRef: SubRouteRef<undefined>;
+    packageRouteRef: SubRouteRef<PathParams<'/packages/:namespace/:name'>>;
+    packageInstallRouteRef: SubRouteRef<
+      PathParams<'/packages/:namespace/:name/install'>
+    >;
+    collectionsRouteRef: SubRouteRef<undefined>;
+    collectionRouteRef: SubRouteRef<
+      PathParams<'/collections/:namespace/:name'>
+    >;
+    catalogTabRouteRef: SubRouteRef<undefined>;
+    installedTabRouteRef: SubRouteRef<undefined>;
+  },
+  {},
+  {}
+>;
 
 // @public @deprecated (undocumented)
 export const MarketplaceTabbedPageRouter: () => JSX_2.Element;
