@@ -29,6 +29,7 @@ import {
   FileRejection,
   type DropEvent as ReactDropzoneDropEvent,
 } from 'react-dropzone';
+import { useMatch, useNavigate } from 'react-router-dom';
 
 import { Button, makeStyles } from '@material-ui/core';
 import {
@@ -369,10 +370,14 @@ export const LightspeedChat = ({
   const isMobile = useIsMobile();
   const classes = useStyles();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<number>(
+    notebooksRouteMatch ? 1 : 0,
+  );
   const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
     useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
@@ -427,8 +432,17 @@ export const LightspeedChat = ({
   ) => {
     const nextTab = Number(tabIndex);
     setActiveTab(nextTab);
-    if (nextTab === 1 && notebooksPermissionResolved) {
-      refetchNotebooks();
+    if (nextTab === 1) {
+      navigate('/lightspeed/notebooks');
+      if (notebooksPermissionResolved) {
+        refetchNotebooks();
+      }
+    } else {
+      navigate(
+        routeConversationId
+          ? `/lightspeed/conversation/${routeConversationId}`
+          : '/lightspeed',
+      );
     }
   };
 
