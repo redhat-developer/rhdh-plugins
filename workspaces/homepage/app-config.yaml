@@ -8,8 +8,6 @@ app:
           availableLanguages: ['en', 'de', 'fr', 'it', 'es', 'ja']
           defaultLanguage: 'en'
     # Disable the nav items that we're manually rendering in packages/app/src/modules/nav/Sidebar.tsx
-    - nav-item:search: false
-    - nav-item:user-settings: false
     - api:home/visits: true
     - app-root-element:home/visit-listener: true
     - page:home:

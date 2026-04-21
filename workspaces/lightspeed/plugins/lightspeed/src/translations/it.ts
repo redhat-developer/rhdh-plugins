@@ -189,6 +189,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'conversation.removeFromPinnedChats': 'Sblocca',
     'conversation.announcement.userMessage':
       "Messaggio dall'utente: {{prompt}}. Caricamento in corso del messaggio del bot.",
+    'conversation.announcement.responseStopped': 'Risposta interrotta.',
     'user.guest': 'Ospite',
     'user.loading': '...',
     'tooltip.attach': 'Allega',
@@ -246,6 +247,50 @@ const lightspeedTranslationIt = createTranslationMessages({
       'Le chat bloccate sono attualmente abilitate',
     'settings.pinned.disabled.description':
       'Le chat bloccate sono attualmente disabilitate',
+    'settings.mcp.label': 'Impostazioni MCP',
+    'mcp.settings.title': 'Server MCP',
+    'mcp.settings.selectedCount':
+      '{{selectedCount}} di {{totalCount}} selezionati',
+    'mcp.settings.closeAriaLabel': 'Chiudi impostazioni MCP',
+    'mcp.settings.readOnlyAccess':
+      "Disponi dell'accesso in sola lettura ai server MCP.",
+    'mcp.settings.tableAriaLabel': 'Tabella dei server MCP',
+    'mcp.settings.enabled': 'Abilitato',
+    'mcp.settings.name': 'Nome',
+    'mcp.settings.status': 'Stato',
+    'mcp.settings.edit': 'Modifica',
+    'mcp.settings.loading': 'Caricamento dei server MCP...',
+    'mcp.settings.noneAvailable': 'Nessun server MCP disponibile.',
+    'mcp.settings.status.disabled': 'Disabilitato',
+    'mcp.settings.status.tokenRequired': 'Token richiesto',
+    'mcp.settings.status.failed': 'Non riuscito',
+    'mcp.settings.status.oneTool': '{{count}} strumento',
+    'mcp.settings.status.manyTools': '{{count}} strumenti',
+    'mcp.settings.status.unknown': 'Sconosciuto',
+    'mcp.settings.toggleServerAriaLabel': 'Attiva/disattiva {{serverName}}',
+    'mcp.settings.editServerAriaLabel': 'Modifica {{serverName}}',
+    'mcp.settings.configureServerTitle': 'Configura server {{serverName}}',
+    'mcp.settings.closeConfigureModalAriaLabel':
+      'Chiudi finestra di configurazione',
+    'mcp.settings.modalDescription':
+      'Le credenziali sono crittografate a riposo e associate al tuo profilo. Lightspeed opererà con esattamente le tue autorizzazioni.',
+    'mcp.settings.savedToken': 'Token salvato',
+    'mcp.settings.personalAccessToken': 'Token di accesso personale',
+    'mcp.settings.usingAdminCredential':
+      "Sono in uso le credenziali fornite dall'amministratore. Inserisci un token personale per sovrascriverle per il tuo account.",
+    'mcp.settings.enterToken': 'Inserisci il tuo token',
+    'mcp.settings.removePersonalToken': 'Rimuovi token personale',
+    'mcp.settings.token.clearAriaLabel': 'Cancella campo token',
+    'mcp.settings.token.validating': 'Convalida del token in corso...',
+    'mcp.settings.token.savingAndValidating':
+      'Salvataggio e convalida del token in corso...',
+    'mcp.settings.token.urlUnavailableForValidation':
+      "Impossibile convalidare il token perché l'URL del server non è disponibile.",
+    'mcp.settings.token.invalidCredentials':
+      "Credenziali non valide. Controlla l'URL del server e il token.",
+    'mcp.settings.token.validationFailed':
+      "Convalida non riuscita. Controlla l'URL del server e il token.",
+    'mcp.settings.token.connectionSuccessful': 'Connessione riuscita',
     // Display modes
     'settings.displayMode.label': 'Modalità di visualizzazione',
     'settings.displayMode.overlay': 'Sovrapposizione',

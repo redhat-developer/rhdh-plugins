@@ -63,6 +63,8 @@ const quickstartTranslationDe = createTranslationMessages({
     'button.openQuickstartGuide': 'Schnellstartanleitung öffnen',
     'button.closeDrawer': 'Drawer schließen',
     'button.gotIt': 'Verstanden!',
+    'snackbar.helpPrompt':
+      'Brauchen Sie Hilfe? Öffnen Sie die Schnellstartanleitung, indem Sie auf das (?) Symbol in der Kopfzeile klicken!',
     'footer.progress': '{{progress}} % Fortschritt',
     'footer.notStarted': 'Nicht gestartet',
     'footer.hide': 'Ausblenden',

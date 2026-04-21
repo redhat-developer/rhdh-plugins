@@ -38,7 +38,7 @@ const defaultCardLayout = {
 export const onboardingSectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-onboarding-section',
   params: {
-    name: 'RhdhOnboardingSection',
+    name: 'Red Hat Developer Hub - Onboarding',
     layout: defaultCardLayout,
     components: () =>
       import('../../components/OnboardingSection').then(m => ({
@@ -54,7 +54,7 @@ export const onboardingSectionWidget = HomePageWidgetBlueprint.make({
 export const entitySectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-entity-section',
   params: {
-    name: 'RhdhEntitySection',
+    name: 'Red Hat Developer Hub - Software Catalog',
     layout: defaultCardLayout,
     components: () =>
       import('../../components/EntitySection').then(m => ({
@@ -70,7 +70,7 @@ export const entitySectionWidget = HomePageWidgetBlueprint.make({
 export const templateSectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-template-section',
   params: {
-    name: 'RhdhTemplateSection',
+    name: 'Red Hat Developer Hub - Explore templates',
     layout: defaultCardLayout,
     components: () =>
       import('../../components/TemplateSection').then(m => ({
@@ -86,7 +86,7 @@ export const templateSectionWidget = HomePageWidgetBlueprint.make({
 export const quickAccessCardWidget = HomePageWidgetBlueprint.make({
   name: 'quick-access-card',
   params: {
-    name: 'QuickAccessCard',
+    name: 'Quick Access Card',
     layout: defaultCardLayout,
     components: () =>
       import('../../components/QuickAccessCard').then(m => ({
@@ -102,7 +102,7 @@ export const quickAccessCardWidget = HomePageWidgetBlueprint.make({
 export const searchBarWidget = HomePageWidgetBlueprint.make({
   name: 'search-bar',
   params: {
-    name: 'SearchBar',
+    name: 'Search',
     layout: {
       ...defaultCardLayout,
       height: {
@@ -126,7 +126,7 @@ export const searchBarWidget = HomePageWidgetBlueprint.make({
 export const featuredDocsCardWidget = HomePageWidgetBlueprint.make({
   name: 'featured-docs-card',
   params: {
-    name: 'FeaturedDocsCard',
+    name: 'Featured docs',
     layout: defaultCardLayout,
     components: () =>
       import('../../components/FeaturedDocsCard').then(m => ({

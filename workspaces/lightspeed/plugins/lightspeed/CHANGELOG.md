@@ -1,5 +1,50 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.1.0
+
+### Minor Changes
+
+- cc98168: Migrated AI Notebooks from direct Llama Stack server to Lightspeed-Core integration
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.1.0
+
+## 2.0.0
+
+### Minor Changes
+
+- 6ae51d4: migrated plugin to nfs
+- f20f9f3: Add AI notebooks UI, hooks, and backend support for listing/renaming/deleting sessions.
+- 0277bd0: Added the MCP servers selector/settings feature in Lightspeed with backend
+  integration for listing servers, per-user token updates, and validation.
+
+  In the settings panel, users can review server status, enable or disable
+  eligible servers, configure personal tokens, and get inline token validation
+  feedback. Token validation now runs automatically after typing stops and shows
+  success (`Connection successful`) or error (`Authorization failed. Try again.`)
+  before save.
+
+- 01241c2: Backstage version bump to v1.49.2
+  moved existing app to app-legacy
+  app now runs the NFS model
+
+### Patch Changes
+
+- 5d4f070: update how tool call info is retrived
+- afd7a1e: Update translations for Lightspeed.
+- c45aa19: Add stop button to interrupt a streaming conversation
+- c0f9d6a: fixes lightspeed overlay (remove horizontal scrollbar, and adds vertical scrollbar for newly created chats)
+- 8f2c7f2: fix the overlay mode opening underneath the ApplicationDrawer
+- a8b3dd9: Fixed "new chat" cta behavior
+  Added vertical scroll when too many models are available
+  Removed model grouping/categories in the model selector dropdown
+- 7ce8caa: Added a missing permission screen for the Notebooks tab. When a user lacks the `lightspeed.notebooks.use` permission, the Notebooks tab now displays a "Missing permission" message with a "Go back" button instead of the notebook list.
+- Updated dependencies [024d5a8]
+- Updated dependencies [7db4bed]
+- Updated dependencies [01241c2]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.0.0
+
 ## 1.4.0
 
 ### Patch Changes

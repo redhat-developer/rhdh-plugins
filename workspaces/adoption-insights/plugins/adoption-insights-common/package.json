@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-adoption-insights-common",
-  "version": "0.6.2",
+  "version": "0.7.1",
   "license": "Apache-2.0",
   "description": "Common functionalities for the adoption-insights plugin",
   "main": "src/index.ts",
@@ -31,10 +31,10 @@
     "postpack": "backstage-cli package postpack"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.35.3"
+    "@backstage/cli": "^0.36.0"
   },
   "peerDependencies": {
-    "@backstage/plugin-permission-common": "^0.9.5"
+    "@backstage/plugin-permission-common": "^0.9.7"
   },
   "files": [
     "dist"

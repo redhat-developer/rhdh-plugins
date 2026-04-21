@@ -188,6 +188,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'conversation.removeFromPinnedChats': 'Détacher',
     'conversation.announcement.userMessage':
       'Message en provenance de l’utilisateur: {{prompt}}. Message en provenance du Bot en cours de chargement.',
+    'conversation.announcement.responseStopped': 'Réponse arrêtée.',
     'user.guest': 'Invité',
     'user.loading': '...',
     'tooltip.attach': 'Attacher',
@@ -247,6 +248,50 @@ const lightspeedTranslationFr = createTranslationMessages({
       'Les conversation épinglées sont actuellement activées',
     'settings.pinned.disabled.description':
       'Les conversations épinglées sont actuellement désactivées',
+    'settings.mcp.label': 'Paramètres MCP',
+    'mcp.settings.title': 'Serveurs MCP',
+    'mcp.settings.selectedCount':
+      '{{selectedCount}} sur {{totalCount}} sélectionnés',
+    'mcp.settings.closeAriaLabel': 'Fermer les paramètres MCP',
+    'mcp.settings.readOnlyAccess':
+      'Vous disposez d’un accès en lecture seule aux serveurs MCP.',
+    'mcp.settings.tableAriaLabel': 'Tableau des serveurs MCP',
+    'mcp.settings.enabled': 'Activé',
+    'mcp.settings.name': 'Nom',
+    'mcp.settings.status': 'Statut',
+    'mcp.settings.edit': 'Modifier',
+    'mcp.settings.loading': 'Chargement des serveurs MCP...',
+    'mcp.settings.noneAvailable': 'Aucun serveur MCP disponible.',
+    'mcp.settings.status.disabled': 'Désactivé',
+    'mcp.settings.status.tokenRequired': 'Jeton requis',
+    'mcp.settings.status.failed': 'Échec',
+    'mcp.settings.status.oneTool': '{{count}} outil',
+    'mcp.settings.status.manyTools': '{{count}} outils',
+    'mcp.settings.status.unknown': 'Inconnu',
+    'mcp.settings.toggleServerAriaLabel': 'Basculer {{serverName}}',
+    'mcp.settings.editServerAriaLabel': 'Modifier {{serverName}}',
+    'mcp.settings.configureServerTitle': 'Configurer le serveur {{serverName}}',
+    'mcp.settings.closeConfigureModalAriaLabel':
+      'Fermer la fenêtre de configuration',
+    'mcp.settings.modalDescription':
+      'Les identifiants sont chiffrés au repos et limités à votre profil. Lightspeed fonctionnera avec exactement vos autorisations.',
+    'mcp.settings.savedToken': 'Jeton enregistré',
+    'mcp.settings.personalAccessToken': "Jeton d'accès personnel",
+    'mcp.settings.usingAdminCredential':
+      'Les identifiants fournis par l’administrateur sont utilisés. Saisissez un jeton personnel pour les remplacer pour votre compte.',
+    'mcp.settings.enterToken': 'Saisissez votre jeton',
+    'mcp.settings.removePersonalToken': 'Supprimer le jeton personnel',
+    'mcp.settings.token.clearAriaLabel': 'Effacer la saisie du jeton',
+    'mcp.settings.token.validating': 'Validation du jeton...',
+    'mcp.settings.token.savingAndValidating':
+      'Enregistrement et validation du jeton...',
+    'mcp.settings.token.urlUnavailableForValidation':
+      'Impossible de valider le jeton car l’URL du serveur n’est pas disponible.',
+    'mcp.settings.token.invalidCredentials':
+      'Identifiants invalides. Vérifiez l’URL du serveur et le jeton.',
+    'mcp.settings.token.validationFailed':
+      'Échec de la validation. Vérifiez l’URL du serveur et le jeton.',
+    'mcp.settings.token.connectionSuccessful': 'Connexion réussie',
 
     // Tool calling
     'toolCall.header': "Réponse de l'outil : {{toolName}}",

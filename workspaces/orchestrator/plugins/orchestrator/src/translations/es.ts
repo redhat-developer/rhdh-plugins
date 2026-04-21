@@ -33,6 +33,7 @@ const orchestratorTranslationEs = createTranslationMessages({
     'table.title.workflows': 'Flujos de trabajo',
     'table.title.allRuns': 'Todas las ejecuciones ({{count}})',
     'table.actions.run': 'Ejecutar',
+    'table.actions.runAsEvent': 'Ejecutar como evento',
     'table.actions.viewRuns': 'Ver ejecuciones',
     'table.actions.viewInputSchema': 'Ver esquema de entrada',
     'table.status.running': 'En ejecución',
@@ -63,6 +64,7 @@ const orchestratorTranslationEs = createTranslationMessages({
       'ID de ejecución copiado en el portapapeles',
     'workflow.errors.retriggerFailed': 'Error al reactivar: {{reason}}',
     'workflow.errors.abortFailedWithReason': 'Error al cancelar: {{reason}}',
+    'workflow.buttons.runAsEvent': 'Ejecutar como evento',
     'run.title': 'Ejecutar flujo de trabajo',
     'run.pageTitle': 'Ejecución de {{processName}}',
     'run.variables': 'Variables de ejecución',
@@ -84,6 +86,8 @@ const orchestratorTranslationEs = createTranslationMessages({
     'run.status.completedWithMessage':
       'Ejecución completada {{time}} con mensaje',
     'run.status.failedAt': 'La ejecución falló {{time}}',
+    'run.messages.eventTriggered':
+      'Se envió un evento para activar este flujo de trabajo. Aparecerá cuando comience la ejecución.',
     'run.viewVariables': 'Ver variables',
     'run.suggestedNextWorkflow': 'Próximo flujo de trabajo sugerido',
     'run.suggestedNextWorkflows': 'Próximos flujos de trabajo sugeridos',

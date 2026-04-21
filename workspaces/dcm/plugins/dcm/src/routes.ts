@@ -13,8 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createRouteRef } from '@backstage/core-plugin-api';
+import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
 
 export const rootRouteRef = createRouteRef({
   id: 'dcm',
+});
+
+export const serviceSpecsRouteRef = createSubRouteRef({
+  id: 'dcm-service-specs',
+  parent: rootRouteRef,
+  path: '/service-specs',
+});
+
+export const environmentDetailsRouteRef = createSubRouteRef({
+  id: 'dcm-environment-details',
+  parent: rootRouteRef,
+  path: '/environments/:id',
+});
+
+export const serviceSpecDetailsRouteRef = createSubRouteRef({
+  id: 'dcm-service-spec-details',
+  parent: rootRouteRef,
+  path: '/service-specs/:id',
+});
+
+export const DCM_DETAILS_TABS = {
+  overview: '/',
+  entities: '/entities',
+  requestHistory: '/request-history',
+} as const;
+
+// ── API-aligned tab route refs ─────────────────────────────────────────────
+
+export const providersRouteRef = createSubRouteRef({
+  id: 'dcm-providers',
+  parent: rootRouteRef,
+  path: '/providers',
+});
+
+export const policiesRouteRef = createSubRouteRef({
+  id: 'dcm-policies',
+  parent: rootRouteRef,
+  path: '/policies',
+});
+
+export const serviceTypesRouteRef = createSubRouteRef({
+  id: 'dcm-service-types',
+  parent: rootRouteRef,
+  path: '/service-types',
+});
+
+export const catalogItemsRouteRef = createSubRouteRef({
+  id: 'dcm-catalog-items',
+  parent: rootRouteRef,
+  path: '/catalog-items',
+});
+
+export const catalogItemInstancesRouteRef = createSubRouteRef({
+  id: 'dcm-catalog-item-instances',
+  parent: rootRouteRef,
+  path: '/catalog-item-instances',
+});
+
+export const resourcesRouteRef = createSubRouteRef({
+  id: 'dcm-resources',
+  parent: rootRouteRef,
+  path: '/resources',
 });

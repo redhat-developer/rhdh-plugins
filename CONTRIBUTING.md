@@ -14,6 +14,8 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
   - [Versioning](#versioning)
   - [Creating Changesets](#creating-changesets)
   - [Release](#release)
+  - [Backporting patches (prior release lines)](#backporting-patches-prior-release-lines)
+    - [Patching an older release](#patching-an-older-release)
   - [Creating a new Workspace](#creating-a-new-workspace)
   - [Creating new plugins or packages in a Workspace](#creating-new-plugins-or-packages-in-a-workspace)
   - [Migrating a plugin](#migrating-a-plugin)
@@ -32,6 +34,9 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
         - [Dependency Updates](#dependency-updates)
         - [Security Fixes](#security-fixes)
     - [Opt-in to Knip Reports Check](#opt-in-to-knip-reports-check)
+  - [Archiving a plugin or workspace](#archiving-a-plugin-or-workspace)
+    - [When to archive](#when-to-archive)
+    - [Steps](#steps)
 
 ## License
 
@@ -70,6 +75,8 @@ There could be times when there is a need for a more rich development environmen
 
 ## Coding Guidelines
 
+For consistency across the monorepo, we suggest following the same Yarn setup as the repository root: the Yarn release is defined in the root `package.json` and `.yarnrc.yml`, and individual workspaces generally should not pin a different Yarn version.
+
 All code is formatted with `prettier` using the configuration in the repo. If possible we recommend configuring your editor to format automatically, but you can also use the `yarn prettier --write <file>` command to format files.
 
 ## Versioning
@@ -82,7 +89,7 @@ We use [changesets](https://github.com/atlassian/changesets) to help us prepare 
 
 To create a changeset, follow these steps:
 
-1. Make sure you are in the root directory of the workspace for the plugin you want to create a changeset for. For ex: if you are making changes on the `openshift-image-registry` plugin then you should be on `workspaces/openshift-image-registry` dir
+1. Make sure you are in the root directory of the workspace for the plugin you want to create a changeset for. For ex: if you are making changes on the `scorecard` plugin then you should be on `workspaces/scorecard` dir
 
 2. Run the following command to create a new changeset:
 
@@ -112,6 +119,58 @@ A release is automatically triggered by merging the plugins “Version Packages�
 > [!Important]
 > Please note that plugins with the private property set to 'true' will not be published upon merging the "Version Packages" PR. If you want full autonomy over the release process, you can mark your plugin as private. In this case, the release process will be managed by the plugin maintainer.
 
+## Backporting patches (prior release lines)
+
+Use this flow when you need a **new npm version** of packages in a workspace that tracks an older line than `main` (for example a security or bugfix for a release already shipped to customers). Day-to-day development and Renovate updates still happen on `main`; the `workspace/<name>` branch is only for those maintenance releases.
+
+Automation for this path is defined in [`.github/workflows/release_workspace_version.yml`](.github/workflows/release_workspace_version.yml). Published packages from this workflow use the npm dist-tag **`maintenance`** so they do not replace `latest`.
+
+### Patching an older release
+
+When patching an older release, follow the steps below to ensure the correct workflow is applied:
+
+1. Verify a `workspace/${workspace}` branch exists. If not, create a `workspace/${workspace}` branch by navigating to the [branches page](https://github.com/redhat-developer/rhdh-plugins/branches) and selecting 'New branch'.
+   - The `${workspace}` should correspond to the specific plugin or component you are patching.
+
+   The workflow requires that pull requests targeting the `workspace/${workspace}` branch be opened from a branch within the `redhat-developer/rhdh-plugins` repository. Therefore, in addition to the `workspace/${workspace}` branch, a corresponding branch must also be created (i.e. `plugin-name-x.y`).
+
+   If a branch `maintenance-changesets-release/${workspace}` already exists on the remote from a previous cycle, delete it before continuing; otherwise the Prior Version Release Workspace workflow will refuse to open a new Version Packages PR.
+
+2. Reset the `workspace` branch from a **published** baseline:
+   - Reset `workspace/${workspace}` so it matches an existing **git tag** for that workspace (the tags created when releases were published), not an arbitrary commit on `main`. That way the maintenance line starts from code that was already shipped and you avoid accidentally including unreleased changes in the next npm publish.
+   - Browse tags in the repository to find the right release: [github.com/redhat-developer/rhdh-plugins/tags](https://github.com/redhat-developer/rhdh-plugins/tags).
+
+3. Apply your commits and push to a branch:
+   - Apply the necessary patch fixes or security updates.
+   - Do not manually bump the version in `package.json`. The version bump must be handled via changesets.
+   - Push to a branch on the `redhat-developer/rhdh-plugins` repository. Note that it is not possible to open PRs from a fork for this release workflow.
+
+4. Open the **patch** pull request (the first PR in this flow):
+   - Open a pull request with your changes against the `workspace/${workspace}` branch.
+   - Ensure the PR:
+     - Contains only necessary fixes.
+     - Includes a changeset.
+
+5. Merge the **patch** PR when it is approved and CI is green.
+
+   Merging this PR does **not** publish to npm by itself. It triggers the Prior Version Release Workspace workflow, which opens a **separate** follow-up pull request—the **Version Packages** PR—from branch `maintenance-changesets-release/${workspace}`, authored by `rhdh-bot`.
+
+6. Merge the corresponding **Version Packages** PR:
+   - The Version Packages PR must meet these conditions before you merge it:
+     - The PR title starts with "Version Packages" (automatically generated by changesets).
+     - The PR originates from a `maintenance-changesets-release/${workspace}` branch.
+     - The PR is authored by `rhdh-bot`.
+     - The PR is merged, not just closed.
+   - Merging **this** PR triggers the release job that builds and publishes to npm.
+
+7. Confirm the release:
+   - Once the workflow completes, a new version will be published.
+   - A new Git tag will be created, which can be used for future patches.
+
+8. Open a PR with the `CHANGELOG` additions to `redhat-developer/rhdh-plugins` main branch:
+   - This is necessary for history to be clear on the latest branch.
+   - You can use `git cherry-pick --no-commit workspace/${workspace}` and only commit the `CHANGELOG` files.
+
 ## Creating a new Workspace
 
 For workspaces the name should reflect the name of the plugins contained in a simple manner (e.g. for the plugins `todo` & `todo-backend` the workspace would be called `todo`).
@@ -136,7 +195,7 @@ From there, once the script has finished, you should have a new `yarn workspace`
 Once you have a workspace setup, the creation of new plugins and packages is just like any other Backstage repository. You can use the `yarn new` command to run the prompt for creating new plugins or packages.
 
 ```bash
-cd workspaces/openshift-image-registry
+cd workspaces/scorecard
 yarn install
 yarn new
 ```
@@ -250,6 +309,8 @@ Once PRs are merged in the new repo, you should [mark the old plugins deprecated
 
 As only a single version will be migrated to the new repo, maintenance of older plugins for previous RHDH releases should continue to be done in the older repo, as the migrated versions will be aligned to newer versions of Backstage and may not be compatible.
 
+For packages **already released from this repository** at an older version, use [Backporting patches (prior release lines)](#backporting-patches-prior-release-lines) instead.
+
 ## API Reports
 
 This repository uses [API Extractor](https://api-extractor.com/) and TSDoc comments to generate API Reports in Markdown format, similar to those used in Backstage. If you make changes to the API or add a new plugin then you will need either generate a new API Report or update an existing API Report. If you don't do this the CI build will fail when you create your Pull Request.
@@ -311,8 +372,7 @@ As a plugin owner, you are responsible for the ongoing health and maintenance of
   See [Keeping Workspaces Up to Date](#keeping-workspaces-up-to-date-with-backstage).
 - **Manage security updates and patches**:
   Work with your security team to address vulnerabilities according to SLA and product lifecycle requirements.
-  Since this repository does not maintain release branches, Renovate only opens PRs against the latest code.
-  If your plugin is used in multiple product versions, you are responsible for backporting critical patches.
+  Renovate opens dependency PRs against `main`. If you must ship a fix on an older published line, follow [Backporting patches (prior release lines)](#backporting-patches-prior-release-lines) using the `workspace/<workspace>` branch for that line.
 - **Justify Dependency-Related PR closures**:
   If you choose not to merge a Renovate or dependency-related PR, include a brief explanation when closing it.
 
@@ -355,3 +415,48 @@ This repository uses [Renovate](https://docs.renovatebot.com/) to automatically 
 Plugin owners can opt in to Knip reports check in CI by creating a `bcp.json` file in the root of their workspace (`workspaces/${WORKSPACE}/bcp.json`) and adding `{ "knip-reports": true }`. This ensures that knip reports in your workspace stay up to date.
 
 [Knip](https://knip.dev/) is a tool that helps with clean-up and maintenance by identifying unused dependencies within workspaces. Regularly reviewing and addressing these reports can significantly improve code quality and reduce bloat.
+
+## Archiving a plugin or workspace
+
+When a plugin is no longer maintained, archive it rather than leaving stale code in the default branch. The archive script records the last published version in `.github/archived-plugins.json`, documents it in `ARCHIVED_WORKSPACES.md`, and strips repository configuration that referenced the workspace when you archive an entire workspace. You then remove the workspace or plugin tree in the same PR (or a follow-up). After the PR merges, npm deprecation runs via `.github/workflows/deprecate-archived-plugins.yml`.
+
+### When to archive
+
+Consider archiving when the plugin is unmaintained, has no owner, has unfixable security issues, has been superseded, or cannot be updated for current Backstage versions.
+
+### Steps
+
+1. From the repository root, run the archive script (use a branch based on current `main`):
+
+   ```bash
+   # Entire workspace (default reason: "No longer maintained")
+   node scripts/archive.js <workspace-name>
+
+   # Entire workspace with a custom reason
+   node scripts/archive.js <workspace-name> "Custom reason"
+
+   # Single plugin under workspaces/<workspace>/plugins/ (by plugin directory name or package suffix)
+   node scripts/archive.js <workspace-name> <plugin-dir-or-package-suffix> "Custom reason"
+   ```
+
+   The script only considers packages under the `@red-hat-developer-hub` scope. It updates:
+   - `.github/archived-plugins.json`
+   - `ARCHIVED_WORKSPACES.md`
+   - `.github/CODEOWNERS` (full workspace only — removes the `/workspaces/<name>` line)
+   - `.github/renovate.json` and `.github/renovate-presets/workspace/rhdh-<workspace>-presets.json` (full workspace only, when present)
+
+   It does **not** delete source directories; do that in the next step.
+
+2. Dry-run npm deprecation (optional):
+
+   ```bash
+   ./scripts/ci/deprecate-archived-plugins.sh --dry-run
+   ```
+
+3. Delete the workspace or plugin directory from the repository (`workspaces/<name>` for a full workspace, or `workspaces/<workspace>/plugins/<plugin>` when archiving specific plugins). Update any documentation that referenced the removed code.
+
+4. Run `yarn install` at the repository root if your tooling reports workspace or lockfile issues.
+
+5. Open a pull request including the script output and the deletion. Changes to `.github/archived-plugins.json` are sensitive because they drive automated npm deprecation after merge; ensure the usual repository reviewers (see `.github/CODEOWNERS`) approve the PR.
+
+6. After the PR merges, confirm the **Deprecate Archived Plugins** workflow ran successfully for the updated `.github/archived-plugins.json`.

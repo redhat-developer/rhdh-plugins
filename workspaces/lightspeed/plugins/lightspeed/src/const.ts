@@ -18,6 +18,8 @@ import { SamplePrompts } from './types';
 
 export const TEMP_CONVERSATION_ID = 'temp-conversation-id';
 
+export const LIGHTSPEED_APP_DRAWER_ID = 'lightspeed';
+
 // Translation keys for disclaimers
 export const FUNCTION_DISCLAIMER_WITHOUT_QUESTION_VALIDATION_KEY =
   'disclaimer.withoutValidation';

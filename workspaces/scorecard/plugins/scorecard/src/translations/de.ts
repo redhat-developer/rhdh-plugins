@@ -50,6 +50,8 @@ const scorecardTranslationDe = createTranslationMessages({
     // Error messages
     'errors.entityMissingProperties':
       'Für die Scorecard-Suche fehlen dem Element die erforderlichen Eigenschaften.',
+    'errors.missingAggregationId':
+      'Die Scorecard ist falsch konfiguriert; die Eigenschaft „Aggregations-ID“ (oder „Metrik-ID“) wurde nicht angegeben',
     'errors.invalidApiResponse': 'Ungültiges Antwortformat der Scorecard-API',
     'errors.fetchError': 'Fehler beim Abrufen der Scorecards: {{error}}',
     'errors.metricDataUnavailable': 'Metrikdaten nicht verfügbar',

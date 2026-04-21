@@ -548,13 +548,21 @@ export const getApi = (
   approvalTool: string,
   options?: APITypes,
 ) => {
+  const params = new URLSearchParams({
+    pagePerIntegration: String(page),
+    sizePerIntegration: String(size),
+    search: searchString,
+    approvalTool,
+  });
+
   if (options?.fetchOrganizations) {
-    return `${backendUrl}/api/bulk-import/organizations?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
+    return `${backendUrl}/api/bulk-import/organizations?${params.toString()}`;
   }
   if (options?.orgName) {
-    return `${backendUrl}/api/bulk-import/organizations/${options.orgName}/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
+    const orgName = encodeURIComponent(options?.orgName);
+    return `${backendUrl}/api/bulk-import/organizations/${orgName}/repositories?${params.toString()}`;
   }
-  return `${backendUrl}/api/bulk-import/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
+  return `${backendUrl}/api/bulk-import/repositories?${params.toString()}`;
 };
 
 export const getCustomisedErrorMessage = (

@@ -190,6 +190,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'conversation.announcement.userMessage':
       'Nachricht vom Benutzer: {{prompt}}. Nachricht vom Bot wird geladen.',
     'user.guest': 'Gast',
+    'conversation.announcement.responseStopped': 'Antwort angehalten.',
     'user.loading': '...',
     'tooltip.attach': 'Anhängen',
     'tooltip.send': 'Senden',
@@ -247,6 +248,50 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Angeheftete Chats sind derzeit aktiviert',
     'settings.pinned.disabled.description':
       'Angeheftete Chats sind derzeit deaktiviert.',
+    'settings.mcp.label': 'MCP-Einstellungen',
+    'mcp.settings.title': 'MCP-Server',
+    'mcp.settings.selectedCount':
+      '{{selectedCount}} von {{totalCount}} ausgewählt',
+    'mcp.settings.closeAriaLabel': 'MCP-Einstellungen schließen',
+    'mcp.settings.readOnlyAccess':
+      'Sie haben schreibgeschützten Zugriff auf MCP-Server.',
+    'mcp.settings.tableAriaLabel': 'MCP-Server-Tabelle',
+    'mcp.settings.enabled': 'Aktiviert',
+    'mcp.settings.name': 'Name',
+    'mcp.settings.status': 'Status',
+    'mcp.settings.edit': 'Bearbeiten',
+    'mcp.settings.loading': 'MCP-Server werden geladen...',
+    'mcp.settings.noneAvailable': 'Keine MCP-Server verfügbar.',
+    'mcp.settings.status.disabled': 'Deaktiviert',
+    'mcp.settings.status.tokenRequired': 'Token erforderlich',
+    'mcp.settings.status.failed': 'Fehlgeschlagen',
+    'mcp.settings.status.oneTool': '{{count}} Tool',
+    'mcp.settings.status.manyTools': '{{count}} Tools',
+    'mcp.settings.status.unknown': 'Unbekannt',
+    'mcp.settings.toggleServerAriaLabel': '{{serverName}} umschalten',
+    'mcp.settings.editServerAriaLabel': '{{serverName}} bearbeiten',
+    'mcp.settings.configureServerTitle': 'Server {{serverName}} konfigurieren',
+    'mcp.settings.closeConfigureModalAriaLabel':
+      'Konfigurationsdialog schließen',
+    'mcp.settings.modalDescription':
+      'Anmeldedaten werden verschlüsselt gespeichert und sind auf Ihr Profil beschränkt. Lightspeed arbeitet mit genau Ihren Berechtigungen.',
+    'mcp.settings.savedToken': 'Gespeicherter Token',
+    'mcp.settings.personalAccessToken': 'Persönlicher Zugriffstoken',
+    'mcp.settings.usingAdminCredential':
+      'Administratoranmeldedaten werden verwendet. Geben Sie einen persönlichen Token ein, um ihn für Ihr Konto zu überschreiben.',
+    'mcp.settings.enterToken': 'Geben Sie Ihren Token ein',
+    'mcp.settings.removePersonalToken': 'Persönlichen Token entfernen',
+    'mcp.settings.token.clearAriaLabel': 'Tokeneingabe löschen',
+    'mcp.settings.token.validating': 'Token wird validiert...',
+    'mcp.settings.token.savingAndValidating':
+      'Token wird gespeichert und validiert...',
+    'mcp.settings.token.urlUnavailableForValidation':
+      'Token kann nicht validiert werden, da die Server-URL nicht verfügbar ist.',
+    'mcp.settings.token.invalidCredentials':
+      'Ungültige Anmeldedaten. Überprüfen Sie Server-URL und Token.',
+    'mcp.settings.token.validationFailed':
+      'Validierung fehlgeschlagen. Überprüfen Sie Server-URL und Token.',
+    'mcp.settings.token.connectionSuccessful': 'Verbindung erfolgreich',
     'toolCall.header': 'Antwort des Tools: {{toolName}}',
     'toolCall.thinking': 'Hat {{seconds}} Sekunden nachgedacht',
     'toolCall.executionTime': 'Ausführungszeit: ',

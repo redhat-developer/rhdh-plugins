@@ -2,12 +2,12 @@ permission:
   enabled: false
 
 auth:
-  environment: production
+  environment: development
   providers:
     github:
-      production:
-        clientId: TODO
-        clientSecret: TODO
+      development:
+        clientId: ${GITHUB_CLIENT_ID}
+        clientSecret: ${GITHUB_CLIENT_SECRET}
         signIn:
           resolvers:
             - resolver: usernameMatchingUserEntityName
@@ -15,36 +15,68 @@ auth:
 catalog:
   locations:
     - type: file
-      target: ../../examples/all-scorecards.yaml
+      target: ../../examples/all-scorecards-location.yaml
       rules:
-        - allow:
-            [Component, System, API, Resource, Location, Template, User, Group]
+        - allow: [Component]
+    - type: file
+      target: ../../examples/orgs/guest.yaml
+      rules:
+        - allow: [User, Group]
     # TODO: Additional catalog entities for your user
 
-proxy:
-  '/jira/api':
-    target: ${JIRA_URL}
-    headers:
-      Authorization: ${JIRA_TOKEN}
-      Accept: 'application/json'
-      Content-Type: 'application/json'
-      X-Atlassian-Token: 'nocheck'
-      User-Agent: 'MY-UA-STRING'
+# ToDo: uncomment this when Jira Proxy is needed
+# proxy:
+#   '/jira/api':
+#     target: ${JIRA_URL}
+#     headers:
+#       Authorization: ${JIRA_TOKEN}
+#       Accept: 'application/json'
+#       Content-Type: 'application/json'
+#       X-Atlassian-Token: 'nocheck'
+#       User-Agent: 'MY-UA-STRING'
 
 integrations:
   github:
     - host: github.com
-      token: TODO
+      token: ${GITHUB_TOKEN}
 
 jira:
-  proxyPath: /jira/api
+  # ToDo: uncomment this when Jira Proxy is needed
+  # proxyPath: /jira/api
+
   product: cloud
   baseUrl: ${JIRA_URL}
   token: ${JIRA_TOKEN}
 
+  # ToDo: uncomment this when Jira Data Center is needed
+  # product: datacenter
+  # baseUrl: ${JIRA_DATA_CENTER_URL}
+  # token: ${JIRA_DATA_CENTER_TOKEN}
+
+# Optional Scorecard overrides (aggregationKPIs defaults are in app-config.yaml).
 scorecard:
   plugins:
     jira:
       open_issues:
-        options:
-          mandatoryFilter: Resolution = Unresolved
+        schedule:
+          frequency: { days: 1 }
+          timeout: { minutes: 2 }
+          initialDelay: { minutes: 1 }
+        # Optional — uncomment to narrow which Jira issues are counted (otherwise all open issues match the provider rules).
+        # options:
+        #   mandatoryFilter: type = Story
+        #   customFilter: priority = High
+    github:
+      open_prs:
+        # Example threshold overrides; remove to use provider defaults.
+        thresholds:
+          rules:
+            - key: success
+              expression: '<=20'
+              color: 'success.main'
+            - key: warning
+              expression: '20-50'
+              color: '#FFFF00'
+            - key: error
+              expression: '>50'
+              color: 'rgb(255, 0, 0)'

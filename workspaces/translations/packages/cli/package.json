@@ -39,7 +39,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@backstage/cli": "^0.34.4",
+    "@backstage/cli": "^0.36.0",
     "chalk": "^4.0.0",
     "commander": "^9.1.0",
     "fs-extra": "^10.1.0",

@@ -21,6 +21,7 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { AggregationConfig } from '../utils/buildAggregationConfig';
 
 describe('AggregatedMetricMapper', () => {
   const mockMetric: Metric = {
@@ -81,6 +82,42 @@ describe('AggregatedMetricMapper', () => {
     });
   });
 
+  describe('toAggregationMetadata', () => {
+    it('should map to AggregationMetadata when no aggregationConfig is provided', () => {
+      const result = AggregatedMetricMapper.toAggregationMetadata(mockMetric);
+
+      expect(result).toEqual({
+        title: 'Test Metric',
+        description: 'Test description',
+        type: 'number',
+        history: undefined,
+        aggregationType: 'statusGrouped',
+      });
+    });
+
+    it('should map to AggregationMetadata when aggregationConfig is provided', () => {
+      const aggregationConfig: AggregationConfig = {
+        id: 'test.metric',
+        type: 'statusGrouped',
+        title: 'Test Metric',
+        description: 'Test description',
+        metricId: 'test.metric',
+      };
+      const result = AggregatedMetricMapper.toAggregationMetadata(
+        mockMetric,
+        aggregationConfig,
+      );
+
+      expect(result).toEqual({
+        title: aggregationConfig.title,
+        description: aggregationConfig.description,
+        type: 'number',
+        history: undefined,
+        aggregationType: aggregationConfig.type,
+      });
+    });
+  });
+
   describe('toAggregatedMetricResult', () => {
     const thresholds: ThresholdConfig = DEFAULT_NUMBER_THRESHOLDS;
 
@@ -99,6 +136,13 @@ describe('AggregatedMetricMapper', () => {
         mockMetric,
         thresholds,
         aggregatedMetric,
+        {
+          id: 'test.metric',
+          type: 'statusGrouped',
+          title: 'Test Metric',
+          description: 'Test description',
+          metricId: 'test.metric',
+        },
       );
 
       expect(result).toEqual({
@@ -109,6 +153,7 @@ describe('AggregatedMetricMapper', () => {
           description: 'Test description',
           type: 'number',
           history: undefined,
+          aggregationType: 'statusGrouped',
         },
         result: {
           ...aggregatedMetric,
@@ -133,6 +178,13 @@ describe('AggregatedMetricMapper', () => {
         mockMetric,
         thresholds,
         aggregatedMetric,
+        {
+          id: 'test.metric',
+          type: 'statusGrouped',
+          title: 'Test Metric',
+          description: 'Test description',
+          metricId: 'test.metric',
+        },
       );
 
       expect(result.result.values).toEqual([
@@ -157,6 +209,13 @@ describe('AggregatedMetricMapper', () => {
         mockMetric,
         thresholds,
         aggregatedMetric,
+        {
+          id: 'test.metric',
+          type: 'statusGrouped',
+          title: 'Test Metric',
+          description: 'Test description',
+          metricId: 'test.metric',
+        },
       );
 
       expect(result.result.values).toEqual([
@@ -189,6 +248,13 @@ describe('AggregatedMetricMapper', () => {
         mockMetric,
         customThresholds,
         aggregatedMetric,
+        {
+          id: 'test.metric',
+          type: 'statusGrouped',
+          title: 'Test Metric',
+          description: 'Test description',
+          metricId: 'test.metric',
+        },
       );
 
       expect(result.result.values).toEqual([
@@ -218,6 +284,13 @@ describe('AggregatedMetricMapper', () => {
         mockMetric,
         thresholdsWithColor,
         aggregatedMetric,
+        {
+          id: 'test.metric',
+          type: 'statusGrouped',
+          title: 'Test Metric',
+          description: 'Test description',
+          metricId: 'test.metric',
+        },
       );
 
       expect(result.result.thresholds.rules).toEqual([
@@ -238,6 +311,13 @@ describe('AggregatedMetricMapper', () => {
         mockMetric,
         thresholds,
         aggregatedMetric,
+        {
+          id: 'test.metric',
+          title: 'Test Metric',
+          description: 'Test description',
+          type: 'statusGrouped',
+          metricId: 'test.metric',
+        },
       );
 
       expect(result.result.values).toEqual([

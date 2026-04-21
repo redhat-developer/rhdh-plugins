@@ -91,7 +91,72 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-jira.open_issues',
+      id: 'scorecard-deprecated-metric-id',
+      title: 'Scorecard: With deprecated metricId property (Jira)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        // The "metricId" represent deprecated logic and will be removed in the future
+        metricId: 'jira.open_issues',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-with-default-aggregation-config',
+      title: 'Scorecard: With default aggregation config (GitHub)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        aggregationId: 'github.open_prs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-openIssuesKpi',
       title: 'Scorecard: Jira open blocking tickets',
       // Supported card layout
       cardLayout: {
@@ -116,14 +181,14 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        metricId: 'jira.open_issues',
+        aggregationId: 'openIssuesKpi',
       },
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-github.open_prs',
+      id: 'scorecard-openPrsKpi',
       title: 'Scorecard: GitHub open PRs',
       // Supported card layout
       cardLayout: {
@@ -148,7 +213,7 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6, x: 4 },
       },
       props: {
-        metricId: 'github.open_prs',
+        aggregationId: 'openPrsKpi',
       },
     },
   },
@@ -203,7 +268,8 @@ const mountPoints: HomePageCardMountPoint[] = [
     Component: ScorecardHomepageCard as ComponentType,
     config: {
       id: 'scorecard-no-metric-id',
-      title: 'Scorecard: No metric id (expected error)',
+      title:
+        'Scorecard: No aggregationId or metricId property (expected error)',
       // Supported card layout
       cardLayout: {
         width: {
@@ -333,7 +399,10 @@ const routes = (
         </ScalprumContext.Provider>
       }
     />
-    <Route path="/scorecard/metrics/:metricId" element={<ScorecardPage />} />
+    <Route
+      path="/scorecard/aggregations/:aggregationId/metrics/:metricId"
+      element={<ScorecardPage />}
+    />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"

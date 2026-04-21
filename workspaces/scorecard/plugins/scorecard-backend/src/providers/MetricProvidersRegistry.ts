@@ -83,6 +83,10 @@ export class MetricProvidersRegistry {
     return metricProvider;
   }
 
+  hasProvider(providerId: string): boolean {
+    return this.metricProviders.has(providerId);
+  }
+
   getMetric(providerId: string): Metric {
     return this.getProvider(providerId).getMetric();
   }

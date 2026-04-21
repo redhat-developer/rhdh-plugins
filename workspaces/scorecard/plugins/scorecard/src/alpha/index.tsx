@@ -19,15 +19,17 @@ import {
   createFrontendPlugin,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { metricRouteRef, rootRouteRef } from '../routes';
+import { rootRouteRef, scorecardDrillDownRouteRef } from '../routes';
 import { scorecardTranslations } from '../translations';
 import { scorecardApi } from './extensions/api';
 import { scorecardEntityContent } from './extensions/entityTab';
 import {
-  scorecardHomepageWidget,
-  scorecardJiraHomepageWidget,
+  aggregatedCardWithDeprecatedMetricIdWidget,
+  aggregatedCardWithDefaultAggregationWidget,
+  aggregatedCardWithGithubOpenPrsWidget,
+  aggregatedCardWithJiraOpenIssuesWidget,
 } from './extensions/homePageCards';
-import { scorecardPage } from './extensions/metricPage';
+import { scorecardPage } from './extensions/scorecardPage';
 
 /**
  * Extension for Scorecard translations.
@@ -47,7 +49,7 @@ export default createFrontendPlugin({
   extensions: [scorecardApi, scorecardPage],
   routes: {
     root: rootRouteRef,
-    metric: metricRouteRef,
+    drillDown: scorecardDrillDownRouteRef,
   },
 });
 
@@ -75,7 +77,12 @@ export const scorecardTranslationsModule = createFrontendModule({
  */
 export const scorecardHomeModule = createFrontendModule({
   pluginId: 'home',
-  extensions: [scorecardHomepageWidget, scorecardJiraHomepageWidget],
+  extensions: [
+    aggregatedCardWithDeprecatedMetricIdWidget,
+    aggregatedCardWithDefaultAggregationWidget,
+    aggregatedCardWithJiraOpenIssuesWidget,
+    aggregatedCardWithGithubOpenPrsWidget,
+  ],
 });
 
 /**

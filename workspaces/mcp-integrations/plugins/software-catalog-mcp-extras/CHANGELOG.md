@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras
 
+## 0.2.2
+
+### Patch Changes
+
+- b337751: Upgrade workspace to Backstage 1.49.4
+
 ## 0.2.1
 
 ### Patch Changes

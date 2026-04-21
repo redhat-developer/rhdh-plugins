@@ -15,23 +15,29 @@
  */
 
 import {
+  BasicPermission,
   PermissionCriteria,
   PermissionCondition,
   PermissionRuleParams,
   AuthorizeResult,
 } from '@backstage/plugin-permission-common';
 import { Request } from 'express';
-import { NotAllowedError } from '@backstage/errors';
+import { AuthenticationError, NotAllowedError } from '@backstage/errors';
 import { catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
 import type {
   HttpAuthService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
+  Metric,
+  scorecardMetricReadPermission,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  authorizeConditional,
   filterAuthorizedMetrics,
   matches,
   checkEntityAccess,
+  getUserEntityRef,
 } from './permissionUtils';
 import { mockServices } from '@backstage/backend-test-utils';
 
@@ -47,6 +53,138 @@ const createMockMetric = (
 });
 
 describe('permissionUtils', () => {
+  describe('getUserEntityRef', () => {
+    it('should return userEntityRef from credentials', async () => {
+      const ref = await getUserEntityRef({
+        principal: { userEntityRef: 'user:default/alice' },
+      } as any);
+
+      expect(ref).toBe('user:default/alice');
+    });
+
+    it('should throw AuthenticationError when userEntityRef is missing', async () => {
+      await expect(getUserEntityRef({ principal: {} } as any)).rejects.toThrow(
+        AuthenticationError,
+      );
+      await expect(getUserEntityRef({ principal: {} } as any)).rejects.toThrow(
+        'User entity reference not found',
+      );
+    });
+
+    it('should throw AuthenticationError when principal is undefined', async () => {
+      await expect(getUserEntityRef({} as any)).rejects.toThrow(
+        AuthenticationError,
+      );
+    });
+  });
+
+  describe('authorizeConditional', () => {
+    const credentials = { principal: {} } as any;
+
+    it('should throw NotAllowedError when resource permission is DENY', async () => {
+      const permissions = mockServices.permissions.mock({
+        authorizeConditional: jest
+          .fn()
+          .mockResolvedValue([{ result: AuthorizeResult.DENY }]),
+      });
+
+      await expect(
+        authorizeConditional(
+          credentials,
+          permissions,
+          scorecardMetricReadPermission,
+        ),
+      ).rejects.toThrow(NotAllowedError);
+    });
+
+    it('should return undefined conditions when resource permission is ALLOW', async () => {
+      const permissions = mockServices.permissions.mock({
+        authorizeConditional: jest
+          .fn()
+          .mockResolvedValue([{ result: AuthorizeResult.ALLOW }]),
+      });
+
+      const result = await authorizeConditional(
+        credentials,
+        permissions,
+        scorecardMetricReadPermission,
+      );
+
+      expect(result.conditions).toBeUndefined();
+    });
+
+    it('should return conditions when resource permission is CONDITIONAL', async () => {
+      const conditions = {
+        anyOf: [
+          {
+            rule: 'HAS_METRIC_ID',
+            resourceType: 'scorecard-metric',
+            params: { metricIds: ['github.open_prs'] },
+          },
+        ],
+      };
+      const permissions = mockServices.permissions.mock({
+        authorizeConditional: jest.fn().mockResolvedValue([
+          {
+            result: AuthorizeResult.CONDITIONAL,
+            conditions,
+          },
+        ]),
+      });
+
+      const result = await authorizeConditional(
+        credentials,
+        permissions,
+        scorecardMetricReadPermission,
+      );
+
+      expect(result.conditions).toEqual(conditions);
+    });
+
+    it('should call authorize (not authorizeConditional) for basic permission', async () => {
+      const authorize = jest
+        .fn()
+        .mockResolvedValue([{ result: AuthorizeResult.ALLOW }]);
+      const authorizeConditionalFn = jest.fn();
+      const permissions = mockServices.permissions.mock({
+        authorize,
+        authorizeConditional: authorizeConditionalFn,
+      });
+
+      const basicPermission = {
+        type: 'basic',
+        name: 'catalog.entity.read',
+        attributes: {},
+      } as BasicPermission;
+
+      await authorizeConditional(credentials, permissions, basicPermission);
+
+      expect(authorize).toHaveBeenCalledWith(
+        [{ permission: basicPermission }],
+        { credentials },
+      );
+      expect(authorizeConditionalFn).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotAllowedError when basic permission is DENY', async () => {
+      const permissions = mockServices.permissions.mock({
+        authorize: jest
+          .fn()
+          .mockResolvedValue([{ result: AuthorizeResult.DENY }]),
+      });
+
+      const basicPermission = {
+        type: 'basic',
+        name: 'catalog.entity.read',
+        attributes: {},
+      } as BasicPermission;
+
+      await expect(
+        authorizeConditional(credentials, permissions, basicPermission),
+      ).rejects.toThrow(NotAllowedError);
+    });
+  });
+
   const mockMetricIdPermissionCondition = {
     rule: 'HAS_METRIC_ID',
     resourceType: 'scorecard-metric',

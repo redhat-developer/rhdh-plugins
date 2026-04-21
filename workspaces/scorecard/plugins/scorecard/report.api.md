@@ -17,15 +17,12 @@ export const EntityScorecardContent: () => JSX_2.Element;
 export { ScorecardErrorStatusIcon };
 
 // @public
-export const ScorecardHomepageCard: ({
-  metricId,
-  showSubheader,
-  showInfo,
-}: {
-  metricId: string;
-  showSubheader?: boolean | undefined;
-  showInfo?: boolean | undefined;
-}) => JSX_2.Element | null;
+export const ScorecardHomepageCard: (props: {
+  metricId?: string;
+  aggregationId?: string;
+  showSubheader?: boolean;
+  showInfo?: boolean;
+}) => JSX_2.Element;
 
 // @public
 export const ScorecardPage: () => JSX_2.Element;
@@ -54,6 +51,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
     readonly 'errors.entityMissingProperties': string;
+    readonly 'errors.missingAggregationId': string;
     readonly 'errors.invalidApiResponse': string;
     readonly 'errors.fetchError': string;
     readonly 'errors.metricDataUnavailable': string;

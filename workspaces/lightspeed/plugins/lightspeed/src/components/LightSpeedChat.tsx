@@ -46,6 +46,7 @@ import {
   FileDropZone,
   MessageBar,
   MessageProps,
+  Settings,
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import {
@@ -89,6 +90,7 @@ import {
   useNotebookSessions,
   usePinnedChatsSettings,
   useSortSettings,
+  useStopConversation,
 } from '../hooks';
 import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
 import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
@@ -109,6 +111,7 @@ import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
+import { McpServersSettings } from './McpServersSettings';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebooksTab } from './notebooks/NotebooksTab';
 import { NotebookView } from './notebooks/NotebookView';
@@ -318,6 +321,19 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
+    '& .pf-chatbot__jump': {
+      left: '50% !important',
+      right: 'auto !important',
+      transform: 'translateX(-50%)',
+      visibility: 'hidden',
+      pointerEvents: 'none',
+    },
+  },
+  chatbotContentHasOverflow: {
+    '& .pf-chatbot__jump': {
+      visibility: 'visible',
+      pointerEvents: 'auto',
+    },
   },
   // Inner scroll container we control: always scrollable so zoomed-in users see full content.
   chatbotContentScroll: {
@@ -343,6 +359,86 @@ const useStyles = makeStyles(theme => ({
   chatbotContentSpacer: {
     flex: 1,
     minHeight: 0,
+  },
+  settingsFlat: {
+    height: '100%',
+    width: '100%',
+    '&.pf-chatbot__settings-form-container': {
+      background:
+        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      padding: 0,
+      margin: 0,
+      minHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      maxWidth: 'none',
+    },
+    '& .pf-chatbot__settings-form': {
+      margin: 0,
+      padding: 0,
+      background:
+        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      minHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      maxWidth: 'none',
+    },
+    '& .pf-chatbot__settings-form-row': {
+      background:
+        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      border: 0,
+      margin: 0,
+      padding: 0,
+      minHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      maxWidth: 'none',
+    },
+    '& .pf-chatbot__settings-label': {
+      display: 'none',
+    },
+  },
+  mcpFullscreenLayout: {
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+    minHeight: 0,
+    height: '100%',
+    flex: 1,
+    width: '100%',
+    minWidth: 0,
+    overflow: 'hidden',
+  },
+  mcpChatPane: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+    width: '100%',
+    minWidth: 0,
+  },
+  mcpSettingsPane: {
+    width: '100%',
+    minWidth: 0,
+    borderLeft: `1px solid ${theme.palette.divider}`,
+    backgroundColor:
+      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+  },
+  mcpCollapsedDrawerOrderFix: {
+    '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
+      {
+        order: 'unset',
+      },
+    '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
+      {
+        visibility: 'hidden',
+        opacity: 0,
+        transition: 'none !important',
+      },
   },
 }));
 
@@ -401,6 +497,7 @@ export const LightspeedChat = ({
     activeNotebook?.session_id,
   );
   const [conversationId, setConversationId] = useState<string>('');
+  const [requestId, setRequestId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
@@ -408,8 +505,13 @@ export const LightspeedChat = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
+  const [isMcpSettingsOpen, setIsMcpSettingsOpen] = useState<boolean>(false);
+  const [chatHeaderBgColor, setChatHeaderBgColor] = useState<string>();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
+  const [messageBarKey, setMessageBarKey] = useState(0);
+  const [hasChatContentOverflow, setHasChatContentOverflow] = useState(false);
+  const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
   const {
@@ -480,6 +582,16 @@ export const LightspeedChat = ({
       setIsChatHistoryDrawerOpen(true);
     }
   }, [isMobile, isFullscreenMode]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const headerElement = document.querySelector('.pf-chatbot__header');
+    if (!headerElement) return;
+    const computedBg = window.getComputedStyle(headerElement).backgroundColor;
+    if (computedBg) {
+      setChatHeaderBgColor(computedBg);
+    }
+  }, [displayMode, isMcpSettingsOpen]);
 
   const {
     isPinningChatsEnabled,
@@ -583,9 +695,16 @@ export const LightspeedChat = ({
     setCurrentConversationId(conv_id);
   };
 
+  const onRequestIdReady = (request_id: string) => {
+    setRequestId(request_id);
+  };
+
   const onComplete = (message: string) => {
     setIsSendButtonDisabled(false);
-    setAnnouncement(`Message from Bot: ${message}`);
+    if (!wasStoppedByUserRef.current) {
+      setAnnouncement(`Message from Bot: ${message}`);
+    }
+    wasStoppedByUserRef.current = false;
     queryClient.invalidateQueries({
       queryKey: ['conversations'],
     });
@@ -604,12 +723,16 @@ export const LightspeedChat = ({
       avatar,
       onComplete,
       onStart,
+      onRequestIdReady,
     );
 
   const [messages, setMessages] =
     useState<MessageProps[]>(conversationMessages);
 
   const sendMessage = (message: string | number) => {
+    if (!message.toString().trim()) return;
+
+    wasStoppedByUserRef.current = false;
     if (conversationId !== TEMP_CONVERSATION_ID) {
       setNewChatCreated(false);
     }
@@ -626,6 +749,7 @@ export const LightspeedChat = ({
 
   const onNewChat = useCallback(() => {
     (async () => {
+      setIsMcpSettingsOpen(false);
       if (conversationId !== TEMP_CONVERSATION_ID) {
         setMessages([]);
         setFileContents([]);
@@ -748,7 +872,7 @@ export const LightspeedChat = ({
       const filteredConversations = Object.entries(categorizedMessages).reduce(
         (acc, [key, items]) => {
           const filteredItems = items.filter(item =>
-            item.text
+            (item.text ?? '')
               .toLocaleLowerCase('en-US')
               .includes(targetValue.toLocaleLowerCase('en-US')),
           );
@@ -817,6 +941,7 @@ export const LightspeedChat = ({
 
   const onSelectActiveItem = useCallback(
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
+      setIsMcpSettingsOpen(false);
       setNewChatCreated(false);
       const newConvId = String(selectedItem);
       setConversationId((c_id: string) => {
@@ -838,6 +963,7 @@ export const LightspeedChat = ({
       setDraftMessage,
       scrollToBottomRef,
       setCurrentConversationId,
+      setIsMcpSettingsOpen,
     ],
   );
 
@@ -904,6 +1030,136 @@ export const LightspeedChat = ({
       resizeObserver?.disconnect();
     };
   }, [welcomePrompts.length]);
+
+  useEffect(() => {
+    const scrollContainer = contentScrollRef.current;
+    if (!scrollContainer) {
+      setHasChatContentOverflow(false);
+      return undefined;
+    }
+
+    const getMessageBox = () =>
+      scrollContainer.querySelector(
+        '.pf-chatbot__messagebox',
+      ) as HTMLElement | null;
+
+    const messageBoxOwnsScroll = (messageBox: HTMLElement | null) => {
+      if (!messageBox || typeof window === 'undefined') {
+        return false;
+      }
+      const overflowY = window.getComputedStyle(messageBox).overflowY;
+      return (
+        overflowY === 'auto' ||
+        overflowY === 'scroll' ||
+        overflowY === 'overlay'
+      );
+    };
+
+    const getScrollTarget = () => {
+      const messageBox = getMessageBox();
+      return messageBoxOwnsScroll(messageBox) ? messageBox! : scrollContainer;
+    };
+
+    let observedScrollTarget: HTMLElement | null = getScrollTarget();
+    let rafId: number | null = null;
+    let updateScheduled = false;
+
+    const updateOverflow = () => {
+      const scrollTarget = observedScrollTarget ?? scrollContainer;
+      setHasChatContentOverflow(
+        scrollTarget.scrollHeight > scrollTarget.clientHeight + 1,
+      );
+    };
+
+    const scheduleOverflowUpdate = () => {
+      if (updateScheduled) {
+        return;
+      }
+      updateScheduled = true;
+      if (typeof requestAnimationFrame !== 'undefined') {
+        rafId = requestAnimationFrame(() => {
+          updateScheduled = false;
+          updateOverflow();
+        });
+      } else {
+        updateScheduled = false;
+        updateOverflow();
+      }
+    };
+
+    scheduleOverflowUpdate();
+
+    // Use capture so scroll events from inner messagebox also trigger updates.
+    scrollContainer.addEventListener('scroll', scheduleOverflowUpdate, {
+      passive: true,
+      capture: true,
+    });
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => scheduleOverflowUpdate())
+        : undefined;
+    resizeObserver?.observe(scrollContainer);
+    if (observedScrollTarget !== scrollContainer) {
+      resizeObserver?.observe(observedScrollTarget);
+    }
+
+    const syncObservedScrollTarget = () => {
+      const nextScrollTarget = getScrollTarget();
+      if (nextScrollTarget === observedScrollTarget) {
+        return;
+      }
+      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
+        resizeObserver?.unobserve(observedScrollTarget);
+      }
+      if (nextScrollTarget !== scrollContainer) {
+        resizeObserver?.observe(nextScrollTarget);
+      }
+      observedScrollTarget = nextScrollTarget;
+    };
+
+    const mutationObserver =
+      typeof MutationObserver !== 'undefined'
+        ? new MutationObserver(() => {
+            syncObservedScrollTarget();
+            scheduleOverflowUpdate();
+          })
+        : undefined;
+    mutationObserver?.observe(scrollContainer, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', updateOverflow);
+    }
+
+    return () => {
+      if (rafId !== null && typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(rafId);
+      }
+      scrollContainer.removeEventListener(
+        'scroll',
+        scheduleOverflowUpdate,
+        true,
+      );
+      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
+        resizeObserver?.unobserve(observedScrollTarget);
+      }
+      resizeObserver?.disconnect();
+      mutationObserver?.disconnect();
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateOverflow);
+      }
+    };
+  }, [
+    conversationId,
+    displayMode,
+    isMcpSettingsOpen,
+    messages.length,
+    welcomePrompts.length,
+  ]);
 
   const handleFilter = useCallback((value: string) => {
     setFilterValue(value);
@@ -1007,6 +1263,26 @@ export const LightspeedChat = ({
     handleFileUpload(data);
   };
 
+  const { mutate: stopConversation } = useStopConversation();
+
+  const handleStopButton = () => {
+    wasStoppedByUserRef.current = true;
+    if (requestId) {
+      stopConversation(requestId);
+      setRequestId('');
+    }
+    setIsSendButtonDisabled(false);
+    setAnnouncement(t('conversation.announcement.responseStopped'));
+    const lastUserMessage = [...conversationMessages]
+      .reverse()
+      .find((m: { role?: string }) => m.role === 'user');
+    const restoredPrompt = (lastUserMessage?.content as string) ?? '';
+    setDraftMessage(restoredPrompt.trim());
+    if (restoredPrompt) setMessageBarKey(k => k + 1);
+    setFileContents([]);
+    setUploadError({ message: null });
+  };
+
   const handleDraftMessage = (
     _e: ChangeEvent<HTMLTextAreaElement>,
     value: string | number,
@@ -1025,6 +1301,117 @@ export const LightspeedChat = ({
       }
     });
   };
+
+  const chatMainContent = (
+    <>
+      <ChatbotContent
+        className={`${classes.chatbotContent} ${
+          hasChatContentOverflow ? classes.chatbotContentHasOverflow : ''
+        }`}
+      >
+        <div ref={contentScrollRef} className={classes.chatbotContentScroll}>
+          {welcomePrompts.length > 0 && (
+            <div className={classes.chatbotContentSpacer} aria-hidden />
+          )}
+          <LightspeedChatBox
+            userName={userName}
+            messages={messages}
+            profileLoading={profileLoading}
+            announcement={announcement}
+            ref={scrollToBottomRef}
+            welcomePrompts={welcomePrompts}
+            conversationId={conversationId}
+            isStreaming={isSendButtonDisabled}
+            topicRestrictionEnabled={topicRestrictionEnabled}
+            displayMode={displayMode}
+          />
+          {welcomePrompts.length > 0 && (
+            <div
+              ref={bottomSentinelRef}
+              aria-hidden
+              style={{ height: 0, flexShrink: 0 }}
+            />
+          )}
+        </div>
+      </ChatbotContent>
+      <ChatbotFooter className={classes.footer}>
+        <FilePreview />
+        <MessageBar
+          key={messageBarKey}
+          onSendMessage={sendMessage}
+          isSendButtonDisabled={isSendButtonDisabled}
+          hasAttachButton
+          handleAttach={handleAttach}
+          hasMicrophoneButton
+          value={draftMessage}
+          onChange={handleDraftMessage}
+          hasStopButton={isSendButtonDisabled}
+          handleStopButton={isSendButtonDisabled ? handleStopButton : undefined}
+          buttonProps={{
+            attach: {
+              inputTestId: 'attachment-input',
+              tooltipContent: t('tooltip.attach'),
+            },
+            microphone: {
+              tooltipContent: {
+                active: t('tooltip.microphone.active'),
+                inactive: t('tooltip.microphone.inactive'),
+              },
+            },
+            send: {
+              tooltipContent: t('tooltip.send'),
+            },
+          }}
+          allowedFileTypes={supportedFileTypes}
+          onAttachRejected={onAttachRejected}
+          placeholder={t('chatbox.message.placeholder')}
+        />
+        <ChatbotFootnote {...getFootnoteProps(t)} />
+      </ChatbotFooter>
+    </>
+  );
+
+  const mcpSettingsPanel = (
+    <McpServersSettings
+      onClose={() => setIsMcpSettingsOpen(false)}
+      backgroundColor={chatHeaderBgColor}
+    />
+  );
+
+  const mainPanelContent = (() => {
+    if (!isMcpSettingsOpen) {
+      return <>{chatMainContent}</>;
+    }
+
+    if (isFullscreenMode) {
+      return (
+        <div className={classes.mcpFullscreenLayout}>
+          <div className={classes.mcpChatPane}>{chatMainContent}</div>
+          <div className={classes.mcpSettingsPane}>{mcpSettingsPanel}</div>
+        </div>
+      );
+    }
+
+    return (
+      <Settings
+        className={classes.settingsFlat}
+        fields={[
+          {
+            id: 'mcp-servers-settings',
+            label: '',
+            field: mcpSettingsPanel,
+          },
+        ]}
+      />
+    );
+  })();
+
+  let drawerPanelStyle: { [key: string]: string | number } | undefined;
+  if (!isFullscreenMode) {
+    drawerPanelStyle = { zIndex: 1300 };
+  } else if (isMcpSettingsOpen) {
+    drawerPanelStyle = { width: 320, minWidth: 320, maxWidth: 320 };
+  }
 
   return (
     <>
@@ -1090,15 +1477,17 @@ export const LightspeedChat = ({
       )}
       <Chatbot
         displayMode={ChatbotDisplayMode.embedded}
-        className={classes.body}
+        className={`${classes.body} ${
+          isMcpSettingsOpen && !isChatHistoryDrawerOpen
+            ? classes.mcpCollapsedDrawerOrderFix
+            : ''
+        }`}
       >
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
             <ChatbotHeaderMenu
               aria-expanded={isChatHistoryDrawerOpen}
-              onMenuToggle={() =>
-                setIsChatHistoryDrawerOpen(!isChatHistoryDrawerOpen)
-              }
+              onMenuToggle={onChatHistoryDrawerToggle}
               className={classes.headerMenu}
               tooltipContent={t('tooltip.chatHistoryMenu')}
               aria-label={t('aria.chatHistoryMenu')}
@@ -1115,6 +1504,7 @@ export const LightspeedChat = ({
           <LightspeedChatBoxHeader
             selectedModel={selectedModel}
             handleSelectedModel={item => {
+              setIsMcpSettingsOpen(false);
               onNewChat();
               handleSelectedModel(item);
             }}
@@ -1124,6 +1514,7 @@ export const LightspeedChat = ({
             setDisplayMode={setDisplayMode}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
+            onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
         {isFullscreenMode && (
@@ -1145,7 +1536,7 @@ export const LightspeedChat = ({
             drawerPanelContentProps={{
               isResizable: isFullscreenMode,
               hasNoBorder: !isFullscreenMode,
-              style: isFullscreenMode ? undefined : { zIndex: 1300 },
+              style: drawerPanelStyle,
             }}
             reverseButtonOrder
             displayMode={ChatbotDisplayMode.embedded}
@@ -1206,69 +1597,7 @@ export const LightspeedChat = ({
                     </ChatbotAlert>
                   </div>
                 )}
-                <ChatbotContent className={classes.chatbotContent}>
-                  <div
-                    ref={contentScrollRef}
-                    className={classes.chatbotContentScroll}
-                  >
-                    {welcomePrompts.length > 0 && (
-                      <div
-                        className={classes.chatbotContentSpacer}
-                        aria-hidden
-                      />
-                    )}
-                    <LightspeedChatBox
-                      userName={userName}
-                      messages={messages}
-                      profileLoading={profileLoading}
-                      announcement={announcement}
-                      ref={scrollToBottomRef}
-                      welcomePrompts={welcomePrompts}
-                      conversationId={conversationId}
-                      isStreaming={isSendButtonDisabled}
-                      topicRestrictionEnabled={topicRestrictionEnabled}
-                      displayMode={displayMode}
-                    />
-                    {welcomePrompts.length > 0 && (
-                      <div
-                        ref={bottomSentinelRef}
-                        aria-hidden
-                        style={{ height: 0, flexShrink: 0 }}
-                      />
-                    )}
-                  </div>
-                </ChatbotContent>
-                <ChatbotFooter className={classes.footer}>
-                  <FilePreview />
-                  <MessageBar
-                    onSendMessage={sendMessage}
-                    isSendButtonDisabled={isSendButtonDisabled}
-                    hasAttachButton
-                    handleAttach={handleAttach}
-                    hasMicrophoneButton
-                    value={draftMessage}
-                    onChange={handleDraftMessage}
-                    buttonProps={{
-                      attach: {
-                        inputTestId: 'attachment-input',
-                        tooltipContent: t('tooltip.attach'),
-                      },
-                      microphone: {
-                        tooltipContent: {
-                          active: t('tooltip.microphone.active'),
-                          inactive: t('tooltip.microphone.inactive'),
-                        },
-                      },
-                      send: {
-                        tooltipContent: t('tooltip.send'),
-                      },
-                    }}
-                    allowedFileTypes={supportedFileTypes}
-                    onAttachRejected={onAttachRejected}
-                    placeholder={t('chatbox.message.placeholder')}
-                  />
-                  <ChatbotFootnote {...getFootnoteProps(t)} />
-                </ChatbotFooter>
+                {mainPanelContent}
               </FileDropZone>
             }
           />

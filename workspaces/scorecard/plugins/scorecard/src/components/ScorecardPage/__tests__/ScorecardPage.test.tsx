@@ -73,18 +73,20 @@ jest.mock('../EntitiesTable/EntitiesTable', () => ({
 const mockScorecardHomepageCard = jest.fn();
 jest.mock('../../ScorecardHomepageSection/ScorecardHomepageCard', () => ({
   ScorecardHomepageCard: (props: {
-    metricId: string;
+    metricId?: string;
+    aggregationId?: string;
     showSubheader: boolean;
     showInfo: boolean;
   }) => {
     mockScorecardHomepageCard(props);
+    const id = `${props.aggregationId ?? ''}|${props.metricId ?? ''}`;
     return (
       <div
         data-testid="scorecard-homepage-card"
         data-show-subheader={props.showSubheader}
         data-show-info={props.showInfo}
       >
-        {props.metricId}
+        {id}
       </div>
     );
   },
@@ -100,7 +102,10 @@ describe('ScorecardPage', () => {
   });
 
   it('should render page structure with header, content, table and scorecard card', () => {
-    mockUseParams.mockReturnValue({ metricId: 'github.open_prs' });
+    mockUseParams.mockReturnValue({
+      aggregationId: 'github.open_prs',
+      metricId: 'github.open_prs',
+    });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
@@ -112,7 +117,10 @@ describe('ScorecardPage', () => {
   });
 
   it('should pass metricId to header when metricTitle is empty', () => {
-    mockUseParams.mockReturnValue({ metricId: 'github.open_prs' });
+    mockUseParams.mockReturnValue({
+      aggregationId: 'github.open_prs',
+      metricId: 'github.open_prs',
+    });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
@@ -121,8 +129,24 @@ describe('ScorecardPage', () => {
     );
   });
 
-  it('should show Unknown metric in header when metricId is undefined', () => {
-    mockUseParams.mockReturnValue({ metricId: undefined });
+  it('should show aggregationId in header when metricId is empty', () => {
+    mockUseParams.mockReturnValue({
+      aggregationId: 'openPrsKpi',
+      metricId: '',
+    });
+
+    render(<ScorecardPage />, { wrapper: TestWrapper });
+
+    expect(mockScorecardPageHeader).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'openPrsKpi' }),
+    );
+  });
+
+  it('should show Unknown metric in header when both ids are empty', () => {
+    mockUseParams.mockReturnValue({
+      aggregationId: '',
+      metricId: '',
+    });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
@@ -132,7 +156,10 @@ describe('ScorecardPage', () => {
   });
 
   it('should pass metricId and setMetricTitle to EntitiesTable', () => {
-    mockUseParams.mockReturnValue({ metricId: 'jira.blocking_tickets' });
+    mockUseParams.mockReturnValue({
+      aggregationId: 'jira.blocking_tickets',
+      metricId: 'jira.blocking_tickets',
+    });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
@@ -144,20 +171,46 @@ describe('ScorecardPage', () => {
     );
   });
 
-  it('should pass metricId, showSubheader false, and showInfo false to ScorecardHomepageCard', () => {
-    mockUseParams.mockReturnValue({ metricId: 'github.open_prs' });
+  it('should pass aggregationId and metricId to ScorecardHomepageCard', () => {
+    mockUseParams.mockReturnValue({
+      aggregationId: 'github.open_prs',
+      metricId: 'github.open_prs',
+    });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
     expect(mockScorecardHomepageCard).toHaveBeenCalledWith({
+      aggregationId: 'github.open_prs',
       metricId: 'github.open_prs',
       showSubheader: false,
       showInfo: false,
     });
   });
 
+  it('should pass KPI aggregation id and backing metric id separately', () => {
+    mockUseParams.mockReturnValue({
+      aggregationId: 'openPrsKpi',
+      metricId: 'github.open_prs',
+    });
+
+    render(<ScorecardPage />, { wrapper: TestWrapper });
+
+    expect(mockScorecardHomepageCard).toHaveBeenCalledWith({
+      aggregationId: 'openPrsKpi',
+      metricId: 'github.open_prs',
+      showSubheader: false,
+      showInfo: false,
+    });
+    expect(mockEntitiesTable).toHaveBeenCalledWith(
+      expect.objectContaining({ metricId: 'github.open_prs' }),
+    );
+  });
+
   it('should update header title when setMetricTitle is called from EntitiesTable', () => {
-    mockUseParams.mockReturnValue({ metricId: 'github.open_prs' });
+    mockUseParams.mockReturnValue({
+      aggregationId: 'github.open_prs',
+      metricId: 'github.open_prs',
+    });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 

@@ -18,7 +18,12 @@ import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common
 
 import { useTranslation } from './useTranslation';
 
-export const useMetricDisplayLabels = (metric?: Metric) => {
+export const useMetricDisplayLabels = (
+  metric?: Pick<Metric, 'id' | 'title' | 'description'>,
+): {
+  title: string;
+  description: string;
+} => {
   const { t } = useTranslation();
 
   if (!metric) {

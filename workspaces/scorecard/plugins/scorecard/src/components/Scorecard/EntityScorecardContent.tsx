@@ -18,7 +18,6 @@ import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-
 import { ResponseErrorPanel } from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import NoScorecardsState from '../Common/NoScorecardsState';
 import Scorecard from './Scorecard';
@@ -26,22 +25,14 @@ import { useScorecards } from '../../hooks/useScorecards';
 import { getStatusConfig } from '../../utils';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { useTranslation } from '../../hooks/useTranslation';
+import { CardLoading } from '../Common/CardLoading';
 
 export const EntityScorecardContent = () => {
-  const { scorecards, loadingData, error } = useScorecards();
+  const { data: scorecards, isLoading, error } = useScorecards();
   const { t } = useTranslation();
 
-  if (loadingData) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
-      >
-        <CircularProgress />
-      </Box>
-    );
+  if (isLoading) {
+    return <CardLoading />;
   }
 
   if (error) {
@@ -51,7 +42,7 @@ export const EntityScorecardContent = () => {
     return <ResponseErrorPanel error={error} />;
   }
 
-  if (!loadingData && scorecards?.length === 0) {
+  if (!isLoading && scorecards?.length === 0) {
     return <NoScorecardsState />;
   }
 

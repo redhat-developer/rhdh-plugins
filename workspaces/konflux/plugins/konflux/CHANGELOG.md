@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-konflux
 
+## 0.1.6
+
+### Patch Changes
+
+- dff3b21: Docs: document wildcard and glob pattern usage with examples and YAML quoting note.
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.6
+
 ## 0.1.5
 
 ### Patch Changes

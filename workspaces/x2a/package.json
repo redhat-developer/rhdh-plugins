@@ -17,16 +17,18 @@
     "openapi-generate": "cd plugins/x2a-backend && yarn openapi-generate",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
-    "clean": "backstage-cli repo clean",
+    "clean": "backstage-cli repo clean && find plugins -mindepth 2 -maxdepth 2 -type d -name dist-dynamic -exec rm -rf {} +",
     "test": "backstage-cli repo test",
+    "test:pg": "CI=true backstage-cli repo test",
     "test:all": "yarn openapi-generate && yarn prettier:check && yarn lint:all && backstage-cli repo test --coverage",
+    "test:all:pg": "yarn openapi-generate && yarn prettier:check && yarn lint:all && CI=true backstage-cli repo test --coverage",
     "test:e2e": "echo Skipping until we have tests: playwright test",
-    "fix": "backstage-cli repo fix",
+    "fix": "backstage-cli repo fix --publish",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
+    "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all:pg",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
@@ -55,12 +57,11 @@
   "resolutions": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "lru-cache": "^8",
-    "@backstage/backend-defaults": "0.13.1",
     "@backstage/backend-plugin-api": "1.5.0",
-    "@backstage-community/plugin-rbac-backend": "~7.4.0",
-    "@backstage/plugin-permission-react": "0.4.36",
-    "@backstage/plugin-auth-backend-module-gitlab-provider": "0.3.9"
+    "@backstage/backend-defaults": "0.13.2",
+    "@backstage/plugin-auth-node": "0.6.10",
+    "@backstage/plugin-permission-backend": "0.7.3",
+    "@backstage/core-app-api": "1.19.2"
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {

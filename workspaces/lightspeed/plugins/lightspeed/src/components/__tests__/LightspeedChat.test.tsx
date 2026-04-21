@@ -157,6 +157,7 @@ const mockLightspeedApi = {
   getFeedbackStatus: jest.fn().mockResolvedValue(false),
   captureFeedback: jest.fn().mockResolvedValue({ response: 'success' }),
   isTopicRestrictionEnabled: jest.fn().mockResolvedValue(false),
+  stopMessage: jest.fn().mockResolvedValue({ success: true }),
 };
 
 const mockNotebooksApi = {

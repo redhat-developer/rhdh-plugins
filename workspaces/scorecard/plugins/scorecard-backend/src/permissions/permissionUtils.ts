@@ -15,15 +15,20 @@
  */
 
 import {
+  AuthorizeResult,
+  BasicPermission,
   PermissionCondition,
   PermissionCriteria,
   PermissionRuleParams,
-  AuthorizeResult,
+  PolicyDecision,
+  ResourcePermission,
 } from '@backstage/plugin-permission-common';
 import { Request } from 'express';
-import { NotAllowedError } from '@backstage/errors';
+import { AuthenticationError, NotAllowedError } from '@backstage/errors';
 import { catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
 import type {
+  BackstageCredentials,
+  BackstageUserPrincipal,
   HttpAuthService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
@@ -31,6 +36,58 @@ import type {
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { rules as scorecardRules } from './rules';
+
+export const getUserEntityRef = async (
+  credentials: BackstageCredentials<BackstageUserPrincipal>,
+) => {
+  const userEntityRef = credentials?.principal?.userEntityRef;
+
+  if (!userEntityRef) {
+    throw new AuthenticationError('User entity reference not found');
+  }
+
+  return userEntityRef;
+};
+
+type ScorecardPermission = {
+  decision: PolicyDecision;
+  conditions?: PermissionCriteria<
+    PermissionCondition<string, PermissionRuleParams>
+  >;
+};
+
+export const authorizeConditional = async (
+  credentials: BackstageCredentials,
+  permissions: PermissionsService,
+  permission: ResourcePermission<'scorecard-metric'> | BasicPermission,
+) => {
+  const scorecardPermission = {} as ScorecardPermission;
+
+  if (permission.type === 'resource') {
+    scorecardPermission.decision = (
+      await permissions.authorizeConditional([{ permission }], {
+        credentials,
+      })
+    )[0];
+  } else {
+    scorecardPermission.decision = (
+      await permissions.authorize([{ permission }], {
+        credentials,
+      })
+    )[0];
+  }
+
+  if (scorecardPermission.decision.result === AuthorizeResult.DENY) {
+    throw new NotAllowedError();
+  }
+
+  scorecardPermission.conditions =
+    scorecardPermission.decision.result === AuthorizeResult.CONDITIONAL
+      ? scorecardPermission.decision.conditions
+      : undefined;
+
+  return scorecardPermission;
+};
 
 export const checkEntityAccess = async (
   entityRef: string,

@@ -43,13 +43,7 @@ export const useCreateConversationMessage = (): UseMutationResult<
       selectedProvider,
       currentConversation,
       attachments,
-    }: {
-      prompt: string;
-      selectedModel: string;
-      selectedProvider: string;
-      currentConversation: string;
-      attachments: Attachment[];
-    }) => {
+    }: CreateMessageVariables) => {
       if (!currentConversation) {
         throw new Error('Failed to generate AI response');
       }
