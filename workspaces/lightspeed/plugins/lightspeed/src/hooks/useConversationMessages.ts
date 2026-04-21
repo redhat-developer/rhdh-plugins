@@ -41,6 +41,12 @@ import {
   transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
 import {
+  clearSharedToolCallsCacheSessionPrefix,
+  getSharedToolCallsCache,
+  migrateSharedToolCallsCacheSessionPrefixToConversation,
+  setSharedToolCallsCache,
+} from './toolCallsCacheStore';
+import {
   CreateMessageVariables,
   useCreateConversationMessage,
 } from './useCreateCoversationMessage';
@@ -77,6 +83,16 @@ const isLegacyToolResultToken = (
   );
 };
 
+/** Unique prefix per temp send so late streams cannot migrate another session's tool cache. */
+function createTempToolCallsCacheSessionPrefix(): string {
+  const suffix =
+    typeof globalThis.crypto !== 'undefined' &&
+    typeof globalThis.crypto.randomUUID === 'function'
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return `lightspeed-temp:${suffix}`;
+}
+
 const legacyToolResultToString = (response: unknown): string => {
   if (!response) return '';
   if (typeof response === 'string') return response;
@@ -86,14 +102,6 @@ const legacyToolResultToString = (response: unknown): string => {
     return String(response);
   }
 };
-
-/**
- * Tool-call metadata is not always present on messages refetched from the API.
- * A ref inside this hook is cleared when the chat UI remounts (e.g. embedded → overlay),
- * so we keep this cache at module scope so the same conversation id still resolves
- * after display-mode switches.
- */
-const sharedToolCallsCache: { [key: string]: ToolCall[] } = {};
 
 // Fetch all conversation messages
 export const useFetchConversationMessages = (
@@ -236,7 +244,7 @@ export const useConversationMessages = (
 
         // Merge cached tool calls if available
         const cacheKey = `${currentConversation}-${i}`;
-        const cachedToolCalls = sharedToolCallsCache[cacheKey];
+        const cachedToolCalls = getSharedToolCallsCache(cacheKey);
         if (cachedToolCalls && cachedToolCalls.length > 0) {
           botMsg.toolCalls = cachedToolCalls;
         }
@@ -269,6 +277,10 @@ export const useConversationMessages = (
     async (prompt: string, attachments: Attachment[] = []) => {
       let newConversationId = '';
       let requestId = '';
+      const toolCallsCacheKeyPrefix =
+        currentConversation === TEMP_CONVERSATION_ID
+          ? createTempToolCallsCacheSessionPrefix()
+          : currentConversation;
 
       const conversationTuple = [
         createUserMessage({
@@ -421,8 +433,8 @@ export const useConversationMessages = (
 
                     // Cache tool calls for this message (message pair index)
                     const messageIndex = Math.floor(lastMessageIndex / 2);
-                    const cacheKey = `${currentConversation}-${messageIndex}`;
-                    sharedToolCallsCache[cacheKey] = nextToolCalls;
+                    const cacheKey = `${toolCallsCacheKeyPrefix}-${messageIndex}`;
+                    setSharedToolCallsCache(cacheKey, nextToolCalls);
 
                     const updatedConversation = [
                       ...conversation.slice(0, lastMessageIndex),
@@ -528,8 +540,8 @@ export const useConversationMessages = (
 
                     // Update cache with completed tool call
                     const messageIndex = Math.floor(lastMessageIndex / 2);
-                    const cacheKey = `${currentConversation}-${messageIndex}`;
-                    sharedToolCallsCache[cacheKey] = updatedToolCalls;
+                    const cacheKey = `${toolCallsCacheKeyPrefix}-${messageIndex}`;
+                    setSharedToolCallsCache(cacheKey, updatedToolCalls);
 
                     const updatedConversation = [
                       ...conversation.slice(0, lastMessageIndex),
@@ -746,15 +758,10 @@ export const useConversationMessages = (
       // Swap temp conversation messages with new conversation
 
       if (currentConversation === TEMP_CONVERSATION_ID && newConversationId) {
-        // Migrate tool calls cache from temp to new conversation ID
-        Object.keys(sharedToolCallsCache).forEach(key => {
-          if (key.startsWith(`${TEMP_CONVERSATION_ID}-`)) {
-            const messageIndex = key.replace(`${TEMP_CONVERSATION_ID}-`, '');
-            const newKey = `${newConversationId}-${messageIndex}`;
-            sharedToolCallsCache[newKey] = sharedToolCallsCache[key];
-            delete sharedToolCallsCache[key];
-          }
-        });
+        migrateSharedToolCallsCacheSessionPrefixToConversation(
+          toolCallsCacheKeyPrefix,
+          newConversationId,
+        );
 
         setConversations(prevConversations => {
           return {
@@ -772,6 +779,8 @@ export const useConversationMessages = (
             return rest;
           });
         }, 0);
+      } else if (currentConversation === TEMP_CONVERSATION_ID) {
+        clearSharedToolCallsCacheSessionPrefix(toolCallsCacheKeyPrefix);
       }
     },
 
