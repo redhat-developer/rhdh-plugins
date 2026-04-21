@@ -184,3 +184,9 @@ kubernetes:
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+  rbac:
+    admin:
+      users:
+        - name: user:development/guest
+      superUsers:
+        - name: user:development/guest

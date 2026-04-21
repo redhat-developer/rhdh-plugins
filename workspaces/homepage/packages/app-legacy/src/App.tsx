@@ -59,6 +59,8 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 
+import { RbacPage } from '@backstage-community/plugin-rbac';
+
 import {
   DynamicHomePage,
   DynamicCustomizableHomePage,
@@ -437,6 +439,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
+    <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );
 
