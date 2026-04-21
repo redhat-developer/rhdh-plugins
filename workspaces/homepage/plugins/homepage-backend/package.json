@@ -9,9 +9,19 @@
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/homepage/plugins/homepage-backend"
+  },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "homepage"
+    "pluginId": "homepage",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-dynamic-home-page",
+      "@red-hat-developer-hub/backstage-plugin-homepage-backend",
+      "@red-hat-developer-hub/backstage-plugin-homepage-common"
+    ]
   },
   "scripts": {
     "start": "backstage-cli package start",

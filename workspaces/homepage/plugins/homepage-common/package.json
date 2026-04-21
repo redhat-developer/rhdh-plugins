@@ -11,9 +11,19 @@
     "module": "dist/index.esm.js",
     "types": "dist/index.d.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/homepage/plugins/homepage-common"
+  },
   "backstage": {
     "role": "common-library",
-    "pluginId": "homepage"
+    "pluginId": "homepage",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-dynamic-home-page",
+      "@red-hat-developer-hub/backstage-plugin-homepage-backend",
+      "@red-hat-developer-hub/backstage-plugin-homepage-common"
+    ]
   },
   "sideEffects": false,
   "scripts": {

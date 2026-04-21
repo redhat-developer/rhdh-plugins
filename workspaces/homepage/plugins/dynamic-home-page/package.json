@@ -14,9 +14,11 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "pluginId": "@red-hat-developer-hub/backstage-plugin-dynamic-home-page",
+    "pluginId": "homepage",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-dynamic-home-page"
+      "@red-hat-developer-hub/backstage-plugin-dynamic-home-page",
+      "@red-hat-developer-hub/backstage-plugin-homepage-backend",
+      "@red-hat-developer-hub/backstage-plugin-homepage-common"
     ]
   },
   "exports": {
