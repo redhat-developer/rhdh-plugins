@@ -51,12 +51,20 @@ export const getTokenFromApi = async (
     return cachedToken;
   }
 
+  const clientId = config.getOptionalString('dcm.clientId') ?? '';
+  const clientSecret = config.getOptionalString('dcm.clientSecret') ?? '';
+
+  if (!clientId || !clientSecret) {
+    logger.debug(
+      'DCM token: clientId/clientSecret not configured — skipping SSO token exchange',
+    );
+    return { accessToken: '', expiresAt: 0 };
+  }
+
   logger.info('DCM token: requesting new access token from SSO');
 
   const ssoBaseUrl =
     config.getOptionalString('dcm.ssoBaseUrl') ?? DEFAULT_SSO_BASE_URL;
-  const clientId = config.getString('dcm.clientId');
-  const clientSecret = config.getString('dcm.clientSecret');
 
   const tokenUrl = `${ssoBaseUrl}/auth/realms/redhat-external/protocol/openid-connect/token`;
   const body = new URLSearchParams({
