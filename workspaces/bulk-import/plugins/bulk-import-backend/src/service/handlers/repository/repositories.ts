@@ -20,6 +20,7 @@ import type { Config } from '@backstage/config';
 import gitUrlParse from 'git-url-parse';
 
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
+import { getCatalogUrl } from '../../../catalog/catalogUtils';
 import type { Components } from '../../../generated/openapi';
 import { GitApiService } from '../../../scm/GitApiService';
 import type { SCMRepositoryResponse } from '../../../scm/types';
@@ -56,11 +57,53 @@ export async function findAllRepositories(
     }',${pageNumber},${pageSize})..`,
   );
 
-  const repos = await deps.gitApiService
-    .getRepositoriesFromIntegrations(search, pageNumber, pageSize, userTokens)
-    .then(response => formatResponse(deps, response, checkStatus));
+  const [alreadyImportedRepositories, allRepositoriesResponse] =
+    await Promise.all([
+      deps.catalogHttpClient.listCatalogUrlLocations(),
+      deps.gitApiService.getRepositoriesFromIntegrations(search, userTokens),
+    ]);
 
-  return repos;
+  const alreadyImportedRepositoriesLocationTargets = new Set(
+    alreadyImportedRepositories.uniqueCatalogUrlLocations.keys(),
+  );
+
+  const { repositories: allRepositories, errors } = allRepositoriesResponse;
+
+  const notImportedYetRepositories = allRepositories.filter(repo => {
+    const catalogUrl = getCatalogUrl(
+      deps.config,
+      repo.html_url.replace(/\/$/, ''),
+      repo.default_branch,
+    );
+
+    let alreadyImported =
+      alreadyImportedRepositoriesLocationTargets.has(catalogUrl);
+
+    if (!alreadyImported) {
+      // Workaround: when a GitHub repository is imported via Backstage, the
+      // resulting registered catalog location may use a '/tree/' URL for the
+      // target instead of the '/blob/' URL format returned by getCatalogUrl.
+      // To correctly detect already-imported repositories regardless of which
+      // format was persisted, the '/tree/' variant is also checked here.
+      // This branch can be removed once catalog locations are consistently
+      // stored using the same '/blob/' format as getCatalogUrl returns.
+      alreadyImported = alreadyImportedRepositoriesLocationTargets.has(
+        catalogUrl.replace('/blob/', '/tree/'),
+      );
+    }
+
+    return !alreadyImported;
+  });
+
+  sortRepos(notImportedYetRepositories);
+
+  const gitRepositoryResponse: SCMRepositoryResponse = {
+    repositories: notImportedYetRepositories,
+    errors,
+    totalCount: notImportedYetRepositories.length,
+  };
+
+  return await formatResponse(deps, gitRepositoryResponse, checkStatus);
 }
 
 export async function findRepositoriesByOrganization(
@@ -81,17 +124,18 @@ export async function findRepositoriesByOrganization(
     `Getting all repositories for org "${orgName}" - (search,page,size)=(${search},${pageNumber},${pageSize})..`,
   );
 
-  const glReposByOrg = await deps.gitApiService
-    .getOrgRepositoriesFromIntegrations(
+  const glReposByOrg =
+    await deps.gitApiService.getOrgRepositoriesFromIntegrations(
       orgName,
       search,
       pageNumber,
       pageSize,
       userTokens,
-    )
-    .then(response => formatResponse(deps, response, checkStatus));
+    );
 
-  return glReposByOrg;
+  sortRepos(glReposByOrg.repositories);
+
+  return formatResponse(deps, glReposByOrg, checkStatus);
 }
 
 function sortRepos(repoList: Components.Schemas.Repository[]) {
@@ -172,8 +216,6 @@ async function formatResponse(
       errors: errors,
     });
   }
-
-  sortRepos(repoList);
 
   return {
     statusCode: 200,
