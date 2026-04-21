@@ -60,4 +60,7 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
 // kubernetes plujgin
 backend.add(import('@backstage/plugin-kubernetes-backend'));
 
+// homepage plugin
+backend.add(import('@red-hat-developer-hub/backstage-plugin-homepage-backend'));
+
 backend.start();
