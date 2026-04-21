@@ -17,54 +17,89 @@ import { createBackend } from '@backstage/backend-defaults';
 import { mockServices } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
-// TEMPLATE NOTE:
-// This is the development setup for your plugin that wires up a
-// minimal backend that can use both real and mocked plugins and services.
-//
 // Start up the backend by running `yarn start` in the package directory.
 // Once it's up and running, try out the following requests:
 //
-// Create a new todo item, standalone or for the sample component:
+//   curl http://localhost:7007/api/homepage/default-cards
 //
-//   curl http://localhost:7007/api/homepage/todos -H 'Content-Type: application/json' -d '{"title": "My Todo"}'
-//   curl http://localhost:7007/api/homepage/todos -H 'Content-Type: application/json' -d '{"title": "My Todo", "entityRef": "component:default/sample"}'
+// Explicitly make an unauthenticated request (returns 401):
 //
-// List TODOs:
-//
-//   curl http://localhost:7007/api/homepage/todos
-//
-// Explicitly make an unauthenticated request, or with service auth:
-//
-//   curl http://localhost:7007/api/homepage/todos -H 'Authorization: Bearer mock-none-token'
-//   curl http://localhost:7007/api/homepage/todos -H 'Authorization: Bearer mock-service-token'
+//   curl -i http://localhost:7007/api/homepage/default-cards \
+//     -H 'Authorization: Bearer mock-none-token'
 
 const backend = createBackend();
 
-// TEMPLATE NOTE:
-// Mocking the auth and httpAuth service allows you to call your plugin API without
-// having to authenticate.
-//
-// If you want to use real auth, you can install the following instead:
-//   backend.add(import('@backstage/plugin-auth-backend'));
-//   backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
+// Mocked auth lets curl hit the endpoint without real tokens.
 backend.add(mockServices.auth.factory());
 backend.add(mockServices.httpAuth.factory());
 
-// TEMPLATE NOTE:
-// Rather than using a real catalog you can use a mock with a fixed set of entities.
+// Provide the default cards config with the customizable flag and rich metadata.
+backend.add(
+  mockServices.rootConfig.factory({
+    data: {
+      homepage: {
+        customizable: true,
+        defaultCards: [
+          {
+            id: 'onboarding',
+            title: 'Get Started',
+            description: 'Helpful links to get you started',
+            priority: 200,
+            layouts: {
+              xl: { w: 12, h: 6 },
+              lg: { w: 12, h: 6 },
+            },
+          },
+          {
+            id: 'entities',
+            title: 'Your Entities',
+            priority: 100,
+            visibility: {
+              groups: ['group:default/developers', 'group:default/platform'],
+            },
+            layouts: {
+              xl: { w: 12, h: 7 },
+              lg: { w: 12, h: 7 },
+            },
+          },
+          {
+            label: 'Admin tools',
+            visibility: { permissions: ['homepage.admin.read'] },
+            children: [
+              {
+                id: 'user-management',
+                title: 'User Management',
+                priority: 300,
+              },
+              {
+                id: 'audit-log',
+                visibility: { users: ['user:default/alice'] },
+              },
+            ],
+          },
+          {
+            id: 'mock-user-welcome',
+            label: 'Welcome',
+            visibility: { users: ['user:default/mock'] },
+          },
+        ],
+      },
+    },
+  }),
+);
+
+// The mocked user `user:default/mock` is a member of `group:default/developers`.
 backend.add(
   catalogServiceMock.factory({
     entities: [
       {
         apiVersion: 'backstage.io/v1alpha1',
-        kind: 'Component',
-        metadata: {
-          name: 'sample',
-          title: 'Sample Component',
-        },
-        spec: {
-          type: 'service',
-        },
+        kind: 'User',
+        metadata: { name: 'mock', namespace: 'default' },
+        spec: { profile: {}, memberOf: ['developers'] },
+        relations: [
+          { type: 'memberOf', targetRef: 'group:default/developers' },
+        ],
       },
     ],
   }),

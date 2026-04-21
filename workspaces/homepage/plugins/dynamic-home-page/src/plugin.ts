@@ -23,6 +23,7 @@ import {
   createPlugin,
   createRoutableExtension,
   discoveryApiRef,
+  fetchApiRef,
   identityApiRef,
   storageApiRef,
 } from '@backstage/core-plugin-api';
@@ -36,7 +37,12 @@ import {
 } from '@backstage/plugin-home';
 
 import { rootRouteRef } from './routes';
-import { QuickAccessApiClient, quickAccessApiRef } from './api';
+import {
+  DefaultCardsApiClient,
+  defaultCardsApiRef,
+  QuickAccessApiClient,
+  quickAccessApiRef,
+} from './api';
 
 import type { DynamicHomePageProps } from './components/DynamicHomePage';
 import type { DynamicCustomizableHomePageProps } from './components/DynamicCustomizableHomePage';
@@ -83,6 +89,15 @@ export const dynamicHomePagePlugin = createPlugin({
       },
       factory: ({ discoveryApi, configApi, identityApi }) =>
         new QuickAccessApiClient({ discoveryApi, configApi, identityApi }),
+    }),
+    createApiFactory({
+      api: defaultCardsApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new DefaultCardsApiClient({ discoveryApi, fetchApi }),
     }),
     createApiFactory({
       api: visitsApiRef,

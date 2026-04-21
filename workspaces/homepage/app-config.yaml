@@ -81,6 +81,41 @@ app:
                   w: 12
                   h: 14
 
+homepage:
+  customizable: true
+  defaultCards:
+    - id: visit-card
+      label: Visits
+      priority: 100
+      layouts:
+        xl: { w: 12, h: 5 }
+        lg: { w: 12, h: 5 }
+        md: { w: 12, h: 6 }
+        sm: { w: 12, h: 7 }
+        xs: { w: 12, h: 9 }
+        xxs: { w: 12, h: 14 }
+    - id: onboarding
+      title: Get Started
+      description: Helpful links to get you started with the platform
+      priority: 200
+      layouts:
+        xl: { w: 12, h: 6 }
+        lg: { w: 12, h: 6 }
+        md: { w: 12, h: 7 }
+        sm: { w: 12, h: 8 }
+        xs: { w: 12, h: 9 }
+        xxs: { w: 12, h: 14 }
+    - label: Admin tools
+      visibility:
+        groups: [group:default/admins]
+      children:
+        - id: rbac
+          title: RBAC Administration
+          priority: 300
+          layouts:
+            xl: { w: 12, h: 6 }
+            lg: { w: 12, h: 6 }
+
 organization:
   name: My Company
 

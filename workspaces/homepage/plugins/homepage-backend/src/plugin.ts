@@ -18,7 +18,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
-import { todoListServiceRef } from './services/TodoListService';
+import { defaultCardsServiceRef } from './services/DefaultCardsService';
 
 /**
  * homepagePlugin backend plugin
@@ -32,13 +32,13 @@ export const homepagePlugin = createBackendPlugin({
       deps: {
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
-        todoList: todoListServiceRef,
+        defaultCards: defaultCardsServiceRef,
       },
-      async init({ httpAuth, httpRouter, todoList }) {
+      async init({ httpAuth, httpRouter, defaultCards }) {
         httpRouter.use(
           await createRouter({
             httpAuth,
-            todoList,
+            defaultCards,
           }),
         );
       },

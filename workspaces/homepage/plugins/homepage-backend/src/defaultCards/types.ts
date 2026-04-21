@@ -14,5 +14,18 @@
  * limitations under the License.
  */
 
-export * from './DefaultCardsApiClient';
-export * from './QuickAccessApiClient';
+export type {
+  CardLayout,
+  CardNode,
+  CardVisibility,
+  DefaultCardsResponse,
+  VisibleCard,
+} from '@red-hat-developer-hub/backstage-plugin-homepage-common';
+
+export type PermissionDecision = 'ALLOW' | 'DENY';
+
+export interface UserContext {
+  userEntityRef: string;
+  groupEntityRefs: Set<string>;
+  permissionDecisions: Map<string, PermissionDecision>;
+}

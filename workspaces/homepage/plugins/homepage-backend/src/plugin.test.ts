@@ -15,130 +15,170 @@
  */
 import {
   mockCredentials,
+  mockServices,
   startTestBackend,
 } from '@backstage/backend-test-utils';
-import { createServiceFactory } from '@backstage/backend-plugin-api';
-import { todoListServiceRef } from './services/TodoListService';
-import { homepagePlugin } from './plugin';
-import request from 'supertest';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-import {
-  ConflictError,
-  AuthenticationError,
-  NotAllowedError,
-} from '@backstage/errors';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import request from 'supertest';
+import { homepagePlugin } from './plugin';
 
-// TEMPLATE NOTE:
-// Plugin tests are integration tests for your plugin, ensuring that all pieces
-// work together end-to-end. You can still mock injected backend services
-// however, just like anyone who installs your plugin might replace the
-// services with their own implementations.
-describe('plugin', () => {
-  it('should create and read TODO items', async () => {
+const userRef = mockCredentials.user().principal.userEntityRef;
+
+const userEntityWithGroups = (groups: string[]) => ({
+  apiVersion: 'backstage.io/v1alpha1',
+  kind: 'User',
+  metadata: {
+    name: userRef.split('/')[1],
+    namespace: 'default',
+  },
+  spec: {
+    profile: {},
+    memberOf: groups.map(g => g.replace(/^group:default\//, '')),
+  },
+  relations: groups.map(targetRef => ({
+    type: 'memberOf',
+    targetRef,
+  })),
+});
+
+describe('homepagePlugin', () => {
+  it('returns the visible default cards for the current user', async () => {
+    const { server } = await startTestBackend({
+      features: [
+        homepagePlugin,
+        mockServices.rootConfig.factory({
+          data: {
+            homepage: {
+              defaultCards: [
+                { id: 'onboarding', title: 'Get Started', priority: 200 },
+                {
+                  id: 'dev-only',
+                  visibility: { groups: ['group:default/developers'] },
+                },
+                {
+                  id: 'admin-only',
+                  visibility: { groups: ['group:default/admins'] },
+                },
+                {
+                  label: 'Platform section',
+                  visibility: {
+                    permissions: ['homepage.platform.read'],
+                  },
+                  children: [{ id: 'platform-inner' }],
+                },
+              ],
+            },
+          },
+        }),
+        catalogServiceMock.factory({
+          entities: [userEntityWithGroups(['group:default/developers'])],
+        }),
+        mockServices.permissions.mock({
+          authorize: async requests =>
+            requests.map(() => ({ result: AuthorizeResult.DENY })),
+        }).factory,
+      ],
+    });
+
+    const res = await request(server).get('/api/homepage/default-cards');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      customizable: false,
+      items: [
+        { id: 'onboarding', title: 'Get Started', priority: 200 },
+        { id: 'dev-only' },
+      ],
+    });
+  });
+
+  it('includes cards gated by an allowed permission', async () => {
+    const { server } = await startTestBackend({
+      features: [
+        homepagePlugin,
+        mockServices.rootConfig.factory({
+          data: {
+            homepage: {
+              defaultCards: [
+                { id: 'public' },
+                {
+                  label: 'Platform section',
+                  visibility: {
+                    permissions: ['homepage.platform.read'],
+                  },
+                  children: [
+                    {
+                      id: 'platform-inner',
+                      layouts: { xl: { w: 12, h: 5 } },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        }),
+        catalogServiceMock.factory({ entities: [userEntityWithGroups([])] }),
+        mockServices.permissions.mock({
+          authorize: async requests =>
+            requests.map(() => ({ result: AuthorizeResult.ALLOW })),
+        }).factory,
+      ],
+    });
+
+    const res = await request(server).get('/api/homepage/default-cards');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      customizable: false,
+      items: [
+        { id: 'public' },
+        { id: 'platform-inner', layouts: { xl: { w: 12, h: 5 } } },
+      ],
+    });
+  });
+
+  it('returns customizable flag from config', async () => {
+    const { server } = await startTestBackend({
+      features: [
+        homepagePlugin,
+        mockServices.rootConfig.factory({
+          data: {
+            homepage: {
+              customizable: true,
+              defaultCards: [{ id: 'a' }],
+            },
+          },
+        }),
+      ],
+    });
+
+    const res = await request(server).get('/api/homepage/default-cards');
+
+    expect(res.status).toBe(200);
+    expect(res.body.customizable).toBe(true);
+  });
+
+  it('returns an empty list when no default cards are configured', async () => {
     const { server } = await startTestBackend({
       features: [homepagePlugin],
     });
 
-    await request(server).get('/api/homepage/todos').expect(200, {
-      items: [],
-    });
+    const res = await request(server).get('/api/homepage/default-cards');
 
-    const createRes = await request(server)
-      .post('/api/homepage/todos')
-      .send({ title: 'My Todo' });
-
-    expect(createRes.status).toBe(201);
-    expect(createRes.body).toEqual({
-      id: expect.any(String),
-      title: 'My Todo',
-      createdBy: mockCredentials.user().principal.userEntityRef,
-      createdAt: expect.any(String),
-    });
-
-    const createdTodoItem = createRes.body;
-
-    await request(server)
-      .get('/api/homepage/todos')
-      .expect(200, {
-        items: [createdTodoItem],
-      });
-
-    await request(server)
-      .get(`/api/homepage/todos/${createdTodoItem.id}`)
-      .expect(200, createdTodoItem);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ customizable: false, items: [] });
   });
 
-  it('should create TODO item with catalog information', async () => {
+  it('rejects unauthenticated requests', async () => {
     const { server } = await startTestBackend({
-      features: [
-        homepagePlugin,
-        catalogServiceMock.factory({
-          entities: [
-            {
-              apiVersion: 'backstage.io/v1alpha1',
-              kind: 'Component',
-              metadata: {
-                name: 'my-component',
-                namespace: 'default',
-                title: 'My Component',
-              },
-              spec: {
-                type: 'service',
-                owner: 'me',
-              },
-            },
-          ],
-        }),
-      ],
+      features: [homepagePlugin],
     });
 
-    const createRes = await request(server)
-      .post('/api/homepage/todos')
-      .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
+    const res = await request(server)
+      .get('/api/homepage/default-cards')
+      .set('Authorization', mockCredentials.none.header());
 
-    expect(createRes.status).toBe(201);
-    expect(createRes.body).toEqual({
-      id: expect.any(String),
-      title: '[My Component] My Todo',
-      createdBy: mockCredentials.user().principal.userEntityRef,
-      createdAt: expect.any(String),
-    });
-  });
-
-  it('should forward errors from the TodoListService', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        homepagePlugin,
-        createServiceFactory({
-          service: todoListServiceRef,
-          deps: {},
-          factory: () => ({
-            createTodo: jest.fn().mockRejectedValue(new ConflictError()),
-            listTodos: jest.fn().mockRejectedValue(new AuthenticationError()),
-            getTodo: jest.fn().mockRejectedValue(new NotAllowedError()),
-          }),
-        }),
-      ],
-    });
-
-    const createRes = await request(server)
-      .post('/api/homepage/todos')
-      .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
-    expect(createRes.status).toBe(409);
-    expect(createRes.body).toMatchObject({
-      error: { name: 'ConflictError' },
-    });
-
-    const listRes = await request(server).get('/api/homepage/todos');
-    expect(listRes.status).toBe(401);
-    expect(listRes.body).toMatchObject({
-      error: { name: 'AuthenticationError' },
-    });
-
-    const getRes = await request(server).get('/api/homepage/todos/123');
-    expect(getRes.status).toBe(403);
-    expect(getRes.body).toMatchObject({
-      error: { name: 'NotAllowedError' },
-    });
+    expect(res.status).toBe(401);
   });
 });
