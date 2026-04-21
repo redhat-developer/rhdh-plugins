@@ -260,32 +260,25 @@ test.describe('Scorecard Plugin Tests', () => {
   });
 
   test.describe('SonarQube Entity Scorecards', () => {
-    const sonarqubeMetricTitles = [
-      'SonarQube Quality Gate Status',
-      'SonarQube Open Issues',
-      'SonarQube Security Rating',
-      'SonarQube Security Issues',
-      'SonarQube Security Review Rating',
-      'SonarQube Security Hotspots',
-      'SonarQube Reliability Rating',
-      'SonarQube Reliability Issues',
-      'SonarQube Maintainability Rating',
-      'SonarQube Maintainability Issues',
-      'SonarQube Code Coverage',
-      'SonarQube Code Duplications',
-    ];
-
     test('Verify all SonarQube metrics display correctly', async ({
       browser,
     }, testInfo) => {
+      const sonarqubeMetrics = Object.entries(translations.metric)
+        .filter(([key]) => key.startsWith('sonarqube.'))
+        .map(
+          ([_key, value]) => value as { title: string; description: string },
+        );
+
       await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
 
       await catalogPage.openCatalog();
       await catalogPage.openComponent('sonarqube-scorecard-only');
       await page.getByText('Scorecard', { exact: true }).click();
 
-      for (const title of sonarqubeMetricTitles) {
-        await expect(page.getByText(title, { exact: true })).toBeVisible({
+      for (const sonarqubeMetric of sonarqubeMetrics) {
+        await expect(
+          page.getByText(sonarqubeMetric.title, { exact: true }),
+        ).toBeVisible({
           timeout: 10000,
         });
       }
@@ -300,23 +293,23 @@ test.describe('Scorecard Plugin Tests', () => {
       await catalogPage.openComponent('sonarqube-scorecard-only');
       await page.getByText('Scorecard', { exact: true }).click();
 
-      await expect(page.getByText('SonarQube Quality Gate Status')).toBeVisible(
-        { timeout: 10000 },
-      );
+      await expect(
+        page.getByText(translations.metric['sonarqube.quality_gate'].title),
+      ).toBeVisible({ timeout: 10000 });
 
       const expectedValues: Record<string, string> = {
-        'SonarQube Quality Gate Status': 'true',
-        'SonarQube Open Issues': '3',
-        'SonarQube Security Rating': '1',
-        'SonarQube Security Issues': '0',
-        'SonarQube Security Review Rating': '1',
-        'SonarQube Security Hotspots': '2',
-        'SonarQube Reliability Rating': '1',
-        'SonarQube Reliability Issues': '0',
-        'SonarQube Maintainability Rating': '1',
-        'SonarQube Maintainability Issues': '12',
-        'SonarQube Code Coverage': '82.5',
-        'SonarQube Code Duplications': '3.2',
+        [translations.metric['sonarqube.quality_gate'].title]: 'true',
+        [translations.metric['sonarqube.open_issues'].title]: '3',
+        [translations.metric['sonarqube.security_rating'].title]: '1',
+        [translations.metric['sonarqube.security_issues'].title]: '0',
+        [translations.metric['sonarqube.security_review_rating'].title]: '1',
+        [translations.metric['sonarqube.security_hotspots'].title]: '2',
+        [translations.metric['sonarqube.reliability_rating'].title]: '1',
+        [translations.metric['sonarqube.reliability_issues'].title]: '0',
+        [translations.metric['sonarqube.maintainability_rating'].title]: '1',
+        [translations.metric['sonarqube.maintainability_issues'].title]: '12',
+        [translations.metric['sonarqube.code_coverage'].title]: '82.5',
+        [translations.metric['sonarqube.code_duplications'].title]: '3.2',
       };
 
       for (const [title, value] of Object.entries(expectedValues)) {
@@ -338,13 +331,15 @@ test.describe('Scorecard Plugin Tests', () => {
       await catalogPage.openComponent('sonarqube-scorecard-only');
       await page.getByText('Scorecard', { exact: true }).click();
 
-      await expect(page.getByText('SonarQube Quality Gate Status')).toBeVisible(
-        { timeout: 10000 },
-      );
+      await expect(
+        page.getByText(translations.metric['sonarqube.quality_gate'].title),
+      ).toBeVisible({ timeout: 10000 });
 
       const qualityGateCard = page
         .locator('[role="article"]')
-        .filter({ hasText: 'SonarQube Quality Gate Status' })
+        .filter({
+          hasText: translations.metric['sonarqube.quality_gate'].description,
+        })
         .first();
       await expect(qualityGateCard).toContainText('false');
     });
