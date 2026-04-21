@@ -139,8 +139,6 @@ annotations:
         - my-application           # Specific application names, or "*" for all
 ```
 
-> **Important:** The `cluster` value in the annotation must match the cluster name defined in your `app-config.local.yaml` under `konflux.clusters`.
-
 For more details on entity annotations and subcomponent support, see the [main plugin README](./plugins/konflux/README.md).
 
 ### Running Tests
