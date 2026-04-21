@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.6.7
+
+### Patch Changes
+
+- f0fc865: fix: add configurable bodyParser limit
+- Updated dependencies [f0fc865]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.0.5
+
 ## 8.6.6
 
 ### Patch Changes
