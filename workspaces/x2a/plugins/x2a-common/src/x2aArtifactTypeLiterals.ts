@@ -42,3 +42,7 @@ export type X2AArtifactTypeValuesSyncWithOpenApi =
       ? true
       : false
     : false;
+
+// compile-type assert
+const _assertArtifactTypeValuesSync: X2AArtifactTypeValuesSyncWithOpenApi = true;
+void _assertArtifactTypeValuesSync;

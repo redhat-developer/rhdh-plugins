@@ -28,6 +28,7 @@ import { createServiceFactory } from '@backstage/backend-plugin-api';
 import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
+// eslint-disable-next-line @backstage/no-mixed-plugin-imports -- integration test: real SQLite via sibling backend factory
 import { x2aDatabaseServiceFactory } from '@red-hat-developer-hub/backstage-plugin-x2a-backend';
 import { kubeServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { RUN_NEXT_DEEP_LINK_HASH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';

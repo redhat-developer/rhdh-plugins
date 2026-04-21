@@ -47,3 +47,7 @@ export type X2AJobStatusValuesSyncWithOpenApi =
       ? true
       : false
     : false;
+
+// compile-type assert
+const _assertJobStatusValuesSync: X2AJobStatusValuesSyncWithOpenApi = true;
+void _assertJobStatusValuesSync;

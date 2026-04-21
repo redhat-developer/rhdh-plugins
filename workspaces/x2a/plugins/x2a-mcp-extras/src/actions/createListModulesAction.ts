@@ -15,6 +15,7 @@
  */
 import { NotFoundError } from '@backstage/errors';
 import {
+  type Job,
   X2A_ARTIFACT_TYPE_VALUES,
   X2A_JOB_STATUS_VALUES,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -118,6 +119,25 @@ export type ListModulesMcpOutput = zod.infer<
   ReturnType<typeof buildListModulesOutputSchema>
 >;
 
+function serializePhaseJobForMcpOutput(job: Job) {
+  let finishedAt: string | undefined;
+  if (job.finishedAt) {
+    finishedAt =
+      job.finishedAt instanceof Date
+        ? job.finishedAt.toISOString()
+        : String(job.finishedAt);
+  }
+
+  return {
+    ...job,
+    startedAt:
+      job.startedAt instanceof Date
+        ? job.startedAt.toISOString()
+        : String(job.startedAt),
+    finishedAt,
+  };
+}
+
 export function createListModulesAction(options: X2aActionsOptions) {
   const {
     actionsRegistry,
@@ -181,19 +201,23 @@ export function createListModulesAction(options: X2aActionsOptions) {
       });
 
       const appBaseUrl = config.getString('app.baseUrl');
-      const serialized = structuredClone(
-        modules.map(module => ({
-          ...module,
+      const items: ListModulesMcpOutput['items'] = modules.map(module => {
+        const { analyze, migrate, publish, ...rest } = module;
+        return {
+          ...rest,
+          analyze: analyze ? serializePhaseJobForMcpOutput(analyze) : undefined,
+          migrate: migrate ? serializePhaseJobForMcpOutput(migrate) : undefined,
+          publish: publish ? serializePhaseJobForMcpOutput(publish) : undefined,
           moduleDetailsUrl: `${appBaseUrl}/x2a/projects/${project.id}/modules/${module.id}`,
-        })),
-      ) as ListModulesMcpOutput['items'];
+        };
+      });
 
       return {
         output: {
           projectId: project.id,
           projectName: project.name,
           projectDetailsUrl: `${appBaseUrl}/x2a/projects/${project.id}`,
-          items: serialized,
+          items,
         },
       };
     },

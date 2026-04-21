@@ -141,5 +141,8 @@ describe('x2a-list-modules MCP tool', () => {
     expect(result.output.items[0].analyze).toBeDefined();
     expect(result.output.items[0].analyze).not.toHaveProperty('callbackToken');
     expect(result.output.items[0].analyze?.status).toBe('success');
+    expect(result.output.items[0].analyze?.startedAt).toBe(
+      '2025-06-01T12:00:00.000Z',
+    );
   });
 });
