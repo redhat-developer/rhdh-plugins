@@ -70,7 +70,6 @@ export function buildListModulesOutputSchema(z: typeof zod) {
           'Outputs attached to this phase job: migration plans, generated sources, metadata, or other collected results.',
         ),
     })
-    .passthrough()
     .describe('Latest job for this phase on the module, if any.');
 
   const moduleItem = z
@@ -95,7 +94,6 @@ export function buildListModulesOutputSchema(z: typeof zod) {
         .string()
         .describe('Full URL to the module details page in the Backstage UI.'),
     })
-    .passthrough()
     .describe(
       'One migration module. Same fields as GET /projects/:projectId/modules JSON plus moduleDetailsUrl.',
     );

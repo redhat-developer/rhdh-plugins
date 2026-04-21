@@ -27,7 +27,6 @@ import {
   BasicPermission,
 } from '@backstage/plugin-permission-common';
 import {
-  Job,
   Project,
   x2aAdminViewPermission,
   x2aAdminWritePermission,
@@ -47,7 +46,10 @@ export {
   getGroupsOfUser,
   reconcileJobStatus,
   generateCallbackToken,
+  removeSensitiveFromJob,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
+export type { UnsecureJob } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
  * Checks if the user has the x2aAdminViewPermission.
@@ -231,15 +233,4 @@ export const useEnforceProjectPermissions = async (
     canViewAll,
     canWriteAll,
   };
-};
-
-export type UnsecureJob = Job & { callbackToken?: string };
-export const removeSensitiveFromJob = (job?: UnsecureJob): Job | undefined => {
-  if (!job) {
-    return undefined;
-  }
-
-  const newJob: UnsecureJob = { ...job };
-  delete newJob.callbackToken;
-  return newJob;
 };

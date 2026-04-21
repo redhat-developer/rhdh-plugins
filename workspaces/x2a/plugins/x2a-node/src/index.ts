@@ -40,7 +40,10 @@ export {
   getGroupsOfUser,
   reconcileJobStatus,
   generateCallbackToken,
+  removeSensitiveFromJob,
 } from './utils';
+
+export type { UnsecureJob } from './utils';
 
 export { calculateModuleStatus } from './moduleStatus';
 

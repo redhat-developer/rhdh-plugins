@@ -172,6 +172,9 @@ export function reconcileJobStatus(job: Job, deps: ReconcileJobDeps): Promise<Jo
 export function reconcileModuleJobs(module: Module, deps: ReconcileJobDeps): Promise<Module>;
 
 // @public
+export function removeSensitiveFromJob(job?: UnsecureJob): Job | undefined;
+
+// @public
 export function resolveX2aPermissionFlags(options: {
     credentials: BackstageCredentials;
     permissionsSvc: PermissionsService;
@@ -179,6 +182,11 @@ export function resolveX2aPermissionFlags(options: {
 
 // @public (undocumented)
 export const SYSTEM_USER_REF = "user:default/system";
+
+// @public
+export type UnsecureJob = Job & {
+    callbackToken?: string;
+};
 
 // @public (undocumented)
 export const X2A_DATABASE_SERVICE_ID = "x2a-database";

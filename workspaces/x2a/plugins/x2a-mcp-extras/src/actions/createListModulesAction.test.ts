@@ -95,4 +95,51 @@ describe('x2a-list-modules MCP tool', () => {
       }),
     ).rejects.toThrow(NotAllowedError);
   });
+
+  it('does not expose callbackToken on phase jobs after K8s reconciliation', async () => {
+    const { getAction, x2aDatabase, kubeService } = buildMocks();
+    x2aDatabase.getProject.mockResolvedValue(MOCK_PROJECT);
+    x2aDatabase.listModules.mockResolvedValue([
+      {
+        id: 'mod-1',
+        name: 'App',
+        sourcePath: '/app',
+        projectId: 'proj-001',
+        analyze: {
+          id: 'job-a1',
+          projectId: 'proj-001',
+          moduleId: 'mod-1',
+          phase: 'analyze',
+          status: 'running',
+          startedAt: new Date('2025-06-01T12:00:00Z'),
+          k8sJobName: 'k8s-analyze',
+        },
+      },
+    ]);
+    (kubeService.getJobStatus as jest.Mock).mockResolvedValue({
+      status: 'success',
+    });
+    x2aDatabase.updateJob.mockResolvedValue({
+      id: 'job-a1',
+      projectId: 'proj-001',
+      moduleId: 'mod-1',
+      phase: 'analyze',
+      status: 'success',
+      startedAt: new Date('2025-06-01T12:00:00Z'),
+      k8sJobName: 'k8s-analyze',
+      callbackToken: 'super-secret-hmac-material',
+    });
+
+    const action = getAction('x2a-list-modules');
+    const result = await action({
+      input: { projectId: 'proj-001' },
+      credentials: mockCredentials.user(),
+      logger: mockServices.logger.mock(),
+    });
+
+    expect(x2aDatabase.updateJob).toHaveBeenCalled();
+    expect(result.output.items[0].analyze).toBeDefined();
+    expect(result.output.items[0].analyze).not.toHaveProperty('callbackToken');
+    expect(result.output.items[0].analyze?.status).toBe('success');
+  });
 });

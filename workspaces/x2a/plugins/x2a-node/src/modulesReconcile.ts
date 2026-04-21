@@ -18,7 +18,7 @@ import type { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common'
 
 import { calculateModuleStatus } from './moduleStatus';
 import type { ReconcileJobDeps } from './services';
-import { reconcileJobStatus } from './utils';
+import { reconcileJobStatus, removeSensitiveFromJob } from './utils';
 
 /**
  * Reconcile any pending/running phase jobs on a module against K8s state.
@@ -33,7 +33,8 @@ export async function reconcileModuleJobs(
   for (const phase of phases) {
     const job = module[phase];
     if (job && ['pending', 'running'].includes(job.status)) {
-      module[phase] = await reconcileJobStatus(job, deps);
+      const reconciled = await reconcileJobStatus(job, deps);
+      module[phase] = removeSensitiveFromJob(reconciled);
     }
   }
   return module;
