@@ -20,12 +20,18 @@
  * @packageDocumentation
  */
 
+/**
+ * @public
+ */
 export interface CardVisibility {
   users?: string[];
   groups?: string[];
   permissions?: string[];
 }
 
+/**
+ * @public
+ */
 export interface CardLayout {
   x?: number;
   y?: number;
@@ -33,6 +39,9 @@ export interface CardLayout {
   h?: number;
 }
 
+/**
+ * @public
+ */
 export interface CardNode {
   id?: string;
   label?: string;
@@ -44,6 +53,9 @@ export interface CardNode {
   children?: CardNode[];
 }
 
+/**
+ * @public
+ */
 export interface VisibleCard {
   id: string;
   label?: string;
@@ -53,6 +65,9 @@ export interface VisibleCard {
   layouts?: Record<string, CardLayout>;
 }
 
+/**
+ * @public
+ */
 export interface DefaultCardsResponse {
   customizable: boolean;
   items: VisibleCard[];
