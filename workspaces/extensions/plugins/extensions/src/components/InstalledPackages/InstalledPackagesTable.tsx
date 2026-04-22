@@ -23,7 +23,7 @@ import {
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
-import { Query, QueryResult } from '@material-table/core';
+import { Query } from '@material-table/core';
 import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
@@ -208,9 +208,7 @@ export const InstalledPackagesTable = () => {
       sorting: false,
     },
   ];
-  const fetchData = async (
-    query: Query<InstalledPackageRow>,
-  ): Promise<QueryResult<InstalledPackageRow>> => {
+  const fetchData = async (query: Query<InstalledPackageRow>) => {
     const { page = 0, pageSize = 5 } = query || {};
 
     try {
