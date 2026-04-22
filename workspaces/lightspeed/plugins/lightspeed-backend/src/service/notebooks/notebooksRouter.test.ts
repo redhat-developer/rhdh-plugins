@@ -26,6 +26,7 @@ import {
   resetMockStorage,
 } from '../../../__fixtures__/lightspeedCoreHandlers';
 import { createNotebooksRouter } from './notebooksRouters';
+import { VectorStoresOperator } from './VectorStoresOperator';
 
 const mockUserId = 'user:default/guest';
 
@@ -53,6 +54,7 @@ describe('Notebooks Router', () => {
 
   beforeEach(async () => {
     resetMockStorage();
+    VectorStoresOperator.resetInstance(); // Reset singleton before each test
     const logger = mockServices.logger.mock();
     const config = mockServices.rootConfig({
       data: {

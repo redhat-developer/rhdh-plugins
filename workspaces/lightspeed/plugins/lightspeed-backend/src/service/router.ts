@@ -108,7 +108,7 @@ export async function createRouter(
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
 
-  const vectorStoresOperator = new VectorStoresOperator(
+  const vectorStoresOperator = VectorStoresOperator.getInstance(
     `http://0.0.0.0:${port}`,
     logger,
   );
@@ -605,7 +605,7 @@ export async function createRouter(
               v.name.startsWith('rhdh-product-docs'),
             )?.id || '';
         }
-        request.body.vector_store_ids = ['asdf'];
+        request.body.vector_store_ids = [lightspeed_vector_store_id];
 
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
@@ -623,7 +623,7 @@ export async function createRouter(
           settingsStore,
           user_id,
         );
-        console.log('requestBodyasdf', requestBody);
+
         const fetchResponse = await fetch(
           `http://0.0.0.0:${port}/v1/streaming_query?${userQueryParam}`,
           {

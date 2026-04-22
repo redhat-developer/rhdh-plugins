@@ -65,7 +65,10 @@ export async function createNotebooksRouter(
   const notebooksRouter = Router();
   notebooksRouter.use(express.json());
 
-  const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${DEFAULT_LIGHTSPEED_SERVICE_PORT}`;
+  const lightSpeedPort =
+    config.getOptionalNumber('lightspeed.servicePort') ??
+    DEFAULT_LIGHTSPEED_SERVICE_PORT;
+  const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
   const queryModel = config.getOptionalString(
     'lightspeed.notebooks.queryDefaults.model',
   );
@@ -82,7 +85,7 @@ export async function createNotebooksRouter(
     `AI Notebooks connecting to Lightspeed-Core at ${lightspeedBaseUrl}`,
   );
 
-  const vectorStoresOperator = new VectorStoresOperator(
+  const vectorStoresOperator = VectorStoresOperator.getInstance(
     lightspeedBaseUrl,
     logger,
   );
