@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.4.7
+
+### Patch Changes
+
+- 1d7ac98: Fix UI styling issues in worfkflow results page
+- Updated dependencies [1d7ac98]
+- Updated dependencies [1d7ac98]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.5.8
+
 ## 5.4.6
 
 ### Patch Changes

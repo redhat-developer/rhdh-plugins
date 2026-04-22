@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.6.8
+
+### Patch Changes
+
+- 1d7ac98: Fix multi-step workflow forms dropping or misplacing async validation errors and deep nested field paths.
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets: Fix safeSet deep paths and sequential async validation in getExtraErrors.
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react: Wrap extraErrors with the active step key so RJSF matches the root schema.
+
 ## 1.6.7
 
 ### Patch Changes
