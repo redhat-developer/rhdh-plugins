@@ -33,17 +33,20 @@ import {
 } from '../../service/handlers/handlers';
 import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import type {
+  AppInstallationRepositories,
+  AuthenticatedUserRepositoryList,
   ExtendedGithubCredentials,
   GithubAppCredentials,
   GithubFetchError,
   GithubRepository,
 } from '../types';
-import { getAllAppOrgs } from './orgUtils';
 import {
   computeTotalCountFromGitHubToken,
   createCredentialError,
   handleError,
 } from './utils';
+
+const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
 
 export type ValidatedRepo = {
   ghConfig: GithubIntegrationConfig;
@@ -120,59 +123,37 @@ export async function addGithubAppRepositories(
   },
   octokit: Octokit,
   credential: GithubAppCredentials,
-  ghConfig: GithubIntegrationConfig,
   repositories: Map<string, GithubRepository>,
   errors: Map<number, GithubFetchError>,
   reqParams?: {
     search?: string;
-    pageNumber?: number;
-    pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
-  const search = reqParams?.search;
-  const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
-  const pageSize = reqParams?.pageSize ?? DefaultPageSize;
+  const lowercaseSearch = reqParams?.search?.toLocaleLowerCase();
   let totalCount: number | undefined;
+
   try {
-    if (search) {
-      const allOrgsMap = await getAllAppOrgs(
-        deps.githubCredentialsProvider,
-        ghConfig,
-        credential.accountLogin,
-      );
-      const orgSearch: string[] = [];
-      for (const [_orgUrl, ghOrg] of allOrgsMap) {
-        orgSearch.push(`org:${ghOrg.name}`);
-      }
-      const query = `${search} in:name ${orgSearch.join(' ')}`;
-      const searchResp = await searchRepos(
-        octokit,
-        query,
-        pageNumber,
-        pageSize,
-      );
-      totalCount = searchResp.totalCount;
-      searchResp.repositories.forEach(repo =>
-        repositories.set(repo.full_name, repo),
-      );
-    } else {
-      const resp = await octokit.apps.listReposAccessibleToInstallation({
-        page: pageNumber,
-        per_page: pageSize,
-      });
-      const repos = resp?.data?.repositories ?? resp?.data;
-      repos?.forEach(repo => {
-        repositories.set(repo.full_name, {
-          name: repo.name,
-          full_name: repo.full_name,
-          url: repo.url,
-          html_url: repo.html_url,
-          default_branch: repo.default_branch,
-          updated_at: repo.updated_at,
-        });
-      });
-      totalCount = resp?.data?.total_count;
-    }
+    const { repositories: allRepositories } =
+      await listAllRepositoriesAccessibleToInstallation(octokit);
+
+    const filteredRepositories = lowercaseSearch
+      ? allRepositories.filter(repo =>
+          repo.name.toLocaleLowerCase().includes(lowercaseSearch),
+        )
+      : allRepositories;
+
+    filteredRepositories.forEach(repo =>
+      repositories.set(repo.full_name, {
+        name: repo.name,
+        full_name: repo.full_name,
+        url: repo.url,
+        html_url: repo.html_url,
+        default_branch: repo.default_branch,
+        updated_at: repo.updated_at,
+      }),
+    );
+
+    totalCount = filteredRepositories.length;
   } catch (err: any) {
     logErrorIfNeeded(
       deps.logger,
@@ -201,81 +182,33 @@ export async function addGithubTokenRepositories(
   errors: Map<number, GithubFetchError>,
   reqParams?: {
     search?: string;
-    pageNumber?: number;
-    pageSize?: number;
   },
 ): Promise<{ totalCount?: number }> {
-  const search = reqParams?.search;
-  const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
-  const pageSize = reqParams?.pageSize ?? DefaultPageSize;
+  const lowercaseSearch = reqParams?.search?.toLocaleLowerCase();
   let totalCount: number | undefined;
+
   try {
-    if (search) {
-      // Get currently authenticated user
-      const username = (await octokit.rest.users.getAuthenticated())?.data
-        ?.login;
-      let query = `${search} in:name user:${username}`;
+    const allRepositories =
+      await listAllRepositoriesForAuthenticatedUser(octokit);
 
-      const allOrgsResp = await octokit.paginate(
-        octokit.rest.orgs.listForAuthenticatedUser,
-        {
-          sort: 'full_name',
-          direction: 'asc',
-        },
-      );
-      const orgSearch: string[] = [];
-      allOrgsResp?.forEach(org => orgSearch.push(`org:${org.login}`));
-      if (orgSearch.length > 0) {
-        query += ` ${orgSearch.join(' ')}`;
-      }
+    const filteredRepositories = lowercaseSearch
+      ? allRepositories.filter(repo =>
+          repo.name.toLocaleLowerCase().includes(lowercaseSearch),
+        )
+      : allRepositories;
 
-      const searchResp = await searchRepos(
-        octokit,
-        query,
-        pageNumber,
-        pageSize,
-      );
-      totalCount = searchResp.totalCount;
-      searchResp.repositories.forEach(repo =>
-        repositories.set(repo.full_name, repo),
-      );
-    } else {
-      /**
-       * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
-       * These would include repositories they own, repositories where they are a collaborator,
-       * and repositories that they can access through an organization membership.
-       */
-      const resp = await octokit.rest.repos.listForAuthenticatedUser({
-        page: pageNumber,
-        per_page: pageSize,
-        sort: 'full_name',
-        direction: 'asc',
+    filteredRepositories.forEach(repo => {
+      repositories.set(repo.full_name, {
+        name: repo.name,
+        full_name: repo.full_name,
+        url: repo.url,
+        html_url: repo.html_url,
+        default_branch: repo.default_branch,
+        updated_at: repo.updated_at,
       });
-      resp?.data?.forEach(repo => {
-        repositories.set(repo.full_name, {
-          name: repo.name,
-          full_name: repo.full_name,
-          url: repo.url,
-          html_url: repo.html_url,
-          default_branch: repo.default_branch,
-          updated_at: repo.updated_at,
-        });
-      });
+    });
 
-      totalCount = await computeTotalCountFromGitHubToken(
-        deps,
-        async (lastPageNumber: number) =>
-          octokit.repos
-            .listForAuthenticatedUser({
-              page: lastPageNumber,
-              per_page: 100,
-            })
-            .then(lastPageResp => lastPageResp.data.length),
-        'repos.listForAuthenticatedUser',
-        resp?.data?.length,
-        resp?.headers?.link,
-      );
-    }
+    totalCount = filteredRepositories.length;
   } catch (err) {
     handleError(
       deps,
@@ -445,4 +378,40 @@ export async function createOrUpdateFileInBranch(
       throw error;
     }
   }
+}
+
+async function listAllRepositoriesForAuthenticatedUser(
+  octokit: Octokit,
+): Promise<AuthenticatedUserRepositoryList> {
+  /**
+   * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
+   * These would include repositories they own, repositories where they are a collaborator,
+   * and repositories that they can access through an organization membership.
+   */
+  return await octokit.paginate(octokit.rest.repos.listForAuthenticatedUser, {
+    per_page: GITHUB_REST_API_MAX_PAGE_SIZE,
+    sort: 'full_name',
+    direction: 'asc',
+  });
+}
+
+async function listAllRepositoriesAccessibleToInstallation(
+  octokit: Octokit,
+): Promise<AppInstallationRepositories> {
+  /**
+   * The octokit pagination smartly extracts data from the response.
+   * Here, repositories array is extracted from the original listReposAccessibleToInstallation.
+   */
+  const repositories = await octokit.paginate(
+    octokit.rest.apps.listReposAccessibleToInstallation,
+    {
+      per_page: GITHUB_REST_API_MAX_PAGE_SIZE,
+    },
+  );
+
+  return {
+    repositories,
+    total_count: repositories.length,
+    repository_selection: repositories.repository_selection ?? 'all',
+  };
 }

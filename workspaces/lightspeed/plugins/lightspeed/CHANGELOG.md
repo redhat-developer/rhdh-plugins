@@ -1,5 +1,15 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.1.0
+
+### Minor Changes
+
+- cc98168: Migrated AI Notebooks from direct Llama Stack server to Lightspeed-Core integration
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.1.0
+
 ## 2.0.0
 
 ### Minor Changes

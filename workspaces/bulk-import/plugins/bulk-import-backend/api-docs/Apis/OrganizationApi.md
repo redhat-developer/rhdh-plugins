@@ -52,7 +52,7 @@ Fetch Repositories in the specified GitHub organization, provided it is accessib
 | **sizePerIntegration** | **Integer**| the number of items per Integration to return per page | [optional] [default to 20] |
 | **search** | **String**| returns only the items that match the search string | [optional] [default to null] |
 | **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
-| **x-scm-tokens** | **String**| **Required.** JSON-encoded map of SCM host URL to user OAuth token. Used to fetch repositories on behalf of the signed-in user. The value must be a JSON object whose keys are SCM integration base URLs and whose values are OAuth bearer tokens (e.g. `{"https://github.com":"ghp_xxx"}`). Requests that omit this header, supply an empty object, or exceed 4 KB are rejected with HTTP 401.  | [required] [default to null] |
+| **x-scm-tokens** | **String**| Optional JSON-encoded map of SCM host URL to user authentication token. Used to fetch repositories on behalf of the user for each configured SCM host. The value must be a JSON string whose structure matches SCMTokenMap (keys are SCM base URLs, values are OAuth bearer tokens).  | [optional] [default to null] |
 
 ### Return type
 
