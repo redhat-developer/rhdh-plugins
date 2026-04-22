@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.21.0
+
+### Minor Changes
+
+- a49a2cc: Added a new frontend system based header
+
 ## 1.20.3
 
 ### Patch Changes
