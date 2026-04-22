@@ -46,10 +46,12 @@ export interface CardNode {
   id?: string;
   label?: string;
   title?: string;
+  titleKey?: string;
   description?: string;
+  descriptionKey?: string;
   priority?: number;
   layouts?: Record<string, CardLayout>;
-  visibility?: CardVisibility;
+  if?: CardVisibility;
   children?: CardNode[];
 }
 
@@ -60,7 +62,9 @@ export interface VisibleCard {
   id: string;
   label?: string;
   title?: string;
+  titleKey?: string;
   description?: string;
+  descriptionKey?: string;
   priority?: number;
   layouts?: Record<string, CardLayout>;
 }

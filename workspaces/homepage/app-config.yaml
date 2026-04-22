@@ -106,7 +106,7 @@ homepage:
         xs: { w: 12, h: 9 }
         xxs: { w: 12, h: 14 }
     - label: Admin tools
-      visibility:
+      if:
         groups: [group:default/admins]
       children:
         - id: rbac

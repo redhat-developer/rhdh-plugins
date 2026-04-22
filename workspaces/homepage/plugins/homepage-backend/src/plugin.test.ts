@@ -54,15 +54,15 @@ describe('homepagePlugin', () => {
                 { id: 'onboarding', title: 'Get Started', priority: 200 },
                 {
                   id: 'dev-only',
-                  visibility: { groups: ['group:default/developers'] },
+                  if: { groups: ['group:default/developers'] },
                 },
                 {
                   id: 'admin-only',
-                  visibility: { groups: ['group:default/admins'] },
+                  if: { groups: ['group:default/admins'] },
                 },
                 {
                   label: 'Platform section',
-                  visibility: {
+                  if: {
                     permissions: ['homepage.platform.read'],
                   },
                   children: [{ id: 'platform-inner' }],
@@ -104,7 +104,7 @@ describe('homepagePlugin', () => {
                 { id: 'public' },
                 {
                   label: 'Platform section',
-                  visibility: {
+                  if: {
                     permissions: ['homepage.platform.read'],
                   },
                   children: [

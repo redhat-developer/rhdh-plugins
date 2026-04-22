@@ -36,12 +36,12 @@ describe('loadDefaultCards', () => {
             { id: 'onboarding' },
             {
               label: 'Admin tools',
-              visibility: { groups: ['group:default/admins'] },
+              if: { groups: ['group:default/admins'] },
               children: [
                 { id: 'user-management' },
                 {
                   id: 'audit-log',
-                  visibility: { users: ['user:default/alice'] },
+                  if: { users: ['user:default/alice'] },
                 },
               ],
             },
@@ -53,12 +53,12 @@ describe('loadDefaultCards', () => {
       { id: 'onboarding' },
       {
         label: 'Admin tools',
-        visibility: { groups: ['group:default/admins'] },
+        if: { groups: ['group:default/admins'] },
         children: [
           { id: 'user-management' },
           {
             id: 'audit-log',
-            visibility: { users: ['user:default/alice'] },
+            if: { users: ['user:default/alice'] },
           },
         ],
       },
@@ -111,7 +111,7 @@ describe('loadDefaultCards', () => {
           defaultCards: [
             {
               id: 'x',
-              visibility: { users: ['not-an-entity-ref'] },
+              if: { users: ['not-an-entity-ref'] },
             },
           ],
         },
@@ -156,6 +156,32 @@ describe('loadDefaultCards', () => {
     ]);
   });
 
+  it('parses cards with titleKey and descriptionKey', () => {
+    const config = mockServices.rootConfig({
+      data: {
+        homepage: {
+          defaultCards: [
+            {
+              id: 'i18n-card',
+              title: 'Fallback',
+              titleKey: 'homepage.card.title',
+              descriptionKey: 'homepage.card.desc',
+            },
+          ],
+        },
+      },
+    });
+    const result = loadDefaultCards(config);
+    expect(result).toEqual([
+      {
+        id: 'i18n-card',
+        title: 'Fallback',
+        titleKey: 'homepage.card.title',
+        descriptionKey: 'homepage.card.desc',
+      },
+    ]);
+  });
+
   it('accepts a group with an empty visibility block', () => {
     const config = mockServices.rootConfig({
       data: {
@@ -163,7 +189,7 @@ describe('loadDefaultCards', () => {
           defaultCards: [
             {
               label: 'empty-vis',
-              visibility: {},
+              if: {},
               children: [{ id: 'x' }],
             },
           ],
@@ -204,22 +230,22 @@ describe('collectReferencedPermissions', () => {
     const tree: CardNode[] = [
       {
         id: 'a',
-        visibility: { permissions: ['perm.read', 'perm.write'] },
+        if: { permissions: ['perm.read', 'perm.write'] },
       },
       {
         label: 'group',
         children: [
           {
             id: 'b',
-            visibility: { permissions: ['perm.read'] },
+            if: { permissions: ['perm.read'] },
           },
           {
             label: 'nested',
-            visibility: { permissions: ['perm.admin'] },
+            if: { permissions: ['perm.admin'] },
             children: [
               {
                 id: 'c',
-                visibility: { permissions: ['perm.write'] },
+                if: { permissions: ['perm.write'] },
               },
             ],
           },

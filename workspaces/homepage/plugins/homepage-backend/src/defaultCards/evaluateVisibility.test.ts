@@ -129,7 +129,7 @@ describe('filterToVisibleLeafIds', () => {
     const tree: CardNode[] = [
       {
         label: 'Admin tools',
-        visibility: { permissions: ['perm.admin'] },
+        if: { permissions: ['perm.admin'] },
         children: [{ id: 'user-management' }, { id: 'audit-log' }],
       },
       { id: 'onboarding' },
@@ -141,12 +141,12 @@ describe('filterToVisibleLeafIds', () => {
     const tree: CardNode[] = [
       {
         label: 'Team tools',
-        visibility: { groups: ['group:default/developers'] },
+        if: { groups: ['group:default/developers'] },
         children: [
           { id: 'visible-child' },
           {
             id: 'hidden-child',
-            visibility: { users: ['user:default/bob'] },
+            if: { users: ['user:default/bob'] },
           },
         ],
       },
@@ -184,22 +184,22 @@ describe('filterToVisibleLeafIds', () => {
     const tree: CardNode[] = [
       {
         label: 'level-1',
-        visibility: { groups: ['group:default/developers'] },
+        if: { groups: ['group:default/developers'] },
         children: [
           {
             label: 'level-2',
-            visibility: { users: ['user:default/alice'] },
+            if: { users: ['user:default/alice'] },
             children: [
               { id: 'deeply-visible' },
               {
                 id: 'deeply-hidden',
-                visibility: { permissions: ['perm.admin'] },
+                if: { permissions: ['perm.admin'] },
               },
             ],
           },
           {
             label: 'level-2-hidden',
-            visibility: { users: ['user:default/bob'] },
+            if: { users: ['user:default/bob'] },
             children: [{ id: 'unreachable' }],
           },
         ],
@@ -244,17 +244,38 @@ describe('filterToVisibleLeaves', () => {
     ]);
   });
 
-  it('strips visibility and children from output', () => {
+  it('includes titleKey and descriptionKey in output', () => {
+    const tree: CardNode[] = [
+      {
+        id: 'i18n-card',
+        title: 'Fallback Title',
+        titleKey: 'homepage.card.title',
+        description: 'Fallback Desc',
+        descriptionKey: 'homepage.card.description',
+      },
+    ];
+    expect(filterToVisibleLeaves(tree, ctx)).toEqual([
+      {
+        id: 'i18n-card',
+        title: 'Fallback Title',
+        titleKey: 'homepage.card.title',
+        description: 'Fallback Desc',
+        descriptionKey: 'homepage.card.description',
+      },
+    ]);
+  });
+
+  it('strips if and children from output', () => {
     const tree: CardNode[] = [
       {
         id: 'x',
         label: 'Label X',
-        visibility: { groups: ['group:default/developers'] },
+        if: { groups: ['group:default/developers'] },
       },
     ];
     const result = filterToVisibleLeaves(tree, ctx);
     expect(result).toEqual([{ id: 'x', label: 'Label X' }]);
-    expect(result[0]).not.toHaveProperty('visibility');
+    expect(result[0]).not.toHaveProperty('if');
     expect(result[0]).not.toHaveProperty('children');
   });
 
@@ -269,7 +290,7 @@ describe('filterToVisibleLeaves', () => {
     const tree: CardNode[] = [
       {
         label: 'Admin tools',
-        visibility: { permissions: ['perm.admin'] },
+        if: { permissions: ['perm.admin'] },
         children: [{ id: 'hidden-inner', title: 'Hidden' }],
       },
       { id: 'visible', priority: 50 },

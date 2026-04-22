@@ -48,10 +48,12 @@ export const cardNodeSchema: z.ZodType<CardNode> = z.lazy(() =>
       id: z.string().min(1).optional(),
       label: z.string().optional(),
       title: z.string().optional(),
+      titleKey: z.string().optional(),
       description: z.string().optional(),
+      descriptionKey: z.string().optional(),
       priority: z.number().optional(),
       layouts: z.record(z.string(), cardLayoutSchema).optional(),
-      visibility: visibilitySchema.optional(),
+      if: visibilitySchema.optional(),
       children: z.array(cardNodeSchema).optional(),
     })
     .strict()
@@ -93,7 +95,7 @@ export function loadCustomizable(config: RootConfigService): boolean {
 export function collectReferencedPermissions(nodes: CardNode[]): Set<string> {
   const out = new Set<string>();
   const walk = (n: CardNode) => {
-    n.visibility?.permissions?.forEach(p => out.add(p));
+    n.if?.permissions?.forEach(p => out.add(p));
     n.children?.forEach(walk);
   };
   nodes.forEach(walk);

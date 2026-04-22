@@ -22,7 +22,11 @@ export interface CardNode {
   // (undocumented)
   description?: string;
   // (undocumented)
+  descriptionKey?: string;
+  // (undocumented)
   id?: string;
+  // (undocumented)
+  if?: CardVisibility;
   // (undocumented)
   label?: string;
   // (undocumented)
@@ -32,7 +36,7 @@ export interface CardNode {
   // (undocumented)
   title?: string;
   // (undocumented)
-  visibility?: CardVisibility;
+  titleKey?: string;
 }
 
 // @public (undocumented)
@@ -58,6 +62,8 @@ export interface VisibleCard {
   // (undocumented)
   description?: string;
   // (undocumented)
+  descriptionKey?: string;
+  // (undocumented)
   id: string;
   // (undocumented)
   label?: string;
@@ -67,5 +73,7 @@ export interface VisibleCard {
   priority?: number;
   // (undocumented)
   title?: string;
+  // (undocumented)
+  titleKey?: string;
 }
 ```

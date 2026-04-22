@@ -37,8 +37,12 @@ interface HomepageDefaultCardNodeConfig {
   label?: string;
   /** Display title for the card. */
   title?: string;
+  /** Translation key for the card title. */
+  titleKey?: string;
   /** Display description for the card. */
   description?: string;
+  /** Translation key for the card description. */
+  descriptionKey?: string;
   /** Ordering hint — higher values appear first. */
   priority?: number;
   /** Responsive layout per breakpoint (xl, lg, md, sm, xs, xxs). */
@@ -46,7 +50,7 @@ interface HomepageDefaultCardNodeConfig {
   /** Child nodes. Presence makes this a group; must be omitted when `id` is set. */
   children?: HomepageDefaultCardNodeConfig[];
   /** Optional visibility constraints; omitted or empty means visible to all. */
-  visibility?: HomepageDefaultCardVisibilityConfig;
+  if?: HomepageDefaultCardVisibilityConfig;
 }
 
 export interface Config {

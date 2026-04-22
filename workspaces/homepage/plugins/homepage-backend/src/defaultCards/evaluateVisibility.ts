@@ -46,7 +46,7 @@ export function filterToVisibleLeafIds(
 ): string[] {
   const out: string[] = [];
   const walk = (node: CardNode) => {
-    if (!isVisible(node.visibility, ctx)) return;
+    if (!isVisible(node.if, ctx)) return;
     if (node.id !== undefined) out.push(node.id);
     node.children?.forEach(walk);
   };
@@ -60,12 +60,15 @@ export function filterToVisibleLeaves(
 ): VisibleCard[] {
   const out: VisibleCard[] = [];
   const walk = (node: CardNode) => {
-    if (!isVisible(node.visibility, ctx)) return;
+    if (!isVisible(node.if, ctx)) return;
     if (node.id !== undefined) {
       const card: VisibleCard = { id: node.id };
       if (node.label !== undefined) card.label = node.label;
       if (node.title !== undefined) card.title = node.title;
+      if (node.titleKey !== undefined) card.titleKey = node.titleKey;
       if (node.description !== undefined) card.description = node.description;
+      if (node.descriptionKey !== undefined)
+        card.descriptionKey = node.descriptionKey;
       if (node.priority !== undefined) card.priority = node.priority;
       if (node.layouts !== undefined) card.layouts = node.layouts;
       out.push(card);

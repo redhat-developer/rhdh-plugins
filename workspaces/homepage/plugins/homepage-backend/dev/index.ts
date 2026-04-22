@@ -54,7 +54,7 @@ backend.add(
             id: 'entities',
             title: 'Your Entities',
             priority: 100,
-            visibility: {
+            if: {
               groups: ['group:default/developers', 'group:default/platform'],
             },
             layouts: {
@@ -64,7 +64,7 @@ backend.add(
           },
           {
             label: 'Admin tools',
-            visibility: { permissions: ['homepage.admin.read'] },
+            if: { permissions: ['homepage.admin.read'] },
             children: [
               {
                 id: 'user-management',
@@ -73,14 +73,14 @@ backend.add(
               },
               {
                 id: 'audit-log',
-                visibility: { users: ['user:default/alice'] },
+                if: { users: ['user:default/alice'] },
               },
             ],
           },
           {
             id: 'mock-user-welcome',
             label: 'Welcome',
-            visibility: { users: ['user:default/mock'] },
+            if: { users: ['user:default/mock'] },
           },
         ],
       },
