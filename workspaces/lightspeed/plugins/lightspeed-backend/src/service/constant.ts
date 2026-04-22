@@ -22,6 +22,7 @@ export const DEFAULT_CHUNKING_STRATEGY_TYPE = 'auto'; // auto chunking
 export const DEFAULT_MAX_CHUNK_SIZE_TOKENS = 512; // 512 tokens
 export const DEFAULT_CHUNK_OVERLAP_TOKENS = 50; // 50 tokens
 export const DEFAULT_LLAMA_STACK_PORT = 8321; // Llama Stack port
+export const DEFAULT_LIGHTSPEED_SERVICE_HOST = 'localhost'; // Lightspeed core service host
 export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
 export const DEFAULT_MAX_FILE_SIZE_MB = 20 * 1024 * 1024; // 20MB
 export const NOTEBOOKS_SYSTEM_PROMPT =
@@ -45,7 +46,6 @@ Make no mistakes.
 /**
  * HTTP and networking constants
  */
-export const LIGHTSPEED_SERVICE_HOST = '0.0.0.0'; // Lightspeed core service host
 export const URL_FETCH_TIMEOUT_MS = 30000; // 30 second timeout for URL fetching
 export const USER_AGENT = 'RHDH-AI-Notebooks-Bot/1.0'; // User agent for HTTP requests
 export const MAX_URL_CONTENT_SIZE = 10 * 1024 * 1024; // 10MB max for URL fetched content

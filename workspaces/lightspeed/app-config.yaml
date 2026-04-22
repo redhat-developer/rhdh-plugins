@@ -19,13 +19,13 @@ organization:
 # Disable AI Notebooks feature by default
 lightspeed:
   notebooks:
-    enabled: false
+    enabled: true
     queryDefaults:
-      model: redhataillama-31-8b-instruct
+      model: redhataillama-31-8b-instruct ## move these to run.yaml, provider id needs to match
       provider_id: vllm
     sessionDefaults:
       provider_id: notebooks
-      embedding_model: ${LLAMA_STACK_EMBEDDING_MODEL}
+      embedding_model: sentence-transformers/all-mpnet-base-v2
       embedding_dimension: 768
 
 backend:

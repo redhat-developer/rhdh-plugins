@@ -40,6 +40,7 @@ import {
   McpValidationResult,
 } from './mcp-server-types';
 import { McpServerValidator } from './mcp-server-validator';
+import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 import { userPermissionAuthorization } from './permission';
 import { createTokenEncryptor } from './token-encryption';
 import {
@@ -106,6 +107,12 @@ export async function createRouter(
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
+
+  const vectorStoresOperator = new VectorStoresOperator(
+    `http://0.0.0.0:${port}`,
+    logger,
+  );
+  let lightspeed_vector_store_id: string = '';
 
   // Parse admin-configured MCP servers from app-config.
   // Only name is required; token is optional (users can provide their own via the UI).
@@ -589,6 +596,17 @@ export async function createRouter(
           lightspeedChatCreatePermission,
           credentials,
         );
+
+        // get the vector store id for the rhdh-product-docs vector store
+        if (lightspeed_vector_store_id === '') {
+          const vectorStores = await vectorStoresOperator.vectorStores.list();
+          lightspeed_vector_store_id =
+            vectorStores.data.find((v: any) =>
+              v.name.startsWith('rhdh-product-docs'),
+            )?.id || '';
+        }
+        request.body.vector_store_ids = ['asdf'];
+
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
         // if system_prompt is defined in lightspeed config
@@ -605,7 +623,7 @@ export async function createRouter(
           settingsStore,
           user_id,
         );
-
+        console.log('requestBodyasdf', requestBody);
         const fetchResponse = await fetch(
           `http://0.0.0.0:${port}/v1/streaming_query?${userQueryParam}`,
           {

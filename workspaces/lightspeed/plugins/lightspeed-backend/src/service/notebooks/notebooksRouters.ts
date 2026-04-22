@@ -29,10 +29,10 @@ import { lightspeedNotebooksUsePermission } from '@red-hat-developer-hub/backsta
 import { Readable } from 'stream';
 
 import {
+  DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
-  LIGHTSPEED_SERVICE_HOST,
   MAX_QUERY_RETRIES,
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
@@ -65,10 +65,7 @@ export async function createNotebooksRouter(
   const notebooksRouter = Router();
   notebooksRouter.use(express.json());
 
-  const lightSpeedPort =
-    config.getOptionalNumber('lightspeed.servicePort') ??
-    DEFAULT_LIGHTSPEED_SERVICE_PORT;
-  const lightspeedBaseUrl = `http://${LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
+  const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${DEFAULT_LIGHTSPEED_SERVICE_PORT}`;
   const queryModel = config.getOptionalString(
     'lightspeed.notebooks.queryDefaults.model',
   );
