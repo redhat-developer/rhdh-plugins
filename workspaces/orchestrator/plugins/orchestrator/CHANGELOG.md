@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.4
+
+### Patch Changes
+
+- fb708f1: Fix UI styling issues in worfkflow results page
+
 ## 5.7.3
 
 ### Patch Changes
