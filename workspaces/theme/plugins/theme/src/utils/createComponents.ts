@@ -22,6 +22,7 @@ import { type CSSObject } from '@mui/material/styles';
 
 import { ThemeConfig, ThemeConfigOptions, RHDHThemePalette } from '../types';
 import { redHatFontFaces, redHatFonts } from '../fonts';
+import { resolveNavigationSidebarColors } from './navigationSidebarColors';
 
 export type Component = {
   defaultProps?: unknown;
@@ -617,15 +618,32 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   }
 
   if (options.sidebars !== 'mui') {
+    const {
+      sidebarBackgroundColor,
+      sidebarItemInteractionBackgroundColor,
+      navigationItemColor,
+      navigationSelectedColor,
+    } = resolveNavigationSidebarColors(themeConfig);
+
     components.BackstageSidebar = {
       styleOverrides: {
         drawer: {
           gap: '0.25rem',
-          borderRight: `0.5rem solid ${general.sidebarBackgroundColor}`,
+          borderRight: `0.5rem solid ${sidebarBackgroundColor}`,
           paddingBottom: '1.5rem',
-          backgroundColor: general.sidebarBackgroundColor,
+          backgroundColor: sidebarBackgroundColor,
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
+          },
+          '& [class*="BackstageSidebarItem-selected-"][class*="BackstageSidebarItem-root-"]':
+            {
+              backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+              color: `${navigationSelectedColor} !important`,
+            },
+
+          '& [class*="BackstageSidebarSubmenuItem-selected-"]': {
+            background: `${sidebarItemInteractionBackgroundColor} !important`,
+            color: `${navigationSelectedColor} !important`,
           },
         },
       },
@@ -638,7 +656,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           marginLeft: '0.5rem !important',
           textDecorationLine: 'none',
           '&:hover, &:focus-visible': {
-            backgroundColor: general.sidebarItemSelectedBackgroundColor,
+            backgroundColor: sidebarItemInteractionBackgroundColor,
           },
         },
         label: {
@@ -647,15 +665,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         selected: {
-          backgroundColor: general.sidebarItemSelectedBackgroundColor,
+          backgroundColor: sidebarItemInteractionBackgroundColor,
+          color: navigationSelectedColor,
         },
       },
     };
     components.MuiBottomNavigation = {
       styleOverrides: {
         root: {
-          backgroundColor: `${general.sidebarBackgroundColor} !important`,
-          borderColor: `${general.sidebarBackgroundColor} !important`,
+          backgroundColor: `${sidebarBackgroundColor} !important`,
+          borderColor: `${sidebarBackgroundColor} !important`,
         },
       },
     };
@@ -665,19 +684,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       },
       styleOverrides: {
         root: {
-          color: `${palette.text?.primary} !important`,
-          backgroundColor: `${general.sidebarBackgroundColor} !important`,
+          color: `${navigationItemColor} !important`,
+          backgroundColor: `${sidebarBackgroundColor} !important`,
           borderRadius: '6px',
           borderTop: '3px solid transparent !important', // default mui selected styling
           paddingTop: '6px !important', // default mui selected styling
           marginTop: '-1px !important', // default mui selected styling
           '&:hover, &:focus-visible': {
-            backgroundColor: `${general.sidebarItemSelectedBackgroundColor} !important`,
+            backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
           },
         },
         selected: {
-          backgroundColor: `${general.sidebarItemSelectedBackgroundColor} !important`,
-          color: `${palette.text?.primary} !important`,
+          backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
         },
       },
     };
@@ -686,7 +705,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         root: {
           // undocumented Backstage makeStyles
           "& [class*='makeStyles-overlay-']": {
-            backgroundColor: `${general.sidebarBackgroundColor} !important`,
+            backgroundColor: `${sidebarBackgroundColor} !important`,
           },
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
@@ -729,7 +748,8 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         root: {
           // Controls the page inset as in PF6 -- only in desktop view
           '@media (min-width: 600px)': {
-            backgroundColor: general.sidebarBackgroundColor,
+            backgroundColor:
+              general.pageInsetBackgroundColor ?? general.appBarBackgroundColor,
             // Prevents the main content from scrolling weird
             overflowY: 'auto',
             // Cancel out the spacing produced by the page inset border when
