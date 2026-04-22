@@ -101,7 +101,8 @@ function generateReviewTableData(
     data,
     options?.includeHiddenFields ?? false,
   );
-  return result[''] as JsonObject;
+  const root = result[''] as JsonObject | undefined;
+  return root ?? {};
 }
 
 export default generateReviewTableData;
