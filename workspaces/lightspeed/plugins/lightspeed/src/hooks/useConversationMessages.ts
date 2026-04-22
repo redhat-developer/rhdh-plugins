@@ -83,13 +83,13 @@ const isLegacyToolResultToken = (
   );
 };
 
+let tempToolCallsCachePrefixFallbackSeq = 0;
+
 /** Unique prefix per temp send so late streams cannot migrate another session's tool cache. */
 function createTempToolCallsCacheSessionPrefix(): string {
   const suffix =
-    typeof globalThis.crypto !== 'undefined' &&
-    typeof globalThis.crypto.randomUUID === 'function'
-      ? globalThis.crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    globalThis.crypto?.randomUUID?.() ??
+    `${Date.now()}-${++tempToolCallsCachePrefixFallbackSeq}`;
   return `lightspeed-temp:${suffix}`;
 }
 
