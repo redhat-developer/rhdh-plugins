@@ -43,7 +43,6 @@ type NotebookCardProps = {
   onRename: (sessionId: string) => void;
   onDelete: (sessionId: string) => void;
   t: TranslationFunction<typeof lightspeedTranslationRef.T>;
-  getDocumentsCount: (documentIds?: string[]) => number;
 };
 
 export const NotebookCard = ({
@@ -55,7 +54,6 @@ export const NotebookCard = ({
   onRename,
   onDelete,
   t,
-  getDocumentsCount,
 }: NotebookCardProps) => (
   <Card
     className={classes.notebookCard}
@@ -136,8 +134,7 @@ export const NotebookCard = ({
       <div>
         <div className={classes.notebookDocuments}>
           <Typography variant="body2">
-            {getDocumentsCount(notebook.metadata?.document_ids)}{' '}
-            {t('notebooks.documents')}
+            {notebook.document_count ?? 0} {t('notebooks.documents')}
           </Typography>
         </div>
         <div className={classes.notebookUpdated}>

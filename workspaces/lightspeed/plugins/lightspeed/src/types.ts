@@ -217,6 +217,7 @@ export type NotebookSession = {
   description?: string;
   created_at: string;
   updated_at: string;
+  document_count?: number;
   metadata?: NotebookSessionMetadata;
 };
 

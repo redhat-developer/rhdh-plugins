@@ -240,8 +240,8 @@ export const NotebookView = ({
 
     for (const result of completedOrFailed) {
       processedIds.current.add(result.documentId);
+      idsToRemove.add(result.documentId);
       if (result.status !== 'completed') {
-        idsToRemove.add(result.documentId);
         namesToRemove.add(result.fileName);
       } else {
         newCompletedNames.add(result.fileName);
@@ -320,6 +320,8 @@ export const NotebookView = ({
               variant={AlertVariant[variant ?? 'success']}
               title={title}
               className={classes.toastAlert}
+              timeout={8000}
+              onTimeout={() => handleRemoveToastAlert(key as React.Key)}
               actionClose={
                 <AlertActionCloseButton
                   title={title as string}

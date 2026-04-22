@@ -75,6 +75,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
     'notebook.upload.modal.dragDropTitle': 'Dateien hierher ziehen und ablegen',
     'notebook.upload.modal.browseButton': 'Hochladen',
+    'notebook.upload.modal.separator': 'oder',
     'notebook.upload.modal.infoText':
       'Akzeptierte Dateitypen: .md, .txt, .pdf, .json, .yaml, .log',
     'notebook.upload.error.unsupportedType':

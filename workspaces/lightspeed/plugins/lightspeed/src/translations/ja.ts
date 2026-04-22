@@ -75,6 +75,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebook.upload.modal.title': 'ノートブックにドキュメントを追加',
     'notebook.upload.modal.dragDropTitle': 'ここにファイルをドラッグ&ドロップ',
     'notebook.upload.modal.browseButton': 'アップロード',
+    'notebook.upload.modal.separator': 'または',
     'notebook.upload.modal.infoText':
       '対応ファイル形式: .md, .txt, .pdf, .json, .yaml, .log',
     'notebook.upload.error.unsupportedType':

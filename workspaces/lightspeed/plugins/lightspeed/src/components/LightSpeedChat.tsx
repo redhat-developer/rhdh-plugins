@@ -563,18 +563,18 @@ export const LightspeedChat = ({
     setActiveNotebook(null);
   }, []);
 
+  const handleRemoveNotebookAlert = (key: React.Key) => {
+    setNotebookAlerts(prevAlerts =>
+      prevAlerts.filter(alert => alert.key !== key),
+    );
+  };
+
   const handleNotebookDeleted = () => {
     const key = Date.now();
     setNotebookAlerts(prevAlerts => [
       { title: t('notebooks.delete.toast'), variant: 'success', key },
       ...prevAlerts,
     ]);
-  };
-
-  const handleRemoveNotebookAlert = (key: React.Key) => {
-    setNotebookAlerts(prevAlerts =>
-      prevAlerts.filter(alert => alert.key !== key),
-    );
   };
   // Open the chat history drawer when entering fullscreen mode on desktop
   useEffect(() => {
@@ -1249,10 +1249,6 @@ export const LightspeedChat = ({
     ],
   );
 
-  const getDocumentsCount = (documentIds?: string[]) => {
-    return Array.isArray(documentIds) ? documentIds.length : 0;
-  };
-
   const handleAttach = (data: File[], event: ReactDropzoneDropEvent) => {
     if (
       'preventDefault' in event &&
@@ -1428,6 +1424,8 @@ export const LightspeedChat = ({
               variant={AlertVariant[variant ?? 'success']}
               title={title}
               className={classes.toastAlert}
+              timeout={8000}
+              onTimeout={() => handleRemoveNotebookAlert(key as React.Key)}
               actionClose={
                 <AlertActionCloseButton
                   title={title as string}
@@ -1628,7 +1626,6 @@ export const LightspeedChat = ({
               onDelete={setDeleteNotebookId}
               onCreateNotebook={handleCreateNotebook}
               t={t}
-              getDocumentsCount={getDocumentsCount}
             />
           )}
         {showNotebooksPanel &&

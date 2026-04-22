@@ -75,6 +75,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebook.upload.modal.title': 'Ajouter un document au carnet',
     'notebook.upload.modal.dragDropTitle': 'Glissez-déposez les fichiers ici',
     'notebook.upload.modal.browseButton': 'Charger',
+    'notebook.upload.modal.separator': 'ou',
     'notebook.upload.modal.infoText':
       'Types de fichiers acceptés : .md, .txt, .pdf, .json, .yaml, .log',
     'notebook.upload.error.unsupportedType':

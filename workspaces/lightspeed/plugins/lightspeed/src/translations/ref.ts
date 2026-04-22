@@ -72,6 +72,7 @@ export const lightspeedMessages = {
   'notebook.upload.modal.title': 'Add a document to Notebook',
   'notebook.upload.modal.dragDropTitle': 'Drag and drop files here',
   'notebook.upload.modal.browseButton': 'Upload',
+  'notebook.upload.modal.separator': 'or',
   'notebook.upload.modal.infoText':
     'Accepted file types: .md, .txt, .pdf, .json, .yaml, .log',
   'notebook.upload.error.unsupportedType':

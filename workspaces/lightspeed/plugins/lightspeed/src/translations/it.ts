@@ -76,6 +76,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebook.upload.modal.title': 'Aggiungi un documento al quaderno',
     'notebook.upload.modal.dragDropTitle': 'Trascina e rilascia i file qui',
     'notebook.upload.modal.browseButton': 'Carica',
+    'notebook.upload.modal.separator': 'o',
     'notebook.upload.modal.infoText':
       'Tipi di file accettati: .md, .txt, .pdf, .json, .yaml, .log',
     'notebook.upload.error.unsupportedType':

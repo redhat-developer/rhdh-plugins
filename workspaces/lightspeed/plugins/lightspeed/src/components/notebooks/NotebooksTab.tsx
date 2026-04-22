@@ -36,7 +36,6 @@ type NotebooksTabProps = {
   onDelete: (sessionId: string) => void;
   onCreateNotebook: () => void;
   t: TranslationFunction<typeof lightspeedTranslationRef.T>;
-  getDocumentsCount: (documentIds?: string[]) => number;
 };
 
 export const NotebooksTab = ({
@@ -50,7 +49,6 @@ export const NotebooksTab = ({
   onDelete,
   onCreateNotebook,
   t,
-  getDocumentsCount,
 }: NotebooksTabProps) => (
   <div className={classes.notebooksContainer}>
     <div className={classes.notebooksHeader}>
@@ -102,7 +100,6 @@ export const NotebooksTab = ({
             onRename={onRename}
             onDelete={onDelete}
             t={t}
-            getDocumentsCount={getDocumentsCount}
           />
         ))}
       </div>

@@ -75,6 +75,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebook.upload.modal.dragDropTitle':
       'Arrastra y suelta los archivos aquí',
     'notebook.upload.modal.browseButton': 'Subir',
+    'notebook.upload.modal.separator': 'o',
     'notebook.upload.modal.infoText':
       'Tipos de archivo aceptados: .md, .txt, .pdf, .json, .yaml, .log',
     'notebook.upload.error.unsupportedType':

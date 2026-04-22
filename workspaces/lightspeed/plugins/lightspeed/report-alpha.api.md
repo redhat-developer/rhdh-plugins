@@ -239,6 +239,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.upload.modal.title': string;
     readonly 'notebook.upload.modal.dragDropTitle': string;
     readonly 'notebook.upload.modal.browseButton': string;
+    readonly 'notebook.upload.modal.separator': string;
     readonly 'notebook.upload.modal.infoText': string;
     readonly 'notebook.upload.error.unsupportedType': string;
     readonly 'notebook.upload.error.fileTooLarge': string;
