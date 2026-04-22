@@ -10694,7 +10694,9 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.8"
     "@backstage/core-plugin-api": "npm:^1.12.4"
     "@backstage/dev-utils": "npm:^1.1.21"
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
     "@backstage/frontend-test-utils": "npm:^0.5.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
     "@backstage/plugin-catalog-react": "npm:^2.1.0"
     "@backstage/plugin-notifications": "npm:^0.5.15"
     "@backstage/plugin-notifications-common": "npm:^0.2.1"
@@ -10742,6 +10744,22 @@ __metadata:
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   checksum: 10c0/9ccc7f5360089f5efe98e85eeb68af061e75306b09f2386605306c8b362b67f79855592f90e7ddb63c051dd585dd3bab7d8e5ff300f9f8cc6370ccef18aea983
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.13.0"
+  dependencies:
+    "@mui/icons-material": "npm:^5.17.1"
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.12.0
+    "@backstage/theme": ^0.7.0
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/561c04203e9047f4df3fd9a0c29eb0e6b578740899dc3da07870f807a4c3324fb6880e2501f168b60d9a121521eb1f6a9d65d9d837e803f469415e2c0f526053
   languageName: node
   linkType: hard
 
@@ -15434,12 +15452,15 @@ __metadata:
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@playwright/test": "npm:1.58.2"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.13.0"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
     "@types/react-dom": "npm:*"
     cross-env: "npm:^7.0.0"
+    material-icons: "npm:^1.13.14"
     react: "npm:^18.0.2"
     react-dom: "npm:^18.0.2"
     react-router: "npm:^6.30.2"
@@ -24526,6 +24547,13 @@ __metadata:
   dependencies:
     escape-string-regexp: "npm:^4.0.0"
   checksum: 10c0/7c90ba780a98542e6db4d1961e82a213f857a4e98b3e76e5f57e5ce19f4f4624e6f23279df397bbe2eed373c707964df93ceba546b80f3863fbb7962daa3a6ea
+  languageName: node
+  linkType: hard
+
+"material-icons@npm:^1.13.14":
+  version: 1.13.14
+  resolution: "material-icons@npm:1.13.14"
+  checksum: 10c0/4c0f9a8ff02545ce7747c621b5ffa1738212628189c9419f4cd2e75f7f8cf9e98ed5f946724a2d7e169cfebc439875df0ba9f79ba94a574e16cbb0c5ce26e55a
   languageName: node
   linkType: hard
 

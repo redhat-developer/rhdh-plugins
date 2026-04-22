@@ -14,38 +14,80 @@
  * limitations under the License.
  */
 
-import '@backstage/config';
-
-declare module '@backstage/config' {
-  interface Config {
-    app?: {
-      branding?: {
-        /**
-         * Base64 URI for the full logo. If the value is a string, it is used as the logo for both themes.
-         * @visibility frontend
-         */
-        fullLogo?:
-          | string
-          | {
-              /**
-               * Base64 URI for the logo in light theme
-               * @visibility frontend
-               */
-              light: string;
-              /**
-               * Base64 URI for the logo in dark theme
-               * @visibility frontend
-               */
-              dark: string;
-            };
-        /**
-         * Fallback width for the full logo in the global header.
-         * Accepts any valid CSS length (e.g. `'200px'`, `'12rem'`).
-         * Used only when a `width` prop isn’t supplied through the extension configuration.
-         * @visibility frontend
-         */
-        fullLogoWidth?: string | number;
-      };
+export interface Config {
+  app?: {
+    branding?: {
+      /**
+       * Base64 URI for the full logo. If the value is a string, it is used as the logo for both themes.
+       * @visibility frontend
+       */
+      fullLogo?:
+        | string
+        | {
+            /**
+             * Base64 URI for the logo in light theme
+             * @visibility frontend
+             */
+            light: string;
+            /**
+             * Base64 URI for the logo in dark theme
+             * @visibility frontend
+             */
+            dark: string;
+          };
+      /**
+       * Fallback width for the full logo in the global header.
+       * Accepts any valid CSS length (e.g. `'200px'`, `'12rem'`).
+       * Used only when a `width` prop isn't supplied through the extension configuration.
+       * @visibility frontend
+       */
+      fullLogoWidth?: string | number;
     };
-  }
+  };
+  globalHeader?: {
+    /**
+     * Simple icon-button toolbar components that deployers can add without
+     * writing a plugin. Each entry renders a clickable icon in the header bar.
+     * @visibility frontend
+     */
+    components?: Array<{
+      /** @visibility frontend */
+      title: string;
+      /** @visibility frontend */
+      titleKey?: string;
+      /** @visibility frontend */
+      icon: string;
+      /** @visibility frontend */
+      link: string;
+      /** @visibility frontend */
+      tooltip?: string;
+      /** @visibility frontend */
+      priority?: number;
+    }>;
+    /**
+     * Simple link menu items that deployers can add without writing a plugin.
+     * Each item is injected into the dropdown identified by `target`.
+     * @visibility frontend
+     */
+    menuItems?: Array<{
+      /** @visibility frontend */
+      target: string;
+      /** @visibility frontend */
+      title: string;
+      /** @visibility frontend */
+      titleKey?: string;
+      /** @visibility frontend */
+      icon?: string;
+      /** @visibility frontend */
+      link: string;
+      /** @visibility frontend */
+      sectionLabel?: string;
+      /** @visibility frontend */
+      sectionLink?: string;
+      /** @visibility frontend */
+      sectionLinkLabel?: string;
+      /** @visibility frontend */
+      priority?: number;
+    }>;
+  };
 }

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { CSSProperties, ComponentType } from 'react';
+import type { ComponentType } from 'react';
 import { LogoutButton } from '../components/LogoutButton/LogoutButton';
-import { CreateDropdown } from '../components/HeaderDropdownComponent/CreateDropdown';
 import { ProfileDropdown } from '../components/HeaderDropdownComponent/ProfileDropdown';
 import { RegisterAComponentSection } from '../components/HeaderDropdownComponent/RegisterAComponentSection';
 import { SoftwareTemplatesSection } from '../components/HeaderDropdownComponent/SoftwareTemplatesSection';
 import { SearchComponent } from '../components/SearchComponent/SearchComponent';
+import { HeaderIconButton } from '../components/HeaderIconButton/HeaderIconButton';
 import { SupportButton } from '../components/SupportButton/SupportButton';
 import {
   ApplicationLauncherDropdownMountPoint,
@@ -73,18 +73,16 @@ export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMoun
         },
       },
     },
-    // Notice: 1.5 ships with a Create link instead of a dropdown!!!
     {
-      Component: CreateDropdown,
+      Component: HeaderIconButton as ComponentType,
       config: {
         priority: 90,
-        layout: {
-          display: {
-            sm: 'none',
-            md: 'block',
-          },
-          mr: 1.5,
-        } as any as CSSProperties, // I don't used MUI v5 specific `sx` types here to allow us changing the implementation later
+        props: {
+          title: 'Self-service',
+          titleKey: 'create.title',
+          icon: 'addCircleOutline',
+          to: '/create',
+        },
       },
     },
     {

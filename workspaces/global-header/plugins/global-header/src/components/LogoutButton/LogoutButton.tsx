@@ -26,7 +26,11 @@ import Divider from '@mui/material/Divider';
 import { MenuItemLinkContent } from '../MenuItemLink/MenuItemLinkContent';
 import { useTranslation } from '../../hooks/useTranslation';
 
-export const LogoutButton = () => {
+export const LogoutButton = ({
+  hideDivider = false,
+}: {
+  hideDivider?: boolean;
+}) => {
   const errorApi = useApi(errorApiRef);
   const identityApi = useApi(identityApiRef);
   const { t } = useTranslation();
@@ -37,7 +41,7 @@ export const LogoutButton = () => {
 
   return (
     <>
-      <Divider />
+      {!hideDivider && <Divider />}
       <MenuItem
         onClick={handleLogout}
         sx={{
