@@ -39,24 +39,22 @@ export class CatalogPage {
   async loginAndSetLocale(locale: string) {
     await this.page.goto('/');
     const enterButton = this.page.getByRole('button', { name: 'Enter' });
-    await expect(enterButton).toBeVisible();
+    await expect(enterButton).toBeVisible({ timeout: 30000 });
     await enterButton.click();
-    await expect(this.page.getByText('Welcome back!')).toBeVisible();
+    // Guest flow copy varies by Backstage / branding; wait for shell instead of "Welcome back!".
+    await expect(
+      this.page.getByRole('link', { name: 'Home' }).first(),
+    ).toBeVisible({
+      timeout: 30000,
+    });
     await this.switchToLocale(locale);
   }
 
-  async openCatalog() {
-    await this.page.goto('/catalog'); // Resolves the issue when "My Groups" sidebar covers the catalog toolbar
-    await this.page.getByTestId('user-picker-all').getByText('All').click();
-  }
-
-  async openComponent(componentName: string) {
-    const link = this.page.getByRole('link', { name: componentName });
-    await this.page
-      .getByRole('textbox', { name: 'Search' })
-      .fill(componentName);
-    await expect(link).toBeVisible({ timeout: 10000 });
-    await link.click();
+  /** Opens a Component in `default` by `metadata.name` (avoids catalog index / filter flakiness). */
+  async openComponent(name: string) {
+    await this.page.goto(
+      `/catalog/default/component/${encodeURIComponent(name)}`,
+    );
   }
 
   async switchToLocale(locale: string): Promise<void> {

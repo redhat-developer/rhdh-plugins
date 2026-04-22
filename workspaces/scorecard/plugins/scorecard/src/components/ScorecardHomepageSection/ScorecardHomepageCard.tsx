@@ -77,7 +77,13 @@ export const ScorecardHomepageCard = ({
     return null;
   }
 
-  if (data.result?.total === 0) {
+  const result = data.result;
+  const hasNoRenderableAggregation =
+    result.total === 0 &&
+    result.calculationErrorCount === 0 &&
+    result.entitiesConsidered === 0;
+
+  if (hasNoRenderableAggregation) {
     return (
       <EmptyStatePanel
         showSubheader={showSubheader}

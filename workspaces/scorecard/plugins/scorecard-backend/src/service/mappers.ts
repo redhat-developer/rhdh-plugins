@@ -38,6 +38,8 @@ export class AggregatedMetricMapper {
       values: aggregatedMetric?.statusCounts ?? {},
       total,
       timestamp,
+      entitiesConsidered: aggregatedMetric?.latest_entity_count ?? 0,
+      calculationErrorCount: aggregatedMetric?.calculation_error_count ?? 0,
     };
   }
 

@@ -105,6 +105,10 @@ export const scorecardMessages = {
     averageLegendTooltipEntitiesEach_other:
       '{{count}} entities, each {{score}}',
     averageLegendTooltipRowTotal: 'Total score {{total}}',
+    drillDownCalculationFailures:
+      'One or more entities failed while calculating this metric.',
+    homepageEntityCalculationHealth:
+      '{{healthy}} / {{total}} entities without metric calculation errors',
   },
 
   // Threshold translations
@@ -148,7 +152,7 @@ export const scorecardMessages = {
       },
     },
   },
-};
+} as const;
 
 /**
  * Translation reference for scorecard plugin

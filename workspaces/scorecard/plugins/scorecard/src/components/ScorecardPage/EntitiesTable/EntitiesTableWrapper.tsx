@@ -27,13 +27,14 @@ import { useTranslation } from '../../../hooks/useTranslation';
 interface EntitiesTableWrapperProps {
   children: ReactNode;
   title: string;
-  isError?: boolean;
+  /** When true, show a warning that at least one visible entity had a metric calculation failure. */
+  showCalculationWarning?: boolean;
 }
 
 export const EntitiesTableWrapper: FC<EntitiesTableWrapperProps> = ({
   children,
   title,
-  isError,
+  showCalculationWarning = false,
 }) => {
   const { t } = useTranslation();
 
@@ -55,9 +56,9 @@ export const EntitiesTableWrapper: FC<EntitiesTableWrapperProps> = ({
           }}
         >
           {title}
-          {!isError && (
+          {showCalculationWarning && (
             <Tooltip
-              title={t('metric.someEntitiesNotReportingValues')}
+              title={t('metric.drillDownCalculationFailures')}
               arrow
               placement="right"
               sx={{

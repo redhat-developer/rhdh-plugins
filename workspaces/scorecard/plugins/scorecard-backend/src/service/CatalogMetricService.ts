@@ -19,6 +19,9 @@ import {
   ThresholdConfig,
   EntityMetricDetailResponse,
   EntityMetricDetail,
+  ScorecardEntityHealthSummary,
+  aggregationTypes,
+  AggregatedMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Entity } from '@backstage/catalog-model';
 import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
@@ -38,6 +41,8 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
+import { isMetricCalculationError } from '../utils/metricCalculationError';
+import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
 
 type CatalogMetricServiceOptions = {
@@ -49,6 +54,20 @@ type CatalogMetricServiceOptions = {
 };
 
 export class CatalogMetricService {
+  private static entityHealthSummary(
+    accessibleRows: DbMetricValue[],
+    countsArePartial: boolean,
+  ): ScorecardEntityHealthSummary {
+    const calculationErrorCount = accessibleRows.filter(row =>
+      isMetricCalculationError(row),
+    ).length;
+    return {
+      totalEntities: accessibleRows.length,
+      calculationErrorCount,
+      countsArePartial,
+    };
+  }
+
   private readonly logger: LoggerService;
 
   private readonly catalog: CatalogService;
@@ -122,7 +141,10 @@ export class CatalogMetricService {
           thresholdError = stringifyError(error);
         }
 
-        const isMetricCalcError = error_message !== null && value === null;
+        const isMetricCalcError = isMetricCalculationError({
+          value,
+          error_message,
+        });
 
         return {
           id: metric.id,
@@ -151,6 +173,49 @@ export class CatalogMetricService {
         };
       },
     );
+  }
+
+  /**
+   * Get an aggregated metric by status grouped for multiple entities and a single metric ID.
+   *
+   * @param entityRefs - Array of entity references in format "kind:namespace/name"
+   * @param metricId - Metric ID to aggregate.
+   * @returns Aggregated metric by status grouped results
+   */
+  async getStatusGroupedAggregatedMetrics(
+    entityRefs: string[],
+    metricId: string,
+  ): Promise<AggregatedMetric> {
+    const aggregatedMetric =
+      await this.database.readAggregatedMetricByEntityRefs(
+        entityRefs,
+        metricId,
+      );
+
+    return AggregatedMetricMapper.toAggregatedMetric(aggregatedMetric);
+  }
+
+  /**
+   * Get an aggregated metric by aggregation type.
+   *
+   * @param entityRefs - Array of entity references in format "kind:namespace/name"
+   * @param metricId - Metric ID to aggregate.
+   * @param aggregationType - Aggregation type to use.
+   * @returns Aggregated metric by aggregation type results
+   */
+  async getAggregatedMetricByEntityRefs(
+    entityRefs: string[],
+    metricId: string,
+    aggregationType: string,
+  ): Promise<AggregatedMetric> {
+    if (entityRefs.length !== 0) {
+      if (aggregationType === aggregationTypes.statusGrouped) {
+        return this.getStatusGroupedAggregatedMetrics(entityRefs, metricId);
+      }
+      throw new Error(`Unsupported aggregation type: ${aggregationType}`);
+    }
+
+    return AggregatedMetricMapper.toAggregatedMetric(undefined);
   }
 
   /**
@@ -219,6 +284,7 @@ export class CatalogMetricService {
           totalPages: 0,
           isCapped: false,
         },
+        entityHealth: CatalogMetricService.entityHealthSummary([], false),
       };
     }
 
@@ -289,6 +355,7 @@ export class CatalogMetricService {
           totalPages: 0,
           isCapped: false,
         },
+        entityHealth: CatalogMetricService.entityHealthSummary([], false),
       };
     }
 
@@ -320,6 +387,10 @@ export class CatalogMetricService {
           totalPages: Math.ceil(totalFiltered / options.limit),
           isCapped,
         },
+        entityHealth: CatalogMetricService.entityHealthSummary(
+          accessibleRows,
+          isCapped,
+        ),
       };
     }
 
@@ -356,6 +427,10 @@ export class CatalogMetricService {
         totalPages: Math.ceil(totalFiltered / options.limit),
         isCapped,
       },
+      entityHealth: CatalogMetricService.entityHealthSummary(
+        accessibleRows,
+        isCapped,
+      ),
     };
   }
 }

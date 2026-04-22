@@ -22,8 +22,8 @@ import { EntitiesTableWrapper } from '../EntitiesTableWrapper';
 jest.mock('../../../../hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string) =>
-      key === 'metric.someEntitiesNotReportingValues'
-        ? 'Some entities are not reporting values'
+      key === 'metric.drillDownCalculationFailures'
+        ? 'Calculation failed for one or more entities'
         : key,
   }),
 }));
@@ -48,8 +48,8 @@ describe('EntitiesTableWrapper', () => {
     );
   });
 
-  it('should render warning icon with tooltip', () => {
-    render(
+  it('should not render calculation warning icon by default', () => {
+    const { container } = render(
       <TestWrapper>
         <EntitiesTableWrapper title="Entities">
           <span>Content</span>
@@ -57,12 +57,25 @@ describe('EntitiesTableWrapper', () => {
       </TestWrapper>,
     );
 
-    const icon = document.querySelector(
-      '[data-testid="ReportProblemOutlinedIcon"]',
-    );
-    expect(icon).toBeInTheDocument();
     expect(
-      screen.getByLabelText('Some entities are not reporting values'),
+      container.querySelector('.MuiSvgIcon-colorWarning'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should render calculation warning icon when showCalculationWarning', () => {
+    const { container } = render(
+      <TestWrapper>
+        <EntitiesTableWrapper title="Entities" showCalculationWarning>
+          <span>Content</span>
+        </EntitiesTableWrapper>
+      </TestWrapper>,
+    );
+
+    expect(
+      container.querySelector('.MuiSvgIcon-colorWarning'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Calculation failed for one or more entities'),
     ).toBeInTheDocument();
   });
 });

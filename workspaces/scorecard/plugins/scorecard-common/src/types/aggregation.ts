@@ -42,6 +42,16 @@ export type AggregatedMetric = {
   values: Record<string, number>;
   total: number;
   timestamp: string;
+  /**
+   * Entities in aggregation scope that have at least one latest stored `metric_values` row for this metric
+   * (aligned with the drill-down list total when the same ownership filters apply).
+   */
+  entitiesConsidered: number;
+  /**
+   * How many of those entities have a latest stored row that is a metric **calculation** failure
+   * (`error_message` set and `value` null), distinct from threshold status counts in `values` / `total`.
+   */
+  calculationErrorCount: number;
 };
 
 /**

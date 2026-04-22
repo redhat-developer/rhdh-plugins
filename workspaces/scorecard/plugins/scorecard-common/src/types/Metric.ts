@@ -77,6 +77,20 @@ export type EntityMetricDetail = {
 };
 
 /**
+ * Rollup for drill-down: counts over the same catalog-authorized rows as `EntityMetricDetailResponse.pagination`.
+ *
+ * @public
+ */
+export type ScorecardEntityHealthSummary = {
+  /** Same as `pagination.total`: entities the caller can read that matched the drill-down query window. */
+  totalEntities: number;
+  /** Latest stored row per entity is a metric **calculation** failure (`error_message` set and `value` null). */
+  calculationErrorCount: number;
+  /** True when the backend DB window was capped; totals may omit additional matching rows. */
+  countsArePartial: boolean;
+};
+
+/**
  * Paginated response for entity metrics drill-down
  * @public
  */
@@ -95,4 +109,5 @@ export type EntityMetricDetailResponse = {
     totalPages: number;
     isCapped: boolean;
   };
+  entityHealth: ScorecardEntityHealthSummary;
 };

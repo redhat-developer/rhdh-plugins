@@ -115,6 +115,8 @@ jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
       switch (key) {
+        case 'metric.homepageEntityCalculationHealth':
+          return `${options?.healthy} / ${options?.total} entities healthy`;
         case 'thresholds.entities':
           return `${options?.count} entities`;
         case 'thresholds.noEntities':
@@ -155,6 +157,8 @@ const mockScorecard: AggregatedMetricResult = {
     ],
     timestamp: '2024-01-01T00:00:00Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 37,
+    calculationErrorCount: 0,
   },
 };
 
@@ -218,7 +222,7 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
       'GitHub open PRs',
     );
     expect(screen.getByTestId('card-subheader')).toHaveTextContent(
-      '37 entities',
+      '37 / 37 entities healthy',
     );
     expect(screen.getByTestId('card-description')).toHaveTextContent(
       'Current count of open Pull Requests',
@@ -300,6 +304,8 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
         ...mockScorecard.result,
         values: [],
         total: 0,
+        entitiesConsidered: 0,
+        calculationErrorCount: 0,
       },
     };
 
@@ -314,7 +320,7 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
     );
 
     expect(screen.getByTestId('card-subheader')).toHaveTextContent(
-      '0 entities',
+      '0 / 0 entities healthy',
     );
     expect(screen.getByTestId('pie-data-length')).toHaveTextContent('0');
   });
@@ -341,6 +347,8 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
       result: {
         ...mockScorecard.result,
         values: [],
+        entitiesConsidered: 37,
+        calculationErrorCount: 0,
       },
     };
 

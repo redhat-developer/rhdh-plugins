@@ -180,19 +180,6 @@ export function getEntitiesPageMissingPermission(
   );
 }
 
-/** Tooltip text for "some entities not reporting" icon on drill-down card (locale-aware). */
-export function getSomeEntitiesNotReportingTooltip(
-  translations: ScorecardMessages,
-): string {
-  const metric = (
-    translations as { metric?: { someEntitiesNotReportingValues?: string } }
-  ).metric;
-  return (
-    metric?.someEntitiesNotReportingValues ??
-    scorecardMessages.metric.someEntitiesNotReportingValues
-  );
-}
-
 /** Rows-per-page label (e.g. "5 rows", "5 lignes"). Used for dropdown and listbox options. */
 export function getEntitiesTableFooterRowsLabel(
   translations: ScorecardMessages,
@@ -306,20 +293,20 @@ export function getLastUpdatedLabel(
 }
 
 /**
- * Homepage KPI cards use aggregationIds (e.g. openPrsKpi); labels fall back to API/config
- * metadata in English, not `metric.github.open_prs` locale keys. Use ref copy for title
- * / description; keep localized errors, thresholds, and entity-count strings.
+ * Homepage KPI drill-down link text: healthy entities vs entities considered (RHIDP-13128).
  */
-function getSomeEntitiesNotReportingLabel(
+export function getHomepageEntityCalculationHealthText(
   translations: ScorecardMessages,
+  healthy: string,
+  total: string,
 ): string {
-  const metric = translations.metric as {
-    someEntitiesNotReportingValues?: string;
-  };
-  return (
-    metric.someEntitiesNotReportingValues ??
-    scorecardMessages.metric.someEntitiesNotReportingValues
-  );
+  const template =
+    (translations.metric as { homepageEntityCalculationHealth?: string })
+      .homepageEntityCalculationHealth ??
+    scorecardMessages.metric.homepageEntityCalculationHealth;
+  return template
+    .replace(/\{\{healthy\}\}/g, healthy)
+    .replace(/\{\{total\}\}/g, total);
 }
 
 /** Snapshot for the scorecard card on the drill-down page when permission is missing (no entity count in UI). */
@@ -357,7 +344,8 @@ export function getThresholdsSnapshot(
   options: {
     drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
     drillDownAggregationId?: string;
-    entityCount: string;
+    /** Interpolation for `metric.homepageEntityCalculationHealth` (mock data uses 10/10). */
+    homepageCalculationHealth?: { healthy: string; total: string };
     cardTitle: string;
     cardDescription: string;
   },
@@ -365,18 +353,24 @@ export function getThresholdsSnapshot(
   const {
     drillDownMetricId,
     drillDownAggregationId,
-    entityCount,
     cardTitle,
     cardDescription,
   } = options;
   const aggregationSegment = drillDownAggregationId ?? drillDownMetricId;
-  const drillDownLinkName = getSomeEntitiesNotReportingLabel(translations);
+  const { healthy, total } = options.homepageCalculationHealth ?? {
+    healthy: '10',
+    total: '10',
+  };
+  const drillDownLinkText = getHomepageEntityCalculationHealthText(
+    translations,
+    healthy,
+    total,
+  );
   return `
         - article:
           - text: ${cardTitle}
-          - link "${drillDownLinkName}":
+          - link "${drillDownLinkText}":
             - /url: /scorecard/aggregations/${aggregationSegment}/metrics/${drillDownMetricId}
-            - text: ${entityCount}
           - button
           - separator
           - paragraph: ${cardDescription}

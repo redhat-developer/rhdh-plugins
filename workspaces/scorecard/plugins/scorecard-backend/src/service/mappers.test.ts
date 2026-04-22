@@ -43,6 +43,8 @@ describe('AggregatedMetricMapper', () => {
           warning: 3,
           error: 2,
         },
+        calculation_error_count: 1,
+        latest_entity_count: 12,
       };
 
       const result = AggregatedMetricMapper.toAggregatedMetric(dbMetric);
@@ -55,6 +57,8 @@ describe('AggregatedMetricMapper', () => {
         },
         total: 10,
         timestamp: '2024-01-15T10:00:00.000Z',
+        entitiesConsidered: 12,
+        calculationErrorCount: 1,
       });
     });
 
@@ -65,6 +69,8 @@ describe('AggregatedMetricMapper', () => {
         values: {},
         total: 0,
         timestamp: expect.any(String),
+        entitiesConsidered: 0,
+        calculationErrorCount: 0,
       });
     });
 
@@ -74,12 +80,16 @@ describe('AggregatedMetricMapper', () => {
         total: 0,
         max_timestamp: new Date('2024-01-15T10:00:00Z'),
         statusCounts: {},
+        calculation_error_count: 0,
+        latest_entity_count: 0,
       };
 
       const result = AggregatedMetricMapper.toAggregatedMetric(dbMetric);
 
       expect(result.values).toEqual({});
       expect(result.total).toBe(0);
+      expect(result.entitiesConsidered).toBe(0);
+      expect(result.calculationErrorCount).toBe(0);
     });
   });
 
@@ -140,6 +150,8 @@ describe('AggregatedMetricMapper', () => {
             { name: 'warning', count: 1, score: 0 },
             { name: 'error', count: 1, score: 0 },
           ],
+          entitiesConsidered: 7,
+          calculationErrorCount: 0,
           thresholds,
         },
         aggregationConfig,

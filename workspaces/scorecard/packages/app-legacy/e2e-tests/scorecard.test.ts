@@ -139,8 +139,7 @@ test.describe('Scorecard Plugin Tests', () => {
         notAllowedAggregationErrorBody,
         403,
       );
-      await catalogPage.openCatalog();
-      await catalogPage.openComponent('Red Hat Developer Hub');
+      await catalogPage.openComponent('red-hat-developer-hub');
       await page.getByText('Scorecard', { exact: true }).click();
 
       await expect(
@@ -163,8 +162,7 @@ test.describe('Scorecard Plugin Tests', () => {
         customScorecardResponse,
       );
 
-      await catalogPage.openCatalog();
-      await catalogPage.openComponent('Red Hat Developer Hub');
+      await catalogPage.openComponent('red-hat-developer-hub');
       await scorecardPage.openTab();
       await scorecardPage.verifyScorecardValues({
         [translations.metric['github.open_prs'].title]: '9',
@@ -187,8 +185,7 @@ test.describe('Scorecard Plugin Tests', () => {
         emptyScorecardResponse,
       );
 
-      await catalogPage.openCatalog();
-      await catalogPage.openComponent('Red Hat Developer Hub');
+      await catalogPage.openComponent('red-hat-developer-hub');
       await scorecardPage.openTab();
 
       await scorecardPage.expectEmptyState();
@@ -205,8 +202,7 @@ test.describe('Scorecard Plugin Tests', () => {
         unavailableMetricResponse,
       );
 
-      await catalogPage.openCatalog();
-      await catalogPage.openComponent('Red Hat Developer Hub');
+      await catalogPage.openComponent('red-hat-developer-hub');
       await scorecardPage.openTab();
 
       const jiraMetric = scorecardPage.scorecardMetrics[1];
@@ -240,8 +236,7 @@ test.describe('Scorecard Plugin Tests', () => {
         invalidThresholdResponse,
       );
 
-      await catalogPage.openCatalog();
-      await catalogPage.openComponent('Red Hat Developer Hub');
+      await catalogPage.openComponent('red-hat-developer-hub');
       await scorecardPage.openTab();
 
       const githubMetric = scorecardPage.scorecardMetrics[0];
@@ -417,11 +412,6 @@ test.describe('Scorecard Plugin Tests', () => {
         await addAggregatedScorecardWidgets(homePage);
         await page.reload();
 
-        const jiraEntityCount = getEntityCount(
-          translations,
-          currentLocale,
-          '10',
-        );
         const card = homePage.getCard(
           AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId,
         );
@@ -435,7 +425,6 @@ test.describe('Scorecard Plugin Tests', () => {
           getThresholdsSnapshot(translations, {
             drillDownMetricId:
               AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId,
-            entityCount: jiraEntityCount,
             cardTitle: metadata.title,
             cardDescription: metadata.description,
           }),
@@ -525,11 +514,6 @@ test.describe('Scorecard Plugin Tests', () => {
         await addAggregatedScorecardWidgets(homePage);
         await page.reload();
 
-        const githubEntityCount = getEntityCount(
-          translations,
-          currentLocale,
-          '10',
-        );
         const metadata =
           translations.metric[
             AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation
@@ -543,7 +527,6 @@ test.describe('Scorecard Plugin Tests', () => {
           getThresholdsSnapshot(translations, {
             drillDownMetricId:
               AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation,
-            entityCount: githubEntityCount,
             cardTitle: metadata.title,
             cardDescription: metadata.description,
           }),
@@ -647,11 +630,6 @@ test.describe('Scorecard Plugin Tests', () => {
         );
         await page.reload();
 
-        const githubEntityCount = getEntityCount(
-          translations,
-          currentLocale,
-          '10',
-        );
         const card = homePage.getCard(
           AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
         );
@@ -663,7 +641,6 @@ test.describe('Scorecard Plugin Tests', () => {
               AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation,
             drillDownAggregationId:
               AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
-            entityCount: githubEntityCount,
             cardTitle: githubAggregatedResponse.metadata.title,
             cardDescription: githubAggregatedResponse.metadata.description,
           }),
@@ -798,7 +775,7 @@ test.describe('Scorecard Plugin Tests', () => {
               cardDescription: githubAggregatedResponse.metadata.description,
             },
           );
-          await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
+          await scorecardDrillDownPage.expectNoDrillDownCalculationErrorWarningIcon();
           await scorecardDrillDownPage.expectTableHeadersVisible();
           const rows5Label = getEntitiesTableFooterRowsLabel(translations, 5);
           await scorecardDrillDownPage.expectTableFooterSnapshot(
@@ -820,7 +797,7 @@ test.describe('Scorecard Plugin Tests', () => {
           // First page: only 5 entities (pageSize=5)
           await scorecardDrillDownPage.expectEntityNamesVisible([
             'all-scorecards-service',
-            'Red Hat Developer Hub',
+            'red-hat-developer-hub',
             'github-scorecard-only-service',
             'all-scorecards-service-different-owner',
             'backend-api',
@@ -915,7 +892,7 @@ test.describe('Scorecard Plugin Tests', () => {
               cardDescription: jiraAggregatedResponse.metadata.description,
             },
           );
-          await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
+          await scorecardDrillDownPage.expectNoDrillDownCalculationErrorWarningIcon();
           await scorecardDrillDownPage.expectTableHeadersVisible();
           await scorecardDrillDownPage.expectEntityNamesVisible([
             'platform-api',

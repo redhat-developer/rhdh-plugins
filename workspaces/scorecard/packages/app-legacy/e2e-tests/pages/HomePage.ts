@@ -18,8 +18,8 @@ import { Locator, Page, expect } from '@playwright/test';
 import { AGGREGATED_CARDS_WIDGET_TITLES } from '../constants/homepageWidgetTitles';
 import {
   ScorecardMessages,
-  getEntitiesLabel,
   getEntityCount,
+  getHomepageEntityCalculationHealthText,
   getLastUpdatedLabel,
 } from '../utils/translationUtils';
 
@@ -130,22 +130,18 @@ export class HomePage {
     await expect(this.page.getByText(label)).toBeVisible();
   }
 
-  async clickDrillDownLink() {
-    // CardSubheader renders the count as a Link (e.g. "10 entities"). The card
-    // description can also contain the word "entities" (see API metadata), so
-    // getByText(entitiesLabel) is ambiguous. MUI Tooltip also sets the link’s
-    // accessible name to the long tooltip, so getByRole('link', { name }) is
-    // locale‑fragile. Match only links whose *visible* text is "{{count}} <label>".
-    const entitiesLabel = getEntitiesLabel(this.translations);
-    await this.page
-      .getByRole('link')
-      .filter({
-        hasText: new RegExp(
-          String.raw`^\d+\s*${escapeRegex(entitiesLabel)}$`,
-          'i',
-        ),
-      })
-      .first()
-      .click();
+  /**
+   * Clicks the homepage KPI drill-down link (healthy/total subheader). Mock data uses 10/10.
+   */
+  async clickDrillDownLink(options?: { healthy?: string; total?: string }) {
+    const healthy = options?.healthy ?? '10';
+    const total = options?.total ?? '10';
+    const name = getHomepageEntityCalculationHealthText(
+      this.translations,
+      healthy,
+      total,
+    );
+    // Multiple homepage scorecards can share the same health string; target the first match.
+    await this.page.getByRole('link', { name }).first().click();
   }
 }

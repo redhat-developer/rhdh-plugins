@@ -155,6 +155,8 @@ describe('ScorecardApiClient', () => {
         values: [{ name: 'success', count: 1 }],
         timestamp: '2025-01-01T00:00:00Z',
         thresholds: {},
+        entitiesConsidered: 1,
+        calculationErrorCount: 0,
       },
     };
 

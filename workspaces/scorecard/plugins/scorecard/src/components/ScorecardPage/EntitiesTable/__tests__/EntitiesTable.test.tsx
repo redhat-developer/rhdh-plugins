@@ -121,6 +121,11 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe('EntitiesTable', () => {
   const defaultAggregatedData = {
     metricMetadata: { title: 'Open PRs' },
+    entityHealth: {
+      totalEntities: 2,
+      calculationErrorCount: 0,
+      countsArePartial: false,
+    },
     entities: [
       {
         entityRef: 'component:default/service-a',
@@ -133,7 +138,13 @@ describe('EntitiesTable', () => {
         metricValue: 12,
       },
     ],
-    pagination: { total: 2 },
+    pagination: {
+      page: 1,
+      pageSize: 10,
+      total: 2,
+      totalPages: 1,
+      isCapped: false,
+    },
   };
 
   beforeEach(() => {
@@ -189,7 +200,18 @@ describe('EntitiesTable', () => {
       aggregatedScorecardEntities: {
         metricMetadata: {},
         entities: [],
-        pagination: { total: 0 },
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: 0,
+          totalPages: 0,
+          isCapped: false,
+        },
+        entityHealth: {
+          totalEntities: 0,
+          calculationErrorCount: 0,
+          countsArePartial: false,
+        },
       },
       loadingData: false,
       error: undefined,
@@ -242,7 +264,18 @@ describe('EntitiesTable', () => {
       aggregatedScorecardEntities: {
         metricMetadata: {},
         entities: [],
-        pagination: { total: 0 },
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: 0,
+          totalPages: 0,
+          isCapped: false,
+        },
+        entityHealth: {
+          totalEntities: 0,
+          calculationErrorCount: 0,
+          countsArePartial: false,
+        },
       },
       loadingData: false,
       error: undefined,

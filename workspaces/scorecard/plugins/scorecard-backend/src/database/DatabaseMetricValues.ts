@@ -89,11 +89,58 @@ export class DatabaseMetricValues {
     catalog_entity_refs: string[],
     metric_id: string,
   ): Promise<DbAggregatedMetric | undefined> {
+    if (catalog_entity_refs.length === 0) {
+      return undefined;
+    }
+
     const latestIdsSubquery = this.dbClient(this.tableName)
       .max('id')
       .where('metric_id', metric_id)
       .whereIn('catalog_entity_ref', catalog_entity_refs)
       .groupBy('catalog_entity_ref');
+
+    // One round-trip for latest-row count, calculation-error count, and max timestamp
+    // (same latest-id set as the status breakdown query below).
+    const statsRow = await this.dbClient(this.tableName)
+      .whereIn('id', latestIdsSubquery)
+      .select(
+        this.dbClient.raw('COUNT(*) as latest_row_count'),
+        this.dbClient.raw(
+          'SUM(CASE WHEN error_message IS NOT NULL AND value IS NULL THEN 1 ELSE 0 END) as calculation_error_count',
+        ),
+        this.dbClient.raw('MAX(timestamp) as max_timestamp'),
+      )
+      .first();
+
+    const latestRowCount = Number(
+      (statsRow as { latest_row_count?: string | number } | undefined)
+        ?.latest_row_count ?? 0,
+    );
+    if (latestRowCount === 0) {
+      return undefined;
+    }
+
+    const calculation_error_count = Number(
+      (statsRow as { calculation_error_count?: string | number } | undefined)
+        ?.calculation_error_count ?? 0,
+    );
+
+    // Normalize types for cross-database compatibility
+    // PostgreSQL returns COUNT/SUM as strings, SQLite returns numbers
+    // PostgreSQL returns MAX(timestamp) as Date, SQLite returns number (milliseconds)
+    const normalizeTimestamp = (timestamp: unknown): Date => {
+      if (timestamp instanceof Date) {
+        return timestamp;
+      }
+      if (typeof timestamp === 'number' || typeof timestamp === 'string') {
+        return new Date(timestamp);
+      }
+      return new Date();
+    };
+
+    const maxTimestampAllLatest = normalizeTimestamp(
+      (statsRow as { max_timestamp?: unknown })?.max_timestamp,
+    );
 
     const statusRows = await this.dbClient(this.tableName)
       .select('status')
@@ -105,23 +152,15 @@ export class DatabaseMetricValues {
       .groupBy('status');
 
     if (!statusRows || statusRows.length === 0) {
-      return undefined;
+      return {
+        metric_id,
+        total: 0,
+        max_timestamp: maxTimestampAllLatest,
+        statusCounts: {},
+        calculation_error_count,
+        latest_entity_count: latestRowCount,
+      };
     }
-
-    // Normalize types for cross-database compatibility
-    // PostgreSQL returns COUNT/SUM as strings, SQLite returns numbers
-    // PostgreSQL returns MAX(timestamp) as Date, SQLite returns number (milliseconds)
-    const normalizeTimestamp = (timestamp: any): Date => {
-      if (timestamp instanceof Date) {
-        return timestamp;
-      } else if (
-        typeof timestamp === 'number' ||
-        typeof timestamp === 'string'
-      ) {
-        return new Date(timestamp);
-      }
-      return new Date();
-    };
 
     let maxTimestamp = new Date(0);
     let total = 0;
@@ -137,11 +176,18 @@ export class DatabaseMetricValues {
       total += count;
     }
 
+    const mergedMax =
+      maxTimestampAllLatest.getTime() >= maxTimestamp.getTime()
+        ? maxTimestampAllLatest
+        : maxTimestamp;
+
     return {
       metric_id,
       total,
-      max_timestamp: maxTimestamp,
+      max_timestamp: mergedMax,
       statusCounts,
+      calculation_error_count,
+      latest_entity_count: latestRowCount,
     };
   }
 

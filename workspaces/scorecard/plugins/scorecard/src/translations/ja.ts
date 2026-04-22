@@ -96,6 +96,10 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.averageLegendTooltipEntitiesEach_other':
       '{{count}} 件のエンティティー、各 {{score}}',
     'metric.averageLegendTooltipRowTotal': '合計スコア {{total}}',
+    'metric.drillDownCalculationFailures':
+      '1 件以上のエンティティーでこの指標の計算に失敗しました。',
+    'metric.homepageEntityCalculationHealth':
+      '指標の計算エラーがないエンティティー {{healthy}} / {{total}}',
 
     // Threshold translations
     'thresholds.success': '成功',

@@ -504,6 +504,8 @@ describe('createRouter', () => {
       },
       total: 12,
       timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 2,
+      calculationErrorCount: 0,
     };
 
     const mockAggregatedMetricResult: AggregatedMetricResult = {
@@ -531,6 +533,8 @@ describe('createRouter', () => {
             { key: 'success', expression: '<=20' },
           ],
         },
+        entitiesConsidered: 2,
+        calculationErrorCount: 0,
       },
     };
 
@@ -872,6 +876,8 @@ describe('createRouter', () => {
       values: { error: 1, warning: 2, success: 3 },
       total: 6,
       timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 2,
+      calculationErrorCount: 0,
     };
 
     const mockAggregatedMetricResult: AggregatedMetricResult = {
@@ -899,6 +905,8 @@ describe('createRouter', () => {
             { key: 'success', expression: '<=20' },
           ],
         },
+        entitiesConsidered: 2,
+        calculationErrorCount: 0,
       },
     };
 
@@ -1412,6 +1420,12 @@ describe('createRouter', () => {
         pageSize: 10,
         total: 2,
         totalPages: 1,
+        isCapped: false,
+      },
+      entityHealth: {
+        totalEntities: 2,
+        calculationErrorCount: 0,
+        countsArePartial: false,
       },
     };
 
@@ -1684,10 +1698,20 @@ describe('createRouter', () => {
     it('should return empty entities array when no results', async () => {
       getEntityMetricDetailsSpy.mockResolvedValue({
         metricId: 'github.open_prs',
-        mockCredentials,
         metricMetadata: mockEntityMetricDetailResponse.metricMetadata,
         entities: [],
-        pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: 0,
+          totalPages: 0,
+          isCapped: false,
+        },
+        entityHealth: {
+          totalEntities: 0,
+          calculationErrorCount: 0,
+          countsArePartial: false,
+        },
       });
 
       const response = await request(drillDownApp).get(

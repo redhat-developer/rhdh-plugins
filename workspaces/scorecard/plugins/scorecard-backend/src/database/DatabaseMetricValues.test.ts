@@ -264,6 +264,8 @@ describe('DatabaseMetricValues', () => {
             critical: 1,
           }),
           max_timestamp: baseTimestamp,
+          calculation_error_count: 0,
+          latest_entity_count: 3,
         });
       },
     );
@@ -301,6 +303,8 @@ describe('DatabaseMetricValues', () => {
           total: 1,
           statusCounts: { success: 1 },
           max_timestamp: baseTimestamp,
+          calculation_error_count: 0,
+          latest_entity_count: 1,
         });
       },
     );
@@ -346,6 +350,8 @@ describe('DatabaseMetricValues', () => {
           total: 2,
           statusCounts: { error: 2 },
           max_timestamp: newerTime,
+          calculation_error_count: 0,
+          latest_entity_count: 2,
         });
       },
     );
@@ -389,6 +395,8 @@ describe('DatabaseMetricValues', () => {
           total: 1,
           statusCounts: { success: 1 },
           max_timestamp: baseTimestamp,
+          calculation_error_count: 1,
+          latest_entity_count: 3,
         });
       },
     );
@@ -443,6 +451,8 @@ describe('DatabaseMetricValues', () => {
             warning: 1,
           }),
           max_timestamp: time3,
+          calculation_error_count: 0,
+          latest_entity_count: 3,
         });
       },
     );
@@ -489,6 +499,44 @@ describe('DatabaseMetricValues', () => {
           statusCounts: { success: 1, warning: 2 },
           total: 3,
           max_timestamp: baseTimestamp,
+          calculation_error_count: 0,
+          latest_entity_count: 3,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should aggregate calculation errors when no successful values exist - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert([
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            value: null,
+            status: null,
+            errorMessage: 'boom-a',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            value: null,
+            status: null,
+            errorMessage: 'boom-b',
+          }),
+        ]);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          ['component:default/service1', 'component:default/service2'],
+          'github.metric1',
+        );
+
+        expect(result).toEqual({
+          metric_id: 'github.metric1',
+          total: 0,
+          statusCounts: {},
+          max_timestamp: baseTimestamp,
+          calculation_error_count: 2,
+          latest_entity_count: 2,
         });
       },
     );
