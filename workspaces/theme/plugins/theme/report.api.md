@@ -54,51 +54,52 @@ export const lightThemeProvider: (props: {
 
 // @public (undocumented)
 export interface RHDHThemePalette {
-    // (undocumented)
-    cards?: {
-        headerTextColor: string;
-        headerBackgroundColor: string;
-        headerBackgroundImage: string;
-    };
-    // (undocumented)
-    general: {
-        pageInset: string;
-        disabled: string;
-        disabledBackground: string;
-        paperBackgroundImage: string;
-        paperBorderColor: string;
-        popoverBoxShadow: string;
-        cardBackgroundColor: string;
-        cardBorderColor: string;
-        mainSectionBackgroundColor: string;
-        formControlBackgroundColor: string;
-        sidebarBackgroundColor: string;
-        sidebarDividerColor: string;
-        sidebarItemSelectedBackgroundColor: string;
-        tableTitleColor: string;
-        tableSubtitleColor: string;
-        tableColumnTitleColor: string;
-        tableRowHover: string;
-        tableBorderColor: string;
-        tableBackgroundColor: string;
-        tabsLinkHoverBackgroundColor: string;
-        contrastText: string;
-        appBarBackgroundScheme: 'light' | 'dark';
-        appBarBackgroundColor: string;
-        appBarForegroundColor: string;
-        appBarBackgroundImage: string;
-        starredItemsColor: string;
-    };
-    // (undocumented)
-    primary: {
-        main: string;
-        focusVisibleBorder: string;
-    };
-    // (undocumented)
-    secondary: {
-        main: string;
-        focusVisibleBorder: string;
-    };
+  // (undocumented)
+  cards?: {
+    headerTextColor: string;
+    headerBackgroundColor: string;
+    headerBackgroundImage: string;
+  };
+  // (undocumented)
+  general: {
+    pageInset: string;
+    pageInsetBackgroundColor: string;
+    disabled: string;
+    disabledBackground: string;
+    paperBackgroundImage: string;
+    paperBorderColor: string;
+    popoverBoxShadow: string;
+    cardBackgroundColor: string;
+    cardBorderColor: string;
+    mainSectionBackgroundColor: string;
+    formControlBackgroundColor: string;
+    sidebarBackgroundColor: string;
+    sidebarDividerColor: string;
+    sidebarItemSelectedBackgroundColor: string;
+    tableTitleColor: string;
+    tableSubtitleColor: string;
+    tableColumnTitleColor: string;
+    tableRowHover: string;
+    tableBorderColor: string;
+    tableBackgroundColor: string;
+    tabsLinkHoverBackgroundColor: string;
+    contrastText: string;
+    appBarBackgroundScheme: 'light' | 'dark';
+    appBarBackgroundColor: string;
+    appBarForegroundColor: string;
+    appBarBackgroundImage: string;
+    starredItemsColor: string;
+  };
+  // (undocumented)
+  primary: {
+    main: string;
+    focusVisibleBorder: string;
+  };
+  // (undocumented)
+  secondary: {
+    main: string;
+    focusVisibleBorder: string;
+  };
 }
 
 // @public (undocumented)
