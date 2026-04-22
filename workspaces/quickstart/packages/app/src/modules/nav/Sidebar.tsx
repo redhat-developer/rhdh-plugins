@@ -22,9 +22,16 @@ import {
   SidebarSpace,
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import WavingHandOutlinedIcon from '@mui/icons-material/WavingHandOutlined';
+import HomeIcon from '@material-ui/icons/Home';
 import { SidebarLogo } from './SidebarLogo';
 import MenuIcon from '@material-ui/icons/Menu';
+import SearchIcon from '@material-ui/icons/Search';
+import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
+
+const QUICKSTART_DRAWER_ID = 'quickstart';
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
@@ -33,15 +40,18 @@ export const SidebarContent = NavContentBlueprint.make({
         <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
       ));
 
-      // Skipped items
-      nav.take('page:search'); // Using search modal instead
+      nav.take('page:search');
+      nav.take('page:catalog');
 
       return (
         <Sidebar>
           <SidebarLogo />
+          <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+            <SidebarSearchModal />
+          </SidebarGroup>
           <SidebarDivider />
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
-            {nav.take('page:catalog')}
+            <SidebarItem icon={HomeIcon} to="/catalog" text="Home" />
             {nav.take('page:scaffolder')}
             <SidebarDivider />
             <SidebarScrollWrapper>
@@ -49,7 +59,7 @@ export const SidebarContent = NavContentBlueprint.make({
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
-          <SidebarDivider />
+          <QuickstartSidebarItem />
           <SidebarDivider />
           <SidebarGroup
             label="Settings"
@@ -64,3 +74,14 @@ export const SidebarContent = NavContentBlueprint.make({
     },
   },
 });
+
+function QuickstartSidebarItem() {
+  const { toggleDrawer } = useAppDrawer();
+  return (
+    <SidebarItem
+      text="Quick start"
+      icon={WavingHandOutlinedIcon}
+      onClick={() => toggleDrawer(QUICKSTART_DRAWER_ID)}
+    />
+  );
+}

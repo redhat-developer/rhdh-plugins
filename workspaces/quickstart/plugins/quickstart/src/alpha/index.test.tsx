@@ -14,4 +14,21 @@
  * limitations under the License.
  */
 
-export * from './translations';
+import quickstartPlugin, {
+  quickstartInitModule,
+  quickstartTranslationsModule,
+} from './index';
+
+describe('quickstart alpha exports', () => {
+  it('should export the quickstart plugin as default', () => {
+    expect(quickstartPlugin).toBeDefined();
+  });
+
+  it('should export quickstartInitModule', () => {
+    expect(quickstartInitModule).toBeDefined();
+  });
+
+  it('should export quickstartTranslationsModule', () => {
+    expect(quickstartTranslationsModule).toBeDefined();
+  });
+});

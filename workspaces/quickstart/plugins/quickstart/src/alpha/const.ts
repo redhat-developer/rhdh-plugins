@@ -13,20 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createApp } from '@backstage/frontend-defaults';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-import quickstartPlugin, {
-  quickstartInitModule,
-  quickstartTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-quickstart/alpha';
-import { navModule } from './modules/nav';
 
-export default createApp({
-  features: [
-    appDrawerModule,
-    quickstartPlugin,
-    quickstartInitModule,
-    quickstartTranslationsModule,
-    navModule,
-  ],
-});
+export const QUICKSTART_DRAWER_ID = 'quickstart';
