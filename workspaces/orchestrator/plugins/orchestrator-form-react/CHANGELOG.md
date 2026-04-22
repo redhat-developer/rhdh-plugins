@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.5.8
+
+### Patch Changes
+
+- 1d7ac98: fix: avoid Review step crash when form data is empty (for example display-only `ActiveText` with no submitted values). `generateReviewTableData` returns `{}` instead of undefined, and `NestedReviewTable` handles missing data.
+- 1d7ac98: Fix multi-step workflow forms dropping or misplacing async validation errors and deep nested field paths.
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets: Fix safeSet deep paths and sequential async validation in getExtraErrors.
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react: Wrap extraErrors with the active step key so RJSF matches the root schema.
+
 ## 2.5.7
 
 ### Patch Changes
