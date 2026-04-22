@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.12.1
+
+### Patch Changes
+
+- c11f7cc: Align the navigation sidebar with merged `palette.navigation` and `rhdh.general` colors, including submenu rows and selected/active `BackstageSidebarItem` states. Add `rhdh.general.pageInsetBackgroundColor` so the page inset shell can use its own color (defaults match the previous app bar fill; falls back to `appBarBackgroundColor` when unset). Main content area remains on `mainSectionBackgroundColor`.
+
 ## 0.12.0
 
 ### Minor Changes
