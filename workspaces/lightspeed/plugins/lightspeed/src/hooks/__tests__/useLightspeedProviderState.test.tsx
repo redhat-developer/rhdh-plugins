@@ -63,6 +63,9 @@ function HookHarness() {
       <div data-testid="overlay-modal-flag">
         {shouldRenderOverlayModal ? 'yes' : 'no'}
       </div>
+      <div data-testid="conversation-id">
+        {contextValue.currentConversationId ?? 'none'}
+      </div>
       <button
         type="button"
         data-testid="toggle-button"
@@ -83,6 +86,13 @@ function HookHarness() {
         onClick={() => navigate('/catalog')}
       >
         Go catalog
+      </button>
+      <button
+        type="button"
+        data-testid="go-lightspeed-base"
+        onClick={() => navigate('/lightspeed')}
+      >
+        Go lightspeed base
       </button>
     </div>
   );
@@ -317,6 +327,44 @@ describe('useLightspeedProviderState', () => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
           ChatbotDisplayMode.default,
         );
+      });
+    });
+
+    it('keeps currentConversationId after leaving /lightspeed/conversation/:id', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.default;
+
+      renderWithRouter(['/lightspeed/conversation/active-thread']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'active-thread',
+        );
+      });
+
+      screen.getByTestId('go-catalog').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'active-thread',
+        );
+      });
+    });
+
+    it('clears currentConversationId when navigating to /lightspeed without conversation segment', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.default;
+
+      renderWithRouter(['/lightspeed/conversation/active-thread']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'active-thread',
+        );
+      });
+
+      screen.getByTestId('go-lightspeed-base').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent('none');
       });
     });
   });

@@ -102,7 +102,10 @@ export function useLightspeedProviderState(): {
   useEffect(() => {
     if (conversationId) {
       setCurrentConversationIdState(conversationId);
-    } else {
+    } else if (isLightspeedRoute) {
+      // On `/lightspeed` without a `:conversationId` segment, URL implies a fresh thread.
+      // When navigating to another app route (overlay/docked), keep the last id so display
+      // mode switches and re-entry to fullscreen stay on the active conversation.
       setCurrentConversationIdState(undefined);
     }
 

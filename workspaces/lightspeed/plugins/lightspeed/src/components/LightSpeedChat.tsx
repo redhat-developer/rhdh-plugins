@@ -698,10 +698,14 @@ export const LightspeedChat = ({
         (c: ConversationSummary) => c.conversation_id === routeConversationId,
       );
       if (!conversationExists) {
-        // Conversation from route doesn't exist, start a new chat
-        setConversationId(TEMP_CONVERSATION_ID);
-        setCurrentConversationId(undefined);
-        setNewChatCreated(true);
+        // New threads can be missing from the summaries list until refetch completes; if we
+        // already show this id locally (e.g. streaming), do not reset to a new chat.
+        if (routeConversationId !== conversationId) {
+          // Conversation from route doesn't exist, start a new chat
+          setConversationId(TEMP_CONVERSATION_ID);
+          setCurrentConversationId(undefined);
+          setNewChatCreated(true);
+        }
       } else if (conversationId !== routeConversationId) {
         setConversationId(routeConversationId);
       }
