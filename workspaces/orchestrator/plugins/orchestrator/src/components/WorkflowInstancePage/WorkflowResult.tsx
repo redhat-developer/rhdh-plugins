@@ -25,8 +25,7 @@ import {
 import { RouteFunc, useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
 
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
+import { Alert, AlertTitle } from '@material-ui/lab';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -433,7 +432,7 @@ export const WorkflowResult: React.FC<{
         className={className}
         cardClassName={cardClassName}
       >
-        <Divider sx={{ mb: 2 }} />
+        <Divider sx={{ '&&': { mb: 2 } }} />
         {logsEnabled && (
           <>
             <Box sx={{ ml: 2 }}>
@@ -452,7 +451,7 @@ export const WorkflowResult: React.FC<{
                 {t('run.logs.viewLogs')}
               </Button>
             </Box>
-            <Divider sx={{ mt: 2, mb: 2 }} />
+            <Divider sx={{ '&&': { my: 2 } }} />
           </>
         )}
         <Grid container alignContent="flex-start" spacing="1rem">

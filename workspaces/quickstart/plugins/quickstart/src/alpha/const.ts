@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './translations';
+export const QUICKSTART_DRAWER_ID = 'quickstart';

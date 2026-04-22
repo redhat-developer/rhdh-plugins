@@ -266,7 +266,7 @@ describe('validateThresholds', () => {
 
       expect(() => validateThresholds(config, 'number')).toThrow(
         new ThresholdConfigFormatError(
-          "Custom threshold key \"critical\" must specify a color or icon property. Only standard keys ('success', 'warning', 'error') have default colors and icons.",
+          "Custom threshold key \"critical\" must specify a color and icon property. Only standard keys ('success', 'warning', 'error') have default colors and icons.",
         ),
       );
     });
@@ -285,7 +285,7 @@ describe('validateThresholds', () => {
 
       expect(() => validateThresholds(config, 'number')).toThrow(
         new ThresholdConfigFormatError(
-          "Custom threshold key \"critical\" must specify a color or icon property. Only standard keys ('success', 'warning', 'error') have default colors and icons.",
+          "Custom threshold key \"critical\" must specify a color and icon property. Only standard keys ('success', 'warning', 'error') have default colors and icons.",
         ),
       );
     });
