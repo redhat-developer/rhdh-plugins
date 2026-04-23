@@ -20,6 +20,13 @@
  * @packageDocumentation
  */
 
+export {
+  homepageDefaultCardsReadPermission,
+  homepagePermissions,
+  RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD,
+} from './permissions';
+export type { HomepageDefaultCardPermission } from './permissions';
+
 /**
  * @public
  */

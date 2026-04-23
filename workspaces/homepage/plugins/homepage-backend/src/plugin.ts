@@ -17,6 +17,9 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import { homepagePermissions } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
+import { homepageDefaultCardPermissionResourceRef } from './permissions/resource';
+import { rules as homepageRules } from './permissions/rules';
 import { createRouter } from './router';
 import { defaultCardsServiceRef } from './services/DefaultCardsService';
 
@@ -32,9 +35,18 @@ export const homepagePlugin = createBackendPlugin({
       deps: {
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
+        permissionsRegistry: coreServices.permissionsRegistry,
         defaultCards: defaultCardsServiceRef,
       },
-      async init({ httpAuth, httpRouter, defaultCards }) {
+      async init({ httpAuth, httpRouter, permissionsRegistry, defaultCards }) {
+        permissionsRegistry.addResourceType({
+          resourceRef: homepageDefaultCardPermissionResourceRef,
+          getResources: async (resourceRefs: string[]) => {
+            return resourceRefs.map(id => ({ id }));
+          },
+          permissions: homepagePermissions,
+          rules: Object.values(homepageRules),
+        });
         httpRouter.use(
           await createRouter({
             httpAuth,

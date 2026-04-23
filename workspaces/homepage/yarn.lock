@@ -10719,6 +10719,7 @@ __metadata:
     "@backstage/errors": "npm:^1.2.7"
     "@backstage/plugin-catalog-node": "npm:^2.1.0"
     "@backstage/plugin-permission-common": "npm:^0.9.7"
+    "@backstage/plugin-permission-node": "npm:^0.10.11"
     "@backstage/types": "npm:^1.2.2"
     "@red-hat-developer-hub/backstage-plugin-homepage-common": "workspace:^"
     "@types/express": "npm:^4.17.6"
@@ -10735,6 +10736,7 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@workspace:plugins/homepage-common"
   dependencies:
     "@backstage/cli": "npm:^0.36.0"
+    "@backstage/plugin-permission-common": "npm:^0.9.7"
   languageName: unknown
   linkType: soft
 
