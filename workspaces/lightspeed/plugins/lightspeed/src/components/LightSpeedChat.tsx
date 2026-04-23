@@ -561,7 +561,8 @@ export const LightspeedChat = ({
 
   const handleCloseNotebook = useCallback(() => {
     setActiveNotebook(null);
-  }, []);
+    refetchNotebooks();
+  }, [refetchNotebooks]);
 
   const handleRemoveNotebookAlert = (key: React.Key) => {
     setNotebookAlerts(prevAlerts =>
