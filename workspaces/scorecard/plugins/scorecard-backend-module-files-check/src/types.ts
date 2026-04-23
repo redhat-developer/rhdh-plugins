@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export type GithubRepository = {
-  owner: string;
-  repo: string;
+
+export type FileCheckEntry = {
+  id: string;
+  path: string;
+};
+
+export type FilesCheckConfig = {
+  files: FileCheckEntry[];
 };

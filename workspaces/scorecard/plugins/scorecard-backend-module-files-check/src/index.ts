@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export type GithubRepository = {
-  owner: string;
-  repo: string;
-};
+
+/**
+ * The files check backend module for the scorecard plugin.
+ *
+ * @packageDocumentation
+ */
+
+export { scorecardModuleFilesCheck as default } from './module';

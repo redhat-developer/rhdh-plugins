@@ -18,19 +18,23 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { GithubOpenPRsProvider } from './metricProviders/GithubOpenPRsProvider';
+import { FilesCheckProvider } from './FilesCheckProvider';
 
-export const scorecardModuleGithub = createBackendModule({
+export const scorecardModuleFilesCheck = createBackendModule({
   pluginId: 'scorecard',
-  moduleId: 'github',
+  moduleId: 'files-check',
   register(reg) {
     reg.registerInit({
       deps: {
         config: coreServices.rootConfig,
+        urlReader: coreServices.urlReader,
         metrics: scorecardMetricsExtensionPoint,
       },
-      async init({ config, metrics }) {
-        metrics.addMetricProvider(GithubOpenPRsProvider.fromConfig(config));
+      async init({ config, urlReader, metrics }) {
+        const provider = FilesCheckProvider.fromConfig(config, urlReader);
+        if (provider) {
+          metrics.addMetricProvider(provider);
+        }
       },
     });
   },

@@ -20,18 +20,14 @@ export interface Config {
   scorecard?: {
     /** Configuration for scorecard plugins/datasources */
     plugins?: {
-      /** Github datasource configuration */
-      github?: {
-        open_prs?: {
-          thresholds?: {
-            rules?: Array<{
-              key: 'error' | 'warning' | 'success';
-              /** Threshold expression - supports: >=, <=, >, <, ==, !=, - (range) */
-              expression: string;
-            }>;
-          };
-          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
-        };
+      /** File existence check configuration */
+      files_check?: {
+        /** File existence checks configuration */
+        files?: Array<{
+          /** Key is the metric identifier, value is the file path */
+          [metricId: string]: string;
+        }>;
+        schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
       };
     };
   };

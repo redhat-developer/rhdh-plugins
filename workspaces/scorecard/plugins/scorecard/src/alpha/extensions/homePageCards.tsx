@@ -55,7 +55,7 @@ function AggregatedCardWithGithubFilesCheckLicenseContent() {
 
 function AggregatedCardWithGithubFilesCheckCodeownersContent() {
   return (
-    <ScorecardHomepageCardWithProvider aggregationId="github.files_check.codeowners" />
+    <ScorecardHomepageCardWithProvider aggregationId="files_check.codeowners" />
   );
 }
 
