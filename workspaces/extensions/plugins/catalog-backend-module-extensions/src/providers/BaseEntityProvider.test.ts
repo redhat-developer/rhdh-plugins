@@ -30,7 +30,7 @@ class TestEntityProvider extends BaseEntityProvider<Entity> {
 }
 
 const taskRunner: SchedulerServiceTaskRunner = {
-  run: jest.fn(async ({ fn }) => fn()),
+  run: jest.fn(async ({ fn }) => fn(new AbortController().signal)),
 };
 
 const createEntity = (overrides?: Partial<Entity>): Entity => ({
