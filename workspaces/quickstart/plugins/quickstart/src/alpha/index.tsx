@@ -21,10 +21,12 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 
 import { quickstartTranslations } from '../translations';
 import { QUICKSTART_DRAWER_ID } from './const';
 import { QuickstartDrawerContent } from './QuickstartDrawerContent';
+import { QuickstartHelpMenuItem } from './QuickstartHelpMenuItem';
 import { QuickstartInit } from './QuickstartInit';
 
 const quickstartDrawer = AppDrawerContentBlueprint.make({
@@ -34,6 +36,15 @@ const quickstartDrawer = AppDrawerContentBlueprint.make({
     element: <QuickstartDrawerContent />,
     resizable: true,
     defaultWidth: 500,
+  },
+});
+
+const quickstartHelpMenuItem = GlobalHeaderMenuItemBlueprint.make({
+  name: 'quickstart',
+  params: {
+    target: 'help',
+    component: QuickstartHelpMenuItem,
+    priority: 50,
   },
 });
 
@@ -51,7 +62,7 @@ const quickstartInitElement = AppRootElementBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'quickstart',
-  extensions: [quickstartDrawer],
+  extensions: [quickstartDrawer, quickstartHelpMenuItem],
 });
 
 /**
