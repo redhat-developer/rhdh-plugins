@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { MemoryRouter, useNavigate } from 'react-router-dom';
+import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -51,11 +51,13 @@ const mockUser = 'user:default/test';
 
 function HookHarness() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { contextValue, shouldRenderOverlayModal } =
     useLightspeedProviderState();
 
   return (
     <div>
+      <div data-testid="pathname">{location.pathname}</div>
       <div data-testid="display-mode">{contextValue.displayMode}</div>
       <div data-testid="is-open">
         {contextValue.isChatbotActive ? 'open' : 'closed'}
@@ -79,6 +81,22 @@ function HookHarness() {
         onClick={() => contextValue.setDisplayMode(ChatbotDisplayMode.docked)}
       >
         Set Docked
+      </button>
+      <button
+        type="button"
+        data-testid="set-overlay-mode"
+        onClick={() => contextValue.setDisplayMode(ChatbotDisplayMode.default)}
+      >
+        Set overlay
+      </button>
+      <button
+        type="button"
+        data-testid="late-conversation-id"
+        onClick={() =>
+          contextValue.setCurrentConversationId('late-from-stream')
+        }
+      >
+        Late conversation id
       </button>
       <button
         type="button"
@@ -365,6 +383,54 @@ describe('useLightspeedProviderState', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('conversation-id')).toHaveTextContent('none');
+      });
+    });
+
+    it('navigates to /catalog when switching from fullscreen route to overlay', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/lightspeed/conversation/stream-done']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.embedded,
+        );
+      });
+
+      screen.getByTestId('set-overlay-mode').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent('/catalog');
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.default,
+        );
+      });
+    });
+
+    it('does not navigate to /lightspeed when late stream sets id after overlay switch', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/lightspeed/conversation/before-switch']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/lightspeed/conversation/before-switch',
+        );
+      });
+
+      screen.getByTestId('set-overlay-mode').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent('/catalog');
+      });
+
+      screen.getByTestId('late-conversation-id').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent('/catalog');
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'late-from-stream',
+        );
       });
     });
   });

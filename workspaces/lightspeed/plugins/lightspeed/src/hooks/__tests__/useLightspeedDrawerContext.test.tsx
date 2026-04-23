@@ -34,6 +34,7 @@ describe('useLightspeedDrawerContext', () => {
     setDraftMessage: jest.fn(),
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
+    consumePendingOverlayThreadHandoff: jest.fn(() => false),
   };
 
   it('should return context value when used within provider', () => {

@@ -67,8 +67,17 @@ export function useLightspeedProviderState(): {
   >([]);
   const openedViaFABRef = useRef(false);
   const dockedAfterLeavingFullscreenRef = useRef(false);
+  /** True while navigating off /lightspeed after user chose overlay/docked (URL can lag persisted mode). */
+  const leavingLightspeedForNonEmbeddedShellRef = useRef(false);
+  /** True until overlay/docked LightspeedChat consumes it (new mount after leaving fullscreen route). */
+  const pendingOverlayThreadHandoffRef = useRef(false);
+
+  const isLightspeedRouteRef = useRef(false);
+  const persistedDisplayModeRef = useRef(persistedDisplayMode);
 
   const isLightspeedRoute = location.pathname.startsWith(LIGHTSPEED_PATH);
+  isLightspeedRouteRef.current = isLightspeedRoute;
+  persistedDisplayModeRef.current = persistedDisplayMode;
   const conversationMatch = useMatch(
     `${LIGHTSPEED_PATH}/conversation/:conversationId`,
   );
@@ -99,7 +108,19 @@ export function useLightspeedProviderState(): {
     navigate(-1);
   }, [navigate]);
 
+  /**
+   * Leaving /lightspeed for overlay/docked must not use navigate(-1): after the first FAB
+   * open, navigateBackOrGoToCatalog uses -1 and can land back on /lightspeed (fullscreen).
+   */
+  const leaveLightspeedRouteForShellDisplayMode = useCallback(() => {
+    navigate('/catalog', { replace: true });
+  }, [navigate]);
+
   useEffect(() => {
+    if (!isLightspeedRoute) {
+      leavingLightspeedForNonEmbeddedShellRef.current = false;
+    }
+
     if (conversationId) {
       setCurrentConversationIdState(conversationId);
     } else if (isLightspeedRoute) {
@@ -110,7 +131,14 @@ export function useLightspeedProviderState(): {
     }
 
     if (isLightspeedRoute) {
-      setDisplayModeState(ChatbotDisplayMode.embedded);
+      if (
+        leavingLightspeedForNonEmbeddedShellRef.current &&
+        persistedDisplayMode !== ChatbotDisplayMode.embedded
+      ) {
+        setDisplayModeState(persistedDisplayMode);
+      } else {
+        setDisplayModeState(ChatbotDisplayMode.embedded);
+      }
       setIsOpen(true);
       if (!dockedAfterLeavingFullscreenRef.current) {
         closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
@@ -194,14 +222,16 @@ export function useLightspeedProviderState(): {
   const setCurrentConversationId = useCallback(
     (id: string | undefined) => {
       setCurrentConversationIdState(id);
+      // Refs: first-stream completion calls onStart after unmount / mode change; a stale
+      // embedded + /lightspeed closure would navigate back to fullscreen without this.
       if (
-        displayModeState === ChatbotDisplayMode.embedded &&
-        isLightspeedRoute
+        persistedDisplayModeRef.current === ChatbotDisplayMode.embedded &&
+        isLightspeedRouteRef.current
       ) {
         navigate(lightspeedRoutePath(id), { replace: true });
       }
     },
-    [displayModeState, isLightspeedRoute, navigate],
+    [navigate],
   );
 
   const setDraftMessage = useCallback((message: string) => {
@@ -210,6 +240,14 @@ export function useLightspeedProviderState(): {
 
   const setDraftFileContents = useCallback((files: FileContent[]) => {
     setDraftFileContentsState(files);
+  }, []);
+
+  const consumePendingOverlayThreadHandoff = useCallback(() => {
+    if (!pendingOverlayThreadHandoffRef.current) {
+      return false;
+    }
+    pendingOverlayThreadHandoffRef.current = false;
+    return true;
   }, []);
 
   const setDisplayMode = useCallback(
@@ -226,7 +264,9 @@ export function useLightspeedProviderState(): {
         setIsOpen(true);
       } else {
         if (isLightspeedRoute) {
-          navigateBackOrGoToCatalog();
+          leavingLightspeedForNonEmbeddedShellRef.current = true;
+          pendingOverlayThreadHandoffRef.current = true;
+          leaveLightspeedRouteForShellDisplayMode();
         }
         setIsOpen(true);
       }
@@ -235,8 +275,8 @@ export function useLightspeedProviderState(): {
       currentConversationIdState,
       displayModeState,
       isLightspeedRoute,
+      leaveLightspeedRouteForShellDisplayMode,
       navigate,
-      navigateBackOrGoToCatalog,
       setPersistedDisplayMode,
       syncShellDrawerForMode,
     ],
@@ -261,6 +301,7 @@ export function useLightspeedProviderState(): {
       setDraftMessage,
       draftFileContents,
       setDraftFileContents,
+      consumePendingOverlayThreadHandoff,
     }),
     [
       isOpen,
@@ -274,6 +315,7 @@ export function useLightspeedProviderState(): {
       setDraftMessage,
       draftFileContents,
       setDraftFileContents,
+      consumePendingOverlayThreadHandoff,
     ],
   );
 
