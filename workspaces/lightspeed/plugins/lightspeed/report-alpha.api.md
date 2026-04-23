@@ -258,18 +258,10 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'permission.subject.plugin': string;
     readonly 'permission.subject.notebooks': string;
     readonly 'permission.notebooks.goBack': string;
-    readonly 'lcore.notConfigured.title': string;
-    readonly 'lcore.notConfigured.description': string;
-    readonly 'lcore.notConfigured.developerLightspeedDocs': string;
-    readonly 'lcore.notConfigured.backendDocs': string;
-    readonly 'lcore.loadError.title': string;
-    readonly 'lcore.loadError.description': string;
     readonly 'footer.accuracy.label': string;
     readonly 'common.cancel': string;
     readonly 'common.close': string;
     readonly 'common.readMore': string;
-    readonly 'common.retry': string;
-    readonly 'common.loading': string;
     readonly 'common.noSearchResults': string;
     readonly 'menu.newConversation': string;
     readonly 'chatbox.header.title': string;

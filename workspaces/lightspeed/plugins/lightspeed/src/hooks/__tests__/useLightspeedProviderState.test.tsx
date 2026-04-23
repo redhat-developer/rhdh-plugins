@@ -298,5 +298,26 @@ describe('useLightspeedProviderState', () => {
         );
       });
     });
+
+    it('uses overlay when leaving /lightspeed while fullscreen preference is persisted', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/lightspeed']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.embedded,
+        );
+        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
+      });
+
+      screen.getByTestId('go-catalog').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.default,
+        );
+      });
+    });
   });
 });

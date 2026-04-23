@@ -112,21 +112,14 @@ export function useLightspeedProviderState(): {
       if (!dockedAfterLeavingFullscreenRef.current) {
         closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
       }
-    } else if (
-      persistedDisplayMode === ChatbotDisplayMode.embedded &&
-      !isOpen
-    ) {
+    } else if (persistedDisplayMode === ChatbotDisplayMode.embedded) {
+      // Off /lightspeed there is no fullscreen surface; use overlay so FAB stays available.
+      // (Persisted preference remains "fullscreen" for the next open.)
       setDisplayModeState(ChatbotDisplayMode.default);
     } else {
       setDisplayModeState(persistedDisplayMode);
     }
-  }, [
-    closeDrawer,
-    conversationId,
-    isLightspeedRoute,
-    isOpen,
-    persistedDisplayMode,
-  ]);
+  }, [closeDrawer, conversationId, isLightspeedRoute, persistedDisplayMode]);
 
   useEffect(() => {
     if (
