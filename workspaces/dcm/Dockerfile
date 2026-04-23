@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # ── Stage 1: build ────────────────────────────────────────────────────────────
-FROM node:20-bookworm-slim AS build
+FROM node:22-bookworm-slim AS build
 
 RUN corepack enable
 
@@ -39,11 +39,11 @@ RUN yarn workspace app build
 RUN yarn workspace backend build
 
 # ── Stage 2: production image ─────────────────────────────────────────────────
-FROM node:20-bookworm-slim
+FROM node:22-bookworm-slim
 
 RUN corepack enable \
     && apt-get update && apt-get install -y --no-install-recommends \
-    python3 make g++ \
+    python3 make g++ g++-13 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -60,7 +60,8 @@ RUN node -e " \
     if (pkg.scripts) pkg.scripts.postinstall = 'true'; \
     fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); \
     " \
-    && YARN_ENABLE_IMMUTABLE_INSTALLS=false \
+    && CXX=g++-13 \
+    YARN_ENABLE_IMMUTABLE_INSTALLS=false \
     YARN_CACHE_FOLDER=/root/.yarn/berry/cache \
     yarn workspaces focus --all --production \
     && rm -rf "$(yarn cache dir)"

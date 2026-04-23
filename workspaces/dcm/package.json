@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "18 || 20"
+    "node": "18 || 20 || 22"
   },
   "scripts": {
     "start": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start-app\" \"yarn start-backend\"",
@@ -56,7 +56,7 @@
     "typescript": "~5.3.0"
   },
   "resolutions": {
-    "isolated-vm": "^6.0.1",
+    "isolated-vm": "6.0.2",
     "better-sqlite3": "^12.0.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
