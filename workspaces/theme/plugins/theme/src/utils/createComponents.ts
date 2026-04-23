@@ -634,6 +634,15 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
+          '#rhdh-sidebar-layout & a[aria-current="page"], & a[aria-current="page"]':
+            {
+              background: `${sidebarItemInteractionBackgroundColor} !important`,
+              backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+              color: `${navigationSelectedColor} !important`,
+              '& .MuiTypography-root': {
+                color: 'inherit !important',
+              },
+            },
           '& [class*="BackstageSidebarItem-selected-"][class*="BackstageSidebarItem-root-"]':
             {
               backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
