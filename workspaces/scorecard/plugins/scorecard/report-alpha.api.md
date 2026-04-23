@@ -25,8 +25,8 @@ const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
     drillDown: RouteRef<{
-      metricId: string;
       aggregationId: string;
+      metricId: string;
     }>;
   },
   {},
