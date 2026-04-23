@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.12.3
+
+### Patch Changes
+
+- 728c50f: style the active sidebar nav link (a[aria-current="page"]) so selected colors match the resolved navigation shell
+
 ## 0.12.2
 
 ### Patch Changes
