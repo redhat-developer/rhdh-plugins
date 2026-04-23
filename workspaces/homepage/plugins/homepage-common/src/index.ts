@@ -21,11 +21,11 @@
  */
 
 export {
-  homepageDefaultCardsReadPermission,
+  homepageDefaultWidgetsReadPermission,
   homepagePermissions,
-  RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD,
+  RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
 } from './permissions';
-export type { HomepageDefaultCardPermission } from './permissions';
+export type { HomepageDefaultWidgetPermission } from './permissions';
 
 /**
  * @public
@@ -51,12 +51,7 @@ export interface CardLayout {
  */
 export interface CardNode {
   id?: string;
-  label?: string;
-  title?: string;
-  titleKey?: string;
-  description?: string;
-  descriptionKey?: string;
-  priority?: number;
+  props?: Record<string, unknown>;
   layouts?: Record<string, CardLayout>;
   if?: CardVisibility;
   children?: CardNode[];
@@ -67,19 +62,14 @@ export interface CardNode {
  */
 export interface VisibleCard {
   id: string;
-  label?: string;
-  title?: string;
-  titleKey?: string;
-  description?: string;
-  descriptionKey?: string;
-  priority?: number;
+  props?: Record<string, unknown>;
   layouts?: Record<string, CardLayout>;
 }
 
 /**
  * @public
  */
-export interface DefaultCardsResponse {
+export interface DefaultWidgetsResponse {
   customizable: boolean;
   items: VisibleCard[];
 }

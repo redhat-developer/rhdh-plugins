@@ -18,24 +18,23 @@ import { mockServices } from '@backstage/backend-test-utils';
 import {
   collectReferencedPermissions,
   loadCustomizable,
-  loadDefaultCards,
-} from './loadDefaultCards';
+  loadDefaultWidgets,
+} from './loadDefaultWidgets';
 import { CardNode } from './types';
 
-describe('loadDefaultCards', () => {
-  it('returns an empty array when homepage.defaultCards is absent', () => {
+describe('loadDefaultWidgets', () => {
+  it('returns an empty array when homepage.defaultWidgets is absent', () => {
     const config = mockServices.rootConfig({ data: {} });
-    expect(loadDefaultCards(config)).toEqual([]);
+    expect(loadDefaultWidgets(config)).toEqual([]);
   });
 
   it('parses a valid tree', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultCards: [
+          defaultWidgets: [
             { id: 'onboarding' },
             {
-              label: 'Admin tools',
               if: { groups: ['group:default/admins'] },
               children: [
                 { id: 'user-management' },
@@ -49,10 +48,9 @@ describe('loadDefaultCards', () => {
         },
       },
     });
-    expect(loadDefaultCards(config)).toEqual([
+    expect(loadDefaultWidgets(config)).toEqual([
       { id: 'onboarding' },
       {
-        label: 'Admin tools',
         if: { groups: ['group:default/admins'] },
         children: [
           { id: 'user-management' },
@@ -69,12 +67,12 @@ describe('loadDefaultCards', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultCards: [{ id: 'mixed', children: [{ id: 'inner' }] }],
+          defaultWidgets: [{ id: 'mixed', children: [{ id: 'inner' }] }],
         },
       },
     });
-    expect(() => loadDefaultCards(config)).toThrow(
-      /Invalid homepage\.defaultCards/,
+    expect(() => loadDefaultWidgets(config)).toThrow(
+      /Invalid homepage\.defaultWidgets/,
     );
   });
 
@@ -82,12 +80,12 @@ describe('loadDefaultCards', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultCards: [{ label: 'lonely' }],
+          defaultWidgets: [{ props: { label: 'lonely' } }],
         },
       },
     });
-    expect(() => loadDefaultCards(config)).toThrow(
-      /Invalid homepage\.defaultCards/,
+    expect(() => loadDefaultWidgets(config)).toThrow(
+      /Invalid homepage\.defaultWidgets/,
     );
   });
 
@@ -95,12 +93,12 @@ describe('loadDefaultCards', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultCards: [{ id: 'x', extra: 'nope' }],
+          defaultWidgets: [{ id: 'x', extra: 'nope' }],
         },
       },
     });
-    expect(() => loadDefaultCards(config)).toThrow(
-      /Invalid homepage\.defaultCards/,
+    expect(() => loadDefaultWidgets(config)).toThrow(
+      /Invalid homepage\.defaultWidgets/,
     );
   });
 
@@ -108,7 +106,7 @@ describe('loadDefaultCards', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultCards: [
+          defaultWidgets: [
             {
               id: 'x',
               if: { users: ['not-an-entity-ref'] },
@@ -117,8 +115,8 @@ describe('loadDefaultCards', () => {
         },
       },
     });
-    expect(() => loadDefaultCards(config)).toThrow(
-      /Invalid homepage\.defaultCards/,
+    expect(() => loadDefaultWidgets(config)).toThrow(
+      /Invalid homepage\.defaultWidgets/,
     );
   });
 
@@ -126,7 +124,7 @@ describe('loadDefaultCards', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultCards: [
+          defaultWidgets: [
             {
               id: 'card-with-meta',
               title: 'My Card',
@@ -141,7 +139,7 @@ describe('loadDefaultCards', () => {
         },
       },
     });
-    const result = loadDefaultCards(config);
+    const result = loadDefaultWidgets(config);
     expect(result).toEqual([
       {
         id: 'card-with-meta',
@@ -160,7 +158,7 @@ describe('loadDefaultCards', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultCards: [
+          defaultWidgets: [
             {
               id: 'i18n-card',
               title: 'Fallback',
@@ -171,7 +169,7 @@ describe('loadDefaultCards', () => {
         },
       },
     });
-    const result = loadDefaultCards(config);
+    const result = loadDefaultWidgets(config);
     expect(result).toEqual([
       {
         id: 'i18n-card',
@@ -186,9 +184,8 @@ describe('loadDefaultCards', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultCards: [
+          defaultWidgets: [
             {
-              label: 'empty-vis',
               if: {},
               children: [{ id: 'x' }],
             },
@@ -196,7 +193,7 @@ describe('loadDefaultCards', () => {
         },
       },
     });
-    expect(loadDefaultCards(config)).toHaveLength(1);
+    expect(loadDefaultWidgets(config)).toHaveLength(1);
   });
 });
 
@@ -233,14 +230,12 @@ describe('collectReferencedPermissions', () => {
         if: { permissions: ['perm.read', 'perm.write'] },
       },
       {
-        label: 'group',
         children: [
           {
             id: 'b',
             if: { permissions: ['perm.read'] },
           },
           {
-            label: 'nested',
             if: { permissions: ['perm.admin'] },
             children: [
               {

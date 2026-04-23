@@ -83,10 +83,11 @@ app:
 
 homepage:
   customizable: true
-  defaultCards:
+  defaultWidgets:
+    - id: hello-guest
+      if:
+        users: [user:development/guest]
     - id: visit-card
-      label: Visits
-      priority: 100
       layouts:
         xl: { w: 12, h: 5 }
         lg: { w: 12, h: 5 }
@@ -95,9 +96,6 @@ homepage:
         xs: { w: 12, h: 9 }
         xxs: { w: 12, h: 14 }
     - id: onboarding
-      title: Get Started
-      description: Helpful links to get you started with the platform
-      priority: 200
       layouts:
         xl: { w: 12, h: 6 }
         lg: { w: 12, h: 6 }
@@ -105,13 +103,10 @@ homepage:
         sm: { w: 12, h: 8 }
         xs: { w: 12, h: 9 }
         xxs: { w: 12, h: 14 }
-    - label: Admin tools
-      if:
+    - if:
         groups: [group:default/admins]
       children:
         - id: rbac
-          title: RBAC Administration
-          priority: 300
           layouts:
             xl: { w: 12, h: 6 }
             lg: { w: 12, h: 6 }

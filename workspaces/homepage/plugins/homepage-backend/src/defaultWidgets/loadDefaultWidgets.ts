@@ -46,12 +46,7 @@ export const cardNodeSchema: z.ZodType<CardNode> = z.lazy(() =>
   z
     .object({
       id: z.string().min(1).optional(),
-      label: z.string().optional(),
-      title: z.string().optional(),
-      titleKey: z.string().optional(),
-      description: z.string().optional(),
-      descriptionKey: z.string().optional(),
-      priority: z.number().optional(),
+      props: z.record(z.string(), z.unknown()).optional(),
       layouts: z.record(z.string(), cardLayoutSchema).optional(),
       if: visibilitySchema.optional(),
       children: z.array(cardNodeSchema).optional(),
@@ -68,19 +63,19 @@ export const cardNodeSchema: z.ZodType<CardNode> = z.lazy(() =>
     ),
 );
 
-export const defaultCardsSchema = z.array(cardNodeSchema);
+export const defaultWidgetsSchema = z.array(cardNodeSchema);
 
 /**
- * Reads and validates the `homepage.defaultCards` config.
+ * Reads and validates the `homepage.defaultWidgets` config.
  * Throws on invalid config so misconfiguration fails fast at backend startup.
  */
-export function loadDefaultCards(config: RootConfigService): CardNode[] {
-  const raw = config.getOptional('homepage.defaultCards');
+export function loadDefaultWidgets(config: RootConfigService): CardNode[] {
+  const raw = config.getOptional('homepage.defaultWidgets');
   if (raw === undefined) return [];
-  const parsed = defaultCardsSchema.safeParse(raw);
+  const parsed = defaultWidgetsSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(
-      `Invalid homepage.defaultCards config: ${parsed.error.message}`,
+      `Invalid homepage.defaultWidgets config: ${parsed.error.message}`,
     );
   }
   return parsed.data;

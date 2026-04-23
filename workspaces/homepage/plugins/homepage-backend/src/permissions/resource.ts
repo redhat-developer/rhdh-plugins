@@ -17,12 +17,12 @@
 import { createPermissionResourceRef } from '@backstage/plugin-permission-node';
 import {
   VisibleCard,
-  RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD,
+  RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
-import { HomepageDefaultCardFilter } from './rules';
+import { HomepageDefaultWidgetFilter } from './rules';
 
 export const homepageDefaultCardPermissionResourceRef =
-  createPermissionResourceRef<VisibleCard, HomepageDefaultCardFilter>().with({
+  createPermissionResourceRef<VisibleCard, HomepageDefaultWidgetFilter>().with({
     pluginId: 'homepage',
-    resourceType: RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD,
+    resourceType: RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
   });

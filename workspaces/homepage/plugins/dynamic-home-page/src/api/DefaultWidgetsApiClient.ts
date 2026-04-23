@@ -19,23 +19,23 @@ import {
   DiscoveryApi,
   FetchApi,
 } from '@backstage/core-plugin-api';
-import type { DefaultCardsResponse } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
+import type { DefaultWidgetsResponse } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 
-export type { DefaultCardsResponse };
+export type { DefaultWidgetsResponse };
 export type {
   CardLayout,
   VisibleCard,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 
-export interface DefaultCardsApi {
-  getDefaultCards(): Promise<DefaultCardsResponse>;
+export interface DefaultWidgetsApi {
+  getDefaultWidgets(): Promise<DefaultWidgetsResponse>;
 }
 
-export const defaultCardsApiRef = createApiRef<DefaultCardsApi>({
-  id: 'plugin.homepage.default-cards',
+export const defaultWidgetsApiRef = createApiRef<DefaultWidgetsApi>({
+  id: 'plugin.homepage.default-widgets',
 });
 
-export class DefaultCardsApiClient implements DefaultCardsApi {
+export class DefaultWidgetsApiClient implements DefaultWidgetsApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
 
@@ -44,9 +44,9 @@ export class DefaultCardsApiClient implements DefaultCardsApi {
     this.fetchApi = options.fetchApi;
   }
 
-  async getDefaultCards(): Promise<DefaultCardsResponse> {
+  async getDefaultWidgets(): Promise<DefaultWidgetsResponse> {
     const baseUrl = await this.discoveryApi.getBaseUrl('homepage');
-    const response = await this.fetchApi.fetch(`${baseUrl}/default-cards`);
+    const response = await this.fetchApi.fetch(`${baseUrl}/default-widgets`);
     if (!response.ok) {
       throw new Error(
         `Failed to fetch default cards, status ${response.status}: ${response.statusText}`,

@@ -22,8 +22,8 @@ import {
   identityApiRef,
 } from '@backstage/frontend-plugin-api';
 import {
-  DefaultCardsApiClient,
-  defaultCardsApiRef,
+  DefaultWidgetsApiClient,
+  defaultWidgetsApiRef,
   QuickAccessApiClient,
   quickAccessApiRef,
 } from '../../api';
@@ -56,19 +56,19 @@ const quickAccessApi = ApiBlueprint.make({
  *
  * @alpha
  */
-const defaultCardsApi = ApiBlueprint.make({
-  name: 'default-cards',
+const defaultWidgetsApi = ApiBlueprint.make({
+  name: 'default-widgets',
   disabled: false,
   params: defineParams =>
     defineParams({
-      api: defaultCardsApiRef,
+      api: defaultWidgetsApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
         fetchApi: fetchApiRef,
       },
       factory: ({ discoveryApi, fetchApi }) =>
-        new DefaultCardsApiClient({ discoveryApi, fetchApi }),
+        new DefaultWidgetsApiClient({ discoveryApi, fetchApi }),
     }),
 });
 
-export { defaultCardsApi, quickAccessApi };
+export { defaultWidgetsApi, quickAccessApi };

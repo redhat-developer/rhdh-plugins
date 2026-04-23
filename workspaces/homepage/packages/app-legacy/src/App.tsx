@@ -42,6 +42,8 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
+import { DebugHomepageAvailableWidgets } from './components/homepage/DebugHomepageAvailableWidgets';
+import { DebugHomepageDefaultWidgets } from './components/homepage/DebugHomepageDefaultWidgets';
 
 import {
   AlertDisplay,
@@ -440,6 +442,18 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/rbac" element={<RbacPage />} />
+    <Route
+      path="/debug-available-widgets"
+      element={
+        <ScalprumContext.Provider value={scalprumState}>
+          <DebugHomepageAvailableWidgets />
+        </ScalprumContext.Provider>
+      }
+    />
+    <Route
+      path="/debug-default-widgets"
+      element={<DebugHomepageDefaultWidgets />}
+    />
   </FlatRoutes>
 );
 

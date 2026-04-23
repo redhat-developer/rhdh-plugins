@@ -22,23 +22,13 @@ export interface CardNode {
   // (undocumented)
   children?: CardNode[];
   // (undocumented)
-  description?: string;
-  // (undocumented)
-  descriptionKey?: string;
-  // (undocumented)
   id?: string;
   // (undocumented)
   if?: CardVisibility;
   // (undocumented)
-  label?: string;
-  // (undocumented)
   layouts?: Record<string, CardLayout>;
   // (undocumented)
-  priority?: number;
-  // (undocumented)
-  title?: string;
-  // (undocumented)
-  titleKey?: string;
+  props?: Record<string, unknown>;
 }
 
 // @public (undocumented)
@@ -52,7 +42,7 @@ export interface CardVisibility {
 }
 
 // @public (undocumented)
-export interface DefaultCardsResponse {
+export interface DefaultWidgetsResponse {
   // (undocumented)
   customizable: boolean;
   // (undocumented)
@@ -60,36 +50,26 @@ export interface DefaultCardsResponse {
 }
 
 // @public
-export type HomepageDefaultCardPermission = ResourcePermission<
-  typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD
+export type HomepageDefaultWidgetPermission = ResourcePermission<
+  typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET
 >;
 
 // @public
-export const homepageDefaultCardsReadPermission: ResourcePermission<'homepage-default-card'>;
+export const homepageDefaultWidgetsReadPermission: ResourcePermission<'homepage-default-card'>;
 
 // @public (undocumented)
 export const homepagePermissions: ResourcePermission<'homepage-default-card'>[];
 
 // @public (undocumented)
-export const RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD = 'homepage-default-card';
+export const RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET = 'homepage-default-card';
 
 // @public (undocumented)
 export interface VisibleCard {
   // (undocumented)
-  description?: string;
-  // (undocumented)
-  descriptionKey?: string;
-  // (undocumented)
   id: string;
-  // (undocumented)
-  label?: string;
   // (undocumented)
   layouts?: Record<string, CardLayout>;
   // (undocumented)
-  priority?: number;
-  // (undocumented)
-  title?: string;
-  // (undocumented)
-  titleKey?: string;
+  props?: Record<string, unknown>;
 }
 ```

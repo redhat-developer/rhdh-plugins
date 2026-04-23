@@ -20,11 +20,11 @@ import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 // Start up the backend by running `yarn start` in the package directory.
 // Once it's up and running, try out the following requests:
 //
-//   curl http://localhost:7007/api/homepage/default-cards
+//   curl http://localhost:7007/api/homepage/default-widgets
 //
 // Explicitly make an unauthenticated request (returns 401):
 //
-//   curl -i http://localhost:7007/api/homepage/default-cards \
+//   curl -i http://localhost:7007/api/homepage/default-widgets \
 //     -H 'Authorization: Bearer mock-none-token'
 
 const backend = createBackend();
@@ -39,7 +39,7 @@ backend.add(
     data: {
       homepage: {
         customizable: true,
-        defaultCards: [
+        defaultWidgets: [
           {
             id: 'onboarding',
             title: 'Get Started',

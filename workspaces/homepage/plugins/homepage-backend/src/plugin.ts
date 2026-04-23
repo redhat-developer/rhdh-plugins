@@ -21,7 +21,7 @@ import { homepagePermissions } from '@red-hat-developer-hub/backstage-plugin-hom
 import { homepageDefaultCardPermissionResourceRef } from './permissions/resource';
 import { rules as homepageRules } from './permissions/rules';
 import { createRouter } from './router';
-import { defaultCardsServiceRef } from './services/DefaultCardsService';
+import { defaultWidgetsServiceRef } from './services/DefaultWidgetsService';
 
 /**
  * homepagePlugin backend plugin
@@ -36,9 +36,14 @@ export const homepagePlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         permissionsRegistry: coreServices.permissionsRegistry,
-        defaultCards: defaultCardsServiceRef,
+        defaultWidgets: defaultWidgetsServiceRef,
       },
-      async init({ httpAuth, httpRouter, permissionsRegistry, defaultCards }) {
+      async init({
+        httpAuth,
+        httpRouter,
+        permissionsRegistry,
+        defaultWidgets,
+      }) {
         permissionsRegistry.addResourceType({
           resourceRef: homepageDefaultCardPermissionResourceRef,
           getResources: async (resourceRefs: string[]) => {
@@ -50,7 +55,7 @@ export const homepagePlugin = createBackendPlugin({
         httpRouter.use(
           await createRouter({
             httpAuth,
-            defaultCards,
+            defaultWidgets,
           }),
         );
       },

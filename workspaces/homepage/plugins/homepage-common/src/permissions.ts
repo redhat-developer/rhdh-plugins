@@ -21,28 +21,28 @@ import {
 /**
  * @public
  */
-export const RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD = 'homepage-default-card';
+export const RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET = 'homepage-default-card';
 
 /**
  * @public
  * Convenience type for homepage default card permissions
  */
-export type HomepageDefaultCardPermission = ResourcePermission<
-  typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD
+export type HomepageDefaultWidgetPermission = ResourcePermission<
+  typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET
 >;
 
 /** This permission is used to read the homepage default cards endpoint
  * @public
  */
-export const homepageDefaultCardsReadPermission = createPermission({
-  name: 'homepage.default-cards.read',
+export const homepageDefaultWidgetsReadPermission = createPermission({
+  name: 'homepage.default-widgets.read',
   attributes: {
     action: 'read',
   },
-  resourceType: RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD,
+  resourceType: RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
 });
 
 /**
  * @public
  */
-export const homepagePermissions = [homepageDefaultCardsReadPermission];
+export const homepagePermissions = [homepageDefaultWidgetsReadPermission];

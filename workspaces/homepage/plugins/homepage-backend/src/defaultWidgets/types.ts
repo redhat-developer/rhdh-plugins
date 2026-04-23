@@ -18,7 +18,7 @@ export type {
   CardLayout,
   CardNode,
   CardVisibility,
-  DefaultCardsResponse,
+  DefaultWidgetsResponse,
   VisibleCard,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 

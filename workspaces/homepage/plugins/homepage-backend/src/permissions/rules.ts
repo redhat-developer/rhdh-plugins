@@ -21,11 +21,11 @@ import {
 import { z } from 'zod/v3';
 import {
   VisibleCard,
-  RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD,
+  RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 import { homepageDefaultCardPermissionResourceRef } from './resource';
 
-export type HomepageDefaultCardFilter = {
+export type HomepageDefaultWidgetFilter = {
   key: string;
   values: Array<string> | undefined;
 };
@@ -54,8 +54,8 @@ const hasCardId = createPermissionRule({
   }),
 } as any) as unknown as PermissionRule<
   VisibleCard,
-  HomepageDefaultCardFilter,
-  typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_CARD,
+  HomepageDefaultWidgetFilter,
+  typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
   HasCardIdParams
 >;
 

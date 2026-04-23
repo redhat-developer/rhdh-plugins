@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-export * from './DefaultCardsApiClient';
+export * from './DefaultWidgetsApiClient';
 export * from './QuickAccessApiClient';

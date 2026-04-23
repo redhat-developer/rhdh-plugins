@@ -38,8 +38,8 @@ import {
 
 import { rootRouteRef } from './routes';
 import {
-  DefaultCardsApiClient,
-  defaultCardsApiRef,
+  DefaultWidgetsApiClient,
+  defaultWidgetsApiRef,
   QuickAccessApiClient,
   quickAccessApiRef,
 } from './api';
@@ -52,6 +52,9 @@ import type { HeadlineProps } from './components/Headline';
 import type { MarkdownProps } from './components/Markdown';
 import type { MarkdownCardProps } from './components/MarkdownCard';
 import type { PlaceholderProps } from './components/Placeholder';
+
+export { defaultWidgetsApiRef } from './api';
+export type { DefaultWidgetsApi } from './api';
 
 export type { DynamicHomePageProps } from './components/DynamicHomePage';
 export type { DynamicCustomizableHomePageProps } from './components/DynamicCustomizableHomePage';
@@ -91,13 +94,13 @@ export const dynamicHomePagePlugin = createPlugin({
         new QuickAccessApiClient({ discoveryApi, configApi, identityApi }),
     }),
     createApiFactory({
-      api: defaultCardsApiRef,
+      api: defaultWidgetsApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
         fetchApi: fetchApiRef,
       },
       factory: ({ discoveryApi, fetchApi }) =>
-        new DefaultCardsApiClient({ discoveryApi, fetchApi }),
+        new DefaultWidgetsApiClient({ discoveryApi, fetchApi }),
     }),
     createApiFactory({
       api: visitsApiRef,

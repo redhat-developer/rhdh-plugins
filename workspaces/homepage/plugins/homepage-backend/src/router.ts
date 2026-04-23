@@ -16,21 +16,21 @@
 import { HttpAuthService } from '@backstage/backend-plugin-api';
 import express from 'express';
 import Router from 'express-promise-router';
-import { defaultCardsServiceRef } from './services/DefaultCardsService';
+import { defaultWidgetsServiceRef } from './services/DefaultWidgetsService';
 
 export async function createRouter({
   httpAuth,
-  defaultCards,
+  defaultWidgets,
 }: {
   httpAuth: HttpAuthService;
-  defaultCards: typeof defaultCardsServiceRef.T;
+  defaultWidgets: typeof defaultWidgetsServiceRef.T;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
 
-  router.get('/default-cards', async (req, res) => {
+  router.get('/default-widgets', async (req, res) => {
     const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-    const result = await defaultCards.getDefaultCards({ credentials });
+    const result = await defaultWidgets.getDefaultWidgets({ credentials });
     res.json(result);
   });
 

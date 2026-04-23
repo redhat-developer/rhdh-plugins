@@ -25,22 +25,22 @@ import {
   createServiceRef,
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
-import { buildUserContext } from '../defaultCards/buildUserContext';
-import { filterToVisibleLeaves } from '../defaultCards/evaluateVisibility';
+import { buildUserContext } from '../defaultWidgets/buildUserContext';
+import { filterToVisibleLeaves } from '../defaultWidgets/evaluateVisibility';
 import {
   collectReferencedPermissions,
   loadCustomizable,
-  loadDefaultCards,
-} from '../defaultCards/loadDefaultCards';
-import { CardNode, DefaultCardsResponse } from '../defaultCards/types';
+  loadDefaultWidgets,
+} from '../defaultWidgets/loadDefaultWidgets';
+import { CardNode, DefaultWidgetsResponse } from '../defaultWidgets/types';
 
-export interface DefaultCardsService {
-  getDefaultCards(options: {
+export interface DefaultWidgetsService {
+  getDefaultWidgets(options: {
     credentials: BackstageCredentials<BackstageUserPrincipal>;
-  }): Promise<DefaultCardsResponse>;
+  }): Promise<DefaultWidgetsResponse>;
 }
 
-export class DefaultCardsServiceImpl implements DefaultCardsService {
+export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
   readonly #tree: CardNode[];
   readonly #customizable: boolean;
   readonly #referencedPermissions: Set<string>;
@@ -53,14 +53,14 @@ export class DefaultCardsServiceImpl implements DefaultCardsService {
     catalog: typeof catalogServiceRef.T;
     permissions: PermissionsService;
     logger: LoggerService;
-  }): DefaultCardsServiceImpl {
-    const tree = loadDefaultCards(options.config);
+  }): DefaultWidgetsServiceImpl {
+    const tree = loadDefaultWidgets(options.config);
     const customizable = loadCustomizable(options.config);
     const referencedPermissions = collectReferencedPermissions(tree);
     options.logger.info(
       `Loaded ${tree.length} default homepage card root node(s) referencing ${referencedPermissions.size} permission(s), customizable=${customizable}`,
     );
-    return new DefaultCardsServiceImpl(
+    return new DefaultWidgetsServiceImpl(
       tree,
       customizable,
       referencedPermissions,
@@ -86,11 +86,11 @@ export class DefaultCardsServiceImpl implements DefaultCardsService {
     this.#logger = logger;
   }
 
-  async getDefaultCards({
+  async getDefaultWidgets({
     credentials,
   }: {
     credentials: BackstageCredentials<BackstageUserPrincipal>;
-  }): Promise<DefaultCardsResponse> {
+  }): Promise<DefaultWidgetsResponse> {
     const ctx = await buildUserContext({
       credentials,
       catalog: this.#catalog,
@@ -105,19 +105,21 @@ export class DefaultCardsServiceImpl implements DefaultCardsService {
   }
 }
 
-export const defaultCardsServiceRef = createServiceRef<DefaultCardsService>({
-  id: 'homepage.defaultCards',
-  defaultFactory: async service =>
-    createServiceFactory({
-      service,
-      deps: {
-        config: coreServices.rootConfig,
-        catalog: catalogServiceRef,
-        permissions: coreServices.permissions,
-        logger: coreServices.logger,
-      },
-      async factory(deps) {
-        return DefaultCardsServiceImpl.create(deps);
-      },
-    }),
-});
+export const defaultWidgetsServiceRef = createServiceRef<DefaultWidgetsService>(
+  {
+    id: 'homepage.defaultWidgets',
+    defaultFactory: async service =>
+      createServiceFactory({
+        service,
+        deps: {
+          config: coreServices.rootConfig,
+          catalog: catalogServiceRef,
+          permissions: coreServices.permissions,
+          logger: coreServices.logger,
+        },
+        async factory(deps) {
+          return DefaultWidgetsServiceImpl.create(deps);
+        },
+      }),
+  },
+);

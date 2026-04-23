@@ -50,7 +50,7 @@ describe('homepagePlugin', () => {
         mockServices.rootConfig.factory({
           data: {
             homepage: {
-              defaultCards: [
+              defaultWidgets: [
                 { id: 'onboarding', title: 'Get Started', priority: 200 },
                 {
                   id: 'dev-only',
@@ -81,7 +81,7 @@ describe('homepagePlugin', () => {
       ],
     });
 
-    const res = await request(server).get('/api/homepage/default-cards');
+    const res = await request(server).get('/api/homepage/default-widgets');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
@@ -100,7 +100,7 @@ describe('homepagePlugin', () => {
         mockServices.rootConfig.factory({
           data: {
             homepage: {
-              defaultCards: [
+              defaultWidgets: [
                 { id: 'public' },
                 {
                   label: 'Platform section',
@@ -126,7 +126,7 @@ describe('homepagePlugin', () => {
       ],
     });
 
-    const res = await request(server).get('/api/homepage/default-cards');
+    const res = await request(server).get('/api/homepage/default-widgets');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
@@ -146,14 +146,14 @@ describe('homepagePlugin', () => {
           data: {
             homepage: {
               customizable: true,
-              defaultCards: [{ id: 'a' }],
+              defaultWidgets: [{ id: 'a' }],
             },
           },
         }),
       ],
     });
 
-    const res = await request(server).get('/api/homepage/default-cards');
+    const res = await request(server).get('/api/homepage/default-widgets');
 
     expect(res.status).toBe(200);
     expect(res.body.customizable).toBe(true);
@@ -164,7 +164,7 @@ describe('homepagePlugin', () => {
       features: [homepagePlugin],
     });
 
-    const res = await request(server).get('/api/homepage/default-cards');
+    const res = await request(server).get('/api/homepage/default-widgets');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ customizable: false, items: [] });
@@ -176,7 +176,7 @@ describe('homepagePlugin', () => {
     });
 
     const res = await request(server)
-      .get('/api/homepage/default-cards')
+      .get('/api/homepage/default-widgets')
       .set('Authorization', mockCredentials.none.header());
 
     expect(res.status).toBe(401);

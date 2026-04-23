@@ -31,7 +31,7 @@ import {
 import { homepageTranslations } from '../translations';
 
 import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
-import { defaultCardsApi, quickAccessApi } from './extensions/apis';
+import { defaultWidgetsApi, quickAccessApi } from './extensions/apis';
 
 /**
  * Frontend module for the Dynamic Home Page plugin (New Frontend System).
@@ -49,7 +49,7 @@ export const homePageModule = createFrontendModule({
     onboardingSectionWidget,
     entitySectionWidget,
     templateSectionWidget,
-    defaultCardsApi,
+    defaultWidgetsApi,
     quickAccessApi,
     quickAccessCardWidget,
     featuredDocsCardWidget,

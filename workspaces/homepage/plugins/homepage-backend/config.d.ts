@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-interface HomepageDefaultCardVisibilityConfig {
+interface HomepageDefaultWidgetVisibilityConfig {
   /** User entity refs that grant visibility (OR within list). */
   users?: string[];
   /** Group entity refs that grant visibility (OR within list). */
@@ -23,34 +23,24 @@ interface HomepageDefaultCardVisibilityConfig {
   permissions?: string[];
 }
 
-interface HomepageDefaultCardLayout {
+interface HomepageDefaultWidgetLayout {
   x?: number;
   y?: number;
   w?: number;
   h?: number;
 }
 
-interface HomepageDefaultCardNodeConfig {
+interface HomepageDefaultWidgetNodeConfig {
   /** Stable card identifier matched against frontend mount-point ids. Present for leaves. */
   id?: string;
-  /** Optional human-readable label for the card or group node. */
-  label?: string;
-  /** Display title for the card. */
-  title?: string;
-  /** Translation key for the card title. */
-  titleKey?: string;
-  /** Display description for the card. */
-  description?: string;
-  /** Translation key for the card description. */
-  descriptionKey?: string;
-  /** Ordering hint — higher values appear first. */
-  priority?: number;
+  /** Arbitrary component props forwarded to the card. */
+  props?: Record<string, unknown>;
   /** Responsive layout per breakpoint (xl, lg, md, sm, xs, xxs). */
-  layouts?: Record<string, HomepageDefaultCardLayout>;
+  layouts?: Record<string, HomepageDefaultWidgetLayout>;
   /** Child nodes. Presence makes this a group; must be omitted when `id` is set. */
-  children?: HomepageDefaultCardNodeConfig[];
+  children?: HomepageDefaultWidgetNodeConfig[];
   /** Optional visibility constraints; omitted or empty means visible to all. */
-  if?: HomepageDefaultCardVisibilityConfig;
+  if?: HomepageDefaultWidgetVisibilityConfig;
 }
 
 export interface Config {
@@ -61,6 +51,6 @@ export interface Config {
      * Recursive default card tree rendered on the homepage. Each node is either
      * a leaf (has `id`) or a group (has `children`).
      */
-    defaultCards?: HomepageDefaultCardNodeConfig[];
+    defaultWidgets?: HomepageDefaultWidgetNodeConfig[];
   };
 }

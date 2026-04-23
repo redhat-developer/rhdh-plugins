@@ -22,19 +22,19 @@ import express from 'express';
 import request from 'supertest';
 
 import { createRouter } from './router';
-import { defaultCardsServiceRef } from './services/DefaultCardsService';
+import { defaultWidgetsServiceRef } from './services/DefaultWidgetsService';
 
 describe('createRouter', () => {
   let app: express.Express;
-  let defaultCards: jest.Mocked<typeof defaultCardsServiceRef.T>;
+  let defaultWidgets: jest.Mocked<typeof defaultWidgetsServiceRef.T>;
 
   beforeEach(async () => {
-    defaultCards = {
-      getDefaultCards: jest.fn(),
+    defaultWidgets = {
+      getDefaultWidgets: jest.fn(),
     };
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
-      defaultCards,
+      defaultWidgets,
     });
     app = express();
     app.use(router);
@@ -42,25 +42,25 @@ describe('createRouter', () => {
   });
 
   it('returns the visible default cards with customizable flag', async () => {
-    defaultCards.getDefaultCards.mockResolvedValue({
+    defaultWidgets.getDefaultWidgets.mockResolvedValue({
       customizable: true,
       items: [
-        { id: 'onboarding', title: 'Get Started', priority: 100 },
+        { id: 'onboarding', props: { title: 'Get Started' } },
         { id: 'entities' },
       ],
     });
 
-    const response = await request(app).get('/default-cards');
+    const response = await request(app).get('/default-widgets');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       customizable: true,
       items: [
-        { id: 'onboarding', title: 'Get Started', priority: 100 },
+        { id: 'onboarding', props: { title: 'Get Started' } },
         { id: 'entities' },
       ],
     });
-    expect(defaultCards.getDefaultCards).toHaveBeenCalledWith({
+    expect(defaultWidgets.getDefaultWidgets).toHaveBeenCalledWith({
       credentials: expect.objectContaining({
         principal: expect.objectContaining({ type: 'user' }),
       }),
@@ -69,10 +69,10 @@ describe('createRouter', () => {
 
   it('rejects unauthenticated requests', async () => {
     const response = await request(app)
-      .get('/default-cards')
+      .get('/default-widgets')
       .set('Authorization', mockCredentials.none.header());
 
     expect(response.status).toBe(401);
-    expect(defaultCards.getDefaultCards).not.toHaveBeenCalled();
+    expect(defaultWidgets.getDefaultWidgets).not.toHaveBeenCalled();
   });
 });
