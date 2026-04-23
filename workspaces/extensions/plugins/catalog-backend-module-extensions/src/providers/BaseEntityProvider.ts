@@ -28,6 +28,7 @@ import { readYamlFiles } from '../utils/file-utils';
 import { JsonFileData } from '../types';
 import path from 'path';
 import fs from 'fs';
+import { isDeepStrictEqual } from 'node:util';
 
 /**
  * @public
@@ -50,23 +51,69 @@ export abstract class BaseEntityProvider<T extends Entity>
   abstract getProviderName(): string;
   abstract getKind(): string;
 
+  private getEntityIdentity(entity: Entity): string {
+    const namespace = entity.metadata.namespace ?? 'default';
+    return [
+      entity.kind.toLocaleLowerCase('en-US'),
+      namespace.toLocaleLowerCase('en-US'),
+      entity.metadata.name.toLocaleLowerCase('en-US'),
+    ].join('/');
+  }
+
+  private addProviderAnnotations(entity: T): T {
+    return {
+      ...entity,
+      metadata: {
+        ...entity.metadata,
+        annotations: {
+          ...entity.metadata.annotations,
+          [ANNOTATION_LOCATION]: `file:${this.getProviderName()}`,
+          [ANNOTATION_ORIGIN_LOCATION]: `file:${this.getProviderName()}`,
+        },
+      },
+    };
+  }
+
   getEntities(allEntities: JsonFileData<T>[]): T[] {
     if (allEntities.length === 0) {
       return [];
     }
-    return allEntities
-      .filter(d => d.content.kind === this.getKind())
-      .map(file => ({
-        ...file.content,
-        metadata: {
-          ...file.content.metadata,
-          annotations: {
-            ...file.content.metadata.annotations,
-            [ANNOTATION_LOCATION]: `file:${this.getProviderName()}`,
-            [ANNOTATION_ORIGIN_LOCATION]: `file:${this.getProviderName()}`,
-          },
-        },
-      }));
+
+    const entitiesByIdentity = new Map<
+      string,
+      { entity: T; filePath: string }
+    >();
+
+    for (const fileData of allEntities) {
+      if (fileData.content.kind !== this.getKind()) {
+        continue;
+      }
+
+      const identity = this.getEntityIdentity(fileData.content);
+      const existing = entitiesByIdentity.get(identity);
+      if (!existing) {
+        entitiesByIdentity.set(identity, {
+          entity: fileData.content,
+          filePath: fileData.filePath,
+        });
+        continue;
+      }
+
+      if (isDeepStrictEqual(existing.entity, fileData.content)) {
+        console.warn(
+          `Skipping duplicate Extensions entity '${identity}' from '${fileData.filePath}'. Keeping first definition from '${existing.filePath}'.`,
+        );
+        continue;
+      }
+
+      throw new Error(
+        `Conflicting Extensions entities detected for '${identity}' in '${existing.filePath}' and '${fileData.filePath}'.`,
+      );
+    }
+
+    return Array.from(entitiesByIdentity.values()).map(({ entity }) =>
+      this.addProviderAnnotations(entity),
+    );
   }
 
   async connect(connection: EntityProviderConnection): Promise<void> {
