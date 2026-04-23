@@ -215,7 +215,7 @@ export class CatalogMetricService {
       throw new Error(`Unsupported aggregation type: ${aggregationType}`);
     }
 
-    return AggregatedMetricMapper.toAggregatedMetric(undefined);
+    return AggregatedMetricMapper.toAggregatedMetric();
   }
 
   /**

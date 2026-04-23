@@ -644,7 +644,7 @@ describe('CatalogMetricService', () => {
 
       it('should call toAggregatedMetric to map aggregated metric to result', async () => {
         expect(toAggregatedMetricSpy).toHaveBeenCalledTimes(1);
-        expect(toAggregatedMetricSpy).toHaveBeenCalledWith(undefined);
+        expect(toAggregatedMetricSpy).toHaveBeenCalledWith();
       });
     });
   });

@@ -39,6 +39,12 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ResponsivePieChart } from './ResponsivePieChart';
 import { useLanguage } from '../../hooks/useLanguage';
 
+/** Coerces unknown/missing values to a finite number for safe UI math (NaN → 0). */
+function toSafeFiniteNumber(value: unknown): number {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) ? n : 0;
+}
+
 const InfoComponent = ({ timestamp }: { timestamp: string }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -118,7 +124,12 @@ export const ScorecardHomepageCardComponent = ({
       ),
     })) ?? [];
 
-  const { entitiesConsidered, calculationErrorCount } = scorecard.result;
+  const entitiesConsidered = toSafeFiniteNumber(
+    scorecard.result.entitiesConsidered,
+  );
+  const calculationErrorCount = toSafeFiniteNumber(
+    scorecard.result.calculationErrorCount,
+  );
   const healthyCount = Math.max(0, entitiesConsidered - calculationErrorCount);
 
   const subheaderLink = (
@@ -158,7 +169,9 @@ export const ScorecardHomepageCardComponent = ({
       description={description}
       {...(showInfo
         ? {
-            info: <InfoComponent timestamp={scorecard.result.timestamp} />,
+            info: (
+              <InfoComponent timestamp={scorecard.result.timestamp ?? ''} />
+            ),
           }
         : {})}
     >

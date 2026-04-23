@@ -305,8 +305,8 @@ export function getHomepageEntityCalculationHealthText(
       .homepageEntityCalculationHealth ??
     scorecardMessages.metric.homepageEntityCalculationHealth;
   return template
-    .replace(/\{\{healthy\}\}/g, healthy)
-    .replace(/\{\{total\}\}/g, total);
+    .replaceAll('{{healthy}}', healthy)
+    .replaceAll('{{total}}', total);
 }
 
 /** Snapshot for the scorecard card on the drill-down page when permission is missing (no entity count in UI). */
