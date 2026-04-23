@@ -16,7 +16,10 @@
 
 import { extensionsMessages } from '../alpha/translations/ref';
 
-function flattenMessages(obj: any, prefix = ''): Record<string, string> {
+function flattenMessages(
+  obj: Record<string, unknown>,
+  prefix = '',
+): Record<string, string> {
   const result: Record<string, string> = {};
 
   for (const key in obj) {
@@ -24,9 +27,12 @@ function flattenMessages(obj: any, prefix = ''): Record<string, string> {
       const newKey = prefix ? `${prefix}.${key}` : key;
 
       if (typeof obj[key] === 'object' && obj[key] !== null) {
-        Object.assign(result, flattenMessages(obj[key], newKey));
+        Object.assign(
+          result,
+          flattenMessages(obj[key] as Record<string, unknown>, newKey),
+        );
       } else {
-        result[newKey] = obj[key];
+        result[newKey] = String(obj[key]);
       }
     }
   }
@@ -36,7 +42,10 @@ function flattenMessages(obj: any, prefix = ''): Record<string, string> {
 
 const flattenedMessages = flattenMessages(extensionsMessages);
 
-export const mockT = (key: string, params?: any) => {
+export const mockT = (
+  key: string,
+  params?: Record<string, string | number | boolean>,
+) => {
   let message = flattenedMessages[key] || key;
 
   if (params) {

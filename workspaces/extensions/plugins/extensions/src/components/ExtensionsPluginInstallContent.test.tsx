@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
 import { TestApiProvider } from '@backstage/test-utils';
@@ -51,11 +51,6 @@ jest.mock('../hooks/usePluginConfigurationPermissions', () => ({
   usePluginConfigurationPermissions: jest.fn(),
 }));
 
-jest.mock('./CodeEditorContext', () => ({
-  useCodeEditor: jest.fn(),
-  CodeEditorContextProvider: ({ children }: any) => children,
-}));
-
 jest.mock('../hooks/useExtensionsConfiguration', () => ({
   useExtensionsConfiguration: jest.fn(),
 }));
@@ -72,18 +67,26 @@ jest.mock('@backstage/core-plugin-api', () => {
   };
 });
 
-const mockCodeEditorSetValue = jest.fn();
+/** Stable editor API so `onLoaded` useCallback stays stable across re-renders; otherwise
+ *  CodeEditorCard's useEffect([onLoad]) re-runs every render and `onLoaded` clears
+ *  `installationError` right after a failed install. */
+let mockEditorContent = '';
+const mockCodeEditorSetValue = jest.fn((value: string) => {
+  mockEditorContent = value;
+});
+const mockCodeEditorApi = {
+  setValue: mockCodeEditorSetValue,
+  getValue: jest.fn(() => mockEditorContent),
+};
 
 jest.mock('./CodeEditorContext', () => ({
-  useCodeEditor: () => ({
-    setValue: mockCodeEditorSetValue,
-    getValue: jest.fn(),
-  }),
-  CodeEditorContextProvider: ({ children }: any) => children,
+  useCodeEditor: () => mockCodeEditorApi,
+  CodeEditorContextProvider: ({ children }: { children: ReactNode }) =>
+    children,
 }));
 
 jest.mock('./CodeEditorCard', () => ({
-  CodeEditorCard: ({ onLoad }: any) => {
+  CodeEditorCard: ({ onLoad }: { onLoad?: () => void }) => {
     useEffect(() => {
       onLoad?.();
     }, [onLoad]);
@@ -93,6 +96,7 @@ jest.mock('./CodeEditorCard', () => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockEditorContent = '';
   usePluginConfigMock.mockReturnValue({
     isLoading: false,
     data: {},
@@ -111,6 +115,11 @@ beforeEach(() => {
     data: {
       enabled: true,
     },
+  });
+
+  // Default hook return so tests are isolated (order-safe) and destructuring never breaks.
+  useInstallPluginMock.mockReturnValue({
+    mutateAsync: jest.fn().mockResolvedValue({ status: 'OK' }),
   });
 });
 

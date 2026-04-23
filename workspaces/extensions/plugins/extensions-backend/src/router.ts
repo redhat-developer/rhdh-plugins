@@ -94,7 +94,7 @@ export async function createRouter(
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
     resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
     permissions: extensionsPermissions,
-    rules: Object.values(extensionRules),
+    rules: Object.values(extensionRules) as any,
   });
   router.use(express.json());
   router.use(permissionsIntegrationRouter);
