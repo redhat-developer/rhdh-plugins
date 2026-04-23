@@ -119,6 +119,45 @@ states:
   };
 }
 
+export function generateTestWorkflowInfoForEventypeNoStartStateNameStates(
+  id: string = 'test_workflowId',
+): WorkflowInfo {
+  return {
+    id: id,
+    source: `# yaml-language-server: $schema=https://raw.githubusercontent.com/serverlessworkflow/specification/refs/heads/0.8.x/schema/workflow.json
+id: lock-flow
+specVersion: "0.8"
+key: lock-flow
+version: "1.0.0"
+events:
+  - type: notify-event
+    kind: produced
+    name: notify-event
+    correlation:
+      - contextAttributeName: lockid
+functions:
+  - name: sysLog
+    type: custom
+    operation: sysout:INFO
+start:
+  stateName: listenToLock
+states:
+  - name: notifyLock
+    type: operation
+    actions:
+      - eventRef:
+          triggerEventRef: notify-event
+      - functionRef:
+          refName: sysLog
+          arguments:
+    transition: waitForRelease
+    end:
+      produceEvents:
+        - eventRef: released-event
+          data: '{test: "testYOOOOOOOOOOOOOOOO"}'`,
+  };
+}
+
 export function generateTestWorkflowInfoForEventypeNoEventRef(
   id: string = 'test_workflowId',
 ): WorkflowInfo {

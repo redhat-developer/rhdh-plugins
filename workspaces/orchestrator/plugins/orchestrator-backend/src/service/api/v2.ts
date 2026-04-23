@@ -219,7 +219,17 @@ export class V2 {
 
       // Parse the definition to find the start param then determine things from there
       // All workflows should have this start param
-      const start = parsedDefinitionSource.start;
+      /**
+       * When a workflow is compiled, the start value will look like this:
+       *
+       * start:
+       *   stateName: "Start State Name"
+       *
+       * Note: This doesn't matter if it is JSON or YAML.
+       * Need to test for both params since we need to be able to test.
+       */
+      const start =
+        parsedDefinitionSource.start?.stateName || parsedDefinitionSource.start;
 
       // Find the start state from the list of states
       const startState = parsedDefinitionSource.states.filter(
