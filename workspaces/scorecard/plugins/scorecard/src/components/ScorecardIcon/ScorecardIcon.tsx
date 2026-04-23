@@ -18,15 +18,16 @@ import Box from '@mui/material/Box';
 import MuiIcon from '@mui/material/Icon';
 import type { SvgIconComponent } from '@mui/icons-material';
 import type { SxProps, Theme } from '@mui/material/styles';
-
-import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
-import WarningAmber from '@mui/icons-material/WarningAmber';
-import DangerousOutlined from '@mui/icons-material/DangerousOutlined';
+import {
+  ScorecardSuccessStatusIcon,
+  ScorecardWarningStatusIcon,
+  ScorecardErrorStatusIcon,
+} from '../..';
 
 const builtInIcons: Record<string, SvgIconComponent> = {
-  scorecardSuccessStatusIcon: CheckCircleOutline,
-  scorecardWarningStatusIcon: WarningAmber,
-  scorecardErrorStatusIcon: DangerousOutlined,
+  scorecardSuccessStatusIcon: ScorecardSuccessStatusIcon,
+  scorecardWarningStatusIcon: ScorecardWarningStatusIcon,
+  scorecardErrorStatusIcon: ScorecardErrorStatusIcon,
 };
 
 /**
