@@ -53,6 +53,41 @@ export const lightspeedMessages = {
   'notebooks.updated.days': 'Updated {{days}} days ago',
   'notebooks.updated.on': 'Updated on',
 
+  // Notebook view
+  'notebook.view.title': 'Untitled notebook',
+  'notebook.view.close': 'Close notebook',
+  'notebook.view.documents.count': '{{count}} Documents',
+  'notebook.view.documents.add': 'Add',
+  'notebook.view.upload.heading': 'Upload a resource to get started',
+  'notebook.view.upload.action': 'Upload a resource',
+  'notebook.view.input.placeholder': 'Ask about your documents...',
+  'notebook.view.sidebar.collapse': 'Collapse sidebar',
+  'notebook.view.sidebar.expand': 'Expand sidebar',
+  'notebook.view.sidebar.resize': 'Resize sidebar',
+  'notebook.view.documents.uploading': 'Uploading document',
+  'notebook.upload.success': '{{fileName}} Successfully Uploaded.',
+  'notebook.upload.failed': '{{fileName}} Upload Failed.',
+
+  // Notebook upload modal
+  'notebook.upload.modal.title': 'Add a document to Notebook',
+  'notebook.upload.modal.dragDropTitle': 'Drag and drop files here',
+  'notebook.upload.modal.browseButton': 'Upload',
+  'notebook.upload.modal.separator': 'or',
+  'notebook.upload.modal.infoText':
+    'Accepted file types: .md, .txt, .pdf, .json, .yaml, .log',
+  'notebook.upload.error.unsupportedType':
+    'Upload error: Unsupported file type(s) found. Please upload only supported file types.',
+  'notebook.upload.error.fileTooLarge':
+    'Upload error: File size exceeds 25 MB limit.',
+  'notebook.upload.error.tooManyFiles':
+    'Upload error: Maximum of {{max}} files allowed.',
+
+  // Notebook overwrite modal
+  'notebook.overwrite.modal.title': 'Overwrite Files?',
+  'notebook.overwrite.modal.description':
+    'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
+  'notebook.overwrite.modal.action': 'Overwrite',
+
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',
   'prompts.codeReadability.message':

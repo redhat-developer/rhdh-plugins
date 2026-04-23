@@ -54,6 +54,43 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebooks.updated.yesterday': '1日前に更新',
     'notebooks.updated.days': '{{days}}日前に更新',
     'notebooks.updated.on': '更新日',
+
+    // Notebook view
+    'notebook.view.title': '無題のノートブック',
+    'notebook.view.close': 'ノートブックを閉じる',
+    'notebook.view.documents.count': '{{count}} 件のドキュメント',
+    'notebook.view.documents.add': '追加',
+    'notebook.view.upload.heading':
+      'リソースをアップロードして開始してください',
+    'notebook.view.upload.action': 'リソースをアップロード',
+    'notebook.view.input.placeholder': 'ドキュメントについて質問する...',
+    'notebook.view.sidebar.collapse': 'サイドバーを折りたたむ',
+    'notebook.view.sidebar.expand': 'サイドバーを展開する',
+    'notebook.view.sidebar.resize': 'サイドバーのサイズを変更する',
+    'notebook.view.documents.uploading': 'ドキュメントをアップロード中',
+    'notebook.upload.success': '{{fileName}} のアップロードに成功しました。',
+    'notebook.upload.failed': '{{fileName}} のアップロードに失敗しました。',
+
+    // Notebook upload modal
+    'notebook.upload.modal.title': 'ノートブックにドキュメントを追加',
+    'notebook.upload.modal.dragDropTitle': 'ここにファイルをドラッグ&ドロップ',
+    'notebook.upload.modal.browseButton': 'アップロード',
+    'notebook.upload.modal.separator': 'または',
+    'notebook.upload.modal.infoText':
+      '対応ファイル形式: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.error.unsupportedType':
+      'アップロードエラー: サポートされていないファイル形式が見つかりました。サポートされているファイル形式のみをアップロードしてください。',
+    'notebook.upload.error.fileTooLarge':
+      'アップロードエラー: ファイルサイズが 25 MB の制限を超えています。',
+    'notebook.upload.error.tooManyFiles':
+      'アップロードエラー: 最大 {{max}} ファイルまで許可されています。',
+
+    // Notebook overwrite modal
+    'notebook.overwrite.modal.title': 'ファイルを上書きしますか？',
+    'notebook.overwrite.modal.description':
+      '以下のファイルはこのノートブックに既に存在します。新しいバージョンで上書きしますか？',
+    'notebook.overwrite.modal.action': '上書き',
+
     'prompts.codeReadability.title': 'コードの可読性に関するヘルプを利用する',
     'prompts.codeReadability.message':
       'コードの可読性と保守性を高めるための手法を提案してくれませんか?',

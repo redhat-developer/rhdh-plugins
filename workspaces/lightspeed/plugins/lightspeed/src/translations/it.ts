@@ -55,6 +55,43 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebooks.updated.yesterday': 'Aggiornato 1 giorno fa',
     'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',
     'notebooks.updated.on': 'Aggiornato il',
+
+    // Notebook view
+    'notebook.view.title': 'Quaderno senza titolo',
+    'notebook.view.close': 'Chiudi quaderno',
+    'notebook.view.documents.count': '{{count}} Documenti',
+    'notebook.view.documents.add': 'Aggiungi',
+    'notebook.view.upload.heading': 'Carica una risorsa per iniziare',
+    'notebook.view.upload.action': 'Carica una risorsa',
+    'notebook.view.input.placeholder':
+      'Chiedi informazioni sui tuoi documenti...',
+    'notebook.view.sidebar.collapse': 'Comprimi barra laterale',
+    'notebook.view.sidebar.expand': 'Espandi barra laterale',
+    'notebook.view.sidebar.resize': 'Ridimensiona barra laterale',
+    'notebook.view.documents.uploading': 'Caricamento documento',
+    'notebook.upload.success': '{{fileName}} caricato con successo.',
+    'notebook.upload.failed': 'Caricamento di {{fileName}} non riuscito.',
+
+    // Notebook upload modal
+    'notebook.upload.modal.title': 'Aggiungi un documento al quaderno',
+    'notebook.upload.modal.dragDropTitle': 'Trascina e rilascia i file qui',
+    'notebook.upload.modal.browseButton': 'Carica',
+    'notebook.upload.modal.separator': 'o',
+    'notebook.upload.modal.infoText':
+      'Tipi di file accettati: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.error.unsupportedType':
+      'Errore di caricamento: trovati tipi di file non supportati. Caricare solo tipi di file supportati.',
+    'notebook.upload.error.fileTooLarge':
+      'Errore di caricamento: la dimensione del file supera il limite di 25 MB.',
+    'notebook.upload.error.tooManyFiles':
+      'Errore di caricamento: sono consentiti al massimo {{max}} file.',
+
+    // Notebook overwrite modal
+    'notebook.overwrite.modal.title': 'Sovrascrivere i file?',
+    'notebook.overwrite.modal.description':
+      'I seguenti file esistono già in questo quaderno. Vuoi sovrascriverli con le nuove versioni?',
+    'notebook.overwrite.modal.action': 'Sovrascrivi',
+
     'prompts.codeReadability.title':
       'Ottenere aiuto sulla leggibilità del codice',
     'prompts.codeReadability.message':

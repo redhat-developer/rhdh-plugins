@@ -51,6 +51,7 @@ export const lightspeedPlugin: BackstagePlugin<
     lightspeedConversation: SubRouteRef<
       PathParams<'/conversation/:conversationId'>
     >;
+    lightspeedNotebooks: SubRouteRef<undefined>;
   },
   {},
   {}

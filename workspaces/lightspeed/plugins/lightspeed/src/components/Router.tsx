@@ -29,6 +29,7 @@ export const Router = () => {
         path="/conversation/:conversationId"
         element={<LightspeedPage />}
       />
+      <Route path="/notebooks" element={<LightspeedPage />} />
     </Routes>
   );
 };
