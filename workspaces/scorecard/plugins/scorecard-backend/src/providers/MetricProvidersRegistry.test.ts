@@ -24,8 +24,8 @@ import {
   MockNumberProvider,
   MockBooleanProvider,
   MockBatchBooleanProvider,
-  githubBatchProvider,
-  githubBatchMetrics,
+  filecheckBatchProvider,
+  filecheckBatchMetrics,
 } from '../../__fixtures__/mockProviders';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 
@@ -146,34 +146,34 @@ describe('MetricProvidersRegistry', () => {
 
     describe('batch providers', () => {
       it('should register batch provider with multiple metric IDs', () => {
-        expect(() => registry.register(githubBatchProvider)).not.toThrow();
+        expect(() => registry.register(filecheckBatchProvider)).not.toThrow();
 
-        expect(registry.listMetrics()).toEqual(githubBatchMetrics);
+        expect(registry.listMetrics()).toEqual(filecheckBatchMetrics);
       });
 
       it('should store batch provider under each metric ID', () => {
-        registry.register(githubBatchProvider);
+        registry.register(filecheckBatchProvider);
 
         // Should be able to get the same provider instance for each metric ID
-        const provider1 = registry.getProvider('github.files_check.readme');
-        const provider2 = registry.getProvider('github.files_check.license');
-        const provider3 = registry.getProvider('github.files_check.codeowners');
+        const provider1 = registry.getProvider('filecheck.readme');
+        const provider2 = registry.getProvider('filecheck.license');
+        const provider3 = registry.getProvider('filecheck.codeowners');
 
-        expect(provider1).toBe(githubBatchProvider);
-        expect(provider2).toBe(githubBatchProvider);
-        expect(provider3).toBe(githubBatchProvider);
+        expect(provider1).toBe(filecheckBatchProvider);
+        expect(provider2).toBe(filecheckBatchProvider);
+        expect(provider3).toBe(filecheckBatchProvider);
       });
 
       it('should throw ConflictError when batch provider metric ID conflicts with existing', () => {
         const existingProvider = new MockBooleanProvider(
-          'github.files_check.readme',
+          'filecheck.readme',
           'github',
         );
         registry.register(existingProvider);
 
-        expect(() => registry.register(githubBatchProvider)).toThrow(
+        expect(() => registry.register(filecheckBatchProvider)).toThrow(
           new ConflictError(
-            "Metric provider with ID 'github.files_check.readme' has already been registered",
+            "Metric provider with ID 'filecheck.readme' has already been registered",
           ),
         );
       });
@@ -181,15 +181,12 @@ describe('MetricProvidersRegistry', () => {
       it('should throw error when metric ID from getMetricIds has no corresponding metric', () => {
         class InvalidBatchProvider extends MockBatchBooleanProvider {
           getMetricIds(): string[] {
-            return [
-              'github.files_check.readme',
-              'github.files_check.nonexistent',
-            ];
+            return ['filecheck.readme', 'filecheck.nonexistent'];
           }
           getMetrics() {
             return [
               {
-                id: 'github.files_check.readme',
+                id: 'filecheck.readme',
                 title: 'README',
                 description: 'README check',
                 type: 'boolean' as const,
@@ -200,12 +197,12 @@ describe('MetricProvidersRegistry', () => {
 
         const invalidProvider = new InvalidBatchProvider(
           'github',
-          'github.files_check',
+          'filecheck',
           [],
         );
 
         expect(() => registry.register(invalidProvider)).toThrow(
-          "Invalid metric provider: metric ID 'github.files_check.nonexistent' returned by getMetricIds() " +
+          "Invalid metric provider: metric ID 'filecheck.nonexistent' returned by getMetricIds() " +
             'does not have a corresponding metric in getMetrics()',
         );
       });
@@ -229,7 +226,7 @@ describe('MetricProvidersRegistry', () => {
 
         const invalidProvider = new InvalidBatchProvider(
           'github',
-          'github.files_check',
+          'filecheck',
           [],
         );
 
@@ -279,17 +276,15 @@ describe('MetricProvidersRegistry', () => {
     });
 
     it('should return specific metric from batch provider', () => {
-      registry.register(githubBatchProvider);
+      registry.register(filecheckBatchProvider);
 
-      const readmeMetric = registry.getMetric('github.files_check.readme');
-      const licenseMetric = registry.getMetric('github.files_check.license');
-      const codeownersMetric = registry.getMetric(
-        'github.files_check.codeowners',
-      );
+      const readmeMetric = registry.getMetric('filecheck.readme');
+      const licenseMetric = registry.getMetric('filecheck.license');
+      const codeownersMetric = registry.getMetric('filecheck.codeowners');
 
-      expect(readmeMetric).toEqual(githubBatchMetrics[0]);
-      expect(licenseMetric).toEqual(githubBatchMetrics[1]);
-      expect(codeownersMetric).toEqual(githubBatchMetrics[2]);
+      expect(readmeMetric).toEqual(filecheckBatchMetrics[0]);
+      expect(licenseMetric).toEqual(filecheckBatchMetrics[1]);
+      expect(codeownersMetric).toEqual(filecheckBatchMetrics[2]);
     });
   });
 
@@ -413,14 +408,14 @@ describe('MetricProvidersRegistry', () => {
     });
 
     it('should deduplicate batch providers that are stored under multiple metric IDs', () => {
-      registry.register(githubBatchProvider);
+      registry.register(filecheckBatchProvider);
       registry.register(jiraBooleanProvider);
 
       const providers = registry.listProviders();
 
       // Should only have 2 providers, not 4 (batch provider has 3 metric IDs)
       expect(providers).toHaveLength(2);
-      expect(providers).toContain(githubBatchProvider);
+      expect(providers).toContain(filecheckBatchProvider);
       expect(providers).toContain(jiraBooleanProvider);
     });
   });
@@ -478,7 +473,7 @@ describe('MetricProvidersRegistry', () => {
     describe('with batch providers', () => {
       beforeEach(() => {
         registry = new MetricProvidersRegistry();
-        registry.register(githubBatchProvider);
+        registry.register(filecheckBatchProvider);
         registry.register(jiraBooleanProvider);
       });
 
@@ -487,22 +482,22 @@ describe('MetricProvidersRegistry', () => {
 
         expect(metrics).toHaveLength(4); // 3 from batch + 1 from jira
         expect(metrics.map(m => m.id)).toEqual([
-          'github.files_check.readme',
-          'github.files_check.license',
-          'github.files_check.codeowners',
+          'filecheck.readme',
+          'filecheck.license',
+          'filecheck.codeowners',
           'jira.boolean_metric',
         ]);
       });
 
       it('should return specific batch provider metrics when filtered', () => {
         const metrics = registry.listMetrics([
-          'github.files_check.readme',
-          'github.files_check.codeowners',
+          'filecheck.readme',
+          'filecheck.codeowners',
         ]);
 
         expect(metrics).toHaveLength(2);
-        expect(metrics[0].id).toBe('github.files_check.readme');
-        expect(metrics[1].id).toBe('github.files_check.codeowners');
+        expect(metrics[0].id).toBe('filecheck.readme');
+        expect(metrics[1].id).toBe('filecheck.codeowners');
       });
 
       it('should not duplicate metrics from batch providers', () => {
@@ -566,7 +561,7 @@ describe('MetricProvidersRegistry', () => {
     describe('with batch providers', () => {
       beforeEach(() => {
         registry = new MetricProvidersRegistry();
-        registry.register(githubBatchProvider);
+        registry.register(filecheckBatchProvider);
         registry.register(githubNumberProvider);
         registry.register(jiraBooleanProvider);
       });
@@ -575,11 +570,9 @@ describe('MetricProvidersRegistry', () => {
         const metrics = registry.listMetricsByDatasource('github');
 
         expect(metrics).toHaveLength(4); // 3 from batch + 1 from number provider
-        expect(metrics.map(m => m.id)).toContain('github.files_check.readme');
-        expect(metrics.map(m => m.id)).toContain('github.files_check.license');
-        expect(metrics.map(m => m.id)).toContain(
-          'github.files_check.codeowners',
-        );
+        expect(metrics.map(m => m.id)).toContain('filecheck.readme');
+        expect(metrics.map(m => m.id)).toContain('filecheck.license');
+        expect(metrics.map(m => m.id)).toContain('filecheck.codeowners');
         expect(metrics.map(m => m.id)).toContain('github.number_metric');
       });
 

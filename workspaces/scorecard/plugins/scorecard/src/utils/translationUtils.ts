@@ -28,7 +28,7 @@ type ScorecardTranslationFunction = TranslationFunction<
  * 2. Parent key with instance suffix as name param:
  *    for a metric ID with 3+ dot-separated segments, strips the suffix after
  *    the first two segments and tries metric.base.field with name = suffix.
- *    E.g. github.files_check.readme tries metric.github.files_check.title
+ *    E.g. filecheck.readme tries metric.filecheck.title
  *    with name = readme.
  * 3. Falls back to `fallback` when provided, otherwise returns the raw
  *    translation key.

@@ -14,10 +14,24 @@
  * limitations under the License.
  */
 
-/**
- * The files check backend module for the scorecard plugin.
- *
- * @packageDocumentation
- */
+import {
+  type ThresholdConfig,
+  ScorecardThresholdRuleColors,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export { scorecardModuleFilesCheck as default } from './module';
+export const DEFAULT_FILECHECK_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    {
+      key: 'exist',
+      expression: '==true',
+      color: ScorecardThresholdRuleColors.SUCCESS,
+      icon: 'scorecardSuccessStatusIcon',
+    },
+    {
+      key: 'missing',
+      expression: '==false',
+      color: ScorecardThresholdRuleColors.ERROR,
+      icon: 'scorecardErrorStatusIcon',
+    },
+  ],
+};

@@ -25,8 +25,8 @@ const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
     drillDown: RouteRef<{
-      aggregationId: string;
       metricId: string;
+      aggregationId: string;
     }>;
   },
   {},
@@ -169,8 +169,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.github.open_prs.description': string;
     readonly 'metric.jira.open_issues.title': string;
     readonly 'metric.jira.open_issues.description': string;
-    readonly 'metric.github.files_check.title': string;
-    readonly 'metric.github.files_check.description': string;
+    readonly 'metric.filecheck.title': string;
+    readonly 'metric.filecheck.description': string;
     readonly 'metric.lastUpdated': string;
     readonly 'metric.lastUpdatedNotAvailable': string;
     readonly 'metric.someEntitiesNotReportingValues': string;

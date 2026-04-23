@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-export type FileCheckEntry = {
-  id: string;
-  path: string;
-};
+/**
+ * The filecheck backend module for the scorecard plugin.
+ *
+ * @packageDocumentation
+ */
 
-export type FilesCheckConfig = {
-  files: FileCheckEntry[];
-};
+export { scorecardModuleFilecheck as default } from './module';

@@ -18,8 +18,8 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import type { UrlReaderService } from '@backstage/backend-plugin-api';
 import { NotFoundError } from '@backstage/errors';
-import { FilesCheckProvider } from './FilesCheckProvider';
-import { DEFAULT_FILE_CHECK_THRESHOLDS } from './config';
+import { FilecheckProvider } from './FilecheckProvider';
+import { DEFAULT_FILECHECK_THRESHOLDS } from './config';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -78,12 +78,12 @@ const mockEntity: Entity = {
   },
 };
 
-describe('FilesCheckProvider', () => {
+describe('FilecheckProvider', () => {
   describe('fromConfig', () => {
     const mockUrlReader = createMockUrlReader(new Set());
 
     it('should return undefined when no files configuration is provided', () => {
-      const provider = FilesCheckProvider.fromConfig(
+      const provider = FilecheckProvider.fromConfig(
         new ConfigReader({}),
         mockUrlReader,
       );
@@ -91,9 +91,9 @@ describe('FilesCheckProvider', () => {
     });
 
     it('should return undefined when files array is empty', () => {
-      const provider = FilesCheckProvider.fromConfig(
+      const provider = FilecheckProvider.fromConfig(
         new ConfigReader({
-          scorecard: { plugins: { files_check: { files: [] } } },
+          scorecard: { plugins: { filecheck: { files: [] } } },
         }),
         mockUrlReader,
       );
@@ -104,19 +104,19 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [{ readme: 'README.md' }, { license: 'LICENSE' }],
             },
           },
         },
       });
 
-      const provider = FilesCheckProvider.fromConfig(config, mockUrlReader);
+      const provider = FilecheckProvider.fromConfig(config, mockUrlReader);
 
       expect(provider).toBeDefined();
       expect(provider?.getMetricIds()).toEqual([
-        'files_check.readme',
-        'files_check.license',
+        'filecheck.readme',
+        'filecheck.license',
       ]);
     });
 
@@ -124,14 +124,12 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: { files: [{ bad: 'path/with"quote.txt' }] },
+            filecheck: { files: [{ bad: 'path/with"quote.txt' }] },
           },
         },
       });
 
-      expect(() =>
-        FilesCheckProvider.fromConfig(config, mockUrlReader),
-      ).toThrow(
+      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
         "Invalid file path for 'bad': path must not contain newlines, quotes, or backslashes",
       );
     });
@@ -140,14 +138,12 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: { files: [{ bad: 'path/with\nnewline' }] },
+            filecheck: { files: [{ bad: 'path/with\nnewline' }] },
           },
         },
       });
 
-      expect(() =>
-        FilesCheckProvider.fromConfig(config, mockUrlReader),
-      ).toThrow(
+      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
         "Invalid file path for 'bad': path must not contain newlines, quotes, or backslashes",
       );
     });
@@ -156,16 +152,14 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [{ bad: String.raw`path\file.txt` }],
             },
           },
         },
       });
 
-      expect(() =>
-        FilesCheckProvider.fromConfig(config, mockUrlReader),
-      ).toThrow(
+      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
         "Invalid file path for 'bad': path must not contain newlines, quotes, or backslashes",
       );
     });
@@ -174,14 +168,12 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: { files: [{ bad: '/absolute/path.txt' }] },
+            filecheck: { files: [{ bad: '/absolute/path.txt' }] },
           },
         },
       });
 
-      expect(() =>
-        FilesCheckProvider.fromConfig(config, mockUrlReader),
-      ).toThrow(
+      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
         "Invalid file path for 'bad': path must be relative without leading './' or '/'",
       );
     });
@@ -190,14 +182,12 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: { files: [{ bad: './relative/path.txt' }] },
+            filecheck: { files: [{ bad: './relative/path.txt' }] },
           },
         },
       });
 
-      expect(() =>
-        FilesCheckProvider.fromConfig(config, mockUrlReader),
-      ).toThrow(
+      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
         "Invalid file path for 'bad': path must be relative without leading './' or '/'",
       );
     });
@@ -206,28 +196,28 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [{ readme: 'README.md', license: 'LICENSE' }],
             },
           },
         },
       });
 
-      expect(() =>
-        FilesCheckProvider.fromConfig(config, mockUrlReader),
-      ).toThrow('Each file config entry must have exactly one key-value pair');
+      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
+        'Each file config entry must have exactly one key-value pair',
+      );
     });
   });
 
   describe('provider methods', () => {
-    let provider: FilesCheckProvider;
+    let provider: FilecheckProvider;
     const mockUrlReader = createMockUrlReader(new Set());
 
     beforeEach(() => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [
                 { readme: 'README.md' },
                 { codeowners: 'CODEOWNERS' },
@@ -237,15 +227,15 @@ describe('FilesCheckProvider', () => {
           },
         },
       });
-      provider = FilesCheckProvider.fromConfig(config, mockUrlReader)!;
+      provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
     });
 
     it('should return correct provider ID', () => {
-      expect(provider.getProviderId()).toBe('files_check');
+      expect(provider.getProviderId()).toBe('filecheck');
     });
 
     it('should return correct datasource ID', () => {
-      expect(provider.getProviderDatasourceId()).toBe('files_check');
+      expect(provider.getProviderDatasourceId()).toBe('filecheck');
     });
 
     it('should return correct metric type', () => {
@@ -254,15 +244,15 @@ describe('FilesCheckProvider', () => {
 
     it('should return all metric IDs', () => {
       expect(provider.getMetricIds()).toEqual([
-        'files_check.readme',
-        'files_check.codeowners',
-        'files_check.dockerfile',
+        'filecheck.readme',
+        'filecheck.codeowners',
+        'filecheck.dockerfile',
       ]);
     });
 
     it('should return default file check thresholds', () => {
       expect(provider.getMetricThresholds()).toEqual(
-        DEFAULT_FILE_CHECK_THRESHOLDS,
+        DEFAULT_FILECHECK_THRESHOLDS,
       );
     });
 
@@ -277,14 +267,14 @@ describe('FilesCheckProvider', () => {
 
       expect(metrics).toHaveLength(3);
       expect(metrics[0]).toEqual({
-        id: 'files_check.readme',
+        id: 'filecheck.readme',
         title: 'File: README.md',
         description: 'Checks if README.md exists in the repository.',
         type: 'boolean',
         history: true,
       });
       expect(metrics[1]).toEqual({
-        id: 'files_check.codeowners',
+        id: 'filecheck.codeowners',
         title: 'File: CODEOWNERS',
         description: 'Checks if CODEOWNERS exists in the repository.',
         type: 'boolean',
@@ -296,7 +286,7 @@ describe('FilesCheckProvider', () => {
       const metric = provider.getMetric();
 
       expect(metric).toEqual({
-        id: 'files_check.readme',
+        id: 'filecheck.readme',
         title: 'File: README.md',
         description: 'Checks if README.md exists in the repository.',
         type: 'boolean',
@@ -315,18 +305,18 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [{ readme: 'README.md' }, { license: 'LICENSE' }],
             },
           },
         },
       });
-      const provider = FilesCheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
 
       const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('files_check.readme')).toBe(true);
-      expect(result.get('files_check.license')).toBe(false);
+      expect(result.get('filecheck.readme')).toBe(true);
+      expect(result.get('filecheck.license')).toBe(false);
     });
 
     it('should check all configured files', async () => {
@@ -340,7 +330,7 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [
                 { readme: 'README.md' },
                 { license: 'LICENSE' },
@@ -351,14 +341,14 @@ describe('FilesCheckProvider', () => {
           },
         },
       });
-      const provider = FilesCheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
 
       const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('files_check.readme')).toBe(true);
-      expect(result.get('files_check.license')).toBe(true);
-      expect(result.get('files_check.codeowners')).toBe(false);
-      expect(result.get('files_check.dockerfile')).toBe(true);
+      expect(result.get('filecheck.readme')).toBe(true);
+      expect(result.get('filecheck.license')).toBe(true);
+      expect(result.get('filecheck.codeowners')).toBe(false);
+      expect(result.get('filecheck.dockerfile')).toBe(true);
       expect(mockUrlReader.readUrl).toHaveBeenCalledTimes(4);
     });
 
@@ -372,13 +362,13 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [{ readme: 'README.md' }],
             },
           },
         },
       });
-      const provider = FilesCheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         'Auth failure',
@@ -394,13 +384,13 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [{ readme: 'README.md' }, { license: 'LICENSE' }],
             },
           },
         },
       });
-      const provider = FilesCheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
 
       const result = await provider.calculateMetric(mockEntity);
 
@@ -413,13 +403,13 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [{ readme: 'README.md' }],
             },
           },
         },
       });
-      const provider = FilesCheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
 
       const result = await provider.calculateMetric(mockEntity);
 
@@ -443,17 +433,17 @@ describe('FilesCheckProvider', () => {
       const config = new ConfigReader({
         scorecard: {
           plugins: {
-            files_check: {
+            filecheck: {
               files: [{ readme: 'README.md' }],
             },
           },
         },
       });
-      const provider = FilesCheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
 
       const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('files_check.readme')).toBe(true);
+      expect(result.get('filecheck.readme')).toBe(true);
     });
   });
 });

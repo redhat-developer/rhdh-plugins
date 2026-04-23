@@ -98,16 +98,16 @@ describe('useMetricDisplayLabels', () => {
 
   describe('parent key cascading lookup', () => {
     const fileCheckMetric = {
-      id: 'github.files_check.readme',
+      id: 'filecheck.readme',
       title: 'GitHub File: README.md',
       description: 'Checks if README.md exists in the repository.',
     };
 
     it('should resolve via parent key when exact key has no translation', () => {
       mockT.mockImplementation((key: string, params?: { name?: string }) => {
-        if (key === 'metric.github.files_check.title')
+        if (key === 'metric.filecheck.title')
           return `File Check: ${params?.name}`;
-        if (key === 'metric.github.files_check.description')
+        if (key === 'metric.filecheck.description')
           return `Checks if ${params?.name} exists`;
         return key;
       });
@@ -124,9 +124,9 @@ describe('useMetricDisplayLabels', () => {
 
     it('should prefer exact key over parent key', () => {
       mockT.mockImplementation((key: string, params?: { name?: string }) => {
-        if (key === 'metric.github.files_check.readme.title')
+        if (key === 'metric.filecheck.readme.title')
           return 'Exact README Title';
-        if (key === 'metric.github.files_check.title')
+        if (key === 'metric.filecheck.title')
           return `File Check: ${params?.name}`;
         return key;
       });

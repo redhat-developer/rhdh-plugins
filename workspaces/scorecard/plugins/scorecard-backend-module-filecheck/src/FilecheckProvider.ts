@@ -25,8 +25,8 @@ import {
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { DEFAULT_FILE_CHECK_THRESHOLDS } from './config';
-import { FileCheckEntry, FilesCheckConfig } from './types';
+import { DEFAULT_FILECHECK_THRESHOLDS } from './config';
+import { FilecheckEntry, FilecheckConfig } from './types';
 
 const INVALID_PATH_CHARS = /[\n\r"\\]/;
 
@@ -73,33 +73,33 @@ function ensureBranchRef(target: string, integration: ScmIntegration): string {
   return `${target.replace(/\/$/, '')}${suffix}`;
 }
 
-export class FilesCheckProvider implements MetricProvider<'boolean'> {
+export class FilecheckProvider implements MetricProvider<'boolean'> {
   private readonly urlReader: UrlReaderService;
   private readonly integrations: ScmIntegrations;
   private readonly thresholds: ThresholdConfig;
-  private readonly filesConfig: FilesCheckConfig;
+  private readonly filesConfig: FilecheckConfig;
 
   private constructor(
     urlReader: UrlReaderService,
     integrations: ScmIntegrations,
-    filesConfig: FilesCheckConfig,
+    filesConfig: FilecheckConfig,
   ) {
     this.urlReader = urlReader;
     this.integrations = integrations;
     this.filesConfig = filesConfig;
-    this.thresholds = DEFAULT_FILE_CHECK_THRESHOLDS;
+    this.thresholds = DEFAULT_FILECHECK_THRESHOLDS;
   }
 
   getProviderDatasourceId(): string {
-    return 'files_check';
+    return 'filecheck';
   }
 
   getProviderId(): string {
-    return 'files_check';
+    return 'filecheck';
   }
 
   getMetricIds(): string[] {
-    return this.filesConfig.files.map(f => `files_check.${f.id}`);
+    return this.filesConfig.files.map(f => `filecheck.${f.id}`);
   }
 
   getMetricType(): 'boolean' {
@@ -112,7 +112,7 @@ export class FilesCheckProvider implements MetricProvider<'boolean'> {
 
   getMetrics(): Metric<'boolean'>[] {
     return this.filesConfig.files.map(f => ({
-      id: `files_check.${f.id}`,
+      id: `filecheck.${f.id}`,
       title: `File: ${f.path}`,
       description: `Checks if ${f.path} exists in the repository.`,
       type: 'boolean' as const,
@@ -154,7 +154,7 @@ export class FilesCheckProvider implements MetricProvider<'boolean'> {
 
     await Promise.all(
       this.filesConfig.files.map(async file => {
-        const metricId = `files_check.${file.id}`;
+        const metricId = `filecheck.${file.id}`;
         const fileUrl = integration.resolveUrl({
           url: `/${file.path}`,
           base: baseUrl,
@@ -179,16 +179,16 @@ export class FilesCheckProvider implements MetricProvider<'boolean'> {
   static fromConfig(
     config: Config,
     urlReader: UrlReaderService,
-  ): FilesCheckProvider | undefined {
+  ): FilecheckProvider | undefined {
     const filesConfig = config.getOptionalConfigArray(
-      'scorecard.plugins.files_check.files',
+      'scorecard.plugins.filecheck.files',
     );
 
     if (!filesConfig || filesConfig.length === 0) {
       return undefined;
     }
 
-    const fileConfigs: FileCheckEntry[] = filesConfig.map(fileConfig => {
+    const fileConfigs: FilecheckEntry[] = filesConfig.map(fileConfig => {
       const keys = fileConfig.keys();
       if (keys.length !== 1) {
         throw new Error(
@@ -203,7 +203,7 @@ export class FilesCheckProvider implements MetricProvider<'boolean'> {
 
     const integrations = ScmIntegrations.fromConfig(config);
 
-    return new FilesCheckProvider(urlReader, integrations, {
+    return new FilecheckProvider(urlReader, integrations, {
       files: fileConfigs,
     });
   }

@@ -85,51 +85,6 @@ This metric counts all pull requests that are currently in an "open" state for t
                 expression: '<10'
   ```
 
-### GitHub File Checks (`github.files_check.*`)
-
-This metric provider checks whether specific files exist in a repository. It's useful for enforcing best practices like having a `README.md`, `LICENSE`, `CODEOWNERS`, or other required files.
-
-- **Metric ID**: `github.files_check.<file_id>` (e.g., `github.files_check.readme`)
-- **Type**: Boolean
-- **Datasource**: `github`
-- **Default thresholds**:
-  - `success`: File exists (`==true`)
-  - `error`: File is missing (`==false`)
-
-#### Configuration
-
-To enable file checks, add a `files_check` configuration in your `app-config.yaml`:
-
-```yaml
-# app-config.yaml
-scorecard:
-  plugins:
-    github:
-      files_check:
-        files:
-          - readme: 'README.md'
-          - license: 'LICENSE'
-          - codeowners: 'CODEOWNERS'
-          - dockerfile: 'Dockerfile'
-```
-
-Each entry in the `files` array creates a separate metric:
-
-- The **key** (e.g., `readme`) becomes the metric identifier suffix (`github.files_check.readme`)
-- The **value** (e.g., `README.md`) is the file path to check in the repository
-
-#### File Path Format
-
-File paths must be relative to the repository root:
-
-| Format           | Example                | Valid |
-| ---------------- | ---------------------- | ----- |
-| Root file        | `README.md`            | ✅    |
-| Subdirectory     | `docs/CONTRIBUTING.md` | ✅    |
-| Hidden file      | `.gitignore`           | ✅    |
-| With `./` prefix | `./README.md`          | ❌    |
-| Absolute path    | `/home/file.txt`       | ❌    |
-
 ## Configuration
 
 ### Threshold Configuration
@@ -145,16 +100,6 @@ scorecard:
   plugins:
     github:
       open_prs:
-        schedule:
-          frequency:
-            cron: '0 6 * * *'
-          timeout:
-            minutes: 5
-          initialDelay:
-            seconds: 5
-      files_check:
-        files:
-          - readme: 'README.md'
         schedule:
           frequency:
             cron: '0 6 * * *'

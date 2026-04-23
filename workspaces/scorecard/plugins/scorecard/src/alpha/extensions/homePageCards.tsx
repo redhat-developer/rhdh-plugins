@@ -47,15 +47,15 @@ function AggregatedCardWithGithubOpenPrsContent() {
   return <ScorecardHomepageCardWithProvider aggregationId="openPrsKpi" />;
 }
 
-function AggregatedCardWithGithubFilesCheckLicenseContent() {
+function AggregatedCardWithGithubFilecheckLicenseContent() {
   return (
     <ScorecardHomepageCardWithProvider aggregationId="licenseFileExistsKpi" />
   );
 }
 
-function AggregatedCardWithGithubFilesCheckCodeownersContent() {
+function AggregatedCardWithGithubFilecheckCodeownersContent() {
   return (
-    <ScorecardHomepageCardWithProvider aggregationId="files_check.codeowners" />
+    <ScorecardHomepageCardWithProvider aggregationId="filecheck.codeowners" />
   );
 }
 
@@ -148,14 +148,14 @@ export const aggregatedCardWithGithubOpenPrsWidget =
   });
 
 /**
- * NFS widget: AggregatedCardWithGithubFilesCheckLicense.
+ * NFS widget: AggregatedCardWithGithubFilecheckLicense.
  * @alpha
  */
-export const aggregatedCardWithGithubFilesCheckLicenseWidget =
+export const aggregatedCardWithGithubFilecheckLicenseWidget =
   HomePageWidgetBlueprint.make({
-    name: 'scorecard-github-files-check-license',
+    name: 'scorecard-github-filecheck-license',
     params: {
-      name: 'AggregatedCardWithGithubFilesCheckLicense',
+      name: 'AggregatedCardWithGithubFilecheckLicense',
       title: 'Scorecard: LICENSE file exists',
       layout: defaultCardLayout,
       componentProps: {
@@ -163,20 +163,20 @@ export const aggregatedCardWithGithubFilesCheckLicenseWidget =
       },
       components: () =>
         Promise.resolve({
-          Content: AggregatedCardWithGithubFilesCheckLicenseContent,
+          Content: AggregatedCardWithGithubFilecheckLicenseContent,
         }),
     },
   });
 
 /**
- * NFS widget: AggregatedCardWithGithubFilesCheckCodeowners.
+ * NFS widget: AggregatedCardWithGithubFilecheckCodeowners.
  * @alpha
  */
-export const aggregatedCardWithGithubFilesCheckCodeownersWidget =
+export const aggregatedCardWithGithubFilecheckCodeownersWidget =
   HomePageWidgetBlueprint.make({
-    name: 'scorecard-github-files-check-codeowners',
+    name: 'scorecard-github-filecheck-codeowners',
     params: {
-      name: 'AggregatedCardWithGithubFilesCheckCodeowners',
+      name: 'AggregatedCardWithGithubFilecheckCodeowners',
       title: 'Scorecard: CODEOWNERS file exists',
       layout: defaultCardLayout,
       componentProps: {
@@ -184,7 +184,7 @@ export const aggregatedCardWithGithubFilesCheckCodeownersWidget =
       },
       components: () =>
         Promise.resolve({
-          Content: AggregatedCardWithGithubFilesCheckCodeownersContent,
+          Content: AggregatedCardWithGithubFilecheckCodeownersContent,
         }),
     },
   });

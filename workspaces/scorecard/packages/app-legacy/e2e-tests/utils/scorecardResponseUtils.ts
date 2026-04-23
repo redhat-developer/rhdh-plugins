@@ -509,7 +509,7 @@ export const jiraEntitiesDrillDownNoDataResponse = {
 
 export const fileCheckScorecardResponse = [
   {
-    id: 'github.files_check.readme',
+    id: 'filecheck.readme',
     status: 'success',
     metadata: {
       title: 'GitHub File: README.md',
@@ -543,7 +543,7 @@ export const fileCheckScorecardResponse = [
     },
   },
   {
-    id: 'github.files_check.codeowners',
+    id: 'filecheck.codeowners',
     status: 'success',
     metadata: {
       title: 'GitHub File: CODEOWNERS',

@@ -202,7 +202,7 @@ scorecard:
       title: License File Exists KPI
       type: statusGrouped
       description: This KPI is provide information about whether the license file exists in the repository.
-      metricId: github.files_check.license
+      metricId: filecheck.license
   plugins:
     jira:
       open_issues:
@@ -216,11 +216,11 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 5 }
-      files_check:
-        files:
-          - license: 'LICENSE'
-          - codeowners: 'CODEOWNERS'
-        schedule:
-          frequency: { minutes: 5 }
-          timeout: { minutes: 10 }
-          initialDelay: { seconds: 5 }
+    filecheck:
+      files:
+        - license: 'LICENSE'
+        - codeowners: 'CODEOWNERS'
+      schedule:
+        frequency: { minutes: 5 }
+        timeout: { minutes: 10 }
+        initialDelay: { seconds: 5 }

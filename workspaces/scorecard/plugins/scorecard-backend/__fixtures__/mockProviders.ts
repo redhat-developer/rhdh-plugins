@@ -211,9 +211,9 @@ export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
   }
 }
 
-export const githubBatchProvider = new MockBatchBooleanProvider(
-  'github',
-  'github.files_check',
+export const filecheckBatchProvider = new MockBatchBooleanProvider(
+  'filecheck',
+  'filecheck',
   [
     { id: 'readme', path: 'README.md' },
     { id: 'license', path: 'LICENSE' },
@@ -221,21 +221,21 @@ export const githubBatchProvider = new MockBatchBooleanProvider(
   ],
 );
 
-export const githubBatchMetrics = [
+export const filecheckBatchMetrics = [
   {
-    id: 'github.files_check.readme',
+    id: 'filecheck.readme',
     title: 'File: README.md',
     description: 'Checks if README.md exists.',
     type: 'boolean' as const,
   },
   {
-    id: 'github.files_check.license',
+    id: 'filecheck.license',
     title: 'File: LICENSE',
     description: 'Checks if LICENSE exists.',
     type: 'boolean' as const,
   },
   {
-    id: 'github.files_check.codeowners',
+    id: 'filecheck.codeowners',
     title: 'File: CODEOWNERS',
     description: 'Checks if CODEOWNERS exists.',
     type: 'boolean' as const,

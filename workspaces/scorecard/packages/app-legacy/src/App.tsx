@@ -220,7 +220,7 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-github.files_check.license',
+      id: 'scorecard-filecheck.license',
       title: 'Scorecard: LICENSE file exists',
       cardLayout: {
         width: {
@@ -243,14 +243,14 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'github.files_check.license',
+        aggregationId: 'filecheck.license',
       },
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-github.files_check.codeowners',
+      id: 'scorecard-filecheck.codeowners',
       title: 'Scorecard: CODEOWNERS file exists',
       cardLayout: {
         width: {
@@ -273,7 +273,7 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6, x: 4 },
       },
       props: {
-        aggregationId: 'github.files_check.codeowners',
+        aggregationId: 'filecheck.codeowners',
       },
     },
   },
@@ -313,8 +313,8 @@ const mountPoints: HomePageCardMountPoint[] = [
               default: 'github.open_prs',
               enum: [
                 'github.open_prs',
-                'github.files_check.license',
-                'github.files_check.codeowners',
+                'filecheck.license',
+                'filecheck.codeowners',
               ],
             },
           },

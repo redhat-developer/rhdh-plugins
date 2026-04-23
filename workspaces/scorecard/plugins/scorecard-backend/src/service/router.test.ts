@@ -785,8 +785,8 @@ describe('createRouter', () => {
 
     it('should use registry.getMetric to resolve the correct metric for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
-        'github',
-        'github.files_check',
+        'filecheck',
+        'filecheck',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -807,13 +807,13 @@ describe('createRouter', () => {
       batchApp.use(mockErrorHandler());
 
       const response = await request(batchApp).get(
-        '/metrics/github.files_check.license/catalog/aggregations',
+        '/metrics/filecheck.license/catalog/aggregations',
       );
 
       expect(response.status).toBe(200);
       expect(toAggregatedMetricResultSpy).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: 'github.files_check.license',
+          id: 'filecheck.license',
           title: 'File: LICENSE',
         }),
         batchProvider.getMetricThresholds(),
@@ -987,8 +987,8 @@ describe('createRouter', () => {
 
     it('should resolve the correct metric for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
-        'github',
-        'github.files_check',
+        'filecheck',
+        'filecheck',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -1009,13 +1009,13 @@ describe('createRouter', () => {
       batchApp.use(mockErrorHandler());
 
       const response = await request(batchApp).get(
-        '/aggregations/github.files_check.license',
+        '/aggregations/filecheck.license',
       );
 
       expect(response.status).toBe(200);
       expect(getAggregatedSpy).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
-        'github.files_check.license',
+        'filecheck.license',
         aggregationTypes.statusGrouped,
       );
     });
@@ -1139,8 +1139,8 @@ describe('createRouter', () => {
 
     it('should resolve the correct metric metadata for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
-        'github',
-        'github.files_check',
+        'filecheck',
+        'filecheck',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -1161,7 +1161,7 @@ describe('createRouter', () => {
       batchMetaApp.use(mockErrorHandler());
 
       const response = await request(batchMetaApp).get(
-        '/aggregations/github.files_check.license/metadata',
+        '/aggregations/filecheck.license/metadata',
       );
 
       expect(response.status).toBe(200);

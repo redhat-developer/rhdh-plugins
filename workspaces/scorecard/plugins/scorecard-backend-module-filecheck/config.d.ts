@@ -21,7 +21,7 @@ export interface Config {
     /** Configuration for scorecard plugins/datasources */
     plugins?: {
       /** File existence check configuration */
-      files_check?: {
+      filecheck?: {
         /** File existence checks configuration */
         files?: Array<{
           /** Key is the metric identifier, value is the file path */

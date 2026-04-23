@@ -273,11 +273,11 @@ test.describe('Scorecard Plugin Tests', () => {
       const missingLabel = translations.thresholds.missing ?? 'Missing';
 
       const readmeTitle = evaluateMessage(
-        translations.metric['github.files_check'].title,
+        translations.metric.filecheck.title,
         'readme',
       );
       const readmeDescription = evaluateMessage(
-        translations.metric['github.files_check'].description,
+        translations.metric.filecheck.description,
         'readme',
       );
 
@@ -295,11 +295,11 @@ test.describe('Scorecard Plugin Tests', () => {
       ).toBeVisible();
 
       const codeownersTitle = evaluateMessage(
-        translations.metric['github.files_check'].title,
+        translations.metric.filecheck.title,
         'codeowners',
       );
       const codeownersDescription = evaluateMessage(
-        translations.metric['github.files_check'].description,
+        translations.metric.filecheck.description,
         'codeowners',
       );
 

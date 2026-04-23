@@ -18,11 +18,11 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { FilesCheckProvider } from './FilesCheckProvider';
+import { FilecheckProvider } from './FilecheckProvider';
 
-export const scorecardModuleFilesCheck = createBackendModule({
+export const scorecardModuleFilecheck = createBackendModule({
   pluginId: 'scorecard',
-  moduleId: 'files-check',
+  moduleId: 'filecheck',
   register(reg) {
     reg.registerInit({
       deps: {
@@ -31,7 +31,7 @@ export const scorecardModuleFilesCheck = createBackendModule({
         metrics: scorecardMetricsExtensionPoint,
       },
       async init({ config, urlReader, metrics }) {
-        const provider = FilesCheckProvider.fromConfig(config, urlReader);
+        const provider = FilecheckProvider.fromConfig(config, urlReader);
         if (provider) {
           metrics.addMetricProvider(provider);
         }

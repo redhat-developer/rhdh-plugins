@@ -44,37 +44,33 @@ describe('resolveMetricTranslation', () => {
 
   it('returns parent translation with name param for 3-segment metric IDs', () => {
     const t = createMockT({
-      'metric.github.files_check.title': 'GitHub file check: {{name}}',
+      'metric.filecheck.title': 'GitHub file check: {{name}}',
     });
 
     expect(
-      resolveMetricTranslation(t as any, 'github.files_check.readme', 'title'),
+      resolveMetricTranslation(t as any, 'filecheck.readme', 'title'),
     ).toBe('GitHub file check: readme');
   });
 
   it('returns parent translation for description field', () => {
     const t = createMockT({
-      'metric.github.files_check.description':
+      'metric.filecheck.description':
         'Checks whether the {{name}} file exists in the repository.',
     });
 
     expect(
-      resolveMetricTranslation(
-        t as any,
-        'github.files_check.readme',
-        'description',
-      ),
+      resolveMetricTranslation(t as any, 'filecheck.readme', 'description'),
     ).toBe('Checks whether the readme file exists in the repository.');
   });
 
   it('prefers exact match over parent match', () => {
     const t = createMockT({
-      'metric.github.files_check.readme.title': 'README file check',
-      'metric.github.files_check.title': 'GitHub file check: {{name}}',
+      'metric.filecheck.readme.title': 'README file check',
+      'metric.filecheck.title': 'GitHub file check: {{name}}',
     });
 
     expect(
-      resolveMetricTranslation(t as any, 'github.files_check.readme', 'title'),
+      resolveMetricTranslation(t as any, 'filecheck.readme', 'title'),
     ).toBe('README file check');
   });
 
@@ -165,13 +161,13 @@ describe('resolveMetricTranslation', () => {
 
   it('prefers parent translation over fallback', () => {
     const t = createMockT({
-      'metric.github.files_check.title': 'GitHub file check: {{name}}',
+      'metric.filecheck.title': 'GitHub file check: {{name}}',
     });
 
     expect(
       resolveMetricTranslation(
         t as any,
-        'github.files_check.readme',
+        'filecheck.readme',
         'title',
         'Fallback Title',
       ),

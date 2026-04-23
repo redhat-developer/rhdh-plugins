@@ -22,8 +22,8 @@ import { CatalogMetricService } from './CatalogMetricService';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
-  githubBatchProvider,
-  githubBatchMetrics,
+  filecheckBatchProvider,
+  filecheckBatchMetrics,
 } from '../../__fixtures__/mockProviders';
 import {
   buildMockDatabaseMetricValues,
@@ -455,18 +455,18 @@ describe('CatalogMetricService', () => {
 
   describe('getLatestEntityMetrics with batch providers', () => {
     it('should return correct per-metric metadata for batch provider metrics', async () => {
-      const batchMetricsList = githubBatchMetrics.map(m => ({
+      const batchMetricsList = filecheckBatchMetrics.map(m => ({
         id: m.id,
       })) as Metric[];
 
       mockedRegistry = buildMockMetricProvidersRegistry({
-        provider: githubBatchProvider,
+        provider: filecheckBatchProvider,
         metricsList: batchMetricsList,
       });
 
-      mockedRegistry.getProvider.mockReturnValue(githubBatchProvider);
+      mockedRegistry.getProvider.mockReturnValue(filecheckBatchProvider);
       mockedRegistry.getMetric.mockImplementation((metricId: string) => {
-        const found = githubBatchMetrics.find(m => m.id === metricId);
+        const found = filecheckBatchMetrics.find(m => m.id === metricId);
         if (!found) throw new Error(`Metric ${metricId} not found`);
         return found;
       });
@@ -475,7 +475,7 @@ describe('CatalogMetricService', () => {
         {
           id: 1,
           catalog_entity_ref: 'component:default/test-component',
-          metric_id: 'github.files_check.readme',
+          metric_id: 'filecheck.readme',
           value: true,
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           error_message: null,
@@ -484,7 +484,7 @@ describe('CatalogMetricService', () => {
         {
           id: 2,
           catalog_entity_ref: 'component:default/test-component',
-          metric_id: 'github.files_check.license',
+          metric_id: 'filecheck.license',
           value: false,
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           error_message: null,
@@ -515,14 +515,14 @@ describe('CatalogMetricService', () => {
 
       expect(results).toHaveLength(2);
 
-      expect(results[0].id).toBe('github.files_check.readme');
+      expect(results[0].id).toBe('filecheck.readme');
       expect(results[0].metadata.title).toBe('File: README.md');
       expect(results[0].metadata.description).toBe(
         'Checks if README.md exists.',
       );
       expect(results[0].metadata.type).toBe('boolean');
 
-      expect(results[1].id).toBe('github.files_check.license');
+      expect(results[1].id).toBe('filecheck.license');
       expect(results[1].metadata.title).toBe('File: LICENSE');
       expect(results[1].metadata.description).toBe('Checks if LICENSE exists.');
       expect(results[1].metadata.type).toBe('boolean');

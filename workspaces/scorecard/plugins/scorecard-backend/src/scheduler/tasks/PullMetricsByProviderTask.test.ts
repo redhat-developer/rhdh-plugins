@@ -442,8 +442,8 @@ describe('PullMetricsByProviderTask', () => {
 
       beforeEach(() => {
         mockBatchProvider = new MockBatchBooleanProvider(
-          'github',
-          'github.files_check',
+          'filecheck',
+          'filecheck',
           [
             { id: 'readme', path: 'README.md' },
             { id: 'license', path: 'LICENSE' },
@@ -498,25 +498,25 @@ describe('PullMetricsByProviderTask', () => {
           expect.arrayContaining([
             expect.objectContaining({
               catalog_entity_ref: 'component:default/test1',
-              metric_id: 'github.files_check.readme',
+              metric_id: 'filecheck.readme',
               value: true,
               status: 'success',
             }),
             expect.objectContaining({
               catalog_entity_ref: 'component:default/test1',
-              metric_id: 'github.files_check.license',
+              metric_id: 'filecheck.license',
               value: true,
               status: 'success',
             }),
             expect.objectContaining({
               catalog_entity_ref: 'component:default/test2',
-              metric_id: 'github.files_check.readme',
+              metric_id: 'filecheck.readme',
               value: true,
               status: 'success',
             }),
             expect.objectContaining({
               catalog_entity_ref: 'component:default/test2',
-              metric_id: 'github.files_check.license',
+              metric_id: 'filecheck.license',
               value: true,
               status: 'success',
             }),
@@ -552,22 +552,22 @@ describe('PullMetricsByProviderTask', () => {
           expect.arrayContaining([
             expect.objectContaining({
               catalog_entity_ref: 'component:default/test1',
-              metric_id: 'github.files_check.readme',
+              metric_id: 'filecheck.readme',
               error_message: 'GitHub API error',
             }),
             expect.objectContaining({
               catalog_entity_ref: 'component:default/test1',
-              metric_id: 'github.files_check.license',
+              metric_id: 'filecheck.license',
               error_message: 'GitHub API error',
             }),
             expect.objectContaining({
               catalog_entity_ref: 'component:default/test2',
-              metric_id: 'github.files_check.readme',
+              metric_id: 'filecheck.readme',
               error_message: 'GitHub API error',
             }),
             expect.objectContaining({
               catalog_entity_ref: 'component:default/test2',
-              metric_id: 'github.files_check.license',
+              metric_id: 'filecheck.license',
               error_message: 'GitHub API error',
             }),
           ]),
@@ -592,7 +592,7 @@ describe('PullMetricsByProviderTask', () => {
           expect.arrayContaining([
             expect.objectContaining({
               catalog_entity_ref: 'component:default/test1',
-              metric_id: 'github.files_check.readme',
+              metric_id: 'filecheck.readme',
               value: true,
               error_message: 'Threshold evaluation failed',
             }),
@@ -608,7 +608,7 @@ describe('PullMetricsByProviderTask', () => {
             name: 'disabled-all',
             annotations: {
               'scorecard.io/disabled-metrics':
-                'github.files_check.readme,github.files_check.license',
+                'filecheck.readme,filecheck.license',
             },
           },
         };
@@ -640,7 +640,7 @@ describe('PullMetricsByProviderTask', () => {
           metadata: {
             name: 'partial-disabled',
             annotations: {
-              'scorecard.io/disabled-metrics': 'github.files_check.license',
+              'scorecard.io/disabled-metrics': 'filecheck.license',
             },
           },
         };
@@ -660,7 +660,7 @@ describe('PullMetricsByProviderTask', () => {
         expect(createMetricValuesSpy).toHaveBeenCalledWith([
           expect.objectContaining({
             catalog_entity_ref: 'component:default/partial-disabled',
-            metric_id: 'github.files_check.readme',
+            metric_id: 'filecheck.readme',
             value: true,
           }),
         ]);
@@ -671,7 +671,7 @@ describe('PullMetricsByProviderTask', () => {
           data: {
             scorecard: {
               schedule: scheduleConfig,
-              disabledMetrics: ['github.files_check.license'],
+              disabledMetrics: ['filecheck.license'],
             },
           },
         });
@@ -699,8 +699,8 @@ describe('PullMetricsByProviderTask', () => {
         const metricIds = savedRecords.map(
           (r: { metric_id: string }) => r.metric_id,
         );
-        expect(metricIds).not.toContain('github.files_check.license');
-        expect(metricIds).toContain('github.files_check.readme');
+        expect(metricIds).not.toContain('filecheck.license');
+        expect(metricIds).toContain('filecheck.readme');
       });
 
       it('should create error records only for enabled metrics when batch calculation fails and some metrics are disabled', async () => {
@@ -714,7 +714,7 @@ describe('PullMetricsByProviderTask', () => {
           metadata: {
             name: 'partial-disabled',
             annotations: {
-              'scorecard.io/disabled-metrics': 'github.files_check.license',
+              'scorecard.io/disabled-metrics': 'filecheck.license',
             },
           },
         };
@@ -734,7 +734,7 @@ describe('PullMetricsByProviderTask', () => {
         expect(createMetricValuesSpy).toHaveBeenCalledWith([
           expect.objectContaining({
             catalog_entity_ref: 'component:default/partial-disabled',
-            metric_id: 'github.files_check.readme',
+            metric_id: 'filecheck.readme',
             error_message: 'GitHub API error',
           }),
         ]);
@@ -753,7 +753,7 @@ describe('PullMetricsByProviderTask', () => {
         await (task as any).start();
 
         expect((task as any).getScheduleFromConfig).toHaveBeenCalledWith(
-          'scorecard.plugins.github.files_check.schedule',
+          'scorecard.plugins.filecheck.schedule',
         );
       });
     });
