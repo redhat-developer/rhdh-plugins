@@ -25,7 +25,7 @@ import {
   costPluginPermissions,
 } from '@red-hat-developer-hub/plugin-cost-management-common/permissions';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
-import { getTokenFromApi } from '../util/tokenUtil';
+import { getTokenFromApi, SsoAuthenticationError } from '../util/tokenUtil';
 import { DEFAULT_COST_MANAGEMENT_PROXY_BASE_URL } from '../util/constant';
 import { resolveActor, emitAuditLog } from '../util/auditLog';
 
@@ -410,6 +410,15 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
       return res.send(await upstreamResponse.text());
     } catch (error) {
       options.logger.error('Secure proxy error', error);
+
+      if (error instanceof SsoAuthenticationError) {
+        return res.status(502).json({
+          error:
+            'Unable to authenticate with the hybrid cloud console. ' +
+            'Please check your service account credentials (clientId/clientSecret) in the RHDH Cost Management configuration.',
+        });
+      }
+
       return res.status(500).json({ error: 'Internal proxy error' });
     }
   };

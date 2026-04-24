@@ -55,12 +55,14 @@
     "typescript": "^5.9.0"
   },
   "resolutions": {
+    "isolated-vm": "^6.0.1",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@backstage/backend-plugin-api": "1.5.0",
     "@backstage/backend-defaults": "0.13.2",
     "@backstage/plugin-auth-node": "0.6.10",
-    "@backstage/plugin-permission-backend": "0.7.3"
+    "@backstage/plugin-permission-backend": "0.7.3",
+    "@backstage/core-app-api": "1.19.2"
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {

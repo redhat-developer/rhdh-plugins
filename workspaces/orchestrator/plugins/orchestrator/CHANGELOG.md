@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.4
+
+### Patch Changes
+
+- fb708f1: Fix UI styling issues in worfkflow results page
+
+## 5.7.3
+
+### Patch Changes
+
+- 69ca919: Simplify workflows tab layout by rendering `WorkflowsTable` directly inside `Content` instead of an extra MUI `Grid` wrapper.
+- Updated dependencies [652fac0]
+- Updated dependencies [4aec634]
+- Updated dependencies [d85bf56]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.1
+
 ## 5.7.2
 
 ### Patch Changes

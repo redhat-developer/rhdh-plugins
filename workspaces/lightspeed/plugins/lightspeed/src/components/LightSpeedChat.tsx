@@ -29,6 +29,7 @@ import {
   FileRejection,
   type DropEvent as ReactDropzoneDropEvent,
 } from 'react-dropzone';
+import { useMatch, useNavigate } from 'react-router-dom';
 
 import { Button, makeStyles } from '@material-ui/core';
 import {
@@ -73,7 +74,11 @@ import {
 } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { supportedFileTypes, TEMP_CONVERSATION_ID } from '../const';
+import {
+  supportedFileTypes,
+  TEMP_CONVERSATION_ID,
+  UNTITLED_NOTEBOOK_NAME,
+} from '../const';
 import {
   useBackstageUserIdentity,
   useConversationMessages,
@@ -87,11 +92,13 @@ import {
   useSortSettings,
   useStopConversation,
 } from '../hooks';
+import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
+import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
-import { ConversationSummary } from '../types';
+import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
   getCategorizeMessages,
@@ -107,6 +114,7 @@ import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 import { McpServersSettings } from './McpServersSettings';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebooksTab } from './notebooks/NotebooksTab';
+import { NotebookView } from './notebooks/NotebookView';
 import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
@@ -126,6 +134,13 @@ const useStyles = makeStyles(theme => ({
   },
   errorContainer: {
     padding: theme.spacing(3),
+  },
+  drawerFileDropZone: {
+    gap: 0,
+    rowGap: 0,
+    columnGap: 0,
+    '--pf-v6-c-multiple-file-upload--Gap': '0',
+    '--pf-v5-c-multiple-file-upload--Gap': '0',
   },
   headerMenu: {
     // align hamburger icon with title
@@ -235,6 +250,12 @@ const useStyles = makeStyles(theme => ({
     borderRadius: theme.spacing(1.5),
     display: 'flex',
     flexDirection: 'column',
+    '&:hover': {
+      borderColor: 'var(--pf-t--global--border--color--hover)',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      cursor: 'pointer',
+    },
   },
   notebookCardHeader: {
     padding: theme.spacing(2),
@@ -452,10 +473,14 @@ export const LightspeedChat = ({
   const isMobile = useIsMobile();
   const classes = useStyles();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<number>(
+    notebooksRouteMatch ? 1 : 0,
+  );
   const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
     useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
@@ -468,8 +493,15 @@ export const LightspeedChat = ({
   );
   const [renameNotebookId, setRenameNotebookId] = useState<string | null>(null);
   const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null);
+  const [activeNotebook, setActiveNotebook] = useState<NotebookSession | null>(
+    null,
+  );
   const [notebookAlerts, setNotebookAlerts] = useState<Partial<AlertProps>[]>(
     [],
+  );
+  const createNotebookMutation = useCreateNotebook();
+  const { data: notebookDocuments = [] } = useNotebookDocuments(
+    activeNotebook?.session_id,
   );
   const [conversationId, setConversationId] = useState<string>('');
   const [requestId, setRequestId] = useState<string>('');
@@ -509,9 +541,40 @@ export const LightspeedChat = ({
   ) => {
     const nextTab = Number(tabIndex);
     setActiveTab(nextTab);
-    if (nextTab === 1 && notebooksPermissionResolved) {
-      refetchNotebooks();
+    if (nextTab === 1) {
+      navigate('/lightspeed/notebooks');
+      if (notebooksPermissionResolved) {
+        refetchNotebooks();
+      }
+    } else {
+      navigate(
+        routeConversationId
+          ? `/lightspeed/conversation/${routeConversationId}`
+          : '/lightspeed',
+      );
     }
+  };
+
+  const handleCreateNotebook = useCallback(() => {
+    createNotebookMutation.mutate(
+      { name: UNTITLED_NOTEBOOK_NAME },
+      {
+        onSuccess: (session: NotebookSession) => {
+          setActiveNotebook(session);
+        },
+      },
+    );
+  }, [createNotebookMutation]);
+
+  const handleCloseNotebook = useCallback(() => {
+    setActiveNotebook(null);
+    refetchNotebooks();
+  }, [refetchNotebooks]);
+
+  const handleRemoveNotebookAlert = (key: React.Key) => {
+    setNotebookAlerts(prevAlerts =>
+      prevAlerts.filter(alert => alert.key !== key),
+    );
   };
 
   const handleNotebookDeleted = () => {
@@ -520,12 +583,6 @@ export const LightspeedChat = ({
       { title: t('notebooks.delete.toast'), variant: 'success', key },
       ...prevAlerts,
     ]);
-  };
-
-  const handleRemoveNotebookAlert = (key: React.Key) => {
-    setNotebookAlerts(prevAlerts =>
-      prevAlerts.filter(alert => alert.key !== key),
-    );
   };
   // Open the chat history drawer when entering fullscreen mode on desktop
   useEffect(() => {
@@ -1200,10 +1257,6 @@ export const LightspeedChat = ({
     ],
   );
 
-  const getDocumentsCount = (documentIds?: string[]) => {
-    return Array.isArray(documentIds) ? documentIds.length : 0;
-  };
-
   const handleAttach = (data: File[], event: ReactDropzoneDropEvent) => {
     if (
       'preventDefault' in event &&
@@ -1379,6 +1432,8 @@ export const LightspeedChat = ({
               variant={AlertVariant[variant ?? 'success']}
               title={title}
               className={classes.toastAlert}
+              timeout={8000}
+              onTimeout={() => handleRemoveNotebookAlert(key as React.Key)}
               actionClose={
                 <AlertActionCloseButton
                   title={title as string}
@@ -1529,6 +1584,7 @@ export const LightspeedChat = ({
             }
             drawerContent={
               <FileDropZone
+                className={classes.drawerFileDropZone}
                 onFileDrop={(e, data) => handleAttach(data, e)}
                 displayMode={ChatbotDisplayMode.embedded}
                 infoText={t('chatbox.fileUpload.infoText')}
@@ -1555,17 +1611,30 @@ export const LightspeedChat = ({
         )}
         {showNotebooksPanel &&
           !notebooksPermissionLoading &&
-          hasNotebooksAccess && (
+          hasNotebooksAccess &&
+          activeNotebook && (
+            <NotebookView
+              sessionId={activeNotebook.session_id}
+              notebookName={activeNotebook.name}
+              documents={notebookDocuments}
+              onClose={handleCloseNotebook}
+            />
+          )}
+        {showNotebooksPanel &&
+          !notebooksPermissionLoading &&
+          hasNotebooksAccess &&
+          !activeNotebook && (
             <NotebooksTab
               notebooks={notebooks}
               hasNotebooks={hasNotebooks}
               classes={classes}
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
+              onSelectNotebook={setActiveNotebook}
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}
+              onCreateNotebook={handleCreateNotebook}
               t={t}
-              getDocumentsCount={getDocumentsCount}
             />
           )}
         {showNotebooksPanel &&

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { useQuery } from '@tanstack/react-query';
-
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
+import { useQuery } from '@tanstack/react-query';
 
 import { useExtensionsApi } from './useExtensionsApi';
 

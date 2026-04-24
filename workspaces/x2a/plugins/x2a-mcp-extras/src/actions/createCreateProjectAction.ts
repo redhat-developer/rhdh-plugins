@@ -73,15 +73,40 @@ The init phase cannot be started automatically from this tool - the user must vi
       output: z =>
         z.object({
           id: z.string().describe('UUID of the newly created project.'),
-          name: z.string(),
-          abbreviation: z.string(),
-          description: z.string().optional(),
-          sourceRepoUrl: z.string(),
-          targetRepoUrl: z.string(),
-          sourceRepoBranch: z.string(),
-          targetRepoBranch: z.string(),
-          createdBy: z.string(),
-          createdAt: z.string(),
+          name: z.string().describe('Full name of the project.'),
+          abbreviation: z
+            .string()
+            .describe(
+              'Short abbreviation for the project (used in labels and URLs).',
+            ),
+          description: z
+            .string()
+            .optional()
+            .describe('Human-readable description of the migration project.'),
+          sourceRepoUrl: z
+            .string()
+            .describe(
+              'Clone URL of the legacy source repository to migrate from.',
+            ),
+          targetRepoUrl: z
+            .string()
+            .describe(
+              'Clone URL of the target repository where migrated content is pushed.',
+            ),
+          sourceRepoBranch: z
+            .string()
+            .describe('Git branch to read from in the source repository.'),
+          targetRepoBranch: z
+            .string()
+            .describe('Git branch to write to in the target repository.'),
+          createdBy: z
+            .string()
+            .describe(
+              'Backstage user entity reference of the project owner (e.g. user:default/jane).',
+            ),
+          createdAt: z
+            .string()
+            .describe('ISO 8601 timestamp when the project was created.'),
           projectDetailsUrl: z
             .string()
             .describe(

@@ -1,7 +1,7 @@
 {
   "name": "@red-hat-developer-hub/translations-cli",
   "description": "CLI tools for translation workflows with our TMS.",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "backstage": {
     "role": "cli"
   },

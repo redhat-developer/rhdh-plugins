@@ -110,20 +110,23 @@ run_x2a() {
   ERROR_MESSAGE=""
 }
 
-# Authenticated git wrappers.
-# Use url.<auth>.insteadOf to inject the token at the transport layer only.
-# The -c flag is transient (applies only to that git invocation), so the
-# token never appears in remote URLs, git config, or generated files like
-# Policyfile.lock.json. This works across GitHub, GitLab, and Bitbucket
-# because git natively handles the https://token@host URL format.
+# Authenticated git wrappers using credential helper.
+# Backstage provides tokens in format "username:password" where:
+# - GitHub:    "git:token"           (username is ignored, token is used)
+# - GitLab:    "oauth2:token"        (username oauth2, token is the actual token)
+# - Bitbucket: "x-token-auth:token"  (username x-token-auth, token is the actual token)
 git_source_repo() {
-  local auth_url="https://${SOURCE_REPO_TOKEN}@${SOURCE_REPO_URL#https://}"
-  git -c "url.${auth_url}.insteadOf=${SOURCE_REPO_URL}" "$@"
+  local username="${SOURCE_REPO_TOKEN%%:*}"
+  local password="${SOURCE_REPO_TOKEN#*:}"
+
+  git -c "credential.helper=!f() { test \"\$1\" = get && printf 'username=${username}\\npassword=${password}\\n'; }; f" "$@"
 }
 
 git_target_repo() {
-  local auth_url="https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}"
-  git -c "url.${auth_url}.insteadOf=${TARGET_REPO_URL}" "$@"
+  local username="${TARGET_REPO_TOKEN%%:*}"
+  local password="${TARGET_REPO_TOKEN#*:}"
+
+  git -c "credential.helper=!f() { test \"\$1\" = get && printf 'username=${username}\\npassword=${password}\\n'; }; f" "$@"
 }
 
 # Cleanup trap: fires on every exit (success or failure).

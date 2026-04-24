@@ -4,6 +4,149 @@
 
 ```ts
 import { BasicPermission } from '@backstage/plugin-permission-common';
+import type { DiscoveryApi } from '@backstage/core-plugin-api';
+import type { FetchApi } from '@backstage/core-plugin-api';
+
+// @public
+export interface CatalogApi {
+  // (undocumented)
+  createCatalogItem(catalogItem: CatalogItem): Promise<CatalogItem>;
+  // (undocumented)
+  createCatalogItemInstance(
+    instance: CatalogItemInstance,
+  ): Promise<CatalogItemInstance>;
+  // (undocumented)
+  createServiceType(serviceType: ServiceType): Promise<ServiceType>;
+  // (undocumented)
+  deleteCatalogItem(catalogItemId: string): Promise<void>;
+  // (undocumented)
+  deleteCatalogItemInstance(catalogItemInstanceId: string): Promise<void>;
+  // (undocumented)
+  getCatalogItem(catalogItemId: string): Promise<CatalogItem>;
+  // (undocumented)
+  getCatalogItemInstance(
+    catalogItemInstanceId: string,
+  ): Promise<CatalogItemInstance>;
+  // (undocumented)
+  getServiceType(serviceTypeId: string): Promise<ServiceType>;
+  // (undocumented)
+  listCatalogItemInstances(): Promise<CatalogItemInstanceList>;
+  // (undocumented)
+  listCatalogItems(): Promise<CatalogItemList>;
+  // (undocumented)
+  listServiceTypes(): Promise<ServiceTypeList>;
+  // (undocumented)
+  updateCatalogItem(
+    catalogItemId: string,
+    patch: Partial<CatalogItem>,
+  ): Promise<CatalogItem>;
+}
+
+// @public
+export class CatalogClient extends DcmBaseClient implements CatalogApi {
+  // (undocumented)
+  createCatalogItem(catalogItem: CatalogItem): Promise<CatalogItem>;
+  // (undocumented)
+  createCatalogItemInstance(
+    instance: CatalogItemInstance,
+  ): Promise<CatalogItemInstance>;
+  // (undocumented)
+  createServiceType(serviceType: ServiceType): Promise<ServiceType>;
+  // (undocumented)
+  deleteCatalogItem(catalogItemId: string): Promise<void>;
+  // (undocumented)
+  deleteCatalogItemInstance(catalogItemInstanceId: string): Promise<void>;
+  // (undocumented)
+  getCatalogItem(catalogItemId: string): Promise<CatalogItem>;
+  // (undocumented)
+  getCatalogItemInstance(
+    catalogItemInstanceId: string,
+  ): Promise<CatalogItemInstance>;
+  // (undocumented)
+  getServiceType(serviceTypeId: string): Promise<ServiceType>;
+  // (undocumented)
+  listCatalogItemInstances(): Promise<CatalogItemInstanceList>;
+  // (undocumented)
+  listCatalogItems(): Promise<CatalogItemList>;
+  // (undocumented)
+  listServiceTypes(): Promise<ServiceTypeList>;
+  // (undocumented)
+  protected readonly serviceName = 'Catalog';
+  // (undocumented)
+  updateCatalogItem(
+    catalogItemId: string,
+    patch: Partial<CatalogItem>,
+  ): Promise<CatalogItem>;
+}
+
+// @public
+export interface CatalogItem {
+  // (undocumented)
+  api_version?: string;
+  // (undocumented)
+  create_time?: string;
+  // (undocumented)
+  display_name?: string;
+  // (undocumented)
+  path?: string;
+  // (undocumented)
+  spec?: CatalogItemSpec;
+  // (undocumented)
+  uid?: string;
+  // (undocumented)
+  update_time?: string;
+}
+
+// @public
+export interface CatalogItemInstance {
+  // (undocumented)
+  api_version: string;
+  // (undocumented)
+  create_time?: string;
+  // (undocumented)
+  display_name: string;
+  // (undocumented)
+  path?: string;
+  resource_id?: string;
+  // (undocumented)
+  spec: CatalogItemInstanceSpec;
+  // (undocumented)
+  uid?: string;
+  // (undocumented)
+  update_time?: string;
+}
+
+// @public
+export interface CatalogItemInstanceList {
+  // (undocumented)
+  next_page_token: string;
+  // (undocumented)
+  results: CatalogItemInstance[];
+}
+
+// @public
+export interface CatalogItemInstanceSpec {
+  // (undocumented)
+  catalog_item_id: string;
+  // (undocumented)
+  user_values: UserValue[];
+}
+
+// @public
+export interface CatalogItemList {
+  // (undocumented)
+  next_page_token: string;
+  // (undocumented)
+  results: CatalogItem[];
+}
+
+// @public
+export interface CatalogItemSpec {
+  // (undocumented)
+  fields?: FieldConfiguration[];
+  // (undocumented)
+  service_type?: string;
+}
 
 // @public
 export const DCM_COMMON_PLUGIN_ID: 'dcm';
@@ -18,7 +161,69 @@ export const DCM_ENTITY_STATUS: {
 export const DCM_ENTITY_STATUS_VALUES: readonly DcmEntityStatus[];
 
 // @public
+export interface DcmApiError {
+  // (undocumented)
+  detail?: string;
+  // (undocumented)
+  instance?: string;
+  // (undocumented)
+  status?: number;
+  // (undocumented)
+  title: string;
+  // (undocumented)
+  type: DcmErrorType | (string & {});
+}
+
+// @public
+export abstract class DcmBaseClient {
+  constructor(options: { discoveryApi: DiscoveryApi; fetchApi: FetchApi });
+  // (undocumented)
+  protected readonly discoveryApi: DiscoveryApi;
+  // (undocumented)
+  protected fetch<T>(path: string, init?: RequestInit): Promise<T>;
+  // (undocumented)
+  protected readonly fetchApi: FetchApi;
+  protected abstract readonly serviceName: string;
+}
+
+// @public
+export class DcmClientError extends Error {
+  constructor(message: string, status: number, apiError?: DcmApiError);
+  readonly apiError: DcmApiError | undefined;
+  static fromResponse(
+    serviceName: string,
+    status: number,
+    body: string,
+  ): DcmClientError;
+  readonly status: number;
+}
+
+// @public
 export type DcmEntityStatus = 'success' | 'running';
+
+// @public
+export type DcmErrorType =
+  | 'INVALID_ARGUMENT'
+  | 'UNAUTHENTICATED'
+  | 'NOT_FOUND'
+  | 'ALREADY_EXISTS'
+  | 'PERMISSION_DENIED'
+  | 'RESOURCE_EXHAUSTED'
+  | 'FAILED_PRECONDITION'
+  | 'ABORTED'
+  | 'OUT_OF_RANGE'
+  | 'UNIMPLEMENTED'
+  | 'INTERNAL'
+  | 'UNAVAILABLE'
+  | 'DEADLINE_EXCEEDED';
+
+// @public
+export interface DcmHealth {
+  // (undocumented)
+  path?: string;
+  // (undocumented)
+  status: string;
+}
 
 // @public
 export const dcmPluginPermissions: BasicPermission[];
@@ -33,5 +238,287 @@ export function displayDcmEntityStatus(status: DcmEntityStatus): string;
 export function displayDcmEntityStatusLoose(raw: string): string;
 
 // @public
+export function extractApiError(err: unknown): string;
+
+// @public
+export interface FieldConfiguration {
+  default?: unknown;
+  // (undocumented)
+  depends_on?: FieldConfigurationDependsOn;
+  // (undocumented)
+  display_name?: string;
+  // (undocumented)
+  editable?: boolean;
+  // (undocumented)
+  path: string;
+  // (undocumented)
+  validation_schema?: Record<string, unknown>;
+}
+
+// @public
+export interface FieldConfigurationDependsOn {
+  // (undocumented)
+  allowed_values: Record<string, unknown[]>;
+  // (undocumented)
+  path: string;
+}
+
+// @public
 export function parseDcmEntityStatus(raw: string): DcmEntityStatus | undefined;
+
+// @public
+export interface PlacementApi {
+  createResource(resource: Resource, id?: string): Promise<Resource>;
+  deleteResource(resourceId: string): Promise<void>;
+  getResource(resourceId: string): Promise<Resource>;
+  listResources(options?: {
+    provider?: string;
+    maxPageSize?: number;
+    pageToken?: string;
+  }): Promise<ResourceList>;
+  rehydrateResource(
+    resourceId: string,
+    request: RehydrateRequest,
+  ): Promise<Resource>;
+}
+
+// @public
+export class PlacementClient extends DcmBaseClient implements PlacementApi {
+  // (undocumented)
+  createResource(resource: Resource, id?: string): Promise<Resource>;
+  // (undocumented)
+  deleteResource(resourceId: string): Promise<void>;
+  // (undocumented)
+  getResource(resourceId: string): Promise<Resource>;
+  // (undocumented)
+  listResources(options?: {
+    provider?: string;
+    maxPageSize?: number;
+    pageToken?: string;
+  }): Promise<ResourceList>;
+  // (undocumented)
+  rehydrateResource(
+    resourceId: string,
+    request: RehydrateRequest,
+  ): Promise<Resource>;
+  // (undocumented)
+  protected readonly serviceName = 'Placement';
+}
+
+// @public
+export interface Policy {
+  // (undocumented)
+  create_time?: string;
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  display_name?: string;
+  // (undocumented)
+  enabled?: boolean;
+  id?: string;
+  label_selector?: Record<string, string>;
+  path?: string;
+  // (undocumented)
+  policy_type?: PolicyType;
+  priority?: number;
+  rego_code?: string;
+  // (undocumented)
+  update_time?: string;
+}
+
+// @public
+export interface PolicyList {
+  // (undocumented)
+  next_page_token?: string;
+  // (undocumented)
+  policies: Policy[];
+}
+
+// @public
+export interface PolicyManagerApi {
+  // (undocumented)
+  createPolicy(policy: Policy): Promise<Policy>;
+  // (undocumented)
+  deletePolicy(policyId: string): Promise<void>;
+  // (undocumented)
+  getPolicy(policyId: string): Promise<Policy>;
+  // (undocumented)
+  listPolicies(): Promise<PolicyList>;
+  // (undocumented)
+  updatePolicy(policyId: string, patch: Partial<Policy>): Promise<Policy>;
+}
+
+// @public
+export class PolicyManagerClient
+  extends DcmBaseClient
+  implements PolicyManagerApi
+{
+  // (undocumented)
+  createPolicy(policy: Policy): Promise<Policy>;
+  // (undocumented)
+  deletePolicy(policyId: string): Promise<void>;
+  // (undocumented)
+  getPolicy(policyId: string): Promise<Policy>;
+  // (undocumented)
+  listPolicies(): Promise<PolicyList>;
+  // (undocumented)
+  protected readonly serviceName = 'Policy Manager';
+  // (undocumented)
+  updatePolicy(policyId: string, patch: Partial<Policy>): Promise<Policy>;
+}
+
+// @public
+export type PolicyType = 'GLOBAL' | 'USER';
+
+// @public
+export interface Provider {
+  // (undocumented)
+  create_time?: string;
+  // (undocumented)
+  display_name?: string;
+  endpoint: string;
+  // (undocumented)
+  health_status?: string;
+  id?: string;
+  // (undocumented)
+  metadata?: ProviderMetadata;
+  // (undocumented)
+  name: string;
+  operations?: string[];
+  path?: string;
+  schema_version: string;
+  // (undocumented)
+  service_type: string;
+  status?: ProviderStatus;
+  // (undocumented)
+  update_time?: string;
+}
+
+// @public
+export interface ProviderList {
+  // (undocumented)
+  next_page_token?: string;
+  // (undocumented)
+  providers?: Provider[];
+}
+
+// @public
+export interface ProviderMetadata {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  region_code?: string;
+  // (undocumented)
+  resources?: ResourceCapacity;
+  // (undocumented)
+  status?: string;
+  // (undocumented)
+  zone?: string;
+}
+
+// @public
+export interface ProvidersApi {
+  // (undocumented)
+  applyProvider(providerId: string, provider: Provider): Promise<Provider>;
+  // (undocumented)
+  createProvider(provider: Provider): Promise<Provider>;
+  // (undocumented)
+  deleteProvider(providerId: string): Promise<void>;
+  // (undocumented)
+  getProvider(providerId: string): Promise<Provider>;
+  // (undocumented)
+  listProviders(): Promise<ProviderList>;
+}
+
+// @public
+export class ProvidersClient extends DcmBaseClient implements ProvidersApi {
+  // (undocumented)
+  applyProvider(providerId: string, provider: Provider): Promise<Provider>;
+  // (undocumented)
+  createProvider(provider: Provider): Promise<Provider>;
+  // (undocumented)
+  deleteProvider(providerId: string): Promise<void>;
+  // (undocumented)
+  getProvider(providerId: string): Promise<Provider>;
+  // (undocumented)
+  listProviders(): Promise<ProviderList>;
+  // (undocumented)
+  protected readonly serviceName = 'Providers';
+}
+
+// @public
+export type ProviderStatus = 'registered' | 'updated';
+
+// @public
+export interface RehydrateRequest {
+  // (undocumented)
+  new_resource_id: string;
+}
+
+// @public
+export interface Resource {
+  approval_status?: string;
+  catalog_item_instance_id: string;
+  create_time?: string;
+  id?: string;
+  path?: string;
+  provider_name?: string;
+  spec: Record<string, unknown>;
+  update_time?: string;
+}
+
+// @public
+export interface ResourceCapacity {
+  // (undocumented)
+  total_cpu?: number;
+  // (undocumented)
+  total_memory?: string;
+  // (undocumented)
+  total_node?: number;
+  // (undocumented)
+  total_storage?: string;
+}
+
+// @public
+export interface ResourceList {
+  // (undocumented)
+  next_page_token?: string;
+  // (undocumented)
+  resources: Resource[];
+}
+
+// @public
+export interface ServiceType {
+  // (undocumented)
+  api_version: string;
+  // (undocumented)
+  create_time?: string;
+  // (undocumented)
+  metadata?: {
+    labels?: Record<string, string>;
+  };
+  path?: string;
+  // (undocumented)
+  service_type: string;
+  spec: Record<string, unknown>;
+  uid?: string;
+  // (undocumented)
+  update_time?: string;
+}
+
+// @public
+export interface ServiceTypeList {
+  // (undocumented)
+  next_page_token: string;
+  // (undocumented)
+  results: ServiceType[];
+}
+
+// @public
+export interface UserValue {
+  // (undocumented)
+  path: string;
+  // (undocumented)
+  value: unknown;
+}
 ```

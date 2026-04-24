@@ -14,16 +14,37 @@
  * limitations under the License.
  */
 import {
+  createApiFactory,
   createPlugin,
   createRoutableExtension,
+  discoveryApiRef,
+  fetchApiRef,
 } from '@backstage/core-plugin-api';
+import {
+  CatalogClient,
+  PlacementClient,
+  PolicyManagerClient,
+  ProvidersClient,
+} from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 
 import {
   rootRouteRef,
   serviceSpecsRouteRef,
   environmentDetailsRouteRef,
   serviceSpecDetailsRouteRef,
+  providersRouteRef,
+  policiesRouteRef,
+  serviceTypesRouteRef,
+  catalogItemsRouteRef,
+  catalogItemInstancesRouteRef,
+  resourcesRouteRef,
 } from './routes';
+import {
+  catalogApiRef,
+  placementApiRef,
+  policyManagerApiRef,
+  providersApiRef,
+} from './apis';
 
 /**
  * DCM plugin instance.
@@ -37,7 +58,43 @@ export const dcmPlugin = createPlugin({
     serviceSpecs: serviceSpecsRouteRef,
     environmentDetails: environmentDetailsRouteRef,
     serviceSpecDetails: serviceSpecDetailsRouteRef,
+    providers: providersRouteRef,
+    policies: policiesRouteRef,
+    serviceTypes: serviceTypesRouteRef,
+    catalogItems: catalogItemsRouteRef,
+    catalogItemInstances: catalogItemInstancesRouteRef,
+    resources: resourcesRouteRef,
   },
+  apis: [
+    createApiFactory({
+      api: catalogApiRef,
+      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
+      factory({ discoveryApi, fetchApi }) {
+        return new CatalogClient({ discoveryApi, fetchApi });
+      },
+    }),
+    createApiFactory({
+      api: policyManagerApiRef,
+      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
+      factory({ discoveryApi, fetchApi }) {
+        return new PolicyManagerClient({ discoveryApi, fetchApi });
+      },
+    }),
+    createApiFactory({
+      api: providersApiRef,
+      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
+      factory({ discoveryApi, fetchApi }) {
+        return new ProvidersClient({ discoveryApi, fetchApi });
+      },
+    }),
+    createApiFactory({
+      api: placementApiRef,
+      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
+      factory({ discoveryApi, fetchApi }) {
+        return new PlacementClient({ discoveryApi, fetchApi });
+      },
+    }),
+  ],
 });
 
 /**

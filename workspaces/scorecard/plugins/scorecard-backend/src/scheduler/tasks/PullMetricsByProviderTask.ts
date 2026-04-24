@@ -181,6 +181,12 @@ export class PullMetricsByProviderTask implements SchedulerTask {
             } catch (error) {
               // status is intentionally omitted — a calculation failure produces a NULL status
               // in the database, which sorts last when sortBy=status is used
+              logger.warn(
+                `Failed to calculate metric for entity ${stringifyEntityRef(
+                  entity,
+                )}: ${error}`,
+                error instanceof Error ? error : undefined,
+              );
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,

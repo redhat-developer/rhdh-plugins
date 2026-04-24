@@ -19,7 +19,10 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { rest } from 'msw';
 import request from 'supertest';
 
-import { LOCAL_ADDR } from '../../../../__fixtures__/handlers';
+import {
+  CATALOG_API_LOCATIONS_LOCAL_ADDR,
+  LOCAL_ADDR,
+} from '../../../../__fixtures__/handlers';
 import {
   addHandlersForGHTokenAppErrors,
   setupTest,
@@ -138,6 +141,251 @@ describe('repositories', () => {
       // not taken, so only the user-token error is surfaced.
       expect(reposResp.body).toEqual({
         errors: ['Github Token auth did not succeed'],
+      });
+    });
+
+    describe('filtering repositories', () => {
+      it('returns all repos when no repos are imported yet', async () => {
+        const { mockCatalogClient } = useTestData();
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'master',
+              errors: [],
+              id: 'octocat/animated-happiness',
+              lastUpdate: '2011-01-26T19:14:43Z',
+              name: 'animated-happiness',
+              organization: 'octocat',
+              url: 'http://localhost:8765/octocat/animated-happiness',
+            },
+
+            {
+              defaultBranch: 'master',
+              errors: [],
+              id: 'my-user/Lorem-Ipsum',
+              lastUpdate: '2011-01-26T19:14:43Z',
+              name: 'Lorem-Ipsum',
+              organization: 'my-user',
+              url: 'http://localhost:8765/my-user/Lorem-Ipsum',
+            },
+          ],
+          totalCount: 2,
+        });
+      });
+
+      it('returns empty array when there are no repos to be imported', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(`${LOCAL_ADDR}/user/repos`, (_, res, ctx) =>
+            res(ctx.status(200), ctx.json([])),
+          ),
+        );
+        server.use(
+          rest.get(`${LOCAL_ADDR}/installation/repositories`, (_, res, ctx) =>
+            res(
+              ctx.status(200),
+              ctx.json({ total_count: 0, repositories: [] }),
+            ),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          errors: [],
+          repositories: [],
+          totalCount: 0,
+        });
+      });
+
+      it('returns filtered (not yet imported) repos when some repos are already imported', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
+            res(
+              ctx.status(200),
+              ctx.json([
+                {
+                  data: {
+                    id: 'imported-hello-world',
+                    target:
+                      'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+              ]),
+            ),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'master',
+              errors: [],
+              id: 'octocat/animated-happiness',
+              lastUpdate: '2011-01-26T19:14:43Z',
+              name: 'animated-happiness',
+              organization: 'octocat',
+              url: 'http://localhost:8765/octocat/animated-happiness',
+            },
+            {
+              defaultBranch: 'master',
+              errors: [],
+              id: 'my-user/Lorem-Ipsum',
+              lastUpdate: '2011-01-26T19:14:43Z',
+              name: 'Lorem-Ipsum',
+              organization: 'my-user',
+              url: 'http://localhost:8765/my-user/Lorem-Ipsum',
+            },
+          ],
+          totalCount: 2,
+        });
+      });
+
+      it('returns empty array when all repos are already imported', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
+            res(
+              ctx.status(200),
+              ctx.json([
+                {
+                  data: {
+                    id: 'imported-animated-happiness',
+                    target:
+                      'http://localhost:8765/octocat/animated-happiness/blob/master/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+                {
+                  data: {
+                    id: 'imported-hello-world',
+                    target:
+                      'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+                {
+                  data: {
+                    id: 'imported-lorem-ipsum',
+                    target:
+                      'http://localhost:8765/my-user/Lorem-Ipsum/blob/master/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+              ]),
+            ),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          errors: [],
+          repositories: [],
+          totalCount: 0,
+        });
+      });
+
+      it('returns all repos even though a non-root catalog location exists', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
+            res(
+              ctx.status(200),
+              ctx.json([
+                {
+                  data: {
+                    id: 'imported-animated-happiness-sub',
+                    target:
+                      'http://localhost:8765/octocat/animated-happiness/blob/master/monorepo/nested/path/catalog-info.yaml',
+                    type: 'url',
+                  },
+                },
+              ]),
+            ),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .set('X-SCM-Tokens', GH_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'master',
+              errors: [],
+              id: 'octocat/animated-happiness',
+              lastUpdate: '2011-01-26T19:14:43Z',
+              name: 'animated-happiness',
+              organization: 'octocat',
+              url: 'http://localhost:8765/octocat/animated-happiness',
+            },
+
+            {
+              defaultBranch: 'master',
+              errors: [],
+              id: 'my-user/Lorem-Ipsum',
+              lastUpdate: '2011-01-26T19:14:43Z',
+              name: 'Lorem-Ipsum',
+              organization: 'my-user',
+              url: 'http://localhost:8765/my-user/Lorem-Ipsum',
+            },
+          ],
+          totalCount: 2,
+        });
       });
     });
   });

@@ -27,7 +27,7 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
     main: '#0066CC',
   },
   navigation: {
-    background: '#222427',
+    background: '#f2f2f2',
     indicator: 'transparent',
     color: '#151515',
     selectedColor: '#151515',
@@ -49,6 +49,7 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
   rhdh: {
     general: {
       pageInset: '1.5rem',
+      pageInsetBackgroundColor: '#f2f2f2',
 
       disabled: '#6A6E73',
       disabledBackground: '#D2D2D2',

@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-quickstart",
-  "version": "1.8.5",
+  "version": "1.9.0",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -38,10 +38,14 @@
     "@backstage-community/plugin-rbac-common": "^1.19.0",
     "@backstage/core-components": "^0.18.8",
     "@backstage/core-plugin-api": "^1.12.4",
+    "@backstage/frontend-plugin-api": "^0.15.1",
+    "@backstage/plugin-app-react": "^0.2.1",
     "@backstage/plugin-permission-react": "^0.4.41",
     "@backstage/theme": "^0.7.2",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
+    "@red-hat-developer-hub/backstage-plugin-app-react": "^0.0.3",
+    "@red-hat-developer-hub/backstage-plugin-global-header": "^1.21.0",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "react-use": "^17.6.0"
   },
@@ -62,14 +66,14 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha.ts",
+    "./alpha": "./src/alpha/index.tsx",
     "./dev": "./dev/CustomDrawer.tsx",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
-        "src/alpha.ts"
+        "src/alpha/index.tsx"
       ],
       "dev": [
         "dev/CustomDrawer.tsx"
@@ -88,7 +92,7 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-quickstart",
     "exposedModules": {
-      "Alpha": "./src/alpha.ts",
+      "Alpha": "./src/alpha/index.tsx",
       "PluginRoot": "./src/index.ts",
       "QuickstartPlugin": "./src/index.ts"
     }

@@ -28,7 +28,9 @@ import { createServiceFactory } from '@backstage/backend-plugin-api';
 import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
+// eslint-disable-next-line @backstage/no-mixed-plugin-imports -- integration test: real SQLite via sibling backend factory
 import { x2aDatabaseServiceFactory } from '@red-hat-developer-hub/backstage-plugin-x2a-backend';
+import { kubeServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { RUN_NEXT_DEEP_LINK_HASH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { x2aMcpExtrasPlugin } from './plugin';
 
@@ -92,6 +94,16 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
           }),
         }),
         createServiceFactory({
+          service: kubeServiceRef,
+          deps: {},
+          factory: () => ({
+            createJob: jest.fn().mockResolvedValue({ k8sJobName: 'mock-k8s' }),
+            getJobStatus: jest.fn().mockResolvedValue({ status: 'running' }),
+            getJobLogs: jest.fn().mockResolvedValue(''),
+            deleteJob: jest.fn(),
+          }),
+        }),
+        createServiceFactory({
           service: catalogServiceRef,
           deps: {},
           factory: () =>
@@ -134,6 +146,7 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
     const names = actions.map(a => a.name).sort((a, b) => a.localeCompare(b));
     expect(names).toEqual([
       'x2a-create-project',
+      'x2a-list-modules',
       'x2a-list-projects',
       'x2a-trigger-next-phase',
     ]);
@@ -195,6 +208,19 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
       projectId,
       name: 'Integration Test Project',
       projectDetailsUrl: `http://localhost:3000/x2a/projects/${projectId}${RUN_NEXT_DEEP_LINK_HASH}`,
+    });
+
+    const listModulesAction = getAction('x2a-list-modules');
+    const listModulesResult = await listModulesAction({
+      input: { projectId },
+      credentials,
+      logger,
+    });
+    expect(listModulesResult.output).toMatchObject({
+      projectId,
+      projectName: 'Integration Test Project',
+      projectDetailsUrl: `http://localhost:3000/x2a/projects/${projectId}`,
+      items: [],
     });
   });
 });

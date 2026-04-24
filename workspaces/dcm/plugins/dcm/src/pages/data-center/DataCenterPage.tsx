@@ -22,9 +22,19 @@ import {
 } from '@backstage/core-components';
 import { Box, Divider, makeStyles, Typography } from '@material-ui/core';
 
-import { EnvironmentsTabContent } from './EnvironmentsTabContent';
-import { ServiceSpecsTabContent } from '../service-spec';
-import { serviceSpecsRouteRef } from '../../routes';
+import { ProvidersTabContent } from '../providers/ProvidersTabContent';
+import { PoliciesTabContent } from '../policies/PoliciesTabContent';
+import { ServiceTypesTabContent } from '../service-types/ServiceTypesTabContent';
+import { CatalogItemsTabContent } from '../catalog-items/CatalogItemsTabContent';
+import { CatalogItemInstancesTabContent } from '../catalog-item-instances/CatalogItemInstancesTabContent';
+import { ResourcesTabContent } from '../resources/ResourcesTabContent';
+import {
+  policiesRouteRef,
+  serviceTypesRouteRef,
+  catalogItemsRouteRef,
+  catalogItemInstancesRouteRef,
+  resourcesRouteRef,
+} from '../../routes';
 import { isDarkMode } from '../../components/dcmTheme';
 
 const useStyles = makeStyles(theme => {
@@ -67,14 +77,32 @@ export const DataCenterPage = () => {
       <Content>
         <Box className={classes.tabbedLayout}>
           <TabbedLayout>
-            <TabbedLayout.Route path="/" title="Environments">
-              <EnvironmentsTabContent />
+            <TabbedLayout.Route path="/" title="Providers">
+              <ProvidersTabContent />
+            </TabbedLayout.Route>
+            <TabbedLayout.Route path={policiesRouteRef.path} title="Policies">
+              <PoliciesTabContent />
             </TabbedLayout.Route>
             <TabbedLayout.Route
-              path={serviceSpecsRouteRef.path}
-              title="Service specs"
+              path={serviceTypesRouteRef.path}
+              title="Service types"
             >
-              <ServiceSpecsTabContent />
+              <ServiceTypesTabContent />
+            </TabbedLayout.Route>
+            <TabbedLayout.Route
+              path={catalogItemsRouteRef.path}
+              title="Catalog items"
+            >
+              <CatalogItemsTabContent />
+            </TabbedLayout.Route>
+            <TabbedLayout.Route
+              path={catalogItemInstancesRouteRef.path}
+              title="Instances"
+            >
+              <CatalogItemInstancesTabContent />
+            </TabbedLayout.Route>
+            <TabbedLayout.Route path={resourcesRouteRef.path} title="Resources">
+              <ResourcesTabContent />
             </TabbedLayout.Route>
           </TabbedLayout>
         </Box>

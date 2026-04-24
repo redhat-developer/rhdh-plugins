@@ -14,9 +14,18 @@
  * limitations under the License.
  */
 
+// Migrate to use useCrudTab + DcmCrudTabLayout when it is re-activated.
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { Table, TableColumn, InfoCard, Link } from '@backstage/core-components';
+import {
+  Table,
+  TableColumn,
+  InfoCard,
+  Link,
+  Progress,
+} from '@backstage/core-components';
+import { useApi } from '@backstage/core-plugin-api';
 import { Box, Button, Typography } from '@material-ui/core';
+import type { Provider } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { DcmDataCenterTabEmptyState } from '../../components/DcmDataCenterTabEmptyState';
 import { DCM_FROM_TAB_STATE } from '../../components/dataCenterNavigation';
 import environmentsEmptyIllustration from '../../assets/environments-empty-state.png';
@@ -25,11 +34,8 @@ import {
   DcmSearchCardAction,
 } from '../../components/dcmTabListHelpers';
 import { useDcmStyles } from '../../components/dcmStyles';
-import {
-  getMockEntityCountForEnvironment,
-  INITIAL_ENVIRONMENTS,
-  type Environment,
-} from '../../data';
+import { getMockEntityCountForEnvironment, type Environment } from '../../data';
+import { providersApiRef } from '../../apis';
 import { DeleteEnvironmentDialog } from './components/DeleteEnvironmentDialog';
 import { EditEnvironmentDialog } from './components/EditEnvironmentDialog';
 import { RegisterEnvironmentDialog } from './components/RegisterEnvironmentDialog';
@@ -40,15 +46,98 @@ import {
 
 export type { Environment } from '../../data';
 
+function providerToEnvironment(p: Provider): Environment {
+  return {
+    id: p.id ?? p.name,
+    name: p.display_name ?? p.name,
+    type: p.service_type,
+    envLabel: String(p.metadata?.status ?? ''),
+    resourceLoadCurrent: 0,
+    resourceLoadTotal: p.metadata?.resources?.total_cpu ?? 0,
+    infrastructureLoadCount: 0,
+    maxRamGb: undefined,
+  };
+}
+
+function formToProvider(form: EnvironmentRegisterFormState): Provider {
+  return {
+    name: form.name
+      .trim()
+      .toLowerCase()
+      .replaceAll(/[^a-z0-9-]/g, '-'),
+    display_name: form.name.trim(),
+    endpoint: '',
+    service_type: form.type,
+    schema_version: 'v1alpha1',
+    metadata: {
+      status: form.envLabel,
+      resources: {
+        total_cpu: Number(form.maxVcpus) || 0,
+        total_memory: form.maxRamGb ? `${form.maxRamGb}Gi` : undefined,
+      },
+    },
+  };
+}
+
+// Module-level state updater factories — defined outside the component so they
+// do not contribute to lexical function-nesting depth (typescript:S2004).
+
+function addEnvironment(env: Environment) {
+  return (prev: Environment[]) => [...prev, env];
+}
+
+function replaceEnvironment(id: string, env: Environment) {
+  return (prev: Environment[]) => prev.map(e => (e.id === id ? env : e));
+}
+
+function patchEnvironment(id: string, form: EnvironmentRegisterFormState) {
+  const maxVcpus = Number(form.maxVcpus) || 0;
+  const maxRamGb =
+    form.maxRamGb.trim() === ''
+      ? undefined
+      : Number(form.maxRamGb) || undefined;
+  return (prev: Environment[]) =>
+    prev.map(e =>
+      e.id === id
+        ? {
+            ...e,
+            name: form.name.trim(),
+            type: form.type,
+            envLabel: form.envLabel.trim(),
+            resourceLoadTotal: maxVcpus,
+            maxRamGb,
+          }
+        : e,
+    );
+}
+
+function removeEnvironment(id: string) {
+  return (prev: Environment[]) => prev.filter(e => e.id !== id);
+}
+
 export function EnvironmentsTabContent() {
   const classes = useDcmStyles();
-  const [environments, setEnvironments] = useState<Environment[]>(
-    () => INITIAL_ENVIRONMENTS,
-  );
+  const providersApi = useApi(providersApiRef);
+  const [environments, setEnvironments] = useState<Environment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(5);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    providersApi
+      .listProviders()
+      .then(list => {
+        setEnvironments((list.providers ?? []).map(providerToEnvironment));
+      })
+      .catch(() => {
+        // Keep empty list on error so the UI shows the empty state
+        setEnvironments([]);
+      })
+      .finally(() => setLoading(false));
+  }, [providersApi]);
   const [registerForm, setRegisterForm] =
     useState<EnvironmentRegisterFormState>(() =>
       emptyEnvironmentRegisterForm(),
@@ -103,29 +192,27 @@ export function EnvironmentsTabContent() {
     setRegisterForm(emptyEnvironmentRegisterForm());
   }, []);
 
-  const handleRegisterSubmit = useCallback(() => {
+  const handleRegisterSubmit = useCallback(async () => {
     if (!isEnvironmentFormValid(registerForm)) return;
-    const maxVcpus = Number(registerForm.maxVcpus) || 0;
-    const maxRamGb =
-      registerForm.maxRamGb.trim() === ''
-        ? undefined
-        : Number(registerForm.maxRamGb) || undefined;
-    const newId = String(Date.now());
-    setEnvironments(prev => [
-      ...prev,
-      {
-        id: newId,
-        name: registerForm.name.trim(),
-        type: registerForm.type,
-        envLabel: registerForm.envLabel.trim(),
-        resourceLoadCurrent: 0,
-        resourceLoadTotal: maxVcpus,
-        infrastructureLoadCount: 0,
-        ...(maxRamGb !== undefined && { maxRamGb }),
-      },
-    ]);
+    const provider = formToProvider(registerForm);
+    try {
+      const created = await providersApi.createProvider(provider);
+      setEnvironments(addEnvironment(providerToEnvironment(created)));
+    } catch {
+      // Optimistic fallback: add locally so the user sees their entry
+      setEnvironments(
+        addEnvironment(
+          providerToEnvironment({ ...provider, id: String(Date.now()) }),
+        ),
+      );
+    }
     handleRegisterModalClose();
-  }, [registerForm, handleRegisterModalClose, isEnvironmentFormValid]);
+  }, [
+    providersApi,
+    registerForm,
+    handleRegisterModalClose,
+    isEnvironmentFormValid,
+  ]);
 
   const handleEdit = useCallback((env: Environment) => {
     setEditingEnvironment(env);
@@ -148,29 +235,19 @@ export function EnvironmentsTabContent() {
     setEditForm(emptyEnvironmentRegisterForm());
   }, []);
 
-  const handleEditSubmit = useCallback(() => {
+  const handleEditSubmit = useCallback(async () => {
     if (!editingEnvironment || !isEnvironmentFormValid(editForm)) return;
-    const maxVcpus = Number(editForm.maxVcpus) || 0;
-    const maxRamGb =
-      editForm.maxRamGb.trim() === ''
-        ? undefined
-        : Number(editForm.maxRamGb) || undefined;
-    setEnvironments(prev =>
-      prev.map(e =>
-        e.id === editingEnvironment.id
-          ? {
-              ...e,
-              name: editForm.name.trim(),
-              type: editForm.type,
-              envLabel: editForm.envLabel.trim(),
-              resourceLoadTotal: maxVcpus,
-              maxRamGb,
-            }
-          : e,
-      ),
-    );
+    const provider = formToProvider(editForm);
+    const id = editingEnvironment.id;
+    try {
+      const updated = await providersApi.applyProvider(id, { ...provider, id });
+      setEnvironments(replaceEnvironment(id, providerToEnvironment(updated)));
+    } catch {
+      setEnvironments(patchEnvironment(id, editForm));
+    }
     handleEditModalClose();
   }, [
+    providersApi,
     editingEnvironment,
     editForm,
     handleEditModalClose,
@@ -187,12 +264,18 @@ export function EnvironmentsTabContent() {
     setEnvToDelete(null);
   }, []);
 
-  const handleDeleteConfirm = useCallback(() => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (envToDelete) {
-      setEnvironments(prev => prev.filter(e => e.id !== envToDelete.id));
+      const id = envToDelete.id;
+      try {
+        await providersApi.deleteProvider(id);
+      } catch {
+        // No-op: keep local removal regardless of API response
+      }
+      setEnvironments(removeEnvironment(id));
     }
     handleDeleteDialogClose();
-  }, [envToDelete, handleDeleteDialogClose]);
+  }, [providersApi, envToDelete, handleDeleteDialogClose]);
 
   const handlePageChange = useCallback(
     (newPage: number, newPageSize: number) => {
@@ -280,6 +363,8 @@ export function EnvironmentsTabContent() {
       classes={classes}
     />
   );
+
+  if (loading) return <Progress />;
 
   return (
     <Box className={classes.root}>

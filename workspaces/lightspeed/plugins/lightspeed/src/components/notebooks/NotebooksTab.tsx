@@ -31,10 +31,11 @@ type NotebooksTabProps = {
   classes: Record<string, string>;
   openNotebookMenuId: string | null;
   setOpenNotebookMenuId: React.Dispatch<React.SetStateAction<string | null>>;
+  onSelectNotebook: (notebook: NotebookSession) => void;
   onRename: (sessionId: string) => void;
   onDelete: (sessionId: string) => void;
+  onCreateNotebook: () => void;
   t: TranslationFunction<typeof lightspeedTranslationRef.T>;
-  getDocumentsCount: (documentIds?: string[]) => number;
 };
 
 export const NotebooksTab = ({
@@ -43,10 +44,11 @@ export const NotebooksTab = ({
   classes,
   openNotebookMenuId,
   setOpenNotebookMenuId,
+  onSelectNotebook,
   onRename,
   onDelete,
+  onCreateNotebook,
   t,
-  getDocumentsCount,
 }: NotebooksTabProps) => (
   <div className={classes.notebooksContainer}>
     <div className={classes.notebooksHeader}>
@@ -58,6 +60,7 @@ export const NotebooksTab = ({
           variant="primary"
           className={classes.notebooksAction}
           icon={<PlusCircleIcon />}
+          onClick={onCreateNotebook}
         >
           {t('notebooks.empty.action')}
         </Button>
@@ -76,7 +79,11 @@ export const NotebooksTab = ({
         >
           {t('notebooks.empty.description')}
         </Typography>
-        <Button variant="primary" className={classes.notebooksActionEmpty}>
+        <Button
+          variant="primary"
+          className={classes.notebooksActionEmpty}
+          onClick={onCreateNotebook}
+        >
           {t('notebooks.empty.action')}
         </Button>
       </div>
@@ -89,10 +96,10 @@ export const NotebooksTab = ({
             classes={classes}
             openNotebookMenuId={openNotebookMenuId}
             setOpenNotebookMenuId={setOpenNotebookMenuId}
+            onClick={onSelectNotebook}
             onRename={onRename}
             onDelete={onDelete}
             t={t}
-            getDocumentsCount={getDocumentsCount}
           />
         ))}
       </div>

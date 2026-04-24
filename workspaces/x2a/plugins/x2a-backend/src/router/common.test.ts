@@ -29,8 +29,6 @@ import {
   isUserOfAdminViewPermission,
   isUserOfAdminWritePermission,
   isUserOfX2AUserPermission,
-  removeSensitiveFromJob,
-  UnsecureJob,
   useEnforceProjectPermissions,
   useEnforceX2APermissions,
 } from './common';
@@ -76,64 +74,6 @@ describe('common', () => {
 
   const createMockHttpAuth = (userRef: string = 'user:default/mock') => ({
     credentials: jest.fn().mockResolvedValue(mockCredentials.user(userRef)),
-  });
-
-  describe('removeSensitiveFromJob', () => {
-    it('returns undefined when job is undefined', () => {
-      expect(removeSensitiveFromJob(undefined)).toBeUndefined();
-    });
-
-    it('returns undefined when job is null', () => {
-      expect(removeSensitiveFromJob(null as any)).toBeUndefined();
-    });
-
-    it('removes callbackToken from job', () => {
-      const job: UnsecureJob = {
-        id: 'job-1',
-        projectId: 'proj-1',
-        moduleId: 'module-1',
-        phase: 'init' as const,
-        status: 'pending' as const,
-        callbackToken: 'secret-token',
-        startedAt: new Date(),
-        k8sJobName: 'job-1',
-      };
-      const result = removeSensitiveFromJob(job);
-      expect(result).toBeDefined();
-      expect(result).not.toHaveProperty('callbackToken');
-      expect(result).toMatchObject({
-        id: 'job-1',
-        projectId: 'proj-1',
-        phase: 'init',
-        status: 'pending',
-      });
-    });
-
-    it('returns job unchanged when it has no callbackToken', () => {
-      const job = {
-        id: 'job-1',
-        projectId: 'proj-1',
-        moduleId: 'module-1',
-        phase: 'analyze' as const,
-        status: 'success' as const,
-        startedAt: new Date(),
-        k8sJobName: 'job-1',
-      };
-      const result = removeSensitiveFromJob(job);
-      expect(result).toEqual(job);
-    });
-
-    it('does not mutate the original job object', () => {
-      const job = {
-        id: 'job-1',
-        callbackToken: 'secret',
-        startedAt: new Date(),
-        k8sJobName: 'job-1',
-      } as UnsecureJob;
-      const result = removeSensitiveFromJob(job);
-      expect(job).toHaveProperty('callbackToken', 'secret');
-      expect(result).not.toHaveProperty('callbackToken');
-    });
   });
 
   describe('getGroupsOfUser', () => {

@@ -25,6 +25,31 @@ import type { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { ReconcileJobDeps } from './services';
 
+/**
+ * Job row shape as returned from persistence layers that may still include
+ * `callbackToken`. Public API responses must never expose it.
+ *
+ * @public
+ */
+export type UnsecureJob = Job & { callbackToken?: string };
+
+/**
+ * Returns a shallow copy of the job without sensitive fields (e.g. HMAC callback secret).
+ * Use after reading jobs from the database or after {@link reconcileJobStatus} so client
+ * payloads stay safe.
+ *
+ * @public
+ */
+export function removeSensitiveFromJob(job?: UnsecureJob): Job | undefined {
+  if (!job) {
+    return undefined;
+  }
+
+  const copy: UnsecureJob = { ...job };
+  delete copy.callbackToken;
+  return copy;
+}
+
 /** @public */
 export const SYSTEM_USER_REF = 'user:default/system';
 

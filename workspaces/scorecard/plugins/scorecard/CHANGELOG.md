@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.5.2
+
+### Patch Changes
+
+- 501e099: Removed Backstage registration requirement for default Scorecard icons
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.2
+
 ## 2.5.1
 
 ### Patch Changes
