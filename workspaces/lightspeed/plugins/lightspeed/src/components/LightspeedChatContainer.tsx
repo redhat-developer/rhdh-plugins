@@ -31,6 +31,11 @@ import { useTranslation } from '../hooks/useTranslation';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
+import {
+  LcoreNotConfiguredEmptyState,
+  LightspeedChatModelsLoading,
+  ModelsLoadErrorEmptyState,
+} from './LightspeedChatModelsState';
 import PermissionRequiredState from './PermissionRequiredState';
 
 const THEME_DARK = 'dark';
@@ -48,7 +53,12 @@ const LightspeedChatContainerInner = () => {
 
   const identityApi = useApi(identityApiRef);
 
-  const { data: models } = useAllModels();
+  const {
+    data: models,
+    isLoading: modelsLoading,
+    isError: modelsError,
+    refetch: refetchModels,
+  } = useAllModels();
 
   const { allowed: hasViewAccess, loading } = useLightspeedViewPermission();
 
@@ -137,7 +147,10 @@ const LightspeedChatContainerInner = () => {
   }, [selectedModel, selectedProvider]);
 
   if (loading) {
-    return null;
+    // Never return null inside the overlay modal: PatternFly's focus-trap requires at least
+    // one tabbable node (e.g. after removing the modal close button). Locale switches can
+    // briefly re-enter this loading state.
+    return <LightspeedChatModelsLoading />;
   }
 
   if (!hasViewAccess) {
@@ -157,6 +170,21 @@ const LightspeedChatContainerInner = () => {
         }
       />
     );
+  }
+
+  if (modelsLoading) {
+    return <LightspeedChatModelsLoading />;
+  }
+
+  // TanStack Query can keep the last successful `data` while `isError` is true after a
+  // failed refetch. Prefer showing chat when we still have LLM rows; only use the full-page
+  // error state when there is nothing usable to render.
+  if (modelsError && modelsItems.length === 0) {
+    return <ModelsLoadErrorEmptyState onRetry={() => refetchModels()} />;
+  }
+
+  if (modelsItems.length === 0) {
+    return <LcoreNotConfiguredEmptyState />;
   }
 
   return (

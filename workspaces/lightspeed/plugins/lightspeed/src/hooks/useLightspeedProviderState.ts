@@ -113,6 +113,8 @@ export function useLightspeedProviderState(): {
         closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
       }
     } else if (persistedDisplayMode === ChatbotDisplayMode.embedded) {
+      // Off /lightspeed there is no fullscreen surface; use overlay so FAB stays available.
+      // (Persisted preference remains "fullscreen" for the next open.)
       setDisplayModeState(ChatbotDisplayMode.default);
     } else {
       setDisplayModeState(persistedDisplayMode);
@@ -132,23 +134,31 @@ export function useLightspeedProviderState(): {
 
   const openChatbot = useCallback(() => {
     openedViaFABRef.current = true;
-    const modeToUse = persistedDisplayMode || ChatbotDisplayMode.default;
-    setDisplayModeState(modeToUse);
+    const rawMode = persistedDisplayMode || ChatbotDisplayMode.default;
 
-    if (modeToUse === ChatbotDisplayMode.docked) {
+    if (rawMode === ChatbotDisplayMode.embedded) {
+      if (!isLightspeedRoute) {
+        navigate(lightspeedRoutePath(currentConversationIdState));
+      }
+      setDisplayModeState(ChatbotDisplayMode.embedded);
+      closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
+      setIsOpen(true);
+      return;
+    }
+
+    setDisplayModeState(rawMode);
+
+    if (rawMode === ChatbotDisplayMode.docked) {
       openDrawer(LIGHTSPEED_APP_DRAWER_ID);
     } else {
       closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
-    }
-
-    if (modeToUse === ChatbotDisplayMode.embedded) {
-      navigate(lightspeedRoutePath(currentConversationIdState));
     }
 
     setIsOpen(true);
   }, [
     closeDrawer,
     currentConversationIdState,
+    isLightspeedRoute,
     navigate,
     openDrawer,
     persistedDisplayMode,

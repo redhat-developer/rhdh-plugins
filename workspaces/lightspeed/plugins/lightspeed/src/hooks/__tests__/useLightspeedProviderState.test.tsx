@@ -183,6 +183,23 @@ describe('useLightspeedProviderState', () => {
       );
       expect(mockOpenDrawer).toHaveBeenCalledWith(LIGHTSPEED_APP_DRAWER_ID);
     });
+
+    it('opens chatbot in persisted fullscreen (embedded) by navigating to /lightspeed', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/catalog']);
+
+      screen.getByTestId('toggle-button').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
+      });
+
+      expect(screen.getByTestId('display-mode')).toHaveTextContent(
+        ChatbotDisplayMode.embedded,
+      );
+      expect(screen.getByTestId('overlay-modal-flag')).toHaveTextContent('no');
+    });
   });
 
   describe('closing chatbot', () => {
@@ -278,6 +295,27 @@ describe('useLightspeedProviderState', () => {
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
           ChatbotDisplayMode.docked,
+        );
+      });
+    });
+
+    it('uses overlay when leaving /lightspeed while fullscreen preference is persisted', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/lightspeed']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.embedded,
+        );
+        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
+      });
+
+      screen.getByTestId('go-catalog').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.default,
         );
       });
     });

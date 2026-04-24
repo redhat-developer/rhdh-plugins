@@ -54,7 +54,8 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
         <ChatbotModal
           isOpen
           displayMode={contextValue.displayMode}
-          onClose={closeChatbot}
+          disableFocusTrap
+          onEscapePress={() => closeChatbot()}
           ouiaId="LightspeedChatbotModal"
           aria-labelledby="lightspeed-chatpopup-modal"
           className={classes.chatbotModal}

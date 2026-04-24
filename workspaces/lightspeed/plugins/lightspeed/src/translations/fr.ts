@@ -139,6 +139,15 @@ const lightspeedTranslationFr = createTranslationMessages({
     'permission.subject.plugin': 'le plugin Lightspeed',
     'permission.subject.notebooks': 'les carnets Lightspeed',
     'permission.notebooks.goBack': 'Retour',
+    'lcore.notConfigured.title': 'Connectez un LLM pour commencer',
+    'lcore.notConfigured.description':
+      "Lightspeed nécessite un LLM enregistré. Contactez l'administrateur de la plateforme de votre organisation pour finaliser la configuration.",
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Configuration de Developer Lightspeed',
+    'lcore.notConfigured.backendDocs': 'Configuration du backend Lightspeed',
+    'lcore.loadError.title': 'Impossible de charger les modèles',
+    'lcore.loadError.description':
+      "Le backend Lightspeed n'a pas renvoyé de liste de modèles. Vérifiez que le service est démarré et joignable, puis réessayez.",
     'permission.required.description':
       "Pour afficher <subject/>, veuillez contacter votre administrateur pour qu'il vous donne la permission <permissions/>.",
     'disclaimer.withValidation':
@@ -150,6 +159,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',
     'common.readMore': 'En savoir plus',
+    'common.retry': 'Réessayer',
+    'common.loading': 'Chargement',
     'common.noSearchResults': 'Aucun résultat ne correspond à cette demande',
     'menu.newConversation': 'Nouvelle Conversation',
     'chatbox.header.title': 'Developer Lightspeed',

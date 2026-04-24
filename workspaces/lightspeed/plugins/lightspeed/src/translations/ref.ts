@@ -145,6 +145,17 @@ export const lightspeedMessages = {
   'permission.subject.notebooks': 'the Lightspeed notebooks',
   'permission.notebooks.goBack': 'Go back',
 
+  // LCORE / LLM (no models registered)
+  'lcore.notConfigured.title': 'Connect an LLM to get started',
+  'lcore.notConfigured.description':
+    "Lightspeed requires a registered LLM. Contact your organization's platform administrator to complete the setup.",
+  'lcore.notConfigured.developerLightspeedDocs':
+    'Configuring Developer Lightspeed',
+  'lcore.notConfigured.backendDocs': 'Lightspeed Backend Setup',
+  'lcore.loadError.title': 'Could not load models',
+  'lcore.loadError.description':
+    'The Lightspeed backend did not return a model list. Check that the service is running and reachable, then try again.',
+
   // Disclaimers
   'disclaimer.withValidation':
     "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
@@ -158,6 +169,8 @@ export const lightspeedMessages = {
   'common.cancel': 'Cancel',
   'common.close': 'Close',
   'common.readMore': 'Read more',
+  'common.retry': 'Try again',
+  'common.loading': 'Loading',
   'common.noSearchResults': 'No result matches the search',
 
   // Menu items
