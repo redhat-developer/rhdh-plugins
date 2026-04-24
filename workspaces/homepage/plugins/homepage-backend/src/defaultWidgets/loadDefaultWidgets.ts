@@ -16,7 +16,7 @@
 
 import { RootConfigService } from '@backstage/backend-plugin-api';
 import { z } from 'zod/v3';
-import { CardNode } from './types';
+import { DefaultWidgetNode } from './types';
 
 const entityRefSchema = z
   .string()
@@ -42,34 +42,38 @@ const cardLayoutSchema = z
   })
   .strict();
 
-export const cardNodeSchema: z.ZodType<CardNode> = z.lazy(() =>
-  z
-    .object({
-      id: z.string().min(1).optional(),
-      props: z.record(z.string(), z.unknown()).optional(),
-      layouts: z.record(z.string(), cardLayoutSchema).optional(),
-      if: visibilitySchema.optional(),
-      children: z.array(cardNodeSchema).optional(),
-    })
-    .strict()
-    .refine(
-      n =>
-        (n.id !== undefined) !==
-        (n.children !== undefined && n.children.length > 0),
-      {
-        message:
-          'Node must have exactly one of `id` (leaf) or non-empty `children` (group)',
-      },
-    ),
+export const defaultWidgetNodeSchema: z.ZodType<DefaultWidgetNode> = z.lazy(
+  () =>
+    z
+      .object({
+        id: z.string().min(1).optional(),
+        ref: z.string().min(1).optional(),
+        props: z.record(z.string(), z.unknown()).optional(),
+        layouts: z.record(z.string(), cardLayoutSchema).optional(),
+        if: visibilitySchema.optional(),
+        children: z.array(defaultWidgetNodeSchema).optional(),
+      })
+      .strict()
+      .refine(
+        n =>
+          (n.id !== undefined) !==
+          (n.children !== undefined && n.children.length > 0),
+        {
+          message:
+            'Node must have exactly one of `id` (leaf) or non-empty `children` (group)',
+        },
+      ),
 );
 
-export const defaultWidgetsSchema = z.array(cardNodeSchema);
+export const defaultWidgetsSchema = z.array(defaultWidgetNodeSchema);
 
 /**
  * Reads and validates the `homepage.defaultWidgets` config.
  * Throws on invalid config so misconfiguration fails fast at backend startup.
  */
-export function loadDefaultWidgets(config: RootConfigService): CardNode[] {
+export function loadDefaultWidgets(
+  config: RootConfigService,
+): DefaultWidgetNode[] {
   const raw = config.getOptional('homepage.defaultWidgets');
   if (raw === undefined) return [];
   const parsed = defaultWidgetsSchema.safeParse(raw);
@@ -87,9 +91,11 @@ export function loadCustomizable(config: RootConfigService): boolean {
 }
 
 /** Walks the tree and returns the set of unique permission names referenced. */
-export function collectReferencedPermissions(nodes: CardNode[]): Set<string> {
+export function collectReferencedPermissions(
+  nodes: DefaultWidgetNode[],
+): Set<string> {
   const out = new Set<string>();
-  const walk = (n: CardNode) => {
+  const walk = (n: DefaultWidgetNode) => {
     n.if?.permissions?.forEach(p => out.add(p));
     n.children?.forEach(walk);
   };

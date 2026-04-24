@@ -19,7 +19,7 @@ import {
   filterToVisibleLeaves,
   isVisible,
 } from './evaluateVisibility';
-import { CardNode, UserContext } from './types';
+import { DefaultWidgetNode, UserContext } from './types';
 
 function makeCtx(partial?: Partial<UserContext>): UserContext {
   return {
@@ -126,24 +126,28 @@ describe('filterToVisibleLeafIds', () => {
   });
 
   it('prunes an entire subtree when the parent group is hidden', () => {
-    const tree: CardNode[] = [
+    const tree: DefaultWidgetNode[] = [
       {
         if: { permissions: ['perm.admin'] },
-        children: [{ id: 'user-management' }, { id: 'audit-log' }],
+        children: [
+          { id: 'user-management', ref: 'user-management' },
+          { id: 'audit-log', ref: 'audit-log' },
+        ],
       },
-      { id: 'onboarding' },
+      { id: 'onboarding', ref: 'onboarding' },
     ];
     expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['onboarding']);
   });
 
   it('returns only visible children of a visible group', () => {
-    const tree: CardNode[] = [
+    const tree: DefaultWidgetNode[] = [
       {
         if: { groups: ['group:default/developers'] },
         children: [
-          { id: 'visible-child' },
+          { id: 'visible-child', ref: 'visible-child' },
           {
             id: 'hidden-child',
+            ref: 'hidden-child',
             if: { users: ['user:default/bob'] },
           },
         ],
@@ -153,18 +157,21 @@ describe('filterToVisibleLeafIds', () => {
   });
 
   it('preserves depth-first pre-order', () => {
-    const tree: CardNode[] = [
-      { id: 'a' },
+    const tree: DefaultWidgetNode[] = [
+      { id: 'a', ref: 'a' },
       {
         children: [
-          { id: 'b' },
+          { id: 'b', ref: 'b' },
           {
-            children: [{ id: 'c' }, { id: 'd' }],
+            children: [
+              { id: 'c', ref: 'c' },
+              { id: 'd', ref: 'd' },
+            ],
           },
-          { id: 'e' },
+          { id: 'e', ref: 'e' },
         ],
       },
-      { id: 'f' },
+      { id: 'f', ref: 'f' },
     ];
     expect(filterToVisibleLeafIds(tree, ctx)).toEqual([
       'a',
@@ -177,23 +184,24 @@ describe('filterToVisibleLeafIds', () => {
   });
 
   it('handles deep nesting with mixed permissions across levels', () => {
-    const tree: CardNode[] = [
+    const tree: DefaultWidgetNode[] = [
       {
         if: { groups: ['group:default/developers'] },
         children: [
           {
             if: { users: ['user:default/alice'] },
             children: [
-              { id: 'deeply-visible' },
+              { id: 'deeply-visible', ref: 'deeply-visible' },
               {
                 id: 'deeply-hidden',
+                ref: 'deeply-hidden',
                 if: { permissions: ['perm.admin'] },
               },
             ],
           },
           {
             if: { users: ['user:default/bob'] },
-            children: [{ id: 'unreachable' }],
+            children: [{ id: 'unreachable', ref: 'unreachable' }],
           },
         ],
       },
@@ -202,9 +210,14 @@ describe('filterToVisibleLeafIds', () => {
   });
 
   it('returns all leaves when no node has visibility constraints', () => {
-    const tree: CardNode[] = [
-      { id: 'a' },
-      { children: [{ id: 'b' }, { id: 'c' }] },
+    const tree: DefaultWidgetNode[] = [
+      { id: 'a', ref: 'a' },
+      {
+        children: [
+          { id: 'b', ref: 'b' },
+          { id: 'c', ref: 'c' },
+        ],
+      },
     ];
     expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['a', 'b', 'c']);
   });
@@ -217,26 +230,29 @@ describe('filterToVisibleLeaves', () => {
   });
 
   it('returns full card objects with metadata', () => {
-    const tree: CardNode[] = [
+    const tree: DefaultWidgetNode[] = [
       {
         id: 'card-a',
+        ref: 'card-a',
         props: { title: 'Card A', description: 'Description A' },
-        layouts: { xl: { w: 12, h: 5 } },
+        layout: { xl: { w: 12, h: 5 } },
       },
     ];
     expect(filterToVisibleLeaves(tree, ctx)).toEqual([
       {
         id: 'card-a',
+        ref: 'card-a',
         props: { title: 'Card A', description: 'Description A' },
-        layouts: { xl: { w: 12, h: 5 } },
+        layout: { xl: { w: 12, h: 5 } },
       },
     ]);
   });
 
   it('includes props in output', () => {
-    const tree: CardNode[] = [
+    const tree: DefaultWidgetNode[] = [
       {
         id: 'i18n-card',
+        ref: 'i18n-card',
         props: {
           title: 'Fallback Title',
           titleKey: 'homepage.card.title',
@@ -248,6 +264,7 @@ describe('filterToVisibleLeaves', () => {
     expect(filterToVisibleLeaves(tree, ctx)).toEqual([
       {
         id: 'i18n-card',
+        ref: 'i18n-card',
         props: {
           title: 'Fallback Title',
           titleKey: 'homepage.card.title',
@@ -259,33 +276,36 @@ describe('filterToVisibleLeaves', () => {
   });
 
   it('strips if and children from output', () => {
-    const tree: CardNode[] = [
+    const tree: DefaultWidgetNode[] = [
       {
         id: 'x',
+        ref: 'x',
         if: { groups: ['group:default/developers'] },
       },
     ];
     const result = filterToVisibleLeaves(tree, ctx);
-    expect(result).toEqual([{ id: 'x' }]);
+    expect(result).toEqual([{ id: 'x', ref: 'x' }]);
     expect(result[0]).not.toHaveProperty('if');
     expect(result[0]).not.toHaveProperty('children');
   });
 
   it('omits undefined optional fields from the output', () => {
-    const tree: CardNode[] = [{ id: 'minimal' }];
+    const tree: DefaultWidgetNode[] = [{ id: 'minimal', ref: 'minimal' }];
     const result = filterToVisibleLeaves(tree, ctx);
-    expect(result).toEqual([{ id: 'minimal' }]);
-    expect(Object.keys(result[0])).toEqual(['id']);
+    expect(result).toEqual([{ id: 'minimal', ref: 'minimal' }]);
+    expect(Object.keys(result[0])).toEqual(['id', 'ref']);
   });
 
   it('prunes subtrees and returns visible leaves from groups', () => {
-    const tree: CardNode[] = [
+    const tree: DefaultWidgetNode[] = [
       {
         if: { permissions: ['perm.admin'] },
-        children: [{ id: 'hidden-inner' }],
+        children: [{ id: 'hidden-inner', ref: 'hidden-inner' }],
       },
-      { id: 'visible' },
+      { id: 'visible', ref: 'visible' },
     ];
-    expect(filterToVisibleLeaves(tree, ctx)).toEqual([{ id: 'visible' }]);
+    expect(filterToVisibleLeaves(tree, ctx)).toEqual([
+      { id: 'visible', ref: 'visible' },
+    ]);
   });
 });

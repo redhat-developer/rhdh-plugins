@@ -6,33 +6,31 @@
 import { ResourcePermission } from '@backstage/plugin-permission-common';
 
 // @public (undocumented)
-export interface CardLayout {
+export interface DefaultWidgetNode {
   // (undocumented)
-  h?: number;
-  // (undocumented)
-  w?: number;
-  // (undocumented)
-  x?: number;
-  // (undocumented)
-  y?: number;
-}
-
-// @public (undocumented)
-export interface CardNode {
-  // (undocumented)
-  children?: CardNode[];
+  children?: DefaultWidgetNode[];
   // (undocumented)
   id?: string;
   // (undocumented)
-  if?: CardVisibility;
+  if?: DefaultWidgetVisibility;
   // (undocumented)
-  layouts?: Record<string, CardLayout>;
+  layout?: unknown;
   // (undocumented)
   props?: Record<string, unknown>;
+  // (undocumented)
+  ref?: string;
 }
 
 // @public (undocumented)
-export interface CardVisibility {
+export interface DefaultWidgetsResponse {
+  // (undocumented)
+  customizable: boolean;
+  // (undocumented)
+  items: VisibleDefaultWidget[];
+}
+
+// @public (undocumented)
+export interface DefaultWidgetVisibility {
   // (undocumented)
   groups?: string[];
   // (undocumented)
@@ -41,35 +39,29 @@ export interface CardVisibility {
   users?: string[];
 }
 
-// @public (undocumented)
-export interface DefaultWidgetsResponse {
-  // (undocumented)
-  customizable: boolean;
-  // (undocumented)
-  items: VisibleCard[];
-}
-
 // @public
 export type HomepageDefaultWidgetPermission = ResourcePermission<
   typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET
 >;
 
 // @public
-export const homepageDefaultWidgetsReadPermission: ResourcePermission<'homepage-default-card'>;
+export const homepageDefaultWidgetsReadPermission: ResourcePermission<'homepage-default-widget'>;
 
 // @public (undocumented)
-export const homepagePermissions: ResourcePermission<'homepage-default-card'>[];
+export const homepagePermissions: ResourcePermission<'homepage-default-widget'>[];
 
 // @public (undocumented)
-export const RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET = 'homepage-default-card';
+export const RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET = 'homepage-default-widget';
 
 // @public (undocumented)
-export interface VisibleCard {
+export interface VisibleDefaultWidget {
   // (undocumented)
   id: string;
   // (undocumented)
-  layouts?: Record<string, CardLayout>;
+  layout?: unknown;
   // (undocumented)
   props?: Record<string, unknown>;
+  // (undocumented)
+  ref: string;
 }
 ```

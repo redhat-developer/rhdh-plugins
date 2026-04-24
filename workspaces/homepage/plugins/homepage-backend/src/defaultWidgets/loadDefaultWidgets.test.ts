@@ -20,7 +20,7 @@ import {
   loadCustomizable,
   loadDefaultWidgets,
 } from './loadDefaultWidgets';
-import { CardNode } from './types';
+import { DefaultWidgetNode } from './types';
 
 describe('loadDefaultWidgets', () => {
   it('returns an empty array when homepage.defaultWidgets is absent', () => {
@@ -33,13 +33,14 @@ describe('loadDefaultWidgets', () => {
       data: {
         homepage: {
           defaultWidgets: [
-            { id: 'onboarding' },
+            { id: 'onboarding', ref: 'onboarding' },
             {
               if: { groups: ['group:default/admins'] },
               children: [
-                { id: 'user-management' },
+                { id: 'user-management', ref: 'user-management' },
                 {
                   id: 'audit-log',
+                  ref: 'audit-log',
                   if: { users: ['user:default/alice'] },
                 },
               ],
@@ -49,13 +50,14 @@ describe('loadDefaultWidgets', () => {
       },
     });
     expect(loadDefaultWidgets(config)).toEqual([
-      { id: 'onboarding' },
+      { id: 'onboarding', ref: 'onboarding' },
       {
         if: { groups: ['group:default/admins'] },
         children: [
-          { id: 'user-management' },
+          { id: 'user-management', ref: 'user-management' },
           {
             id: 'audit-log',
+            ref: 'audit-log',
             if: { users: ['user:default/alice'] },
           },
         ],
@@ -67,7 +69,13 @@ describe('loadDefaultWidgets', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultWidgets: [{ id: 'mixed', children: [{ id: 'inner' }] }],
+          defaultWidgets: [
+            {
+              id: 'mixed',
+              ref: 'mixed',
+              children: [{ id: 'inner', ref: 'inner' }],
+            },
+          ],
         },
       },
     });
@@ -80,7 +88,7 @@ describe('loadDefaultWidgets', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultWidgets: [{ props: { label: 'lonely' } }],
+          defaultWidgets: [{ ref: 'lonely', props: { label: 'lonely' } }],
         },
       },
     });
@@ -93,7 +101,7 @@ describe('loadDefaultWidgets', () => {
     const config = mockServices.rootConfig({
       data: {
         homepage: {
-          defaultWidgets: [{ id: 'x', extra: 'nope' }],
+          defaultWidgets: [{ id: 'x', ref: 'x', extra: 'nope' }],
         },
       },
     });
@@ -109,6 +117,7 @@ describe('loadDefaultWidgets', () => {
           defaultWidgets: [
             {
               id: 'x',
+              ref: 'x',
               if: { users: ['not-an-entity-ref'] },
             },
           ],
@@ -127,6 +136,7 @@ describe('loadDefaultWidgets', () => {
           defaultWidgets: [
             {
               id: 'card-with-meta',
+              ref: 'card-with-meta',
               title: 'My Card',
               description: 'A description',
               priority: 200,
@@ -143,6 +153,7 @@ describe('loadDefaultWidgets', () => {
     expect(result).toEqual([
       {
         id: 'card-with-meta',
+        ref: 'card-with-meta',
         title: 'My Card',
         description: 'A description',
         priority: 200,
@@ -161,6 +172,7 @@ describe('loadDefaultWidgets', () => {
           defaultWidgets: [
             {
               id: 'i18n-card',
+              ref: 'i18n-card',
               title: 'Fallback',
               titleKey: 'homepage.card.title',
               descriptionKey: 'homepage.card.desc',
@@ -173,6 +185,7 @@ describe('loadDefaultWidgets', () => {
     expect(result).toEqual([
       {
         id: 'i18n-card',
+        ref: 'i18n-card',
         title: 'Fallback',
         titleKey: 'homepage.card.title',
         descriptionKey: 'homepage.card.desc',
@@ -187,7 +200,7 @@ describe('loadDefaultWidgets', () => {
           defaultWidgets: [
             {
               if: {},
-              children: [{ id: 'x' }],
+              children: [{ id: 'x', ref: 'x' }],
             },
           ],
         },
@@ -224,15 +237,17 @@ describe('collectReferencedPermissions', () => {
   });
 
   it('walks the whole tree and deduplicates', () => {
-    const tree: CardNode[] = [
+    const tree: DefaultWidgetNode[] = [
       {
         id: 'a',
+        ref: 'a',
         if: { permissions: ['perm.read', 'perm.write'] },
       },
       {
         children: [
           {
             id: 'b',
+            ref: 'b',
             if: { permissions: ['perm.read'] },
           },
           {
@@ -240,13 +255,14 @@ describe('collectReferencedPermissions', () => {
             children: [
               {
                 id: 'c',
+                ref: 'c',
                 if: { permissions: ['perm.write'] },
               },
             ],
           },
         ],
       },
-      { id: 'd' },
+      { id: 'd', ref: 'd' },
     ];
     expect(collectReferencedPermissions(tree)).toEqual(
       new Set(['perm.read', 'perm.write', 'perm.admin']),

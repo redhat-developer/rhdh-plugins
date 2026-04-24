@@ -15,11 +15,10 @@
  */
 
 export type {
-  CardLayout,
-  CardNode,
-  CardVisibility,
+  DefaultWidgetNode,
+  DefaultWidgetVisibility,
   DefaultWidgetsResponse,
-  VisibleCard,
+  VisibleDefaultWidget,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 
 export type PermissionDecision = 'ALLOW' | 'DENY';

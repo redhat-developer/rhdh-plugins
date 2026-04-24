@@ -83,10 +83,24 @@ app:
 
 homepage:
   customizable: true
+  # The widget id is required if a user changes the default layout.
+  # The widget ref is used to determine which widget is rendered.
+  # For 1.x this references a mount point (`config.id`).
+  # For 2.x this references a homepage widget extension (name).
   defaultWidgets:
-    - id: hello-guest
-      if:
-        users: [user:development/guest]
+    - id: headline-left
+      ref: Headline
+      props:
+        title: Headline left
+    - id: headline-center
+      ref: Headline
+      props:
+        title: Headline center
+    - id: headline-right
+      ref: Headline
+      props:
+        title: Headline right
+
     - id: visit-card
       layouts:
         xl: { w: 12, h: 5 }

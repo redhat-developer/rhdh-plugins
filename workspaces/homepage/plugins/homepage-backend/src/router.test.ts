@@ -45,8 +45,12 @@ describe('createRouter', () => {
     defaultWidgets.getDefaultWidgets.mockResolvedValue({
       customizable: true,
       items: [
-        { id: 'onboarding', props: { title: 'Get Started' } },
-        { id: 'entities' },
+        {
+          id: 'onboarding',
+          ref: 'onboarding',
+          props: { title: 'Get Started' },
+        },
+        { id: 'entities', ref: 'entities' },
       ],
     });
 
@@ -56,8 +60,12 @@ describe('createRouter', () => {
     expect(response.body).toEqual({
       customizable: true,
       items: [
-        { id: 'onboarding', props: { title: 'Get Started' } },
-        { id: 'entities' },
+        {
+          id: 'onboarding',
+          ref: 'onboarding',
+          props: { title: 'Get Started' },
+        },
+        { id: 'entities', ref: 'entities' },
       ],
     });
     expect(defaultWidgets.getDefaultWidgets).toHaveBeenCalledWith({

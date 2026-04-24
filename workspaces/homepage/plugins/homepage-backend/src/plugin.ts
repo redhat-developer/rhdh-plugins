@@ -47,7 +47,7 @@ export const homepagePlugin = createBackendPlugin({
         permissionsRegistry.addResourceType({
           resourceRef: homepageDefaultCardPermissionResourceRef,
           getResources: async (resourceRefs: string[]) => {
-            return resourceRefs.map(id => ({ id }));
+            return resourceRefs.map(ref => ({ id: ref, ref }));
           },
           permissions: homepagePermissions,
           rules: Object.values(homepageRules),

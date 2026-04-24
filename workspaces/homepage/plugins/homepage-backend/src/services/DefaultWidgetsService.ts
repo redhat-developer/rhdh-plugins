@@ -32,7 +32,10 @@ import {
   loadCustomizable,
   loadDefaultWidgets,
 } from '../defaultWidgets/loadDefaultWidgets';
-import { CardNode, DefaultWidgetsResponse } from '../defaultWidgets/types';
+import {
+  DefaultWidgetNode,
+  DefaultWidgetsResponse,
+} from '../defaultWidgets/types';
 
 export interface DefaultWidgetsService {
   getDefaultWidgets(options: {
@@ -41,7 +44,7 @@ export interface DefaultWidgetsService {
 }
 
 export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
-  readonly #tree: CardNode[];
+  readonly #tree: DefaultWidgetNode[];
   readonly #customizable: boolean;
   readonly #referencedPermissions: Set<string>;
   readonly #catalog: typeof catalogServiceRef.T;
@@ -71,7 +74,7 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
   }
 
   private constructor(
-    tree: CardNode[],
+    tree: DefaultWidgetNode[],
     customizable: boolean,
     referencedPermissions: Set<string>,
     catalog: typeof catalogServiceRef.T,

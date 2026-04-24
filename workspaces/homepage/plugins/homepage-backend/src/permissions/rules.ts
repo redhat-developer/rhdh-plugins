@@ -20,7 +20,7 @@ import {
 } from '@backstage/plugin-permission-node';
 import { z } from 'zod/v3';
 import {
-  VisibleCard,
+  VisibleDefaultWidget,
   RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 import { homepageDefaultCardPermissionResourceRef } from './resource';
@@ -45,7 +45,7 @@ const hasCardId = createPermissionRule({
       .optional()
       .describe('List of card IDs to match on'),
   }),
-  apply: (card: VisibleCard, { cardIds }: HasCardIdParams) => {
+  apply: (card: VisibleDefaultWidget, { cardIds }: HasCardIdParams) => {
     return cardIds && cardIds.length > 0 ? cardIds.includes(card.id) : true;
   },
   toQuery: ({ cardIds }: HasCardIdParams) => ({
@@ -53,7 +53,7 @@ const hasCardId = createPermissionRule({
     values: cardIds,
   }),
 } as any) as unknown as PermissionRule<
-  VisibleCard,
+  VisibleDefaultWidget,
   HomepageDefaultWidgetFilter,
   typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
   HasCardIdParams

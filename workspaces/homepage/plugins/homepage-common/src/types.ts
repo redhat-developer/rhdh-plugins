@@ -15,15 +15,40 @@
  */
 
 /**
- * Common types for the homepage plugin shared between frontend and backend.
- *
- * @packageDocumentation
+ * @public
  */
+export interface DefaultWidgetVisibility {
+  users?: string[];
+  groups?: string[];
+  permissions?: string[];
+}
 
-export type * from './types';
-export {
-  homepageDefaultWidgetsReadPermission,
-  homepagePermissions,
-  RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
-} from './permissions';
-export type { HomepageDefaultWidgetPermission } from './permissions';
+/**
+ * @public
+ */
+export interface DefaultWidgetNode {
+  id?: string;
+  ref?: string;
+  props?: Record<string, unknown>;
+  layout?: unknown;
+  if?: DefaultWidgetVisibility;
+  children?: DefaultWidgetNode[];
+}
+
+/**
+ * @public
+ */
+export interface VisibleDefaultWidget {
+  id: string;
+  ref: string;
+  props?: Record<string, unknown>;
+  layout?: unknown;
+}
+
+/**
+ * @public
+ */
+export interface DefaultWidgetsResponse {
+  customizable: boolean;
+  items: VisibleDefaultWidget[];
+}

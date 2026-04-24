@@ -21,20 +21,28 @@ import {
 } from '@backstage/core-plugin-api';
 import type { DefaultWidgetsResponse } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 
-export type { DefaultWidgetsResponse };
 export type {
-  CardLayout,
-  VisibleCard,
+  DefaultWidgetsResponse,
+  VisibleDefaultWidget,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 
+/**
+ * @public
+ */
 export interface DefaultWidgetsApi {
   getDefaultWidgets(): Promise<DefaultWidgetsResponse>;
 }
 
+/**
+ * @public
+ */
 export const defaultWidgetsApiRef = createApiRef<DefaultWidgetsApi>({
   id: 'plugin.homepage.default-widgets',
 });
 
+/**
+ * @public
+ */
 export class DefaultWidgetsApiClient implements DefaultWidgetsApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;

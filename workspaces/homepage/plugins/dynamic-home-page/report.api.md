@@ -35,16 +35,12 @@ export enum Breakpoint {
 // @public (undocumented)
 export const CatalogStarredEntitiesCard: ComponentType<StarredEntitiesProps>;
 
-// Warning: (ae-missing-release-tag) "DefaultWidgetsApi" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
 // @public (undocumented)
 export interface DefaultWidgetsApi {
   // (undocumented)
   getDefaultWidgets(): Promise<DefaultWidgetsResponse>;
 }
 
-// Warning: (ae-missing-release-tag) "defaultWidgetsApiRef" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
 // @public (undocumented)
 export const defaultWidgetsApiRef: ApiRef<DefaultWidgetsApi>;
 

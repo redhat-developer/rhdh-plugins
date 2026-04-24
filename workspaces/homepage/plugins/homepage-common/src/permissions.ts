@@ -21,17 +21,18 @@ import {
 /**
  * @public
  */
-export const RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET = 'homepage-default-card';
+export const RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET = 'homepage-default-widget';
 
 /**
+ * Convenience type for homepage default widget permissions
  * @public
- * Convenience type for homepage default card permissions
  */
 export type HomepageDefaultWidgetPermission = ResourcePermission<
   typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET
 >;
 
-/** This permission is used to read the homepage default cards endpoint
+/**
+ * This permission is used to read the homepage default widgets endpoint
  * @public
  */
 export const homepageDefaultWidgetsReadPermission = createPermission({

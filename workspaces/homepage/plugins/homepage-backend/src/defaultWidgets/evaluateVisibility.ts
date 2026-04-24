@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-import { CardNode, CardVisibility, UserContext, VisibleCard } from './types';
+import {
+  DefaultWidgetNode,
+  DefaultWidgetVisibility,
+  UserContext,
+  VisibleDefaultWidget,
+} from './types';
 
 export function isVisible(
-  visibility: CardVisibility | undefined,
+  visibility: DefaultWidgetVisibility | undefined,
   ctx: UserContext,
 ): boolean {
   if (!visibility) return true;
@@ -41,11 +46,11 @@ export function isVisible(
 }
 
 export function filterToVisibleLeafIds(
-  nodes: CardNode[],
+  nodes: DefaultWidgetNode[],
   ctx: UserContext,
 ): string[] {
   const out: string[] = [];
-  const walk = (node: CardNode) => {
+  const walk = (node: DefaultWidgetNode) => {
     if (!isVisible(node.if, ctx)) return;
     if (node.id !== undefined) out.push(node.id);
     node.children?.forEach(walk);
@@ -55,16 +60,19 @@ export function filterToVisibleLeafIds(
 }
 
 export function filterToVisibleLeaves(
-  nodes: CardNode[],
+  nodes: DefaultWidgetNode[],
   ctx: UserContext,
-): VisibleCard[] {
-  const out: VisibleCard[] = [];
-  const walk = (node: CardNode) => {
+): VisibleDefaultWidget[] {
+  const out: VisibleDefaultWidget[] = [];
+  const walk = (node: DefaultWidgetNode) => {
     if (!isVisible(node.if, ctx)) return;
     if (node.id !== undefined) {
-      const card: VisibleCard = { id: node.id };
+      const card: VisibleDefaultWidget = {
+        id: node.id,
+        ref: node.ref ?? node.id,
+      };
       if (node.props !== undefined) card.props = node.props;
-      if (node.layouts !== undefined) card.layouts = node.layouts;
+      if (node.layout !== undefined) card.layout = node.layout;
       out.push(card);
     }
     node.children?.forEach(walk);
