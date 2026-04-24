@@ -167,7 +167,7 @@ describe('MetricProvidersRegistry', () => {
       it('should throw ConflictError when batch provider metric ID conflicts with existing', () => {
         const existingProvider = new MockBooleanProvider(
           'filecheck.readme',
-          'github',
+          'filecheck',
         );
         registry.register(existingProvider);
 
@@ -196,7 +196,7 @@ describe('MetricProvidersRegistry', () => {
         }
 
         const invalidProvider = new InvalidBatchProvider(
-          'github',
+          'filecheck',
           'filecheck',
           [],
         );
@@ -567,17 +567,23 @@ describe('MetricProvidersRegistry', () => {
       });
 
       it('should return all metrics from batch provider for datasource', () => {
-        const metrics = registry.listMetricsByDatasource('github');
+        const metrics = registry.listMetricsByDatasource('filecheck');
 
-        expect(metrics).toHaveLength(4); // 3 from batch + 1 from number provider
+        expect(metrics).toHaveLength(3);
         expect(metrics.map(m => m.id)).toContain('filecheck.readme');
         expect(metrics.map(m => m.id)).toContain('filecheck.license');
         expect(metrics.map(m => m.id)).toContain('filecheck.codeowners');
-        expect(metrics.map(m => m.id)).toContain('github.number_metric');
+      });
+
+      it('should not include batch provider metrics under a different datasource', () => {
+        const githubMetrics = registry.listMetricsByDatasource('github');
+
+        expect(githubMetrics).toHaveLength(1);
+        expect(githubMetrics[0].id).toBe('github.number_metric');
       });
 
       it('should not duplicate metrics from batch providers in datasource listing', () => {
-        const metrics = registry.listMetricsByDatasource('github');
+        const metrics = registry.listMetricsByDatasource('filecheck');
         const metricIds = metrics.map(m => m.id);
 
         // Each metric ID should appear exactly once
