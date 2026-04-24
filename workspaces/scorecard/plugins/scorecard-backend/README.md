@@ -102,6 +102,7 @@ To use these providers, install the corresponding backend modules:
 - Jira: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira`](../scorecard-backend-module-jira/README.md)
 - OpenSSF: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf`](../scorecard-backend-module-openssf/README.md)
 - Dependabot: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot`](../scorecard-backend-module-dependabot/README.md)
+- Filecheck: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck`](../scorecard-backend-module-filecheck/README.md)
 
 ### Disabling Metrics
 
