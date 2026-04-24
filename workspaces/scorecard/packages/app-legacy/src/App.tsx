@@ -243,7 +243,7 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'filecheck.license',
+        aggregationId: 'licenseFileExistsKpi',
       },
     },
   },
