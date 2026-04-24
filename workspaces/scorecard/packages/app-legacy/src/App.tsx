@@ -310,8 +310,9 @@ const mountPoints: HomePageCardMountPoint[] = [
             metricId: {
               title: 'Metric (Needs currently a page reload after change!)',
               type: 'string',
-              default: 'github.open_prs',
+              default: 'jira.open_issues',
               enum: [
+                'jira.open_issues',
                 'github.open_prs',
                 'filecheck.license',
                 'filecheck.codeowners',
@@ -323,6 +324,7 @@ const mountPoints: HomePageCardMountPoint[] = [
           metricId: {
             'ui:widget': 'RadioWidget',
             'ui:enumNames': [
+              'Jira Open Issues',
               'GitHub Open PRs',
               'LICENSE file exists',
               'CODEOWNERS file exists',
