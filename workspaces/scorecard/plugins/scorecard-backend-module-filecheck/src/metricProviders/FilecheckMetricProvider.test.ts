@@ -233,22 +233,22 @@ describe('FilecheckMetricProvider', () => {
         },
       }),
       mockUrlReader,
-    )!;
+    );
 
     it('should return correct provider ID', () => {
-      expect(provider.getProviderId()).toBe('filecheck');
+      expect(provider?.getProviderId()).toBe('filecheck');
     });
 
     it('should return correct datasource ID', () => {
-      expect(provider.getProviderDatasourceId()).toBe('filecheck');
+      expect(provider?.getProviderDatasourceId()).toBe('filecheck');
     });
 
     it('should return correct metric type', () => {
-      expect(provider.getMetricType()).toBe('boolean');
+      expect(provider?.getMetricType()).toBe('boolean');
     });
 
     it('should return all metric IDs', () => {
-      expect(provider.getMetricIds()).toEqual([
+      expect(provider?.getMetricIds()).toEqual([
         'filecheck.readme',
         'filecheck.codeowners',
         'filecheck.dockerfile',
@@ -256,29 +256,29 @@ describe('FilecheckMetricProvider', () => {
     });
 
     it('should return default file check thresholds', () => {
-      expect(provider.getMetricThresholds()).toEqual(
+      expect(provider?.getMetricThresholds()).toEqual(
         DEFAULT_FILECHECK_THRESHOLDS,
       );
     });
 
     it('should return correct catalog filter', () => {
-      expect(provider.getCatalogFilter()).toEqual({
+      expect(provider?.getCatalogFilter()).toEqual({
         'metadata.annotations.backstage.io/source-location': expect.any(Symbol),
       });
     });
 
     it('should return all metrics with correct metadata', () => {
-      const metrics = provider.getMetrics();
+      const metrics = provider?.getMetrics();
 
       expect(metrics).toHaveLength(3);
-      expect(metrics[0]).toEqual({
+      expect(metrics?.[0]).toEqual({
         id: 'filecheck.readme',
         title: 'File: README.md',
         description: 'Checks if README.md exists in the repository.',
         type: 'boolean',
         history: true,
       });
-      expect(metrics[1]).toEqual({
+      expect(metrics?.[1]).toEqual({
         id: 'filecheck.codeowners',
         title: 'File: CODEOWNERS',
         description: 'Checks if CODEOWNERS exists in the repository.',
@@ -288,7 +288,7 @@ describe('FilecheckMetricProvider', () => {
     });
 
     it('should return first metric for backward compatibility via getMetric()', () => {
-      const metric = provider.getMetric();
+      const metric = provider?.getMetric();
 
       expect(metric).toEqual({
         id: 'filecheck.readme',
