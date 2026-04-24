@@ -18,8 +18,8 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import type { UrlReaderService } from '@backstage/backend-plugin-api';
 import { NotFoundError } from '@backstage/errors';
-import { FilecheckProvider } from './metricProviders/FilecheckProvider';
-import { DEFAULT_FILECHECK_THRESHOLDS } from './config';
+import { DEFAULT_FILECHECK_THRESHOLDS } from './FilecheckConfig';
+import { createFilecheckMetricProvider } from './FilecheckMetricProviderFactory';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -78,12 +78,12 @@ const mockEntity: Entity = {
   },
 };
 
-describe('FilecheckProvider', () => {
-  describe('fromConfig', () => {
+describe('FilecheckMetricProvider', () => {
+  describe('createFilecheckMetricProvider', () => {
     const mockUrlReader = createMockUrlReader(new Set());
 
     it('should return undefined when no files configuration is provided', () => {
-      const provider = FilecheckProvider.fromConfig(
+      const provider = createFilecheckMetricProvider(
         new ConfigReader({}),
         mockUrlReader,
       );
@@ -91,7 +91,7 @@ describe('FilecheckProvider', () => {
     });
 
     it('should return undefined when files array is empty', () => {
-      const provider = FilecheckProvider.fromConfig(
+      const provider = createFilecheckMetricProvider(
         new ConfigReader({
           scorecard: { plugins: { filecheck: { files: [] } } },
         }),
@@ -111,7 +111,7 @@ describe('FilecheckProvider', () => {
         },
       });
 
-      const provider = FilecheckProvider.fromConfig(config, mockUrlReader);
+      const provider = createFilecheckMetricProvider(config, mockUrlReader);
 
       expect(provider).toBeDefined();
       expect(provider?.getMetricIds()).toEqual([
@@ -129,7 +129,9 @@ describe('FilecheckProvider', () => {
         },
       });
 
-      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
+      expect(() =>
+        createFilecheckMetricProvider(config, mockUrlReader),
+      ).toThrow(
         "Invalid file path for 'bad': path must not contain newlines, quotes, or backslashes",
       );
     });
@@ -143,7 +145,9 @@ describe('FilecheckProvider', () => {
         },
       });
 
-      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
+      expect(() =>
+        createFilecheckMetricProvider(config, mockUrlReader),
+      ).toThrow(
         "Invalid file path for 'bad': path must not contain newlines, quotes, or backslashes",
       );
     });
@@ -159,7 +163,9 @@ describe('FilecheckProvider', () => {
         },
       });
 
-      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
+      expect(() =>
+        createFilecheckMetricProvider(config, mockUrlReader),
+      ).toThrow(
         "Invalid file path for 'bad': path must not contain newlines, quotes, or backslashes",
       );
     });
@@ -173,7 +179,9 @@ describe('FilecheckProvider', () => {
         },
       });
 
-      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
+      expect(() =>
+        createFilecheckMetricProvider(config, mockUrlReader),
+      ).toThrow(
         "Invalid file path for 'bad': path must be relative without leading './' or '/'",
       );
     });
@@ -187,7 +195,9 @@ describe('FilecheckProvider', () => {
         },
       });
 
-      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
+      expect(() =>
+        createFilecheckMetricProvider(config, mockUrlReader),
+      ).toThrow(
         "Invalid file path for 'bad': path must be relative without leading './' or '/'",
       );
     });
@@ -203,18 +213,17 @@ describe('FilecheckProvider', () => {
         },
       });
 
-      expect(() => FilecheckProvider.fromConfig(config, mockUrlReader)).toThrow(
-        'Each file config entry must have exactly one key-value pair',
-      );
+      expect(() =>
+        createFilecheckMetricProvider(config, mockUrlReader),
+      ).toThrow('Each file config entry must have exactly one key-value pair');
     });
   });
 
   describe('provider methods', () => {
-    let provider: FilecheckProvider;
     const mockUrlReader = createMockUrlReader(new Set());
 
-    beforeEach(() => {
-      const config = new ConfigReader({
+    const provider = createFilecheckMetricProvider(
+      new ConfigReader({
         scorecard: {
           plugins: {
             filecheck: {
@@ -226,9 +235,9 @@ describe('FilecheckProvider', () => {
             },
           },
         },
-      });
-      provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
-    });
+      }),
+      mockUrlReader,
+    )!;
 
     it('should return correct provider ID', () => {
       expect(provider.getProviderId()).toBe('filecheck');
@@ -311,7 +320,7 @@ describe('FilecheckProvider', () => {
           },
         },
       });
-      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
 
       const result = await provider.calculateMetrics(mockEntity);
 
@@ -341,7 +350,7 @@ describe('FilecheckProvider', () => {
           },
         },
       });
-      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
 
       const result = await provider.calculateMetrics(mockEntity);
 
@@ -368,7 +377,7 @@ describe('FilecheckProvider', () => {
           },
         },
       });
-      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         'Auth failure',
@@ -390,7 +399,7 @@ describe('FilecheckProvider', () => {
           },
         },
       });
-      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
 
       const result = await provider.calculateMetric(mockEntity);
 
@@ -409,7 +418,7 @@ describe('FilecheckProvider', () => {
           },
         },
       });
-      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
 
       const result = await provider.calculateMetric(mockEntity);
 
@@ -439,7 +448,7 @@ describe('FilecheckProvider', () => {
           },
         },
       });
-      const provider = FilecheckProvider.fromConfig(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
 
       const result = await provider.calculateMetrics(mockEntity);
 
