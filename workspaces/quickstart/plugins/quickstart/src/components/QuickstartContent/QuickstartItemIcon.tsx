@@ -26,6 +26,7 @@ import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import { SxProps, Theme } from '@mui/material/styles';
 import { useApp } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
+import lightspeedIcon from '../../images/lightspeed-icon.svg';
 
 export interface QuickstartItemIconProps {
   icon?: string;
@@ -43,6 +44,15 @@ const commonIcons: {
   Catalog: <CategoryOutlinedIcon />,
   SelfService: <ControlPointOutlinedIcon />,
   Learning: <SchoolOutlinedIcon />,
+  Lightspeed: (
+    <img
+      src={lightspeedIcon}
+      alt=""
+      height={24}
+      width={24}
+      style={{ display: 'block' }}
+    />
+  ),
 };
 
 export const QuickstartItemIcon = ({ icon, sx }: QuickstartItemIconProps) => {
