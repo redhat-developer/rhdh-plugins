@@ -15,18 +15,25 @@
  */
 import { createApp } from '@backstage/frontend-defaults';
 import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-import quickstartPlugin, {
+import {
+  globalHeaderModule,
+  globalHeaderTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import {
   quickstartInitModule,
   quickstartTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-quickstart/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { navModule } from './modules/nav';
 
 export default createApp({
   features: [
     appDrawerModule,
-    quickstartPlugin,
+    globalHeaderModule,
+    globalHeaderTranslationsModule,
     quickstartInitModule,
     quickstartTranslationsModule,
+    rhdhThemeModule,
     navModule,
   ],
 });

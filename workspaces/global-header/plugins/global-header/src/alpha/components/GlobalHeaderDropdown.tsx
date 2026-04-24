@@ -74,15 +74,16 @@ export const GlobalHeaderDropdown = ({
 
   const menuListRef = useRef<HTMLUListElement>(null);
   const [hasVisibleItems, setHasVisibleItems] = useState(true);
+  const isOpen = Boolean(anchorEl);
 
   useLayoutEffect(() => {
-    if (!trackValidity || !menuListRef.current) return;
+    if (!trackValidity || !isOpen || !menuListRef.current) return;
     const found =
       menuListRef.current.querySelector('[role="menuitem"]') !== null;
     if (found !== hasVisibleItems) {
       setHasVisibleItems(found);
     }
-  }, [trackValidity, hasVisibleItems]);
+  }, [trackValidity, hasVisibleItems, isOpen]);
 
   if (menuItems.length === 0 && !emptyState) return null;
 

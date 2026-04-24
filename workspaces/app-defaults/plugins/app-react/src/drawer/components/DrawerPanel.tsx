@@ -110,11 +110,9 @@ export const DrawerPanel = (props: DrawerPanelProps) => {
       open={isDrawerOpen}
       PaperProps={{
         style: { width: drawerWidth },
-      }}
-      sx={{
-        '& .MuiDrawer-paper': {
+        sx: {
           boxSizing: 'border-box',
-          backgroundColor: theme => {
+          backgroundColor: (theme: Record<string, any>) => {
             const palette = theme.palette as Record<string, any>;
             return (
               palette?.rhdh?.general?.sidebarBackgroundColor ||
@@ -122,12 +120,6 @@ export const DrawerPanel = (props: DrawerPanelProps) => {
             );
           },
           justifyContent: 'space-between',
-        },
-        'body:has(#global-header) &': {
-          '& .MuiDrawer-paper': {
-            top: '64px !important',
-            height: 'calc(100vh - 64px) !important',
-          },
         },
       }}
     >

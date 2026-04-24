@@ -27,26 +27,18 @@ import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react'
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import ChatIcon from '@material-ui/icons/Chat';
-import HelpIcon from '@material-ui/icons/Help';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
-const DrawerDemoItems = () => {
+const ChatDrawerItem = () => {
   const { toggleDrawer } = useAppDrawer();
   return (
-    <>
-      <SidebarItem
-        icon={() => <ChatIcon />}
-        text="Chat"
-        onClick={() => toggleDrawer('demo-chat')}
-      />
-      <SidebarItem
-        icon={() => <HelpIcon />}
-        text="Help"
-        onClick={() => toggleDrawer('demo-help')}
-      />
-    </>
+    <SidebarItem
+      icon={() => <ChatIcon />}
+      text="Chat"
+      onClick={() => toggleDrawer('demo-chat')}
+    />
   );
 };
 
@@ -76,7 +68,7 @@ export const SidebarContent = NavContentBlueprint.make({
           </SidebarGroup>
           <SidebarSpace />
           <SidebarDivider />
-          <DrawerDemoItems />
+          <ChatDrawerItem />
           <NotificationsSidebarItem />
           <SidebarDivider />
           <SidebarGroup

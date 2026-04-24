@@ -32,7 +32,16 @@ export const GlobalHeader = () => {
   const components = useGlobalHeaderComponents();
 
   return (
-    <AppBar position="sticky" component="nav" id="global-header">
+    <AppBar
+      position="sticky"
+      component="nav"
+      id="global-header"
+      sx={{
+        width: 'auto',
+        marginRight: 'var(--docked-drawer-width, 0px)',
+        transition: 'margin-right 225ms cubic-bezier(0, 0, 0.2, 1)',
+      }}
+    >
       <Toolbar
         sx={{
           gap: 1,
