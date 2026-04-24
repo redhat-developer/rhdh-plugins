@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.2.1
+
+### Patch Changes
+
+- 0c0e14e: Add an empty state for unconfigured LLM.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.2.1
+
 ## 2.2.0
 
 ### Minor Changes
