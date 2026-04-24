@@ -17,7 +17,6 @@
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import type { UrlReaderService } from '@backstage/backend-plugin-api';
-import { NotFoundError } from '@backstage/errors';
 import { DEFAULT_FILECHECK_THRESHOLDS } from './FilecheckConfig';
 import { createFilecheckMetricProvider } from './FilecheckMetricProviderFactory';
 
@@ -29,39 +28,36 @@ jest.mock('@backstage/catalog-model', () => ({
   }),
 }));
 
-jest.mock('@backstage/integration', () => {
-  const mockResolveUrl = jest.fn(
-    ({ url, base }: { url: string; base: string }) => {
-      const repoRoot = base
-        .replace(/\/tree\/main\/.*$/, '')
-        .replace(/\/blob\/HEAD\/.*$/, '')
-        .replace(/\/blob\/HEAD\/?$/, '');
-      return `${repoRoot}/blob/main${url}`;
-    },
-  );
-  return {
-    ScmIntegrations: {
-      fromConfig: jest.fn().mockReturnValue({
-        byUrl: jest.fn().mockReturnValue({
-          type: 'github',
-          resolveUrl: mockResolveUrl,
-        }),
-      }),
-    },
-  };
-});
-
+/**
+ * Creates a mock UrlReaderService whose readTree returns a tree containing
+ * only the paths in existingFiles (filtered by the caller's filter option).
+ * File paths are relative to the tree root (e.g. "README.md", not a full URL).
+ */
 function createMockUrlReader(
   existingFiles: Set<string>,
 ): jest.Mocked<UrlReaderService> {
   return {
-    readUrl: jest.fn(async (url: string) => {
-      if (existingFiles.has(url)) {
-        return { buffer: async () => Buffer.from(''), etag: 'test' };
-      }
-      throw new NotFoundError(`File not found: ${url}`);
-    }),
-    readTree: jest.fn(),
+    readUrl: jest.fn(),
+    readTree: jest.fn(
+      async (
+        _url: string,
+        opts?: {
+          etag?: string;
+          filter?: (path: string, info?: { size: number }) => boolean;
+        },
+      ) => {
+        const files = [...existingFiles]
+          .filter(p => !opts?.filter || opts.filter(p))
+          .map(p => ({ path: p, content: async () => Buffer.from('') }));
+        return {
+          files: async () => files,
+          etag: 'test-etag',
+          archive: async () => {
+            throw new Error('not implemented');
+          },
+        };
+      },
+    ),
     search: jest.fn(),
   } as unknown as jest.Mocked<UrlReaderService>;
 }
@@ -306,9 +302,7 @@ describe('FilecheckMetricProvider', () => {
 
   describe('calculateMetrics', () => {
     it('should return true for existing files and false for missing files', async () => {
-      const existingFiles = new Set([
-        'https://github.com/org/my-repo/blob/main/README.md',
-      ]);
+      const existingFiles = new Set(['README.md']);
       const mockUrlReader = createMockUrlReader(existingFiles);
 
       const config = new ConfigReader({
@@ -328,12 +322,8 @@ describe('FilecheckMetricProvider', () => {
       expect(result.get('filecheck.license')).toBe(false);
     });
 
-    it('should check all configured files', async () => {
-      const existingFiles = new Set([
-        'https://github.com/org/my-repo/blob/main/README.md',
-        'https://github.com/org/my-repo/blob/main/LICENSE',
-        'https://github.com/org/my-repo/blob/main/Dockerfile',
-      ]);
+    it('should check all configured files with a single readTree call', async () => {
+      const existingFiles = new Set(['README.md', 'LICENSE', 'Dockerfile']);
       const mockUrlReader = createMockUrlReader(existingFiles);
 
       const config = new ConfigReader({
@@ -358,13 +348,13 @@ describe('FilecheckMetricProvider', () => {
       expect(result.get('filecheck.license')).toBe(true);
       expect(result.get('filecheck.codeowners')).toBe(false);
       expect(result.get('filecheck.dockerfile')).toBe(true);
-      expect(mockUrlReader.readUrl).toHaveBeenCalledTimes(4);
+      expect(mockUrlReader.readTree).toHaveBeenCalledTimes(1);
     });
 
-    it('should propagate non-NotFoundError errors', async () => {
+    it('should propagate errors from readTree', async () => {
       const mockUrlReader: jest.Mocked<UrlReaderService> = {
-        readUrl: jest.fn().mockRejectedValue(new Error('Auth failure')),
-        readTree: jest.fn(),
+        readUrl: jest.fn(),
+        readTree: jest.fn().mockRejectedValue(new Error('Auth failure')),
         search: jest.fn(),
       } as unknown as jest.Mocked<UrlReaderService>;
 
@@ -385,9 +375,7 @@ describe('FilecheckMetricProvider', () => {
     });
 
     it('should return first metric result for legacy calculateMetric()', async () => {
-      const existingFiles = new Set([
-        'https://github.com/org/my-repo/blob/main/README.md',
-      ]);
+      const existingFiles = new Set(['README.md']);
       const mockUrlReader = createMockUrlReader(existingFiles);
 
       const config = new ConfigReader({
@@ -434,9 +422,7 @@ describe('FilecheckMetricProvider', () => {
         target: 'https://github.com/org/my-repo',
       });
 
-      const existingFiles = new Set([
-        'https://github.com/org/my-repo/blob/main/README.md',
-      ]);
+      const existingFiles = new Set(['README.md']);
       const mockUrlReader = createMockUrlReader(existingFiles);
 
       const config = new ConfigReader({
@@ -453,6 +439,44 @@ describe('FilecheckMetricProvider', () => {
       const result = await provider.calculateMetrics(mockEntity);
 
       expect(result.get('filecheck.readme')).toBe(true);
+      expect(mockUrlReader.readTree).toHaveBeenCalledWith(
+        'https://github.com/org/my-repo',
+        expect.objectContaining({ filter: expect.any(Function) }),
+      );
+    });
+
+    it('should use ETag cache to skip re-downloading unchanged trees', async () => {
+      const existingFiles = new Set(['README.md']);
+      const mockUrlReader = createMockUrlReader(existingFiles);
+
+      const config = new ConfigReader({
+        scorecard: {
+          plugins: {
+            filecheck: {
+              files: [{ readme: 'README.md' }],
+            },
+          },
+        },
+      });
+      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
+
+      await provider.calculateMetrics(mockEntity);
+
+      const notModifiedError = new Error('Not modified');
+      notModifiedError.name = 'NotModifiedError';
+      (mockUrlReader.readTree as jest.Mock).mockRejectedValueOnce(
+        notModifiedError,
+      );
+
+      const result = await provider.calculateMetrics(mockEntity);
+
+      expect(result.get('filecheck.readme')).toBe(true);
+      expect(mockUrlReader.readTree).toHaveBeenCalledTimes(2);
+      expect(mockUrlReader.readTree).toHaveBeenNthCalledWith(
+        2,
+        'https://github.com/org/my-repo/tree/main/',
+        expect.objectContaining({ etag: 'test-etag' }),
+      );
     });
   });
 });

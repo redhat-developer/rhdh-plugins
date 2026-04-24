@@ -90,16 +90,13 @@ export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, boolean>> {
+    const filePaths = this.filesConfig.files.map(f => f.path);
+    const existsMap = await this.client.checkFiles(entity, filePaths);
+
     const results = new Map<string, boolean>();
-
-    await Promise.all(
-      this.filesConfig.files.map(async file => {
-        const metricId = `filecheck.${file.id}`;
-        const exists = await this.client.fileExists(entity, file.path);
-        results.set(metricId, exists);
-      }),
-    );
-
+    for (const file of this.filesConfig.files) {
+      results.set(`filecheck.${file.id}`, existsMap.get(file.path) ?? false);
+    }
     return results;
   }
 }

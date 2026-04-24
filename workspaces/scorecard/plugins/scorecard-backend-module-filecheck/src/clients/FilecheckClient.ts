@@ -16,73 +16,65 @@
 
 import type { UrlReaderService } from '@backstage/backend-plugin-api';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
-import { NotFoundError } from '@backstage/errors';
-import { type ScmIntegration, ScmIntegrations } from '@backstage/integration';
 
-const BRANCH_REF_PATTERNS: Record<string, RegExp> = {
-  github: /\/(blob|tree|edit)\//,
-  gitlab: /\/\-\/(blob|tree|edit)\//,
-  bitbucketCloud: /\/(src|raw)\//,
-  bitbucketServer: /\/browse\//,
+type CacheEntry = {
+  etag: string;
+  foundPaths: Set<string>;
 };
-
-const DEFAULT_REF_SUFFIXES: Record<string, string> = {
-  github: '/blob/HEAD/',
-  gitlab: '/-/blob/HEAD/',
-  bitbucketCloud: '/src/HEAD/',
-  bitbucketServer: '/browse/',
-};
-
-/**
- * Bare repo URLs (e.g. "https://github.com/org/repo") lack a branch reference,
- * which causes `resolveUrl` to produce URLs like "/org/repo/README.md" that the
- * UrlReader cannot parse. This function appends a default branch ref (HEAD) when
- * the URL doesn't already contain one.
- */
-function ensureBranchRef(target: string, integration: ScmIntegration): string {
-  const pattern = BRANCH_REF_PATTERNS[integration.type];
-  if (pattern && pattern.test(target)) {
-    return target;
-  }
-
-  const suffix = DEFAULT_REF_SUFFIXES[integration.type] ?? '/blob/HEAD/';
-  return `${target.replace(/\/$/, '')}${suffix}`;
-}
 
 export class FilecheckClient {
   private readonly urlReader: UrlReaderService;
-  private readonly integrations: ScmIntegrations;
+  private readonly cache = new Map<string, CacheEntry>();
 
-  constructor(urlReader: UrlReaderService, integrations: ScmIntegrations) {
+  constructor(urlReader: UrlReaderService) {
     this.urlReader = urlReader;
-    this.integrations = integrations;
   }
 
   /**
-   * Returns true if the given file path exists in the entity's source repository.
+   * Downloads the entity's repository tree once and checks which of the given
+   * file paths exist. Returns a map of path → boolean.
+   *
+   * A filter is applied so that only the requested paths are streamed from the
+   * archive, keeping bandwidth usage proportional to the number of configured
+   * files rather than the size of the whole repository.
+   *
+   * Results are cached per (target URL, file list) pair using ETags so that
+   * subsequent scheduler runs skip re-downloading trees that have not changed.
    */
-  async fileExists(entity: Entity, filePath: string): Promise<boolean> {
+  async checkFiles(
+    entity: Entity,
+    filePaths: string[],
+  ): Promise<Map<string, boolean>> {
     const { target } = getEntitySourceLocation(entity);
-    const integration = this.integrations.byUrl(target);
 
-    if (!integration) {
-      throw new Error(`No SCM integration found for URL '${target}'`);
-    }
+    const sortedPaths = [...filePaths].sort();
+    const cacheKey = `${target}\0${sortedPaths.join('\0')}`;
+    const pathsSet = new Set(filePaths);
+    const cached = this.cache.get(cacheKey);
 
-    const baseUrl = ensureBranchRef(target, integration);
-    const fileUrl = integration.resolveUrl({
-      url: `/${filePath}`,
-      base: baseUrl,
-    });
+    let foundPaths: Set<string>;
 
     try {
-      await this.urlReader.readUrl(fileUrl);
-      return true;
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        return false;
+      const tree = await this.urlReader.readTree(target, {
+        etag: cached?.etag,
+        filter: filePath => pathsSet.has(filePath),
+      });
+
+      const files = await tree.files();
+      foundPaths = new Set(files.map(f => f.path));
+      this.cache.set(cacheKey, { etag: tree.etag, foundPaths });
+    } catch (error: any) {
+      if (cached && error.name === 'NotModifiedError') {
+        foundPaths = cached.foundPaths;
+      } else {
+        throw error;
       }
-      throw error;
     }
+
+    const result = new Map<string, boolean>();
+    for (const filePath of filePaths) {
+      result.set(filePath, foundPaths.has(filePath));
+    }
+    return result;
   }
 }

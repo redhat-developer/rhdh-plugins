@@ -16,7 +16,6 @@
 
 import type { UrlReaderService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import { ScmIntegrations } from '@backstage/integration';
 import { FilecheckClient } from '../clients/FilecheckClient';
 import { parseFilecheckConfig } from './FilecheckConfig';
 import { FilecheckMetricProvider } from './FilecheckMetricProvider';
@@ -34,7 +33,6 @@ export function createFilecheckMetricProvider(
     return undefined;
   }
 
-  const integrations = ScmIntegrations.fromConfig(config);
-  const client = new FilecheckClient(urlReader, integrations);
+  const client = new FilecheckClient(urlReader);
   return new FilecheckMetricProvider(client, filesConfig);
 }
