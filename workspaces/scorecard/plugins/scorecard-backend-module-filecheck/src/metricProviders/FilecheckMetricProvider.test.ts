@@ -314,12 +314,12 @@ describe('FilecheckMetricProvider', () => {
           },
         },
       });
-      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader);
 
-      const result = await provider.calculateMetrics(mockEntity);
+      const result = await provider?.calculateMetrics(mockEntity);
 
-      expect(result.get('filecheck.readme')).toBe(true);
-      expect(result.get('filecheck.license')).toBe(false);
+      expect(result?.get('filecheck.readme')).toBe(true);
+      expect(result?.get('filecheck.license')).toBe(false);
     });
 
     it('should check all configured files with a single readTree call', async () => {
@@ -340,14 +340,14 @@ describe('FilecheckMetricProvider', () => {
           },
         },
       });
-      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader);
 
-      const result = await provider.calculateMetrics(mockEntity);
+      const result = await provider?.calculateMetrics(mockEntity);
 
-      expect(result.get('filecheck.readme')).toBe(true);
-      expect(result.get('filecheck.license')).toBe(true);
-      expect(result.get('filecheck.codeowners')).toBe(false);
-      expect(result.get('filecheck.dockerfile')).toBe(true);
+      expect(result?.get('filecheck.readme')).toBe(true);
+      expect(result?.get('filecheck.license')).toBe(true);
+      expect(result?.get('filecheck.codeowners')).toBe(false);
+      expect(result?.get('filecheck.dockerfile')).toBe(true);
       expect(mockUrlReader.readTree).toHaveBeenCalledTimes(1);
     });
 
@@ -367,9 +367,9 @@ describe('FilecheckMetricProvider', () => {
           },
         },
       });
-      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader);
 
-      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+      await expect(provider?.calculateMetrics(mockEntity)).rejects.toThrow(
         'Auth failure',
       );
     });
@@ -387,9 +387,9 @@ describe('FilecheckMetricProvider', () => {
           },
         },
       });
-      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader);
 
-      const result = await provider.calculateMetric(mockEntity);
+      const result = await provider?.calculateMetric(mockEntity);
 
       expect(result).toBe(true);
     });
@@ -406,9 +406,9 @@ describe('FilecheckMetricProvider', () => {
           },
         },
       });
-      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader);
 
-      const result = await provider.calculateMetric(mockEntity);
+      const result = await provider?.calculateMetric(mockEntity);
 
       expect(result).toBe(false);
     });
@@ -434,11 +434,11 @@ describe('FilecheckMetricProvider', () => {
           },
         },
       });
-      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader);
 
-      const result = await provider.calculateMetrics(mockEntity);
+      const result = await provider?.calculateMetrics(mockEntity);
 
-      expect(result.get('filecheck.readme')).toBe(true);
+      expect(result?.get('filecheck.readme')).toBe(true);
       expect(mockUrlReader.readTree).toHaveBeenCalledWith(
         'https://github.com/org/my-repo',
         expect.objectContaining({ filter: expect.any(Function) }),
@@ -458,9 +458,9 @@ describe('FilecheckMetricProvider', () => {
           },
         },
       });
-      const provider = createFilecheckMetricProvider(config, mockUrlReader)!;
+      const provider = createFilecheckMetricProvider(config, mockUrlReader);
 
-      await provider.calculateMetrics(mockEntity);
+      await provider?.calculateMetrics(mockEntity);
 
       const notModifiedError = new Error('Not modified');
       notModifiedError.name = 'NotModifiedError';
@@ -468,9 +468,9 @@ describe('FilecheckMetricProvider', () => {
         notModifiedError,
       );
 
-      const result = await provider.calculateMetrics(mockEntity);
+      const result = await provider?.calculateMetrics(mockEntity);
 
-      expect(result.get('filecheck.readme')).toBe(true);
+      expect(result?.get('filecheck.readme')).toBe(true);
       expect(mockUrlReader.readTree).toHaveBeenCalledTimes(2);
       expect(mockUrlReader.readTree).toHaveBeenNthCalledWith(
         2,

@@ -47,7 +47,7 @@ export class FilecheckClient {
   ): Promise<Map<string, boolean>> {
     const { target } = getEntitySourceLocation(entity);
 
-    const sortedPaths = [...filePaths].sort();
+    const sortedPaths = [...filePaths].sort((a, b) => a.localeCompare(b));
     const cacheKey = `${target}\0${sortedPaths.join('\0')}`;
     const pathsSet = new Set(filePaths);
     const cached = this.cache.get(cacheKey);
