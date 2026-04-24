@@ -31,6 +31,6 @@ export const useNotebookDocuments = (
       return await notebooksApi.listDocuments(sessionId!);
     },
     enabled: Boolean(sessionId),
-    staleTime: 1000 * 60,
+    staleTime: 0,
   });
 };

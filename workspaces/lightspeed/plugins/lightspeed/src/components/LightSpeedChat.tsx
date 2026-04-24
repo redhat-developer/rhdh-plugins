@@ -1532,23 +1532,22 @@ export const LightspeedChat = ({
             )}
           </ChatbotHeaderMain>
 
-          {showChatPanel && (
-            <LightspeedChatBoxHeader
-              selectedModel={selectedModel}
-              handleSelectedModel={item => {
-                setIsMcpSettingsOpen(false);
-                onNewChat();
-                handleSelectedModel(item);
-              }}
-              models={models}
-              isPinningChatsEnabled={isPinningChatsEnabled}
-              isModelSelectorDisabled={isSendButtonDisabled}
-              setDisplayMode={setDisplayMode}
-              displayMode={displayMode}
-              onPinnedChatsToggle={handlePinningChatsToggle}
-              onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
-            />
-          )}
+          <LightspeedChatBoxHeader
+            selectedModel={selectedModel}
+            handleSelectedModel={item => {
+              setIsMcpSettingsOpen(false);
+              onNewChat();
+              handleSelectedModel(item);
+            }}
+            models={models}
+            isPinningChatsEnabled={isPinningChatsEnabled}
+            isModelSelectorDisabled={isSendButtonDisabled}
+            hideModelSelector={showNotebooksPanel}
+            setDisplayMode={setDisplayMode}
+            displayMode={displayMode}
+            onPinnedChatsToggle={handlePinningChatsToggle}
+            onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
+          />
         </ChatbotHeader>
         {isFullscreenMode && (
           <>
