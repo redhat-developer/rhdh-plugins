@@ -173,6 +173,16 @@ const useStyles = makeStyles(theme => ({
   fullWidth: {
     maxWidth: 'unset',
   },
+  footerAlignedAlert: {
+    maxWidth: '60rem',
+    width: '90%',
+    margin: '0 auto',
+    padding: `0 0 ${theme.spacing(1)}px`,
+  },
+  alertFullWidth: {
+    maxWidth: 'unset',
+    width: '95%',
+  },
   footerFullWidth: {
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
@@ -624,7 +634,9 @@ export const NotebookView = ({
                 <div className={classes.mainContent}>{renderMainContent()}</div>
 
                 {!hasDocuments && (
-                  <div className={classes.alertContainer}>
+                  <div
+                    className={`${classes.footerAlignedAlert}${sidebarCollapsed ? ` ${classes.alertFullWidth}` : ''}`}
+                  >
                     <Alert isInline variant="info" title={t('aria.important')}>
                       {t('disclaimer.withoutValidation')}
                     </Alert>
