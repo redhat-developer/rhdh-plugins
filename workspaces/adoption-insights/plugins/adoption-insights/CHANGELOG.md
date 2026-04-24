@@ -1,5 +1,39 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.8.0
+
+### Minor Changes
+
+- 4526035: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- Updated dependencies [4526035]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.0
+
+## 0.7.1
+
+### Patch Changes
+
+- fcc50b6: The Adoption Insights "Missing Permission" page was linking to GitHub repository documentation. This has been updated to point to the official Red Hat Developer Hub product documentation instead.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.1
+
+## 0.7.0
+
+### Minor Changes
+
+- b58b43d: Migrated Adoption Insights and Adoption Insights Analytics Module to New Frontend System
+- e3e959d: Use readable entity titles in Adoption Insights widgets
+- 0f66c7c: Backstage version bump to v1.47.3
+
+### Patch Changes
+
+- 5c82367: normalize event timestamps to UTC and fix frontend date parsing
+- f6d5102: Translation updated for German and Spanish
+- afd7a1e: Update translations for Adoption Insights.
+- Updated dependencies [0f66c7c]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.0
+
 ## 0.6.2
 
 ### Patch Changes

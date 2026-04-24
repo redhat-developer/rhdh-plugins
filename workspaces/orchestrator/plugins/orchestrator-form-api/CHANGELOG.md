@@ -1,5 +1,56 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-api
 
+## 2.7.1
+
+### Patch Changes
+
+- Updated dependencies [d85bf56]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.2
+
+## 2.7.0
+
+### Minor Changes
+
+- f45fe5a: Add custom review page API support
+
+  **Custom Review Page API:**
+  - Add `ReviewComponentProps` type to define props for custom review components
+  - Add optional `getReviewComponent()` method to `OrchestratorFormApi` interface
+  - Update `OrchestratorForm` to support custom review page components from plugins
+  - Add `CustomReviewPage` example component in orchestrator-form-widgets plugin (aligned with `ReviewStep`: `generateReviewTableData`, hidden-fields toggle, `NestedReviewTable`)
+  - Export `generateReviewTableData`, `schemaHasUiHiddenFields`, and `NestedReviewTable` from orchestrator-form-react for custom review implementations
+  - Falls back to default review page when `getReviewComponent()` returns `undefined`
+
+  **Documentation:**
+  - Update `extensibleForm.md` with custom review page implementation guide
+  - Add example showing how to implement and use custom review components
+
+### Patch Changes
+
+- 16d41c2: Add Run as Event when `orchestrator.kafka` is configured: send `isEvent` with execute input, redirect to workflow runs with a notice when the response id is `kafkaEvent`.
+- Updated dependencies [16d41c2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.1
+
+## 2.6.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- Updated dependencies [665a75c]
+- Updated dependencies [2212e8d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.0
+
+## 2.5.3
+
+### Patch Changes
+
+- 315239c: Scope SchemaUpdater replacements to the originating step and improve scope resolution.
+- Updated dependencies [5a9d9d8]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+
 ## 2.5.2
 
 ### Patch Changes

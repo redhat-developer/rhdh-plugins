@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights
 
+## 0.8.0
+
+### Minor Changes
+
+- 4526035: Backstage version bump to v1.49.3
+
+## 0.7.1
+
+## 0.7.0
+
+### Minor Changes
+
+- b58b43d: Migrated Adoption Insights and Adoption Insights Analytics Module to New Frontend System
+- 0f66c7c: Backstage version bump to v1.47.3
+
 ## 0.6.2
 
 ## 0.6.1

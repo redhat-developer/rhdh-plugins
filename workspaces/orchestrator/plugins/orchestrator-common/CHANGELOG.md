@@ -1,5 +1,33 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.6.2
+
+### Patch Changes
+
+- d85bf56: chore: add new config value for contentLengthLimit
+
+## 3.6.1
+
+### Patch Changes
+
+- 16d41c2: Add Run as Event when `orchestrator.kafka` is configured: send `isEvent` with execute input, redirect to workflow runs with a notice when the response id is `kafkaEvent`.
+
+## 3.6.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- 665a75c: fix: update axios for CVE-2026-40175
+
+## 3.5.3
+
+### Patch Changes
+
+- 5a9d9d8: Updated dependency `@openapitools/openapi-generator-cli` to `2.30.2`.
+
 ## 3.5.2
 
 ### Patch Changes

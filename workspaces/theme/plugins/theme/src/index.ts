@@ -17,6 +17,8 @@
 export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
 export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
 
+import './assets/fonts/font.min.css';
+
 export * from './hooks';
 export * from './themes';
 export { LogoFull, LogoIcon } from './components';

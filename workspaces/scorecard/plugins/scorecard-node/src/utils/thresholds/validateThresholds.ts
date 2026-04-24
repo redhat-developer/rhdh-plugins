@@ -152,7 +152,7 @@ export function validateThresholds(
       throw new ThresholdConfigFormatError(
         `Custom threshold key "${
           rule.key
-        }" must specify a color or icon property. Only standard keys (${standardThresholdRuleKeys
+        }" must specify a color and icon property. Only standard keys (${standardThresholdRuleKeys
           .map(k => `'${k}'`)
           .join(', ')}) have default colors and icons.`,
       );

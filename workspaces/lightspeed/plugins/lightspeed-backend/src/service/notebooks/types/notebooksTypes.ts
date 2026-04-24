@@ -18,7 +18,6 @@
  * Session metadata for organization
  */
 export interface SessionMetadata {
-  document_ids?: string[]; // Track documents in this session
   conversation_id?: string | null; // Active conversation ID for RAG queries
   embedding_model?: string; // Embedding model used
   embedding_dimension?: number; // Embedding vector dimension
@@ -38,6 +37,7 @@ export interface NotebookSession {
   created_at: string;
   updated_at: string;
   metadata?: SessionMetadata;
+  document_count?: number;
 }
 
 /**
@@ -45,12 +45,9 @@ export interface NotebookSession {
  */
 export interface SessionDocument {
   document_id: string;
-  title: string;
-  session_id: string;
-  user_id: string;
   source_type: 'text' | 'pdf' | 'url' | 'md' | 'json' | 'yaml' | 'log';
   created_at: string;
-  metadata?: Record<string, any>;
+  updated_at: string;
 }
 
 /**
@@ -93,3 +90,91 @@ export interface QueryResponse {
   chunks?: any[];
   error?: string;
 }
+
+export interface UpsertResult {
+  document_id: string;
+  file_id: string;
+  replaced: boolean;
+  status: 'completed' | 'in_progress' | 'failed' | 'cancelled';
+}
+
+/**
+ * Response factory functions
+ */
+
+/**
+ * Create a successful session response
+ * @param session - Notebook session object
+ * @param message - Success message
+ * @returns Session response object
+ */
+export const createSessionResponse = (
+  session: NotebookSession,
+  message: string,
+): SessionResponse => {
+  return {
+    status: 'success',
+    session,
+    message,
+  };
+};
+
+/**
+ * Create a successful session list response
+ * @param sessions - Array of notebook sessions
+ * @returns Session list response object
+ */
+export const createSessionListResponse = (
+  sessions: NotebookSession[],
+): SessionListResponse => {
+  return {
+    status: 'success',
+    sessions,
+    count: sessions.length,
+  };
+};
+
+/**
+ * Create a successful document response
+ * @param document_id - Document identifier
+ * @param session_id - Session identifier
+ * @param message - Success message
+ * @param options - Optional fields (title, replaced)
+ * @returns Document response object
+ */
+export const createDocumentResponse = (
+  document_id: string,
+  session_id: string,
+  message: string,
+  options?: {
+    title?: string;
+    replaced?: boolean;
+  },
+): DocumentResponse => {
+  return {
+    status: 'success',
+    document_id,
+    title: options?.title,
+    session_id,
+    replaced: options?.replaced,
+    message,
+  };
+};
+
+/**
+ * Create a successful document list response
+ * @param session_id - Session identifier
+ * @param documents - Array of session documents
+ * @returns Document list response object
+ */
+export const createDocumentListResponse = (
+  session_id: string,
+  documents: SessionDocument[],
+): DocumentListResponse => {
+  return {
+    status: 'success',
+    session_id,
+    documents,
+    count: documents.length,
+  };
+};

@@ -112,7 +112,7 @@ export interface BaseMessage {
 export type ConversationSummary = {
   conversation_id: string;
   last_message_timestamp: number;
-  topic_summary: string;
+  topic_summary: string | null;
 };
 
 export enum SupportedFileType {
@@ -168,7 +168,7 @@ export type CaptureFeedback = {
 
 // Tool Calling Types
 export interface ToolCall {
-  id: number;
+  id: number | string;
   toolName: string;
   description?: string;
   arguments: Record<string, any>;
@@ -180,13 +180,19 @@ export interface ToolCall {
 }
 
 export interface ToolCallEvent {
-  id: number;
-  token: string | { tool_name: string; arguments: Record<string, any> };
+  id: number | string;
+  token?: string | { tool_name: string; arguments: Record<string, any> };
+  name?: string;
+  args?: Record<string, any>;
+  arguments?: Record<string, any>;
+  type?: string;
 }
 
 export interface ToolResultEvent {
-  id: number;
-  token: { tool_name: string; response: string };
+  id: number | string;
+  token?: { tool_name: string; response: string };
+  status?: string;
+  content?: string;
 }
 
 /**
@@ -212,6 +218,7 @@ export type NotebookSession = {
   description?: string;
   created_at: string;
   updated_at: string;
+  document_count?: number;
   metadata?: NotebookSessionMetadata;
 };
 

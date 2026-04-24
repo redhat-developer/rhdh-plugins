@@ -1,8 +1,32 @@
-.git
-.yarn/cache
+# ── Yarn install state ────────────────────────────────────────────────────────
 .yarn/install-state.gz
+.pnp.*
+
+# ── Local build artefacts ─────────────────────────────────────────────────────
 node_modules
-packages/*/src
-packages/*/node_modules
-plugins
+dist
+dist-types
+dist-dynamic
+dynamic-plugins-root
+coverage
+
+# ── Sensitive / local-only config ─────────────────────────────────────────────
+# app-config.local.yaml contains real credentials and must never enter the image.
 *.local.yaml
+.env
+.env.*
+
+# ── Git history ───────────────────────────────────────────────────────────────
+# Git metadata is not needed to build the app and may expose commit history.
+.git
+.gitignore
+.gitattributes
+
+# ── CI / tooling / editor files ───────────────────────────────────────────────
+.cursor
+.changeset
+scripts
+*.md
+knip.json
+catalog-info.yaml
+examples

@@ -23,11 +23,19 @@ import {
 } from '../utils';
 import { useTranslation } from '../hooks/useTranslation';
 
-export const InstallationWarning = ({ configData }: { configData: any }) => {
+export type InstallationWarningConfig = {
+  error?: { reason?: ExtensionsStatus; message?: string };
+};
+
+export const InstallationWarning = ({
+  configData,
+}: {
+  configData: InstallationWarningConfig | undefined;
+}) => {
   const { t } = useTranslation();
   const errorMessage = getErrorMessage(
-    configData?.error?.reason,
-    configData?.error?.message,
+    configData?.error?.reason ?? ExtensionsStatus.UNKNOWN,
+    configData?.error?.message ?? '',
     t,
   );
 

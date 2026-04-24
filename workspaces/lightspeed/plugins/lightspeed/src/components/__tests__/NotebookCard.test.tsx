@@ -26,6 +26,7 @@ const mockNotebook: NotebookSession = {
   name: 'My Notebook',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
+  document_count: 2,
   metadata: {
     document_ids: ['doc-1', 'doc-2'],
   },
@@ -52,7 +53,6 @@ describe('NotebookCard', () => {
   const onRename = jest.fn();
   const onDelete = jest.fn();
   const setOpenNotebookMenuId = jest.fn();
-  const getDocumentsCount = jest.fn().mockReturnValue(2);
 
   const defaultProps = {
     notebook: mockNotebook,
@@ -63,12 +63,10 @@ describe('NotebookCard', () => {
     onRename,
     onDelete,
     t: mockT as any,
-    getDocumentsCount,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    getDocumentsCount.mockReturnValue(2);
   });
 
   it('should render the notebook name', () => {
@@ -144,8 +142,8 @@ describe('NotebookCard', () => {
     });
   });
 
-  it('should call getDocumentsCount with document_ids from metadata', () => {
+  it('should render document_count from the notebook session', () => {
     render(<NotebookCard {...defaultProps} />);
-    expect(getDocumentsCount).toHaveBeenCalledWith(['doc-1', 'doc-2']);
+    expect(screen.getByText(/2/)).toBeInTheDocument();
   });
 });

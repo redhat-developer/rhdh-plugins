@@ -75,6 +75,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
     'notebook.upload.modal.dragDropTitle': 'Dateien hierher ziehen und ablegen',
     'notebook.upload.modal.browseButton': 'Hochladen',
+    'notebook.upload.modal.separator': 'oder',
     'notebook.upload.modal.infoText':
       'Akzeptierte Dateitypen: .md, .txt, .pdf, .json, .yaml, .log',
     'notebook.upload.error.unsupportedType':
@@ -142,6 +143,15 @@ const lightspeedTranslationDe = createTranslationMessages({
     'permission.subject.plugin': 'das Lightspeed-Plugin',
     'permission.subject.notebooks': 'die Lightspeed-Notizbücher',
     'permission.notebooks.goBack': 'Zurück',
+    'lcore.notConfigured.title': 'Verbinden Sie ein LLM, um zu starten',
+    'lcore.notConfigured.description':
+      'Lightspeed erfordert ein registriertes LLM. Wenden Sie sich an den Plattformadministrator Ihrer Organisation, um die Einrichtung abzuschließen.',
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Developer Lightspeed wird konfiguriert',
+    'lcore.notConfigured.backendDocs': 'Lightspeed-Backend einrichten',
+    'lcore.loadError.title': 'Modelle konnten nicht geladen werden',
+    'lcore.loadError.description':
+      'Das Lightspeed-Backend hat keine Modellliste zurückgegeben. Prüfen Sie, ob der Dienst läuft und erreichbar ist, und versuchen Sie es erneut.',
     'disclaimer.withValidation':
       'Diese Funktion nutzt KI-Technologie. Geben Sie bei Ihrer Eingabe keine persönlichen oder sonstigen sensiblen Informationen an. Interaktionen können dazu genutzt werden, die Produkte oder Dienstleistungen von Red Hat zu verbessern.',
     'disclaimer.withoutValidation':
@@ -151,6 +161,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'common.cancel': 'Abbrechen',
     'common.close': 'Schließen',
     'common.readMore': 'Mehr lesen',
+    'common.retry': 'Erneut versuchen',
+    'common.loading': 'Wird geladen',
     'common.noSearchResults': 'Keine Ergebnisse, die der Suche entsprechen',
     'menu.newConversation': 'Neuer Chat',
     'chatbox.header.title': 'Developer Lightspeed',
@@ -191,6 +203,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'conversation.announcement.userMessage':
       'Nachricht vom Benutzer: {{prompt}}. Nachricht vom Bot wird geladen.',
     'user.guest': 'Gast',
+    'conversation.announcement.responseStopped': 'Antwort angehalten.',
     'user.loading': '...',
     'tooltip.attach': 'Anhängen',
     'tooltip.send': 'Senden',
@@ -248,6 +261,50 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Angeheftete Chats sind derzeit aktiviert',
     'settings.pinned.disabled.description':
       'Angeheftete Chats sind derzeit deaktiviert.',
+    'settings.mcp.label': 'MCP-Einstellungen',
+    'mcp.settings.title': 'MCP-Server',
+    'mcp.settings.selectedCount':
+      '{{selectedCount}} von {{totalCount}} ausgewählt',
+    'mcp.settings.closeAriaLabel': 'MCP-Einstellungen schließen',
+    'mcp.settings.readOnlyAccess':
+      'Sie haben schreibgeschützten Zugriff auf MCP-Server.',
+    'mcp.settings.tableAriaLabel': 'MCP-Server-Tabelle',
+    'mcp.settings.enabled': 'Aktiviert',
+    'mcp.settings.name': 'Name',
+    'mcp.settings.status': 'Status',
+    'mcp.settings.edit': 'Bearbeiten',
+    'mcp.settings.loading': 'MCP-Server werden geladen...',
+    'mcp.settings.noneAvailable': 'Keine MCP-Server verfügbar.',
+    'mcp.settings.status.disabled': 'Deaktiviert',
+    'mcp.settings.status.tokenRequired': 'Token erforderlich',
+    'mcp.settings.status.failed': 'Fehlgeschlagen',
+    'mcp.settings.status.oneTool': '{{count}} Tool',
+    'mcp.settings.status.manyTools': '{{count}} Tools',
+    'mcp.settings.status.unknown': 'Unbekannt',
+    'mcp.settings.toggleServerAriaLabel': '{{serverName}} umschalten',
+    'mcp.settings.editServerAriaLabel': '{{serverName}} bearbeiten',
+    'mcp.settings.configureServerTitle': 'Server {{serverName}} konfigurieren',
+    'mcp.settings.closeConfigureModalAriaLabel':
+      'Konfigurationsdialog schließen',
+    'mcp.settings.modalDescription':
+      'Anmeldedaten werden verschlüsselt gespeichert und sind auf Ihr Profil beschränkt. Lightspeed arbeitet mit genau Ihren Berechtigungen.',
+    'mcp.settings.savedToken': 'Gespeicherter Token',
+    'mcp.settings.personalAccessToken': 'Persönlicher Zugriffstoken',
+    'mcp.settings.usingAdminCredential':
+      'Administratoranmeldedaten werden verwendet. Geben Sie einen persönlichen Token ein, um ihn für Ihr Konto zu überschreiben.',
+    'mcp.settings.enterToken': 'Geben Sie Ihren Token ein',
+    'mcp.settings.removePersonalToken': 'Persönlichen Token entfernen',
+    'mcp.settings.token.clearAriaLabel': 'Tokeneingabe löschen',
+    'mcp.settings.token.validating': 'Token wird validiert...',
+    'mcp.settings.token.savingAndValidating':
+      'Token wird gespeichert und validiert...',
+    'mcp.settings.token.urlUnavailableForValidation':
+      'Token kann nicht validiert werden, da die Server-URL nicht verfügbar ist.',
+    'mcp.settings.token.invalidCredentials':
+      'Ungültige Anmeldedaten. Überprüfen Sie Server-URL und Token.',
+    'mcp.settings.token.validationFailed':
+      'Validierung fehlgeschlagen. Überprüfen Sie Server-URL und Token.',
+    'mcp.settings.token.connectionSuccessful': 'Verbindung erfolgreich',
     'toolCall.header': 'Antwort des Tools: {{toolName}}',
     'toolCall.thinking': 'Hat {{seconds}} Sekunden nachgedacht',
     'toolCall.executionTime': 'Ausführungszeit: ',

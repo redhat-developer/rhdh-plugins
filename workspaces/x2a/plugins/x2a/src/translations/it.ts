@@ -242,6 +242,16 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'retriggerInit.confirm.userPromptPlaceholder':
       'Fornire istruzioni aggiuntive per la conversione…',
     'retriggerInit.confirm.confirmButton': 'Riavvia',
+    'retriggerInit.firstTrigger.title':
+      'Avviare la fase di inizializzazione per "{{name}}"?',
+    'retriggerInit.firstTrigger.message':
+      'Dopo la conferma verrà avviata la fase di scoperta per questo progetto. Potrebbero esserti richiesti i token SCM di origine e destinazione.',
+    'retriggerInit.firstTrigger.userPromptLabel':
+      'Istruzioni utente (opzionale)',
+    'retriggerInit.firstTrigger.userPromptPlaceholder':
+      'Fornire istruzioni aggiuntive per la conversione…',
+    'retriggerInit.firstTrigger.confirmButton':
+      'Avvia fase di inizializzazione',
     'retriggerInit.error':
       'Errore nel riavvio della fase di inizializzazione del progetto "{{name}}"',
     'retriggerInit.errorStart':

@@ -9,10 +9,7 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 import { Router } from 'express';
 
 // @public (undocumented)
-export function createRouter({
-  logger,
-  config,
-}: RouterOptions): Promise<Router>;
+export function createRouter(input: RouterOptions): Promise<Router>;
 
 // @public (undocumented)
 export interface RouterOptions {

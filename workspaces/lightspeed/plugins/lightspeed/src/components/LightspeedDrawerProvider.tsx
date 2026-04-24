@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 
-import {
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { useLocation, useMatch, useNavigate } from 'react-router-dom';
+import { PropsWithChildren } from 'react';
 
 import { makeStyles } from '@mui/styles';
-import { ChatbotDisplayMode, ChatbotModal } from '@patternfly/chatbot';
+import { ChatbotModal } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
-import { useBackstageUserIdentity, useDisplayModeSettings } from '../hooks';
-import { FileContent } from '../types';
+import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 
@@ -53,195 +44,8 @@ const useStyles = makeStyles(theme => ({
  */
 export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   const classes = useStyles();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const user = useBackstageUserIdentity();
-  const {
-    displayMode: persistedDisplayMode,
-    setDisplayMode: setPersistedDisplayMode,
-  } = useDisplayModeSettings(user, ChatbotDisplayMode.default);
-
-  const [displayModeState, setDisplayModeState] =
-    useState<ChatbotDisplayMode>(persistedDisplayMode);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [drawerWidth, setDrawerWidth] = useState<number>(400);
-  const [currentConversationIdState, setCurrentConversationIdState] = useState<
-    string | undefined
-  >(undefined);
-  const [draftMessage, setDraftMessageState] = useState<string>('');
-  const [draftFileContents, setDraftFileContentsState] = useState<
-    FileContent[]
-  >([]);
-  const openedViaFABRef = useRef<boolean>(false);
-
-  const isLightspeedRoute = location.pathname.startsWith('/lightspeed');
-
-  const conversationMatch = useMatch(
-    '/lightspeed/conversation/:conversationId',
-  );
-
-  const conversationId = conversationMatch?.params?.conversationId;
-
-  const navigateBackOrGoToCatalog = useCallback(() => {
-    // go to catalog page, if the user opens the lightspeed route via a new tab
-    if (!openedViaFABRef.current) {
-      navigate('/catalog');
-      openedViaFABRef.current = true;
-      return;
-    }
-    navigate(-1);
-  }, [navigate]);
-
-  useEffect(() => {
-    if (conversationId) {
-      setCurrentConversationIdState(conversationId);
-    } else {
-      setCurrentConversationIdState(undefined);
-    }
-
-    if (isLightspeedRoute) {
-      setDisplayModeState(ChatbotDisplayMode.embedded);
-      setIsOpen(true);
-    } else {
-      // When leaving lightspeed route, restore the persisted display mode
-      // If persisted mode is embedded, reset to default
-      if (persistedDisplayMode === ChatbotDisplayMode.embedded) {
-        setDisplayModeState(ChatbotDisplayMode.default);
-      } else {
-        setDisplayModeState(persistedDisplayMode);
-      }
-    }
-  }, [conversationId, isLightspeedRoute, persistedDisplayMode]);
-
-  // Open chatbot using the persisted display mode preference
-  const openChatbot = useCallback(() => {
-    openedViaFABRef.current = true;
-
-    const modeToUse = persistedDisplayMode || ChatbotDisplayMode.default;
-    setDisplayModeState(modeToUse);
-
-    if (modeToUse === ChatbotDisplayMode.embedded) {
-      const convId = currentConversationIdState;
-      const path = convId
-        ? `/lightspeed/conversation/${convId}`
-        : '/lightspeed';
-      navigate(path);
-    }
-
-    setIsOpen(true);
-  }, [persistedDisplayMode, currentConversationIdState, navigate]);
-
-  const closeChatbot = useCallback(() => {
-    // If in embedded mode on the lightspeed route, navigate back
-    if (displayModeState === ChatbotDisplayMode.embedded && isLightspeedRoute) {
-      navigateBackOrGoToCatalog();
-    }
-    setIsOpen(false);
-  }, [displayModeState, isLightspeedRoute, navigateBackOrGoToCatalog]);
-
-  const toggleChatbot = useCallback(() => {
-    if (isOpen) {
-      closeChatbot();
-    } else {
-      openChatbot();
-    }
-  }, [isOpen, openChatbot, closeChatbot]);
-
-  const setCurrentConversationId = useCallback(
-    (id: string | undefined) => {
-      setCurrentConversationIdState(id);
-
-      if (
-        displayModeState === ChatbotDisplayMode.embedded &&
-        isLightspeedRoute
-      ) {
-        const path = id ? `/lightspeed/conversation/${id}` : '/lightspeed';
-        navigate(path, { replace: true });
-      }
-    },
-    [displayModeState, isLightspeedRoute, navigate],
-  );
-
-  const setDraftMessage = useCallback((message: string) => {
-    setDraftMessageState(message);
-  }, []);
-
-  const setDraftFileContents = useCallback((files: FileContent[]) => {
-    setDraftFileContentsState(files);
-  }, []);
-
-  // Set display mode with route handling for embedded/fullscreen
-  const setDisplayMode = useCallback(
-    (mode: ChatbotDisplayMode, conversationIdParam?: string) => {
-      if (mode === displayModeState) {
-        return;
-      }
-
-      setPersistedDisplayMode(mode);
-
-      // Navigate to fullscreen route with conversation ID if available
-      if (mode === ChatbotDisplayMode.embedded) {
-        const convId = conversationIdParam ?? currentConversationIdState;
-        const path = convId
-          ? `/lightspeed/conversation/${convId}`
-          : '/lightspeed';
-        navigate(path);
-        setIsOpen(true);
-      } else {
-        if (isLightspeedRoute) {
-          navigateBackOrGoToCatalog();
-        }
-        setIsOpen(true);
-      }
-    },
-    [
-      navigate,
-      isLightspeedRoute,
-      currentConversationIdState,
-      displayModeState,
-      navigateBackOrGoToCatalog,
-      setPersistedDisplayMode,
-    ],
-  );
-
-  // Only render ChatbotModal for overlay mode
-  // Docked mode is handled by ApplicationDrawer in Root
-  // Embedded mode is handled by LightspeedPage route
-  const shouldRenderOverlayModal =
-    isOpen &&
-    displayModeState === ChatbotDisplayMode.default &&
-    !isLightspeedRoute;
-
-  const contextValue = useMemo(
-    () => ({
-      isChatbotActive: isOpen,
-      toggleChatbot,
-      displayMode: displayModeState,
-      setDisplayMode,
-      drawerWidth,
-      setDrawerWidth,
-      currentConversationId: currentConversationIdState,
-      setCurrentConversationId,
-      draftMessage,
-      setDraftMessage,
-      draftFileContents,
-      setDraftFileContents,
-    }),
-    [
-      isOpen,
-      toggleChatbot,
-      displayModeState,
-      setDisplayMode,
-      drawerWidth,
-      setDrawerWidth,
-      currentConversationIdState,
-      setCurrentConversationId,
-      draftMessage,
-      setDraftMessage,
-      draftFileContents,
-      setDraftFileContents,
-    ],
-  );
+  const { contextValue, shouldRenderOverlayModal, closeChatbot } =
+    useLightspeedProviderState();
 
   return (
     <LightspeedDrawerContext.Provider value={contextValue}>
@@ -249,8 +53,9 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       {shouldRenderOverlayModal && (
         <ChatbotModal
           isOpen
-          displayMode={displayModeState}
-          onClose={closeChatbot}
+          displayMode={contextValue.displayMode}
+          disableFocusTrap
+          onEscapePress={() => closeChatbot()}
           ouiaId="LightspeedChatbotModal"
           aria-labelledby="lightspeed-chatpopup-modal"
           className={classes.chatbotModal}

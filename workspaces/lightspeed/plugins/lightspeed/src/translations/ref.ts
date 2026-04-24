@@ -72,6 +72,7 @@ export const lightspeedMessages = {
   'notebook.upload.modal.title': 'Add a document to Notebook',
   'notebook.upload.modal.dragDropTitle': 'Drag and drop files here',
   'notebook.upload.modal.browseButton': 'Upload',
+  'notebook.upload.modal.separator': 'or',
   'notebook.upload.modal.infoText':
     'Accepted file types: .md, .txt, .pdf, .json, .yaml, .log',
   'notebook.upload.error.unsupportedType':
@@ -145,6 +146,17 @@ export const lightspeedMessages = {
   'permission.subject.notebooks': 'the Lightspeed notebooks',
   'permission.notebooks.goBack': 'Go back',
 
+  // LCORE / LLM (no models registered)
+  'lcore.notConfigured.title': 'Connect an LLM to get started',
+  'lcore.notConfigured.description':
+    "Lightspeed requires a registered LLM. Contact your organization's platform administrator to complete the setup.",
+  'lcore.notConfigured.developerLightspeedDocs':
+    'Configuring Developer Lightspeed',
+  'lcore.notConfigured.backendDocs': 'Lightspeed Backend Setup',
+  'lcore.loadError.title': 'Could not load models',
+  'lcore.loadError.description':
+    'The Lightspeed backend did not return a model list. Check that the service is running and reachable, then try again.',
+
   // Disclaimers
   'disclaimer.withValidation':
     "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
@@ -158,6 +170,8 @@ export const lightspeedMessages = {
   'common.cancel': 'Cancel',
   'common.close': 'Close',
   'common.readMore': 'Read more',
+  'common.retry': 'Try again',
+  'common.loading': 'Loading',
   'common.noSearchResults': 'No result matches the search',
 
   // Menu items
@@ -206,6 +220,7 @@ export const lightspeedMessages = {
   'conversation.removeFromPinnedChats': 'Unpin',
   'conversation.announcement.userMessage':
     'Message from User: {{prompt}}. Message from Bot is loading.',
+  'conversation.announcement.responseStopped': 'Response stopped.',
 
   // User states
   'user.guest': 'Guest',
@@ -277,6 +292,48 @@ export const lightspeedMessages = {
   'settings.pinned.disable': 'Disable pinned chats',
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
   'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
+  'settings.mcp.label': 'MCP settings',
+
+  // MCP settings
+  'mcp.settings.title': 'MCP servers',
+  'mcp.settings.selectedCount': '{{selectedCount}} of {{totalCount}} selected',
+  'mcp.settings.closeAriaLabel': 'Close MCP settings',
+  'mcp.settings.readOnlyAccess': 'You have read-only access to MCP servers.',
+  'mcp.settings.tableAriaLabel': 'MCP servers table',
+  'mcp.settings.enabled': 'Enabled',
+  'mcp.settings.name': 'Name',
+  'mcp.settings.status': 'Status',
+  'mcp.settings.edit': 'Edit',
+  'mcp.settings.loading': 'Loading MCP servers...',
+  'mcp.settings.noneAvailable': 'No MCP servers available.',
+  'mcp.settings.status.disabled': 'Disabled',
+  'mcp.settings.status.tokenRequired': 'Token required',
+  'mcp.settings.status.failed': 'Failed',
+  'mcp.settings.status.oneTool': '{{count}} tool',
+  'mcp.settings.status.manyTools': '{{count}} tools',
+  'mcp.settings.status.unknown': 'Unknown',
+  'mcp.settings.toggleServerAriaLabel': 'Toggle {{serverName}}',
+  'mcp.settings.editServerAriaLabel': 'Edit {{serverName}}',
+  'mcp.settings.configureServerTitle': 'Configure {{serverName}} server',
+  'mcp.settings.closeConfigureModalAriaLabel': 'Close configure modal',
+  'mcp.settings.modalDescription':
+    'Credentials are encrypted at rest and scoped to your profile. Lightspeed will operate with your exact permissions.',
+  'mcp.settings.savedToken': 'Saved token',
+  'mcp.settings.personalAccessToken': 'Personal Access Token',
+  'mcp.settings.usingAdminCredential':
+    'Using Administrator provided credential. Enter a personal token to override for your account.',
+  'mcp.settings.enterToken': 'Enter your token',
+  'mcp.settings.removePersonalToken': 'Remove personal token',
+  'mcp.settings.token.clearAriaLabel': 'Clear token input',
+  'mcp.settings.token.validating': 'Validating token...',
+  'mcp.settings.token.savingAndValidating': 'Saving and validating token...',
+  'mcp.settings.token.urlUnavailableForValidation':
+    'Unable to validate token because server URL is not available.',
+  'mcp.settings.token.invalidCredentials':
+    'Invalid credentials. Check server URL and token.',
+  'mcp.settings.token.validationFailed':
+    'Validation failed. Check server URL and token.',
+  'mcp.settings.token.connectionSuccessful': 'Connection successful',
 
   // Tool calling
   'toolCall.header': 'Tool response: {{toolName}}',

@@ -1,5 +1,57 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.9.1
+
+### Patch Changes
+
+- d85bf56: fix: add configurable bodyParser limit
+- Updated dependencies [d85bf56]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.2
+
+## 8.9.0
+
+### Minor Changes
+
+- 9ab62e3: feature: add the ability to trigger kafka based workflows from the plugin
+
+## 8.8.2
+
+### Patch Changes
+
+- f96e4f2: fix: updating lodash for cve fixes
+
+## 8.8.1
+
+### Patch Changes
+
+- Updated dependencies [16d41c2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.1
+
+## 8.8.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- Updated dependencies [665a75c]
+- Updated dependencies [2212e8d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.0
+
+## 8.7.3
+
+### Patch Changes
+
+- 91013e2: - Update dependecy @urql/core to fix CVE-2026-3118
+  - Reworks the filter and query builder code to use query variables
+- Updated dependencies [5a9d9d8]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.1.3
+
 ## 8.7.2
 
 ### Patch Changes
@@ -30,6 +82,13 @@
 - Updated dependencies [3648a62]
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.0
   - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.1.0
+
+## 8.6.4
+
+### Patch Changes
+
+- 13159d3: - Update dependecy @urql/core to fix CVE-2026-3118
+  - Reworks the filter and query builder code to use query variables
 
 ## 8.6.3
 
@@ -117,6 +176,13 @@
 
 - Updated dependencies [fba1136]
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+
+## 8.3.1
+
+### Patch Changes
+
+- 480bde1: - Update dependecy @urql/core to fix CVE-2026-3118
+  - Reworks the filter and query builder code to use query variables
 
 ## 8.3.0
 

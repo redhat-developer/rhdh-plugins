@@ -182,7 +182,11 @@ export class NotebooksApiClient implements NotebooksAPI {
     const response = await this.fetchJson<DocumentListResponse>(
       `${baseUrl}/v1/sessions/${encodeURIComponent(sessionId)}/documents`,
     );
-    return response?.documents ?? [];
+    const docs = response?.documents ?? [];
+    return docs.map(doc => ({
+      ...doc,
+      title: (doc as any).title ?? doc.document_id,
+    }));
   }
 
   async deleteDocument(sessionId: string, documentId: string) {

@@ -44,19 +44,19 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage/core-app-api": "^1.19.4",
-    "@backstage/core-components": "^0.18.6",
-    "@backstage/core-plugin-api": "^1.12.2",
-    "@backstage/integration-react": "^1.2.14",
+    "@backstage/core-app-api": "^1.19.6",
+    "@backstage/core-components": "^0.18.8",
+    "@backstage/core-plugin-api": "^1.12.4",
+    "@backstage/integration-react": "^1.2.16",
     "@mui/material": "^5.17.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.35.3",
+    "@backstage/cli": "^0.36.0",
     "@janus-idp/cli": "3.7.0",
     "@types/react": "^18.0.0",
-    "prettier": "3.8.1",
+    "prettier": "3.8.3",
     "react-router": "^6.4.5",
     "react-router-dom": "^6.4.5",
     "typescript": "5.6.3"

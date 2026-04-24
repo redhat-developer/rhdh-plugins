@@ -250,7 +250,9 @@ const useColumns = (
               threshold: String(PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD),
             })}
           >
-            <span>{t('table.columns.status')}</span>
+            <Typography component="span" variant="inherit">
+              {t('table.columns.status')}
+            </Typography>
           </Tooltip>
         ),
         field: 'status',

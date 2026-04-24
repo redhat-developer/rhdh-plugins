@@ -1,5 +1,35 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 0.8.0
+
+### Minor Changes
+
+- 4526035: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- Updated dependencies [4526035]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.0
+
+## 0.7.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.1
+
+## 0.7.0
+
+### Minor Changes
+
+- 0f66c7c: Backstage version bump to v1.47.3
+
+### Patch Changes
+
+- 5c82367: normalize event timestamps to UTC and fix frontend date parsing
+- e2ae776: Add missing direct dependencies to package
+- Updated dependencies [0f66c7c]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.0
+
 ## 0.6.2
 
 ### Patch Changes

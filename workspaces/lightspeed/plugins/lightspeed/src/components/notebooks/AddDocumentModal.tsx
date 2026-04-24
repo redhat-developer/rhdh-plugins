@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import { FileRejection } from 'react-dropzone';
 
 import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -63,6 +64,17 @@ const useStyles = makeStyles(theme => ({
   },
   errorAlert: {
     marginBottom: theme.spacing(2),
+  },
+  dropzone: {
+    '& .pf-v6-c-multiple-file-upload__main': {
+      borderColor: 'var(--pf-t--global--border--color--brand--default)',
+      transition: 'background-color 0.2s ease',
+      cursor: 'pointer',
+    },
+    '& .pf-v6-c-multiple-file-upload__main:hover': {
+      backgroundColor:
+        'color-mix(in srgb, var(--pf-t--global--color--brand--default) 10%, transparent)',
+    },
   },
 }));
 
@@ -136,6 +148,15 @@ export const AddDocumentModal = ({
     onClose();
   };
 
+  const handleDropRejected = (rejections: FileRejection[]) => {
+    const hasInvalidType = rejections.some(r =>
+      r.errors.some(e => e.code === 'file-invalid-type'),
+    );
+    if (hasInvalidType) {
+      setValidationErrors(['notebook.upload.error.unsupportedType']);
+    }
+  };
+
   const handleClose = () => {
     setValidationErrors([]);
     onClose();
@@ -179,15 +200,17 @@ export const AddDocumentModal = ({
         )}
 
         <MultipleFileUpload
+          className={classes.dropzone}
           dropzoneProps={{
             accept: getNotebookAcceptedFileTypes(),
+            onDropRejected: handleDropRejected,
           }}
           onFileDrop={handleFileDrop}
         >
           <MultipleFileUploadMain
             titleIcon={<UploadIcon />}
             titleText={t('notebook.upload.modal.dragDropTitle')}
-            titleTextSeparator="or"
+            titleTextSeparator={t('notebook.upload.modal.separator')}
             infoText={t('notebook.upload.modal.infoText')}
             browseButtonText={t('notebook.upload.modal.browseButton')}
           />

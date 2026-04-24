@@ -36,6 +36,7 @@ import { useClientService } from '../ClientService';
 import { ItemField } from './ItemField';
 import {
   canCancelPhase,
+  downloadLogFile,
   formatDuration,
   humanizeDate,
   secondsBetween,
@@ -283,6 +284,9 @@ export const PhaseDetails = (
             <div style={{ height: 400 }}>
               <LogViewer
                 text={logText || t('modulePage.phases.noLogsAvailable')}
+                onDownloadLog={() =>
+                  downloadLogFile(logText || '', `${phaseName}-${projectId}`)
+                }
               />
             </div>
           )}

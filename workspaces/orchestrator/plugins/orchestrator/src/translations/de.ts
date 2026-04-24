@@ -33,6 +33,7 @@ const orchestratorTranslationDe = createTranslationMessages({
     'table.title.workflows': 'Workflows',
     'table.title.allRuns': 'Alle Ausführungen ({{count}})',
     'table.actions.run': 'Ausführung',
+    'table.actions.runAsEvent': 'Als Ereignis ausführen',
     'table.actions.viewRuns': 'Ausführungen anzeigen',
     'table.actions.viewInputSchema': 'Eingabeschema anzeigen',
     'table.status.running': 'Wird ausgeführt',
@@ -65,6 +66,7 @@ const orchestratorTranslationDe = createTranslationMessages({
       'Erneuter Auslöser fehlgeschlagen: {{reason}}',
     'workflow.errors.abortFailedWithReason':
       'Abbruch fehlgeschlagen: {{reason}}',
+    'workflow.buttons.runAsEvent': 'Als Ereignis ausführen',
     'run.title': 'Workflow ausführen',
     'run.pageTitle': 'Ausführung von {{processName}}',
     'run.variables': 'Ausführungsvariablen',
@@ -86,6 +88,8 @@ const orchestratorTranslationDe = createTranslationMessages({
     'run.status.completedWithMessage':
       'Ausführung {{time}} mit folgender Nachricht abgeschlossen',
     'run.status.failedAt': 'Ausführung ist fehlgeschlagen {{time}}',
+    'run.messages.eventTriggered':
+      'Ein Ereignis wurde gesendet, um diesen Workflow zu starten. Es wird angezeigt, sobald die Ausführung beginnt.',
     'run.viewVariables': 'Variablen anzeigen',
     'run.suggestedNextWorkflow': 'Vorgeschlagener nächster Workflow',
     'run.suggestedNextWorkflows': 'Empfohlene nächste Workflows',

@@ -23,11 +23,24 @@ import {
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { SidebarLogo } from './SidebarLogo';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
+import ChatIcon from '@material-ui/icons/Chat';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
+
+const ChatDrawerItem = () => {
+  const { toggleDrawer } = useAppDrawer();
+  return (
+    <SidebarItem
+      icon={() => <ChatIcon />}
+      text="Chat"
+      onClick={() => toggleDrawer('demo-chat')}
+    />
+  );
+};
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
@@ -36,8 +49,7 @@ export const SidebarContent = NavContentBlueprint.make({
         <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
       ));
 
-      // Skipped items
-      nav.take('page:search'); // Using search modal instead
+      nav.take('page:search');
 
       return (
         <Sidebar>
@@ -56,6 +68,7 @@ export const SidebarContent = NavContentBlueprint.make({
           </SidebarGroup>
           <SidebarSpace />
           <SidebarDivider />
+          <ChatDrawerItem />
           <NotificationsSidebarItem />
           <SidebarDivider />
           <SidebarGroup

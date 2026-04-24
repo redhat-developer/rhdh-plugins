@@ -25,3 +25,9 @@ export const addConversationRouteRef = createSubRouteRef({
   parent: rootRouteRef,
   path: '/conversation/:conversationId',
 });
+
+export const notebooksRouteRef = createSubRouteRef({
+  id: 'lightspeed-notebooks',
+  parent: rootRouteRef,
+  path: '/notebooks',
+});

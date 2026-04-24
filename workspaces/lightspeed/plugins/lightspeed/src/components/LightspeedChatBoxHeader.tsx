@@ -40,6 +40,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { McpSettingsIcon } from './McpSettingsIcon';
 
 type LightspeedChatBoxHeaderProps = {
   displayMode: ChatbotDisplayMode;
@@ -48,6 +49,7 @@ type LightspeedChatBoxHeaderProps = {
   models: { label: string; value: string; provider: string }[];
   isPinningChatsEnabled: boolean;
   onPinnedChatsToggle: (state: boolean) => void;
+  onMcpSettingsClick: () => void;
   isModelSelectorDisabled?: boolean;
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
@@ -81,6 +83,7 @@ export const LightspeedChatBoxHeader = ({
   models,
   isPinningChatsEnabled,
   onPinnedChatsToggle,
+  onMcpSettingsClick,
   isModelSelectorDisabled = false,
   setDisplayMode,
 }: LightspeedChatBoxHeaderProps) => {
@@ -230,6 +233,14 @@ export const LightspeedChatBoxHeader = ({
                 {t('settings.pinned.enable')}
               </DropdownItem>
             )}
+            <DropdownItem
+              value="mcpSettings"
+              key="mcpSettings"
+              icon={<McpSettingsIcon />}
+              onClick={onMcpSettingsClick}
+            >
+              {t('settings.mcp.label')}
+            </DropdownItem>
           </DropdownList>
         </DropdownGroup>
       </ChatbotHeaderOptionsDropdown>

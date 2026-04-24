@@ -23,8 +23,12 @@ import { isIP } from 'net';
 
 import {
   DEFAULT_MAX_FILE_SIZE_MB,
+  FILTERED_CONTENT_MARKER,
   HTML_BLOCK_TAGS,
   HTML_IGNORED_TAGS,
+  MAX_CONSECUTIVE_NEWLINES,
+  PROMPT_INJECTION_PATTERNS,
+  SSRF_BLOCKED_HOSTNAMES,
   SupportedFileType,
 } from '../../constant';
 import { parseFile } from './fileParser';
@@ -176,8 +180,15 @@ const isPrivateOrInternalIP = (ip: string): boolean => {
 };
 
 /**
- * Validate URL and check for SSRF vulnerabilities
- * Resolves hostname to IP and blocks private/internal addresses
+ * Validate URL and check for SSRF (Server-Side Request Forgery) vulnerabilities
+ *
+ * This function protects against SSRF attacks by:
+ * 1. Blocking access to private/internal IP ranges (RFC 1918, link-local, loopback)
+ * 2. Blocking access to cloud metadata endpoints (AWS, GCP, Azure)
+ * 3. Resolving hostnames to IPs to prevent DNS rebinding attacks
+ *
+ * @param urlString - URL to validate
+ * @throws InputError if URL points to blocked hostname or private IP
  */
 export const validateURLForSSRF = async (urlString: string): Promise<void> => {
   const url = new URL(urlString);
@@ -196,21 +207,9 @@ export const validateURLForSSRF = async (urlString: string): Promise<void> => {
     return;
   }
 
-  // Block localhost and common internal hostnames
+  // Block localhost and common internal hostnames used in SSRF attacks
   const lowerHostname = hostname.toLowerCase();
-  const blockedHostnames = [
-    'localhost',
-    'metadata.google.internal', // GCP metadata
-    'kubernetes.default.svc', // K8s internal service
-    'host.docker.internal', // Docker internal service
-    '169.254.169.254', // AWS/GCP/Azure metadata endpoint
-    '127.0.0.1', // Loopback address
-    '0.0.0.0', // Current network address
-    '::1', // Loopback address
-    '::', // Current network address
-  ];
-
-  if (blockedHostnames.includes(lowerHostname)) {
+  if (SSRF_BLOCKED_HOSTNAMES.includes(lowerHostname as any)) {
     throw new InputError(`Access to ${lowerHostname} is not allowed`);
   }
 
@@ -227,27 +226,13 @@ export const validateURLForSSRF = async (urlString: string): Promise<void> => {
       }
     }
   } catch (error: any) {
-    // If DNS resolution fails, throw the error
-    if (error.message?.includes('not allowed')) {
+    // Re-throw InputError from isPrivateOrInternalIP check
+    if (error instanceof InputError) {
       throw error;
     }
-    throw new Error(`Failed to resolve hostname: ${error.message}`);
+    // DNS resolution failure is a user input issue (invalid hostname)
+    throw new InputError(`Failed to resolve hostname: ${error.message}`);
   }
-};
-
-/**
- * Sanitize title to create a valid document ID
- * Converts title to lowercase, replaces spaces/special chars with hyphens
- */
-export const sanitizeTitle = (title: string): string => {
-  return (
-    title
-      .trim()
-      .toLocaleLowerCase('en-US')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+/g, '')
-      .replace(/-$/g, '') || 'untitled'
-  );
 };
 
 /**
@@ -281,4 +266,35 @@ export const stripHtmlTags = (html: string): string => {
     .replace(/\n\s*\n/g, '\n\n')
     .replace(/[ \t]+/g, ' ')
     .trim();
+};
+
+/**
+ * Sanitize content to prevent prompt injection attacks
+ * Detects and filters common prompt injection patterns
+ * @param content - Raw content to sanitize
+ * @returns Sanitized content with prompt injection patterns removed
+ * @public
+ */
+export const sanitizeContentForRAG = (content: string): string => {
+  let sanitized = content;
+
+  // Replace prompt injection patterns with filtered marker
+  for (const pattern of PROMPT_INJECTION_PATTERNS) {
+    sanitized = sanitized.replace(pattern, FILTERED_CONTENT_MARKER);
+  }
+
+  // Limit excessive consecutive newlines to prevent context stuffing
+  const newlinePattern = new RegExp(
+    `\\n{${MAX_CONSECUTIVE_NEWLINES + 1},}`,
+    'g',
+  );
+  sanitized = sanitized.replace(
+    newlinePattern,
+    '\n'.repeat(MAX_CONSECUTIVE_NEWLINES),
+  );
+
+  // Normalize excessive whitespace
+  sanitized = sanitized.replace(/[ \t]{10,}/g, ' ');
+
+  return sanitized.trim();
 };

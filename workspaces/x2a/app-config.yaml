@@ -22,7 +22,9 @@ backend:
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
     # Default Helmet Content-Security-Policy values can be removed by setting the key to false
   cors:
-    origin: http://localhost:3000
+    origin:
+      - http://localhost:3000
+      - http://localhost:6274
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
     credentials: true
   # This is for local development only, it is not recommended to use this in production
@@ -31,6 +33,22 @@ backend:
     client: better-sqlite3
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+
+  # MCP Actions: expose x2a tools to AI clients (Cursor, Claude, etc.)
+  actions:
+    pluginSources:
+      - 'catalog'
+      - 'software-catalog-mcp-tool'
+      - 'x2a-mcp-extras'
+  # Enable following for non-DCR flow for MCP tools
+  # auth:
+  #   externalAccess:
+  #     - type: static
+  #       options:
+  #         token: ${MCP_TOKEN}
+  #         subject: mcp-clients
+  #       accessRestrictions:
+  #         - plugin: mcp-actions
 
 proxy:
   ### Example for how to add a proxy endpoint for the frontend.
@@ -74,6 +92,17 @@ integrations:
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   environment: development
+  # Uncomment to enable OAuth DCR for MCP clients (user-identity auth).
+  # Narrow allowedRedirectUriPatterns to match your specific needs.
+  # Requires either @backstage/plugin-auth or x2a-dcr frontend plugin.
+  experimentalDynamicClientRegistration:
+    enabled: true
+    allowedRedirectUriPatterns:
+      # Keeping those generic for development. Narrow to specific patterns in production.
+      - cursor://*
+      - https://*
+      - http://*
+      # - http://localhost:*
   providers:
     # See https://backstage.io/docs/auth/guest/provider
     guest: {}
@@ -92,6 +121,7 @@ auth:
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
         signIn:
           resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
             - resolver: usernameMatchingUserEntityName
     bitbucket:
       # Follow https://backstage.io/docs/auth/bitbucket/provider/

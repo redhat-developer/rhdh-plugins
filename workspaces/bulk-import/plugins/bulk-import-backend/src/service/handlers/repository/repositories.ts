@@ -20,12 +20,10 @@ import type { Config } from '@backstage/config';
 import gitUrlParse from 'git-url-parse';
 
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
+import { getCatalogUrl } from '../../../catalog/catalogUtils';
 import type { Components } from '../../../generated/openapi';
-import type {
-  GithubApiService,
-  GithubRepositoryResponse,
-} from '../../../github';
-import { GitlabApiService, GitlabRepositoryResponse } from '../../../gitlab';
+import { GitApiService } from '../../../scm/GitApiService';
+import type { SCMRepositoryResponse } from '../../../scm/types';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -37,39 +35,82 @@ export async function findAllRepositories(
   deps: {
     logger: LoggerService;
     config: Config;
-    gitApiService: GithubApiService | GitlabApiService;
+    gitApiService: GitApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   reqParams?: {
-    approvalTool?: string;
     search?: string;
     checkStatus?: boolean;
     pageNumber?: number;
     pageSize?: number;
+    userTokens?: Record<string, string>;
   },
 ): Promise<HandlerResponse<Components.Schemas.RepositoryList>> {
   const search = reqParams?.search;
   const checkStatus = reqParams?.checkStatus ?? false;
   const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
   const pageSize = reqParams?.pageSize ?? DefaultPageSize;
+  const userTokens = reqParams?.userTokens;
   deps.logger.debug(
     `Getting all repositories - (search,page,size)=('${
       search ?? ''
     }',${pageNumber},${pageSize})..`,
   );
 
-  const repos = await deps.gitApiService
-    .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
-    .then(response => formatResponse(deps, response, checkStatus));
+  const [alreadyImportedRepositories, allRepositoriesResponse] =
+    await Promise.all([
+      deps.catalogHttpClient.listCatalogUrlLocations(),
+      deps.gitApiService.getRepositoriesFromIntegrations(search, userTokens),
+    ]);
 
-  return repos;
+  const alreadyImportedRepositoriesLocationTargets = new Set(
+    alreadyImportedRepositories.uniqueCatalogUrlLocations.keys(),
+  );
+
+  const { repositories: allRepositories, errors } = allRepositoriesResponse;
+
+  const notImportedYetRepositories = allRepositories.filter(repo => {
+    const catalogUrl = getCatalogUrl(
+      deps.config,
+      repo.html_url.replace(/\/$/, ''),
+      repo.default_branch,
+    );
+
+    let alreadyImported =
+      alreadyImportedRepositoriesLocationTargets.has(catalogUrl);
+
+    if (!alreadyImported) {
+      // Workaround: when a GitHub repository is imported via Backstage, the
+      // resulting registered catalog location may use a '/tree/' URL for the
+      // target instead of the '/blob/' URL format returned by getCatalogUrl.
+      // To correctly detect already-imported repositories regardless of which
+      // format was persisted, the '/tree/' variant is also checked here.
+      // This branch can be removed once catalog locations are consistently
+      // stored using the same '/blob/' format as getCatalogUrl returns.
+      alreadyImported = alreadyImportedRepositoriesLocationTargets.has(
+        catalogUrl.replace('/blob/', '/tree/'),
+      );
+    }
+
+    return !alreadyImported;
+  });
+
+  sortRepos(notImportedYetRepositories);
+
+  const gitRepositoryResponse: SCMRepositoryResponse = {
+    repositories: notImportedYetRepositories,
+    errors,
+    totalCount: notImportedYetRepositories.length,
+  };
+
+  return await formatResponse(deps, gitRepositoryResponse, checkStatus);
 }
 
 export async function findRepositoriesByOrganization(
   deps: {
     logger: LoggerService;
     config: Config;
-    gitApiService: GithubApiService | GitlabApiService;
+    gitApiService: GitApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   orgName: string,
@@ -77,16 +118,24 @@ export async function findRepositoriesByOrganization(
   checkStatus: boolean = false,
   pageNumber: number = DefaultPageNumber,
   pageSize: number = DefaultPageSize,
+  userTokens?: Record<string, string>,
 ): Promise<HandlerResponse<Components.Schemas.RepositoryList>> {
   deps.logger.debug(
     `Getting all repositories for org "${orgName}" - (search,page,size)=(${search},${pageNumber},${pageSize})..`,
   );
 
-  const glReposByOrg = await deps.gitApiService
-    .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
-    .then(response => formatResponse(deps, response, checkStatus));
+  const glReposByOrg =
+    await deps.gitApiService.getOrgRepositoriesFromIntegrations(
+      orgName,
+      search,
+      pageNumber,
+      pageSize,
+      userTokens,
+    );
 
-  return glReposByOrg;
+  sortRepos(glReposByOrg.repositories);
+
+  return formatResponse(deps, glReposByOrg, checkStatus);
 }
 
 function sortRepos(repoList: Components.Schemas.Repository[]) {
@@ -114,10 +163,10 @@ async function formatResponse(
   deps: {
     logger: LoggerService;
     config: Config;
-    gitApiService: GithubApiService | GitlabApiService;
+    gitApiService: GitApiService;
     catalogHttpClient: CatalogHttpClient;
   },
-  allReposAccessible: GithubRepositoryResponse | GitlabRepositoryResponse,
+  allReposAccessible: SCMRepositoryResponse,
   checkStatus: boolean,
 ) {
   const errorList =
@@ -167,8 +216,6 @@ async function formatResponse(
       errors: errors,
     });
   }
-
-  sortRepos(repoList);
 
   return {
     statusCode: 200,

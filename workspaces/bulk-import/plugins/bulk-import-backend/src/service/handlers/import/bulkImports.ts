@@ -53,6 +53,7 @@ import {
   paginateArray,
   parseGitURLForApprovalTool,
 } from '../../../helpers';
+import { GitApiService } from '../../../scm/GitApiService';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -348,7 +349,7 @@ function findImportCandidates(
 }
 
 async function createPR(
-  gitApiService: GithubApiService | GitlabApiService,
+  gitApiService: GitApiService,
   logger: LoggerService,
   req: Components.Schemas.ImportRequest,
   gitUrl: gitUrlParse.GitUrl,
@@ -942,11 +943,13 @@ export async function findTaskImportStatusByRepo(
         repository.approvalTool as unknown as Components.Schemas.ApprovalTool;
       const pullRequest = await parsePullOrMergeRequestInfo(
         data.state?.checkpoints,
-        deps.gitlabApiService,
-        deps.githubApiService,
-        approvalTool,
-        deps.logger,
-        repoUrl,
+        {
+          githubApiService: deps.githubApiService,
+          gitlabApiService: deps.gitlabApiService,
+          approvalTool,
+          logger: deps.logger,
+          repoUrl,
+        },
       );
       if (pullRequest && approvalTool === 'GITLAB') {
         result.gitlab = { pullRequest };
@@ -1078,11 +1081,19 @@ export async function findOrchestratorImportStatusByRepo(
 
 async function parsePullOrMergeRequestInfo(
   checkpoints: Record<string, any>,
-  githubApiService: GitlabApiService,
-  gitlabApiService: GithubApiService,
-  approvalTool: Components.Schemas.ApprovalTool,
-  logger: LoggerService,
-  repoUrl: string,
+  {
+    githubApiService,
+    gitlabApiService,
+    approvalTool,
+    logger,
+    repoUrl,
+  }: {
+    githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
+    approvalTool: Components.Schemas.ApprovalTool;
+    logger: LoggerService;
+    repoUrl: string;
+  },
 ): Promise<Components.Schemas.PullRequest | undefined> {
   // return errors ?
   if (approvalTool !== 'GITLAB' && approvalTool !== 'GIT') {
@@ -1139,7 +1150,7 @@ export async function deleteImportByRepo(
   deps: {
     logger: LoggerService;
     config: Config;
-    gitApiService: GithubApiService | GitlabApiService;
+    gitApiService: GitApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,

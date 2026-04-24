@@ -17,11 +17,8 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 
 import type { Components } from '../../../generated/openapi';
-import type {
-  GithubApiService,
-  GithubOrganizationResponse,
-} from '../../../github';
-import { GitlabApiService, GitlabOrganizationResponse } from '../../../gitlab';
+import { GitApiService } from '../../../scm/GitApiService';
+import { SCMOrganizationResponse } from '../../../scm/types';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -30,7 +27,7 @@ import {
 
 export async function findAllOrganizations(
   logger: LoggerService,
-  gitApiService: GithubApiService | GitlabApiService,
+  gitApiService: GitApiService,
   search?: string,
   pageNumber: number = DefaultPageNumber,
   pageSize: number = DefaultPageSize,
@@ -43,9 +40,9 @@ export async function findAllOrganizations(
 
   const allOrgsAccessible =
     await gitApiService.getOrganizationsFromIntegrations(
-      search,
       pageNumber,
       pageSize,
+      search,
     );
 
   const errorList: string[] = [];
@@ -80,9 +77,7 @@ export async function findAllOrganizations(
   };
 }
 
-function extractOrgMap(
-  allOrgsAccessible: GithubOrganizationResponse | GitlabOrganizationResponse,
-) {
+function extractOrgMap(allOrgsAccessible: SCMOrganizationResponse) {
   const orgMap = new Map<string, Components.Schemas.Organization>();
   for (const org of allOrgsAccessible.organizations ?? []) {
     let totalRepoCount: number | undefined;

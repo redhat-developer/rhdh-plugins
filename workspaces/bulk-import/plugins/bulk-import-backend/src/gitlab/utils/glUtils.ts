@@ -42,7 +42,7 @@ export function buildGitlab(
 ): InstanceType<typeof Gitlab<false>> {
   const apiThing = new Gitlab({
     host: baseUrl,
-    token: input.credential.token,
+    oauthToken: input.credential.token,
   });
   return apiThing;
 }

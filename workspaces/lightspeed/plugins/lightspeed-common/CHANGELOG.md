@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-common
 
+## 2.2.1
+
+## 2.2.0
+
+## 2.1.0
+
+## 2.0.0
+
+### Minor Changes
+
+- 024d5a8: Added MCP Server management backend APIs with per-user preferences, on-demand validation, and new permissions (lightspeed.mcp.read, lightspeed.mcp.manage)
+- 7db4bed: Implement AI Notebooks session, document, and query service
+- 01241c2: Backstage version bump to v1.49.2
+  moved existing app to app-legacy
+  app now runs the NFS model
+
 ## 1.4.0
 
 ## 1.3.0

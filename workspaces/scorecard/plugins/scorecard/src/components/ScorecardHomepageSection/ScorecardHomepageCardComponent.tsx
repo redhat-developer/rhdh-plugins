@@ -71,7 +71,7 @@ const InfoComponent = ({ timestamp }: { timestamp: string }) => {
           },
         }}
       >
-        <IconButton>
+        <IconButton data-testid="scorecard-homepage-card-info">
           <InfoOutlinedIcon
             sx={{ color: theme.palette.text.secondary, fontSize: '1.75rem' }}
           />
@@ -85,14 +85,18 @@ export const ScorecardHomepageCardComponent = ({
   scorecard,
   cardTitle,
   description,
+  aggregationId,
   showSubheader = true,
   showInfo = true,
+  dataTestId,
 }: {
   scorecard: AggregatedMetricResult;
   cardTitle: string;
   description: string;
+  aggregationId: string;
   showSubheader?: boolean;
   showInfo?: boolean;
+  dataTestId?: string;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -117,6 +121,7 @@ export const ScorecardHomepageCardComponent = ({
   return (
     <CardWrapper
       title={cardTitle}
+      dataTestId={dataTestId}
       {...(showSubheader
         ? {
             subheader: (
@@ -126,7 +131,11 @@ export const ScorecardHomepageCardComponent = ({
                 arrow
                 placement="right"
               >
-                <Link to={`/scorecard/metrics/${scorecard.id}`}>
+                <Link
+                  to={`/scorecard/aggregations/${encodeURIComponent(
+                    aggregationId,
+                  )}/metrics/${encodeURIComponent(scorecard.id)}`}
+                >
                   {t('thresholds.entities', { count: scorecard.result.total })}
                 </Link>
               </Tooltip>

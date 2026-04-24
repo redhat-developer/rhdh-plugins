@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import crypto from 'node:crypto';
 import type { Request } from 'express';
 import type {
   BackstageCredentials,
@@ -22,24 +21,35 @@ import type {
   HttpAuthService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
-import { RELATION_MEMBER_OF } from '@backstage/catalog-model';
 import {
-  AuthorizePermissionRequest,
   AuthorizePermissionResponse,
   AuthorizeResult,
   BasicPermission,
 } from '@backstage/plugin-permission-common';
-import type { CatalogService } from '@backstage/plugin-catalog-node';
 import {
-  Job,
   Project,
   x2aAdminViewPermission,
   x2aAdminWritePermission,
   x2aUserPermission,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
+import {
+  getUserRef,
+  getGroupsOfUser,
+  resolveX2aPermissionFlags,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import type { RouterDeps } from './types';
+
+export {
+  getUserRef,
+  getGroupsOfUser,
+  reconcileJobStatus,
+  generateCallbackToken,
+  removeSensitiveFromJob,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
+export type { UnsecureJob } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
  * Checks if the user has the x2aAdminViewPermission.
@@ -59,6 +69,7 @@ export const isUserOfAdminViewPermission = async (
 
 /**
  * Checks if the user has the x2aAdminWritePermission.
+ * @public
  */
 export const isUserOfAdminWritePermission = async (
   request: Request,
@@ -75,6 +86,7 @@ export const isUserOfAdminWritePermission = async (
 
 /**
  * Checks if the user has the x2aUserPermission.
+ * @public
  */
 export const isUserOfX2AUserPermission = async (
   request: Request,
@@ -91,6 +103,7 @@ export const isUserOfX2AUserPermission = async (
 
 /**
  * Authorizes the user for the given list of permissions.
+ * @public
  */
 export const authorize = async (
   request: Request,
@@ -121,7 +134,11 @@ export const authorize = async (
 /**
  * Enforces the x2a permissions for the given request.
  *
- * Throws a NotAllowedError if the user does not have any of the x2a.user or x2a.admin (read or update, depending on the readOnly param)
+ * Delegates RBAC evaluation to {@link resolveX2aPermissionFlags} in x2a-node
+ * (shared with MCP `resolveCredentialsContext`).
+ *
+ * Throws NotAllowedError if the caller may not read (readOnly) or write (!readOnly).
+ * @public
  */
 export const useEnforceX2APermissions = async ({
   req,
@@ -137,27 +154,11 @@ export const useEnforceX2APermissions = async ({
   credentials: BackstageCredentials<BackstageUserPrincipal>;
 }> => {
   const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-  const permissionsRequests: AuthorizePermissionRequest[] = [
-    { permission: x2aUserPermission },
-    { permission: x2aAdminViewPermission },
-  ];
-  if (!readOnly) {
-    permissionsRequests.push({ permission: x2aAdminWritePermission });
-  }
-
-  // Future versions should support passing an array of requests to the permissionsSvc.authorize() but this does not work yet.
-  const result = await Promise.all(
-    permissionsRequests.map(request => {
-      return permissionsSvc.authorize([request], {
-        credentials,
-      });
-    }),
-  );
-
-  const isX2AUser = result[0][0]?.result === AuthorizeResult.ALLOW;
-  const canViewAll = result[1][0]?.result === AuthorizeResult.ALLOW;
-  const canWriteAll =
-    !readOnly && result[2]?.[0]?.result === AuthorizeResult.ALLOW;
+  const { isX2AUser, canViewAll, canWriteAll } =
+    await resolveX2aPermissionFlags({
+      credentials,
+      permissionsSvc,
+    });
 
   if (readOnly) {
     if (!isX2AUser && !canViewAll) {
@@ -176,6 +177,7 @@ export const useEnforceX2APermissions = async ({
 
 /**
  * Enforces the user can view or write the project.
+ * @public
  */
 export const useEnforceProjectPermissions = async (
   props: {
@@ -232,108 +234,3 @@ export const useEnforceProjectPermissions = async (
     canWriteAll,
   };
 };
-
-/**
- * Safely extracts user reference from credentials with fallback
- */
-export function getUserRef(
-  credentials: BackstageCredentials<BackstageUserPrincipal>,
-): string {
-  try {
-    return credentials.principal.userEntityRef;
-  } catch {
-    return 'user:default/system';
-  }
-}
-
-/**
- * Returns the list of Backstage group entity refs the user is a member of.
- * Fetches the user entity from the catalog and extracts targetRef from
- * relations of type RELATION_MEMBER_OF.
- * Returns an empty array if the user is not in the catalog or has no group memberships.
- */
-export async function getGroupsOfUser(
-  userEntityRef: string,
-  options: {
-    catalog: CatalogService;
-    credentials: BackstageCredentials;
-  },
-): Promise<string[]> {
-  try {
-    const userEntity = await options.catalog.getEntityByRef(userEntityRef, {
-      credentials: options.credentials,
-    });
-
-    if (!userEntity?.relations) {
-      return [];
-    }
-
-    const memberOfRelations =
-      userEntity.relations.filter(
-        relation => relation.type === RELATION_MEMBER_OF,
-      ) ?? [];
-
-    return memberOfRelations.map(relation => relation.targetRef);
-  } catch {
-    return [];
-  }
-}
-
-export type UnsecureJob = Job & { callbackToken?: string };
-export const removeSensitiveFromJob = (job?: UnsecureJob): Job | undefined => {
-  if (!job) {
-    return undefined;
-  }
-
-  const newJob: UnsecureJob = { ...job };
-  delete newJob.callbackToken;
-  return newJob;
-};
-
-// TODO: Remove once collectArtifacts (or the `report` command) is implemented
-// and jobs update their own status on completion. Until then this is the only
-// mechanism that syncs stale DB records with actual K8s job state.
-export async function reconcileJobStatus(
-  job: Job,
-  deps: Pick<RouterDeps, 'kubeService' | 'x2aDatabase' | 'logger'>,
-): Promise<Job> {
-  if (!['pending', 'running'].includes(job.status)) {
-    return job;
-  }
-  if (!job.k8sJobName) {
-    return job;
-  }
-
-  deps.logger.info(
-    `Reconciling job ${job.id} (k8s: ${job.k8sJobName}), DB status: '${job.status}'`,
-  );
-  const k8sStatus = await deps.kubeService.getJobStatus(job.k8sJobName);
-
-  if (k8sStatus.status === 'success' || k8sStatus.status === 'error') {
-    let log: string | null = null;
-    try {
-      log = (await deps.kubeService.getJobLogs(job.k8sJobName)) as string;
-    } catch {
-      deps.logger.warn(
-        `Could not fetch logs for job ${job.id} (k8s job: ${job.k8sJobName})`,
-      );
-    }
-    const updated = await deps.x2aDatabase.updateJob({
-      id: job.id,
-      status: k8sStatus.status,
-      finishedAt: new Date(),
-      log,
-    });
-    deps.logger.info(
-      `Reconciled job ${job.id}: DB had '${job.status}', K8s reports '${k8sStatus.status}'`,
-    );
-    return updated ?? job;
-  }
-
-  return job;
-}
-
-/** Generate a 256-bit hex callback token to match HMAC-SHA256 strength. */
-export function generateCallbackToken(): string {
-  return crypto.randomBytes(32).toString('hex');
-}

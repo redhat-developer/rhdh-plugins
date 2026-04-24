@@ -47,6 +47,7 @@ export const orchestratorMessages = {
     },
     actions: {
       run: 'Run',
+      runAsEvent: 'Run as Event',
       viewRuns: 'View runs',
       viewInputSchema: 'View input schema',
     },
@@ -102,6 +103,7 @@ export const orchestratorMessages = {
     },
     buttons: {
       run: 'Run',
+      runAsEvent: 'Run as Event',
       runWorkflow: 'Run workflow',
       runAgain: 'Run again',
       running: 'Running...',
@@ -146,6 +148,10 @@ export const orchestratorMessages = {
         'The workflow provided no additional info about the status.',
       resultsWillBeDisplayedHereOnceTheRunIsComplete:
         'Results will be displayed here once the run is complete.',
+    },
+    messages: {
+      eventTriggered:
+        'An event was sent to trigger this workflow. It will appear once the run starts.',
     },
     retrigger: 'Retrigger',
     viewVariables: 'View variables',

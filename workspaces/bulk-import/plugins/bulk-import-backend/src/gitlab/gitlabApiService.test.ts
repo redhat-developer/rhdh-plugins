@@ -289,7 +289,11 @@ describe('GitlabApiService tests', () => {
       paginationInfo: { total: 1 },
     });
 
-    const result = await gitlabApiService.getOrganizationsFromIntegrations('A');
+    const result = await gitlabApiService.getOrganizationsFromIntegrations(
+      1,
+      20,
+      'A',
+    );
 
     const expected_response = {
       organizations: [
@@ -433,6 +437,110 @@ describe('GitlabApiService tests', () => {
       errors: [],
       repositories: [],
       totalCount: 0,
+    });
+  });
+
+  describe('with userTokens', () => {
+    const glRepos = [
+      {
+        id: '1',
+        name: 'A',
+        path_with_namespace: 'backstage/A',
+        _links: { self: 'https://gitlab.com/api/v4/projects/1' },
+        web_url: 'https://gitlab.com/backstage/A',
+        default_branch: 'master',
+      },
+      {
+        id: '2',
+        name: 'B',
+        path_with_namespace: 'backstage/B',
+        _links: { self: 'https://gitlab.com/api/v4/projects/2' },
+        web_url: 'https://gitlab.com/backstage/B',
+        default_branch: 'main',
+      },
+    ];
+
+    it('uses the user-token path for getRepositoriesFromIntegrations when a matching host token is provided', async () => {
+      gitlabkit.Projects.all.mockReturnValue({
+        data: glRepos,
+        paginationInfo: { total: 2 },
+      });
+
+      const result = await gitlabApiService.getRepositoriesFromIntegrations(
+        undefined,
+        { 'https://gitlab.com': 'user-gitlab-oauth-token' },
+      );
+
+      expect(result.repositories).toHaveLength(2);
+      expect(result.errors).toEqual([]);
+      expect(mockGetAllCredentials).not.toHaveBeenCalled();
+    });
+
+    it('returns empty repositories when userTokens is provided but no host matches an integration', async () => {
+      const result = await gitlabApiService.getRepositoriesFromIntegrations(
+        undefined,
+        { 'https://some-other-host.com': 'user-gitlab-oauth-token' },
+      );
+
+      expect(result.repositories).toEqual([]);
+      expect(result.errors).toEqual([]);
+      expect(mockGetAllCredentials).not.toHaveBeenCalled();
+    });
+
+    it('falls back to server credentials when userTokens is undefined', async () => {
+      gitlabkit.Projects.all.mockReturnValue({
+        data: glRepos,
+        paginationInfo: { total: 2 },
+      });
+
+      await gitlabApiService.getRepositoriesFromIntegrations();
+
+      // Server credentials path — getAllCredentials IS called
+      expect(mockGetAllCredentials).toHaveBeenCalled();
+    });
+
+    it('falls back to server credentials when userTokens is an empty object', async () => {
+      gitlabkit.Projects.all.mockReturnValue({
+        data: glRepos,
+        paginationInfo: { total: 2 },
+      });
+
+      await gitlabApiService.getRepositoriesFromIntegrations(undefined, {});
+
+      expect(mockGetAllCredentials).toHaveBeenCalled();
+    });
+
+    it('uses the user-token path for getOrgRepositoriesFromIntegrations when a matching host token is provided', async () => {
+      gitlabkit.Groups.allProjects.mockReturnValue({
+        data: glRepos,
+        paginationInfo: { total: 2 },
+      });
+
+      const result = await gitlabApiService.getOrgRepositoriesFromIntegrations(
+        'my-group',
+        undefined,
+        undefined,
+        undefined,
+        { 'https://gitlab.com': 'user-gitlab-oauth-token' },
+      );
+
+      expect(result.repositories).toHaveLength(2);
+      expect(result.errors).toEqual([]);
+      expect(mockGetAllCredentials).not.toHaveBeenCalled();
+    });
+
+    it('returns empty org repositories when userTokens provided but no host matches', async () => {
+      const result = await gitlabApiService.getOrgRepositoriesFromIntegrations(
+        'my-group',
+        undefined,
+        undefined,
+        undefined,
+        { 'https://some-other-host.com': 'user-gitlab-oauth-token' },
+      );
+
+      expect(result.repositories).toEqual([]);
+      expect(result.errors).toEqual([]);
+      expect(mockGetAllCredentials).not.toHaveBeenCalled();
     });
   });
 });

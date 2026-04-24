@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const useDropdownManager = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const location = useLocation();
 
-  const handleOpen = (event: MouseEvent<HTMLElement>) => {
+  const handleOpen = useCallback((event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setAnchorEl(null);
-  };
+  }, []);
+
+  // Close the dropdown on any route change — acts as a safety net when
+  // a Link-based MenuItem navigates before the Menu transition completes.
+  useEffect(() => {
+    setAnchorEl(null);
+  }, [location.pathname]);
 
   return {
     anchorEl,

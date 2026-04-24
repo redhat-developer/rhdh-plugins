@@ -1,0 +1,30 @@
+app:
+  baseUrl: ${APP_BASE_URL:-http://localhost:7007}
+
+backend:
+  baseUrl: ${APP_BASE_URL:-http://localhost:7007}
+  listen: ':7007'
+  cors:
+    origin: ${APP_BASE_URL:-http://localhost:7007}
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+dcm:
+  apiGatewayUrl: ${DCM_API_GATEWAY_URL:-}
+  ssoBaseUrl: ${DCM_SSO_BASE_URL:-}
+  clientId: ${DCM_CLIENT_ID:-}
+  clientSecret: ${DCM_CLIENT_SECRET:-}
+
+auth:
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
+      userEntityRef: user:default/guest
+
+catalog:
+  locations: []
+
+techdocs:
+  generator:
+    runIn: local

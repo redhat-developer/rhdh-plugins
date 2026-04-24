@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [ff39f9a]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.2.1
+
+## 0.3.0
+
+### Minor Changes
+
+- 53a0ccf: Bump all dependencies to match RHDH 1.9.3
+
+### Patch Changes
+
+- Updated dependencies [53a0ccf]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.2.0
+
 ## 0.2.0
 
 ### Minor Changes

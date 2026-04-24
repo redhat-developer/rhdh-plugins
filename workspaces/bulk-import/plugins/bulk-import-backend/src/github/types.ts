@@ -14,86 +14,20 @@
  * limitations under the License.
  */
 
-import type { SerializedError } from '@backstage/errors';
 import type {
   GithubCredentials,
   GithubCredentialsProvider,
 } from '@backstage/integration';
 
-// From https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
-export type GithubOrganization = {
-  name: string;
-  id: number;
-  description?: string;
-  url?: string;
-  html_url?: string;
-  repos_url?: string;
-  events_url?: string;
-  hooks_url?: string;
-  issues_url?: string;
-  members_url?: string;
-  public_members_url?: string;
-  avatar_url?: string;
-  public_repos?: number;
-  total_private_repos?: number;
-  /**
-   * Number of internal repositories, accessible to all members in a GH enterprise
-   */
-  owned_private_repos?: number;
-};
+import { type RestEndpointMethodTypes } from '@octokit/rest';
 
-export type GithubRepository = {
-  name: string;
-  /**
-   * The full name of the repository in the form of owner/repo
-   */
-  full_name: string;
-  /**
-   * The API url to the repository
-   */
-  url: string;
-  /**
-   * The HTML URL to the repository
-   */
-  html_url: string;
-  /**
-   * The default "main" branch of the repository to place the `catalog-info.yaml` file into
-   */
-  default_branch: string;
-  /**
-   * The date-time the repository was last updated at
-   */
-  updated_at?: string | null;
-};
-
-/**
- * The type of credentials produced by the credential provider.
- *
- * @public
- */
-
-export type GithubFetchError =
-  | {
-      type: 'app';
-      appId: number;
-      error: SerializedError;
-    }
-  | {
-      type: 'token';
-      error: SerializedError;
-    };
-
-export type GithubOrganizationResponse = {
-  organizations: GithubOrganization[];
-  errors: GithubFetchError[];
-  totalCount?: number;
-};
-
-export type GithubRepositoryResponse = {
-  repositories: GithubRepository[];
-  errors: GithubFetchError[];
-  totalCount?: number;
-};
+export type {
+  SCMFetchError as GithubFetchError,
+  SCMOrganization as GithubOrganization,
+  SCMOrganizationResponse as GithubOrganizationResponse,
+  SCMRepository as GithubRepository,
+  SCMRepositoryResponse as GithubRepositoryResponse,
+} from '../scm/types';
 
 export type AppCredentialFetchResult = AppCredential | AppCredentialError;
 
@@ -132,3 +66,15 @@ export interface ExtendedGithubCredentialsProvider extends GithubCredentialsProv
     host: string;
   }) => Promise<ExtendedGithubCredentials[]>;
 }
+
+export type AuthenticatedUserRepositoryResponse =
+  RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response'];
+
+export type AuthenticatedUserRepositoryList =
+  AuthenticatedUserRepositoryResponse['data'];
+
+export type AppInstallationRepositoriesResponse =
+  RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response'];
+
+export type AppInstallationRepositories =
+  AppInstallationRepositoriesResponse['data'];

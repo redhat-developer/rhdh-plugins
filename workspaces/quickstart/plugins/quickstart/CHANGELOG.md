@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.9.0
+
+### Minor Changes
+
+- 0502c77: Added support for NFS
+
+## 1.8.5
+
+### Patch Changes
+
+- 14d6bcb: Localize the Quickstart help snackbar message.
+
 ## 1.8.4
 
 ### Patch Changes

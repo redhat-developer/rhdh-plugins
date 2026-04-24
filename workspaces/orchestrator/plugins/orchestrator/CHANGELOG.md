@@ -1,5 +1,77 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.4
+
+### Patch Changes
+
+- fb708f1: Fix UI styling issues in worfkflow results page
+
+## 5.7.3
+
+### Patch Changes
+
+- 69ca919: Simplify workflows tab layout by rendering `WorkflowsTable` directly inside `Content` instead of an extra MUI `Grid` wrapper.
+- Updated dependencies [652fac0]
+- Updated dependencies [4aec634]
+- Updated dependencies [d85bf56]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.1
+
+## 5.7.2
+
+### Patch Changes
+
+- f96e4f2: fix: updating lodash for cve fixes
+- Updated dependencies [f96e4f2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.1
+
+## 5.7.1
+
+### Patch Changes
+
+- 16d41c2: Add Run as Event when `orchestrator.kafka` is configured: send `isEvent` with execute input, redirect to workflow runs with a notice when the response id is `kafkaEvent`.
+- Updated dependencies [f45fe5a]
+- Updated dependencies [16d41c2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.1
+
+## 5.7.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- 665a75c: fix: update axios for CVE-2026-40175
+- Updated dependencies [665a75c]
+- Updated dependencies [2212e8d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.7.0
+
+## 5.6.0
+
+### Minor Changes
+
+- 775f8f9: Add NFS support in orchestrator and orchestarator-form-widget plugins
+
+### Patch Changes
+
+- 315239c: Scope SchemaUpdater replacements to the originating step and improve scope resolution.
+- 3988b16: prepopulate Execute Workflow form from URL query params
+- Updated dependencies [3d6415d]
+- Updated dependencies [64fd859]
+- Updated dependencies [5a9d9d8]
+- Updated dependencies [315239c]
+- Updated dependencies [60aa6a6]
+- Updated dependencies [ac2cbf8]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.6.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.3
+
 ## 5.5.2
 
 ### Patch Changes

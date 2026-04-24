@@ -19,6 +19,11 @@ export interface Config {
    * Configuration for the Orchestrator plugin.
    */
   orchestrator?: {
+    /**
+     * Set the content length limit for the requests.
+     * Defaults to 102400 bytes (100kb)
+     */
+    contentLengthLimit?: string;
     sonataFlowService: {
       /**
        * Base URL of the Sonata Flow service.
@@ -77,6 +82,30 @@ export interface Config {
        * Example: http://localhost:8099
        */
       url: string;
+    };
+    /**
+     * Kafka configuration for event-triggered workflows (KafkaJS-style).
+     * When present, the UI can show actions such as "Run as Event".
+     * @visibility frontend
+     */
+    kafka?: {
+      /**
+       * Logical identifier of the Kafka client application.
+       * @see https://kafka.js.org/docs/configuration#client-id
+       * @visibility frontend
+       */
+      clientId: string;
+      /**
+       * Kafka broker addresses (`host:port`).
+       * @visibility frontend
+       */
+      brokers: string[];
+      /**
+       * Log level for orchestrator Kafka services. Defaults to INFO (4); e.g. use 5 for DEBUG.
+       * @see https://kafka.js.org/docs/configuration#logging
+       * @visibility frontend
+       */
+      logLevel?: number;
     };
     /**
      * Configuration for the workflow log provider.

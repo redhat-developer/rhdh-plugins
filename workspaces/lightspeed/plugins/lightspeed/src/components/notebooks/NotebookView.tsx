@@ -69,6 +69,7 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     flex: 1,
     minHeight: 0,
+    height: '100%',
     backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
   },
   drawerContainer: {
@@ -415,8 +416,8 @@ export const NotebookView = ({
 
     for (const result of completedOrFailed) {
       processedIds.current.add(result.documentId);
+      idsToRemove.add(result.documentId);
       if (result.status !== 'completed') {
-        idsToRemove.add(result.documentId);
         namesToRemove.add(result.fileName);
       } else {
         newCompletedNames.add(result.fileName);

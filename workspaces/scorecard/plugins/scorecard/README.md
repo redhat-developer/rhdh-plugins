@@ -136,8 +136,8 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
            config:
              customizable: true
              widgetLayout:
-               ScorecardJiraHomepage:
-                 priority: 240
+               AggregatedCardWithDeprecatedMetricId:
+                 priority: 410
                  breakpoints:
                    xl: { w: 4, h: 6 }
                    lg: { w: 4, h: 6 }
@@ -145,8 +145,26 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    sm: { w: 4, h: 6 }
                    xs: { w: 4, h: 6 }
                    xxs: { w: 4, h: 6 }
-               ScorecardGithubHomepage:
-                 priority: 250
+               AggregatedCardWithDefaultAggregation:
+                 priority: 420
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 4 }
+                   lg: { w: 4, h: 6, x: 4 }
+                   md: { w: 4, h: 6, x: 4 }
+                   sm: { w: 4, h: 6, x: 4 }
+                   xs: { w: 4, h: 6, x: 4 }
+                   xxs: { w: 4, h: 6, x: 4 }
+               AggregatedCardWithJiraOpenIssues:
+                 priority: 430
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithGithubOpenPrs:
+                 priority: 440
                  breakpoints:
                    xl: { w: 4, h: 6, x: 4 }
                    lg: { w: 4, h: 6, x: 4 }
@@ -156,12 +174,14 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    xxs: { w: 4, h: 6, x: 4 }
    ```
 
-   The home module contributes two widgets:
+   The home module contributes four widgets:
 
-   - `ScorecardGithubHomepage` (title: **Scorecard: GitHub open PRs**)
-   - `ScorecardJiraHomepage` (title: **Scorecard: Jira open blocking tickets**)
+   - `AggregatedCardWithDeprecatedMetricId` (title: **Scorecard: With deprecated metricId property (Jira)**)
+   - `AggregatedCardWithDefaultAggregation` (title: **Scorecard: With default aggregation config (GitHub)**)
+   - `AggregatedCardWithJiraOpenIssues` (title: **Scorecard: Jira open blocking tickets**)
+   - `AggregatedCardWithGithubOpenPrs` (title: **Scorecard: GitHub open PRs**)
 
-   These widgets render the same `ScorecardHomepageCard` component used in legacy apps, preconfigured for `github.open_prs` and `jira.open_issues`.
+   These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
 
 ##### Modules and extensions (NFS)
 
@@ -169,18 +189,20 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 
 **Modules**
 
-| Module                        | Description                                                                                                                                                            |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scorecardHomeModule`         | Registers Scorecard homepage widgets for the home plugin (`ScorecardGithubHomepage` and `ScorecardJiraHomepage`).                                                      |
-| `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3). |
-| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                           |
+| Module                        | Description                                                                                                                                                                                                           |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scorecardHomeModule`         | Registers Scorecard homepage widgets for the home plugin (`AggregatedCardWithDeprecatedMetricId`, `AggregatedCardWithDefaultAggregation`, `AggregatedCardWithJiraOpenIssues`, and `AggregatedCardWithGithubOpenPrs`). |
+| `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3).                                                |
+| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                                                                          |
 
 **Extensions**
 
 - `api:scorecard` — Scorecard API (provided by the plugin; auto-discovered when the plugin is installed).
 - `entity-content:catalog/entity-content-scorecard` — Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type.
-- `home-page-widget:home/scorecard-github-homepage` — Homepage widget showing GitHub open PR metric.
-- `home-page-widget:home/scorecard-jira-homepage` — Homepage widget showing Jira open issues metric.
+- `home-page-widget:home/scorecard-deprecated-metric-id` — Homepage widget using deprecated metricId property (Jira open issues).
+- `home-page-widget:home/scorecard-default-aggregation` — Homepage widget using default aggregation config (GitHub open PRs).
+- `home-page-widget:home/scorecard-jira-open-issues` — Homepage widget showing Jira open blocking tickets.
+- `home-page-widget:home/scorecard-github-open-prs` — Homepage widget showing GitHub open PRs.
 
 #### Legacy app
 
@@ -280,6 +302,59 @@ permission:
 - **app (NFS):** Open your Backstage app, go to **Catalog**, open an entity. The **Scorecard** tab appears when the entity matches your `allowedFilters` in app-config (or for all entities if the extension config is omitted).
 - **app-legacy:** Open your Backstage app, go to the entity overview from the catalog, and open the **Scorecard** tab to view and analyze scorecard metrics.
 
+### Homepage scorecard cards
+
+The plugin exports **`ScorecardHomepageCard`** (see [`plugin.ts`](./src/plugin.ts)) for use on customizable home pages (for example **Dynamic Home Page** mount points such as `home.page/cards`).
+
+#### Backend configuration
+
+Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId` (default status-grouped aggregation).
+
+#### Card props
+
+The supported model is **a single `aggregationId` string** whose value is either:
+
+- a **KPI key** from **`scorecard.aggregationKPIs`** in app-config (custom title, description, type, backing metric), or
+- a **metric id** when you have no KPI row for that card (default **statusGrouped** aggregation and metric-defined metadata).
+
+| Prop                | Status       | Description                                                                                                                          |
+| ------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **`aggregationId`** | **Use this** | KPI id from **`scorecard.aggregationKPIs`** _or_ **metric id** for the default case. Sent to **`GET /aggregations/:aggregationId`**. |
+| **`metricId`**      | **Legacy**   | Default aggregated card metadata: resolved as **`aggregationId ?? metricId`**.                                                       |
+
+**Migrating**
+
+- **Homepage `props`:** set **`aggregationId`** to your KPI key or metric id - drop **`metricId`** when your plugin version no longer requires it.
+- **Custom HTTP clients:** replace **`GET .../metrics/<metricId>/catalog/aggregations`** with **`GET .../aggregations/<aggregationId>`** (same segment value when you used the metric id before). Deprecation **`Link`** headers point at the successor URL.
+- **User-editable home cards:** if your **`settings.schema`** still exposes **`metricId`**, plan to rename or replace it with **`aggregationId`** using the same KPI vs metric-id rules once the frontend supports it.
+
+Example (Dynamic Home Page–style mount point): register **`ScorecardHomepageCard`** and pass **`props.aggregationId`** (and **`metricId`** only if you still run an older card API):
+
+```tsx
+import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import { ComponentType } from 'react';
+
+// Inside your home page cards config:
+{
+  Component: ScorecardHomepageCard as ComponentType,
+  config: {
+    id: 'scorecard-jira-open-issues',
+    title: 'Scorecard: Jira open issues',
+    layouts: { /* … */ },
+    props: {
+      aggregationId: 'openIssuesKpi',
+      // metricId: 'jira.open_issues', // legacy only; remove when only aggregationId is supported
+    },
+  },
+},
+```
+
+#### Default labels and translations
+
+- The API returns **title** and **description** in **`metadata`** (from **`aggregationKPIs`** or from the metric definition).
+- The homepage card applies **plugin translations** when keys exist for **`metric.<id>.title`** and **`metric.<id>.description`**, where **`<id>`** is the value passed into the translation hook (**`aggregationId ?? metricId`**). If no translation key matches, the UI shows the **metadata** strings from the API.
+- **Custom `title` / `description` in `aggregationKPIs`** are returned as-is from the backend; add matching translation keys for **`metric.<yourKpiId>.*`** if you want those strings localized.
+
 ## Adding Translations
 
 The Scorecard plugin supports internationalization (i18n) for metric titles and descriptions. To add translations for new metrics:
@@ -321,6 +396,8 @@ Translation keys follow this pattern:
 
 - **Metric titles**: `metric.{metric-id}.title`
 - **Metric descriptions**: `metric.{metric-id}.description`
+
+Use the same pattern with a **KPI id** as `{metric-id}` when localizing **`aggregationKPIs`** titles (for example **`metric.openIssuesKpi.title`**).
 
 ### 3. Fallback Behavior
 

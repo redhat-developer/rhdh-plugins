@@ -16,6 +16,7 @@
 
 import { defineConfig } from '@playwright/test';
 
+// APP_MODE: 'legacy' (app-legacy) or 'nfs' (packages/app with new frontend)
 const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
@@ -54,7 +55,7 @@ export default defineConfig({
 
   outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
 
-  testDir: 'packages/app-legacy/e2e-tests',
+  testDir: 'e2e-tests',
 
   projects: LOCALES.map(locale => ({
     name: locale,

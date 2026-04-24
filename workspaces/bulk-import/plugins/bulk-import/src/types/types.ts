@@ -182,6 +182,7 @@ export type CreateImportJobRepository = {
 export type APITypes = {
   orgName?: string;
   fetchOrganizations?: boolean;
+  scmAuthTokens?: Record<string, string>;
 };
 
 export type ErrorType = {
@@ -207,9 +208,10 @@ export interface RepositoriesError extends Error {
 }
 
 export type DataFetcherQueryParams = {
-  page: number;
-  querySize: number;
+  page?: number;
+  querySize?: number;
   showOrganizations?: boolean;
   orgName?: string;
   searchString?: string;
+  approvalTool: ApprovalTool;
 };
