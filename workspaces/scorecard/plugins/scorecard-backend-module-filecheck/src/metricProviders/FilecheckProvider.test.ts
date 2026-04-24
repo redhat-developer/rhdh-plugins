@@ -18,7 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import type { UrlReaderService } from '@backstage/backend-plugin-api';
 import { NotFoundError } from '@backstage/errors';
-import { FilecheckProvider } from './FilecheckProvider';
+import { FilecheckProvider } from './metricProviders/FilecheckProvider';
 import { DEFAULT_FILECHECK_THRESHOLDS } from './config';
 
 jest.mock('@backstage/catalog-model', () => ({

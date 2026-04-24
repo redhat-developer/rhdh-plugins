@@ -88,7 +88,7 @@ export const scorecardMessages = {
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
     },
     filecheck: {
-      title: 'GitHub file check: {{name}}',
+      title: 'File check: {{name}}',
       description: 'Checks whether the {{name}} file exists in the repository.',
     },
     lastUpdated: 'Last updated: {{timestamp}}',

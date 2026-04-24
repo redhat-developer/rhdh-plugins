@@ -42,14 +42,14 @@ describe('resolveMetricTranslation', () => {
     );
   });
 
-  it('returns parent translation with name param for 3-segment metric IDs', () => {
+  it('returns parent translation with name param for 2-segment metric IDs', () => {
     const t = createMockT({
-      'metric.filecheck.title': 'GitHub file check: {{name}}',
+      'metric.filecheck.title': 'File check: {{name}}',
     });
 
     expect(
       resolveMetricTranslation(t as any, 'filecheck.readme', 'title'),
-    ).toBe('GitHub file check: readme');
+    ).toBe('File check: readme');
   });
 
   it('returns parent translation for description field', () => {
@@ -66,7 +66,7 @@ describe('resolveMetricTranslation', () => {
   it('prefers exact match over parent match', () => {
     const t = createMockT({
       'metric.filecheck.readme.title': 'README file check',
-      'metric.filecheck.title': 'GitHub file check: {{name}}',
+      'metric.filecheck.title': 'File check: {{name}}',
     });
 
     expect(
@@ -74,14 +74,14 @@ describe('resolveMetricTranslation', () => {
     ).toBe('README file check');
   });
 
-  it('joins multiple suffix segments as the name parameter', () => {
+  it('uses first segment as template namespace with the rest as name', () => {
     const t = createMockT({
-      'metric.some.provider.title': 'Provider: {{name}}',
+      'metric.some.title': 'Provider: {{name}}',
     });
 
     expect(
       resolveMetricTranslation(t as any, 'some.provider.deep.nested', 'title'),
-    ).toBe('Provider: deep.nested');
+    ).toBe('Provider: provider.deep.nested');
   });
 
   it('returns raw key when no translation matches for 2-segment metric ID', () => {
@@ -100,14 +100,14 @@ describe('resolveMetricTranslation', () => {
     ).toBe('metric.unknown.metric.instance.title');
   });
 
-  it('does not attempt parent lookup for 2-segment metric IDs', () => {
+  it('attempts parent lookup for 2-segment metric IDs', () => {
     const t = createMockT({
-      'metric.unknown.title': 'Should not match',
+      'metric.unknown.title': 'Resolved via parent: {{name}}',
     });
 
     expect(
       resolveMetricTranslation(t as any, 'unknown.something', 'title'),
-    ).toBe('metric.unknown.something.title');
+    ).toBe('Resolved via parent: something');
   });
 
   it('does not attempt parent lookup for 1-segment metric IDs', () => {
@@ -161,7 +161,7 @@ describe('resolveMetricTranslation', () => {
 
   it('prefers parent translation over fallback', () => {
     const t = createMockT({
-      'metric.filecheck.title': 'GitHub file check: {{name}}',
+      'metric.filecheck.title': 'File check: {{name}}',
     });
 
     expect(
@@ -171,6 +171,6 @@ describe('resolveMetricTranslation', () => {
         'title',
         'Fallback Title',
       ),
-    ).toBe('GitHub file check: readme');
+    ).toBe('File check: readme');
   });
 });

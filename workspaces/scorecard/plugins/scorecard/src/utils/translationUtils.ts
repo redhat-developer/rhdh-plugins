@@ -24,12 +24,10 @@ type ScorecardTranslationFunction = TranslationFunction<
 /**
  * Resolves a metric's translated title or description using a cascading lookup:
  *
- * 1. Exact key: metric.metricId.field (e.g. metric.github.open_prs.title)
- * 2. Parent key with instance suffix as name param:
- *    for a metric ID with 3+ dot-separated segments, strips the suffix after
- *    the first two segments and tries metric.base.field with name = suffix.
- *    E.g. filecheck.readme tries metric.filecheck.title
- *    with name = readme.
+ * 1. Exact key: metric.<metricId>.<field> (e.g. metric.github.open_prs.title)
+ * 2. Template key: metric.<provider>.<field> with name = <rest of metricId>
+ *    The first dot-separated segment is always the provider/namespace.
+ *    E.g. filecheck.codeowners -> metric.filecheck.title with name = codeowners
  * 3. Falls back to `fallback` when provided, otherwise returns the raw
  *    translation key.
  */
@@ -43,13 +41,13 @@ export function resolveMetricTranslation(
   const translated = t(key as any, {});
   if (translated !== key) return translated;
 
-  const segments = metricId.split('.');
-  if (segments.length > 2) {
-    const base = segments.slice(0, 2).join('.');
-    const name = segments.slice(2).join('.');
-    const parentKey = `metric.${base}.${field}`;
-    const parentTranslated = t(parentKey as any, { name });
-    if (parentTranslated !== parentKey) return parentTranslated;
+  const dotIndex = metricId.indexOf('.');
+  if (dotIndex !== -1) {
+    const base = metricId.slice(0, dotIndex);
+    const name = metricId.slice(dotIndex + 1);
+    const templateKey = `metric.${base}.${field}`;
+    const templateTranslated = t(templateKey as any, { name });
+    if (templateTranslated !== templateKey) return templateTranslated;
   }
 
   return fallback ?? translated;

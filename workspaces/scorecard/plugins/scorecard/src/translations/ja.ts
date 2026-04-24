@@ -81,7 +81,7 @@ const scorecardTranslationJa = createTranslationMessages({
       'Jira のオープン状態の進行を妨げているチケット',
     'metric.jira.open_issues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
-    'metric.filecheck.title': 'GitHub ファイル確認: {{name}}',
+    'metric.filecheck.title': 'ファイル確認: {{name}}',
     'metric.filecheck.description':
       'リポジトリーに {{name}} ファイルが存在するかを確認します。',
     'metric.lastUpdated': '最終更新日: {{timestamp}}',

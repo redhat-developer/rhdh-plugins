@@ -25,8 +25,8 @@ import {
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { DEFAULT_FILECHECK_THRESHOLDS } from './config';
-import { FilecheckEntry, FilecheckConfig } from './types';
+import { DEFAULT_FILECHECK_THRESHOLDS } from '../config';
+import { FilecheckEntry, FilecheckConfig } from '../types';
 
 const INVALID_PATH_CHARS = /[\n\r"\\]/;
 

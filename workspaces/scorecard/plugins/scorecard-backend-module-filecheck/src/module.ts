@@ -18,7 +18,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { FilecheckProvider } from './FilecheckProvider';
+import { FilecheckProvider } from './metricProviders/FilecheckProvider';
 
 export const scorecardModuleFilecheck = createBackendModule({
   pluginId: 'scorecard',
