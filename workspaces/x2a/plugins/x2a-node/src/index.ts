@@ -40,7 +40,17 @@ export {
   getGroupsOfUser,
   reconcileJobStatus,
   generateCallbackToken,
+  removeSensitiveFromJob,
 } from './utils';
+
+export type { UnsecureJob } from './utils';
+
+export { calculateModuleStatus } from './moduleStatus';
+
+export {
+  reconcileModuleJobs,
+  listModulesWithReconciledStatuses,
+} from './modulesReconcile';
 
 export type { X2aPermissionFlags } from './permissions';
 export { resolveX2aPermissionFlags } from './permissions';

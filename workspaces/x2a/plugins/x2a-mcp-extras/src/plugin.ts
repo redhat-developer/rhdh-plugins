@@ -19,7 +19,10 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
-import { x2aDatabaseServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import {
+  kubeServiceRef,
+  x2aDatabaseServiceRef,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { createX2aActions } from './actions';
 
 /**
@@ -42,6 +45,7 @@ export const x2aMcpExtrasPlugin = createBackendPlugin({
         logger: coreServices.logger,
         permissionsSvc: coreServices.permissions,
         x2aDatabase: x2aDatabaseServiceRef,
+        kubeService: kubeServiceRef,
       },
       async init({
         actionsRegistry,
@@ -51,6 +55,7 @@ export const x2aMcpExtrasPlugin = createBackendPlugin({
         logger,
         permissionsSvc,
         x2aDatabase,
+        kubeService,
       }) {
         createX2aActions({
           actionsRegistry,
@@ -60,6 +65,7 @@ export const x2aMcpExtrasPlugin = createBackendPlugin({
           logger,
           permissionsSvc,
           x2aDatabase,
+          kubeService,
         });
       },
     });
