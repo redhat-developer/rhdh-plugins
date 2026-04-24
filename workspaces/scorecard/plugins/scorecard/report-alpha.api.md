@@ -165,12 +165,12 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.authenticationErrorMessage': string;
     readonly 'errors.noMetricsFound': string;
     readonly 'errors.multipleMetricsFound': string;
+    readonly 'metric.filecheck.title': string;
+    readonly 'metric.filecheck.description': string;
     readonly 'metric.github.open_prs.title': string;
     readonly 'metric.github.open_prs.description': string;
     readonly 'metric.jira.open_issues.title': string;
     readonly 'metric.jira.open_issues.description': string;
-    readonly 'metric.filecheck.title': string;
-    readonly 'metric.filecheck.description': string;
     readonly 'metric.lastUpdated': string;
     readonly 'metric.lastUpdatedNotAvailable': string;
     readonly 'metric.someEntitiesNotReportingValues': string;
