@@ -494,7 +494,7 @@ export const NotebookView = ({
   );
 
   const renderMainContent = () => {
-    if (!hasDocuments) {
+    if (!hasDocuments && messages.length === 0) {
       return <UploadResourceScreen onUploadClick={handleOpenUploadModal} />;
     }
     if (messages.length > 0) {
@@ -633,7 +633,7 @@ export const NotebookView = ({
 
                 <div className={classes.mainContent}>{renderMainContent()}</div>
 
-                {!hasDocuments && (
+                {!hasDocuments && messages.length === 0 && (
                   <div
                     className={`${classes.footerAlignedAlert}${sidebarCollapsed ? ` ${classes.alertFullWidth}` : ''}`}
                   >
