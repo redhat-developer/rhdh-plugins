@@ -72,6 +72,42 @@ describe('loadDefaultWidgets', () => {
           defaultWidgets: [
             {
               id: 'mixed',
+              children: [{ id: 'inner', ref: 'inner' }],
+            },
+          ],
+        },
+      },
+    });
+    expect(() => loadDefaultWidgets(config)).toThrow(
+      /Invalid homepage\.defaultWidgets/,
+    );
+  });
+
+  it('throws when a node has `id`, `ref` and `children`', () => {
+    const config = mockServices.rootConfig({
+      data: {
+        homepage: {
+          defaultWidgets: [
+            {
+              id: 'mixed',
+              ref: 'mixed',
+              children: [{ id: 'inner', ref: 'inner' }],
+            },
+          ],
+        },
+      },
+    });
+    expect(() => loadDefaultWidgets(config)).toThrow(
+      /Invalid homepage\.defaultWidgets/,
+    );
+  });
+
+  it('throws when a node has both `ref` and `children`', () => {
+    const config = mockServices.rootConfig({
+      data: {
+        homepage: {
+          defaultWidgets: [
+            {
               ref: 'mixed',
               children: [{ id: 'inner', ref: 'inner' }],
             },
@@ -127,70 +163,6 @@ describe('loadDefaultWidgets', () => {
     expect(() => loadDefaultWidgets(config)).toThrow(
       /Invalid homepage\.defaultWidgets/,
     );
-  });
-
-  it('parses cards with title, description, priority, and layouts', () => {
-    const config = mockServices.rootConfig({
-      data: {
-        homepage: {
-          defaultWidgets: [
-            {
-              id: 'card-with-meta',
-              ref: 'card-with-meta',
-              title: 'My Card',
-              description: 'A description',
-              priority: 200,
-              layouts: {
-                xl: { w: 12, h: 5, x: 0, y: 0 },
-                sm: { w: 6, h: 3 },
-              },
-            },
-          ],
-        },
-      },
-    });
-    const result = loadDefaultWidgets(config);
-    expect(result).toEqual([
-      {
-        id: 'card-with-meta',
-        ref: 'card-with-meta',
-        title: 'My Card',
-        description: 'A description',
-        priority: 200,
-        layouts: {
-          xl: { w: 12, h: 5, x: 0, y: 0 },
-          sm: { w: 6, h: 3 },
-        },
-      },
-    ]);
-  });
-
-  it('parses cards with titleKey and descriptionKey', () => {
-    const config = mockServices.rootConfig({
-      data: {
-        homepage: {
-          defaultWidgets: [
-            {
-              id: 'i18n-card',
-              ref: 'i18n-card',
-              title: 'Fallback',
-              titleKey: 'homepage.card.title',
-              descriptionKey: 'homepage.card.desc',
-            },
-          ],
-        },
-      },
-    });
-    const result = loadDefaultWidgets(config);
-    expect(result).toEqual([
-      {
-        id: 'i18n-card',
-        ref: 'i18n-card',
-        title: 'Fallback',
-        titleKey: 'homepage.card.title',
-        descriptionKey: 'homepage.card.desc',
-      },
-    ]);
   });
 
   it('accepts a group with an empty visibility block', () => {

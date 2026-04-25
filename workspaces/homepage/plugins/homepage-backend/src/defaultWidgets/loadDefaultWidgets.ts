@@ -18,27 +18,25 @@ import { RootConfigService } from '@backstage/backend-plugin-api';
 import { z } from 'zod/v3';
 import { DefaultWidgetNode } from './types';
 
-const entityRefSchema = z
+const userRefSchema = z
   .string()
   .min(1)
-  .refine(s => s.includes(':') && s.includes('/'), {
-    message: 'Must be a fully qualified entity ref (kind:namespace/name)',
+  .refine(s => s.startsWith('user:') && s.includes('/'), {
+    message: 'Must be a fully qualified user ref (user:namespace/name)',
+  });
+
+const groupRefSchema = z
+  .string()
+  .min(1)
+  .refine(s => s.startsWith('group:') && s.includes('/'), {
+    message: 'Must be a fully qualified group ref (group:namespace/name)',
   });
 
 const visibilitySchema = z
   .object({
-    users: z.array(entityRefSchema).optional(),
-    groups: z.array(entityRefSchema).optional(),
+    users: z.array(userRefSchema).optional(),
+    groups: z.array(groupRefSchema).optional(),
     permissions: z.array(z.string().min(1)).optional(),
-  })
-  .strict();
-
-const cardLayoutSchema = z
-  .object({
-    x: z.number().optional(),
-    y: z.number().optional(),
-    w: z.number().optional(),
-    h: z.number().optional(),
   })
   .strict();
 
@@ -49,18 +47,22 @@ export const defaultWidgetNodeSchema: z.ZodType<DefaultWidgetNode> = z.lazy(
         id: z.string().min(1).optional(),
         ref: z.string().min(1).optional(),
         props: z.record(z.string(), z.unknown()).optional(),
-        layouts: z.record(z.string(), cardLayoutSchema).optional(),
+        layout: z.record(z.string(), z.unknown()).optional(),
         if: visibilitySchema.optional(),
         children: z.array(defaultWidgetNodeSchema).optional(),
       })
       .strict()
       .refine(
-        n =>
-          (n.id !== undefined) !==
-          (n.children !== undefined && n.children.length > 0),
+        n => {
+          const hasId = n.id !== undefined && n.id.length > 0;
+          const hasRef = n.ref !== undefined && n.ref.length > 0;
+          const hasChildren = n.children !== undefined && n.children.length > 0;
+          if (hasChildren) return !hasId && !hasRef;
+          return hasId && hasRef;
+        },
         {
           message:
-            'Node must have exactly one of `id` (leaf) or non-empty `children` (group)',
+            'Node must have `id` and `ref` (leaf) or non-empty `children` (group), not both',
         },
       ),
 );

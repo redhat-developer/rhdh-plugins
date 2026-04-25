@@ -43,7 +43,7 @@ const userEntityWithGroups = (groups: string[]) => ({
 });
 
 describe('homepagePlugin', () => {
-  it('returns the visible default cards for the current user', async () => {
+  it('returns the visible default widgets for the current user', async () => {
     const { server } = await startTestBackend({
       features: [
         homepagePlugin,
@@ -51,21 +51,27 @@ describe('homepagePlugin', () => {
           data: {
             homepage: {
               defaultWidgets: [
-                { id: 'onboarding', title: 'Get Started', priority: 200 },
                 {
-                  id: 'dev-only',
+                  id: 'onboarding',
+                  ref: 'rhdh.onboarding',
+                },
+                {
                   if: { groups: ['group:default/developers'] },
+                  children: [
+                    { id: 'dev-card-1', ref: 'dev-card-1' },
+                    { id: 'dev-card-2', ref: 'dev-card-2' },
+                  ],
                 },
                 {
-                  id: 'admin-only',
                   if: { groups: ['group:default/admins'] },
+                  children: [
+                    { id: 'admin-card-1', ref: 'admin-card-1' },
+                    { id: 'admin-card-2', ref: 'admin-card-2' },
+                  ],
                 },
                 {
-                  label: 'Platform section',
-                  if: {
-                    permissions: ['homepage.platform.read'],
-                  },
-                  children: [{ id: 'platform-inner' }],
+                  if: { permissions: ['homepage.platform.read'] },
+                  children: [{ id: 'platform-inner', ref: 'rhdh.platform' }],
                 },
               ],
             },
@@ -87,13 +93,14 @@ describe('homepagePlugin', () => {
     expect(res.body).toEqual({
       customizable: false,
       items: [
-        { id: 'onboarding', title: 'Get Started', priority: 200 },
-        { id: 'dev-only' },
+        { id: 'onboarding', ref: 'rhdh.onboarding' },
+        { id: 'dev-card-1', ref: 'dev-card-1' },
+        { id: 'dev-card-2', ref: 'dev-card-2' },
       ],
     });
   });
 
-  it('includes cards gated by an allowed permission', async () => {
+  it('includes widgets gated by an allowed permission', async () => {
     const { server } = await startTestBackend({
       features: [
         homepagePlugin,
@@ -101,16 +108,16 @@ describe('homepagePlugin', () => {
           data: {
             homepage: {
               defaultWidgets: [
-                { id: 'public' },
+                { id: 'public', ref: 'rhdh.public' },
                 {
-                  label: 'Platform section',
                   if: {
                     permissions: ['homepage.platform.read'],
                   },
                   children: [
                     {
                       id: 'platform-inner',
-                      layouts: { xl: { w: 12, h: 5 } },
+                      ref: 'rhdh.platform',
+                      layout: { xl: { w: 12, h: 5 } },
                     },
                   ],
                 },
@@ -132,8 +139,12 @@ describe('homepagePlugin', () => {
     expect(res.body).toEqual({
       customizable: false,
       items: [
-        { id: 'public' },
-        { id: 'platform-inner', layouts: { xl: { w: 12, h: 5 } } },
+        { id: 'public', ref: 'rhdh.public' },
+        {
+          id: 'platform-inner',
+          ref: 'rhdh.platform',
+          layout: { xl: { w: 12, h: 5 } },
+        },
       ],
     });
   });
@@ -146,7 +157,7 @@ describe('homepagePlugin', () => {
           data: {
             homepage: {
               customizable: true,
-              defaultWidgets: [{ id: 'a' }],
+              defaultWidgets: [{ id: 'a', ref: 'a' }],
             },
           },
         }),
@@ -159,7 +170,7 @@ describe('homepagePlugin', () => {
     expect(res.body.customizable).toBe(true);
   });
 
-  it('returns an empty list when no default cards are configured', async () => {
+  it('returns an empty list when no default widgets are configured', async () => {
     const { server } = await startTestBackend({
       features: [homepagePlugin],
     });
