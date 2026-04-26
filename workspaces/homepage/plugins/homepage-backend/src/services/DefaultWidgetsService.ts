@@ -75,14 +75,12 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
 
   private constructor(
     tree: DefaultWidgetNode[],
-    customizable: boolean,
     referencedPermissions: Set<string>,
     catalog: typeof catalogServiceRef.T,
     permissions: PermissionsService,
     logger: LoggerService,
   ) {
     this.#tree = tree;
-    this.#customizable = customizable;
     this.#referencedPermissions = referencedPermissions;
     this.#catalog = catalog;
     this.#permissions = permissions;
@@ -102,7 +100,6 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
       logger: this.#logger,
     });
     return {
-      customizable: this.#customizable,
       items: filterToVisibleLeaves(this.#tree, ctx),
     };
   }

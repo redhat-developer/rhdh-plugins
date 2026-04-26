@@ -82,7 +82,6 @@ app:
                   h: 14
 
 homepage:
-  customizable: true
   # The widget id is required if a user changes the default layout.
   # The widget ref is used to determine which widget is rendered.
   # For 1.x this references a mount point (`config.id`).
@@ -102,7 +101,8 @@ homepage:
         title: Headline right
 
     - id: visit-card
-      layouts:
+      ref: VisitCard
+      layout:
         xl: { w: 12, h: 5 }
         lg: { w: 12, h: 5 }
         md: { w: 12, h: 6 }
@@ -110,7 +110,8 @@ homepage:
         xs: { w: 12, h: 9 }
         xxs: { w: 12, h: 14 }
     - id: onboarding
-      layouts:
+      ref: Onboarding
+      layout:
         xl: { w: 12, h: 6 }
         lg: { w: 12, h: 6 }
         md: { w: 12, h: 7 }
@@ -121,7 +122,8 @@ homepage:
         groups: [group:default/admins]
       children:
         - id: rbac
-          layouts:
+          ref: RBAC
+          layout:
             xl: { w: 12, h: 6 }
             lg: { w: 12, h: 6 }
 

@@ -45,8 +45,6 @@ interface HomepageDefaultWidgetNodeConfig {
 
 export interface Config {
   homepage?: {
-    /** Whether the homepage layout is customizable by the user. Defaults to false. */
-    customizable?: boolean;
     /**
      * Recursive default card tree rendered on the homepage. Each node is either
      * a leaf (has `id`) or a group (has `children`).

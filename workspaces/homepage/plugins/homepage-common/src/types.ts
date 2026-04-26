@@ -49,6 +49,5 @@ export interface VisibleDefaultWidget {
  * @public
  */
 export interface DefaultWidgetsResponse {
-  customizable: boolean;
   items: VisibleDefaultWidget[];
 }

@@ -91,7 +91,6 @@ describe('homepagePlugin', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      customizable: false,
       items: [
         { id: 'onboarding', ref: 'rhdh.onboarding' },
         { id: 'dev-card-1', ref: 'dev-card-1' },
@@ -137,7 +136,6 @@ describe('homepagePlugin', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      customizable: false,
       items: [
         { id: 'public', ref: 'rhdh.public' },
         {
@@ -156,7 +154,6 @@ describe('homepagePlugin', () => {
         mockServices.rootConfig.factory({
           data: {
             homepage: {
-              customizable: true,
               defaultWidgets: [{ id: 'a', ref: 'a' }],
             },
           },
@@ -178,7 +175,7 @@ describe('homepagePlugin', () => {
     const res = await request(server).get('/api/homepage/default-widgets');
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ customizable: false, items: [] });
+    expect(res.body).toEqual({ items: [] });
   });
 
   it('rejects unauthenticated requests', async () => {

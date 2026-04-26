@@ -41,9 +41,8 @@ describe('createRouter', () => {
     app.use(mockErrorHandler());
   });
 
-  it('returns the visible default cards with customizable flag', async () => {
+  it('returns the visible default widgets', async () => {
     defaultWidgets.getDefaultWidgets.mockResolvedValue({
-      customizable: true,
       items: [
         {
           id: 'onboarding',
@@ -58,7 +57,6 @@ describe('createRouter', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      customizable: true,
       items: [
         {
           id: 'onboarding',

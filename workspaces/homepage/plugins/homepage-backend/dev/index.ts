@@ -38,7 +38,6 @@ backend.add(
   mockServices.rootConfig.factory({
     data: {
       homepage: {
-        customizable: true,
         defaultWidgets: [
           {
             id: 'onboarding',
