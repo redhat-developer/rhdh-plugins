@@ -88,15 +88,15 @@ homepage:
   # For 2.x this references a homepage widget extension (name).
   defaultWidgets:
     - id: headline-left
-      ref: Headline
+      ref: headline-left
       props:
-        title: Headline left
+        title: Headline left2
     - id: headline-center
-      ref: Headline
+      ref: headline-center
       props:
         title: Headline center
     - id: headline-right
-      ref: Headline
+      ref: headline-right
       props:
         title: Headline right
 

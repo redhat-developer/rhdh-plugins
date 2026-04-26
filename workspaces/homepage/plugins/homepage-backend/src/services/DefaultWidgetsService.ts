@@ -45,7 +45,6 @@ export interface DefaultWidgetsService {
 
 export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
   readonly #tree: DefaultWidgetNode[];
-  readonly #customizable: boolean;
   readonly #referencedPermissions: Set<string>;
   readonly #catalog: typeof catalogServiceRef.T;
   readonly #permissions: PermissionsService;
@@ -65,7 +64,6 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
     );
     return new DefaultWidgetsServiceImpl(
       tree,
-      customizable,
       referencedPermissions,
       options.catalog,
       options.permissions,
