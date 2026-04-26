@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 // Inline default thresholds for e2e mocks (matches scorecard-common DEFAULT_NUMBER_THRESHOLDS)
 const DEFAULT_NUMBER_THRESHOLDS = {
   rules: [
@@ -199,6 +201,75 @@ export const openIssuesKpiMetadataResponse = {
   type: 'number',
   history: true,
   aggregationType: 'statusGrouped',
+};
+
+/** Matches `scorecard.aggregationKPIs.openPrsWeightedKpi` in app-config.yaml */
+export const openPrsWeightedKpiMetadataResponse = {
+  title: 'GitHub Open PRs (weighted health)',
+  description:
+    'Weighted health average for open PRs by threshold status across your entities.',
+  type: 'number',
+  history: true,
+  aggregationType: aggregationKinds.average,
+};
+
+/**
+ * Average KPI: 3×100 + 5×40 + 2×0 = 500 weighted sum; max 100×10 entities → 50% score.
+ * Colors align with `aggregationResultThresholds` warning band (30–79%) in app-config.
+ */
+export const openPrsWeightedAggregatedResponse = {
+  id: 'github.open_prs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    values: [
+      { count: 3, name: 'success', score: 100 },
+      { count: 5, name: 'warning', score: 40 },
+      { count: 2, name: 'error', score: 0 },
+    ],
+    total: 10,
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    averageScore: 0.5,
+    averageWeightedSum: 500,
+    averageMaxPossible: 1000,
+    aggregationChartDisplayColor: 'rgb(224, 189, 108)',
+  },
+};
+
+export const emptyOpenPrsWeightedAggregatedResponse = {
+  id: 'github.open_prs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    total: 0,
+    values: [
+      { count: 0, name: 'success', score: 100 },
+      { count: 0, name: 'warning', score: 40 },
+      { count: 0, name: 'error', score: 0 },
+    ],
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    averageScore: 0,
+    averageWeightedSum: 0,
+    averageMaxPossible: 0,
+    aggregationChartDisplayColor: '#6bb300',
+  },
+};
+
+/** Deliberately unknown `aggregationType` for UnsupportedAggregationType UI tests. */
+export const openPrsWeightedUnsupportedAggregationResponse = {
+  id: 'github.open_prs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+    aggregationType: 'customUnknownAggregationKind',
+  },
+  result: openPrsWeightedAggregatedResponse.result,
 };
 
 // Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)

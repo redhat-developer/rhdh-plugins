@@ -41,15 +41,16 @@ import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { AggregatedMetricMapper } from './mappers';
 import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
 import { validateAggregationIdParam } from '../middlewares/validateAggregationIdParam';
-import {
-  aggregationTypes,
-  scorecardMetricReadPermission,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { validateDatasourceQueryParams } from '../middlewares/validateDatasourceQueryParams';
+import { AggregationsService } from './aggregations/AggregationService';
 
 export type ScorecardRouterOptions = {
+  service: {
+    aggregationsService: AggregationsService;
+    catalogMetricService: CatalogMetricService;
+  };
   metricProvidersRegistry: MetricProvidersRegistry;
-  catalogMetricService: CatalogMetricService;
   catalog: CatalogService;
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
@@ -58,7 +59,7 @@ export type ScorecardRouterOptions = {
 
 export async function createRouter({
   metricProvidersRegistry,
-  catalogMetricService,
+  service,
   catalog,
   httpAuth,
   permissions,
@@ -66,6 +67,8 @@ export async function createRouter({
 }: ScorecardRouterOptions): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
+
+  const { aggregationsService, catalogMetricService } = service;
 
   router.get(
     '/metrics',
@@ -178,23 +181,21 @@ export async function createRouter({
       }
 
       const thresholds = provider.getMetricThresholds();
-      const aggregatedMetric =
-        await catalogMetricService.getAggregatedMetricByEntityRefs(
-          entitiesOwnedByAUser,
-          metricId,
-          aggregationTypes.statusGrouped, // By default, used the status grouped aggregation type
-        );
 
       logger.warn(
         `Deprecated Scorecard API: GET /metrics/${metricId}/catalog/aggregations is deprecated; use GET /aggregations/:aggregationId (e.g. when the aggregation id matches the metric id, GET /aggregations/${metricId}).`,
       );
 
+      const aggregationConfig =
+        aggregationsService.getAggregationConfig(metricId);
+
       res.json(
-        AggregatedMetricMapper.toAggregatedMetricResult(
+        await aggregationsService.getAggregatedMetricByEntityRefs({
           metric,
           thresholds,
-          aggregatedMetric,
-        ),
+          aggregationConfig,
+          entityRefs: entitiesOwnedByAUser,
+        }),
       );
     },
   );
@@ -275,12 +276,11 @@ export async function createRouter({
 
       const userEntityRef = await getUserEntityRef(credentials);
 
-      const [aggregationConfig] = catalogMetricService.getAggregationConfigs([
-        aggregationId,
-      ]);
+      const aggregationConfig =
+        aggregationsService.getAggregationConfig(aggregationId);
 
       const provider = metricProvidersRegistry.getProvider(
-        aggregationConfig?.metricId ?? aggregationId,
+        aggregationConfig.metricId,
       );
       const metric = provider.getMetric();
 
@@ -288,6 +288,7 @@ export async function createRouter({
         catalog,
         credentials,
       });
+
       for (const entityRef of entitiesOwnedByAUser) {
         await checkEntityAccess(entityRef, req, permissions, httpAuth);
       }
@@ -301,20 +302,13 @@ export async function createRouter({
 
       const thresholds = provider.getMetricThresholds();
 
-      const aggregatedMetric =
-        await catalogMetricService.getAggregatedMetricByEntityRefs(
-          entitiesOwnedByAUser,
-          metric.id,
-          aggregationConfig?.type ?? aggregationTypes.statusGrouped,
-        );
-
       res.json(
-        AggregatedMetricMapper.toAggregatedMetricResult(
+        await aggregationsService.getAggregatedMetricByEntityRefs({
           metric,
           thresholds,
-          aggregatedMetric,
           aggregationConfig,
-        ),
+          entityRefs: entitiesOwnedByAUser,
+        }),
       );
     },
   );
@@ -325,12 +319,11 @@ export async function createRouter({
     async (req, res) => {
       const { aggregationId } = req.params;
 
-      const [aggregationConfig] = catalogMetricService.getAggregationConfigs([
-        aggregationId,
-      ]);
+      const aggregationConfig =
+        aggregationsService.getAggregationConfig(aggregationId);
 
       const provider = metricProvidersRegistry.getProvider(
-        aggregationConfig?.metricId ?? aggregationId,
+        aggregationConfig.metricId,
       );
       const metric = provider.getMetric();
 

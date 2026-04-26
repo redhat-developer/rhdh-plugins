@@ -67,11 +67,9 @@ const scorecardTranslationEs = createTranslationMessages({
       'Entidad de usuario no encontrada en el catálogo',
     'errors.noDataFoundMessage':
       'Para ver tus datos aquí, comprueba que tus entidades estén reportando valores relacionados con esta métrica.',
+    'errors.unsupportedAggregationType':
+      'Esta scorecard usa un tipo de agregación no admitido en esta versión del plugin.',
     'errors.authenticationErrorMessage': 'Inicie sesión para ver sus datos.',
-    'errors.noMetricsFound':
-      'No se encontraron métricas para la ID de métrica especificada.',
-    'errors.multipleMetricsFound':
-      'Se encontraron múltiples métricas para la ID de métrica especificada. Se esperaba exactamente una.',
 
     // Metric translations
     'metric.github.open_prs.title': 'GitHub PRs abiertas',
@@ -84,6 +82,11 @@ const scorecardTranslationEs = createTranslationMessages({
     'metric.lastUpdatedNotAvailable': 'Última actualización: No disponible',
     'metric.someEntitiesNotReportingValues':
       'Algunas entidades no están reportando valores relacionados con esta métrica.',
+    'metric.averageCenterTooltipTotalLabel': 'Puntuación total',
+    'metric.averageCenterTooltipMaxLabel': 'Puntuación máxima posible',
+    'metric.averageLegendTooltipEntitiesEach':
+      '{{count}} entidades, cada una {{score}}',
+    'metric.averageLegendTooltipRowTotal': 'Puntuación total {{total}}',
 
     // Threshold translations
     'thresholds.success': 'Éxito',

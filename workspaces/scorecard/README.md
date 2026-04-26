@@ -12,3 +12,13 @@ yarn install
 - **app-legacy:** Run `yarn start:legacy` to start the legacy frontend with the backend. Use the Scorecard tab on entity pages or the scorecard homepage card.
 
 > **Notice:** The guest user has admin permissions in this application for quick setup. For better control, specify more users and groups in `app-config.local.yaml` and define a separate admin/admins permission instead of using the guest user. Using the guest user as admin is not recommended for permission management.
+
+## Documentation
+
+| Topic                                                           | Location                                                                                       |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Aggregation KPIs (`statusGrouped`, `average`), API, ownership   | [plugins/scorecard-backend/docs/aggregation.md](plugins/scorecard-backend/docs/aggregation.md) |
+| Backend install, RBAC, **`scorecard.aggregationKPIs`** examples | [plugins/scorecard-backend/README.md](plugins/scorecard-backend/README.md)                     |
+| Drill-down (entity list for a metric)                           | [plugins/scorecard-backend/docs/drill-down.md](plugins/scorecard-backend/docs/drill-down.md)   |
+| Metric thresholds, annotations, **average KPI result colors**   | [plugins/scorecard-backend/docs/thresholds.md](plugins/scorecard-backend/docs/thresholds.md)   |
+| Frontend (homepage cards, NFS)                                  | [plugins/scorecard/README.md](plugins/scorecard/README.md)                                     |

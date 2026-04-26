@@ -22,7 +22,7 @@ import {
   type Metric,
   type EntityMetricDetailResponse,
   type AggregationMetadata,
-  aggregationTypes,
+  aggregationKinds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import type { GetAggregatedScorecardEntitiesOptions } from '../src/components/types';
@@ -66,7 +66,7 @@ export class MockScorecardApi implements ScorecardApi {
   async getAggregatedScorecard(
     _aggregationId: string,
   ): Promise<AggregatedMetricResult> {
-    return mockAggregatedScorecardData[aggregationTypes.statusGrouped];
+    return mockAggregatedScorecardData[aggregationKinds.statusGrouped];
   }
 
   async getMetrics(_options: {
@@ -103,7 +103,7 @@ export class MockScorecardApi implements ScorecardApi {
       description: 'GitHub open issues',
       type: 'number',
       history: true,
-      aggregationType: aggregationTypes.statusGrouped,
+      aggregationType: aggregationKinds.statusGrouped,
     };
   }
 }

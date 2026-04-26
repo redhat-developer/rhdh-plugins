@@ -6,7 +6,7 @@ The plugin supports both the **legacy** Backstage frontend and the **New Fronten
 **Features:**
 
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
-- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues).
+- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie) and **`average`** (weighted health donut) KPI types configured under **`scorecard.aggregationKPIs`**.
 - **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
 
 ## Getting started
@@ -309,6 +309,8 @@ The plugin exports **`ScorecardHomepageCard`** (see [`plugin.ts`](./src/plugin.t
 #### Backend configuration
 
 Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId` (default status-grouped aggregation).
+
+**`type: average`** KPIs require **`options.statusScores`** (weights per threshold rule key). Optionally set **`options.aggregationResultThresholds`** so the API returns **`aggregationChartDisplayColor`** for the headline percentage. Behavior, validation, and drill-down notes are described in [aggregation.md](../scorecard-backend/docs/aggregation.md).
 
 #### Card props
 

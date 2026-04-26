@@ -54,7 +54,7 @@ interface ResponsivePieChartProps {
   pieData: PieData[];
   LabelContent?: (props: PieLabelRenderProps) => React.ReactNode;
   legendContent: (props: PieLegendContentProps) => React.ReactNode;
-  tooltipContent: (props: PieTooltipContentProps) => React.ReactNode;
+  tooltipContent?: (props: PieTooltipContentProps) => React.ReactNode;
   isErrorState?: boolean;
   setIsInsidePieCircle?: (isInside: boolean) => void;
 }
@@ -67,6 +67,8 @@ export const ResponsivePieChart = ({
   isErrorState,
   setIsInsidePieCircle,
 }: ResponsivePieChartProps) => {
+  const isTooltipEnabled = Boolean(tooltipContent);
+
   return (
     <ResponsiveContainer style={{ outline: 'none' }}>
       <PieChart responsive>
@@ -102,7 +104,7 @@ export const ResponsivePieChart = ({
           startAngle={90}
           endAngle={-270}
           stroke="none"
-          cursor="pointer"
+          cursor={isTooltipEnabled ? 'pointer' : undefined}
           isAnimationActive={false}
           labelLine={false}
           label={LabelContent}
@@ -129,7 +131,7 @@ export const ResponsivePieChart = ({
           content={legendContent}
         />
 
-        <Tooltip content={tooltipContent} />
+        <Tooltip content={isTooltipEnabled ? tooltipContent : () => null} />
       </PieChart>
     </ResponsiveContainer>
   );

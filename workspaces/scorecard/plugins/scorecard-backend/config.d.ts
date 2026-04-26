@@ -32,6 +32,25 @@ export interface Config {
         type: AggregationType;
         /** Metric ID for which the aggregation is calculated */
         metricId: string;
+        /** Type-specific settings */
+        options?: {
+          /** Required under `options` when `type` is `average` */
+          statusScores?: {
+            [thresholdRuleKey: string]: number;
+          };
+          /**
+           * Optional: threshold rules for coloring the KPI headline value from the aggregation result
+           * (e.g. average percentage 0–100 for `average` KPIs). Same shape as metric `thresholds`;
+           * rules are evaluated in order against that headline value.
+           */
+          aggregationResultThresholds?: {
+            rules?: Array<{
+              key: string;
+              expression: string;
+              color?: string;
+            }>;
+          };
+        };
       };
     };
     /** Number of days to retain metric data in the database. Older data will be automatically cleaned up. Default: 365 days */

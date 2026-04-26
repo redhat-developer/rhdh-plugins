@@ -15,13 +15,16 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import { SCORECARD_LOADING_ARIA_LABEL } from '../../../utils';
 import { CardLoading } from '../CardLoading';
 
 describe('CardLoading', () => {
   it('renders a CircularProgress inside a Box', () => {
     render(<CardLoading />);
 
-    const progress = screen.getByRole('progressbar');
+    const progress = screen.getByRole('progressbar', {
+      name: SCORECARD_LOADING_ARIA_LABEL,
+    });
     expect(progress).toBeInTheDocument();
   });
 });

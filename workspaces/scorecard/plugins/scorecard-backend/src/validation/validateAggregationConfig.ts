@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-import { z } from 'zod';
 import { InputError } from '@backstage/errors';
-import type { AggregationConfig } from '../utils/buildAggregationConfig';
-import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Config } from '@backstage/config';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
-import { buildAggregationConfig } from '../utils/buildAggregationConfig';
+import { aggregationConfigSchema } from './schemas/aggregationConfigSchemas';
+import {
+  buildAggregationConfig,
+  type AggregationConfig,
+} from '../utils/buildAggregationConfig';
+import { validateThresholdsForAggregation } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 function parseAggregationConfig(config: unknown): AggregationConfig {
-  const aggregationConfigSchema = z.object({
-    type: z.nativeEnum(aggregationTypes),
-    id: z.string().min(1).max(255),
-    title: z.string().min(1).max(255),
-    metricId: z.string().min(1).max(255),
-    description: z.string().min(1).max(255),
-  });
-
   const parsed = aggregationConfigSchema.safeParse(config);
 
   if (!parsed.success) {
@@ -40,6 +35,16 @@ function parseAggregationConfig(config: unknown): AggregationConfig {
       .join('; ');
 
     throw new InputError(`${errorMessage}`);
+  }
+
+  if (
+    parsed.data?.type === aggregationKinds.average &&
+    parsed.data.options?.aggregationResultThresholds
+  ) {
+    validateThresholdsForAggregation(
+      parsed.data.options.aggregationResultThresholds,
+      'number',
+    );
   }
 
   return parsed.data;
@@ -54,6 +59,7 @@ export function validateAggregationConfig(options: {
   const aggregationKPIsConfig = rootConfig.getOptionalConfig(
     AGGREGATION_KPIS_CONFIG_PATH,
   );
+
   if (!aggregationKPIsConfig) {
     return;
   }

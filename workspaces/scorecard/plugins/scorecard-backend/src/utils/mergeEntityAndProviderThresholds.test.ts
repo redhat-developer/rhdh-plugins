@@ -268,6 +268,20 @@ describe('mergeEntityAndProviderThresholds', () => {
     );
   });
 
+  it('should throw ThresholdConfigFormatError with annotation path when boolean override expression is invalid', () => {
+    entity.metadata.annotations = {
+      'scorecard.io/jira.boolean_metric.thresholds.rules.success': '>40',
+    };
+    expect(() =>
+      mergeEntityAndProviderThresholds(entity, booleanMetricProvider),
+    ).toThrow(ThresholdConfigFormatError);
+    expect(() =>
+      mergeEntityAndProviderThresholds(entity, booleanMetricProvider),
+    ).toThrow(
+      "Invalid threshold annotation 'scorecard.io/jira.boolean_metric.thresholds.rules.success: >40' in entity 'component:default/test-component'",
+    );
+  });
+
   it('should preserve order of provider rules when overriding', () => {
     entity.metadata.annotations = {
       'scorecard.io/github.important_metric.thresholds.rules.success': '<=10',

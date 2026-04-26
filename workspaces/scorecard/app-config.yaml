@@ -193,6 +193,27 @@ scorecard:
       type: statusGrouped
       description: This KPI is provide information about GitHub open PRs grouped by status.
       metricId: github.open_prs
+    openPrsWeightedKpi:
+      title: GitHub Open PRs (weighted health)
+      type: average
+      description: Weighted health average for open PRs by threshold status across your entities.
+      metricId: github.open_prs
+      options:
+        statusScores:
+          success: 100
+          warning: 40
+          error: 0
+        aggregationResultThresholds:
+          rules:
+            - key: success
+              expression: '>=80'
+              color: '#6bb300' # green
+            - key: warning
+              expression: '30-79'
+              color: 'rgb(224, 189, 108)' # light orange
+            - key: error
+              expression: '<30'
+              color: '#be1ec7' # purple
     openIssuesKpi:
       title: Jira Open Issues KPI
       type: statusGrouped

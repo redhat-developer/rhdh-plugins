@@ -125,6 +125,20 @@ Where:
 - `{thresholdKey}`: The threshold category (e.g., `success`, `warning`, `error`)
 - `{expression}`: The threshold expression (e.g., `>10`, `==true`, `5-15`)
 
+### 4. Aggregation KPI result thresholds (`average` type)
+
+These thresholds are **not** per-entity metric rules. They apply only to homepage aggregation KPIs where **`scorecard.aggregationKPIs.<aggregationId>.type`** is **`average`**.
+
+**Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.aggregationResultThresholds`
+
+**YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the average KPI donut). Expressions are **number**-style and are evaluated against the **headline percentage** **`averageScore × 100`**, where **`averageScore`** is the backend’s portfolio ratio in **`[0, 1]`** (see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
+
+**Defaults:** If **`aggregationResultThresholds`** is omitted, the backend applies **`DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS`** from [`src/constants/aggregationKPIs.ts`](../src/constants/aggregationKPIs.ts): **`<30`** → error, **`30-79`** → warning, **`>=80`** → success (higher percentage = better). When that default is used, the backend logs at **info** that the built-in 0–100% scale is in effect.
+
+**Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
+
+**Further reading:** [Entity Aggregation](./aggregation.md) (`average` algorithm, API, drill-down); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (full **`aggregationKPIs`** example including **`statusScores`**).
+
 ## Threshold Priority Order
 
 Thresholds are applied with the following priority (highest to lowest):
@@ -384,3 +398,9 @@ rules:
 ### 2. Avoid Overlapping Ranges
 
 Ensure threshold ranges don't create gaps or unexpected behavior.
+
+## Related documentation
+
+- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`** vs **`average`**
+- [Drill-down](./drill-down.md) — entity list for a metric (`metricId`, not KPI id)
+- [Scorecard backend README](../README.md) — install, RBAC, **`aggregationKPIs`** examples

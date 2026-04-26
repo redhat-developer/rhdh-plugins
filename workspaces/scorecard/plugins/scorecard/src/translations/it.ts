@@ -67,12 +67,10 @@ const scorecardTranslationIt = createTranslationMessages({
       'Entità utente non trovata nel catalogo.',
     'errors.noDataFoundMessage':
       'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano riportando valori relativi a questa metrica.',
+    'errors.unsupportedAggregationType':
+      'Questa scorecard utilizza un tipo di aggregazione non supportato da questa versione del plugin.',
     'errors.authenticationErrorMessage':
       'Effettua il login per visualizzare i tuoi dati.',
-    'errors.noMetricsFound':
-      "Nessuna metrica trovata per l'ID di metrica specificato.",
-    'errors.multipleMetricsFound':
-      'Multiple metrics found for the specified metric ID. Expected exactly one.',
 
     // Metric translations
     'metric.github.open_prs.title': 'Richieste pull aperte su GitHub',
@@ -85,6 +83,11 @@ const scorecardTranslationIt = createTranslationMessages({
     'metric.lastUpdatedNotAvailable': 'Ultimo aggiornamento: Non disponibile',
     'metric.someEntitiesNotReportingValues':
       'Alcune entità non stanno riportando valori relativi a questa metrica.',
+    'metric.averageCenterTooltipTotalLabel': 'Punteggio totale',
+    'metric.averageCenterTooltipMaxLabel': 'Punteggio massimo possibile',
+    'metric.averageLegendTooltipEntitiesEach':
+      '{{count}} entità, ciascuna {{score}}',
+    'metric.averageLegendTooltipRowTotal': 'Punteggio totale {{total}}',
 
     // Threshold translations
     'thresholds.success': 'Attività riuscita',

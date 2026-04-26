@@ -18,7 +18,7 @@ import {
   AggregatedMetricResult,
   DEFAULT_NUMBER_THRESHOLDS,
   MetricResult,
-  aggregationTypes,
+  aggregationKinds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const mockScorecardSuccessData = [
@@ -134,7 +134,7 @@ export const mockScorecardErrorData = [
 ] as MetricResult[];
 
 export const mockAggregatedScorecardData = {
-  [aggregationTypes.statusGrouped]: {
+  [aggregationKinds.statusGrouped]: {
     id: 'github.open_prs',
     status: 'success',
     metadata: {
@@ -143,7 +143,7 @@ export const mockAggregatedScorecardData = {
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
       history: true,
-      aggregationType: aggregationTypes.statusGrouped,
+      aggregationType: aggregationKinds.statusGrouped,
     },
     result: {
       values: [
@@ -154,6 +154,30 @@ export const mockAggregatedScorecardData = {
       total: 37,
       timestamp: '2024-01-15T10:30:00Z',
       thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    },
+  } as AggregatedMetricResult,
+  [aggregationKinds.average]: {
+    id: 'github.open_prs',
+    status: 'success',
+    metadata: {
+      title: 'GitHub open PRs',
+      description: 'Weighted health average for the Generative AI API group.',
+      type: 'number',
+      history: true,
+      aggregationType: aggregationKinds.average,
+    },
+    result: {
+      values: [
+        { count: 5, name: 'success' },
+        { count: 2, name: 'warning' },
+        { count: 1, name: 'error' },
+      ],
+      total: 8,
+      timestamp: '2024-01-15T10:30:00Z',
+      thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      averageScore: 0.75,
+      averageWeightedSum: 18,
+      averageMaxPossible: 24,
     },
   } as AggregatedMetricResult,
 };

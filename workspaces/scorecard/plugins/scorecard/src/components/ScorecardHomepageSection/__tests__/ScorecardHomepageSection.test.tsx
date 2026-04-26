@@ -44,8 +44,8 @@ jest.mock('../../../hooks/useTranslation', () => ({
   }),
 }));
 
-jest.mock('../ScorecardHomepageCardComponent', () => ({
-  ScorecardHomepageCardComponent: ({
+jest.mock('../../AggregatedMetricCards/AggregatedMetricCard', () => ({
+  AggregatedMetricCard: ({
     scorecard,
   }: {
     scorecard: AggregatedMetricResult;

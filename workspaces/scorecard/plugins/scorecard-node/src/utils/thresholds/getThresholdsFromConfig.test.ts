@@ -15,15 +15,18 @@
  */
 
 import type { Config } from '@backstage/config';
-import { validateThresholds } from './validateThresholds';
 import { mockServices } from '@backstage/backend-test-utils';
 import { getThresholdsFromConfig } from './getThresholdsFromConfig';
+import { validateThresholdsForMetric } from './validateThresholds';
 
-jest.mock('./validateThresholds');
+jest.mock('./validateThresholds', () => ({
+  validateThresholdsForMetric: jest.fn(),
+}));
 
-const mockedValidateThresholds = validateThresholds as jest.MockedFunction<
-  typeof validateThresholds
->;
+const mockedValidateThresholdsForMetric =
+  validateThresholdsForMetric as jest.MockedFunction<
+    typeof validateThresholdsForMetric
+  >;
 
 const rules = [
   { key: 'error', expression: '>40' },
@@ -31,13 +34,16 @@ const rules = [
   { key: 'success', expression: '<=20' },
 ];
 
+const thresholdConfig = { rules };
+
 describe('getThresholdsFromConfig', () => {
   let mockedConfig: Config;
 
   beforeEach(() => {
     mockedConfig = mockServices.rootConfig({
-      data: { scorecard: { rules } },
+      data: { scorecard: { defaultMetricThresholds: thresholdConfig } },
     });
+    mockedValidateThresholdsForMetric.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -46,42 +52,61 @@ describe('getThresholdsFromConfig', () => {
 
   it('should get optional thresholds from config', () => {
     jest.spyOn(mockedConfig, 'getOptional');
-    getThresholdsFromConfig(mockedConfig, 'scorecard.rules', 'number');
+    getThresholdsFromConfig(
+      mockedConfig,
+      'scorecard.defaultMetricThresholds',
+      'number',
+    );
 
-    expect(mockedConfig.getOptional).toHaveBeenCalledWith('scorecard.rules');
+    expect(mockedConfig.getOptional).toHaveBeenCalledWith(
+      'scorecard.defaultMetricThresholds',
+    );
   });
 
   describe('when thresholds config is present', () => {
     it('should validate thresholds config', () => {
-      getThresholdsFromConfig(mockedConfig, 'scorecard.rules', 'number');
-      expect(mockedValidateThresholds).toHaveBeenCalledWith(rules, 'number');
+      getThresholdsFromConfig(
+        mockedConfig,
+        'scorecard.defaultMetricThresholds',
+        'number',
+      );
+      expect(mockedValidateThresholdsForMetric).toHaveBeenCalledWith(
+        thresholdConfig,
+        'number',
+      );
     });
 
     it('should return thresholds config', () => {
       const thresholds = getThresholdsFromConfig(
         mockedConfig,
-        'scorecard.rules',
+        'scorecard.defaultMetricThresholds',
         'number',
       );
-      expect(thresholds).toEqual(rules);
+      expect(thresholds).toEqual(thresholdConfig);
     });
   });
 
   it('should throw error message when thresholds validation is failed', () => {
-    mockedValidateThresholds.mockImplementationOnce(() => {
+    mockedValidateThresholdsForMetric.mockImplementationOnce(() => {
       throw new Error('Invalid thresholds configuration');
     });
 
     expect(() =>
-      getThresholdsFromConfig(mockedConfig, 'scorecard.rules', 'number'),
-    ).toThrow('Invalid thresholds configuration');
+      getThresholdsFromConfig(
+        mockedConfig,
+        'scorecard.defaultMetricThresholds',
+        'number',
+      ),
+    ).toThrow(
+      /Invalid thresholds configuration at scorecard\.defaultMetricThresholds/,
+    );
   });
 
   it('should return undefined when thresholds config is not present', () => {
     jest.spyOn(mockedConfig, 'getOptional').mockReturnValue(undefined);
     const thresholds = getThresholdsFromConfig(
       mockedConfig,
-      'scorecard.rules',
+      'scorecard.defaultMetricThresholds',
       'number',
     );
 

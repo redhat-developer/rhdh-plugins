@@ -13,21 +13,33 @@ export type AggregatedMetric = {
 };
 
 // @public (undocumented)
+export type AggregatedMetricAverageResult = StatusGroupedAggregationResult & {
+  averageScore: number;
+  averageWeightedSum: number;
+  averageMaxPossible: number;
+  aggregationChartDisplayColor: string;
+};
+
+// @public (undocumented)
 export type AggregatedMetricResult = {
   id: string;
   status: 'success' | 'error';
   metadata: AggregationMetadata;
-  result: Omit<AggregatedMetric, 'values'> & {
-    values: AggregatedMetricValue[];
-    thresholds: ThresholdConfig;
-  };
+  result: AggregationResultByType;
 };
 
 // @public (undocumented)
 export type AggregatedMetricValue = {
   count: number;
   name: string;
+  score?: number;
 };
+
+// @public
+export const aggregationKinds: Readonly<{
+  statusGrouped: 'statusGrouped';
+  average: 'average';
+}>;
 
 // @public (undocumented)
 export type AggregationMetadata = {
@@ -39,13 +51,13 @@ export type AggregationMetadata = {
 };
 
 // @public (undocumented)
-export type AggregationType =
-  (typeof aggregationTypes)[keyof typeof aggregationTypes];
+export type AggregationResultByType =
+  | StatusGroupedAggregationResult
+  | AggregatedMetricAverageResult;
 
 // @public (undocumented)
-export const aggregationTypes: Readonly<{
-  statusGrouped: 'statusGrouped';
-}>;
+export type AggregationType =
+  (typeof aggregationKinds)[keyof typeof aggregationKinds];
 
 // @public
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
@@ -143,6 +155,15 @@ export const ScorecardThresholdRuleColors: {
   readonly SUCCESS: 'success.main';
   readonly WARNING: 'warning.main';
   readonly ERROR: 'error.main';
+};
+
+// @public (undocumented)
+export type StatusGroupedAggregationResult = Omit<
+  AggregatedMetric,
+  'values'
+> & {
+  values: AggregatedMetricValue[];
+  thresholds: ThresholdConfig;
 };
 
 // @public

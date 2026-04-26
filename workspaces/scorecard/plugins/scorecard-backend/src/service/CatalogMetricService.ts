@@ -17,12 +17,10 @@
 import {
   MetricResult,
   ThresholdConfig,
-  AggregatedMetric,
   EntityMetricDetailResponse,
   EntityMetricDetail,
-  aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { Entity } from '@backstage/catalog-model';
+import type { Entity } from '@backstage/catalog-model';
 import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { NotFoundError, stringifyError } from '@backstage/errors';
@@ -40,14 +38,7 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
-import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
-import type { Config } from '@backstage/config';
-import {
-  buildAggregationConfig,
-  type AggregationConfig,
-} from '../utils/buildAggregationConfig';
-import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
 
 type CatalogMetricServiceOptions = {
   catalog: CatalogService;
@@ -55,7 +46,6 @@ type CatalogMetricServiceOptions = {
   registry: MetricProvidersRegistry;
   database: DatabaseMetricValues;
   logger: LoggerService;
-  config: Config;
 };
 
 export class CatalogMetricService {
@@ -65,7 +55,6 @@ export class CatalogMetricService {
   private readonly auth: AuthService;
   private readonly registry: MetricProvidersRegistry;
   private readonly database: DatabaseMetricValues;
-  private readonly config: Config;
 
   private static readonly MAX_FETCHABLE_ROWS = 10_000;
   private static readonly BATCH_SIZE = 100;
@@ -76,7 +65,6 @@ export class CatalogMetricService {
     this.registry = options.registry;
     this.database = options.database;
     this.logger = options.logger;
-    this.config = options.config;
   }
 
   /**
@@ -163,49 +151,6 @@ export class CatalogMetricService {
         };
       },
     );
-  }
-
-  /**
-   * Get an aggregated metric by status grouped for multiple entities and a single metric ID.
-   *
-   * @param entityRefs - Array of entity references in format "kind:namespace/name"
-   * @param metricId - Metric ID to aggregate.
-   * @returns Aggregated metric by status grouped results
-   */
-  async getStatusGroupedAggregatedMetrics(
-    entityRefs: string[],
-    metricId: string,
-  ): Promise<AggregatedMetric> {
-    const aggregatedMetric =
-      await this.database.readAggregatedMetricByEntityRefs(
-        entityRefs,
-        metricId,
-      );
-
-    return AggregatedMetricMapper.toAggregatedMetric(aggregatedMetric);
-  }
-
-  /**
-   * Get an aggregated metric by aggregation type.
-   *
-   * @param entityRefs - Array of entity references in format "kind:namespace/name"
-   * @param metricId - Metric ID to aggregate.
-   * @param aggregationType - Aggregation type to use.
-   * @returns Aggregated metric by aggregation type results
-   */
-  async getAggregatedMetricByEntityRefs(
-    entityRefs: string[],
-    metricId: string,
-    aggregationType: string,
-  ): Promise<AggregatedMetric> {
-    if (entityRefs.length !== 0) {
-      if (aggregationType === aggregationTypes.statusGrouped) {
-        return this.getStatusGroupedAggregatedMetrics(entityRefs, metricId);
-      }
-      throw new Error(`Unsupported aggregation type: ${aggregationType}`);
-    }
-
-    return AggregatedMetricMapper.toAggregatedMetric();
   }
 
   /**
@@ -412,51 +357,5 @@ export class CatalogMetricService {
         isCapped,
       },
     };
-  }
-
-  /**
-   * Get the aggregation configs for a given aggregation IDs filtered by metric IDs.
-   * If no aggregation IDs are provided, all aggregation configs will be returned.
-   * If no metric IDs are provided, all metrics will be included.
-   *
-   * @param aggregationIds - Optional array of aggregation IDs to fetch the configs for.
-   * @param metricIds - Optional array of metric IDs, when provided, only aggregations whose config metricId is in this array will be returned.
-   * @returns Aggregation configs
-   */
-  getAggregationConfigs(
-    aggregationIds: string[] = [],
-    metricIds: string[] = [],
-  ): AggregationConfig[] {
-    const aggregationKPIsConfig = this.config.getOptionalConfig(
-      AGGREGATION_KPIS_CONFIG_PATH,
-    );
-
-    if (!aggregationKPIsConfig) {
-      return [];
-    }
-
-    const aggregations: AggregationConfig[] = [];
-
-    const aggregationConfigIds =
-      aggregationIds.length > 0 ? aggregationIds : aggregationKPIsConfig.keys();
-
-    for (const aggregationId of aggregationConfigIds) {
-      const config = aggregationKPIsConfig.getOptionalConfig(aggregationId);
-
-      if (config) {
-        const aggregationConfig = buildAggregationConfig(aggregationId, {
-          config,
-        });
-
-        if (
-          metricIds.length === 0 ||
-          metricIds.includes(aggregationConfig.metricId)
-        ) {
-          aggregations.push(aggregationConfig);
-        }
-      }
-    }
-
-    return aggregations;
   }
 }

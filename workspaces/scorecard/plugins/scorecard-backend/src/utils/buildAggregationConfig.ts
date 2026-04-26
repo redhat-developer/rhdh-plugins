@@ -15,7 +15,17 @@
  */
 
 import type { Config } from '@backstage/config';
-import { AggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  AggregationType,
+  ThresholdConfig,
+  aggregationKinds,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS } from '../constants/aggregationKPIs';
+
+export type AverageOptions = {
+  statusScores: Record<string, number>;
+  aggregationResultThresholds?: ThresholdConfig;
+};
 
 export type AggregationConfig = {
   id: string;
@@ -23,7 +33,40 @@ export type AggregationConfig = {
   description: string;
   type: AggregationType;
   metricId: string;
+  options?: AverageOptions;
 };
+
+function buildStatusScores(config: Config): AverageOptions['statusScores'] {
+  const statusScores: AverageOptions['statusScores'] = {};
+  const statusScoresConfig = config
+    .getConfig('options')
+    .getConfig('statusScores');
+
+  for (const key of statusScoresConfig.keys()) {
+    statusScores[key] = statusScoresConfig.getNumber(key);
+  }
+
+  return statusScores;
+}
+
+function buildAggregationThresholdsConfig(
+  config: Config,
+): ThresholdConfig | undefined {
+  const aggregationResultThresholds = config.getOptionalConfig(
+    'options.aggregationResultThresholds',
+  );
+  if (aggregationResultThresholds) {
+    return {
+      rules: aggregationResultThresholds.getConfigArray('rules').map(rule => ({
+        key: rule.getString('key'),
+        expression: rule.getString('expression'),
+        color: rule.getString('color'),
+      })),
+    };
+  }
+
+  return undefined;
+}
 
 export function buildAggregationConfig(
   aggregationId: string,
@@ -33,11 +76,22 @@ export function buildAggregationConfig(
 ): AggregationConfig {
   const { config } = options;
 
-  return {
+  const aggregationConfig: AggregationConfig = {
     id: aggregationId,
     type: config.getString('type'),
     title: config.getString('title'),
     metricId: config.getString('metricId'),
     description: config.getString('description'),
   } as AggregationConfig;
+
+  if (aggregationConfig.type === aggregationKinds.average) {
+    aggregationConfig.options = {
+      statusScores: buildStatusScores(config),
+      aggregationResultThresholds:
+        buildAggregationThresholdsConfig(config) ??
+        DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
+    };
+  }
+
+  return aggregationConfig;
 }

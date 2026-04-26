@@ -19,8 +19,8 @@ import {
   AggregatedMetricResult,
   AggregationMetadata,
   Metric,
-  ThresholdConfig,
-  aggregationTypes,
+  aggregationKinds,
+  AggregationResultByType,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
 import type { AggregationConfig } from '../utils/buildAggregationConfig';
@@ -51,31 +51,20 @@ export class AggregatedMetricMapper {
       type: metric.type,
       history: metric.history,
       aggregationType:
-        aggregationConfig?.type ?? aggregationTypes.statusGrouped, // By default, return the status grouped aggregation type
+        aggregationConfig?.type ?? aggregationKinds.statusGrouped, // By default, return the status grouped aggregation type
     };
   }
 
   static toAggregatedMetricResult(
     metric: Metric,
-    thresholds: ThresholdConfig,
-    aggregatedMetric: AggregatedMetric,
+    result: AggregationResultByType,
     aggregationConfig?: AggregationConfig,
   ): AggregatedMetricResult {
-    // Build values in threshold rules order, filling missing ones with 0
-    const allStatusCountValues = thresholds.rules.map(rule => ({
-      name: rule.key,
-      count: aggregatedMetric.values[rule.key] ?? 0,
-    }));
-
     return {
       id: metric.id,
       status: 'success',
       metadata: this.toAggregationMetadata(metric, aggregationConfig),
-      result: {
-        ...aggregatedMetric,
-        values: allStatusCountValues,
-        thresholds,
-      },
+      result,
     };
   }
 }

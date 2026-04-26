@@ -15,7 +15,7 @@
  */
 
 import { ScorecardQueryProvider } from '../../api';
-import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
+import { AggregatedMetricCard } from '../AggregatedMetricCards/AggregatedMetricCard';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ErrorStatePanel } from './ErrorStatePanel';
@@ -91,7 +91,7 @@ export const ScorecardHomepageCard = ({
   }
 
   return (
-    <ScorecardHomepageCardComponent
+    <AggregatedMetricCard
       key={data.id}
       showSubheader={showSubheader}
       showInfo={showInfo}
