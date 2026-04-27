@@ -153,7 +153,7 @@ export const scorecardMessages = {
       },
     },
   },
-} as const;
+};
 
 /**
  * Translation reference for scorecard plugin

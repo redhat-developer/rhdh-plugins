@@ -58,7 +58,7 @@ const InfoComponent = ({ timestamp }: { timestamp: string }) => {
         title={
           <Box sx={{ textAlign: 'center' }}>
             {lastUpdatedLabel !== '--'
-              ? t('metric.lastUpdated', { timestamp: lastUpdatedLabel })
+              ? t('metric.lastUpdated' as any, { timestamp: lastUpdatedLabel })
               : t('metric.lastUpdatedNotAvailable')}
           </Box>
         }
@@ -142,7 +142,7 @@ export const ScorecardHomepageCardComponent = ({
   const healthyCount = Math.max(0, entitiesConsidered - calculationErrorCount);
   const hasCalculationErrors = calculationErrorCount > 0;
   const subheaderLabel = hasCalculationErrors
-    ? t('metric.homepageEntityHealthRatio', {
+    ? t('metric.homepageEntityHealthRatio' as any, {
         healthy: String(healthyCount),
         total: String(entitiesConsidered),
       })
