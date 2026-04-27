@@ -85,7 +85,9 @@ const scorecardTranslationJa = createTranslationMessages({
       'エンティティーがこの指標に関連する値を報告していません。',
     'metric.averageCenterTooltipTotalLabel': '合計スコア',
     'metric.averageCenterTooltipMaxLabel': '最大可能スコア',
-    'metric.averageLegendTooltipEntitiesEach':
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} 件のエンティティー、各 {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
       '{{count}} 件のエンティティー、各 {{score}}',
     'metric.averageLegendTooltipRowTotal': '合計スコア {{total}}',
 

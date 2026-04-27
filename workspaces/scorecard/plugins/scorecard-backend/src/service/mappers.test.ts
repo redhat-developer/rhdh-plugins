@@ -22,7 +22,7 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { AggregationConfig } from '../utils/buildAggregationConfig';
+import { type AggregationConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 describe('AggregatedMetricMapper', () => {
   const mockMetric: Metric = {

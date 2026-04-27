@@ -85,7 +85,9 @@ const scorecardTranslationIt = createTranslationMessages({
       'Alcune entità non stanno riportando valori relativi a questa metrica.',
     'metric.averageCenterTooltipTotalLabel': 'Punteggio totale',
     'metric.averageCenterTooltipMaxLabel': 'Punteggio massimo possibile',
-    'metric.averageLegendTooltipEntitiesEach':
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} entità, ciascuna {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
       '{{count}} entità, ciascuna {{score}}',
     'metric.averageLegendTooltipRowTotal': 'Punteggio totale {{total}}',
 

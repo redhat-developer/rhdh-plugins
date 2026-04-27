@@ -19,12 +19,12 @@ import type { Config } from '@backstage/config';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
 import { aggregationConfigSchema } from './schemas/aggregationConfigSchemas';
-import {
-  buildAggregationConfig,
-  type AggregationConfig,
-} from '../utils/buildAggregationConfig';
+import { buildAggregationConfig } from '../utils/buildAggregationConfig';
 import { validateThresholdsForAggregation } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  type AggregationConfig,
+  aggregationKinds,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 function parseAggregationConfig(config: unknown): AggregationConfig {
   const parsed = aggregationConfigSchema.safeParse(config);

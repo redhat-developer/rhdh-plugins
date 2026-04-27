@@ -16,8 +16,8 @@
 
 import {
   type AggregatedMetricResult,
+  type AggregationConfig,
   type AggregationType,
-  ThresholdConfig,
   aggregationKinds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Config } from '@backstage/config';
@@ -34,20 +34,6 @@ export type AggregationsServiceOptions = {
   config: Config;
   logger: LoggerService;
   database: DatabaseMetricValues;
-};
-
-export type AggregationKpiOptions = {
-  statusScores: Record<string, number>;
-  aggregationResultThresholds?: ThresholdConfig;
-};
-
-export type AggregationConfig = {
-  id: string;
-  title: string;
-  description: string;
-  type: AggregationType;
-  metricId: string;
-  options?: AggregationKpiOptions;
 };
 
 export class AggregationsService {

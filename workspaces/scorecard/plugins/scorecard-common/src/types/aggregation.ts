@@ -83,3 +83,23 @@ export type AggregatedMetricResult = {
   metadata: AggregationMetadata;
   result: AggregationResultByType;
 };
+
+/**
+ * @public
+ */
+export type AggregationConfigOptions = {
+  statusScores: Record<string, number>;
+  aggregationResultThresholds?: ThresholdConfig;
+};
+
+/**
+ * @public
+ */
+export type AggregationConfig = {
+  id: string;
+  title: string;
+  description: string;
+  type: AggregationType;
+  metricId: string;
+  options?: AggregationConfigOptions;
+};

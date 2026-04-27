@@ -85,7 +85,9 @@ const scorecardTranslationFr = createTranslationMessages({
       'Certaines entités ne communiquent pas de valeurs liées à cette métrique.',
     'metric.averageCenterTooltipTotalLabel': 'Score total',
     'metric.averageCenterTooltipMaxLabel': 'Score maximum possible',
-    'metric.averageLegendTooltipEntitiesEach':
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} entité, chacune {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
       '{{count}} entités, chacune {{score}}',
     'metric.averageLegendTooltipRowTotal': 'Score total {{total}}',
 

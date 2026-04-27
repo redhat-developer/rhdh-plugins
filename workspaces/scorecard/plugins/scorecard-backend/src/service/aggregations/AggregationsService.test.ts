@@ -23,10 +23,11 @@ import {
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS } from '../../constants/aggregationKPIs';
-import { AggregationConfig, AggregationsService } from './AggregationService';
+import { AggregationsService } from './AggregationService';
 import type { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 import type { DbAggregatedMetric } from '../../database/types';
 import { AggregationOptions } from './types';
+import { type AggregationConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 function createDatabaseMock(
   readAggregatedMetricByEntityRefs: jest.Mock,

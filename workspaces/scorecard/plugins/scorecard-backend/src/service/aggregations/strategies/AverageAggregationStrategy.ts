@@ -28,7 +28,7 @@ import type { AggregationOptions } from '../types';
 import type { AggregationStrategy } from './types';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ThresholdEvaluator } from '../../../threshold/ThresholdEvaluator';
-import { AverageOptions } from '../../../utils/buildAggregationConfig';
+import { type AggregationConfigOptions } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export class AverageAggregationStrategy implements AggregationStrategy {
   constructor(
@@ -117,7 +117,7 @@ export class AverageAggregationStrategy implements AggregationStrategy {
 
   private calculateWeightedSum(
     values: Pick<AggregatedMetric, 'values'>['values'],
-    statusScores: AverageOptions['statusScores'],
+    statusScores: AggregationConfigOptions['statusScores'],
     metricId: string,
   ): number {
     let weightedSum = 0;
@@ -151,7 +151,7 @@ export class AverageAggregationStrategy implements AggregationStrategy {
 
   private prepareScoreValues(
     numberOfEntities: Pick<AggregatedMetric, 'total'>['total'],
-    statusScores: AverageOptions['statusScores'],
+    statusScores: AggregationConfigOptions['statusScores'],
     rules: ThresholdRule[],
     weightedSum: number,
   ): { averageScore: number; maxPossibleScore: number } {

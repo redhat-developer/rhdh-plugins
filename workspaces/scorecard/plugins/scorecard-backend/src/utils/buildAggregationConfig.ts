@@ -16,27 +16,16 @@
 
 import type { Config } from '@backstage/config';
 import {
-  AggregationType,
-  ThresholdConfig,
+  type ThresholdConfig,
   aggregationKinds,
+  type AggregationConfigOptions,
+  type AggregationConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export type AverageOptions = {
-  statusScores: Record<string, number>;
-  aggregationResultThresholds?: ThresholdConfig;
-};
-
-export type AggregationConfig = {
-  id: string;
-  title: string;
-  description: string;
-  type: AggregationType;
-  metricId: string;
-  options?: AverageOptions;
-};
-
-function buildStatusScores(config: Config): AverageOptions['statusScores'] {
-  const statusScores: AverageOptions['statusScores'] = {};
+function buildStatusScores(
+  config: Config,
+): AggregationConfigOptions['statusScores'] {
+  const statusScores: AggregationConfigOptions['statusScores'] = {};
   const statusScoresConfig = config
     .getConfig('options')
     .getConfig('statusScores');

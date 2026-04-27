@@ -83,7 +83,9 @@ const scorecardTranslationDe = createTranslationMessages({
       'Einige Elemente melden keine Werte, die mit dieser Metrik in Verbindung stehen.',
     'metric.averageCenterTooltipTotalLabel': 'Gesamtpunktzahl',
     'metric.averageCenterTooltipMaxLabel': 'Maximal mögliche Punktzahl',
-    'metric.averageLegendTooltipEntitiesEach':
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} Element, je {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
       '{{count}} Elemente, je {{score}}',
     'metric.averageLegendTooltipRowTotal': 'Gesamtpunktzahl {{total}}',
 

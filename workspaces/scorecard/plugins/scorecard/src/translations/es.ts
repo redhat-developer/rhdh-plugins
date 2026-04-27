@@ -84,7 +84,9 @@ const scorecardTranslationEs = createTranslationMessages({
       'Algunas entidades no están reportando valores relacionados con esta métrica.',
     'metric.averageCenterTooltipTotalLabel': 'Puntuación total',
     'metric.averageCenterTooltipMaxLabel': 'Puntuación máxima posible',
-    'metric.averageLegendTooltipEntitiesEach':
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} entidad, cada una {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
       '{{count}} entidades, cada una {{score}}',
     'metric.averageLegendTooltipRowTotal': 'Puntuación total {{total}}',
 

@@ -29,9 +29,9 @@ export const AGGREGATION_KPIS_CONFIG_PATH =
 export const DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS: ThresholdConfig = {
   rules: [
     {
-      key: 'error',
-      expression: '<30',
-      color: ScorecardThresholdRuleColors.ERROR,
+      key: 'success',
+      expression: '>=80',
+      color: ScorecardThresholdRuleColors.SUCCESS,
     },
     {
       key: 'warning',
@@ -39,9 +39,9 @@ export const DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS: ThresholdConfig = {
       color: ScorecardThresholdRuleColors.WARNING,
     },
     {
-      key: 'success',
-      expression: '>=80',
-      color: ScorecardThresholdRuleColors.SUCCESS,
+      key: 'error',
+      expression: '<30',
+      color: ScorecardThresholdRuleColors.ERROR,
     },
   ],
 };

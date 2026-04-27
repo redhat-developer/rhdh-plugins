@@ -25,8 +25,8 @@ const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
     drillDown: RouteRef<{
-      aggregationId: string;
       metricId: string;
+      aggregationId: string;
     }>;
   },
   {},
@@ -173,7 +173,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.someEntitiesNotReportingValues': string;
     readonly 'metric.averageCenterTooltipTotalLabel': string;
     readonly 'metric.averageCenterTooltipMaxLabel': string;
-    readonly 'metric.averageLegendTooltipEntitiesEach': string;
+    readonly 'metric.averageLegendTooltipEntitiesEach_one': string;
+    readonly 'metric.averageLegendTooltipEntitiesEach_other': string;
     readonly 'metric.averageLegendTooltipRowTotal': string;
     readonly 'thresholds.success': string;
     readonly 'thresholds.warning': string;

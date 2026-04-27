@@ -32,21 +32,21 @@ export const LegendTooltipContent = ({
   const rowTotal = count * unitScore;
   const percentLabel =
     maxPossible && maxPossible > 0
-      ? `${((rowTotal / maxPossible) * 100).toFixed(1)}%`
+      ? `${((rowTotal / maxPossible) * 100).toFixed(1).replace(/\.0$/, '')}%`
       : '—';
 
   return (
     <Stack direction="column">
       <TooltipContent
-        label={t('metric.averageLegendTooltipEntitiesEach' as any, {
-          count: String(count),
+        label={t('metric.averageLegendTooltipEntitiesEach', {
+          count,
           score: formatAggregationScoreDetail(unitScore),
-        })}
+        } as any)}
       />
       <TooltipContent
-        label={t('metric.averageLegendTooltipRowTotal' as any, {
+        label={t('metric.averageLegendTooltipRowTotal', {
           total: formatAggregationScoreDetail(rowTotal),
-        })}
+        } as any)}
         value={percentLabel}
       />
     </Stack>

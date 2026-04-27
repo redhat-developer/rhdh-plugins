@@ -35,6 +35,22 @@ export type AggregatedMetricValue = {
   score?: number;
 };
 
+// @public (undocumented)
+export type AggregationConfig = {
+  id: string;
+  title: string;
+  description: string;
+  type: AggregationType;
+  metricId: string;
+  options?: AggregationConfigOptions;
+};
+
+// @public (undocumented)
+export type AggregationConfigOptions = {
+  statusScores: Record<string, number>;
+  aggregationResultThresholds?: ThresholdConfig;
+};
+
 // @public
 export const aggregationKinds: Readonly<{
   statusGrouped: 'statusGrouped';
