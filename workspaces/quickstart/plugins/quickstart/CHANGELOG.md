@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.9.2
+
+### Patch Changes
+
+- 200133a: add Lightspeed intro to the quickstarts
+
 ## 1.9.1
 
 ### Patch Changes
