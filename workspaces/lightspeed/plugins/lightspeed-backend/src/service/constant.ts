@@ -48,7 +48,7 @@ Make no mistakes.
  * HTTP and networking constants
  */
 export const URL_FETCH_TIMEOUT_MS = 30000; // 30 second timeout for URL fetching
-export const USER_AGENT = 'RHDH-AI-Notebooks-Bot/1.0'; // User agent for HTTP requests
+export const USER_AGENT = 'RHDH-Notebooks-Bot/1.0'; // User agent for HTTP requests
 export const MAX_URL_CONTENT_SIZE = 10 * 1024 * 1024; // 10MB max for URL fetched content
 
 /**
