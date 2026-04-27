@@ -605,7 +605,10 @@ export async function createRouter(
               v.name.startsWith('rhdh-product-docs'),
             )?.id || '';
         }
-        request.body.vector_store_ids = [lightspeed_vector_store_id];
+
+        if (lightspeed_vector_store_id !== '') {
+          request.body.vector_store_ids = [lightspeed_vector_store_id];
+        }
 
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
