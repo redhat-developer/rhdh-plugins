@@ -97,13 +97,6 @@ export class DocumentService {
    * @returns File ID from the Files API
    * @throws Error if upload fails
    */
-  /**
-   * Upload a file to the Files API
-   * @param content - File content as string
-   * @param title - File title/name
-   * @returns File ID from the Files API
-   * @throws Error if upload fails
-   */
   async uploadFile(content: string, title: string): Promise<string> {
     try {
       // Determine MIME type from file type or default to text/plain
