@@ -15,7 +15,7 @@
  */
 
 import { useId } from 'react';
-import type { ReactNode, ComponentProps, MouseEvent, FC } from 'react';
+import type { ReactNode, ComponentProps, MouseEvent, FC, Ref } from 'react';
 import Menu from '@mui/material/Menu';
 import Button from '@mui/material/Button';
 import { Theme } from '@mui/material/styles';
@@ -36,31 +36,33 @@ interface HeaderDropdownProps {
   isIconButton?: boolean;
   tooltip?: string;
   size?: IconButtonProps['size'];
+  /** Ref forwarded to the underlying MUI MenuList (`<ul>`). */
+  menuListRef?: Ref<HTMLUListElement | null>;
 }
 
-const menuListStyle = (theme: Theme) => ({
-  fontSize: '0.875rem',
-  boxSizing: 'border-box',
-  padding: 0,
-  margin: 0,
-  minWidth: '160px',
+const paperStyle = (theme: Theme) => ({
   borderRadius: '4px',
-  textDecoration: 'none',
-  listStyle: 'none',
-  overflow: 'auto',
-  outline: '1px solid transparent',
   background: theme.palette.background.paper,
   border: `1px solid ${theme.palette.divider}`,
-  color:
-    theme.palette.mode === 'dark'
-      ? theme.palette.text.disabled
-      : theme.palette.text.primary,
   boxShadow:
     theme.palette.mode === 'dark'
       ? '0 2px 6px 2px rgba(0,0,0,0.50), 0 1px 2px 0 rgba(0,0,0,0.50)'
       : '0 2px 6px 2px rgba(0,0,0,0.15), 0 1px 2px 0 rgba(0,0,0,0.30)',
   maxHeight: '60vh',
-  zIndex: 1,
+  overflow: 'auto',
+});
+
+const menuListStyle = (theme: Theme) => ({
+  fontSize: '0.875rem',
+  padding: 0,
+  margin: 0,
+  minWidth: '160px',
+  textDecoration: 'none',
+  listStyle: 'none',
+  color:
+    theme.palette.mode === 'dark'
+      ? theme.palette.text.disabled
+      : theme.palette.text.primary,
 });
 
 export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
@@ -73,25 +75,28 @@ export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
   isIconButton = false,
   size = 'small',
   tooltip,
+  menuListRef,
 }) => {
   const id = useId();
+
+  const menuId = `${id}-menu`;
 
   const commonButtonProps = {
     ...buttonProps,
     onClick: (event: MouseEvent<HTMLElement>) => {
       onOpen(event);
-      // focus the menu when opened
-      // TODO: investigate why MUI isn't doing this for us
+      // Defer focus until MUI finishes rendering the menu into the DOM.
       setTimeout(() => {
         document
-          .getElementById(`${id}-menu`)
-          ?.getElementsByTagName('a')[0]
+          .getElementById(menuId)
+          ?.querySelector<HTMLElement>('[role="menuitem"]')
           ?.focus();
       }, 0);
     },
     'aria-haspopup': true,
-    'aria-controls': id,
+    'aria-controls': menuId,
     'aria-expanded': anchorEl ? true : undefined,
+    'aria-label': tooltip,
   };
 
   return (
@@ -108,7 +113,7 @@ export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
         )}
       </Tooltip>
       <Menu
-        id={`${id}-menu`}
+        id={menuId}
         anchorEl={anchorEl}
         keepMounted
         open={Boolean(anchorEl)}
@@ -121,12 +126,18 @@ export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
           vertical: 'top',
           horizontal: 'center',
         }}
+        slotProps={{
+          paper: {
+            sx: theme => paperStyle(theme as Theme),
+          },
+        }}
         sx={{
           '& ul[class*="MuiMenu-list"]': {
             py: 0,
           },
         }}
         MenuListProps={{
+          ref: menuListRef as Ref<HTMLUListElement>,
           'aria-labelledby': id,
           sx: theme => menuListStyle(theme),
         }}

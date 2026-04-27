@@ -35,6 +35,34 @@ export const supportedFileTypes = {
   'application/yaml': ['.yaml', '.yml'],
 };
 
+export const NOTEBOOK_MAX_FILES = 10;
+export const NOTEBOOK_MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+export const UNTITLED_NOTEBOOK_NAME = 'Untitled Notebook';
+
+export const NOTEBOOK_ALLOWED_EXTENSIONS: Record<string, string[]> = {
+  'text/plain': ['.txt', '.log'],
+  'text/markdown': ['.md'],
+  'application/pdf': ['.pdf'],
+  'application/json': ['.json'],
+  'application/x-yaml': ['.yaml', '.yml'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [
+    '.docx',
+  ],
+  'application/vnd.oasis.opendocument.text': ['.odt'],
+};
+
+export const NOTEBOOK_EXTENSION_TO_FILE_TYPE: Record<string, string> = {
+  '.txt': 'txt',
+  '.md': 'md',
+  '.pdf': 'pdf',
+  '.json': 'json',
+  '.yaml': 'yaml',
+  '.yml': 'yaml',
+  '.log': 'log',
+  '.docx': 'txt',
+  '.odt': 'txt',
+};
+
 export const DEFAULT_SAMPLE_PROMPTS: SamplePrompts = [
   createPrompt(
     'prompts.codeReadability.title',

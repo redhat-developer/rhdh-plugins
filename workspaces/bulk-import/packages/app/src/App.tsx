@@ -16,12 +16,15 @@
 
 import { createApp } from '@backstage/frontend-defaults';
 import {
-  SignInPageBlueprint,
   createFrontendModule,
   githubAuthApiRef,
   gitlabAuthApiRef,
 } from '@backstage/frontend-plugin-api';
 import { SignInPage } from '@backstage/core-components';
+import {
+  SignInPageBlueprint,
+  type SignInPageProps,
+} from '@backstage/plugin-app-react';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import { navModule } from './modules/nav';
@@ -39,7 +42,7 @@ import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 // Create sign-in page extension with GitHub and GitLab providers
 const signInPageExtension = SignInPageBlueprint.make({
   params: {
-    loader: async () => props => (
+    loader: async () => (props: SignInPageProps) => (
       <SignInPage
         {...props}
         auto

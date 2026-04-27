@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": "18 || 20 || 22"
+    "node": "22 || 24"
   },
   "scripts": {
     "dev": "yarn start",
@@ -38,9 +38,10 @@
     "directory": "workspaces/konflux"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5",
-    "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.16.0",
+    "@backstage/cli": "^0.36.0",
+    "@backstage/cli-defaults": "^0.1.0",
+    "@backstage/e2e-test-utils": "^0.1.2",
+    "@backstage/repo-tools": "^0.17.0",
     "@changesets/cli": "^2.27.1",
     "@types/cookie-parser": "^1.4.3",
     "@types/js-yaml": "^4.0.1",
@@ -48,7 +49,7 @@
     "knip": "^5.27.4",
     "node-gyp": "^10.0.0",
     "prettier": "^2.3.2",
-    "typescript": "~5.3.0"
+    "typescript": "~5.7.0"
   },
   "resolutions": {
     "@types/react": "^18",

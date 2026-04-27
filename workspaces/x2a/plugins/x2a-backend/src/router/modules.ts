@@ -18,33 +18,17 @@ import { z } from 'zod';
 import express from 'express';
 import { InputError, NotFoundError } from '@backstage/errors';
 
-import type { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-
 import type { RouterDeps } from './types';
 import {
   generateCallbackToken,
   reconcileJobStatus,
   useEnforceProjectPermissions,
 } from './common';
-import { calculateModuleStatus } from '../services/X2ADatabaseService/status';
-
-/**
- * Reconcile any pending/running phase jobs on a module against K8s state.
- * Mutates the module in-place and returns it.
- */
-async function reconcileModuleJobs(
-  module: Module,
-  deps: Pick<RouterDeps, 'kubeService' | 'x2aDatabase' | 'logger'>,
-): Promise<Module> {
-  const phases = ['analyze', 'migrate', 'publish'] as const;
-  for (const phase of phases) {
-    const job = module[phase];
-    if (job && ['pending', 'running'].includes(job.status)) {
-      module[phase] = await reconcileJobStatus(job, deps);
-    }
-  }
-  return module;
-}
+import {
+  calculateModuleStatus,
+  listModulesWithReconciledStatuses,
+  reconcileModuleJobs,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 export function registerModuleRoutes(
   router: express.Router,
@@ -76,26 +60,12 @@ export function registerModuleRoutes(
       catalog,
     });
 
-    // List modules
     const modules = await x2aDatabase.listModules({ projectId });
-
-    // Reconcile any pending/running jobs against K8s
-    await Promise.all(
-      modules.map(m =>
-        reconcileModuleJobs(m, { kubeService, x2aDatabase, logger }),
-      ),
-    );
-
-    // Recalculate status for each module after reconciliation
-    for (const m of modules) {
-      const { status, errorDetails } = calculateModuleStatus({
-        analyze: m.analyze,
-        migrate: m.migrate,
-        publish: m.publish,
-      });
-      m.status = status;
-      m.errorDetails = errorDetails;
-    }
+    await listModulesWithReconciledStatuses(modules, {
+      kubeService,
+      x2aDatabase,
+      logger,
+    });
 
     res.json(modules);
   });

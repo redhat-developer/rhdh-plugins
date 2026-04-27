@@ -31,7 +31,7 @@ interface TabPanelProps {
   index: number;
   value: number;
   title?: string;
-  others?: { [key: string]: any };
+  others?: { packageNames?: Record<string, string> };
 }
 
 export const TabPanel = ({
@@ -52,7 +52,7 @@ export const TabPanel = ({
       const newContent = applyContent(
         codeEditorContent || '',
         pkg,
-        others?.packageNames,
+        others?.packageNames ?? {},
         content,
       );
       const selection = codeEditor.getSelection();

@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.21.1
+
+### Patch Changes
+
+- 351d260: Fixed the css issue when drawer opens, fixed the validity check bug
+
+## 1.21.0
+
+### Minor Changes
+
+- a49a2cc: Added a new frontend system based header
+
 ## 1.20.3
 
 ### Patch Changes

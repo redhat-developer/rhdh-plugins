@@ -1,5 +1,22 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.2.1
+
+### Patch Changes
+
+- 0c0e14e: Add an empty state for unconfigured LLM.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.2.1
+
+## 2.2.0
+
+### Minor Changes
+
+- 82a9ee8: Add notebook creation and document upload flow with file type validation, overwrite confirmation, collapsible document sidebar, file type icons, i18n support, and unit tests.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes

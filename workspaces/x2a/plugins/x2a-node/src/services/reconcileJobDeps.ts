@@ -14,4 +14,17 @@
  * limitations under the License.
  */
 
-export * from './translations';
+import type { LoggerService } from '@backstage/backend-plugin-api';
+
+import type { X2ADatabaseServiceApi } from './X2ADatabaseService';
+import type { KubeServiceApi } from './kubeServiceApi';
+
+/**
+ * Dependencies for {@link reconcileJobStatus}.
+ * @public
+ */
+export interface ReconcileJobDeps {
+  kubeService: KubeServiceApi;
+  x2aDatabase: X2ADatabaseServiceApi;
+  logger: LoggerService;
+}

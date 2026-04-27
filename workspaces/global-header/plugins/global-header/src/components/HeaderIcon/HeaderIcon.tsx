@@ -28,6 +28,14 @@ export interface HeaderIconProps {
 }
 
 /**
+ * Converts camelCase icon names to snake_case for Material Icons ligatures.
+ * e.g. `manageAccounts` -> `manage_accounts`, `accountCircle` -> `account_circle`
+ */
+function toMaterialIconLigature(name: string): string {
+  return name.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`);
+}
+
+/**
  * @public
  */
 export const HeaderIcon = ({
@@ -74,13 +82,14 @@ export const HeaderIcon = ({
     );
   }
 
+  const ligature = toMaterialIconLigature(icon);
   return (
     <MuiIcon
       fontSize={size}
       baseClassName="material-icons-outlined"
       sx={layout}
     >
-      {icon}
+      {ligature}
     </MuiIcon>
   );
 };

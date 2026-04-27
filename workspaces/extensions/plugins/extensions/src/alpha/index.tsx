@@ -76,7 +76,10 @@ export const extensionsTranslationsModule = createFrontendModule({
 /*
  * @alpha
  */
-export default createFrontendPlugin({
+/**
+ * @alpha
+ */
+const extensionsPlugin = createFrontendPlugin({
   pluginId: 'extensions',
   info: { packageJson: () => import('../../package.json') },
   extensions: [
@@ -87,3 +90,5 @@ export default createFrontendPlugin({
   ],
   routes: allRoutes,
 });
+
+export default extensionsPlugin;

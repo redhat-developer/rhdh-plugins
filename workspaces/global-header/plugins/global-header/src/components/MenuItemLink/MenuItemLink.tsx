@@ -33,6 +33,7 @@ export interface MenuItemLinkProps {
   tooltip?: string;
 }
 
+/** @public */
 export const MenuItemLink = ({
   to,
   title,

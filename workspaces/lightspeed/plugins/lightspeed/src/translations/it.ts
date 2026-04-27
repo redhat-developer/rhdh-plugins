@@ -55,6 +55,43 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebooks.updated.yesterday': 'Aggiornato 1 giorno fa',
     'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',
     'notebooks.updated.on': 'Aggiornato il',
+
+    // Notebook view
+    'notebook.view.title': 'Quaderno senza titolo',
+    'notebook.view.close': 'Chiudi quaderno',
+    'notebook.view.documents.count': '{{count}} Documenti',
+    'notebook.view.documents.add': 'Aggiungi',
+    'notebook.view.upload.heading': 'Carica una risorsa per iniziare',
+    'notebook.view.upload.action': 'Carica una risorsa',
+    'notebook.view.input.placeholder':
+      'Chiedi informazioni sui tuoi documenti...',
+    'notebook.view.sidebar.collapse': 'Comprimi barra laterale',
+    'notebook.view.sidebar.expand': 'Espandi barra laterale',
+    'notebook.view.sidebar.resize': 'Ridimensiona barra laterale',
+    'notebook.view.documents.uploading': 'Caricamento documento',
+    'notebook.upload.success': '{{fileName}} caricato con successo.',
+    'notebook.upload.failed': 'Caricamento di {{fileName}} non riuscito.',
+
+    // Notebook upload modal
+    'notebook.upload.modal.title': 'Aggiungi un documento al quaderno',
+    'notebook.upload.modal.dragDropTitle': 'Trascina e rilascia i file qui',
+    'notebook.upload.modal.browseButton': 'Carica',
+    'notebook.upload.modal.separator': 'o',
+    'notebook.upload.modal.infoText':
+      'Tipi di file accettati: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.error.unsupportedType':
+      'Errore di caricamento: trovati tipi di file non supportati. Caricare solo tipi di file supportati.',
+    'notebook.upload.error.fileTooLarge':
+      'Errore di caricamento: la dimensione del file supera il limite di 25 MB.',
+    'notebook.upload.error.tooManyFiles':
+      'Errore di caricamento: sono consentiti al massimo {{max}} file.',
+
+    // Notebook overwrite modal
+    'notebook.overwrite.modal.title': 'Sovrascrivere i file?',
+    'notebook.overwrite.modal.description':
+      'I seguenti file esistono già in questo quaderno. Vuoi sovrascriverli con le nuove versioni?',
+    'notebook.overwrite.modal.action': 'Sovrascrivi',
+
     'prompts.codeReadability.title':
       'Ottenere aiuto sulla leggibilità del codice',
     'prompts.codeReadability.message':
@@ -106,6 +143,15 @@ const lightspeedTranslationIt = createTranslationMessages({
     'permission.subject.plugin': 'il plugin Lightspeed',
     'permission.subject.notebooks': 'i quaderni Lightspeed',
     'permission.notebooks.goBack': 'Torna indietro',
+    'lcore.notConfigured.title': 'Collega un LLM per iniziare',
+    'lcore.notConfigured.description':
+      "Lightspeed richiede un LLM registrato. Contattare l'amministratore della piattaforma dell'organizzazione per completare la configurazione.",
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Configurazione di Developer Lightspeed',
+    'lcore.notConfigured.backendDocs': 'Configurazione backend Lightspeed',
+    'lcore.loadError.title': 'Impossibile caricare i modelli',
+    'lcore.loadError.description':
+      'Il backend Lightspeed non ha restituito un elenco di modelli. Verifica che il servizio sia in esecuzione e raggiungibile, quindi riprova.',
     'disclaimer.withValidation':
       'Questa funzione utilizza una tecnologia AI. Non includere nei dati immessi informazioni personali o altre informazioni sensibili. Le interazioni possono essere utilizzate per migliorare i prodotti o i servizi Red Hat.',
     'disclaimer.withoutValidation':
@@ -115,6 +161,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'common.cancel': 'Cancella',
     'common.close': 'Chiudi',
     'common.readMore': 'Per saperne di più',
+    'common.retry': 'Riprova',
+    'common.loading': 'Caricamento in corso',
     'common.noSearchResults': 'Nessun risultato corrisponde alla ricerca',
     'menu.newConversation': 'Nuova chat',
     'chatbox.header.title': 'Sviluppatore Lightspeed',

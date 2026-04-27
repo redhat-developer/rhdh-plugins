@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { MemoryRouter } from 'react-router-dom';
+
 import {
   configApiRef,
   IdentityApi,
@@ -33,6 +35,7 @@ import {
 import userEvent from '@testing-library/user-event';
 
 import { lightspeedApiRef } from '../../api/api';
+import { notebooksApiRef } from '../../api/notebooksApi';
 import { useConversations, useNotebookSessions } from '../../hooks';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
@@ -125,6 +128,12 @@ jest.mock('@patternfly/chatbot', () => {
   };
 });
 
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
+
 const mockUseConversations = useConversations as jest.MockedFunction<
   typeof useConversations
 >;
@@ -151,29 +160,43 @@ const mockLightspeedApi = {
   stopMessage: jest.fn().mockResolvedValue({ success: true }),
 };
 
-const setupLightspeedChat = () => (
-  <TestApiProvider
-    apis={[
-      [identityApiRef, identityApi],
-      [configApiRef, configAPi],
-      [lightspeedApiRef, mockLightspeedApi],
-    ]}
-  >
-    <FileAttachmentContextProvider>
-      <QueryClientProvider client={queryClient}>
-        <LightspeedChat
-          selectedModel="granite"
-          profileLoading={false}
-          handleSelectedModel={() => {}}
-          topicRestrictionEnabled={false}
-          selectedProvider="openai"
-          models={[]}
-          avatar="test"
-          userName="user:test"
-        />
-      </QueryClientProvider>
-    </FileAttachmentContextProvider>
-  </TestApiProvider>
+const mockNotebooksApi = {
+  createSession: jest.fn().mockResolvedValue({}),
+  listSessions: jest.fn().mockResolvedValue([]),
+  renameSession: jest.fn().mockResolvedValue(undefined),
+  deleteSession: jest.fn().mockResolvedValue(undefined),
+  uploadDocument: jest.fn().mockResolvedValue({}),
+  listDocuments: jest.fn().mockResolvedValue([]),
+  deleteDocument: jest.fn().mockResolvedValue(undefined),
+  getDocumentStatus: jest.fn().mockResolvedValue({}),
+};
+
+const setupLightspeedChat = (initialPath = '/lightspeed') => (
+  <MemoryRouter initialEntries={[initialPath]}>
+    <TestApiProvider
+      apis={[
+        [identityApiRef, identityApi],
+        [configApiRef, configAPi],
+        [lightspeedApiRef, mockLightspeedApi],
+        [notebooksApiRef, mockNotebooksApi],
+      ]}
+    >
+      <FileAttachmentContextProvider>
+        <QueryClientProvider client={queryClient}>
+          <LightspeedChat
+            selectedModel="granite"
+            profileLoading={false}
+            handleSelectedModel={() => {}}
+            topicRestrictionEnabled={false}
+            selectedProvider="openai"
+            models={[]}
+            avatar="test"
+            userName="user:test"
+          />
+        </QueryClientProvider>
+      </FileAttachmentContextProvider>
+    </TestApiProvider>
+  </MemoryRouter>
 );
 
 describe('LightspeedChat', () => {
@@ -206,6 +229,7 @@ describe('LightspeedChat', () => {
 
     localStorage.clear();
     jest.clearAllMocks();
+    mockNavigate.mockClear();
   });
 
   afterEach(() => {
@@ -727,6 +751,104 @@ describe('LightspeedChat', () => {
           screen.queryByText('Missing permissions'),
         ).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe('notebook tab routing', () => {
+    beforeEach(() => {
+      mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: false,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.embedded,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+      });
+    });
+
+    it('should initialize to chat tab when path is /lightspeed', async () => {
+      render(setupLightspeedChat('/lightspeed'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const chatTab = screen.getByRole('tab', { name: 'Chat' });
+      expect(chatTab).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('should initialize to notebooks tab when path is /lightspeed/notebooks', async () => {
+      render(setupLightspeedChat('/lightspeed/notebooks'));
+
+      await waitFor(() => {
+        expect(screen.getByText('My Notebooks')).toBeInTheDocument();
+      });
+
+      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
+      expect(notebooksTab).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('should navigate to /lightspeed/notebooks when clicking the Notebooks tab', async () => {
+      render(setupLightspeedChat('/lightspeed'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
+      await userEvent.click(notebooksTab);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/lightspeed/notebooks');
+    });
+
+    it('should navigate to /lightspeed when clicking Chat tab from notebooks view', async () => {
+      render(setupLightspeedChat('/lightspeed/notebooks'));
+
+      await waitFor(() => {
+        expect(screen.getByText('My Notebooks')).toBeInTheDocument();
+      });
+
+      const chatTab = screen.getByRole('tab', { name: 'Chat' });
+      await userEvent.click(chatTab);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/lightspeed');
+    });
+
+    it('should navigate to conversation URL when switching to chat tab with an active conversation', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: false,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.embedded,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: 'conv-123',
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+      });
+
+      render(setupLightspeedChat('/lightspeed/notebooks'));
+
+      await waitFor(() => {
+        expect(screen.getByText('My Notebooks')).toBeInTheDocument();
+      });
+
+      const chatTab = screen.getByRole('tab', { name: 'Chat' });
+      await userEvent.click(chatTab);
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/lightspeed/conversation/conv-123',
+      );
     });
   });
 });

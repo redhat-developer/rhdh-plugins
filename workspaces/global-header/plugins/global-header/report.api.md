@@ -167,8 +167,6 @@ export interface HeaderIconButtonProps {
   // (undocumented)
   icon: string;
   // (undocumented)
-  layout?: CSSProperties;
-  // (undocumented)
   size?: 'small' | 'medium' | 'large';
   // (undocumented)
   title: string;
@@ -223,6 +221,8 @@ export interface MenuItemConfig {
   labelKey?: string;
   // (undocumented)
   link?: string;
+  // (undocumented)
+  onClick?: () => void;
   // (undocumented)
   subLabel?: string;
   // (undocumented)

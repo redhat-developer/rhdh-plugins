@@ -59,6 +59,14 @@ const quickstartTranslationFr = createTranslationMessages({
     'steps.findAllLearningPaths.description':
       'Intégrez l’apprentissage en ligne personnalisé dans vos flux de travail avec Learning Paths pour accélérer l’intégration, combler les lacunes en matière de compétences et promouvoir les meilleures pratiques.',
     'steps.findAllLearningPaths.ctaTitle': 'Voir Learning Paths',
+    'steps.setupLightspeed.title': 'Configurer Lightspeed',
+    'steps.setupLightspeed.description':
+      'Connectez Lightspeed à un modèle de langage volumineux (LLM) pris en charge et configurez les autorisations afin d’offrir à vos développeurs une assistance optimisée par l’IA.',
+    'steps.setupLightspeed.ctaTitle': 'En savoir plus',
+    'steps.getStartedWithLightspeed.title': 'Premiers pas avec Lightspeed',
+    'steps.getStartedWithLightspeed.description':
+      'Dépanner des problèmes, générer du code et en savoir plus sur les ressources de la plateforme grâce au chat piloté par l’IA.',
+    'steps.getStartedWithLightspeed.ctaTitle': 'En savoir plus',
     'button.quickstart': 'Démarrage rapide',
     'button.openQuickstartGuide': 'Ouvrir le guide de démarrage rapide',
     'button.closeDrawer': 'Fermer le tiroir',

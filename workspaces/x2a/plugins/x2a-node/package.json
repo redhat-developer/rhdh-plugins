@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-x2a-node",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "Apache-2.0",
   "description": "Shared backend API surface (interfaces, service refs, utilities) for x2a plugins",
   "main": "src/index.ts",

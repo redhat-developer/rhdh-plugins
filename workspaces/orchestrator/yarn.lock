@@ -12893,6 +12893,7 @@ __metadata:
     "@backstage/ui": "npm:^0.13.2"
     "@janus-idp/cli": "npm:3.7.0"
     "@material-ui/core": "npm:^4.12.4"
+    "@material-ui/lab": "npm:^4.0.0-alpha.61"
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:^5.17.1"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"

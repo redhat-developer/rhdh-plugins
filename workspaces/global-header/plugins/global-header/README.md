@@ -1,13 +1,97 @@
-# global-header
+# Global Header Plugin
 
-Welcome to the global-header plugin!
+A configurable and extensible global header for [Red Hat Developer Hub](https://developers.redhat.com/rhdh) (RHDH), built as a [Backstage](https://backstage.io) frontend plugin.
 
-_This plugin was created through the Backstage CLI_
+## Features
 
-## Getting started
+- Sticky header bar with company logo, search, notifications, and user profile
+- Dropdown menus for application launcher, help/support, and user profile
+- Extensible via the **new frontend system** (extension blueprints) or **legacy mount points**
+- Config-driven menu items via `app-config.yaml` (no code required)
+- Full i18n/translation support
+- Themeable (light/dark mode, custom branding)
 
-Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/global-header](http://localhost:3000/global-header).
+## Installation
 
-You can also serve the plugin in isolation by running `yarn start` in the plugin directory.
-This method of serving the plugin provides quicker iteration speed and a faster startup and hot reloads.
-It is only meant for local development, and the setup for it can be found inside the [/dev](./dev) directory.
+```bash
+yarn --cwd packages/app add @red-hat-developer-hub/backstage-plugin-global-header
+```
+
+## Usage
+
+### New Frontend System
+
+Import the plugin and module in your NFS app:
+
+```typescript
+import { createApp } from '@backstage/frontend-defaults';
+import globalHeaderPlugin, {
+  globalHeaderModule,
+} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+
+export default createApp({
+  features: [
+    // ... other plugins
+    globalHeaderModule,
+    globalHeaderPlugin,
+  ],
+});
+```
+
+Other plugins can contribute toolbar items and dropdown menu items using `GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint`. See the [New Frontend System documentation](../../docs/new-frontend-system.md) for detailed examples and API reference.
+
+### Legacy (Mount Points)
+
+For legacy Backstage apps using dynamic plugin mount points, see the [Configuration documentation](../../docs/configuration.md).
+
+## Configuration
+
+### Config-driven toolbar buttons and menu items
+
+Add toolbar buttons and dropdown menu items directly from `app-config.yaml`:
+
+```yaml
+globalHeader:
+  components:
+    - title: Dashboard
+      icon: dashboard
+      link: /dashboard
+      priority: 75
+
+  menuItems:
+    - target: app-launcher
+      title: Internal Wiki
+      icon: article
+      link: https://wiki.internal.example.com
+      sectionLabel: Resources
+      priority: 80
+```
+
+### Company logo branding
+
+```yaml
+app:
+  branding:
+    fullLogo:
+      light: 'data:image/svg+xml;base64,...'
+      dark: 'data:image/svg+xml;base64,...'
+    fullLogoWidth: 200px
+```
+
+## Documentation
+
+- [New Frontend System Guide](../../docs/new-frontend-system.md) -- Blueprints, building blocks, and integration guide for plugin authors
+- [Configuration](../../docs/configuration.md) -- Dynamic plugin setup for legacy apps
+- [Components](../../docs/components/) -- HeaderButton, HeaderIconButton, Spacer, Divider reference
+
+## Development
+
+```bash
+cd workspaces/global-header
+yarn install
+yarn start
+```
+
+## License
+
+Apache-2.0
