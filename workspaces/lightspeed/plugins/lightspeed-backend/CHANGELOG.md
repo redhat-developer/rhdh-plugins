@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.4.0
+
+### Minor Changes
+
+- 161c1f2: ai-notebooks route name is now notebooks. Added a route to fetch single notebooks session by id
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.4.0
+
 ## 2.3.0
 
 ### Minor Changes
