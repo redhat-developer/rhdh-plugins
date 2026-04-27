@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.3.0
+
+### Minor Changes
+
+- dff8f34: All lightspeed query is now called with rhdh-docs vector_store. Notebooks app-config only now requires queryDefaults model and provider
+  All files uploaded to lightspeed-stack will be converted to .txt
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.3.0
+
 ## 2.2.1
 
 ### Patch Changes
