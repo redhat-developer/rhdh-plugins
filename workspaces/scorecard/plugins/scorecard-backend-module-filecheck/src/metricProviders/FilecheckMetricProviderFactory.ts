@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { UrlReaderService } from '@backstage/backend-plugin-api';
+import type {
+  CacheService,
+  UrlReaderService,
+} from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { FilecheckClient } from '../clients/FilecheckClient';
 import { parseFilecheckConfig } from './FilecheckConfig';
@@ -27,12 +30,13 @@ import { FilecheckMetricProvider } from './FilecheckMetricProvider';
 export function createFilecheckMetricProvider(
   config: Config,
   urlReader: UrlReaderService,
+  cache: CacheService,
 ): FilecheckMetricProvider | undefined {
   const filesConfig = parseFilecheckConfig(config);
   if (!filesConfig) {
     return undefined;
   }
 
-  const client = new FilecheckClient(urlReader);
+  const client = new FilecheckClient(urlReader, cache);
   return new FilecheckMetricProvider(client, filesConfig);
 }

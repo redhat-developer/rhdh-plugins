@@ -43,7 +43,7 @@ backend.start();
 
 ### Files Configuration
 
-Define which files to check under `scorecard.plugins.filecheck.files` in your `app-config.yaml`. Each entry is a single key–value pair where the key becomes the metric identifier suffix and the value is the relative file path inside the repository:
+Define which files to check under `scorecard.plugins.filecheck.files` in your `app-config.yaml`. Keys become the metric identifier suffix and values are relative file paths inside the repository:
 
 ```yaml
 # app-config.yaml
@@ -51,10 +51,10 @@ scorecard:
   plugins:
     filecheck:
       files:
-        - readme: README.md
-        - license: LICENSE
-        - codeowners: CODEOWNERS
-        - contributing: CONTRIBUTING.md
+        readme: README.md
+        license: LICENSE
+        codeowners: CODEOWNERS
+        contributing: CONTRIBUTING.md
 ```
 
 This produces the following metrics:
@@ -70,7 +70,7 @@ If no files are configured, no metrics are registered and the module has no effe
 
 **File path rules:**
 
-- Paths must be relative (no leading `/` or `./`).
+- Paths must be relative (no leading `/`, `./` or `../`).
 - Paths must not contain newlines, quotes (`"`), or backslashes.
 
 ### Entity Requirements

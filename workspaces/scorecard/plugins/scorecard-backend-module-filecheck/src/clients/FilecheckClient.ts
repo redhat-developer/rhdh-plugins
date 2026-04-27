@@ -14,20 +14,28 @@
  * limitations under the License.
  */
 
-import type { UrlReaderService } from '@backstage/backend-plugin-api';
+import type {
+  CacheService,
+  UrlReaderService,
+} from '@backstage/backend-plugin-api';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
+import { NotModifiedError } from '@backstage/errors';
+
+/** TTL for cache entries: 1 hour in milliseconds */
+const CACHE_TTL_MS = 60 * 60 * 1000;
 
 type CacheEntry = {
   etag: string;
-  foundPaths: Set<string>;
+  foundPaths: string[];
 };
 
 export class FilecheckClient {
   private readonly urlReader: UrlReaderService;
-  private readonly cache = new Map<string, CacheEntry>();
+  private readonly cache: CacheService;
 
-  constructor(urlReader: UrlReaderService) {
+  constructor(urlReader: UrlReaderService, cache: CacheService) {
     this.urlReader = urlReader;
+    this.cache = cache;
   }
 
   /**
@@ -40,6 +48,8 @@ export class FilecheckClient {
    *
    * Results are cached per (target URL, file list) pair using ETags so that
    * subsequent scheduler runs skip re-downloading trees that have not changed.
+   * Entries expire after one hour so stale data for removed entities is
+   * eventually evicted.
    */
   async checkFiles(
     entity: Entity,
@@ -50,7 +60,7 @@ export class FilecheckClient {
     const sortedPaths = [...filePaths].sort((a, b) => a.localeCompare(b));
     const cacheKey = `${target}\0${sortedPaths.join('\0')}`;
     const pathsSet = new Set(filePaths);
-    const cached = this.cache.get(cacheKey);
+    const cached = await this.cache.get<CacheEntry>(cacheKey);
 
     let foundPaths: Set<string>;
 
@@ -62,10 +72,14 @@ export class FilecheckClient {
 
       const files = await tree.files();
       foundPaths = new Set(files.map(f => f.path));
-      this.cache.set(cacheKey, { etag: tree.etag, foundPaths });
+      await this.cache.set(
+        cacheKey,
+        { etag: tree.etag, foundPaths: [...foundPaths] },
+        { ttl: CACHE_TTL_MS },
+      );
     } catch (error: any) {
-      if (cached && error.name === 'NotModifiedError') {
-        foundPaths = cached.foundPaths;
+      if (cached && error instanceof NotModifiedError) {
+        foundPaths = new Set(cached.foundPaths);
       } else {
         throw error;
       }

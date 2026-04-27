@@ -54,9 +54,9 @@ export function validateFilePath(id: string, path: string): void {
       `Invalid file path for '${id}': path must not contain newlines, quotes, or backslashes`,
     );
   }
-  if (path.startsWith('/') || path.startsWith('./')) {
+  if (path.startsWith('/') || path.startsWith('./') || path.startsWith('../')) {
     throw new Error(
-      `Invalid file path for '${id}': path must be relative without leading './' or '/'`,
+      `Invalid file path for '${id}': path must be relative without leading './', '../' or '/'`,
     );
   }
 }
@@ -68,23 +68,22 @@ export function validateFilePath(id: string, path: string): void {
 export function parseFilecheckConfig(
   config: Config,
 ): FilecheckConfig | undefined {
-  const filesConfig = config.getOptionalConfigArray(
+  const filesConfig = config.getOptionalConfig(
     'scorecard.plugins.filecheck.files',
   );
 
-  if (!filesConfig || filesConfig.length === 0) {
+  if (!filesConfig) {
     return undefined;
   }
 
-  const files: FilecheckEntry[] = filesConfig.map(fileConfig => {
-    const keys = fileConfig.keys();
-    if (keys.length !== 1) {
-      throw new Error(
-        'Each file config entry must have exactly one key-value pair',
-      );
-    }
-    const id = keys[0];
-    const path = fileConfig.getString(id);
+  const ids = filesConfig.keys();
+
+  if (ids.length === 0) {
+    return undefined;
+  }
+
+  const files: FilecheckEntry[] = ids.map(id => {
+    const path = filesConfig.getString(id);
     validateFilePath(id, path);
     return { id, path };
   });

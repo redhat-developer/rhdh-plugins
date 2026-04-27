@@ -28,10 +28,15 @@ export const scorecardModuleFilecheck = createBackendModule({
       deps: {
         config: coreServices.rootConfig,
         urlReader: coreServices.urlReader,
+        cache: coreServices.cache,
         metrics: scorecardMetricsExtensionPoint,
       },
-      async init({ config, urlReader, metrics }) {
-        const provider = createFilecheckMetricProvider(config, urlReader);
+      async init({ config, urlReader, cache, metrics }) {
+        const provider = createFilecheckMetricProvider(
+          config,
+          urlReader,
+          cache,
+        );
         if (provider) {
           metrics.addMetricProvider(provider);
         }

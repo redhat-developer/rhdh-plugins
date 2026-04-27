@@ -236,8 +236,8 @@ scorecard:
           initialDelay: { seconds: 5 }
     filecheck:
       files:
-        - license: 'LICENSE'
-        - codeowners: 'CODEOWNERS'
+        license: 'LICENSE'
+        codeowners: 'CODEOWNERS'
       schedule:
         frequency: { minutes: 5 }
         timeout: { minutes: 10 }

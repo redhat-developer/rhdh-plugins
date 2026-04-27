@@ -163,7 +163,20 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 const resultsMap = await provider.calculateMetrics(entity);
 
                 return enabledMetricIds.map(metricId => {
-                  const value = resultsMap.get(metricId)!;
+                  if (!resultsMap.has(metricId)) {
+                    return {
+                      catalog_entity_ref: entityRef,
+                      metric_id: metricId,
+                      value: undefined,
+                      timestamp: new Date(),
+                      error_message: `calculateMetrics() did not return an entry for metric '${metricId}'`,
+                      entity_kind: entityKind,
+                      entity_namespace: entityNamespace,
+                      entity_owner: entityOwner,
+                    } as DbMetricValueCreate;
+                  }
+
+                  const value = resultsMap.get(metricId) as MetricValue;
 
                   try {
                     const thresholds = mergeEntityAndProviderThresholds(

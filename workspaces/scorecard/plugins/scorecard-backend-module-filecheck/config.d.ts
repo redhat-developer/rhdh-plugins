@@ -22,11 +22,10 @@ export interface Config {
     plugins?: {
       /** File existence check configuration */
       filecheck?: {
-        /** File existence checks configuration */
-        files?: Array<{
-          /** Key is the metric identifier, value is the file path */
+        /** File existence checks configuration. Keys are metric identifier suffixes, values are relative file paths. */
+        files?: {
           [metricId: string]: string;
-        }>;
+        };
         schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
       };
     };
