@@ -15,7 +15,53 @@
  */
 
 import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
-import { AggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  aggregationKinds,
+  ThresholdRule,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+/** `scorecard.aggregationKPIs.*` entry when `type` is `average`. */
+export type AverageAggregationKPIConfig = {
+  /** Title of the aggregation */
+  title: string;
+  /** Description of the aggregation */
+  description: string;
+  /** Metric ID for which the aggregation is calculated */
+  metricId: string;
+  /** Type of the aggregation */
+  type: typeof aggregationKinds.average;
+  /** Required for `average`: status weights and optional headline-value thresholds */
+  options: {
+    /** At least one status name → weight mapping (validated at startup) */
+    statusScores: {
+      [statusKey: string]: number;
+    };
+    /**
+     * Optional: threshold rules for coloring the KPI headline value from the aggregation result
+     * (e.g. average percentage 0–100). Rules are evaluated in order against that headline value.
+     */
+    thresholds?: {
+      rules: Pick<ThresholdRule, 'key' | 'expression' | 'color'>[];
+    };
+  };
+};
+
+/** `scorecard.aggregationKPIs.*` entry when `type` is `statusGrouped`. */
+export type StatusGroupedAggregationKPIConfig = {
+  /** Title of the aggregation */
+  title: string;
+  /** Description of the aggregation */
+  description: string;
+  /** Metric ID for which the aggregation is calculated */
+  metricId: string;
+  /** Type of the aggregation */
+  type: typeof aggregationKinds.statusGrouped;
+};
+
+/** Discriminated union of aggregation KPI shapes (discriminant: `type`). */
+export type AggregationKPIConfig =
+  | AverageAggregationKPIConfig
+  | StatusGroupedAggregationKPIConfig;
 
 export interface Config {
   /** Configuration for scorecard plugin */
@@ -23,35 +69,7 @@ export interface Config {
     /** Configuration for scorecard aggregation KPIs */
     aggregationKPIs?: {
       /** Unique identifier for scorecard aggregation KPIs */
-      [aggregationId: string]: {
-        /** Title of the aggregation */
-        title: string;
-        /** Description of the aggregation */
-        description: string;
-        /** Type of the aggregation */
-        type: AggregationType;
-        /** Metric ID for which the aggregation is calculated */
-        metricId: string;
-        /** Type-specific settings */
-        options?: {
-          /** Required under `options` when `type` is `average` */
-          statusScores?: {
-            [thresholdRuleKey: string]: number;
-          };
-          /**
-           * Optional: threshold rules for coloring the KPI headline value from the aggregation result
-           * (e.g. average percentage 0–100 for `average` KPIs). Same shape as metric `thresholds`;
-           * rules are evaluated in order against that headline value.
-           */
-          thresholds?: {
-            rules?: Array<{
-              key: string;
-              expression: string;
-              color?: string;
-            }>;
-          };
-        };
-      };
+      [aggregationId: string]: AggregationKPIConfig;
     };
     /** Number of days to retain metric data in the database. Older data will be automatically cleaned up. Default: 365 days */
     dataRetentionDays?: number;
