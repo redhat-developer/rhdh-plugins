@@ -29,10 +29,10 @@ import { lightspeedNotebooksUsePermission } from '@red-hat-developer-hub/backsta
 import { Readable } from 'stream';
 
 import {
+  DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
-  LIGHTSPEED_SERVICE_HOST,
   MAX_QUERY_RETRIES,
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
@@ -68,7 +68,7 @@ export async function createNotebooksRouter(
   const lightSpeedPort =
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
-  const lightspeedBaseUrl = `http://${LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
+  const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
   const queryModel = config.getOptionalString(
     'lightspeed.notebooks.queryDefaults.model',
   );
@@ -85,15 +85,11 @@ export async function createNotebooksRouter(
     `AI Notebooks connecting to Lightspeed-Core at ${lightspeedBaseUrl}`,
   );
 
-  const vectorStoresOperator = new VectorStoresOperator(
+  const vectorStoresOperator = VectorStoresOperator.getInstance(
     lightspeedBaseUrl,
     logger,
   );
-  const sessionService = new SessionService(
-    vectorStoresOperator,
-    logger,
-    config,
-  );
+  const sessionService = new SessionService(vectorStoresOperator, logger);
   const documentService = new DocumentService(
     vectorStoresOperator,
     logger,
@@ -314,7 +310,6 @@ export async function createNotebooksRouter(
       const fileId = await documentService.uploadFile(
         parsedDocument.content,
         title,
-        fileType,
       );
 
       res.status(HTTP_STATUS_ACCEPTED).json({

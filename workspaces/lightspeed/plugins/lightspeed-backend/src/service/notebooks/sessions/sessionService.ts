@@ -15,7 +15,6 @@
  */
 
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { Config } from '@backstage/config';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
 
 import { NotebookSession, SessionMetadata } from '../types/notebooksTypes';
@@ -32,36 +31,11 @@ export class SessionService {
   private logger: LoggerService;
   private client: VectorStoresOperator;
   private providerId: string;
-  private embeddingModel: string;
-  private embeddingDimension: number;
 
-  constructor(
-    client: VectorStoresOperator,
-    logger: LoggerService,
-    config?: Config,
-  ) {
+  constructor(client: VectorStoresOperator, logger: LoggerService) {
     this.client = client;
     this.logger = logger;
-
-    const requireConfig = <T>(value: T | undefined, key: string): T => {
-      if (value === undefined) throw new Error(`${key} is required in config`);
-      return value;
-    };
-
-    this.providerId = requireConfig(
-      config?.getString('lightspeed.notebooks.sessionDefaults.provider_id'),
-      'lightspeed.notebooks.sessionDefaults.provider_id',
-    );
-    this.embeddingModel = requireConfig(
-      config?.getString('lightspeed.notebooks.sessionDefaults.embedding_model'),
-      'lightspeed.notebooks.sessionDefaults.embedding_model',
-    );
-    this.embeddingDimension = requireConfig(
-      config?.getNumber(
-        'lightspeed.notebooks.sessionDefaults.embedding_dimension',
-      ),
-      'lightspeed.notebooks.sessionDefaults.embedding_dimension',
-    );
+    this.providerId = 'notebooks';
   }
 
   /**
@@ -94,16 +68,12 @@ export class SessionService {
         ...metadata,
         conversation_id: null,
         provider_id: this.providerId,
-        embedding_model: this.embeddingModel,
-        embedding_dimension: this.embeddingDimension,
       },
     };
 
     const vectorStore = await this.client.vectorStores.create({
       name: name || `Session for ${userId}`,
       provider_id: this.providerId,
-      embedding_model: this.embeddingModel,
-      embedding_dimension: this.embeddingDimension,
       metadata: buildVectorStoreMetadata(tempSession),
     });
 

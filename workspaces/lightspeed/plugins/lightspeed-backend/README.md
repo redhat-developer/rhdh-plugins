@@ -110,15 +110,8 @@ lightspeed:
     # Required: Query defaults for RAG queries
     # Both model and provider_id must be configured together
     queryDefaults:
-      model: llama3.1-8b-instruct # Model to use for answering queries
-      provider_id: ollama # AI provider for the query model
-
-    # Required: Session defaults for creating vector stores
-    # All three fields are required when Notebooks is enabled
-    sessionDefaults:
-      provider_id: notebooks # Vector store provider ID (must match Llama Stack config)
-      embedding_model: sentence-transformers/all-mpnet-base-v2 # Model for generating embeddings
-      embedding_dimension: 768 # Embedding vector dimension (must match model output)
+      model: ${NOTEBOOKS_QUERY_MODEL} # Model to use for answering queries. Must map to a model available through the provider set in $NOTEBOOKS_QUERY_PROVIDER_ID
+      provider_id: ${NOTEBOOKS_QUERY_PROVIDER_ID} # AI provider for the query model. Must map to a provider enabled in your Lightspeed config.yaml
 
     # Optional: Chunking strategy for document processing
     chunkingStrategy:
@@ -143,11 +136,7 @@ lightspeed:
 - **`queryDefaults.model`** _(required)_: The LLM model to use for answering RAG queries. Must be available in the configured provider.
 - **`queryDefaults.provider_id`** _(required)_: The AI provider identifier for the query model (e.g., `ollama`, `vllm`). Both `model` and `provider_id` must be configured together.
 
-**Session Defaults** _(required when enabled)_:
-
-- **`sessionDefaults.provider_id`** _(required)_: Vector store provider identifier. Must match a provider configured in your Llama Stack instance (e.g., `notebooks`, `chromadb`). This determines where document embeddings are stored.
-- **`sessionDefaults.embedding_model`** _(required)_: The embedding model to use for converting documents to vectors (e.g., `sentence-transformers/all-mpnet-base-v2`). Must be available in Llama Stack.
-- **`sessionDefaults.embedding_dimension`** _(required)_: Dimension of the embedding vectors produced by the embedding model. Must match the model's output dimension (commonly `768`, `384`, or `1536`).
+> **Important**: The `model` and `provider_id` values must map to a provider and model that are actually enabled in your Lightspeed config.yaml configuration. If the provider or model is not available in Lightspeed, queries will fail. For example, if `openai` enabled in Lightspeed via ENABLE_OPENAI, then model must be available, e.g (model=gpt-4o-mini).
 
 **Chunking Strategy** _(optional)_:
 
