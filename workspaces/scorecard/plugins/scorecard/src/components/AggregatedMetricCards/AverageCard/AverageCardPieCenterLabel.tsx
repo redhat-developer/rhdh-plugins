@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-import { SetStateAction } from 'react';
-
-import { Dispatch } from 'react';
 import { PieLabelRenderProps } from 'recharts';
 import { TooltipPosition } from './types';
 
 type AverageCardPieCenterLabelProps = PieLabelRenderProps & {
   centerPercentLabel: string;
   arcResolvedColor: string;
-  setActiveIndex: Dispatch<SetStateAction<number | null>>;
-  setTooltipPosition: Dispatch<SetStateAction<TooltipPosition | null>>;
+  setActiveIndex: (index: number | null) => void;
+  setTooltipPosition: (position: TooltipPosition | null) => void;
   updateCenterTooltipPosition: (e: React.MouseEvent<SVGCircleElement>) => void;
-  setCenterTooltipPosition: Dispatch<SetStateAction<TooltipPosition | null>>;
+  setCenterTooltipPosition: (position: TooltipPosition | null) => void;
 };
 
 export function AverageCardPieCenterLabel({

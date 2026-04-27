@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { Dispatch, SetStateAction } from 'react';
-
 import CustomLegend from '../../ScorecardHomepageSection/CustomLegend';
 import type { PieData } from '../../types';
 import type { PieLegendContentProps } from '../../ScorecardHomepageSection/ResponsivePieChart';
@@ -23,8 +21,8 @@ import type { TooltipPosition } from '../AverageCard/types';
 
 export type CardLegendContentProps = PieLegendContentProps & {
   activeIndex: number | null;
-  setActiveIndex: Dispatch<SetStateAction<number | null>>;
-  setTooltipPosition: Dispatch<SetStateAction<TooltipPosition | null>>;
+  setActiveIndex: (index: number | null) => void;
+  setTooltipPosition: (position: TooltipPosition | null) => void;
   pieData: PieData[];
 };
 

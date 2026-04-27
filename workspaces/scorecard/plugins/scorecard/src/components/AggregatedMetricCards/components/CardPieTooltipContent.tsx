@@ -20,7 +20,7 @@ import { PieTooltipPayload } from '../../ScorecardHomepageSection/ResponsivePieC
 
 export type CardPieTooltipContentProps = {
   active?: boolean;
-  payload?: readonly PieTooltipPayload[] | undefined;
+  payload?: readonly PieTooltipPayload[];
   pieData: PieData[];
 };
 

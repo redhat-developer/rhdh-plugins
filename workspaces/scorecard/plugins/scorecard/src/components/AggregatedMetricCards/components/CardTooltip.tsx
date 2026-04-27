@@ -21,9 +21,10 @@ import {
 import Box from '@mui/material/Box';
 import Portal from '@mui/material/Portal';
 import type { PieData } from '../../types';
+import { TooltipPosition } from '../AverageCard/types';
 
 type CardTooltipProps = {
-  tooltipPosition: { left: number; top: number };
+  tooltipPosition: TooltipPosition;
   pieData: PieData[];
   payload: CustomTooltipPayload[];
   customContent?: string | React.ReactNode;
