@@ -26,3 +26,4 @@ export {
 export { getLastUpdatedLabel } from './entityTableUtils';
 export { getStatusConfig, resolveStatusColor } from './statusUtils';
 export { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
+export { resolveMetricTranslation } from './translationUtils';

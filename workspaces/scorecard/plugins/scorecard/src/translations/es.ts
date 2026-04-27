@@ -78,6 +78,9 @@ const scorecardTranslationEs = createTranslationMessages({
     'metric.jira.open_issues.title': 'Jira tickets bloqueantes abiertos',
     'metric.jira.open_issues.description':
       'Destaca el número de problemas críticos y bloqueantes que están actualmente abiertos en Jira.',
+    'metric.filecheck.title': 'Verificación de archivo: {{name}}',
+    'metric.filecheck.description':
+      'Verifica si el archivo {{name}} existe en el repositorio.',
     'metric.lastUpdated': 'Última actualización: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Última actualización: No disponible',
     'metric.someEntitiesNotReportingValues':
@@ -94,6 +97,8 @@ const scorecardTranslationEs = createTranslationMessages({
     'thresholds.success': 'Éxito',
     'thresholds.warning': 'Advertencia',
     'thresholds.error': 'Error',
+    'thresholds.exist': 'Existe',
+    'thresholds.missing': 'Faltante',
     'thresholds.noEntities': 'No hay entidades en el estado {{category}}',
     'thresholds.entities_one': '{{count}} entidad',
     'thresholds.entities_other': '{{count}} entidades',

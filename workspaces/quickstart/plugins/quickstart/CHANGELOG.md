@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.9.1
+
+### Patch Changes
+
+- 351d260: Added quick start menu item to help dropdown in global header
+
 ## 1.9.0
 
 ### Minor Changes

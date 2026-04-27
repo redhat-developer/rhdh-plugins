@@ -79,6 +79,9 @@ const scorecardTranslationJa = createTranslationMessages({
       'Jira のオープン状態の進行を妨げているチケット',
     'metric.jira.open_issues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
+    'metric.filecheck.title': 'ファイル確認: {{name}}',
+    'metric.filecheck.description':
+      'リポジトリーに {{name}} ファイルが存在するかを確認します。',
     'metric.lastUpdated': '最終更新日: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': '最終更新日: 利用不可',
     'metric.someEntitiesNotReportingValues':
@@ -95,6 +98,8 @@ const scorecardTranslationJa = createTranslationMessages({
     'thresholds.success': '成功',
     'thresholds.warning': '警告',
     'thresholds.error': 'エラー',
+    'thresholds.exist': '存在',
+    'thresholds.missing': '欠落',
     'thresholds.noEntities': '{{category}} 状態のエンティティーがありません',
     'thresholds.entities_one': '{{count}} エンティティー',
     'thresholds.entities_other': '{{count}} エンティティー',

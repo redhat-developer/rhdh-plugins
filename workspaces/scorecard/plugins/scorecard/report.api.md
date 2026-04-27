@@ -68,6 +68,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.github.open_prs.description': string;
     readonly 'metric.jira.open_issues.title': string;
     readonly 'metric.jira.open_issues.description': string;
+    readonly 'metric.filecheck.title': string;
+    readonly 'metric.filecheck.description': string;
     readonly 'metric.lastUpdated': string;
     readonly 'metric.lastUpdatedNotAvailable': string;
     readonly 'metric.someEntitiesNotReportingValues': string;
@@ -79,6 +81,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'thresholds.success': string;
     readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;
+    readonly 'thresholds.exist': string;
+    readonly 'thresholds.missing': string;
     readonly 'thresholds.noEntities': string;
     readonly 'thresholds.entities_one': string;
     readonly 'thresholds.entities_other': string;

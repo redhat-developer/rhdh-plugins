@@ -68,17 +68,17 @@ export class CatalogMetricService {
   }
 
   /**
-   * Get latest metric results for a specific catalog entity and metric providers.
+   * Get latest metric results for a specific catalog entity.
    *
    * @param entityRef - Entity reference in format "kind:namespace/name"
-   * @param providerIds - Optional array of provider IDs to get latest metrics of.
-   *                      If not provided, gets all available latest metrics.
+   * @param metricIds - Optional array of metric IDs to get latest metrics of.
+   *                    If not provided, gets all available latest metrics.
    * @param filter - Permission filter
    * @returns Metric results with entity-specific thresholds applied
    */
   async getLatestEntityMetrics(
     entityRef: string,
-    providerIds?: string[],
+    metricIds?: string[],
     filter?: PermissionCriteria<
       PermissionCondition<string, PermissionRuleParams>
     >,
@@ -90,7 +90,7 @@ export class CatalogMetricService {
       throw new NotFoundError(`Entity not found: ${entityRef}`);
     }
 
-    const metricsToFetch = this.registry.listMetrics(providerIds);
+    const metricsToFetch = this.registry.listMetrics(metricIds);
 
     const authorizedMetricsToFetch = filterAuthorizedMetrics(
       metricsToFetch,
@@ -107,7 +107,7 @@ export class CatalogMetricService {
         let thresholdError: string | undefined;
 
         const provider = this.registry.getProvider(metric_id);
-        const metric = provider.getMetric();
+        const metric = this.registry.getMetric(metric_id);
 
         try {
           thresholds = mergeEntityAndProviderThresholds(entity, provider);

@@ -59,6 +59,14 @@ const quickstartTranslationEs = createTranslationMessages({
     'steps.findAllLearningPaths.description':
       'Integre aprendizaje en línea personalizado en sus flujos de trabajo con rutas de aprendizaje, a fin de agilizar el proceso de incorporación, reducir brechas de habilidades y promover prácticas recomendadas.',
     'steps.findAllLearningPaths.ctaTitle': 'Ver rutas de aprendizaje',
+    'steps.setupLightspeed.title': 'Configurar Lightspeed',
+    'steps.setupLightspeed.description':
+      'Conecte Lightspeed a un modelo de lenguaje de gran tamaño (LLM) compatible y configure los permisos para ofrecer a sus desarrolladores asistencia impulsada por IA.',
+    'steps.setupLightspeed.ctaTitle': 'Aprenda más',
+    'steps.getStartedWithLightspeed.title': 'Primeros pasos con Lightspeed',
+    'steps.getStartedWithLightspeed.description':
+      'Resuelva incidencias, genere código y conozca los recursos de la plataforma mediante un chat con IA.',
+    'steps.getStartedWithLightspeed.ctaTitle': 'Aprenda más',
     'button.quickstart': 'Inicio rápido',
     'button.openQuickstartGuide': 'Abrir la Guía de inicio rápido',
     'button.closeDrawer': 'Cerrar panel',

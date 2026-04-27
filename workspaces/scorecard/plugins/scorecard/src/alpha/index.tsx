@@ -28,6 +28,8 @@ import {
   aggregatedCardWithDefaultAggregationWidget,
   aggregatedCardWithGithubOpenPrsWidget,
   aggregatedCardWithJiraOpenIssuesWidget,
+  aggregatedCardWithGithubFilecheckLicenseWidget,
+  aggregatedCardWithGithubFilecheckCodeownersWidget,
   aggregatedCardWithGithubOpenPrsWeightedWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
@@ -83,6 +85,8 @@ export const scorecardHomeModule = createFrontendModule({
     aggregatedCardWithDefaultAggregationWidget,
     aggregatedCardWithJiraOpenIssuesWidget,
     aggregatedCardWithGithubOpenPrsWidget,
+    aggregatedCardWithGithubFilecheckLicenseWidget,
+    aggregatedCardWithGithubFilecheckCodeownersWidget,
     aggregatedCardWithGithubOpenPrsWeightedWidget,
   ],
 });

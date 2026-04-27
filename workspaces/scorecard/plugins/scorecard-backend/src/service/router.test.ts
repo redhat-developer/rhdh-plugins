@@ -27,6 +27,7 @@ import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
   MockBooleanProvider,
+  MockBatchBooleanProvider,
   githubNumberMetricMetadata,
 } from '../../__fixtures__/mockProviders';
 import {
@@ -676,7 +677,9 @@ describe('createRouter', () => {
 
       expect(result.statusCode).toBe(404);
       expect(result.body.error.name).toBe('NotFoundError');
-      expect(result.body.error.message).toContain('Metric provider with ID');
+      expect(result.body.error.message).toContain(
+        'No metric provider registered',
+      );
     });
 
     it('should return aggregated metrics for a specific metric', async () => {
@@ -807,6 +810,44 @@ describe('createRouter', () => {
           type: aggregationKinds.statusGrouped,
           metricId: 'github.open_prs',
         }),
+      );
+    });
+
+    it('should use registry.getMetric to resolve the correct metric for batch providers', async () => {
+      const batchProvider = new MockBatchBooleanProvider(
+        'filecheck',
+        'filecheck',
+        [
+          { id: 'readme', path: 'README.md' },
+          { id: 'license', path: 'LICENSE' },
+        ],
+      );
+      metricProvidersRegistry.register(batchProvider);
+
+      const batchAggregationRouter = await createRouter({
+        metricProvidersRegistry,
+        catalogMetricService,
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+      });
+      const batchApp = express();
+      batchApp.use(batchAggregationRouter);
+      batchApp.use(mockErrorHandler());
+
+      const response = await request(batchApp).get(
+        '/metrics/filecheck.license/catalog/aggregations',
+      );
+
+      expect(response.status).toBe(200);
+      expect(toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'filecheck.license',
+          title: 'File: LICENSE',
+        }),
+        batchProvider.getMetricThresholds(),
+        mockAggregatedMetric,
       );
     });
   });
@@ -989,6 +1030,41 @@ describe('createRouter', () => {
 
       expect(response.status).toBe(401);
       expect(response.body.error.name).toBe('AuthenticationError');
+    });
+
+    it('should resolve the correct metric for batch providers', async () => {
+      const batchProvider = new MockBatchBooleanProvider(
+        'filecheck',
+        'filecheck',
+        [
+          { id: 'readme', path: 'README.md' },
+          { id: 'license', path: 'LICENSE' },
+        ],
+      );
+      metricRegistry.register(batchProvider);
+
+      const batchRouter = await createRouter({
+        metricProvidersRegistry: metricRegistry,
+        catalogMetricService: mockCatalogMetricService,
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+      });
+      const batchApp = express();
+      batchApp.use(batchRouter);
+      batchApp.use(mockErrorHandler());
+
+      const response = await request(batchApp).get(
+        '/aggregations/filecheck.license',
+      );
+
+      expect(response.status).toBe(200);
+      expect(getAggregatedSpy).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/my-other-service'],
+        'filecheck.license',
+        aggregationTypes.statusGrouped,
+      );
     });
 
     it('should use KPI config metricId and type when aggregationId is a KPI key', async () => {
@@ -1186,6 +1262,37 @@ describe('createRouter', () => {
         history: undefined,
         aggregationType: 'statusGrouped',
       });
+    });
+
+    it('should resolve the correct metric metadata for batch providers', async () => {
+      const batchProvider = new MockBatchBooleanProvider(
+        'filecheck',
+        'filecheck',
+        [
+          { id: 'readme', path: 'README.md' },
+          { id: 'license', path: 'LICENSE' },
+        ],
+      );
+      metaRegistry.register(batchProvider);
+
+      const router = await createRouter({
+        metricProvidersRegistry: metaRegistry,
+        catalogMetricService: metaCatalogMetricService,
+        catalog: metaCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+      });
+      const batchMetaApp = express();
+      batchMetaApp.use(router);
+      batchMetaApp.use(mockErrorHandler());
+
+      const response = await request(batchMetaApp).get(
+        '/aggregations/filecheck.license/metadata',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.title).toBe('File: LICENSE');
     });
 
     it('returns metadata for metric id when no KPI row exists', async () => {
