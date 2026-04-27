@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -24,6 +24,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import TablePagination from '@mui/material/TablePagination';
 import IconButton from '@mui/material/IconButton';
 import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
@@ -40,6 +41,11 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
+import {
+  CONTENT_MAX_WIDTH,
+  TABLE_HEADER_CELL_SX,
+  tableContainerSx,
+} from '../shared/commandCenterStyles';
 
 export interface KagentiBuildPipelinePanelProps {
   namespace?: string;
@@ -94,6 +100,13 @@ export function KagentiBuildPipelinePanel({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [triggerKey, setTriggerKey] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const paginatedBuilds = useMemo(
+    () => builds.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [builds, page, rowsPerPage],
+  );
 
   const buildRowKey = useCallback(
     (b: KagentiBuildListItem) => `${b.namespace}/${b.name}`,
@@ -162,12 +175,7 @@ export function KagentiBuildPipelinePanel({
     }
   };
 
-  const thStyle = {
-    fontWeight: 600,
-    fontSize: '0.75rem',
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-  } as const;
+  const thStyle = TABLE_HEADER_CELL_SX;
 
   function renderTableContent() {
     if (builds.length === 0) {
@@ -185,7 +193,7 @@ export function KagentiBuildPipelinePanel({
         </TableRow>
       );
     }
-    return builds.map(b => {
+    return paginatedBuilds.map(b => {
       const key = buildRowKey(b);
       const info = buildInfoMap.get(key);
       const typeLabel = isTool(b) ? 'Tool' : 'Agent';
@@ -211,7 +219,7 @@ export function KagentiBuildPipelinePanel({
           <TableCell>
             <Typography
               variant="body2"
-              sx={{ fontWeight: 600, fontSize: '0.8125rem' }}
+              sx={{ fontWeight: 600, fontSize: '0.875rem' }}
             >
               {b.name}
             </Typography>
@@ -222,8 +230,8 @@ export function KagentiBuildPipelinePanel({
               size="small"
               variant="outlined"
               sx={{
-                fontSize: '0.7rem',
-                height: 22,
+                fontSize: '0.75rem',
+                height: 24,
                 borderColor: alpha(typeColor, 0.4),
                 color: typeColor,
               }}
@@ -244,7 +252,7 @@ export function KagentiBuildPipelinePanel({
               <Typography
                 variant="body2"
                 noWrap
-                sx={{ maxWidth: 200, fontSize: '0.8rem', cursor: 'default' }}
+                sx={{ maxWidth: 200, fontSize: '0.875rem', cursor: 'default' }}
               >
                 {b.gitUrl ?? '--'}
               </Typography>
@@ -256,8 +264,8 @@ export function KagentiBuildPipelinePanel({
                 label={b.registered ? 'Registered' : 'Unregistered'}
                 size="small"
                 sx={{
-                  fontSize: '0.65rem',
-                  height: 20,
+                  fontSize: '0.75rem',
+                  height: 24,
                   fontWeight: 600,
                   bgcolor: alpha(regColor, isDark ? 0.15 : 0.1),
                   color: regColor,
@@ -269,8 +277,8 @@ export function KagentiBuildPipelinePanel({
                   label={runLabel}
                   size="small"
                   sx={{
-                    fontSize: '0.65rem',
-                    height: 20,
+                    fontSize: '0.75rem',
+                    height: 24,
                     fontWeight: 600,
                     bgcolor: alpha(runColor, isDark ? 0.15 : 0.1),
                     color: runColor,
@@ -309,79 +317,96 @@ export function KagentiBuildPipelinePanel({
   }
 
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            mb: 3,
-            flexWrap: 'wrap',
-            gap: 1,
-          }}
-        >
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>
-              Build Pipelines
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: theme.palette.text.secondary, mt: 0.25 }}
-            >
-              View and trigger container image builds for your agents and tools.
-            </Typography>
-          </Box>
-          <Button
-            size="small"
-            startIcon={<RefreshIcon />}
-            onClick={loadAll}
-            disabled={loading}
-            sx={{ textTransform: 'none' }}
-          >
-            Refresh
-          </Button>
-        </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
-
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={32} />
-          </Box>
-        ) : (
-          <TableContainer
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+      <Card variant="outlined">
+        <CardContent>
+          <Box
             sx={{
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 1,
-              bgcolor: alpha(theme.palette.background.paper, 0.5),
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              mb: 3,
+              flexWrap: 'wrap',
+              gap: 1,
             }}
           >
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={thStyle}>Name</TableCell>
-                  <TableCell sx={thStyle}>Type</TableCell>
-                  <TableCell sx={thStyle}>Workspace</TableCell>
-                  <TableCell sx={thStyle}>Strategy</TableCell>
-                  <TableCell sx={thStyle}>Git URL</TableCell>
-                  <TableCell sx={thStyle}>Status</TableCell>
-                  <TableCell sx={thStyle}>Created</TableCell>
-                  <TableCell sx={thStyle} align="right">
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>{renderTableContent()}</TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </CardContent>
-    </Card>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Build Pipelines
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.text.secondary, mt: 0.25 }}
+              >
+                View and trigger container image builds for your agents and
+                tools.
+              </Typography>
+            </Box>
+            <Button
+              size="small"
+              startIcon={<RefreshIcon />}
+              onClick={loadAll}
+              disabled={loading}
+              sx={{ textTransform: 'none' }}
+            >
+              Refresh
+            </Button>
+          </Box>
+
+          {error && (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              onClose={() => setError(null)}
+            >
+              {error}
+            </Alert>
+          )}
+
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={32} />
+            </Box>
+          ) : (
+            <>
+              <TableContainer sx={tableContainerSx(theme)}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={thStyle}>Name</TableCell>
+                      <TableCell sx={thStyle}>Type</TableCell>
+                      <TableCell sx={thStyle}>Workspace</TableCell>
+                      <TableCell sx={thStyle}>Strategy</TableCell>
+                      <TableCell sx={thStyle}>Git URL</TableCell>
+                      <TableCell sx={thStyle}>Status</TableCell>
+                      <TableCell sx={thStyle}>Created</TableCell>
+                      <TableCell sx={thStyle} align="right">
+                        Actions
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>{renderTableContent()}</TableBody>
+                </Table>
+              </TableContainer>
+              {builds.length > rowsPerPage && (
+                <TablePagination
+                  component="div"
+                  count={builds.length}
+                  page={page}
+                  onPageChange={(_e, p) => setPage(p)}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={e => {
+                    setRowsPerPage(parseInt(e.target.value, 10));
+                    setPage(0);
+                  }}
+                  rowsPerPageOptions={[5, 10, 25]}
+                  sx={{ borderTop: 1, borderColor: 'divider' }}
+                />
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </Box>
   );
 }

@@ -24,6 +24,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import TablePagination from '@mui/material/TablePagination';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -40,14 +41,24 @@ import { useTheme, alpha } from '@mui/material/styles';
 import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
+import { AgentsPanel } from '../AgentsPanel';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { AgentCreateIntentDialog } from './AgentCreateIntentDialog';
 import { CreateAgentWizard } from './CreateAgentWizard';
 import { KagentiAgentDetailView } from './KagentiAgentDetailView';
 import { statusChipColor, formatDateTime } from './kagentiDisplayUtils';
 import type { DeploymentMethod } from './agentWizardTypes';
+import {
+  CONTENT_MAX_WIDTH,
+  PAGE_TITLE_SX,
+  PAGE_SUBTITLE_SX,
+  TABLE_HEADER_CELL_SX,
+  tableContainerSx,
+  emptyStateSx,
+} from '../shared/commandCenterStyles';
 
 type SortField = 'name' | 'status' | 'workloadType' | 'createdAt';
 type SortDir = 'asc' | 'desc';
@@ -67,21 +78,24 @@ function compareAgents(
   return String(valA).localeCompare(String(valB));
 }
 
-const TH_STYLE = {
-  fontWeight: 600,
-  fontSize: '0.75rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
-} as const;
+const TH_STYLE = TABLE_HEADER_CELL_SX;
 
 export interface KagentiAgentsPanelProps {
   namespace?: string;
   onChatWithAgent?: (agentId: string) => void;
+  autoOpenIntent?: boolean;
+  onIntentOpened?: () => void;
+  initialAgentName?: string;
+  onFocusConsumed?: () => void;
 }
 
 export function KagentiAgentsPanel({
   namespace,
   onChatWithAgent,
+  autoOpenIntent,
+  onIntentOpened,
+  initialAgentName,
+  onFocusConsumed,
 }: KagentiAgentsPanelProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
@@ -99,9 +113,12 @@ export function KagentiAgentsPanel({
 
   const [selectedAgent, setSelectedAgent] =
     useState<KagentiAgentSummary | null>(null);
+  const [showOrchestration, setShowOrchestration] = useState(false);
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadAgents = useCallback(() => {
     setLoading(true);
@@ -116,6 +133,23 @@ export function KagentiAgentsPanel({
   useEffect(() => {
     loadAgents();
   }, [loadAgents]);
+
+  useEffect(() => {
+    if (autoOpenIntent) {
+      setIntentOpen(true);
+      onIntentOpened?.();
+    }
+  }, [autoOpenIntent, onIntentOpened]);
+
+  useEffect(() => {
+    if (initialAgentName && !loading && agents.length > 0) {
+      const match = agents.find(a => a.name === initialAgentName);
+      if (match) {
+        setSelectedAgent(match);
+      }
+      onFocusConsumed?.();
+    }
+  }, [initialAgentName, loading, agents, onFocusConsumed]);
 
   const agentKey = (a: KagentiAgentSummary) => `${a.namespace}/${a.name}`;
 
@@ -154,6 +188,16 @@ export function KagentiAgentsPanel({
     return sortDir === 'desc' ? sorted.reverse() : sorted;
   }, [agents, search, sortField, sortDir]);
 
+  const paginatedAgents = useMemo(
+    () =>
+      visibleAgents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [visibleAgents, page, rowsPerPage],
+  );
+
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
+
   if (selectedAgent) {
     return (
       <KagentiAgentDetailView
@@ -164,6 +208,26 @@ export function KagentiAgentsPanel({
         }}
         onChatWithAgent={onChatWithAgent}
       />
+    );
+  }
+
+  if (showOrchestration) {
+    return (
+      <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+          <IconButton
+            size="small"
+            onClick={() => setShowOrchestration(false)}
+            aria-label="Back to agents"
+          >
+            <ArrowBackIcon fontSize="small" />
+          </IconButton>
+          <Typography variant="h5" sx={PAGE_TITLE_SX}>
+            Agents
+          </Typography>
+        </Box>
+        <AgentsPanel />
+      </Box>
     );
   }
 
@@ -184,7 +248,7 @@ export function KagentiAgentsPanel({
   );
 
   return (
-    <Box sx={{ maxWidth: 1200 }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
       <Box
         sx={{
           display: 'flex',
@@ -196,13 +260,10 @@ export function KagentiAgentsPanel({
         }}
       >
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          <Typography variant="h5" sx={PAGE_TITLE_SX}>
             Agents
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ color: theme.palette.text.secondary, mt: 0.25 }}
-          >
+          <Typography variant="body2" sx={PAGE_SUBTITLE_SX}>
             Deploy, manage, and monitor your AI agents.
           </Typography>
         </Box>
@@ -223,7 +284,7 @@ export function KagentiAgentsPanel({
             onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none' }}
           >
-            Create Agent
+            New Agent
           </Button>
         </Box>
       </Box>
@@ -261,19 +322,7 @@ export function KagentiAgentsPanel({
         </Box>
       )}
       {!loading && agents.length === 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            py: 8,
-            border: `1px dashed ${alpha(theme.palette.divider, 0.4)}`,
-            borderRadius: 2,
-            bgcolor: alpha(theme.palette.background.paper, 0.5),
-            gap: 2,
-          }}
-        >
+        <Box sx={emptyStateSx(theme)}>
           <HubOutlinedIcon
             sx={{ fontSize: 48, color: theme.palette.text.disabled }}
           />
@@ -301,147 +350,162 @@ export function KagentiAgentsPanel({
             onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none', mt: 1 }}
           >
-            Create Agent
+            New Agent
           </Button>
         </Box>
       )}
       {!loading && agents.length > 0 && (
-        <TableContainer
-          sx={{
-            border: 1,
-            borderColor: 'divider',
-            borderRadius: 1,
-            bgcolor: alpha(theme.palette.background.paper, 0.5),
-          }}
-        >
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                {sortableHead('name', 'Name')}
-                <TableCell sx={TH_STYLE}>Description</TableCell>
-                {sortableHead('status', 'Status')}
-                <TableCell sx={TH_STYLE}>Labels</TableCell>
-                {sortableHead('workloadType', 'Workload')}
-                {sortableHead('createdAt', 'Created')}
-                <TableCell sx={TH_STYLE} align="right">
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {visibleAgents.map(a => {
-                const key = agentKey(a);
-                return (
-                  <TableRow
-                    key={key}
-                    hover
-                    sx={{ cursor: 'pointer' }}
-                    onClick={() => setSelectedAgent(a)}
-                  >
-                    <TableCell>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: 600,
-                          color: theme.palette.primary.main,
-                          fontSize: '0.8125rem',
-                        }}
+        <>
+          <TableContainer sx={tableContainerSx(theme)}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  {sortableHead('name', 'Name')}
+                  <TableCell sx={TH_STYLE}>Description</TableCell>
+                  {sortableHead('status', 'Status')}
+                  <TableCell sx={TH_STYLE}>Labels</TableCell>
+                  {sortableHead('workloadType', 'Workload')}
+                  {sortableHead('createdAt', 'Created')}
+                  <TableCell sx={TH_STYLE} align="right">
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedAgents.map(a => {
+                  const key = agentKey(a);
+                  return (
+                    <TableRow
+                      key={key}
+                      hover
+                      sx={{ cursor: 'pointer' }}
+                      onClick={() => setSelectedAgent(a)}
+                    >
+                      <TableCell>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            color: theme.palette.text.primary,
+                            fontSize: '0.875rem',
+                          }}
+                        >
+                          {a.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {a.namespace}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 260 }}>
+                        <Typography
+                          variant="body2"
+                          noWrap
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            fontSize: '0.875rem',
+                          }}
+                        >
+                          {a.description || '—'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={a.status}
+                          size="small"
+                          color={statusChipColor(a.status)}
+                          sx={{ height: 24 }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Box
+                          sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}
+                        >
+                          {a.labels?.protocol && (
+                            <Chip
+                              label={[a.labels.protocol]
+                                .flat()
+                                .join(', ')
+                                .toUpperCase()}
+                              size="small"
+                              color="primary"
+                              variant="filled"
+                              sx={{ height: 24, fontSize: '0.75rem' }}
+                            />
+                          )}
+                          {a.labels?.framework && (
+                            <Chip
+                              label={a.labels.framework}
+                              size="small"
+                              color="info"
+                              variant="filled"
+                              sx={{ height: 24, fontSize: '0.75rem' }}
+                            />
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={a.workloadType ?? 'deployment'}
+                          size="small"
+                          variant="outlined"
+                          sx={{ height: 24, fontSize: '0.75rem' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatDateTime(a.createdAt)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        onClick={e => e.stopPropagation()}
                       >
-                        {a.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {a.namespace}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ maxWidth: 260 }}>
-                      <Typography
-                        variant="body2"
-                        noWrap
-                        sx={{
-                          color: theme.palette.text.secondary,
-                          fontSize: '0.8125rem',
-                        }}
-                      >
-                        {a.description || '—'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={a.status}
-                        size="small"
-                        color={statusChipColor(a.status)}
-                        sx={{ height: 24 }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                        {a.labels?.protocol && (
-                          <Chip
-                            label={[a.labels.protocol]
-                              .flat()
-                              .join(', ')
-                              .toUpperCase()}
-                            size="small"
-                            color="primary"
-                            variant="filled"
-                            sx={{ height: 22, fontSize: '0.7rem' }}
-                          />
+                        {onChatWithAgent && (
+                          <Tooltip title="Chat with agent">
+                            <IconButton
+                              size="small"
+                              aria-label="Chat with agent"
+                              onClick={() =>
+                                onChatWithAgent(`${a.namespace}/${a.name}`)
+                              }
+                            >
+                              <ChatOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
                         )}
-                        {a.labels?.framework && (
-                          <Chip
-                            label={a.labels.framework}
-                            size="small"
-                            color="info"
-                            variant="filled"
-                            sx={{ height: 22, fontSize: '0.7rem' }}
-                          />
-                        )}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={a.workloadType ?? 'deployment'}
-                        size="small"
-                        variant="outlined"
-                        sx={{ height: 22, fontSize: '0.7rem' }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatDateTime(a.createdAt)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="right" onClick={e => e.stopPropagation()}>
-                      {onChatWithAgent && (
-                        <Tooltip title="Chat with agent">
+                        <Tooltip title="Delete agent">
                           <IconButton
                             size="small"
-                            aria-label="Chat with agent"
-                            onClick={() =>
-                              onChatWithAgent(`${a.namespace}/${a.name}`)
-                            }
+                            color="error"
+                            aria-label="Delete agent"
+                            onClick={() => setDeleteTarget(a)}
                           >
-                            <ChatOutlinedIcon fontSize="small" />
+                            <DeleteOutlineIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                      )}
-                      <Tooltip title="Delete agent">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          aria-label="Delete agent"
-                          onClick={() => setDeleteTarget(a)}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          {visibleAgents.length > rowsPerPage && (
+            <TablePagination
+              component="div"
+              count={visibleAgents.length}
+              page={page}
+              onPageChange={(_e, p) => setPage(p)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={e => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 10, 25]}
+              sx={{ borderTop: 1, borderColor: 'divider' }}
+            />
+          )}
+        </>
       )}
 
       <AgentCreateIntentDialog
@@ -451,6 +515,10 @@ export function KagentiAgentsPanel({
           setIntentOpen(false);
           setInitialDeployMethod(method);
           setCreateOpen(true);
+        }}
+        onSelectConfigure={() => {
+          setIntentOpen(false);
+          setShowOrchestration(true);
         }}
       />
 
