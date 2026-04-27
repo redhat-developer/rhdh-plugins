@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -24,6 +24,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import TablePagination from '@mui/material/TablePagination';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -55,12 +56,26 @@ import { ToolConnectDialog } from './ToolConnectDialog';
 import { ToolInvokeDialog } from './ToolInvokeDialog';
 import { useKagentiToolsList, type SortField } from './useKagentiToolsList';
 import { useToolInvoke } from './useToolInvoke';
+import {
+  CONTENT_MAX_WIDTH,
+  PAGE_TITLE_SX,
+  PAGE_SUBTITLE_SX,
+  TABLE_HEADER_CELL_SX,
+  tableContainerSx,
+  emptyStateSx,
+} from '../shared/commandCenterStyles';
 
 export interface KagentiToolsPanelProps {
   namespace?: string;
+  initialToolName?: string;
+  onFocusConsumed?: () => void;
 }
 
-export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
+export function KagentiToolsPanel({
+  namespace,
+  initialToolName,
+  onFocusConsumed,
+}: KagentiToolsPanelProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
   const {
@@ -92,6 +107,28 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
   );
 
   const [detailTool, setDetailTool] = useState<KagentiToolSummary | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const paginatedTools = useMemo(
+    () =>
+      sortedTools.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [sortedTools, page, rowsPerPage],
+  );
+
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
+
+  useEffect(() => {
+    if (initialToolName && !loading && tools.length > 0) {
+      const match = tools.find(t => t.name === initialToolName);
+      if (match) {
+        setDetailTool(match);
+      }
+      onFocusConsumed?.();
+    }
+  }, [initialToolName, loading, tools, onFocusConsumed]);
 
   const displayError = listError || actionError;
 
@@ -114,12 +151,7 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
     setConnectOpen(true);
   };
 
-  const thStyle = {
-    fontWeight: 600,
-    fontSize: '0.75rem',
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-  } as const;
+  const thStyle = TABLE_HEADER_CELL_SX;
 
   const sortableHead = (field: SortField, label: string, align?: 'right') => (
     <TableCell align={align} sx={thStyle}>
@@ -134,7 +166,7 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
   );
 
   return (
-    <Box sx={{ maxWidth: 1200 }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
       <Box
         sx={{
           display: 'flex',
@@ -146,13 +178,10 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
         }}
       >
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          <Typography variant="h5" sx={PAGE_TITLE_SX}>
             Tools
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ color: theme.palette.text.secondary, mt: 0.25 }}
-          >
+          <Typography variant="body2" sx={PAGE_SUBTITLE_SX}>
             Register and manage MCP tool servers for your agents.
           </Typography>
         </Box>
@@ -173,7 +202,7 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
             onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none' }}
           >
-            Create Tool
+            New Tool
           </Button>
         </Box>
       </Box>
@@ -218,19 +247,7 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
         </Box>
       )}
       {!loading && tools.length === 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            py: 8,
-            border: `1px dashed ${alpha(theme.palette.divider, 0.4)}`,
-            borderRadius: 2,
-            bgcolor: alpha(theme.palette.background.paper, 0.5),
-            gap: 2,
-          }}
-        >
+        <Box sx={emptyStateSx(theme)}>
           <BuildIcon
             sx={{ fontSize: 48, color: theme.palette.text.disabled }}
           />
@@ -258,137 +275,147 @@ export function KagentiToolsPanel({ namespace }: KagentiToolsPanelProps) {
             onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none', mt: 1 }}
           >
-            Create Tool
+            New Tool
           </Button>
         </Box>
       )}
       {!loading && tools.length > 0 && (
-        <TableContainer
-          sx={{
-            border: 1,
-            borderColor: 'divider',
-            borderRadius: 1,
-            bgcolor: alpha(theme.palette.background.paper, 0.5),
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow>
-                {sortableHead('name', 'Name')}
-                <TableCell sx={thStyle}>Description</TableCell>
-                {sortableHead('status', 'Status')}
-                <TableCell sx={thStyle}>Labels</TableCell>
-                {sortableHead('workloadType', 'Workload')}
-                {sortableHead('createdAt', 'Created')}
-                <TableCell sx={thStyle} align="right">
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedTools.map(t => (
-                <TableRow
-                  key={toolKey(t)}
-                  hover
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => setDetailTool(t)}
-                >
-                  <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {t.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {t.namespace}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        maxWidth: 220,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {t.description || '—'}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={t.status}
-                      size="small"
-                      color={toolStatusColor(t.status)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {t.labels?.protocol && (
-                        <Chip
-                          label={[t.labels.protocol]
-                            .flat()
-                            .join(', ')
-                            .toUpperCase()}
-                          size="small"
-                          variant="outlined"
-                        />
-                      )}
-                      {t.labels?.framework && (
-                        <Chip
-                          label={t.labels.framework}
-                          size="small"
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
-                  </TableCell>
-                  <TableCell>{t.workloadType ?? '—'}</TableCell>
-                  <TableCell>{formatDateTime(t.createdAt)}</TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Discover MCP tools">
-                      <IconButton
-                        size="small"
-                        aria-label="Connect tool"
-                        onClick={e => {
-                          e.stopPropagation();
-                          openConnect(t);
-                        }}
-                      >
-                        <LinkIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Invoke tool">
-                      <IconButton
-                        size="small"
-                        aria-label="Invoke tool"
-                        onClick={e => {
-                          e.stopPropagation();
-                          toolInvoke.openInvoke(t);
-                        }}
-                      >
-                        <PlayCircleOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete tool">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        aria-label="Delete tool"
-                        onClick={e => {
-                          e.stopPropagation();
-                          setDeleteTarget(t);
-                        }}
-                      >
-                        <DeleteOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+        <>
+          <TableContainer sx={tableContainerSx(theme)}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  {sortableHead('name', 'Name')}
+                  <TableCell sx={thStyle}>Description</TableCell>
+                  {sortableHead('status', 'Status')}
+                  <TableCell sx={thStyle}>Labels</TableCell>
+                  {sortableHead('workloadType', 'Workload')}
+                  {sortableHead('createdAt', 'Created')}
+                  <TableCell sx={thStyle} align="right">
+                    Actions
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {paginatedTools.map(t => (
+                  <TableRow
+                    key={toolKey(t)}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => setDetailTool(t)}
+                  >
+                    <TableCell>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {t.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {t.namespace}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          maxWidth: 220,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {t.description || '—'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={t.status}
+                        size="small"
+                        color={toolStatusColor(t.status)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {t.labels?.protocol && (
+                          <Chip
+                            label={[t.labels.protocol]
+                              .flat()
+                              .join(', ')
+                              .toUpperCase()}
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                        {t.labels?.framework && (
+                          <Chip
+                            label={t.labels.framework}
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell>{t.workloadType ?? '—'}</TableCell>
+                    <TableCell>{formatDateTime(t.createdAt)}</TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Discover MCP tools">
+                        <IconButton
+                          size="small"
+                          aria-label="Connect tool"
+                          onClick={e => {
+                            e.stopPropagation();
+                            openConnect(t);
+                          }}
+                        >
+                          <LinkIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Invoke tool">
+                        <IconButton
+                          size="small"
+                          aria-label="Invoke tool"
+                          onClick={e => {
+                            e.stopPropagation();
+                            toolInvoke.openInvoke(t);
+                          }}
+                        >
+                          <PlayCircleOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete tool">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          aria-label="Delete tool"
+                          onClick={e => {
+                            e.stopPropagation();
+                            setDeleteTarget(t);
+                          }}
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          {sortedTools.length > rowsPerPage && (
+            <TablePagination
+              component="div"
+              count={sortedTools.length}
+              page={page}
+              onPageChange={(_e, p) => setPage(p)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={e => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 10, 25]}
+              sx={{ borderTop: 1, borderColor: 'divider' }}
+            />
+          )}
+        </>
       )}
 
       <ToolCreateIntentDialog

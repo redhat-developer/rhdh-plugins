@@ -213,6 +213,24 @@ const AugmentPageContent = () => {
     [switchToChat],
   );
 
+  const [pendingCreateAgent, setPendingCreateAgent] = useState(false);
+  const [focusTarget, setFocusTarget] = useState<string | undefined>();
+  const handleCreateAgent = useCallback(() => {
+    setFocusTarget(undefined);
+    setAdminPanel('kagenti-agents');
+    setPendingCreateAgent(true);
+  }, [setAdminPanel]);
+  const handleIntentOpened = useCallback(() => {
+    setPendingCreateAgent(false);
+  }, []);
+  const handleNavigateWithFocus = useCallback(
+    (panel: AdminPanel, name?: string) => {
+      setFocusTarget(name);
+      setAdminPanel(panel);
+    },
+    [setAdminPanel],
+  );
+
   const toggleRightPane = () => {
     setRightPaneCollapsed(!rightPaneCollapsed);
   };
@@ -298,18 +316,25 @@ const AugmentPageContent = () => {
                       {adminPanel === 'kagenti-home' && (
                         <KagentiHomeDashboard
                           namespace={kagentiNamespace || undefined}
-                          onNavigate={setAdminPanel}
+                          onNavigate={handleNavigateWithFocus}
+                          onCreateAgent={handleCreateAgent}
                         />
                       )}
                       {adminPanel === 'kagenti-agents' && (
                         <KagentiAgentsPanel
                           namespace={kagentiNamespace || undefined}
                           onChatWithAgent={handleChatWithAgent}
+                          autoOpenIntent={pendingCreateAgent}
+                          onIntentOpened={handleIntentOpened}
+                          initialAgentName={focusTarget}
+                          onFocusConsumed={() => setFocusTarget(undefined)}
                         />
                       )}
                       {adminPanel === 'kagenti-tools' && (
                         <KagentiToolsPanel
                           namespace={kagentiNamespace || undefined}
+                          initialToolName={focusTarget}
+                          onFocusConsumed={() => setFocusTarget(undefined)}
                         />
                       )}
                       {adminPanel === 'kagenti-builds' && (
@@ -322,10 +347,12 @@ const AugmentPageContent = () => {
                       )}
                       {adminPanel === 'kagenti-sandbox' &&
                         !kagentiNamespace && (
-                          <Box sx={{ py: 4 }}>
-                            <Alert severity="info">
-                              Select a namespace from the sidebar to manage
-                              sandbox sessions.
+                          <Box sx={{ py: 4, maxWidth: 520 }}>
+                            <Alert severity="info" variant="outlined">
+                              <strong>Namespace required</strong> — use the
+                              namespace dropdown at the top of the sidebar to
+                              select a target namespace, then return here to
+                              manage sandbox sessions.
                             </Alert>
                           </Box>
                         )}
