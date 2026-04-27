@@ -81,15 +81,15 @@ permission:
     policyFileReload: true
 ```
 
-### AI Notebooks (Developer Preview)
+### Notebooks (Developer Preview)
 
-AI Notebooks is an experimental feature that enables document-based conversations with Retrieval-Augmented Generation (RAG).
+Notebooks is an experimental feature that enables document-based conversations with Retrieval-Augmented Generation (RAG).
 
-For user-facing feature documentation, see the [Lightspeed Frontend README](../lightspeed/README.md#ai-notebooks-developer-preview).
+For user-facing feature documentation, see the [Lightspeed Frontend README](../lightspeed/README.md#notebooks-developer-preview).
 
 #### Prerequisites
 
-AI Notebooks requires:
+Notebooks requires:
 
 - **Lightspeed Core service** to be running (provides the backend API proxy)
 - **Llama Stack service** to be accessible from Lightspeed Core (provides vector database, embeddings, and RAG capabilities)
@@ -98,14 +98,14 @@ For Llama Stack setup and configuration, refer to the [Llama Stack documentation
 
 #### Configuration
 
-To enable AI Notebooks, add the following configuration to your `app-config.yaml`:
+To enable Notebooks, add the following configuration to your `app-config.yaml`:
 
 ```yaml
 lightspeed:
   servicePort: 8080 # Optional: Lightspeed Core service port (default: 8080)
 
   notebooks:
-    enabled: false # Enable AI Notebooks feature (default: false)
+    enabled: false # Enable Notebooks feature (default: false)
 
     # Required: Query defaults for RAG queries
     # Both model and provider_id must be configured together
@@ -129,7 +129,7 @@ lightspeed:
 
 **Notebooks Settings**:
 
-- **`Notebooks.enabled`** _(optional)_: Enable or disable the AI Notebooks feature (default: `false`)
+- **`Notebooks.enabled`** _(optional)_: Enable or disable the Notebooks feature (default: `false`)
 
 **Query Defaults** _(required when enabled)_:
 
@@ -151,25 +151,26 @@ lightspeed:
 
 #### API Endpoints
 
-When enabled, AI Notebooks exposes the following REST API endpoints:
+When enabled, Notebooks exposes the following REST API endpoints:
 
 - **Health Check**:
-  - `GET /lightspeed/ai-notebooks/health` - Health check endpoint
+  - `GET /lightspeed/notebooks/health` - Health check endpoint
 
 - **Sessions**:
-  - `POST /lightspeed/ai-notebooks/v1/sessions` - Create a new session
-  - `GET /lightspeed/ai-notebooks/v1/sessions` - List all sessions for the current user
-  - `PUT /lightspeed/ai-notebooks/v1/sessions/:sessionId` - Update session details
-  - `DELETE /lightspeed/ai-notebooks/v1/sessions/:sessionId` - Delete session
+  - `POST /lightspeed/notebooks/v1/sessions` - Create a new session
+  - `GET /lightspeed/notebooks/v1/sessions` - List all sessions for the current user
+  - `GET /lightspeed/notebooks/v1/sessions/:sessionId` - Get a specific session given the sessionID
+  - `PUT /lightspeed/notebooks/v1/sessions/:sessionId` - Update session details
+  - `DELETE /lightspeed/notebooks/v1/sessions/:sessionId` - Delete session
 
 - **Documents**:
-  - `PUT /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents` - Upload or update a document (multipart/form-data)
-  - `GET /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents` - List all documents in a session
-  - `GET /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents/:documentId/status` - Get document processing status
-  - `DELETE /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents/:documentId` - Delete a document
+  - `PUT /lightspeed/notebooks/v1/sessions/:sessionId/documents` - Upload or update a document (multipart/form-data)
+  - `GET /lightspeed/notebooks/v1/sessions/:sessionId/documents` - List all documents in a session
+  - `GET /lightspeed/notebooks/v1/sessions/:sessionId/documents/:documentId/status` - Get document processing status
+  - `DELETE /lightspeed/notebooks/v1/sessions/:sessionId/documents/:documentId` - Delete a document
 
 - **Queries**:
-  - `POST /lightspeed/ai-notebooks/v1/sessions/:sessionId/query` - Query documents with RAG
+  - `POST /lightspeed/notebooks/v1/sessions/:sessionId/query` - Query documents with RAG
 
 **Notes**:
 
@@ -178,9 +179,9 @@ When enabled, AI Notebooks exposes the following REST API endpoints:
 - Document endpoints verify session ownership before allowing operations
 - `documentId` in paths is the document title (URL-encoded for special characters)
 
-#### Permission Framework Support for AI Notebooks
+#### Permission Framework Support for Notebooks
 
-When RBAC is enabled, users need the following permission to use AI Notebooks:
+When RBAC is enabled, users need the following permission to use Notebooks:
 
 ```CSV
 p, role:default/team_a, lightspeed.notebooks.use, update, allow

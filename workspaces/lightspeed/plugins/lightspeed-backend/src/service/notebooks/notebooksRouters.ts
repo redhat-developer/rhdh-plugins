@@ -234,6 +234,17 @@ export async function createNotebooksRouter(
     }),
   );
 
+  notebooksRouter.get(
+    '/v1/sessions/:sessionId',
+    withAuth(async (req, res, userId) => {
+      const { sessionId } = req.params;
+      const session = await sessionService.readSession(sessionId, userId);
+      res.json(
+        createSessionResponse(session, 'Session retrieved successfully'),
+      );
+    }),
+  );
+
   notebooksRouter.put(
     '/v1/sessions/:sessionId',
     withAuth(async (req, res, userId) => {
@@ -465,6 +476,6 @@ export async function createNotebooksRouter(
   );
 
   const router = Router();
-  router.use('/ai-notebooks', notebooksRouter);
+  router.use('/notebooks', notebooksRouter);
   return router;
 }

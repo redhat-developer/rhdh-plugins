@@ -418,9 +418,9 @@ export async function createRouter(
       '/v1/query/interrupt',
       '/v1/feedback',
     ];
-    // Skip middleware for ai-notebooks routes and specific paths
+    // Skip middleware for notebooks routes and specific paths
     if (
-      req.path.startsWith('/ai-notebooks') ||
+      req.path.startsWith('/notebooks') ||
       passthroughPaths.includes(req.path) ||
       req.method === 'PUT'
     ) {

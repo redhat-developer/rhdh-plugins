@@ -48,7 +48,7 @@ export class NotebooksApiClient implements NotebooksAPI {
   }
 
   async getBaseUrl() {
-    return `${this.configApi.getString('backend.baseUrl')}/api/lightspeed/ai-notebooks`;
+    return `${this.configApi.getString('backend.baseUrl')}/api/lightspeed/notebooks`;
   }
 
   private async handleResponseError(response: Response): Promise<string> {
