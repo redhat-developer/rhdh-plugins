@@ -20,7 +20,10 @@ import { FileRejection } from 'react-dropzone';
 import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
@@ -38,6 +41,7 @@ import {
   getNotebookAcceptedFileTypes,
   validateFiles,
 } from '../../utils/notebook-upload-utils';
+import { FileListItem } from './FileListItem';
 
 const useStyles = makeStyles(theme => ({
   dialogPaper: {
@@ -76,6 +80,32 @@ const useStyles = makeStyles(theme => ({
         'color-mix(in srgb, var(--pf-t--global--color--brand--default) 10%, transparent)',
     },
   },
+  fileListContainer: {
+    marginTop: theme.spacing(2),
+    maxHeight: 200,
+    overflowY: 'auto',
+  },
+  fileListHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing(1),
+  },
+  fileCount: {
+    fontSize: '0.875rem',
+    color: theme.palette.text.secondary,
+  },
+  dialogActions: {
+    padding: '16px 24px',
+    justifyContent: 'flex-end',
+    gap: theme.spacing(1),
+  },
+  addButton: {
+    textTransform: 'none',
+  },
+  cancelButton: {
+    textTransform: 'none',
+  },
 }));
 
 type AddDocumentModalProps = {
@@ -103,14 +133,16 @@ export const AddDocumentModal = ({
   const { t } = useTranslation();
   const uploadMutation = useUploadDocument();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  const totalExistingAndSelected =
+    existingDocumentNames.length + selectedFiles.length;
+  const remainingSlots = NOTEBOOK_MAX_FILES - totalExistingAndSelected;
 
   const handleFileDrop = (_event: unknown, files: File[]) => {
     setValidationErrors([]);
 
-    const { valid, errors } = validateFiles(
-      files,
-      existingDocumentNames.length,
-    );
+    const { valid, errors } = validateFiles(files, totalExistingAndSelected);
 
     if (errors.length > 0) {
       setValidationErrors(errors);
@@ -119,31 +151,47 @@ export const AddDocumentModal = ({
 
     if (valid.length === 0) return;
 
-    const existingNamesSet = new Set(existingDocumentNames);
+    const existingNamesSet = new Set([
+      ...existingDocumentNames,
+      ...selectedFiles.map(f => f.name),
+    ]);
     const newFiles = valid.filter(f => !existingNamesSet.has(f.name));
-    const duplicateFiles = valid.filter(f => existingNamesSet.has(f.name));
-
-    if (newFiles.length > 0) {
-      onFilesUploading?.(newFiles);
-      for (const file of newFiles) {
-        uploadMutation
-          .mutateAsync({ sessionId, file })
-          .then(data => {
-            onUploadStarted?.({
-              fileName: file.name,
-              documentId: data.document_id,
-            });
-          })
-          .catch(() => {
-            onUploadFailed?.(file.name);
-          });
-      }
-    }
+    const duplicateFiles = valid.filter(f =>
+      existingDocumentNames.includes(f.name),
+    );
 
     if (duplicateFiles.length > 0) {
       onDuplicatesFound?.(duplicateFiles);
     }
 
+    if (newFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...newFiles]);
+    }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddFiles = () => {
+    if (selectedFiles.length === 0) return;
+
+    onFilesUploading?.(selectedFiles);
+    for (const file of selectedFiles) {
+      uploadMutation
+        .mutateAsync({ sessionId, file })
+        .then(data => {
+          onUploadStarted?.({
+            fileName: file.name,
+            documentId: data.document_id,
+          });
+        })
+        .catch(() => {
+          onUploadFailed?.(file.name);
+        });
+    }
+
+    setSelectedFiles([]);
     setValidationErrors([]);
     onClose();
   };
@@ -158,6 +206,7 @@ export const AddDocumentModal = ({
   };
 
   const handleClose = () => {
+    setSelectedFiles([]);
     setValidationErrors([]);
     onClose();
   };
@@ -174,6 +223,8 @@ export const AddDocumentModal = ({
       <DialogTitle className={classes.dialogTitle}>
         <Typography component="h2" className={classes.titleText}>
           {t('notebook.upload.modal.title')}
+          {selectedFiles.length > 0 &&
+            ` (${selectedFiles.length}/${NOTEBOOK_MAX_FILES - existingDocumentNames.length})`}
         </Typography>
         <IconButton
           aria-label={t('common.close')}
@@ -199,23 +250,72 @@ export const AddDocumentModal = ({
           </Alert>
         )}
 
-        <MultipleFileUpload
-          className={classes.dropzone}
-          dropzoneProps={{
-            accept: getNotebookAcceptedFileTypes(),
-            onDropRejected: handleDropRejected,
-          }}
-          onFileDrop={handleFileDrop}
-        >
-          <MultipleFileUploadMain
-            titleIcon={<UploadIcon />}
-            titleText={t('notebook.upload.modal.dragDropTitle')}
-            titleTextSeparator={t('notebook.upload.modal.separator')}
-            infoText={t('notebook.upload.modal.infoText')}
-            browseButtonText={t('notebook.upload.modal.browseButton')}
-          />
-        </MultipleFileUpload>
+        {remainingSlots > 0 && (
+          <MultipleFileUpload
+            className={classes.dropzone}
+            dropzoneProps={{
+              accept: getNotebookAcceptedFileTypes(),
+              onDropRejected: handleDropRejected,
+            }}
+            onFileDrop={handleFileDrop}
+          >
+            <MultipleFileUploadMain
+              titleIcon={<UploadIcon />}
+              titleText={t('notebook.upload.modal.dragDropTitle')}
+              titleTextSeparator={t('notebook.upload.modal.separator')}
+              infoText={t('notebook.upload.modal.infoText')}
+              browseButtonText={t('notebook.upload.modal.browseButton')}
+            />
+          </MultipleFileUpload>
+        )}
+
+        {selectedFiles.length > 0 && (
+          <Box className={classes.fileListContainer}>
+            <Box className={classes.fileListHeader}>
+              <Typography className={classes.fileCount}>
+                {(t as Function)('notebook.upload.modal.selectedFiles', {
+                  count: selectedFiles.length,
+                  max: NOTEBOOK_MAX_FILES - existingDocumentNames.length,
+                })}
+              </Typography>
+            </Box>
+            {selectedFiles.map((file, index) => (
+              <FileListItem
+                key={`${file.name}-${index}`}
+                file={file}
+                onRemove={() => handleRemoveFile(index)}
+                removeAriaLabel={(t as Function)(
+                  'notebook.upload.modal.removeFile',
+                  {
+                    fileName: file.name,
+                  },
+                )}
+              />
+            ))}
+          </Box>
+        )}
       </DialogContent>
+
+      <DialogActions className={classes.dialogActions}>
+        <Button
+          onClick={handleClose}
+          className={classes.cancelButton}
+          color="inherit"
+        >
+          {t('common.cancel')}
+        </Button>
+        <Button
+          onClick={handleAddFiles}
+          className={classes.addButton}
+          variant="contained"
+          color="primary"
+          disabled={selectedFiles.length === 0}
+        >
+          {(t as Function)('notebook.upload.modal.addButton', {
+            count: selectedFiles.length,
+          })}
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };

@@ -628,14 +628,33 @@ export const NotebookView = ({
                 )}
 
                 <ChatbotFooter className={classes.footer}>
-                  <MessageBar
-                    hasAttachButton={false}
-                    hasMicrophoneButton
-                    hasStopButton={false}
-                    isSendButtonDisabled={isSendButtonDisabled}
-                    onSendMessage={sendMessage}
-                    placeholder={t('notebook.view.input.placeholder')}
-                  />
+                  {documents.length === 0 ? (
+                    <Tooltip
+                      content={t('notebook.view.input.disabledTooltip')}
+                      position="top"
+                    >
+                      <div>
+                        <MessageBar
+                          hasAttachButton={false}
+                          hasMicrophoneButton={false}
+                          hasStopButton={false}
+                          isSendButtonDisabled
+                          isDisabled
+                          onSendMessage={sendMessage}
+                          placeholder={t('notebook.view.input.placeholder')}
+                        />
+                      </div>
+                    </Tooltip>
+                  ) : (
+                    <MessageBar
+                      hasAttachButton={false}
+                      hasMicrophoneButton
+                      hasStopButton={false}
+                      isSendButtonDisabled={isSendButtonDisabled}
+                      onSendMessage={sendMessage}
+                      placeholder={t('notebook.view.input.placeholder')}
+                    />
+                  )}
                   <ChatbotFootnote label={t('footer.accuracy.label')} />
                 </ChatbotFooter>
               </div>
