@@ -43,7 +43,7 @@ export interface Config {
            * (e.g. average percentage 0–100 for `average` KPIs). Same shape as metric `thresholds`;
            * rules are evaluated in order against that headline value.
            */
-          aggregationResultThresholds?: {
+          thresholds?: {
             rules?: Array<{
               key: string;
               expression: string;

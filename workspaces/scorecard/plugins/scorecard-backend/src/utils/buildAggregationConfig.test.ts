@@ -65,10 +65,10 @@ describe('buildAggregationConfig', () => {
         statusScores: { error: 0, warning: 50, success: 100 },
       },
     });
-    expect(result.options?.aggregationResultThresholds).toBeUndefined();
+    expect(result.options?.thresholds).toBeUndefined();
   });
 
-  it('maps optional aggregationResultThresholds for average KPIs', () => {
+  it('maps optional thresholds for average KPIs', () => {
     const config = new ConfigReader({
       title: 'Weighted health',
       description: 'Average across statuses',
@@ -76,7 +76,7 @@ describe('buildAggregationConfig', () => {
       metricId: 'github.open_prs',
       options: {
         statusScores: { success: 100, warning: 50, error: 0 },
-        aggregationResultThresholds: {
+        thresholds: {
           rules: [
             { key: 'success', expression: '>=75', color: 'success.main' },
             { key: 'warning', expression: '10-74', color: 'warning.main' },
@@ -88,7 +88,7 @@ describe('buildAggregationConfig', () => {
 
     const result = buildAggregationConfig('avgKpi', { config });
 
-    expect(result.options?.aggregationResultThresholds?.rules).toEqual([
+    expect(result.options?.thresholds?.rules).toEqual([
       { key: 'success', expression: '>=75', color: 'success.main' },
       { key: 'warning', expression: '10-74', color: 'warning.main' },
       { key: 'error', expression: '<10', color: 'error.main' },

@@ -215,7 +215,7 @@ export const openPrsWeightedKpiMetadataResponse = {
 
 /**
  * Average KPI: 3×100 + 5×40 + 2×0 = 500 weighted sum; max 100×10 entities → 50% score.
- * Colors align with `aggregationResultThresholds` warning band (30–79%) in app-config.
+ * Colors align with aggregation KPI `options.thresholds` warning band (30–79%) in app-config.
  */
 export const openPrsWeightedAggregatedResponse = {
   id: 'github.open_prs',

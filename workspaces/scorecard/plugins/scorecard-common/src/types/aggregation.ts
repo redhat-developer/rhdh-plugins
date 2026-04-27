@@ -89,7 +89,7 @@ export type AggregatedMetricResult = {
  */
 export type AggregationConfigOptions = {
   statusScores: Record<string, number>;
-  aggregationResultThresholds?: ThresholdConfig;
+  thresholds?: ThresholdConfig;
 };
 
 /**

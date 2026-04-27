@@ -310,7 +310,7 @@ The plugin exports **`ScorecardHomepageCard`** (see [`plugin.ts`](./src/plugin.t
 
 Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId` (default status-grouped aggregation).
 
-**`type: average`** KPIs require **`options.statusScores`** (weights per threshold rule key). Optionally set **`options.aggregationResultThresholds`** so the API returns **`aggregationChartDisplayColor`** for the headline percentage. Behavior, validation, and drill-down notes are described in [aggregation.md](../scorecard-backend/docs/aggregation.md).
+**`type: average`** KPIs require **`options.statusScores`** (weights per threshold rule key). Optionally set **`options.thresholds`** so the API returns **`aggregationChartDisplayColor`** for the headline percentage. Behavior, validation, and drill-down notes are described in [aggregation.md](../scorecard-backend/docs/aggregation.md).
 
 #### Card props
 

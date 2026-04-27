@@ -39,12 +39,9 @@ function parseAggregationConfig(config: unknown): AggregationConfig {
 
   if (
     parsed.data?.type === aggregationKinds.average &&
-    parsed.data.options?.aggregationResultThresholds
+    parsed.data.options?.thresholds
   ) {
-    validateThresholdsForAggregation(
-      parsed.data.options.aggregationResultThresholds,
-      'number',
-    );
+    validateThresholdsForAggregation(parsed.data.options.thresholds, 'number');
   }
 
   return parsed.data;

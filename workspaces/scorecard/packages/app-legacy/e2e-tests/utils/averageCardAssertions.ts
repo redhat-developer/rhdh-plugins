@@ -33,6 +33,26 @@ function interpolate(template: string, vars: Record<string, string>): string {
   );
 }
 
+function averageLegendTooltipEntitiesEachTemplateKey(
+  locale: string,
+  countStr: string,
+):
+  | 'averageLegendTooltipEntitiesEach_one'
+  | 'averageLegendTooltipEntitiesEach_other' {
+  const n = Number.parseInt(countStr, 10);
+  if (Number.isNaN(n)) {
+    return 'averageLegendTooltipEntitiesEach_other';
+  }
+  // Align with `getEntityCount` / i18next-style pluralization used in the app.
+  if (locale.startsWith('fr') && n === 0) {
+    return 'averageLegendTooltipEntitiesEach_one';
+  }
+  if (n === 1) {
+    return 'averageLegendTooltipEntitiesEach_one';
+  }
+  return 'averageLegendTooltipEntitiesEach_other';
+}
+
 export async function expectAverageCardCenterPercent(
   card: Locator,
   percentLabel: string,
@@ -81,13 +101,18 @@ export async function verifyAverageLegendTooltipForStatus(
   page: Page,
   card: Locator,
   translations: ScorecardMessages,
+  locale: string,
   statusKey: 'success' | 'warning' | 'error',
 ): Promise<void> {
   await card.getByTestId(`legend-colorbox-${statusKey}`).hover();
   const { count, score } = AVERAGE_LEGEND_EXPECTED[statusKey];
-  const entitiesLabel = interpolate(
-    metricCopy(translations, 'averageLegendTooltipEntitiesEach'),
-    { count, score },
+  const templateKey = averageLegendTooltipEntitiesEachTemplateKey(
+    locale,
+    count,
   );
+  const entitiesLabel = interpolate(metricCopy(translations, templateKey), {
+    count,
+    score,
+  });
   await expect(page.getByText(entitiesLabel)).toBeVisible();
 }

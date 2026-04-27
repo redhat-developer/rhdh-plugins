@@ -40,12 +40,10 @@ function buildStatusScores(
 function buildAggregationThresholdsConfig(
   config: Config,
 ): ThresholdConfig | undefined {
-  const aggregationResultThresholds = config.getOptionalConfig(
-    'options.aggregationResultThresholds',
-  );
-  if (aggregationResultThresholds) {
+  const thresholdsConfig = config.getOptionalConfig('options.thresholds');
+  if (thresholdsConfig) {
     return {
-      rules: aggregationResultThresholds.getConfigArray('rules').map(rule => ({
+      rules: thresholdsConfig.getConfigArray('rules').map(rule => ({
         key: rule.getString('key'),
         expression: rule.getString('expression'),
         color: rule.getString('color'),
@@ -75,7 +73,7 @@ export function buildAggregationConfig(
   if (aggregationConfig.type === aggregationKinds.average) {
     aggregationConfig.options = {
       statusScores: buildStatusScores(config),
-      aggregationResultThresholds: buildAggregationThresholdsConfig(config),
+      thresholds: buildAggregationThresholdsConfig(config),
     };
   }
 

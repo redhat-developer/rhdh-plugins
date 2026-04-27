@@ -50,16 +50,15 @@ export class AverageAggregationStrategy implements AggregationStrategy {
       );
     }
 
-    if (!options.aggregationResultThresholds) {
+    if (!options.thresholds) {
       this.logger.info(
-        `The "scorecard.aggregationKPIs.${aggregationConfig.id}.options.aggregationResultThresholds" is not configured for average aggregation; ` +
+        `The "scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds" is not configured for average aggregation; ` +
           'using the default 0–100% health scale (higher is better).',
       );
     }
 
-    const aggregationResultThresholds =
-      options.aggregationResultThresholds ??
-      DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS;
+    const headlineThresholds =
+      options.thresholds ?? DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS;
 
     const aggregatedMetric =
       await this.loader.loadStatusGroupedMetricByEntityRefs(
@@ -84,12 +83,12 @@ export class AverageAggregationStrategy implements AggregationStrategy {
 
     const aggregationChartDisplayColor = this.getAggregationChartDisplayColor(
       scorePercent,
-      aggregationResultThresholds,
+      headlineThresholds,
     );
 
     if (!aggregationChartDisplayColor) {
       throw new Error(
-        `The color for percentage '${scorePercent}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.aggregationResultThresholds' configuration.`,
+        `The color for percentage '${scorePercent}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
       );
     }
 

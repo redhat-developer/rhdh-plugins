@@ -59,7 +59,7 @@ describe('AverageAggregationStrategy', () => {
       type: aggregationKinds.average,
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
-        aggregationResultThresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
+        thresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
       },
     } as const;
 
@@ -83,7 +83,7 @@ describe('AverageAggregationStrategy', () => {
     expect(logger.info).not.toHaveBeenCalled();
   });
 
-  it('logs info and uses default result thresholds when aggregationResultThresholds is omitted', async () => {
+  it('logs info and uses default result thresholds when thresholds is omitted', async () => {
     const loadStatusGroupedMetricByEntityRefs = jest.fn().mockResolvedValue({
       values: { error: 1, warning: 1, success: 1 },
       total: 3,
@@ -113,7 +113,7 @@ describe('AverageAggregationStrategy', () => {
 
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining(
-        'options.aggregationResultThresholds" is not configured for average aggregation',
+        'options.thresholds" is not configured for average aggregation',
       ),
     );
     expect(out.result).toEqual(
@@ -169,7 +169,7 @@ describe('AverageAggregationStrategy', () => {
       type: aggregationKinds.average,
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
-        aggregationResultThresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
+        thresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
       },
     } as const;
 

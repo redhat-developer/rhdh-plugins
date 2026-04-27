@@ -964,6 +964,7 @@ test.describe('Scorecard Plugin Tests', () => {
           page,
           card,
           translations,
+          currentLocale,
           'success',
         );
       });

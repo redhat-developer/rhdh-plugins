@@ -196,7 +196,7 @@ describe('validateAggregationConfig', () => {
     );
   });
 
-  it('should not throw when average KPI includes optional aggregationResultThresholds', () => {
+  it('should not throw when average KPI includes optional thresholds', () => {
     const registry = new MetricProvidersRegistry();
     registry.register(new MockNumberProvider('github.open_prs', 'github'));
 
@@ -210,7 +210,7 @@ describe('validateAggregationConfig', () => {
             metricId: 'github.open_prs',
             options: {
               statusScores: { success: 100, warning: 50, error: 0 },
-              aggregationResultThresholds: {
+              thresholds: {
                 rules: [
                   {
                     key: 'success',
@@ -236,7 +236,7 @@ describe('validateAggregationConfig', () => {
     ).not.toThrow();
   });
 
-  it('should throw when aggregationResultThresholds has an invalid expression', () => {
+  it('should throw when thresholds has an invalid expression', () => {
     const registry = new MetricProvidersRegistry();
     registry.register(new MockNumberProvider('github.open_prs', 'github'));
 
@@ -250,7 +250,7 @@ describe('validateAggregationConfig', () => {
             metricId: 'github.open_prs',
             options: {
               statusScores: { success: 100, warning: 50, error: 0 },
-              aggregationResultThresholds: {
+              thresholds: {
                 rules: [
                   {
                     key: 'success',

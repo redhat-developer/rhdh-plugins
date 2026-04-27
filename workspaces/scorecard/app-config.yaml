@@ -203,7 +203,7 @@ scorecard:
           success: 100
           warning: 40
           error: 0
-        aggregationResultThresholds:
+        thresholds:
           rules:
             - key: success
               expression: '>=80'

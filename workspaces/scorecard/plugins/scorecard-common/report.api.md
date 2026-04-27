@@ -48,7 +48,7 @@ export type AggregationConfig = {
 // @public (undocumented)
 export type AggregationConfigOptions = {
   statusScores: Record<string, number>;
-  aggregationResultThresholds?: ThresholdConfig;
+  thresholds?: ThresholdConfig;
 };
 
 // @public

@@ -38,7 +38,7 @@ const averageAggregationConfigSchema = z.object({
       .refine(scores => Object.keys(scores).length > 0, {
         message: 'options.statusScores must contain at least one weight value',
       }),
-    aggregationResultThresholds: z
+    thresholds: z
       .object({
         rules: z.array(
           z.object({

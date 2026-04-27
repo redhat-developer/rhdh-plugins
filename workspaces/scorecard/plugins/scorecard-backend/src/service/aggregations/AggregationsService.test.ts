@@ -116,7 +116,7 @@ describe('AggregationsService', () => {
         type: aggregationKinds.average,
         options: {
           statusScores: { error: 0, warning: 50, success: 100 },
-          aggregationResultThresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
+          thresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
         },
       } as AggregationConfig,
     } as AggregationOptions);
