@@ -824,9 +824,16 @@ describe('createRouter', () => {
       );
       metricProvidersRegistry.register(batchProvider);
 
+      const batchAggregationsService = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+      );
+
       const batchAggregationRouter = await createRouter({
         metricProvidersRegistry,
-        catalogMetricService,
+        service: {
+          aggregationsService: batchAggregationsService,
+          catalogMetricService,
+        },
         catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
@@ -846,8 +853,16 @@ describe('createRouter', () => {
           id: 'filecheck.license',
           title: 'File: LICENSE',
         }),
-        batchProvider.getMetricThresholds(),
-        mockAggregatedMetric,
+        expect.objectContaining({
+          total: mockAggregatedMetric.total,
+          timestamp: mockAggregatedMetric.timestamp,
+          thresholds: batchProvider.getMetricThresholds(),
+        }),
+        expect.objectContaining({
+          id: 'filecheck.license',
+          metricId: 'filecheck.license',
+          type: aggregationKinds.statusGrouped,
+        }),
       );
     });
   });
@@ -1043,9 +1058,21 @@ describe('createRouter', () => {
       );
       metricRegistry.register(batchProvider);
 
+      const aggregationsServiceBatch = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        mockServices.rootConfig({ data: {} }),
+      );
+      const getAggregatedSpy = jest.spyOn(
+        aggregationsServiceBatch,
+        'getAggregatedMetricByEntityRefs',
+      );
+
       const batchRouter = await createRouter({
         metricProvidersRegistry: metricRegistry,
-        catalogMetricService: mockCatalogMetricService,
+        service: {
+          aggregationsService: aggregationsServiceBatch,
+          catalogMetricService: mockCatalogMetricService,
+        },
         catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
@@ -1061,9 +1088,16 @@ describe('createRouter', () => {
 
       expect(response.status).toBe(200);
       expect(getAggregatedSpy).toHaveBeenCalledWith(
-        ['component:default/my-service', 'component:default/my-other-service'],
-        'filecheck.license',
-        aggregationTypes.statusGrouped,
+        expect.objectContaining({
+          entityRefs: [
+            'component:default/my-service',
+            'component:default/my-other-service',
+          ],
+          aggregationConfig: expect.objectContaining({
+            metricId: 'filecheck.license',
+            type: aggregationKinds.statusGrouped,
+          }),
+        }),
       );
     });
 
@@ -1277,7 +1311,13 @@ describe('createRouter', () => {
 
       const router = await createRouter({
         metricProvidersRegistry: metaRegistry,
-        catalogMetricService: metaCatalogMetricService,
+        service: {
+          aggregationsService: createTestAggregationsService(
+            mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+            mockServices.rootConfig({ data: {} }),
+          ),
+          catalogMetricService: metaCatalogMetricService,
+        },
         catalog: metaCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,

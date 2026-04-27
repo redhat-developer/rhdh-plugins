@@ -195,7 +195,7 @@ export const aggregatedCardWithGithubFilecheckCodeownersWidget =
     },
   });
 
-  /**
+/**
  * NFS widget: AggregatedCardWithGithubOpenPrsWeighted.
  * @alpha
  */
