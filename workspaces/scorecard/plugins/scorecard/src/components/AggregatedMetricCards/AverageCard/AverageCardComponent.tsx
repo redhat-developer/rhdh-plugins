@@ -17,12 +17,9 @@
 import { useState } from 'react';
 import type { MouseEvent } from 'react';
 
-import type { PieLabelRenderProps } from 'recharts';
-
 import { useTheme } from '@mui/material/styles';
 
 import { CardWrapper } from '../../Common/CardWrapper';
-import CustomLegend from '../../ScorecardHomepageSection/CustomLegend';
 import type { PieData } from '../../types';
 import {
   getThresholdRuleColor,
@@ -36,7 +33,9 @@ import { CardChartContainer } from '../components/CardChartContainer';
 import { CardTooltip } from '../components/CardTooltip';
 import { LegendTooltipContent } from './LegendTooltipContent';
 import { DonutChartTooltipContent } from './DonutChartTooltipContent';
-import type { AverageCardComponentProps } from './types';
+import type { AverageCardComponentProps, TooltipPosition } from './types';
+import { CardLegendContent } from '../components/CardLegendContent';
+import { AverageCardPieCenterLabel } from './AverageCardPieCenterLabel';
 
 const AVERAGE_SCORE_SLICE = 'averageScoreFill';
 const AVERAGE_REMAINDER_SLICE = 'averageScoreRemainder';
@@ -61,14 +60,10 @@ export const AverageCardComponent = ({
   const theme = useTheme();
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<{
-    left: number;
-    top: number;
-  } | null>(null);
-  const [centerTooltipPosition, setCenterTooltipPosition] = useState<{
-    left: number;
-    top: number;
-  } | null>(null);
+  const [tooltipPosition, setTooltipPosition] =
+    useState<TooltipPosition | null>(null);
+  const [centerTooltipPosition, setCenterTooltipPosition] =
+    useState<TooltipPosition | null>(null);
 
   const updateCenterTooltipPosition = (e: MouseEvent<SVGCircleElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -136,56 +131,19 @@ export const AverageCardComponent = ({
       <CardChartContainer>
         <ResponsivePieChart
           pieData={averagePieData}
-          LabelContent={(props: PieLabelRenderProps) => {
-            const { cx, cy, index } = props;
-            if (
-              cx === undefined ||
-              cx === null ||
-              cy === undefined ||
-              cy === null ||
-              index === undefined ||
-              index !== 0
-            ) {
-              return null;
-            }
-            const cxNum = Number(cx);
-            const cyNum = Number(cy);
-            return (
-              <g style={{ cursor: 'pointer' }}>
-                <circle
-                  cx={cxNum}
-                  cy={cyNum}
-                  r={52}
-                  fill="transparent"
-                  stroke="none"
-                  pointerEvents="all"
-                  data-testid="average-card-center-percent-hit-area"
-                  onMouseEnter={e => {
-                    setActiveIndex(null);
-                    setTooltipPosition(null);
-                    updateCenterTooltipPosition(e);
-                  }}
-                  onMouseMove={updateCenterTooltipPosition}
-                  onMouseLeave={() => setCenterTooltipPosition(null)}
-                />
-                <text
-                  x={cxNum}
-                  y={cyNum}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill={arcResolvedColor}
-                  fontSize={24}
-                  fontWeight={500}
-                  pointerEvents="none"
-                  data-testid="average-card-center-percent"
-                >
-                  {centerPercentLabel}
-                </text>
-              </g>
-            );
-          }}
+          LabelContent={props => (
+            <AverageCardPieCenterLabel
+              {...props}
+              centerPercentLabel={centerPercentLabel}
+              arcResolvedColor={arcResolvedColor}
+              setActiveIndex={setActiveIndex}
+              setTooltipPosition={setTooltipPosition}
+              updateCenterTooltipPosition={updateCenterTooltipPosition}
+              setCenterTooltipPosition={setCenterTooltipPosition}
+            />
+          )}
           legendContent={props => (
-            <CustomLegend
+            <CardLegendContent
               {...props}
               activeIndex={activeIndex}
               setActiveIndex={setActiveIndex}

@@ -74,9 +74,7 @@ export class AggregationsService {
     if (!config) {
       this.logger.warn(
         `No "${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}" block in app-config; ` +
-          `using default type "${
-            aggregationKinds.statusGrouped
-          }" with ${`metricId="${aggregationId}"`} ` +
+          `using default type "${aggregationKinds.statusGrouped}" with metricId="${aggregationId}" ` +
           '(same as aggregation id). Add a KPI entry if you meant a custom title, description, or type.',
       );
       return {

@@ -28,6 +28,14 @@ import type { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 import type { DbAggregatedMetric } from '../../database/types';
 import { AggregationOptions } from './types';
 
+function createDatabaseMock(
+  readAggregatedMetricByEntityRefs: jest.Mock,
+): DatabaseMetricValues {
+  return {
+    readAggregatedMetricByEntityRefs,
+  } as unknown as DatabaseMetricValues;
+}
+
 describe('AggregationsService', () => {
   const metric = {
     id: 'github.open_prs',
@@ -43,14 +51,6 @@ describe('AggregationsService', () => {
       { key: 'success', expression: '<=20' },
     ],
   };
-
-  function createDatabaseMock(
-    readAggregatedMetricByEntityRefs: jest.Mock,
-  ): DatabaseMetricValues {
-    return {
-      readAggregatedMetricByEntityRefs,
-    } as unknown as DatabaseMetricValues;
-  }
 
   it('getAggregatedMetricByEntityRefs loads via DB and maps through statusGrouped strategy', async () => {
     const dbRow: DbAggregatedMetric = {

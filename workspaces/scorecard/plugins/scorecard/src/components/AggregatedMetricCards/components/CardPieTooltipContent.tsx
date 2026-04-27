@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-import {
-  AggregatedMetricAverageResult,
-  AggregatedMetricResult,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { PieData } from '../../types';
+import { CustomTooltip } from '../../ScorecardHomepageSection/CustomTooltip';
+import { PieTooltipPayload } from '../../ScorecardHomepageSection/ResponsivePieChart';
 
-export type AverageCardComponentProps = {
-  scorecard: Omit<AggregatedMetricResult, 'result'> & {
-    result: AggregatedMetricAverageResult;
-  };
-  cardTitle: string;
-  description: string;
-  aggregationId: string;
-  showSubheader?: boolean;
-  showInfo?: boolean;
-  dataTestId?: string;
+export type CardPieTooltipContentProps = {
+  active?: boolean;
+  payload?: readonly PieTooltipPayload[] | undefined;
+  pieData: PieData[];
 };
 
-export type TooltipPosition = { left: number; top: number };
+export function CardPieTooltipContent({
+  active,
+  payload,
+  pieData,
+}: CardPieTooltipContentProps) {
+  if (!active || !payload) {
+    return null;
+  }
+  return <CustomTooltip payload={payload} pieData={pieData} />;
+}

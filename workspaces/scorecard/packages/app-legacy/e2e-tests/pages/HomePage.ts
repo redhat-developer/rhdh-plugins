@@ -140,7 +140,10 @@ export class HomePage {
     await this.page
       .getByRole('link')
       .filter({
-        hasText: new RegExp(`^\\d+\\s*${escapeRegex(entitiesLabel)}$`, 'i'),
+        hasText: new RegExp(
+          String.raw`^\d+\s*${escapeRegex(entitiesLabel)}$`,
+          'i',
+        ),
       })
       .first()
       .click();

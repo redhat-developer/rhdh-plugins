@@ -25,8 +25,8 @@ import {
 import { CardWrapper } from '../../Common/CardWrapper';
 import { CardInfoButton } from '../components/CardInfoButton';
 import { ResponsivePieChart } from '../../ScorecardHomepageSection/ResponsivePieChart';
-import CustomLegend from '../../ScorecardHomepageSection/CustomLegend';
-import { CustomTooltip } from '../../ScorecardHomepageSection/CustomTooltip';
+import { CardLegendContent } from '../components/CardLegendContent';
+import { CardPieTooltipContent } from '../components/CardPieTooltipContent';
 import { CardChartContainer } from '../components/CardChartContainer';
 import { CardSubheader } from '../components/CardSubheader';
 import { CardTooltip } from '../components/CardTooltip';
@@ -86,7 +86,7 @@ export const StatusGroupedCardComponent = ({
         <ResponsivePieChart
           pieData={pieData}
           legendContent={props => (
-            <CustomLegend
+            <CardLegendContent
               {...props}
               activeIndex={activeIndex}
               setActiveIndex={setActiveIndex}
@@ -94,11 +94,13 @@ export const StatusGroupedCardComponent = ({
               pieData={pieData}
             />
           )}
-          tooltipContent={({ active, payload }) =>
-            active && payload ? (
-              <CustomTooltip payload={payload} pieData={pieData} />
-            ) : null
-          }
+          tooltipContent={({ active, payload }) => (
+            <CardPieTooltipContent
+              active={active}
+              payload={payload}
+              pieData={pieData}
+            />
+          )}
         />
 
         {activeIndex !== null && tooltipPosition && (

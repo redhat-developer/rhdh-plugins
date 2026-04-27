@@ -25,7 +25,7 @@ import {
 } from 'recharts';
 import type { PieData } from '../types';
 
-interface PieTooltipPayload {
+export interface PieTooltipPayload {
   name?: string;
   value?: number;
   payload?: {

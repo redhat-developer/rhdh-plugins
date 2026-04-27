@@ -122,7 +122,7 @@ export class AverageAggregationStrategy implements AggregationStrategy {
   ): number {
     let weightedSum = 0;
     for (const [status, count] of Object.entries(values)) {
-      const score = statusScores[status as string];
+      const score = statusScores[status];
 
       if (score === undefined) {
         this.logger.warn(
