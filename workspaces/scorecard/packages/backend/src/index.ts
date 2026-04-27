@@ -74,6 +74,11 @@ backend.add(
 );
 backend.add(
   import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck'
+  ),
+);
+backend.add(
+  import(
     '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf'
   ),
 );

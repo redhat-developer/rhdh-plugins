@@ -88,6 +88,10 @@ jest.mock('../../../hooks/useScorecards', () => ({
 
 jest.mock('../../../utils', () => ({
   getStatusConfig: jest.fn(),
+  resolveMetricTranslation: jest.fn(
+    (_t: any, _metricId: string, _field: string, fallback?: string) =>
+      fallback ?? `metric.${_metricId}.${_field}`,
+  ),
 }));
 
 const useScorecardsMock = useScorecards as jest.Mock;

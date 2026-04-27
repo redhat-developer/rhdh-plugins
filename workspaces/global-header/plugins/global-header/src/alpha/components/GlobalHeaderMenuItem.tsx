@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { Fragment } from 'react';
-
 import { Link } from '@backstage/core-components';
 
 import MenuItem from '@mui/material/MenuItem';
@@ -83,8 +81,7 @@ export const GlobalHeaderMenuItem = ({
     disableTouchRipple
     onClick={onClick}
     sx={{ py: 0.5, color: 'inherit', textDecoration: 'none' }}
-    component={to ? Link : Fragment}
-    to={to}
+    {...(to ? { component: Link, to } : {})}
   >
     <MenuItemLink
       to={to ?? ''}

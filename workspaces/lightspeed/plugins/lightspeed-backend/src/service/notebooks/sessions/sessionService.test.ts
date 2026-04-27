@@ -251,6 +251,7 @@ describe('SessionService', () => {
       await service.createSession(mockUserId, 'Session 1', 'Description 1');
       await new Promise(resolve => setTimeout(resolve, 10));
       await service.createSession(mockUserId, 'Session 2', 'Description 2');
+      await new Promise(resolve => setTimeout(resolve, 10));
       await service.createSession(mockUserId2, 'Other Session', 'Other');
 
       const sessions = await service.listSessions(mockUserId);

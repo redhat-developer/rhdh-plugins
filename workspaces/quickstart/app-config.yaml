@@ -94,6 +94,28 @@ app:
         text: View Learning Paths
         textKey: steps.findAllLearningPaths.ctaTitle
         link: /learning-paths
+    - title: Set up Lightspeed
+      titleKey: steps.setupLightspeed.title
+      icon: Lightspeed
+      roles:
+        - admin
+      description: Connect Lightspeed to a supported large language model (LLM) and configure permissions to provide your AI-powered assistance to your developers.
+      descriptionKey: steps.setupLightspeed.description
+      cta:
+        text: Learn more
+        textKey: steps.setupLightspeed.ctaTitle
+        link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/interacting_with_red_hat_developer_lightspeed_for_red_hat_developer_hub/
+    - title: Get started with Lightspeed
+      titleKey: steps.getStartedWithLightspeed.title
+      icon: Lightspeed
+      roles:
+        - developer
+      description: Troubleshoot issues, generate code, and learn about platform resources using AI-powered chat.
+      descriptionKey: steps.getStartedWithLightspeed.description
+      cta:
+        text: Learn more
+        textKey: steps.getStartedWithLightspeed.ctaTitle
+        link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/interacting_with_red_hat_developer_lightspeed_for_red_hat_developer_hub/
 
 organization:
   name: My Company

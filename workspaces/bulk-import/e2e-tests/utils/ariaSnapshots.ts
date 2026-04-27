@@ -142,13 +142,13 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
       - text: This pull request adds a
       - strong: Backstage entity metadata file
       - text: to this repository so that the component can be added to the
-      - link "software catalog":
+      - link "software catalog , Opens in a new window":
         - /url: /http:\\/\\/localhost:300\\d\\/catalog/
       - text: . After this pull request is merged, the component will become available. For more information, read an
-      - link "overview of the Backstage software catalog":
+      - link "overview of the Backstage software catalog , Opens in a new window":
         - /url: https://backstage.io/docs/features/software-catalog/
       - text: . View the import job in your app
-      - link "here":
+      - link "here , Opens in a new window":
         - /url: /http:\\/\\/localhost:300\\d\\/bulk-import\\?repository=https:\\/\\/github\\.com\\/test-org\\/backend-service&defaultBranch=main/
       - text: .
   `,

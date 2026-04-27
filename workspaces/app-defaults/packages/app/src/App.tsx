@@ -19,6 +19,10 @@ import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth/alpha';
 import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations/alpha';
 import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import {
+  globalHeaderModule,
+  globalHeaderTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 import { navModule } from './modules/nav';
 import { drawerDemoModule } from './modules/drawer-demo';
 
@@ -30,5 +34,7 @@ export default createApp({
     appIntegrationsModule,
     appDrawerModule,
     drawerDemoModule,
+    globalHeaderModule,
+    globalHeaderTranslationsModule,
   ],
 });

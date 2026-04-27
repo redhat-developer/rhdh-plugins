@@ -21,9 +21,16 @@ import { useQuery } from '@tanstack/react-query';
 import {
   GetEntitiesRequest,
   ExtensionsAnnotation,
+  ExtensionsPlugin,
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useExtensionsApi } from './useExtensionsApi';
+
+export type FilteredPluginsData = {
+  items: ExtensionsPlugin[];
+  filteredItems: number;
+  totalItems: number;
+};
 
 const filteredPluginsRequest: GetEntitiesRequest = {
   orderFields: [

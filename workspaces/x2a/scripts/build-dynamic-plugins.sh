@@ -2,14 +2,20 @@
 #
 # Build x2a dynamic plugins and package them as OCI images.
 #
-# Usage: ./scripts/build-dynamic-plugins.sh [--push]
+# Usage: ./scripts/build-dynamic-plugins.sh [--push] [--tag <tag>]
 #
 # Options:
-#   --push    Push built images to the registry after packaging
+#   --push       Push built images to the registry after packaging
+#   --tag <tag>  Additional tag to apply to images (e.g., nightly, latest)
 #
 # Produces OCI images:
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a:<version>
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-backend:<version>
+#   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-dcr:<version>
+#   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-mcp-extras:<version>
+#   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a:<version>
+#
+#   And optionally with custom tag if --tag is specified
 #
 #
 set -euo pipefail
@@ -21,6 +27,7 @@ EMBED_COMMON="@red-hat-developer-hub/backstage-plugin-x2a-common"
 EMBED_NODE="@red-hat-developer-hub/backstage-plugin-x2a-node"
 IMAGE_REGISTRY="quay.io/x2ansible"
 PUSH_IMAGES=false
+CUSTOM_TAG=""
 
 # Per-plugin embed packages. Plugins that depend on x2a-node (workspace dep)
 # must embed it alongside x2a-common so the RHDH CLI moves shared deps to
@@ -119,6 +126,12 @@ package_plugin() {
   log "Packaging plugin image: ${image_tag}"
   (cd "$plugin_path" && npx "@red-hat-developer-hub/cli@${RHDH_CLI_VERSION}" plugin package \
     -t "$image_tag")
+
+  if [[ -n "$CUSTOM_TAG" ]]; then
+    local custom_image_tag="${IMAGE_REGISTRY}/${image_name}:${CUSTOM_TAG}"
+    log "Tagging image with custom tag: ${custom_image_tag}"
+    podman tag "$image_tag" "$custom_image_tag"
+  fi
 }
 
 push_plugin() {
@@ -126,8 +139,15 @@ push_plugin() {
   local image_name="${PLUGIN_IMAGES[$plugin_dir]}"
   local version
   version="$(get_plugin_version "$plugin_dir")"
-  local image_tag="${IMAGE_REGISTRY}/${image_name}:${version}"
 
+  if [[ -n "$CUSTOM_TAG" ]]; then
+    local custom_image_tag="${IMAGE_REGISTRY}/${image_name}:${CUSTOM_TAG}"
+    log "Pushing image with custom tag: ${custom_image_tag}"
+    podman push "$custom_image_tag"
+    return
+  fi
+
+  local image_tag="${IMAGE_REGISTRY}/${image_name}:${version}"
   log "Pushing image: ${image_tag}"
   podman push "$image_tag"
 }
@@ -137,10 +157,24 @@ push_plugin() {
 # ---------------------------------------------------------------------------
 
 parse_args() {
-  for arg in "$@"; do
-    case "$arg" in
-      --push) PUSH_IMAGES=true ;;
-      *) echo "ERROR: unknown argument: $arg" >&2; exit 1 ;;
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --push)
+        PUSH_IMAGES=true
+        shift
+        ;;
+      --tag)
+        if [[ -z "${2:-}" ]]; then
+          echo "ERROR: --tag requires a value" >&2
+          exit 1
+        fi
+        CUSTOM_TAG="$2"
+        shift 2
+        ;;
+      *)
+        echo "ERROR: unknown argument: $1" >&2
+        exit 1
+        ;;
     esac
   done
 }

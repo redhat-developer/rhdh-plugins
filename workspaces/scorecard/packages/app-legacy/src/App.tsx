@@ -220,6 +220,66 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
+      id: 'scorecard-filecheck.license',
+      title: 'Scorecard: LICENSE file exists',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        aggregationId: 'licenseFileExistsKpi',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-filecheck.codeowners',
+      title: 'Scorecard: CODEOWNERS file exists',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
+      props: {
+        aggregationId: 'filecheck.codeowners',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
       id: 'scorecard-customizable',
       title: 'Scorecard: Customizable',
       // Supported card layout
@@ -251,14 +311,24 @@ const mountPoints: HomePageCardMountPoint[] = [
               title: 'Metric (Needs currently a page reload after change!)',
               type: 'string',
               default: 'jira.open_issues',
-              enum: ['jira.open_issues', 'github.open_prs'],
+              enum: [
+                'jira.open_issues',
+                'github.open_prs',
+                'filecheck.license',
+                'filecheck.codeowners',
+              ],
             },
           },
         },
         uiSchema: {
           metricId: {
             'ui:widget': 'RadioWidget',
-            'ui:enumNames': ['Jira Open Issues', 'GitHub Open PRs'],
+            'ui:enumNames': [
+              'Jira Open Issues',
+              'GitHub Open PRs',
+              'LICENSE file exists',
+              'CODEOWNERS file exists',
+            ],
           },
         },
       },

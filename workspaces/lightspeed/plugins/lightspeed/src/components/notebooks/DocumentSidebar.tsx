@@ -1,0 +1,193 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { makeStyles, Typography } from '@material-ui/core';
+import { Button, Spinner, Tooltip } from '@patternfly/react-core';
+import { PlusCircleIcon } from '@patternfly/react-icons';
+
+import { useTranslation } from '../../hooks/useTranslation';
+import { SessionDocument } from '../../types';
+import { FileTypeIcon } from './FileTypeIcon';
+import { SidebarCollapseIcon } from './SidebarCollapseIcon';
+
+const useStyles = makeStyles(theme => ({
+  sidebar: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    height: '100%',
+    padding: theme.spacing(2),
+    overflow: 'hidden',
+  },
+  titleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing(2),
+    gap: theme.spacing(1),
+  },
+  title: {
+    fontWeight: 500,
+    fontSize: '1.25rem',
+    lineHeight: '2rem',
+    letterSpacing: '-0.25px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    flex: 1,
+    minWidth: 0,
+  },
+  collapseButton: {
+    flexShrink: 0,
+  },
+  documentsRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  documentCount: {
+    fontWeight: 700,
+    fontSize: '1.125rem',
+    lineHeight: '2rem',
+  },
+  addButton: {
+    textTransform: 'none',
+  },
+  documentsList: {
+    marginTop: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
+    overflowY: 'auto',
+    flex: 1,
+  },
+  documentItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: `${theme.spacing(1)}px ${theme.spacing(0.5)}px`,
+    borderRadius: 4,
+  },
+  fileIcon: {
+    flexShrink: 0,
+    color: theme.palette.grey[500],
+    fontSize: '1rem',
+  },
+  fileName: {
+    flex: 1,
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: '0.875rem',
+    lineHeight: '1.25rem',
+  },
+  spinnerContainer: {
+    flexShrink: 0,
+  },
+}));
+
+type DocumentSidebarProps = {
+  notebookName: string;
+  documents: SessionDocument[];
+  uploadingFileNames: string[];
+  completedFileNames?: Set<string>;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+  onAddDocument: () => void;
+};
+
+export const DocumentSidebar = ({
+  notebookName,
+  documents,
+  uploadingFileNames,
+  completedFileNames,
+  collapsed,
+  onToggleCollapse,
+  onAddDocument,
+}: DocumentSidebarProps) => {
+  const classes = useStyles();
+  const { t } = useTranslation();
+
+  if (collapsed) {
+    return null;
+  }
+
+  const uploadedNames = new Set(documents.map(d => d.title));
+  const activePending = uploadingFileNames.filter(
+    name => !uploadedNames.has(name),
+  );
+  const totalCount = documents.length + activePending.length;
+
+  return (
+    <div className={classes.sidebar}>
+      <div className={classes.titleRow}>
+        <Typography className={classes.title}>{notebookName}</Typography>
+        <Tooltip content={t('notebook.view.sidebar.collapse')} position="right">
+          <Button
+            variant="plain"
+            className={classes.collapseButton}
+            onClick={onToggleCollapse}
+            aria-label={t('notebook.view.sidebar.collapse')}
+          >
+            <SidebarCollapseIcon />
+          </Button>
+        </Tooltip>
+      </div>
+
+      <div className={classes.documentsRow}>
+        <Typography className={classes.documentCount}>
+          {t('notebook.view.documents.count', {
+            count: totalCount,
+          } as any)}
+        </Typography>
+        <Button
+          variant="link"
+          className={classes.addButton}
+          icon={<PlusCircleIcon />}
+          onClick={onAddDocument}
+        >
+          {t('notebook.view.documents.add')}
+        </Button>
+      </div>
+
+      {(documents.length > 0 || activePending.length > 0) && (
+        <div className={classes.documentsList}>
+          {documents.map(doc => (
+            <div key={doc.document_id} className={classes.documentItem}>
+              <FileTypeIcon fileName={doc.title} />
+              <Typography className={classes.fileName}>{doc.title}</Typography>
+            </div>
+          ))}
+          {activePending.map(fileName => (
+            <div key={`pending-${fileName}`} className={classes.documentItem}>
+              <FileTypeIcon fileName={fileName} />
+              <Typography className={classes.fileName}>{fileName}</Typography>
+              {!completedFileNames?.has(fileName) && (
+                <div className={classes.spinnerContainer}>
+                  <Spinner
+                    size="md"
+                    aria-label={t('notebook.view.documents.uploading')}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};

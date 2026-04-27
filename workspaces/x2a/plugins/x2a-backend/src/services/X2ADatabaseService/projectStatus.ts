@@ -17,45 +17,11 @@
 import {
   Job,
   Module,
-  ModuleStatus,
   ProjectStatus,
   ProjectStatusState,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-/**
- * Module's status is the status of the last job of its most-advanced phase.
- *
- * If the most-advanced phase's job was cancelled, the module status is cancelled.
- *
- * If a later retrigger for an earlier phase fails (e.g. when retrigger on analyze
- * fails but a former migrate already passed), the modules status should not change.
- */
-export function calculateModuleStatus({
-  analyze,
-  migrate,
-  publish,
-}: {
-  analyze?: Job;
-  migrate?: Job;
-  publish?: Job;
-}): { status: ModuleStatus; errorDetails?: string } {
-  const latestPhaseJob = publish ?? migrate ?? analyze;
-  if (latestPhaseJob?.status === 'cancelled') {
-    return { status: 'cancelled', errorDetails: undefined };
-  }
-
-  if (publish) {
-    return { status: publish.status, errorDetails: publish.errorDetails };
-  }
-  if (migrate) {
-    return { status: migrate.status, errorDetails: migrate.errorDetails };
-  }
-  if (analyze) {
-    return { status: analyze.status, errorDetails: analyze.errorDetails };
-  }
-
-  return { status: 'pending', errorDetails: undefined };
-}
+export { calculateModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 /**
  * Project status is calculated from its modules.
