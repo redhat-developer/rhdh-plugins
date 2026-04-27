@@ -127,10 +127,26 @@ export const ScorecardHomepageCardComponent = ({
   const entitiesConsidered = toSafeFiniteNumber(
     scorecard.result.entitiesConsidered,
   );
-  const calculationErrorCount = toSafeFiniteNumber(
+  const rawCalculationErrorCount = toSafeFiniteNumber(
     scorecard.result.calculationErrorCount,
   );
+
+  const total = toSafeFiniteNumber(scorecard.result.total);
+  // Defensive fallback: older/inconsistent payloads may miss calc-error counts even
+  // when entitiesConsidered includes rows without a status bucket.
+  const inferredCalculationErrorCount = Math.max(0, entitiesConsidered - total);
+  const calculationErrorCount = Math.max(
+    rawCalculationErrorCount,
+    inferredCalculationErrorCount,
+  );
   const healthyCount = Math.max(0, entitiesConsidered - calculationErrorCount);
+  const hasCalculationErrors = calculationErrorCount > 0;
+  const subheaderLabel = hasCalculationErrors
+    ? t('metric.homepageEntityHealthRatio', {
+        healthy: String(healthyCount),
+        total: String(entitiesConsidered),
+      })
+    : t('thresholds.entities', { count: entitiesConsidered });
 
   const subheaderLink = (
     <Link
@@ -138,10 +154,7 @@ export const ScorecardHomepageCardComponent = ({
         aggregationId,
       )}/metrics/${encodeURIComponent(scorecard.id)}`}
     >
-      {t('metric.homepageEntityCalculationHealth', {
-        healthy: String(healthyCount),
-        total: String(entitiesConsidered),
-      })}
+      {subheaderLabel}
     </Link>
   );
 
@@ -151,19 +164,20 @@ export const ScorecardHomepageCardComponent = ({
       dataTestId={dataTestId}
       {...(showSubheader
         ? {
-            subheader:
-              calculationErrorCount > 0 ? (
-                <Tooltip
-                  enterDelay={800}
-                  title={t('metric.drillDownCalculationFailures')}
-                  arrow
-                  placement="right"
-                >
+            subheader: hasCalculationErrors ? (
+              <Tooltip
+                enterDelay={800}
+                title={t('metric.someEntitiesNotReportingValues')}
+                arrow
+                placement="right"
+              >
+                <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
                   {subheaderLink}
-                </Tooltip>
-              ) : (
-                subheaderLink
-              ),
+                </Box>
+              </Tooltip>
+            ) : (
+              subheaderLink
+            ),
           }
         : {})}
       description={description}

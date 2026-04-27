@@ -22,8 +22,8 @@ import { EntitiesTableWrapper } from '../EntitiesTableWrapper';
 jest.mock('../../../../hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string) =>
-      key === 'metric.drillDownCalculationFailures'
-        ? 'Calculation failed for one or more entities'
+      key === 'metric.someEntitiesNotReportingValues'
+        ? 'Some entities are not reporting values related to this metric.'
         : key,
   }),
 }));
@@ -75,7 +75,9 @@ describe('EntitiesTableWrapper', () => {
       container.querySelector('.MuiSvgIcon-colorWarning'),
     ).toBeInTheDocument();
     expect(
-      screen.getByLabelText('Calculation failed for one or more entities'),
+      screen.getByLabelText(
+        'Some entities are not reporting values related to this metric.',
+      ),
     ).toBeInTheDocument();
   });
 });

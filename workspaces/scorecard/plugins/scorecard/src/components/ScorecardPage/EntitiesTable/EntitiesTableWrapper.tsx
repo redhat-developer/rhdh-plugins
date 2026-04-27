@@ -58,7 +58,7 @@ export const EntitiesTableWrapper: FC<EntitiesTableWrapperProps> = ({
           {title}
           {showCalculationWarning && (
             <Tooltip
-              title={t('metric.drillDownCalculationFailures')}
+              title={t('metric.someEntitiesNotReportingValues')}
               arrow
               placement="right"
               sx={{

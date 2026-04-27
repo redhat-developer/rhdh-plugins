@@ -107,6 +107,7 @@ export const scorecardMessages = {
     averageLegendTooltipRowTotal: 'Total score {{total}}',
     drillDownCalculationFailures:
       'One or more entities failed while calculating this metric.',
+    homepageEntityHealthRatio: '{{healthy}}/{{total}} entities',
     homepageEntityCalculationHealth:
       '{{healthy}} / {{total}} entities without metric calculation errors',
   },

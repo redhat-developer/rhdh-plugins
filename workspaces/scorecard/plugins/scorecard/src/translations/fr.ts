@@ -98,6 +98,7 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.averageLegendTooltipRowTotal': 'Score total {{total}}',
     'metric.drillDownCalculationFailures':
       'Le calcul de cette métrique a échoué pour une ou plusieurs entités.',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entités',
     'metric.homepageEntityCalculationHealth':
       '{{healthy}} / {{total}} entités sans erreur de calcul de métrique',
 

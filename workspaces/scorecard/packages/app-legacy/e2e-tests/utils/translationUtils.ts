@@ -293,17 +293,34 @@ export function getLastUpdatedLabel(
 }
 
 /**
- * Homepage KPI drill-down link text: healthy entities vs entities considered (RHIDP-13128).
+ * Homepage KPI drill-down link text:
+ * - with calculation errors: healthy/total ratio
+ * - without calculation errors: plain entity count
  */
 export function getHomepageEntityCalculationHealthText(
   translations: ScorecardMessages,
   healthy: string,
   total: string,
 ): string {
+  if (healthy === total) {
+    const count = Number(total);
+    const entitiesTemplate =
+      count === 1
+        ? translations.thresholds.entities_one
+        : translations.thresholds.entities_other;
+    return entitiesTemplate.replaceAll('{{count}}', String(count));
+  }
+
   const template =
-    (translations.metric as { homepageEntityCalculationHealth?: string })
-      .homepageEntityCalculationHealth ??
+    (
+      translations.metric as {
+        homepageEntityHealthRatio?: string;
+        homepageEntityCalculationHealth?: string;
+      }
+    ).homepageEntityHealthRatio ??
+    scorecardMessages.metric.homepageEntityHealthRatio ??
     scorecardMessages.metric.homepageEntityCalculationHealth;
+
   return template
     .replaceAll('{{healthy}}', healthy)
     .replaceAll('{{total}}', total);
@@ -344,7 +361,7 @@ export function getThresholdsSnapshot(
   options: {
     drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
     drillDownAggregationId?: string;
-    /** Interpolation for `metric.homepageEntityCalculationHealth` (mock data uses 10/10). */
+    /** Interpolation for homepage subheader (mock data uses 10/10). */
     homepageCalculationHealth?: { healthy: string; total: string };
     cardTitle: string;
     cardDescription: string;

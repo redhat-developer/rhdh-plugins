@@ -98,6 +98,7 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.averageLegendTooltipRowTotal': '合計スコア {{total}}',
     'metric.drillDownCalculationFailures':
       '1 件以上のエンティティーでこの指標の計算に失敗しました。',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} エンティティー',
     'metric.homepageEntityCalculationHealth':
       '指標の計算エラーがないエンティティー {{healthy}} / {{total}}',
 

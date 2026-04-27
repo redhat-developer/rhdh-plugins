@@ -99,6 +99,11 @@ export class DatabaseMetricValues {
       .whereIn('catalog_entity_ref', catalog_entity_refs)
       .groupBy('catalog_entity_ref');
 
+    // `value` is a JSON column. Depending on database/driver, a "missing" metric value can
+    // arrive either as SQL NULL or as JSON literal null (`CAST(value AS TEXT) = 'null'`).
+    const metricValueIsMissingExpr =
+      "(value IS NULL OR CAST(value AS TEXT) = 'null')";
+
     // One round-trip for latest-row count, calculation-error count, and max timestamp
     // (same latest-id set as the status breakdown query below).
     const statsRow = await this.dbClient(this.tableName)
@@ -106,7 +111,7 @@ export class DatabaseMetricValues {
       .select(
         this.dbClient.raw('COUNT(*) as latest_row_count'),
         this.dbClient.raw(
-          'SUM(CASE WHEN error_message IS NOT NULL AND value IS NULL THEN 1 ELSE 0 END) as calculation_error_count',
+          `SUM(CASE WHEN error_message IS NOT NULL AND ${metricValueIsMissingExpr} THEN 1 ELSE 0 END) as calculation_error_count`,
         ),
         this.dbClient.raw('MAX(timestamp) as max_timestamp'),
       )
@@ -148,7 +153,7 @@ export class DatabaseMetricValues {
       .max('timestamp as max_timestamp')
       .whereIn('id', latestIdsSubquery)
       .whereNotNull('status')
-      .whereNotNull('value')
+      .whereRaw(`NOT ${metricValueIsMissingExpr}`)
       .groupBy('status');
 
     if (!statusRows || statusRows.length === 0) {

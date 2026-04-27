@@ -542,6 +542,47 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
+      'should treat JSON null metric values as calculation errors - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            // Simulates a JSON literal null (not SQL NULL), seen in production DB rows.
+            value: 'null',
+            timestamp: baseTimestamp,
+            error_message: 'boom-a',
+            status: 'null',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 4,
+            timestamp: baseTimestamp,
+            error_message: null,
+            status: 'warning',
+          },
+        ]);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          ['component:default/service1', 'component:default/service2'],
+          'github.metric1',
+        );
+
+        expect(result).toEqual({
+          metric_id: 'github.metric1',
+          total: 1,
+          statusCounts: { warning: 1 },
+          max_timestamp: baseTimestamp,
+          calculation_error_count: 1,
+          latest_entity_count: 2,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
       'should return undefined when no matching entities - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
