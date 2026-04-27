@@ -21,7 +21,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 import { HomepageDefaultWidgetFilter } from './rules';
 
-export const homepageDefaultCardPermissionResourceRef =
+export const homepageDefaultWidgetPermissionResourceRef =
   createPermissionResourceRef<
     VisibleDefaultWidget,
     HomepageDefaultWidgetFilter

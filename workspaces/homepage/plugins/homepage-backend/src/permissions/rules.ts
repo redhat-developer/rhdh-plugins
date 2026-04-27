@@ -23,40 +23,42 @@ import {
   VisibleDefaultWidget,
   RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
-import { homepageDefaultCardPermissionResourceRef } from './resource';
+import { homepageDefaultWidgetPermissionResourceRef } from './resource';
 
 export type HomepageDefaultWidgetFilter = {
   key: string;
   values: Array<string> | undefined;
 };
 
-type HasCardIdParams = { cardIds?: string[] | undefined };
+type HasWidgetIdParams = { widgetIds?: string[] | undefined };
 
-const hasCardId = createPermissionRule({
-  name: 'HAS_CARD_ID',
+const hasWidgetId = createPermissionRule({
+  name: 'HAS_WIDGET_ID',
   description:
-    'Should allow users to access homepage cards with specified card IDs',
-  resourceRef: homepageDefaultCardPermissionResourceRef,
+    'Should allow users to access homepage widgets with specified widget IDs',
+  resourceRef: homepageDefaultWidgetPermissionResourceRef,
 
   paramsSchema: z.object({
-    cardIds: z
+    widgetIds: z
       .string()
       .array()
       .optional()
-      .describe('List of card IDs to match on'),
+      .describe('List of widget IDs to match on'),
   }),
-  apply: (card: VisibleDefaultWidget, { cardIds }: HasCardIdParams) => {
-    return cardIds && cardIds.length > 0 ? cardIds.includes(card.id) : true;
+  apply: (widget: VisibleDefaultWidget, { widgetIds }: HasWidgetIdParams) => {
+    return widgetIds && widgetIds.length > 0
+      ? widgetIds.includes(widget.id)
+      : true;
   },
-  toQuery: ({ cardIds }: HasCardIdParams) => ({
-    key: 'cardId',
-    values: cardIds,
+  toQuery: ({ widgetIds }: HasWidgetIdParams) => ({
+    key: 'widgetId',
+    values: widgetIds,
   }),
 } as any) as unknown as PermissionRule<
   VisibleDefaultWidget,
   HomepageDefaultWidgetFilter,
   typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
-  HasCardIdParams
+  HasWidgetIdParams
 >;
 
-export const rules = { hasCardId };
+export const rules = { hasWidgetId };

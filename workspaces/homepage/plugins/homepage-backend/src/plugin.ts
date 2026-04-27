@@ -18,7 +18,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { homepagePermissions } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
-import { homepageDefaultCardPermissionResourceRef } from './permissions/resource';
+import { homepageDefaultWidgetPermissionResourceRef } from './permissions/resource';
 import { rules as homepageRules } from './permissions/rules';
 import { createRouter } from './router';
 import { defaultWidgetsServiceRef } from './services/DefaultWidgetsService';
@@ -45,7 +45,7 @@ export const homepagePlugin = createBackendPlugin({
         defaultWidgets,
       }) {
         permissionsRegistry.addResourceType({
-          resourceRef: homepageDefaultCardPermissionResourceRef,
+          resourceRef: homepageDefaultWidgetPermissionResourceRef,
           getResources: async (resourceRefs: string[]) => {
             return resourceRefs.map(ref => ({ id: ref, ref }));
           },
