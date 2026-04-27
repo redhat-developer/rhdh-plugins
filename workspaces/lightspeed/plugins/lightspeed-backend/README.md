@@ -110,8 +110,8 @@ lightspeed:
     # Required: Query defaults for RAG queries
     # Both model and provider_id must be configured together
     queryDefaults:
-      model: llama3.1-8b-instruct # Model to use for answering queries
-      provider_id: ollama # AI provider for the query model
+      model: ${NOTEBOOKS_QUERY_MODEL} # Model to use for answering queries. Must map to a model inabled in your Lightspeed Stack run.yaml
+      provider_id: ${NOTEBOOKS_QUERY_PROVIDER_ID} # AI provider for the query model. Must map to a provier inabled in your Lightspeed Stack run.yaml
 
     # Optional: Chunking strategy for document processing
     chunkingStrategy:
@@ -135,6 +135,8 @@ lightspeed:
 
 - **`queryDefaults.model`** _(required)_: The LLM model to use for answering RAG queries. Must be available in the configured provider.
 - **`queryDefaults.provider_id`** _(required)_: The AI provider identifier for the query model (e.g., `ollama`, `vllm`). Both `model` and `provider_id` must be configured together.
+
+> **Important**: The `model` and `provider_id` values must map to a provider and model that are actually enabled in your Lightspeed Stack run.yaml configuration. If the provider or model is not available in Lightspeed Stack, queries will fail. For example, if `openai` enabled in Lightspeed via ENABLE_OPENAI, then model must be available (model=gpt-4o-mini).
 
 **Chunking Strategy** _(optional)_:
 
