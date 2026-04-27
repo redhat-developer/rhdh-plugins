@@ -102,23 +102,16 @@ export class DocumentService {
    * Upload a file to the Files API
    * @param content - File content as string
    * @param title - File title/name
-   * @param fileType - Optional file type for MIME type detection
    * @returns File ID from the Files API
    * @throws Error if upload fails
    */
-  async uploadFile(
-    content: string,
-    title: string,
-    fileType?: string,
-  ): Promise<string> {
+  async uploadFile(content: string, title: string): Promise<string> {
     try {
       // Determine MIME type from file type or default to text/plain
-      const mimeType = fileType
-        ? FILE_TYPE_TO_MIME[fileType] || 'text/plain'
-        : 'text/plain';
-
+      const mimeType = 'text/plain';
+      const txtFilename = `${title.replace(/\.[^.]+$/, '')}.txt`;
       const file = await this.client.files.create({
-        file: await toFile(Buffer.from(content, 'utf-8'), title, {
+        file: await toFile(Buffer.from(content, 'utf-8'), txtFilename, {
           type: mimeType,
         }),
         purpose: 'assistants',

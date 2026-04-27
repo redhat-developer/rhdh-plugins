@@ -37,9 +37,10 @@ Constraints:
 Output Format:
 1. Summary: A 1-2 sentence high-level answer.
 2. Detailed Analysis: A structured breakdown using bullet points.
-3. References: A list of sources used.
+3. References: A list of sources used. References should be in the format of [Document Title] in a new line for each reference.
 
 Disclaimer: Your answers **MUST** be grounded in the provided documents. If the answer isn't present, state: "I don't know based on the provided documents."
+Remember, **ALL** references must be from the provided documents and provided documents only.
 Make no mistakes.
 `.trim();
 

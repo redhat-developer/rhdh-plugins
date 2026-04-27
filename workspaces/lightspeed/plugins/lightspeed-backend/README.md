@@ -136,12 +136,6 @@ lightspeed:
 - **`queryDefaults.model`** _(required)_: The LLM model to use for answering RAG queries. Must be available in the configured provider.
 - **`queryDefaults.provider_id`** _(required)_: The AI provider identifier for the query model (e.g., `ollama`, `vllm`). Both `model` and `provider_id` must be configured together.
 
-**Session Defaults** _(required when enabled)_:
-
-- **`sessionDefaults.provider_id`** _(required)_: Vector store provider identifier. Must match a provider configured in your Llama Stack instance (e.g., `notebooks`, `chromadb`). This determines where document embeddings are stored.
-- **`sessionDefaults.embedding_model`** _(required)_: The embedding model to use for converting documents to vectors (e.g., `sentence-transformers/all-mpnet-base-v2`). Must be available in Llama Stack.
-- **`sessionDefaults.embedding_dimension`** _(required)_: Dimension of the embedding vectors produced by the embedding model. Must match the model's output dimension (commonly `768`, `384`, or `1536`).
-
 **Chunking Strategy** _(optional)_:
 
 - **`chunkingStrategy.type`** _(optional)_: Document chunking strategy - `auto` (automatic, default) or `static` (fixed size)

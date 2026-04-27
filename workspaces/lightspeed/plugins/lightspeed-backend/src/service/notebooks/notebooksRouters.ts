@@ -314,7 +314,6 @@ export async function createNotebooksRouter(
       const fileId = await documentService.uploadFile(
         parsedDocument.content,
         title,
-        fileType,
       );
 
       res.status(HTTP_STATUS_ACCEPTED).json({
