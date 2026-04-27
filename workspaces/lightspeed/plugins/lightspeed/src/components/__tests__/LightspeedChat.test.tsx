@@ -81,6 +81,14 @@ jest.mock('../../hooks/notebooks/useNotebookSessions', () => ({
   }),
 }));
 
+jest.mock('../../hooks/notebooks/useNotebookSession', () => ({
+  useNotebookSession: jest.fn().mockReturnValue({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 jest.mock('../../hooks/useFeedbackActions', () => ({
   useFeedbackActions: jest.fn().mockReturnValue([]),
 }));

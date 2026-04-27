@@ -87,6 +87,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
   useLightspeedNotebooksPermission,
+  useNotebookSession,
   useNotebookSessions,
   usePinnedChatsSettings,
   useSortSettings,
@@ -475,11 +476,13 @@ export const LightspeedChat = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
+  const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
+  const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [activeTab, setActiveTab] = useState<number>(
-    notebooksRouteMatch ? 1 : 0,
+    notebooksRouteMatch || notebookViewRouteMatch ? 1 : 0,
   );
   const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
     useLightspeedNotebooksPermission();
@@ -496,6 +499,29 @@ export const LightspeedChat = ({
   const [activeNotebook, setActiveNotebook] = useState<NotebookSession | null>(
     null,
   );
+  const {
+    data: routeNotebook,
+    isLoading: routeNotebookLoading,
+    isError: routeNotebookError,
+  } = useNotebookSession(routeNotebookId);
+
+  useEffect(() => {
+    if (routeNotebookId && routeNotebook && !routeNotebookLoading) {
+      setActiveNotebook(routeNotebook);
+    } else if (routeNotebookId && routeNotebookError) {
+      navigate('/lightspeed/notebooks', { replace: true });
+    } else if (!routeNotebookId && notebooksRouteMatch) {
+      setActiveNotebook(null);
+    }
+  }, [
+    routeNotebookId,
+    routeNotebook,
+    routeNotebookLoading,
+    routeNotebookError,
+    notebooksRouteMatch,
+    navigate,
+  ]);
+
   const [notebookAlerts, setNotebookAlerts] = useState<Partial<AlertProps>[]>(
     [],
   );
@@ -560,16 +586,16 @@ export const LightspeedChat = ({
       { name: UNTITLED_NOTEBOOK_NAME },
       {
         onSuccess: (session: NotebookSession) => {
-          setActiveNotebook(session);
+          navigate(`/lightspeed/notebooks/${session.session_id}`);
         },
       },
     );
-  }, [createNotebookMutation]);
+  }, [createNotebookMutation, navigate]);
 
   const handleCloseNotebook = useCallback(() => {
-    setActiveNotebook(null);
+    navigate('/lightspeed/notebooks');
     refetchNotebooks();
-  }, [refetchNotebooks]);
+  }, [navigate, refetchNotebooks]);
 
   const handleRemoveNotebookAlert = (key: React.Key) => {
     setNotebookAlerts(prevAlerts =>
@@ -1668,7 +1694,9 @@ export const LightspeedChat = ({
               classes={classes}
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
-              onSelectNotebook={setActiveNotebook}
+              onSelectNotebook={(notebook: NotebookSession) =>
+                navigate(`/lightspeed/notebooks/${notebook.session_id}`)
+              }
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}
               onCreateNotebook={handleCreateNotebook}
