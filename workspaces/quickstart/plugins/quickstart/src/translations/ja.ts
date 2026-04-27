@@ -59,6 +59,14 @@ const quickstartTranslationJa = createTranslationMessages({
     'steps.findAllLearningPaths.description':
       'ラーニングパスを利用してカスタマイズした e ラーニングをワークフローに統合し、オンボーディングの加速、スキルギャップの解消、ベストプラクティスの浸透を実現できます。',
     'steps.findAllLearningPaths.ctaTitle': 'ラーニングパスの表示',
+    'steps.setupLightspeed.title': 'Lightspeed のセットアップ',
+    'steps.setupLightspeed.description':
+      'サポート対象の大規模言語モデル (LLM) に Lightspeed を接続し、パーミッションを設定して、開発者向けの AI 支援を提供します。',
+    'steps.setupLightspeed.ctaTitle': '詳細',
+    'steps.getStartedWithLightspeed.title': 'Lightspeed を使い始める',
+    'steps.getStartedWithLightspeed.description':
+      'AI チャットを使って、問題のトラブルシューティング、コードの生成、プラットフォームリソースの確認ができます。',
+    'steps.getStartedWithLightspeed.ctaTitle': '詳細',
     'button.quickstart': 'クイックスタート',
     'button.openQuickstartGuide': 'クイックスタートガイドを開く',
     'button.closeDrawer': 'ドロワーを閉じる',

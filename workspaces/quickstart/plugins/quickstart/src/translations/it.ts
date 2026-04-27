@@ -61,6 +61,14 @@ const quickstartTranslationIt = createTranslationMessages({
       "Integrare l'e-learning personalizzato nei flussi di lavoro con i percorsi di apprendimento per accelerare l'onboarding, colmare le lacune di competenze e promuovere le best practice.",
     'steps.findAllLearningPaths.ctaTitle':
       'Visualizzare i percorsi di apprendimento',
+    'steps.setupLightspeed.title': 'Impostare Lightspeed',
+    'steps.setupLightspeed.description':
+      'Connetti Lightspeed a un modello di linguaggio di grandi dimensioni (LLM) supportato e configura le autorizzazioni per fornire ai tuoi sviluppatori assistenza basata sull’intelligenza artificiale.',
+    'steps.setupLightspeed.ctaTitle': 'Per saperne di più',
+    'steps.getStartedWithLightspeed.title': 'Iniziare con Lightspeed',
+    'steps.getStartedWithLightspeed.description':
+      'Risolvere problemi, generare codice e conoscere le risorse della piattaforma con la chat basata sull’intelligenza artificiale.',
+    'steps.getStartedWithLightspeed.ctaTitle': 'Per saperne di più',
     'button.quickstart': 'Avvio rapido',
     'button.openQuickstartGuide': "Apri la Guida all'avvio rapido",
     'button.closeDrawer': 'Chiudi riquadro',

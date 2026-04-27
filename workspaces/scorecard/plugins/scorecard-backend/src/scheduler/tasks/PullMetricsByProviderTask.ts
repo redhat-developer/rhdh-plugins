@@ -125,6 +125,8 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     let cursor: string | undefined = undefined;
 
     const metricType = provider.getMetricType();
+    const isBatchProvider = typeof provider.calculateMetrics === 'function';
+    const metricIds = provider.getMetricIds?.() ?? [provider.getProviderId()];
 
     try {
       do {
@@ -141,6 +143,96 @@ export class PullMetricsByProviderTask implements SchedulerTask {
 
         const batchResults = await Promise.allSettled(
           entitiesResponse.items.map(async entity => {
+            // Handle batch providers
+            if (isBatchProvider && provider.calculateMetrics) {
+              const entityRef = stringifyEntityRef(entity);
+              const entityKind = normalizeField(entity.kind);
+              const entityNamespace = normalizeField(entity.metadata.namespace);
+              const entityOwner = normalizeOwnerRef(entity?.spec?.owner);
+
+              const enabledMetricIds = metricIds.filter(
+                metricId =>
+                  !isMetricIdDisabled(this.config, metricId, entity, logger),
+              );
+
+              if (enabledMetricIds.length === 0) {
+                return undefined;
+              }
+
+              try {
+                const resultsMap = await provider.calculateMetrics(entity);
+
+                return enabledMetricIds.map(metricId => {
+                  if (!resultsMap.has(metricId)) {
+                    return {
+                      catalog_entity_ref: entityRef,
+                      metric_id: metricId,
+                      value: undefined,
+                      timestamp: new Date(),
+                      error_message: `calculateMetrics() did not return an entry for metric '${metricId}'`,
+                      entity_kind: entityKind,
+                      entity_namespace: entityNamespace,
+                      entity_owner: entityOwner,
+                    } as DbMetricValueCreate;
+                  }
+
+                  const value = resultsMap.get(metricId) as MetricValue;
+
+                  try {
+                    const thresholds = mergeEntityAndProviderThresholds(
+                      entity,
+                      provider,
+                    );
+
+                    const status =
+                      this.thresholdEvaluator.getFirstMatchingThreshold(
+                        value,
+                        metricType,
+                        thresholds,
+                      );
+
+                    return {
+                      catalog_entity_ref: entityRef,
+                      metric_id: metricId,
+                      value,
+                      timestamp: new Date(),
+                      status,
+                      entity_kind: entityKind,
+                      entity_namespace: entityNamespace,
+                      entity_owner: entityOwner,
+                    } as DbMetricValueCreate;
+                  } catch (error) {
+                    return {
+                      catalog_entity_ref: entityRef,
+                      metric_id: metricId,
+                      value,
+                      timestamp: new Date(),
+                      error_message:
+                        error instanceof Error ? error.message : String(error),
+                      entity_kind: entityKind,
+                      entity_namespace: entityNamespace,
+                      entity_owner: entityOwner,
+                    } as DbMetricValueCreate;
+                  }
+                });
+              } catch (error) {
+                return enabledMetricIds.map(
+                  metricId =>
+                    ({
+                      catalog_entity_ref: entityRef,
+                      metric_id: metricId,
+                      value: undefined,
+                      timestamp: new Date(),
+                      error_message:
+                        error instanceof Error ? error.message : String(error),
+                      entity_kind: entityKind,
+                      entity_namespace: entityNamespace,
+                      entity_owner: entityOwner,
+                    } as DbMetricValueCreate),
+                );
+              }
+            }
+
             let value: MetricValue | undefined;
 
             try {
@@ -203,11 +295,23 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         ).then(promises =>
           promises.reduce((acc, curr) => {
             if (curr.status === 'fulfilled' && curr.value !== undefined) {
-              return [...acc, curr.value];
+              // Batch providers return an array of results, single providers return one result
+              const result = curr.value;
+              if (Array.isArray(result)) {
+                return [...acc, ...result];
+              }
+              return [...acc, result];
             }
             return acc;
           }, [] as DbMetricValueCreate[]),
         );
+
+        if (batchResults.length > 0) {
+          const errorCount = batchResults.filter(r => r.error_message).length;
+          logger.debug(
+            `Storing ${batchResults.length} metric values (${errorCount} errors)`,
+          );
+        }
 
         await this.database.createMetricValues(batchResults);
         totalProcessed += entitiesResponse.items.length;

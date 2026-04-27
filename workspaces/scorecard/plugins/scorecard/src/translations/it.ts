@@ -81,6 +81,9 @@ const scorecardTranslationIt = createTranslationMessages({
     'metric.jira.open_issues.title': 'Ticket di blocco Jira aperti',
     'metric.jira.open_issues.description':
       'Evidenzia il numero di problemi critici e di blocco attualmente aperti in Jira.',
+    'metric.filecheck.title': 'Verifica file: {{name}}',
+    'metric.filecheck.description':
+      'Verifica se il file {{name}} esiste nel repository.',
     'metric.lastUpdated': 'Ultimo aggiornamento: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Ultimo aggiornamento: Non disponibile',
     'metric.someEntitiesNotReportingValues':
@@ -90,6 +93,8 @@ const scorecardTranslationIt = createTranslationMessages({
     'thresholds.success': 'Attività riuscita',
     'thresholds.warning': 'Avviso',
     'thresholds.error': 'Errore',
+    'thresholds.exist': 'Esistente',
+    'thresholds.missing': 'Mancante',
     'thresholds.noEntities': 'Nessuna entità con stato {{category}}',
     'thresholds.entities_one': '{{count}} entità',
     'thresholds.entities_other': '{{count}} entità',
