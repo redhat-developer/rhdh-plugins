@@ -21,8 +21,8 @@ lightspeed:
   notebooks:
     enabled: false
     queryDefaults:
-      model: redhataillama-31-8b-instruct
-      provider_id: vllm
+      model: ${NOTEBOOKS_QUERY_MODEL}
+      provider_id: ${NOTEBOOKS_QUERY_PROVIDER_ID}
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
