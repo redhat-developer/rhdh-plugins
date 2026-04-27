@@ -47,19 +47,6 @@ describe('SessionService', () => {
 
   beforeEach(() => {
     resetMockStorage();
-    const config = mockServices.rootConfig({
-      data: {
-        lightspeed: {
-          notebooks: {
-            sessionDefaults: {
-              provider_id: 'test-notebooks',
-              embedding_model: 'test-embedding-model',
-              embedding_dimension: 768,
-            },
-          },
-        },
-      },
-    });
     VectorStoresOperator.resetInstance(); // Reset singleton before each test
     operator = VectorStoresOperator.getInstance(LIGHTSPEED_CORE_ADDR, logger);
     service = new SessionService(operator, logger);
