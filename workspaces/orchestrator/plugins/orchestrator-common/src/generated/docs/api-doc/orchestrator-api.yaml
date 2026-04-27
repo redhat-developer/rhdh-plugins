@@ -464,6 +464,9 @@ spec:
               type: string
             isAvailable:
               type: boolean
+            version:
+              type: string
+              description: Workflow definition version
           required:
             - workflowId
             - format
@@ -536,6 +539,9 @@ spec:
           properties:
             id:
               type: string
+            version:
+              type: string
+              description: Process definition version
             processId:
               type: string
             processName:

@@ -324,7 +324,7 @@ export class DataIndexService {
     const graphQlQuery = buildGraphQlQuery({
       type: 'ProcessInstances',
       queryBody:
-        'id, processName, processId, state, start, end, nodes { id }, variables, executionSummary, parentProcessInstance {id, processName, businessKey}',
+        'id, version,processName, processId, state, start, end, nodes { id }, variables, executionSummary, parentProcessInstance {id, processName, businessKey}',
       whereClause,
       pagination,
       filterCondition: filterCondition,
@@ -485,7 +485,7 @@ export class DataIndexService {
           where: {processId: {equal: $definitionId } ${targetEntityWhereCondition} },
           orderBy: {start:DESC},
           pagination: {limit: $limit, offset: $offset}
-        ) { id, processName, state, start, end }
+        ) { id, version, processName, state, start, end }
       }
      `;
 
@@ -590,6 +590,7 @@ export class DataIndexService {
       query FindProcessInstanceQuery($instanceId: String!) {
         ProcessInstances(where: { id: { equal: $instanceId } }) {
           id
+          version
           processName
           processId
           serviceUrl

@@ -104,6 +104,7 @@ export interface WorkflowOverview {
   avgDurationMs?: number;
   description?: string;
   isAvailable?: boolean;
+  version?: string;
 }
 
 export interface WorkflowInfo {
