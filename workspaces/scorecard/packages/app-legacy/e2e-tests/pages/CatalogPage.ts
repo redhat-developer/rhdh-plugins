@@ -50,11 +50,18 @@ export class CatalogPage {
     await this.switchToLocale(locale);
   }
 
-  /** Opens a Component in `default` by `metadata.name` (avoids catalog index / filter flakiness). */
-  async openComponent(name: string) {
-    await this.page.goto(
-      `/catalog/default/component/${encodeURIComponent(name)}`,
-    );
+  async openCatalog() {
+    await this.page.goto('/catalog'); // Resolves the issue when "My Groups" sidebar covers the catalog toolbar
+    await this.page.getByTestId('user-picker-all').getByText('All').click();
+  }
+
+  async openComponent(componentName: string) {
+    const link = this.page.getByRole('link', { name: componentName });
+    await this.page
+      .getByRole('textbox', { name: 'Search' })
+      .fill(componentName);
+    await expect(link).toBeVisible({ timeout: 10000 });
+    await link.click();
   }
 
   async switchToLocale(locale: string): Promise<void> {

@@ -139,7 +139,9 @@ test.describe('Scorecard Plugin Tests', () => {
         notAllowedAggregationErrorBody,
         403,
       );
-      await catalogPage.openComponent('red-hat-developer-hub');
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
       await page.getByText('Scorecard', { exact: true }).click();
 
       await expect(
@@ -162,7 +164,8 @@ test.describe('Scorecard Plugin Tests', () => {
         customScorecardResponse,
       );
 
-      await catalogPage.openComponent('red-hat-developer-hub');
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
       await scorecardPage.verifyScorecardValues({
         [translations.metric['github.open_prs'].title]: '9',
@@ -185,7 +188,8 @@ test.describe('Scorecard Plugin Tests', () => {
         emptyScorecardResponse,
       );
 
-      await catalogPage.openComponent('red-hat-developer-hub');
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
 
       await scorecardPage.expectEmptyState();
@@ -202,7 +206,8 @@ test.describe('Scorecard Plugin Tests', () => {
         unavailableMetricResponse,
       );
 
-      await catalogPage.openComponent('red-hat-developer-hub');
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
 
       const jiraMetric = scorecardPage.scorecardMetrics[1];
@@ -236,7 +241,8 @@ test.describe('Scorecard Plugin Tests', () => {
         invalidThresholdResponse,
       );
 
-      await catalogPage.openComponent('red-hat-developer-hub');
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
 
       const githubMetric = scorecardPage.scorecardMetrics[0];
