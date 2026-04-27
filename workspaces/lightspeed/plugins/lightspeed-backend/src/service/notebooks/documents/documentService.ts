@@ -22,7 +22,6 @@ import {
   DEFAULT_CHUNK_OVERLAP_TOKENS,
   DEFAULT_CHUNKING_STRATEGY_TYPE,
   DEFAULT_MAX_CHUNK_SIZE_TOKENS,
-  FILE_TYPE_TO_MIME,
 } from '../../constant';
 import { SessionDocument, UpsertResult } from '../types/notebooksTypes';
 import { VectorStoresOperator } from '../VectorStoresOperator';

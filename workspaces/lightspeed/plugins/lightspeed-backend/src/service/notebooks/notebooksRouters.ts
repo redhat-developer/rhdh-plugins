@@ -89,11 +89,7 @@ export async function createNotebooksRouter(
     lightspeedBaseUrl,
     logger,
   );
-  const sessionService = new SessionService(
-    vectorStoresOperator,
-    logger,
-    config,
-  );
+  const sessionService = new SessionService(vectorStoresOperator, logger);
   const documentService = new DocumentService(
     vectorStoresOperator,
     logger,

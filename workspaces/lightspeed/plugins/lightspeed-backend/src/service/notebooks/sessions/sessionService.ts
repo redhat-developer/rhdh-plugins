@@ -15,7 +15,6 @@
  */
 
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { Config } from '@backstage/config';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
 
 import { NotebookSession, SessionMetadata } from '../types/notebooksTypes';
@@ -33,19 +32,10 @@ export class SessionService {
   private client: VectorStoresOperator;
   private providerId: string;
 
-  constructor(
-    client: VectorStoresOperator,
-    logger: LoggerService,
-    config?: Config,
-  ) {
+  constructor(client: VectorStoresOperator, logger: LoggerService) {
     this.client = client;
     this.logger = logger;
-
-    // Use optional config with default fallback
-    this.providerId =
-      config?.getOptionalString(
-        'lightspeed.notebooks.sessionDefaults.provider_id',
-      ) ?? 'notebooks';
+    this.providerId = 'notebooks';
   }
 
   /**

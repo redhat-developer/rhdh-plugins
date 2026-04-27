@@ -62,7 +62,7 @@ describe('SessionService', () => {
     });
     VectorStoresOperator.resetInstance(); // Reset singleton before each test
     operator = VectorStoresOperator.getInstance(LIGHTSPEED_CORE_ADDR, logger);
-    service = new SessionService(operator, logger, config);
+    service = new SessionService(operator, logger);
   });
 
   afterEach(() => {
