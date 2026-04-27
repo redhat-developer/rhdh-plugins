@@ -174,16 +174,12 @@ const useStyles = makeStyles(theme => ({
     maxWidth: 'unset',
   },
   footerAlignedAlert: {
-    maxWidth: '60rem',
-    width: '90%',
+    maxWidth: 'unset',
+    width: '95%',
     margin: '0 auto',
     padding: `0 0 ${theme.spacing(1)}px`,
   },
-  alertFullWidth: {
-    maxWidth: 'unset',
-    width: '95%',
-  },
-  footerFullWidth: {
+  footer: {
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
@@ -634,20 +630,14 @@ export const NotebookView = ({
                 <div className={classes.mainContent}>{renderMainContent()}</div>
 
                 {!hasDocuments && messages.length === 0 && (
-                  <div
-                    className={`${classes.footerAlignedAlert}${sidebarCollapsed ? ` ${classes.alertFullWidth}` : ''}`}
-                  >
+                  <div className={classes.footerAlignedAlert}>
                     <Alert isInline variant="info" title={t('aria.important')}>
                       {t('disclaimer.withoutValidation')}
                     </Alert>
                   </div>
                 )}
 
-                <ChatbotFooter
-                  className={
-                    sidebarCollapsed ? classes.footerFullWidth : undefined
-                  }
-                >
+                <ChatbotFooter className={classes.footer}>
                   <MessageBar
                     hasAttachButton={false}
                     hasMicrophoneButton
