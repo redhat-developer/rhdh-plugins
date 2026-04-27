@@ -75,6 +75,18 @@ export const quickstartMessages = {
         'Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.',
       ctaTitle: 'View Learning Paths',
     },
+    setupLightspeed: {
+      title: 'Set up Lightspeed',
+      description:
+        'Connect Lightspeed to a supported large language model (LLM) and configure permissions to provide your AI-powered assistance to your developers.',
+      ctaTitle: 'Learn more',
+    },
+    getStartedWithLightspeed: {
+      title: 'Get started with Lightspeed',
+      description:
+        'Troubleshoot issues, generate code, and learn about platform resources using AI-powered chat.',
+      ctaTitle: 'Learn more',
+    },
   },
   button: {
     quickstart: 'Quick start',

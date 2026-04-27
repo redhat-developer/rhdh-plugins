@@ -118,6 +118,12 @@ export const quickstartTranslationRef: TranslationRef<
     readonly 'steps.findAllLearningPaths.title': string;
     readonly 'steps.findAllLearningPaths.description': string;
     readonly 'steps.findAllLearningPaths.ctaTitle': string;
+    readonly 'steps.setupLightspeed.title': string;
+    readonly 'steps.setupLightspeed.description': string;
+    readonly 'steps.setupLightspeed.ctaTitle': string;
+    readonly 'steps.getStartedWithLightspeed.title': string;
+    readonly 'steps.getStartedWithLightspeed.description': string;
+    readonly 'steps.getStartedWithLightspeed.ctaTitle': string;
     readonly 'button.quickstart': string;
     readonly 'button.openQuickstartGuide': string;
     readonly 'button.closeDrawer': string;
