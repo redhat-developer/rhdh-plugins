@@ -65,7 +65,7 @@ describe('DocumentService', () => {
     VectorStoresOperator.resetInstance(); // Reset singleton before each test
     operator = VectorStoresOperator.getInstance(LIGHTSPEED_CORE_ADDR, logger);
     documentService = new DocumentService(operator, logger, config);
-    sessionService = new SessionService(operator, logger, config);
+    sessionService = new SessionService(operator, logger);
 
     // Create a test session for document operations
     const session = await sessionService.createSession(
@@ -85,7 +85,6 @@ describe('DocumentService', () => {
       const fileId = await documentService.uploadFile(
         'Test content',
         'test-file.txt',
-        'txt',
       );
 
       expect(fileId).toBeDefined();
@@ -94,23 +93,13 @@ describe('DocumentService', () => {
 
     it('should handle upload errors', async () => {
       // Mock a failure by passing invalid content
-      await expect(
-        documentService.uploadFile('', '', 'txt'),
-      ).resolves.toBeDefined();
+      await expect(documentService.uploadFile('', '')).resolves.toBeDefined();
     });
 
     it('should use correct MIME type based on file type', async () => {
-      const fileId1 = await documentService.uploadFile(
-        '{}',
-        'test.json',
-        'json',
-      );
-      const fileId2 = await documentService.uploadFile(
-        'text',
-        'test.txt',
-        'txt',
-      );
-      const fileId3 = await documentService.uploadFile('# MD', 'test.md', 'md');
+      const fileId1 = await documentService.uploadFile('{}', 'test.json');
+      const fileId2 = await documentService.uploadFile('text', 'test.txt');
+      const fileId3 = await documentService.uploadFile('# MD', 'test.md');
 
       expect(fileId1).toBeDefined();
       expect(fileId2).toBeDefined();
@@ -120,11 +109,7 @@ describe('DocumentService', () => {
 
   describe('getFileStatus', () => {
     it('should get file status for existing document', async () => {
-      const fileId = await documentService.uploadFile(
-        'Content',
-        'Test Doc',
-        'text',
-      );
+      const fileId = await documentService.uploadFile('Content', 'Test Doc');
       await documentService.upsertDocument(
         sessionId,
         'Test Doc',
@@ -150,7 +135,6 @@ describe('DocumentService', () => {
       const fileId = await documentService.uploadFile(
         'This is test content',
         'Test Document',
-        'text',
       );
 
       const result = await documentService.upsertDocument(
@@ -170,7 +154,6 @@ describe('DocumentService', () => {
       const fileId1 = await documentService.uploadFile(
         'Original content',
         'Original Title',
-        'text',
       );
       await documentService.upsertDocument(
         sessionId,
@@ -182,7 +165,6 @@ describe('DocumentService', () => {
       const fileId2 = await documentService.uploadFile(
         'Updated content',
         'Original Title',
-        'text',
       );
       const result = await documentService.upsertDocument(
         sessionId,
@@ -200,7 +182,6 @@ describe('DocumentService', () => {
       const fileId1 = await documentService.uploadFile(
         'Content',
         'Original Title',
-        'text',
       );
       await documentService.upsertDocument(
         sessionId,
@@ -212,7 +193,6 @@ describe('DocumentService', () => {
       const fileId2 = await documentService.uploadFile(
         'Updated content',
         'New Title',
-        'text',
       );
       const result = await documentService.upsertDocument(
         sessionId,
@@ -231,7 +211,6 @@ describe('DocumentService', () => {
       const fileId1 = await documentService.uploadFile(
         'Content 1',
         'Document 1',
-        'text',
       );
       await documentService.upsertDocument(
         sessionId,
@@ -243,7 +222,6 @@ describe('DocumentService', () => {
       const fileId2 = await documentService.uploadFile(
         'Content 2',
         'Document 2',
-        'text',
       );
       await documentService.upsertDocument(
         sessionId,
@@ -266,11 +244,7 @@ describe('DocumentService', () => {
     });
 
     it('should filter documents by file type', async () => {
-      const fileId1 = await documentService.uploadFile(
-        'Content',
-        'Text Doc',
-        'text',
-      );
+      const fileId1 = await documentService.uploadFile('Content', 'Text Doc');
       await documentService.upsertDocument(
         sessionId,
         'Text Doc',
@@ -278,11 +252,7 @@ describe('DocumentService', () => {
         fileId1,
       );
 
-      const fileId2 = await documentService.uploadFile(
-        'Content',
-        'PDF Doc',
-        'pdf',
-      );
+      const fileId2 = await documentService.uploadFile('Content', 'PDF Doc');
       await documentService.upsertDocument(
         sessionId,
         'PDF Doc',
@@ -300,7 +270,6 @@ describe('DocumentService', () => {
       const fileId = await documentService.uploadFile(
         'Content',
         'Test Document',
-        'text',
       );
       await documentService.upsertDocument(
         sessionId,
@@ -324,7 +293,6 @@ describe('DocumentService', () => {
       const fileId = await documentService.uploadFile(
         'Content',
         'Test Document',
-        'text',
       );
       await documentService.upsertDocument(
         sessionId,

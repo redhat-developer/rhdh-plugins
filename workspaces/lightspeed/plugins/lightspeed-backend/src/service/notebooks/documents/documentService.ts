@@ -22,7 +22,6 @@ import {
   DEFAULT_CHUNK_OVERLAP_TOKENS,
   DEFAULT_CHUNKING_STRATEGY_TYPE,
   DEFAULT_MAX_CHUNK_SIZE_TOKENS,
-  FILE_TYPE_TO_MIME,
 } from '../../constant';
 import { SessionDocument, UpsertResult } from '../types/notebooksTypes';
 import { VectorStoresOperator } from '../VectorStoresOperator';
@@ -91,13 +90,6 @@ export class DocumentService {
     );
   }
 
-  /**
-   * Upload a file to the Files API
-   * @param content - File content as string
-   * @param title - File title/name
-   * @returns File ID from the Files API
-   * @throws Error if upload fails
-   */
   /**
    * Upload a file to the Files API
    * @param content - File content as string
