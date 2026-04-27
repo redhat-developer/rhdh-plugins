@@ -20,7 +20,6 @@ import {
   ThresholdConfig,
   aggregationKinds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS } from '../constants/aggregationKPIs';
 
 export type AverageOptions = {
   statusScores: Record<string, number>;
@@ -87,9 +86,7 @@ export function buildAggregationConfig(
   if (aggregationConfig.type === aggregationKinds.average) {
     aggregationConfig.options = {
       statusScores: buildStatusScores(config),
-      aggregationResultThresholds:
-        buildAggregationThresholdsConfig(config) ??
-        DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
+      aggregationResultThresholds: buildAggregationThresholdsConfig(config),
     };
   }
 

@@ -80,6 +80,47 @@ describe('AverageAggregationStrategy', () => {
       }),
     );
     expect(logger.warn).not.toHaveBeenCalled();
+    expect(logger.info).not.toHaveBeenCalled();
+  });
+
+  it('logs info and uses default result thresholds when aggregationResultThresholds is omitted', async () => {
+    const loadStatusGroupedMetricByEntityRefs = jest.fn().mockResolvedValue({
+      values: { error: 1, warning: 1, success: 1 },
+      total: 3,
+      timestamp: '2025-01-01T10:30:00.000Z',
+    });
+
+    const loader = {
+      loadStatusGroupedMetricByEntityRefs,
+    } as unknown as AggregatedMetricLoader;
+
+    const logger = mockServices.logger.mock();
+    const strategy = new AverageAggregationStrategy(loader, logger);
+
+    const out = await strategy.aggregate({
+      metric,
+      entityRefs: ['component:default/a'],
+      thresholds,
+      aggregationConfig: {
+        id: 'avgKpi',
+        metricId: metric.id,
+        type: aggregationKinds.average,
+        options: {
+          statusScores: { error: 0, warning: 50, success: 100 },
+        },
+      } as any,
+    });
+
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'options.aggregationResultThresholds" is not configured for average aggregation',
+      ),
+    );
+    expect(out.result).toEqual(
+      expect.objectContaining({
+        aggregationChartDisplayColor: 'warning.main',
+      }),
+    );
   });
 
   it('throws when options.statusScores is missing', async () => {

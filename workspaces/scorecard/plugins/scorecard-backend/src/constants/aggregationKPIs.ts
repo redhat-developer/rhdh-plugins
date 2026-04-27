@@ -23,8 +23,8 @@ export const AGGREGATION_KPIS_CONFIG_PATH =
   'scorecard.aggregationKPIs' as const;
 
 /**
- * Default for `options.aggregationResultThresholds` on average aggregation KPIs when unset:
- * higher headline percentage (0–100) = better. Evaluated in order; first match wins.
+ * Default applied by `AverageAggregationStrategy` when `options.aggregationResultThresholds` is omitted
+ * from app-config. Higher headline percentage (0–100) = better. Evaluated in order; first match wins.
  */
 export const DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS: ThresholdConfig = {
   rules: [

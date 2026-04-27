@@ -16,7 +16,6 @@
 
 import { ConfigReader } from '@backstage/config';
 import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS } from '../constants/aggregationKPIs';
 import { buildAggregationConfig } from './buildAggregationConfig';
 
 describe('buildAggregationConfig', () => {
@@ -64,9 +63,9 @@ describe('buildAggregationConfig', () => {
       metricId: 'github.open_prs',
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
-        aggregationResultThresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
       },
     });
+    expect(result.options?.aggregationResultThresholds).toBeUndefined();
   });
 
   it('maps optional aggregationResultThresholds for average KPIs', () => {

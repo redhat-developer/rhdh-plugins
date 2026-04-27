@@ -50,16 +50,16 @@ export class AverageAggregationStrategy implements AggregationStrategy {
       );
     }
 
-    const aggregationResultThresholds =
-      options.aggregationResultThresholds ??
-      DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS;
-
     if (!options.aggregationResultThresholds) {
       this.logger.info(
         `The "scorecard.aggregationKPIs.${aggregationConfig.id}.options.aggregationResultThresholds" is not configured for average aggregation; ` +
           'using the default 0–100% health scale (higher is better).',
       );
     }
+
+    const aggregationResultThresholds =
+      options.aggregationResultThresholds ??
+      DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS;
 
     const aggregatedMetric =
       await this.loader.loadStatusGroupedMetricByEntityRefs(
