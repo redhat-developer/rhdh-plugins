@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-export {
-  getHeightForCenterLabel,
-  getYOffsetForCenterLabel,
-} from './chartLabelUtils';
-export {
-  SCORECARD_ENTITIES_TABLE_HEADERS,
-  SCORECARD_ERROR_STATE_COLOR,
-} from './constants';
-export { getLastUpdatedLabel } from './entityTableUtils';
-export { getStatusConfig, resolveStatusColor } from './statusUtils';
-export { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
-export { resolveMetricTranslation } from './translationUtils';
+/**
+ * The filecheck backend module for the scorecard plugin.
+ *
+ * @packageDocumentation
+ */
+
+export { scorecardModuleFilecheck as default } from './module';
