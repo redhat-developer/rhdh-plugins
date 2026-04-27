@@ -41,6 +41,14 @@ import type { AverageCardComponentProps } from './types';
 const AVERAGE_SCORE_SLICE = 'averageScoreFill';
 const AVERAGE_REMAINDER_SLICE = 'averageScoreRemainder';
 
+function clampPercentForDonut(rawPercent: number): {
+  fill: number;
+  remainder: number;
+} {
+  const fill = Math.min(100, Math.max(0, rawPercent));
+  return { fill, remainder: 100 - fill };
+}
+
 export const AverageCardComponent = ({
   scorecard,
   cardTitle,
@@ -70,7 +78,10 @@ export const AverageCardComponent = ({
     });
   };
 
-  const displayPercent = scorecard.result.averageScore * 100;
+  const rawPercent = scorecard.result.averageScore * 100;
+  const { fill: chartFillPercent, remainder: chartRemainderPercent } =
+    clampPercentForDonut(rawPercent);
+  const centerPercentLabel = `${Math.round(rawPercent)}%`;
 
   const arcResolvedColor = resolveStatusColor(
     theme,
@@ -80,12 +91,12 @@ export const AverageCardComponent = ({
   const averagePieData: PieData[] = [
     {
       name: AVERAGE_SCORE_SLICE,
-      value: displayPercent,
+      value: chartFillPercent,
       color: arcResolvedColor,
     },
     {
       name: AVERAGE_REMAINDER_SLICE,
-      value: Math.max(0, 100 - displayPercent),
+      value: chartRemainderPercent,
       color: theme.palette.grey[300],
     },
   ];
@@ -168,7 +179,7 @@ export const AverageCardComponent = ({
                   pointerEvents="none"
                   data-testid="average-card-center-percent"
                 >
-                  {`${displayPercent}%`}
+                  {centerPercentLabel}
                 </text>
               </g>
             );
