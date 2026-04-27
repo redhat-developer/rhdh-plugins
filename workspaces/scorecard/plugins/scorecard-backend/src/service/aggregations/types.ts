@@ -17,8 +17,8 @@
 import type {
   Metric,
   ThresholdConfig,
+  AggregationConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { type AggregationConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export type AggregationOptions = {
   metric: Metric;

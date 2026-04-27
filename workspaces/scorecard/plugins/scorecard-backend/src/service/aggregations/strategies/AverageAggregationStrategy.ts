@@ -20,6 +20,7 @@ import {
   type AggregatedMetricResult,
   type ThresholdConfig,
   ThresholdRule,
+  type AggregationConfigOptions,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS } from '../../../constants/aggregationKPIs';
 import { AggregatedMetricMapper } from '../../mappers';
@@ -28,7 +29,6 @@ import type { AggregationOptions } from '../types';
 import type { AggregationStrategy } from './types';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ThresholdEvaluator } from '../../../threshold/ThresholdEvaluator';
-import { type AggregationConfigOptions } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export class AverageAggregationStrategy implements AggregationStrategy {
   constructor(
