@@ -29,7 +29,6 @@ import { buildUserContext } from '../defaultWidgets/buildUserContext';
 import { filterToVisibleLeaves } from '../defaultWidgets/evaluateVisibility';
 import {
   collectReferencedPermissions,
-  loadCustomizable,
   loadDefaultWidgets,
 } from '../defaultWidgets/loadDefaultWidgets';
 import {
@@ -57,10 +56,9 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
     logger: LoggerService;
   }): DefaultWidgetsServiceImpl {
     const tree = loadDefaultWidgets(options.config);
-    const customizable = loadCustomizable(options.config);
     const referencedPermissions = collectReferencedPermissions(tree);
     options.logger.info(
-      `Loaded ${tree.length} default homepage card root node(s) referencing ${referencedPermissions.size} permission(s), customizable=${customizable}`,
+      `Loaded ${tree.length} default homepage card root node(s) referencing ${referencedPermissions.size} permission(s)`,
     );
     return new DefaultWidgetsServiceImpl(
       tree,

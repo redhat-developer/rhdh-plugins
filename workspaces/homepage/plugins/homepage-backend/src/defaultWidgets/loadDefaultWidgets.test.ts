@@ -17,7 +17,6 @@
 import { mockServices } from '@backstage/backend-test-utils';
 import {
   collectReferencedPermissions,
-  loadCustomizable,
   loadDefaultWidgets,
 } from './loadDefaultWidgets';
 import { DefaultWidgetNode } from './types';
@@ -179,27 +178,6 @@ describe('loadDefaultWidgets', () => {
       },
     });
     expect(loadDefaultWidgets(config)).toHaveLength(1);
-  });
-});
-
-describe('loadCustomizable', () => {
-  it('returns false when homepage.customizable is absent', () => {
-    const config = mockServices.rootConfig({ data: {} });
-    expect(loadCustomizable(config)).toBe(false);
-  });
-
-  it('returns true when homepage.customizable is true', () => {
-    const config = mockServices.rootConfig({
-      data: { homepage: { customizable: true } },
-    });
-    expect(loadCustomizable(config)).toBe(true);
-  });
-
-  it('returns false when homepage.customizable is false', () => {
-    const config = mockServices.rootConfig({
-      data: { homepage: { customizable: false } },
-    });
-    expect(loadCustomizable(config)).toBe(false);
   });
 });
 

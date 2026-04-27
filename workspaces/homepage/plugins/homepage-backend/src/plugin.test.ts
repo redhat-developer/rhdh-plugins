@@ -147,26 +147,6 @@ describe('homepagePlugin', () => {
     });
   });
 
-  it('returns customizable flag from config', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        homepagePlugin,
-        mockServices.rootConfig.factory({
-          data: {
-            homepage: {
-              defaultWidgets: [{ id: 'a', ref: 'a' }],
-            },
-          },
-        }),
-      ],
-    });
-
-    const res = await request(server).get('/api/homepage/default-widgets');
-
-    expect(res.status).toBe(200);
-    expect(res.body.customizable).toBe(true);
-  });
-
   it('returns an empty list when no default widgets are configured', async () => {
     const { server } = await startTestBackend({
       features: [homepagePlugin],

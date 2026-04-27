@@ -87,11 +87,6 @@ export function loadDefaultWidgets(
   return parsed.data;
 }
 
-/** Reads the `homepage.customizable` flag, defaulting to false. */
-export function loadCustomizable(config: RootConfigService): boolean {
-  return config.getOptionalBoolean('homepage.customizable') ?? false;
-}
-
 /** Walks the tree and returns the set of unique permission names referenced. */
 export function collectReferencedPermissions(
   nodes: DefaultWidgetNode[],
