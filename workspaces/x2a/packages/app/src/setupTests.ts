@@ -27,6 +27,7 @@ const suppressPatterns = [
   'findDOMNode is deprecated', // @material-ui/core
   'validateDOMNesting', // React DOM nesting (e.g. div inside p from Typography)
   'Not implemented: HTMLCanvasElement.prototype.getContext', // JSDOM canvas
+  'DEPRECATION WARNING', // @backstage/frontend-plugin-api config.schema → configSchema
 ];
 const getMatchedPattern = (args: unknown[]): string | null => {
   const first = args[0];

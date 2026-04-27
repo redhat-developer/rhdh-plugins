@@ -15,7 +15,11 @@
  */
 
 import { LoggerService } from '@backstage/backend-plugin-api';
-import type { CoreV1Api, BatchV1Api } from '@kubernetes/client-node';
+import type {
+  CoreV1Api,
+  BatchV1Api,
+  KubeConfig,
+} from '@kubernetes/client-node';
 
 /**
  * Kubernetes API clients
@@ -23,6 +27,8 @@ import type { CoreV1Api, BatchV1Api } from '@kubernetes/client-node';
 export interface K8sClients {
   coreV1Api: CoreV1Api;
   batchV1Api: BatchV1Api;
+  /** Required for the `Log` helper (true streaming follow), which uses fetch + body.pipe. */
+  kubeConfig: KubeConfig;
 }
 
 /**
@@ -74,9 +80,10 @@ export const makeK8sClient = async (
 
   // Dynamic import of API classes to avoid ESM issues
   const { CoreV1Api, BatchV1Api } = await import('@kubernetes/client-node');
-  const clients = {
+  const clients: K8sClients = {
     coreV1Api: kc.makeApiClient(CoreV1Api),
     batchV1Api: kc.makeApiClient(BatchV1Api),
+    kubeConfig: kc,
   };
 
   // Test connection to the cluster. Fail fast...

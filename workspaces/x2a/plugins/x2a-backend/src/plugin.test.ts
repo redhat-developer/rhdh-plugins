@@ -43,6 +43,7 @@ jest.mock('./services/makeK8sClient', () => ({
   makeK8sClient: jest.fn(() => ({
     coreV1Api: {},
     batchV1Api: {},
+    kubeConfig: { getCurrentCluster: () => ({ server: 'https://mock' }) },
   })),
 }));
 
