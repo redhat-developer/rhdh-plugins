@@ -123,10 +123,10 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
   },
   alertContainer: {
-    width: '100%',
-    maxWidth: 816,
+    width: '95%',
+    maxWidth: 'unset',
     margin: '0 auto',
-    padding: `0 ${theme.spacing(3)}px ${theme.spacing(1)}px`,
+    padding: `0 0 ${theme.spacing(1)}px`,
   },
   toastAlertGroup: {
     '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
@@ -147,10 +147,10 @@ const useStyles = makeStyles(theme => ({
     overflow: 'auto',
   },
   notebookContentArea: {
-    width: '100%',
-    maxWidth: 816,
-    margin: '0 auto',
-    padding: `0 ${theme.spacing(3)}px`,
+    width: '95%',
+    maxWidth: 'unset',
+    margin: `${theme.spacing(3)}px auto 0 auto`,
+    padding: 0,
   },
   notebookHeading: {
     fontSize: '2rem',
@@ -165,13 +165,9 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(0.5),
   },
   promptSuggestions: {
-    width: '100%',
-    maxWidth: 816,
-    margin: '0 auto',
-    padding: `${theme.spacing(2)}px ${theme.spacing(3)}px ${theme.spacing(3)}px`,
-  },
-  fullWidth: {
+    width: '95%',
     maxWidth: 'unset',
+    margin: '0 auto',
   },
   footerAlignedAlert: {
     maxWidth: 'unset',
@@ -512,16 +508,12 @@ export const NotebookView = ({
     }
     return (
       <div className={classes.welcomeContainer}>
-        <div
-          className={`${classes.alertContainer}${sidebarCollapsed ? ` ${classes.fullWidth}` : ''}`}
-        >
+        <div className={classes.alertContainer}>
           <Alert isInline variant="info" title={t('aria.important')}>
             {t('disclaimer.withoutValidation')}
           </Alert>
         </div>
-        <div
-          className={`${classes.notebookContentArea}${sidebarCollapsed ? ` ${classes.fullWidth}` : ''}`}
-        >
+        <div className={classes.notebookContentArea}>
           <Typography className={classes.notebookHeading}>
             {notebookName}
           </Typography>
@@ -532,9 +524,7 @@ export const NotebookView = ({
           )}
         </div>
         {welcomePrompts.length > 0 && (
-          <div
-            className={`${classes.promptSuggestions}${sidebarCollapsed ? ` ${classes.fullWidth}` : ''}`}
-          >
+          <div className={classes.promptSuggestions}>
             <ChatbotWelcomePrompt
               title=""
               description=""
