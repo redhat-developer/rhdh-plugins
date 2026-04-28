@@ -40,7 +40,10 @@ import {
   getTimestamp,
   transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
-import { useCreateConversationMessage } from './useCreateCoversationMessage';
+import {
+  CreateMessageVariables,
+  useCreateConversationMessage,
+} from './useCreateCoversationMessage';
 
 const toolCallIdKey = (id: string | number): string => {
   return String(id);
@@ -145,9 +148,13 @@ export const useConversationMessages = (
   avatar: string = userAvatar,
   onComplete?: (message: string) => void,
   onStart?: (conversation_id: string) => void,
+  createMessageOverride?: (
+    vars: CreateMessageVariables,
+  ) => Promise<ReadableStreamDefaultReader<Uint8Array>>,
   onRequestIdReady?: (request_id: string) => void,
 ): UseConversationMessagesReturn => {
-  const { mutateAsync: createMessage } = useCreateConversationMessage();
+  const { mutateAsync: defaultCreateMessage } = useCreateConversationMessage();
+  const createMessage = createMessageOverride ?? defaultCreateMessage;
   const scrollToBottomRef = useRef<ScrollContainerHandle>(null);
 
   const [currentConversation, setCurrentConversation] =

@@ -205,4 +205,37 @@ export class NotebooksApiClient implements NotebooksAPI {
       `${baseUrl}/v1/sessions/${encodeURIComponent(sessionId)}/documents/${encodeURIComponent(documentId)}/status`,
     );
   }
+
+  async querySession(
+    sessionId: string,
+    query: string,
+  ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/v1/sessions/${encodeURIComponent(sessionId)}/query`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      },
+    );
+
+    if (!response.body) {
+      throw new Error('Readable stream is not supported or there is no body.');
+    }
+
+    if (!response.ok) {
+      const reader = response.body.getReader();
+      const { done, value } = await reader.read();
+      const text = done ? '' : new TextDecoder('utf-8').decode(value);
+      const errorMessage = JSON.parse(text);
+      if (errorMessage?.error) {
+        throw new Error(
+          `failed to query notebook session: ${errorMessage.error}`,
+        );
+      }
+    }
+
+    return response.body.getReader();
+  }
 }

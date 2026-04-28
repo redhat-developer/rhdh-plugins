@@ -247,6 +247,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.overwrite.modal.title': string;
     readonly 'notebook.overwrite.modal.description': string;
     readonly 'notebook.overwrite.modal.action': string;
+    readonly 'notebook.document.delete': string;
     readonly 'conversation.delete.confirm.title': string;
     readonly 'conversation.delete.confirm.message': string;
     readonly 'conversation.delete.confirm.action': string;

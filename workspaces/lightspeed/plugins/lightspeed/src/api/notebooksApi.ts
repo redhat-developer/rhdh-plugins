@@ -48,6 +48,10 @@ export type NotebooksAPI = {
     sessionId: string,
     documentId: string,
   ) => Promise<DocumentStatus>;
+  querySession: (
+    sessionId: string,
+    query: string,
+  ) => Promise<ReadableStreamDefaultReader<Uint8Array>>;
 };
 
 /**

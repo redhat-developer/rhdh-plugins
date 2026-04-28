@@ -204,6 +204,7 @@ export type NotebookSessionMetadata = {
   tags?: string[];
   project?: string;
   document_ids?: string[];
+  conversation_id?: string;
 };
 
 /**

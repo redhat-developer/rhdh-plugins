@@ -486,7 +486,7 @@ export const LightspeedChat = ({
   const notebooksPermissionResolved =
     !notebooksPermissionLoading && hasNotebooksAccess;
   const { data: notebooks = [], refetch: refetchNotebooks } =
-    useNotebookSessions(activeTab === 1 && notebooksPermissionResolved);
+    useNotebookSessions(notebooksPermissionResolved);
   const hasNotebooks = notebooks.length > 0;
   const [openNotebookMenuId, setOpenNotebookMenuId] = useState<string | null>(
     null,
@@ -731,6 +731,7 @@ export const LightspeedChat = ({
       avatar,
       onComplete,
       onStart,
+      undefined,
       onRequestIdReady,
     );
 
@@ -860,16 +861,40 @@ export const LightspeedChat = ({
     ],
   );
 
+  const notebookConversationIds = useMemo(
+    () =>
+      new Set(
+        notebooks
+          .map(n => n.metadata?.conversation_id)
+          .filter((id): id is string => !!id),
+      ),
+    [notebooks],
+  );
+
+  const chatOnlyConversations = useMemo(
+    () =>
+      conversations.filter(
+        c => !notebookConversationIds.has(c.conversation_id),
+      ),
+    [conversations, notebookConversationIds],
+  );
+
   const categorizedMessages = useMemo(
     () =>
       getCategorizeMessages(
-        conversations,
+        chatOnlyConversations,
         pinnedChats,
         additionalMessageProps,
         t,
         selectedSort,
       ),
-    [additionalMessageProps, conversations, pinnedChats, t, selectedSort],
+    [
+      additionalMessageProps,
+      chatOnlyConversations,
+      pinnedChats,
+      t,
+      selectedSort,
+    ],
   );
 
   const filterConversations = useCallback(
@@ -1517,6 +1542,7 @@ export const LightspeedChat = ({
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
             isModelSelectorDisabled={isSendButtonDisabled}
+            hideModelSelector={showNotebooksPanel}
             setDisplayMode={setDisplayMode}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
@@ -1617,6 +1643,18 @@ export const LightspeedChat = ({
               sessionId={activeNotebook.session_id}
               notebookName={activeNotebook.name}
               documents={notebookDocuments}
+              metadata={activeNotebook.metadata}
+              topicSummary={
+                conversations.find(
+                  c =>
+                    c.conversation_id ===
+                    activeNotebook.metadata?.conversation_id,
+                )?.topic_summary ?? undefined
+              }
+              userName={userName}
+              avatar={avatar}
+              profileLoading={profileLoading}
+              topicRestrictionEnabled={topicRestrictionEnabled}
               onClose={handleCloseNotebook}
             />
           )}

@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
+
 import { makeStyles, Typography } from '@material-ui/core';
-import { Button, Spinner, Tooltip } from '@patternfly/react-core';
-import { PlusCircleIcon } from '@patternfly/react-icons';
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  MenuToggle,
+  Spinner,
+  Tooltip,
+} from '@patternfly/react-core';
+import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
@@ -98,6 +108,17 @@ const useStyles = makeStyles(theme => ({
   spinnerContainer: {
     flexShrink: 0,
   },
+  kebabToggle: {
+    padding: 0,
+    flexShrink: 0,
+  },
+  kebabDropdownMenu: {
+    '& .pf-v6-c-menu__list': {
+      paddingInlineStart: 0,
+      marginBlockStart: 0,
+      marginBlockEnd: 0,
+    },
+  },
 }));
 
 type DocumentSidebarProps = {
@@ -105,9 +126,11 @@ type DocumentSidebarProps = {
   documents: SessionDocument[];
   uploadingFileNames: string[];
   completedFileNames?: Set<string>;
+  deletingDocumentIds?: Set<string>;
   collapsed: boolean;
   onToggleCollapse: () => void;
   onAddDocument: () => void;
+  onDeleteDocument?: (documentId: string) => void;
 };
 
 export const DocumentSidebar = ({
@@ -115,12 +138,15 @@ export const DocumentSidebar = ({
   documents,
   uploadingFileNames,
   completedFileNames,
+  deletingDocumentIds,
   collapsed,
   onToggleCollapse,
   onAddDocument,
+  onDeleteDocument,
 }: DocumentSidebarProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
+  const [openMenuDocId, setOpenMenuDocId] = useState<string | null>(null);
 
   if (collapsed) {
     return null;
@@ -170,6 +196,56 @@ export const DocumentSidebar = ({
             <div key={doc.document_id} className={classes.documentItem}>
               <FileTypeIcon fileName={doc.title} />
               <Typography className={classes.fileName}>{doc.title}</Typography>
+              {deletingDocumentIds?.has(doc.document_id) ? (
+                <div className={classes.spinnerContainer}>
+                  <Spinner
+                    size="md"
+                    aria-label={t('notebook.document.delete')}
+                  />
+                </div>
+              ) : (
+                <Dropdown
+                  className={classes.kebabDropdownMenu}
+                  isOpen={openMenuDocId === doc.document_id}
+                  popperProps={{
+                    position: 'end',
+                    preventOverflow: true,
+                  }}
+                  onOpenChange={isOpen =>
+                    setOpenMenuDocId(isOpen ? doc.document_id : null)
+                  }
+                  toggle={toggleRef => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      variant="plain"
+                      className={classes.kebabToggle}
+                      isExpanded={openMenuDocId === doc.document_id}
+                      onClick={event => {
+                        event.stopPropagation();
+                        setOpenMenuDocId(current =>
+                          current === doc.document_id ? null : doc.document_id,
+                        );
+                      }}
+                      aria-label={t('notebook.document.delete')}
+                    >
+                      <EllipsisVIcon />
+                    </MenuToggle>
+                  )}
+                >
+                  <DropdownList>
+                    <DropdownItem
+                      key="delete"
+                      onClick={event => {
+                        event.stopPropagation();
+                        setOpenMenuDocId(null);
+                        onDeleteDocument?.(doc.document_id);
+                      }}
+                    >
+                      {t('notebook.document.delete')}
+                    </DropdownItem>
+                  </DropdownList>
+                </Dropdown>
+              )}
             </div>
           ))}
           {activePending.map(fileName => (
