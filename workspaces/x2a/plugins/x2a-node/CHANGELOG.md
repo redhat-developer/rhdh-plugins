@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-node
 
+## 0.2.2
+
+### Patch Changes
+
+- f45644b: Internal change only - split x2a-node services.ts for better maintenance in the future.
+
 ## 0.2.1
 
 ### Patch Changes
