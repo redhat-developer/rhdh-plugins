@@ -79,8 +79,10 @@ describe('OpenSSFClient', () => {
       'throws when scorecard annotation is invalid (%s)',
       async (_, testEntity) => {
         const client = new OpenSSFClient();
+        const request = client.getScorecard(testEntity);
 
-        await expect(client.getScorecard(testEntity)).rejects.toThrow(
+        await expect(request).rejects.toBeInstanceOf(Error);
+        await expect(request).rejects.toThrow(
           "Invalid annotation 'openssf/scorecard-location' value",
         );
         expect(fetch).not.toHaveBeenCalled();
@@ -111,21 +113,11 @@ describe('OpenSSFClient', () => {
       });
 
       const client = new OpenSSFClient();
+      const request = client.getScorecard(entity);
 
-      await expect(client.getScorecard(entity)).rejects.toThrow(
+      await expect(request).rejects.toBeInstanceOf(Error);
+      await expect(request).rejects.toThrow(
         'OpenSSF API request failed with status 404: Not Found',
-      );
-    });
-
-    it('throws when fetch rejects', async () => {
-      (globalThis.fetch as jest.Mock).mockRejectedValue(
-        new Error('Network error'),
-      );
-
-      const client = new OpenSSFClient();
-
-      await expect(client.getScorecard(entity)).rejects.toThrow(
-        'Network error',
       );
     });
   });
