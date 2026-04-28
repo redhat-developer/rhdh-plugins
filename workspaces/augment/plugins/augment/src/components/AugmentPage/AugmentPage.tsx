@@ -51,7 +51,19 @@ import {
   KagentiBuildPipelinePanel,
   KagentiSandboxPanel,
 } from '../AdminPanels/KagentiPanels';
+import { DocsPanel } from '../AdminPanels/DocsPanel';
 import { KagentiSidebar } from './KagentiSidebar';
+import { TourProvider } from '../AdminPanels/shared/TourProvider';
+import {
+  TourControllerProvider,
+  type TourControllerCallbacks,
+} from '../AdminPanels/shared/TourController';
+import type { AgentPanelTourControl } from '../AdminPanels/KagentiPanels/KagentiAgentsPanel';
+import type { ToolPanelTourControl } from '../AdminPanels/KagentiPanels/KagentiToolsPanel';
+import {
+  TourLauncherDialog,
+  useFirstVisitTourDialog,
+} from '../AdminPanels/shared/TourLauncherDialog';
 
 const AugmentPageContent = () => {
   const theme = useTheme();
@@ -187,19 +199,21 @@ const AugmentPageContent = () => {
       const panelMap: Record<string, AdminPanel> = {
         platform: 'kagenti-platform',
         agents: 'kagenti-agents',
-        branding: 'kagenti-home',
+        branding: 'kagenti-branding',
       };
       setAdminPanel(panelMap[adminPanel] ?? 'kagenti-home');
     } else if (prevProvider === 'kagenti') {
       const panelMap: Record<string, AdminPanel> = {
         'kagenti-platform': 'platform',
         'kagenti-agents': 'agents',
+        'kagenti-branding': 'branding',
         'kagenti-home': 'platform',
         'kagenti-tools': 'platform',
         'kagenti-builds': 'platform',
         'kagenti-sandbox': 'platform',
         'kagenti-dashboards': 'platform',
         'kagenti-admin': 'platform',
+        'kagenti-docs': 'platform',
       };
       setAdminPanel(panelMap[adminPanel] ?? 'platform');
     }
@@ -215,6 +229,49 @@ const AugmentPageContent = () => {
 
   const [pendingCreateAgent, setPendingCreateAgent] = useState(false);
   const [focusTarget, setFocusTarget] = useState<string | undefined>();
+  const tourDialog = useFirstVisitTourDialog();
+
+  const agentTourRef = useRef<AgentPanelTourControl | null>(null);
+  const toolTourRef = useRef<ToolPanelTourControl | null>(null);
+
+  const tourCallbacks = useMemo<TourControllerCallbacks>(
+    () => ({
+      navigatePanel: (panel: AdminPanel) => {
+        setFocusTarget(undefined);
+        setAdminPanel(panel);
+      },
+      openAgentIntent: () => {
+        agentTourRef.current?.openIntent();
+      },
+      selectAgentIntent: (cardId: string) => {
+        agentTourRef.current?.selectIntent(cardId);
+      },
+      openToolIntent: () => {
+        toolTourRef.current?.openIntent();
+      },
+      selectToolDeploy: () => {
+        toolTourRef.current?.selectDeploy();
+      },
+      closeAllDialogs: () => {
+        agentTourRef.current?.closeIntent();
+        agentTourRef.current?.closeWizard();
+        toolTourRef.current?.closeIntent();
+        toolTourRef.current?.closeWizard();
+      },
+      setWizardStep: (step: number) => {
+        agentTourRef.current?.setWizardStep(step);
+        toolTourRef.current?.setWizardStep(step);
+      },
+      setDeployMethod: (method: string) => {
+        agentTourRef.current?.setDeployMethod(method);
+      },
+      returnToGuidedExperience: () => {
+        setAdminPanel('kagenti-home');
+        setTimeout(() => tourDialog.openDialog(), 300);
+      },
+    }),
+    [setAdminPanel, tourDialog],
+  );
   const handleCreateAgent = useCallback(() => {
     setFocusTarget(undefined);
     setAdminPanel('kagenti-agents');
@@ -283,95 +340,132 @@ const AugmentPageContent = () => {
             {isAdmin &&
               viewMode === 'admin' &&
               liveStatus?.providerId === 'kagenti' && (
-                <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
-                  <KagentiSidebar
-                    adminPanel={adminPanel}
-                    onAdminPanelChange={setAdminPanel}
-                    onBackToChat={switchToChat}
-                    kagentiNamespace={kagentiNamespace}
-                    onKagentiNamespaceChange={handleNamespaceChange}
-                  />
-                  <Box
-                    sx={{
-                      flex: 1,
-                      minHeight: 0,
-                      position: 'relative',
-                    }}
-                  >
-                    <Box
-                      key={adminPanel}
-                      sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        overflow: 'auto',
-                        p: 3,
-                        animation: 'fadeSlideIn 0.2s ease-out',
-                        '@keyframes fadeSlideIn': {
-                          '0%': { opacity: 0, transform: 'translateY(4px)' },
-                          '100%': { opacity: 1, transform: 'translateY(0)' },
-                        },
-                        ...adminScrollSx,
-                      }}
-                    >
-                      {adminPanel === 'kagenti-home' && (
-                        <KagentiHomeDashboard
-                          namespace={kagentiNamespace || undefined}
-                          onNavigate={handleNavigateWithFocus}
-                          onCreateAgent={handleCreateAgent}
-                        />
-                      )}
-                      {adminPanel === 'kagenti-agents' && (
-                        <KagentiAgentsPanel
-                          namespace={kagentiNamespace || undefined}
-                          onChatWithAgent={handleChatWithAgent}
-                          autoOpenIntent={pendingCreateAgent}
-                          onIntentOpened={handleIntentOpened}
-                          initialAgentName={focusTarget}
-                          onFocusConsumed={() => setFocusTarget(undefined)}
-                        />
-                      )}
-                      {adminPanel === 'kagenti-tools' && (
-                        <KagentiToolsPanel
-                          namespace={kagentiNamespace || undefined}
-                          initialToolName={focusTarget}
-                          onFocusConsumed={() => setFocusTarget(undefined)}
-                        />
-                      )}
-                      {adminPanel === 'kagenti-builds' && (
-                        <KagentiBuildPipelinePanel
-                          namespace={kagentiNamespace || undefined}
-                        />
-                      )}
-                      {adminPanel === 'kagenti-sandbox' && kagentiNamespace && (
-                        <KagentiSandboxPanel namespace={kagentiNamespace} />
-                      )}
-                      {adminPanel === 'kagenti-sandbox' &&
-                        !kagentiNamespace && (
-                          <Box sx={{ py: 4, maxWidth: 520 }}>
-                            <Alert severity="info" variant="outlined">
-                              <strong>Namespace required</strong> — use the
-                              namespace dropdown at the top of the sidebar to
-                              select a target namespace, then return here to
-                              manage sandbox sessions.
-                            </Alert>
+                <TourControllerProvider callbacks={tourCallbacks}>
+                  <TourProvider>
+                    <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
+                      <KagentiSidebar
+                        adminPanel={adminPanel}
+                        onAdminPanelChange={setAdminPanel}
+                        onBackToChat={switchToChat}
+                        kagentiNamespace={kagentiNamespace}
+                        onKagentiNamespaceChange={handleNamespaceChange}
+                      />
+                      <TourLauncherDialog
+                        open={tourDialog.open}
+                        onClose={tourDialog.close}
+                      />
+                      <Box
+                        sx={{
+                          flex: 1,
+                          minHeight: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            flex: 1,
+                            minHeight: 0,
+                            position: 'relative',
+                          }}
+                        >
+                          <Box
+                            key={adminPanel}
+                            sx={{
+                              position: 'absolute',
+                              inset: 0,
+                              overflow: 'auto',
+                              p: 3,
+                              animation: 'fadeSlideIn 0.2s ease-out',
+                              '@keyframes fadeSlideIn': {
+                                '0%': {
+                                  opacity: 0,
+                                  transform: 'translateY(4px)',
+                                },
+                                '100%': {
+                                  opacity: 1,
+                                  transform: 'translateY(0)',
+                                },
+                              },
+                              ...adminScrollSx,
+                            }}
+                          >
+                            {adminPanel === 'kagenti-home' && (
+                              <KagentiHomeDashboard
+                                namespace={kagentiNamespace || undefined}
+                                onNavigate={handleNavigateWithFocus}
+                                onCreateAgent={handleCreateAgent}
+                                onHelpTours={tourDialog.openDialog}
+                              />
+                            )}
+                            {adminPanel === 'kagenti-agents' && (
+                              <KagentiAgentsPanel
+                                namespace={kagentiNamespace || undefined}
+                                onChatWithAgent={handleChatWithAgent}
+                                autoOpenIntent={pendingCreateAgent}
+                                onIntentOpened={handleIntentOpened}
+                                initialAgentName={focusTarget}
+                                onFocusConsumed={() =>
+                                  setFocusTarget(undefined)
+                                }
+                                tourControlRef={agentTourRef}
+                              />
+                            )}
+                            {adminPanel === 'kagenti-tools' && (
+                              <KagentiToolsPanel
+                                namespace={kagentiNamespace || undefined}
+                                initialToolName={focusTarget}
+                                onFocusConsumed={() =>
+                                  setFocusTarget(undefined)
+                                }
+                                tourControlRef={toolTourRef}
+                              />
+                            )}
+                            {adminPanel === 'kagenti-builds' && (
+                              <KagentiBuildPipelinePanel
+                                namespace={kagentiNamespace || undefined}
+                              />
+                            )}
+                            {adminPanel === 'kagenti-sandbox' &&
+                              kagentiNamespace && (
+                                <KagentiSandboxPanel
+                                  namespace={kagentiNamespace}
+                                />
+                              )}
+                            {adminPanel === 'kagenti-sandbox' &&
+                              !kagentiNamespace && (
+                                <Box sx={{ py: 4, maxWidth: 520 }}>
+                                  <Alert severity="info" variant="outlined">
+                                    <strong>Namespace required</strong> — use
+                                    the namespace dropdown at the top of the
+                                    sidebar to select a target namespace, then
+                                    return here to manage sandbox sessions.
+                                  </Alert>
+                                </Box>
+                              )}
+                            {adminPanel === 'kagenti-platform' && (
+                              <AgentConfigPanel />
+                            )}
+                            {adminPanel === 'kagenti-dashboards' && (
+                              <KagentiDashboardLinks
+                                namespace={kagentiNamespace || undefined}
+                              />
+                            )}
+                            {adminPanel === 'kagenti-admin' && (
+                              <KagentiAdminPanel
+                                namespace={kagentiNamespace || undefined}
+                              />
+                            )}
+                            {adminPanel === 'kagenti-branding' && (
+                              <BrandingPanel />
+                            )}
+                            {adminPanel === 'kagenti-docs' && <DocsPanel />}
                           </Box>
-                        )}
-                      {adminPanel === 'kagenti-platform' && (
-                        <AgentConfigPanel />
-                      )}
-                      {adminPanel === 'kagenti-dashboards' && (
-                        <KagentiDashboardLinks
-                          namespace={kagentiNamespace || undefined}
-                        />
-                      )}
-                      {adminPanel === 'kagenti-admin' && (
-                        <KagentiAdminPanel
-                          namespace={kagentiNamespace || undefined}
-                        />
-                      )}
+                        </Box>
+                      </Box>
                     </Box>
-                  </Box>
-                </Box>
+                  </TourProvider>
+                </TourControllerProvider>
               )}
 
             {isAdmin &&
