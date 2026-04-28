@@ -44,9 +44,31 @@ export interface Config {
            * rules are evaluated in order against that headline value.
            */
           thresholds?: {
+            /**
+             * Threshold rules for coloring the KPI chart color from the aggregation result
+             */
             rules?: Array<{
+              /**
+               * Threshold category key that a chart color value is assigned to when this rule
+               * matches (for example `success`, `warning`, `error`, or a custom key).
+               */
               key: string;
+              /**
+               * Threshold expression that determines whether a chart color value matches this
+               * rule. Supports:`>=`, `<=`, `>`, `<`, `==`, `!=`, `-` (range).
+               *
+               * @example `<= 10` - Chart color value must be less than or equal to 10.
+               * @example `10-60` - Chart color value must be between 10 and 60 (inclusive).
+               */
               expression: string;
+              /**
+               * Color configuration - supports multiple formats:
+               * - theme palette reference (`success.main` / `warning.main` / `error.main`)
+               * - HEX code (e.g. '#FFA500')
+               * - RGB/RGBA (e.g. 'rgb(255, 0, 0)')
+               *
+               * Threshold rules 'success', 'warning' and 'error' have default colors.
+               */
               color?: string;
             }>;
           };
