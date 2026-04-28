@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.6.3
+
+### Patch Changes
+
+- dfd28b3: fix: returns the version of the workflow in the overview and instance reponses
+
 ## 3.6.2
 
 ### Patch Changes
