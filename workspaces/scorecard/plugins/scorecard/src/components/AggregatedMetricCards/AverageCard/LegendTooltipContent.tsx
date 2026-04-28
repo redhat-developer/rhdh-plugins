@@ -18,6 +18,7 @@ import type { PieData } from '../../types';
 import Stack from '@mui/material/Stack';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { formatAggregationScoreDetail, TooltipContent } from './TooltipContent';
+import { formatPercentage } from '../../../utils/formatPercentage';
 
 export const LegendTooltipContent = ({
   row,
@@ -32,7 +33,7 @@ export const LegendTooltipContent = ({
   const rowTotal = count * unitScore;
   const percentLabel =
     maxPossible && maxPossible > 0
-      ? `${((rowTotal / maxPossible) * 100).toFixed(1).replace(/\.0$/, '')}%`
+      ? `${formatPercentage((rowTotal / maxPossible) * 100)}%`
       : '—';
 
   return (

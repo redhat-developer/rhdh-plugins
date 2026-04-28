@@ -36,6 +36,7 @@ import { DonutChartTooltipContent } from './DonutChartTooltipContent';
 import type { AverageCardComponentProps, TooltipPosition } from './types';
 import { CardLegendContent } from '../components/CardLegendContent';
 import { AverageCardPieCenterLabel } from './AverageCardPieCenterLabel';
+import { formatPercentage } from '../../../utils/formatPercentage';
 
 const AVERAGE_SCORE_SLICE = 'averageScoreFill';
 const AVERAGE_REMAINDER_SLICE = 'averageScoreRemainder';
@@ -76,7 +77,8 @@ export const AverageCardComponent = ({
   const rawPercent = scorecard.result.averageScore * 100;
   const { fill: chartFillPercent, remainder: chartRemainderPercent } =
     clampPercentForDonut(rawPercent);
-  const centerPercentLabel = `${Math.round(rawPercent)}%`;
+
+  const centerPercentLabel = `${formatPercentage(rawPercent)}%`;
 
   const arcResolvedColor = resolveStatusColor(
     theme,

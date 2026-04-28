@@ -185,6 +185,7 @@ describe('AverageAggregationStrategy', () => {
       expect.objectContaining({
         averageWeightedSum: 100,
         averageMaxPossible: 300,
+        averageScore: 0.333,
       }),
     );
   });

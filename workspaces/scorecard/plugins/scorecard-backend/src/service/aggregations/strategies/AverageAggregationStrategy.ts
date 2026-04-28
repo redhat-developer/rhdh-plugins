@@ -160,9 +160,11 @@ export class AverageAggregationStrategy implements AggregationStrategy {
 
     const maxPossibleScore = maxScore * numberOfEntities;
 
+    const precision = 1000;
+
     const averageScore =
       numberOfEntities > 0 && maxPossibleScore > 0
-        ? Math.round((weightedSum / maxPossibleScore) * 10) / 10
+        ? Math.round((weightedSum / maxPossibleScore) * precision) / precision
         : 0;
 
     return { averageScore, maxPossibleScore };
