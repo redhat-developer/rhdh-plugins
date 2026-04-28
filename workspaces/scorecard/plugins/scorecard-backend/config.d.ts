@@ -18,7 +18,7 @@ import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend
 import {
   AggregationType,
   ThresholdConfig,
-  ThresholdRuleAggregationConfig,
+  AggregationThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface Config {
@@ -47,7 +47,7 @@ export interface Config {
            * (e.g. average percentage 0–100 for `average` KPIs).
            */
           thresholds?: {
-            rules: ThresholdRuleAggregationConfig[];
+            rules: AggregationThresholdRule[];
           };
         };
       };

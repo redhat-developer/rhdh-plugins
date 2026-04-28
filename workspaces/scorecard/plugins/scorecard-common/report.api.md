@@ -65,6 +65,12 @@ export type AggregationResultByType =
   | StatusGroupedAggregationResult
   | AggregatedMetricAverageResult;
 
+// @public
+export type AggregationThresholdRule = Pick<
+  ThresholdRule,
+  'key' | 'expression' | 'color'
+>;
+
 // @public (undocumented)
 export type AggregationType =
   (typeof aggregationTypes)[keyof typeof aggregationTypes];
@@ -202,12 +208,6 @@ export type ThresholdRule = {
   color?: string;
   icon?: string;
 };
-
-// @public
-export type ThresholdRuleAggregationConfig = Pick<
-  ThresholdRule,
-  'key' | 'expression' | 'color'
->;
 
 // (No @packageDocumentation comment for this package)
 ```
