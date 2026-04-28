@@ -32,7 +32,9 @@ export type AdminPanel =
   | 'kagenti-sandbox'
   | 'kagenti-platform'
   | 'kagenti-dashboards'
-  | 'kagenti-admin';
+  | 'kagenti-admin'
+  | 'kagenti-branding'
+  | 'kagenti-docs';
 
 export interface UseAdminViewOptions {
   isAdmin: boolean;
@@ -65,7 +67,7 @@ export function useAdminView({
     } catch {
       /* sessionStorage unavailable */
     }
-    return 'platform';
+    return 'kagenti-home';
   });
   const setAdminPanel = useCallback((panel: AdminPanel) => {
     setAdminPanelRaw(panel);
@@ -99,6 +101,7 @@ export function useAdminView({
 
   const switchToAdmin = useCallback(() => {
     setViewMode('admin');
+    setAdminPanel('kagenti-home');
     setShowAdminBanner(false);
     try {
       localStorage.setItem(STORAGE_KEY_MODE, 'admin');
@@ -106,7 +109,7 @@ export function useAdminView({
     } catch {
       // localStorage unavailable
     }
-  }, []);
+  }, [setAdminPanel]);
 
   const switchToChat = useCallback(() => {
     setViewMode('chat');

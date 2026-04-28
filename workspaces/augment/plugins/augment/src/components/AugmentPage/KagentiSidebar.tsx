@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, Fragment } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -29,6 +29,8 @@ import ScienceIcon from '@mui/icons-material/Science';
 import TuneIcon from '@mui/icons-material/Tune';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import PaletteIcon from '@mui/icons-material/Palette';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -43,6 +45,8 @@ interface NavItem {
   id: AdminPanel;
   label: string;
   icon: React.ReactNode;
+  description?: string;
+  tourId: string;
 }
 
 interface NavGroup {
@@ -79,7 +83,9 @@ export function KagentiSidebar({
           {
             id: 'kagenti-home' as AdminPanel,
             label: t('commandCenter.home'),
-            icon: <HomeIcon sx={{ fontSize: 20 }} />,
+            icon: <HomeIcon sx={{ fontSize: 22 }} />,
+            description: 'Dashboard overview and quick actions',
+            tourId: 'nav-home',
           },
         ],
       },
@@ -89,22 +95,30 @@ export function KagentiSidebar({
           {
             id: 'kagenti-agents' as AdminPanel,
             label: t('commandCenter.agentCatalog'),
-            icon: <SmartToyIcon sx={{ fontSize: 20 }} />,
+            icon: <SmartToyIcon sx={{ fontSize: 22 }} />,
+            description: 'Deploy, manage, and chat with AI agents',
+            tourId: 'nav-agents',
           },
           {
             id: 'kagenti-tools' as AdminPanel,
             label: t('commandCenter.toolCatalog'),
-            icon: <BuildIcon sx={{ fontSize: 20 }} />,
+            icon: <BuildIcon sx={{ fontSize: 22 }} />,
+            description: 'Register MCP tool servers for your agents',
+            tourId: 'nav-tools',
           },
           {
             id: 'kagenti-builds' as AdminPanel,
-            label: 'Build Pipelines',
-            icon: <RocketLaunchIcon sx={{ fontSize: 20 }} />,
+            label: t('commandCenter.buildPipelines'),
+            icon: <RocketLaunchIcon sx={{ fontSize: 22 }} />,
+            description: 'View and trigger container image builds',
+            tourId: 'nav-builds',
           },
           {
             id: 'kagenti-sandbox' as AdminPanel,
-            label: 'Sandbox',
-            icon: <ScienceIcon sx={{ fontSize: 20 }} />,
+            label: t('commandCenter.sandbox'),
+            icon: <ScienceIcon sx={{ fontSize: 22 }} />,
+            description: 'Interactive testing sessions for agents',
+            tourId: 'nav-sandbox',
           },
         ],
       },
@@ -113,18 +127,39 @@ export function KagentiSidebar({
         items: [
           {
             id: 'kagenti-platform' as AdminPanel,
-            label: 'Platform Config',
-            icon: <TuneIcon sx={{ fontSize: 20 }} />,
+            label: t('commandCenter.platformConfig'),
+            icon: <TuneIcon sx={{ fontSize: 22 }} />,
+            description: 'Model, tools, RAG, and safety settings',
+            tourId: 'nav-platform',
+          },
+          {
+            id: 'kagenti-branding' as AdminPanel,
+            label: t('commandCenter.branding'),
+            icon: <PaletteIcon sx={{ fontSize: 22 }} />,
+            description:
+              'Customize appearance, prompt groups, and chat experience',
+            tourId: 'nav-branding',
           },
           {
             id: 'kagenti-dashboards' as AdminPanel,
             label: t('commandCenter.observability'),
-            icon: <MonitorHeartIcon sx={{ fontSize: 20 }} />,
+            icon: <MonitorHeartIcon sx={{ fontSize: 22 }} />,
+            description: 'Dashboards for traces and monitoring',
+            tourId: 'nav-observability',
           },
           {
             id: 'kagenti-admin' as AdminPanel,
             label: t('commandCenter.administration'),
-            icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: 20 }} />,
+            icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: 22 }} />,
+            description: 'Users, namespaces, and build config',
+            tourId: 'nav-admin',
+          },
+          {
+            id: 'kagenti-docs' as AdminPanel,
+            label: 'Documentation',
+            icon: <MenuBookIcon sx={{ fontSize: 22 }} />,
+            description: 'Product guides, feature reference, and how-to docs',
+            tourId: 'nav-docs',
           },
         ],
       },
@@ -163,7 +198,7 @@ export function KagentiSidebar({
           gap: 1,
           px: collapsed ? 1 : 2,
           py: 1.5,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+          borderBottom: `1px solid ${theme.palette.divider}`,
           minHeight: 52,
         }}
       >
@@ -199,6 +234,7 @@ export function KagentiSidebar({
       {/* Namespace Picker */}
       {onKagentiNamespaceChange && !collapsed && (
         <Box
+          data-tour="namespace-picker"
           sx={{
             px: 1.5,
             py: 1,
@@ -245,10 +281,10 @@ export function KagentiSidebar({
                   px: 2,
                   pt: groupIdx === 0 ? 0.5 : 1.5,
                   pb: 0.5,
-                  fontSize: '0.625rem',
-                  fontWeight: 700,
-                  color: alpha(theme.palette.text.secondary, 0.7),
-                  letterSpacing: '0.08em',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: theme.palette.text.secondary,
+                  letterSpacing: '0.04em',
                   lineHeight: 1.4,
                 }}
               >
@@ -260,7 +296,7 @@ export function KagentiSidebar({
               const isActive = adminPanel === item.id;
               const btn = (
                 <Box
-                  key={item.id}
+                  data-tour={item.tourId}
                   role="button"
                   tabIndex={0}
                   onClick={() => handleNavClick(item.id)}
@@ -280,31 +316,18 @@ export function KagentiSidebar({
                     borderRadius: 1,
                     cursor: 'pointer',
                     justifyContent: collapsed ? 'center' : 'flex-start',
-                    position: 'relative',
                     color: isActive
-                      ? theme.palette.primary.main
+                      ? theme.palette.text.primary
                       : theme.palette.text.secondary,
                     bgcolor: isActive
-                      ? alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08)
+                      ? alpha(theme.palette.text.primary, isDark ? 0.08 : 0.05)
                       : 'transparent',
                     fontWeight: isActive ? 600 : 400,
                     '&:hover': {
                       bgcolor: isActive
-                        ? alpha(theme.palette.primary.main, isDark ? 0.2 : 0.12)
+                        ? alpha(theme.palette.text.primary, isDark ? 0.1 : 0.07)
                         : alpha(theme.palette.action.hover, 0.5),
                     },
-                    '&::before': isActive
-                      ? {
-                          content: '""',
-                          position: 'absolute',
-                          left: 0,
-                          top: 4,
-                          bottom: 4,
-                          width: 3,
-                          borderRadius: '0 2px 2px 0',
-                          bgcolor: theme.palette.primary.main,
-                        }
-                      : {},
                     transition: 'background-color 0.15s ease',
                   }}
                 >
@@ -322,7 +345,7 @@ export function KagentiSidebar({
                       variant="body2"
                       noWrap
                       sx={{
-                        fontSize: '0.8125rem',
+                        fontSize: '0.875rem',
                         fontWeight: isActive ? 600 : 400,
                       }}
                     >
@@ -332,13 +355,32 @@ export function KagentiSidebar({
                 </Box>
               );
 
-              return collapsed ? (
-                <Tooltip key={item.id} title={item.label} placement="right">
-                  {btn}
-                </Tooltip>
-              ) : (
-                btn
-              );
+              if (collapsed) {
+                return (
+                  <Tooltip
+                    key={item.id}
+                    title={item.label}
+                    placement="right"
+                    arrow
+                  >
+                    {btn}
+                  </Tooltip>
+                );
+              }
+              if (item.description) {
+                return (
+                  <Tooltip
+                    key={item.id}
+                    title={item.description}
+                    placement="right"
+                    arrow
+                    enterDelay={600}
+                  >
+                    {btn}
+                  </Tooltip>
+                );
+              }
+              return <Fragment key={item.id}>{btn}</Fragment>;
             })}
           </Box>
         ))}
@@ -346,8 +388,9 @@ export function KagentiSidebar({
 
       {/* Back to Chat */}
       <Box
+        data-tour="back-to-chat"
         sx={{
-          borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+          borderTop: `1px solid ${theme.palette.divider}`,
           p: collapsed ? 0.5 : 1.5,
           display: 'flex',
           justifyContent: collapsed ? 'center' : 'stretch',
@@ -369,7 +412,7 @@ export function KagentiSidebar({
             sx={{
               textTransform: 'none',
               fontWeight: 500,
-              fontSize: '0.8125rem',
+              fontSize: '0.875rem',
               borderColor: alpha(theme.palette.divider, 0.6),
               color: theme.palette.text.secondary,
               '&:hover': {
