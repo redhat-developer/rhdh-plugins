@@ -41,6 +41,12 @@ const maintainedConfig = {
   description: 'Determines if the project is actively maintained.',
 };
 
+const hyphenatedCheckConfig = {
+  name: 'Code-Review',
+  displayTitle: 'OpenSSF Code Review',
+  description: 'Determines if the project requires code review.',
+};
+
 describe('OpenSSFMetricProvider', () => {
   const entity = createEntity();
 
@@ -73,6 +79,14 @@ describe('OpenSSFMetricProvider', () => {
         OPENSSF_THRESHOLDS,
       );
       expect(provider.getProviderId()).toBe('openssf.maintained');
+    });
+
+    it('normalizes hyphenated check names for provider id', () => {
+      const provider = new OpenSSFMetricProvider(
+        hyphenatedCheckConfig,
+        OPENSSF_THRESHOLDS,
+      );
+      expect(provider.getProviderId()).toBe('openssf.code_review');
     });
 
     it('returns openssf as provider datasource id', () => {
