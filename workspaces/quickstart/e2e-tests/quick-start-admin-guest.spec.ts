@@ -110,6 +110,35 @@ test.describe('Test Quick Start plugin', () => {
     expect(href).toContain(
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/',
     );
+
+    const lightspeedDocsUrl =
+      'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/interacting_with_red_hat_developer_lightspeed_for_red_hat_developer_hub/';
+
+    const setupLightspeedStepTitle = page.getByText(
+      translations.steps.setupLightspeed.title,
+    );
+    await setupLightspeedStepTitle.click();
+    const setupLightspeedDescription = page.getByText(
+      translations.steps.setupLightspeed.description,
+    );
+    await setupLightspeedDescription.waitFor({ state: 'visible' });
+    await expect(page.getByRole('list')).toContainText(
+      translations.steps.setupLightspeed.description,
+    );
+    const setupLightspeedParentList = setupLightspeedDescription
+      .locator('..')
+      .locator('..')
+      .locator('..');
+    const setupLightspeedCta = setupLightspeedParentList
+      .getByRole('button', {
+        name: translations.steps.setupLightspeed.ctaTitle,
+      })
+      .first();
+    await setupLightspeedCta.waitFor({ state: 'visible' });
+    expect(await setupLightspeedCta.getAttribute('href')).toContain(
+      lightspeedDocsUrl,
+    );
+
     await page.getByText(translations.steps.managePlugins.title).click();
     await uiHelper.verifyButtonURL(
       translations.steps.managePlugins.ctaTitle,
@@ -117,6 +146,7 @@ test.describe('Test Quick Start plugin', () => {
     );
     await uiHelper.clickButtonByText(translations.steps.managePlugins.ctaTitle);
     await expect(page).toHaveURL(/extensions/);
+
     const progressPattern = new RegExp(
       translations.footer.progress.replace('{{progress}}', '\\d+'),
     );
