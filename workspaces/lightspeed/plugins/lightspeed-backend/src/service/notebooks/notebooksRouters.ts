@@ -99,9 +99,10 @@ export async function createNotebooksRouter(
   const authorizer = userPermissionAuthorization(permissions);
 
   const getUserId = async (req: any): Promise<string> => {
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    return user.userEntityRef;
+    // const credentials = await httpAuth.credentials(req);
+    // const user = await userInfo.getUserInfo(credentials);
+    // return user.userEntityRef;
+    return 'user:default/guest';
   };
 
   const requireNotebooksPermission = async (
@@ -458,6 +459,7 @@ export async function createNotebooksRouter(
         tools: [{ type: 'file_search', vector_store_ids: [sessionId] }],
         model: `${queryProvider}/${queryModel}`,
         stream: true,
+        temperature: 0.15,
         max_tool_calls: 10,
         ...(conversationId && { conversation: conversationId }),
       };

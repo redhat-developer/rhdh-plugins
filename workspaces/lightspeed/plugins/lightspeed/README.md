@@ -129,7 +129,7 @@ Notebooks is an experimental feature that enables **document-based conversations
 
 #### Prerequisites for Notebooks
 
-- Notebooks requires a **Llama Stack service** to be running
+- Notebooks requires a **Lightspeed Stack service** to be running
 - The backend administrator must enable the feature (see [Backend Configuration](../lightspeed-backend/README.md#notebooks-developer-preview))
 - Users need the appropriate RBAC permissions (if enabled)
 
