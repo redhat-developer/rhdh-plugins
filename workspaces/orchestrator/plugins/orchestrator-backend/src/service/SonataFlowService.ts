@@ -381,6 +381,7 @@ export class SonataFlowService {
       lastTriggeredMs: lastTriggered.getTime(),
       lastRunStatus,
       description: definition.description,
+      version: definition.version,
     };
   }
 
