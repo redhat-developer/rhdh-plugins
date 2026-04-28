@@ -59,6 +59,12 @@ function AggregatedCardWithGithubFilecheckCodeownersContent() {
   );
 }
 
+function AggregatedCardWithGithubOpenPrsWeightedContent() {
+  return (
+    <ScorecardHomepageCardWithProvider aggregationId="openPrsWeightedKpi" />
+  );
+}
+
 function BorderlessHomeWidgetRenderer({ Content }: RendererProps) {
   return <Content />;
 }
@@ -185,6 +191,27 @@ export const aggregatedCardWithGithubFilecheckCodeownersWidget =
       components: () =>
         Promise.resolve({
           Content: AggregatedCardWithGithubFilecheckCodeownersContent,
+        }),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithGithubOpenPrsWeighted.
+ * @alpha
+ */
+export const aggregatedCardWithGithubOpenPrsWeightedWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-github-open-prs-weighted',
+    params: {
+      name: 'AggregatedCardWithGithubOpenPrsWeighted',
+      title: 'Scorecard: GitHub open PRs (weighted health)',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: () =>
+        Promise.resolve({
+          Content: AggregatedCardWithGithubOpenPrsWeightedContent,
         }),
     },
   });

@@ -38,6 +38,9 @@ const scorecardTranslationJa = createTranslationMessages({
     'permissionRequired.button': 'さらに表示する',
     'permissionRequired.altText': '権限が必要',
 
+    // Common UI
+    'common.loading': '読み込み中',
+
     // Not found state
     'notFound.title': '404 ページが見つかりません',
     'notFound.description':
@@ -66,12 +69,10 @@ const scorecardTranslationJa = createTranslationMessages({
       'ユーザーエンティティーがカタログに見つかりません',
     'errors.noDataFoundMessage':
       'ここでデータを確認するには、エンティティがこの指標に関連する値を報告していることを確認してください。',
+    'errors.unsupportedAggregationType':
+      'このスコアカードの集計タイプは、使用中のプラグインのバージョンではサポートされていません。',
     'errors.authenticationErrorMessage':
       'データを確認するにはサインインしてください。',
-    'errors.noMetricsFound':
-      '指定されたメトリクス ID に対するメトリクスが見つかりません。',
-    'errors.multipleMetricsFound':
-      '指定されたメトリクス ID に対するメトリクスが複数見つかりました。1つのみが期待されています。',
 
     // Metric translations
     'metric.github.open_prs.title': 'GitHub のオープン状態の PR',
@@ -88,6 +89,13 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.lastUpdatedNotAvailable': '最終更新日: 利用不可',
     'metric.someEntitiesNotReportingValues':
       'エンティティーがこの指標に関連する値を報告していません。',
+    'metric.averageCenterTooltipTotalLabel': '合計スコア',
+    'metric.averageCenterTooltipMaxLabel': '最大可能スコア',
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} 件のエンティティー、各 {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
+      '{{count}} 件のエンティティー、各 {{score}}',
+    'metric.averageLegendTooltipRowTotal': '合計スコア {{total}}',
 
     // Threshold translations
     'thresholds.success': '成功',

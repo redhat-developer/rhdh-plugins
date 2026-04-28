@@ -30,6 +30,7 @@ import {
   aggregatedCardWithJiraOpenIssuesWidget,
   aggregatedCardWithGithubFilecheckLicenseWidget,
   aggregatedCardWithGithubFilecheckCodeownersWidget,
+  aggregatedCardWithGithubOpenPrsWeightedWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
 
@@ -86,6 +87,7 @@ export const scorecardHomeModule = createFrontendModule({
     aggregatedCardWithGithubOpenPrsWidget,
     aggregatedCardWithGithubFilecheckLicenseWidget,
     aggregatedCardWithGithubFilecheckCodeownersWidget,
+    aggregatedCardWithGithubOpenPrsWeightedWidget,
   ],
 });
 

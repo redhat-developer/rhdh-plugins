@@ -22,6 +22,10 @@ export const ScorecardRoutes = {
   OPEN_ISSUES_KPI_METADATA_ROUTE:
     '**/api/scorecard/aggregations/openIssuesKpi/metadata',
   OPEN_PRS_KPI_AGGREGATION_ROUTE: '**/api/scorecard/aggregations/openPrsKpi',
+  OPEN_PRS_WEIGHTED_KPI_METADATA_ROUTE:
+    '**/api/scorecard/aggregations/openPrsWeightedKpi/metadata',
+  OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE:
+    '**/api/scorecard/aggregations/openPrsWeightedKpi',
   OPEN_ISSUES_KPI_AGGREGATION_ROUTE:
     '**/api/scorecard/aggregations/openIssuesKpi',
   /** Default aggregation when aggregationId is the metric id (no KPI entry). */

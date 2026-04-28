@@ -38,6 +38,9 @@ const scorecardTranslationDe = createTranslationMessages({
     'permissionRequired.button': 'Mehr erfahren',
     'permissionRequired.altText': 'Berechtigung erforderlich',
 
+    // Common UI
+    'common.loading': 'Wird geladen',
+
     // Not found state
     'notFound.title': '404 Diese Seite wurde nicht gefunden',
     'notFound.description':
@@ -65,12 +68,10 @@ const scorecardTranslationDe = createTranslationMessages({
       'Benutzer-Element nicht im Katalog gefunden.',
     'errors.noDataFoundMessage':
       'Um Ihre Daten hier anzuzeigen, überprüfen Sie, ob Ihre Elemente Werte melden, die mit dieser Metrik in Verbindung stehen.',
+    'errors.unsupportedAggregationType':
+      'Diese Scorecard verwendet einen Aggregationstyp, der von dieser Plugin-Version nicht unterstützt wird.',
     'errors.authenticationErrorMessage':
       'Bitte melden Sie sich an, um Ihre Daten anzuzeigen.',
-    'errors.noMetricsFound':
-      'Keine Metriken für die angegebene Metrik-ID gefunden.',
-    'errors.multipleMetricsFound':
-      'Mehrere Metriken für die angegebene Metrik-ID gefunden. Genau eine erwartet.',
 
     // Metric translations
     'metric.github.open_prs.title': 'GitHub PRs offen',
@@ -86,6 +87,13 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.lastUpdatedNotAvailable': 'Zuletzt aktualisiert: Nicht verfügbar',
     'metric.someEntitiesNotReportingValues':
       'Einige Elemente melden keine Werte, die mit dieser Metrik in Verbindung stehen.',
+    'metric.averageCenterTooltipTotalLabel': 'Gesamtpunktzahl',
+    'metric.averageCenterTooltipMaxLabel': 'Maximal mögliche Punktzahl',
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} Element, je {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
+      '{{count}} Elemente, je {{score}}',
+    'metric.averageLegendTooltipRowTotal': 'Gesamtpunktzahl {{total}}',
 
     // Threshold translations
     'thresholds.success': 'Erfolg',

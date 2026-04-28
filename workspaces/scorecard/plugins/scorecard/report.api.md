@@ -50,6 +50,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.description': string;
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
+    readonly 'common.loading': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.missingAggregationId': string;
     readonly 'errors.invalidApiResponse': string;
@@ -62,9 +63,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.missingPermissionMessage': string;
     readonly 'errors.userNotFoundInCatalogMessage': string;
     readonly 'errors.noDataFoundMessage': string;
+    readonly 'errors.unsupportedAggregationType': string;
     readonly 'errors.authenticationErrorMessage': string;
-    readonly 'errors.noMetricsFound': string;
-    readonly 'errors.multipleMetricsFound': string;
     readonly 'metric.github.open_prs.title': string;
     readonly 'metric.github.open_prs.description': string;
     readonly 'metric.jira.open_issues.title': string;
@@ -74,6 +74,11 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.lastUpdated': string;
     readonly 'metric.lastUpdatedNotAvailable': string;
     readonly 'metric.someEntitiesNotReportingValues': string;
+    readonly 'metric.averageCenterTooltipTotalLabel': string;
+    readonly 'metric.averageCenterTooltipMaxLabel': string;
+    readonly 'metric.averageLegendTooltipEntitiesEach_one': string;
+    readonly 'metric.averageLegendTooltipEntitiesEach_other': string;
+    readonly 'metric.averageLegendTooltipRowTotal': string;
     readonly 'thresholds.success': string;
     readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;

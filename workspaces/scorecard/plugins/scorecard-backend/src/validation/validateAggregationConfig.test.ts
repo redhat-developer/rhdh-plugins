@@ -121,4 +121,152 @@ describe('validateAggregationConfig', () => {
       ),
     );
   });
+
+  it('should not throw when average KPI has options.statusScores (app-config shape)', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          openPrsWeightedKpi: {
+            title: 'GitHub Open PRs (weighted health)',
+            type: aggregationTypes.average,
+            description: 'Weighted health average for open PRs.',
+            metricId: 'github.open_prs',
+            options: {
+              statusScores: {
+                success: 100,
+                warning: 50,
+                error: 0,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(() =>
+      validateAggregationConfig({ rootConfig, registry }),
+    ).not.toThrow();
+  });
+
+  it('should throw when type is average but required options block is missing', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          avgKpi: {
+            title: 'Avg KPI',
+            type: aggregationTypes.average,
+            description: 'Weighted health',
+            metricId: 'github.open_prs',
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      /Missing required config value at .*\.options/,
+    );
+  });
+
+  it('should throw InputError when type is average but options.statusScores is empty', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          avgKpi: {
+            title: 'Avg KPI',
+            type: aggregationTypes.average,
+            description: 'Weighted health',
+            metricId: 'github.open_prs',
+            options: { statusScores: {} },
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      InputError,
+    );
+  });
+
+  it('should not throw when average KPI includes optional thresholds', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          avgKpi: {
+            title: 'Avg KPI',
+            type: aggregationTypes.average,
+            description: 'Weighted health',
+            metricId: 'github.open_prs',
+            options: {
+              statusScores: { success: 100, warning: 50, error: 0 },
+              thresholds: {
+                rules: [
+                  {
+                    key: 'success',
+                    expression: '>=75',
+                    color: 'success.main',
+                  },
+                  {
+                    key: 'warning',
+                    expression: '10-74',
+                    color: 'warning.main',
+                  },
+                  { key: 'error', expression: '<10', color: 'error.main' },
+                ],
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(() =>
+      validateAggregationConfig({ rootConfig, registry }),
+    ).not.toThrow();
+  });
+
+  it('should throw when thresholds has an invalid expression', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          avgKpi: {
+            title: 'Avg KPI',
+            type: aggregationTypes.average,
+            description: 'Weighted health',
+            metricId: 'github.open_prs',
+            options: {
+              statusScores: { success: 100, warning: 50, error: 0 },
+              thresholds: {
+                rules: [
+                  {
+                    key: 'success',
+                    expression: '%%%invalid%%%',
+                    color: 'success.main',
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      /Invalid thresholds configuration|Invalid threshold expression/,
+    );
+  });
 });

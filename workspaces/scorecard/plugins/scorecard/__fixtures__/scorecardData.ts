@@ -156,4 +156,28 @@ export const mockAggregatedScorecardData = {
       thresholds: DEFAULT_NUMBER_THRESHOLDS,
     },
   } as AggregatedMetricResult,
+  [aggregationTypes.average]: {
+    id: 'github.open_prs',
+    status: 'success',
+    metadata: {
+      title: 'GitHub open PRs',
+      description: 'Weighted health average for the Generative AI API group.',
+      type: 'number',
+      history: true,
+      aggregationType: aggregationTypes.average,
+    },
+    result: {
+      values: [
+        { count: 5, name: 'success' },
+        { count: 2, name: 'warning' },
+        { count: 1, name: 'error' },
+      ],
+      total: 8,
+      timestamp: '2024-01-15T10:30:00Z',
+      thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      averageScore: 0.75,
+      averageWeightedSum: 18,
+      averageMaxPossible: 24,
+    },
+  } as AggregatedMetricResult,
 };

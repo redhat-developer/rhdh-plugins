@@ -14,5 +14,34 @@
  * limitations under the License.
  */
 
+import {
+  type ThresholdConfig,
+  ScorecardThresholdRuleColors,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 export const AGGREGATION_KPIS_CONFIG_PATH =
   'scorecard.aggregationKPIs' as const;
+
+/**
+ * Default applied by `AverageAggregationStrategy` when `options.thresholds` is omitted
+ * from app-config. Higher headline percentage (0–100) = better. Evaluated in order; first match wins.
+ */
+export const DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    {
+      key: 'success',
+      expression: '>=80',
+      color: ScorecardThresholdRuleColors.SUCCESS,
+    },
+    {
+      key: 'warning',
+      expression: '30-79',
+      color: ScorecardThresholdRuleColors.WARNING,
+    },
+    {
+      key: 'error',
+      expression: '<30',
+      color: ScorecardThresholdRuleColors.ERROR,
+    },
+  ],
+};

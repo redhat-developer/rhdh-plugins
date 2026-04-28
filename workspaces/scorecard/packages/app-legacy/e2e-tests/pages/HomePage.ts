@@ -15,6 +15,7 @@
  */
 
 import { Locator, Page, expect } from '@playwright/test';
+import { AGGREGATED_CARDS_WIDGET_TITLES } from '../constants/homepageWidgetTitles';
 import {
   ScorecardMessages,
   getEntitiesLabel,
@@ -62,6 +63,11 @@ export class HomePage {
       cardPattern = /Scorecard:\s*GitHub open PRs|ScorecardGithubHomepage/i;
     } else if (cardName === 'Scorecard: Jira open blocking') {
       cardPattern = /Scorecard:\s*Jira open blocking|ScorecardJiraHomepage/i;
+    } else if (
+      cardName === AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi
+    ) {
+      cardPattern =
+        /Scorecard:\s*GitHub open PRs \(weighted health\)|ScorecardOpenPrsWeightedKpi/i;
     } else {
       cardPattern = new RegExp(escapeRegex(cardName), 'i');
     }
@@ -125,6 +131,21 @@ export class HomePage {
   }
 
   async clickDrillDownLink() {
-    await this.page.getByText(getEntitiesLabel(this.translations)).click();
+    // CardSubheader renders the count as a Link (e.g. "10 entities"). The card
+    // description can also contain the word "entities" (see API metadata), so
+    // getByText(entitiesLabel) is ambiguous. MUI Tooltip also sets the link’s
+    // accessible name to the long tooltip, so getByRole('link', { name }) is
+    // locale‑fragile. Match only links whose *visible* text is "{{count}} <label>".
+    const entitiesLabel = getEntitiesLabel(this.translations);
+    await this.page
+      .getByRole('link')
+      .filter({
+        hasText: new RegExp(
+          String.raw`^\d+\s*${escapeRegex(entitiesLabel)}$`,
+          'i',
+        ),
+      })
+      .first()
+      .click();
   }
 }

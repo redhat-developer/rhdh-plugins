@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
+import type { ReactNode } from 'react';
 import type { TooltipProps } from 'recharts';
 
+import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
 import type { PieData } from '../types';
 import { useTranslation } from '../../hooks/useTranslation';
 
-type CustomTooltipPayload = {
+export type CustomTooltipPayload = {
   name?: string;
   value?: number;
   payload?: PieData;
@@ -31,7 +33,7 @@ type CustomTooltipPayload = {
 type CustomTooltipProps = TooltipProps<number, string> & {
   payload?: readonly CustomTooltipPayload[];
   pieData: PieData[];
-  customContent?: string;
+  customContent?: string | React.ReactNode;
 };
 
 export const CustomTooltip = ({
@@ -60,12 +62,20 @@ export const CustomTooltip = ({
 
   let contentElement = null;
 
-  if (customContent) {
-    contentElement = (
-      <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
-        {customContent}
-      </Typography>
-    );
+  if (
+    customContent !== undefined &&
+    customContent !== null &&
+    customContent !== ''
+  ) {
+    if (typeof customContent === 'string') {
+      contentElement = (
+        <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
+          {customContent}
+        </Typography>
+      );
+    } else {
+      contentElement = <Box sx={{ m: 0 }}>{customContent as ReactNode}</Box>;
+    }
   } else if (payload?.[0]?.value === 0 || payload?.[0]?.value === undefined) {
     const translatedState = t(`thresholds.${payload?.[0]?.name}` as any, {});
     contentElement = (

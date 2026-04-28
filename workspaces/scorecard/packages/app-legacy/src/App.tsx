@@ -280,6 +280,38 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
+      id: 'scorecard-openPrsWeightedKpi',
+      title: 'Scorecard: GitHub open PRs (weighted health)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
+      props: {
+        aggregationId: 'openPrsWeightedKpi',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
       id: 'scorecard-customizable',
       title: 'Scorecard: Customizable',
       // Supported card layout
