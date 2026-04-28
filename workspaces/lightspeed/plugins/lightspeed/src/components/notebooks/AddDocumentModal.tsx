@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FileRejection } from 'react-dropzone';
 
 import { makeStyles } from '@material-ui/core/styles';
@@ -117,6 +117,8 @@ type AddDocumentModalProps = {
   onUploadStarted?: (info: { fileName: string; documentId: string }) => void;
   onUploadFailed?: (fileName: string) => void;
   onDuplicatesFound?: (files: File[]) => void;
+  filesToAdd?: File[];
+  onFilesAdded?: () => void;
 };
 
 export const AddDocumentModal = ({
@@ -128,6 +130,8 @@ export const AddDocumentModal = ({
   onUploadStarted,
   onUploadFailed,
   onDuplicatesFound,
+  filesToAdd,
+  onFilesAdded,
 }: AddDocumentModalProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -138,6 +142,13 @@ export const AddDocumentModal = ({
   const totalExistingAndSelected =
     existingDocumentNames.length + selectedFiles.length;
   const remainingSlots = NOTEBOOK_MAX_FILES - totalExistingAndSelected;
+
+  useEffect(() => {
+    if (filesToAdd && filesToAdd.length > 0) {
+      setSelectedFiles(prev => [...prev, ...filesToAdd]);
+      onFilesAdded?.();
+    }
+  }, [filesToAdd, onFilesAdded]);
 
   const handleFileDrop = (_event: unknown, files: File[]) => {
     setValidationErrors([]);

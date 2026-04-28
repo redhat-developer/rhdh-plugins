@@ -50,7 +50,6 @@ import {
   useDocumentStatusPolling,
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
-import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -219,7 +218,6 @@ export const NotebookView = ({
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const notebooksApi = useApi(notebooksApiRef);
-  const uploadMutation = useUploadDocument();
   const { mutateAsync: notebookCreateMessage } = useCreateNotebookMessage();
 
   const [conversationId, setConversationId] = useState(
@@ -331,6 +329,7 @@ export const NotebookView = ({
   );
   const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
+  const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
 
   const handleOpenUploadModal = () => setIsUploadModalOpen(true);
   const handleCloseUploadModal = () => setIsUploadModalOpen(false);
@@ -376,20 +375,11 @@ export const NotebookView = ({
 
     if (files.length === 0) return;
 
-    setUploadingFileNames(prev => [...prev, ...files.map(f => f.name)]);
-    for (const file of files) {
-      uploadMutation
-        .mutateAsync({ sessionId, file })
-        .then(data => {
-          handleUploadStarted({
-            fileName: file.name,
-            documentId: data.document_id,
-          });
-        })
-        .catch(() => {
-          handleUploadFailed(file.name);
-        });
-    }
+    setFilesToAddToModal(files);
+  };
+
+  const handleFilesAddedToModal = () => {
+    setFilesToAddToModal([]);
   };
 
   const handleOverwriteCancel = () => {
@@ -674,6 +664,8 @@ export const NotebookView = ({
         onUploadStarted={handleUploadStarted}
         onUploadFailed={handleUploadFailed}
         onDuplicatesFound={handleDuplicatesFound}
+        filesToAdd={filesToAddToModal}
+        onFilesAdded={handleFilesAddedToModal}
       />
 
       <OverwriteConfirmModal

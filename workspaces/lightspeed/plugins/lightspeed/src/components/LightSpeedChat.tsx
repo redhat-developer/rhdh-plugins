@@ -1483,7 +1483,7 @@ export const LightspeedChat = ({
               variant={AlertVariant[variant ?? 'success']}
               title={title}
               className={classes.toastAlert}
-              timeout={8000}
+              timeout={2000}
               onTimeout={() => handleRemoveNotebookAlert(key as React.Key)}
               actionClose={
                 <AlertActionCloseButton
