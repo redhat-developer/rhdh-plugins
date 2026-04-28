@@ -67,6 +67,8 @@ describe('StatusGroupedAggregationStrategy', () => {
           timestamp: '2025-01-01T10:30:00.000Z',
           values: [{ count: 2, name: 'success' }],
           thresholds,
+          entitiesConsidered: 9,
+          calculationErrorCount: 0,
         },
       });
 

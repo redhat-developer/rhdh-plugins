@@ -242,7 +242,7 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
     };
 
     render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={scorecardWithCalculationErrors}
         aggregationId={scorecardWithCalculationErrors.id}
         cardTitle="GitHub open PRs"
@@ -269,7 +269,7 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
     };
 
     render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={scorecardWithImplicitCalculationErrors}
         aggregationId={scorecardWithImplicitCalculationErrors.id}
         cardTitle="GitHub open PRs"

@@ -547,6 +547,8 @@ describe('createRouter', () => {
         warning: 4,
         success: 5,
       },
+      calculation_error_count: 1,
+      latest_entity_count: 1,
     };
 
     let mockCatalog: ReturnType<typeof catalogServiceMock.mock>;
@@ -739,6 +741,8 @@ describe('createRouter', () => {
               count: 0,
             })),
             thresholds,
+            entitiesConsidered: 9,
+            calculationErrorCount: 0,
           },
           {
             id: 'github.open_prs',
@@ -919,6 +923,8 @@ describe('createRouter', () => {
         warning: 2,
         success: 3,
       },
+      calculation_error_count: 1,
+      latest_entity_count: 1,
     };
 
     let metricRegistry: MetricProvidersRegistry;
