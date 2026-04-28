@@ -44,7 +44,11 @@ import { TimesIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
-import { TEMP_CONVERSATION_ID, UNTITLED_NOTEBOOK_NAME } from '../../const';
+import {
+  NOTEBOOK_MAX_FILES,
+  TEMP_CONVERSATION_ID,
+  UNTITLED_NOTEBOOK_NAME,
+} from '../../const';
 import { useCreateNotebookMessage } from '../../hooks/notebooks/useCreateNotebookMessage';
 import {
   useDocumentStatusPolling,
@@ -454,6 +458,8 @@ export const NotebookView = ({
   };
 
   const hasDocuments = documents.length > 0 || uploadingFileNames.length > 0;
+  const totalDocumentCount = documents.length + uploadingFileNames.length;
+  const isAddDisabled = totalDocumentCount >= NOTEBOOK_MAX_FILES;
 
   const panelContent = (
     <DrawerPanelContent
@@ -583,17 +589,26 @@ export const NotebookView = ({
                     </Button>
                   </Tooltip>
                   <Tooltip
-                    content={t('notebook.view.documents.add')}
+                    content={
+                      isAddDisabled
+                        ? t('notebook.view.documents.maxReached')
+                        : t('notebook.view.documents.add')
+                    }
                     position="right"
                   >
-                    <Button
-                      variant="plain"
-                      className={classes.addIconButton}
-                      onClick={handleOpenUploadModal}
-                      aria-label={t('notebook.view.documents.add')}
-                    >
-                      <AddCircleFilledIcon />
-                    </Button>
+                    <span>
+                      <Button
+                        variant="plain"
+                        className={classes.addIconButton}
+                        onClick={
+                          isAddDisabled ? undefined : handleOpenUploadModal
+                        }
+                        aria-label={t('notebook.view.documents.add')}
+                        isDisabled={isAddDisabled}
+                      >
+                        <AddCircleFilledIcon disabled={isAddDisabled} />
+                      </Button>
+                    </span>
                   </Tooltip>
                 </div>
               )}

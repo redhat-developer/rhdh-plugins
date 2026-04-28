@@ -63,10 +63,14 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebook.view.upload.heading': 'Sube un recurso para empezar',
     'notebook.view.upload.action': 'Subir un recurso',
     'notebook.view.input.placeholder': 'Pregunta sobre tus documentos...',
+    'notebook.view.input.disabledTooltip':
+      'Selecciona al menos un recurso cargado para comenzar a chatear',
     'notebook.view.sidebar.collapse': 'Contraer barra lateral',
     'notebook.view.sidebar.expand': 'Expandir barra lateral',
     'notebook.view.sidebar.resize': 'Redimensionar barra lateral',
     'notebook.view.documents.uploading': 'Subiendo documento',
+    'notebook.view.documents.maxReached':
+      'Se permiten un máximo de 10 documentos. Elimina un documento para subir uno nuevo.',
     'notebook.upload.success': '{{fileName}} subido correctamente.',
     'notebook.upload.failed': 'Error al subir {{fileName}}.',
 
@@ -78,6 +82,10 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebook.upload.modal.separator': 'o',
     'notebook.upload.modal.infoText':
       'Tipos de archivo aceptados: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.selectedFiles':
+      '{{count}} de {{max}} archivos seleccionados',
+    'notebook.upload.modal.addButton': 'Agregar ({{count}})',
+    'notebook.upload.modal.removeFile': 'Eliminar {{fileName}}',
     'notebook.upload.error.unsupportedType':
       'Error de carga: se encontraron tipos de archivo no compatibles. Suba solo tipos de archivo compatibles.',
     'notebook.upload.error.fileTooLarge':

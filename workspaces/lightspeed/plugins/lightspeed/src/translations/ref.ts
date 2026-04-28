@@ -67,6 +67,8 @@ export const lightspeedMessages = {
   'notebook.view.sidebar.expand': 'Expand sidebar',
   'notebook.view.sidebar.resize': 'Resize sidebar',
   'notebook.view.documents.uploading': 'Uploading document',
+  'notebook.view.documents.maxReached':
+    'Maximum 10 documents are allowed. Delete a document to upload a new document.',
   'notebook.upload.success': '{{fileName}} Successfully Uploaded.',
   'notebook.upload.failed': '{{fileName}} Upload Failed.',
 

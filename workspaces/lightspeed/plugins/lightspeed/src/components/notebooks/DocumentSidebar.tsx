@@ -28,6 +28,7 @@ import {
 } from '@patternfly/react-core';
 import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
 
+import { NOTEBOOK_MAX_FILES } from '../../const';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
 import { FileTypeIcon } from './FileTypeIcon';
@@ -157,6 +158,7 @@ export const DocumentSidebar = ({
     name => !uploadedNames.has(name),
   );
   const totalCount = documents.length + activePending.length;
+  const isAddDisabled = totalCount >= NOTEBOOK_MAX_FILES;
 
   return (
     <div className={classes.sidebar}>
@@ -180,14 +182,32 @@ export const DocumentSidebar = ({
             count: totalCount,
           } as any)}
         </Typography>
-        <Button
-          variant="link"
-          className={classes.addButton}
-          icon={<PlusCircleIcon />}
-          onClick={onAddDocument}
-        >
-          {t('notebook.view.documents.add')}
-        </Button>
+        {isAddDisabled ? (
+          <Tooltip
+            content={t('notebook.view.documents.maxReached')}
+            position="top"
+          >
+            <span>
+              <Button
+                variant="link"
+                className={classes.addButton}
+                icon={<PlusCircleIcon />}
+                isDisabled
+              >
+                {t('notebook.view.documents.add')}
+              </Button>
+            </span>
+          </Tooltip>
+        ) : (
+          <Button
+            variant="link"
+            className={classes.addButton}
+            icon={<PlusCircleIcon />}
+            onClick={onAddDocument}
+          >
+            {t('notebook.view.documents.add')}
+          </Button>
+        )}
       </div>
 
       {(documents.length > 0 || activePending.length > 0) && (
