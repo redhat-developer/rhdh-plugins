@@ -203,5 +203,11 @@ export type ThresholdRule = {
   icon?: string;
 };
 
+// @public
+export type ThresholdRuleAggregationConfig = Pick<
+  ThresholdRule,
+  'key' | 'expression' | 'color'
+>;
+
 // (No @packageDocumentation comment for this package)
 ```

@@ -67,6 +67,15 @@ export type ThresholdConfig = {
 };
 
 /**
+ * Threshold rule configuration for aggregation KPIs
+ * @public
+ */
+export type ThresholdRuleAggregationConfig = Pick<
+  ThresholdRule,
+  'key' | 'expression' | 'color'
+>;
+
+/**
  * @public
  */
 export type ThresholdResult = {
