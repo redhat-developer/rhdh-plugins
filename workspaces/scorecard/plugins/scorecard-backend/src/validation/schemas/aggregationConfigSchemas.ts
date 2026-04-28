@@ -18,10 +18,10 @@ import { z } from 'zod';
 import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 const baseAggregationConfigSchema = z.object({
-  id: z.string().min(1).max(255),
-  title: z.string().min(1).max(255),
+  id: z.string().min(1).max(128),
+  title: z.string().min(1).max(80),
   metricId: z.string().min(1).max(255),
-  description: z.string().min(1).max(255),
+  description: z.string().min(1).max(200),
 });
 
 const statusGroupedAggregationConfigSchema = z.object({
