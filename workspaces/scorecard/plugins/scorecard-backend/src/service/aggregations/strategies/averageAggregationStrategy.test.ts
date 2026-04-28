@@ -45,6 +45,8 @@ describe('AverageAggregationStrategy', () => {
       values: { error: 1, warning: 1, success: 1 },
       total: 3,
       timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 5,
+      calculationErrorCount: 2,
     });
 
     const loader = {
@@ -73,6 +75,8 @@ describe('AverageAggregationStrategy', () => {
     expect(out.result).toEqual(
       expect.objectContaining({
         total: 3,
+        entitiesConsidered: 5,
+        calculationErrorCount: 2,
         averageWeightedSum: 150,
         averageMaxPossible: 300,
         averageScore: 0.5,
@@ -88,6 +92,8 @@ describe('AverageAggregationStrategy', () => {
       values: { error: 1, warning: 1, success: 1 },
       total: 3,
       timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 3,
+      calculationErrorCount: 0,
     });
 
     const loader = {
@@ -129,6 +135,8 @@ describe('AverageAggregationStrategy', () => {
         values: { success: 1 },
         total: 1,
         timestamp: '2025-01-01T10:30:00.000Z',
+        entitiesConsidered: 1,
+        calculationErrorCount: 0,
       }),
     } as unknown as AggregatedMetricLoader;
 
@@ -154,6 +162,8 @@ describe('AverageAggregationStrategy', () => {
       values: { error: 0, warning: 0, success: 1, orphan: 2 },
       total: 3,
       timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 4,
+      calculationErrorCount: 1,
     });
 
     const loader = {
@@ -183,6 +193,8 @@ describe('AverageAggregationStrategy', () => {
     expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('orphan'));
     expect(out.result).toEqual(
       expect.objectContaining({
+        entitiesConsidered: 4,
+        calculationErrorCount: 1,
         averageWeightedSum: 100,
         averageMaxPossible: 300,
         averageScore: 0.333,

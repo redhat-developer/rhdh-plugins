@@ -162,7 +162,8 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest:
+      userEntityRef: user:development/guest
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options

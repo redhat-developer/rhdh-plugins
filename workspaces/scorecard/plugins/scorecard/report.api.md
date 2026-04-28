@@ -79,6 +79,9 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.averageLegendTooltipEntitiesEach_one': string;
     readonly 'metric.averageLegendTooltipEntitiesEach_other': string;
     readonly 'metric.averageLegendTooltipRowTotal': string;
+    readonly 'metric.drillDownCalculationFailures': string;
+    readonly 'metric.homepageEntityHealthRatio': string;
+    readonly 'metric.homepageEntityCalculationHealth': string;
     readonly 'thresholds.success': string;
     readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;

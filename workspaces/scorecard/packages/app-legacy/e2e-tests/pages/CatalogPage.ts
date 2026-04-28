@@ -39,9 +39,14 @@ export class CatalogPage {
   async loginAndSetLocale(locale: string) {
     await this.page.goto('/');
     const enterButton = this.page.getByRole('button', { name: 'Enter' });
-    await expect(enterButton).toBeVisible();
+    await expect(enterButton).toBeVisible({ timeout: 30000 });
     await enterButton.click();
-    await expect(this.page.getByText('Welcome back!')).toBeVisible();
+    // Guest flow copy varies by Backstage / branding; wait for shell instead of "Welcome back!".
+    await expect(
+      this.page.getByRole('link', { name: 'Home' }).first(),
+    ).toBeVisible({
+      timeout: 30000,
+    });
     await this.switchToLocale(locale);
   }
 

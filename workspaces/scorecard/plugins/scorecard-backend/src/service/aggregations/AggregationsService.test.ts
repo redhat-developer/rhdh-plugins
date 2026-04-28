@@ -59,6 +59,8 @@ describe('AggregationsService', () => {
       total: 3,
       max_timestamp: new Date('2025-01-01T10:00:00.000Z'),
       statusCounts: { error: 1, warning: 1, success: 1 },
+      calculation_error_count: 1,
+      latest_entity_count: 1,
     };
     const readAggregatedMetricByEntityRefs = jest.fn().mockResolvedValue(dbRow);
 
@@ -95,6 +97,8 @@ describe('AggregationsService', () => {
       total: 3,
       max_timestamp: new Date('2025-01-01T10:00:00.000Z'),
       statusCounts: { error: 1, warning: 1, success: 1 },
+      calculation_error_count: 1,
+      latest_entity_count: 1,
     };
     const readAggregatedMetricByEntityRefs = jest.fn().mockResolvedValue(dbRow);
 

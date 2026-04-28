@@ -67,6 +67,8 @@ export const StatusGroupedCardComponent = ({
       aggregationId={aggregationId}
       scorecardId={scorecardId}
       entitiesCount={result.total}
+      entitiesConsidered={result.entitiesConsidered}
+      calculationErrorCount={result.calculationErrorCount}
     />
   ) : null;
 

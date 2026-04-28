@@ -307,6 +307,8 @@ export const githubAggregatedResponse = {
     total: 10,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
   },
 };
 
@@ -330,6 +332,8 @@ export const jiraAggregatedResponse = {
     total: 10,
     timestamp: '2026-01-24T14:10:32.776Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
   },
 };
 
@@ -353,6 +357,8 @@ export const emptyJiraAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
   },
 };
 
@@ -376,6 +382,8 @@ export const emptyGithubAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
   },
 };
 
@@ -497,6 +505,11 @@ export const githubEntitiesDrillDownResponse = {
     totalPages: 1,
     isCapped: false,
   },
+  entityHealth: {
+    totalEntities: 10,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
 };
 
 /** Mock response for GET .../api/scorecard/metrics/jira.open_issues/catalog/aggregations/entities (in sync with jiraAggregatedResponse) */
@@ -557,6 +570,11 @@ export const jiraEntitiesDrillDownResponse = {
     totalPages: 1,
     isCapped: false,
   },
+  entityHealth: {
+    totalEntities: 4,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
 };
 
 /** Mock response for Jira entities drill-down when aggregation has no data (empty list). */
@@ -575,6 +593,11 @@ export const jiraEntitiesDrillDownNoDataResponse = {
     total: 0,
     totalPages: 0,
     isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 0,
+    calculationErrorCount: 0,
+    countsArePartial: false,
   },
 };
 

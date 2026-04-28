@@ -95,6 +95,11 @@ const scorecardTranslationEs = createTranslationMessages({
     'metric.averageLegendTooltipEntitiesEach_other':
       '{{count}} entidades, cada una {{score}}',
     'metric.averageLegendTooltipRowTotal': 'Puntuación total {{total}}',
+    'metric.drillDownCalculationFailures':
+      'Una o más entidades fallaron al calcular esta métrica.',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entidades',
+    'metric.homepageEntityCalculationHealth':
+      '{{healthy}} / {{total}} entidades sin errores de cálculo de métrica',
 
     // Threshold translations
     'thresholds.success': 'Éxito',

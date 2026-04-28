@@ -94,6 +94,11 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.averageLegendTooltipEntitiesEach_other':
       '{{count}} Elemente, je {{score}}',
     'metric.averageLegendTooltipRowTotal': 'Gesamtpunktzahl {{total}}',
+    'metric.drillDownCalculationFailures':
+      'Mindestens ein Element konnte diese Metrik nicht berechnen.',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} Elemente',
+    'metric.homepageEntityCalculationHealth':
+      '{{healthy}} / {{total}} Elemente ohne Metrik-Berechnungsfehler',
 
     // Threshold translations
     'thresholds.success': 'Erfolg',

@@ -42,6 +42,8 @@ describe('AggregatedMetricLoader', () => {
       total: 3,
       max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
       statusCounts: { success: 3 },
+      calculation_error_count: 1,
+      latest_entity_count: 1,
     };
 
     const readAggregatedMetricByEntityRefs = jest.fn().mockResolvedValue(row);

@@ -101,6 +101,8 @@ const mockScorecard: AggregatedMetricResult = {
     values: [{ name: 'success', count: 8 }],
     timestamp: '2024-01-01T00:00:00Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 8,
+    calculationErrorCount: 0,
   },
 };
 
@@ -326,6 +328,8 @@ describe('ScorecardHomepageCard', () => {
           values: [],
           timestamp: '2024-01-01T00:00:00Z',
           thresholds: DEFAULT_NUMBER_THRESHOLDS,
+          entitiesConsidered: 0,
+          calculationErrorCount: 0,
         },
       },
       isLoading: false,

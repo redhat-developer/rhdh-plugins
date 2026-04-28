@@ -115,8 +115,12 @@ jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
       switch (key) {
+        case 'metric.homepageEntityHealthRatio':
+          return '{{healthy}}/{{total}} entities';
         case 'thresholds.entities':
           return `${options?.count} entities`;
+        case 'metric.someEntitiesNotReportingValues':
+          return 'Some entities are not reporting values related to this metric.';
         case 'thresholds.noEntities':
           return `No entities in ${options?.category} state`;
         case 'thresholds.Test':
@@ -155,6 +159,8 @@ const mockScorecard: AggregatedMetricResult = {
     ],
     timestamp: '2024-01-01T00:00:00Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 37,
+    calculationErrorCount: 0,
   },
 };
 
@@ -223,6 +229,59 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
     expect(screen.getByTestId('card-description')).toHaveTextContent(
       'Current count of open Pull Requests',
     );
+  });
+
+  it('should render ratio and warning affordance when calculation errors exist', () => {
+    const scorecardWithCalculationErrors: AggregatedMetricResult = {
+      ...mockScorecard,
+      result: {
+        ...mockScorecard.result,
+        entitiesConsidered: 45,
+        calculationErrorCount: 8,
+      },
+    };
+
+    render(
+      <AggregatedMetricCard
+        scorecard={scorecardWithCalculationErrors}
+        aggregationId={scorecardWithCalculationErrors.id}
+        cardTitle="GitHub open PRs"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('card-subheader')).toHaveTextContent(
+      '37/45 entities',
+    );
+    expect(screen.queryByTestId('scorecard-homepage-card-warning')).toBeNull();
+  });
+
+  it('should infer ratio and warning from entitiesConsidered minus total when calculationErrorCount is missing', () => {
+    const scorecardWithImplicitCalculationErrors: AggregatedMetricResult = {
+      ...mockScorecard,
+      result: {
+        ...mockScorecard.result,
+        total: 4,
+        entitiesConsidered: 5,
+        calculationErrorCount: 0,
+      },
+    };
+
+    render(
+      <AggregatedMetricCard
+        scorecard={scorecardWithImplicitCalculationErrors}
+        aggregationId={scorecardWithImplicitCalculationErrors.id}
+        cardTitle="GitHub open PRs"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('card-subheader')).toHaveTextContent(
+      '4/5 entities',
+    );
+    expect(screen.queryByTestId('scorecard-homepage-card-warning')).toBeNull();
   });
 
   it('should render ResponsivePieChart', () => {
@@ -300,6 +359,8 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
         ...mockScorecard.result,
         values: [],
         total: 0,
+        entitiesConsidered: 0,
+        calculationErrorCount: 0,
       },
     };
 
@@ -341,6 +402,8 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
       result: {
         ...mockScorecard.result,
         values: [],
+        entitiesConsidered: 37,
+        calculationErrorCount: 0,
       },
     };
 

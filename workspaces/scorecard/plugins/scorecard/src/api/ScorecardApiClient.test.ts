@@ -155,6 +155,8 @@ describe('ScorecardApiClient', () => {
         values: [{ name: 'success', count: 1 }],
         timestamp: '2025-01-01T00:00:00Z',
         thresholds: {},
+        entitiesConsidered: 1,
+        calculationErrorCount: 0,
       },
     };
 
@@ -198,6 +200,58 @@ describe('ScorecardApiClient', () => {
 
       await expect(client.getAggregatedScorecard('myKpi')).rejects.toThrow(
         TypeError,
+      );
+    });
+
+    it('should throw TypeError when result is null', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...validAggregated,
+          result: null,
+        }),
+      });
+
+      await expect(client.getAggregatedScorecard('myKpi')).rejects.toThrow(
+        'result must be a non-null object',
+      );
+    });
+
+    it('should default missing numeric result fields to 0', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...validAggregated,
+          result: {
+            total: 2,
+            values: [{ name: 'success', count: 2 }],
+            timestamp: '2025-01-01T00:00:00Z',
+            thresholds: {},
+          },
+        }),
+      });
+
+      const out = await client.getAggregatedScorecard('myKpi');
+
+      expect(out.result.entitiesConsidered).toBe(0);
+      expect(out.result.calculationErrorCount).toBe(0);
+      expect(out.result.total).toBe(2);
+    });
+
+    it('should throw TypeError when a normalized numeric field is non-finite', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...validAggregated,
+          result: {
+            ...validAggregated.result,
+            entitiesConsidered: Number.NaN,
+          },
+        }),
+      });
+
+      await expect(client.getAggregatedScorecard('myKpi')).rejects.toThrow(
+        'entitiesConsidered must be a finite number',
       );
     });
   });

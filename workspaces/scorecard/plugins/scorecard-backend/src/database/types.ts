@@ -46,4 +46,11 @@ export type DbAggregatedMetric = {
   total: number;
   max_timestamp: Date;
   statusCounts: Record<string, number>;
+  /** Latest row per entity is a metric calculation failure (error_message set, value null). */
+  calculation_error_count: number;
+  /**
+   * How many of the requested `catalog_entity_refs` have at least one latest `metric_values` row
+   * for this metric (same cardinality the drill-down table is built from, modulo caps/filters).
+   */
+  latest_entity_count: number;
 };

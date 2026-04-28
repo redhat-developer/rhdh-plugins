@@ -37,6 +37,7 @@ import {
 import * as permissionUtils from '../permissions/permissionUtils';
 import {
   AggregatedMetric,
+  aggregationTypes,
   Metric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import * as thresholdUtils from '../utils/mergeEntityAndProviderThresholds';
@@ -77,6 +78,8 @@ const aggregatedMetric: DbAggregatedMetric = {
     success: 1,
     warning: 1,
   },
+  calculation_error_count: 0,
+  latest_entity_count: 2,
 };
 
 const metricsList = [
@@ -557,6 +560,8 @@ describe('CatalogMetricService', () => {
           },
           total: 2,
           timestamp: '2024-01-15T12:00:00.000Z',
+          entitiesConsidered: 2,
+          calculationErrorCount: 0,
         });
       });
 
@@ -576,6 +581,39 @@ describe('CatalogMetricService', () => {
         expect(toAggregatedMetricSpy).toHaveBeenCalledTimes(1);
         expect(toAggregatedMetricSpy).toHaveBeenCalledWith(aggregatedMetric);
       });
+
+      it('should throw when aggregation type is not supported', async () => {
+        await expect(
+          service.getAggregatedMetricByEntityRefs(
+            ['component:default/test-component'],
+            'github.important_metric',
+            'unknownAggregation',
+          ),
+        ).rejects.toThrow('Unsupported aggregation type: unknownAggregation');
+      });
+
+      it('should use latest_entity_count for entitiesConsidered when fewer owned refs have metric rows', async () => {
+        mockedDatabase.readAggregatedMetricByEntityRefs.mockResolvedValue({
+          ...aggregatedMetric,
+          latest_entity_count: 5,
+        });
+
+        const sparse = await service.getAggregatedMetricByEntityRefs(
+          [
+            'component:default/a',
+            'component:default/b',
+            'component:default/c',
+            'component:default/d',
+            'component:default/e',
+            'component:default/f',
+            'component:default/g',
+          ],
+          'github.important_metric',
+          aggregationTypes.statusGrouped,
+        );
+
+        expect(sparse.entitiesConsidered).toBe(5);
+      });
     });
 
     describe('when no entities are provided', () => {
@@ -593,6 +631,8 @@ describe('CatalogMetricService', () => {
           values: {},
           total: 0,
           timestamp: '2024-01-15T12:00:00.000Z',
+          entitiesConsidered: 0,
+          calculationErrorCount: 0,
         });
       });
 
@@ -699,6 +739,11 @@ describe('CatalogMetricService', () => {
         total: 3,
         totalPages: 1,
         isCapped: false,
+      });
+      expect(result.entityHealth).toEqual({
+        totalEntities: 3,
+        calculationErrorCount: 0,
+        countsArePartial: false,
       });
     });
 
@@ -1102,6 +1147,11 @@ describe('CatalogMetricService', () => {
       );
       expect(result.entities[0].entityRef).toBe('component:default/service-a');
       expect(result.entities[1].entityRef).toBe('component:staging/service-c');
+      expect(result.entityHealth).toEqual({
+        totalEntities: 2,
+        calculationErrorCount: 0,
+        countsArePartial: false,
+      });
     });
 
     it('should handle catalog API failures by logging an error and not returning information from the database', async () => {
@@ -1125,6 +1175,11 @@ describe('CatalogMetricService', () => {
 
       // When catalog is unavailable, do not bypass and instead log error
       expect(result.entities).toHaveLength(0);
+      expect(result.entityHealth).toEqual({
+        totalEntities: 0,
+        calculationErrorCount: 0,
+        countsArePartial: false,
+      });
     });
 
     it('should pass null to database for unscoped query (avoids catalog enumeration)', async () => {
@@ -1157,6 +1212,11 @@ describe('CatalogMetricService', () => {
       expect(result.entities.map(e => e.entityRef)).not.toContain(
         'component:default/service-b',
       );
+      expect(result.entityHealth).toEqual({
+        totalEntities: 2,
+        calculationErrorCount: 0,
+        countsArePartial: false,
+      });
     });
 
     it('should combine filters, sorting, and pagination', async () => {
@@ -1213,6 +1273,38 @@ describe('CatalogMetricService', () => {
         total: 0,
         totalPages: 0,
         isCapped: false,
+      });
+      expect(result.entityHealth).toEqual({
+        totalEntities: 0,
+        calculationErrorCount: 0,
+        countsArePartial: false,
+      });
+    });
+
+    it('should count metric calculation failures in entityHealth', async () => {
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([
+        mockMetricRows[0],
+        {
+          ...mockMetricRows[1],
+          value: null,
+          error_message: 'Provider failed',
+          status: null,
+        },
+      ]);
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(result.entityHealth).toEqual({
+        totalEntities: 2,
+        calculationErrorCount: 1,
+        countsArePartial: false,
       });
     });
 

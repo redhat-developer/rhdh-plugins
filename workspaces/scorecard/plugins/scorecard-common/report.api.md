@@ -10,6 +10,8 @@ export type AggregatedMetric = {
   values: Record<string, number>;
   total: number;
   timestamp: string;
+  entitiesConsidered: number;
+  calculationErrorCount: number;
 };
 
 // @public (undocumented)
@@ -112,6 +114,7 @@ export type EntityMetricDetailResponse = {
     totalPages: number;
     isCapped: boolean;
   };
+  entityHealth: ScorecardEntityHealthSummary;
 };
 
 // @public (undocumented)
@@ -160,6 +163,13 @@ export const SCORECARD_THRESHOLD_RULE_COLOR_VALUES: (
   | 'warning.main'
   | 'error.main'
 )[];
+
+// @public
+export type ScorecardEntityHealthSummary = {
+  totalEntities: number;
+  calculationErrorCount: number;
+  countsArePartial: boolean;
+};
 
 // @public
 export type ScorecardMetricPermission = ResourcePermission<

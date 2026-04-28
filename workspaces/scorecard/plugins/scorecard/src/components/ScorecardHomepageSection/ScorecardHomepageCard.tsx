@@ -24,6 +24,12 @@ import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common
 import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
 import { CardLoading } from '../Common/CardLoading';
 
+/** Coerces unknown/missing values to a finite number for safe UI math (NaN → 0). */
+function toSafeFiniteNumber(value: unknown): number {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export const ScorecardHomepageCard = ({
   metricId,
   aggregationId,
@@ -77,7 +83,16 @@ export const ScorecardHomepageCard = ({
     return null;
   }
 
-  if (data.result?.total === 0) {
+  const result = data.result;
+  const total = toSafeFiniteNumber(result.total);
+  const calculationErrorCount = toSafeFiniteNumber(
+    result.calculationErrorCount,
+  );
+  const entitiesConsidered = toSafeFiniteNumber(result.entitiesConsidered);
+  const hasNoRenderableAggregation =
+    total === 0 && calculationErrorCount === 0 && entitiesConsidered === 0;
+
+  if (hasNoRenderableAggregation) {
     return (
       <EmptyStatePanel
         showSubheader={showSubheader}
