@@ -45,7 +45,7 @@ describe('NotebooksApiClient', () => {
   describe('getBaseUrl', () => {
     it('should return the correct base URL', async () => {
       const baseUrl = await client.getBaseUrl();
-      expect(baseUrl).toBe('http://localhost:7007/api/lightspeed/ai-notebooks');
+      expect(baseUrl).toBe('http://localhost:7007/api/lightspeed/notebooks');
       expect(mockConfigApi.getString).toHaveBeenCalledWith('backend.baseUrl');
     });
   });
@@ -72,7 +72,7 @@ describe('NotebooksApiClient', () => {
 
       expect(result).toEqual(mockSession);
       expect(mockFetchApi.fetch).toHaveBeenCalledWith(
-        'http://localhost:7007/api/lightspeed/ai-notebooks/v1/sessions/vs_test-123',
+        'http://localhost:7007/api/lightspeed/notebooks/v1/sessions/vs_test-123',
         expect.objectContaining({
           headers: { 'Content-Type': 'application/json' },
         }),
@@ -95,7 +95,7 @@ describe('NotebooksApiClient', () => {
       await client.getSession('vs_test/special?chars');
 
       expect(mockFetchApi.fetch).toHaveBeenCalledWith(
-        'http://localhost:7007/api/lightspeed/ai-notebooks/v1/sessions/vs_test%2Fspecial%3Fchars',
+        'http://localhost:7007/api/lightspeed/notebooks/v1/sessions/vs_test%2Fspecial%3Fchars',
         expect.any(Object),
       );
     });
@@ -162,7 +162,7 @@ describe('NotebooksApiClient', () => {
 
       expect(result).toEqual(mockSessions);
       expect(mockFetchApi.fetch).toHaveBeenCalledWith(
-        'http://localhost:7007/api/lightspeed/ai-notebooks/v1/sessions',
+        'http://localhost:7007/api/lightspeed/notebooks/v1/sessions',
         expect.any(Object),
       );
     });
@@ -196,7 +196,7 @@ describe('NotebooksApiClient', () => {
 
       expect(result).toEqual(mockSession);
       expect(mockFetchApi.fetch).toHaveBeenCalledWith(
-        'http://localhost:7007/api/lightspeed/ai-notebooks/v1/sessions',
+        'http://localhost:7007/api/lightspeed/notebooks/v1/sessions',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
@@ -233,7 +233,7 @@ describe('NotebooksApiClient', () => {
       await client.renameSession('vs_test-123', 'New Name');
 
       expect(mockFetchApi.fetch).toHaveBeenCalledWith(
-        'http://localhost:7007/api/lightspeed/ai-notebooks/v1/sessions/vs_test-123',
+        'http://localhost:7007/api/lightspeed/notebooks/v1/sessions/vs_test-123',
         expect.objectContaining({
           method: 'PUT',
           body: JSON.stringify({ name: 'New Name' }),
@@ -252,7 +252,7 @@ describe('NotebooksApiClient', () => {
       await client.deleteSession('vs_test-123');
 
       expect(mockFetchApi.fetch).toHaveBeenCalledWith(
-        'http://localhost:7007/api/lightspeed/ai-notebooks/v1/sessions/vs_test-123',
+        'http://localhost:7007/api/lightspeed/notebooks/v1/sessions/vs_test-123',
         expect.objectContaining({
           method: 'DELETE',
         }),
