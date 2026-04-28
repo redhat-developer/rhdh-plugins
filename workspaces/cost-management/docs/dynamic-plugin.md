@@ -5,11 +5,12 @@ Red Hat Developer Hub (RHDH) leverages dynamic plugins to efficiently deploy plu
 
 The procedure involves the following steps:
 
-1. Ensure you are familiar with the [Red Hat Developer Hub 1.8 configuration docs](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/configuring_red_hat_developer_hub/index) and [Red Hat Developer Hub 1.8 plugin installation guide](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/installing_and_viewing_plugins_in_red_hat_developer_hub/index)
+1. Ensure you are familiar with the Red Hat Developer Hub configuration docs and plugin installation guide. This plugin has been tested with RHDH 1.8 and 1.9.
 
    **Additional Resources:**
 
-   - For comprehensive RHDH documentation, visit: [Red Hat Developer Hub 1.8 Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/)
+   - [Red Hat Developer Hub 1.9 Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/)
+   - [Red Hat Developer Hub 1.8 Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/)
 
 2. The plugin consumes services from [Red Hat Hybrid Cloud Console](https://console.redhat.com/openshift/cost-management) for both OpenShift and Optimizations sections, therefore your clusters [must be configured to access cost management data and optimization recommendations](https://docs.redhat.com/en/documentation/cost_management_service/1-latest/html/integrating_openshift_container_platform_data_into_cost_management/index).
    Copy and save the `CLIENT_ID` & `CLIENT_SECRET` from service account you created earlier with `Cost OpenShift Viewer` role. This will be needed during configuration step below.
@@ -33,7 +34,7 @@ The procedure involves the following steps:
    ```yaml
    # Add to dynamic-plugins-rhdh ConfigMap
 
-   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:latest!red-hat-developer-hub-plugin-cost-management
+   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.0.2!red-hat-developer-hub-plugin-cost-management
      disabled: false
      pluginConfig:
        dynamicPlugins:
@@ -64,7 +65,7 @@ The procedure involves the following steps:
                cost-management.openshift:
                  parent: cost-management
                  priority: 20
-   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:latest!red-hat-developer-hub-plugin-cost-management-backend
+   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.0.2!red-hat-developer-hub-plugin-cost-management-backend
      disabled: false
      pluginConfig:
        costManagement:
