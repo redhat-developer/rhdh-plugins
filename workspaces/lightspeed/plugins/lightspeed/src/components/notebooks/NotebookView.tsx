@@ -551,6 +551,8 @@ export const NotebookView = ({
               variant={AlertVariant[variant ?? 'success']}
               title={title}
               className={classes.toastAlert}
+              timeout={2000}
+              onTimeout={() => handleRemoveToastAlert(key as React.Key)}
               actionClose={
                 <AlertActionCloseButton
                   title={title as string}
