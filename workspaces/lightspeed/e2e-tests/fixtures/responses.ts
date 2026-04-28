@@ -64,6 +64,7 @@ export const thinkingContent =
   'The user wants to start a new conversation. I should respond helpfully and concisely.';
 export const assistantResponse = 'Still a placeholder message';
 
+/** Default conversation history for most e2e tests (no deep-thinking / reasoning UI). */
 export const contents = [
   {
     provider: models[1].provider_id,
@@ -74,12 +75,29 @@ export const contents = [
         type: 'user',
       },
       {
-        content: `<think>\n${thinkingContent}\n</think>\n\n${assistantResponse}`,
+        content: assistantResponse,
         type: 'assistant',
       },
     ],
     started_at: '2025-10-06T15:39:38Z',
     completed_at: '2025-10-06T15:39:42Z',
+  },
+];
+
+/**
+ * Same thread as {@link contents}, but assistant text includes `redacted_thinking`
+ * so the chat renders the expandable “Show thinking” section.
+ */
+export const contentsWithRedactedThinking = [
+  {
+    ...contents[0],
+    messages: [
+      contents[0].messages[0],
+      {
+        content: `<think>\n${thinkingContent}\n</think>\n\n${assistantResponse}`,
+        type: 'assistant',
+      },
+    ],
   },
 ];
 

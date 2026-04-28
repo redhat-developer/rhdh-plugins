@@ -21,6 +21,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { TEMP_CONVERSATION_ID } from '../../const';
 import { getTimestamp } from '../../utils/lightspeed-chatbox-utils';
+import { resetSharedToolCallsCacheStoreForTests } from '../toolCallsCacheStore';
 import {
   useConversationMessages,
   useFetchConversationMessages,
@@ -154,6 +155,7 @@ describe('useFetchConversations', () => {
 describe('useConversationMesages', () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    resetSharedToolCallsCacheStoreForTests();
   });
 
   it('should initialize conversations with the given conversationId', () => {

@@ -96,6 +96,7 @@ function baseContextValue(): LightspeedDrawerContextType {
     setDraftMessage: jest.fn(),
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
+    consumePendingOverlayThreadHandoff: jest.fn(() => false),
   };
 }
 
