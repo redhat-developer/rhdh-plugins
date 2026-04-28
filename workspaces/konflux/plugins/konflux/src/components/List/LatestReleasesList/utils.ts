@@ -16,6 +16,7 @@
 
 import {
   getApplicationFromResource,
+  matchesApplicationPattern,
   ReleaseResource,
   SubcomponentClusterConfig,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
@@ -40,16 +41,19 @@ export const getLatestRelease = (
       config.namespace === namespace,
   );
 
-  // get all applications from matching configs
-  const appNames = new Set(
-    matchingConfigs.flatMap(config => config.applications),
+  // get all application patterns from matching configs
+  const appPatterns = matchingConfigs.flatMap(
+    config => config.applications ?? [],
   );
+  const fetchesAll = appPatterns.length === 0 || appPatterns.includes('*');
 
   const filteredReleases = releases.filter(release => {
     const applicationName = getApplicationFromResource(release) || '';
+    const matchesApp =
+      fetchesAll || matchesApplicationPattern(applicationName, appPatterns);
     return (
       release.subcomponent?.name === subcomponent &&
-      appNames.has(applicationName) &&
+      matchesApp &&
       release.cluster.name === cluster &&
       release.metadata?.namespace === namespace
     );

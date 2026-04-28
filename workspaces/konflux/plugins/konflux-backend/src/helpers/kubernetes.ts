@@ -16,29 +16,8 @@
 import {
   getApplicationFromResource,
   K8sResourceCommonWithClusterInfo,
+  matchesApplicationPattern,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-
-/**
- * Convert a glob pattern (e.g. "app-*", "*api*") to a RegExp
- */
-const globToRegex = (pattern: string): RegExp => {
-  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
-  const regexStr = escaped.replace(/\*/g, '.*');
-  return new RegExp(`^${regexStr}$`);
-};
-
-/**
- * Check if a name matches any of the given application patterns.
- * Supports exact matches and glob patterns with "*".
- */
-export const matchesApplicationPattern = (
-  name: string,
-  patterns: string[],
-): boolean => {
-  return patterns.some(pattern =>
-    pattern.includes('*') ? globToRegex(pattern).test(name) : pattern === name,
-  );
-};
 
 /**
  * Filter resources by application names or glob patterns
