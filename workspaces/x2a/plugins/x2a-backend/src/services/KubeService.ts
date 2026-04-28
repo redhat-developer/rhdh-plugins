@@ -19,15 +19,20 @@ import {
   createServiceFactory,
   LoggerService,
 } from '@backstage/backend-plugin-api';
+import { Log } from '@kubernetes/client-node';
 import type {
   CoreV1Api,
   BatchV1Api,
+  KubeConfig,
   V1OwnerReference,
   V1Pod,
   V1PodList,
   V1Secret,
   V1Job,
 } from '@kubernetes/client-node';
+
+import { PassThrough } from 'node:stream';
+import * as fs from 'node:fs';
 import {
   kubeServiceRef,
   type KubeServiceApi,
@@ -36,6 +41,8 @@ import {
   type GitRepo,
   type JobCreateParams,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
+import { stringifyError } from '../utils';
 import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
 import type { X2AConfig } from './types';
@@ -52,9 +59,30 @@ import {
   DEFAULT_GIT_AUTHOR_NAME,
   DEFAULT_GIT_AUTHOR_EMAIL,
 } from './constants';
-import * as fs from 'node:fs';
 
-import { stringifyError } from '../utils';
+/**
+ * The API does not guarantee `items` order. Never use `items[0]`: a Pending
+ * placeholder can sort before a Running pod, which made us return no logs
+ * and/or tail the wrong pod.
+ *
+ * Priority: Running > any non-Pending (Succeeded/Failed) > Pending.
+ */
+export function choosePodForJobLogs(items: V1Pod[]): V1Pod | undefined {
+  const asTime = (p: V1Pod) => {
+    const ts = p.metadata?.creationTimestamp;
+    if (!ts) {
+      return 0;
+    }
+    return Date.parse(typeof ts === 'string' ? ts : ts.toISOString()) || 0;
+  };
+  const byNewest = [...items].sort((a, b) => asTime(b) - asTime(a));
+  const running = byNewest.find(p => p.status?.phase === 'Running');
+  if (running) {
+    return running;
+  }
+  const nonPending = byNewest.find(p => p.status?.phase !== 'Pending');
+  return nonPending ?? byNewest[0];
+}
 
 /**
  * Reads the namespace from the in-cluster service account
@@ -101,6 +129,7 @@ export class KubeService implements KubeServiceApi {
   readonly #logger: LoggerService;
   readonly #coreV1Api: CoreV1Api;
   readonly #batchV1Api: BatchV1Api;
+  readonly #kubeConfig: KubeConfig;
   readonly #config: X2AConfig;
   readonly #namespace: string;
 
@@ -116,15 +145,17 @@ export class KubeService implements KubeServiceApi {
     this.#namespace = config.kubernetes.namespace;
     this.#coreV1Api = null as any; // Initialized in initialize()
     this.#batchV1Api = null as any; // Initialized in initialize()
+    this.#kubeConfig = null as any; // Initialized in initialize()
   }
 
   private async initialize() {
-    const { coreV1Api, batchV1Api } = await makeK8sClient(
+    const { coreV1Api, batchV1Api, kubeConfig } = await makeK8sClient(
       this.#logger,
       this.#namespace,
     );
     (this.#coreV1Api as any) = coreV1Api;
     (this.#batchV1Api as any) = batchV1Api;
+    (this.#kubeConfig as any) = kubeConfig;
   }
 
   /**
@@ -381,7 +412,10 @@ export class KubeService implements KubeServiceApi {
         return '';
       }
 
-      const pod = pods.items[0];
+      const pod = choosePodForJobLogs(pods.items);
+      if (!pod) {
+        return '';
+      }
       const podName = pod?.metadata?.name;
       if (!podName) {
         // This can happen if a pod is in the process of being created but hasn't been
@@ -397,11 +431,35 @@ export class KubeService implements KubeServiceApi {
         return '';
       }
 
-      // Get logs from the pod
+      const containerName = pod.spec?.containers?.[0]?.name;
+      if (!containerName) {
+        this.#logger.warn(
+          `No container in pod to read logs for job: ${k8sJobName}`,
+        );
+        return '';
+      }
+
+      if (streaming) {
+        const pass = new PassThrough();
+        const k8sLog = new Log(this.#kubeConfig);
+        const logAbort: AbortController = await k8sLog.log(
+          this.#namespace,
+          podName,
+          containerName,
+          pass,
+          { follow: true },
+        );
+        pass.on('close', () => {
+          logAbort.abort();
+        });
+        return pass;
+      }
+
       const logs = await this.#coreV1Api.readNamespacedPodLog({
         name: podName,
         namespace: this.#namespace,
-        follow: streaming,
+        container: containerName,
+        follow: false,
       });
 
       return logs;

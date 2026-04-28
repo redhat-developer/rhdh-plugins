@@ -130,6 +130,7 @@ readonly "modulePage.phases.commitId": string;
 readonly "modulePage.phases.viewLog": string;
 readonly "modulePage.phases.hideLog": string;
 readonly "modulePage.phases.noLogsAvailable": string;
+readonly "modulePage.phases.logWaitingForStream": string;
 readonly "modulePage.phases.telemetry.title": string;
 readonly "modulePage.phases.telemetry.duration": string;
 readonly "modulePage.phases.telemetry.noTelemetryAvailable": string;

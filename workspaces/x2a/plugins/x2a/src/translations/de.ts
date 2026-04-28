@@ -176,6 +176,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.viewLog': 'Log anzeigen',
     'modulePage.phases.hideLog': 'Log ausblenden',
     'modulePage.phases.noLogsAvailable': 'Noch keine Logs verfügbar...',
+    'modulePage.phases.logWaitingForStream':
+      'Warte auf Log-Ausgabe vom Cluster...',
     'modulePage.phases.telemetry.title': 'Telemetrie',
     'modulePage.phases.telemetry.noTelemetryAvailable':
       'Keine Telemetrie verfügbar',
