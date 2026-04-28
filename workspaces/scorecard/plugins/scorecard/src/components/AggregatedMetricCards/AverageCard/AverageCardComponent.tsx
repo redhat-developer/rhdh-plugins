@@ -115,6 +115,8 @@ export const AverageCardComponent = ({
       aggregationId={aggregationId}
       scorecardId={scorecard.id}
       entitiesCount={scorecard.result.total}
+      entitiesConsidered={scorecard.result.entitiesConsidered}
+      calculationErrorCount={scorecard.result.calculationErrorCount}
     />
   ) : null;
 

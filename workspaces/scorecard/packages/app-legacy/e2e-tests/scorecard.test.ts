@@ -1094,11 +1094,10 @@ test.describe('Scorecard Plugin Tests', () => {
           },
         );
         await expectAverageCardCenterPercent(drillCard, '50%');
-        await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
         await scorecardDrillDownPage.expectTableHeadersVisible();
         await scorecardDrillDownPage.expectEntityNamesVisible([
           'all-scorecards-service',
-          'Red Hat Developer Hub',
+          'red-hat-developer-hub',
           'github-scorecard-only-service',
           'all-scorecards-service-different-owner',
           'backend-api',

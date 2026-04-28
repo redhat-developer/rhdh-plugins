@@ -150,8 +150,8 @@ describe('AggregatedMetricMapper', () => {
             { name: 'warning', count: 1, score: 0 },
             { name: 'error', count: 1, score: 0 },
           ],
-          entitiesConsidered: 7,
           calculationErrorCount: 0,
+          entitiesConsidered: 3,
           thresholds,
         },
         aggregationConfig,
@@ -175,6 +175,8 @@ describe('AggregatedMetricMapper', () => {
             { name: 'warning', count: 1, score: 0 },
             { name: 'error', count: 1, score: 0 },
           ],
+          calculationErrorCount: 0,
+          entitiesConsidered: 3,
           thresholds,
         },
       });

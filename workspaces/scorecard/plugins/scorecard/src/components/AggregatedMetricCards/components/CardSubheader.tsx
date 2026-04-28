@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from '@backstage/core-components';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -22,29 +23,57 @@ type CardSubheaderProps = {
   aggregationId: string;
   scorecardId: string;
   entitiesCount: number;
+  entitiesConsidered?: number;
+  calculationErrorCount?: number;
 };
 
 export const CardSubheader = ({
   aggregationId,
   scorecardId,
   entitiesCount,
+  entitiesConsidered = entitiesCount,
+  calculationErrorCount = 0,
 }: CardSubheaderProps) => {
   const { t } = useTranslation();
+  const totalEntities = Math.max(0, entitiesConsidered);
+  const inferredErrorCount = Math.max(0, totalEntities - entitiesCount);
+  const effectiveErrorCount = Math.max(
+    calculationErrorCount,
+    inferredErrorCount,
+  );
+  const hasCalculationErrors = effectiveErrorCount > 0;
+  const healthyEntitiesCount = Math.max(0, totalEntities - effectiveErrorCount);
+  const ratioTemplate = t('metric.homepageEntityHealthRatio');
+  const entitiesLabel = hasCalculationErrors
+    ? ratioTemplate
+        .replace('{{healthy}}', String(healthyEntitiesCount))
+        .replace('{{total}}', String(totalEntities))
+    : t('thresholds.entities', { count: entitiesCount });
+
+  const linkNode = (
+    <Link
+      to={`/scorecard/aggregations/${encodeURIComponent(
+        aggregationId,
+      )}/metrics/${encodeURIComponent(scorecardId)}`}
+    >
+      {entitiesLabel}
+    </Link>
+  );
 
   return (
-    <Tooltip
-      enterDelay={1500}
-      title={t('metric.someEntitiesNotReportingValues')}
-      arrow
-      placement="right"
-    >
-      <Link
-        to={`/scorecard/aggregations/${encodeURIComponent(
-          aggregationId,
-        )}/metrics/${encodeURIComponent(scorecardId)}`}
-      >
-        {t('thresholds.entities', { count: entitiesCount })}
-      </Link>
-    </Tooltip>
+    <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+      {hasCalculationErrors ? (
+        <Tooltip
+          enterDelay={1500}
+          title={t('metric.someEntitiesNotReportingValues')}
+          arrow
+          placement="right"
+        >
+          {linkNode}
+        </Tooltip>
+      ) : (
+        linkNode
+      )}
+    </Box>
   );
 };

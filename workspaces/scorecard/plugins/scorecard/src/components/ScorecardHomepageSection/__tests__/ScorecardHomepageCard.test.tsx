@@ -116,7 +116,7 @@ jest.mock('../../../hooks/useTranslation', () => ({
     t: (key: string, options?: any) => {
       switch (key) {
         case 'metric.homepageEntityHealthRatio':
-          return `${options?.healthy}/${options?.total} entities`;
+          return '{{healthy}}/{{total}} entities';
         case 'thresholds.entities':
           return `${options?.count} entities`;
         case 'metric.someEntitiesNotReportingValues':

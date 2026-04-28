@@ -40,6 +40,8 @@ export class StatusGroupedAggregationStrategy implements AggregationStrategy {
     const result = {
       total: aggregatedMetric.total,
       timestamp: aggregatedMetric.timestamp,
+      entitiesConsidered: aggregatedMetric.entitiesConsidered,
+      calculationErrorCount: aggregatedMetric.calculationErrorCount,
       values: thresholds.rules.map(rule => ({
         name: rule.key,
         count: aggregatedMetric.values[rule.key] ?? 0,

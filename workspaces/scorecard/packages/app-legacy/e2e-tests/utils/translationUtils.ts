@@ -180,6 +180,19 @@ export function getEntitiesPageMissingPermission(
   );
 }
 
+/** Tooltip text for "some entities not reporting" icon on drill-down card (locale-aware). */
+export function getSomeEntitiesNotReportingTooltip(
+  translations: ScorecardMessages,
+): string {
+  const metric = (
+    translations as { metric?: { someEntitiesNotReportingValues?: string } }
+  ).metric;
+  return (
+    metric?.someEntitiesNotReportingValues ??
+    scorecardMessages.metric.someEntitiesNotReportingValues
+  );
+}
+
 /** Rows-per-page label (e.g. "5 rows", "5 lignes"). Used for dropdown and listbox options. */
 export function getEntitiesTableFooterRowsLabel(
   translations: ScorecardMessages,

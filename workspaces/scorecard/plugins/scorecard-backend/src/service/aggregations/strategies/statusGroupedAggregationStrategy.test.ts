@@ -45,6 +45,8 @@ describe('StatusGroupedAggregationStrategy', () => {
       values: { success: 2 },
       total: 2,
       timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 9,
+      calculationErrorCount: 2,
     });
 
     const loader = {
@@ -94,6 +96,8 @@ describe('StatusGroupedAggregationStrategy', () => {
       metric,
       expect.objectContaining({
         total: 2,
+        entitiesConsidered: 9,
+        calculationErrorCount: 2,
         values: expect.arrayContaining([
           expect.objectContaining({ name: 'error', count: 0 }),
           expect.objectContaining({ name: 'warning', count: 0 }),
@@ -124,6 +128,8 @@ describe('StatusGroupedAggregationStrategy', () => {
     });
 
     expect(result.result.total).toBe(0);
+    expect(result.result.entitiesConsidered).toBe(0);
+    expect(result.result.calculationErrorCount).toBe(0);
     expect(
       result.result.values.map(v => ({ name: v.name, count: v.count })),
     ).toEqual([

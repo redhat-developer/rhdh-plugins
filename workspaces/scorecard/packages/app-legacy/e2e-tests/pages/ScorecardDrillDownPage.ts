@@ -23,6 +23,7 @@ import {
   getEntitiesPageMissingPermission,
   getEntitiesPageNoDataFound,
   getEntitiesTableHeaderLabels,
+  getSomeEntitiesNotReportingTooltip,
 } from '../utils/translationUtils';
 
 type MetricId = 'github.open_prs' | 'jira.open_issues';
@@ -174,6 +175,15 @@ export class ScorecardDrillDownPage {
     await expect(heading.locator('svg.MuiSvgIcon-colorWarning')).toHaveCount(0);
   }
 
+  /** Verifies the "some entities not reporting" icon tooltip on the drill-down card. */
+  async verifySomeEntitiesNotReportingTooltip() {
+    const icon = this.page.getByTestId('ReportProblemOutlinedIcon');
+    await expect(icon).toBeVisible();
+    await icon.hover();
+    const tooltipText = getSomeEntitiesNotReportingTooltip(this.translations);
+    await expect(this.page.getByRole('tooltip')).toContainText(tooltipText);
+  }
+
   async expectTableHeadersVisible() {
     const tableHeaders = getEntitiesTableHeaderLabels(this.translations);
     const headerNames = [
@@ -204,7 +214,7 @@ export class ScorecardDrillDownPage {
       await expect(
         entitiesTable
           .locator('tbody')
-          .locator(`a[href*="/component/${slug}"]`)
+          .locator(`a[href*="/catalog/default/component/${slug}"]`)
           .first(),
       ).toBeVisible({ timeout: 15_000 });
     }
