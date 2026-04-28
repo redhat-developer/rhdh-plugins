@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.7.0
+
+### Minor Changes
+
+- bf72ffc: Adds `**average**` as an aggregation KPI type alongside `**statusGrouped**`, with configurable `**options.statusScores**` and optional `**options.thresholds**` (same shape as metric thresholds) for homepage donut coloring against `**averageScore × 100**`, with built-in defaults when omitted.
+
+### Patch Changes
+
+- Updated dependencies [bf72ffc]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.0
+
 ## 2.6.0
 
 ### Minor Changes
