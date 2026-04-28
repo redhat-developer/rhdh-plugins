@@ -34,7 +34,7 @@ export const getCostManagementAccess: (
   options: RouterOptions,
 ) => RequestHandler = options => async (_, response) => {
   const { logger, permissions, httpAuth, cache, costManagementApi } = options;
-  let finalDecision = AuthorizeResult.DENY;
+  let finalDecision: AuthorizeResult = AuthorizeResult.DENY;
 
   // Check for cost.plugin permission
   // If user has cost.plugin permission, allow access to all data
