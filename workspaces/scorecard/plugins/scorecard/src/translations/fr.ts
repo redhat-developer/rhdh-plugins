@@ -38,6 +38,9 @@ const scorecardTranslationFr = createTranslationMessages({
     'permissionRequired.button': 'En savoir plus',
     'permissionRequired.altText': 'Autorisation requise',
 
+    // Common UI
+    'common.loading': 'Chargement',
+
     // Not found state
     'notFound.title': "404 Nous n'avons pas trouvé cette page",
     'notFound.description':

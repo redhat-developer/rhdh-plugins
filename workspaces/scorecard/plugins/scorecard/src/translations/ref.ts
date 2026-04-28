@@ -51,6 +51,11 @@ export const scorecardMessages = {
     altText: 'Permission required',
   },
 
+  // Common UI
+  common: {
+    loading: 'Loading',
+  },
+
   // Error messages
   errors: {
     entityMissingProperties:

@@ -21,7 +21,6 @@ export {
 export {
   SCORECARD_ENTITIES_TABLE_HEADERS,
   SCORECARD_ERROR_STATE_COLOR,
-  SCORECARD_LOADING_ARIA_LABEL,
 } from './constants';
 export { getLastUpdatedLabel } from './entityTableUtils';
 export { getStatusConfig, resolveStatusColor } from './statusUtils';

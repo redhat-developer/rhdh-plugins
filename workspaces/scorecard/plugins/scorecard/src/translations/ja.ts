@@ -38,6 +38,9 @@ const scorecardTranslationJa = createTranslationMessages({
     'permissionRequired.button': 'さらに表示する',
     'permissionRequired.altText': '権限が必要',
 
+    // Common UI
+    'common.loading': '読み込み中',
+
     // Not found state
     'notFound.title': '404 ページが見つかりません',
     'notFound.description':

@@ -19,12 +19,6 @@
  */
 export const SCORECARD_ERROR_STATE_COLOR = 'rhdh.general.cardBorderColor';
 
-/**
- * `aria-label` for MUI `CircularProgress` (`role="progressbar"`): WCAG / axe need a named
- * progressbar when there is no visible text. English-only (not i18n).
- */
-export const SCORECARD_LOADING_ARIA_LABEL = 'Loading';
-
 interface HeadCell {
   id: string;
   label: string;

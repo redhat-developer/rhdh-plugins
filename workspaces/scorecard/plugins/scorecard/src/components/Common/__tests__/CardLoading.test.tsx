@@ -15,7 +15,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { SCORECARD_LOADING_ARIA_LABEL } from '../../../utils';
+import { mockT } from '../../../test-utils/mockTranslations';
 import { CardLoading } from '../CardLoading';
 
 describe('CardLoading', () => {
@@ -23,7 +23,7 @@ describe('CardLoading', () => {
     render(<CardLoading />);
 
     const progress = screen.getByRole('progressbar', {
-      name: SCORECARD_LOADING_ARIA_LABEL,
+      name: mockT('common.loading'),
     });
     expect(progress).toBeInTheDocument();
   });

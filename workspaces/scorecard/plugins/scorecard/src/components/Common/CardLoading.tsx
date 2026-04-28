@@ -17,9 +17,11 @@
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { SCORECARD_LOADING_ARIA_LABEL } from '../../utils';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const CardLoading = ({ dataTestId }: { dataTestId?: string }) => {
+  const { t } = useTranslation();
+
   return (
     <Box
       display="flex"
@@ -28,7 +30,7 @@ export const CardLoading = ({ dataTestId }: { dataTestId?: string }) => {
       minHeight="200px"
       data-testid={dataTestId}
     >
-      <CircularProgress aria-label={SCORECARD_LOADING_ARIA_LABEL} />
+      <CircularProgress aria-label={t('common.loading')} />
     </Box>
   );
 };

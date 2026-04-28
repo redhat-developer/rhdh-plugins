@@ -29,10 +29,7 @@ import { useOwnershipEntityRefs } from '../../../hooks/useOwnershipEntityRefs';
 import { useAggregatedScorecardEntities } from '../../../hooks/useAggregatedScorecardEntities';
 import { useAggregatedScorecard } from '../../../hooks/useAggregatedScorecard';
 import { useEntityMetadataMap } from '../../../hooks/useEntityMetadataMap';
-import {
-  SCORECARD_ENTITIES_TABLE_HEADERS,
-  SCORECARD_LOADING_ARIA_LABEL,
-} from '../../../utils';
+import { SCORECARD_ENTITIES_TABLE_HEADERS } from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
 
 import { EntitiesTableStateRow } from './EntitiesTableStateRow';
@@ -154,7 +151,7 @@ export const EntitiesTable = ({
                 colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
                 align="center"
               >
-                <CircularProgress aria-label={SCORECARD_LOADING_ARIA_LABEL} />
+                <CircularProgress aria-label={t('common.loading')} />
               </TableCell>
             </TableRow>
           )}
