@@ -138,6 +138,38 @@ describe('OpenSSFMetricProvider', () => {
   });
 
   describe('calculateMetric', () => {
+    it.each([0, 10])(
+      'returns the score when the check is at boundary %i',
+      async boundaryScore => {
+        (globalThis.fetch as jest.Mock).mockResolvedValue({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            date: '2024-01-15',
+            repo: { name: 'github.com/owner/repo', commit: 'x' },
+            scorecard: { version: '4.0.0', commit: 'y' },
+            score: 7,
+            checks: [
+              {
+                name: 'Maintained',
+                score: boundaryScore,
+                reason: null,
+                details: null,
+                documentation: { short: '', url: '' },
+              },
+            ],
+          }),
+        });
+
+        const provider = new OpenSSFMetricProvider(
+          maintainedConfig,
+          OPENSSF_THRESHOLDS,
+        );
+        const result = await provider.calculateMetric(entity);
+
+        expect(result).toBe(boundaryScore);
+      },
+    );
+
     it('returns the score for the configured check', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue({
         ok: true,
