@@ -341,7 +341,12 @@ export const NotebookView = ({
   const handleCloseUploadModal = () => setIsUploadModalOpen(false);
 
   const handleFilesUploading = (files: File[]) => {
-    setUploadingFileNames(prev => [...prev, ...files.map(f => f.name)]);
+    setUploadingFileNames(prev => {
+      const newNames = files
+        .map(f => f.name)
+        .filter(name => !prev.includes(name));
+      return [...prev, ...newNames];
+    });
   };
 
   const handleUploadStarted = (info: {
@@ -415,9 +420,8 @@ export const NotebookView = ({
     for (const result of completedOrFailed) {
       processedIds.current.add(result.documentId);
       idsToRemove.add(result.documentId);
-      if (result.status !== 'completed') {
-        namesToRemove.add(result.fileName);
-      } else {
+      namesToRemove.add(result.fileName);
+      if (result.status === 'completed') {
         newCompletedNames.add(result.fileName);
       }
 
