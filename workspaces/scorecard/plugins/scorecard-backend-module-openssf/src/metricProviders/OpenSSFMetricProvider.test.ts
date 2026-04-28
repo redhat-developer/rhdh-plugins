@@ -17,8 +17,11 @@
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 
-import { OpenSSFMetricProvider } from './OpenSSFMetricProvider';
-import { OPENSSF_THRESHOLDS } from './OpenSSFConfig';
+import {
+  createOpenSSFMetricProvider,
+  OpenSSFMetricProvider,
+} from './OpenSSFMetricProvider';
+import { OPENSSF_METRICS, OPENSSF_THRESHOLDS } from './OpenSSFConfig';
 
 const scorecardLocation =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
@@ -275,6 +278,33 @@ describe('OpenSSFMetricProvider', () => {
       await expect(provider.calculateMetric(entity)).rejects.toThrow(
         "OpenSSF check 'Maintained' has invalid score 11",
       );
+    });
+  });
+
+  describe('createOpenSSFMetricProvider', () => {
+    it('creates one provider per configured OpenSSF metric', () => {
+      const providers = createOpenSSFMetricProvider();
+
+      expect(providers).toHaveLength(OPENSSF_METRICS.length);
+      expect(
+        providers.every(provider => provider instanceof OpenSSFMetricProvider),
+      ).toBe(true);
+    });
+
+    it('returns providers with normalized ids and configured thresholds', () => {
+      const providers = createOpenSSFMetricProvider();
+
+      const providerIds = providers.map(provider => provider.getProviderId());
+      const expectedProviderIds = OPENSSF_METRICS.map(metric => {
+        const normalizedName = metric.name.toLowerCase().replace(/-/g, '_');
+        return `openssf.${normalizedName}`;
+      });
+
+      expect(providerIds).toEqual(expectedProviderIds);
+      providers.forEach(provider => {
+        expect(provider.getProviderDatasourceId()).toBe('openssf');
+        expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);
+      });
     });
   });
 });
