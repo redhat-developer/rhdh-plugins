@@ -200,6 +200,23 @@ describe('OpenSSFMetricProvider', () => {
       expect(fetch).toHaveBeenCalledWith(scorecardLocation, expect.any(Object));
     });
 
+    it('propagates errors from the OpenSSF client', async () => {
+      const provider = new OpenSSFMetricProvider(
+        maintainedConfig,
+        OPENSSF_THRESHOLDS,
+      );
+      const propagatedError = new Error('OpenSSF client failed');
+      const getScorecardSpy = jest
+        .spyOn((provider as any).openSSFClient, 'getScorecard')
+        .mockRejectedValue(propagatedError);
+
+      await expect(provider.calculateMetric(entity)).rejects.toBe(
+        propagatedError,
+      );
+      expect(getScorecardSpy).toHaveBeenCalledWith(entity);
+      expect(fetch).not.toHaveBeenCalled();
+    });
+
     it('throws when the check is not in the scorecard', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue({
         ok: true,
