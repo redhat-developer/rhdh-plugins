@@ -31,6 +31,7 @@ AI assistant to orchestrate the migration workflow end-to-end.
 | Tool name                | Description                                                                     |
 | ------------------------ | ------------------------------------------------------------------------------- |
 | `x2a-list-projects`      | List migration projects with pagination and sorting.                            |
+| `x2a-list-modules`       | List modules for a project (by `projectId`) with statuses.                      |
 | `x2a-create-project`     | Create a new project and return its Project Details URL.                        |
 | `x2a-trigger-next-phase` | Look up a project and return its Project Details URL for triggering next phase. |
 

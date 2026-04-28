@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import { ConfigReader } from '@backstage/config';
 import { NotFoundError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { CatalogMetricService } from './CatalogMetricService';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
-import { MockNumberProvider } from '../../__fixtures__/mockProviders';
+import {
+  MockNumberProvider,
+  filecheckBatchProvider,
+  filecheckBatchMetrics,
+} from '../../__fixtures__/mockProviders';
 import {
   buildMockDatabaseMetricValues,
   mockDatabaseMetricValues,
@@ -34,8 +37,8 @@ import {
 import * as permissionUtils from '../permissions/permissionUtils';
 import {
   AggregatedMetric,
-  Metric,
   aggregationTypes,
+  Metric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import * as thresholdUtils from '../utils/mergeEntityAndProviderThresholds';
 import { DbMetricValue, DbAggregatedMetric } from '../database/types';
@@ -47,6 +50,8 @@ import {
   PermissionCriteria,
 } from '@backstage/plugin-permission-common';
 import { AggregatedMetricMapper } from './mappers';
+import { AggregatedMetricLoader } from './aggregations/AggregatedMetricLoader';
+import type { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 
 jest.mock('../utils/mergeEntityAndProviderThresholds');
 jest.mock('../permissions/permissionUtils');
@@ -73,6 +78,8 @@ const aggregatedMetric: DbAggregatedMetric = {
     success: 1,
     warning: 1,
   },
+  calculation_error_count: 0,
+  latest_entity_count: 2,
 };
 
 const metricsList = [
@@ -148,7 +155,6 @@ describe('CatalogMetricService', () => {
       registry: mockedRegistry,
       database: mockedDatabase,
       logger: mockedLogger,
-      config: mockServices.rootConfig({ data: {} }),
     });
 
     jest.useFakeTimers();
@@ -179,6 +185,11 @@ describe('CatalogMetricService', () => {
       );
       mockedRegistry.getProvider.mockImplementation(id =>
         id === 'github.important_metric' ? provider : secondProvider,
+      );
+      mockedRegistry.getMetric.mockImplementation(id =>
+        id === 'github.important_metric'
+          ? provider.getMetric()
+          : secondProvider.getMetric(),
       );
 
       const multipleMetrics = [
@@ -294,14 +305,14 @@ describe('CatalogMetricService', () => {
       );
     });
 
-    it('should get provider metric', async () => {
-      const getMetricSpy = jest.spyOn(provider, 'getMetric');
-
+    it('should get metric from registry', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
         'github.important_metric',
       ]);
 
-      expect(getMetricSpy).toHaveBeenCalled();
+      expect(mockedRegistry.getMetric).toHaveBeenCalledWith(
+        'github.important_metric',
+      );
     });
 
     it('should merge entity and provider thresholds', async () => {
@@ -444,18 +455,100 @@ describe('CatalogMetricService', () => {
     });
   });
 
-  describe('getAggregatedMetricByEntityRefs', () => {
+  describe('getLatestEntityMetrics with batch providers', () => {
+    it('should return correct per-metric metadata for batch provider metrics', async () => {
+      const batchMetricsList = filecheckBatchMetrics.map(m => ({
+        id: m.id,
+      })) as Metric[];
+
+      mockedRegistry = buildMockMetricProvidersRegistry({
+        provider: filecheckBatchProvider,
+        metricsList: batchMetricsList,
+      });
+
+      mockedRegistry.getProvider.mockReturnValue(filecheckBatchProvider);
+      mockedRegistry.getMetric.mockImplementation((metricId: string) => {
+        const found = filecheckBatchMetrics.find(m => m.id === metricId);
+        if (!found) throw new Error(`Metric ${metricId} not found`);
+        return found;
+      });
+
+      const batchDbResults = [
+        {
+          id: 1,
+          catalog_entity_ref: 'component:default/test-component',
+          metric_id: 'filecheck.readme',
+          value: true,
+          timestamp: new Date('2024-01-15T12:00:00.000Z'),
+          error_message: null,
+          status: 'success',
+        },
+        {
+          id: 2,
+          catalog_entity_ref: 'component:default/test-component',
+          metric_id: 'filecheck.license',
+          value: false,
+          timestamp: new Date('2024-01-15T12:00:00.000Z'),
+          error_message: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[];
+
+      mockedDatabase = buildMockDatabaseMetricValues({
+        latestEntityMetric: batchDbResults,
+      });
+
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue(
+        batchMetricsList,
+      );
+
+      service = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: mockedRegistry,
+        database: mockedDatabase,
+        logger: mockedLogger,
+      });
+
+      const results = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+      );
+
+      expect(results).toHaveLength(2);
+
+      expect(results[0].id).toBe('filecheck.readme');
+      expect(results[0].metadata.title).toBe('File: README.md');
+      expect(results[0].metadata.description).toBe(
+        'Checks if README.md exists.',
+      );
+      expect(results[0].metadata.type).toBe('boolean');
+
+      expect(results[1].id).toBe('filecheck.license');
+      expect(results[1].metadata.title).toBe('File: LICENSE');
+      expect(results[1].metadata.description).toBe('Checks if LICENSE exists.');
+      expect(results[1].metadata.type).toBe('boolean');
+    });
+  });
+
+  describe('loadStatusGroupedMetricByEntityRefs', () => {
+    let loader: AggregatedMetricLoader;
+
+    beforeEach(() => {
+      loader = new AggregatedMetricLoader(
+        mockedDatabase as unknown as DatabaseMetricValues,
+      );
+    });
+
     describe('when entities are provided', () => {
       let result: AggregatedMetric;
 
       beforeEach(async () => {
-        result = await service.getAggregatedMetricByEntityRefs(
+        result = await loader.loadStatusGroupedMetricByEntityRefs(
           [
             'component:default/test-component',
             'component:default/test-component-2',
           ],
           'github.important_metric',
-          aggregationTypes.statusGrouped,
         );
       });
 
@@ -467,6 +560,8 @@ describe('CatalogMetricService', () => {
           },
           total: 2,
           timestamp: '2024-01-15T12:00:00.000Z',
+          entitiesConsidered: 2,
+          calculationErrorCount: 0,
         });
       });
 
@@ -496,16 +591,38 @@ describe('CatalogMetricService', () => {
           ),
         ).rejects.toThrow('Unsupported aggregation type: unknownAggregation');
       });
+
+      it('should use latest_entity_count for entitiesConsidered when fewer owned refs have metric rows', async () => {
+        mockedDatabase.readAggregatedMetricByEntityRefs.mockResolvedValue({
+          ...aggregatedMetric,
+          latest_entity_count: 5,
+        });
+
+        const sparse = await service.getAggregatedMetricByEntityRefs(
+          [
+            'component:default/a',
+            'component:default/b',
+            'component:default/c',
+            'component:default/d',
+            'component:default/e',
+            'component:default/f',
+            'component:default/g',
+          ],
+          'github.important_metric',
+          aggregationTypes.statusGrouped,
+        );
+
+        expect(sparse.entitiesConsidered).toBe(5);
+      });
     });
 
     describe('when no entities are provided', () => {
       let result: AggregatedMetric;
 
       beforeEach(async () => {
-        result = await service.getAggregatedMetricByEntityRefs(
+        result = await loader.loadStatusGroupedMetricByEntityRefs(
           [],
           'github.important_metric',
-          aggregationTypes.statusGrouped,
         );
       });
 
@@ -514,6 +631,8 @@ describe('CatalogMetricService', () => {
           values: {},
           total: 0,
           timestamp: '2024-01-15T12:00:00.000Z',
+          entitiesConsidered: 0,
+          calculationErrorCount: 0,
         });
       });
 
@@ -620,6 +739,11 @@ describe('CatalogMetricService', () => {
         total: 3,
         totalPages: 1,
         isCapped: false,
+      });
+      expect(result.entityHealth).toEqual({
+        totalEntities: 3,
+        calculationErrorCount: 0,
+        countsArePartial: false,
       });
     });
 
@@ -1023,6 +1147,11 @@ describe('CatalogMetricService', () => {
       );
       expect(result.entities[0].entityRef).toBe('component:default/service-a');
       expect(result.entities[1].entityRef).toBe('component:staging/service-c');
+      expect(result.entityHealth).toEqual({
+        totalEntities: 2,
+        calculationErrorCount: 0,
+        countsArePartial: false,
+      });
     });
 
     it('should handle catalog API failures by logging an error and not returning information from the database', async () => {
@@ -1046,6 +1175,11 @@ describe('CatalogMetricService', () => {
 
       // When catalog is unavailable, do not bypass and instead log error
       expect(result.entities).toHaveLength(0);
+      expect(result.entityHealth).toEqual({
+        totalEntities: 0,
+        calculationErrorCount: 0,
+        countsArePartial: false,
+      });
     });
 
     it('should pass null to database for unscoped query (avoids catalog enumeration)', async () => {
@@ -1078,6 +1212,11 @@ describe('CatalogMetricService', () => {
       expect(result.entities.map(e => e.entityRef)).not.toContain(
         'component:default/service-b',
       );
+      expect(result.entityHealth).toEqual({
+        totalEntities: 2,
+        calculationErrorCount: 0,
+        countsArePartial: false,
+      });
     });
 
     it('should combine filters, sorting, and pagination', async () => {
@@ -1135,6 +1274,38 @@ describe('CatalogMetricService', () => {
         totalPages: 0,
         isCapped: false,
       });
+      expect(result.entityHealth).toEqual({
+        totalEntities: 0,
+        calculationErrorCount: 0,
+        countsArePartial: false,
+      });
+    });
+
+    it('should count metric calculation failures in entityHealth', async () => {
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([
+        mockMetricRows[0],
+        {
+          ...mockMetricRows[1],
+          value: null,
+          error_message: 'Provider failed',
+          status: null,
+        },
+      ]);
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(result.entityHealth).toEqual({
+        totalEntities: 2,
+        calculationErrorCount: 1,
+        countsArePartial: false,
+      });
     });
 
     it('should include metric metadata in response', async () => {
@@ -1152,123 +1323,6 @@ describe('CatalogMetricService', () => {
         description: provider.getMetric().description,
         type: provider.getMetric().type,
       });
-    });
-  });
-
-  describe('getAggregationConfigs', () => {
-    const kpiConfigReader = new ConfigReader({
-      scorecard: {
-        aggregationKPIs: {
-          openPrsKpi: {
-            title: 'GitHub PRs',
-            description: 'Open pull requests',
-            type: 'statusGrouped',
-            metricId: 'github.open_prs',
-          },
-          openIssuesKpi: {
-            title: 'Jira issues',
-            description: 'Open issues',
-            type: 'statusGrouped',
-            metricId: 'jira.open_issues',
-          },
-        },
-      },
-    });
-
-    let aggService: CatalogMetricService;
-    let aggRegistry: MetricProvidersRegistry;
-
-    beforeEach(() => {
-      aggRegistry = new MetricProvidersRegistry();
-      aggRegistry.register(
-        new MockNumberProvider('github.open_prs', 'github', 'GitHub PRs'),
-      );
-      aggRegistry.register(
-        new MockNumberProvider('jira.open_issues', 'jira', 'Jira issues'),
-      );
-
-      aggService = new CatalogMetricService({
-        catalog: mockedCatalog,
-        auth: mockedAuth,
-        registry: aggRegistry,
-        database: mockedDatabase,
-        logger: mockedLogger,
-        config: kpiConfigReader,
-      });
-    });
-
-    it('should return empty array when scorecard.aggregationKPIs is absent', () => {
-      const s = new CatalogMetricService({
-        catalog: mockedCatalog,
-        auth: mockedAuth,
-        registry: aggRegistry,
-        database: mockedDatabase,
-        logger: mockedLogger,
-        config: mockServices.rootConfig({ data: {} }),
-      });
-
-      expect(s.getAggregationConfigs()).toEqual([]);
-    });
-
-    it('should return all KPI configs when aggregationIds and metricIds are default', () => {
-      const result = aggService.getAggregationConfigs();
-
-      expect(result).toHaveLength(2);
-      expect(result.map(c => c.id)).toContain('openIssuesKpi');
-      expect(result.map(c => c.id)).toContain('openPrsKpi');
-    });
-
-    it('should filter by aggregationIds', () => {
-      const result = aggService.getAggregationConfigs(['openPrsKpi']);
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
-        id: 'openPrsKpi',
-        metricId: 'github.open_prs',
-        type: 'statusGrouped',
-      });
-    });
-
-    it('should filter by metricIds to KPIs whose metricId is listed', () => {
-      const result = aggService.getAggregationConfigs([], ['github.open_prs']);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('openPrsKpi');
-    });
-
-    it('should return empty when aggregationId exists but metricIds filter excludes its metric', () => {
-      const result = aggService.getAggregationConfigs(
-        ['openPrsKpi'],
-        ['jira.open_issues'],
-      );
-
-      expect(result).toEqual([]);
-    });
-
-    it('should omit KPI keys that have no nested config', () => {
-      const partialReader = new ConfigReader({
-        scorecard: {
-          aggregationKPIs: {
-            openPrsKpi: {
-              title: 'GitHub PRs',
-              description: 'Open pull requests',
-              type: 'statusGrouped',
-              metricId: 'github.open_prs',
-            },
-          },
-        },
-      });
-      // Request an id that is not present under aggregationKPIs
-      const svc = new CatalogMetricService({
-        catalog: mockedCatalog,
-        auth: mockedAuth,
-        registry: aggRegistry,
-        database: mockedDatabase,
-        logger: mockedLogger,
-        config: partialReader,
-      });
-
-      expect(svc.getAggregationConfigs(['missingKpi'])).toEqual([]);
     });
   });
 });

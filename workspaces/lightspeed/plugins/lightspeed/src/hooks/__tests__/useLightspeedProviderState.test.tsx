@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { MemoryRouter, useNavigate } from 'react-router-dom';
+import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -51,17 +51,22 @@ const mockUser = 'user:default/test';
 
 function HookHarness() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { contextValue, shouldRenderOverlayModal } =
     useLightspeedProviderState();
 
   return (
     <div>
+      <div data-testid="pathname">{location.pathname}</div>
       <div data-testid="display-mode">{contextValue.displayMode}</div>
       <div data-testid="is-open">
         {contextValue.isChatbotActive ? 'open' : 'closed'}
       </div>
       <div data-testid="overlay-modal-flag">
         {shouldRenderOverlayModal ? 'yes' : 'no'}
+      </div>
+      <div data-testid="conversation-id">
+        {contextValue.currentConversationId ?? 'none'}
       </div>
       <button
         type="button"
@@ -79,10 +84,33 @@ function HookHarness() {
       </button>
       <button
         type="button"
+        data-testid="set-overlay-mode"
+        onClick={() => contextValue.setDisplayMode(ChatbotDisplayMode.default)}
+      >
+        Set overlay
+      </button>
+      <button
+        type="button"
+        data-testid="late-conversation-id"
+        onClick={() =>
+          contextValue.setCurrentConversationId('late-from-stream')
+        }
+      >
+        Late conversation id
+      </button>
+      <button
+        type="button"
         data-testid="go-catalog"
         onClick={() => navigate('/catalog')}
       >
         Go catalog
+      </button>
+      <button
+        type="button"
+        data-testid="go-lightspeed-base"
+        onClick={() => navigate('/lightspeed')}
+      >
+        Go lightspeed base
       </button>
     </div>
   );
@@ -183,6 +211,23 @@ describe('useLightspeedProviderState', () => {
       );
       expect(mockOpenDrawer).toHaveBeenCalledWith(LIGHTSPEED_APP_DRAWER_ID);
     });
+
+    it('opens chatbot in persisted fullscreen (embedded) by navigating to /lightspeed', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/catalog']);
+
+      screen.getByTestId('toggle-button').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
+      });
+
+      expect(screen.getByTestId('display-mode')).toHaveTextContent(
+        ChatbotDisplayMode.embedded,
+      );
+      expect(screen.getByTestId('overlay-modal-flag')).toHaveTextContent('no');
+    });
   });
 
   describe('closing chatbot', () => {
@@ -278,6 +323,113 @@ describe('useLightspeedProviderState', () => {
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
           ChatbotDisplayMode.docked,
+        );
+      });
+    });
+
+    it('uses overlay when leaving /lightspeed while fullscreen preference is persisted', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/lightspeed']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.embedded,
+        );
+        expect(screen.getByTestId('is-open')).toHaveTextContent('open');
+      });
+
+      screen.getByTestId('go-catalog').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.default,
+        );
+      });
+    });
+
+    it('keeps currentConversationId after leaving /lightspeed/conversation/:id', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.default;
+
+      renderWithRouter(['/lightspeed/conversation/active-thread']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'active-thread',
+        );
+      });
+
+      screen.getByTestId('go-catalog').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'active-thread',
+        );
+      });
+    });
+
+    it('clears currentConversationId when navigating to /lightspeed without conversation segment', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.default;
+
+      renderWithRouter(['/lightspeed/conversation/active-thread']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'active-thread',
+        );
+      });
+
+      screen.getByTestId('go-lightspeed-base').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent('none');
+      });
+    });
+
+    it('navigates to /catalog when switching from fullscreen route to overlay', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/lightspeed/conversation/stream-done']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.embedded,
+        );
+      });
+
+      screen.getByTestId('set-overlay-mode').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent('/catalog');
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.default,
+        );
+      });
+    });
+
+    it('does not navigate to /lightspeed when late stream sets id after overlay switch', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/lightspeed/conversation/before-switch']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/lightspeed/conversation/before-switch',
+        );
+      });
+
+      screen.getByTestId('set-overlay-mode').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent('/catalog');
+      });
+
+      screen.getByTestId('late-conversation-id').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent('/catalog');
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'late-from-stream',
         );
       });
     });

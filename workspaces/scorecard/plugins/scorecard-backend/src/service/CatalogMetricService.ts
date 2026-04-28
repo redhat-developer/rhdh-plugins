@@ -17,12 +17,13 @@
 import {
   MetricResult,
   ThresholdConfig,
-  AggregatedMetric,
   EntityMetricDetailResponse,
   EntityMetricDetail,
+  ScorecardEntityHealthSummary,
   aggregationTypes,
+  AggregatedMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { Entity } from '@backstage/catalog-model';
+import type { Entity } from '@backstage/catalog-model';
 import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { NotFoundError, stringifyError } from '@backstage/errors';
@@ -40,14 +41,9 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
+import { isMetricCalculationError } from '../utils/metricCalculationError';
 import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
-import type { Config } from '@backstage/config';
-import {
-  buildAggregationConfig,
-  type AggregationConfig,
-} from '../utils/buildAggregationConfig';
-import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
 
 type CatalogMetricServiceOptions = {
   catalog: CatalogService;
@@ -55,17 +51,29 @@ type CatalogMetricServiceOptions = {
   registry: MetricProvidersRegistry;
   database: DatabaseMetricValues;
   logger: LoggerService;
-  config: Config;
 };
 
 export class CatalogMetricService {
+  private static entityHealthSummary(
+    accessibleRows: DbMetricValue[],
+    countsArePartial: boolean,
+  ): ScorecardEntityHealthSummary {
+    const calculationErrorCount = accessibleRows.filter(row =>
+      isMetricCalculationError(row),
+    ).length;
+    return {
+      totalEntities: accessibleRows.length,
+      calculationErrorCount,
+      countsArePartial,
+    };
+  }
+
   private readonly logger: LoggerService;
 
   private readonly catalog: CatalogService;
   private readonly auth: AuthService;
   private readonly registry: MetricProvidersRegistry;
   private readonly database: DatabaseMetricValues;
-  private readonly config: Config;
 
   private static readonly MAX_FETCHABLE_ROWS = 10_000;
   private static readonly BATCH_SIZE = 100;
@@ -76,21 +84,20 @@ export class CatalogMetricService {
     this.registry = options.registry;
     this.database = options.database;
     this.logger = options.logger;
-    this.config = options.config;
   }
 
   /**
-   * Get latest metric results for a specific catalog entity and metric providers.
+   * Get latest metric results for a specific catalog entity.
    *
    * @param entityRef - Entity reference in format "kind:namespace/name"
-   * @param providerIds - Optional array of provider IDs to get latest metrics of.
-   *                      If not provided, gets all available latest metrics.
+   * @param metricIds - Optional array of metric IDs to get latest metrics of.
+   *                    If not provided, gets all available latest metrics.
    * @param filter - Permission filter
    * @returns Metric results with entity-specific thresholds applied
    */
   async getLatestEntityMetrics(
     entityRef: string,
-    providerIds?: string[],
+    metricIds?: string[],
     filter?: PermissionCriteria<
       PermissionCondition<string, PermissionRuleParams>
     >,
@@ -102,7 +109,7 @@ export class CatalogMetricService {
       throw new NotFoundError(`Entity not found: ${entityRef}`);
     }
 
-    const metricsToFetch = this.registry.listMetrics(providerIds);
+    const metricsToFetch = this.registry.listMetrics(metricIds);
 
     const authorizedMetricsToFetch = filterAuthorizedMetrics(
       metricsToFetch,
@@ -119,7 +126,7 @@ export class CatalogMetricService {
         let thresholdError: string | undefined;
 
         const provider = this.registry.getProvider(metric_id);
-        const metric = provider.getMetric();
+        const metric = this.registry.getMetric(metric_id);
 
         try {
           thresholds = mergeEntityAndProviderThresholds(entity, provider);
@@ -134,7 +141,10 @@ export class CatalogMetricService {
           thresholdError = stringifyError(error);
         }
 
-        const isMetricCalcError = error_message !== null && value === null;
+        const isMetricCalcError = isMetricCalculationError({
+          value,
+          error_message,
+        });
 
         return {
           id: metric.id,
@@ -274,6 +284,7 @@ export class CatalogMetricService {
           totalPages: 0,
           isCapped: false,
         },
+        entityHealth: CatalogMetricService.entityHealthSummary([], false),
       };
     }
 
@@ -344,6 +355,7 @@ export class CatalogMetricService {
           totalPages: 0,
           isCapped: false,
         },
+        entityHealth: CatalogMetricService.entityHealthSummary([], false),
       };
     }
 
@@ -375,6 +387,10 @@ export class CatalogMetricService {
           totalPages: Math.ceil(totalFiltered / options.limit),
           isCapped,
         },
+        entityHealth: CatalogMetricService.entityHealthSummary(
+          accessibleRows,
+          isCapped,
+        ),
       };
     }
 
@@ -411,52 +427,10 @@ export class CatalogMetricService {
         totalPages: Math.ceil(totalFiltered / options.limit),
         isCapped,
       },
+      entityHealth: CatalogMetricService.entityHealthSummary(
+        accessibleRows,
+        isCapped,
+      ),
     };
-  }
-
-  /**
-   * Get the aggregation configs for a given aggregation IDs filtered by metric IDs.
-   * If no aggregation IDs are provided, all aggregation configs will be returned.
-   * If no metric IDs are provided, all metrics will be included.
-   *
-   * @param aggregationIds - Optional array of aggregation IDs to fetch the configs for.
-   * @param metricIds - Optional array of metric IDs, when provided, only aggregations whose config metricId is in this array will be returned.
-   * @returns Aggregation configs
-   */
-  getAggregationConfigs(
-    aggregationIds: string[] = [],
-    metricIds: string[] = [],
-  ): AggregationConfig[] {
-    const aggregationKPIsConfig = this.config.getOptionalConfig(
-      AGGREGATION_KPIS_CONFIG_PATH,
-    );
-
-    if (!aggregationKPIsConfig) {
-      return [];
-    }
-
-    const aggregations: AggregationConfig[] = [];
-
-    const aggregationConfigIds =
-      aggregationIds.length > 0 ? aggregationIds : aggregationKPIsConfig.keys();
-
-    for (const aggregationId of aggregationConfigIds) {
-      const config = aggregationKPIsConfig.getOptionalConfig(aggregationId);
-
-      if (config) {
-        const aggregationConfig = buildAggregationConfig(aggregationId, {
-          config,
-        });
-
-        if (
-          metricIds.length === 0 ||
-          metricIds.includes(aggregationConfig.metricId)
-        ) {
-          aggregations.push(aggregationConfig);
-        }
-      }
-    }
-
-    return aggregations;
   }
 }

@@ -14,13 +14,21 @@
  * limitations under the License.
  */
 
-import { Content, EmptyState, Page } from '@backstage/core-components';
+import {
+  Content,
+  EmptyState,
+  Page,
+  Progress,
+} from '@backstage/core-components';
 
+import { useDefaultWidgets } from '../hooks/useDefaultWidgets';
 import { useTranslation } from '../hooks/useTranslation';
 import { HomePageCardMountPoint } from '../types';
+import { CustomizableGrid } from './CustomizableGrid';
+import { DefaultWidgetsCustomizableGrid } from './DefaultWidgetsCustomizableGrid';
+import { DefaultWidgetsReadOnlyGrid } from './DefaultWidgetsReadOnlyGrid';
 import { Header, HeaderProps } from './Header';
 import { ReadOnlyGrid } from './ReadOnlyGrid';
-import { CustomizableGrid } from './CustomizableGrid';
 
 export interface HomePageProps extends HeaderProps {
   mountPoints: HomePageCardMountPoint[];
@@ -33,9 +41,28 @@ export const HomePage = ({
   ...otherProps
 }: HomePageProps) => {
   const { t } = useTranslation();
+  const { defaultWidgets, loading } = useDefaultWidgets();
 
   let content: React.ReactNode;
-  if (mountPoints.length === 0) {
+  if (loading) {
+    content = <Progress />;
+  } else if (defaultWidgets && defaultWidgets.length > 0) {
+    if (customizable) {
+      content = (
+        <DefaultWidgetsCustomizableGrid
+          defaultWidgets={defaultWidgets}
+          mountPoints={mountPoints}
+        />
+      );
+    } else {
+      content = (
+        <DefaultWidgetsReadOnlyGrid
+          defaultWidgets={defaultWidgets}
+          mountPoints={mountPoints}
+        />
+      );
+    }
+  } else if (mountPoints.length === 0) {
     content = <EmptyState title={t('homePage.empty')} missing="content" />;
   } else if (customizable) {
     content = <CustomizableGrid mountPoints={mountPoints} />;

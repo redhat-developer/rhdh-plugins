@@ -52,7 +52,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
 import { RbacPage } from '@backstage-community/plugin-rbac';
 import { Navigate, Route } from 'react-router-dom';
@@ -146,7 +145,6 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/bulk-import/*" element={<BulkImportPage />} />
-    <Route path="/notifications" element={<NotificationsPage />} />
     <Route path="/orchestrator" element={<OrchestratorPage />} />
     <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>

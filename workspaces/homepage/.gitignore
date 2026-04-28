@@ -42,6 +42,7 @@ dist-types
 site
 
 # Local configuration files
+*.local.json
 *.local.yaml
 
 # Sensitive credentials

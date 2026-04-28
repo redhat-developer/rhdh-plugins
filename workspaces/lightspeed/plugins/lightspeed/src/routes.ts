@@ -31,3 +31,9 @@ export const notebooksRouteRef = createSubRouteRef({
   parent: rootRouteRef,
   path: '/notebooks',
 });
+
+export const notebookViewRouteRef = createSubRouteRef({
+  id: 'lightspeed-notebook-view',
+  parent: rootRouteRef,
+  path: '/notebooks/:notebookId',
+});

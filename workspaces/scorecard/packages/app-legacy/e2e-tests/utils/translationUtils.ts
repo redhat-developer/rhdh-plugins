@@ -306,20 +306,37 @@ export function getLastUpdatedLabel(
 }
 
 /**
- * Homepage KPI cards use aggregationIds (e.g. openPrsKpi); labels fall back to API/config
- * metadata in English, not `metric.github.open_prs` locale keys. Use ref copy for title
- * / description; keep localized errors, thresholds, and entity-count strings.
+ * Homepage KPI drill-down link text:
+ * - with calculation errors: healthy/total ratio
+ * - without calculation errors: plain entity count
  */
-function getSomeEntitiesNotReportingLabel(
+export function getHomepageEntityCalculationHealthText(
   translations: ScorecardMessages,
+  healthy: string,
+  total: string,
 ): string {
-  const metric = translations.metric as {
-    someEntitiesNotReportingValues?: string;
-  };
-  return (
-    metric.someEntitiesNotReportingValues ??
-    scorecardMessages.metric.someEntitiesNotReportingValues
-  );
+  if (healthy === total) {
+    const count = Number(total);
+    const entitiesTemplate =
+      count === 1
+        ? translations.thresholds.entities_one
+        : translations.thresholds.entities_other;
+    return entitiesTemplate.replaceAll('{{count}}', String(count));
+  }
+
+  const template =
+    (
+      translations.metric as {
+        homepageEntityHealthRatio?: string;
+        homepageEntityCalculationHealth?: string;
+      }
+    ).homepageEntityHealthRatio ??
+    scorecardMessages.metric.homepageEntityHealthRatio ??
+    scorecardMessages.metric.homepageEntityCalculationHealth;
+
+  return template
+    .replaceAll('{{healthy}}', healthy)
+    .replaceAll('{{total}}', total);
 }
 
 /** Snapshot for the scorecard card on the drill-down page when permission is missing (no entity count in UI). */
@@ -357,7 +374,8 @@ export function getThresholdsSnapshot(
   options: {
     drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
     drillDownAggregationId?: string;
-    entityCount: string;
+    /** Interpolation for homepage subheader (mock data uses 10/10). */
+    homepageCalculationHealth?: { healthy: string; total: string };
     cardTitle: string;
     cardDescription: string;
   },
@@ -365,18 +383,24 @@ export function getThresholdsSnapshot(
   const {
     drillDownMetricId,
     drillDownAggregationId,
-    entityCount,
     cardTitle,
     cardDescription,
   } = options;
   const aggregationSegment = drillDownAggregationId ?? drillDownMetricId;
-  const drillDownLinkName = getSomeEntitiesNotReportingLabel(translations);
+  const { healthy, total } = options.homepageCalculationHealth ?? {
+    healthy: '10',
+    total: '10',
+  };
+  const drillDownLinkText = getHomepageEntityCalculationHealthText(
+    translations,
+    healthy,
+    total,
+  );
   return `
         - article:
           - text: ${cardTitle}
-          - link "${drillDownLinkName}":
+          - link "${drillDownLinkText}":
             - /url: /scorecard/aggregations/${aggregationSegment}/metrics/${drillDownMetricId}
-            - text: ${entityCount}
           - button
           - separator
           - paragraph: ${cardDescription}

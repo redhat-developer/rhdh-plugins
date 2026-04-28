@@ -39,6 +39,8 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import {
   x2aDatabaseServiceRef,
+  removeSensitiveFromJob,
+  calculateModuleStatus,
   type X2ADatabaseServiceApi,
   type CreateJobInput,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
@@ -47,11 +49,10 @@ import { JobOperations } from './jobOperations';
 import { ModuleOperations } from './moduleOperations';
 import { ProjectOperations } from './projectOperations';
 import { isNonDbSortField } from './queryHelpers';
-import { removeSensitiveFromJob } from '../../router/common';
 import { MAX_CONCURRENT_ENRICHMENT_JOBS } from '../constants';
 import { migrate } from '../dbMigrate';
 import { maxConcurrency } from '../../utils';
-import { calculateModuleStatus, calculateProjectStatus } from './status';
+import { calculateProjectStatus } from './projectStatus';
 
 export class X2ADatabaseService implements X2ADatabaseServiceApi {
   readonly #logger: LoggerService;

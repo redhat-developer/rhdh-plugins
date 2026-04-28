@@ -30,6 +30,8 @@ export type AggregationType =
 export type AggregatedMetricValue = {
   count: number;
   name: string;
+  /** Present when the API includes per-status weights (e.g. average aggregation). */
+  score?: number;
 };
 
 /**
@@ -40,6 +42,16 @@ export type AggregatedMetric = {
   values: Record<string, number>;
   total: number;
   timestamp: string;
+  /**
+   * Entities in aggregation scope that have at least one latest stored `metric_values` row for this metric
+   * (aligned with the drill-down list total when the same ownership filters apply).
+   */
+  entitiesConsidered: number;
+  /**
+   * How many of those entities have a latest stored row that is a metric **calculation** failure
+   * (`error_message` set and `value` null), distinct from threshold status counts in `values` / `total`.
+   */
+  calculationErrorCount: number;
 };
 
 /**
@@ -53,6 +65,25 @@ export type AggregationMetadata = {
   aggregationType: AggregationType;
 };
 
+export type StatusGroupedAggregationResult = Omit<
+  AggregatedMetric,
+  'values'
+> & { values: AggregatedMetricValue[]; thresholds: ThresholdConfig };
+
+export type AggregatedMetricAverageResult = StatusGroupedAggregationResult & {
+  averageScore: number;
+  averageWeightedSum: number;
+  averageMaxPossible: number;
+  aggregationChartDisplayColor: string;
+};
+
+/**
+ * @public
+ */
+export type AggregationResultByType =
+  | StatusGroupedAggregationResult
+  | AggregatedMetricAverageResult;
+
 /**
  * @public
  */
@@ -60,8 +91,25 @@ export type AggregatedMetricResult = {
   id: string;
   status: 'success' | 'error';
   metadata: AggregationMetadata;
-  result: Omit<AggregatedMetric, 'values'> & {
-    values: AggregatedMetricValue[];
-    thresholds: ThresholdConfig;
-  };
+  result: AggregationResultByType;
+};
+
+/**
+ * @public
+ */
+export type AggregationConfigOptions = {
+  statusScores: Record<string, number>;
+  thresholds?: ThresholdConfig;
+};
+
+/**
+ * @public
+ */
+export type AggregationConfig = {
+  id: string;
+  title: string;
+  description: string;
+  type: AggregationType;
+  metricId: string;
+  options?: AggregationConfigOptions;
 };

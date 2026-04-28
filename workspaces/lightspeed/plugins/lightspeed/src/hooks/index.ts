@@ -26,6 +26,7 @@ export * from './useLightspeedDeletePermission';
 export * from './notebooks/useLightspeedNotebooksPermission';
 export * from './useLightspeedViewPermission';
 export * from './useDisplayModeSettings';
+export * from './notebooks/useNotebookSession';
 export * from './notebooks/useNotebookSessions';
 export * from './usePinnedChatsSettings';
 export * from './notebooks/useRenameNotebook';

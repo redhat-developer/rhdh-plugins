@@ -19,6 +19,12 @@ import { useApi } from '@backstage/core-plugin-api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
+import type { ToolCall } from '../../types';
+import {
+  getSharedToolCallsCache,
+  resetSharedToolCallsCacheStoreForTests,
+  setSharedToolCallsCache,
+} from '../toolCallsCacheStore';
 import { useDeleteConversation } from '../useDeleteConversation';
 
 // Mocking the useApi and lightspeed API
@@ -62,6 +68,7 @@ const mockLightspeedApi = {
 (useApi as jest.Mock).mockReturnValue(mockLightspeedApi);
 describe('useDeleteConversation', () => {
   beforeEach(() => {
+    resetSharedToolCallsCacheStoreForTests();
     queryClient.clear();
     mockDeleteConversation.mockClear();
     mockGetQueryData.mockClear();
@@ -118,6 +125,27 @@ describe('useDeleteConversation', () => {
         queryKey: ['conversations'],
       });
     });
+  });
+
+  it('clears shared tool-call cache for the conversation on successful delete', async () => {
+    const conversationId = 'conv-with-tools';
+    const toolCall: ToolCall = {
+      id: 1,
+      toolName: 'mcp_list_tools',
+      arguments: {},
+      startTime: 0,
+      isLoading: false,
+    };
+    setSharedToolCallsCache(`${conversationId}-0`, [toolCall]);
+    mockGetQueryData.mockReturnValue([{ conversation_id: conversationId }]);
+
+    const { result } = renderHook(() => useDeleteConversation(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutate({ conversation_id: conversationId });
+    });
+
+    expect(getSharedToolCallsCache(`${conversationId}-0`)).toBeUndefined();
   });
 
   it('reverts cache on error', async () => {

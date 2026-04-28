@@ -20,11 +20,11 @@ import type {
   ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
+  type MetricProvider,
+  validateThresholdsForMetric,
   ThresholdConfigFormatError,
-  validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { isError } from '@backstage/errors';
-import type { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 const thresholdRulesAnnotationPrefix = (providerId: string) =>
   `scorecard.io/${providerId}.thresholds.rules.`;
@@ -77,7 +77,7 @@ export function mergeEntityAndProviderThresholds(
 
     const mergedRule: ThresholdRule = { ...mergedRules[foundKey], ...override };
     try {
-      validateThresholds({ rules: [mergedRule] }, providerMetricType);
+      validateThresholdsForMetric({ rules: [mergedRule] }, providerMetricType);
     } catch (e) {
       if (isError(e)) {
         throw new ThresholdConfigFormatError(

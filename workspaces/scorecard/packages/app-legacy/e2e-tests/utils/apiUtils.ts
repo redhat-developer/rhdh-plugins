@@ -16,7 +16,6 @@
 import { Page, expect } from '@playwright/test';
 import { ScorecardRoutes } from '../constants/routes';
 
-/** Metric-id aggregation URLs (drill-down uses `github.open_prs` / `jira.open_issues`). */
 const GITHUB_AGGREGATION_ROUTE =
   ScorecardRoutes.GITHUB_OPEN_PRS_METRIC_AGGREGATION_ROUTE;
 const JIRA_AGGREGATION_ROUTE =

@@ -20,12 +20,58 @@ import type {
   ThresholdConfig,
   ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  SCORECARD_THRESHOLD_RULE_COLOR_VALUES,
-  ScorecardThresholdRuleColors,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { SCORECARD_THRESHOLD_RULE_COLOR_VALUES } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfigFormatError } from '../../errors';
 import { parseThresholdExpression } from './parseThresholdExpression';
+
+const THRESHOLD_RULE_KEYS = ['success', 'warning', 'error'];
+
+/**
+ * Validates the thresholds for a metric
+ * @public
+ */
+export function validateThresholdsForMetric(
+  thresholds: JsonValue,
+  expectedMetricType: MetricType,
+): asserts thresholds is ThresholdConfig {
+  validateConfigType(thresholds);
+
+  const seenKeys = new Set<string>();
+  for (const rule of thresholds.rules) {
+    validateThresholdRule(rule);
+    validateDuplicateKey(rule, seenKeys);
+    validateColorAndIconExists(rule);
+    validateRuleColor(rule);
+    validateRuleIcon(rule);
+
+    seenKeys.add(rule.key);
+
+    parseThresholdExpression(rule.expression, expectedMetricType);
+  }
+}
+
+/**
+ * Validates the thresholds for aggregation
+ * @public
+ */
+export function validateThresholdsForAggregation(
+  thresholds: JsonValue,
+  expectedMetricType: MetricType,
+): asserts thresholds is ThresholdConfig {
+  validateConfigType(thresholds);
+
+  const seenKeys = new Set<string>();
+  for (const rule of thresholds.rules) {
+    validateThresholdRule(rule);
+    validateDuplicateKey(rule, seenKeys);
+    validateColorExists(rule);
+    validateRuleColor(rule);
+
+    seenKeys.add(rule.key);
+
+    parseThresholdExpression(rule.expression, expectedMetricType);
+  }
+}
 
 /**
  * Validates if a color string is valid
@@ -100,7 +146,10 @@ function validateRuleIcon(rule: ThresholdRule): void {
   }
 }
 
-function isThresholdRule(rule: unknown): asserts rule is ThresholdRule {
+/**
+ * Validates the threshold rule format
+ */
+function validateThresholdRule(rule: unknown): asserts rule is ThresholdRule {
   if (
     typeof rule !== 'object' ||
     rule === null ||
@@ -120,12 +169,10 @@ function isThresholdRule(rule: unknown): asserts rule is ThresholdRule {
 }
 
 /**
- * Validate thresholds configuration
- * @public
+ * Validates the config type
  */
-export function validateThresholds(
-  thresholds: JsonValue,
-  expectedMetricType: MetricType,
+function validateConfigType(
+  thresholds: unknown,
 ): asserts thresholds is ThresholdConfig {
   if (
     typeof thresholds !== 'object' ||
@@ -137,34 +184,55 @@ export function validateThresholds(
       'Invalid type for ThresholdConfig, must have a rules property that is an array',
     );
   }
+}
 
-  const seenKeys = new Set<string>();
-  for (const rule of thresholds.rules) {
-    isThresholdRule(rule);
-    validateRuleColor(rule);
-    validateRuleIcon(rule);
+/**
+ * Validates if a rule is a standard threshold rule
+ */
+function isStandardThresholdRule(rule: ThresholdRule): boolean {
+  return THRESHOLD_RULE_KEYS.includes(rule.key);
+}
 
-    const standardThresholdRuleKeys = ['success', 'warning', 'error'];
-    if (
-      !standardThresholdRuleKeys.includes(rule.key) &&
-      (!('color' in rule) || !('icon' in rule))
-    ) {
-      throw new ThresholdConfigFormatError(
-        `Custom threshold key "${
-          rule.key
-        }" must specify a color and icon property. Only standard keys (${standardThresholdRuleKeys
-          .map(k => `'${k}'`)
-          .join(', ')}) have default colors and icons.`,
-      );
-    }
+/**
+ * Validates the color and icon exists
+ */
+function validateColorAndIconExists(rule: ThresholdRule): void {
+  if (
+    !isStandardThresholdRule(rule) &&
+    (!('color' in rule) || !('icon' in rule))
+  ) {
+    throw new ThresholdConfigFormatError(
+      `Custom threshold key "${
+        rule.key
+      }" must specify a color and icon property. Only standard keys (${THRESHOLD_RULE_KEYS.map(
+        k => `'${k}'`,
+      ).join(', ')}) have default colors and icons.`,
+    );
+  }
+}
 
-    if (seenKeys.has(rule.key)) {
-      throw new ThresholdConfigFormatError(
-        `Duplicate key detected for "${rule.key}" with expression "${rule.expression}"`,
-      );
-    }
-    seenKeys.add(rule.key);
+function validateColorExists(rule: ThresholdRule): void {
+  if (!isStandardThresholdRule(rule) && !('color' in rule)) {
+    throw new ThresholdConfigFormatError(
+      `Custom threshold key "${
+        rule.key
+      }" must specify a color property. Only standard keys (${THRESHOLD_RULE_KEYS.map(
+        k => `'${k}'`,
+      ).join(', ')}) have default colors.`,
+    );
+  }
+}
 
-    parseThresholdExpression(rule.expression, expectedMetricType);
+/**
+ * Validates the duplicate key
+ */
+function validateDuplicateKey(
+  rule: ThresholdRule,
+  seenKeys: Set<string>,
+): void {
+  if (seenKeys.has(rule.key)) {
+    throw new ThresholdConfigFormatError(
+      `Duplicate key detected for "${rule.key}" with expression "${rule.expression}"`,
+    );
   }
 }

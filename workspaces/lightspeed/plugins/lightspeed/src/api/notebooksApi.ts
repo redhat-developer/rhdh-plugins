@@ -33,6 +33,7 @@ export type NotebooksAPI = {
     description?: string,
   ) => Promise<NotebookSession>;
   listSessions: () => Promise<NotebookSession[]>;
+  getSession: (sessionId: string) => Promise<NotebookSession>;
   renameSession: (sessionId: string, name: string) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
   uploadDocument: (
@@ -48,6 +49,10 @@ export type NotebooksAPI = {
     sessionId: string,
     documentId: string,
   ) => Promise<DocumentStatus>;
+  querySession: (
+    sessionId: string,
+    query: string,
+  ) => Promise<ReadableStreamDefaultReader<Uint8Array>>;
 };
 
 /**

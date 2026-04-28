@@ -1,5 +1,49 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.5.0
+
+### Patch Changes
+
+- d9df5b8: Add notebook chat with streaming support, document management, and UI improvements.
+  - Backend: add SSE transform to normalize Responses API format to legacy streaming format so notebook chat streams token-by-token like the chat tab.
+  - Frontend: add notebook chat view with conversation messages, document sidebar with per-document delete, and topic summary display.
+  - Fix stale document list when re-opening a notebook by setting query staleTime to 0.
+  - Hide model selector on the Notebooks tab while keeping the settings ellipsis menu visible.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.5.0
+
+## 2.4.0
+
+### Minor Changes
+
+- 161c1f2: ai-notebooks route name is now notebooks. Added a route to fetch single notebooks session by id
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.4.0
+
+## 2.3.0
+
+### Minor Changes
+
+- dff8f34: All lightspeed query is now called with rhdh-docs vector_store. Notebooks app-config only now requires queryDefaults model and provider
+  All files uploaded to lightspeed-stack will be converted to .txt
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.3.0
+
+## 2.2.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.2.1
+
+## 2.2.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes

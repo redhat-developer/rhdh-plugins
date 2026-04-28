@@ -90,6 +90,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.overwrite.modal.description':
       'Die folgenden Dateien existieren bereits in diesem Notizbuch. Möchten Sie sie mit den neuen Versionen überschreiben?',
     'notebook.overwrite.modal.action': 'Überschreiben',
+    'notebook.document.delete': 'Löschen',
 
     'prompts.codeReadability.title': 'Hilfe zur Code-Lesbarkeit erhalten',
     'prompts.codeReadability.message':
@@ -142,6 +143,15 @@ const lightspeedTranslationDe = createTranslationMessages({
     'permission.subject.plugin': 'das Lightspeed-Plugin',
     'permission.subject.notebooks': 'die Lightspeed-Notizbücher',
     'permission.notebooks.goBack': 'Zurück',
+    'lcore.notConfigured.title': 'Verbinden Sie ein LLM, um zu starten',
+    'lcore.notConfigured.description':
+      'Lightspeed erfordert ein registriertes LLM. Wenden Sie sich an den Plattformadministrator Ihrer Organisation, um die Einrichtung abzuschließen.',
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Developer Lightspeed wird konfiguriert',
+    'lcore.notConfigured.backendDocs': 'Lightspeed-Backend einrichten',
+    'lcore.loadError.title': 'Modelle konnten nicht geladen werden',
+    'lcore.loadError.description':
+      'Das Lightspeed-Backend hat keine Modellliste zurückgegeben. Prüfen Sie, ob der Dienst läuft und erreichbar ist, und versuchen Sie es erneut.',
     'disclaimer.withValidation':
       'Diese Funktion nutzt KI-Technologie. Geben Sie bei Ihrer Eingabe keine persönlichen oder sonstigen sensiblen Informationen an. Interaktionen können dazu genutzt werden, die Produkte oder Dienstleistungen von Red Hat zu verbessern.',
     'disclaimer.withoutValidation':
@@ -151,6 +161,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'common.cancel': 'Abbrechen',
     'common.close': 'Schließen',
     'common.readMore': 'Mehr lesen',
+    'common.retry': 'Erneut versuchen',
+    'common.loading': 'Wird geladen',
     'common.noSearchResults': 'Keine Ergebnisse, die der Suche entsprechen',
     'menu.newConversation': 'Neuer Chat',
     'chatbox.header.title': 'Developer Lightspeed',

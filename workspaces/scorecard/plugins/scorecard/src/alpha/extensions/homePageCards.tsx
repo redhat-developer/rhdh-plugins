@@ -47,6 +47,24 @@ function AggregatedCardWithGithubOpenPrsContent() {
   return <ScorecardHomepageCardWithProvider aggregationId="openPrsKpi" />;
 }
 
+function AggregatedCardWithGithubFilecheckLicenseContent() {
+  return (
+    <ScorecardHomepageCardWithProvider aggregationId="licenseFileExistsKpi" />
+  );
+}
+
+function AggregatedCardWithGithubFilecheckCodeownersContent() {
+  return (
+    <ScorecardHomepageCardWithProvider aggregationId="filecheck.codeowners" />
+  );
+}
+
+function AggregatedCardWithGithubOpenPrsWeightedContent() {
+  return (
+    <ScorecardHomepageCardWithProvider aggregationId="openPrsWeightedKpi" />
+  );
+}
+
 function BorderlessHomeWidgetRenderer({ Content }: RendererProps) {
   return <Content />;
 }
@@ -131,6 +149,69 @@ export const aggregatedCardWithGithubOpenPrsWidget =
       components: () =>
         Promise.resolve({
           Content: AggregatedCardWithGithubOpenPrsContent,
+        }),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithGithubFilecheckLicense.
+ * @alpha
+ */
+export const aggregatedCardWithGithubFilecheckLicenseWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-github-filecheck-license',
+    params: {
+      name: 'AggregatedCardWithGithubFilecheckLicense',
+      title: 'Scorecard: LICENSE file exists',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: () =>
+        Promise.resolve({
+          Content: AggregatedCardWithGithubFilecheckLicenseContent,
+        }),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithGithubFilecheckCodeowners.
+ * @alpha
+ */
+export const aggregatedCardWithGithubFilecheckCodeownersWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-github-filecheck-codeowners',
+    params: {
+      name: 'AggregatedCardWithGithubFilecheckCodeowners',
+      title: 'Scorecard: CODEOWNERS file exists',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: () =>
+        Promise.resolve({
+          Content: AggregatedCardWithGithubFilecheckCodeownersContent,
+        }),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithGithubOpenPrsWeighted.
+ * @alpha
+ */
+export const aggregatedCardWithGithubOpenPrsWeightedWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-github-open-prs-weighted',
+    params: {
+      name: 'AggregatedCardWithGithubOpenPrsWeighted',
+      title: 'Scorecard: GitHub open PRs (weighted health)',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: () =>
+        Promise.resolve({
+          Content: AggregatedCardWithGithubOpenPrsWeightedContent,
         }),
     },
   });

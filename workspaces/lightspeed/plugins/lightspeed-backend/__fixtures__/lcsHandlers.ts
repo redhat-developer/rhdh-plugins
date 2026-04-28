@@ -268,6 +268,20 @@ export const lcsHandlers: HttpHandler[] = [
     });
   }),
 
+  // Vector stores list endpoint - returns mock RHDH product docs vector store
+  http.get(`${LOCAL_LCS_ADDR}/v1/vector-stores`, () => {
+    return HttpResponse.json({
+      data: [
+        {
+          id: 'vs-rhdh-product-docs',
+          name: 'rhdh-product-docs',
+          provider_id: 'notebooks',
+          metadata: {},
+        },
+      ],
+    });
+  }),
+
   // Catch-all handler for unknown paths
   http.all(`${LOCAL_LCS_ADDR}/*`, ({ request }) => {
     console.log(`Caught request to unknown path: ${request.url}`);

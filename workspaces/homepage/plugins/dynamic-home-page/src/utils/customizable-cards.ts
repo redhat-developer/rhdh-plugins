@@ -27,7 +27,7 @@ import { getTranslatedTextWithFallback } from '../translations/utils';
  * This is needed when customization is enabled and if customers might adopt
  * the customization in yaml feature previously.
  *
- * 1. Card mount points with a `config.layout` should be shown by default.
+ * 1. Card mount points with a `config.layouts` should be shown by default.
  * 2. Card mount points without a `config.id` should be shown by default
  *    as well for backward compatibilty!
  */

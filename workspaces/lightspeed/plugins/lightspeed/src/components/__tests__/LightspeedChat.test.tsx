@@ -81,6 +81,14 @@ jest.mock('../../hooks/notebooks/useNotebookSessions', () => ({
   }),
 }));
 
+jest.mock('../../hooks/notebooks/useNotebookSession', () => ({
+  useNotebookSession: jest.fn().mockReturnValue({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 jest.mock('../../hooks/useFeedbackActions', () => ({
   useFeedbackActions: jest.fn().mockReturnValue([]),
 }));
@@ -169,6 +177,9 @@ const mockNotebooksApi = {
   listDocuments: jest.fn().mockResolvedValue([]),
   deleteDocument: jest.fn().mockResolvedValue(undefined),
   getDocumentStatus: jest.fn().mockResolvedValue({}),
+  querySession: jest.fn().mockResolvedValue({
+    read: jest.fn().mockResolvedValue({ done: true, value: undefined }),
+  }),
 };
 
 const setupLightspeedChat = (initialPath = '/lightspeed') => (
@@ -225,6 +236,7 @@ describe('LightspeedChat', () => {
       setDraftMessage: jest.fn(),
       draftFileContents: [],
       setDraftFileContents: jest.fn(),
+      consumePendingOverlayThreadHandoff: jest.fn(() => false),
     });
 
     localStorage.clear();
@@ -621,6 +633,7 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
       });
 
       render(setupLightspeedChat());
@@ -652,6 +665,7 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
       });
 
       render(setupLightspeedChat());
@@ -683,6 +697,7 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
       });
 
       render(setupLightspeedChat());

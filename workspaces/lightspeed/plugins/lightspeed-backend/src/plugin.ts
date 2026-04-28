@@ -77,7 +77,7 @@ export const lightspeedPlugin = createBackendPlugin({
           logger.info('AI Notebooks enabled');
 
           http.addAuthPolicy({
-            path: '/ai-notebooks/health',
+            path: '/notebooks/health',
             allow: 'unauthenticated',
           });
         }

@@ -6,6 +6,8 @@
 import { AppDrawerContent } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
+import { GlobalHeaderMenuItemData } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { MenuItemParams } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
@@ -38,6 +40,37 @@ const _default: OverridableFrontendPlugin<
         defaultWidth?: number;
         priority?: number;
       };
+    }>;
+    'gh-menu-item:quickstart/quickstart': OverridableExtensionDefinition<{
+      kind: 'gh-menu-item';
+      name: 'quickstart';
+      config: {
+        priority: number | undefined;
+        title: string | undefined;
+        titleKey: string | undefined;
+        icon: string | undefined;
+        link: string | undefined;
+        sectionLabel: string | undefined;
+        sectionLink: string | undefined;
+        sectionLinkLabel: string | undefined;
+      };
+      configInput: {
+        link?: string | undefined;
+        title?: string | undefined;
+        icon?: string | undefined;
+        titleKey?: string | undefined;
+        priority?: number | undefined;
+        sectionLabel?: string | undefined;
+        sectionLink?: string | undefined;
+        sectionLinkLabel?: string | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderMenuItemData,
+        'global-header.menu-item',
+        {}
+      >;
+      inputs: {};
+      params: MenuItemParams;
     }>;
   }
 >;
@@ -76,6 +109,12 @@ export const quickstartTranslationRef: TranslationRef<
     readonly 'steps.findAllLearningPaths.title': string;
     readonly 'steps.findAllLearningPaths.description': string;
     readonly 'steps.findAllLearningPaths.ctaTitle': string;
+    readonly 'steps.setupLightspeed.title': string;
+    readonly 'steps.setupLightspeed.description': string;
+    readonly 'steps.setupLightspeed.ctaTitle': string;
+    readonly 'steps.getStartedWithLightspeed.title': string;
+    readonly 'steps.getStartedWithLightspeed.description': string;
+    readonly 'steps.getStartedWithLightspeed.ctaTitle': string;
     readonly 'button.quickstart': string;
     readonly 'button.openQuickstartGuide': string;
     readonly 'button.closeDrawer': string;

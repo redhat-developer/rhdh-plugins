@@ -15,7 +15,13 @@
  */
 
 const STATUS_GROUPED = 'statusGrouped' as const;
+const AVERAGE = 'average' as const;
 
+/**
+ * Supported aggregation types
+ * @public
+ */
 export const aggregationTypes = Object.freeze({
   statusGrouped: STATUS_GROUPED,
+  average: AVERAGE,
 });

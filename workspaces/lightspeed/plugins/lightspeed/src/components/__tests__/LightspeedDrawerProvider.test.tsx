@@ -35,13 +35,15 @@ jest.mock('@patternfly/chatbot', () => {
     ChatbotModal: ({
       children,
       onClose,
+      onEscapePress,
       displayMode,
       className,
       ouiaId,
       'aria-labelledby': ariaLabelledBy,
     }: {
       children: React.ReactNode;
-      onClose: () => void;
+      onClose?: () => void;
+      onEscapePress?: () => void;
       displayMode: ChatbotDisplayMode;
       className?: string;
       ouiaId?: string;
@@ -54,9 +56,20 @@ jest.mock('@patternfly/chatbot', () => {
         data-display-mode={displayMode}
         className={className}
       >
-        <button type="button" data-testid="modal-close" onClick={onClose}>
-          Close
-        </button>
+        {onClose ? (
+          <button type="button" data-testid="modal-close" onClick={onClose}>
+            Close
+          </button>
+        ) : null}
+        {onEscapePress ? (
+          <button
+            type="button"
+            data-testid="modal-escape-close"
+            onClick={() => onEscapePress()}
+          >
+            Escape close
+          </button>
+        ) : null}
         {children}
       </div>
     ),
@@ -83,6 +96,7 @@ function baseContextValue(): LightspeedDrawerContextType {
     setDraftMessage: jest.fn(),
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
+    consumePendingOverlayThreadHandoff: jest.fn(() => false),
   };
 }
 
@@ -172,7 +186,7 @@ describe('LightspeedDrawerProvider', () => {
     expect(screen.getByTestId('lightspeed-chat-container')).toBeInTheDocument();
   });
 
-  it('wires ChatbotModal onClose to closeChatbot from the hook', async () => {
+  it('wires ChatbotModal onEscapePress to closeChatbot from the hook', async () => {
     const user = userEvent.setup();
     const closeChatbot = jest.fn();
     mockUseLightspeedProviderState.mockReturnValue({
@@ -187,7 +201,7 @@ describe('LightspeedDrawerProvider', () => {
       </LightspeedDrawerProvider>,
     );
 
-    await user.click(screen.getByTestId('modal-close'));
+    await user.click(screen.getByTestId('modal-escape-close'));
     expect(closeChatbot).toHaveBeenCalledTimes(1);
   });
 });

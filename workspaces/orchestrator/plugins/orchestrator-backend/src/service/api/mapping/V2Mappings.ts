@@ -51,6 +51,7 @@ export function mapToWorkflowOverviewDTO(
       : undefined,
     lastTriggeredMs: overview.lastTriggeredMs,
     isAvailable: overview.isAvailable,
+    version: overview.version,
   };
 }
 
@@ -108,6 +109,7 @@ export function mapToProcessInstanceDTO(
 
   return {
     id: processInstance.id,
+    version: processInstance.version,
     processId: processInstance.processId,
     processName: processInstance.processName,
     description: processInstance.description,

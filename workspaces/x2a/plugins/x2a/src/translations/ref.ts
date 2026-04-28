@@ -122,6 +122,7 @@ export const x2aPluginMessages = {
       viewLog: 'View Log',
       hideLog: 'Hide Log',
       noLogsAvailable: 'No logs available yet...',
+      logWaitingForStream: 'Waiting for log output from the cluster...',
       telemetry: {
         title: 'Telemetry',
         noTelemetryAvailable: 'No telemetry available',

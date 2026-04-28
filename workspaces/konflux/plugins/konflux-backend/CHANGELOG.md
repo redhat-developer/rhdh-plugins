@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-konflux-backend
 
+## 0.1.7
+
+### Patch Changes
+
+- 378b871: Bump Backstage dependencies from 1.45.2 to 1.49.4 to align with RHDH 1.10. Fix Latest Releases not shown when applications field is omitted or uses wildcard patterns.
+- Updated dependencies [378b871]
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.7
+
 ## 0.1.6
 
 ### Patch Changes

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ConfigReader } from '@backstage/config';
+import { ConfigReader, type Config } from '@backstage/config';
 import {
   mockErrorHandler,
   mockServices,
@@ -27,6 +27,7 @@ import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
   MockBooleanProvider,
+  MockBatchBooleanProvider,
   githubNumberMetricMetadata,
 } from '../../__fixtures__/mockProviders';
 import {
@@ -48,6 +49,9 @@ import {
   PermissionsService,
 } from '@backstage/backend-plugin-api';
 import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
+import { AggregationsService } from './aggregations/AggregationService';
+import type { DatabaseMetricValues } from '../database/DatabaseMetricValues';
+import type { DbAggregatedMetric } from '../database/types';
 
 jest.mock('../utils/getEntitiesOwnedByUser', () => ({
   getEntitiesOwnedByUser: jest.fn(),
@@ -65,6 +69,17 @@ import * as getEntitiesOwnedByUserModule from '../utils/getEntitiesOwnedByUser';
 import * as permissionUtilsModule from '../permissions/permissionUtils';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import { AggregatedMetricMapper } from './mappers';
+
+function createTestAggregationsService(
+  database: DatabaseMetricValues,
+  config?: Config,
+): AggregationsService {
+  return new AggregationsService({
+    config: config ?? mockServices.rootConfig({ data: {} }),
+    database,
+    logger: mockServices.logger.mock(),
+  });
+}
 
 const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
   result: AuthorizeResult.CONDITIONAL,
@@ -87,6 +102,7 @@ describe('createRouter', () => {
   let app: express.Express;
   let metricProvidersRegistry: MetricProvidersRegistry;
   let catalogMetricService: CatalogMetricService;
+  let aggregationsService: AggregationsService;
   let mockLogger: ReturnType<typeof mockServices.logger.mock>;
   let httpAuthMock: ServiceMock<
     import('@backstage/backend-plugin-api').HttpAuthService
@@ -107,8 +123,12 @@ describe('createRouter', () => {
       auth: mockServices.auth(),
       database: mockDatabaseMetricValues,
       logger: mockLogger,
-      config: mockServices.rootConfig({ data: {} }),
     });
+
+    aggregationsService = createTestAggregationsService(
+      mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+      mockServices.rootConfig({ data: {} }),
+    );
 
     permissionsMock.authorizeConditional.mockResolvedValue([
       { result: AuthorizeResult.ALLOW },
@@ -128,7 +148,7 @@ describe('createRouter', () => {
 
     const router = await createRouter({
       metricProvidersRegistry,
-      catalogMetricService,
+      service: { aggregationsService, catalogMetricService },
       catalog,
       httpAuth: httpAuthMock,
       permissions: permissionsMock,
@@ -484,6 +504,8 @@ describe('createRouter', () => {
       },
       total: 12,
       timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 2,
+      calculationErrorCount: 0,
     };
 
     const mockAggregatedMetricResult: AggregatedMetricResult = {
@@ -511,7 +533,22 @@ describe('createRouter', () => {
             { key: 'success', expression: '<=20' },
           ],
         },
+        entitiesConsidered: 2,
+        calculationErrorCount: 0,
       },
+    };
+
+    const mockDbAggregatedMetric: DbAggregatedMetric = {
+      metric_id: 'github.open_prs',
+      total: 12,
+      max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+      statusCounts: {
+        error: 3,
+        warning: 4,
+        success: 5,
+      },
+      calculation_error_count: 1,
+      latest_entity_count: 1,
     };
 
     let mockCatalog: ReturnType<typeof catalogServiceMock.mock>;
@@ -519,7 +556,7 @@ describe('createRouter', () => {
     let checkEntityAccessSpy: jest.SpyInstance;
     let aggregationApp: express.Express;
     let toAggregatedMetricResultSpy: jest.SpyInstance;
-    let getAggregatedMetricByEntityRefsSpy: jest.SpyInstance;
+    let readAggregatedMetricByEntityRefsSpy: jest.SpyInstance;
 
     beforeEach(async () => {
       const githubProvider = new MockNumberProvider(
@@ -549,13 +586,17 @@ describe('createRouter', () => {
         .build();
       mockCatalog.getEntities.mockResolvedValue({ items: [componentEntity] });
 
-      getAggregatedMetricByEntityRefsSpy = jest
-        .spyOn(catalogMetricService, 'getAggregatedMetricByEntityRefs')
-        .mockResolvedValue(mockAggregatedMetric);
+      readAggregatedMetricByEntityRefsSpy = jest
+        .spyOn(mockDatabaseMetricValues, 'readAggregatedMetricByEntityRefs')
+        .mockResolvedValue(mockDbAggregatedMetric);
 
       toAggregatedMetricResultSpy = jest
         .spyOn(AggregatedMetricMapper, 'toAggregatedMetricResult')
         .mockReturnValue(mockAggregatedMetricResult);
+
+      const aggregationsServiceLocal = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+      );
 
       getEntitiesOwnedByUserSpy = jest
         .spyOn(getEntitiesOwnedByUserModule, 'getEntitiesOwnedByUser')
@@ -571,7 +612,10 @@ describe('createRouter', () => {
 
       const router = await createRouter({
         metricProvidersRegistry,
-        catalogMetricService,
+        service: {
+          aggregationsService: aggregationsServiceLocal,
+          catalogMetricService,
+        },
         catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
@@ -639,7 +683,9 @@ describe('createRouter', () => {
 
       expect(result.statusCode).toBe(404);
       expect(result.body.error.name).toBe('NotFoundError');
-      expect(result.body.error.message).toContain('Metric provider with ID');
+      expect(result.body.error.message).toContain(
+        'No metric provider registered',
+      );
     });
 
     it('should return aggregated metrics for a specific metric', async () => {
@@ -680,26 +726,34 @@ describe('createRouter', () => {
 
     it('should return empty aggregation when user owns no entities', async () => {
       const emptyAggregatedMetric = AggregatedMetricMapper.toAggregatedMetric();
+      const { AggregatedMetricMapper: ActualAggregatedMetricMapper } =
+        jest.requireActual<typeof import('./mappers')>('./mappers');
+      const provider = metricProvidersRegistry.getProvider('github.open_prs');
+      const thresholds = provider.getMetricThresholds();
       const emptyAggregatedMetricResult =
-        AggregatedMetricMapper.toAggregatedMetricResult(
-          metricProvidersRegistry.getMetric('github.open_prs'),
-          metricProvidersRegistry
-            .getProvider('github.open_prs')
-            .getMetricThresholds(),
-          emptyAggregatedMetric,
+        ActualAggregatedMetricMapper.toAggregatedMetricResult(
+          provider.getMetric(),
+          {
+            total: 0,
+            timestamp: emptyAggregatedMetric.timestamp,
+            values: thresholds.rules.map(rule => ({
+              name: rule.key,
+              count: 0,
+            })),
+            thresholds,
+            entitiesConsidered: 9,
+            calculationErrorCount: 0,
+          },
           {
             id: 'github.open_prs',
             title: 'GitHub Open PRs',
             description: 'Mock number description.',
-            type: 'statusGrouped',
+            type: aggregationTypes.statusGrouped,
             metricId: 'github.open_prs',
           },
         );
 
       getEntitiesOwnedByUserSpy.mockResolvedValueOnce([]);
-      getAggregatedMetricByEntityRefsSpy.mockResolvedValueOnce(
-        emptyAggregatedMetric,
-      );
       toAggregatedMetricResultSpy.mockReturnValueOnce(
         emptyAggregatedMetricResult,
       );
@@ -711,24 +765,19 @@ describe('createRouter', () => {
       expect(response.status).toBe(200);
       expect(response.body).toEqual(emptyAggregatedMetricResult);
       expect(response.headers.deprecation).toBe('true');
-      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledWith(
-        [],
-        'github.open_prs',
-        aggregationTypes.statusGrouped,
-      );
+      expect(readAggregatedMetricByEntityRefsSpy).not.toHaveBeenCalled();
       expect(checkEntityAccessSpy).not.toHaveBeenCalled();
     });
 
-    it('should call getAggregatedMetricByEntityRefs to get aggregated metric', async () => {
+    it('should call readAggregatedMetricByEntityRefs to get aggregated metric', async () => {
       await request(aggregationApp).get(
         '/metrics/github.open_prs/catalog/aggregations',
       );
 
-      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledTimes(1);
-      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledWith(
+      expect(readAggregatedMetricByEntityRefsSpy).toHaveBeenCalledTimes(1);
+      expect(readAggregatedMetricByEntityRefsSpy).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
         'github.open_prs',
-        aggregationTypes.statusGrouped,
       );
     });
 
@@ -752,20 +801,7 @@ describe('createRouter', () => {
       );
     });
 
-    it('should get aggregated metric by entity refs', async () => {
-      await request(aggregationApp).get(
-        '/metrics/github.open_prs/catalog/aggregations',
-      );
-
-      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledTimes(1);
-      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledWith(
-        ['component:default/my-service', 'component:default/my-other-service'],
-        'github.open_prs',
-        aggregationTypes.statusGrouped,
-      );
-    });
-
-    it('should call toAggregatedMetricResult to map aggregated metric to result', async () => {
+    it('should call toAggregatedMetricResult to map aggregated data to the API result', async () => {
       await request(aggregationApp).get(
         '/metrics/github.open_prs/catalog/aggregations',
       );
@@ -773,10 +809,68 @@ describe('createRouter', () => {
       expect(toAggregatedMetricResultSpy).toHaveBeenCalledTimes(1);
       expect(toAggregatedMetricResultSpy).toHaveBeenCalledWith(
         metricProvidersRegistry.getMetric('github.open_prs'),
-        metricProvidersRegistry
-          .getProvider('github.open_prs')
-          .getMetricThresholds(),
-        mockAggregatedMetric,
+        expect.objectContaining({
+          total: mockAggregatedMetric.total,
+          timestamp: mockAggregatedMetric.timestamp,
+        }),
+        expect.objectContaining({
+          id: 'github.open_prs',
+          type: aggregationTypes.statusGrouped,
+          metricId: 'github.open_prs',
+        }),
+      );
+    });
+
+    it('should use registry.getMetric to resolve the correct metric for batch providers', async () => {
+      const batchProvider = new MockBatchBooleanProvider(
+        'filecheck',
+        'filecheck',
+        [
+          { id: 'readme', path: 'README.md' },
+          { id: 'license', path: 'LICENSE' },
+        ],
+      );
+      metricProvidersRegistry.register(batchProvider);
+
+      const batchAggregationsService = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+      );
+
+      const batchAggregationRouter = await createRouter({
+        metricProvidersRegistry,
+        service: {
+          aggregationsService: batchAggregationsService,
+          catalogMetricService,
+        },
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+      });
+      const batchApp = express();
+      batchApp.use(batchAggregationRouter);
+      batchApp.use(mockErrorHandler());
+
+      const response = await request(batchApp).get(
+        '/metrics/filecheck.license/catalog/aggregations',
+      );
+
+      expect(response.status).toBe(200);
+      expect(toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'filecheck.license',
+          title: 'File: LICENSE',
+        }),
+        expect.objectContaining({
+          total: mockAggregatedMetric.total,
+          timestamp: mockAggregatedMetric.timestamp,
+          thresholds: batchProvider.getMetricThresholds(),
+        }),
+        expect.objectContaining({
+          id: 'filecheck.license',
+          metricId: 'filecheck.license',
+          type: aggregationTypes.statusGrouped,
+        }),
       );
     });
   });
@@ -786,6 +880,8 @@ describe('createRouter', () => {
       values: { error: 1, warning: 2, success: 3 },
       total: 6,
       timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 2,
+      calculationErrorCount: 0,
     };
 
     const mockAggregatedMetricResult: AggregatedMetricResult = {
@@ -813,14 +909,29 @@ describe('createRouter', () => {
             { key: 'success', expression: '<=20' },
           ],
         },
+        entitiesConsidered: 2,
+        calculationErrorCount: 0,
       },
+    };
+
+    const mockDbAggregatedMetricForAgId: DbAggregatedMetric = {
+      metric_id: 'github.open_prs',
+      total: 6,
+      max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+      statusCounts: {
+        error: 1,
+        warning: 2,
+        success: 3,
+      },
+      calculation_error_count: 1,
+      latest_entity_count: 1,
     };
 
     let metricRegistry: MetricProvidersRegistry;
     let mockCatalog: ReturnType<typeof catalogServiceMock.mock>;
     let mockCatalogMetricService: CatalogMetricService;
     let aggregationsApp: express.Express;
-    let getAggregatedSpy: jest.SpyInstance;
+    let readAggregatedMetricByEntityRefsSpyAgId: jest.SpyInstance;
 
     beforeEach(async () => {
       metricRegistry = new MetricProvidersRegistry();
@@ -855,12 +966,11 @@ describe('createRouter', () => {
         registry: metricRegistry,
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
-        config: mockServices.rootConfig({ data: {} }),
       });
 
-      getAggregatedSpy = jest
-        .spyOn(mockCatalogMetricService, 'getAggregatedMetricByEntityRefs')
-        .mockResolvedValue(mockAggregatedMetric);
+      readAggregatedMetricByEntityRefsSpyAgId = jest
+        .spyOn(mockDatabaseMetricValues, 'readAggregatedMetricByEntityRefs')
+        .mockResolvedValue(mockDbAggregatedMetricForAgId);
 
       jest
         .spyOn(AggregatedMetricMapper, 'toAggregatedMetricResult')
@@ -880,9 +990,17 @@ describe('createRouter', () => {
         principal: { userEntityRef: 'user:default/test-user' },
       } as any);
 
+      const aggregationsServiceAgRoute = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        mockServices.rootConfig({ data: {} }),
+      );
+
       const router = await createRouter({
         metricProvidersRegistry: metricRegistry,
-        catalogMetricService: mockCatalogMetricService,
+        service: {
+          aggregationsService: aggregationsServiceAgRoute,
+          catalogMetricService: mockCatalogMetricService,
+        },
         catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
@@ -908,13 +1026,12 @@ describe('createRouter', () => {
       expect(response.headers.link).toBeUndefined();
     });
 
-    it('should call getAggregatedMetricByEntityRefs with metric id and statusGrouped when no KPI config', async () => {
+    it('should call readAggregatedMetricByEntityRefs when no KPI config', async () => {
       await request(aggregationsApp).get('/aggregations/github.open_prs');
 
-      expect(getAggregatedSpy).toHaveBeenCalledWith(
+      expect(readAggregatedMetricByEntityRefsSpyAgId).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
         'github.open_prs',
-        aggregationTypes.statusGrouped,
       );
     });
 
@@ -944,7 +1061,73 @@ describe('createRouter', () => {
       expect(response.body.error.name).toBe('AuthenticationError');
     });
 
+    it('should resolve the correct metric for batch providers', async () => {
+      const batchProvider = new MockBatchBooleanProvider(
+        'filecheck',
+        'filecheck',
+        [
+          { id: 'readme', path: 'README.md' },
+          { id: 'license', path: 'LICENSE' },
+        ],
+      );
+      metricRegistry.register(batchProvider);
+
+      const aggregationsServiceBatch = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        mockServices.rootConfig({ data: {} }),
+      );
+      const getAggregatedSpy = jest.spyOn(
+        aggregationsServiceBatch,
+        'getAggregatedMetricByEntityRefs',
+      );
+
+      const batchRouter = await createRouter({
+        metricProvidersRegistry: metricRegistry,
+        service: {
+          aggregationsService: aggregationsServiceBatch,
+          catalogMetricService: mockCatalogMetricService,
+        },
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+      });
+      const batchApp = express();
+      batchApp.use(batchRouter);
+      batchApp.use(mockErrorHandler());
+
+      const response = await request(batchApp).get(
+        '/aggregations/filecheck.license',
+      );
+
+      expect(response.status).toBe(200);
+      expect(getAggregatedSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityRefs: [
+            'component:default/my-service',
+            'component:default/my-other-service',
+          ],
+          aggregationConfig: expect.objectContaining({
+            metricId: 'filecheck.license',
+            type: aggregationTypes.statusGrouped,
+          }),
+        }),
+      );
+    });
+
     it('should use KPI config metricId and type when aggregationId is a KPI key', async () => {
+      const kpiConfig = new ConfigReader({
+        scorecard: {
+          aggregationKPIs: {
+            myKpi: {
+              title: 'Custom KPI title',
+              description: 'Custom KPI description',
+              type: 'statusGrouped',
+              metricId: 'github.open_prs',
+            },
+          },
+        },
+      });
       const kpiService = new CatalogMetricService({
         catalog: mockCatalog,
         auth: mockServices.auth.mock({
@@ -955,27 +1138,23 @@ describe('createRouter', () => {
         registry: metricRegistry,
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
-        config: new ConfigReader({
-          scorecard: {
-            aggregationKPIs: {
-              myKpi: {
-                title: 'Custom KPI title',
-                description: 'Custom KPI description',
-                type: 'statusGrouped',
-                metricId: 'github.open_prs',
-              },
-            },
-          },
-        }),
       });
 
       const getSpy = jest
-        .spyOn(kpiService, 'getAggregatedMetricByEntityRefs')
-        .mockResolvedValue(mockAggregatedMetric);
+        .spyOn(mockDatabaseMetricValues, 'readAggregatedMetricByEntityRefs')
+        .mockResolvedValue(mockDbAggregatedMetricForAgId);
+
+      const aggregationsServiceKpi = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        kpiConfig,
+      );
 
       const router = await createRouter({
         metricProvidersRegistry: metricRegistry,
-        catalogMetricService: kpiService,
+        service: {
+          aggregationsService: aggregationsServiceKpi,
+          catalogMetricService: kpiService,
+        },
         catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
@@ -990,7 +1169,70 @@ describe('createRouter', () => {
       expect(getSpy).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
         'github.open_prs',
-        aggregationTypes.statusGrouped,
+      );
+    });
+
+    it('should use KPI type average when configured', async () => {
+      const kpiConfig = new ConfigReader({
+        scorecard: {
+          aggregationKPIs: {
+            avgKpi: {
+              title: 'Weighted health KPI',
+              description: 'Weighted average',
+              type: 'average',
+              metricId: 'github.open_prs',
+              options: {
+                statusScores: {
+                  error: 0,
+                  warning: 50,
+                  success: 100,
+                },
+              },
+            },
+          },
+        },
+      });
+      const kpiService = new CatalogMetricService({
+        catalog: mockCatalog,
+        auth: mockServices.auth.mock({
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({
+            token: 'test-token',
+          }),
+        }),
+        registry: metricRegistry,
+        database: mockDatabaseMetricValues,
+        logger: mockServices.logger.mock(),
+      });
+
+      const getSpy = jest
+        .spyOn(mockDatabaseMetricValues, 'readAggregatedMetricByEntityRefs')
+        .mockResolvedValue(mockDbAggregatedMetricForAgId);
+
+      const aggregationsServiceAvg = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        kpiConfig,
+      );
+
+      const router = await createRouter({
+        metricProvidersRegistry: metricRegistry,
+        service: {
+          aggregationsService: aggregationsServiceAvg,
+          catalogMetricService: kpiService,
+        },
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+      });
+      const kpiApp = express();
+      kpiApp.use(router);
+      kpiApp.use(mockErrorHandler());
+
+      await request(kpiApp).get('/aggregations/avgKpi');
+
+      expect(getSpy).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/my-other-service'],
+        'github.open_prs',
       );
     });
   });
@@ -1009,6 +1251,19 @@ describe('createRouter', () => {
 
       metaCatalog = catalogServiceMock.mock();
 
+      const metaAggregationConfig = new ConfigReader({
+        scorecard: {
+          aggregationKPIs: {
+            myKpi: {
+              title: 'Custom KPI title',
+              description: 'Custom KPI description',
+              type: 'statusGrouped',
+              metricId: 'github.open_prs',
+            },
+          },
+        },
+      });
+
       metaCatalogMetricService = new CatalogMetricService({
         catalog: metaCatalog,
         auth: mockServices.auth.mock({
@@ -1019,23 +1274,19 @@ describe('createRouter', () => {
         registry: metaRegistry,
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
-        config: new ConfigReader({
-          scorecard: {
-            aggregationKPIs: {
-              myKpi: {
-                title: 'Custom KPI title',
-                description: 'Custom KPI description',
-                type: 'statusGrouped',
-                metricId: 'github.open_prs',
-              },
-            },
-          },
-        }),
       });
+
+      const aggregationsMetaService = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        metaAggregationConfig,
+      );
 
       const router = await createRouter({
         metricProvidersRegistry: metaRegistry,
-        catalogMetricService: metaCatalogMetricService,
+        service: {
+          aggregationsService: aggregationsMetaService,
+          catalogMetricService: metaCatalogMetricService,
+        },
         catalog: metaCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
@@ -1061,6 +1312,43 @@ describe('createRouter', () => {
       });
     });
 
+    it('should resolve the correct metric metadata for batch providers', async () => {
+      const batchProvider = new MockBatchBooleanProvider(
+        'filecheck',
+        'filecheck',
+        [
+          { id: 'readme', path: 'README.md' },
+          { id: 'license', path: 'LICENSE' },
+        ],
+      );
+      metaRegistry.register(batchProvider);
+
+      const router = await createRouter({
+        metricProvidersRegistry: metaRegistry,
+        service: {
+          aggregationsService: createTestAggregationsService(
+            mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+            mockServices.rootConfig({ data: {} }),
+          ),
+          catalogMetricService: metaCatalogMetricService,
+        },
+        catalog: metaCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+      });
+      const batchMetaApp = express();
+      batchMetaApp.use(router);
+      batchMetaApp.use(mockErrorHandler());
+
+      const response = await request(batchMetaApp).get(
+        '/aggregations/filecheck.license/metadata',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.title).toBe('File: LICENSE');
+    });
+
     it('returns metadata for metric id when no KPI row exists', async () => {
       const svc = new CatalogMetricService({
         catalog: metaCatalog,
@@ -1072,12 +1360,19 @@ describe('createRouter', () => {
         registry: metaRegistry,
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
-        config: mockServices.rootConfig({ data: {} }),
       });
+
+      const aggregationsSvcNoKpi = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        mockServices.rootConfig({ data: {} }),
+      );
 
       const router = await createRouter({
         metricProvidersRegistry: metaRegistry,
-        catalogMetricService: svc,
+        service: {
+          aggregationsService: aggregationsSvcNoKpi,
+          catalogMetricService: svc,
+        },
         catalog: metaCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
@@ -1131,6 +1426,12 @@ describe('createRouter', () => {
         pageSize: 10,
         total: 2,
         totalPages: 1,
+        isCapped: false,
+      },
+      entityHealth: {
+        totalEntities: 2,
+        calculationErrorCount: 0,
+        countsArePartial: false,
       },
     };
 
@@ -1160,7 +1461,7 @@ describe('createRouter', () => {
       const mockCatalog = catalogServiceMock.mock();
       const router = await createRouter({
         metricProvidersRegistry,
-        catalogMetricService,
+        service: { aggregationsService, catalogMetricService },
         catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
@@ -1403,10 +1704,20 @@ describe('createRouter', () => {
     it('should return empty entities array when no results', async () => {
       getEntityMetricDetailsSpy.mockResolvedValue({
         metricId: 'github.open_prs',
-        mockCredentials,
         metricMetadata: mockEntityMetricDetailResponse.metricMetadata,
         entities: [],
-        pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: 0,
+          totalPages: 0,
+          isCapped: false,
+        },
+        entityHealth: {
+          totalEntities: 0,
+          calculationErrorCount: 0,
+          countsArePartial: false,
+        },
       });
 
       const response = await request(drillDownApp).get(

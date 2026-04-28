@@ -87,6 +87,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
   useLightspeedNotebooksPermission,
+  useNotebookSession,
   useNotebookSessions,
   usePinnedChatsSettings,
   useSortSettings,
@@ -134,6 +135,13 @@ const useStyles = makeStyles(theme => ({
   },
   errorContainer: {
     padding: theme.spacing(3),
+  },
+  drawerFileDropZone: {
+    gap: 0,
+    rowGap: 0,
+    columnGap: 0,
+    '--pf-v6-c-multiple-file-upload--Gap': '0',
+    '--pf-v5-c-multiple-file-upload--Gap': '0',
   },
   headerMenu: {
     // align hamburger icon with title
@@ -468,18 +476,20 @@ export const LightspeedChat = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
+  const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
+  const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [activeTab, setActiveTab] = useState<number>(
-    notebooksRouteMatch ? 1 : 0,
+    notebooksRouteMatch || notebookViewRouteMatch ? 1 : 0,
   );
   const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
     useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
     !notebooksPermissionLoading && hasNotebooksAccess;
   const { data: notebooks = [], refetch: refetchNotebooks } =
-    useNotebookSessions(activeTab === 1 && notebooksPermissionResolved);
+    useNotebookSessions(notebooksPermissionResolved);
   const hasNotebooks = notebooks.length > 0;
   const [openNotebookMenuId, setOpenNotebookMenuId] = useState<string | null>(
     null,
@@ -489,6 +499,29 @@ export const LightspeedChat = ({
   const [activeNotebook, setActiveNotebook] = useState<NotebookSession | null>(
     null,
   );
+  const {
+    data: routeNotebook,
+    isLoading: routeNotebookLoading,
+    isError: routeNotebookError,
+  } = useNotebookSession(routeNotebookId);
+
+  useEffect(() => {
+    if (routeNotebookId && routeNotebook && !routeNotebookLoading) {
+      setActiveNotebook(routeNotebook);
+    } else if (routeNotebookId && routeNotebookError) {
+      navigate('/lightspeed/notebooks', { replace: true });
+    } else if (!routeNotebookId && notebooksRouteMatch) {
+      setActiveNotebook(null);
+    }
+  }, [
+    routeNotebookId,
+    routeNotebook,
+    routeNotebookLoading,
+    routeNotebookError,
+    notebooksRouteMatch,
+    navigate,
+  ]);
+
   const [notebookAlerts, setNotebookAlerts] = useState<Partial<AlertProps>[]>(
     [],
   );
@@ -521,6 +554,7 @@ export const LightspeedChat = ({
     setCurrentConversationId,
     draftMessage,
     setDraftMessage,
+    consumePendingOverlayThreadHandoff,
   } = useLightspeedDrawerContext();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const showChatPanel = !isFullscreenMode || activeTab === 0;
@@ -553,16 +587,16 @@ export const LightspeedChat = ({
       { name: UNTITLED_NOTEBOOK_NAME },
       {
         onSuccess: (session: NotebookSession) => {
-          setActiveNotebook(session);
+          navigate(`/lightspeed/notebooks/${session.session_id}`);
         },
       },
     );
-  }, [createNotebookMutation]);
+  }, [createNotebookMutation, navigate]);
 
   const handleCloseNotebook = useCallback(() => {
-    setActiveNotebook(null);
+    navigate('/lightspeed/notebooks');
     refetchNotebooks();
-  }, [refetchNotebooks]);
+  }, [navigate, refetchNotebooks]);
 
   const handleRemoveNotebookAlert = (key: React.Key) => {
     setNotebookAlerts(prevAlerts =>
@@ -614,12 +648,55 @@ export const LightspeedChat = ({
     setUploadError,
   } = useFileAttachmentContext();
 
-  // Sync conversationId with lastOpenedId whenever lastOpenedId changes
-  useEffect(() => {
-    if (isReady && lastOpenedId !== null) {
+  // After leaving fullscreen for overlay/docked, provider signals a one-shot handoff so a
+  // new LightspeedChat mount does not briefly apply stale lastOpened from storage.
+  useLayoutEffect(() => {
+    if (!isReady) return;
+
+    if (isFullscreenMode) {
+      return;
+    }
+
+    const handoff = consumePendingOverlayThreadHandoff?.() ?? false;
+    if (handoff) {
+      if (routeConversationId) {
+        setConversationId(routeConversationId);
+        setNewChatCreated(false);
+      } else {
+        setConversationId(TEMP_CONVERSATION_ID);
+        setNewChatCreated(true);
+      }
+      return;
+    }
+
+    if (routeConversationId && routeConversationId !== conversationId) {
+      setConversationId(routeConversationId);
+      setNewChatCreated(false);
+    } else if (
+      !routeConversationId &&
+      conversationId === '' &&
+      lastOpenedId !== null
+    ) {
       setConversationId(lastOpenedId);
     }
-  }, [lastOpenedId, isReady]);
+  }, [
+    isReady,
+    isFullscreenMode,
+    routeConversationId,
+    conversationId,
+    lastOpenedId,
+    consumePendingOverlayThreadHandoff,
+  ]);
+
+  // Sync conversationId with lastOpenedId — fullscreen only (overlay uses layout effect above).
+  useEffect(() => {
+    if (!isReady || !isFullscreenMode) {
+      return;
+    }
+    if (lastOpenedId !== null) {
+      setConversationId(lastOpenedId);
+    }
+  }, [lastOpenedId, isReady, isFullscreenMode]);
 
   const queryClient = useQueryClient();
 
@@ -634,13 +711,32 @@ export const LightspeedChat = ({
   const samplePrompts = useWelcomePrompts();
   useEffect(() => {
     if (!user || !isReady) return;
+    const onOverlayLikeSurface = isFullscreenMode || !routeConversationId;
+    const stillOnProvisionalThread =
+      !conversationId || conversationId === TEMP_CONVERSATION_ID;
+
     if (lastOpenedId === null) {
-      setConversationId(TEMP_CONVERSATION_ID);
+      if (onOverlayLikeSurface && stillOnProvisionalThread) {
+        setConversationId(TEMP_CONVERSATION_ID);
+      }
     }
+    // Only treat as blank "new chat" while there is no persisted thread id yet. Otherwise
+    // after the first stream assigns a real conversationId, lastOpenedId can lag one frame
+    // and this effect would flip newChatCreated back to true and hide the New chat button.
     if (lastOpenedId === TEMP_CONVERSATION_ID || lastOpenedId === null) {
-      setNewChatCreated(true);
+      if (onOverlayLikeSurface && stillOnProvisionalThread) {
+        setNewChatCreated(true);
+      }
     }
-  }, [user, isReady, lastOpenedId, setConversationId]);
+  }, [
+    user,
+    isReady,
+    lastOpenedId,
+    setConversationId,
+    isFullscreenMode,
+    routeConversationId,
+    conversationId,
+  ]);
 
   useEffect(() => {
     // Clear last opened conversationId when there are no conversations.
@@ -651,8 +747,20 @@ export const LightspeedChat = ({
       lastOpenedId
     ) {
       clearLastOpenedId();
+      // Stale last-opened pointed at a missing thread; align with blank new chat so
+      // provisional UI (e.g. hide New chat) matches storage.
+      setConversationId(TEMP_CONVERSATION_ID);
+      setNewChatCreated(true);
+      setCurrentConversationId(undefined);
     }
-  }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
+  }, [
+    isLoading,
+    isRefetching,
+    conversations,
+    lastOpenedId,
+    clearLastOpenedId,
+    setCurrentConversationId,
+  ]);
 
   useEffect(() => {
     if (
@@ -665,10 +773,14 @@ export const LightspeedChat = ({
         (c: ConversationSummary) => c.conversation_id === routeConversationId,
       );
       if (!conversationExists) {
-        // Conversation from route doesn't exist, start a new chat
-        setConversationId(TEMP_CONVERSATION_ID);
-        setCurrentConversationId(undefined);
-        setNewChatCreated(true);
+        // New threads can be missing from the summaries list until refetch completes; if we
+        // already show this id locally (e.g. streaming), do not reset to a new chat.
+        if (routeConversationId !== conversationId) {
+          // Conversation from route doesn't exist, start a new chat
+          setConversationId(TEMP_CONVERSATION_ID);
+          setCurrentConversationId(undefined);
+          setNewChatCreated(true);
+        }
       } else if (conversationId !== routeConversationId) {
         setConversationId(routeConversationId);
       }
@@ -691,6 +803,14 @@ export const LightspeedChat = ({
     }
   }, [conversationId, setLastOpenedId]);
 
+  const viewConversationId = useMemo(
+    () =>
+      !isFullscreenMode && routeConversationId
+        ? routeConversationId
+        : conversationId,
+    [isFullscreenMode, routeConversationId, conversationId],
+  );
+
   const onStart = (conv_id: string) => {
     setConversationId(conv_id);
     setCurrentConversationId(conv_id);
@@ -710,20 +830,21 @@ export const LightspeedChat = ({
       queryKey: ['conversations'],
     });
     queryClient.invalidateQueries({
-      queryKey: ['conversationMessages', conversationId],
+      queryKey: ['conversationMessages', viewConversationId],
     });
     setNewChatCreated(false);
   };
 
   const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
     useConversationMessages(
-      conversationId,
+      viewConversationId,
       userName,
       selectedModel,
       selectedProvider,
       avatar,
       onComplete,
       onStart,
+      undefined,
       onRequestIdReady,
     );
 
@@ -734,7 +855,7 @@ export const LightspeedChat = ({
     if (!message.toString().trim()) return;
 
     wasStoppedByUserRef.current = false;
-    if (conversationId !== TEMP_CONVERSATION_ID) {
+    if (viewConversationId !== TEMP_CONVERSATION_ID) {
       setNewChatCreated(false);
     }
     setAnnouncement(
@@ -853,16 +974,40 @@ export const LightspeedChat = ({
     ],
   );
 
+  const notebookConversationIds = useMemo(
+    () =>
+      new Set(
+        notebooks
+          .map(n => n.metadata?.conversation_id)
+          .filter((id): id is string => !!id),
+      ),
+    [notebooks],
+  );
+
+  const chatOnlyConversations = useMemo(
+    () =>
+      conversations.filter(
+        c => !notebookConversationIds.has(c.conversation_id),
+      ),
+    [conversations, notebookConversationIds],
+  );
+
   const categorizedMessages = useMemo(
     () =>
       getCategorizeMessages(
-        conversations,
+        chatOnlyConversations,
         pinnedChats,
         additionalMessageProps,
         t,
         selectedSort,
       ),
-    [additionalMessageProps, conversations, pinnedChats, t, selectedSort],
+    [
+      additionalMessageProps,
+      chatOnlyConversations,
+      pinnedChats,
+      t,
+      selectedSort,
+    ],
   );
 
   const filterConversations = useCallback(
@@ -969,7 +1114,7 @@ export const LightspeedChat = ({
   );
 
   const conversationFound = !!conversations.find(
-    (c: ConversationSummary) => c.conversation_id === conversationId,
+    (c: ConversationSummary) => c.conversation_id === viewConversationId,
   );
 
   const getMaxPrompts = () => {
@@ -1510,6 +1655,7 @@ export const LightspeedChat = ({
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
             isModelSelectorDisabled={isSendButtonDisabled}
+            hideModelSelector={showNotebooksPanel}
             setDisplayMode={setDisplayMode}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
@@ -1547,7 +1693,7 @@ export const LightspeedChat = ({
               'aria-label': t('aria.closeDrawerPanel'),
             }}
             setIsDrawerOpen={setIsChatHistoryDrawerOpen}
-            activeItemId={conversationId}
+            activeItemId={viewConversationId}
             onSelectActiveItem={onSelectActiveItem}
             conversations={filterConversations(filterValue)}
             onNewChat={newChatCreated ? undefined : onNewChat}
@@ -1577,6 +1723,7 @@ export const LightspeedChat = ({
             }
             drawerContent={
               <FileDropZone
+                className={classes.drawerFileDropZone}
                 onFileDrop={(e, data) => handleAttach(data, e)}
                 displayMode={ChatbotDisplayMode.embedded}
                 infoText={t('chatbox.fileUpload.infoText')}
@@ -1609,6 +1756,18 @@ export const LightspeedChat = ({
               sessionId={activeNotebook.session_id}
               notebookName={activeNotebook.name}
               documents={notebookDocuments}
+              metadata={activeNotebook.metadata}
+              topicSummary={
+                conversations.find(
+                  c =>
+                    c.conversation_id ===
+                    activeNotebook.metadata?.conversation_id,
+                )?.topic_summary ?? undefined
+              }
+              userName={userName}
+              avatar={avatar}
+              profileLoading={profileLoading}
+              topicRestrictionEnabled={topicRestrictionEnabled}
               onClose={handleCloseNotebook}
             />
           )}
@@ -1622,7 +1781,9 @@ export const LightspeedChat = ({
               classes={classes}
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
-              onSelectNotebook={setActiveNotebook}
+              onSelectNotebook={(notebook: NotebookSession) =>
+                navigate(`/lightspeed/notebooks/${notebook.session_id}`)
+              }
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}
               onCreateNotebook={handleCreateNotebook}
