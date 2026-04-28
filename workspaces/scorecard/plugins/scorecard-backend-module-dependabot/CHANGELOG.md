@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot
 
+## 0.2.3
+
+### Patch Changes
+
+- Updated dependencies [4ecaacd]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.6.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.6.0
+
 ## 0.2.2
 
 ### Patch Changes

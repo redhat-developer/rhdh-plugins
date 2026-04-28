@@ -1,0 +1,13 @@
+# @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck
+
+## 0.1.0
+
+### Minor Changes
+
+- 4ecaacd: Add support for batch metric providers, allowing a single provider to handle multiple metrics efficiently. Introduce a new backend module for configurable file existence checks (filecheck.\*) that verify whether required files (like README, LICENSE, or CODEOWNERS) are present in a repository.
+
+### Patch Changes
+
+- Updated dependencies [4ecaacd]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.6.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.6.0
