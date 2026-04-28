@@ -30,6 +30,7 @@ export const Router = () => {
         element={<LightspeedPage />}
       />
       <Route path="/notebooks" element={<LightspeedPage />} />
+      <Route path="/notebooks/:notebookId" element={<LightspeedPage />} />
     </Routes>
   );
 };

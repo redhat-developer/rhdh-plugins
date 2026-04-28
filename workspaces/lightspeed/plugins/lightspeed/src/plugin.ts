@@ -35,6 +35,7 @@ import { NotebooksApiClient } from './api/NotebooksApiClient';
 import {
   addConversationRouteRef,
   notebooksRouteRef,
+  notebookViewRouteRef,
   rootRouteRef,
 } from './routes';
 
@@ -48,6 +49,7 @@ export const lightspeedPlugin = createPlugin({
     root: rootRouteRef,
     lightspeedConversation: addConversationRouteRef,
     lightspeedNotebooks: notebooksRouteRef,
+    lightspeedNotebookView: notebookViewRouteRef,
   },
   apis: [
     createApiFactory({

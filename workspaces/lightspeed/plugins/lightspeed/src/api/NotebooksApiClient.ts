@@ -135,6 +135,17 @@ export class NotebooksApiClient implements NotebooksAPI {
     return response?.sessions ?? [];
   }
 
+  async getSession(sessionId: string) {
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchJson<SessionResponse>(
+      `${baseUrl}/v1/sessions/${encodeURIComponent(sessionId)}`,
+    );
+    if (!response.session) {
+      throw new Error(response.error ?? 'Session not found');
+    }
+    return response.session;
+  }
+
   async renameSession(sessionId: string, name: string) {
     const baseUrl = await this.getBaseUrl();
     await this.fetchJson(
