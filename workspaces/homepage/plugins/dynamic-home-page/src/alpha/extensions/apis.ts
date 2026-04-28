@@ -18,9 +18,15 @@ import {
   ApiBlueprint,
   configApiRef,
   discoveryApiRef,
+  fetchApiRef,
   identityApiRef,
 } from '@backstage/frontend-plugin-api';
-import { QuickAccessApiClient, quickAccessApiRef } from '../../api';
+import {
+  DefaultWidgetsApiClient,
+  defaultWidgetsApiRef,
+  QuickAccessApiClient,
+  quickAccessApiRef,
+} from '../../api';
 
 /**
  * Quick access API for the New Frontend System.
@@ -44,4 +50,25 @@ const quickAccessApi = ApiBlueprint.make({
     }),
 });
 
-export { quickAccessApi };
+/**
+ * Default cards API for the New Frontend System.
+ * Provides access to permission-filtered homepage cards from the backend.
+ *
+ * @alpha
+ */
+const defaultWidgetsApi = ApiBlueprint.make({
+  name: 'default-widgets',
+  disabled: false,
+  params: defineParams =>
+    defineParams({
+      api: defaultWidgetsApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new DefaultWidgetsApiClient({ discoveryApi, fetchApi }),
+    }),
+});
+
+export { defaultWidgetsApi, quickAccessApi };

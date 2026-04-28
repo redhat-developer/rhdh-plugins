@@ -21,8 +21,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
 import CreateComponentIcon from '@material-ui/icons/AddCircleOutline';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
+import { Administration } from '@backstage-community/plugin-rbac';
 import {
   Settings as SidebarSettings,
   UserSettingsSignInAvatar,
@@ -42,8 +41,11 @@ import {
 } from '@backstage/core-components';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
-import { MyGroupsSidebarItem } from '@backstage/plugin-org';
-import GroupIcon from '@material-ui/icons/People';
+
+import {
+  LogoFull,
+  LogoIcon,
+} from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -85,15 +87,24 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         {/* Global nav, not org-specific */}
         <SidebarItem icon={HomeIcon} to="" text="Home" />
         <SidebarItem icon={HomeIcon} to="customizable" text="Customizable" />
-        <SidebarItem icon={CatalogIcon} to="catalog" text="Catalog" />
-        <MyGroupsSidebarItem
-          singularTitle="My Group"
-          pluralTitle="My Groups"
-          icon={GroupIcon}
+        {/* <SidebarItem icon={HomeIcon} to="static" text="Static Home" /> */}
+        <SidebarItem
+          icon={HomeIcon}
+          to="debug-available-widgets"
+          text="Avail. Widgets"
         />
+        <SidebarItem
+          icon={HomeIcon}
+          to="debug-default-widgets"
+          text="Default Widgets"
+        />
+        <SidebarDivider />
+        <SidebarItem icon={CatalogIcon} to="catalog" text="Catalog" />
+        <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
+        <SidebarDivider />
         <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
-        <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
+        <Administration />
         {/* End global nav */}
         <SidebarDivider />
         <SidebarScrollWrapper>

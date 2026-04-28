@@ -215,7 +215,7 @@ export class HomePageCustomization {
     }
   }
 
-  async restoreDefaultCards(): Promise<void> {
+  async restoreDefaultWidgets(): Promise<void> {
     await this.testUtils.clickButton('Restore defaults');
     await this.page.waitForTimeout(2000);
     await this.saveButton().click();
