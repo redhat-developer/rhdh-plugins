@@ -15,7 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import { createAggregationStrategyRegistry } from './registerStrategies';
 import { AverageAggregationStrategy } from './AverageAggregationStrategy';
@@ -28,10 +28,10 @@ describe('createAggregationStrategyRegistry', () => {
 
     const registry = createAggregationStrategyRegistry(loader, logger);
 
-    expect(registry.get(aggregationKinds.statusGrouped)).toBeInstanceOf(
+    expect(registry.get(aggregationTypes.statusGrouped)).toBeInstanceOf(
       StatusGroupedAggregationStrategy,
     );
-    expect(registry.get(aggregationKinds.average)).toBeInstanceOf(
+    expect(registry.get(aggregationTypes.average)).toBeInstanceOf(
       AverageAggregationStrategy,
     );
     expect(registry.size).toBe(2);

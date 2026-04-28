@@ -18,7 +18,7 @@ import {
   AggregatedMetricResult,
   DEFAULT_NUMBER_THRESHOLDS,
   MetricResult,
-  aggregationKinds,
+  aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const mockScorecardSuccessData = [
@@ -134,7 +134,7 @@ export const mockScorecardErrorData = [
 ] as MetricResult[];
 
 export const mockAggregatedScorecardData = {
-  [aggregationKinds.statusGrouped]: {
+  [aggregationTypes.statusGrouped]: {
     id: 'github.open_prs',
     status: 'success',
     metadata: {
@@ -143,7 +143,7 @@ export const mockAggregatedScorecardData = {
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
       history: true,
-      aggregationType: aggregationKinds.statusGrouped,
+      aggregationType: aggregationTypes.statusGrouped,
     },
     result: {
       values: [
@@ -156,7 +156,7 @@ export const mockAggregatedScorecardData = {
       thresholds: DEFAULT_NUMBER_THRESHOLDS,
     },
   } as AggregatedMetricResult,
-  [aggregationKinds.average]: {
+  [aggregationTypes.average]: {
     id: 'github.open_prs',
     status: 'success',
     metadata: {
@@ -164,7 +164,7 @@ export const mockAggregatedScorecardData = {
       description: 'Weighted health average for the Generative AI API group.',
       type: 'number',
       history: true,
-      aggregationType: aggregationKinds.average,
+      aggregationType: aggregationTypes.average,
     },
     result: {
       values: [

@@ -15,7 +15,7 @@
  */
 
 import { z } from 'zod';
-import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 const baseAggregationConfigSchema = z.object({
   id: z.string().min(1).max(128),
@@ -26,12 +26,12 @@ const baseAggregationConfigSchema = z.object({
 
 const statusGroupedAggregationConfigSchema = z.object({
   ...baseAggregationConfigSchema.shape,
-  type: z.literal(aggregationKinds.statusGrouped),
+  type: z.literal(aggregationTypes.statusGrouped),
 });
 
 const averageAggregationConfigSchema = z.object({
   ...baseAggregationConfigSchema.shape,
-  type: z.literal(aggregationKinds.average),
+  type: z.literal(aggregationTypes.average),
   options: z.strictObject({
     statusScores: z
       .record(z.string(), z.number().finite())

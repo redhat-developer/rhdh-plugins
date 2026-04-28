@@ -150,6 +150,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.description': string;
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
+    readonly 'common.loading': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.missingAggregationId': string;
     readonly 'errors.invalidApiResponse': string;

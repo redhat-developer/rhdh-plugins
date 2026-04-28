@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // Inline default thresholds for e2e mocks (matches scorecard-common DEFAULT_NUMBER_THRESHOLDS)
 const DEFAULT_NUMBER_THRESHOLDS = {
@@ -210,7 +210,7 @@ export const openPrsWeightedKpiMetadataResponse = {
     'Weighted health average for open PRs by threshold status across your entities.',
   type: 'number',
   history: true,
-  aggregationType: aggregationKinds.average,
+  aggregationType: aggregationTypes.average,
 };
 
 /**

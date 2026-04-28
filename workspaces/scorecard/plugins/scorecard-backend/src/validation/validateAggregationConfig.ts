@@ -23,7 +23,7 @@ import { buildAggregationConfig } from '../utils/buildAggregationConfig';
 import { validateThresholdsForAggregation } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
   type AggregationConfig,
-  aggregationKinds,
+  aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 function parseAggregationConfig(config: unknown): AggregationConfig {
@@ -38,7 +38,7 @@ function parseAggregationConfig(config: unknown): AggregationConfig {
   }
 
   if (
-    parsed.data?.type === aggregationKinds.average &&
+    parsed.data?.type === aggregationTypes.average &&
     parsed.data.options?.thresholds
   ) {
     validateThresholdsForAggregation(parsed.data.options.thresholds, 'number');

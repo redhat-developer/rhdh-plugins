@@ -17,7 +17,7 @@
 import { ConfigReader } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
 import {
-  aggregationKinds,
+  aggregationTypes,
   type AggregatedMetricAverageResult,
   Metric,
   ThresholdConfig,
@@ -75,7 +75,7 @@ describe('AggregationsService', () => {
       aggregationConfig: {
         id: metric.id,
         metricId: metric.id,
-        type: aggregationKinds.statusGrouped,
+        type: aggregationTypes.statusGrouped,
       } as any,
     });
 
@@ -85,7 +85,7 @@ describe('AggregationsService', () => {
     );
     expect(result.id).toBe(metric.id);
     expect(result.metadata?.aggregationType).toBe(
-      aggregationKinds.statusGrouped,
+      aggregationTypes.statusGrouped,
     );
   });
 
@@ -113,7 +113,7 @@ describe('AggregationsService', () => {
         title: 'Average KPI',
         description: 'Average KPI description',
         metricId: metric.id,
-        type: aggregationKinds.average,
+        type: aggregationTypes.average,
         options: {
           statusScores: { error: 0, warning: 50, success: 100 },
           thresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
@@ -128,7 +128,7 @@ describe('AggregationsService', () => {
 
     const aggregationResult = result.result as AggregatedMetricAverageResult;
 
-    expect(result.metadata?.aggregationType).toBe(aggregationKinds.average);
+    expect(result.metadata?.aggregationType).toBe(aggregationTypes.average);
     expect(aggregationResult.averageScore).toBeCloseTo(0.5, 5);
     expect(aggregationResult.averageWeightedSum).toBe(150);
     expect(aggregationResult.averageMaxPossible).toBe(300);
@@ -168,7 +168,7 @@ describe('AggregationsService', () => {
 
       expect(cfg.id).toBe('github.open_prs');
       expect(cfg.metricId).toBe('github.open_prs');
-      expect(cfg.type).toBe(aggregationKinds.statusGrouped);
+      expect(cfg.type).toBe(aggregationTypes.statusGrouped);
       expect(logger.warn).toHaveBeenCalledWith(
         expect.stringContaining('github.open_prs'),
       );
@@ -181,7 +181,7 @@ describe('AggregationsService', () => {
             myKpi: {
               title: 'KPI title',
               description: 'KPI desc',
-              type: aggregationKinds.average,
+              type: aggregationTypes.average,
               metricId: 'github.open_prs',
               options: {
                 statusScores: { error: 0, warning: 50, success: 100 },
@@ -200,7 +200,7 @@ describe('AggregationsService', () => {
       const cfg = service.getAggregationConfig('myKpi');
 
       expect(cfg.metricId).toBe('github.open_prs');
-      expect(cfg.type).toBe(aggregationKinds.average);
+      expect(cfg.type).toBe(aggregationTypes.average);
       expect(cfg.title).toBe('KPI title');
     });
   });

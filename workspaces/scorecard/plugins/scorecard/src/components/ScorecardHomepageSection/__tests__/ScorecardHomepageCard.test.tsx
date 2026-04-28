@@ -20,7 +20,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import { AggregatedMetricCard } from '../../AggregatedMetricCards/AggregatedMetricCard';
 import {
-  aggregationKinds,
+  aggregationTypes,
   DEFAULT_NUMBER_THRESHOLDS,
   type AggregatedMetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -144,7 +144,7 @@ const mockScorecard: AggregatedMetricResult = {
     description: 'Open PRs',
     type: 'number',
     history: true,
-    aggregationType: aggregationKinds.statusGrouped,
+    aggregationType: aggregationTypes.statusGrouped,
   },
   result: {
     total: 37,
@@ -162,7 +162,7 @@ const mockAverageScorecard: AggregatedMetricResult = {
   ...mockScorecard,
   metadata: {
     ...mockScorecard.metadata,
-    aggregationType: aggregationKinds.average,
+    aggregationType: aggregationTypes.average,
   },
   result: {
     ...mockScorecard.result,

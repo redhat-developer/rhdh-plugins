@@ -51,12 +51,6 @@ export type AggregationConfigOptions = {
   thresholds?: ThresholdConfig;
 };
 
-// @public
-export const aggregationKinds: Readonly<{
-  statusGrouped: 'statusGrouped';
-  average: 'average';
-}>;
-
 // @public (undocumented)
 export type AggregationMetadata = {
   title: string;
@@ -73,7 +67,13 @@ export type AggregationResultByType =
 
 // @public (undocumented)
 export type AggregationType =
-  (typeof aggregationKinds)[keyof typeof aggregationKinds];
+  (typeof aggregationTypes)[keyof typeof aggregationTypes];
+
+// @public
+export const aggregationTypes: Readonly<{
+  statusGrouped: 'statusGrouped';
+  average: 'average';
+}>;
 
 // @public
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { StatusGroupedCardComponent } from './StatusGroupedCard/StatusGroupedCardComponent';
 import { AverageCardComponent } from './AverageCard/AverageCardComponent';
 import type { AverageCardComponentProps } from './AverageCard/types';
@@ -27,13 +27,13 @@ export type AggregatedMetricCardProps =
 
 export const AggregatedMetricCard = (props: AggregatedMetricCardProps) => {
   switch (props.scorecard.metadata.aggregationType) {
-    case aggregationKinds.statusGrouped:
+    case aggregationTypes.statusGrouped:
       return (
         <StatusGroupedCardComponent
           {...(props as StatusGroupedCardComponentProps)}
         />
       );
-    case aggregationKinds.average:
+    case aggregationTypes.average:
       return <AverageCardComponent {...(props as AverageCardComponentProps)} />;
     default:
       return (

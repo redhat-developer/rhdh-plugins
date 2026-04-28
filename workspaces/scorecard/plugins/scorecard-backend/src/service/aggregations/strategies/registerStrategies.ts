@@ -15,7 +15,7 @@
  */
 
 import {
-  aggregationKinds,
+  aggregationTypes,
   type AggregationType,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { AggregatedMetricLoader } from '../AggregatedMetricLoader';
@@ -30,9 +30,9 @@ export function createAggregationStrategyRegistry(
 ): Map<AggregationType, AggregationStrategy> {
   return new Map<AggregationType, AggregationStrategy>([
     [
-      aggregationKinds.statusGrouped,
+      aggregationTypes.statusGrouped,
       new StatusGroupedAggregationStrategy(loader),
     ],
-    [aggregationKinds.average, new AverageAggregationStrategy(loader, logger)],
+    [aggregationTypes.average, new AverageAggregationStrategy(loader, logger)],
   ]);
 }

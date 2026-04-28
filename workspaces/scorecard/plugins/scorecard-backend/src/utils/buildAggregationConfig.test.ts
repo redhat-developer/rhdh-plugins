@@ -15,7 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { buildAggregationConfig } from './buildAggregationConfig';
 
 describe('buildAggregationConfig', () => {
@@ -23,7 +23,7 @@ describe('buildAggregationConfig', () => {
     const config = new ConfigReader({
       title: 'GitHub PRs',
       description: 'Open pull requests',
-      type: aggregationKinds.statusGrouped,
+      type: aggregationTypes.statusGrouped,
       metricId: 'github.open_prs',
     });
 
@@ -33,7 +33,7 @@ describe('buildAggregationConfig', () => {
       id: 'openPrsKpi',
       title: 'GitHub PRs',
       description: 'Open pull requests',
-      type: aggregationKinds.statusGrouped,
+      type: aggregationTypes.statusGrouped,
       metricId: 'github.open_prs',
     });
   });
@@ -42,7 +42,7 @@ describe('buildAggregationConfig', () => {
     const config = new ConfigReader({
       title: 'Weighted health',
       description: 'Average across statuses',
-      type: aggregationKinds.average,
+      type: aggregationTypes.average,
       metricId: 'github.open_prs',
       options: {
         statusScores: {
@@ -59,7 +59,7 @@ describe('buildAggregationConfig', () => {
       id: 'avgKpi',
       title: 'Weighted health',
       description: 'Average across statuses',
-      type: aggregationKinds.average,
+      type: aggregationTypes.average,
       metricId: 'github.open_prs',
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
@@ -72,7 +72,7 @@ describe('buildAggregationConfig', () => {
     const config = new ConfigReader({
       title: 'Weighted health',
       description: 'Average across statuses',
-      type: aggregationKinds.average,
+      type: aggregationTypes.average,
       metricId: 'github.open_prs',
       options: {
         statusScores: { success: 100, warning: 50, error: 0 },

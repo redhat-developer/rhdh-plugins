@@ -16,7 +16,7 @@
 
 import { mockServices } from '@backstage/backend-test-utils';
 import {
-  aggregationKinds,
+  aggregationTypes,
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -56,7 +56,7 @@ describe('AverageAggregationStrategy', () => {
     const aggregationConfig = {
       id: 'avgKpi',
       metricId: metric.id,
-      type: aggregationKinds.average,
+      type: aggregationTypes.average,
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
         thresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
@@ -104,7 +104,7 @@ describe('AverageAggregationStrategy', () => {
       aggregationConfig: {
         id: 'avgKpi',
         metricId: metric.id,
-        type: aggregationKinds.average,
+        type: aggregationTypes.average,
         options: {
           statusScores: { error: 0, warning: 50, success: 100 },
         },
@@ -143,7 +143,7 @@ describe('AverageAggregationStrategy', () => {
         aggregationConfig: {
           id: 'avgKpi',
           metricId: metric.id,
-          type: aggregationKinds.average,
+          type: aggregationTypes.average,
         } as any,
       }),
     ).rejects.toThrow(/statusScores.*required for average aggregation/);
@@ -166,7 +166,7 @@ describe('AverageAggregationStrategy', () => {
     const aggregationConfig = {
       id: 'avgKpi',
       metricId: metric.id,
-      type: aggregationKinds.average,
+      type: aggregationTypes.average,
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
         thresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { aggregationKinds } from '../constants/aggregations';
+import { aggregationTypes } from '../constants/aggregations';
 import { MetricType } from './Metric';
 import { ThresholdConfig } from './threshold';
 
@@ -22,7 +22,7 @@ import { ThresholdConfig } from './threshold';
  * @public
  */
 export type AggregationType =
-  (typeof aggregationKinds)[keyof typeof aggregationKinds];
+  (typeof aggregationTypes)[keyof typeof aggregationTypes];
 
 /**
  * @public

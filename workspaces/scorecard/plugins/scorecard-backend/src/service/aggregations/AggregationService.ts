@@ -18,7 +18,7 @@ import {
   type AggregatedMetricResult,
   type AggregationConfig,
   type AggregationType,
-  aggregationKinds,
+  aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Config } from '@backstage/config';
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../../constants';
@@ -60,12 +60,12 @@ export class AggregationsService {
     if (!config) {
       this.logger.warn(
         `No "${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}" block in app-config; ` +
-          `using default type "${aggregationKinds.statusGrouped}" with metricId="${aggregationId}" ` +
+          `using default type "${aggregationTypes.statusGrouped}" with metricId="${aggregationId}" ` +
           '(same as aggregation id). Add a KPI entry if you meant a custom title, description, or type.',
       );
       return {
         id: aggregationId,
-        type: aggregationKinds.statusGrouped,
+        type: aggregationTypes.statusGrouped,
         metricId: aggregationId,
       } as AggregationConfig;
     }

@@ -17,7 +17,7 @@
 import type { Config } from '@backstage/config';
 import {
   type ThresholdConfig,
-  aggregationKinds,
+  aggregationTypes,
   type AggregationConfigOptions,
   type AggregationConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -70,7 +70,7 @@ export function buildAggregationConfig(
     description: config.getString('description'),
   } as AggregationConfig;
 
-  if (aggregationConfig.type === aggregationKinds.average) {
+  if (aggregationConfig.type === aggregationTypes.average) {
     aggregationConfig.options = {
       statusScores: buildStatusScores(config),
       thresholds: buildAggregationThresholdsConfig(config),

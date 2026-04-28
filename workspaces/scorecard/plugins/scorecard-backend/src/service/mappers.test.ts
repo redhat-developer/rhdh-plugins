@@ -17,7 +17,7 @@
 import { AggregatedMetricMapper } from './mappers';
 import { DbAggregatedMetric } from '../database/types';
 import {
-  aggregationKinds,
+  aggregationTypes,
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   ThresholdConfig,
@@ -171,7 +171,7 @@ describe('AggregatedMetricMapper', () => {
     it('should wrap a average-shaped result and aggregationType from config', () => {
       const aggregationConfig: AggregationConfig = {
         id: 'avg.kpi',
-        type: aggregationKinds.average,
+        type: aggregationTypes.average,
         title: 'Avg KPI',
         description: 'Average KPI',
         metricId: 'test.metric',
@@ -195,7 +195,7 @@ describe('AggregatedMetricMapper', () => {
         aggregationConfig,
       );
 
-      expect(result.metadata.aggregationType).toBe(aggregationKinds.average);
+      expect(result.metadata.aggregationType).toBe(aggregationTypes.average);
       expect((result.result as any).averageScore).toBe(0.5);
     });
   });

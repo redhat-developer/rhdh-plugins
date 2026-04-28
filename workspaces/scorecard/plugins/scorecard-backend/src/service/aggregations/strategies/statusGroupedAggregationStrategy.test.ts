@@ -15,7 +15,7 @@
  */
 
 import {
-  aggregationKinds,
+  aggregationTypes,
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -60,7 +60,7 @@ describe('StatusGroupedAggregationStrategy', () => {
           title: metric.title,
           description: metric.description,
           type: metric.type,
-          aggregationType: aggregationKinds.statusGrouped,
+          aggregationType: aggregationTypes.statusGrouped,
         },
         result: {
           total: 2,
@@ -74,7 +74,7 @@ describe('StatusGroupedAggregationStrategy', () => {
     const aggregationConfig = {
       id: metric.id,
       metricId: metric.id,
-      type: aggregationKinds.statusGrouped,
+      type: aggregationTypes.statusGrouped,
     } as const;
 
     await strategy.aggregate({
@@ -117,7 +117,7 @@ describe('StatusGroupedAggregationStrategy', () => {
       aggregationConfig: {
         id: metric.id,
         metricId: metric.id,
-        type: aggregationKinds.statusGrouped,
+        type: aggregationTypes.statusGrouped,
       } as any,
     });
 

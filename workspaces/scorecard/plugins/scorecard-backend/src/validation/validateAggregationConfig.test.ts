@@ -16,7 +16,7 @@
 
 import { ConfigReader } from '@backstage/config';
 import { InputError } from '@backstage/errors';
-import { aggregationKinds } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { validateAggregationConfig } from './validateAggregationConfig';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { MockNumberProvider } from '../../__fixtures__/mockProviders';
@@ -42,7 +42,7 @@ describe('validateAggregationConfig', () => {
           openPrsKpi: {
             title: 'GitHub PRs',
             description: 'Open pull requests',
-            type: aggregationKinds.statusGrouped,
+            type: aggregationTypes.statusGrouped,
             metricId: 'github.open_prs',
           },
         },
@@ -65,7 +65,7 @@ describe('validateAggregationConfig', () => {
           badKpi: {
             title: tooLong,
             description: 'Valid description',
-            type: aggregationKinds.statusGrouped,
+            type: aggregationTypes.statusGrouped,
             metricId: 'github.open_prs',
           },
         },
@@ -108,7 +108,7 @@ describe('validateAggregationConfig', () => {
           openPrsKpi: {
             title: 'GitHub PRs',
             description: 'Open pull requests',
-            type: aggregationKinds.statusGrouped,
+            type: aggregationTypes.statusGrouped,
             metricId: 'github.open_prs',
           },
         },
@@ -131,7 +131,7 @@ describe('validateAggregationConfig', () => {
         aggregationKPIs: {
           openPrsWeightedKpi: {
             title: 'GitHub Open PRs (weighted health)',
-            type: aggregationKinds.average,
+            type: aggregationTypes.average,
             description: 'Weighted health average for open PRs.',
             metricId: 'github.open_prs',
             options: {
@@ -160,7 +160,7 @@ describe('validateAggregationConfig', () => {
         aggregationKPIs: {
           avgKpi: {
             title: 'Avg KPI',
-            type: aggregationKinds.average,
+            type: aggregationTypes.average,
             description: 'Weighted health',
             metricId: 'github.open_prs',
           },
@@ -182,7 +182,7 @@ describe('validateAggregationConfig', () => {
         aggregationKPIs: {
           avgKpi: {
             title: 'Avg KPI',
-            type: aggregationKinds.average,
+            type: aggregationTypes.average,
             description: 'Weighted health',
             metricId: 'github.open_prs',
             options: { statusScores: {} },
@@ -205,7 +205,7 @@ describe('validateAggregationConfig', () => {
         aggregationKPIs: {
           avgKpi: {
             title: 'Avg KPI',
-            type: aggregationKinds.average,
+            type: aggregationTypes.average,
             description: 'Weighted health',
             metricId: 'github.open_prs',
             options: {
@@ -245,7 +245,7 @@ describe('validateAggregationConfig', () => {
         aggregationKPIs: {
           avgKpi: {
             title: 'Avg KPI',
-            type: aggregationKinds.average,
+            type: aggregationTypes.average,
             description: 'Weighted health',
             metricId: 'github.open_prs',
             options: {

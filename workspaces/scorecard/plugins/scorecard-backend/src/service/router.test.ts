@@ -33,7 +33,7 @@ import {
 import {
   AggregatedMetric,
   AggregatedMetricResult,
-  aggregationKinds,
+  aggregationTypes,
   Metric,
   MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -740,7 +740,7 @@ describe('createRouter', () => {
             id: 'github.open_prs',
             title: 'GitHub Open PRs',
             description: 'Mock number description.',
-            type: aggregationKinds.statusGrouped,
+            type: aggregationTypes.statusGrouped,
             metricId: 'github.open_prs',
           },
         );
@@ -807,7 +807,7 @@ describe('createRouter', () => {
         }),
         expect.objectContaining({
           id: 'github.open_prs',
-          type: aggregationKinds.statusGrouped,
+          type: aggregationTypes.statusGrouped,
           metricId: 'github.open_prs',
         }),
       );
@@ -861,7 +861,7 @@ describe('createRouter', () => {
         expect.objectContaining({
           id: 'filecheck.license',
           metricId: 'filecheck.license',
-          type: aggregationKinds.statusGrouped,
+          type: aggregationTypes.statusGrouped,
         }),
       );
     });
@@ -1095,7 +1095,7 @@ describe('createRouter', () => {
           ],
           aggregationConfig: expect.objectContaining({
             metricId: 'filecheck.license',
-            type: aggregationKinds.statusGrouped,
+            type: aggregationTypes.statusGrouped,
           }),
         }),
       );

@@ -19,7 +19,7 @@ import {
   AggregatedMetricResult,
   AggregationMetadata,
   Metric,
-  aggregationKinds,
+  aggregationTypes,
   AggregationResultByType,
   type AggregationConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -51,7 +51,7 @@ export class AggregatedMetricMapper {
       type: metric.type,
       history: metric.history,
       aggregationType:
-        aggregationConfig?.type ?? aggregationKinds.statusGrouped, // By default, return the status grouped aggregation type
+        aggregationConfig?.type ?? aggregationTypes.statusGrouped, // By default, return the status grouped aggregation type
     };
   }
 
