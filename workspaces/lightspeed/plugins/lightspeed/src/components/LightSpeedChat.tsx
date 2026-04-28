@@ -711,13 +711,20 @@ export const LightspeedChat = ({
   const samplePrompts = useWelcomePrompts();
   useEffect(() => {
     if (!user || !isReady) return;
+    const onOverlayLikeSurface = isFullscreenMode || !routeConversationId;
+    const stillOnProvisionalThread =
+      !conversationId || conversationId === TEMP_CONVERSATION_ID;
+
     if (lastOpenedId === null) {
-      if (isFullscreenMode || !routeConversationId) {
+      if (onOverlayLikeSurface && stillOnProvisionalThread) {
         setConversationId(TEMP_CONVERSATION_ID);
       }
     }
+    // Only treat as blank "new chat" while there is no persisted thread id yet. Otherwise
+    // after the first stream assigns a real conversationId, lastOpenedId can lag one frame
+    // and this effect would flip newChatCreated back to true and hide the New chat button.
     if (lastOpenedId === TEMP_CONVERSATION_ID || lastOpenedId === null) {
-      if (isFullscreenMode || !routeConversationId) {
+      if (onOverlayLikeSurface && stillOnProvisionalThread) {
         setNewChatCreated(true);
       }
     }
@@ -728,6 +735,7 @@ export const LightspeedChat = ({
     setConversationId,
     isFullscreenMode,
     routeConversationId,
+    conversationId,
   ]);
 
   useEffect(() => {
@@ -739,8 +747,20 @@ export const LightspeedChat = ({
       lastOpenedId
     ) {
       clearLastOpenedId();
+      // Stale last-opened pointed at a missing thread; align with blank new chat so
+      // provisional UI (e.g. hide New chat) matches storage.
+      setConversationId(TEMP_CONVERSATION_ID);
+      setNewChatCreated(true);
+      setCurrentConversationId(undefined);
     }
-  }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
+  }, [
+    isLoading,
+    isRefetching,
+    conversations,
+    lastOpenedId,
+    clearLastOpenedId,
+    setCurrentConversationId,
+  ]);
 
   useEffect(() => {
     if (
