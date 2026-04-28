@@ -52,27 +52,66 @@ export const DefaultWidgetsCustomizableGrid = ({
   const gridContainerRef = useRef<HTMLDivElement>(null);
   useContainerQuery(gridContainerRef, { notifyWindowResize: true });
 
-  const defaultWidgetsByRef = useMemo(() => {
-    const map = new Map<string, VisibleDefaultWidget>();
-    for (const w of defaultWidgets) {
-      map.set(w.ref, w);
+  const mountPointsById = useMemo(() => {
+    const map = new Map<string, HomePageCardMountPoint>();
+    for (const mp of mountPoints) {
+      if (mp.config?.id) {
+        map.set(mp.config.id, mp);
+      }
     }
     return map;
-  }, [defaultWidgets]);
+  }, [mountPoints]);
+
+  const widgetsToRender = useMemo(() => {
+    // If config exists, use it exclusively; otherwise fall back to mount points
+    if (defaultWidgets.length > 0) {
+      return defaultWidgets.map((widget, index) => ({
+        id: widget.id || `config-widget-${index}`,
+        ref: widget.ref,
+        layout: widget.layout,
+        source: 'config' as const,
+      }));
+    }
+
+    // Fallback: render all mount points
+    return mountPoints
+      .filter(mp => mp.config?.id)
+      .map(mp => ({
+        id: mp.config!.id,
+        ref: mp.config!.id,
+        layout: undefined,
+        source: 'mountpoint' as const,
+      }));
+  }, [defaultWidgets, mountPoints]);
 
   const { children, config } = useMemo(() => {
     const childDictionary: Record<
       string,
       { child: ReactElement; title: string | undefined }
     > = {};
-
     const defaultConfig: LayoutConfiguration[] = [];
 
-    mountPoints.forEach(mountPoint => {
-      if (!mountPoint.config?.id) {
+    widgetsToRender.forEach(widget => {
+      const widgetId = widget.id;
+      const widgetRef = widget.ref ?? widgetId;
+      if (!widgetId || !widgetRef) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Widget missing id or ref (id: ${String(widget.id)}, ref: ${String(widget.ref)}).`,
+        );
         return;
       }
-      const id = mountPoint.config.id;
+
+      const mountPoint = mountPointsById.get(widgetRef);
+
+      if (!mountPoint || !mountPoint.config?.id) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `No mount point found for widget ref ${widgetRef}. Available mount points: ${[...mountPointsById.keys()].join(', ')}`,
+        );
+        return;
+      }
+
       const title = getCardTitle(t, mountPoint);
       const description = getCardDescription(t, mountPoint);
 
@@ -92,7 +131,7 @@ export const DefaultWidgetsCustomizableGrid = ({
       };
 
       const cardExtension = createCardExtension({
-        name: id,
+        name: widgetId,
         title,
         description,
         layout: mountPoint.config.cardLayout,
@@ -102,19 +141,10 @@ export const DefaultWidgetsCustomizableGrid = ({
 
       const Card = dynamicHomePagePlugin.provide(cardExtension);
 
-      childDictionary[id] = {
+      childDictionary[widgetId] = {
         child: <Card />,
         title,
       };
-
-      const widget = defaultWidgetsByRef.get(id);
-      if (!widget) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `No mount point found for widget with ref ${id}. Available mount points: ${[...defaultWidgetsByRef.keys()].join(', ')}`,
-        );
-        return;
-      }
 
       const widgetLayout = widget.layout as
         | Record<string, { x?: number; y?: number; w?: number; h?: number }>
@@ -122,7 +152,7 @@ export const DefaultWidgetsCustomizableGrid = ({
       const layout = widgetLayout?.xl ?? {};
 
       defaultConfig.push({
-        component: id,
+        component: widgetId,
         x: layout.x ?? 0,
         y: layout.y ?? 0,
         width: layout.w ?? 12,
@@ -141,7 +171,7 @@ export const DefaultWidgetsCustomizableGrid = ({
         .map(e => e.child),
       config: defaultConfig,
     };
-  }, [mountPoints, defaultWidgetsByRef, t]);
+  }, [widgetsToRender, mountPointsById, t]);
 
   return (
     <>

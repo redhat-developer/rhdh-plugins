@@ -87,19 +87,42 @@ homepage:
   # For 1.x this references a mount point (`config.id`).
   # For 2.x this references a homepage widget extension (name).
   defaultWidgets:
-    - id: headline-left
-      ref: headline-left
-      props:
-        title: Headline left2
-    - id: headline-center
-      ref: headline-center
-      props:
-        title: Headline center
-    - id: headline-right
-      ref: headline-right
-      props:
-        title: Headline right
-
+    - id: onboarding
+      ref: 'rhdh-onboarding-section'
+      layout:
+        xl: { w: 12, h: 6 }
+        lg: { w: 12, h: 6 }
+        md: { w: 12, h: 7 }
+        sm: { w: 12, h: 8 }
+        xs: { w: 12, h: 9 }
+        xxs: { w: 12, h: 14 }
+    - id: entity-list
+      ref: 'rhdh-entity-section'
+      layout:
+        xl: { w: 12, h: 7 }
+        lg: { w: 12, h: 7 }
+        md: { w: 12, h: 8 }
+        sm: { w: 12, h: 9 }
+        xs: { w: 12, h: 11 }
+        xxs: { w: 12, h: 15 }
+    - id: template-list
+      ref: 'rhdh-template-section'
+      layout:
+        xl: { w: 12, h: 5 }
+        lg: { w: 12, h: 5 }
+        md: { w: 12, h: 5 }
+        sm: { w: 12, h: 5 }
+        xs: { w: 12, h: 7.5 }
+        xxs: { w: 12, h: 13.5 }
+    - id: quickaccess-card
+      ref: quickaccess-card
+      layout:
+        xl: { w: 6, h: 8, x: 6 }
+        lg: { w: 6, h: 8, x: 6 }
+        md: { w: 6, h: 8, x: 6 }
+        sm: { w: 12, h: 8, x: 6 }
+        xs: { w: 12, h: 8, x: 6 }
+        xxs: { w: 12, h: 8, x: 6 }
     - id: visit-card
       ref: VisitCard
       layout:
@@ -107,15 +130,6 @@ homepage:
         lg: { w: 12, h: 5 }
         md: { w: 12, h: 6 }
         sm: { w: 12, h: 7 }
-        xs: { w: 12, h: 9 }
-        xxs: { w: 12, h: 14 }
-    - id: onboarding
-      ref: Onboarding
-      layout:
-        xl: { w: 12, h: 6 }
-        lg: { w: 12, h: 6 }
-        md: { w: 12, h: 7 }
-        sm: { w: 12, h: 8 }
         xs: { w: 12, h: 9 }
         xxs: { w: 12, h: 14 }
     - if:
