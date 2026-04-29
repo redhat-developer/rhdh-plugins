@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/plugin-cost-management",
-  "version": "2.0.3-rc.4",
+  "version": "2.1.0",
   "backstage": {
     "pluginId": "cost-management",
     "pluginPackages": [
@@ -100,6 +100,5 @@
         "package.json"
       ]
     }
-  },
-  "stableVersion": "2.0.1"
+  }
 }
