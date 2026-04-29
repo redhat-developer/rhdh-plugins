@@ -60,7 +60,11 @@
     "@types/react-dom": "^18",
     "react": "^18",
     "react-dom": "^18",
-    "@protobufjs/inquire": "1.1.0"
+    "@protobufjs/inquire": "1.1.0",
+    "linkifyjs": "4.3.2",
+    "@aws-sdk/core/fast-xml-parser": "4.5.4",
+    "request/form-data": "2.5.4",
+    "@types/request/form-data": "2.5.4"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

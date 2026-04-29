@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/plugin-cost-management-backend",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "backstage": {
     "pluginId": "cost-management",
     "pluginPackages": [
@@ -35,7 +35,7 @@
     "@backstage/plugin-proxy-backend": "^0.6.11",
     "@types/lodash": "4.17.24",
     "@types/supertest": "^6.0.0",
-    "msw": "^1.0.0",
+    "msw": "^2.3.4",
     "supertest": "^7.0.0"
   },
   "exports": {
