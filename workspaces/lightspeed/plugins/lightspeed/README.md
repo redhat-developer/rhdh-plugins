@@ -85,7 +85,11 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 #### Procedure
 
 1. Open your Backstage application and select a Lightspeed nav item from the **Navigation**.
-2. Ask you questions to the Lightspeed chatbot.
+2. Ask your questions to the Lightspeed chatbot.
+
+### Display modes and chat continuity
+
+Lightspeed supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
 
 ### MCP servers settings
 
