@@ -1164,13 +1164,14 @@ __metadata:
   linkType: hard
 
 "@aws-sdk/xml-builder@npm:^3.972.4":
-  version: 3.972.4
-  resolution: "@aws-sdk/xml-builder@npm:3.972.4"
+  version: 3.972.21
+  resolution: "@aws-sdk/xml-builder@npm:3.972.21"
   dependencies:
-    "@smithy/types": "npm:^4.12.0"
-    fast-xml-parser: "npm:5.3.4"
+    "@nodable/entities": "npm:2.1.0"
+    "@smithy/types": "npm:^4.14.1"
+    fast-xml-parser: "npm:5.7.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/6ed7ace0e74902ddb1075404312182330827b9cc23439676f8a076bd90d10115232854e8e5512fd6a85c290c88b5b381b98b9bf79f573f5eb05b49e944d49f02
+  checksum: 10c0/58f0c7a13bd7c67ddf38fedd728b8b78df23997793325811c6980fb2f4dbbe8768be902c0de0527e441e3b23e0d358982d42493a72105f104cab53aab1288886
   languageName: node
   linkType: hard
 
@@ -7375,7 +7376,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nodable/entities@npm:^2.1.0":
+"@nodable/entities@npm:2.1.0, @nodable/entities@npm:^2.1.0":
   version: 2.1.0
   resolution: "@nodable/entities@npm:2.1.0"
   checksum: 10c0/5a4cba2b61a5b6c726328b18b1de6d033cae4a658a118644bf31e0bcbda126ea7b69385043dc556cf1ed859b9ca220e82b81b5e5c48ef1b519fb8ec104575dee
@@ -11892,6 +11893,15 @@ __metadata:
   dependencies:
     tslib: "npm:^2.6.2"
   checksum: 10c0/ac81de3f24b43e52a5089279bced4ff04a853e0bdc80143a234e79f7f40cbd61d85497b08a252265570b4637a3cf265cf85a7a09e5f194937fe30706498640b7
+  languageName: node
+  linkType: hard
+
+"@smithy/types@npm:^4.14.1":
+  version: 4.14.1
+  resolution: "@smithy/types@npm:4.14.1"
+  dependencies:
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/9e6209770a25582a11ca67d4750865de0b7732bf3f353ba9260f49e9c4b2adf3274d64057a2bda93da7025e33a54e51bd78c529307efc2b75b429bc45a6ad64c
   languageName: node
   linkType: hard
 
@@ -20300,14 +20310,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:5.3.4":
-  version: 5.3.4
-  resolution: "fast-xml-parser@npm:5.3.4"
+"fast-xml-parser@npm:5.7.2, fast-xml-parser@npm:^5.0.7":
+  version: 5.7.2
+  resolution: "fast-xml-parser@npm:5.7.2"
   dependencies:
-    strnum: "npm:^2.1.0"
+    "@nodable/entities": "npm:^2.1.0"
+    fast-xml-builder: "npm:^1.1.5"
+    path-expression-matcher: "npm:^1.5.0"
+    strnum: "npm:^2.2.3"
   bin:
     fxparser: src/cli/cli.js
-  checksum: 10c0/d77866ca860ad185153e12f6ba12274d32026319ad8064e4681342b8a8e1ffad3f1f98daf04d77239fb12eb1d906ee7185fd328deda74529680e8dae0f3e9327
+  checksum: 10c0/d48439ce0700add82f5e7c6ccc5a1f06483beb7cd8e88caa83c6406843e52f14988e60d05cbb3a86ffe07e073807674c807e0764d94a280e1c96d7e2011dae8e
   languageName: node
   linkType: hard
 
@@ -20319,20 +20332,6 @@ __metadata:
   bin:
     fxparser: src/cli/cli.js
   checksum: 10c0/1c19e183b5ee93bea9b24e1ddb0aed8564b273c6106af622b1c11ff8eb1fc8d2033cd7a0cb68976a5f3e05d1cbf0a0026e6f300f904be0bc854ff896dbdf38d2
-  languageName: node
-  linkType: hard
-
-"fast-xml-parser@npm:^5.0.7":
-  version: 5.7.2
-  resolution: "fast-xml-parser@npm:5.7.2"
-  dependencies:
-    "@nodable/entities": "npm:^2.1.0"
-    fast-xml-builder: "npm:^1.1.5"
-    path-expression-matcher: "npm:^1.5.0"
-    strnum: "npm:^2.2.3"
-  bin:
-    fxparser: src/cli/cli.js
-  checksum: 10c0/d48439ce0700add82f5e7c6ccc5a1f06483beb7cd8e88caa83c6406843e52f14988e60d05cbb3a86ffe07e073807674c807e0764d94a280e1c96d7e2011dae8e
   languageName: node
   linkType: hard
 
@@ -32655,13 +32654,6 @@ __metadata:
   version: 1.1.2
   resolution: "strnum@npm:1.1.2"
   checksum: 10c0/a0fce2498fa3c64ce64a40dada41beb91cabe3caefa910e467dc0518ef2ebd7e4d10f8c2202a6104f1410254cae245066c0e94e2521fb4061a5cb41831952392
-  languageName: node
-  linkType: hard
-
-"strnum@npm:^2.1.0":
-  version: 2.1.2
-  resolution: "strnum@npm:2.1.2"
-  checksum: 10c0/4e04753b793540d79cd13b2c3e59e298440477bae2b853ab78d548138385193b37d766d95b63b7046475d68d44fb1fca692f0a3f72b03f4168af076c7b246df9
   languageName: node
   linkType: hard
 
