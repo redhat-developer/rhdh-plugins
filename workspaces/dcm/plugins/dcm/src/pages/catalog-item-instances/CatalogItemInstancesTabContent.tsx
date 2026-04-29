@@ -93,6 +93,7 @@ export function CatalogItemInstancesTabContent() {
     ],
     emptyForm: emptyInstanceForm,
     isValid: isInstanceFormValid,
+    storageKey: 'catalog-item-instances',
   });
 
   const { handleOpenDelete, setItems } = crud;

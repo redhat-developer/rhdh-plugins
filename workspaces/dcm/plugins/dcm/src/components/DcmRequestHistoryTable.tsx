@@ -21,6 +21,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
+import { usePersistedPageSize } from '../hooks/usePersistedPageSize';
 import { InfoCard, Link, Table, TableColumn } from '@backstage/core-components';
 import {
   Box,
@@ -90,7 +91,7 @@ export function useDcmRequestHistoryListState<T extends DcmRequestHistoryRow>(
 ) {
   const [filter, setFilter] = useState('');
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = usePersistedPageSize('request-history');
 
   const filteredHistory = useMemo(() => {
     if (!filter.trim()) return allRows;
@@ -112,10 +113,13 @@ export function useDcmRequestHistoryListState<T extends DcmRequestHistoryRow>(
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
   }, []);
-  const handleRowsPerPageChange = useCallback((newPageSize: number) => {
-    setPageSize(newPageSize);
-    setPage(0);
-  }, []);
+  const handleRowsPerPageChange = useCallback(
+    (newPageSize: number) => {
+      setPageSize(newPageSize);
+      setPage(0);
+    },
+    [setPageSize],
+  );
 
   return {
     filter,

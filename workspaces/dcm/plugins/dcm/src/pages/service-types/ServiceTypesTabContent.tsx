@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
 import {
   Table,
   TableColumn,
@@ -41,7 +42,7 @@ export function ServiceTypesTabContent() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = usePersistedPageSize('service-types');
 
   const load = useCallback(() => {
     setLoading(true);
