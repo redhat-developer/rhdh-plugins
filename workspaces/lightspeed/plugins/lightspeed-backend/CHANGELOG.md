@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.5.1
+
+### Patch Changes
+
+- 5d17950: Retain Lightspeed chat and tool-call state when the chat UI remounts (for example when switching display mode between embedded and overlay), so the active thread and tool metadata are not dropped while messages are still streaming or before history refetches.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.5.1
+
 ## 2.5.0
 
 ### Patch Changes
