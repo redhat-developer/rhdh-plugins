@@ -60,7 +60,8 @@
     "@types/react-dom": "^18",
     "react": "^18",
     "react-dom": "^18",
-    "@protobufjs/inquire": "1.1.0"
+    "@protobufjs/inquire": "1.1.0",
+    "linkifyjs": "4.3.2"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
