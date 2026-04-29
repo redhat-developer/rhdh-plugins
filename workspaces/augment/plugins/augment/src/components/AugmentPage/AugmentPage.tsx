@@ -287,6 +287,10 @@ const AugmentPageContent = () => {
   const handleIntentOpened = useCallback(() => {
     setPendingCreateAgent(false);
   }, []);
+  const [sidebarHidden, setSidebarHidden] = useState(false);
+  const handleFullScreenChange = useCallback((fullScreen: boolean) => {
+    setSidebarHidden(fullScreen);
+  }, []);
   const handleNavigateWithFocus = useCallback(
     (panel: AdminPanel, name?: string) => {
       setFocusTarget(name);
@@ -357,13 +361,15 @@ const AugmentPageContent = () => {
                 <TourControllerProvider callbacks={tourCallbacks}>
                   <TourProvider>
                     <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
-                      <KagentiSidebar
-                        adminPanel={adminPanel}
-                        onAdminPanelChange={setAdminPanel}
-                        onBackToChat={switchToChat}
-                        kagentiNamespace={kagentiNamespace}
-                        onKagentiNamespaceChange={handleNamespaceChange}
-                      />
+                      {!sidebarHidden && (
+                        <KagentiSidebar
+                          adminPanel={adminPanel}
+                          onAdminPanelChange={setAdminPanel}
+                          onBackToChat={switchToChat}
+                          kagentiNamespace={kagentiNamespace}
+                          onKagentiNamespaceChange={handleNamespaceChange}
+                        />
+                      )}
                       <TourLauncherDialog
                         open={tourDialog.open}
                         onClose={tourDialog.close}
@@ -418,6 +424,7 @@ const AugmentPageContent = () => {
                                 onChatWithAgent={handleChatWithAgent}
                                 autoOpenIntent={pendingCreateAgent}
                                 onIntentOpened={handleIntentOpened}
+                                onFullScreenChange={handleFullScreenChange}
                                 initialAgentName={focusTarget}
                                 onFocusConsumed={() =>
                                   setFocusTarget(undefined)
