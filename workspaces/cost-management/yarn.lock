@@ -6993,7 +6993,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/backstage-plugin-audit-log-node@npm:^1.7.1, @janus-idp/backstage-plugin-audit-log-node@npm:^1.8.0":
+"@janus-idp/backstage-plugin-audit-log-node@npm:^1.7.1":
   version: 1.8.1
   resolution: "@janus-idp/backstage-plugin-audit-log-node@npm:1.8.1"
   dependencies:
@@ -16443,7 +16443,6 @@ __metadata:
     "@backstage/plugin-search-backend-module-techdocs": "npm:^0.4.12"
     "@backstage/plugin-search-backend-node": "npm:^1.4.2"
     "@backstage/plugin-techdocs-backend": "npm:^2.1.6"
-    "@janus-idp/backstage-plugin-audit-log-node": "npm:^1.8.0"
     "@red-hat-developer-hub/plugin-cost-management-backend": "workspace:^"
     "@types/dockerode": "npm:^3.3.0"
     "@types/express": "npm:^4.17.21"
