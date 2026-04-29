@@ -60,7 +60,7 @@
     "@types/react-dom": "^18",
     "react": "^18",
     "react-dom": "^18",
-    "isolated-vm": "^6.0.1"
+    "@protobufjs/inquire": "1.1.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
