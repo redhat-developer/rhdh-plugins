@@ -32,7 +32,7 @@ coverage:
         informational: true
 
 comment:
-  layout: "header, diff, flags, components, footer"
+  layout: "header, diff, flags, footer"
   behavior: default
   require_changes: false
   show_carryforward_flags: true
@@ -50,8 +50,8 @@ ignore:
   - "**/build/**"
   - "**/node_modules/**"
   - "**/playwright.config.ts"
-  - "scripts/**"
-  - "docs/**"
+  - "**/scripts/**"
+  - "**/docs/**"
 
 flag_management:
   default_rules:
