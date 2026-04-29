@@ -135,6 +135,8 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
 
   // ── Effects ────────────────────────────────────────────────────────────
 
+  const isSingleAgentMode = createType === 'single' && autoCreate;
+
   useEffect(
     () => () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -144,16 +146,21 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
 
   useEffect(() => {
     if (!effectiveConfig || initialized) return;
-    const rawAgents =
-      (effectiveConfig.agents as Record<string, Record<string, unknown>>) || {};
-    const parsed: Record<string, AgentFormData> = {};
-    for (const [key, cfg] of Object.entries(rawAgents))
-      parsed[key] = agentFromConfig(cfg);
-    setAgents(parsed);
-    setDefaultAgentKey((effectiveConfig.defaultAgent as string) || '');
+    if (isSingleAgentMode) {
+      setAgents({});
+      setDefaultAgentKey('');
+    } else {
+      const rawAgents =
+        (effectiveConfig.agents as Record<string, Record<string, unknown>>) || {};
+      const parsed: Record<string, AgentFormData> = {};
+      for (const [key, cfg] of Object.entries(rawAgents))
+        parsed[key] = agentFromConfig(cfg);
+      setAgents(parsed);
+      setDefaultAgentKey((effectiveConfig.defaultAgent as string) || '');
+    }
     setMaxTurns((effectiveConfig.maxAgentTurns as number) || DEFAULT_MAX_TURNS);
     setInitialized(true);
-  }, [effectiveConfig, initialized]);
+  }, [effectiveConfig, initialized, isSingleAgentMode]);
 
   // Auto-select focused agent or first agent when agents load
   const focusAppliedRef = useRef(false);
@@ -175,8 +182,6 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
     setSelectedAgentKey(prev => (!prev || !agents[prev] ? keys[0] : prev));
   }, [initialized, agents, focusAgentKey]);
 
-  const isSingleAgentMode = createType === 'single' && autoCreate;
-
   const autoCreateAppliedRef = useRef(false);
   useEffect(() => {
     if (autoCreate && initialized && !autoCreateAppliedRef.current) {
@@ -185,7 +190,7 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
         const key = 'agent';
         const agent = createDefaultAgent();
         agent.name = 'Agent';
-        setAgents(prev => ({ ...prev, [key]: agent }));
+        setAgents({ [key]: agent });
         setDefaultAgentKey(key);
         setSelectedAgentKey(key);
       } else {
@@ -320,9 +325,15 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
     setSaveError(null);
     setSaveSuccess(false);
     try {
-      const payload: Record<string, Record<string, unknown>> = {};
+      const newAgents: Record<string, Record<string, unknown>> = {};
       for (const [key, agent] of Object.entries(agents)) {
-        payload[key] = agentToConfig(agent);
+        newAgents[key] = agentToConfig(agent);
+      }
+      let payload = newAgents;
+      if (isSingleAgentMode && effectiveConfig) {
+        const existing =
+          (effectiveConfig.agents as Record<string, Record<string, unknown>>) || {};
+        payload = { ...existing, ...newAgents };
       }
       for (const step of [
         { label: 'agents', fn: () => saveAgents(payload) },
@@ -368,6 +379,8 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
     saveDefaultAgent,
     saveMaxTurns,
     onSaved,
+    isSingleAgentMode,
+    effectiveConfig,
   ]);
 
   const executeReset = useCallback(async () => {
