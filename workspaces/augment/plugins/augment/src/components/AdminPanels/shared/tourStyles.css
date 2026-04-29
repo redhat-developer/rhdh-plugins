@@ -1,0 +1,134 @@
+.augment-tour-popover.driver-popover {
+  max-width: 360px;
+  border-radius: 12px;
+  background-color: #fff !important;
+  color: #1e1e1e !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+}
+
+.augment-tour-popover .driver-popover-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #1e1e1e !important;
+}
+
+.augment-tour-popover .driver-popover-description {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #555 !important;
+}
+
+.augment-tour-popover .driver-popover-progress-text {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888 !important;
+}
+
+.augment-tour-popover .driver-popover-close-btn {
+  color: #888 !important;
+}
+
+.augment-tour-popover .driver-popover-close-btn:hover {
+  color: #1e1e1e !important;
+}
+
+.augment-tour-popover .driver-popover-navigation-btns button {
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: none;
+  padding: 4px 16px;
+}
+
+.augment-tour-popover .driver-popover-prev-btn {
+  color: #555 !important;
+  border-color: #ccc !important;
+}
+
+.augment-tour-popover .driver-popover-arrow-side-left,
+.augment-tour-popover .driver-popover-arrow-side-right,
+.augment-tour-popover .driver-popover-arrow-side-top,
+.augment-tour-popover .driver-popover-arrow-side-bottom {
+  border-color: #fff !important;
+}
+
+/* Dark mode overrides */
+.augment-tour-dark.driver-popover {
+  background-color: #1e1e1e !important;
+  color: #e0e0e0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.augment-tour-dark .driver-popover-title {
+  color: #fff !important;
+}
+
+.augment-tour-dark .driver-popover-description {
+  color: #b0b0b0 !important;
+}
+
+.augment-tour-dark .driver-popover-progress-text {
+  color: #777 !important;
+}
+
+.augment-tour-dark .driver-popover-close-btn {
+  color: #777 !important;
+}
+
+.augment-tour-dark .driver-popover-close-btn:hover {
+  color: #fff !important;
+}
+
+.augment-tour-dark .driver-popover-prev-btn {
+  color: #b0b0b0 !important;
+  border-color: #444 !important;
+}
+
+.augment-tour-dark .driver-popover-next-btn,
+.augment-tour-dark .driver-popover-done-btn {
+  background-color: #1976d2 !important;
+  color: #fff !important;
+}
+
+.augment-tour-dark .driver-popover-arrow-side-left,
+.augment-tour-dark .driver-popover-arrow-side-right,
+.augment-tour-dark .driver-popover-arrow-side-top,
+.augment-tour-dark .driver-popover-arrow-side-bottom {
+  border-color: #1e1e1e !important;
+}
+
+/* Voice toggle button in popover footer */
+.tour-voice-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  color: #888;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 6px;
+  vertical-align: middle;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tour-voice-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
+  color: #555;
+}
+
+.augment-tour-dark .tour-voice-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #999;
+}
+
+.augment-tour-dark .tour-voice-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ccc;
+}

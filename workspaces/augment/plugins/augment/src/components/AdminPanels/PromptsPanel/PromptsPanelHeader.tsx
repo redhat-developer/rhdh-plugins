@@ -60,10 +60,10 @@ export const PromptsPanelHeader: React.FC<PromptsPanelHeaderProps> = ({
 }) => (
   <Box sx={HEADER_SX}>
     <Box>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: '-0.01em', color: 'text.primary' }} gutterBottom>
         Prompts &amp; Actions
       </Typography>
-      <Typography variant="body2" color="textSecondary" component="div">
+      <Typography variant="body2" sx={{ color: 'text.secondary' }} component="div">
         Configure prompt groups and clickable prompts shown on the welcome
         screen.{' '}
         {source === 'database' && (

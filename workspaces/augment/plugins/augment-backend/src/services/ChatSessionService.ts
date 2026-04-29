@@ -46,6 +46,7 @@ export interface SessionMessage {
   ragSources?: string;
   usage?: string;
   reasoning?: string;
+  citations?: string;
   createdAt: string;
 }
 
@@ -70,6 +71,7 @@ interface SessionMessageRow {
   rag_sources: string | null;
   usage: string | null;
   reasoning: string | null;
+  citations: string | null;
   created_at: string;
 }
 
@@ -216,6 +218,19 @@ export class ChatSessionService {
 
     const hasTable = await this.db.schema.hasTable(MESSAGES_TABLE);
     if (hasTable) {
+      const hasCitations = await this.db.schema.hasColumn(MESSAGES_TABLE, 'citations');
+      if (!hasCitations) {
+        try {
+          await this.db.schema.alterTable(MESSAGES_TABLE, table => {
+            table.text('citations').nullable();
+          });
+          this.logger.info(`Added citations column to ${MESSAGES_TABLE} table`);
+        } catch (alterError) {
+          const hasCitationsNow = await this.db.schema.hasColumn(MESSAGES_TABLE, 'citations');
+          if (!hasCitationsNow) throw alterError;
+          this.logger.info(`citations column in ${MESSAGES_TABLE} was added by another instance`);
+        }
+      }
       this.logger.info(`Using existing ${MESSAGES_TABLE} table`);
       return;
     }
@@ -231,6 +246,7 @@ export class ChatSessionService {
         table.text('rag_sources').nullable();
         table.text('usage').nullable();
         table.text('reasoning').nullable();
+        table.text('citations').nullable();
         table
           .timestamp('created_at')
           .notNullable()
@@ -306,6 +322,7 @@ export class ChatSessionService {
       ...(row.rag_sources ? { ragSources: row.rag_sources } : {}),
       ...(row.usage ? { usage: row.usage } : {}),
       ...(row.reasoning ? { reasoning: row.reasoning } : {}),
+      ...(row.citations ? { citations: row.citations } : {}),
       createdAt: row.created_at,
     };
   }
@@ -565,6 +582,7 @@ export class ChatSessionService {
       rag_sources: msg.ragSources || null,
       usage: msg.usage || null,
       reasoning: msg.reasoning || null,
+      citations: msg.citations || null,
       created_at: now,
     });
 

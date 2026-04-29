@@ -179,13 +179,14 @@ export async function getEvaluationStatus(
 export async function testModelConnection(
   deps: AdminApiDeps,
   model?: string,
+  baseUrl?: string,
 ): Promise<{
   connected: boolean;
   modelFound: boolean;
   canGenerate: boolean;
   error?: string;
 }> {
-  return deps.fetchJson('/admin/test-model', jsonBody({ model }));
+  return deps.fetchJson('/admin/test-model', jsonBody({ model, baseUrl }));
 }
 
 export async function testMcpConnection(

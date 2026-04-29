@@ -33,65 +33,6 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
   ProviderDescriptor
 >([
   [
-    'llamastack',
-    {
-      id: 'llamastack',
-      displayName: 'Llama Stack',
-      description:
-        'Meta Llama Stack -- open-source AI inference and agentic platform',
-      implemented: true,
-      capabilities: {
-        chat: true,
-        rag: true,
-        safety: true,
-        evaluation: true,
-        conversations: true,
-        mcpTools: true,
-        tools: true,
-      },
-      configFields: [
-        {
-          key: 'model',
-          label: 'Model',
-          type: 'string',
-          required: true,
-          description: 'LLM model identifier on the inference server',
-          placeholder: 'meta-llama/Llama-3.3-8B-Instruct',
-        },
-        {
-          key: 'baseUrl',
-          label: 'Server URL',
-          type: 'string',
-          required: true,
-          description: 'Base URL of the Llama Stack server',
-          placeholder: 'http://localhost:8321',
-        },
-        {
-          key: 'toolChoice',
-          label: 'Tool Choice',
-          type: 'select',
-          required: false,
-          description: 'How the model should use tools',
-          options: ['auto', 'required', 'none'],
-        },
-        {
-          key: 'enableWebSearch',
-          label: 'Web Search',
-          type: 'boolean',
-          required: false,
-          description: 'Enable built-in web search tool',
-        },
-        {
-          key: 'enableCodeInterpreter',
-          label: 'Code Interpreter',
-          type: 'boolean',
-          required: false,
-          description: 'Enable built-in code interpreter tool',
-        },
-      ],
-    },
-  ],
-  [
     'googleadk',
     {
       id: 'googleadk',
@@ -115,17 +56,17 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
     'kagenti',
     {
       id: 'kagenti',
-      displayName: 'Kagenti',
-      description: 'Kagenti -- Kubernetes-native AI agent operations platform',
+      displayName: 'Red Hat AI',
+      description: 'Red Hat AI -- Kubernetes-native AI agent operations platform',
       implemented: true,
       capabilities: {
         chat: true,
-        rag: false,
-        safety: false,
-        evaluation: false,
-        conversations: false,
-        mcpTools: false,
-        tools: false,
+        rag: true,
+        safety: true,
+        evaluation: true,
+        conversations: true,
+        mcpTools: true,
+        tools: true,
       },
       configFields: [
         {

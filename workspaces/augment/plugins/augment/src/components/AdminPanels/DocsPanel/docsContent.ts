@@ -195,6 +195,81 @@ Launch a cloud IDE with your agent repo pre-configured.
   },
 
   {
+    id: 'agent-registry',
+    title: 'Agent Registry & Lifecycle',
+    category: 'Agents',
+    content: `# Agent Registry & Lifecycle
+
+The Agent Registry is the central staging area where administrators manage the full agent lifecycle — from initial discovery through enterprise registration to production deployment. Every agent, regardless of source (Kagenti, orchestration, or external), appears in the registry.
+
+## Agent Lifecycle
+
+Agents follow a three-stage promotion pipeline:
+
+### 1. Draft
+Agents start as **Draft** when first discovered. Draft agents are visible only to administrators in the registry. They have not been reviewed or vetted.
+
+### 2. Registered
+When an admin promotes a draft agent, it becomes **Registered** — a vetted enterprise asset. Registered agents have been reviewed but are not yet available to end users. This stage is for quality assurance and governance review.
+
+### 3. Deployed
+When a registered agent is promoted to **Deployed**, it goes live in the end-user catalog. Users can discover and chat with deployed agents. Each deployment increments the agent's version number.
+
+## Core Concepts
+
+### Promotion Pipeline
+The registry header shows a visual pipeline of all three lifecycle stages with counts. Click any stage to filter the list. Promoting an agent requires confirmation — no accidental deployments.
+
+### Versioning
+Each promotion increments the agent's version number. The registry tracks who promoted the agent and when, providing an audit trail.
+
+### Featured Agents
+Deployed agents can be marked as **featured** to appear prominently on the chat welcome screen. Up to 4 agents can be featured simultaneously.
+
+### Dev & Ops Views
+Expanding an agent row shows two information sections:
+- **Development** — source, framework, protocols, namespace, creation date
+- **Operations** — runtime status, lifecycle stage, version, promotion history
+
+## Agent Sources
+
+| Source | Description | Status |
+|--------|-------------|--------|
+| **Kagenti** | Container workloads deployed on OpenShift | Runtime status (Ready, Pending, Error) |
+| **Orchestration** | Multi-agent configurations from the Configure panel | Config-based (always "config") |
+
+## Using the Registry
+
+### Promoting an Agent
+1. Navigate to **Agent Registry** under Agent Ops in the sidebar
+2. Find the agent in the list (use search or filters)
+3. Click **Register** to promote from Draft → Registered
+4. Click **Deploy** to promote from Registered → Deployed
+5. Confirm the promotion in the dialog
+
+### Withdrawing an Agent
+Click the back arrow on any agent to withdraw it to the previous lifecycle stage. Withdrawing a deployed agent removes it from the end-user catalog immediately.
+
+### Configuring Display
+Expand any agent row to customize how it appears to end users:
+- **Display Name** — override the agent's technical name
+- **Description** — custom description for the catalog
+- **Avatar URL** — custom avatar image
+- **Accent Color** — hex color for the agent's avatar
+- **Greeting Message** — first message when a user starts a conversation
+- **Conversation Starters** — suggested prompts shown on the welcome screen
+
+### Bulk Operations
+1. Select multiple agents using checkboxes
+2. Use **Deploy All** or **Withdraw All** in the toolbar
+3. All selected agents are updated simultaneously
+
+### Quick Promote from Agent Detail
+When viewing an agent's detail page in the Agents panel, use the **Deploy to Catalog** / **Withdraw** button in the header.
+`,
+  },
+
+  {
     id: 'agent-orchestration',
     title: 'Agent Orchestration',
     category: 'Agents',

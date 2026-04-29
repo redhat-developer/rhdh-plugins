@@ -66,7 +66,7 @@ export function AgentDetailsTab({
             label={agent.workloadType ?? 'Deployment'}
             size="small"
             variant="outlined"
-            sx={{ height: 22 }}
+            sx={{ height: 24 }}
           />
         ),
       },
@@ -171,7 +171,7 @@ export function AgentDetailsTab({
                   size="small"
                   variant="outlined"
                   sx={{
-                    height: 22,
+                    height: 24,
                     fontFamily: 'monospace',
                     fontSize: '0.75rem',
                   }}
@@ -205,7 +205,10 @@ export function AgentDetailsTab({
       }}
     >
       <Card variant="outlined" sx={{ p: 2.5 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>
+        <Typography
+          variant="subtitle2"
+          sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}
+        >
           Agent Information
         </Typography>
         {loading ? (
@@ -247,7 +250,10 @@ export function AgentDetailsTab({
       </Card>
 
       <Card variant="outlined" sx={{ p: 2.5 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>
+        <Typography
+          variant="subtitle2"
+          sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}
+        >
           Endpoint
         </Typography>
         {loading && (

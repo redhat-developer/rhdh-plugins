@@ -61,6 +61,8 @@ export const AgentInfoSection = ({
   const { status, loading } = useStatus();
   const api = useApi(augmentApiRef);
   const isKagenti = status?.providerId === 'kagenti';
+  const hasAgentCards = status?.capabilities?.agentCards ?? isKagenti;
+  const hasAgentCatalog = status?.capabilities?.agentCatalog ?? isKagenti;
 
   const [agentCard, setAgentCard] = useState<KagentiAgentCard | undefined>();
   const [agentStatus, setAgentStatus] = useState<string | undefined>();
@@ -71,7 +73,7 @@ export const AgentInfoSection = ({
   const effectiveAgent = currentAgent || selectedModel;
 
   useEffect(() => {
-    if (!isKagenti || !effectiveAgent) {
+    if (!hasAgentCards || !effectiveAgent) {
       setAgentCard(undefined);
       setAgentStatus(undefined);
       return undefined;
@@ -105,10 +107,10 @@ export const AgentInfoSection = ({
     return () => {
       cancelled = true;
     };
-  }, [api, isKagenti, effectiveAgent]);
+  }, [api, hasAgentCards, effectiveAgent]);
 
   useEffect(() => {
-    if (!isKagenti) return undefined;
+    if (!hasAgentCards) return undefined;
     let cancelled = false;
     (async () => {
       try {
@@ -121,7 +123,7 @@ export const AgentInfoSection = ({
     return () => {
       cancelled = true;
     };
-  }, [api, isKagenti]);
+  }, [api, hasAgentCards]);
 
   const providerConnected = status?.provider.connected ?? false;
   const vectorStoreConnected = status?.vectorStore.connected ?? false;
@@ -137,7 +139,7 @@ export const AgentInfoSection = ({
   const agentStatusColor = (() => {
     if (loading) return theme.palette.warning.main;
     if (!providerConnected) return theme.palette.error.main;
-    if (isKagenti && agentStatus) {
+    if (hasAgentCards && agentStatus) {
       const s = agentStatus.toLowerCase();
       if (s === 'ready' || s === 'running' || s === 'active')
         return theme.palette.success.main;
@@ -151,7 +153,7 @@ export const AgentInfoSection = ({
   const agentStatusText = (() => {
     if (loading) return t('agentInfo.connecting');
     if (!providerConnected) return t('agentInfo.offline');
-    if (isKagenti && agentStatus) return agentStatus;
+    if (hasAgentCards && agentStatus) return agentStatus;
     if (overallReady) return t('agentInfo.ready');
     return t('agentInfo.offline');
   })();
@@ -232,7 +234,7 @@ export const AgentInfoSection = ({
           }}
         >
           {/* Kagenti Agent Card Details — shown first for Kagenti */}
-          {isKagenti && agentCard && (
+          {hasAgentCards && agentCard && (
             <>
               <Box
                 sx={{
@@ -327,7 +329,7 @@ export const AgentInfoSection = ({
           )}
 
           {/* Kagenti: no agent selected hint */}
-          {isKagenti && !agentCard && !effectiveAgent && (
+          {hasAgentCatalog && !agentCard && !effectiveAgent && (
             <Typography
               variant="caption"
               sx={{
@@ -341,7 +343,7 @@ export const AgentInfoSection = ({
           )}
 
           {/* Dashboard Links */}
-          {isKagenti &&
+          {hasAgentCards &&
             dashboards &&
             Object.entries(dashboards).some(([, v]) => v) && (
               <>
@@ -387,8 +389,8 @@ export const AgentInfoSection = ({
               </>
             )}
 
-          {/* Non-Kagenti sections: Agent Team, LLM, Vector RAG, MCP */}
-          {!isKagenti && agents && agents.length > 0 && (
+          {/* Agent Team -- shown for all providers when agents are configured */}
+          {agents && agents.length > 0 && !agentCard && (
             <>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <GroupIcon
@@ -462,36 +464,36 @@ export const AgentInfoSection = ({
             </>
           )}
 
-          {!isKagenti && (
-            <Tooltip title={modelName} placement="left">
-              <Box
+          {/* LLM Model */}
+          <Tooltip title={modelName} placement="left">
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                cursor: 'help',
+              }}
+            >
+              <CloudOutlinedIcon
+                sx={{ fontSize: 15, color: theme.palette.text.secondary }}
+              />
+              <Typography
+                variant="caption"
+                noWrap
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  cursor: 'help',
+                  fontSize: '0.75rem',
+                  flex: 1,
+                  color: theme.palette.text.primary,
                 }}
               >
-                <CloudOutlinedIcon
-                  sx={{ fontSize: 15, color: theme.palette.text.secondary }}
-                />
-                <Typography
-                  variant="caption"
-                  noWrap
-                  sx={{
-                    fontSize: '0.75rem',
-                    flex: 1,
-                    color: theme.palette.text.primary,
-                  }}
-                >
-                  {modelName}
-                </Typography>
-                <StatusDot connected={providerConnected} loading={loading} />
-              </Box>
-            </Tooltip>
-          )}
+                {modelName}
+              </Typography>
+              <StatusDot connected={providerConnected} loading={loading} />
+            </Box>
+          </Tooltip>
 
-          {!isKagenti && (
+          {/* Vector RAG -- shown when capability is available */}
+          {status?.capabilities?.rag?.available !== false && (
             <Tooltip
               title={
                 vectorStoreConnected
@@ -529,7 +531,8 @@ export const AgentInfoSection = ({
             </Tooltip>
           )}
 
-          {!isKagenti && mcpServers.length > 0 && (
+          {/* MCP Servers -- shown when any are configured */}
+          {mcpServers.length > 0 && (
             <>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <McpIcon

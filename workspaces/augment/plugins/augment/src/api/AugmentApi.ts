@@ -46,7 +46,10 @@ import {
   SafetyStatusResponse,
   EvaluationStatusResponse,
 } from '../types';
-import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  ProviderDescriptor,
+  ChatAgent,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import * as chatEndpoints from './chatEndpoints';
 import * as conversationEndpoints from './conversationEndpoints';
 import * as adminEndpoints from './adminEndpoints';
@@ -63,6 +66,42 @@ export interface AugmentApi {
    * Get the status of the Augment service
    */
   getStatus(): Promise<AugmentStatus>;
+
+  /**
+   * List agents available for chat in a provider-agnostic format.
+   * @param options.published - When true, only return published agents
+   */
+  listAgents(options?: { published?: boolean }): Promise<ChatAgent[]>;
+
+  /**
+   * Publish an agent to the end-user catalog.
+   */
+  publishAgent(agentId: string): Promise<void>;
+
+  /**
+   * Unpublish an agent from the end-user catalog.
+   */
+  unpublishAgent(agentId: string): Promise<void>;
+
+  /**
+   * Promote an agent to the next lifecycle stage (draft → registered → deployed).
+   */
+  promoteAgent(agentId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string; version: number }>;
+
+  /**
+   * Demote an agent to a previous lifecycle stage (deployed → registered → draft).
+   */
+  demoteAgent(agentId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string }>;
+
+  /**
+   * Bulk publish or unpublish agents.
+   */
+  bulkPublishAgents(agentIds: string[], published: boolean): Promise<void>;
+
+  /**
+   * Update agent display configuration (name, description, starters, etc.)
+   */
+  updateAgentConfig(agentId: string, config: Partial<import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig>): Promise<void>;
 
   /**
    * Get branding configuration for enterprise customization
@@ -318,7 +357,10 @@ export interface AugmentApi {
   getEvaluationStatus(): Promise<EvaluationStatusResponse>;
 
   /** Test model connectivity, availability, and generation capability */
-  testModelConnection(model?: string): Promise<{
+  testModelConnection(
+    model?: string,
+    baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -640,6 +682,56 @@ export class AugmentApiClient implements AugmentApi {
     return this.fetchJson('/status');
   }
 
+  async listAgents(options?: { published?: boolean }): Promise<ChatAgent[]> {
+    const qs = options?.published ? '?published=true' : '';
+    const data = await this.fetchJson<{ agents: ChatAgent[] }>(`/agents${qs}`);
+    return data.agents ?? [];
+  }
+
+  async publishAgent(agentId: string): Promise<void> {
+    await this.fetchJson(`/agents/${encodeURIComponent(agentId)}/publish`, {
+      method: 'PUT',
+    });
+  }
+
+  async unpublishAgent(agentId: string): Promise<void> {
+    await this.fetchJson(`/agents/${encodeURIComponent(agentId)}/unpublish`, {
+      method: 'PUT',
+    });
+  }
+
+  async promoteAgent(agentId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string; version: number }> {
+    return this.fetchJson(`/agents/${encodeURIComponent(agentId)}/promote`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetStage }),
+    });
+  }
+
+  async demoteAgent(agentId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string }> {
+    return this.fetchJson(`/agents/${encodeURIComponent(agentId)}/demote`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetStage }),
+    });
+  }
+
+  async bulkPublishAgents(agentIds: string[], published: boolean): Promise<void> {
+    await this.fetchJson('/agents/bulk-publish', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentIds, published }),
+    });
+  }
+
+  async updateAgentConfig(agentId: string, config: Partial<import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig>): Promise<void> {
+    await this.fetchJson(`/agents/${encodeURIComponent(agentId)}/config`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+  }
+
   async getBranding(): Promise<BrandingConfig> {
     const data = await this.fetchJson<{ branding: BrandingConfig }>(
       '/branding',
@@ -956,13 +1048,16 @@ export class AugmentApiClient implements AugmentApi {
     return adminEndpoints.getEvaluationStatus(this.adminDeps);
   }
 
-  async testModelConnection(model?: string): Promise<{
+  async testModelConnection(
+    model?: string,
+    baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
     error?: string;
   }> {
-    return adminEndpoints.testModelConnection(this.adminDeps, model);
+    return adminEndpoints.testModelConnection(this.adminDeps, model, baseUrl);
   }
 
   async testMcpConnection(

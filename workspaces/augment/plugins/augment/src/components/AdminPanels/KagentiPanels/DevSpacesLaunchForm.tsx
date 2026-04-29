@@ -178,7 +178,7 @@ export function DevSpacesLaunchForm({
         <LaptopMacOutlinedIcon
           sx={{ fontSize: 22, color: theme.palette.primary.main }}
         />
-        <Typography variant="h6" sx={{ fontWeight: 700, flex: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, flex: 1, color: 'text.primary' }}>
           {Label} DevSpace
         </Typography>
       </Box>
@@ -232,7 +232,7 @@ export function DevSpacesLaunchForm({
                 borderBottom: `1px solid ${theme.palette.divider}`,
               }}
             >
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                 Next Steps
               </Typography>
             </Box>

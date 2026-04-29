@@ -348,6 +348,9 @@ export function registerSessionRoutes(ctx: RouteContext): void {
               : {}),
             ...(m.usage ? { usage: safeJsonParse(m.usage) } : {}),
             ...(m.reasoning ? { reasoning: m.reasoning } : {}),
+            ...(m.citations
+              ? { citations: safeJsonParse(m.citations) }
+              : {}),
             createdAt: m.createdAt,
           }));
           res.json({

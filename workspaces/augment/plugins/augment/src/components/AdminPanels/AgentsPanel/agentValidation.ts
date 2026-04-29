@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+import {
+  type AgentRole,
+  deriveRoleFromTopology,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
+
+export type PublishAsRole = AgentRole;
+
 export interface AgentFormData {
   name: string;
   instructions: string;
@@ -104,6 +111,48 @@ export function agentFromConfig(cfg: Record<string, unknown>): AgentFormData {
   return base;
 }
 
+/**
+ * Converts an AgentFormData into the config payload shape expected by the
+ * admin config API (PUT /admin/config/agents). Inverse of `agentFromConfig`.
+ * Only includes optional fields when they carry a meaningful value so the
+ * persisted config stays minimal.
+ */
+export function agentToConfig(agent: AgentFormData): Record<string, unknown> {
+  const entry: Record<string, unknown> = {
+    name: agent.name,
+    instructions: agent.instructions,
+  };
+  if (agent.handoffDescription) entry.handoffDescription = agent.handoffDescription;
+  if (agent.model) entry.model = agent.model;
+  if (agent.handoffs.length > 0) entry.handoffs = agent.handoffs;
+  if (agent.asTools.length > 0) entry.asTools = agent.asTools;
+  if (agent.mcpServers.length > 0) entry.mcpServers = agent.mcpServers;
+  if (agent.enableRAG) entry.enableRAG = true;
+  if (agent.vectorStoreIds.length > 0) entry.vectorStoreIds = agent.vectorStoreIds;
+  if (agent.enableWebSearch) entry.enableWebSearch = true;
+  if (agent.enableCodeInterpreter) entry.enableCodeInterpreter = true;
+  if (agent.toolChoice) entry.toolChoice = agent.toolChoice;
+  if (agent.temperature !== undefined) entry.temperature = agent.temperature;
+  if (agent.maxOutputTokens !== undefined) entry.maxOutputTokens = agent.maxOutputTokens;
+  if (agent.maxToolCalls !== undefined) entry.maxToolCalls = agent.maxToolCalls;
+  if (agent.guardrails && agent.guardrails.length > 0) entry.guardrails = agent.guardrails;
+  if (agent.reasoning) entry.reasoning = agent.reasoning;
+  if (agent.resetToolChoice !== undefined) entry.resetToolChoice = agent.resetToolChoice;
+  if (agent.nestHandoffHistory !== undefined) entry.nestHandoffHistory = agent.nestHandoffHistory;
+  return entry;
+}
+
+/**
+ * Derives the effective role for an agent purely from topology.
+ * Delegates to the shared `deriveRoleFromTopology` utility in augment-common.
+ */
+export function deriveAgentRole(
+  agentKey: string,
+  allAgents: Record<string, { handoffs?: string[]; asTools?: string[] }>,
+): PublishAsRole {
+  return deriveRoleFromTopology(agentKey, allAgents);
+}
+
 export function detectCircularHandoffs(
   agents: Record<string, AgentFormData>,
 ): string[] {
@@ -144,12 +193,42 @@ export function validateAgents(
         errors.push(`Agent "${key}" calls unknown agent "${t}" as tool`);
     }
   }
-  if (agentKeys.length > 0 && !agents[defaultAgentKey]) {
+
+  const hasAnyRouterOrSpecialist = agentKeys.some(k => {
+    const r = deriveAgentRole(k, agents);
+    return r === 'router' || r === 'specialist';
+  });
+  if (hasAnyRouterOrSpecialist && agentKeys.length > 0 && !agents[defaultAgentKey]) {
     errors.push(`Default agent "${defaultAgentKey}" not found`);
   }
 
-  const warnings = detectCircularHandoffs(agents);
+  const warnings: string[] = [];
+  warnings.push(...detectCircularHandoffs(agents));
   warnings.push(...detectSmartWarnings(agents, defaultAgentKey));
+
+  for (const [key] of Object.entries(agents)) {
+    const role = deriveAgentRole(key, agents);
+    if (role === 'router') {
+      const a = agents[key];
+      if (a.handoffs.length === 0 && a.asTools.length === 0) {
+        warnings.push(
+          `"${a.name || key}" is configured as Router but has no handoffs or delegates.`,
+        );
+      }
+    }
+    if (role === 'specialist') {
+      const isTarget = agentKeys.some(
+        k =>
+          k !== key &&
+          (agents[k].handoffs.includes(key) || agents[k].asTools.includes(key)),
+      );
+      if (!isTarget) {
+        warnings.push(
+          `"${agents[key].name || key}" is a Specialist but no other agent routes to it.`,
+        );
+      }
+    }
+  }
 
   return { errors, warnings };
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -65,16 +65,26 @@ import {
   emptyStateSx,
 } from '../shared/commandCenterStyles';
 
+export interface ToolPanelTourControl {
+  openIntent: () => void;
+  closeIntent: () => void;
+  selectDeploy: () => void;
+  closeWizard: () => void;
+  setWizardStep: (step: number) => void;
+}
+
 export interface KagentiToolsPanelProps {
   namespace?: string;
   initialToolName?: string;
   onFocusConsumed?: () => void;
+  tourControlRef?: React.MutableRefObject<ToolPanelTourControl | null>;
 }
 
 export function KagentiToolsPanel({
   namespace,
   initialToolName,
   onFocusConsumed,
+  tourControlRef,
 }: KagentiToolsPanelProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
@@ -96,6 +106,7 @@ export function KagentiToolsPanel({
 
   const [intentOpen, setIntentOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const wizardStepRef = useRef<((step: number) => void) | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<KagentiToolSummary | null>(
     null,
   );
@@ -129,6 +140,28 @@ export function KagentiToolsPanel({
       onFocusConsumed?.();
     }
   }, [initialToolName, loading, tools, onFocusConsumed]);
+
+  useEffect(() => {
+    if (tourControlRef) {
+      tourControlRef.current = {
+        openIntent: () => setIntentOpen(true),
+        closeIntent: () => setIntentOpen(false),
+        selectDeploy: () => {
+          setIntentOpen(false);
+          setCreateOpen(true);
+        },
+        closeWizard: () => setCreateOpen(false),
+        setWizardStep: (step: number) => {
+          wizardStepRef.current?.(step);
+        },
+      };
+    }
+    return () => {
+      if (tourControlRef) {
+        tourControlRef.current = null;
+      }
+    };
+  }, [tourControlRef]);
 
   const displayError = listError || actionError;
 
@@ -198,6 +231,7 @@ export function KagentiToolsPanel({
           <Button
             variant="contained"
             size="small"
+            data-tour="new-tool-btn"
             startIcon={<AddIcon />}
             onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none' }}
@@ -271,6 +305,7 @@ export function KagentiToolsPanel({
           <Button
             variant="outlined"
             size="small"
+            data-tour="new-tool-btn"
             startIcon={<AddIcon />}
             onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none', mt: 1 }}
@@ -281,7 +316,10 @@ export function KagentiToolsPanel({
       )}
       {!loading && tools.length > 0 && (
         <>
-          <TableContainer sx={tableContainerSx(theme)}>
+          <TableContainer
+            data-tour="tools-table"
+            sx={tableContainerSx(theme)}
+          >
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -432,6 +470,9 @@ export function KagentiToolsPanel({
         namespace={namespace}
         onClose={() => setCreateOpen(false)}
         onCreated={loadTools}
+        onStepControl={setter => {
+          wizardStepRef.current = setter;
+        }}
       />
 
       <ToolConnectDialog

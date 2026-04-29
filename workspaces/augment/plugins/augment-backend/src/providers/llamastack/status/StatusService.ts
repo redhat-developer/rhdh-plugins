@@ -142,6 +142,9 @@ export class StatusService {
             mcpServerStatuses,
           ),
         },
+        agentCatalog: true,
+        agentSelection: false,
+        agentCards: false,
       },
     };
   }

@@ -17,6 +17,7 @@ import { InputError } from '@backstage/errors';
 import {
   DEFAULT_BRANDING,
   isProviderScopedKey,
+  deriveRoleFromTopology,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ProviderType } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { AdminConfigService } from '../services/AdminConfigService';
@@ -164,6 +165,66 @@ export function registerAdminConfigRoutes(
         }
 
         onConfigChanged?.();
+
+        // Auto-register chatAgents entries for agents that can be published
+        // (router or standalone). New agents start as 'registered' so they're
+        // one click away from being published. Specialists are hidden.
+        if (validKey === 'agents' && value && typeof value === 'object') {
+          try {
+            const agentMap = value as Record<string, { handoffs?: string[]; asTools?: string[] }>;
+
+            const existing = await adminConfig.get('chatAgents');
+            const configs: import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig[] =
+              Array.isArray(existing) ? [...(existing as import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig[])] : [];
+            const existingIds = new Set(configs.map(c => c.agentId));
+            let added = 0;
+
+            for (const [agentKey, agentCfg] of Object.entries(agentMap)) {
+              if (!agentCfg || typeof agentCfg !== 'object') continue;
+
+              const role = deriveRoleFromTopology(agentKey, agentMap);
+              if (role === 'specialist') continue;
+              if (existingIds.has(agentKey)) continue;
+
+              configs.push({
+                agentId: agentKey,
+                published: false,
+                visible: false,
+                featured: false,
+                lifecycleStage: 'registered',
+                version: 1,
+                promotedAt: new Date().toISOString(),
+                promotedBy: userRef,
+              });
+              added++;
+            }
+
+            // Remove chatAgents entries for agents whose role is now specialist
+            // or that no longer exist in the agents map.
+            const agentKeys = new Set(Object.keys(agentMap));
+            const before = configs.length;
+            const cleaned = configs.filter(c => {
+              if (!agentKeys.has(c.agentId)) return false;
+              const cfg = agentMap[c.agentId];
+              if (!cfg || typeof cfg !== 'object') return false;
+              return deriveRoleFromTopology(c.agentId, agentMap) !== 'specialist';
+            });
+            const removed = before - cleaned.length;
+
+            if (added > 0 || removed > 0) {
+              const final = removed > 0 ? cleaned : configs;
+              await adminConfig.set('chatAgents', final, userRef);
+              const parts: string[] = [];
+              if (added > 0) parts.push(`registered ${added} new`);
+              if (removed > 0) parts.push(`removed ${removed} chatAgent entries`);
+              logger.info(
+                `[AdminConfig] chatAgent entries: ${parts.join(', ')}`,
+              );
+            }
+          } catch (err) {
+            logger.warn(`Failed to auto-manage chatAgent entries: ${err}`);
+          }
+        }
 
         const warnings: string[] = [];
 

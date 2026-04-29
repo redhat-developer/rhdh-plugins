@@ -15,6 +15,7 @@
  */
 
 import type { FC } from 'react';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
@@ -50,18 +51,20 @@ export const AgentWizardBasicsStep: FC<AgentWizardBasicsStepProps> = ({
   availableNamespaces,
 }) => (
   <Stack spacing={2}>
-    <TextField
-      label="Name"
-      value={name}
-      onChange={e => setName(e.target.value)}
-      fullWidth
-      required
-      size="small"
-      error={!!nameError}
-      helperText={
-        nameError ?? 'Lowercase alphanumeric and hyphens (max 63 chars).'
-      }
-    />
+    <Box data-tour="agent-name">
+      <TextField
+        label="Name"
+        value={name}
+        onChange={e => setName(e.target.value)}
+        fullWidth
+        required
+        size="small"
+        error={!!nameError}
+        helperText={
+          nameError ?? 'Lowercase alphanumeric and hyphens (max 63 chars).'
+        }
+      />
+    </Box>
     {availableNamespaces.length > 0 ? (
       <FormControl size="small" fullWidth required>
         <InputLabel>Namespace</InputLabel>
@@ -89,7 +92,7 @@ export const AgentWizardBasicsStep: FC<AgentWizardBasicsStepProps> = ({
         helperText="Target Kubernetes namespace for the agent."
       />
     )}
-    <FormControl size="small" fullWidth>
+    <FormControl size="small" fullWidth data-tour="agent-protocol">
       <InputLabel>Protocol</InputLabel>
       <Select
         label="Protocol"
@@ -101,6 +104,10 @@ export const AgentWizardBasicsStep: FC<AgentWizardBasicsStepProps> = ({
         <MenuItem value="mcp">MCP</MenuItem>
         <MenuItem value="http">HTTP</MenuItem>
       </Select>
+      <FormHelperText>
+        A2A = Agent-to-Agent. MCP = Model Context Protocol. HTTP = standard
+        REST.
+      </FormHelperText>
     </FormControl>
     <FormControl size="small" fullWidth>
       <InputLabel>Framework</InputLabel>

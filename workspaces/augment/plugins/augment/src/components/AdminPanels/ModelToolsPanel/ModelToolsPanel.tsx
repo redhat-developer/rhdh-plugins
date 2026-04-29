@@ -29,6 +29,8 @@ import { McpServersSection } from './McpServersSection';
 import { SafetyEvalPanel } from '../SafetyEvalPanel/SafetyEvalPanel';
 import { EvaluationSection } from '../SafetyEvalPanel/EvaluationSection';
 import { KnowledgeBasePanel } from '../KnowledgeBasePanel';
+import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
+import { PanelIntroBanner } from '../shared/PanelIntroBanner';
 
 type SubTab =
   | 'connection'
@@ -53,9 +55,9 @@ const ALL_TABS: readonly TabDef[] = [
   { label: 'Evaluation', value: 'evaluation', capability: 'evaluation' },
 ] as const;
 
-const CONTENT_SX = { px: 3, py: 2, maxWidth: 960, mx: 'auto' } as const;
+const CONTENT_SX = { px: 3, py: 2, maxWidth: CONTENT_MAX_WIDTH, mx: 'auto' } as const;
 
-const HEADER_OUTER_SX = { px: 3, pt: 3, maxWidth: 960, mx: 'auto' } as const;
+const HEADER_OUTER_SX = { px: 3, pt: 3, maxWidth: CONTENT_MAX_WIDTH, mx: 'auto' } as const;
 
 const HEADER_ROW_SX = {
   display: 'flex',
@@ -164,12 +166,20 @@ export const AgentConfigPanel = () => {
         </Box>
       </Box>
 
+      <Box sx={{ px: 3, maxWidth: CONTENT_MAX_WIDTH, mx: 'auto' }}>
+        <PanelIntroBanner storageKey="platform-config">
+          Platform Config controls the shared AI infrastructure — model
+          endpoints, tool registrations, RAG pipelines, and safety guardrails —
+          used by all agents.
+        </PanelIntroBanner>
+      </Box>
+
       <Box
         sx={{
           borderBottom: 1,
           borderColor: 'divider',
           mb: 1,
-          maxWidth: 960,
+          maxWidth: CONTENT_MAX_WIDTH,
           mx: 'auto',
         }}
       >

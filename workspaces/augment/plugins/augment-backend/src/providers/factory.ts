@@ -109,6 +109,7 @@ export function createProvider(
       return new KagentiProvider({
         logger,
         config,
+        adminConfig,
       });
 
     case 'googleadk':

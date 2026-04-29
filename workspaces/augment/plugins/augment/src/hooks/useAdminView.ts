@@ -34,6 +34,7 @@ export type AdminPanel =
   | 'kagenti-dashboards'
   | 'kagenti-admin'
   | 'kagenti-branding'
+  | 'kagenti-registry'
   | 'kagenti-docs';
 
 export interface UseAdminViewOptions {
@@ -47,7 +48,7 @@ export interface UseAdminViewReturn {
   setAdminPanel: (panel: AdminPanel) => void;
   showAdminBanner: boolean;
   setShowAdminBanner: (show: boolean) => void;
-  switchToAdmin: () => void;
+  switchToAdmin: (providerId?: string) => void;
   switchToChat: () => void;
   dismissAdminBanner: () => void;
 }
@@ -63,7 +64,14 @@ export function useAdminView({
   const [adminPanel, setAdminPanelRaw] = useState<AdminPanel>(() => {
     try {
       const saved = sessionStorage.getItem(STORAGE_KEY_PANEL);
-      if (saved) return saved as AdminPanel;
+      if (saved) {
+        // Redirect stale panel values that have been removed
+        const STALE_REDIRECTS: Record<string, AdminPanel> = {
+          'kagenti-orchestration': 'kagenti-agents',
+        };
+        if (saved in STALE_REDIRECTS) return STALE_REDIRECTS[saved];
+        return saved as AdminPanel;
+      }
     } catch {
       /* sessionStorage unavailable */
     }
@@ -99,9 +107,10 @@ export function useAdminView({
     }
   }, [isAdmin]);
 
-  const switchToAdmin = useCallback(() => {
+  const switchToAdmin = useCallback((providerId?: string) => {
     setViewMode('admin');
-    setAdminPanel('kagenti-home');
+    const defaultPanel: AdminPanel = providerId === 'kagenti' ? 'kagenti-home' : 'platform';
+    setAdminPanel(defaultPanel);
     setShowAdminBanner(false);
     try {
       localStorage.setItem(STORAGE_KEY_MODE, 'admin');

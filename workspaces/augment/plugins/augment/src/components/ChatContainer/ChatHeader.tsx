@@ -37,7 +37,6 @@ interface ChatHeaderProps {
   selectedModel?: string;
   currentAgent?: string;
   onChangeAgent?: () => void;
-  onBrowseAgents?: () => void;
   healthWarning?: string;
   agentConfig?: ChatAgentConfig;
   onExport?: () => void;
@@ -55,7 +54,6 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
   selectedModel,
   currentAgent,
   onChangeAgent,
-  onBrowseAgents,
   healthWarning,
   agentConfig,
   onExport,
@@ -64,13 +62,13 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
   const { status } = useStatus();
-  const isKagenti = status?.providerId === 'kagenti';
+  const hasAgentCards = status?.capabilities?.agentCards ?? (status?.providerId === 'kagenti');
   const { isDev, toggleMode } = useChatViewMode();
 
   const [agentCard, setAgentCard] = useState<KagentiAgentCard | null>(null);
 
   useEffect(() => {
-    if (!isKagenti || !selectedModel || !selectedModel.includes('/')) {
+    if (!hasAgentCards || !selectedModel || !selectedModel.includes('/')) {
       setAgentCard(null);
       return undefined;
     }
@@ -87,7 +85,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
     return () => {
       cancelled = true;
     };
-  }, [api, isKagenti, selectedModel]);
+  }, [api, hasAgentCards, selectedModel]);
 
   if (!selectedModel) return null;
 
@@ -303,13 +301,13 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
             </IconButton>
           </Tooltip>
         )}
-        {/* Browse / Change Agent */}
-        {(onBrowseAgents || onChangeAgent) && (
-          <Tooltip title="Browse agents" placement="bottom">
+        {/* Change Agent */}
+        {onChangeAgent && (
+          <Tooltip title="Change agent" placement="bottom">
             <IconButton
               size="small"
-              onClick={onBrowseAgents || onChangeAgent}
-              aria-label="Browse agents"
+              onClick={onChangeAgent}
+              aria-label="Change agent"
               sx={{
                 p: 0.5,
                 borderRadius: 1.5,

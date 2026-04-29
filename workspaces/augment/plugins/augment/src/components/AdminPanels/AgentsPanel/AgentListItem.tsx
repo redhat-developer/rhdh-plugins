@@ -17,13 +17,14 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PublicIcon from '@mui/icons-material/Public';
 import CodeIcon from '@mui/icons-material/Code';
 import StarIcon from '@mui/icons-material/Star';
 import { useTheme, alpha } from '@mui/material/styles';
-import type { AgentFormData } from './agentValidation';
+import type { AgentFormData, PublishAsRole } from './agentValidation';
 
 interface AgentListItemProps {
   agentKey: string;
@@ -33,8 +34,15 @@ interface AgentListItemProps {
   isSingleAgent: boolean;
   outCount: number;
   inCount: number;
+  effectiveRole: PublishAsRole;
   onSelect: (key: string) => void;
 }
+
+const ROLE_CHIP_CONFIG: Record<PublishAsRole, { label: string; color: 'primary' | 'default' | 'secondary' }> = {
+  router: { label: 'Router', color: 'primary' },
+  specialist: { label: 'Specialist', color: 'secondary' },
+  standalone: { label: 'Standalone', color: 'default' },
+};
 
 export const AgentListItem = React.memo(function AgentListItem({
   agentKey,
@@ -44,6 +52,7 @@ export const AgentListItem = React.memo(function AgentListItem({
   isSingleAgent,
   outCount,
   inCount,
+  effectiveRole,
   onSelect,
 }: AgentListItemProps) {
   const theme = useTheme();
@@ -101,19 +110,19 @@ export const AgentListItem = React.memo(function AgentListItem({
         >
           {agent.name || agentKey}
         </Typography>
-      </Box>
-      {isSingleAgent && (
-        <Typography
+        <Chip
+          label={ROLE_CHIP_CONFIG[effectiveRole].label}
+          color={ROLE_CHIP_CONFIG[effectiveRole].color}
+          size="small"
+          variant="outlined"
           sx={{
-            fontSize: '0.6rem',
-            color: theme.palette.text.disabled,
-            mt: 0.25,
-            letterSpacing: '0.03em',
+            height: 16,
+            fontSize: '0.55rem',
+            fontWeight: 600,
+            '& .MuiChip-label': { px: 0.75 },
           }}
-        >
-          Entry point
-        </Typography>
-      )}
+        />
+      </Box>
       {(hasCapabilities || outCount > 0 || inCount > 0) && (
         <Box
           sx={{

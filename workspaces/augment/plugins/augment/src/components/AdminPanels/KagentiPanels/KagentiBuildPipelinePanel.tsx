@@ -32,6 +32,7 @@ import CardContent from '@mui/material/CardContent';
 import Alert from '@mui/material/Alert';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
+import BuildIcon from '@mui/icons-material/Build';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -46,6 +47,7 @@ import {
   TABLE_HEADER_CELL_SX,
   tableContainerSx,
 } from '../shared/commandCenterStyles';
+import { PanelIntroBanner } from '../shared/PanelIntroBanner';
 
 export interface KagentiBuildPipelinePanelProps {
   namespace?: string;
@@ -181,14 +183,40 @@ export function KagentiBuildPipelinePanel({
     if (builds.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={8}>
-            <Typography
-              variant="body2"
-              color="textSecondary"
-              sx={{ py: 2, textAlign: 'center' }}
+          <TableCell colSpan={8} sx={{ border: 0 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                py: 6,
+                gap: 1,
+              }}
             >
-              No builds found.
-            </Typography>
+              <BuildIcon
+                sx={{ fontSize: 40, color: theme.palette.text.disabled }}
+              />
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.text.secondary,
+                }}
+              >
+                No builds found
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.text.disabled,
+                  textAlign: 'center',
+                  maxWidth: 400,
+                }}
+              >
+                Builds are created when agents or tools are imported via Source
+                from Git. Import an agent to see build activity here.
+              </Typography>
+            </Box>
           </TableCell>
         </TableRow>
       );
@@ -320,6 +348,11 @@ export function KagentiBuildPipelinePanel({
     <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
       <Card variant="outlined">
         <CardContent>
+          <PanelIntroBanner storageKey="builds-panel">
+            Build Pipelines show Shipwright builds created when agents or tools are
+            imported via Source from Git. You can also manually trigger rebuilds
+            here.
+          </PanelIntroBanner>
           <Box
             sx={{
               display: 'flex',
@@ -331,7 +364,7 @@ export function KagentiBuildPipelinePanel({
             }}
           >
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>
                 Build Pipelines
               </Typography>
               <Typography

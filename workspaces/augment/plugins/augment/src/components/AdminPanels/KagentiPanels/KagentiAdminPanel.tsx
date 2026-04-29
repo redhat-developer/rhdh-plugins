@@ -55,6 +55,12 @@ import * as kagentiEndpoints from '../../../api/kagentiEndpoints';
 import type { KagentiApiDeps } from '../../../api/kagentiEndpoints';
 import { getErrorMessage } from '../../../utils';
 import { useAdminConfig } from '../../../hooks';
+import {
+  CONTENT_MAX_WIDTH,
+  PAGE_TITLE_SX,
+  PAGE_SUBTITLE_SX,
+  sectionCardSx,
+} from '../shared/commandCenterStyles';
 
 export interface KagentiAdminPanelProps {
   namespace?: string;
@@ -486,14 +492,7 @@ export function KagentiAdminPanel({
     actions: ReactNode | undefined,
     children: ReactNode,
   ) => (
-    <Card
-      variant="outlined"
-      sx={{
-        mb: 3,
-        p: 2.5,
-        bgcolor: alpha(theme.palette.background.paper, 0.4),
-      }}
-    >
+    <Box sx={{ ...sectionCardSx(theme), mb: 3 }}>
       <Box
         sx={{
           display: 'flex',
@@ -503,7 +502,7 @@ export function KagentiAdminPanel({
         }}
       >
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
             {title}
           </Typography>
           {subtitle && (
@@ -518,7 +517,7 @@ export function KagentiAdminPanel({
         {actions}
       </Box>
       {children}
-    </Card>
+    </Box>
   );
 
   if (loading) {
@@ -530,15 +529,12 @@ export function KagentiAdminPanel({
   }
 
   return (
-    <Box sx={{ maxWidth: 1200 }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+        <Typography variant="h5" sx={PAGE_TITLE_SX}>
           Administration
         </Typography>
-        <Typography
-          variant="body2"
-          sx={{ color: theme.palette.text.secondary }}
-        >
+        <Typography variant="body2" sx={PAGE_SUBTITLE_SX}>
           Identity management, namespace oversight, agent migration, and build
           configuration.
         </Typography>
@@ -620,7 +616,7 @@ export function KagentiAdminPanel({
                         label="Enabled"
                         size="small"
                         color="success"
-                        sx={{ height: 22 }}
+                        sx={{ height: 24 }}
                       />
                     </TableCell>
                   </TableRow>
@@ -691,7 +687,7 @@ export function KagentiAdminPanel({
                         <Chip
                           label={ma.status}
                           size="small"
-                          sx={{ height: 22 }}
+                          sx={{ height: 24 }}
                         />
                       </TableCell>
                       <TableCell>
@@ -700,14 +696,14 @@ export function KagentiAdminPanel({
                             label="Yes"
                             size="small"
                             color="success"
-                            sx={{ height: 22 }}
+                            sx={{ height: 24 }}
                           />
                         ) : (
                           <Chip
                             label="No"
                             size="small"
                             color="default"
-                            sx={{ height: 22 }}
+                            sx={{ height: 24 }}
                           />
                         )}
                       </TableCell>
@@ -875,7 +871,7 @@ export function KagentiAdminPanel({
               border: 1,
               borderColor: 'divider',
               bgcolor: alpha(theme.palette.background.default, 0.5),
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               overflow: 'auto',
               maxHeight: 300,
               whiteSpace: 'pre-wrap',
@@ -1190,7 +1186,7 @@ export function KagentiAdminPanel({
                 border: 1,
                 borderColor: 'divider',
                 bgcolor: alpha(theme.palette.background.default, 0.5),
-                fontSize: '0.7rem',
+                fontSize: '0.75rem',
                 overflow: 'auto',
                 maxHeight: 200,
                 whiteSpace: 'pre-wrap',
@@ -1200,17 +1196,6 @@ export function KagentiAdminPanel({
             </Box>
           )}
         </Box>,
-      )}
-
-      {sectionShell(
-        'Platform Configuration',
-        'Model selection, RAG pipelines, tool registries, MCP servers, and safety guardrails.',
-        undefined,
-        <Alert severity="info" variant="outlined" sx={{ mb: 0 }}>
-          Platform-level settings (LLM model, RAG, MCP, safety) are managed in
-          the <strong>Platform Config</strong> section of the sidebar
-          navigation.
-        </Alert>,
       )}
 
       {/* Create Team Dialog */}

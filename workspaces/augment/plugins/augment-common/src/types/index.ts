@@ -45,6 +45,11 @@ export {
   type SyncResult,
   type ToolCapabilityInfo,
   type PromptCapabilities,
+  type ChatAgent,
+  type AgentLifecycleStage,
+  type AgentRole,
+  type AgentTopologyNode,
+  deriveRoleFromTopology,
 } from './shared';
 
 export type {

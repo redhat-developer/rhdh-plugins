@@ -47,8 +47,20 @@ const BUILD_POLL_INTERVAL_MS = 4000;
 const BUILD_TIMEOUT_WARN_MS = 10 * 60 * 1000;
 const MAX_CONSECUTIVE_POLL_ERRORS = 8;
 
+const INTERNAL_REGISTRY_BASE =
+  'image-registry.openshift-image-registry.svc:5000';
+
+function defaultRegistryUrl(ns: string): string {
+  return ns ? `${INTERNAL_REGISTRY_BASE}/${ns}` : INTERNAL_REGISTRY_BASE;
+}
+
+const INTERNAL_REGISTRY_RE = new RegExp(
+  `^${INTERNAL_REGISTRY_BASE.replace(/\./g, '\\.')}(\\/[a-z0-9-]*)?$`,
+);
+
 export interface UseToolWizardFormReturn {
   activeStep: number;
+  setActiveStep: (step: number) => void;
   submitting: boolean;
   submitError: string | null;
   setSubmitError: (v: string | null) => void;
@@ -174,7 +186,7 @@ export function useToolWizardForm(
   const [gitRevision, setGitRevision] = useState('main');
   const [contextDir, setContextDir] = useState('');
   const [registryUrl, setRegistryUrl] = useState(
-    'image-registry.openshift-image-registry.svc:5000',
+    defaultRegistryUrl(namespaceProp ?? ''),
   );
   const [registrySecret, setRegistrySecret] = useState('');
   const [imageTag, setImageTag] = useState('v0.0.1');
@@ -228,7 +240,7 @@ export function useToolWizardForm(
     setGitUrl('');
     setGitRevision('main');
     setContextDir('');
-    setRegistryUrl('image-registry.openshift-image-registry.svc:5000');
+    setRegistryUrl(defaultRegistryUrl(namespaceProp ?? ''));
     setRegistrySecret('');
     setImageTag('v0.0.1');
     setBuildStrategy('');
@@ -274,6 +286,12 @@ export function useToolWizardForm(
   useEffect(() => {
     setNamespace(n => namespaceProp ?? n);
   }, [namespaceProp]);
+
+  useEffect(() => {
+    setRegistryUrl(prev =>
+      INTERNAL_REGISTRY_RE.test(prev) ? defaultRegistryUrl(namespace) : prev,
+    );
+  }, [namespace]);
 
   const formState = useMemo(
     (): ToolFormState => ({
@@ -727,6 +745,7 @@ export function useToolWizardForm(
 
   return {
     activeStep,
+    setActiveStep,
     submitting,
     submitError,
     setSubmitError,

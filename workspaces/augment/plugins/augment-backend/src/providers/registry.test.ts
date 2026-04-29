@@ -22,76 +22,83 @@ import {
 } from './registry';
 
 describe('provider registry', () => {
-  it('PROVIDER_REGISTRY contains both llamastack and googleadk entries', () => {
-    expect(PROVIDER_REGISTRY.has('llamastack')).toBe(true);
+  it('PROVIDER_REGISTRY contains googleadk and kagenti entries', () => {
     expect(PROVIDER_REGISTRY.has('googleadk')).toBe(true);
+    expect(PROVIDER_REGISTRY.has('kagenti')).toBe(true);
   });
 
-  it('getProviderDescriptor("llamastack") returns descriptor with implemented: true', () => {
-    const d = getProviderDescriptor('llamastack');
+  it('PROVIDER_REGISTRY does not contain llamastack', () => {
+    expect(PROVIDER_REGISTRY.has('llamastack')).toBe(false);
+  });
+
+  it('getProviderDescriptor("kagenti") returns descriptor with implemented: true', () => {
+    const d = getProviderDescriptor('kagenti');
     expect(d).toBeDefined();
-    expect(d!.id).toBe('llamastack');
-    expect(d!.implemented).toBe(true);
+    expect(d && d.id).toBe('kagenti');
+    expect(d && d.implemented).toBe(true);
   });
 
   it('getProviderDescriptor("googleadk") returns descriptor with implemented: false', () => {
     const d = getProviderDescriptor('googleadk');
     expect(d).toBeDefined();
-    expect(d!.id).toBe('googleadk');
-    expect(d!.implemented).toBe(false);
+    expect(d && d.id).toBe('googleadk');
+    expect(d && d.implemented).toBe(false);
   });
 
   it('getProviderDescriptor("unknown") returns undefined', () => {
     expect(
-      getProviderDescriptor(
-        'unknown' as import('@red-hat-developer-hub/backstage-plugin-augment-common').ProviderType,
-      ),
+      getProviderDescriptor('unknown'),
     ).toBeUndefined();
   });
 
   it('getAllProviderDescriptors returns all providers sorted by displayName', () => {
     const all = getAllProviderDescriptors();
-    expect(all).toHaveLength(3);
+    expect(all).toHaveLength(2);
     expect(all[0].displayName).toBe('Google ADK');
-    expect(all[1].displayName).toBe('Kagenti');
-    expect(all[2].displayName).toBe('Llama Stack');
+    expect(all[1].displayName).toBe('Red Hat AI');
   });
 
-  it('isValidProviderType("llamastack") returns true', () => {
-    expect(isValidProviderType('llamastack')).toBe(true);
+  it('isValidProviderType("kagenti") returns true', () => {
+    expect(isValidProviderType('kagenti')).toBe(true);
   });
 
   it('isValidProviderType("unknown") returns false', () => {
     expect(isValidProviderType('unknown')).toBe(false);
   });
 
-  it('LlamaStack descriptor has all capabilities set to true', () => {
-    const d = getProviderDescriptor('llamastack')!;
-    expect(d.capabilities).toEqual({
-      chat: true,
-      rag: true,
-      safety: true,
-      evaluation: true,
-      conversations: true,
-      mcpTools: true,
-      tools: true,
-    });
-  });
-
   it('GoogleADK descriptor has chat, conversations, mcpTools true and others false', () => {
-    const d = getProviderDescriptor('googleadk')!;
-    expect(d.capabilities.chat).toBe(true);
-    expect(d.capabilities.conversations).toBe(true);
-    expect(d.capabilities.mcpTools).toBe(true);
-    expect(d.capabilities.rag).toBe(false);
-    expect(d.capabilities.safety).toBe(false);
-    expect(d.capabilities.evaluation).toBe(false);
+    const d = getProviderDescriptor('googleadk');
+    expect(d).toBeDefined();
+    if (d) {
+      expect(d.capabilities.chat).toBe(true);
+      expect(d.capabilities.conversations).toBe(true);
+      expect(d.capabilities.mcpTools).toBe(true);
+      expect(d.capabilities.rag).toBe(false);
+      expect(d.capabilities.safety).toBe(false);
+      expect(d.capabilities.evaluation).toBe(false);
+    }
   });
 
-  it('LlamaStack has configFields with at least model and baseUrl', () => {
-    const d = getProviderDescriptor('llamastack')!;
-    const keys = d.configFields.map(f => f.key);
-    expect(keys).toContain('model');
-    expect(keys).toContain('baseUrl');
+  it('Kagenti has configFields with baseUrl', () => {
+    const d = getProviderDescriptor('kagenti');
+    expect(d).toBeDefined();
+    if (d) {
+      const keys = d.configFields.map(f => f.key);
+      expect(keys).toContain('baseUrl');
+    }
+  });
+
+  it('Kagenti exposes all platform capabilities', () => {
+    const d = getProviderDescriptor('kagenti');
+    expect(d).toBeDefined();
+    if (d) {
+      expect(d.capabilities.chat).toBe(true);
+      expect(d.capabilities.rag).toBe(true);
+      expect(d.capabilities.safety).toBe(true);
+      expect(d.capabilities.evaluation).toBe(true);
+      expect(d.capabilities.conversations).toBe(true);
+      expect(d.capabilities.mcpTools).toBe(true);
+      expect(d.capabilities.tools).toBe(true);
+    }
   });
 });

@@ -135,6 +135,11 @@ function validateAgents(value: unknown): void {
 
     if (Array.isArray(agent.handoffs)) {
       for (const target of agent.handoffs as string[]) {
+        if (target === key) {
+          throw new InputError(
+            `Agent "${key}" has a handoff to itself — this would cause an infinite loop`,
+          );
+        }
         if (!keys.has(target)) {
           throw new InputError(
             `Agent "${key}" has handoff to "${target}" which does not exist ` +
@@ -146,6 +151,11 @@ function validateAgents(value: unknown): void {
 
     if (Array.isArray(agent.asTools)) {
       for (const target of agent.asTools as string[]) {
+        if (target === key) {
+          throw new InputError(
+            `Agent "${key}" has an asTools reference to itself — this would cause an infinite loop`,
+          );
+        }
         if (!keys.has(target)) {
           throw new InputError(
             `Agent "${key}" has asTools reference to "${target}" which does ` +
@@ -154,6 +164,38 @@ function validateAgents(value: unknown): void {
         }
       }
     }
+  }
+
+  // Detect circular handoff chains (A → B → C → A).
+  // Only checks handoffs (transfer of control), not asTools (function calls
+  // that return results and don't transfer control permanently).
+  const handoffGraph: Record<string, string[]> = {};
+  for (const [key, agentVal] of Object.entries(agents)) {
+    const agent = agentVal as Record<string, unknown>;
+    handoffGraph[key] = Array.isArray(agent.handoffs)
+      ? (agent.handoffs as string[]).filter(t => keys.has(t))
+      : [];
+  }
+  const visited = new Set<string>();
+  const inStack = new Set<string>();
+  function dfs(node: string, path: string[]): void {
+    if (inStack.has(node)) {
+      const cycleStart = path.indexOf(node);
+      const cycle = path.slice(cycleStart).concat(node);
+      throw new InputError(
+        `Circular handoff chain detected: ${cycle.join(' → ')}`,
+      );
+    }
+    if (visited.has(node)) return;
+    visited.add(node);
+    inStack.add(node);
+    for (const target of handoffGraph[node] ?? []) {
+      dfs(target, [...path, node]);
+    }
+    inStack.delete(node);
+  }
+  for (const key of keys) {
+    dfs(key, []);
   }
 
   assertSizeLimit(value, 'agents');

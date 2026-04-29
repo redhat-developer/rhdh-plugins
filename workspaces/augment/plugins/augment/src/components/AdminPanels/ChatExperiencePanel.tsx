@@ -229,7 +229,7 @@ export const ChatExperiencePanel = () => {
         }}
       >
         <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
             Chat Experience
           </Typography>
           <Typography

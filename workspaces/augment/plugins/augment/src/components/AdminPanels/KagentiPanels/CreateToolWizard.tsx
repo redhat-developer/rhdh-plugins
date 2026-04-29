@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo, useId } from 'react';
+import { useCallback, useEffect, useMemo, useId } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -49,14 +49,31 @@ const STEP_ICONS: Record<string, React.ReactElement> = {
   [TOOL_BUILD_STEP]: <BuildIcon />,
 };
 
+const STEP_DESCRIPTIONS: Record<string, string> = {
+  Basics: 'Name your tool, set its protocol, and choose a runtime framework.',
+  Deployment:
+    'Choose how to deploy — from a pre-built container image or built from source code.',
+  Runtime:
+    'Configure the workload type, environment, ports, and security settings.',
+  [TOOL_BUILD_STEP]:
+    'Monitor the build progress and deployment status of your tool.',
+};
+
 export function CreateToolWizard({
   open,
   namespace: namespaceProp,
   onClose,
   onCreated,
+  onStepControl,
 }: CreateToolWizardProps) {
   const titleId = useId();
   const form = useToolWizardForm(open, namespaceProp, onClose, onCreated);
+
+  useEffect(() => {
+    if (open && onStepControl) {
+      onStepControl(form.setActiveStep);
+    }
+  }, [open, onStepControl, form.setActiveStep]);
 
   const isSourceDeploy = form.deploymentMethod === 'source';
   const isBuildStep = form.activeStep === TOOL_STEPS.length;
@@ -119,6 +136,16 @@ export function CreateToolWizard({
               </Step>
             ))}
           </Stepper>
+
+          {!isBuildStep && STEP_DESCRIPTIONS[allSteps[form.activeStep]] && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 2, mt: -1 }}
+            >
+              {STEP_DESCRIPTIONS[allSteps[form.activeStep]]}
+            </Typography>
+          )}
 
           {form.submitError && !isBuildStep && (
             <Alert

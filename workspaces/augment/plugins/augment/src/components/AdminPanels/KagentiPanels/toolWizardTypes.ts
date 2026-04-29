@@ -84,4 +84,5 @@ export interface CreateToolWizardProps {
   namespace?: string;
   onClose: () => void;
   onCreated: () => void;
+  onStepControl?: (setter: (step: number) => void) => void;
 }

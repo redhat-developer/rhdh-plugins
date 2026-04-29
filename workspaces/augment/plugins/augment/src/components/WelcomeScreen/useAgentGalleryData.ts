@@ -16,8 +16,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AugmentApi } from '../../api';
+import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { AgentWithCard } from './agentUtils';
 
+/**
+ * Fetches agents from the provider-agnostic /agents endpoint and maps them
+ * to the AgentWithCard shape expected by the gallery components.
+ */
 export function useAgentGalleryData(api: AugmentApi) {
   const [agents, setAgents] = useState<AgentWithCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,11 +37,39 @@ export function useAgentGalleryData(api: AugmentApi) {
       try {
         setLoading(true);
         setError(null);
-        const { agents: agentList } = await api.listKagentiAgents(undefined, {
-          includeCards: true,
+
+        const chatAgents: ChatAgent[] = await api.listAgents({ published: true });
+
+        const mapped: AgentWithCard[] = chatAgents.map(agent => {
+          const [namespace, ...rest] = agent.id.includes('/')
+            ? agent.id.split('/')
+            : ['default', agent.id];
+          const name = rest.join('/') || agent.id;
+          return {
+            name,
+            namespace,
+            description: agent.description ?? '',
+            status: agent.status,
+            labels: {
+              framework: agent.framework,
+              protocol: agent.protocols,
+            },
+            createdAt: agent.createdAt,
+            agentCard: {
+              name: agent.name,
+              description: agent.description,
+              version: '',
+              url: '',
+              streaming: true,
+              skills: agent.starters?.length
+                ? [{ name: 'default', examples: agent.starters }]
+                : [],
+            },
+          };
         });
+
         if (myNonce !== nonceRef.current) return;
-        setAgents(agentList as AgentWithCard[]);
+        setAgents(mapped);
       } catch (err) {
         if (myNonce !== nonceRef.current) return;
         setError(err instanceof Error ? err.message : 'Failed to load agents');

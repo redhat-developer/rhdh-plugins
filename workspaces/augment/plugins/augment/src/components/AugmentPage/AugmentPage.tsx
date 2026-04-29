@@ -21,6 +21,7 @@ import Snackbar from '@mui/material/Snackbar';
 import { useTheme } from '@mui/material/styles';
 import { Content, Page, ErrorBoundary } from '@backstage/core-components';
 import { createMinimalScrollbarStyles } from '../../theme/styles';
+import { typography } from '../../theme/tokens';
 import { useApi } from '@backstage/core-plugin-api';
 import { ChatContainer, type ChatContainerRef } from '../ChatContainer';
 import { RightPane } from '../RightPane';
@@ -52,6 +53,7 @@ import {
   KagentiSandboxPanel,
 } from '../AdminPanels/KagentiPanels';
 import { DocsPanel } from '../AdminPanels/DocsPanel';
+import { AgentRegistryPanel } from '../AdminPanels/AgentRegistryPanel';
 import { KagentiSidebar } from './KagentiSidebar';
 import { TourProvider } from '../AdminPanels/shared/TourProvider';
 import {
@@ -213,6 +215,7 @@ const AugmentPageContent = () => {
         'kagenti-sandbox': 'platform',
         'kagenti-dashboards': 'platform',
         'kagenti-admin': 'platform',
+        'kagenti-registry': 'platform',
         'kagenti-docs': 'platform',
       };
       setAdminPanel(panelMap[adminPanel] ?? 'platform');
@@ -226,6 +229,10 @@ const AugmentPageContent = () => {
     },
     [switchToChat],
   );
+
+  const handleSwitchToAdmin = useCallback(() => {
+    switchToAdmin(liveStatus?.providerId);
+  }, [switchToAdmin, liveStatus?.providerId]);
 
   const [pendingCreateAgent, setPendingCreateAgent] = useState(false);
   const [focusTarget, setFocusTarget] = useState<string | undefined>();
@@ -320,6 +327,13 @@ const AugmentPageContent = () => {
               minHeight: 0,
               backgroundColor: theme.palette.background.default,
               overflow: 'hidden',
+              fontFamily: typography.fontFamily.primary,
+              '& *': {
+                fontFamily: 'inherit',
+              },
+              '& code, & pre, & .MuiChip-label': {
+                fontFamily: typography.fontFamily.mono,
+              },
             }}
           >
             {/* ============================================= */}
@@ -459,6 +473,9 @@ const AugmentPageContent = () => {
                             {adminPanel === 'kagenti-branding' && (
                               <BrandingPanel />
                             )}
+                            {adminPanel === 'kagenti-registry' && (
+                              <AgentRegistryPanel />
+                            )}
                             {adminPanel === 'kagenti-docs' && <DocsPanel />}
                           </Box>
                         </Box>
@@ -572,7 +589,7 @@ const AugmentPageContent = () => {
                           activeSessionId={activeSessionId}
                           refreshTrigger={sessionRefreshTrigger}
                           isAdmin={isAdmin}
-                          onAdminClick={switchToAdmin}
+                          onAdminClick={handleSwitchToAdmin}
                           currentAgent={currentAgent}
                           messageCount={messages.length}
                           providerId={liveStatus?.providerId}
@@ -585,7 +602,7 @@ const AugmentPageContent = () => {
                       <AdminOnboardingCard
                         branding={branding}
                         onStartChat={dismissAdminBanner}
-                        onOpenAdmin={switchToAdmin}
+                        onOpenAdmin={handleSwitchToAdmin}
                       />
                     )}
 

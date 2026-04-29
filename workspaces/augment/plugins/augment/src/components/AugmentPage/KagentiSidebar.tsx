@@ -30,6 +30,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
 import PaletteIcon from '@mui/icons-material/Palette';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -90,7 +91,7 @@ export function KagentiSidebar({
         ],
       },
       {
-        title: 'Agentic Workloads',
+        title: 'Agent Development',
         items: [
           {
             id: 'kagenti-agents' as AdminPanel,
@@ -123,8 +124,22 @@ export function KagentiSidebar({
         ],
       },
       {
-        title: 'Operations',
+        title: 'Agent Ops',
         items: [
+          {
+            id: 'kagenti-registry' as AdminPanel,
+            label: 'Agent Registry',
+            icon: <StorefrontIcon sx={{ fontSize: 22 }} />,
+            description: 'Agent lifecycle — promote from draft to deployment',
+            tourId: 'nav-registry',
+          },
+          {
+            id: 'kagenti-dashboards' as AdminPanel,
+            label: t('commandCenter.observability'),
+            icon: <MonitorHeartIcon sx={{ fontSize: 22 }} />,
+            description: 'Dashboards for traces and monitoring',
+            tourId: 'nav-observability',
+          },
           {
             id: 'kagenti-platform' as AdminPanel,
             label: t('commandCenter.platformConfig'),
@@ -139,13 +154,6 @@ export function KagentiSidebar({
             description:
               'Customize appearance, prompt groups, and chat experience',
             tourId: 'nav-branding',
-          },
-          {
-            id: 'kagenti-dashboards' as AdminPanel,
-            label: t('commandCenter.observability'),
-            icon: <MonitorHeartIcon sx={{ fontSize: 22 }} />,
-            description: 'Dashboards for traces and monitoring',
-            tourId: 'nav-observability',
           },
           {
             id: 'kagenti-admin' as AdminPanel,

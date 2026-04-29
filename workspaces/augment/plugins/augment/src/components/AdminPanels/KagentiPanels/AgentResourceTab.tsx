@@ -77,7 +77,7 @@ export function AgentResourceTab({
               top: 8,
               right: 8,
               zIndex: 1,
-              bgcolor: alpha(theme.palette.background.paper, 0.8),
+              bgcolor: 'background.paper',
             }}
           >
             <ContentCopyIcon sx={{ fontSize: 16 }} />
@@ -88,7 +88,7 @@ export function AgentResourceTab({
               p: 2.5,
               m: 0,
               fontFamily: 'monospace',
-              fontSize: '0.8rem',
+              fontSize: '0.875rem',
               lineHeight: 1.6,
               overflow: 'auto',
               maxHeight: 600,

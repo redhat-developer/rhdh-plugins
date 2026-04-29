@@ -102,7 +102,10 @@ describe('KagentiApiClient', () => {
             }),
           );
         });
-      } else if (req.url === '/api/v1/shipwright/builds') {
+      } else if (req.url === '/api/v1/agents') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ items: [] }));
+      } else if (req.url === '/api/v1/tools') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ items: [] }));
       } else {

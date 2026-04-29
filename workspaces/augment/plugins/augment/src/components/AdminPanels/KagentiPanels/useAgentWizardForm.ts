@@ -43,9 +43,21 @@ const BUILD_POLL_INTERVAL_MS = 4000;
 const BUILD_TIMEOUT_WARN_MS = 10 * 60 * 1000;
 const MAX_CONSECUTIVE_POLL_ERRORS = 5;
 
+const INTERNAL_REGISTRY_BASE =
+  'image-registry.openshift-image-registry.svc:5000';
+
+function defaultRegistryUrl(ns: string): string {
+  return ns ? `${INTERNAL_REGISTRY_BASE}/${ns}` : INTERNAL_REGISTRY_BASE;
+}
+
+const INTERNAL_REGISTRY_RE = new RegExp(
+  `^${INTERNAL_REGISTRY_BASE.replace(/\./g, '\\.')}(\\/[a-z0-9-]*)?$`,
+);
+
 export interface UseAgentWizardFormReturn {
   // Wizard chrome
   activeStep: number;
+  setActiveStep: (step: number) => void;
   submitting: boolean;
   submitError: string | null;
   setSubmitError: (v: string | null) => void;
@@ -171,7 +183,7 @@ export function useAgentWizardForm(
   const [gitBranch, setGitBranch] = useState('main');
   const [gitPath, setGitPath] = useState('');
   const [registryUrl, setRegistryUrl] = useState(
-    'image-registry.openshift-image-registry.svc:5000',
+    defaultRegistryUrl(namespaceProp ?? ''),
   );
   const [registrySecret, setRegistrySecret] = useState('');
   const [imageTag, setImageTag] = useState('');
@@ -229,7 +241,7 @@ export function useAgentWizardForm(
     setGitUrl('');
     setGitBranch('main');
     setGitPath('');
-    setRegistryUrl('image-registry.openshift-image-registry.svc:5000');
+    setRegistryUrl(defaultRegistryUrl(namespaceProp ?? ''));
     setRegistrySecret('');
     setImageTag('');
     setBuildStrategy('');
@@ -274,6 +286,12 @@ export function useAgentWizardForm(
   useEffect(() => {
     setNamespace(n => namespaceProp ?? n);
   }, [namespaceProp]);
+
+  useEffect(() => {
+    setRegistryUrl(prev =>
+      INTERNAL_REGISTRY_RE.test(prev) ? defaultRegistryUrl(namespace) : prev,
+    );
+  }, [namespace]);
 
   // ---------------------------------------------------------------------------
   // Derived / computed
@@ -721,6 +739,7 @@ export function useAgentWizardForm(
 
   return {
     activeStep,
+    setActiveStep,
     submitting,
     submitError,
     setSubmitError,

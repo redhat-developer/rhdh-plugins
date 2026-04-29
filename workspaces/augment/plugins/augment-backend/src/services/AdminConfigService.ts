@@ -57,6 +57,12 @@ const ALLOWED_KEYS: ReadonlySet<AdminConfigKey> = new Set<AdminConfigKey>([
   'agents',
   'defaultAgent',
   'maxAgentTurns',
+  'maxToolCalls',
+  'maxOutputTokens',
+  'temperature',
+  'safetyIdentifier',
+  'chatAgents',
+  'devSpacesApiUrl',
 ]);
 
 interface AdminConfigRow {

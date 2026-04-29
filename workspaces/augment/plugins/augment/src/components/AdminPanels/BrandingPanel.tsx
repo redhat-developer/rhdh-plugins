@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { Progress } from '@backstage/core-components';
-import { useEffectiveConfig, useStatus } from '../../hooks';
+import { useEffectiveConfig } from '../../hooks';
 import { AppearanceSection } from './AppearanceSection';
 import { PromptsPanel } from './PromptsPanel/PromptsPanel';
-import { ChatExperiencePanel } from './ChatExperiencePanel';
-
-type SubTab = 'appearance' | 'promptGroups' | 'chatExperience';
+type SubTab = 'appearance' | 'promptGroups';
 
 const TABS_SX = {
   minHeight: 36,
@@ -41,15 +39,6 @@ const TABS_SX = {
 export const BrandingPanel = () => {
   const [activeTab, setActiveTab] = useState<SubTab>('appearance');
   const { config: effectiveConfig, loading: ecLoading } = useEffectiveConfig();
-  const { status } = useStatus();
-  const isKagenti = status?.providerId === 'kagenti';
-
-  // Reset to a visible tab when the Chat Experience tab disappears
-  useEffect(() => {
-    if (!isKagenti && activeTab === 'chatExperience') {
-      setActiveTab('appearance');
-    }
-  }, [isKagenti, activeTab]);
 
   if (ecLoading) {
     return <Progress />;
@@ -58,10 +47,10 @@ export const BrandingPanel = () => {
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ px: 3, pt: 2, maxWidth: 960, mx: 'auto' }}>
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: '-0.01em', color: 'text.primary' }} gutterBottom>
           Branding
         </Typography>
-        <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
           Customize how the chat interface looks and feels to users.
         </Typography>
       </Box>
@@ -86,7 +75,6 @@ export const BrandingPanel = () => {
         >
           <Tab label="Appearance" value="appearance" />
           <Tab label="Prompt Groups" value="promptGroups" />
-          {isKagenti && <Tab label="Chat Experience" value="chatExperience" />}
         </Tabs>
       </Box>
 
@@ -96,7 +84,6 @@ export const BrandingPanel = () => {
         </Box>
       )}
       {activeTab === 'promptGroups' && <PromptsPanel />}
-      {activeTab === 'chatExperience' && isKagenti && <ChatExperiencePanel />}
     </Box>
   );
 };

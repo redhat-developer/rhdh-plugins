@@ -105,7 +105,7 @@ export const AgentWizardDeployStep: FC<AgentWizardDeployStepProps> = ({
   removeBuildArgRow,
 }) => (
   <Stack spacing={2}>
-    <FormControl>
+    <FormControl data-tour="deploy-method">
       <FormLabel id="agent-deploy-method">Deployment method</FormLabel>
       <RadioGroup
         aria-labelledby="agent-deploy-method"
@@ -145,7 +145,7 @@ export const AgentWizardDeployStep: FC<AgentWizardDeployStepProps> = ({
     </FormControl>
 
     {deploymentMethod === 'image' ? (
-      <Stack spacing={2}>
+      <Stack spacing={2} data-tour="deploy-container-image">
         <TextField
           label="Container image"
           value={containerImage}
@@ -166,15 +166,17 @@ export const AgentWizardDeployStep: FC<AgentWizardDeployStepProps> = ({
       </Stack>
     ) : (
       <Stack spacing={2}>
-        <TextField
-          label="Git URL"
-          value={gitUrl}
-          onChange={e => setGitUrl(e.target.value)}
-          fullWidth
-          required
-          size="small"
-          helperText="Repository URL containing the agent source code."
-        />
+        <Box data-tour="deploy-git-url">
+          <TextField
+            label="Git URL"
+            value={gitUrl}
+            onChange={e => setGitUrl(e.target.value)}
+            fullWidth
+            required
+            size="small"
+            helperText="Repository URL containing the agent source code."
+          />
+        </Box>
         <Stack direction="row" spacing={2}>
           <TextField
             label="Git branch"
@@ -195,15 +197,17 @@ export const AgentWizardDeployStep: FC<AgentWizardDeployStepProps> = ({
           />
         </Stack>
         <Stack direction="row" spacing={2}>
-          <TextField
-            label="Registry URL"
-            value={registryUrl}
-            onChange={e => setRegistryUrl(e.target.value)}
-            size="small"
-            sx={{ flex: 1 }}
-            placeholder="e.g. image-registry.openshift-image-registry.svc:5000"
-            helperText="Container registry for the built image. If empty, uses the cluster default."
-          />
+          <Box data-tour="deploy-registry" sx={{ flex: 1 }}>
+            <TextField
+              label="Registry URL"
+              value={registryUrl}
+              onChange={e => setRegistryUrl(e.target.value)}
+              size="small"
+              fullWidth
+              placeholder="e.g. image-registry.openshift-image-registry.svc:5000/my-ns"
+              helperText="Container registry path including namespace (e.g. registry/namespace)."
+            />
+          </Box>
           <TextField
             label="Registry secret"
             value={registrySecret}
@@ -233,7 +237,11 @@ export const AgentWizardDeployStep: FC<AgentWizardDeployStepProps> = ({
         </Stack>
 
         {/* Shipwright build config */}
-        <Typography variant="subtitle2" sx={{ mt: 1 }}>
+        <Typography
+          data-tour="deploy-build-config"
+          variant="subtitle2"
+          sx={{ mt: 1 }}
+        >
           Build configuration
         </Typography>
         {buildStrategyError && (
@@ -259,14 +267,16 @@ export const AgentWizardDeployStep: FC<AgentWizardDeployStepProps> = ({
               ))}
             </Select>
           </FormControl>
-          <TextField
-            label="Dockerfile"
-            value={dockerfile}
-            onChange={e => setDockerfile(e.target.value)}
-            size="small"
-            sx={{ flex: 1 }}
-            helperText="Path relative to git path."
-          />
+          <Box data-tour="deploy-dockerfile" sx={{ flex: 1 }}>
+            <TextField
+              label="Dockerfile"
+              value={dockerfile}
+              onChange={e => setDockerfile(e.target.value)}
+              size="small"
+              fullWidth
+              helperText="Path relative to git path."
+            />
+          </Box>
         </Stack>
         <TextField
           label="Build timeout"

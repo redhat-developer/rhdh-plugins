@@ -673,6 +673,19 @@ export class ConfigLoader {
       temperature:
         typeof raw.temperature === 'number' ? raw.temperature : undefined,
       truncation: this.parseTruncation(raw.truncation as string | undefined),
+      publishAs: (() => {
+        if (raw.publishAs === undefined) return undefined;
+        if (
+          typeof raw.publishAs === 'string' &&
+          ['router', 'specialist', 'standalone'].includes(raw.publishAs)
+        ) {
+          return raw.publishAs as 'router' | 'specialist' | 'standalone';
+        }
+        this.logger.warn(
+          `[MultiAgent] Agent "${key}": publishAs must be "router", "specialist", or "standalone", got "${String(raw.publishAs)}". Ignoring.`,
+        );
+        return undefined;
+      })(),
     };
   }
 

@@ -110,7 +110,7 @@ export const ToolWizardDeployStep: FC<ToolWizardDeployStepProps> = ({
         Choose how to deploy your tool — from a pre-built container image or by
         building from source code.
       </Typography>
-      <FormControl>
+      <FormControl data-tour="tool-deploy-method">
         <FormLabel id="tool-deploy-method-label">Deployment method</FormLabel>
         <RadioGroup
           aria-labelledby="tool-deploy-method-label"
@@ -221,8 +221,8 @@ export const ToolWizardDeployStep: FC<ToolWizardDeployStepProps> = ({
                   onChange={e => setRegistryUrl(e.target.value)}
                   fullWidth
                   size="small"
-                  placeholder="e.g. image-registry.openshift-image-registry.svc:5000"
-                  helperText="Container registry for the built image. If empty, uses the cluster default."
+                  placeholder="e.g. image-registry.openshift-image-registry.svc:5000/my-ns"
+                  helperText="Container registry path including namespace (e.g. registry/namespace)."
                 />
                 <TextField
                   label="Registry secret"

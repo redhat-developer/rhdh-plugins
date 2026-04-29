@@ -16,7 +16,7 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import type { Response } from 'express';
-import type { NormalizedStreamEvent } from '../providers';
+import type { NormalizedStreamEvent, AgenticProvider } from '../providers';
 import type { ChatMessage } from '../types';
 import type { SafetyChatResponse, EvaluatedChatResponse } from '../types';
 import { createWithRoute } from './routeWrapper';
@@ -93,10 +93,17 @@ interface StreamRagSource {
   fileId?: string;
 }
 
+interface StreamCitation {
+  title?: string;
+  url?: string;
+  snippet?: string;
+}
+
 interface StreamMetadata {
   agentName?: string;
   toolCalls: StreamToolCall[];
   ragSources: StreamRagSource[];
+  citations: StreamCitation[];
   usage?: {
     input_tokens?: number;
     output_tokens?: number;
@@ -118,7 +125,7 @@ function createStreamEventForwarder(
   const streamedTextRef = { current: '' };
   const streamModelRef = { current: undefined as string | undefined };
   const streamMetadataRef: { current: StreamMetadata } = {
-    current: { toolCalls: [], ragSources: [], reasoning: '' },
+    current: { toolCalls: [], ragSources: [], citations: [], reasoning: '' },
   };
   const MAX_PENDING_EVENTS = 500;
   const state = { draining: false, terminated: false };
@@ -219,6 +226,13 @@ function createStreamEventForwarder(
           score: src.score,
           fileId: src.fileId,
         });
+      }
+    } else if (event.type === 'stream.citation') {
+      const citationEvent = event as { citations?: StreamCitation[] };
+      if (citationEvent.citations) {
+        for (const c of citationEvent.citations) {
+          streamMetadataRef.current.citations.push(c);
+        }
       }
     }
 
@@ -345,6 +359,52 @@ async function resolveConversationId(
 /**
  * Registers chat, streaming, and human-in-the-loop approval endpoints.
  */
+/**
+ * Determine whether a chat request should be routed to the orchestration
+ * fallback provider instead of the primary Kagenti provider.
+ * Returns the orchestration provider when: (1) the primary is Kagenti,
+ * (2) an orchestration fallback exists, and (3) the requested model is
+ * NOT a known Kagenti agent.
+ *
+ * Uses a cached set of Kagenti agent IDs (refreshed periodically) to
+ * distinguish Kagenti agents from LlamaStack model IDs. This avoids
+ * fragile heuristics like slash-counting which break for model IDs
+ * like "vllm-inference/gemma-4-31b-it".
+ */
+let kagentiAgentIds: Set<string> | null = null;
+let kagentiCacheExpiry = 0;
+const KAGENTI_CACHE_TTL_MS = 30_000;
+
+async function refreshKagentiCache(primary: AgenticProvider): Promise<Set<string>> {
+  if (kagentiAgentIds && Date.now() < kagentiCacheExpiry) {
+    return kagentiAgentIds;
+  }
+  try {
+    const agents = await primary.listAgents?.() ?? [];
+    kagentiAgentIds = new Set(agents.map(a => a.id));
+    kagentiCacheExpiry = Date.now() + KAGENTI_CACHE_TTL_MS;
+  } catch {
+    if (!kagentiAgentIds) kagentiAgentIds = new Set();
+    kagentiCacheExpiry = Date.now() + 5_000;
+  }
+  return kagentiAgentIds;
+}
+
+async function resolveProvider(
+  primary: AgenticProvider,
+  orchestration: AgenticProvider | undefined,
+  model: string | undefined,
+): Promise<AgenticProvider> {
+  if (primary.id !== 'kagenti' || !orchestration || !model) {
+    return primary;
+  }
+  const knownAgents = await refreshKagentiCache(primary);
+  if (knownAgents.has(model)) {
+    return primary;
+  }
+  return orchestration;
+}
+
 export function registerChatRoutes(ctx: RouteContext): void {
   const {
     router,
@@ -365,8 +425,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'POST /chat',
       'Failed to process chat message',
       async (req, res) => {
-        const provider = ctx.provider;
         const parsed = parseChatRequest(req.body);
+        const provider = await resolveProvider(ctx.provider, ctx.orchestrationProvider, parsed.model);
         const {
           messages,
           enableRAG,
@@ -511,7 +571,6 @@ export function registerChatRoutes(ctx: RouteContext): void {
   );
 
   router.post('/chat/stream', async (req, res) => {
-    const provider = ctx.provider;
     logger.info('POST /chat/stream - Starting streaming response');
 
     let parsedRequest: ReturnType<typeof parseChatRequest>;
@@ -526,6 +585,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
       );
       return;
     }
+    const provider = await resolveProvider(ctx.provider, ctx.orchestrationProvider, parsedRequest.model);
     const {
       messages,
       enableRAG,
@@ -747,6 +807,10 @@ export function registerChatRoutes(ctx: RouteContext): void {
                       : undefined,
                   usage: meta.usage ? JSON.stringify(meta.usage) : undefined,
                   reasoning: meta.reasoning || undefined,
+                  citations:
+                    meta.citations.length > 0
+                      ? JSON.stringify(meta.citations)
+                      : undefined,
                 }),
               );
             }

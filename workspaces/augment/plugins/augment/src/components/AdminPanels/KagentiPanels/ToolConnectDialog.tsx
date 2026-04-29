@@ -113,7 +113,7 @@ export function ToolConnectDialog({
           <ExtensionOutlinedIcon
             sx={{ fontSize: 22, color: theme.palette.primary.main }}
           />
-          <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', color: 'text.primary' }}>
             MCP Tool Discovery
           </Typography>
           {tool && (
@@ -121,7 +121,7 @@ export function ToolConnectDialog({
               label={tool.status}
               size="small"
               color={toolSummaryStatusChipColor(tool.status)}
-              sx={{ height: 22, ml: 'auto' }}
+              sx={{ height: 24, ml: 'auto' }}
             />
           )}
         </Box>

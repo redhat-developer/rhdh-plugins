@@ -23,6 +23,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
 import FormLabel from '@mui/material/FormLabel';
 import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
@@ -87,7 +88,7 @@ export const AgentWizardRuntimeStep: FC<AgentWizardRuntimeStepProps> = ({
   setSpireEnabled,
 }) => (
   <Stack spacing={3}>
-    <FormControl>
+    <FormControl data-tour="runtime-workload">
       <FormLabel id="agent-workload-type">Workload type</FormLabel>
       <RadioGroup
         aria-labelledby="agent-workload-type"
@@ -111,6 +112,10 @@ export const AgentWizardRuntimeStep: FC<AgentWizardRuntimeStepProps> = ({
           label="Job"
         />
       </RadioGroup>
+      <FormHelperText>
+        Deployment = always running. StatefulSet = persistent state. Job = run
+        once and exit.
+      </FormHelperText>
     </FormControl>
 
     {/* Environment variables */}
@@ -285,7 +290,7 @@ export const AgentWizardRuntimeStep: FC<AgentWizardRuntimeStepProps> = ({
     </Box>
 
     {/* Switches */}
-    <Stack spacing={1}>
+    <Stack data-tour="runtime-security" spacing={1}>
       <Tooltip
         title="Expose the agent externally via an OpenShift Route or Kubernetes Ingress."
         placement="right"

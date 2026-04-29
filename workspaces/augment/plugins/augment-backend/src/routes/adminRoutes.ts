@@ -86,6 +86,7 @@ export function registerAdminRoutes(
     get provider() {
       return ctx.provider;
     },
+    orchestrationProvider: ctx.orchestrationProvider,
     adminConfig,
     providerManager,
     sendRouteError,

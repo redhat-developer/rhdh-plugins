@@ -127,7 +127,7 @@ describe('KagentiAgentsPanel', () => {
     ).toBeInTheDocument();
   });
 
-  it('empty state Create Agent button opens create wizard', async () => {
+  it('empty state New Agent button opens create wizard', async () => {
     const user = userEvent.setup();
     renderPanel();
     await waitFor(() =>
@@ -135,13 +135,13 @@ describe('KagentiAgentsPanel', () => {
     );
 
     const createButtons = screen.getAllByRole('button', {
-      name: /Create Agent/i,
+      name: /New Agent/i,
     });
     expect(createButtons.length).toBeGreaterThanOrEqual(1);
     await user.click(createButtons[createButtons.length - 1]);
 
     expect(
-      screen.getByRole('dialog', { name: /Create Agent/i }),
+      screen.getByRole('dialog', { name: /New Agent/i }),
     ).toBeInTheDocument();
   });
 
@@ -243,7 +243,7 @@ describe('KagentiAgentsPanel', () => {
     });
   });
 
-  it('opens create wizard when header Create Agent is clicked', async () => {
+  it('opens create wizard when header New Agent is clicked', async () => {
     const user = userEvent.setup();
     renderPanel(
       {},
@@ -258,12 +258,12 @@ describe('KagentiAgentsPanel', () => {
     );
 
     const createButtons = screen.getAllByRole('button', {
-      name: /Create Agent/i,
+      name: /New Agent/i,
     });
     await user.click(createButtons[0]);
 
     expect(
-      screen.getByRole('dialog', { name: /Create Agent/i }),
+      screen.getByRole('dialog', { name: /New Agent/i }),
     ).toBeInTheDocument();
   });
 

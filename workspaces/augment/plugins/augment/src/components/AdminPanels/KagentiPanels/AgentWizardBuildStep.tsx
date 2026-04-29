@@ -264,8 +264,8 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
                   label={progress.buildRunPhase}
                   size="small"
                   sx={{
-                    height: 22,
-                    fontSize: '0.7rem',
+                    height: 24,
+                    fontSize: '0.75rem',
                     bgcolor: phaseChipColor(
                       progress.buildRunPhase,
                       theme.palette,
@@ -323,7 +323,7 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
             sx={{ color: theme.palette.success.main, fontSize: 28 }}
           />
           <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
               {resourceLabel.charAt(0).toUpperCase() + resourceLabel.slice(1)}{' '}
               deployed successfully
             </Typography>
@@ -404,7 +404,7 @@ function DetailRow({
           variant="caption"
           sx={{
             fontFamily: mono ? 'monospace' : undefined,
-            fontSize: mono ? '0.7rem' : undefined,
+            fontSize: mono ? '0.75rem' : undefined,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -481,7 +481,7 @@ function FailureBlock({
             variant="caption"
             sx={{
               fontFamily: 'monospace',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               flex: 1,
               wordBreak: 'break-all',
             }}
