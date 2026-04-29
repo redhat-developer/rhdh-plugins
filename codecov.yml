@@ -25,11 +25,15 @@ coverage:
         threshold: 100%
         informational: true
         only_pulls: false
+        paths:
+          - "workspaces/*/plugins/*/src/**"
     patch:
       default:
         target: auto
         threshold: 100%
         informational: true
+        paths:
+          - "workspaces/*/plugins/*/src/**"
 
 comment:
   layout: "header, diff, flags, footer"

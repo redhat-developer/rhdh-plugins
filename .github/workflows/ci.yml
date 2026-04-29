@@ -132,7 +132,8 @@ jobs:
         uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         with:
           flags: ${{ matrix.workspace }}
-          directory: ./workspaces/${{ matrix.workspace }}
+          files: workspaces/${{ matrix.workspace }}/plugins/**/coverage/lcov.info
+          disable_search: true
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
