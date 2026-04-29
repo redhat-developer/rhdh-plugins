@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.6
+
+### Patch Changes
+
+- 8e0ba0a: Update uuid to v14.0.0
+
 ## 5.7.5
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki
 
+## 1.2.4
+
+### Patch Changes
+
+- 8d54142: Update Undici to v7.25.0
+
 ## 1.2.3
 
 ### Patch Changes
