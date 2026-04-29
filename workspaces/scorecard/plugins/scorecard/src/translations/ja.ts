@@ -38,6 +38,9 @@ const scorecardTranslationJa = createTranslationMessages({
     'permissionRequired.button': 'さらに表示する',
     'permissionRequired.altText': '権限が必要',
 
+    // Common UI
+    'common.loading': '読み込み中',
+
     // Not found state
     'notFound.title': '404 ページが見つかりません',
     'notFound.description':
@@ -66,12 +69,10 @@ const scorecardTranslationJa = createTranslationMessages({
       'ユーザーエンティティーがカタログに見つかりません',
     'errors.noDataFoundMessage':
       'ここでデータを確認するには、エンティティがこの指標に関連する値を報告していることを確認してください。',
+    'errors.unsupportedAggregationType':
+      'このスコアカードの集計タイプは、使用中のプラグインのバージョンではサポートされていません。',
     'errors.authenticationErrorMessage':
       'データを確認するにはサインインしてください。',
-    'errors.noMetricsFound':
-      '指定されたメトリクス ID に対するメトリクスが見つかりません。',
-    'errors.multipleMetricsFound':
-      '指定されたメトリクス ID に対するメトリクスが複数見つかりました。1つのみが期待されています。',
 
     // Metric translations
     'metric.github.open_prs.title': 'GitHub のオープン状態の PR',
@@ -81,15 +82,32 @@ const scorecardTranslationJa = createTranslationMessages({
       'Jira のオープン状態の進行を妨げているチケット',
     'metric.jira.open_issues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
+    'metric.filecheck.title': 'ファイル確認: {{name}}',
+    'metric.filecheck.description':
+      'リポジトリーに {{name}} ファイルが存在するかを確認します。',
     'metric.lastUpdated': '最終更新日: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': '最終更新日: 利用不可',
     'metric.someEntitiesNotReportingValues':
       'エンティティーがこの指標に関連する値を報告していません。',
+    'metric.averageCenterTooltipTotalLabel': '合計スコア',
+    'metric.averageCenterTooltipMaxLabel': '最大可能スコア',
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} 件のエンティティー、各 {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
+      '{{count}} 件のエンティティー、各 {{score}}',
+    'metric.averageLegendTooltipRowTotal': '合計スコア {{total}}',
+    'metric.drillDownCalculationFailures':
+      '1 件以上のエンティティーでこの指標の計算に失敗しました。',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} エンティティー',
+    'metric.homepageEntityCalculationHealth':
+      '指標の計算エラーがないエンティティー {{healthy}} / {{total}}',
 
     // Threshold translations
     'thresholds.success': '成功',
     'thresholds.warning': '警告',
     'thresholds.error': 'エラー',
+    'thresholds.exist': '存在',
+    'thresholds.missing': '欠落',
     'thresholds.noEntities': '{{category}} 状態のエンティティーがありません',
     'thresholds.entities_one': '{{count}} エンティティー',
     'thresholds.entities_other': '{{count}} エンティティー',

@@ -29,6 +29,7 @@ import request from 'supertest';
 import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
 import { lcsHandlers, LOCAL_LCS_ADDR } from '../../__fixtures__/lcsHandlers';
 import { lightspeedPlugin } from '../plugin';
+import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 
 const mockUserId = `user: default/user1`;
 const mockConversationId = 'conversation-id-1';
@@ -106,6 +107,10 @@ describe('lightspeed router tests', () => {
   afterAll(() => {
     server.close();
     rcs.close();
+  });
+
+  beforeEach(() => {
+    VectorStoresOperator.resetInstance(); // Reset singleton before each test
   });
 
   afterEach(() => {

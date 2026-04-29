@@ -67,6 +67,7 @@ export interface RHDHThemePalette {
   // (undocumented)
   general: {
     pageInset: string;
+    pageInsetBackgroundColor: string;
     disabled: string;
     disabledBackground: string;
     paperBackgroundImage: string;

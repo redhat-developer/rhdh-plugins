@@ -484,10 +484,22 @@ export type TypedResponse<T> = Omit<Response, 'json'> & {
 };
 
 // @public
+export const X2A_ARTIFACT_TYPE_VALUES: readonly ["migration_plan", "module_migration_plan", "migrated_sources", "project_metadata", "ansible_project"];
+
+// @public
+export const X2A_JOB_STATUS_VALUES: readonly ["pending", "running", "success", "error", "cancelled"];
+
+// @public
 export const x2aAdminViewPermission: BasicPermission;
 
 // @public
 export const x2aAdminWritePermission: BasicPermission;
+
+// @public
+export type X2AArtifactTypeValuesSyncWithOpenApi = ArtifactType extends (typeof X2A_ARTIFACT_TYPE_VALUES)[number] ? (typeof X2A_ARTIFACT_TYPE_VALUES)[number] extends ArtifactType ? true : false : false;
+
+// @public
+export type X2AJobStatusValuesSyncWithOpenApi = JobStatusEnum extends (typeof X2A_JOB_STATUS_VALUES)[number] ? (typeof X2A_JOB_STATUS_VALUES)[number] extends JobStatusEnum ? true : false : false;
 
 // @public
 export const x2aPermissions: BasicPermission[];

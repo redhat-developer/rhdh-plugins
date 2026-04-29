@@ -335,13 +335,10 @@ export class GithubApiService implements GitApiService {
               },
               octokit,
               credential,
-              ghConfig,
               repositories,
               dataFetchErrors,
               {
                 search,
-                pageNumber,
-                pageSize,
               },
             );
           } else {
@@ -356,8 +353,6 @@ export class GithubApiService implements GitApiService {
               dataFetchErrors,
               {
                 search,
-                pageNumber,
-                pageSize,
               },
             );
           }
@@ -383,8 +378,6 @@ export class GithubApiService implements GitApiService {
    */
   async getRepositoriesFromIntegrations(
     search?: string,
-    pageNumber: number = DefaultPageNumber,
-    pageSize: number = DefaultPageSize,
     userTokens?: Record<string, string>,
   ): Promise<GithubRepositoryResponse> {
     const repositories = new Map<string, GithubRepository>();
@@ -404,7 +397,7 @@ export class GithubApiService implements GitApiService {
               userCredential,
               repositories,
               dataFetchErrors,
-              { search, pageNumber, pageSize },
+              { search },
             ),
         );
       const repoList = Array.from(repositories.values());
@@ -429,13 +422,10 @@ export class GithubApiService implements GitApiService {
                 },
                 octokit,
                 credential,
-                ghConfig,
                 repositories,
                 dataFetchErrors,
                 {
                   search,
-                  pageNumber,
-                  pageSize,
                 },
               )
             : await addGithubTokenRepositories(
@@ -448,8 +438,6 @@ export class GithubApiService implements GitApiService {
                 dataFetchErrors,
                 {
                   search,
-                  pageNumber,
-                  pageSize,
                 },
               );
           this.logger.debug(
@@ -463,7 +451,7 @@ export class GithubApiService implements GitApiService {
       },
     );
 
-    return this.buildRepositoryResponse(repositories, result, pageSize);
+    return this.buildRepositoryResponse(repositories, result, DefaultPageSize);
   }
 
   async filterLocationsAccessibleFromIntegrations(

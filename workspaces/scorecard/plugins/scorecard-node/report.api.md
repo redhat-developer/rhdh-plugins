@@ -32,8 +32,11 @@ export function getThresholdsFromConfig(
 // @public
 export interface MetricProvider<T extends MetricType = MetricType> {
   calculateMetric(entity: Entity): Promise<MetricValue<T>>;
+  calculateMetrics?(entity: Entity): Promise<Map<string, MetricValue<T>>>;
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
   getMetric(): Metric<T>;
+  getMetricIds?(): string[];
+  getMetrics?(): Metric<T>[];
   getMetricThresholds(): ThresholdConfig;
   getMetricType(): T;
   getProviderDatasourceId(): string;
@@ -68,7 +71,13 @@ export class ThresholdConfigFormatError extends CustomErrorBase {
 }
 
 // @public
-export function validateThresholds(
+export function validateThresholdsForAggregation(
+  thresholds: JsonValue,
+  expectedMetricType: MetricType,
+): asserts thresholds is ThresholdConfig;
+
+// @public
+export function validateThresholdsForMetric(
   thresholds: JsonValue,
   expectedMetricType: MetricType,
 ): asserts thresholds is ThresholdConfig;

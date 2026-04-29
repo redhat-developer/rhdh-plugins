@@ -40,7 +40,16 @@ import {
   getTimestamp,
   transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
-import { useCreateConversationMessage } from './useCreateCoversationMessage';
+import {
+  clearSharedToolCallsCacheSessionPrefix,
+  getSharedToolCallsCache,
+  migrateSharedToolCallsCacheSessionPrefixToConversation,
+  setSharedToolCallsCache,
+} from './toolCallsCacheStore';
+import {
+  CreateMessageVariables,
+  useCreateConversationMessage,
+} from './useCreateCoversationMessage';
 
 const toolCallIdKey = (id: string | number): string => {
   return String(id);
@@ -73,6 +82,16 @@ const isLegacyToolResultToken = (
     (token as { tool_name: string }).tool_name.length > 0
   );
 };
+
+let tempToolCallsCachePrefixFallbackSeq = 0;
+
+/** Unique prefix per temp send so late streams cannot migrate another session's tool cache. */
+function createTempToolCallsCacheSessionPrefix(): string {
+  const suffix =
+    globalThis.crypto?.randomUUID?.() ??
+    `${Date.now()}-${++tempToolCallsCachePrefixFallbackSeq}`;
+  return `lightspeed-temp:${suffix}`;
+}
 
 const legacyToolResultToString = (response: unknown): string => {
   if (!response) return '';
@@ -145,9 +164,13 @@ export const useConversationMessages = (
   avatar: string = userAvatar,
   onComplete?: (message: string) => void,
   onStart?: (conversation_id: string) => void,
+  createMessageOverride?: (
+    vars: CreateMessageVariables,
+  ) => Promise<ReadableStreamDefaultReader<Uint8Array>>,
   onRequestIdReady?: (request_id: string) => void,
 ): UseConversationMessagesReturn => {
-  const { mutateAsync: createMessage } = useCreateConversationMessage();
+  const { mutateAsync: defaultCreateMessage } = useCreateConversationMessage();
+  const createMessage = createMessageOverride ?? defaultCreateMessage;
   const scrollToBottomRef = useRef<ScrollContainerHandle>(null);
 
   const [currentConversation, setCurrentConversation] =
@@ -161,10 +184,6 @@ export const useConversationMessages = (
 
   // Track pending tool calls during streaming
   const pendingToolCalls = useRef<Record<string, ToolCall>>({});
-
-  // Cache tool calls by conversation ID and message index to persist across refetches
-  // Key format: `${conversationId}-${messageIndex}`
-  const toolCallsCache = useRef<{ [key: string]: ToolCall[] }>({});
 
   useEffect(() => {
     if (currentConversation !== conversationId) {
@@ -225,7 +244,7 @@ export const useConversationMessages = (
 
         // Merge cached tool calls if available
         const cacheKey = `${currentConversation}-${i}`;
-        const cachedToolCalls = toolCallsCache.current[cacheKey];
+        const cachedToolCalls = getSharedToolCallsCache(cacheKey);
         if (cachedToolCalls && cachedToolCalls.length > 0) {
           botMsg.toolCalls = cachedToolCalls;
         }
@@ -258,6 +277,10 @@ export const useConversationMessages = (
     async (prompt: string, attachments: Attachment[] = []) => {
       let newConversationId = '';
       let requestId = '';
+      const toolCallsCacheKeyPrefix =
+        currentConversation === TEMP_CONVERSATION_ID
+          ? createTempToolCallsCacheSessionPrefix()
+          : currentConversation;
 
       const conversationTuple = [
         createUserMessage({
@@ -410,8 +433,8 @@ export const useConversationMessages = (
 
                     // Cache tool calls for this message (message pair index)
                     const messageIndex = Math.floor(lastMessageIndex / 2);
-                    const cacheKey = `${currentConversation}-${messageIndex}`;
-                    toolCallsCache.current[cacheKey] = nextToolCalls;
+                    const cacheKey = `${toolCallsCacheKeyPrefix}-${messageIndex}`;
+                    setSharedToolCallsCache(cacheKey, nextToolCalls);
 
                     const updatedConversation = [
                       ...conversation.slice(0, lastMessageIndex),
@@ -517,8 +540,8 @@ export const useConversationMessages = (
 
                     // Update cache with completed tool call
                     const messageIndex = Math.floor(lastMessageIndex / 2);
-                    const cacheKey = `${currentConversation}-${messageIndex}`;
-                    toolCallsCache.current[cacheKey] = updatedToolCalls;
+                    const cacheKey = `${toolCallsCacheKeyPrefix}-${messageIndex}`;
+                    setSharedToolCallsCache(cacheKey, updatedToolCalls);
 
                     const updatedConversation = [
                       ...conversation.slice(0, lastMessageIndex),
@@ -735,15 +758,10 @@ export const useConversationMessages = (
       // Swap temp conversation messages with new conversation
 
       if (currentConversation === TEMP_CONVERSATION_ID && newConversationId) {
-        // Migrate tool calls cache from temp to new conversation ID
-        Object.keys(toolCallsCache.current).forEach(key => {
-          if (key.startsWith(`${TEMP_CONVERSATION_ID}-`)) {
-            const messageIndex = key.replace(`${TEMP_CONVERSATION_ID}-`, '');
-            const newKey = `${newConversationId}-${messageIndex}`;
-            toolCallsCache.current[newKey] = toolCallsCache.current[key];
-            delete toolCallsCache.current[key];
-          }
-        });
+        migrateSharedToolCallsCacheSessionPrefixToConversation(
+          toolCallsCacheKeyPrefix,
+          newConversationId,
+        );
 
         setConversations(prevConversations => {
           return {
@@ -761,6 +779,8 @@ export const useConversationMessages = (
             return rest;
           });
         }, 0);
+      } else if (currentConversation === TEMP_CONVERSATION_ID) {
+        clearSharedToolCallsCacheSessionPrefix(toolCallsCacheKeyPrefix);
       }
     },
 

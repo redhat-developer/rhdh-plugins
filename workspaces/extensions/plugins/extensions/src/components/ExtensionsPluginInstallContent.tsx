@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type SyntheticEvent } from 'react';
 
 import {
   ErrorPage,
@@ -54,8 +54,10 @@ import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
 import {
+  apiErrorMessage,
   ExtensionsStatus,
   getPluginActionTooltipMessage,
+  getPluginConfigResponseError,
   isPluginInstalled,
 } from '../utils';
 import { Permission } from '../types';
@@ -75,13 +77,16 @@ import { mapExtensionsPluginInstallStatusToInstallPageButton } from '../labels';
 import { useTranslation } from '../hooks/useTranslation';
 import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
-import { InstallationWarning } from './InstallationWarning';
+import {
+  InstallationWarning,
+  type InstallationWarningConfig,
+} from './InstallationWarning';
 
 interface TabItem {
   label: string;
   content: string | ExtensionsPackageAppConfigExamples[];
   key: string;
-  others?: { [key: string]: any };
+  others?: Record<string, unknown>;
 }
 
 export const ExtensionsPluginInstallContent = ({
@@ -200,7 +205,7 @@ export const ExtensionsPluginInstallContent = ({
   const showRightCard = examples || installationInstructions || aboutMarkdown;
   const [tabIndex, setTabIndex] = useState(0);
 
-  const handleTabChange = (_: any, newValue: React.SetStateAction<number>) => {
+  const handleTabChange = (_event: SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
@@ -231,25 +236,28 @@ export const ExtensionsPluginInstallContent = ({
         navigate('/extensions');
       } else {
         setIsSubmitting(false);
-        setInstallationError((res as any)?.error?.message);
+        setInstallationError(apiErrorMessage(res) ?? null);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsSubmitting(false);
-      setInstallationError(err?.error?.message);
+      setInstallationError(apiErrorMessage(err) ?? null);
     }
   };
 
   const missingDynamicArtifact = packages.some(p => !p.spec?.dynamicArtifact);
 
-  const isInstallDisabled =
+  const pluginConfigError = getPluginConfigResponseError(pluginConfig.data);
+
+  const isInstallDisabled = Boolean(
     isProductionEnvironment ||
-    installationError ||
-    pluginConfigPermissions.data?.write !== Permission.ALLOW ||
-    (pluginConfig.data as any)?.error ||
-    !extensionsConfig?.data?.enabled ||
-    isSubmitting ||
-    packages.length === 0 ||
-    missingDynamicArtifact;
+      installationError ||
+      pluginConfigPermissions.data?.write !== Permission.ALLOW ||
+      pluginConfigError ||
+      !extensionsConfig?.data?.enabled ||
+      isSubmitting ||
+      packages.length === 0 ||
+      missingDynamicArtifact,
+  );
 
   const installTooltip = getPluginActionTooltipMessage(
     isProductionEnvironment,
@@ -263,10 +271,9 @@ export const ExtensionsPluginInstallContent = ({
   );
 
   const showInstallationWarning =
-    (pluginConfig.data as any)?.error?.message &&
-    (pluginConfig.data as any)?.error?.reason !==
-      ExtensionsStatus.INSTALLATION_DISABLED &&
-    (pluginConfig.data as any)?.error?.reason !==
+    Boolean(pluginConfigError?.message) &&
+    pluginConfigError?.reason !== ExtensionsStatus.INSTALLATION_DISABLED &&
+    pluginConfigError?.reason !==
       ExtensionsStatus.INSTALLATION_DISABLED_IN_PRODUCTION;
 
   const getInstallButtonDatatestid = () => {
@@ -293,7 +300,9 @@ export const ExtensionsPluginInstallContent = ({
     <Flex direction="column" gap="4" style={{ height: '100% ' }}>
       {/* Content above the two sided "editor area" */}
       {showInstallationWarning && (
-        <InstallationWarning configData={pluginConfig.data} />
+        <InstallationWarning
+          configData={pluginConfig.data as InstallationWarningConfig}
+        />
       )}
       {installationError && <Alert severity="error">{installationError}</Alert>}
       {missingDynamicArtifact && (
@@ -462,9 +471,11 @@ export const ExtensionsPluginInstallContentLoader = () => {
   }
   return (
     <ErrorPage
-      statusMessage={t('metadata.pluginNotFound', {
-        name: `${params.namespace}/${params.name}`,
-      } as any)}
+      statusMessage={t(
+        'metadata.pluginNotFound',
+        // i18n: "name" is a plugin ref string for this message template
+        { name: `${params.namespace}/${params.name}` } as never,
+      )}
     />
   );
 };

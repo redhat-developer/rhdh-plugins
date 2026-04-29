@@ -23,6 +23,8 @@ import {
   notAllowedAggregationErrorBody,
   openIssuesKpiMetadataResponse,
   openPrsKpiMetadataResponse,
+  openPrsWeightedAggregatedResponse,
+  openPrsWeightedKpiMetadataResponse,
 } from './scorecardResponseUtils';
 
 function aggregationMetadataForRequestUrl(url: string): object {
@@ -31,6 +33,9 @@ function aggregationMetadataForRequestUrl(url: string): object {
   }
   if (url.includes('openPrsKpi')) {
     return openPrsKpiMetadataResponse;
+  }
+  if (url.includes('openPrsWeightedKpi')) {
+    return openPrsWeightedKpiMetadataResponse;
   }
   if (url.includes('jira.open_issues')) {
     return jiraAggregatedResponse.metadata;
@@ -67,8 +72,8 @@ export async function mockHomepageAggregationsPermissionDenied(
 }
 
 /**
- * Mocks all four default homepage scorecard aggregation KPI endpoints
- * so the full grid can load without hitting the real backend.
+ * Mocks all default homepage scorecard aggregation KPI endpoints used by
+ * `addAggregatedScorecardWidgets` so the grid can load without hitting the real backend.
  */
 export async function mockAllDefaultHomepageAggregationsSuccess(
   page: Page,
@@ -92,5 +97,10 @@ export async function mockAllDefaultHomepageAggregationsSuccess(
     page,
     ScorecardRoutes.OPEN_PRS_KPI_AGGREGATION_ROUTE,
     githubAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
+    openPrsWeightedAggregatedResponse,
   );
 }

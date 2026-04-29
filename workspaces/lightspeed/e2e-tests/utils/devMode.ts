@@ -15,6 +15,7 @@
  */
 import { Page } from '@playwright/test';
 import {
+  contentsWithRedactedThinking,
   E2E_MCP_VALID_TOKEN,
   generateQueryResponse,
   mockedMcpServersResponse,
@@ -70,6 +71,14 @@ export async function mockChatHistory(page: Page, contents?: any[]) {
     const json = contents ? { chat_history: contents } : [];
     await route.fulfill({ json });
   });
+}
+
+/**
+ * Applies chat history that contains `redacted_thinking` so the reasoning block is shown.
+ * Call then reload (or re-open the conversation) so the client refetches history.
+ */
+export async function mockChatHistoryWithRedactedThinking(page: Page) {
+  await mockChatHistory(page, contentsWithRedactedThinking);
 }
 
 export async function mockQuery(

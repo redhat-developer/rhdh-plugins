@@ -53,6 +53,49 @@ export const lightspeedMessages = {
   'notebooks.updated.days': 'Updated {{days}} days ago',
   'notebooks.updated.on': 'Updated on',
 
+  // Notebook view
+  'notebook.view.title': 'Untitled notebook',
+  'notebook.view.close': 'Close notebook',
+  'notebook.view.documents.count': '{{count}} Documents',
+  'notebook.view.documents.add': 'Add',
+  'notebook.view.upload.heading': 'Upload a resource to get started',
+  'notebook.view.upload.action': 'Upload a resource',
+  'notebook.view.input.placeholder': 'Ask about your documents...',
+  'notebook.view.input.disabledTooltip':
+    'Select at least one loaded resource to start chatting',
+  'notebook.view.sidebar.collapse': 'Collapse sidebar',
+  'notebook.view.sidebar.expand': 'Expand sidebar',
+  'notebook.view.sidebar.resize': 'Resize sidebar',
+  'notebook.view.documents.uploading': 'Uploading document',
+  'notebook.view.documents.maxReached':
+    'Maximum 10 documents are allowed. Delete a document to upload a new document.',
+  'notebook.upload.success': '{{fileName}} Successfully Uploaded.',
+  'notebook.upload.failed': '{{fileName}} Upload Failed.',
+
+  // Notebook upload modal
+  'notebook.upload.modal.title': 'Add a document to Notebook',
+  'notebook.upload.modal.dragDropTitle': 'Drag and drop files here',
+  'notebook.upload.modal.browseButton': 'Upload',
+  'notebook.upload.modal.separator': 'or',
+  'notebook.upload.modal.infoText':
+    'Accepted file types: .md, .txt, .pdf, .json, .yaml, .log',
+  'notebook.upload.modal.selectedFiles': '{{count}} of {{max}} files selected',
+  'notebook.upload.modal.addButton': 'Add ({{count}})',
+  'notebook.upload.modal.removeFile': 'Remove {{fileName}}',
+  'notebook.upload.error.unsupportedType':
+    'Upload error: Unsupported file type(s) found. Please upload only supported file types.',
+  'notebook.upload.error.fileTooLarge':
+    'Upload error: File size exceeds 25 MB limit.',
+  'notebook.upload.error.tooManyFiles':
+    'Upload error: Maximum of {{max}} files allowed.',
+
+  // Notebook overwrite modal
+  'notebook.overwrite.modal.title': 'Overwrite Files?',
+  'notebook.overwrite.modal.description':
+    'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
+  'notebook.overwrite.modal.action': 'Overwrite',
+  'notebook.document.delete': 'Delete',
+
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',
   'prompts.codeReadability.message':
@@ -110,6 +153,17 @@ export const lightspeedMessages = {
   'permission.subject.notebooks': 'the Lightspeed notebooks',
   'permission.notebooks.goBack': 'Go back',
 
+  // LCORE / LLM (no models registered)
+  'lcore.notConfigured.title': 'Connect an LLM to get started',
+  'lcore.notConfigured.description':
+    "Lightspeed requires a registered LLM. Contact your organization's platform administrator to complete the setup.",
+  'lcore.notConfigured.developerLightspeedDocs':
+    'Configuring Developer Lightspeed',
+  'lcore.notConfigured.backendDocs': 'Lightspeed Backend Setup',
+  'lcore.loadError.title': 'Could not load models',
+  'lcore.loadError.description':
+    'The Lightspeed backend did not return a model list. Check that the service is running and reachable, then try again.',
+
   // Disclaimers
   'disclaimer.withValidation':
     "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
@@ -123,6 +177,8 @@ export const lightspeedMessages = {
   'common.cancel': 'Cancel',
   'common.close': 'Close',
   'common.readMore': 'Read more',
+  'common.retry': 'Try again',
+  'common.loading': 'Loading',
   'common.noSearchResults': 'No result matches the search',
 
   // Menu items

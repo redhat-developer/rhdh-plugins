@@ -24,6 +24,7 @@ import {
 
 import { lightspeedApiRef } from '../api/api';
 import { ConversationList } from '../types';
+import { clearSharedToolCallsCacheForConversation } from './toolCallsCacheStore';
 
 type DeleteVariables = {
   conversation_id: string;
@@ -63,6 +64,7 @@ export const useDeleteConversation = (): UseMutationResult<
       return { previousConversations };
     },
     onSuccess: (_, props) => {
+      clearSharedToolCallsCacheForConversation(props.conversation_id);
       if (props.invalidateCache) {
         queryClient.invalidateQueries({ queryKey: ['conversations'] });
       }

@@ -54,14 +54,22 @@ import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
 import { useInstallationContext } from './InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
-import { ExtensionsStatus, getPluginActionTooltipMessage } from '../utils';
-import { InstallationWarning } from './InstallationWarning';
+import {
+  apiErrorMessage,
+  ExtensionsStatus,
+  getPluginActionTooltipMessage,
+  getPluginConfigResponseError,
+} from '../utils';
+import {
+  InstallationWarning,
+  type InstallationWarningConfig,
+} from './InstallationWarning';
 
 interface TabItem {
   label: string;
   content: string | ExtensionsPackageAppConfigExamples[];
   key: string;
-  others?: { [key: string]: any };
+  others?: Record<string, unknown>;
 }
 
 export const ExtensionsPackageEditContent = ({
@@ -192,11 +200,11 @@ export const ExtensionsPackageEditContent = ({
 
   const showRightCard = hasPackageExamples;
 
+  const pkgConfigError = getPluginConfigResponseError(pkgConfig.data);
   const showEditWarning =
-    (pkgConfig.data as any)?.error?.message &&
-    (pkgConfig.data as any)?.error?.reason !==
-      ExtensionsStatus.INSTALLATION_DISABLED &&
-    (pkgConfig.data as any)?.error?.reason !==
+    Boolean(pkgConfigError?.message) &&
+    pkgConfigError?.reason !== ExtensionsStatus.INSTALLATION_DISABLED &&
+    pkgConfigError?.reason !==
       ExtensionsStatus.INSTALLATION_DISABLED_IN_PRODUCTION;
 
   const handleSave = async () => {
@@ -268,13 +276,11 @@ export const ExtensionsPackageEditContent = ({
         const preserved = new URLSearchParams(location.search);
         navigate(`/extensions/installed-packages?${preserved.toString()}`);
       } else {
-        setSaveError(
-          (res as any)?.error?.message ?? t('install.errors.failedToSave'),
-        );
+        setSaveError(apiErrorMessage(res) ?? t('install.errors.failedToSave'));
         setIsSubmitting(false);
       }
-    } catch (e: any) {
-      setSaveError(e?.error?.message ?? t('install.errors.failedToSave'));
+    } catch (e: unknown) {
+      setSaveError(apiErrorMessage(e) ?? t('install.errors.failedToSave'));
       setIsSubmitting(false);
     }
   };
@@ -282,7 +288,11 @@ export const ExtensionsPackageEditContent = ({
   return (
     <Flex direction="column" gap="4" style={{ height: '100% ' }}>
       {/* Content above the two sided "editor area" */}
-      {showEditWarning && <InstallationWarning configData={pkgConfig.data} />}
+      {showEditWarning && pkgConfig.data && (
+        <InstallationWarning
+          configData={pkgConfig.data as InstallationWarningConfig}
+        />
+      )}
       {saveError && (
         <Alert severity="error" sx={{ mb: '1rem' }}>
           {saveError}

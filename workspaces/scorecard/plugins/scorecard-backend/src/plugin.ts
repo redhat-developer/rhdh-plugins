@@ -35,6 +35,7 @@ import { migrate } from './database/migration';
 import { DatabaseMetricValues } from './database/DatabaseMetricValues';
 import { Scheduler } from './scheduler';
 import { validateAggregationConfig } from './validation/validateAggregationConfig';
+import { AggregationsService } from './service/aggregations/AggregationService';
 
 /**
  * scorecardPlugin backend plugin
@@ -100,7 +101,12 @@ export const scorecardPlugin = createBackendPlugin({
           registry: metricProvidersRegistry,
           database: dbMetricValues,
           logger: logger,
+        });
+
+        const aggregationsService = new AggregationsService({
           config,
+          database: dbMetricValues,
+          logger: logger,
         });
 
         validateAggregationConfig({
@@ -119,10 +125,15 @@ export const scorecardPlugin = createBackendPlugin({
           thresholdEvaluator: new ThresholdEvaluator(),
         }).start();
 
+        const service = {
+          aggregationsService: aggregationsService,
+          catalogMetricService: catalogMetricService,
+        };
+
         httpRouter.use(
           await createRouter({
             metricProvidersRegistry,
-            catalogMetricService,
+            service,
             catalog,
             httpAuth,
             permissions,

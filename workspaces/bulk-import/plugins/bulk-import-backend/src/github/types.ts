@@ -19,6 +19,8 @@ import type {
   GithubCredentialsProvider,
 } from '@backstage/integration';
 
+import { type RestEndpointMethodTypes } from '@octokit/rest';
+
 export type {
   SCMFetchError as GithubFetchError,
   SCMOrganization as GithubOrganization,
@@ -64,3 +66,15 @@ export interface ExtendedGithubCredentialsProvider extends GithubCredentialsProv
     host: string;
   }) => Promise<ExtendedGithubCredentials[]>;
 }
+
+export type AuthenticatedUserRepositoryResponse =
+  RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response'];
+
+export type AuthenticatedUserRepositoryList =
+  AuthenticatedUserRepositoryResponse['data'];
+
+export type AppInstallationRepositoriesResponse =
+  RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response'];
+
+export type AppInstallationRepositories =
+  AppInstallationRepositoriesResponse['data'];

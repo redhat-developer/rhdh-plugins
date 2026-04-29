@@ -38,6 +38,9 @@ const scorecardTranslationIt = createTranslationMessages({
     'permissionRequired.button': 'Per saperne di più',
     'permissionRequired.altText': 'Autorizzazione richiesta',
 
+    // Common UI
+    'common.loading': 'Caricamento in corso',
+
     // Not found state
     'notFound.title': '404 Pagina non trovata',
     'notFound.description':
@@ -67,12 +70,10 @@ const scorecardTranslationIt = createTranslationMessages({
       'Entità utente non trovata nel catalogo.',
     'errors.noDataFoundMessage':
       'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano riportando valori relativi a questa metrica.',
+    'errors.unsupportedAggregationType':
+      'Questa scorecard utilizza un tipo di aggregazione non supportato da questa versione del plugin.',
     'errors.authenticationErrorMessage':
       'Effettua il login per visualizzare i tuoi dati.',
-    'errors.noMetricsFound':
-      "Nessuna metrica trovata per l'ID di metrica specificato.",
-    'errors.multipleMetricsFound':
-      'Multiple metrics found for the specified metric ID. Expected exactly one.',
 
     // Metric translations
     'metric.github.open_prs.title': 'Richieste pull aperte su GitHub',
@@ -81,15 +82,32 @@ const scorecardTranslationIt = createTranslationMessages({
     'metric.jira.open_issues.title': 'Ticket di blocco Jira aperti',
     'metric.jira.open_issues.description':
       'Evidenzia il numero di problemi critici e di blocco attualmente aperti in Jira.',
+    'metric.filecheck.title': 'Verifica file: {{name}}',
+    'metric.filecheck.description':
+      'Verifica se il file {{name}} esiste nel repository.',
     'metric.lastUpdated': 'Ultimo aggiornamento: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Ultimo aggiornamento: Non disponibile',
     'metric.someEntitiesNotReportingValues':
       'Alcune entità non stanno riportando valori relativi a questa metrica.',
+    'metric.averageCenterTooltipTotalLabel': 'Punteggio totale',
+    'metric.averageCenterTooltipMaxLabel': 'Punteggio massimo possibile',
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} entità, ciascuna {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
+      '{{count}} entità, ciascuna {{score}}',
+    'metric.averageLegendTooltipRowTotal': 'Punteggio totale {{total}}',
+    'metric.drillDownCalculationFailures':
+      'Il calcolo di questa metrica non è riuscito per una o più entità.',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entità',
+    'metric.homepageEntityCalculationHealth':
+      '{{healthy}} / {{total}} entità senza errori di calcolo della metrica',
 
     // Threshold translations
     'thresholds.success': 'Attività riuscita',
     'thresholds.warning': 'Avviso',
     'thresholds.error': 'Errore',
+    'thresholds.exist': 'Esistente',
+    'thresholds.missing': 'Mancante',
     'thresholds.noEntities': 'Nessuna entità con stato {{category}}',
     'thresholds.entities_one': '{{count}} entità',
     'thresholds.entities_other': '{{count}} entità',

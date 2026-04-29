@@ -1,5 +1,36 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira
 
+## 2.7.1
+
+### Patch Changes
+
+- Updated dependencies [91e724f]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.1
+
+## 2.7.0
+
+### Patch Changes
+
+- Updated dependencies [bf72ffc]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.0
+
+## 2.6.0
+
+### Patch Changes
+
+- Updated dependencies [4ecaacd]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.6.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.6.0
+
+## 2.5.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.2
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@2.5.2
+
 ## 2.5.1
 
 ### Patch Changes

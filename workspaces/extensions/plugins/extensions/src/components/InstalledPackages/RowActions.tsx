@@ -34,6 +34,7 @@ import { packageInstallRouteRef, packageRouteRef } from '../../routes';
 import { usePackageConfig } from '../../hooks/usePackageConfig';
 import { usePackage } from '../../hooks/usePackage';
 import { downloadPackageYAML } from '../../utils/downloadPackageYaml';
+import { apiErrorMessage } from '../../utils';
 import { usePluginConfigurationPermissions } from '../../hooks/usePluginConfigurationPermissions';
 import { useEnablePlugin } from '../../hooks/useEnablePlugin';
 import { useInstallationContext } from '../InstallationContext';
@@ -130,9 +131,15 @@ export const DownloadPackageYaml = ({
               return;
             }
             await downloadPackageYAML(configYaml, pkg.name!);
-          } catch (err: any) {
+          } catch (err: unknown) {
             const errorMessage =
-              err?.message || err?.toString() || 'Unknown error occurred';
+              err instanceof Error
+                ? err.message
+                : apiErrorMessage(err) ||
+                  (typeof err === 'object' && err !== null && 'message' in err
+                    ? String((err as { message: unknown }).message)
+                    : String(err)) ||
+                  'Unknown error occurred';
             onError?.(
               `Failed to download package ${pkg.name}: ${errorMessage}`,
             );
@@ -351,17 +358,22 @@ export const TogglePackage = ({
         setInstalledPackages(updated);
       } else {
         const errorMessage =
-          (res as any)?.error?.message ?? res?.toString() ?? 'Unknown error';
+          apiErrorMessage(res) ?? String(res ?? 'Unknown error');
         onError?.(
           `Failed to ${isPackageEnabled ? 'disable' : 'enable'} package ${pkg.name}: ${errorMessage}`,
         );
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      let fallbackMessage: string;
+      if (err instanceof Error) {
+        fallbackMessage = err.message;
+      } else if (typeof err === 'object' && err !== null && 'message' in err) {
+        fallbackMessage = String((err as { message: unknown }).message);
+      } else {
+        fallbackMessage = String(err);
+      }
       const errorMessage =
-        err?.error?.message ??
-        err?.message ??
-        err?.toString() ??
-        'Unknown error';
+        (apiErrorMessage(err) ?? fallbackMessage) || 'Unknown error';
       onError?.(
         `Failed to ${isPackageEnabled ? 'disable' : 'enable'} package ${pkg.name}: ${errorMessage}`,
       );

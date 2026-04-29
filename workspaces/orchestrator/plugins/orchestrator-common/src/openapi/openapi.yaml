@@ -452,6 +452,9 @@ components:
           type: string
         isAvailable:
           type: boolean
+        version:
+          type: string
+          description: Workflow definition version
       required:
         - workflowId
         - format
@@ -524,6 +527,9 @@ components:
       properties:
         id:
           type: string
+        version:
+          type: string
+          description: Process definition version
         processId:
           type: string
         processName:

@@ -36,7 +36,7 @@ export function createTriggerNextPhaseAction(options: X2aActionsOptions) {
       readOnly: true,
       idempotent: true,
     },
-    description: `Return the full URL to the Project Details page for an X2A migration project.
+    description: `Return the full URL to the Project Details page for an X2A migration project for the user to run next migrations on all eligible modules.
 
 IMPORTANT: This tool does NOT trigger the next phase automatically.
 The output includes a projectDetailsUrl (with a URL fragment) that the user must open in their browser.

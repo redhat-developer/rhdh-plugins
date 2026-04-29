@@ -164,7 +164,7 @@ export const transformDocumentsToSources = (
       body: doc.doc_description,
       title: doc.doc_title,
       link: doc?.doc_url,
-      isExternal: true,
+      isExternal: !!doc?.doc_url,
     })),
   };
 };

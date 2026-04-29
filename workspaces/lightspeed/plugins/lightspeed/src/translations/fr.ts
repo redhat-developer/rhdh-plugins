@@ -54,6 +54,52 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebooks.updated.yesterday': 'Mis à jour il y a 1 jour',
     'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',
     'notebooks.updated.on': 'Mis à jour le',
+
+    // Notebook view
+    'notebook.view.title': 'Carnet sans titre',
+    'notebook.view.close': 'Fermer le carnet',
+    'notebook.view.documents.count': '{{count}} Documents',
+    'notebook.view.documents.add': 'Ajouter',
+    'notebook.view.upload.heading': 'Chargez une ressource pour commencer',
+    'notebook.view.upload.action': 'Charger une ressource',
+    'notebook.view.input.placeholder':
+      'Posez des questions sur vos documents...',
+    'notebook.view.input.disabledTooltip':
+      'Sélectionnez au moins une ressource chargée pour commencer à discuter',
+    'notebook.view.sidebar.collapse': 'Réduire la barre latérale',
+    'notebook.view.sidebar.expand': 'Développer la barre latérale',
+    'notebook.view.sidebar.resize': 'Redimensionner la barre latérale',
+    'notebook.view.documents.uploading': 'Chargement du document',
+    'notebook.view.documents.maxReached':
+      'Maximum 10 documents autorisés. Supprimez un document pour en charger un nouveau.',
+    'notebook.upload.success': '{{fileName}} chargé avec succès.',
+    'notebook.upload.failed': 'Échec du chargement de {{fileName}}.',
+
+    // Notebook upload modal
+    'notebook.upload.modal.title': 'Ajouter un document au carnet',
+    'notebook.upload.modal.dragDropTitle': 'Glissez-déposez les fichiers ici',
+    'notebook.upload.modal.browseButton': 'Charger',
+    'notebook.upload.modal.separator': 'ou',
+    'notebook.upload.modal.infoText':
+      'Types de fichiers acceptés : .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.selectedFiles':
+      '{{count}} sur {{max}} fichiers sélectionnés',
+    'notebook.upload.modal.addButton': 'Ajouter ({{count}})',
+    'notebook.upload.modal.removeFile': 'Supprimer {{fileName}}',
+    'notebook.upload.error.unsupportedType':
+      'Erreur de chargement : type(s) de fichier non pris en charge. Veuillez charger uniquement des types de fichiers pris en charge.',
+    'notebook.upload.error.fileTooLarge':
+      'Erreur de chargement : la taille du fichier dépasse la limite de 25 Mo.',
+    'notebook.upload.error.tooManyFiles':
+      'Erreur de chargement : {{max}} fichiers maximum autorisés.',
+
+    // Notebook overwrite modal
+    'notebook.overwrite.modal.title': 'Écraser les fichiers ?',
+    'notebook.overwrite.modal.description':
+      'Les fichiers suivants existent déjà dans ce carnet. Voulez-vous les écraser avec les nouvelles versions ?',
+    'notebook.overwrite.modal.action': 'Écraser',
+    'notebook.document.delete': 'Supprimer',
+
     'prompts.codeReadability.title': 'Obtenir de l’aide pour Décrypter le Code',
     'prompts.codeReadability.message':
       'Pourriez-vous me suggérer des techniques qui puissent rendre mon code plus lisible et facile d’entretien?',
@@ -102,6 +148,15 @@ const lightspeedTranslationFr = createTranslationMessages({
     'permission.subject.plugin': 'le plugin Lightspeed',
     'permission.subject.notebooks': 'les carnets Lightspeed',
     'permission.notebooks.goBack': 'Retour',
+    'lcore.notConfigured.title': 'Connectez un LLM pour commencer',
+    'lcore.notConfigured.description':
+      "Lightspeed nécessite un LLM enregistré. Contactez l'administrateur de la plateforme de votre organisation pour finaliser la configuration.",
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Configuration de Developer Lightspeed',
+    'lcore.notConfigured.backendDocs': 'Configuration du backend Lightspeed',
+    'lcore.loadError.title': 'Impossible de charger les modèles',
+    'lcore.loadError.description':
+      "Le backend Lightspeed n'a pas renvoyé de liste de modèles. Vérifiez que le service est démarré et joignable, puis réessayez.",
     'permission.required.description':
       "Pour afficher <subject/>, veuillez contacter votre administrateur pour qu'il vous donne la permission <permissions/>.",
     'disclaimer.withValidation':
@@ -113,6 +168,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',
     'common.readMore': 'En savoir plus',
+    'common.retry': 'Réessayer',
+    'common.loading': 'Chargement',
     'common.noSearchResults': 'Aucun résultat ne correspond à cette demande',
     'menu.newConversation': 'Nouvelle Conversation',
     'chatbox.header.title': 'Developer Lightspeed',

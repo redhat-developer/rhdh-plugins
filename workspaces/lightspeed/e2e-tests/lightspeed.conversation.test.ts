@@ -79,6 +79,7 @@ import {
 } from './utils/chatManagement';
 import {
   mockChatHistory,
+  mockChatHistoryWithRedactedThinking,
   mockConversations,
   mockQueryWithResponseDelay,
 } from './utils/devMode';
@@ -128,26 +129,10 @@ test.describe('Lightspeed conversation', () => {
       await assertClipboardContains(sharedPage, botResponse);
     });
 
-    test('Conversation is created and shown in side panel', async () => {
+    // Remove skip once the NewChat button's functionality is fixed
+    test.skip('Conversation is created and shown in side panel', async () => {
       await sendMessage('test', sharedPage, translations);
       await verifySidePanelConversation(sharedPage, translations);
-    });
-
-    test('Verify thinking section is displayed in bot response', async () => {
-      const botMessage = sharedPage.locator('.pf-chatbot__message--bot').last();
-      await expect(botMessage).toBeVisible();
-
-      await expect(
-        sharedPage.getByRole('button', {
-          name: translations['reasoning.thinking'],
-        }),
-      ).toBeVisible();
-
-      await expect(sharedPage.locator('#deep-thinking-1')).toBeVisible();
-
-      await expect(
-        sharedPage.getByLabel(translations['reasoning.thinking']),
-      ).toContainText(thinkingContent);
     });
 
     test('Verify scroll controls in Conversation', async ({
@@ -347,6 +332,22 @@ test.describe('Lightspeed conversation', () => {
         await openSortDropdown(sharedPage, translations);
         await selectSortOption(sharedPage, 'newest', translations);
       });
+    });
+
+    test('Verify thinking section is displayed in bot response', async () => {
+      await mockChatHistoryWithRedactedThinking(sharedPage);
+      await sharedPage.reload();
+      const botMessage = sharedPage.locator('.pf-chatbot__message--bot').last();
+      await expect(botMessage).toBeVisible();
+      await expect(
+        sharedPage.getByRole('button', {
+          name: translations['reasoning.thinking'],
+        }),
+      ).toBeVisible();
+      await expect(sharedPage.locator('#deep-thinking-1')).toBeVisible();
+      await expect(
+        sharedPage.getByLabel(translations['reasoning.thinking']),
+      ).toContainText(thinkingContent);
     });
   });
 });

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights
 
+## 0.8.0
+
+### Minor Changes
+
+- 4526035: Backstage version bump to v1.49.3
+
 ## 0.7.1
 
 ## 0.7.0

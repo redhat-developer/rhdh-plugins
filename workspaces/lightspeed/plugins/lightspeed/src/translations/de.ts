@@ -54,6 +54,52 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebooks.updated.yesterday': 'Vor 1 Tag aktualisiert',
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',
     'notebooks.updated.on': 'Aktualisiert am',
+
+    // Notebook view
+    'notebook.view.title': 'Unbenanntes Notizbuch',
+    'notebook.view.close': 'Notizbuch schließen',
+    'notebook.view.documents.count': '{{count}} Dokumente',
+    'notebook.view.documents.add': 'Hinzufügen',
+    'notebook.view.upload.heading':
+      'Laden Sie eine Ressource hoch, um zu beginnen',
+    'notebook.view.upload.action': 'Ressource hochladen',
+    'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Dokumenten...',
+    'notebook.view.input.disabledTooltip':
+      'Wählen Sie mindestens eine geladene Ressource aus, um den Chat zu starten',
+    'notebook.view.sidebar.collapse': 'Seitenleiste einklappen',
+    'notebook.view.sidebar.expand': 'Seitenleiste ausklappen',
+    'notebook.view.sidebar.resize': 'Größe der Seitenleiste ändern',
+    'notebook.view.documents.uploading': 'Dokument wird hochgeladen',
+    'notebook.view.documents.maxReached':
+      'Maximal 10 Dokumente sind erlaubt. Löschen Sie ein Dokument, um ein neues hochzuladen.',
+    'notebook.upload.success': '{{fileName}} erfolgreich hochgeladen.',
+    'notebook.upload.failed': 'Hochladen von {{fileName}} fehlgeschlagen.',
+
+    // Notebook upload modal
+    'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
+    'notebook.upload.modal.dragDropTitle': 'Dateien hierher ziehen und ablegen',
+    'notebook.upload.modal.browseButton': 'Hochladen',
+    'notebook.upload.modal.separator': 'oder',
+    'notebook.upload.modal.infoText':
+      'Akzeptierte Dateitypen: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.selectedFiles':
+      '{{count}} von {{max}} Dateien ausgewählt',
+    'notebook.upload.modal.addButton': 'Hinzufügen ({{count}})',
+    'notebook.upload.modal.removeFile': '{{fileName}} entfernen',
+    'notebook.upload.error.unsupportedType':
+      'Upload-Fehler: Nicht unterstützte Dateitypen gefunden. Bitte laden Sie nur unterstützte Dateitypen hoch.',
+    'notebook.upload.error.fileTooLarge':
+      'Upload-Fehler: Dateigröße überschreitet das Limit von 25 MB.',
+    'notebook.upload.error.tooManyFiles':
+      'Upload-Fehler: Maximal {{max}} Dateien erlaubt.',
+
+    // Notebook overwrite modal
+    'notebook.overwrite.modal.title': 'Dateien überschreiben?',
+    'notebook.overwrite.modal.description':
+      'Die folgenden Dateien existieren bereits in diesem Notizbuch. Möchten Sie sie mit den neuen Versionen überschreiben?',
+    'notebook.overwrite.modal.action': 'Überschreiben',
+    'notebook.document.delete': 'Löschen',
+
     'prompts.codeReadability.title': 'Hilfe zur Code-Lesbarkeit erhalten',
     'prompts.codeReadability.message':
       'Können Sie mir Techniken vorschlagen, mit denen ich meinen Code lesbarer und wartungsfreundlicher gestalten kann?',
@@ -105,6 +151,15 @@ const lightspeedTranslationDe = createTranslationMessages({
     'permission.subject.plugin': 'das Lightspeed-Plugin',
     'permission.subject.notebooks': 'die Lightspeed-Notizbücher',
     'permission.notebooks.goBack': 'Zurück',
+    'lcore.notConfigured.title': 'Verbinden Sie ein LLM, um zu starten',
+    'lcore.notConfigured.description':
+      'Lightspeed erfordert ein registriertes LLM. Wenden Sie sich an den Plattformadministrator Ihrer Organisation, um die Einrichtung abzuschließen.',
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Developer Lightspeed wird konfiguriert',
+    'lcore.notConfigured.backendDocs': 'Lightspeed-Backend einrichten',
+    'lcore.loadError.title': 'Modelle konnten nicht geladen werden',
+    'lcore.loadError.description':
+      'Das Lightspeed-Backend hat keine Modellliste zurückgegeben. Prüfen Sie, ob der Dienst läuft und erreichbar ist, und versuchen Sie es erneut.',
     'disclaimer.withValidation':
       'Diese Funktion nutzt KI-Technologie. Geben Sie bei Ihrer Eingabe keine persönlichen oder sonstigen sensiblen Informationen an. Interaktionen können dazu genutzt werden, die Produkte oder Dienstleistungen von Red Hat zu verbessern.',
     'disclaimer.withoutValidation':
@@ -114,6 +169,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'common.cancel': 'Abbrechen',
     'common.close': 'Schließen',
     'common.readMore': 'Mehr lesen',
+    'common.retry': 'Erneut versuchen',
+    'common.loading': 'Wird geladen',
     'common.noSearchResults': 'Keine Ergebnisse, die der Suche entsprechen',
     'menu.newConversation': 'Neuer Chat',
     'chatbox.header.title': 'Developer Lightspeed',

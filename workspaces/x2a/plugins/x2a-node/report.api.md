@@ -5,14 +5,15 @@
 ```ts
 
 import type { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { BackstageCredentials } from '@backstage/backend-plugin-api';
-import { BackstageUserPrincipal } from '@backstage/backend-plugin-api';
+import type { BackstageCredentials } from '@backstage/backend-plugin-api';
+import type { BackstageUserPrincipal } from '@backstage/backend-plugin-api';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
 import type { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { JobStatusEnum } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { LoggerService } from '@backstage/backend-plugin-api';
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import type { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -32,6 +33,16 @@ export interface AAPCredentials {
     // (undocumented)
     username?: string;
 }
+
+// @public
+export function calculateModuleStatus({ analyze, migrate, publish, }: {
+    analyze?: Job;
+    migrate?: Job;
+    publish?: Job;
+}): {
+    status: ModuleStatus;
+    errorDetails?: string;
+};
 
 // @public (undocumented)
 export interface CreateJobInput {
@@ -142,6 +153,9 @@ export interface KubeServiceApi {
 export const kubeServiceRef: ServiceRef<KubeServiceApi, "plugin", "singleton">;
 
 // @public
+export function listModulesWithReconciledStatuses(modules: Module[], deps: ReconcileJobDeps): Promise<Module[]>;
+
+// @public
 export interface ReconcileJobDeps {
     // (undocumented)
     kubeService: KubeServiceApi;
@@ -155,6 +169,12 @@ export interface ReconcileJobDeps {
 export function reconcileJobStatus(job: Job, deps: ReconcileJobDeps): Promise<Job>;
 
 // @public
+export function reconcileModuleJobs(module: Module, deps: ReconcileJobDeps): Promise<Module>;
+
+// @public
+export function removeSensitiveFromJob(job?: UnsecureJob): Job | undefined;
+
+// @public
 export function resolveX2aPermissionFlags(options: {
     credentials: BackstageCredentials;
     permissionsSvc: PermissionsService;
@@ -162,6 +182,11 @@ export function resolveX2aPermissionFlags(options: {
 
 // @public (undocumented)
 export const SYSTEM_USER_REF = "user:default/system";
+
+// @public
+export type UnsecureJob = Job & {
+    callbackToken?: string;
+};
 
 // @public (undocumented)
 export const X2A_DATABASE_SERVICE_ID = "x2a-database";

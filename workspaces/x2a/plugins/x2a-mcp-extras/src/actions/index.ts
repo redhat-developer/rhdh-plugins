@@ -21,15 +21,20 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
-import type { x2aDatabaseServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import type {
+  KubeServiceApi,
+  x2aDatabaseServiceRef,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import { createListProjectsAction } from './createListProjectsAction';
 import { createCreateProjectAction } from './createCreateProjectAction';
 import { createTriggerNextPhaseAction } from './createTriggerNextPhaseAction';
+import { createListModulesAction } from './createListModulesAction';
 
 export { createListProjectsAction } from './createListProjectsAction';
 export { createCreateProjectAction } from './createCreateProjectAction';
 export { createTriggerNextPhaseAction } from './createTriggerNextPhaseAction';
+export { createListModulesAction } from './createListModulesAction';
 
 export interface X2aActionsOptions {
   actionsRegistry: ActionsRegistryService;
@@ -39,10 +44,12 @@ export interface X2aActionsOptions {
   logger: LoggerService;
   permissionsSvc: PermissionsService;
   x2aDatabase: typeof x2aDatabaseServiceRef.T;
+  kubeService: KubeServiceApi;
 }
 
 export function createX2aActions(options: X2aActionsOptions) {
   createListProjectsAction(options);
   createCreateProjectAction(options);
   createTriggerNextPhaseAction(options);
+  createListModulesAction(options);
 }

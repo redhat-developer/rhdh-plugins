@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 1.4.2
+
+### Patch Changes
+
+- 321f6dd: Stream logs in real-time as backend jobs produce them. Exclude row numbers from copy selection.
+- Updated dependencies [f45644b]
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@0.2.2
+
+## 1.4.1
+
+### Patch Changes
+
+- 484583b: Added x2a-list-modules MCP tool listing modules by projectId.
+- Updated dependencies [484583b]
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@0.2.1
+
 ## 1.4.0
 
 ### Minor Changes

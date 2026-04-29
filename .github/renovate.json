@@ -68,13 +68,14 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-x2a-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-konflux-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-dcm-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-app-defaults-presets"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-app-defaults-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-augment-presets"
       ]
     },
     {
       "groupName": "Upstream Backstage packages",
       "enabled": false,
-      "matchDepNames": ["/^@backstage//", "/^@backstage-community//"]
+      "matchDepNames": ["/^@backstage//"]
     }
   ],
   "ignorePaths": ["**/dist-dynamic/**"]

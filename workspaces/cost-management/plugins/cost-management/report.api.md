@@ -4,10 +4,8 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { OpenShiftPage as OpenShiftPage_2 } from './pages/openshift/OpenShiftPage';
 import { PathParams } from '@backstage/core-plugin-api';
 import { default as React_2 } from 'react';
-import { Router as Router_2 } from './Router';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 import { SvgIconProps } from '@material-ui/core/SvgIcon';
@@ -44,11 +42,13 @@ export const CostManagementIconOutlined: (
   props: SvgIconProps,
 ) => React_2.JSX.Element;
 
+// Warning: (ae-forgotten-export) The symbol "OpenShiftPage_2" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
 export const OpenShiftPage: OpenShiftPage_2;
 
 // @public (undocumented)
-export const ResourceOptimizationPage: Router_2;
+export const ResourceOptimizationPage: Router;
 
 // @public (undocumented)
 export const resourceOptimizationPlugin: BackstagePlugin<

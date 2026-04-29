@@ -499,7 +499,7 @@ special: "Line 1\nLine 2"
         'https://example.com',
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': 'RHDH-AI-Notebooks-Bot/1.0',
+            'User-Agent': 'RHDH-Notebooks-Bot/1.0',
           }),
         }),
       );

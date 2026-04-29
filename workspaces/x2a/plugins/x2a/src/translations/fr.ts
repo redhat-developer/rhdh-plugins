@@ -178,6 +178,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.hideLog': 'Masquer le journal',
     'modulePage.phases.noLogsAvailable':
       'Aucun journal disponible pour le moment...',
+    'modulePage.phases.logWaitingForStream':
+      'En attente des journaux du cluster...',
     'modulePage.phases.telemetry.title': 'Télémétrie',
     'modulePage.phases.telemetry.noTelemetryAvailable':
       'Aucune télémétrie disponible',

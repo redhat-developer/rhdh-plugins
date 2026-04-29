@@ -1,5 +1,39 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 2.7.1
+
+### Patch Changes
+
+- Updated dependencies [91e724f]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.1
+
+## 2.7.0
+
+### Minor Changes
+
+- bf72ffc: Adds `**average**` as an aggregation KPI type alongside `**statusGrouped**`, with configurable `**options.statusScores**` and optional `**options.thresholds**` (same shape as metric thresholds) for homepage donut coloring against `**averageScore × 100**`, with built-in defaults when omitted.
+
+### Patch Changes
+
+- Updated dependencies [bf72ffc]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.0
+
+## 2.6.0
+
+### Minor Changes
+
+- 4ecaacd: Add support for batch metric providers, allowing a single provider to handle multiple metrics efficiently. Introduce a new backend module for configurable file existence checks (filecheck.\*) that verify whether required files (like README, LICENSE, or CODEOWNERS) are present in a repository.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.6.0
+
+## 2.5.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.2
+
 ## 2.5.1
 
 ### Patch Changes

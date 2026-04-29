@@ -77,6 +77,12 @@ export interface LightspeedDrawerContextType {
    * To save file attachments as a draft when switching modes
    */
   setDraftFileContents: (files: FileContent[]) => void;
+  /**
+   * @internal After leaving fullscreen for overlay/docked, the next overlay/docked chat
+   * mount should seed the thread from currentConversationId (or TEMP) instead of storage
+   * lastOpened. Returns true at most once per handoff.
+   */
+  consumePendingOverlayThreadHandoff?: () => boolean;
 }
 
 /**

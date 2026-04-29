@@ -47,21 +47,9 @@ describe('SessionService', () => {
 
   beforeEach(() => {
     resetMockStorage();
-    const config = mockServices.rootConfig({
-      data: {
-        lightspeed: {
-          notebooks: {
-            sessionDefaults: {
-              provider_id: 'test-notebooks',
-              embedding_model: 'test-embedding-model',
-              embedding_dimension: 768,
-            },
-          },
-        },
-      },
-    });
-    operator = new VectorStoresOperator(LIGHTSPEED_CORE_ADDR, logger);
-    service = new SessionService(operator, logger, config);
+    VectorStoresOperator.resetInstance(); // Reset singleton before each test
+    operator = VectorStoresOperator.getInstance(LIGHTSPEED_CORE_ADDR, logger);
+    service = new SessionService(operator, logger);
   });
 
   afterEach(() => {
@@ -250,6 +238,7 @@ describe('SessionService', () => {
       await service.createSession(mockUserId, 'Session 1', 'Description 1');
       await new Promise(resolve => setTimeout(resolve, 10));
       await service.createSession(mockUserId, 'Session 2', 'Description 2');
+      await new Promise(resolve => setTimeout(resolve, 10));
       await service.createSession(mockUserId2, 'Other Session', 'Other');
 
       const sessions = await service.listSessions(mockUserId);

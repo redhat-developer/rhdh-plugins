@@ -82,14 +82,43 @@ async function handleHttpError(
  *
  * This class provides the same interface as LlamaStackClient but proxies calls through
  * lightspeed-core REST API instead of calling llama stack directly.
+ *
+ * Implemented as a singleton to ensure single instance across the application.
  */
 export class VectorStoresOperator {
+  private static instance: VectorStoresOperator | null = null;
   private baseURL: string;
   private logger: LoggerService;
 
-  constructor(lightspeedCoreUrl: string, logger: LoggerService) {
+  private constructor(lightspeedCoreUrl: string, logger: LoggerService) {
     this.baseURL = lightspeedCoreUrl;
     this.logger = logger;
+  }
+
+  /**
+   * Get the singleton instance of VectorStoresOperator
+   * @param lightspeedCoreUrl - Lightspeed core URL (required on first call)
+   * @param logger - Logger service (required on first call)
+   * @returns The singleton instance
+   */
+  static getInstance(
+    lightspeedCoreUrl: string,
+    logger: LoggerService,
+  ): VectorStoresOperator {
+    if (!VectorStoresOperator.instance) {
+      VectorStoresOperator.instance = new VectorStoresOperator(
+        lightspeedCoreUrl,
+        logger,
+      );
+    }
+    return VectorStoresOperator.instance;
+  }
+
+  /**
+   * Reset the singleton instance (primarily for testing)
+   */
+  static resetInstance(): void {
+    VectorStoresOperator.instance = null;
   }
 
   /**

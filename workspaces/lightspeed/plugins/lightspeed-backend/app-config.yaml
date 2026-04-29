@@ -13,13 +13,6 @@
 #      provider_id: ollama # AI provider for query model (e.g., ollama, vllm)
 #      model: llama3.1-8b-instruct # Model to use for answering queries
 #
-#    # REQUIRED when enabled: Session defaults for vector stores
-#    # All three fields are required
-#    sessionDefaults:
-#      provider_id: notebooks # Vector store provider ID (must match Llama Stack config)
-#      embedding_model: sentence-transformers/all-mpnet-base-v2 # Embedding model for documents
-#      embedding_dimension: 768 # Vector dimension (must match embedding model output)
-#
 #    # OPTIONAL: Chunking strategy for document processing
 #    chunkingStrategy:
 #      type: auto # 'auto' (default) or 'static'

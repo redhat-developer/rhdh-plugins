@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { test, TestInfo } from '@playwright/test';
+import { test, expect, TestInfo } from '@playwright/test';
 import { UIhelper, switchToLocale } from './utils/helper';
 import { getTranslations, QuickstartMessages } from './utils/translations';
 import { runAccessibilityTests } from './utils/accessibility';
@@ -143,7 +143,7 @@ test.describe('Test Quick Start plugin', () => {
     await uiHelper.clickButtonByText(
       translations.steps.exploreSelfServiceTemplates.ctaTitle,
     );
-    await uiHelper.verifyHeading('Create a new component');
+    await expect(page).toHaveURL(/\/create/);
     await page.getByText(translations.steps.findAllLearningPaths.title).click();
     await uiHelper.verifyButtonURL(
       translations.steps.findAllLearningPaths.ctaTitle,

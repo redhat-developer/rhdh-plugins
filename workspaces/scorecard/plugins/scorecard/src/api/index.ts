@@ -142,7 +142,61 @@ export class ScorecardApiClient implements ScorecardApi {
         );
       }
 
-      return data;
+      const resultRaw = data.result;
+      if (
+        resultRaw === null ||
+        typeof resultRaw !== 'object' ||
+        Array.isArray(resultRaw)
+      ) {
+        throw new TypeError(
+          'Invalid response format from aggregated scorecard API: result must be a non-null object',
+        );
+      }
+
+      const requireFiniteNumber = (value: unknown, fieldName: string) => {
+        const n = Number(value ?? 0);
+        if (!Number.isFinite(n)) {
+          throw new TypeError(
+            `Invalid aggregated scorecard API response: ${fieldName} must be a finite number`,
+          );
+        }
+        return n;
+      };
+
+      const resultRecord = resultRaw as Record<string, unknown>;
+      const timestampValue = resultRecord.timestamp;
+      let timestamp: string;
+      if (typeof timestampValue === 'string') {
+        timestamp = timestampValue;
+      } else if (
+        typeof timestampValue === 'number' &&
+        Number.isFinite(timestampValue)
+      ) {
+        timestamp = String(timestampValue);
+      } else if (typeof timestampValue === 'bigint') {
+        timestamp = timestampValue.toString();
+      } else if (timestampValue instanceof Date) {
+        timestamp = timestampValue.toISOString();
+      } else {
+        timestamp = '';
+      }
+
+      return {
+        ...data,
+        result: {
+          ...resultRecord,
+          total: requireFiniteNumber(resultRecord.total, 'total'),
+          entitiesConsidered: requireFiniteNumber(
+            resultRecord.entitiesConsidered,
+            'entitiesConsidered',
+          ),
+          calculationErrorCount: requireFiniteNumber(
+            resultRecord.calculationErrorCount,
+            'calculationErrorCount',
+          ),
+          timestamp,
+        },
+      } as AggregatedMetricResult;
     } catch (error) {
       if (error instanceof Error) {
         throw error;

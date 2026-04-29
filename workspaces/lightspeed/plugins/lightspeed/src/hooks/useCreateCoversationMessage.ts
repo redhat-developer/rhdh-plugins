@@ -21,7 +21,7 @@ import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 import { lightspeedApiRef } from '../api/api';
 import { Attachment } from '../types';
 
-type CreateMessageVariables = {
+export type CreateMessageVariables = {
   prompt: string;
   selectedModel: string;
   selectedProvider: string;

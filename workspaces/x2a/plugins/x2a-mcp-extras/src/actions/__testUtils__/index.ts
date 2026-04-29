@@ -91,10 +91,18 @@ export function buildMocks(overrides?: Partial<X2aActionsOptions>) {
     authorizeConditional: jest.fn(),
   };
 
+  const kubeService = {
+    createJob: jest.fn(),
+    getJobStatus: jest.fn().mockResolvedValue({ status: 'running' }),
+    getJobLogs: jest.fn().mockResolvedValue(''),
+    deleteJob: jest.fn(),
+  };
+
   const x2aDatabase = {
     createProject: jest.fn(),
     listProjects: jest.fn(),
     getProject: jest.fn(),
+    listModules: jest.fn().mockResolvedValue([]),
     deleteProject: jest.fn(),
     createJob: jest.fn(),
     updateJob: jest.fn(),
@@ -118,6 +126,7 @@ export function buildMocks(overrides?: Partial<X2aActionsOptions>) {
     logger,
     permissionsSvc: permissionsSvc as any,
     x2aDatabase: x2aDatabase as any,
+    kubeService: kubeService as any,
     ...overrides,
   };
 
@@ -144,6 +153,7 @@ export function buildMocks(overrides?: Partial<X2aActionsOptions>) {
     logger,
     permissionsSvc,
     x2aDatabase,
+    kubeService,
   };
 }
 

@@ -546,7 +546,7 @@ describe('fetchInstances', () => {
     definitionIds,
   )}`;
   const queryBody =
-    'id, processName, processId, state, start, end, nodes { id }, variables, executionSummary, parentProcessInstance {id, processName, businessKey}';
+    'id, version, processName, processId, state, start, end, nodes { id }, variables, executionSummary, parentProcessInstance {id, processName, businessKey}';
 
   const mockProcessInstances: ProcessInstance[] = [
     {

@@ -163,7 +163,7 @@ export const useFilteredPluginFacet = (
       const facetValues: Record<string, number> = {};
 
       filteredPlugins.forEach(plugin => {
-        let values: any[] = [];
+        let values: string[] = [];
 
         // Extract values based on facet path
         if (facet === 'spec.categories') {
@@ -174,7 +174,7 @@ export const useFilteredPluginFacet = (
               .map(author =>
                 typeof author === 'string' ? author : author.name,
               )
-              .filter(Boolean);
+              .filter((v): v is string => Boolean(v));
           } else if (plugin.spec?.author) {
             values = [plugin.spec.author];
           }

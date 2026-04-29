@@ -64,6 +64,24 @@ app:
                 sm: { w: 4, h: 6, x: 4 }
                 xs: { w: 4, h: 6, x: 4 }
                 xxs: { w: 4, h: 6, x: 4 }
+            AggregatedCardWithGithubFilecheckLicense:
+              priority: 450
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+            AggregatedCardWithGithubFilecheckCodeowners:
+              priority: 460
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
 
 organization:
   name: My Company
@@ -144,7 +162,8 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest:
+      userEntityRef: user:development/guest
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -193,11 +212,37 @@ scorecard:
       type: statusGrouped
       description: This KPI is provide information about GitHub open PRs grouped by status.
       metricId: github.open_prs
+    openPrsWeightedKpi:
+      title: GitHub Open PRs (weighted health)
+      type: average
+      description: Weighted health average for open PRs by threshold status across your entities.
+      metricId: github.open_prs
+      options:
+        statusScores:
+          success: 100
+          warning: 40
+          error: 0
+        thresholds:
+          rules:
+            - key: success
+              expression: '>=80'
+              color: '#6bb300' # green
+            - key: warning
+              expression: '30-79'
+              color: 'rgb(224, 189, 108)' # light orange
+            - key: error
+              expression: '<30'
+              color: '#be1ec7' # purple
     openIssuesKpi:
       title: Jira Open Issues KPI
       type: statusGrouped
       description: This KPI is provide information about Jira open issues grouped by status.
       metricId: jira.open_issues
+    licenseFileExistsKpi:
+      title: License File Exists KPI
+      type: statusGrouped
+      description: This KPI is provide information about whether the license file exists in the repository.
+      metricId: filecheck.license
   plugins:
     jira:
       open_issues:
@@ -211,3 +256,11 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 5 }
+    filecheck:
+      files:
+        license: 'LICENSE'
+        codeowners: 'CODEOWNERS'
+      schedule:
+        frequency: { minutes: 5 }
+        timeout: { minutes: 10 }
+        initialDelay: { seconds: 5 }

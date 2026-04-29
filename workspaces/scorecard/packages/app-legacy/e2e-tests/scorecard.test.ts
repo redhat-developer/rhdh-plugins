@@ -37,11 +37,16 @@ import {
   emptyGithubAggregatedResponse,
   emptyJiraAggregatedResponse,
   openPrsKpiMetadataResponse,
+  openPrsWeightedAggregatedResponse,
+  emptyOpenPrsWeightedAggregatedResponse,
+  openPrsWeightedKpiMetadataResponse,
+  openPrsWeightedUnsupportedAggregationResponse,
   notAllowedAggregationErrorBody,
   githubEntitiesDrillDownResponse,
   jiraEntitiesDrillDownResponse,
   jiraEntitiesDrillDownNoDataResponse,
   jiraMetricMetadataResponse,
+  fileCheckScorecardResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
@@ -57,6 +62,11 @@ import {
   mockAllDefaultHomepageAggregationsSuccess,
   mockHomepageAggregationsPermissionDenied,
 } from './utils/mockHomepageAggregations';
+import {
+  expectAverageCardCenterPercent,
+  verifyAverageDonutCenterTooltip,
+  verifyAverageLegendTooltipForStatus,
+} from './utils/averageCardAssertions';
 import { runAccessibilityTests } from './utils/accessibility';
 import { ScorecardRoutes } from './constants/routes';
 import {
@@ -82,6 +92,7 @@ async function addAggregatedScorecardWidgets(homePage: HomePage) {
   await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withDefaultAggregation);
   await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withGithubOpenPrs);
   await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withJiraOpenIssuesKpi);
+  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi);
 
   await homePage.saveChanges();
 }
@@ -128,6 +139,7 @@ test.describe('Scorecard Plugin Tests', () => {
         notAllowedAggregationErrorBody,
         403,
       );
+
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
       await page.getByText('Scorecard', { exact: true }).click();
@@ -254,6 +266,71 @@ test.describe('Scorecard Plugin Tests', () => {
 
       await runAccessibilityTests(page, testInfo);
     });
+
+    test('Verify file check metrics display correctly', async ({
+      browser,
+    }, testInfo) => {
+      await mockApiResponse(
+        page,
+        ScorecardRoutes.SCORECARD_API_ROUTE,
+        fileCheckScorecardResponse,
+      );
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
+      await scorecardPage.openTab();
+
+      const existLabel = translations.thresholds.exist ?? 'Exist';
+      const missingLabel = translations.thresholds.missing ?? 'Missing';
+
+      const readmeTitle = evaluateMessage(
+        translations.metric.filecheck.title,
+        'readme',
+      );
+      const readmeDescription = evaluateMessage(
+        translations.metric.filecheck.description,
+        'readme',
+      );
+
+      const readmeCard = page
+        .locator('[role="article"]')
+        .filter({ hasText: readmeTitle })
+        .first();
+      await expect(readmeCard).toBeVisible();
+      await expect(readmeCard.getByText(readmeDescription)).toBeVisible();
+      await expect(
+        readmeCard.getByText(existLabel, { exact: true }),
+      ).toBeVisible();
+      await expect(
+        readmeCard.getByText(missingLabel, { exact: true }),
+      ).toBeVisible();
+
+      const codeownersTitle = evaluateMessage(
+        translations.metric.filecheck.title,
+        'codeowners',
+      );
+      const codeownersDescription = evaluateMessage(
+        translations.metric.filecheck.description,
+        'codeowners',
+      );
+
+      const codeownersCard = page
+        .locator('[role="article"]')
+        .filter({ hasText: codeownersTitle })
+        .first();
+      await expect(codeownersCard).toBeVisible();
+      await expect(
+        codeownersCard.getByText(codeownersDescription),
+      ).toBeVisible();
+      await expect(
+        codeownersCard.getByText(existLabel, { exact: true }),
+      ).toBeVisible();
+      await expect(
+        codeownersCard.getByText(missingLabel, { exact: true }),
+      ).toBeVisible();
+
+      await runAccessibilityTests(page, testInfo);
+    });
   });
 
   test.describe('Homepage aggregated scorecards', () => {
@@ -341,11 +418,6 @@ test.describe('Scorecard Plugin Tests', () => {
         await addAggregatedScorecardWidgets(homePage);
         await page.reload();
 
-        const jiraEntityCount = getEntityCount(
-          translations,
-          currentLocale,
-          '10',
-        );
         const card = homePage.getCard(
           AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId,
         );
@@ -359,7 +431,6 @@ test.describe('Scorecard Plugin Tests', () => {
           getThresholdsSnapshot(translations, {
             drillDownMetricId:
               AGGREGATED_CARDS_METRIC_IDS.withDeprecatedMetricId,
-            entityCount: jiraEntityCount,
             cardTitle: metadata.title,
             cardDescription: metadata.description,
           }),
@@ -449,11 +520,6 @@ test.describe('Scorecard Plugin Tests', () => {
         await addAggregatedScorecardWidgets(homePage);
         await page.reload();
 
-        const githubEntityCount = getEntityCount(
-          translations,
-          currentLocale,
-          '10',
-        );
         const metadata =
           translations.metric[
             AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation
@@ -467,7 +533,6 @@ test.describe('Scorecard Plugin Tests', () => {
           getThresholdsSnapshot(translations, {
             drillDownMetricId:
               AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation,
-            entityCount: githubEntityCount,
             cardTitle: metadata.title,
             cardDescription: metadata.description,
           }),
@@ -571,11 +636,6 @@ test.describe('Scorecard Plugin Tests', () => {
         );
         await page.reload();
 
-        const githubEntityCount = getEntityCount(
-          translations,
-          currentLocale,
-          '10',
-        );
         const card = homePage.getCard(
           AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
         );
@@ -587,7 +647,6 @@ test.describe('Scorecard Plugin Tests', () => {
               AGGREGATED_CARDS_METRIC_IDS.withDefaultAggregation,
             drillDownAggregationId:
               AGGREGATED_CARDS_METRIC_IDS.withGithubOpenPrs,
-            entityCount: githubEntityCount,
             cardTitle: githubAggregatedResponse.metadata.title,
             cardDescription: githubAggregatedResponse.metadata.description,
           }),
@@ -722,7 +781,7 @@ test.describe('Scorecard Plugin Tests', () => {
               cardDescription: githubAggregatedResponse.metadata.description,
             },
           );
-          await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
+          await scorecardDrillDownPage.expectNoDrillDownCalculationErrorWarningIcon();
           await scorecardDrillDownPage.expectTableHeadersVisible();
           const rows5Label = getEntitiesTableFooterRowsLabel(translations, 5);
           await scorecardDrillDownPage.expectTableFooterSnapshot(
@@ -744,7 +803,7 @@ test.describe('Scorecard Plugin Tests', () => {
           // First page: only 5 entities (pageSize=5)
           await scorecardDrillDownPage.expectEntityNamesVisible([
             'all-scorecards-service',
-            'Red Hat Developer Hub',
+            'red-hat-developer-hub',
             'github-scorecard-only-service',
             'all-scorecards-service-different-owner',
             'backend-api',
@@ -839,7 +898,7 @@ test.describe('Scorecard Plugin Tests', () => {
               cardDescription: jiraAggregatedResponse.metadata.description,
             },
           );
-          await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
+          await scorecardDrillDownPage.expectNoDrillDownCalculationErrorWarningIcon();
           await scorecardDrillDownPage.expectTableHeadersVisible();
           await scorecardDrillDownPage.expectEntityNamesVisible([
             'platform-api',
@@ -897,6 +956,176 @@ test.describe('Scorecard Plugin Tests', () => {
         await scorecardDrillDownPage.expectCardHasNoDataFound(
           'jira.open_issues',
         );
+      });
+    });
+
+    test.describe('Average aggregation KPI (openPrsWeightedKpi)', () => {
+      test('Verify title and description from API metadata', async () => {
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
+          openPrsWeightedAggregatedResponse,
+        );
+
+        await addWidgets(
+          homePage,
+          AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
+        );
+        await page.reload();
+
+        const card = homePage.getCard(
+          AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
+        );
+        await expect(card).toBeVisible();
+        await expect(card).toContainText(
+          openPrsWeightedKpiMetadataResponse.title,
+        );
+        await expect(card).toContainText(
+          openPrsWeightedKpiMetadataResponse.description,
+        );
+      });
+
+      test('Verify center score and average tooltips', async () => {
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
+          openPrsWeightedAggregatedResponse,
+        );
+
+        await addWidgets(
+          homePage,
+          AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
+        );
+        await page.reload();
+
+        const card = homePage.getCard(
+          AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
+        );
+        await expectAverageCardCenterPercent(card, '50%');
+        await verifyAverageDonutCenterTooltip(
+          page,
+          card,
+          translations,
+          500,
+          1000,
+        );
+        await verifyAverageLegendTooltipForStatus(
+          page,
+          card,
+          translations,
+          currentLocale,
+          'success',
+        );
+      });
+
+      test('Verify empty aggregated response shows no data', async () => {
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
+          emptyOpenPrsWeightedAggregatedResponse,
+        );
+
+        await addWidgets(
+          homePage,
+          AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
+        );
+        await page.reload();
+
+        await homePage.expectCardHasNoDataFound(
+          AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
+        );
+      });
+
+      test('Accessibility on weighted average card', async ({
+        browser: _browser,
+      }, testInfo) => {
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
+          openPrsWeightedAggregatedResponse,
+        );
+
+        await homePage.navigateToHome();
+        await homePage.enterEditMode();
+        await homePage.clearAllCards();
+        await homePage.addCard(
+          AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
+        );
+        await homePage.saveChanges();
+        await page.reload();
+
+        await runAccessibilityTests(page, testInfo);
+      });
+
+      test('GitHub weighted KPI: drill-down, average card, and table', async () => {
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
+          openPrsWeightedAggregatedResponse,
+        );
+        await mockScorecardEntitiesDrillDownWithSort(
+          page,
+          githubEntitiesDrillDownResponse,
+          'github.open_prs',
+        );
+
+        await homePage.navigateToHome();
+        await page.reload();
+        await homePage.enterEditMode();
+        await homePage.clearAllCards();
+        await homePage.addCard(
+          AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
+        );
+        await homePage.saveChanges();
+
+        await homePage.clickDrillDownLink();
+        await scorecardDrillDownPage.expectOnPage('github.open_prs', {
+          aggregationId: AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
+        });
+        await scorecardDrillDownPage.expectPageTitle(
+          'github.open_prs',
+          openPrsWeightedKpiMetadataResponse.title,
+        );
+
+        const drillCard = scorecardDrillDownPage.getDrillDownCard(
+          'github.open_prs',
+          {
+            aggregationId: AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
+          },
+        );
+        await expectAverageCardCenterPercent(drillCard, '50%');
+        await scorecardDrillDownPage.expectTableHeadersVisible();
+        await scorecardDrillDownPage.expectEntityNamesVisible([
+          'all-scorecards-service',
+          'red-hat-developer-hub',
+          'github-scorecard-only-service',
+          'all-scorecards-service-different-owner',
+          'backend-api',
+        ]);
+      });
+    });
+
+    test.describe('Unsupported aggregation type', () => {
+      test('Shows unsupported message when aggregationType is unknown', async () => {
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
+          openPrsWeightedUnsupportedAggregationResponse,
+        );
+
+        await addWidgets(
+          homePage,
+          AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
+        );
+        await page.reload();
+
+        const card = homePage.getCard(
+          AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
+        );
+        await expect(card).toContainText(
+          translations.errors.unsupportedAggregationType,
+        );
+        await expect(card).toContainText('customUnknownAggregationKind');
       });
     });
   });

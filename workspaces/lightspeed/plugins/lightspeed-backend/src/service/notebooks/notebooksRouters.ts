@@ -26,13 +26,13 @@ import express, { Router } from 'express';
 
 import { lightspeedNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
-import { Readable } from 'stream';
+import { Readable, Transform } from 'stream';
 
 import {
+  DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
-  LIGHTSPEED_SERVICE_HOST,
   MAX_QUERY_RETRIES,
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
@@ -68,7 +68,7 @@ export async function createNotebooksRouter(
   const lightSpeedPort =
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
-  const lightspeedBaseUrl = `http://${LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
+  const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
   const queryModel = config.getOptionalString(
     'lightspeed.notebooks.queryDefaults.model',
   );
@@ -85,15 +85,11 @@ export async function createNotebooksRouter(
     `AI Notebooks connecting to Lightspeed-Core at ${lightspeedBaseUrl}`,
   );
 
-  const vectorStoresOperator = new VectorStoresOperator(
+  const vectorStoresOperator = VectorStoresOperator.getInstance(
     lightspeedBaseUrl,
     logger,
   );
-  const sessionService = new SessionService(
-    vectorStoresOperator,
-    logger,
-    config,
-  );
+  const sessionService = new SessionService(vectorStoresOperator, logger);
   const documentService = new DocumentService(
     vectorStoresOperator,
     logger,
@@ -153,51 +149,114 @@ export async function createNotebooksRouter(
       }
     };
 
-  const createConversationIdCaptureTransform = (
+  /**
+   * Transforms Responses API SSE (event:/data: lines) into the legacy
+   * streaming format that the frontend useConversationMessages hook expects:
+   *   data: {"event": "<type>", "data": {...}}\n\n
+   *
+   * Also captures the conversation_id from the first response.created event
+   * and persists it on the session when it is new.
+   */
+  const createResponsesApiTransform = (
     session: any,
     sessionId: string,
     userId: string,
   ) => {
-    const { Transform } = require('stream');
-    let captured = false;
     let buffer = '';
+    let conversationCaptured = !!session.metadata?.conversation_id;
 
     return new Transform({
       transform(chunk: any, _encoding: any, callback: any) {
-        this.push(chunk);
+        buffer += chunk.toString();
 
-        if (!captured) {
-          buffer += chunk.toString();
-          const lines = buffer.split('\n');
-          buffer = buffer.endsWith('\n') ? '' : lines.pop() || '';
+        const blocks = buffer.split('\n\n');
+        buffer = blocks.pop()!;
+
+        for (const block of blocks) {
+          if (!block.trim()) continue;
+
+          const lines = block.split('\n');
+          let eventType = '';
+          let dataLine = '';
 
           for (const line of lines) {
-            if (
-              line.startsWith('data: ') &&
-              line.slice(6).trim() !== '[DONE]'
-            ) {
-              try {
-                const conversationId = JSON.parse(line.slice(6))?.response
-                  ?.conversation;
-                if (conversationId) {
-                  captured = true;
-                  buffer = '';
-                  logger.info(`Captured conversation ID: ${conversationId}`);
-
-                  sessionService
-                    .updateSession(sessionId, userId, undefined, undefined, {
-                      ...session.metadata,
-                      conversation_id: conversationId,
-                    })
-                    .catch((err: any) =>
-                      logger.error(`Failed to update session: ${err}`),
-                    );
-                  break;
-                }
-              } catch {
-                // Ignore parse errors for non-JSON SSE markers
-              }
+            if (line.startsWith('event: ')) {
+              eventType = line.slice(7).trim();
+            } else if (line.startsWith('data: ')) {
+              dataLine = line.slice(6).trim();
             }
+          }
+
+          if (dataLine === '[DONE]') {
+            this.push('data: [DONE]\n\n');
+            continue;
+          }
+
+          if (!dataLine) continue;
+
+          let parsed: any;
+          try {
+            parsed = JSON.parse(dataLine);
+          } catch {
+            continue;
+          }
+
+          if (eventType === 'response.created') {
+            const convId = parsed?.response?.conversation;
+            const requestId = parsed?.response?.id;
+
+            if (convId && !conversationCaptured) {
+              conversationCaptured = true;
+              logger.info(`Captured conversation ID: ${convId}`);
+              sessionService
+                .updateSession(sessionId, userId, undefined, undefined, {
+                  ...session.metadata,
+                  conversation_id: convId,
+                })
+                .catch((err: any) =>
+                  logger.error(`Failed to update session: ${err}`),
+                );
+            }
+
+            const legacy = {
+              event: 'start',
+              data: { conversation_id: convId, request_id: requestId },
+            };
+            this.push(`data: ${JSON.stringify(legacy)}\n\n`);
+          } else if (eventType === 'response.output_text.delta') {
+            const legacy = {
+              event: 'token',
+              data: { token: parsed?.delta ?? '' },
+            };
+            this.push(`data: ${JSON.stringify(legacy)}\n\n`);
+          } else if (eventType === 'response.completed') {
+            const usage = parsed?.response?.usage;
+            const legacy = {
+              event: 'end',
+              data: {
+                referenced_documents: [],
+                input_tokens: usage?.input_tokens,
+                output_tokens: usage?.output_tokens,
+              },
+            };
+            this.push(`data: ${JSON.stringify(legacy)}\n\n`);
+          }
+        }
+
+        callback();
+      },
+
+      flush(callback: any) {
+        if (buffer.trim()) {
+          const lines = buffer.split('\n');
+          let dataLine = '';
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              dataLine = line.slice(6).trim();
+            }
+          }
+          if (dataLine === '[DONE]') {
+            this.push('data: [DONE]\n\n');
           }
         }
         callback();
@@ -231,6 +290,17 @@ export async function createNotebooksRouter(
     withAuth(async (_req, res, userId) => {
       const sessions = await sessionService.listSessions(userId);
       res.json(createSessionListResponse(sessions));
+    }),
+  );
+
+  notebooksRouter.get(
+    '/v1/sessions/:sessionId',
+    withAuth(async (req, res, userId) => {
+      const { sessionId } = req.params;
+      const session = await sessionService.readSession(sessionId, userId);
+      res.json(
+        createSessionResponse(session, 'Session retrieved successfully'),
+      );
     }),
   );
 
@@ -314,7 +384,6 @@ export async function createNotebooksRouter(
       const fileId = await documentService.uploadFile(
         parsedDocument.content,
         title,
-        fileType,
       );
 
       res.status(HTTP_STATUS_ACCEPTED).json({
@@ -445,16 +514,9 @@ export async function createNotebooksRouter(
 
         if (response.body) {
           const body = Readable.fromWeb(response.body as any);
-          const stream = conversationId
-            ? body
-            : body.pipe(
-                createConversationIdCaptureTransform(
-                  session,
-                  sessionId,
-                  userId,
-                ),
-              );
-          stream.pipe(res);
+          body
+            .pipe(createResponsesApiTransform(session, sessionId, userId))
+            .pipe(res);
         }
         break;
       }
@@ -466,6 +528,6 @@ export async function createNotebooksRouter(
   );
 
   const router = Router();
-  router.use('/ai-notebooks', notebooksRouter);
+  router.use('/notebooks', notebooksRouter);
   return router;
 }
