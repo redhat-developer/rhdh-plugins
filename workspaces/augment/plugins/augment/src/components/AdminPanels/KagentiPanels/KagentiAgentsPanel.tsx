@@ -137,6 +137,7 @@ export interface KagentiAgentsPanelProps {
   onChatWithAgent?: (agentId: string) => void;
   autoOpenIntent?: boolean;
   onIntentOpened?: () => void;
+  onFullScreenChange?: (fullScreen: boolean) => void;
   initialAgentName?: string;
   onFocusConsumed?: () => void;
   tourControlRef?: React.MutableRefObject<AgentPanelTourControl | null>;
@@ -147,6 +148,7 @@ export function KagentiAgentsPanel({
   onChatWithAgent,
   autoOpenIntent,
   onIntentOpened,
+  onFullScreenChange,
   initialAgentName,
   onFocusConsumed,
   tourControlRef,
@@ -362,6 +364,7 @@ export function KagentiAgentsPanel({
               setAutoCreateAgent(false);
               setCreateType(null);
               loadAgents();
+              onFullScreenChange?.(false);
             }}
             aria-label="Back to agents"
           >
@@ -382,6 +385,7 @@ export function KagentiAgentsPanel({
             setAutoCreateAgent(false);
             setCreateType(null);
             loadAgents();
+            onFullScreenChange?.(false);
             setSuccessToast(
               savedType
                 ? savedType === 'multi'
@@ -726,6 +730,7 @@ export function KagentiAgentsPanel({
           setShowOrchestration(true);
           setAutoCreateAgent(true);
           setCreateType(type === 'multi' ? 'multi' : 'single');
+          if (type === 'single') onFullScreenChange?.(true);
         }}
       />
 
