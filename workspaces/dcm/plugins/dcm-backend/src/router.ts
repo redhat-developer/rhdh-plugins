@@ -28,7 +28,11 @@ export async function createRouter(
 ): Promise<express.Router> {
   const router = Router();
 
-  router.use(express.json());
+  router.use(
+    express.json({
+      type: ['application/json', 'application/merge-patch+json'],
+    }),
+  );
 
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
     permissions: dcmPluginPermissions,

@@ -230,10 +230,12 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.view.upload.heading': string;
     readonly 'notebook.view.upload.action': string;
     readonly 'notebook.view.input.placeholder': string;
+    readonly 'notebook.view.input.disabledTooltip': string;
     readonly 'notebook.view.sidebar.collapse': string;
     readonly 'notebook.view.sidebar.expand': string;
     readonly 'notebook.view.sidebar.resize': string;
     readonly 'notebook.view.documents.uploading': string;
+    readonly 'notebook.view.documents.maxReached': string;
     readonly 'notebook.upload.success': string;
     readonly 'notebook.upload.failed': string;
     readonly 'notebook.upload.modal.title': string;
@@ -241,6 +243,9 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.upload.modal.browseButton': string;
     readonly 'notebook.upload.modal.separator': string;
     readonly 'notebook.upload.modal.infoText': string;
+    readonly 'notebook.upload.modal.selectedFiles': string;
+    readonly 'notebook.upload.modal.addButton': string;
+    readonly 'notebook.upload.modal.removeFile': string;
     readonly 'notebook.upload.error.unsupportedType': string;
     readonly 'notebook.upload.error.fileTooLarge': string;
     readonly 'notebook.upload.error.tooManyFiles': string;

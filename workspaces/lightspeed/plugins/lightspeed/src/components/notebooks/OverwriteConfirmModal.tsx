@@ -63,6 +63,7 @@ const useStyles = makeStyles(theme => ({
     padding: `${theme.spacing(2)}px 0`,
     borderBottom:
       '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
+    cursor: 'pointer',
   },
   fileName: {
     flex: 1,

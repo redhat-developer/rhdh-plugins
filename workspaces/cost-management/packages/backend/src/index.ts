@@ -27,14 +27,6 @@ backend.add(import('@backstage/plugin-techdocs-backend'));
 // this plugin
 backend.add(import('@red-hat-developer-hub/plugin-cost-management-backend'));
 
-// orchestrator plugin
-backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend'),
-);
-// orchestrator plugin dependencies
-backend.add(import('@backstage/plugin-notifications-backend'));
-backend.add(import('@backstage/plugin-signals-backend'));
-
 // auth plugin
 // See https://backstage.io/docs/backend-system/building-backends/migrating#the-auth-plugin
 backend.add(import('@backstage/plugin-auth-backend'));

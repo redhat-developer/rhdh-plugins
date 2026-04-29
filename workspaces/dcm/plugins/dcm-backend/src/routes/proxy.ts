@@ -75,9 +75,15 @@ export function createDcmProxy(options: RouterOptions) {
     }
 
     const requestHeaders: Record<string, string> = {
-      Authorization: `Bearer ${tokenResult.accessToken}`,
       Accept: (req.headers.accept as string) || 'application/json',
     };
+
+    // Only attach the Authorization header when an SSO token was obtained.
+    // When clientId/clientSecret are not configured the token is empty and
+    // the request is forwarded without auth (open/unauthenticated gateway).
+    if (tokenResult.accessToken) {
+      requestHeaders.Authorization = `Bearer ${tokenResult.accessToken}`;
+    }
 
     // Forward Content-Type for requests that carry a body
     if (req.headers['content-type']) {

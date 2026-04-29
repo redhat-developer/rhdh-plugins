@@ -1,7 +1,7 @@
 {
   "name": "@red-hat-developer-hub/plugin-cost-management-common",
   "description": "Common functionalities for the cost-management plugin",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "backstage": {
     "pluginId": "cost-management",
     "pluginPackages": [
@@ -13,15 +13,15 @@
   },
   "dependencies": {
     "@backstage-community/plugin-rbac-common": "^1.12.2",
-    "@backstage/core-plugin-api": "^1.10.3",
-    "@backstage/plugin-permission-common": "^0.8.4",
+    "@backstage/core-plugin-api": "^1.12.4",
+    "@backstage/plugin-permission-common": "^0.9.7",
     "cross-fetch": "^4.0.0",
     "lodash": "^4.17.21",
     "uri-template": "^2.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.29.4",
-    "@backstage/types": "^1.2.1",
+    "@backstage/cli": "^0.36.0",
+    "@backstage/types": "^1.2.2",
     "@testing-library/jest-dom": "^6.0.0",
     "@types/lodash": "^4.17.5",
     "msw": "^2.3.4",

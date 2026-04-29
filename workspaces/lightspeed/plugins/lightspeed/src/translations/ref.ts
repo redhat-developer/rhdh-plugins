@@ -61,10 +61,14 @@ export const lightspeedMessages = {
   'notebook.view.upload.heading': 'Upload a resource to get started',
   'notebook.view.upload.action': 'Upload a resource',
   'notebook.view.input.placeholder': 'Ask about your documents...',
+  'notebook.view.input.disabledTooltip':
+    'Select at least one loaded resource to start chatting',
   'notebook.view.sidebar.collapse': 'Collapse sidebar',
   'notebook.view.sidebar.expand': 'Expand sidebar',
   'notebook.view.sidebar.resize': 'Resize sidebar',
   'notebook.view.documents.uploading': 'Uploading document',
+  'notebook.view.documents.maxReached':
+    'Maximum 10 documents are allowed. Delete a document to upload a new document.',
   'notebook.upload.success': '{{fileName}} Successfully Uploaded.',
   'notebook.upload.failed': '{{fileName}} Upload Failed.',
 
@@ -75,6 +79,9 @@ export const lightspeedMessages = {
   'notebook.upload.modal.separator': 'or',
   'notebook.upload.modal.infoText':
     'Accepted file types: .md, .txt, .pdf, .json, .yaml, .log',
+  'notebook.upload.modal.selectedFiles': '{{count}} of {{max}} files selected',
+  'notebook.upload.modal.addButton': 'Add ({{count}})',
+  'notebook.upload.modal.removeFile': 'Remove {{fileName}}',
   'notebook.upload.error.unsupportedType':
     'Upload error: Unsupported file type(s) found. Please upload only supported file types.',
   'notebook.upload.error.fileTooLarge':
