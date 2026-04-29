@@ -49,6 +49,7 @@ ignore:
   - "**/dist/**"
   - "**/build/**"
   - "**/node_modules/**"
+  - "**/setupTests.*"
   - "**/playwright.config.ts"
   - "**/scripts/**"
   - "**/docs/**"
