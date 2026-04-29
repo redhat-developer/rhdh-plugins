@@ -470,6 +470,7 @@ export const ServiceSpecsTabContent = () => {
                   sorting: true,
                   padding: 'default',
                   toolbar: false,
+                  emptyRowsWhenPaging: false,
                 }}
                 totalCount={filteredSpecs.length}
                 page={page}

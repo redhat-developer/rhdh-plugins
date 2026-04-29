@@ -41,7 +41,6 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import SecurityIcon from '@material-ui/icons/Security';
 import StorageIcon from '@material-ui/icons/Storage';
-import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import LogoFull from './LogoFull';
@@ -235,7 +234,6 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   const location = useLocation();
   usePatternFlyTheme();
   const isDcmActive = location.pathname.startsWith('/dcm');
-  const isRbacActive = location.pathname.startsWith('/rbac');
 
   return (
     <SidebarPage>
@@ -272,16 +270,6 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                 text="Data Center"
                 className={`${classes.submenuItem} ${
                   isDcmActive ? classes.submenuItemActive : classes.inactiveItem
-                }`}
-              />
-              <SidebarItem
-                icon={VpnKeyIcon}
-                to="/rbac"
-                text="RBAC"
-                className={`${classes.submenuItem} ${
-                  isRbacActive
-                    ? classes.submenuItemActive
-                    : classes.inactiveItem
                 }`}
               />
             </Box>

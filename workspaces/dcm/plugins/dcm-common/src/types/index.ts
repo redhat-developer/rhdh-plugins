@@ -16,6 +16,5 @@
 
 export * from './catalog';
 export * from './common';
-export * from './placement';
 export * from './policy-manager';
 export * from './providers';

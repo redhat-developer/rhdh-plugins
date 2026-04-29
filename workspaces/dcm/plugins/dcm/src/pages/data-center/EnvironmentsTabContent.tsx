@@ -407,6 +407,7 @@ export function EnvironmentsTabContent() {
                   sorting: true,
                   padding: 'default',
                   toolbar: false,
+                  emptyRowsWhenPaging: false,
                 }}
                 totalCount={filteredEnvironments.length}
                 page={page}

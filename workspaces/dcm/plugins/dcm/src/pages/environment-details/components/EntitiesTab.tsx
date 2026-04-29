@@ -90,6 +90,7 @@ export function EntitiesTab(props: Readonly<{ env: Environment }>) {
             sorting: true,
             padding: 'default',
             toolbar: false,
+            emptyRowsWhenPaging: false,
           }}
           totalCount={filteredEntities.length}
           page={page}

@@ -284,6 +284,7 @@ export function DcmRequestHistoryTableCard(
             sorting: true,
             padding: 'default',
             toolbar: false,
+            emptyRowsWhenPaging: false,
           }}
           totalCount={filteredHistory.length}
           page={page}

@@ -27,13 +27,11 @@ import { PoliciesTabContent } from '../policies/PoliciesTabContent';
 import { ServiceTypesTabContent } from '../service-types/ServiceTypesTabContent';
 import { CatalogItemsTabContent } from '../catalog-items/CatalogItemsTabContent';
 import { CatalogItemInstancesTabContent } from '../catalog-item-instances/CatalogItemInstancesTabContent';
-import { ResourcesTabContent } from '../resources/ResourcesTabContent';
 import {
   policiesRouteRef,
   serviceTypesRouteRef,
   catalogItemsRouteRef,
   catalogItemInstancesRouteRef,
-  resourcesRouteRef,
 } from '../../routes';
 import { isDarkMode } from '../../components/dcmTheme';
 
@@ -100,9 +98,6 @@ export const DataCenterPage = () => {
               title="Instances"
             >
               <CatalogItemInstancesTabContent />
-            </TabbedLayout.Route>
-            <TabbedLayout.Route path={resourcesRouteRef.path} title="Resources">
-              <ResourcesTabContent />
             </TabbedLayout.Route>
           </TabbedLayout>
         </Box>

@@ -177,6 +177,7 @@ export function ServiceTypesTabContent() {
                 sorting: true,
                 padding: 'default',
                 toolbar: false,
+                emptyRowsWhenPaging: false,
               }}
               totalCount={filtered.length}
               page={page}

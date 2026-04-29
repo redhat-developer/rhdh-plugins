@@ -35,6 +35,9 @@ export interface CatalogApi {
   listCatalogItems(): Promise<CatalogItemList>;
   // (undocumented)
   listServiceTypes(): Promise<ServiceTypeList>;
+  rehydrateCatalogItemInstance(
+    catalogItemInstanceId: string,
+  ): Promise<CatalogItemInstance>;
   // (undocumented)
   updateCatalogItem(
     catalogItemId: string,
@@ -70,6 +73,10 @@ export class CatalogClient extends DcmBaseClient implements CatalogApi {
   listCatalogItems(): Promise<CatalogItemList>;
   // (undocumented)
   listServiceTypes(): Promise<ServiceTypeList>;
+  // (undocumented)
+  rehydrateCatalogItemInstance(
+    catalogItemInstanceId: string,
+  ): Promise<CatalogItemInstance>;
   // (undocumented)
   protected readonly serviceName = 'Catalog';
   // (undocumented)
@@ -267,45 +274,6 @@ export interface FieldConfigurationDependsOn {
 export function parseDcmEntityStatus(raw: string): DcmEntityStatus | undefined;
 
 // @public
-export interface PlacementApi {
-  createResource(resource: Resource, id?: string): Promise<Resource>;
-  deleteResource(resourceId: string): Promise<void>;
-  getResource(resourceId: string): Promise<Resource>;
-  listResources(options?: {
-    provider?: string;
-    maxPageSize?: number;
-    pageToken?: string;
-  }): Promise<ResourceList>;
-  rehydrateResource(
-    resourceId: string,
-    request: RehydrateRequest,
-  ): Promise<Resource>;
-}
-
-// @public
-export class PlacementClient extends DcmBaseClient implements PlacementApi {
-  // (undocumented)
-  createResource(resource: Resource, id?: string): Promise<Resource>;
-  // (undocumented)
-  deleteResource(resourceId: string): Promise<void>;
-  // (undocumented)
-  getResource(resourceId: string): Promise<Resource>;
-  // (undocumented)
-  listResources(options?: {
-    provider?: string;
-    maxPageSize?: number;
-    pageToken?: string;
-  }): Promise<ResourceList>;
-  // (undocumented)
-  rehydrateResource(
-    resourceId: string,
-    request: RehydrateRequest,
-  ): Promise<Resource>;
-  // (undocumented)
-  protected readonly serviceName = 'Placement';
-}
-
-// @public
 export interface Policy {
   // (undocumented)
   create_time?: string;
@@ -450,24 +418,6 @@ export class ProvidersClient extends DcmBaseClient implements ProvidersApi {
 export type ProviderStatus = 'registered' | 'updated';
 
 // @public
-export interface RehydrateRequest {
-  // (undocumented)
-  new_resource_id: string;
-}
-
-// @public
-export interface Resource {
-  approval_status?: string;
-  catalog_item_instance_id: string;
-  create_time?: string;
-  id?: string;
-  path?: string;
-  provider_name?: string;
-  spec: Record<string, unknown>;
-  update_time?: string;
-}
-
-// @public
 export interface ResourceCapacity {
   // (undocumented)
   total_cpu?: number;
@@ -477,14 +427,6 @@ export interface ResourceCapacity {
   total_node?: number;
   // (undocumented)
   total_storage?: string;
-}
-
-// @public
-export interface ResourceList {
-  // (undocumented)
-  next_page_token?: string;
-  // (undocumented)
-  resources: Resource[];
 }
 
 // @public

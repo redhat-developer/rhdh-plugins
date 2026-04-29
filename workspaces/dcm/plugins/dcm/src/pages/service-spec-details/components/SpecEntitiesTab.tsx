@@ -90,6 +90,7 @@ export function SpecEntitiesTab(props: Readonly<{ spec: ServiceSpec }>) {
             sorting: true,
             padding: 'default',
             toolbar: false,
+            emptyRowsWhenPaging: false,
           }}
           totalCount={filteredEntities.length}
           page={page}

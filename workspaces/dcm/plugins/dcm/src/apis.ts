@@ -17,7 +17,6 @@
 import { createApiRef } from '@backstage/core-plugin-api';
 import type {
   CatalogApi,
-  PlacementApi,
   PolicyManagerApi,
   ProvidersApi,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
@@ -54,16 +53,4 @@ export const policyManagerApiRef = createApiRef<PolicyManagerApi>({
  */
 export const providersApiRef = createApiRef<ProvidersApi>({
   id: 'plugin.dcm.providers',
-});
-
-/**
- * Backstage API ref for the DCM Placement Manager service.
- *
- * Provides list, create, delete, and rehydrate operations for Resources
- * via the dcm-backend secure proxy.
- *
- * @public
- */
-export const placementApiRef = createApiRef<PlacementApi>({
-  id: 'plugin.dcm.placement',
 });

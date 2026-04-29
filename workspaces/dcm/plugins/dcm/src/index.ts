@@ -15,12 +15,7 @@
  */
 export { Router } from './Router';
 export { dcmPlugin, DcmPage } from './plugin';
-export {
-  catalogApiRef,
-  placementApiRef,
-  policyManagerApiRef,
-  providersApiRef,
-} from './apis';
+export { catalogApiRef, policyManagerApiRef, providersApiRef } from './apis';
 export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
 export { RhdhLogoFull } from './components/RhdhLogoFull';
 export { RhdhLogoIcon } from './components/RhdhLogoIcon';

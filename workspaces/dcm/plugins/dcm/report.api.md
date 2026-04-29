@@ -8,7 +8,6 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import type { CatalogApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { PathParams } from '@backstage/core-plugin-api';
-import type { PlacementApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import type { PolicyManagerApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import type { ProvidersApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { RouteRef } from '@backstage/core-plugin-api';
@@ -33,7 +32,6 @@ export const dcmPlugin: BackstagePlugin<
     serviceTypes: SubRouteRef<undefined>;
     catalogItems: SubRouteRef<undefined>;
     catalogItemInstances: SubRouteRef<undefined>;
-    resources: SubRouteRef<undefined>;
   },
   {},
   {}
@@ -41,9 +39,6 @@ export const dcmPlugin: BackstagePlugin<
 
 // @public
 export function isDarkMode(theme: Theme): boolean;
-
-// @public
-export const placementApiRef: ApiRef<PlacementApi>;
 
 // @public
 export const policyManagerApiRef: ApiRef<PolicyManagerApi>;

@@ -74,9 +74,3 @@ export const catalogItemInstancesRouteRef = createSubRouteRef({
   parent: rootRouteRef,
   path: '/catalog-item-instances',
 });
-
-export const resourcesRouteRef = createSubRouteRef({
-  id: 'dcm-resources',
-  parent: rootRouteRef,
-  path: '/resources',
-});
