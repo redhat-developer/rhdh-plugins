@@ -744,6 +744,16 @@ describe('lightspeed router tests', () => {
         error: 'Requested path is not available',
       });
     });
+
+    it('should reject dot-segment path traversal attempts', async () => {
+      const backendServer = await startBackendServer();
+      // Express normalizes /v1/models/../admin to /v1/admin before
+      // the request reaches our middleware, so the allowlist rejects it.
+      const response = await request(backendServer).get(
+        '/api/lightspeed/v1/models/../admin',
+      );
+      expect(response.statusCode).toEqual(404);
+    });
   });
 
   describe('POST /v1/query/interrupt', () => {
