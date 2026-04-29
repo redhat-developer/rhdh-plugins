@@ -88,6 +88,7 @@ export function ProvidersTabContent() {
     emptyForm: emptyProviderForm,
     isValid: isProviderFormValid,
     itemToForm: providerToForm,
+    storageKey: 'providers',
   });
 
   const columns = useMemo<TableColumn<Provider>[]>(

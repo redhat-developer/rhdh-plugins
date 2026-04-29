@@ -16,6 +16,7 @@
 
 // Migrate to use useCrudTab + DcmCrudTabLayout when it is re-activated.
 import { useMemo, useState, useCallback, useEffect } from 'react';
+import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
 import {
   Table,
   TableColumn,
@@ -176,7 +177,7 @@ export const ServiceSpecsTabContent = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = usePersistedPageSize('service-specs');
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   useEffect(() => {
@@ -322,13 +323,16 @@ export const ServiceSpecsTabContent = () => {
       setPage(newPage);
       setPageSize(newPageSize);
     },
-    [],
+    [setPageSize],
   );
 
-  const handleRowsPerPageChange = useCallback((newPageSize: number) => {
-    setPageSize(newPageSize);
-    setPage(0);
-  }, []);
+  const handleRowsPerPageChange = useCallback(
+    (newPageSize: number) => {
+      setPageSize(newPageSize);
+      setPage(0);
+    },
+    [setPageSize],
+  );
 
   const { underlineLink } = classes;
 
@@ -470,6 +474,7 @@ export const ServiceSpecsTabContent = () => {
                   sorting: true,
                   padding: 'default',
                   toolbar: false,
+                  emptyRowsWhenPaging: false,
                 }}
                 totalCount={filteredSpecs.length}
                 page={page}
