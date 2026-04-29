@@ -55,7 +55,6 @@ import {
   ResourceOptimizationPage,
   OpenShiftPage,
 } from '@red-hat-developer-hub/plugin-cost-management';
-import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { useRhdhTheme } from './hooks/useRhdhTheme';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { RbacPage } from '@backstage-community/plugin-rbac';
@@ -144,7 +143,6 @@ const routes = (
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/cost-management" element={<ResourceOptimizationPage />} />
     <Route path="/cost-management/openshift" element={<OpenShiftPage />} />
-    <Route path="/orchestrator" element={<OrchestratorPage />} />
     <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );

@@ -28,7 +28,7 @@ import { resolveActor, emitAuditLog } from '../util/auditLog';
 export const getAccess: (options: RouterOptions) => RequestHandler =
   options => async (_, response) => {
     const { logger, permissions, httpAuth, cache, optimizationApi } = options;
-    let finalDecision = AuthorizeResult.DENY;
+    let finalDecision: AuthorizeResult = AuthorizeResult.DENY;
 
     // Check for ros.plugin permisssion
     // if user has ros.plugin permission, allow access to all the data
