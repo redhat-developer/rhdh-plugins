@@ -374,6 +374,7 @@ export function KagentiAgentsPanel({
         <AgentsPanel
           focusAgentKey={orchFocusKey}
           autoCreate={autoCreateAgent}
+          createType={createType}
           onSaved={() => {
             const savedType = createType;
             setShowOrchestration(false);

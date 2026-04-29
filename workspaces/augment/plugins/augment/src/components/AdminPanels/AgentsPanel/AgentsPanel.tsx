@@ -77,10 +77,11 @@ const MAX_TURNS = 50;
 export interface AgentsPanelProps {
   focusAgentKey?: string;
   autoCreate?: boolean;
+  createType?: 'single' | 'multi' | null;
   onSaved?: () => void;
 }
 
-export const AgentsPanel = ({ focusAgentKey, autoCreate, onSaved }: AgentsPanelProps = {}) => {
+export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: AgentsPanelProps = {}) => {
   const theme = useTheme();
   const {
     config: effectiveConfig,
@@ -174,13 +175,24 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, onSaved }: AgentsPanelP
     setSelectedAgentKey(prev => (!prev || !agents[prev] ? keys[0] : prev));
   }, [initialized, agents, focusAgentKey]);
 
+  const isSingleAgentMode = createType === 'single' && autoCreate;
+
   const autoCreateAppliedRef = useRef(false);
   useEffect(() => {
     if (autoCreate && initialized && !autoCreateAppliedRef.current) {
       autoCreateAppliedRef.current = true;
-      setCreateModalOpen(true);
+      if (isSingleAgentMode) {
+        const key = 'agent';
+        const agent = createDefaultAgent();
+        agent.name = 'Agent';
+        setAgents(prev => ({ ...prev, [key]: agent }));
+        setDefaultAgentKey(key);
+        setSelectedAgentKey(key);
+      } else {
+        setCreateModalOpen(true);
+      }
     }
-  }, [autoCreate, initialized]);
+  }, [autoCreate, initialized, isSingleAgentMode]);
 
   // ── Memos ──────────────────────────────────────────────────────────────
 
@@ -455,7 +467,7 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, onSaved }: AgentsPanelP
           flexWrap: 'wrap',
         }}
       >
-        {agentKeys.length > 1 && (
+        {!isSingleAgentMode && agentKeys.length > 1 && (
           <>
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel sx={{ fontSize: '0.8rem' }}>
@@ -496,7 +508,7 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, onSaved }: AgentsPanelP
 
         <Box sx={{ flex: 1 }} />
 
-        {agentsSource === 'database' && (
+        {!isSingleAgentMode && agentsSource === 'database' && (
           <Button
             size="small"
             color="warning"
@@ -507,15 +519,17 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, onSaved }: AgentsPanelP
             Reset
           </Button>
         )}
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<AddIcon sx={{ fontSize: 16 }} />}
-          onClick={() => setCreateModalOpen(true)}
-          sx={{ textTransform: 'none', fontSize: '0.8rem' }}
-        >
-          New Agent
-        </Button>
+        {!isSingleAgentMode && (
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+            onClick={() => setCreateModalOpen(true)}
+            sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+          >
+            New Agent
+          </Button>
+        )}
         <Button
           variant="contained"
           size="small"
@@ -555,7 +569,7 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, onSaved }: AgentsPanelP
       )}
 
       {/* ── Main content ──────────────────────────────────────────────── */}
-      {agentKeys.length === 0 ? (
+      {!isSingleAgentMode && agentKeys.length === 0 ? (
         <Box
           sx={{
             flex: 1,
@@ -602,35 +616,37 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, onSaved }: AgentsPanelP
         <Box
           sx={{ flex: 1, display: 'flex', minHeight: 0, overflow: 'hidden' }}
         >
-          {/* ── Left panel: Agent list + Topology ──────────────────────── */}
-          <Box
-            data-tour="orch-agent-list"
-            sx={{
-              width: LEFT_PANEL_WIDTH,
-              flexShrink: 0,
-              borderRight: `1px solid ${theme.palette.divider}`,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-            }}
-          >
-            <Box sx={{ flex: 1, overflow: 'auto', py: 0.5 }}>
-              {agentKeys.map(key => (
-                <AgentListItem
-                  key={key}
-                  agentKey={key}
-                  agent={agents[key]}
-                  isSelected={key === selectedAgentKey}
-                  isDefault={key === defaultAgentKey}
-                  isSingleAgent={agentKeys.length === 1}
-                  outCount={edgeCounts[key]?.out ?? 0}
-                  inCount={edgeCounts[key]?.in ?? 0}
-                  effectiveRole={agentRoles[key] ?? 'standalone'}
-                  onSelect={handleSelectAgent}
-                />
-              ))}
+          {/* ── Left panel: Agent list + Topology (hidden in single-agent mode) */}
+          {!isSingleAgentMode && (
+            <Box
+              data-tour="orch-agent-list"
+              sx={{
+                width: LEFT_PANEL_WIDTH,
+                flexShrink: 0,
+                borderRight: `1px solid ${theme.palette.divider}`,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+              }}
+            >
+              <Box sx={{ flex: 1, overflow: 'auto', py: 0.5 }}>
+                {agentKeys.map(key => (
+                  <AgentListItem
+                    key={key}
+                    agentKey={key}
+                    agent={agents[key]}
+                    isSelected={key === selectedAgentKey}
+                    isDefault={key === defaultAgentKey}
+                    isSingleAgent={agentKeys.length === 1}
+                    outCount={edgeCounts[key]?.out ?? 0}
+                    inCount={edgeCounts[key]?.in ?? 0}
+                    effectiveRole={agentRoles[key] ?? 'standalone'}
+                    onSelect={handleSelectAgent}
+                  />
+                ))}
+              </Box>
             </Box>
-          </Box>
+          )}
 
           {/* ── Right panel: Agent config form ─────────────────────────── */}
           <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
@@ -675,49 +691,53 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, onSaved }: AgentsPanelP
                     {agentsSource === 'database' && (
                       <Chip label="Modified" size="small" color="info" />
                     )}
-                    <Tooltip title="Delete agent">
-                      <IconButton
+                    {!isSingleAgentMode && (
+                      <Tooltip title="Delete agent">
+                        <IconButton
+                          size="small"
+                          aria-label="Delete agent"
+                          onClick={() => handleRemoveAgent(selectedAgentKey)}
+                          sx={{
+                            color: theme.palette.error.main,
+                            opacity: 0.35,
+                            '&:hover': { opacity: 1 },
+                          }}
+                        >
+                          <DeleteIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                  {!isSingleAgentMode && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Chip
                         size="small"
-                        aria-label="Delete agent"
-                        onClick={() => handleRemoveAgent(selectedAgentKey)}
+                        icon={
+                          selectedAgentRole === 'router' ? <HubIcon sx={{ fontSize: 14 }} /> :
+                          selectedAgentRole === 'specialist' ? <BuildIcon sx={{ fontSize: 14 }} /> :
+                          <RocketLaunchIcon sx={{ fontSize: 14 }} />
+                        }
+                        label={selectedAgentRole.charAt(0).toUpperCase() + selectedAgentRole.slice(1)}
+                        color={
+                          selectedAgentRole === 'router' ? 'primary' :
+                          selectedAgentRole === 'specialist' ? 'default' :
+                          'success'
+                        }
+                        variant="outlined"
+                        sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+                      />
+                      <Typography
                         sx={{
-                          color: theme.palette.error.main,
-                          opacity: 0.35,
-                          '&:hover': { opacity: 1 },
+                          fontSize: '0.75rem',
+                          color: theme.palette.text.secondary,
                         }}
                       >
-                        <DeleteIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <Chip
-                      size="small"
-                      icon={
-                        selectedAgentRole === 'router' ? <HubIcon sx={{ fontSize: 14 }} /> :
-                        selectedAgentRole === 'specialist' ? <BuildIcon sx={{ fontSize: 14 }} /> :
-                        <RocketLaunchIcon sx={{ fontSize: 14 }} />
-                      }
-                      label={selectedAgentRole.charAt(0).toUpperCase() + selectedAgentRole.slice(1)}
-                      color={
-                        selectedAgentRole === 'router' ? 'primary' :
-                        selectedAgentRole === 'specialist' ? 'default' :
-                        'success'
-                      }
-                      variant="outlined"
-                      sx={{ fontWeight: 600, fontSize: '0.75rem' }}
-                    />
-                    <Typography
-                      sx={{
-                        fontSize: '0.75rem',
-                        color: theme.palette.text.secondary,
-                      }}
-                    >
-                      {selectedAgentRole === 'router' && 'Visible in gallery — routes to other agents'}
-                      {selectedAgentRole === 'specialist' && 'Hidden — only reachable via handoffs'}
-                      {selectedAgentRole === 'standalone' && 'Visible in gallery — independent agent'}
-                    </Typography>
-                  </Box>
+                        {selectedAgentRole === 'router' && 'Visible in gallery — routes to other agents'}
+                        {selectedAgentRole === 'specialist' && 'Hidden — only reachable via handoffs'}
+                        {selectedAgentRole === 'standalone' && 'Visible in gallery — independent agent'}
+                      </Typography>
+                    </Box>
+                  )}
                   {showConnections && (
                     <TextField
                       value={selectedAgent.handoffDescription}
