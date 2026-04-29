@@ -31,7 +31,7 @@ Add the following lightspeed configurations into your `app-config.yaml` file:
 
 ```yaml
 lightspeed:
-  servicePort: <portNumber> # Optional - Change the LS service port nubmer. Defaults to 8080.
+  servicePort: <portNumber> # Optional - Change the LS service port number. Defaults to 8080.
   systemPrompt: <system prompt> # Optional - Override the default system prompt.
   mcpServers: # Optional - one or more MCP servers
     - name: <mcp server name> # must match the name configured in LCS
@@ -129,7 +129,7 @@ lightspeed:
 
 **Notebooks Settings**:
 
-- **`Notebooks.enabled`** _(optional)_: Enable or disable the Notebooks feature (default: `false`)
+- **`notebooks.enabled`** _(optional)_: Enable or disable the Notebooks feature (default: `false`)
 
 **Query Defaults** _(required when enabled)_:
 
