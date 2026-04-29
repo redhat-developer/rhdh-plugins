@@ -219,13 +219,13 @@ function backstage-image {
   "$_pocker" build \
     "${volume_args[@]+"${volume_args[@]}"}" \
     --tag "$image_tag" \
-    --tag "$REGISTRY_URL/$ORG_ID/$REPO:latest" \
+    --tag "$REGISTRY_URL/$ORG_ID/$REPO:main" \
     "$workspace_dir"
 
   if $do_push; then
     echo "Pushing $image_tag"
     "$_pocker" push "$image_tag"
-    "$_pocker" push "$REGISTRY_URL/$ORG_ID/$REPO:latest"
+    "$_pocker" push "$REGISTRY_URL/$ORG_ID/$REPO:main"
   else
     echo "Image built. Run with --push to push to the registry, or use:"
     echo "  $_pocker push $image_tag"
