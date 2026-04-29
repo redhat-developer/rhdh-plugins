@@ -124,7 +124,18 @@ jobs:
         run: yarn backstage-cli repo fix --check --publish
 
       - name: test changed packages
+        id: tests
         run: yarn test:all --maxWorkers=3
+
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        with:
+          flags: ${{ matrix.workspace }}
+          files: workspaces/${{ matrix.workspace }}/plugins/**/coverage/lcov.info
+          disable_search: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
       - name: install playwright
         if: ${{ hashFiles(format('workspaces/{0}/playwright.config.ts', matrix.workspace)) != '' }}
