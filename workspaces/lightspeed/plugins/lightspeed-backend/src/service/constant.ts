@@ -88,6 +88,8 @@ export const HTTP_STATUS_INTERNAL_ERROR = 500; // Internal server error
 /**
  * Proxy path security - only these LCORE path prefixes may be proxied
  * Avoids authenticated users hitting arbitrary LCORE endpoints
+ * /v1/feedback is here to cover the /feedback/status case as
+ * the exact /v1/feedback has its own handler
  */
 export const ALLOWED_PROXY_PREFIXES = [
   '/v1/models',
