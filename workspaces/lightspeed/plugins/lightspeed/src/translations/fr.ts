@@ -64,10 +64,14 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebook.view.upload.action': 'Charger une ressource',
     'notebook.view.input.placeholder':
       'Posez des questions sur vos documents...',
+    'notebook.view.input.disabledTooltip':
+      'Sélectionnez au moins une ressource chargée pour commencer à discuter',
     'notebook.view.sidebar.collapse': 'Réduire la barre latérale',
     'notebook.view.sidebar.expand': 'Développer la barre latérale',
     'notebook.view.sidebar.resize': 'Redimensionner la barre latérale',
     'notebook.view.documents.uploading': 'Chargement du document',
+    'notebook.view.documents.maxReached':
+      'Maximum 10 documents autorisés. Supprimez un document pour en charger un nouveau.',
     'notebook.upload.success': '{{fileName}} chargé avec succès.',
     'notebook.upload.failed': 'Échec du chargement de {{fileName}}.',
 
@@ -78,6 +82,10 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebook.upload.modal.separator': 'ou',
     'notebook.upload.modal.infoText':
       'Types de fichiers acceptés : .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.selectedFiles':
+      '{{count}} sur {{max}} fichiers sélectionnés',
+    'notebook.upload.modal.addButton': 'Ajouter ({{count}})',
+    'notebook.upload.modal.removeFile': 'Supprimer {{fileName}}',
     'notebook.upload.error.unsupportedType':
       'Erreur de chargement : type(s) de fichier non pris en charge. Veuillez charger uniquement des types de fichiers pris en charge.',
     'notebook.upload.error.fileTooLarge':

@@ -65,10 +65,14 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebook.view.upload.action': 'Carica una risorsa',
     'notebook.view.input.placeholder':
       'Chiedi informazioni sui tuoi documenti...',
+    'notebook.view.input.disabledTooltip':
+      'Seleziona almeno una risorsa caricata per iniziare a chattare',
     'notebook.view.sidebar.collapse': 'Comprimi barra laterale',
     'notebook.view.sidebar.expand': 'Espandi barra laterale',
     'notebook.view.sidebar.resize': 'Ridimensiona barra laterale',
     'notebook.view.documents.uploading': 'Caricamento documento',
+    'notebook.view.documents.maxReached':
+      'Sono consentiti al massimo 10 documenti. Elimina un documento per caricarne uno nuovo.',
     'notebook.upload.success': '{{fileName}} caricato con successo.',
     'notebook.upload.failed': 'Caricamento di {{fileName}} non riuscito.',
 
@@ -79,6 +83,10 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebook.upload.modal.separator': 'o',
     'notebook.upload.modal.infoText':
       'Tipi di file accettati: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.selectedFiles':
+      '{{count}} di {{max}} file selezionati',
+    'notebook.upload.modal.addButton': 'Aggiungi ({{count}})',
+    'notebook.upload.modal.removeFile': 'Rimuovi {{fileName}}',
     'notebook.upload.error.unsupportedType':
       'Errore di caricamento: trovati tipi di file non supportati. Caricare solo tipi di file supportati.',
     'notebook.upload.error.fileTooLarge':

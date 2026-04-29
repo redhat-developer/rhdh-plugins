@@ -44,13 +44,16 @@ import { TimesIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
-import { TEMP_CONVERSATION_ID, UNTITLED_NOTEBOOK_NAME } from '../../const';
+import {
+  NOTEBOOK_MAX_FILES,
+  TEMP_CONVERSATION_ID,
+  UNTITLED_NOTEBOOK_NAME,
+} from '../../const';
 import { useCreateNotebookMessage } from '../../hooks/notebooks/useCreateNotebookMessage';
 import {
   useDocumentStatusPolling,
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
-import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -200,6 +203,7 @@ type NotebookViewProps = {
   avatar?: string;
   profileLoading: boolean;
   topicRestrictionEnabled: boolean;
+  selectedModel: string;
   onClose: () => void;
 };
 
@@ -213,13 +217,13 @@ export const NotebookView = ({
   avatar,
   profileLoading,
   topicRestrictionEnabled,
+  selectedModel,
   onClose,
 }: NotebookViewProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const notebooksApi = useApi(notebooksApiRef);
-  const uploadMutation = useUploadDocument();
   const { mutateAsync: notebookCreateMessage } = useCreateNotebookMessage();
 
   const [conversationId, setConversationId] = useState(
@@ -281,7 +285,7 @@ export const NotebookView = ({
     useConversationMessages(
       conversationId,
       userName,
-      '',
+      selectedModel,
       '',
       avatar,
       onComplete,
@@ -331,12 +335,18 @@ export const NotebookView = ({
   );
   const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
+  const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
 
   const handleOpenUploadModal = () => setIsUploadModalOpen(true);
   const handleCloseUploadModal = () => setIsUploadModalOpen(false);
 
   const handleFilesUploading = (files: File[]) => {
-    setUploadingFileNames(prev => [...prev, ...files.map(f => f.name)]);
+    setUploadingFileNames(prev => {
+      const newNames = files
+        .map(f => f.name)
+        .filter(name => !prev.includes(name));
+      return [...prev, ...newNames];
+    });
   };
 
   const handleUploadStarted = (info: {
@@ -376,20 +386,11 @@ export const NotebookView = ({
 
     if (files.length === 0) return;
 
-    setUploadingFileNames(prev => [...prev, ...files.map(f => f.name)]);
-    for (const file of files) {
-      uploadMutation
-        .mutateAsync({ sessionId, file })
-        .then(data => {
-          handleUploadStarted({
-            fileName: file.name,
-            documentId: data.document_id,
-          });
-        })
-        .catch(() => {
-          handleUploadFailed(file.name);
-        });
-    }
+    setFilesToAddToModal(files);
+  };
+
+  const handleFilesAddedToModal = () => {
+    setFilesToAddToModal([]);
   };
 
   const handleOverwriteCancel = () => {
@@ -419,9 +420,8 @@ export const NotebookView = ({
     for (const result of completedOrFailed) {
       processedIds.current.add(result.documentId);
       idsToRemove.add(result.documentId);
-      if (result.status !== 'completed') {
-        namesToRemove.add(result.fileName);
-      } else {
+      namesToRemove.add(result.fileName);
+      if (result.status === 'completed') {
         newCompletedNames.add(result.fileName);
       }
 
@@ -462,6 +462,8 @@ export const NotebookView = ({
   };
 
   const hasDocuments = documents.length > 0 || uploadingFileNames.length > 0;
+  const totalDocumentCount = documents.length + uploadingFileNames.length;
+  const isAddDisabled = totalDocumentCount >= NOTEBOOK_MAX_FILES;
 
   const panelContent = (
     <DrawerPanelContent
@@ -551,6 +553,8 @@ export const NotebookView = ({
               variant={AlertVariant[variant ?? 'success']}
               title={title}
               className={classes.toastAlert}
+              timeout={2000}
+              onTimeout={() => handleRemoveToastAlert(key as React.Key)}
               actionClose={
                 <AlertActionCloseButton
                   title={title as string}
@@ -589,17 +593,26 @@ export const NotebookView = ({
                     </Button>
                   </Tooltip>
                   <Tooltip
-                    content={t('notebook.view.documents.add')}
+                    content={
+                      isAddDisabled
+                        ? t('notebook.view.documents.maxReached')
+                        : t('notebook.view.documents.add')
+                    }
                     position="right"
                   >
-                    <Button
-                      variant="plain"
-                      className={classes.addIconButton}
-                      onClick={handleOpenUploadModal}
-                      aria-label={t('notebook.view.documents.add')}
-                    >
-                      <AddCircleFilledIcon />
-                    </Button>
+                    <span>
+                      <Button
+                        variant="plain"
+                        className={classes.addIconButton}
+                        onClick={
+                          isAddDisabled ? undefined : handleOpenUploadModal
+                        }
+                        aria-label={t('notebook.view.documents.add')}
+                        isDisabled={isAddDisabled}
+                      >
+                        <AddCircleFilledIcon disabled={isAddDisabled} />
+                      </Button>
+                    </span>
                   </Tooltip>
                 </div>
               )}
@@ -628,14 +641,33 @@ export const NotebookView = ({
                 )}
 
                 <ChatbotFooter className={classes.footer}>
-                  <MessageBar
-                    hasAttachButton={false}
-                    hasMicrophoneButton
-                    hasStopButton={false}
-                    isSendButtonDisabled={isSendButtonDisabled}
-                    onSendMessage={sendMessage}
-                    placeholder={t('notebook.view.input.placeholder')}
-                  />
+                  {documents.length === 0 ? (
+                    <Tooltip
+                      content={t('notebook.view.input.disabledTooltip')}
+                      position="top"
+                    >
+                      <div>
+                        <MessageBar
+                          hasAttachButton={false}
+                          hasMicrophoneButton={false}
+                          hasStopButton={false}
+                          isSendButtonDisabled
+                          isDisabled
+                          onSendMessage={sendMessage}
+                          placeholder={t('notebook.view.input.placeholder')}
+                        />
+                      </div>
+                    </Tooltip>
+                  ) : (
+                    <MessageBar
+                      hasAttachButton={false}
+                      hasMicrophoneButton
+                      hasStopButton={false}
+                      isSendButtonDisabled={isSendButtonDisabled}
+                      onSendMessage={sendMessage}
+                      placeholder={t('notebook.view.input.placeholder')}
+                    />
+                  )}
                   <ChatbotFootnote label={t('footer.accuracy.label')} />
                 </ChatbotFooter>
               </div>
@@ -653,6 +685,8 @@ export const NotebookView = ({
         onUploadStarted={handleUploadStarted}
         onUploadFailed={handleUploadFailed}
         onDuplicatesFound={handleDuplicatesFound}
+        filesToAdd={filesToAddToModal}
+        onFilesAdded={handleFilesAddedToModal}
       />
 
       <OverwriteConfirmModal

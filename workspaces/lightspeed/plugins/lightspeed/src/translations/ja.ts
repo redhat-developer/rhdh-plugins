@@ -64,10 +64,14 @@ const lightspeedTranslationJa = createTranslationMessages({
       'リソースをアップロードして開始してください',
     'notebook.view.upload.action': 'リソースをアップロード',
     'notebook.view.input.placeholder': 'ドキュメントについて質問する...',
+    'notebook.view.input.disabledTooltip':
+      'チャットを開始するには、少なくとも1つのロード済みリソースを選択してください',
     'notebook.view.sidebar.collapse': 'サイドバーを折りたたむ',
     'notebook.view.sidebar.expand': 'サイドバーを展開する',
     'notebook.view.sidebar.resize': 'サイドバーのサイズを変更する',
     'notebook.view.documents.uploading': 'ドキュメントをアップロード中',
+    'notebook.view.documents.maxReached':
+      '最大10個のドキュメントが許可されています。新しいドキュメントをアップロードするには、ドキュメントを削除してください。',
     'notebook.upload.success': '{{fileName}} のアップロードに成功しました。',
     'notebook.upload.failed': '{{fileName}} のアップロードに失敗しました。',
 
@@ -78,6 +82,10 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebook.upload.modal.separator': 'または',
     'notebook.upload.modal.infoText':
       '対応ファイル形式: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.selectedFiles':
+      '{{max}} 件中 {{count}} 件のファイルを選択',
+    'notebook.upload.modal.addButton': '追加 ({{count}})',
+    'notebook.upload.modal.removeFile': '{{fileName}} を削除',
     'notebook.upload.error.unsupportedType':
       'アップロードエラー: サポートされていないファイル形式が見つかりました。サポートされているファイル形式のみをアップロードしてください。',
     'notebook.upload.error.fileTooLarge':
