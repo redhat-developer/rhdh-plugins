@@ -125,6 +125,7 @@ export class AdkOrchestrator {
         request.conversationId,
         snapshot,
         'chat',
+        request.model,
       );
       const runOptions = await this.buildRunOptions(
         snapshot,
@@ -167,6 +168,7 @@ export class AdkOrchestrator {
         request.conversationId,
         snapshot,
         'stream',
+        request.model,
       );
       const runOptions = await this.buildRunOptions(
         snapshot,
@@ -225,8 +227,16 @@ export class AdkOrchestrator {
     conversationId: string | undefined,
     snapshot: AgentGraphSnapshot,
     mode: 'chat' | 'stream',
+    requestedAgent?: string,
   ): { agentRef: AgentRef; resumeState: RunState | undefined } {
-    const agentRef: AgentRef = { key: snapshot.defaultAgentKey };
+    let startKey = snapshot.defaultAgentKey;
+    if (requestedAgent && snapshot.agents.has(requestedAgent)) {
+      startKey = requestedAgent;
+      this.logger.info(
+        `[AdkOrchestrator] Using requested agent "${requestedAgent}" as starting agent for ${mode}`,
+      );
+    }
+    const agentRef: AgentRef = { key: startKey };
     const resumeState = this.getConversationState(conversationId, snapshot);
     if (resumeState) {
       agentRef.key = resumeState.currentAgentKey;

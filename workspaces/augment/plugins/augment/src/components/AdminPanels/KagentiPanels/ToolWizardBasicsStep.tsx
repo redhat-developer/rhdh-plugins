@@ -57,7 +57,7 @@ export const ToolWizardBasicsStep: FC<ToolWizardBasicsStepProps> = ({
   nameWarning,
   availableNamespaces,
 }) => (
-  <Stack spacing={2}>
+  <Stack spacing={2} data-tour="tool-name">
     <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
       Define the identity of your MCP tool. The name and namespace determine
       where it runs on the cluster.

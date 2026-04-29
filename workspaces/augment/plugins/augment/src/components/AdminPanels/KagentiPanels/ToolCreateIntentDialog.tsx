@@ -48,6 +48,7 @@ type View = 'intent' | 'develop-sub' | 'templates' | 'devspaces';
 const INTENT_CARDS: IntentCard[] = [
   {
     id: 'develop',
+    tourId: 'tool-intent-develop',
     icon: <CodeIcon />,
     title: 'Develop',
     subtitle: 'Start building your MCP tool',
@@ -56,6 +57,7 @@ const INTENT_CARDS: IntentCard[] = [
   },
   {
     id: 'deploy',
+    tourId: 'tool-intent-deploy',
     icon: <RocketLaunchOutlinedIcon />,
     title: 'Deploy',
     subtitle: 'Deploy your tool to the platform',
@@ -145,7 +147,7 @@ export function ToolCreateIntentDialog({
         <>
           <DialogHeader
             titleId={titleId}
-            title="Create Tool"
+            title="New Tool"
             subtitle="Choose how you want to get started with your new MCP tool."
           />
           <DialogContent sx={{ px: 3, pt: 3, pb: 3 }}>

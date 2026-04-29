@@ -40,6 +40,9 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import HubIcon from '@mui/icons-material/Hub';
+import BuildIcon from '@mui/icons-material/Build';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 
 import { useEffectiveConfig } from '../../../hooks/useEffectiveConfig';
 import {
@@ -51,9 +54,12 @@ import {
 import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
 import {
   type AgentFormData,
+  type PublishAsRole,
   createDefaultAgent,
   agentFromConfig,
+  agentToConfig,
   validateAgents,
+  deriveAgentRole,
   buildAgentContext,
 } from './agentValidation';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
@@ -68,7 +74,13 @@ const DEFAULT_MAX_TURNS = 10;
 const MIN_TURNS = 1;
 const MAX_TURNS = 50;
 
-export const AgentsPanel = () => {
+export interface AgentsPanelProps {
+  focusAgentKey?: string;
+  autoCreate?: boolean;
+  onSaved?: () => void;
+}
+
+export const AgentsPanel = ({ focusAgentKey, autoCreate, onSaved }: AgentsPanelProps = {}) => {
   const theme = useTheme();
   const {
     config: effectiveConfig,
@@ -142,16 +154,33 @@ export const AgentsPanel = () => {
     setInitialized(true);
   }, [effectiveConfig, initialized]);
 
-  // Auto-select first agent when agents change or become empty
+  // Auto-select focused agent or first agent when agents load
+  const focusAppliedRef = useRef(false);
+  useEffect(() => {
+    focusAppliedRef.current = false;
+  }, [focusAgentKey]);
   useEffect(() => {
     if (!initialized) return;
     const keys = Object.keys(agents);
     if (keys.length === 0) {
       setSelectedAgentKey(null);
-    } else {
-      setSelectedAgentKey(prev => (!prev || !agents[prev] ? keys[0] : prev));
+      return;
     }
-  }, [initialized, agents]);
+    if (focusAgentKey && agents[focusAgentKey] && !focusAppliedRef.current) {
+      focusAppliedRef.current = true;
+      setSelectedAgentKey(focusAgentKey);
+      return;
+    }
+    setSelectedAgentKey(prev => (!prev || !agents[prev] ? keys[0] : prev));
+  }, [initialized, agents, focusAgentKey]);
+
+  const autoCreateAppliedRef = useRef(false);
+  useEffect(() => {
+    if (autoCreate && initialized && !autoCreateAppliedRef.current) {
+      autoCreateAppliedRef.current = true;
+      setCreateModalOpen(true);
+    }
+  }, [autoCreate, initialized]);
 
   // ── Memos ──────────────────────────────────────────────────────────────
 
@@ -162,13 +191,19 @@ export const AgentsPanel = () => {
       (effectiveConfig.mcpServers as Array<{ id: string; name: string }>) || [];
     return servers.map(s => ({ id: s.id, name: s.name || s.id }));
   }, [effectiveConfig]);
+  const selectedAgent = selectedAgentKey
+    ? (agents[selectedAgentKey] ?? null)
+    : null;
+  const selectedAgentRole: PublishAsRole = useMemo(
+    () =>
+      selectedAgentKey ? deriveAgentRole(selectedAgentKey, agents) : 'standalone',
+    [selectedAgentKey, agents],
+  );
+  const showConnections = selectedAgentRole !== 'standalone';
   const validation = useMemo(
     () => validateAgents(agents, defaultAgentKey),
     [agents, defaultAgentKey],
   );
-  const selectedAgent = selectedAgentKey
-    ? (agents[selectedAgentKey] ?? null)
-    : null;
 
   const topologyEdges = useMemo(() => {
     const edges: Array<{
@@ -184,6 +219,14 @@ export const AgentsPanel = () => {
         if (agents[t]) edges.push({ from: key, to: t, type: 'subtask' });
     }
     return edges;
+  }, [agents, agentKeys]);
+
+  const agentRoles = useMemo(() => {
+    const roles: Record<string, PublishAsRole> = {};
+    for (const key of agentKeys) {
+      roles[key] = deriveAgentRole(key, agents);
+    }
+    return roles;
   }, [agents, agentKeys]);
 
   const edgeCounts = useMemo(() => {
@@ -267,36 +310,7 @@ export const AgentsPanel = () => {
     try {
       const payload: Record<string, Record<string, unknown>> = {};
       for (const [key, agent] of Object.entries(agents)) {
-        const entry: Record<string, unknown> = {
-          name: agent.name,
-          instructions: agent.instructions,
-        };
-        if (agent.handoffDescription)
-          entry.handoffDescription = agent.handoffDescription;
-        if (agent.model) entry.model = agent.model;
-        if (agent.handoffs.length > 0) entry.handoffs = agent.handoffs;
-        if (agent.asTools.length > 0) entry.asTools = agent.asTools;
-        if (agent.mcpServers.length > 0) entry.mcpServers = agent.mcpServers;
-        if (agent.enableRAG) entry.enableRAG = true;
-        if (agent.vectorStoreIds.length > 0)
-          entry.vectorStoreIds = agent.vectorStoreIds;
-        if (agent.enableWebSearch) entry.enableWebSearch = true;
-        if (agent.enableCodeInterpreter) entry.enableCodeInterpreter = true;
-        if (agent.toolChoice) entry.toolChoice = agent.toolChoice;
-        if (agent.temperature !== undefined)
-          entry.temperature = agent.temperature;
-        if (agent.maxOutputTokens !== undefined)
-          entry.maxOutputTokens = agent.maxOutputTokens;
-        if (agent.maxToolCalls !== undefined)
-          entry.maxToolCalls = agent.maxToolCalls;
-        if (agent.guardrails && agent.guardrails.length > 0)
-          entry.guardrails = agent.guardrails;
-        if (agent.reasoning) entry.reasoning = agent.reasoning;
-        if (agent.resetToolChoice !== undefined)
-          entry.resetToolChoice = agent.resetToolChoice;
-        if (agent.nestHandoffHistory !== undefined)
-          entry.nestHandoffHistory = agent.nestHandoffHistory;
-        payload[key] = entry;
+        payload[key] = agentToConfig(agent);
       }
       for (const step of [
         { label: 'agents', fn: () => saveAgents(payload) },
@@ -312,10 +326,14 @@ export const AgentsPanel = () => {
         }
       }
       setSaveSuccess(true);
-      saveTimerRef.current = setTimeout(
-        () => setSaveSuccess(false),
-        SAVE_SUCCESS_TIMEOUT_MS,
-      );
+      if (onSaved) {
+        onSaved();
+      } else {
+        saveTimerRef.current = setTimeout(
+          () => setSaveSuccess(false),
+          SAVE_SUCCESS_TIMEOUT_MS,
+        );
+      }
     } catch (err) {
       let msg = 'Failed to save agent config';
       if (err instanceof Error) msg = err.message;
@@ -337,6 +355,7 @@ export const AgentsPanel = () => {
     saveAgents,
     saveDefaultAgent,
     saveMaxTurns,
+    onSaved,
   ]);
 
   const executeReset = useCallback(async () => {
@@ -424,6 +443,7 @@ export const AgentsPanel = () => {
     >
       {/* ── Top bar ───────────────────────────────────────────────────── */}
       <Box
+        data-tour="orch-toolbar"
         sx={{
           px: 2,
           py: 1,
@@ -584,6 +604,7 @@ export const AgentsPanel = () => {
         >
           {/* ── Left panel: Agent list + Topology ──────────────────────── */}
           <Box
+            data-tour="orch-agent-list"
             sx={{
               width: LEFT_PANEL_WIDTH,
               flexShrink: 0,
@@ -604,6 +625,7 @@ export const AgentsPanel = () => {
                   isSingleAgent={agentKeys.length === 1}
                   outCount={edgeCounts[key]?.out ?? 0}
                   inCount={edgeCounts[key]?.in ?? 0}
+                  effectiveRole={agentRoles[key] ?? 'standalone'}
                   onSelect={handleSelectAgent}
                 />
               ))}
@@ -622,7 +644,7 @@ export const AgentsPanel = () => {
                 }}
               >
                 {/* Identity — always visible above tabs */}
-                <Box sx={{ flexShrink: 0, mb: 1.5 }}>
+                <Box data-tour="orch-identity" sx={{ flexShrink: 0, mb: 1.5 }}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -668,33 +690,63 @@ export const AgentsPanel = () => {
                       </IconButton>
                     </Tooltip>
                   </Box>
-                  <TextField
-                    value={selectedAgent.handoffDescription}
-                    onChange={e =>
-                      updateAgent(
-                        selectedAgentKey,
-                        'handoffDescription',
-                        e.target.value,
-                      )
-                    }
-                    variant="standard"
-                    fullWidth
-                    placeholder="Add a description \u2014 other agents read this when deciding to route here"
-                    InputProps={{
-                      sx: {
-                        fontSize: '0.8rem',
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <Chip
+                      size="small"
+                      icon={
+                        selectedAgentRole === 'router' ? <HubIcon sx={{ fontSize: 14 }} /> :
+                        selectedAgentRole === 'specialist' ? <BuildIcon sx={{ fontSize: 14 }} /> :
+                        <RocketLaunchIcon sx={{ fontSize: 14 }} />
+                      }
+                      label={selectedAgentRole.charAt(0).toUpperCase() + selectedAgentRole.slice(1)}
+                      color={
+                        selectedAgentRole === 'router' ? 'primary' :
+                        selectedAgentRole === 'specialist' ? 'default' :
+                        'success'
+                      }
+                      variant="outlined"
+                      sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+                    />
+                    <Typography
+                      sx={{
+                        fontSize: '0.75rem',
                         color: theme.palette.text.secondary,
-                        borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.25)}`,
-                        '&:hover': {
-                          borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.5)}`,
+                      }}
+                    >
+                      {selectedAgentRole === 'router' && 'Visible in gallery — routes to other agents'}
+                      {selectedAgentRole === 'specialist' && 'Hidden — only reachable via handoffs'}
+                      {selectedAgentRole === 'standalone' && 'Visible in gallery — independent agent'}
+                    </Typography>
+                  </Box>
+                  {showConnections && (
+                    <TextField
+                      value={selectedAgent.handoffDescription}
+                      onChange={e =>
+                        updateAgent(
+                          selectedAgentKey,
+                          'handoffDescription',
+                          e.target.value,
+                        )
+                      }
+                      variant="standard"
+                      fullWidth
+                      placeholder="Add a description \u2014 other agents read this when deciding to route here"
+                      InputProps={{
+                        sx: {
+                          fontSize: '0.8rem',
+                          color: theme.palette.text.secondary,
+                          borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.25)}`,
+                          '&:hover': {
+                            borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.5)}`,
+                          },
+                          '&.Mui-focused': {
+                            borderBottom: `1px solid ${theme.palette.primary.main}`,
+                          },
                         },
-                        '&.Mui-focused': {
-                          borderBottom: `1px solid ${theme.palette.primary.main}`,
-                        },
-                      },
-                      disableUnderline: true,
-                    }}
-                  />
+                        disableUnderline: true,
+                      }}
+                    />
+                  )}
                 </Box>
 
                 {/* Validation — always visible above tabs */}
@@ -734,6 +786,7 @@ export const AgentsPanel = () => {
 
                 {/* Tabs */}
                 <Box
+                  data-tour="orch-tabs"
                   sx={{
                     borderBottom: 1,
                     borderColor: 'divider',
@@ -755,18 +808,25 @@ export const AgentsPanel = () => {
                       },
                     }}
                   >
-                    <Tab label="Capabilities" />
-                    <Tab label="Connections" />
-                    <Tab label="Advanced" />
-                    <Tab label="Instructions" />
+                    <Tab label="Capabilities" data-tour="orch-tab-capabilities" />
+                    {showConnections && (
+                      <Tab label="Connections" data-tour="orch-tab-connections" />
+                    )}
+                    <Tab label="Advanced" data-tour="orch-tab-advanced" />
+                    <Tab label="Instructions" data-tour="orch-tab-instructions" />
                   </Tabs>
                 </Box>
 
                 {/* Tab content — this area scrolls independently */}
+                {(() => {
+                  const connectionsTab = showConnections ? 1 : -1;
+                  const advancedTab = showConnections ? 2 : 1;
+                  const instructionsTab = showConnections ? 3 : 2;
+                  return (
                 <Box sx={{ flex: 1, overflow: 'auto', pt: 2 }}>
                   {/* Tab: Capabilities */}
                   {activeTab === 0 && (
-                    <Box>
+                    <Box data-tour="orch-capabilities">
                       <Box
                         sx={{
                           display: 'flex',
@@ -1055,12 +1115,21 @@ export const AgentsPanel = () => {
                           }
                         />
                       </Box>
+                      <Alert
+                        severity="info"
+                        variant="outlined"
+                        sx={{ mt: 3, fontSize: '0.8rem' }}
+                      >
+                        Global models, MCP servers, and RAG settings are managed
+                        in{' '}
+                        <strong>Platform Config</strong> from the sidebar.
+                      </Alert>
                     </Box>
                   )}
 
-                  {/* Tab: Connections */}
-                  {activeTab === 1 && (
-                    <Box>
+                  {/* Tab: Connections (team mode only) */}
+                  {activeTab === connectionsTab && (
+                    <Box data-tour="orch-connections">
                       {agentKeys.length <= 1 ? (
                         <Box sx={{ py: 4, textAlign: 'center' }}>
                           <Typography
@@ -1274,8 +1343,8 @@ export const AgentsPanel = () => {
                   )}
 
                   {/* Tab: Advanced */}
-                  {activeTab === 2 && (
-                    <Box>
+                  {activeTab === advancedTab && (
+                    <Box data-tour="orch-advanced">
                       <Box
                         sx={{
                           display: 'grid',
@@ -1523,26 +1592,30 @@ export const AgentsPanel = () => {
                   )}
 
                   {/* Tab: Instructions */}
-                  {activeTab === 3 && (
-                    <InstructionsTab
-                      agent={selectedAgent}
-                      agents={agents}
-                      availableMcpServers={availableMcpServers}
-                      modelOptions={modelOptions}
-                      modelsLoading={modelsLoading}
-                      effectiveModel={
-                        selectedAgent.model ||
-                        (effectiveConfig?.model as string) ||
-                        ''
-                      }
-                      generating={generating}
-                      generateError={generateError}
-                      onUpdateInstructions={handleUpdateInstructions}
-                      onGenerate={handleGenerateForTab}
-                      onRefreshModels={refreshModels}
-                    />
+                  {activeTab === instructionsTab && (
+                    <Box data-tour="orch-instructions">
+                      <InstructionsTab
+                        agent={selectedAgent}
+                        agents={agents}
+                        availableMcpServers={availableMcpServers}
+                        modelOptions={modelOptions}
+                        modelsLoading={modelsLoading}
+                        effectiveModel={
+                          selectedAgent.model ||
+                          (effectiveConfig?.model as string) ||
+                          ''
+                        }
+                        generating={generating}
+                        generateError={generateError}
+                        onUpdateInstructions={handleUpdateInstructions}
+                        onGenerate={handleGenerateForTab}
+                        onRefreshModels={refreshModels}
+                      />
+                    </Box>
                   )}
                 </Box>
+                  );
+                })()}
               </Box>
             ) : (
               <Box

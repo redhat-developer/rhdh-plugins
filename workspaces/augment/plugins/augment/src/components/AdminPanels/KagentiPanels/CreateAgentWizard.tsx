@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo, useId } from 'react';
+import { useCallback, useEffect, useMemo, useId } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -27,6 +27,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
+import Typography from '@mui/material/Typography';
 import BuildIcon from '@mui/icons-material/Build';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -48,12 +49,24 @@ const STEP_ICONS: Record<string, React.ReactElement> = {
   [BUILD_STEP]: <BuildIcon />,
 };
 
+const STEP_DESCRIPTIONS: Record<string, string> = {
+  Basics: 'Name your agent and choose its communication protocol and framework.',
+  Deployment:
+    'Choose how to deploy — from a pre-built container image or built from source code.',
+  Runtime:
+    'Configure the workload type, environment variables, ports, and security settings.',
+  [BUILD_STEP]:
+    'Monitor the build progress and deployment status of your agent.',
+};
+
 export function CreateAgentWizard({
   open,
   namespace: namespaceProp,
   initialDeploymentMethod,
   onClose,
   onCreated,
+  onStepControl,
+  onDeployMethodControl,
 }: CreateAgentWizardProps) {
   const titleId = useId();
   const form = useAgentWizardForm(
@@ -63,6 +76,22 @@ export function CreateAgentWizard({
     onCreated,
     initialDeploymentMethod,
   );
+
+  useEffect(() => {
+    if (open && onDeployMethodControl) {
+      onDeployMethodControl((method: string) => {
+        if (method === 'image' || method === 'source') {
+          form.setDeploymentMethod(method);
+        }
+      });
+    }
+  }, [open, onDeployMethodControl, form.setDeploymentMethod]);
+
+  useEffect(() => {
+    if (open && onStepControl) {
+      onStepControl(form.setActiveStep);
+    }
+  }, [open, onStepControl, form.setActiveStep]);
 
   const isSourceDeploy = form.deploymentMethod === 'source';
   const isBuildStep = form.activeStep === FORM_STEPS.length;
@@ -120,6 +149,16 @@ export function CreateAgentWizard({
               </Step>
             ))}
           </Stepper>
+
+          {!isBuildStep && STEP_DESCRIPTIONS[allSteps[form.activeStep]] && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 2, mt: -1 }}
+            >
+              {STEP_DESCRIPTIONS[allSteps[form.activeStep]]}
+            </Typography>
+          )}
 
           {form.submitError && !isBuildStep && (
             <Alert

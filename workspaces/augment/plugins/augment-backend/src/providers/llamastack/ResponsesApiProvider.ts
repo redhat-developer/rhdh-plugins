@@ -49,7 +49,11 @@ import { ResponsesApiCoordinator } from './ResponsesApiCoordinator';
 import { SafetyService } from './SafetyService';
 import { EvaluationService } from './EvaluationService';
 import { normalizeLlamaStackEvent } from './StreamEventNormalizer';
-import type { PromptCapabilities } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import {
+  type PromptCapabilities,
+  type ChatAgent,
+  deriveRoleFromTopology,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { buildMetaPrompt } from './promptGeneration';
 import {
   buildConversationsCapability,
@@ -177,7 +181,7 @@ export class ResponsesApiProvider implements AgenticProvider {
     return models;
   }
 
-  async testModel(modelOverride?: string): Promise<{
+  async testModel(modelOverride?: string, _baseUrl?: string): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -372,6 +376,45 @@ export class ResponsesApiProvider implements AgenticProvider {
 
   async getStatus(): Promise<AgenticProviderStatus> {
     return this.orchestrator.getStatus();
+  }
+
+  async listAgents(): Promise<ChatAgent[]> {
+    const snapshot = await this.orchestrator
+      .getAgentGraphManager()
+      ?.getSnapshot();
+    if (!snapshot?.agents?.size) {
+      return [];
+    }
+
+    // Build topology map from the snapshot for deriveRoleFromTopology
+    const topologyMap: Record<string, { handoffs?: string[]; asTools?: string[] }> = {};
+    for (const [key, resolved] of snapshot.agents) {
+      topologyMap[key] = {
+        handoffs: resolved.config.handoffs,
+        asTools: resolved.config.asTools,
+      };
+    }
+
+    const agents: ChatAgent[] = [];
+    for (const [key, resolved] of snapshot.agents) {
+      const role = deriveRoleFromTopology(key, topologyMap);
+      if (role === 'specialist') continue;
+
+      agents.push({
+        id: key,
+        name: resolved.config.name ?? key,
+        description: resolved.config.instructions
+          ? resolved.config.instructions.slice(0, 200)
+          : undefined,
+        status: 'config',
+        isDefault: key === snapshot.defaultAgentKey,
+        providerType: 'llamastack',
+        framework: 'llamastack',
+        source: 'orchestration',
+        agentRole: role,
+      });
+    }
+    return agents;
   }
 
   // ===========================================================================

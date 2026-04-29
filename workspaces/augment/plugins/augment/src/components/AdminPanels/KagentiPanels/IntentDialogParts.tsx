@@ -23,6 +23,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 
 export interface IntentCard {
   id: string;
+  tourId?: string;
   icon: React.ReactElement;
   title: string;
   subtitle: string;
@@ -51,6 +52,7 @@ export function CardGrid({
       {cards.map(card => (
         <ButtonBase
           key={card.id}
+          data-tour={card.tourId}
           onClick={() => onCardClick(card.id)}
           sx={{
             display: 'flex',

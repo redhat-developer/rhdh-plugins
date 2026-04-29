@@ -143,7 +143,7 @@ export function AgentTemplateBrowser({
         <IconButton onClick={onBack} size="small" aria-label="Back">
           <ArrowBackIcon fontSize="small" />
         </IconButton>
-        <Typography variant="h6" sx={{ fontWeight: 700, flex: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, flex: 1, color: 'text.primary' }}>
           {titleLabel}
         </Typography>
         <IconButton onClick={reload} size="small" aria-label="Refresh templates">
@@ -309,7 +309,7 @@ export function AgentTemplateBrowser({
                         label={type}
                         size="small"
                         variant="outlined"
-                        sx={{ height: 20, fontSize: '0.7rem', flexShrink: 0 }}
+                        sx={{ height: 24, fontSize: '0.75rem', flexShrink: 0 }}
                       />
                     )}
                   </Box>
@@ -344,8 +344,8 @@ export function AgentTemplateBrowser({
                           label={t}
                           size="small"
                           sx={{
-                            height: 20,
-                            fontSize: '0.675rem',
+                            height: 24,
+                            fontSize: '0.75rem',
                             bgcolor: alpha(theme.palette.primary.main, 0.08),
                             color: theme.palette.primary.main,
                           }}

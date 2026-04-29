@@ -252,6 +252,7 @@ export const augmentPlugin = createBackendPlugin({
           '/chat',
           '/chat/stream',
           '/chat/approve',
+          '/agents',
           '/sync',
           '/safety/status',
           '/evaluation/status',

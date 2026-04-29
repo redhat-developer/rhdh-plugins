@@ -23,8 +23,10 @@ export {
   scopedConfigKey,
   isProviderScopedKey,
   isGlobalConfigKey,
+  deriveRoleFromTopology,
 } from './types';
 export type {
+  AgentLifecycleStage,
   BrandingConfig,
   ResponseUsage,
   InputTokensDetails,
@@ -49,6 +51,9 @@ export type {
   QuickAction,
   PromptCard,
   ChatAgentConfig,
+  ChatAgent,
+  AgentRole,
+  AgentTopologyNode,
   PromptGroup,
   ConversationSummary,
   // Prompt generation types

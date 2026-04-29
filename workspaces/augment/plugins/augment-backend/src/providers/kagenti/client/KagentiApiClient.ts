@@ -40,6 +40,7 @@ import type {
   MigrateAgentResponse,
   MigrateAllResponse,
   ClusterBuildStrategiesResponse,
+  ShipwrightBuildListItem,
   ShipwrightBuildListResponse,
   ShipwrightBuildStatusResponse,
   ShipwrightBuildRunStatusResponse,
@@ -638,16 +639,32 @@ export class KagentiApiClient {
 
   async listAgentBuilds(
     namespace?: string,
-    allNamespaces = false,
+    _allNamespaces = false,
   ): Promise<ShipwrightBuildListResponse> {
-    const params = new URLSearchParams();
-    if (namespace) params.set('namespace', namespace);
-    if (allNamespaces) params.set('allNamespaces', 'true');
-    const qs = params.toString() ? `?${params.toString()}` : '';
-    return this.request<ShipwrightBuildListResponse>(
-      'GET',
-      `${API_PREFIX}/agents/shipwright-builds${qs}`,
+    const agents = await this.listAgents(namespace);
+    const results = await Promise.allSettled(
+      agents.items.map(a => this.getAgentBuildInfo(a.namespace, a.name)),
     );
+    const items: ShipwrightBuildListItem[] = [];
+    results.forEach((r, i) => {
+      const a = agents.items[i];
+      if (r.status === 'fulfilled') {
+        const info = r.value;
+        items.push({
+          name: a.name,
+          namespace: a.namespace,
+          resourceType: 'agent',
+          registered: info.buildRegistered,
+          strategy: info.strategy,
+          gitUrl: info.gitUrl,
+          gitRevision: info.gitRevision,
+          contextDir: info.contextDir,
+          outputImage: info.outputImage,
+          creationTimestamp: a.createdAt,
+        });
+      }
+    });
+    return { items };
   }
 
   async getAgentBuild(
@@ -767,16 +784,32 @@ export class KagentiApiClient {
 
   async listToolBuilds(
     namespace?: string,
-    allNamespaces = false,
+    _allNamespaces = false,
   ): Promise<ShipwrightBuildListResponse> {
-    const params = new URLSearchParams();
-    if (namespace) params.set('namespace', namespace);
-    if (allNamespaces) params.set('allNamespaces', 'true');
-    const qs = params.toString() ? `?${params.toString()}` : '';
-    return this.request<ShipwrightBuildListResponse>(
-      'GET',
-      `${API_PREFIX}/tools/shipwright-builds${qs}`,
+    const tools = await this.listTools(namespace);
+    const results = await Promise.allSettled(
+      tools.items.map(t => this.getToolBuildInfo(t.namespace, t.name)),
     );
+    const items: ShipwrightBuildListItem[] = [];
+    results.forEach((r, i) => {
+      const t = tools.items[i];
+      if (r.status === 'fulfilled') {
+        const info = r.value;
+        items.push({
+          name: t.name,
+          namespace: t.namespace,
+          resourceType: 'tool',
+          registered: info.buildRegistered,
+          strategy: info.strategy,
+          gitUrl: info.gitUrl,
+          gitRevision: info.gitRevision,
+          contextDir: info.contextDir,
+          outputImage: info.outputImage,
+          creationTimestamp: t.createdAt,
+        });
+      }
+    });
+    return { items };
   }
 
   async getToolBuildInfo(
@@ -843,16 +876,13 @@ export class KagentiApiClient {
 
   async listAllBuilds(
     namespace?: string,
-    allNamespaces = false,
+    _allNamespaces = false,
   ): Promise<ShipwrightBuildListResponse> {
-    const params = new URLSearchParams();
-    if (namespace) params.set('namespace', namespace);
-    if (allNamespaces) params.set('allNamespaces', 'true');
-    const qs = params.toString() ? `?${params.toString()}` : '';
-    return this.request<ShipwrightBuildListResponse>(
-      'GET',
-      `${API_PREFIX}/shipwright/builds${qs}`,
-    );
+    const [agentBuilds, toolBuilds] = await Promise.all([
+      this.listAgentBuilds(namespace).catch(() => ({ items: [] as ShipwrightBuildListItem[] })),
+      this.listToolBuilds(namespace).catch(() => ({ items: [] as ShipwrightBuildListItem[] })),
+    ]);
+    return { items: [...agentBuilds.items, ...toolBuilds.items] };
   }
 
   // ---------------------------------------------------------------------------

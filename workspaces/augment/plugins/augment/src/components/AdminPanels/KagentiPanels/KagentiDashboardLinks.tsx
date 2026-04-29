@@ -27,10 +27,17 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import HubIcon from '@mui/icons-material/Hub';
 import SearchIcon from '@mui/icons-material/Search';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
+
 import { useTheme, alpha } from '@mui/material/styles';
 import type { KagentiDashboardConfig } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
+import {
+  CONTENT_MAX_WIDTH,
+  HOVER_TRANSITION,
+  PAGE_TITLE_SX,
+  PAGE_SUBTITLE_SX,
+  SECTION_LABEL_SX,
+} from '../shared/commandCenterStyles';
 
 function appendNamespaceQueryParam(href: string, namespace?: string): string {
   const trimmed = namespace?.trim();
@@ -48,7 +55,7 @@ interface LinkDef {
   label: string;
   description: string;
   icon: React.ElementType;
-  category: 'Observability' | 'Security' | 'Development';
+  category: 'Observability' | 'Development';
 }
 
 const LINK_DEFS: LinkDef[] = [
@@ -80,19 +87,11 @@ const LINK_DEFS: LinkDef[] = [
     icon: SyncAltIcon,
     category: 'Development',
   },
-  {
-    key: 'keycloakConsole',
-    label: 'Keycloak Console',
-    description: 'Identity and access management for agents',
-    icon: VpnKeyIcon,
-    category: 'Security',
-  },
 ];
 
 const CATEGORY_ORDER: Array<LinkDef['category']> = [
   'Observability',
   'Development',
-  'Security',
 ];
 
 export function KagentiDashboardLinks({
@@ -206,17 +205,14 @@ export function KagentiDashboardLinks({
   })).filter(g => g.items.length > 0);
 
   return (
-    <Box sx={{ maxWidth: 1200 }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-          Observability Dashboard
+        <Typography variant="h5" sx={PAGE_TITLE_SX}>
+          Observability
         </Typography>
-        <Typography
-          variant="body2"
-          sx={{ color: theme.palette.text.secondary }}
-        >
-          Access various dashboards to monitor the health, performance, traces,
-          and network traffic of your deployed agents and tools.
+        <Typography variant="body2" sx={PAGE_SUBTITLE_SX}>
+          Access dashboards to monitor health, performance, traces, and network
+          traffic of your deployed agents and tools.
         </Typography>
       </Box>
 
@@ -227,10 +223,7 @@ export function KagentiDashboardLinks({
               <Typography
                 variant="caption"
                 sx={{
-                  fontWeight: 600,
-                  color: theme.palette.text.secondary,
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
+                  ...SECTION_LABEL_SX,
                   display: 'block',
                   mb: 1,
                 }}
@@ -246,10 +239,9 @@ export function KagentiDashboardLinks({
                       sx={{
                         width: 260,
                         borderRadius: 2,
-                        transition: 'all 0.2s ease',
+                        transition: HOVER_TRANSITION,
                         '&:hover': {
-                          borderColor: theme.palette.primary.main,
-                          boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, isDark ? 0.12 : 0.08)}`,
+                          borderColor: theme.palette.text.disabled,
                         },
                       }}
                     >
@@ -275,10 +267,10 @@ export function KagentiDashboardLinks({
                               alignItems: 'center',
                               justifyContent: 'center',
                               bgcolor: alpha(
-                                theme.palette.primary.main,
-                                isDark ? 0.15 : 0.08,
+                                theme.palette.text.primary,
+                                isDark ? 0.08 : 0.05,
                               ),
-                              color: theme.palette.primary.main,
+                              color: theme.palette.text.secondary,
                               flexShrink: 0,
                             }}
                           >
@@ -294,7 +286,7 @@ export function KagentiDashboardLinks({
                             >
                               <Typography
                                 variant="body2"
-                                sx={{ fontWeight: 600, fontSize: '0.85rem' }}
+                                sx={{ fontWeight: 600, fontSize: '0.875rem' }}
                               >
                                 {label}
                               </Typography>

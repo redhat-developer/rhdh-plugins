@@ -140,7 +140,7 @@ export function getSharedMarkdownSx(
       backgroundColor: codeBg,
       padding: '2px 6px',
       borderRadius: '4px',
-      fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace',
+      fontFamily: '"SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", monospace',
       fontSize: '0.85em',
       fontWeight: 400,
       wordBreak: 'break-all' as const,

@@ -368,7 +368,7 @@ export class ResponsesApiCoordinator {
    */
   async chat(request: ChatRequest): Promise<ChatResponse> {
     const orchestrator = this.getAdkOrchestrator();
-    const snapshot = await this.getAgentGraphManager().getSnapshot();
+    const snapshot = await this.requireAgentGraphManager().getSnapshot();
     const userQuery = this.chatDepsBuilder.extractUserQuery(request);
 
     return orchestrator.chat(
@@ -389,7 +389,7 @@ export class ResponsesApiCoordinator {
     signal?: AbortSignal,
   ): Promise<void> {
     const orchestrator = this.getAdkOrchestrator();
-    const snapshot = await this.getAgentGraphManager().getSnapshot();
+    const snapshot = await this.requireAgentGraphManager().getSnapshot();
     const userQuery = this.chatDepsBuilder.extractUserQuery(request);
 
     await orchestrator.chatStream(
@@ -410,7 +410,11 @@ export class ResponsesApiCoordinator {
     return this.adkOrchestrator;
   }
 
-  private getAgentGraphManager(): AgentGraphManager {
+  getAgentGraphManager(): AgentGraphManager | null {
+    return this.agentGraphManager;
+  }
+
+  private requireAgentGraphManager(): AgentGraphManager {
     if (!this.agentGraphManager) {
       throw new Error(
         'AgentGraphManager not initialized. Call initialize() first.',

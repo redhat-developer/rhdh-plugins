@@ -19,9 +19,19 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
+import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Fade from '@mui/material/Fade';
+import Skeleton from '@mui/material/Skeleton';
 import { useTheme, alpha } from '@mui/material/styles';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
+import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
 import { useBranding } from '../../hooks';
@@ -36,8 +46,13 @@ import type {
   ChatAgentConfig,
 } from '../../types';
 import { PromptGroupRow } from './PromptGroupRow';
-import { FeaturedAgents } from './FeaturedAgents';
-import { getAgentAvatarColor } from './agentUtils';
+import {
+  getAgentAvatarColor,
+  isAgentReady,
+  sanitizeDescription,
+  sortAgents,
+} from './agentUtils';
+import type { AgentWithCard } from './agentUtils';
 import { buildEffectivePromptGroups } from './buildEffectivePromptGroups';
 import { stripMarkdown } from './stripMarkdown';
 import {
@@ -45,6 +60,10 @@ import {
   getHeroSx,
   getTitleSx,
   getPromptGroupsContainerSx,
+  getPlaygroundHeroSx,
+  getSearchBarSx,
+  getAgentGridSx,
+  getGridScrollAreaSx,
 } from './styles';
 
 export interface SelectedAgentInfo {
@@ -67,7 +86,6 @@ interface WelcomeScreenProps {
   readonly selectedAgent?: SelectedAgentInfo;
   readonly onChangeAgent?: () => void;
   readonly onStarterSelect?: (prompt: string) => void;
-  readonly onBrowseCatalog?: () => void;
 }
 
 const TAGLINE_SX = {
@@ -95,7 +113,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   selectedAgent,
   onChangeAgent,
   onStarterSelect,
-  onBrowseCatalog,
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -103,7 +120,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { branding } = useBranding();
   const { t } = useTranslation();
   const [logoError, setLogoError] = useState(false);
-  const { agents: allAgents } = useAgentGalleryData(api);
+  const [agentSearch, setAgentSearch] = useState('');
+  const { agents: allAgents, loading: agentsLoading } = useAgentGalleryData(api);
 
   const safeLogoUrl = useMemo(
     () => sanitizeBrandingUrl(branding.logoUrl),
@@ -145,6 +163,39 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   );
 
   const hasFeatured = showAgentGallery && onAgentSelect;
+
+  // Visible agents filtered by admin config
+  const visibleAgents = useMemo(() => {
+    if (chatAgentConfigs.length === 0) return allAgents;
+    const hiddenIds = new Set(
+      chatAgentConfigs.filter(c => !c.visible).map(c => c.agentId),
+    );
+    return allAgents.filter((a: AgentWithCard) => !hiddenIds.has(`${a.namespace}/${a.name}`));
+  }, [allAgents, chatAgentConfigs]);
+
+  // Search-filtered and sorted agents
+  const filteredAgents = useMemo(() => {
+    let list = visibleAgents;
+    if (agentSearch.trim()) {
+      const q = agentSearch.toLowerCase();
+      list = list.filter((a: AgentWithCard) => {
+        const name = (a.agentCard?.name || a.name).toLowerCase();
+        const desc = (a.agentCard?.description || a.description || '').toLowerCase();
+        return name.includes(q) || desc.includes(q);
+      });
+    }
+    return sortAgents(list, 'name');
+  }, [visibleAgents, agentSearch]);
+
+  const handleInlineAgentSelect = useCallback(
+    (agent: AgentWithCard) => {
+      if (!onAgentSelect) return;
+      const agentId = `${agent.namespace}/${agent.name}`;
+      const displayName = agent.agentCard?.name || agent.name;
+      onAgentSelect(agentId, displayName);
+    },
+    [onAgentSelect],
+  );
 
   // ── State 2: Agent selected, no messages ──────────────────────────────
   if (selectedAgent) {
@@ -332,7 +383,347 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     );
   }
 
-  // ── State 1: No agent selected ────────────────────────────────────────
+  // ── State 1: No agent selected — full-page agent playground ─────────
+  if (hasFeatured) {
+    return (
+      <Box sx={getContainerSx(theme)}>
+        {/* Compact Hero */}
+        <Box sx={getPlaygroundHeroSx()}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 3,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: alpha(branding.primaryColor || theme.palette.primary.main, isDark ? 0.15 : 0.08),
+              mx: 'auto',
+              mb: 1.5,
+            }}
+          >
+            <HubOutlinedIcon
+              sx={{
+                fontSize: 24,
+                color: branding.primaryColor || theme.palette.primary.main,
+              }}
+            />
+          </Box>
+          <Typography variant="h5" sx={{ ...titleSx, fontSize: '1.4rem', mb: 0.5 }}>
+            Agent Playground
+          </Typography>
+          <Typography variant="body2" sx={TAGLINE_SX}>
+            Select an agent to start a conversation
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              color: theme.palette.text.disabled,
+              fontSize: '0.7rem',
+              mt: 0.5,
+              display: 'block',
+            }}
+          >
+            {visibleAgents.length} {visibleAgents.length === 1 ? 'agent' : 'agents'} available
+          </Typography>
+        </Box>
+
+        {/* Search Bar */}
+        <Box sx={getSearchBarSx(theme)}>
+          <TextField
+            size="small"
+            placeholder="Search agents..."
+            value={agentSearch}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgentSearch(e.target.value)}
+            fullWidth
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ fontSize: 18, color: theme.palette.text.disabled }} />
+                  </InputAdornment>
+                ),
+                endAdornment: agentSearch ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setAgentSearch('')}>
+                      <ClearIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              },
+            }}
+            sx={{ maxWidth: 480 }}
+          />
+        </Box>
+
+        {/* Agent Grid */}
+        <Box sx={getGridScrollAreaSx(theme)}>
+          {agentsLoading ? (
+            <Box sx={getAgentGridSx(theme)}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton
+                  key={i}
+                  variant="rectangular"
+                  height={140}
+                  sx={{ borderRadius: 3 }}
+                  animation="wave"
+                />
+              ))}
+            </Box>
+          ) : filteredAgents.length === 0 ? (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 8,
+                gap: 2,
+              }}
+            >
+              {visibleAgents.length === 0 ? (
+                <>
+                  <Box
+                    sx={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: alpha(theme.palette.primary.main, isDark ? 0.1 : 0.06),
+                    }}
+                  >
+                    <HubOutlinedIcon
+                      sx={{ fontSize: 40, color: theme.palette.primary.main, opacity: 0.6 }}
+                    />
+                  </Box>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    No agents available
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: theme.palette.text.secondary, textAlign: 'center', maxWidth: 360 }}
+                  >
+                    Deploy agents via the Command Center to get started. They will appear here automatically.
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <SearchIcon sx={{ fontSize: 40, color: alpha(theme.palette.text.disabled, 0.4) }} />
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    No matching agents
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: theme.palette.text.secondary, maxWidth: 300, textAlign: 'center' }}
+                  >
+                    No agents match &ldquo;{agentSearch}&rdquo;. Try a different search term.
+                  </Typography>
+                </>
+              )}
+            </Box>
+          ) : (
+            <Box sx={getAgentGridSx(theme)}>
+              {filteredAgents.map((agent: AgentWithCard, idx: number) => {
+                const displayName = chatAgentConfigs.find(
+                  c => c.agentId === `${agent.namespace}/${agent.name}`,
+                )?.displayName || agent.agentCard?.name || agent.name;
+                const config = chatAgentConfigs.find(
+                  c => c.agentId === `${agent.namespace}/${agent.name}`,
+                );
+                const description = config?.description || agent.agentCard?.description || agent.description;
+                const avatarColor = config?.accentColor || getAgentAvatarColor(displayName);
+                const avatarUrl = config?.avatarUrl;
+                const ready = isAgentReady(agent.status);
+
+                return (
+                  <Fade in timeout={80 + idx * 30} key={`${agent.namespace}/${agent.name}`}>
+                    <Card
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 3,
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        opacity: ready ? 1 : 0.55,
+                        borderColor: alpha(theme.palette.divider, isDark ? 0.15 : 0.18),
+                        bgcolor: alpha(theme.palette.background.paper, isDark ? 0.6 : 0.9),
+                        boxShadow: isDark
+                          ? `0 1px 4px ${alpha('#000', 0.2)}`
+                          : `0 1px 4px ${alpha('#000', 0.06)}`,
+                        '&:hover': {
+                          borderColor: alpha(avatarColor, 0.4),
+                          boxShadow: isDark
+                            ? `0 8px 24px ${alpha(avatarColor, 0.15)}`
+                            : `0 8px 24px ${alpha(avatarColor, 0.1)}`,
+                          transform: ready ? 'translateY(-2px)' : undefined,
+                        },
+                      }}
+                    >
+                      <CardActionArea
+                        onClick={() => handleInlineAgentSelect(agent)}
+                        sx={{
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'stretch',
+                          borderRadius: 3,
+                        }}
+                      >
+                        <CardContent
+                          sx={{
+                            p: 2,
+                            '&:last-child': { pb: 2 },
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1 }}>
+                            {avatarUrl ? (
+                              <Box
+                                component="img"
+                                src={avatarUrl}
+                                alt={displayName}
+                                sx={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: 2,
+                                  objectFit: 'cover',
+                                  flexShrink: 0,
+                                }}
+                              />
+                            ) : (
+                              <Box
+                                sx={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: 2,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 700,
+                                  fontSize: '1rem',
+                                  bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
+                                  color: avatarColor,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {displayName.charAt(0).toUpperCase()}
+                              </Box>
+                            )}
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                <Box
+                                  sx={{
+                                    width: 7,
+                                    height: 7,
+                                    borderRadius: '50%',
+                                    bgcolor: ready
+                                      ? theme.palette.success.main
+                                      : theme.palette.warning.main,
+                                    flexShrink: 0,
+                                  }}
+                                />
+                                <Typography
+                                  variant="subtitle2"
+                                  noWrap
+                                  sx={{ fontWeight: 700, fontSize: '0.88rem', lineHeight: 1.3 }}
+                                >
+                                  {displayName}
+                                </Typography>
+                              </Box>
+                              <Typography
+                                variant="caption"
+                                noWrap
+                                sx={{
+                                  color: theme.palette.text.disabled,
+                                  fontSize: '0.65rem',
+                                  display: 'block',
+                                }}
+                              >
+                                {agent.namespace}
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: '0.76rem',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              lineHeight: 1.45,
+                              flex: 1,
+                              mb: 1,
+                            }}
+                          >
+                            {description ? sanitizeDescription(description, 120) : '\u00A0'}
+                          </Typography>
+
+                          {/* Chips row */}
+                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                            {agent.labels?.framework && (
+                              <Chip
+                                label={agent.labels.framework}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.65rem',
+                                  borderRadius: 1.5,
+                                  borderColor: alpha(theme.palette.divider, 0.3),
+                                  color: theme.palette.text.secondary,
+                                }}
+                              />
+                            )}
+                            {agent.labels?.protocol && (
+                              <Chip
+                                label="A2A"
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.65rem',
+                                  borderRadius: 1.5,
+                                  borderColor: alpha(theme.palette.divider, 0.3),
+                                  color: theme.palette.text.secondary,
+                                }}
+                              />
+                            )}
+                            {agent.agentCard?.streaming && (
+                              <Chip
+                                label="Streaming"
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.65rem',
+                                  borderRadius: 1.5,
+                                  borderColor: alpha(theme.palette.divider, 0.3),
+                                  color: theme.palette.text.secondary,
+                                }}
+                              />
+                            )}
+                          </Box>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Fade>
+                );
+              })}
+            </Box>
+          )}
+        </Box>
+      </Box>
+    );
+  }
+
+  // ── Fallback: No agent catalog available — show prompts ──────────────
   const hasPrompts = effectivePromptGroups.length > 0;
 
   return (
@@ -368,64 +759,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <Typography variant="body2" sx={TAGLINE_SX}>
           {branding.tagline}
         </Typography>
-
-        {/* Agent strip — primary CTA, directly below tagline */}
-        {hasFeatured && (
-          <Box sx={{ mt: 3 }}>
-            <FeaturedAgents
-              agents={allAgents}
-              chatAgentConfigs={chatAgentConfigs}
-              onAgentSelect={onAgentSelect!}
-              onBrowseCatalog={onBrowseCatalog}
-            />
-          </Box>
-        )}
       </Box>
-
-      {/* Divider between agents and prompts */}
-      {hasFeatured && hasPrompts && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            px: { xs: 3, sm: 4, md: 6 },
-            py: 1,
-            maxWidth: 960,
-            width: '100%',
-            mx: 'auto',
-            boxSizing: 'border-box',
-          }}
-        >
-          <Box
-            sx={{
-              flex: 1,
-              height: '1px',
-              bgcolor: alpha(theme.palette.divider, 0.4),
-            }}
-          />
-          <Typography
-            variant="caption"
-            sx={{
-              color: 'text.disabled',
-              fontSize: '0.7rem',
-              fontWeight: 500,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            or start with a prompt
-          </Typography>
-          <Box
-            sx={{
-              flex: 1,
-              height: '1px',
-              bgcolor: alpha(theme.palette.divider, 0.4),
-            }}
-          />
-        </Box>
-      )}
 
       {/* Prompt Groups */}
       <Box sx={getPromptGroupsContainerSx(isDark, theme)}>
@@ -438,7 +772,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               isDark={isDark}
             />
           ))}
-        {!hasPrompts && !hasFeatured && (
+        {!hasPrompts && (
           <Box
             sx={{
               flex: 1,

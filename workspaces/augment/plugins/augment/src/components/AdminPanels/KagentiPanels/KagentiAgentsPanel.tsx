@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -31,6 +31,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -38,7 +39,10 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import { useTheme, alpha } from '@mui/material/styles';
-import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  KagentiAgentSummary,
+  ChatAgent,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -49,6 +53,7 @@ import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { AgentCreateIntentDialog } from './AgentCreateIntentDialog';
 import { CreateAgentWizard } from './CreateAgentWizard';
 import { KagentiAgentDetailView } from './KagentiAgentDetailView';
+import { OrchAgentDetailView } from './OrchAgentDetailView';
 import { statusChipColor, formatDateTime } from './kagentiDisplayUtils';
 import type { DeploymentMethod } from './agentWizardTypes';
 import {
@@ -60,14 +65,24 @@ import {
   emptyStateSx,
 } from '../shared/commandCenterStyles';
 
+interface AgentRow {
+  id: string;
+  name: string;
+  namespace?: string;
+  description: string;
+  status: string;
+  labels: { protocol?: string | string[]; framework?: string };
+  workloadType?: string;
+  createdAt?: string;
+  source: 'kagenti' | 'orchestration';
+  agentRole?: string;
+  kagentiAgent?: KagentiAgentSummary;
+}
+
 type SortField = 'name' | 'status' | 'workloadType' | 'createdAt';
 type SortDir = 'asc' | 'desc';
 
-function compareAgents(
-  a: KagentiAgentSummary,
-  b: KagentiAgentSummary,
-  field: SortField,
-): number {
+function compareRows(a: AgentRow, b: AgentRow, field: SortField): number {
   if (field === 'createdAt') {
     const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -78,7 +93,44 @@ function compareAgents(
   return String(valA).localeCompare(String(valB));
 }
 
+function kagentiToRow(a: KagentiAgentSummary): AgentRow {
+  return {
+    id: `${a.namespace}/${a.name}`,
+    name: a.name,
+    namespace: a.namespace,
+    description: a.description,
+    status: a.status,
+    labels: a.labels,
+    workloadType: a.workloadType,
+    createdAt: a.createdAt,
+    source: 'kagenti',
+    kagentiAgent: a,
+  };
+}
+
+function orchAgentToRow(a: ChatAgent): AgentRow {
+  return {
+    id: a.id,
+    name: a.name,
+    description: a.description ?? '',
+    status: a.status,
+    labels: { framework: a.framework },
+    workloadType: 'config',
+    source: 'orchestration',
+    agentRole: a.agentRole,
+  };
+}
+
 const TH_STYLE = TABLE_HEADER_CELL_SX;
+
+export interface AgentPanelTourControl {
+  openIntent: () => void;
+  closeIntent: () => void;
+  selectIntent: (cardId: string) => void;
+  closeWizard: () => void;
+  setWizardStep: (step: number) => void;
+  setDeployMethod: (method: string) => void;
+}
 
 export interface KagentiAgentsPanelProps {
   namespace?: string;
@@ -87,6 +139,7 @@ export interface KagentiAgentsPanelProps {
   onIntentOpened?: () => void;
   initialAgentName?: string;
   onFocusConsumed?: () => void;
+  tourControlRef?: React.MutableRefObject<AgentPanelTourControl | null>;
 }
 
 export function KagentiAgentsPanel({
@@ -96,10 +149,11 @@ export function KagentiAgentsPanel({
   onIntentOpened,
   initialAgentName,
   onFocusConsumed,
+  tourControlRef,
 }: KagentiAgentsPanelProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
-  const [agents, setAgents] = useState<KagentiAgentSummary[]>([]);
+  const [rows, setRows] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [intentOpen, setIntentOpen] = useState(false);
@@ -107,13 +161,21 @@ export function KagentiAgentsPanel({
   const [initialDeployMethod, setInitialDeployMethod] = useState<
     DeploymentMethod | undefined
   >(undefined);
+  const wizardStepRef = useRef<((step: number) => void) | null>(null);
+  const deployMethodRef = useRef<((method: string) => void) | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<KagentiAgentSummary | null>(
     null,
   );
 
   const [selectedAgent, setSelectedAgent] =
     useState<KagentiAgentSummary | null>(null);
+  const [selectedOrchAgent, setSelectedOrchAgent] =
+    useState<ChatAgent | null>(null);
   const [showOrchestration, setShowOrchestration] = useState(false);
+  const [orchFocusKey, setOrchFocusKey] = useState<string | undefined>();
+  const [autoCreateAgent, setAutoCreateAgent] = useState(false);
+  const [createType, setCreateType] = useState<'single' | 'multi' | null>(null);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
@@ -123,10 +185,16 @@ export function KagentiAgentsPanel({
   const loadAgents = useCallback(() => {
     setLoading(true);
     setError(null);
-    api
-      .listKagentiAgents(namespace || undefined)
-      .then(res => setAgents(res.agents ?? []))
-      .catch(e => setError(getErrorMessage(e)))
+    Promise.all([
+      api.listKagentiAgents(namespace || undefined).catch(() => ({ agents: [] as KagentiAgentSummary[] })),
+      api.listAgents().catch(() => [] as ChatAgent[]),
+    ]).then(([kagentiRes, allAgents]) => {
+      const kagentiRows = (kagentiRes.agents ?? []).map(kagentiToRow);
+      const orchRows = allAgents
+        .filter(a => a.source === 'orchestration')
+        .map(orchAgentToRow);
+      setRows([...kagentiRows, ...orchRows]);
+    }).catch(e => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [api, namespace]);
 
@@ -142,16 +210,64 @@ export function KagentiAgentsPanel({
   }, [autoOpenIntent, onIntentOpened]);
 
   useEffect(() => {
-    if (initialAgentName && !loading && agents.length > 0) {
-      const match = agents.find(a => a.name === initialAgentName);
-      if (match) {
-        setSelectedAgent(match);
+    if (tourControlRef) {
+      tourControlRef.current = {
+        openIntent: () => setIntentOpen(true),
+        closeIntent: () => setIntentOpen(false),
+        selectIntent: (cardId: string) => {
+          if (cardId === 'deploy') {
+            setIntentOpen(false);
+            setCreateOpen(true);
+          } else if (cardId === 'develop') {
+            const card = document.querySelector('[data-tour="intent-develop"]');
+            if (card instanceof HTMLElement) {
+              card.click();
+            }
+          } else if (cardId === 'configure') {
+            const card = document.querySelector('[data-tour="intent-configure"]');
+            if (card instanceof HTMLElement) {
+              card.click();
+            }
+          } else if (cardId === 'configure-single') {
+            const card = document.querySelector('[data-tour="intent-configure-single"]');
+            if (card instanceof HTMLElement) {
+              card.click();
+            }
+          } else if (cardId === 'configure-multi') {
+            const card = document.querySelector('[data-tour="intent-configure-multi"]');
+            if (card instanceof HTMLElement) {
+              card.click();
+            }
+          }
+        },
+        closeWizard: () => {
+          setCreateOpen(false);
+          setInitialDeployMethod(undefined);
+        },
+        setWizardStep: (step: number) => {
+          wizardStepRef.current?.(step);
+        },
+        setDeployMethod: (method: string) => {
+          deployMethodRef.current?.(method);
+        },
+      };
+    }
+    return () => {
+      if (tourControlRef) {
+        tourControlRef.current = null;
+      }
+    };
+  }, [tourControlRef]);
+
+  useEffect(() => {
+    if (initialAgentName && !loading && rows.length > 0) {
+      const match = rows.find(r => r.name === initialAgentName && r.kagentiAgent);
+      if (match?.kagentiAgent) {
+        setSelectedAgent(match.kagentiAgent);
       }
       onFocusConsumed?.();
     }
-  }, [initialAgentName, loading, agents, onFocusConsumed]);
-
-  const agentKey = (a: KagentiAgentSummary) => `${a.namespace}/${a.name}`;
+  }, [initialAgentName, loading, rows, onFocusConsumed]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -174,24 +290,24 @@ export function KagentiAgentsPanel({
     }
   };
 
-  const visibleAgents = useMemo(() => {
-    let list = agents;
+  const visibleRows = useMemo(() => {
+    let list = rows;
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter(
-        a =>
-          a.name.toLowerCase().includes(q) ||
-          (a.description ?? '').toLowerCase().includes(q),
+        r =>
+          r.name.toLowerCase().includes(q) ||
+          r.description.toLowerCase().includes(q),
       );
     }
-    const sorted = [...list].sort((a, b) => compareAgents(a, b, sortField));
+    const sorted = [...list].sort((a, b) => compareRows(a, b, sortField));
     return sortDir === 'desc' ? sorted.reverse() : sorted;
-  }, [agents, search, sortField, sortDir]);
+  }, [rows, search, sortField, sortDir]);
 
-  const paginatedAgents = useMemo(
+  const paginatedRows = useMemo(
     () =>
-      visibleAgents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [visibleAgents, page, rowsPerPage],
+      visibleRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [visibleRows, page, rowsPerPage],
   );
 
   useEffect(() => {
@@ -211,22 +327,69 @@ export function KagentiAgentsPanel({
     );
   }
 
+  if (selectedOrchAgent) {
+    return (
+      <OrchAgentDetailView
+        agent={selectedOrchAgent}
+        onBack={() => {
+          setSelectedOrchAgent(null);
+          loadAgents();
+        }}
+        onEditConfig={(agentKey) => {
+          setSelectedOrchAgent(null);
+          setOrchFocusKey(agentKey);
+          setShowOrchestration(true);
+        }}
+        onChatWithAgent={onChatWithAgent}
+      />
+    );
+  }
+
   if (showOrchestration) {
+    const title = orchFocusKey
+      ? 'Edit Agent'
+      : createType === 'multi'
+        ? 'Create Agent Team'
+        : 'Create Agent';
     return (
       <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
           <IconButton
             size="small"
-            onClick={() => setShowOrchestration(false)}
+            onClick={() => {
+              setShowOrchestration(false);
+              setOrchFocusKey(undefined);
+              setAutoCreateAgent(false);
+              setCreateType(null);
+              loadAgents();
+            }}
             aria-label="Back to agents"
           >
             <ArrowBackIcon fontSize="small" />
           </IconButton>
           <Typography variant="h5" sx={PAGE_TITLE_SX}>
-            Agents
+            {title}
           </Typography>
         </Box>
-        <AgentsPanel />
+        <AgentsPanel
+          focusAgentKey={orchFocusKey}
+          autoCreate={autoCreateAgent}
+          onSaved={() => {
+            const savedType = createType;
+            setShowOrchestration(false);
+            setOrchFocusKey(undefined);
+            setAutoCreateAgent(false);
+            setCreateType(null);
+            loadAgents();
+            setSuccessToast(
+              savedType
+                ? savedType === 'multi'
+                  ? 'Agent team created and registered — ready to publish.'
+                  : 'Agent created and registered — ready to publish.'
+                : 'Agent configuration saved.',
+            );
+          }}
+        />
       </Box>
     );
   }
@@ -280,6 +443,7 @@ export function KagentiAgentsPanel({
           <Button
             variant="contained"
             size="small"
+            data-tour="new-agent-btn"
             startIcon={<AddIcon />}
             onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none' }}
@@ -289,9 +453,10 @@ export function KagentiAgentsPanel({
         </Box>
       </Box>
 
-      {!loading && agents.length > 0 && (
+      {!loading && rows.length > 0 && (
         <TextField
           size="small"
+          data-tour="agents-search"
           placeholder="Search agents by name or description…"
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -321,7 +486,7 @@ export function KagentiAgentsPanel({
           <CircularProgress size={32} />
         </Box>
       )}
-      {!loading && agents.length === 0 && (
+      {!loading && rows.length === 0 && (
         <Box sx={emptyStateSx(theme)}>
           <HubOutlinedIcon
             sx={{ fontSize: 48, color: theme.palette.text.disabled }}
@@ -340,12 +505,13 @@ export function KagentiAgentsPanel({
               maxWidth: 400,
             }}
           >
-            Create your first agent to get started. Agents are Kubernetes-native
-            AI workloads that you can chat with.
+            Create your first agent to get started. Agents can be deployed as
+            Kubernetes workloads or configured as multi-agent teams.
           </Typography>
           <Button
             variant="outlined"
             size="small"
+            data-tour="new-agent-btn"
             startIcon={<AddIcon />}
             onClick={() => setIntentOpen(true)}
             sx={{ textTransform: 'none', mt: 1 }}
@@ -354,9 +520,9 @@ export function KagentiAgentsPanel({
           </Button>
         </Box>
       )}
-      {!loading && agents.length > 0 && (
+      {!loading && rows.length > 0 && (
         <>
-          <TableContainer sx={tableContainerSx(theme)}>
+          <TableContainer data-tour="agents-table" sx={tableContainerSx(theme)}>
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -364,7 +530,7 @@ export function KagentiAgentsPanel({
                   <TableCell sx={TH_STYLE}>Description</TableCell>
                   {sortableHead('status', 'Status')}
                   <TableCell sx={TH_STYLE}>Labels</TableCell>
-                  {sortableHead('workloadType', 'Workload')}
+                  <TableCell sx={TH_STYLE}>Source</TableCell>
                   {sortableHead('createdAt', 'Created')}
                   <TableCell sx={TH_STYLE} align="right">
                     Actions
@@ -372,128 +538,165 @@ export function KagentiAgentsPanel({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedAgents.map(a => {
-                  const key = agentKey(a);
-                  return (
-                    <TableRow
-                      key={key}
-                      hover
-                      sx={{ cursor: 'pointer' }}
-                      onClick={() => setSelectedAgent(a)}
-                    >
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontWeight: 600,
-                            color: theme.palette.text.primary,
-                            fontSize: '0.875rem',
-                          }}
-                        >
-                          {a.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {a.namespace}
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ maxWidth: 260 }}>
-                        <Typography
-                          variant="body2"
-                          noWrap
-                          sx={{
-                            color: theme.palette.text.secondary,
-                            fontSize: '0.875rem',
-                          }}
-                        >
-                          {a.description || '—'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={a.status}
-                          size="small"
-                          color={statusChipColor(a.status)}
-                          sx={{ height: 24 }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}
-                        >
-                          {a.labels?.protocol && (
-                            <Chip
-                              label={[a.labels.protocol]
-                                .flat()
-                                .join(', ')
-                                .toUpperCase()}
-                              size="small"
-                              color="primary"
-                              variant="filled"
-                              sx={{ height: 24, fontSize: '0.75rem' }}
-                            />
-                          )}
-                          {a.labels?.framework && (
-                            <Chip
-                              label={a.labels.framework}
-                              size="small"
-                              color="info"
-                              variant="filled"
-                              sx={{ height: 24, fontSize: '0.75rem' }}
-                            />
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={a.workloadType ?? 'deployment'}
-                          size="small"
-                          variant="outlined"
-                          sx={{ height: 24, fontSize: '0.75rem' }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatDateTime(a.createdAt)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        onClick={e => e.stopPropagation()}
+                {paginatedRows.map(row => (
+                  <TableRow
+                    key={row.id}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      if (row.source === 'orchestration') {
+                        const orchAgent = rows.find(r => r.id === row.id);
+                        if (orchAgent) {
+                          const chatAgent: ChatAgent = {
+                            id: orchAgent.id,
+                            name: orchAgent.name,
+                            description: orchAgent.description || undefined,
+                            status: orchAgent.status,
+                            providerType: 'orchestration',
+                            source: 'orchestration',
+                            agentRole: orchAgent.agentRole as ChatAgent['agentRole'],
+                          };
+                          setSelectedOrchAgent(chatAgent);
+                        }
+                      } else if (row.kagentiAgent) {
+                        setSelectedAgent(row.kagentiAgent);
+                      }
+                    }}
+                  >
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 600,
+                          color: theme.palette.text.primary,
+                          fontSize: '0.875rem',
+                        }}
                       >
-                        {onChatWithAgent && (
-                          <Tooltip title="Chat with agent">
-                            <IconButton
-                              size="small"
-                              aria-label="Chat with agent"
-                              onClick={() =>
-                                onChatWithAgent(`${a.namespace}/${a.name}`)
-                              }
-                            >
-                              <ChatOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+                        {row.name}
+                      </Typography>
+                      {row.namespace && (
+                        <Typography variant="caption" color="text.secondary">
+                          {row.namespace}
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 260 }}>
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        {row.description || '—'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={row.status}
+                        size="small"
+                        color={statusChipColor(row.status)}
+                        sx={{ height: 24 }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}
+                      >
+                        {row.agentRole && (
+                          <Chip
+                            label={row.agentRole.charAt(0).toUpperCase() + row.agentRole.slice(1)}
+                            size="small"
+                            color="secondary"
+                            variant="filled"
+                            sx={{ height: 24, fontSize: '0.75rem' }}
+                          />
                         )}
+                        {row.labels?.protocol && (
+                          <Chip
+                            label={[row.labels.protocol]
+                              .flat()
+                              .join(', ')
+                              .toUpperCase()}
+                            size="small"
+                            color="primary"
+                            variant="filled"
+                            sx={{ height: 24, fontSize: '0.75rem' }}
+                          />
+                        )}
+                        {row.labels?.framework && (
+                          <Chip
+                            label={row.labels.framework}
+                            size="small"
+                            color="info"
+                            variant="filled"
+                            sx={{ height: 24, fontSize: '0.75rem' }}
+                          />
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={row.source === 'orchestration' ? 'Responses API' : 'Kagenti'}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          height: 24,
+                          fontSize: '0.75rem',
+                          borderColor: row.source === 'orchestration'
+                            ? alpha(theme.palette.info.main, 0.5)
+                            : undefined,
+                          color: row.source === 'orchestration'
+                            ? theme.palette.info.main
+                            : undefined,
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatDateTime(row.createdAt)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {onChatWithAgent && (
+                        <Tooltip title="Chat with agent">
+                          <IconButton
+                            size="small"
+                            aria-label="Chat with agent"
+                            onClick={() => onChatWithAgent(row.id)}
+                          >
+                            <ChatOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {row.source === 'kagenti' && (
                         <Tooltip title="Delete agent">
                           <IconButton
                             size="small"
                             color="error"
                             aria-label="Delete agent"
-                            onClick={() => setDeleteTarget(a)}
+                            onClick={() => {
+                              if (row.kagentiAgent) setDeleteTarget(row.kagentiAgent);
+                            }}
                           >
                             <DeleteOutlineIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
-          {visibleAgents.length > rowsPerPage && (
+          {visibleRows.length > rowsPerPage && (
             <TablePagination
               component="div"
-              count={visibleAgents.length}
+              count={visibleRows.length}
               page={page}
               onPageChange={(_e, p) => setPage(p)}
               rowsPerPage={rowsPerPage}
@@ -516,9 +719,12 @@ export function KagentiAgentsPanel({
           setInitialDeployMethod(method);
           setCreateOpen(true);
         }}
-        onSelectConfigure={() => {
+        onSelectConfigure={(type) => {
           setIntentOpen(false);
+          setOrchFocusKey(undefined);
           setShowOrchestration(true);
+          setAutoCreateAgent(true);
+          setCreateType(type === 'multi' ? 'multi' : 'single');
         }}
       />
 
@@ -531,6 +737,12 @@ export function KagentiAgentsPanel({
           setInitialDeployMethod(undefined);
         }}
         onCreated={loadAgents}
+        onStepControl={setter => {
+          wizardStepRef.current = setter;
+        }}
+        onDeployMethodControl={setter => {
+          deployMethodRef.current = setter;
+        }}
       />
 
       <ConfirmDialog
@@ -544,6 +756,24 @@ export function KagentiAgentsPanel({
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      <Snackbar
+        open={!!successToast}
+        autoHideDuration={5000}
+        onClose={() => setSuccessToast(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        {successToast ? (
+          <Alert
+            onClose={() => setSuccessToast(null)}
+            severity="success"
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {successToast}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </Box>
   );
 }

@@ -156,7 +156,7 @@ export function AgentStatusTab({
             mb: 2,
           }}
         >
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
             Agent Status
           </Typography>
           <Typography
@@ -253,7 +253,7 @@ export function AgentStatusTab({
               mb: 2,
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
               Shipwright Build Status
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -286,14 +286,14 @@ export function AgentStatusTab({
                           label="Yes"
                           size="small"
                           color="success"
-                          sx={{ height: 22 }}
+                          sx={{ height: 24 }}
                         />
                       ) : (
                         <Chip
                           label="No"
                           size="small"
                           color="default"
-                          sx={{ height: 22 }}
+                          sx={{ height: 24 }}
                         />
                       ),
                     },
@@ -304,7 +304,7 @@ export function AgentStatusTab({
                           label={buildInfo.strategy}
                           size="small"
                           color="info"
-                          sx={{ height: 22 }}
+                          sx={{ height: 24 }}
                         />
                       ) : (
                         '—'
@@ -402,7 +402,7 @@ export function AgentStatusTab({
                               color={statusColor(
                                 buildPhaseToStatus(buildInfo.buildRunPhase),
                               )}
-                              sx={{ height: 22 }}
+                              sx={{ height: 24 }}
                             />
                           ) : (
                             '—'

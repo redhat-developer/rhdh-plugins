@@ -33,7 +33,7 @@ import CodeIcon from '@mui/icons-material/Code';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Message } from '../../types';
-import { WelcomeScreen, AgentCatalogDialog } from '../WelcomeScreen';
+import { WelcomeScreen } from '../WelcomeScreen';
 import type { SelectedAgentInfo } from '../WelcomeScreen';
 import { VirtualizedMessageList } from './VirtualizedMessageList';
 import { StreamingMessage } from '../StreamingMessage';
@@ -123,6 +123,9 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     const { workflows, quickActions, promptGroups } = useWelcomeData();
     const { status } = useStatus();
     const isKagenti = status?.providerId === 'kagenti';
+    const hasAgentCatalog = status?.capabilities?.agentCatalog ?? isKagenti;
+    const requiresAgentSelection =
+      status?.capabilities?.agentSelection ?? isKagenti;
     const providerId = status?.providerId;
     const { configs: chatAgentConfigs } = useChatAgentConfig();
     const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -137,7 +140,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       resetAgentSelection,
     } = useAgentSelection({
       api,
-      isKagenti,
+      isKagenti: hasAgentCatalog,
       chatAgentConfigs,
       messages,
       onMessagesChange,
@@ -155,34 +158,6 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       setInputValue(prompt);
       chatInputRef.current?.focus();
     }, []);
-
-    // ── Agent Catalog Dialog ──────────────────────────────────
-    const [catalogOpen, setCatalogOpen] = useState(false);
-    const catalogAutoOpened = useRef(false);
-
-    const handleOpenCatalog = useCallback(() => setCatalogOpen(true), []);
-    const handleCloseCatalog = useCallback(() => setCatalogOpen(false), []);
-
-    const handleCatalogAgentSelect = useCallback(
-      (agentId: string, agentName: string) => {
-        handleAgentSelect(agentId, agentName);
-        setCatalogOpen(false);
-      },
-      [handleAgentSelect],
-    );
-
-    const handleCatalogStarterSelect = useCallback(
-      (agentId: string, prompt: string) => {
-        const name = agentId.includes('/')
-          ? agentId.split('/').pop()!
-          : agentId;
-        handleAgentSelect(agentId, name);
-        setInputValue(prompt);
-        setCatalogOpen(false);
-        setTimeout(() => chatInputRef.current?.focus(), 100);
-      },
-      [handleAgentSelect],
-    );
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -281,6 +256,23 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     const [shortcutsOpen, setShortcutsOpen] = useState(false);
     const handleShowShortcuts = useCallback(() => setShortcutsOpen(true), []);
 
+    const [attachedFile, setAttachedFile] = useState<File | null>(null);
+    const handleFileSelect = useCallback((file: File) => setAttachedFile(file), []);
+    const handleClearFile = useCallback(() => setAttachedFile(null), []);
+
+    const sendMessageWithFile = useCallback(
+      async (text: string, msgs: Message[]) => {
+        if (!attachedFile) {
+          return sendMessage(text, msgs);
+        }
+        const fileContent = await attachedFile.text();
+        const augmentedText = `${text}\n\n---\nAttached file: ${attachedFile.name}\n\`\`\`\n${fileContent}\n\`\`\``;
+        setAttachedFile(null);
+        return sendMessage(augmentedText, msgs);
+      },
+      [attachedFile, sendMessage],
+    );
+
     const {
       handleQuickActionSelect,
       handleRegenerate,
@@ -288,7 +280,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       handleSendMessage,
       handleStopGeneration,
     } = useChatActions({
-      sendMessage,
+      sendMessage: sendMessageWithFile,
       cancelRequest,
       messages,
       onMessagesChange,
@@ -373,26 +365,13 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     // Show streaming message during generation OR while waiting for approval
     const showStreaming = !!streamingState;
 
-    // Auto-open catalog on first load when Kagenti provider is active
-    useEffect(() => {
-      if (
-        isKagenti &&
-        showWelcome &&
-        !selectedModel &&
-        !catalogAutoOpened.current
-      ) {
-        catalogAutoOpened.current = true;
-        setCatalogOpen(true);
-      }
-    }, [isKagenti, showWelcome, selectedModel]);
-
     const activeAgentConfig = useMemo(
       () => chatAgentConfigs.find(c => c.agentId === selectedModel),
       [chatAgentConfigs, selectedModel],
     );
 
     const selectedAgentInfo: SelectedAgentInfo | undefined = useMemo(() => {
-      if (!selectedModel || !isKagenti) return undefined;
+      if (!selectedModel || !hasAgentCatalog) return undefined;
       const shortName = selectedModel.includes('/')
         ? selectedModel.split('/').pop()!
         : selectedModel;
@@ -406,7 +385,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
       };
     }, [
       selectedModel,
-      isKagenti,
+      hasAgentCatalog,
       activeAgentConfig,
       agentDescription,
       agentStarters,
@@ -427,12 +406,11 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
         }}
       >
         {/* Agent Header -- shown whenever an agent is selected, including on welcome */}
-        {isKagenti && selectedModel && (
+        {hasAgentCatalog && selectedModel && (
           <ChatHeader
             selectedModel={selectedModel}
             currentAgent={streamingState?.currentAgent}
             onChangeAgent={handleChangeAgent}
-            onBrowseAgents={handleOpenCatalog}
             healthWarning={agentHealthWarning ?? undefined}
             agentConfig={activeAgentConfig}
             onExport={
@@ -447,7 +425,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
         {/* Standalone export toolbar — only when no ChatHeader is visible */}
         {messages.length > 0 &&
           !showWelcome &&
-          !(isKagenti && selectedModel) && (
+          !(hasAgentCatalog && selectedModel) && (
             <Box
               sx={{
                 display: 'flex',
@@ -527,13 +505,12 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
               quickActions={quickActions}
               onQuickActionSelect={handleQuickActionSelect}
               promptGroups={promptGroups}
-              showAgentGallery={isKagenti}
+              showAgentGallery={hasAgentCatalog}
               onAgentSelect={handleAgentSelect}
               chatAgentConfigs={chatAgentConfigs}
               selectedAgent={selectedAgentInfo}
               onChangeAgent={handleChangeAgent}
               onStarterSelect={handleStarterClick}
-              onBrowseCatalog={handleOpenCatalog}
             />
           ) : showEmptySession ? (
             <Box
@@ -641,27 +618,33 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           )}
         </Dialog>
 
-        {/* Input Area */}
-        <ChatInput
-          value={inputValue}
-          onChange={setInputValue}
-          onSend={handleSendMessage}
-          onStop={handleStopGeneration}
-          onNewChat={onNewChat}
-          placeholder={
-            activeAgentConfig?.displayName
-              ? `Ask ${activeAgentConfig.displayName} anything...`
-              : branding.inputPlaceholder
-          }
-          isTyping={isTyping || loadingConversation}
-          showNewChatButton={messages.length > 0}
-          inputRef={chatInputRef}
-          activeAgentName={streamingState?.currentAgent}
-          selectedModel={selectedModel}
-          isKagenti={isKagenti}
-          onClearAgent={handleChangeAgent}
-          requireAgent={isKagenti && !selectedModel}
-        />
+        {/* Input Area — only visible when an agent is selected (or agent selection not required) */}
+        {(!requiresAgentSelection || selectedModel) && (
+          <ChatInput
+            value={inputValue}
+            onChange={setInputValue}
+            onSend={handleSendMessage}
+            onStop={handleStopGeneration}
+            onNewChat={onNewChat}
+            onFileSelect={handleFileSelect}
+            attachedFile={attachedFile}
+            onClearFile={handleClearFile}
+            enableFileUpload
+            placeholder={
+              activeAgentConfig?.displayName
+                ? `Ask ${activeAgentConfig.displayName} anything...`
+                : branding.inputPlaceholder
+            }
+            isTyping={isTyping || loadingConversation}
+            showNewChatButton={messages.length > 0}
+            inputRef={chatInputRef}
+            activeAgentName={streamingState?.currentAgent}
+            selectedModel={selectedModel}
+            isKagenti={hasAgentCatalog}
+            onClearAgent={handleChangeAgent}
+            requireAgent={false}
+          />
+        )}
 
         {/* Disclosure Footer */}
         <Typography
@@ -683,16 +666,6 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           onClose={() => setShortcutsOpen(false)}
         />
 
-        {/* Agent Catalog Dialog */}
-        {isKagenti && (
-          <AgentCatalogDialog
-            open={catalogOpen}
-            onClose={handleCloseCatalog}
-            onAgentSelect={handleCatalogAgentSelect}
-            onStarterSelect={handleCatalogStarterSelect}
-            chatAgentConfigs={chatAgentConfigs}
-          />
-        )}
 
         {/* Message Inspector (dev mode only) */}
         {isDev && (

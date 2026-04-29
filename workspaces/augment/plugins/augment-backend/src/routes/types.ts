@@ -53,6 +53,8 @@ export interface RouteContext {
   logger: LoggerService;
   config: import('@backstage/config').Config;
   provider: AgenticProvider;
+  /** Fallback provider for orchestration agents when primary is Kagenti */
+  orchestrationProvider?: AgenticProvider;
   sessions: ChatSessionService | undefined;
 
   /** Extract a safe error message string from an unknown caught value. */

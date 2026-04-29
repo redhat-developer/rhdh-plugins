@@ -236,6 +236,12 @@ export interface AugmentStatus {
     chat: boolean;
     rag: { available: boolean; reason?: string };
     mcpTools: { available: boolean; reason?: string };
+    /** Whether this provider supports listing agents for the catalog */
+    agentCatalog?: boolean;
+    /** Whether the user must select an agent before chatting */
+    agentSelection?: boolean;
+    /** Whether agents have rich metadata (cards, skills) */
+    agentCards?: boolean;
   };
   /** Summary of configured agents (multi-agent only) */
   agents?: Array<{ key: string; name: string; isDefault: boolean }>;
@@ -358,10 +364,20 @@ export interface PromptCard {
 export interface ChatAgentConfig {
   /** Agent identifier: "namespace/name" */
   agentId: string;
-  /** Whether this agent appears in end-user chat */
+  /** Whether this agent is published to the end-user catalog (derived from lifecycleStage === 'deployed') */
+  published: boolean;
+  /** Whether this agent appears in end-user chat (only applies when published) */
   visible: boolean;
   /** Whether this agent is featured prominently on the welcome screen */
   featured: boolean;
+  /** Lifecycle stage: draft → registered → deployed */
+  lifecycleStage?: AgentLifecycleStage;
+  /** Promotion version — incremented each time the agent is promoted forward */
+  version?: number;
+  /** ISO timestamp of last promotion */
+  promotedAt?: string;
+  /** User ref of who last promoted this agent */
+  promotedBy?: string;
   /** Display order (lower first) */
   order?: number;
   /** Override display name */
@@ -397,6 +413,124 @@ export interface PromptGroup {
   order?: number;
   /** Cards within this prompt group */
   cards: PromptCard[];
+}
+
+// =============================================================================
+// Unified Agent Catalog Types
+// =============================================================================
+
+/**
+ * Lifecycle stage of an agent in the promotion pipeline.
+ *
+ * Inspired by the AgentOps Lifecycle:
+ *   draft → registered → deployed
+ *
+ * - **draft**: Agent exists but has not been reviewed by an admin.
+ * - **registered**: Admin has vetted and registered the agent as an enterprise asset.
+ * - **deployed**: Agent is promoted to the end-user catalog and available for use.
+ * @public
+ */
+export type AgentLifecycleStage = 'draft' | 'registered' | 'deployed';
+
+/**
+ * Provider-agnostic representation of a chat agent.
+ * Used by the agent catalog/gallery to display agents from any provider
+ * (Kagenti, Llama Stack config-driven, or custom).
+ * @public
+ */
+export interface ChatAgent {
+  /** Unique agent identifier (e.g. "namespace/name" for Kagenti, agent key for Llama Stack) */
+  id: string;
+  /** Display name */
+  name: string;
+  /** Human-readable description */
+  description?: string;
+  /** Runtime status (e.g. "Ready", "Pending", "config") */
+  status: string;
+  /** Whether this is the default/entry agent */
+  isDefault?: boolean;
+  /** Provider that owns this agent */
+  providerType: string;
+  /** Conversation starters / example prompts */
+  starters?: string[];
+  /** Avatar image URL */
+  avatarUrl?: string;
+  /** Agent creation timestamp */
+  createdAt?: string;
+  /** Agent framework label (e.g. "a2a", "llamastack") */
+  framework?: string;
+  /** Protocol labels (e.g. "A2A", "MCP") */
+  protocols?: string[];
+  /** Whether this agent is published to the end-user catalog (derived: lifecycleStage === 'deployed') */
+  published?: boolean;
+  /** Origin of this agent: 'kagenti' | 'orchestration' | 'external' */
+  source?: string;
+  /** Namespace the agent belongs to (for Kagenti agents) */
+  namespace?: string;
+  /** Current lifecycle stage in the promotion pipeline */
+  lifecycleStage?: AgentLifecycleStage;
+  /** Promotion version (increments each time the agent is promoted) */
+  version?: number;
+  /** When this agent was last promoted */
+  promotedAt?: string;
+  /** Who promoted this agent */
+  promotedBy?: string;
+  /** Role of this agent in the orchestration topology */
+  agentRole?: AgentRole;
+}
+
+/**
+ * Possible roles an agent can have in the orchestration topology.
+ * Always auto-derived from connections, never manually set.
+ * @public
+ */
+export type AgentRole = 'router' | 'specialist' | 'standalone';
+
+/**
+ * Minimal agent shape required for topology-based role derivation.
+ * Both frontend form data and backend config objects satisfy this.
+ * @public
+ */
+export interface AgentTopologyNode {
+  handoffs?: string[];
+  asTools?: string[];
+}
+
+/**
+ * Derives an agent's role from the multi-agent topology.
+ * This is the single source of truth for role derivation across
+ * both frontend and backend.
+ *
+ * Rules:
+ * - Has outgoing handoffs or asTools -> 'router'
+ * - Is a target of another agent's handoffs or asTools -> 'specialist'
+ * - Neither -> 'standalone'
+ *
+ * @public
+ */
+export function deriveRoleFromTopology(
+  agentKey: string,
+  allAgents: Record<string, AgentTopologyNode | null | undefined>,
+): AgentRole {
+  const agent = allAgents[agentKey];
+  if (!agent) return 'standalone';
+
+  const hasOutgoing =
+    (agent.handoffs && agent.handoffs.length > 0) ||
+    (agent.asTools && agent.asTools.length > 0);
+
+  if (hasOutgoing) return 'router';
+
+  const isTarget = Object.entries(allAgents).some(
+    ([k, a]) =>
+      k !== agentKey &&
+      a != null &&
+      ((a.handoffs ?? []).includes(agentKey) ||
+        (a.asTools ?? []).includes(agentKey)),
+  );
+
+  if (isTarget) return 'specialist';
+  return 'standalone';
 }
 
 // =============================================================================

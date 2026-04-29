@@ -35,6 +35,9 @@ backend.add(
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
 backend.add(import('@backstage/plugin-permission-backend'));
+backend.add(
+  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
+);
 
 backend.add(import('@backstage/plugin-search-backend'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog'));

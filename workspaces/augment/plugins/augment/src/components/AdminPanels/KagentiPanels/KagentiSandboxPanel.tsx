@@ -72,7 +72,12 @@ import * as kagentiEndpoints from '../../../api/kagentiEndpoints';
 import type { KagentiApiDeps } from '../../../api/kagentiEndpoints';
 import { getErrorMessage } from '../../../utils';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
+import {
+  sectionCardSx,
+  tableContainerSx,
+} from '../shared/commandCenterStyles';
 import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
+import { PanelIntroBanner } from '../shared/PanelIntroBanner';
 
 export interface KagentiSandboxPanelProps {
   namespace: string;
@@ -623,7 +628,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
           borderRadius: 1,
           border: 1,
           borderColor: 'divider',
-          bgcolor: alpha(theme.palette.info.main, 0.06),
+          bgcolor: 'background.paper',
         }}
       >
         <Typography variant="body2">
@@ -655,7 +660,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
         border: 1,
         borderColor: 'divider',
         bgcolor: alpha(theme.palette.background.default, 0.5),
-        fontSize: '0.7rem',
+        fontSize: '0.75rem',
         overflow: 'auto',
         maxHeight: 400,
         whiteSpace: 'pre-wrap',
@@ -671,10 +676,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
     actions: ReactNode | undefined,
     children: ReactNode,
   ) => (
-    <Card
-      variant="outlined"
-      sx={{ mb: 2, p: 2, bgcolor: alpha(theme.palette.background.paper, 0.4) }}
-    >
+    <Box sx={{ ...sectionCardSx(theme), mb: 2, p: 2 }}>
       <Box
         sx={{
           display: 'flex',
@@ -683,13 +685,13 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
           mb: 1.5,
         }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
           {title}
         </Typography>
         {actions}
       </Box>
       {children}
-    </Card>
+    </Box>
   );
 
   // ---- Sessions tab content ----
@@ -755,14 +757,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
         </Box>
       ) : (
         <>
-          <TableContainer
-            sx={{
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 1,
-              bgcolor: alpha(theme.palette.background.paper, 0.5),
-            }}
-          >
+          <TableContainer sx={tableContainerSx(theme)}>
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -1098,14 +1093,14 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
                                   | 'error'
                                   | 'default'
                               }
-                              sx={{ height: 20, fontSize: '0.65rem' }}
+                              sx={{ height: 24, fontSize: '0.75rem' }}
                             />
                             {restarts !== undefined && (
                               <Chip
                                 label={`${restarts} restart${Number(restarts) === 1 ? '' : 's'}`}
                                 size="small"
                                 variant="outlined"
-                                sx={{ height: 20, fontSize: '0.65rem' }}
+                                sx={{ height: 24, fontSize: '0.75rem' }}
                               />
                             )}
                           </Box>
@@ -1610,7 +1605,12 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
   return (
     <Card variant="outlined">
       <CardContent>
-        <Typography variant="h6" sx={{ fontSize: '1rem', mb: 1 }}>
+        <PanelIntroBanner storageKey="sandbox-panel">
+          The Sandbox provides isolated environments to test agents before
+          promoting them to production. Create sessions, inspect conversations,
+          and validate behavior.
+        </PanelIntroBanner>
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: 'text.primary' }}>
           Sandbox Management
         </Typography>
 

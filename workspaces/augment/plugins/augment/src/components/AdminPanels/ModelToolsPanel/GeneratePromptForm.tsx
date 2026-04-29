@@ -149,7 +149,7 @@ export const GeneratePromptForm = ({
                         size="small"
                         color="success"
                         variant="outlined"
-                        sx={{ height: 20, fontSize: '0.7rem' }}
+                        sx={{ height: 24, fontSize: '0.75rem' }}
                       />
                     )}
                   </Box>

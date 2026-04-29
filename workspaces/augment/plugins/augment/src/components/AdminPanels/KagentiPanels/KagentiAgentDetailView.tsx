@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -22,10 +22,14 @@ import Chip from '@mui/material/Chip';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import Snackbar from '@mui/material/Snackbar';
 import { useTheme } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ChatIcon from '@mui/icons-material/Chat';
+import PublishIcon from '@mui/icons-material/Publish';
+import CloudOffIcon from '@mui/icons-material/CloudOff';
 import { useApi } from '@backstage/core-plugin-api';
 import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
@@ -34,6 +38,7 @@ import { AgentDetailsTab } from './AgentDetailsTab';
 import { AgentStatusTab } from './AgentStatusTab';
 import { AgentResourceTab } from './AgentResourceTab';
 import { AgentCardTab } from './AgentCardTab';
+import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
 import { useKagentiAgentDetail } from './useKagentiAgentDetail';
 
 export interface KagentiAgentDetailViewProps {
@@ -70,8 +75,44 @@ export function KagentiAgentDetailView({
   const agentId = `${agent.namespace}/${agent.name}`;
   const displayName = agentCard?.name || agent.name;
 
+  const [lifecycleStage, setLifecycleStage] = useState<string | null>(null);
+  const isPublished = lifecycleStage === 'deployed';
+  const [publishLoading, setPublishLoading] = useState(false);
+  const [publishToast, setPublishToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.listAgents().then(agents => {
+      if (cancelled) return;
+      const match = agents.find(a => a.id === agentId);
+      if (match) {
+        setLifecycleStage(match.lifecycleStage ?? 'draft');
+      }
+    }).catch(() => { /* initial state unknown — user can still act */ });
+    return () => { cancelled = true; };
+  }, [api, agentId]);
+
+  const handleTogglePublish = useCallback(async () => {
+    setPublishLoading(true);
+    try {
+      if (isPublished) {
+        const result = await api.demoteAgent(agentId, 'registered');
+        setLifecycleStage(result.lifecycleStage);
+        setPublishToast('Agent withdrawn from catalog');
+      } else {
+        const result = await api.promoteAgent(agentId, 'deployed');
+        setLifecycleStage(result.lifecycleStage);
+        setPublishToast(`Agent deployed to catalog (v${result.version})`);
+      }
+    } catch (err) {
+      setPublishToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
+    } finally {
+      setPublishLoading(false);
+    }
+  }, [api, agentId, isPublished]);
+
   return (
-    <Box sx={{ maxWidth: 1200 }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
       <Button
         size="small"
         startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
@@ -99,7 +140,10 @@ export function KagentiAgentDetailView({
           <Box
             sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}
           >
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: 700, color: 'text.primary' }}
+            >
               {displayName}
             </Typography>
             <Chip
@@ -121,7 +165,7 @@ export function KagentiAgentDetailView({
                 label={[agent.labels.protocol].flat().join(', ').toUpperCase()}
                 size="small"
                 variant="outlined"
-                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }}
+                sx={{ height: 24, fontSize: '0.75rem', fontWeight: 600 }}
               />
             )}
             {agent.labels?.framework && (
@@ -130,7 +174,7 @@ export function KagentiAgentDetailView({
                 size="small"
                 variant="outlined"
                 color="info"
-                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }}
+                sx={{ height: 24, fontSize: '0.75rem', fontWeight: 600 }}
               />
             )}
             {agent.workloadType && (
@@ -138,12 +182,31 @@ export function KagentiAgentDetailView({
                 label={agent.workloadType}
                 size="small"
                 variant="outlined"
-                sx={{ height: 22, fontSize: '0.7rem' }}
+                sx={{ height: 24, fontSize: '0.75rem' }}
               />
             )}
           </Box>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', pt: 0.5 }}>
+          <Button
+            size="small"
+            variant={isPublished ? 'outlined' : 'contained'}
+            color={isPublished ? 'inherit' : 'success'}
+            startIcon={
+              publishLoading ? (
+                <CircularProgress size={14} />
+              ) : isPublished ? (
+                <CloudOffIcon />
+              ) : (
+                <PublishIcon />
+              )
+            }
+            disabled={publishLoading}
+            onClick={handleTogglePublish}
+            sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+          >
+            {isPublished ? 'Withdraw' : 'Deploy to Catalog'}
+          </Button>
           {hasBuild && (
             <Button
               size="small"
@@ -242,6 +305,14 @@ export function KagentiAgentDetailView({
           onCopy={handleCopy}
         />
       )}
+
+      <Snackbar
+        open={!!publishToast}
+        autoHideDuration={3000}
+        onClose={() => setPublishToast(null)}
+        message={publishToast}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Box>
   );
 }

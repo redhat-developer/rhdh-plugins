@@ -38,6 +38,11 @@ interface SessionMessageResult {
       fileId?: string;
       attributes?: Record<string, unknown>;
     }>;
+    citations?: Array<{
+      title?: string;
+      url?: string;
+      snippet?: string;
+    }>;
   }>;
   sessionCreatedAt?: string;
   hasConversationId?: boolean;
@@ -202,6 +207,13 @@ export function useChatSessions({
               score: rs.score,
               fileId: rs.fileId,
               attributes: rs.attributes,
+            }));
+          }
+          if (pm.citations && pm.citations.length > 0) {
+            msg.citations = pm.citations.map(c => ({
+              title: c.title,
+              url: c.url,
+              snippet: c.snippet,
             }));
           }
           const pmAny = pm as Record<string, unknown>;

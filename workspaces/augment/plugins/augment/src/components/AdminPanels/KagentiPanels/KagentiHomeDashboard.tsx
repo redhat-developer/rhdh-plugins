@@ -61,11 +61,14 @@ import {
   subtleBorder,
   tableContainerSx,
 } from '../shared/commandCenterStyles';
+import { InfoTip } from '../shared/InfoTip';
+import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
 
 export interface KagentiHomeDashboardProps {
   namespace?: string;
   onNavigate: (panel: AdminPanel, focusName?: string) => void;
   onCreateAgent?: () => void;
+  onHelpTours?: () => void;
 }
 
 interface DashboardData {
@@ -122,6 +125,7 @@ export function KagentiHomeDashboard({
   namespace,
   onNavigate,
   onCreateAgent,
+  onHelpTours,
 }: KagentiHomeDashboardProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
@@ -130,6 +134,7 @@ export function KagentiHomeDashboard({
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [buildError, setBuildError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [showGettingStarted, setShowGettingStarted] = useState(() => {
     try {
@@ -142,6 +147,7 @@ export function KagentiHomeDashboard({
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setBuildError(null);
     try {
       const [agentsRes, toolsRes, nsRes, buildsRes] = await Promise.all([
         api.listKagentiAgents(namespace || undefined),
@@ -149,7 +155,10 @@ export function KagentiHomeDashboard({
         api.listKagentiNamespaces(),
         api
           .listKagentiShipwrightBuilds(namespace ? { namespace } : undefined)
-          .catch(() => ({ builds: [] as KagentiBuildListItem[] })),
+          .catch((e: unknown) => {
+            setBuildError(e instanceof Error ? e.message : 'Failed to load builds');
+            return { builds: [] as KagentiBuildListItem[] };
+          }),
       ]);
       setData({
         agents: agentsRes.agents ?? [],
@@ -233,6 +242,7 @@ export function KagentiHomeDashboard({
       value: totalAgents,
       icon: <HubOutlinedIcon />,
       accent: theme.palette.primary.main,
+      tip: 'Total number of agents deployed in the selected namespace.',
     },
     {
       label: 'Ready Agents',
@@ -241,6 +251,7 @@ export function KagentiHomeDashboard({
       accent: allAgentsHealthy
         ? theme.palette.success.main
         : theme.palette.warning.main,
+      tip: "Agents with status 'Ready' — running and accepting requests.",
     },
     {
       label: 'Ready Tools',
@@ -249,16 +260,26 @@ export function KagentiHomeDashboard({
       accent: allToolsHealthy
         ? theme.palette.success.main
         : theme.palette.warning.main,
+      tip: 'MCP tool servers running and available for agent use.',
     },
     {
       label: 'Namespaces',
       value: data?.namespaceCount ?? 0,
       icon: <WorkspacesOutlinedIcon />,
       accent: theme.palette.info.main,
+      tip: 'Kubernetes namespaces with deployed agents or tools. Use the sidebar picker to filter.',
     },
   ];
 
   const createActions = [
+    {
+      label: 'Guided Experience',
+      description: 'Step-by-step interactive walkthroughs',
+      icon: <ExploreOutlinedIcon sx={{ fontSize: 24 }} />,
+      accent: theme.palette.text.secondary,
+      panel: 'kagenti-home' as AdminPanel,
+      action: onHelpTours,
+    },
     {
       label: 'New Agent',
       description: 'Import or build a new AI agent',
@@ -281,19 +302,27 @@ export function KagentiHomeDashboard({
       step: 1,
       title: 'Import an agent',
       description: 'Start by importing an agent from the examples repository.',
+      done: totalAgents > 0,
+      onClick: () => onCreateAgent?.(),
     },
     {
       step: 2,
       title: 'Chat with it',
       description: 'Then chat with it to see it in action.',
+      done: totalAgents > 0,
+      onClick: () => onNavigate('kagenti-agents' as AdminPanel),
     },
     {
       step: 3,
       title: 'Monitor & observe',
       description:
         'Use the observability dashboards to monitor traces and network traffic.',
+      done: readyAgents > 0,
+      onClick: () => onNavigate('kagenti-dashboards' as AdminPanel),
     },
   ];
+
+  const stepsCompleted = gettingStartedSteps.filter(s => s.done).length;
 
   const thStyle = TABLE_HEADER_CELL_SX;
 
@@ -416,6 +445,19 @@ export function KagentiHomeDashboard({
 
   function renderBuildsContent() {
     if (loading) return renderLoadingSkeleton();
+    if (buildError) {
+      return (
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <WarningAmberIcon sx={{ fontSize: 32, color: theme.palette.warning.main, mb: 1 }} />
+          <Typography variant="body2" color="error" sx={{ mb: 0.5 }}>
+            Failed to load builds
+          </Typography>
+          <Typography variant="caption" color="textSecondary">
+            {buildError}
+          </Typography>
+        </Box>
+      );
+    }
     if (recentBuilds.length === 0) {
       return (
         <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -531,6 +573,7 @@ export function KagentiHomeDashboard({
 
       {/* Stats Row */}
       <Box
+        data-tour="stat-cards"
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' },
@@ -560,6 +603,7 @@ export function KagentiHomeDashboard({
             >
               <Typography variant="caption" sx={SECTION_LABEL_SX}>
                 {card.label}
+                {card.tip && <InfoTip text={card.tip} />}
               </Typography>
               <Box sx={{ color: theme.palette.text.disabled }}>{card.icon}</Box>
             </Box>
@@ -568,9 +612,9 @@ export function KagentiHomeDashboard({
             ) : (
               <Typography
                 sx={{
-                  fontWeight: 800,
+                  fontWeight: 700,
                   lineHeight: 1,
-                  fontSize: '2rem',
+                  fontSize: '1.5rem',
                   color: 'text.primary',
                 }}
               >
@@ -584,6 +628,7 @@ export function KagentiHomeDashboard({
       {/* Getting Started */}
       <Collapse in={showGettingStarted}>
         <Card
+          data-tour="getting-started"
           variant="outlined"
           sx={{
             p: 3,
@@ -614,6 +659,13 @@ export function KagentiHomeDashboard({
                 }}
               >
                 Getting Started
+                <Typography
+                  component="span"
+                  variant="caption"
+                  sx={{ ml: 1, color: 'text.secondary', fontWeight: 400 }}
+                >
+                  {stepsCompleted} of {gettingStartedSteps.length} completed
+                </Typography>
               </Typography>
             </Box>
             <IconButton size="small" onClick={dismissGettingStarted}>
@@ -630,7 +682,28 @@ export function KagentiHomeDashboard({
             {gettingStartedSteps.map(step => (
               <Box
                 key={step.step}
-                sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}
+                onClick={step.onClick}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') step.onClick?.();
+                }}
+                sx={{
+                  display: 'flex',
+                  gap: 1.5,
+                  alignItems: 'flex-start',
+                  cursor: 'pointer',
+                  borderRadius: 1.5,
+                  p: 1.5,
+                  mx: -1.5,
+                  transition: 'background-color 0.15s ease',
+                  '&:hover': {
+                    bgcolor: alpha(
+                      theme.palette.text.primary,
+                      isDark ? 0.06 : 0.03,
+                    ),
+                  },
+                }}
               >
                 <Box
                   sx={{
@@ -640,19 +713,27 @@ export function KagentiHomeDashboard({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    bgcolor: alpha(
-                      theme.palette.text.primary,
-                      isDark ? 0.1 : 0.06,
-                    ),
-                    color: theme.palette.text.secondary,
+                    bgcolor: step.done
+                      ? alpha(theme.palette.success.main, isDark ? 0.15 : 0.1)
+                      : alpha(
+                          theme.palette.text.primary,
+                          isDark ? 0.1 : 0.06,
+                        ),
+                    color: step.done
+                      ? theme.palette.success.main
+                      : theme.palette.text.secondary,
                     fontWeight: 700,
                     fontSize: '0.875rem',
                     flexShrink: 0,
                   }}
                 >
-                  {step.step}
+                  {step.done ? (
+                    <CheckCircleIcon sx={{ fontSize: 18 }} />
+                  ) : (
+                    step.step
+                  )}
                 </Box>
-                <Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     variant="subtitle2"
                     sx={{
@@ -670,6 +751,14 @@ export function KagentiHomeDashboard({
                     {step.description}
                   </Typography>
                 </Box>
+                <ArrowForwardIcon
+                  sx={{
+                    fontSize: 16,
+                    color: theme.palette.text.disabled,
+                    flexShrink: 0,
+                    mt: 0.5,
+                  }}
+                />
               </Box>
             ))}
           </Box>
@@ -677,24 +766,25 @@ export function KagentiHomeDashboard({
       </Collapse>
 
       {/* Quick Actions */}
-      <Typography
-        variant="h6"
-        sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}
-      >
-        Quick Actions
-      </Typography>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(2, 1fr)',
-          },
-          gap: 2,
-          mb: 3,
-        }}
-      >
-        {createActions.map(action => (
+      <Box data-tour="quick-actions">
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}
+        >
+          Quick Actions
+        </Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(3, 1fr)',
+            },
+            gap: 2,
+            mb: 3,
+          }}
+        >
+          {createActions.map(action => (
           <Card
             key={action.label}
             variant="outlined"
@@ -763,10 +853,14 @@ export function KagentiHomeDashboard({
             </CardActionArea>
           </Card>
         ))}
+        </Box>
       </Box>
 
       {/* Agent & Tool Health + Recent Builds (tabbed) */}
-      <Box sx={{ ...tableContainerSx(theme), overflow: 'hidden' }}>
+      <Box
+        data-tour="health-table"
+        sx={{ ...tableContainerSx(theme), overflow: 'hidden' }}
+      >
         <Tabs
           value={activeTab}
           onChange={(_e, v) => setActiveTab(v)}
@@ -779,7 +873,8 @@ export function KagentiHomeDashboard({
               minHeight: 40,
               textTransform: 'none',
               fontWeight: 600,
-              fontSize: '0.875rem',
+              fontSize: '0.8125rem',
+              mr: 2,
             },
           }}
         >

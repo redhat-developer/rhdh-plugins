@@ -23,7 +23,7 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Skeleton from '@mui/material/Skeleton';
-import { useTheme, alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import StreamIcon from '@mui/icons-material/Stream';
 import type { KagentiAgentCard } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 
@@ -67,7 +67,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
       }}
     >
       <Card variant="outlined" sx={{ p: 2.5 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}>
           Basic Information
         </Typography>
         <Table size="small">
@@ -93,7 +93,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
                   label={agentCard.version || '0.0.0'}
                   size="small"
                   variant="outlined"
-                  sx={{ height: 22, fontSize: '0.75rem' }}
+                  sx={{ height: 24, fontSize: '0.75rem' }}
                 />
               </TableCell>
             </TableRow>
@@ -104,7 +104,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
               <TableCell
                 sx={{
                   fontFamily: 'monospace',
-                  fontSize: '0.8rem',
+                  fontSize: '0.875rem',
                   wordBreak: 'break-all',
                 }}
               >
@@ -116,7 +116,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
       </Card>
 
       <Card variant="outlined" sx={{ p: 2.5 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}>
           Capabilities
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
@@ -131,7 +131,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
             label={agentCard.streaming ? 'Enabled' : 'Disabled'}
             size="small"
             color={agentCard.streaming ? 'success' : 'default'}
-            sx={{ height: 22 }}
+            sx={{ height: 24 }}
           />
         </Box>
         {agentCard.defaultInputModes && agentCard.defaultInputModes.length > 0 && (
@@ -149,7 +149,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
                   label={mode}
                   size="small"
                   variant="outlined"
-                  sx={{ height: 22 }}
+                  sx={{ height: 24 }}
                 />
               ))}
             </Box>
@@ -159,7 +159,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
 
       {agentCard.description && (
         <Card variant="outlined" sx={{ p: 2.5, gridColumn: { md: '1 / -1' } }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: 'text.primary' }}>
             Description
           </Typography>
           <Typography
@@ -173,7 +173,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
 
       {agentCard.skills && agentCard.skills.length > 0 && (
         <Card variant="outlined" sx={{ p: 2.5, gridColumn: { md: '1 / -1' } }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
             Skills ({agentCard.skills.length})
           </Typography>
           <Box
@@ -202,7 +202,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
                   variant="outlined"
                   sx={{
                     p: 2,
-                    bgcolor: alpha(theme.palette.background.paper, 0.5),
+                    bgcolor: 'background.paper',
                   }}
                 >
                   <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
@@ -227,7 +227,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
                           label={tag}
                           size="small"
                           variant="outlined"
-                          sx={{ height: 20, fontSize: '0.65rem' }}
+                          sx={{ height: 24, fontSize: '0.75rem' }}
                         />
                       ))}
                     </Box>

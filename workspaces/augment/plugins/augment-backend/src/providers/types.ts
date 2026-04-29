@@ -17,6 +17,7 @@
 import type {
   NormalizedStreamEvent,
   SyncResult,
+  ChatAgent,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type {
   ChatRequest,
@@ -43,6 +44,7 @@ export type {
   MCPServerStatus,
   SecurityMode,
   RAGSource,
+  ChatAgent,
 };
 export type { EvaluationResult } from '../types';
 
@@ -333,6 +335,13 @@ export interface AgenticProvider {
   ): Promise<string>;
 
   /**
+   * List agents available for chat in a provider-agnostic format.
+   * Used by the agent catalog/gallery to display agents regardless of
+   * whether they come from Kagenti, Llama Stack config, or another source.
+   */
+  listAgents?(): Promise<ChatAgent[]>;
+
+  /**
    * List available models from the inference server.
    * Used by the admin panel to populate model selection dropdowns.
    */
@@ -344,7 +353,10 @@ export interface AgenticProvider {
    * Test connectivity to the inference server and optionally verify that a
    * specific model is available and can generate output.
    */
-  testModel?(model?: string): Promise<{
+  testModel?(
+    model?: string,
+    baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -385,6 +397,12 @@ export interface AgenticProviderStatus {
     chat: boolean;
     rag: { available: boolean; reason?: string };
     mcpTools: { available: boolean; reason?: string };
+    /** Whether this provider supports listing agents for the catalog */
+    agentCatalog?: boolean;
+    /** Whether the user must select an agent before chatting */
+    agentSelection?: boolean;
+    /** Whether agents have rich metadata (cards, skills) */
+    agentCards?: boolean;
   };
 }
 

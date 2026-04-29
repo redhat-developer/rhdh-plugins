@@ -98,7 +98,7 @@ export const ToolWizardRuntimeStep: FC<ToolWizardRuntimeStepProps> = ({
       and essential variables — only customize if your tool has specific
       requirements.
     </Typography>
-    <FormControl>
+    <FormControl data-tour="tool-runtime-workload">
       <FormLabel id="tool-workload-type-label">Workload type</FormLabel>
       <RadioGroup
         aria-labelledby="tool-workload-type-label"

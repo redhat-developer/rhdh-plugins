@@ -107,4 +107,6 @@ export interface CreateAgentWizardProps {
   initialDeploymentMethod?: DeploymentMethod;
   onClose: () => void;
   onCreated: () => void;
+  onStepControl?: (setter: (step: number) => void) => void;
+  onDeployMethodControl?: (setter: (method: string) => void) => void;
 }

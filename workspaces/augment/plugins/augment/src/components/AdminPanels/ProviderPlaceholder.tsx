@@ -51,7 +51,7 @@ export function ProviderPlaceholder({ provider }: ProviderPlaceholderProps) {
           color: alpha(theme.palette.text.secondary, 0.4),
         }}
       />
-      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+      <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
         {provider.displayName}
       </Typography>
       <Typography variant="body2" color="textSecondary" sx={{ maxWidth: 400 }}>

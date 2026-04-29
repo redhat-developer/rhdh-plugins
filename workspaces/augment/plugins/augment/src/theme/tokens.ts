@@ -152,8 +152,9 @@ export const colors = {
 
 export const typography = {
   fontFamily: {
-    primary: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    mono: '"JetBrains Mono", "Fira Code", "Monaco", monospace',
+    primary:
+      '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", "Roboto", sans-serif',
+    mono: '"SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", "Monaco", monospace',
   },
 
   fontSize: {

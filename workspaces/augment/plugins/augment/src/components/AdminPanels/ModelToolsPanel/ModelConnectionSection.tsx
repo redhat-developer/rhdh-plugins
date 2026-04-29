@@ -130,7 +130,11 @@ export const ModelConnectionSection = ({
     setTesting(true);
     setTestResult(null);
     try {
-      const result = await api.testModelConnection(model.trim() || undefined);
+      const trimmedUrl = baseUrl.trim() || undefined;
+      const result = await api.testModelConnection(
+        model.trim() || undefined,
+        trimmedUrl,
+      );
       setTestResult(result);
     } catch (err) {
       setTestResult({
@@ -142,7 +146,7 @@ export const ModelConnectionSection = ({
     } finally {
       setTesting(false);
     }
-  }, [api, model]);
+  }, [api, model, baseUrl]);
 
   const handleSave = useCallback(async () => {
     const allWarnings: string[] = [];

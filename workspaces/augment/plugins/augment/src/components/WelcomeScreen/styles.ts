@@ -84,6 +84,67 @@ export const getLaneIconSx = (
   '& svg': { fontSize: 14 },
 });
 
+/** Compact hero for agent playground (no-agent-selected state). */
+export const getPlaygroundHeroSx = (): SxProps<Theme> => ({
+  textAlign: 'center',
+  pt: { xs: 3, sm: 4 },
+  pb: 1,
+  px: { xs: 2, sm: 3 },
+  flexShrink: 0,
+});
+
+/** Inline search bar container. */
+export const getSearchBarSx = (theme: Theme): SxProps<Theme> => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 1,
+  px: { xs: 2, sm: 3 },
+  pb: 1.5,
+  pt: 0.5,
+  flexShrink: 0,
+  maxWidth: 1100,
+  width: '100%',
+  mx: 'auto',
+  boxSizing: 'border-box',
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 5,
+    fontSize: '0.85rem',
+    height: 42,
+    bgcolor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.5 : 0.8),
+    '&.Mui-focused': {
+      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.15)}`,
+    },
+  },
+});
+
+/** Responsive agent grid. */
+export const getAgentGridSx = (theme: Theme): SxProps<Theme> => ({
+  display: 'grid',
+  gridTemplateColumns: {
+    xs: '1fr',
+    sm: 'repeat(2, 1fr)',
+    md: 'repeat(3, 1fr)',
+  },
+  gap: 2,
+  px: { xs: 2, sm: 3 },
+  pb: 3,
+  maxWidth: 1100,
+  width: '100%',
+  mx: 'auto',
+  boxSizing: 'border-box',
+  ...(theme ? createMinimalScrollbarStyles(theme) : {}),
+});
+
+/** Scrollable wrapper for the grid area. */
+export const getGridScrollAreaSx = (theme: Theme): SxProps<Theme> => ({
+  flex: '1 1 0',
+  minHeight: 0,
+  overflowY: 'auto',
+  overflowX: 'clip',
+  ...(theme ? createMinimalScrollbarStyles(theme) : {}),
+});
+
 /** Individual swim lane card. */
 export const getCardSx = (
   isDark: boolean,

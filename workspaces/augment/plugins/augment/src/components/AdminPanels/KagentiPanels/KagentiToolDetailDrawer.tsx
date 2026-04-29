@@ -109,7 +109,7 @@ export function KagentiToolDetailDrawer({
     border: 1,
     borderColor: 'divider',
     borderRadius: 1,
-    bgcolor: alpha(theme.palette.background.paper, isDark ? 0.35 : 0.65),
+    bgcolor: 'background.paper',
   };
 
   return (

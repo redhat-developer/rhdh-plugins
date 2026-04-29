@@ -38,10 +38,12 @@ import {
   registerKagentiSandboxRoutes,
   registerKagentiAdminRoutes,
   registerDevSpacesRoutes,
+  registerAgentRoutes,
 } from './routes';
 import { toErrorMessage } from './services/utils';
 import { sanitizeErrorMessage } from './services/utils/errorSanitizer';
 import type { AdminConfigService } from './services/AdminConfigService';
+import { ResponsesApiProvider } from './providers/llamastack';
 import { createSecurityMiddleware } from './middleware/security';
 import { createRateLimiter } from './middleware/rateLimiter';
 import {
@@ -91,6 +93,7 @@ export async function createRouter({
   config,
   httpAuth,
   permissions,
+  database,
   providerManager,
   sessions,
   adminConfig,
@@ -218,6 +221,22 @@ export async function createRouter({
   // Route Registration
   // =============================================================================
 
+  let orchestrationProvider: ResponsesApiProvider | undefined;
+  if (providerManager.provider.id === 'kagenti') {
+    try {
+      orchestrationProvider = new ResponsesApiProvider({
+        logger: logger.child({ provider: 'orchestration-fallback' }),
+        config,
+        database,
+        adminConfig,
+      });
+      await orchestrationProvider.initialize();
+      logger.info('Orchestration fallback provider created and initialized for hybrid routing');
+    } catch (err) {
+      logger.warn(`Could not create orchestration fallback provider: ${toErrorMessage(err)}`);
+    }
+  }
+
   const ctx: RouteContext = {
     router,
     logger,
@@ -225,6 +244,7 @@ export async function createRouter({
     get provider() {
       return providerManager.provider;
     },
+    orchestrationProvider,
     sessions,
     toErrorMessage,
     sendRouteError,
@@ -255,6 +275,7 @@ export async function createRouter({
 
   // Authenticated routes
   registerChatRoutes(ctx);
+  registerAgentRoutes(ctx, adminConfig);
   registerDocumentRoutes(ctx);
   registerConfigRoutes(ctx, adminConfig);
   registerSessionRoutes(ctx);
