@@ -90,7 +90,7 @@
     "react-use": "^17.4.0",
     "swr": "^2.0.0",
     "tss-react": "^4.9.18",
-    "uuid": "^11.0.3",
+    "uuid": "^14.0.0",
     "vscode-languageserver-types": "3.17.5"
   },
   "devDependencies": {
