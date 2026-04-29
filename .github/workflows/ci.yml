@@ -123,9 +123,16 @@ jobs:
       - name: publish check
         run: yarn backstage-cli repo fix --check --publish
 
-      - name: test changed packages
+      - name: Install jest-junit reporter
+        run: npm install jest-junit@17.0.0 --prefix ${{ runner.temp }}/jest-junit
+
+      - name: Test changed packages
         id: tests
-        run: yarn test:all --maxWorkers=3
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ${{ runner.temp }}/test-results/${{ matrix.workspace }}
+          JEST_JUNIT_CLASSNAME: '{filepath}'
+          JEST_JUNIT_UNIQUE_OUTPUT_NAME: 'true'
+        run: yarn test:all --maxWorkers=3 --reporters=default --reporters=${{ runner.temp }}/jest-junit/node_modules/jest-junit
 
       - name: Upload coverage to Codecov
         if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
@@ -133,6 +140,15 @@ jobs:
         with:
           flags: ${{ matrix.workspace }}
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/test-results-action@6ba3fdeec616fb91fd6a389b788a2366835a0fa2 # v1.2.1
+        with:
+          flags: ${{ matrix.workspace }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ runner.temp }}/test-results/${{ matrix.workspace }}
           fail_ci_if_error: false
 
       - name: install playwright
