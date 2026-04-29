@@ -14,7 +14,26 @@
  * limitations under the License.
  */
 
-export * from './normalizeRepoUrl';
-export * from './normalizeSourceTechnology';
-export * from './toSorted';
-export * from './tokenDescriptorTypes';
+import type { Knex } from 'knex';
+
+/**
+ * Adds the technology column to the modules table.
+ *
+ * @public
+ */
+export async function up(knex: Knex): Promise<void> {
+  await knex.schema.alterTable('modules', table => {
+    table.string('technology').nullable();
+  });
+}
+
+/**
+ * Removes the technology column from the modules table.
+ *
+ * @public
+ */
+export async function down(knex: Knex): Promise<void> {
+  await knex.schema.alterTable('modules', table => {
+    table.dropColumn('technology');
+  });
+}

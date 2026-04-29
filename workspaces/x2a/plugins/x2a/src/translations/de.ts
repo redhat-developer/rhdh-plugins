@@ -27,7 +27,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'sidebar.x2a.title': 'Konversions Hub',
     'page.title': 'Konversions Hub',
     'page.subtitle':
-      'Starten und verfolgen Sie die asynchrone Umwandlung von Chef-Dateien in produktionsreife Ansible Playbooks.',
+      'Starten und verfolgen Sie die asynchrone Umwandlung von Legacy-Infrastrukturautomatisierung in produktionsreife Ansible Playbooks.',
     'table.columns.name': 'Name',
     'table.columns.status': 'Status',
     'table.columns.statusSortDisabledTooltip':
@@ -82,7 +82,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'common.newProject': 'Neues Projekt',
     'emptyPage.noConversionInitiatedYet': 'Noch keine Konversion gestartet',
     'emptyPage.noConversionInitiatedYetDescription':
-      'Starten und verfolgen Sie die Konvertierung von Chef-Dateien in produktionsreife Ansible',
+      'Starten und verfolgen Sie die Konvertierung von Legacy-Infrastrukturautomatisierung in produktionsreife Ansible',
     'emptyPage.startFirstConversion': 'Erste Konversion starten',
     'emptyPage.notAllowedTitle': 'Zugriff verweigert',
     'emptyPage.notAllowedDescription':
@@ -155,7 +155,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Überprüfen Sie vor der Analyse zunächst den gesamten Projektmigrationsplan. Sein Inhalt bestimmt die Analyse des Moduls.',
     'modulePage.phases.runAnalyze': 'Modulmigrationsplan erstellen',
     'modulePage.phases.migrateInstructions':
-      'Überprüfen Sie vor der Migration den Modulmigrationsplan. Der Migrationsprozess konvertiert den Chef-Code basierend auf dem Plan in Ansible.',
+      'Überprüfen Sie vor der Migration den Modulmigrationsplan. Der Migrationsprozess konvertiert den Quellcode basierend auf dem Plan in Ansible.',
     'modulePage.phases.runMigrate': 'Modulquellen migrieren',
     'modulePage.phases.remigrateInstructions':
       'Die migrierten Quellen sind bereits vorhanden. Lösen Sie die Migration erneut aus, um den konvertierten Ansible-Code neu zu erstellen.',

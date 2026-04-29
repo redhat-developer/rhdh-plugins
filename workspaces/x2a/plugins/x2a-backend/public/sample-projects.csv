@@ -1,2 +1,2 @@
 name,description,abbreviation,ownedByGroup,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch
-my-examples,Convert chef-examples to Ansible,mex,,https://github.com/x2ansible/chef-examples,main,https://github.com/my-converted-projects/my-examples,target
+my-examples,Convert legacy config to Ansible,mex,,https://github.com/x2ansible/config-examples,main,https://github.com/my-converted-projects/my-examples,target

@@ -19,6 +19,7 @@
 // ******************************************************************
 import { Job } from '../models/Job.model';
 import { ModuleStatus } from '../models/ModuleStatus.model';
+import { SourceTechnology } from '../models/SourceTechnology.model';
 
 /**
  * @public
@@ -36,6 +37,7 @@ export interface Module {
    * Path to the module in the source repository
    */
   sourcePath: string;
+  technology?: SourceTechnology;
   /**
    * UUID of the owning project
    */

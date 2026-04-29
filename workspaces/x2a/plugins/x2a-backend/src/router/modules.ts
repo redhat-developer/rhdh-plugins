@@ -305,6 +305,7 @@ export function registerModuleRoutes(
         callbackUrl,
         moduleId,
         moduleName: module.name,
+        sourceTechnology: module.technology,
         sourceRepo: {
           url: project.sourceRepoUrl,
           branch: project.sourceRepoBranch,
