@@ -32,7 +32,10 @@ import {
 
 import { Readable } from 'node:stream';
 
-import { DEFAULT_LIGHTSPEED_SERVICE_PORT } from './constant';
+import {
+  DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  PROXY_PASSTHROUGH_PATHS,
+} from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
   McpServerResponse,
@@ -48,7 +51,7 @@ import {
   QueryRequestBody,
   RouterOptions,
 } from './types';
-import { validateCompletionsRequest } from './validation';
+import { isAllowedProxyPath, validateCompletionsRequest } from './validation';
 
 const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
 
@@ -413,19 +416,19 @@ export async function createRouter(
   // ─── Proxy Middleware (existing) ────────────────────────────────────
 
   router.use('/', async (req, res, next) => {
-    const passthroughPaths = [
-      '/v1/query',
-      '/v1/query/interrupt',
-      '/v1/feedback',
-    ];
     // Skip middleware for notebooks routes and specific paths
     if (
       req.path.startsWith('/notebooks') ||
-      passthroughPaths.includes(req.path) ||
+      PROXY_PASSTHROUGH_PATHS.includes(req.path) ||
       req.method === 'PUT'
     ) {
       return next();
     }
+
+    if (!isAllowedProxyPath(req.path)) {
+      return res.status(404).json({ error: 'Requested path is not available' });
+    }
+
     // TODO: parse server_id from req.body and get URL and token when multi-server is supported
     const credentials = await httpAuth.credentials(req);
     const user = await userInfo.getUserInfo(credentials);
