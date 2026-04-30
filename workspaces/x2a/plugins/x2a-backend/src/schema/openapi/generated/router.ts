@@ -1180,8 +1180,6 @@ export const spec = {
         "type": "string",
         "enum": [
           "chef",
-          "puppet",
-          "salt",
           "legacy-ansible",
           "powershell"
         ],

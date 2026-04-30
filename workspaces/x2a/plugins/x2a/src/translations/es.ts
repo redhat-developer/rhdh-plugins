@@ -27,7 +27,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'sidebar.x2a.title': 'Hub de conversión',
     'page.title': 'Hub de conversión',
     'page.subtitle':
-      'Inicie y realice el seguimiento de la conversión asíncrona de automatización de infraestructura legacy a playbooks Ansible listos para producción.',
+      'Inicie y realice el seguimiento de la conversión asíncrona de automatización existente a playbooks Ansible listos para producción.',
     'table.columns.name': 'Nombre',
     'table.columns.status': 'Estado',
     'table.columns.statusSortDisabledTooltip':
@@ -83,7 +83,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'emptyPage.noConversionInitiatedYet':
       'Aún no se ha iniciado ninguna conversión',
     'emptyPage.noConversionInitiatedYetDescription':
-      'Inicie y realice el seguimiento de la conversión de automatización de infraestructura legacy a Ansible listo para producción',
+      'Inicie y realice el seguimiento de la conversión de automatización existente a Ansible listo para producción',
     'emptyPage.startFirstConversion': 'Iniciar primera conversión',
     'emptyPage.notAllowedTitle': 'Acceso denegado',
     'emptyPage.notAllowedDescription':

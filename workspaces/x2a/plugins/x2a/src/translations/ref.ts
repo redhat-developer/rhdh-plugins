@@ -31,7 +31,7 @@ export const x2aPluginMessages = {
   page: {
     title: 'Conversion Hub',
     subtitle:
-      'Initiate and track the asynchronous conversion of legacy infrastructure automation into production-ready Ansible Playbooks.',
+      'Initiate and track the asynchronous conversion of existing automation into production-ready Ansible Playbooks.',
   },
   projectPage: {
     title: 'Project',
@@ -176,7 +176,7 @@ export const x2aPluginMessages = {
   emptyPage: {
     noConversionInitiatedYet: 'No conversion initiated yet',
     noConversionInitiatedYetDescription:
-      'Initiate and track conversion of legacy infrastructure automation into production-ready Ansible',
+      'Initiate and track conversion of existing automation into production-ready Ansible',
     startFirstConversion: 'Start first conversion',
     notAllowedTitle: 'Access denied',
     notAllowedDescription: 'You are not allowed to access conversion projects.',

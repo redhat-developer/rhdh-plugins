@@ -850,8 +850,6 @@ components:
       type: string
       enum:
         - chef
-        - puppet
-        - salt
         - legacy-ansible
         - powershell
       description: Source configuration-management technology being converted to Ansible

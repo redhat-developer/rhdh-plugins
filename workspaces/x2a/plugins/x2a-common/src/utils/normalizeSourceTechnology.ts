@@ -25,8 +25,6 @@ import { SourceTechnology } from '../../client/src/schema/openapi';
  */
 export const SOURCE_TECHNOLOGY_ALIASES: Record<SourceTechnology, string[]> = {
   chef: ['chef'],
-  puppet: ['puppet'],
-  salt: ['salt', 'saltstack'],
   'legacy-ansible': ['legacy-ansible', 'ansible'],
   powershell: ['powershell', 'powershell-dsc', 'dsc'],
 };
