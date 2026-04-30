@@ -84,6 +84,16 @@ function applyVectorStoreOverrides(
  * - Listing documents
  * - Deleting documents
  */
+export class DuplicateVectorStoreError extends Error {
+  constructor(name: string, existingId: string) {
+    super(
+      `A vector store named "${name}" already exists (ID: ${existingId}). ` +
+        'Use a different name or connect the existing store.',
+    );
+    this.name = 'DuplicateVectorStoreError';
+  }
+}
+
 export class VectorStoreService {
   private readonly client: ResponsesApiClient;
   private readonly logger: LoggerService;
@@ -238,9 +248,10 @@ export class VectorStoreService {
   private async findVectorStoreByName(
     vectorStoreName: string,
   ): Promise<LlamaStackVectorStoreResponse | undefined> {
-    const listResponse = await this.client.request<{
-      data?: LlamaStackVectorStoreResponse[];
-    }>('/v1/vector_stores', { method: 'GET' });
+    const listResponse = await this.client.request<
+      | { data?: LlamaStackVectorStoreResponse[] }
+      | LlamaStackVectorStoreResponse[]
+    >('/v1/vector_stores', { method: 'GET' });
 
     const existingStores = Array.isArray(listResponse)
       ? listResponse
@@ -266,20 +277,22 @@ export class VectorStoreService {
   private async createVectorStore(
     vectorStoreName: string,
   ): Promise<LlamaStackVectorStoreResponse> {
-    // Build creation request body
     const createBody: Record<string, unknown> = {
       name: vectorStoreName,
     };
 
-    // Embedding configuration
     if (this.config.embeddingModel) {
       createBody.embedding_model = this.config.embeddingModel;
     }
-    if (this.config.embeddingDimension) {
-      createBody.embedding_dimension = this.config.embeddingDimension;
+
+    const { dimension, providerId } = await this.resolveFromExistingStores();
+    if (dimension) {
+      createBody.embedding_dimension = dimension;
+    }
+    if (providerId) {
+      createBody.provider_id = providerId;
     }
 
-    // Hybrid search configuration
     if (this.config.searchMode) {
       createBody.search_mode = this.config.searchMode;
     }
@@ -290,7 +303,6 @@ export class VectorStoreService {
       createBody.semantic_weight = this.config.semanticWeight;
     }
 
-    // Log configuration details
     this.logVectorStoreConfig(vectorStoreName);
 
     try {
@@ -298,7 +310,7 @@ export class VectorStoreService {
         '/v1/vector_stores',
         {
           method: 'POST',
-          body: JSON.stringify(createBody),
+          body: createBody,
         },
       );
     } catch (error) {
@@ -310,6 +322,52 @@ export class VectorStoreService {
         `Failed to create vector store "${vectorStoreName}": ${message}`,
       );
     }
+  }
+
+  /**
+   * Resolve the correct embedding dimension and provider ID from existing
+   * stores on the server. This avoids dimension mismatches (e.g. config
+   * says 384 but model needs 768) and ensures the correct provider_id is
+   * sent when multiple vector_io providers are available.
+   */
+  private async resolveFromExistingStores(): Promise<{
+    dimension: number | undefined;
+    providerId: string | undefined;
+  }> {
+    const configuredDim = this.config.embeddingDimension;
+    const model = this.config.embeddingModel;
+
+    if (!model) return { dimension: configuredDim, providerId: undefined };
+
+    try {
+      const stores = await this.listVectorStores();
+      const sameModelStore = stores.find(
+        s => s.embeddingModel === model && s.embeddingDimension,
+      );
+      if (sameModelStore) {
+        const detectedDim = sameModelStore.embeddingDimension;
+        if (detectedDim && configuredDim && configuredDim !== detectedDim) {
+          this.logger.info(
+            `Correcting embeddingDimension from ${configuredDim} to ${detectedDim} (detected from existing store using "${model}")`,
+          );
+        }
+        return {
+          dimension: detectedDim ?? configuredDim,
+          providerId: sameModelStore.providerType,
+        };
+      }
+
+      if (stores.length > 0 && stores[0].providerType) {
+        return {
+          dimension: configuredDim,
+          providerId: stores[0].providerType,
+        };
+      }
+    } catch {
+      this.logger.debug('Could not auto-detect settings from existing stores');
+    }
+
+    return { dimension: configuredDim, providerId: undefined };
   }
 
   /**
@@ -444,18 +502,14 @@ export class VectorStoreService {
       const serverStores = await this.listVectorStores();
       const duplicate = serverStores.find(s => s.name === cfg.vectorStoreName);
       if (duplicate) {
-        throw new Error(
-          `A vector store named "${cfg.vectorStoreName}" already exists (ID: ${duplicate.id}). ` +
-            'Use a different name or connect the existing store.',
-        );
+        throw new DuplicateVectorStoreError(cfg.vectorStoreName, duplicate.id);
       }
     } catch (error) {
-      // Re-throw our own duplicate error; swallow server list failures
-      if (error instanceof Error && error.message.includes('already exists')) {
+      if (error instanceof DuplicateVectorStoreError) {
         throw error;
       }
-      this.logger.debug(
-        'Vector store registration error (non-duplicate), swallowed',
+      this.logger.warn(
+        `Could not check for duplicate vector stores: ${error instanceof Error ? error.message : String(error)}. Proceeding with creation.`,
       );
     }
 
@@ -484,48 +538,83 @@ export class VectorStoreService {
     };
   }
 
+  private mapStoreToInfo(
+    store: LlamaStackVectorStoreResponse,
+  ): VectorStoreInfo {
+    return {
+      id: store.id,
+      name: store.name || store.id,
+      status: store.status || 'unknown',
+      fileCount: store.file_counts?.total || 0,
+      createdAt: store.created_at ?? 0,
+      embeddingModel: store.metadata?.embedding_model,
+      embeddingDimension: (() => {
+        if (!store.metadata?.embedding_dimension) return undefined;
+        const parsed = parseInt(store.metadata.embedding_dimension, 10);
+        return Number.isFinite(parsed) ? parsed : undefined;
+      })(),
+      providerType: store.metadata?.provider_id,
+      usageBytes: store.usage_bytes,
+      lastActiveAt: store.last_active_at,
+      fileCounts: store.file_counts
+        ? {
+            completed: store.file_counts.completed,
+            inProgress: store.file_counts.in_progress,
+            failed: store.file_counts.failed,
+            cancelled: store.file_counts.cancelled,
+            total: store.file_counts.total,
+          }
+        : undefined,
+    };
+  }
+
   /**
-   * List all available vector stores from Llama Stack
-   * Returns vector stores that can be used for RAG queries
+   * List all available vector stores from Llama Stack.
+   * Paginates through all pages using the has_more / after cursor.
    */
   async listVectorStores(): Promise<VectorStoreInfo[]> {
-    try {
+    const PAGE_LIMIT = 100;
+    const MAX_PAGES = 20;
+    const allStores: LlamaStackVectorStoreResponse[] = [];
+    let after: string | undefined;
+
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const qs = new URLSearchParams();
+      qs.set('limit', String(PAGE_LIMIT));
+      qs.set('order', 'desc');
+      if (after) qs.set('after', after);
+
       const response = await this.client.request<
         | {
             data?: LlamaStackVectorStoreResponse[];
+            has_more?: boolean;
+            last_id?: string;
           }
         | LlamaStackVectorStoreResponse[]
-      >('/v1/vector_stores', {
-        method: 'GET',
-      });
+      >(`/v1/vector_stores?${qs.toString()}`, { method: 'GET' });
 
-      // Handle both array and object response formats
-      const stores: LlamaStackVectorStoreResponse[] = Array.isArray(response)
-        ? response
-        : response.data || [];
+      let pageStores: LlamaStackVectorStoreResponse[];
+      let hasMore = false;
+      let lastId: string | undefined;
 
-      this.logger.info(`Found ${stores.length} vector stores`);
+      if (Array.isArray(response)) {
+        pageStores = response;
+      } else {
+        pageStores = response.data || [];
+        hasMore = response.has_more ?? false;
+        lastId = response.last_id ?? undefined;
+      }
 
-      return stores.map(store => ({
-        id: store.id,
-        name: store.name || store.id,
-        status: store.status || 'unknown',
-        fileCount: store.file_counts?.total || 0,
-        createdAt: store.created_at ?? 0,
-      }));
-    } catch (error) {
-      const errorMsg = toErrorMessage(error);
-      this.logger.error(`Failed to list vector stores: ${errorMsg}`);
+      allStores.push(...pageStores);
 
-      // Return at least the configured vector stores
-      return this.config.vectorStoreIds.map((id, index) => ({
-        id,
-        name: index === 0 ? 'Primary' : `Store ${index + 1}`,
-        status: 'unknown',
-        fileCount: 0,
-        createdAt: 0,
-      }));
+      if (!hasMore || pageStores.length === 0) break;
+
+      after = lastId ?? pageStores[pageStores.length - 1]?.id;
+      if (!after) break;
     }
+
+    this.logger.info(`Found ${allStores.length} vector stores`);
+    return allStores.map(store => this.mapStoreToInfo(store));
   }
 
   /**
@@ -649,5 +738,25 @@ export class VectorStoreService {
       }
     }
     return { success: true, filesDeleted };
+  }
+
+  /**
+   * Update a vector store's name or metadata on the Llama Stack server.
+   * Uses POST /v1/vector_stores/{id} (OpenAI-compatible update endpoint).
+   */
+  async updateVectorStore(
+    vectorStoreId: string,
+    updates: { name?: string; metadata?: Record<string, string> },
+  ): Promise<VectorStoreInfo> {
+    const body: Record<string, unknown> = {};
+    if (updates.name !== undefined) body.name = updates.name;
+    if (updates.metadata !== undefined) body.metadata = updates.metadata;
+
+    const response = await this.client.request<LlamaStackVectorStoreResponse>(
+      `/v1/vector_stores/${vectorStoreId}`,
+      { method: 'POST', body },
+    );
+
+    return this.mapStoreToInfo(response);
   }
 }

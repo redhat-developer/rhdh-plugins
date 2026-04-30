@@ -24,6 +24,7 @@ import {
 import { createWithRoute } from './routeWrapper';
 import type { AdminRouteDeps } from './adminRouteTypes';
 import type { ProviderType } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { DuplicateVectorStoreError } from '../providers/responses-api/documents/VectorStoreService';
 
 function readVectorStoreDefaults(
   ls: import('@backstage/config').Config | undefined,
@@ -133,10 +134,31 @@ export function registerAdminVectorStoreRoutes(
               embeddingIds.length > 0 &&
               (!currentModel || !embeddingIds.includes(currentModel))
             ) {
-              cfgObj.embeddingModel = embeddingIds[0];
+              const newModel = embeddingIds[0];
+              cfgObj.embeddingModel = newModel;
               logger.info(
-                `Config embeddingModel "${currentModel ?? ''}" not available on server; defaulting to "${embeddingIds[0]}"`,
+                `Config embeddingModel "${currentModel ?? ''}" not available on server; defaulting to "${newModel}"`,
               );
+
+              if (provider.rag?.listVectorStores) {
+                try {
+                  const existingStores = await provider.rag.listVectorStores();
+                  const sameModelStore = existingStores.find(
+                    s => s.embeddingModel === newModel && s.embeddingDimension,
+                  );
+                  if (sameModelStore?.embeddingDimension) {
+                    cfgObj.embeddingDimension =
+                      sameModelStore.embeddingDimension;
+                    logger.info(
+                      `Auto-detected embeddingDimension=${sameModelStore.embeddingDimension} from existing store using "${newModel}"`,
+                    );
+                  }
+                } catch {
+                  logger.debug(
+                    'Could not auto-detect embeddingDimension from existing stores',
+                  );
+                }
+              }
             }
           } catch (err) {
             logger.debug(
@@ -192,15 +214,19 @@ export function registerAdminVectorStoreRoutes(
               'Request body must be an object, not null or array',
             );
           }
-          if (body.name !== undefined) {
+          if (body.vectorStoreName !== undefined) {
             if (
-              typeof body.name !== 'string' ||
-              (body.name as string).trim().length === 0
+              typeof body.vectorStoreName !== 'string' ||
+              (body.vectorStoreName as string).trim().length === 0
             ) {
-              throw new InputError('name must be a non-empty string');
+              throw new InputError(
+                'vectorStoreName must be a non-empty string',
+              );
             }
-            if ((body.name as string).length > 200) {
-              throw new InputError('name must be at most 200 characters');
+            if ((body.vectorStoreName as string).length > 200) {
+              throw new InputError(
+                'vectorStoreName must be at most 200 characters',
+              );
             }
           }
           if (body.embeddingModel !== undefined) {
@@ -257,14 +283,40 @@ export function registerAdminVectorStoreRoutes(
           }
         }
 
+        const selectedModel = overrides.embeddingModel as string | undefined;
+        if (selectedModel && provider.rag.listVectorStores) {
+          try {
+            const existingStores = await provider.rag.listVectorStores();
+            const sameModelStore = existingStores.find(
+              s => s.embeddingModel === selectedModel && s.embeddingDimension,
+            );
+            if (sameModelStore?.embeddingDimension) {
+              const requestedDim = overrides.embeddingDimension as
+                | number
+                | undefined;
+              if (
+                requestedDim &&
+                requestedDim !== sameModelStore.embeddingDimension
+              ) {
+                logger.info(
+                  `Auto-correcting embeddingDimension from ${requestedDim} to ${sameModelStore.embeddingDimension} to match model "${selectedModel}"`,
+                );
+                overrides.embeddingDimension =
+                  sameModelStore.embeddingDimension;
+              }
+            }
+          } catch {
+            logger.debug(
+              'Could not validate embeddingDimension from existing stores before create',
+            );
+          }
+        }
+
         let result: { vectorStoreId: string; message?: string };
         try {
           result = await provider.rag.createVectorStoreWithConfig(overrides);
         } catch (createErr) {
-          if (
-            createErr instanceof Error &&
-            createErr.message.includes('already exists')
-          ) {
+          if (createErr instanceof DuplicateVectorStoreError) {
             res.status(409).json({
               success: false,
               error: createErr.message,
@@ -296,6 +348,9 @@ export function registerAdminVectorStoreRoutes(
                 );
               }
             });
+            if (provider.rag?.addVectorStoreId) {
+              provider.rag.addVectorStoreId(result.vectorStoreId);
+            }
             onConfigChanged?.();
           } catch (persistErr) {
             logger.warn(
@@ -364,6 +419,13 @@ export function registerAdminVectorStoreRoutes(
           'activeVectorStoreIds',
           providerId,
         );
+        if (Array.isArray(dbValue) && dbValue.length > 0) {
+          const merged = new Set([
+            ...activeIds,
+            ...dbValue.filter((v): v is string => typeof v === 'string'),
+          ]);
+          activeIds = [...merged];
+        }
         const userHasManagedList = dbValue !== undefined;
 
         if (
@@ -413,46 +475,46 @@ export function registerAdminVectorStoreRoutes(
           }
         }
 
-        const allStores = await provider.rag.listVectorStores();
+        let allStores: import('@red-hat-developer-hub/backstage-plugin-augment-common').VectorStoreInfo[] =
+          [];
+        let serverListError: string | undefined;
+
+        try {
+          allStores = await provider.rag.listVectorStores();
+        } catch (listErr) {
+          serverListError =
+            listErr instanceof Error ? listErr.message : String(listErr);
+          logger.warn(
+            `Failed to list vector stores from server: ${serverListError}`,
+          );
+          allStores = activeIds.map(id => ({
+            id,
+            name: id,
+            status: 'unknown',
+            fileCount: 0,
+            createdAt: 0,
+          }));
+        }
+
         const serverMap = new Map(allStores.map(s => [s.id, s]));
 
-        const stores = await Promise.all(
-          activeIds.map(async id => {
-            const fromServer = serverMap.get(id);
-            if (fromServer && fromServer.status !== 'unknown') {
-              return { ...fromServer, active: true };
-            }
-
-            if (provider.rag?.getVectorStoreStatus) {
-              try {
-                const vs = await provider.rag.getVectorStoreStatus();
-                if (vs.exists && vs.vectorStoreId === id) {
-                  return {
-                    id,
-                    name: vs.vectorStoreName ?? id,
-                    status: vs.ready ? 'completed' : 'in_progress',
-                    fileCount: vs.documentCount ?? 0,
-                    createdAt: 0,
-                    active: true,
-                  };
-                }
-              } catch {
-                logger.debug(
-                  'Vector store ID resolution failed, falling through',
-                );
-              }
-            }
-
-            return {
-              id,
-              name: fromServer?.name ?? id,
-              status: fromServer?.status ?? 'unknown',
-              fileCount: fromServer?.fileCount ?? 0,
-              createdAt: fromServer?.createdAt ?? 0,
-              active: true,
-            };
-          }),
-        );
+        const stores = activeIds.map(id => {
+          const fromServer = serverMap.get(id);
+          return {
+            id,
+            name: fromServer?.name ?? id,
+            status: fromServer?.status ?? 'unknown',
+            fileCount: fromServer?.fileCount ?? 0,
+            createdAt: fromServer?.createdAt ?? 0,
+            embeddingModel: fromServer?.embeddingModel,
+            embeddingDimension: fromServer?.embeddingDimension,
+            providerType: fromServer?.providerType,
+            usageBytes: fromServer?.usageBytes,
+            lastActiveAt: fromServer?.lastActiveAt,
+            fileCounts: fromServer?.fileCounts,
+            active: true,
+          };
+        });
 
         const activeSet = new Set(activeIds);
         const unconnectedStores = allStores
@@ -463,6 +525,7 @@ export function registerAdminVectorStoreRoutes(
           success: true,
           stores,
           unconnected: unconnectedStores,
+          serverListError,
           timestamp: new Date().toISOString(),
         });
       },
@@ -531,6 +594,84 @@ export function registerAdminVectorStoreRoutes(
         res.json({
           success: true,
           activeVectorStoreIds: updatedIds,
+          timestamp: new Date().toISOString(),
+        });
+      },
+    ),
+  );
+
+  router.post(
+    '/admin/vector-stores/:id/update',
+    withRoute(
+      req => `POST /admin/vector-stores/${req.params.id}/update`,
+      'Failed to update vector store',
+      async (req, res) => {
+        const provider = deps.provider;
+        const { id } = req.params;
+
+        if (!id || id.trim().length === 0) {
+          throw new InputError('Vector store ID is required');
+        }
+
+        if (!provider.rag?.updateVectorStore) {
+          res.status(501).json({
+            success: false,
+            error: 'Vector store update not supported by current provider',
+          });
+          return;
+        }
+
+        const body = req.body;
+        if (!body || typeof body !== 'object' || Array.isArray(body)) {
+          throw new InputError('Request body must be an object');
+        }
+
+        const updates: { name?: string; metadata?: Record<string, string> } =
+          {};
+        if (body.name !== undefined) {
+          if (typeof body.name !== 'string' || body.name.trim().length === 0) {
+            throw new InputError('name must be a non-empty string');
+          }
+          if (body.name.length > 200) {
+            throw new InputError('name must be at most 200 characters');
+          }
+          updates.name = body.name.trim();
+        }
+        if (body.metadata !== undefined) {
+          if (
+            typeof body.metadata !== 'object' ||
+            Array.isArray(body.metadata) ||
+            body.metadata === null
+          ) {
+            throw new InputError('metadata must be an object');
+          }
+          const metaObj = body.metadata as Record<string, unknown>;
+          for (const [k, v] of Object.entries(metaObj)) {
+            if (typeof v !== 'string') {
+              throw new InputError(
+                `metadata value for key "${k}" must be a string`,
+              );
+            }
+            if (v.length > 1000) {
+              throw new InputError(
+                `metadata value for key "${k}" must be at most 1000 characters`,
+              );
+            }
+          }
+          updates.metadata = metaObj as Record<string, string>;
+        }
+
+        if (Object.keys(updates).length === 0) {
+          throw new InputError(
+            'At least one field to update is required (name, metadata)',
+          );
+        }
+
+        const updated = await provider.rag.updateVectorStore(id, updates);
+
+        res.json({
+          success: true,
+          store: updated,
           timestamp: new Date().toISOString(),
         });
       },

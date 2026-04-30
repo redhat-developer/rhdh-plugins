@@ -191,7 +191,7 @@ export async function listDocuments(
       logger.warn(
         `Could not list documents: vector store endpoint failed (${errorMessage}), files API also failed (${fallbackMsg})`,
       );
-      return [];
+      throw new Error(`Could not load documents: ${errorMessage}`);
     }
   }
 }

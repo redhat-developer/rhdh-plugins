@@ -140,12 +140,16 @@ export function CreateStoreForm({
         label="Dimension"
         size="small"
         type="number"
-        value={localConfig.embeddingDimension ?? 384}
-        onChange={e =>
-          onUpdate(
-            'embeddingDimension',
-            Number.parseInt(e.target.value, 10) || 384,
-          )
+        value={localConfig.embeddingDimension ?? ''}
+        onChange={e => {
+          const parsed = Number.parseInt(e.target.value, 10);
+          if (Number.isFinite(parsed) && parsed > 0) {
+            onUpdate('embeddingDimension', parsed);
+          }
+        }}
+        error={
+          localConfig.embeddingDimension !== undefined &&
+          !Number.isFinite(localConfig.embeddingDimension)
         }
         helperText="384, 768, etc."
       />

@@ -46,9 +46,18 @@ export const IngestDropZone = ({
     <>
       <Paper
         variant="outlined"
+        role="button"
+        tabIndex={0}
+        aria-label="Upload files"
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
         sx={{
           p: 2,
           textAlign: 'center',
@@ -59,6 +68,11 @@ export const IngestDropZone = ({
           '&:hover': {
             borderColor: 'primary.light',
             bgcolor: 'action.hover',
+          },
+          '&:focus-visible': {
+            outline: '2px solid',
+            outlineColor: 'primary.main',
+            outlineOffset: 2,
           },
         }}
         onClick={() => fileInputRef.current?.click()}

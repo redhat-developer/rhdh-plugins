@@ -233,7 +233,11 @@ export function RagResultsTable({
             </Box>
           )}
           <Tooltip title="Export results as JSON">
-            <IconButton size="small" onClick={handleExportJson}>
+            <IconButton
+              size="small"
+              aria-label="Export results as JSON"
+              onClick={handleExportJson}
+            >
               <DownloadIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
