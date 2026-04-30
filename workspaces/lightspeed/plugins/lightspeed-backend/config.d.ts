@@ -52,69 +52,48 @@ export interface Config {
     /**
      * Configuration for AI Notebooks (Developer Preview)
      */
-    aiNotebooks?: {
+    notebooks?: {
       /**
        * Enable/disable AI Notebooks feature
        * When enabled, exposes AI Notebooks REST API endpoints for document-based conversations with RAG.
-       * Requires Llama Stack service to be running (default: http://0.0.0.0:8321).
+       * Requires Lightspeed service to be running (default: http://0.0.0.0:8080).
        * @default false
        * @visibility frontend
        */
-      enabled?: boolean;
+      enabled: boolean;
       /**
-       * Llama Stack configuration
+       * Lightspeed configuration
        * @visibility backend
        */
-      llamaStack?: {
+      queryDefaults: {
         /**
-         * Llama Stack API port
+         * Model to use for answering queries. Must map to a model available through the provider set in provider_id.
          * @visibility backend
          */
-        port?: number;
+        model: string;
         /**
-         * Embedding model for vector database
+         * AI provider for the query model. Must map to a provider enabled in your Lightspeed config.
          * @visibility backend
          */
-        embeddingModel?: string;
-        /**
-         * Embedding dimension
-         * @visibility backend
-         */
-        embeddingDimension?: number;
-        /**
-         * Vector IO configuration
-         * @visibility backend
-         */
-        vectorIo?: {
-          /**
-           * Vector store provider ID
-           * @visibility backend
-           */
-          providerId?: string;
-        };
+        provider_id: string;
       };
       /**
-       * File processing timeout in milliseconds
-       * @visibility backend
-       */
-      fileProcessingTimeoutMs?: number;
-      /**
-       * Chunking strategy configuration
+       * Chunking strategy for document processing
        * @visibility backend
        */
       chunkingStrategy?: {
         /**
-         * Type of chunking strategy ('auto' or 'static')
+         * Document chunking strategy - 'auto' (automatic, default) or 'static' (fixed size)
          * @visibility backend
          */
-        type?: string;
+        type?: 'auto' | 'static';
         /**
-         * Maximum chunk size in tokens (for static strategy)
+         * Maximum chunk size in tokens for static chunking (default: 512)
          * @visibility backend
          */
         maxChunkSizeTokens?: number;
         /**
-         * Chunk overlap in tokens (for static strategy)
+         * Token overlap between chunks for static chunking (default: 50)
          * @visibility backend
          */
         chunkOverlapTokens?: number;

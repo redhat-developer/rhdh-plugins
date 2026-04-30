@@ -15,7 +15,7 @@
  */
 
 import type { Dispatch, SetStateAction } from 'react';
-import type { TableColumn } from '@backstage/core-components';
+import { InfoCard, Table, type TableColumn } from '@backstage/core-components';
 import {
   Box,
   IconButton,
@@ -24,6 +24,7 @@ import {
   Tooltip,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import { useDcmStyles } from './dcmStyles';
 import CloseIcon from '@material-ui/icons/Close';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
@@ -96,6 +97,85 @@ function ActionsCell({ onEdit, onDelete }: ActionsCellProps) {
         </IconButton>
       </Tooltip>
     </Box>
+  );
+}
+
+export type DcmSearchTableCardProps<T extends object> = Readonly<{
+  title: string;
+  /** Already-paginated rows to render. */
+  data: T[];
+  columns: TableColumn<T>[];
+  /** Total rows after filtering (drives the pagination footer). */
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  setPage: Dispatch<SetStateAction<number>>;
+  setPageSize: Dispatch<SetStateAction<number>>;
+  search: string;
+  setSearch: Dispatch<SetStateAction<string>>;
+  pageSizeOptions?: number[];
+}>;
+
+/**
+ * Shared InfoCard + Table layout used by read-only data-center tabs (service
+ * types, resources, …). Handles the search action, pagination wiring, and
+ * all the standard table options so individual tabs only provide data & columns.
+ */
+export function DcmSearchTableCard<T extends object>({
+  title,
+  data,
+  columns,
+  totalCount,
+  page,
+  pageSize,
+  setPage,
+  setPageSize,
+  search,
+  setSearch,
+  pageSizeOptions = [5, 10, 25],
+}: DcmSearchTableCardProps<T>) {
+  const classes = useDcmStyles();
+  return (
+    <InfoCard
+      title={title}
+      action={
+        <DcmSearchCardAction
+          value={search}
+          setValue={setSearch}
+          classes={classes}
+        />
+      }
+      className={classes.dataCard}
+      titleTypographyProps={{ className: classes.cardTitle }}
+    >
+      <Box className={classes.cardContent}>
+        <Table<T>
+          data={data}
+          columns={columns}
+          options={{
+            paging: true,
+            pageSize,
+            pageSizeOptions,
+            search: false,
+            sorting: true,
+            padding: 'default',
+            toolbar: false,
+            emptyRowsWhenPaging: false,
+          }}
+          totalCount={totalCount}
+          page={page}
+          onPageChange={(p, ps) => {
+            setPage(p);
+            setPageSize(ps);
+          }}
+          onRowsPerPageChange={ps => {
+            setPageSize(ps);
+            setPage(0);
+          }}
+          localization={{ pagination: { labelRowsPerPage: 'rows' } }}
+        />
+      </Box>
+    </InfoCard>
   );
 }
 

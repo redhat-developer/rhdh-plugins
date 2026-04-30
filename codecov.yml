@@ -5,8 +5,8 @@
 # Epic: RHIDP-11862 — Unit Test Coverage for RHDH Plugins Repository
 #
 # Each workspace uploads coverage with its own flag (e.g., lightspeed,
-# orchestrator). Flags are created dynamically by the upload step in CI;
-# default_rules apply to all of them automatically.
+# orchestrator). individual_flags scope each flag to its workspace path
+# so the Flags page shows per-workspace coverage correctly.
 
 codecov:
   require_ci_to_pass: false
@@ -68,3 +68,70 @@ flag_management:
       - type: patch
         target: auto
         threshold: 100%
+  individual_flags:
+    - name: adoption-insights
+      paths:
+        - workspaces/adoption-insights/
+    - name: ai-integrations
+      paths:
+        - workspaces/ai-integrations/
+    - name: app-defaults
+      paths:
+        - workspaces/app-defaults/
+    - name: augment
+      paths:
+        - workspaces/augment/
+    - name: bulk-import
+      paths:
+        - workspaces/bulk-import/
+    - name: cost-management
+      paths:
+        - workspaces/cost-management/
+    - name: dcm
+      paths:
+        - workspaces/dcm/
+    - name: extensions
+      paths:
+        - workspaces/extensions/
+    - name: global-floating-action-button
+      paths:
+        - workspaces/global-floating-action-button/
+    - name: global-header
+      paths:
+        - workspaces/global-header/
+    - name: homepage
+      paths:
+        - workspaces/homepage/
+    - name: konflux
+      paths:
+        - workspaces/konflux/
+    - name: lightspeed
+      paths:
+        - workspaces/lightspeed/
+    - name: mcp-integrations
+      paths:
+        - workspaces/mcp-integrations/
+    - name: orchestrator
+      paths:
+        - workspaces/orchestrator/
+    - name: quickstart
+      paths:
+        - workspaces/quickstart/
+    - name: repo-tools
+      paths:
+        - workspaces/repo-tools/
+    - name: sandbox
+      paths:
+        - workspaces/sandbox/
+    - name: scorecard
+      paths:
+        - workspaces/scorecard/
+    - name: theme
+      paths:
+        - workspaces/theme/
+    - name: translations
+      paths:
+        - workspaces/translations/
+    - name: x2a
+      paths:
+        - workspaces/x2a/
