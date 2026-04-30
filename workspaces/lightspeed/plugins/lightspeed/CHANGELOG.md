@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.6.0
+
+### Patch Changes
+
+- 9f5f22a: Fix new chat streams when switching threads and scope Stop to the streaming conversation (RHDHBUGS-3040).
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.0
+
 ## 2.5.1
 
 ### Patch Changes

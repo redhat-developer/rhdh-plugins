@@ -124,7 +124,9 @@ jobs:
         run: yarn backstage-cli repo fix --check --publish
 
       - name: Install jest-junit reporter
-        run: npm install jest-junit@17.0.0 --prefix ${{ runner.temp }}/jest-junit
+        run: |
+          npm install jest-junit@17.0.0 --ignore-scripts --prefix ${{ runner.temp }}/jest-junit
+          mkdir -p ${{ runner.temp }}/test-results/${{ matrix.workspace }}
 
       - name: Test changed packages
         id: tests
