@@ -835,18 +835,27 @@ export const LightspeedChat = ({
     setNewChatCreated(false);
   };
 
-  const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
-    useConversationMessages(
-      viewConversationId,
-      userName,
-      selectedModel,
-      selectedProvider,
-      avatar,
-      onComplete,
-      onStart,
-      undefined,
-      onRequestIdReady,
-    );
+  const {
+    conversationMessages,
+    handleInputPrompt,
+    scrollToBottomRef,
+    streamingConversationId,
+  } = useConversationMessages(
+    viewConversationId,
+    userName,
+    selectedModel,
+    selectedProvider,
+    avatar,
+    onComplete,
+    onStart,
+    undefined,
+    onRequestIdReady,
+  );
+
+  const streamingUiMatchesView =
+    isSendButtonDisabled &&
+    streamingConversationId !== null &&
+    viewConversationId === streamingConversationId;
 
   const [messages, setMessages] =
     useState<MessageProps[]>(conversationMessages);
@@ -1463,7 +1472,7 @@ export const LightspeedChat = ({
             ref={scrollToBottomRef}
             welcomePrompts={welcomePrompts}
             conversationId={conversationId}
-            isStreaming={isSendButtonDisabled}
+            isStreaming={streamingUiMatchesView}
             topicRestrictionEnabled={topicRestrictionEnabled}
             displayMode={displayMode}
           />
@@ -1487,8 +1496,10 @@ export const LightspeedChat = ({
           hasMicrophoneButton
           value={draftMessage}
           onChange={handleDraftMessage}
-          hasStopButton={isSendButtonDisabled}
-          handleStopButton={isSendButtonDisabled ? handleStopButton : undefined}
+          hasStopButton={streamingUiMatchesView}
+          handleStopButton={
+            streamingUiMatchesView ? handleStopButton : undefined
+          }
           buttonProps={{
             attach: {
               inputTestId: 'attachment-input',
