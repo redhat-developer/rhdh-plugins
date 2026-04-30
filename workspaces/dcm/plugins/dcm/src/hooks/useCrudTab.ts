@@ -16,6 +16,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { usePersistedPageSize } from './usePersistedPageSize';
 
 // Module-level state-updater factories — defined outside the hook so they do
 // not contribute to lexical function-nesting depth (typescript:S2004).
@@ -83,6 +84,12 @@ export interface UseCrudTabOptions<T, F extends Record<string, unknown>> {
    * Required when updateFn is provided.
    */
   itemToForm?: (item: T) => F;
+  /**
+   * When provided, the selected page-size is persisted to `localStorage` under
+   * `dcm:pageSize:<storageKey>` so the user's preference survives refreshes.
+   * Each table should use a unique key (e.g. `'providers'`, `'policies'`).
+   */
+  storageKey?: string;
 }
 
 type TouchedMap<F> = Partial<Record<keyof F, boolean>>;
@@ -179,7 +186,9 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   // ── Search + pagination ──────────────────────────────────────────────────
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = usePersistedPageSize(
+    options.storageKey ?? '',
+  );
 
   // ── Create dialog ────────────────────────────────────────────────────────
   const [createOpen, setCreateOpen] = useState(false);
@@ -251,15 +260,21 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     return filtered.slice(start, start + pageSize);
   }, [filtered, page, pageSize]);
 
-  const onPageChange = useCallback((p: number, ps: number) => {
-    setPage(p);
-    setPageSize(ps);
-  }, []);
+  const onPageChange = useCallback(
+    (p: number, ps: number) => {
+      setPage(p);
+      setPageSize(ps);
+    },
+    [setPageSize],
+  );
 
-  const onRowsPerPageChange = useCallback((ps: number) => {
-    setPageSize(ps);
-    setPage(0);
-  }, []);
+  const onRowsPerPageChange = useCallback(
+    (ps: number) => {
+      setPageSize(ps);
+      setPage(0);
+    },
+    [setPageSize],
+  );
 
   // ── Create ───────────────────────────────────────────────────────────────
   const handleOpenCreate = useCallback(() => {

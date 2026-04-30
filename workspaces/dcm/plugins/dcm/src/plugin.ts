@@ -22,9 +22,9 @@ import {
 } from '@backstage/core-plugin-api';
 import {
   CatalogClient,
-  PlacementClient,
   PolicyManagerClient,
   ProvidersClient,
+  ResourcesClient,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 
 import {
@@ -41,9 +41,9 @@ import {
 } from './routes';
 import {
   catalogApiRef,
-  placementApiRef,
   policyManagerApiRef,
   providersApiRef,
+  resourcesApiRef,
 } from './apis';
 
 /**
@@ -88,10 +88,10 @@ export const dcmPlugin = createPlugin({
       },
     }),
     createApiFactory({
-      api: placementApiRef,
+      api: resourcesApiRef,
       deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
       factory({ discoveryApi, fetchApi }) {
-        return new PlacementClient({ discoveryApi, fetchApi });
+        return new ResourcesClient({ discoveryApi, fetchApi });
       },
     }),
   ],

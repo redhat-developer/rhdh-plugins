@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
-import { Link, TableColumn } from '@backstage/core-components';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { InfoCard, Link, Table, TableColumn } from '@backstage/core-components';
 import { Box, IconButton, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import { usePersistedPageSize } from '../hooks/usePersistedPageSize';
+import { useDcmStyles } from './dcmStyles';
+import { DcmRequestHistoryFilter as DcmTableFilterField } from './DcmRequestHistoryTable';
 import {
   DCM_ENTITY_STATUS,
   displayDcmEntityStatus,
@@ -185,3 +188,94 @@ export const DCM_ENTITY_TABLE_COLUMNS: TableColumn<DcmEntityRow>[] = [
 
 /** Text filter used in entity detail tables (shared implementation with request history). */
 export { DcmRequestHistoryFilter as DcmTableFilterField } from './DcmRequestHistoryTable';
+
+export type DcmEntitiesCardProps = Readonly<{
+  /** Rows already pre-filtered to the parent entity (environment or spec). */
+  allEntities: DcmEntityRow[];
+  /** localStorage key for persisting the chosen page size. */
+  storageKey: string;
+  /**
+   * When this value changes (e.g. navigating to a different environment) the
+   * current page resets to 0 so the user is not left on a non-existent page.
+   */
+  resetKey?: string | number;
+}>;
+
+/**
+ * Shared paginated entity table with filter and persistent page-size, used by
+ * both the environment-details and service-spec-details entity tabs.
+ */
+export function DcmEntitiesCard({
+  allEntities,
+  storageKey,
+  resetKey,
+}: DcmEntitiesCardProps) {
+  const classes = useDcmStyles();
+
+  const { filter, setFilter, filteredEntities, entityRowCount } =
+    useDcmEntityListState(allEntities);
+
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = usePersistedPageSize(storageKey);
+
+  useEffect(() => {
+    setPage(0);
+  }, [filter, resetKey]);
+
+  const paginatedEntities = useMemo(() => {
+    const start = page * pageSize;
+    return filteredEntities.slice(start, start + pageSize);
+  }, [filteredEntities, page, pageSize]);
+
+  const handlePageChange = useCallback(
+    (newPage: number, newPageSize: number) => {
+      setPage(newPage);
+      setPageSize(newPageSize);
+    },
+    [setPageSize],
+  );
+
+  const handleRowsPerPageChange = useCallback(
+    (newPageSize: number) => {
+      setPageSize(newPageSize);
+      setPage(0);
+    },
+    [setPageSize],
+  );
+
+  return (
+    <InfoCard
+      title={`Entities (${entityRowCount})`}
+      action={
+        <DcmTableFilterField
+          filter={filter}
+          setFilter={setFilter}
+          classes={classes}
+        />
+      }
+      className={classes.tableCard}
+    >
+      <Box className={classes.cardContent}>
+        <Table<DcmEntityRow>
+          data={paginatedEntities}
+          columns={DCM_ENTITY_TABLE_COLUMNS}
+          options={{
+            paging: true,
+            pageSize,
+            pageSizeOptions: [5, 10, 25, 50],
+            search: false,
+            sorting: true,
+            padding: 'default',
+            toolbar: false,
+            emptyRowsWhenPaging: false,
+          }}
+          totalCount={filteredEntities.length}
+          page={page}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
+          localization={{ pagination: { labelRowsPerPage: 'rows' } }}
+        />
+      </Box>
+    </InfoCard>
+  );
+}
