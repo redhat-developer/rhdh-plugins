@@ -119,7 +119,7 @@ export class CatalogClient extends DcmBaseClient implements CatalogApi {
   ): Promise<CatalogItemInstance> {
     return this.fetch<CatalogItemInstance>(
       `catalog-item-instances/${catalogItemInstanceId}:rehydrate`,
-      { method: 'POST' },
+      { method: 'POST', body: '{}' },
     );
   }
 

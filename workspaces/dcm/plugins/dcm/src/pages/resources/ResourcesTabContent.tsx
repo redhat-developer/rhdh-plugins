@@ -17,9 +17,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TableColumn, Progress } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { Box, Chip, Typography } from '@material-ui/core';
+import { Box, Button, Chip, Typography } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 import type { ServiceTypeInstance } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { resourcesApiRef } from '../../apis';
+import { extractApiError } from '../../utils/extractApiError';
 import { DcmSearchTableCard } from '../../components/dcmTabListHelpers';
 import { useDcmStyles } from '../../components/dcmStyles';
 import emptyIllustration from '../../assets/environments-empty-state.png';
@@ -33,16 +35,18 @@ export function ResourcesTabContent() {
 
   const [instances, setInstances] = useState<ServiceTypeInstance[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = usePersistedPageSize('resources');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError(null);
     resourcesApi
       .listServiceTypeInstances()
       .then(res => setInstances(res.instances ?? []))
-      .catch(() => setInstances([]))
+      .catch(err => setLoadError(extractApiError(err)))
       .finally(() => setLoading(false));
   }, [resourcesApi]);
 
@@ -136,6 +140,24 @@ export function ResourcesTabContent() {
   );
 
   if (loading) return <Progress />;
+
+  if (loadError) {
+    return (
+      <Box p={2}>
+        <MuiAlert
+          severity="error"
+          variant="outlined"
+          action={
+            <Button color="inherit" size="small" onClick={load}>
+              Retry
+            </Button>
+          }
+        >
+          {loadError}
+        </MuiAlert>
+      </Box>
+    );
+  }
 
   return (
     <Box className={classes.root}>

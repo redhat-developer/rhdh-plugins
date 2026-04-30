@@ -19,25 +19,6 @@ import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { Box, Chip, IconButton, Tooltip, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-
-const useStyles = makeStyles(() => ({
-  catalogItemChip: {
-    maxWidth: 180,
-  },
-  apiVersionChip: {
-    maxWidth: 140,
-  },
-  actionsCell: {
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'nowrap',
-    gap: 4,
-  },
-  /** Lets Tooltip wrap disabled IconButton (ref + layout) without raw `<span>`. */
-  tooltipTrigger: {
-    display: 'inline-flex',
-  },
-}));
 import AutorenewIcon from '@material-ui/icons/Autorenew';
 import DeleteIcon from '@material-ui/icons/Delete';
 import type {
@@ -62,6 +43,25 @@ import {
   isInstanceFormValid,
 } from './instanceFormTypes';
 import type { InstanceForm } from './instanceFormTypes';
+
+const useStyles = makeStyles(() => ({
+  catalogItemChip: {
+    maxWidth: 180,
+  },
+  apiVersionChip: {
+    maxWidth: 140,
+  },
+  actionsCell: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+    gap: 4,
+  },
+  /** Lets Tooltip wrap disabled IconButton (ref + layout) without raw `<span>`. */
+  tooltipTrigger: {
+    display: 'inline-flex',
+  },
+}));
 
 export function CatalogItemInstancesTabContent() {
   const classes = useStyles();
@@ -198,7 +198,7 @@ export function CatalogItemInstancesTabContent() {
         sorting: false,
         width: '120px',
         render: inst => {
-          const busy = rehydratingId === (inst.uid ?? '');
+          const busy = rehydratingId === inst.uid;
           return (
             <Box className={classes.actionsCell}>
               <Tooltip title="Rehydrate">
