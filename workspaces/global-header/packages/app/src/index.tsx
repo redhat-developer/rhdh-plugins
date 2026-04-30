@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import '@backstage/cli/asset-types';
+import 'material-icons/iconfont/outlined.css';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import '@backstage/ui/css/styles.css';

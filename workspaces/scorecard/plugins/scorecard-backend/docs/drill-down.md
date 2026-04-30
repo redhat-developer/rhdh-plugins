@@ -6,6 +6,8 @@ The Scorecard plugin provides a drill-down endpoint that returns detailed entity
 
 High-level aggregation for homepage KPIs uses **`GET /aggregations/:aggregationId`** (see [aggregation.md](./aggregation.md)). Drill-down is **metric-scoped**: the endpoint **`/metrics/:metricId/catalog/aggregations/entities`** lists entities and values for a single **metric id** (not a KPI id).
 
+**Note:** If the homepage card uses a KPI key (for example **`openPrsWeightedKpi`**) with **`type: average`**, drill-down still uses the KPI’s configured **`metricId`** (e.g. **`github.open_prs`**) in this path—not the KPI id.
+
 The drill-down endpoint provides a detailed view of entities and their metric values. It allows managers and platform engineers to:
 
 - See individual entities contributing to aggregated scores
@@ -69,6 +71,12 @@ Requires `scorecard.metric.read` permission. Additionally:
     pageSize: number;
     total: number;
     totalPages: number;
+    isCapped: boolean;
+  };
+  entityHealth: {
+    totalEntities: number; // Same as pagination.total for this response
+    calculationErrorCount: number; // Latest row is a metric calculation failure (error_message set, value null)
+    countsArePartial: boolean; // True when the DB fetch window was capped
   };
 }
 

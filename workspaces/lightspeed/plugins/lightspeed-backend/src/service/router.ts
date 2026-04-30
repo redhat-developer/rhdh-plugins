@@ -32,7 +32,10 @@ import {
 
 import { Readable } from 'node:stream';
 
-import { DEFAULT_LIGHTSPEED_SERVICE_PORT } from './constant';
+import {
+  DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  PROXY_PASSTHROUGH_PATHS,
+} from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
   McpServerResponse,
@@ -40,6 +43,7 @@ import {
   McpValidationResult,
 } from './mcp-server-types';
 import { McpServerValidator } from './mcp-server-validator';
+import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 import { userPermissionAuthorization } from './permission';
 import { createTokenEncryptor } from './token-encryption';
 import {
@@ -47,7 +51,7 @@ import {
   QueryRequestBody,
   RouterOptions,
 } from './types';
-import { validateCompletionsRequest } from './validation';
+import { isAllowedProxyPath, validateCompletionsRequest } from './validation';
 
 const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
 
@@ -106,6 +110,12 @@ export async function createRouter(
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
+
+  const vectorStoresOperator = VectorStoresOperator.getInstance(
+    `http://0.0.0.0:${port}`,
+    logger,
+  );
+  let lightspeed_vector_store_id: string = '';
 
   // Parse admin-configured MCP servers from app-config.
   // Only name is required; token is optional (users can provide their own via the UI).
@@ -406,19 +416,19 @@ export async function createRouter(
   // ─── Proxy Middleware (existing) ────────────────────────────────────
 
   router.use('/', async (req, res, next) => {
-    const passthroughPaths = [
-      '/v1/query',
-      '/v1/query/interrupt',
-      '/v1/feedback',
-    ];
-    // Skip middleware for ai-notebooks routes and specific paths
+    // Skip middleware for notebooks routes and specific paths
     if (
-      req.path.startsWith('/ai-notebooks') ||
-      passthroughPaths.includes(req.path) ||
+      req.path.startsWith('/notebooks') ||
+      PROXY_PASSTHROUGH_PATHS.includes(req.path) ||
       req.method === 'PUT'
     ) {
       return next();
     }
+
+    if (!isAllowedProxyPath(req.path)) {
+      return res.status(404).json({ error: 'Requested path is not available' });
+    }
+
     // TODO: parse server_id from req.body and get URL and token when multi-server is supported
     const credentials = await httpAuth.credentials(req);
     const user = await userInfo.getUserInfo(credentials);
@@ -589,6 +599,20 @@ export async function createRouter(
           lightspeedChatCreatePermission,
           credentials,
         );
+
+        // get the vector store id for the rhdh-product-docs vector store
+        if (lightspeed_vector_store_id === '') {
+          const vectorStores = await vectorStoresOperator.vectorStores.list();
+          lightspeed_vector_store_id =
+            vectorStores.data.find((v: any) =>
+              v.name.startsWith('rhdh-product-docs'),
+            )?.id || '';
+        }
+
+        if (lightspeed_vector_store_id !== '') {
+          request.body.vector_store_ids = [lightspeed_vector_store_id];
+        }
+
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
         // if system_prompt is defined in lightspeed config

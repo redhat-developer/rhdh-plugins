@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.9.2
+
+### Patch Changes
+
+- dfd28b3: fix: returns the version of the workflow in the overview and instance reponses
+- Updated dependencies [dfd28b3]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.3
+
+## 8.9.1
+
+### Patch Changes
+
+- d85bf56: fix: add configurable bodyParser limit
+- Updated dependencies [d85bf56]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.2
+
 ## 8.9.0
 
 ### Minor Changes

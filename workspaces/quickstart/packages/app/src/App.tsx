@@ -14,9 +14,26 @@
  * limitations under the License.
  */
 import { createApp } from '@backstage/frontend-defaults';
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import {
+  globalHeaderModule,
+  globalHeaderTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import {
+  quickstartInitModule,
+  quickstartTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-quickstart/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { navModule } from './modules/nav';
 
 export default createApp({
-  features: [catalogPlugin, navModule],
+  features: [
+    appDrawerModule,
+    globalHeaderModule,
+    globalHeaderTranslationsModule,
+    quickstartInitModule,
+    quickstartTranslationsModule,
+    rhdhThemeModule,
+    navModule,
+  ],
 });

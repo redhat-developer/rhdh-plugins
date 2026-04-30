@@ -47,6 +47,7 @@
     "@backstage/plugin-techdocs-backend": "^2.1.6",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf": "workspace:^",

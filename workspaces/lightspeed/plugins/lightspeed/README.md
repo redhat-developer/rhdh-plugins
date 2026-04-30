@@ -24,7 +24,7 @@ p, role:default/team_a, lightspeed.chat.create, create, allow
 p, role:default/team_a, lightspeed.chat.delete, delete, allow
 p, role:default/team_a, lightspeed.chat.update, update, allow
 
-# Required for AI Notebooks feature (if enabled)
+# Required for Notebooks feature (if enabled)
 p, role:default/team_a, lightspeed.notebooks.use, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
@@ -85,7 +85,11 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 #### Procedure
 
 1. Open your Backstage application and select a Lightspeed nav item from the **Navigation**.
-2. Ask you questions to the Lightspeed chatbot.
+2. Ask your questions to the Lightspeed chatbot.
+
+### Display modes and chat continuity
+
+Lightspeed supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
 
 ### MCP servers settings
 
@@ -106,9 +110,9 @@ automatically after typing stops briefly. The input shows inline feedback:
 
 Users can then save the configuration after validation feedback is displayed.
 
-### AI Notebooks (Developer Preview)
+### Notebooks (Developer Preview)
 
-AI Notebooks is an experimental feature that enables **document-based conversations with Retrieval-Augmented Generation (RAG)**. This feature allows you to:
+Notebooks is an experimental feature that enables **document-based conversations with Retrieval-Augmented Generation (RAG)**. This feature allows you to:
 
 - **Create persistent notebook sessions** with their own vector databases
 - **Upload and manage documents** to query against, including:
@@ -120,28 +124,28 @@ AI Notebooks is an experimental feature that enables **document-based conversati
 - **Organize documents** by sessions with metadata and tagging
 - **Maintain context** across conversations - all uploaded documents remain available throughout the session
 
-#### How AI Notebooks Works
+#### How Notebooks Works
 
 1. **Session Management**: Create a notebook session, which is backed by its own vector database
 2. **Document Upload**: Upload documents - they are automatically processed, chunked, and embedded into the vector database
 3. **RAG Conversations**: Ask questions about your documents - relevant chunks are retrieved and provided as context to the LLM
 4. **Persistent Storage**: Your documents and conversations remain available throughout the session lifecycle
 
-#### Prerequisites for AI Notebooks
+#### Prerequisites for Notebooks
 
-- AI Notebooks requires a **Llama Stack service** to be running
-- The backend administrator must enable the feature (see [Backend Configuration](../lightspeed-backend/README.md#ai-notebooks-developer-preview))
+- Notebooks requires a **Lightspeed Stack service** to be running
+- The backend administrator must enable the feature (see [Backend Configuration](../lightspeed-backend/README.md#notebooks-developer-preview))
 - Users need the appropriate RBAC permissions (if enabled)
 
-#### Using AI Notebooks
+#### Using Notebooks
 
-1. Ensure AI Notebooks is enabled in your Backstage instance
+1. Ensure Notebooks is enabled in your Backstage instance
 2. Navigate to the Lightspeed page
 3. Create a new notebook session or select an existing one
 4. Upload documents you want to query
 5. Start asking questions about your uploaded documents
 
-For backend configuration and API details, administrators should refer to the [Lightspeed Backend Plugin Documentation](../lightspeed-backend/README.md#ai-notebooks-developer-preview).
+For backend configuration and API details, administrators should refer to the [Lightspeed Backend Plugin Documentation](../lightspeed-backend/README.md#notebooks-developer-preview).
 
 ## Loading as Dynamic Plugin
 

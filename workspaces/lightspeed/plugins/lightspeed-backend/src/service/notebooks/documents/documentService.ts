@@ -22,7 +22,6 @@ import {
   DEFAULT_CHUNK_OVERLAP_TOKENS,
   DEFAULT_CHUNKING_STRATEGY_TYPE,
   DEFAULT_MAX_CHUNK_SIZE_TOKENS,
-  FILE_TYPE_TO_MIME,
 } from '../../constant';
 import { SessionDocument, UpsertResult } from '../types/notebooksTypes';
 import { VectorStoresOperator } from '../VectorStoresOperator';
@@ -98,27 +97,13 @@ export class DocumentService {
    * @returns File ID from the Files API
    * @throws Error if upload fails
    */
-  /**
-   * Upload a file to the Files API
-   * @param content - File content as string
-   * @param title - File title/name
-   * @param fileType - Optional file type for MIME type detection
-   * @returns File ID from the Files API
-   * @throws Error if upload fails
-   */
-  async uploadFile(
-    content: string,
-    title: string,
-    fileType?: string,
-  ): Promise<string> {
+  async uploadFile(content: string, title: string): Promise<string> {
     try {
       // Determine MIME type from file type or default to text/plain
-      const mimeType = fileType
-        ? FILE_TYPE_TO_MIME[fileType] || 'text/plain'
-        : 'text/plain';
-
+      const mimeType = 'text/plain';
+      const txtFilename = `${title.replace(/\.[^.]+$/, '')}.txt`;
       const file = await this.client.files.create({
-        file: await toFile(Buffer.from(content, 'utf-8'), title, {
+        file: await toFile(Buffer.from(content, 'utf-8'), txtFilename, {
           type: mimeType,
         }),
         purpose: 'assistants',

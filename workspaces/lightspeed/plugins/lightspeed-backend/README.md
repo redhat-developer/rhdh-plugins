@@ -31,7 +31,7 @@ Add the following lightspeed configurations into your `app-config.yaml` file:
 
 ```yaml
 lightspeed:
-  servicePort: <portNumber> # Optional - Change the LS service port nubmer. Defaults to 8080.
+  servicePort: <portNumber> # Optional - Change the LS service port number. Defaults to 8080.
   systemPrompt: <system prompt> # Optional - Override the default system prompt.
   mcpServers: # Optional - one or more MCP servers
     - name: <mcp server name> # must match the name configured in LCS
@@ -81,15 +81,15 @@ permission:
     policyFileReload: true
 ```
 
-### AI Notebooks (Developer Preview)
+### Notebooks (Developer Preview)
 
-AI Notebooks is an experimental feature that enables document-based conversations with Retrieval-Augmented Generation (RAG).
+Notebooks is an experimental feature that enables document-based conversations with Retrieval-Augmented Generation (RAG).
 
-For user-facing feature documentation, see the [Lightspeed Frontend README](../lightspeed/README.md#ai-notebooks-developer-preview).
+For user-facing feature documentation, see the [Lightspeed Frontend README](../lightspeed/README.md#notebooks-developer-preview).
 
 #### Prerequisites
 
-AI Notebooks requires:
+Notebooks requires:
 
 - **Lightspeed Core service** to be running (provides the backend API proxy)
 - **Llama Stack service** to be accessible from Lightspeed Core (provides vector database, embeddings, and RAG capabilities)
@@ -98,27 +98,20 @@ For Llama Stack setup and configuration, refer to the [Llama Stack documentation
 
 #### Configuration
 
-To enable AI Notebooks, add the following configuration to your `app-config.yaml`:
+To enable Notebooks, add the following configuration to your `app-config.yaml`:
 
 ```yaml
 lightspeed:
   servicePort: 8080 # Optional: Lightspeed Core service port (default: 8080)
 
   notebooks:
-    enabled: false # Enable AI Notebooks feature (default: false)
+    enabled: false # Enable Notebooks feature (default: false)
 
     # Required: Query defaults for RAG queries
     # Both model and provider_id must be configured together
     queryDefaults:
-      model: llama3.1-8b-instruct # Model to use for answering queries
-      provider_id: ollama # AI provider for the query model
-
-    # Required: Session defaults for creating vector stores
-    # All three fields are required when Notebooks is enabled
-    sessionDefaults:
-      provider_id: notebooks # Vector store provider ID (must match Llama Stack config)
-      embedding_model: sentence-transformers/all-mpnet-base-v2 # Model for generating embeddings
-      embedding_dimension: 768 # Embedding vector dimension (must match model output)
+      model: ${NOTEBOOKS_QUERY_MODEL} # Model to use for answering queries. Must map to a model available through the provider set in $NOTEBOOKS_QUERY_PROVIDER_ID
+      provider_id: ${NOTEBOOKS_QUERY_PROVIDER_ID} # AI provider for the query model. Must map to a provider enabled in your Lightspeed config.yaml
 
     # Optional: Chunking strategy for document processing
     chunkingStrategy:
@@ -136,18 +129,14 @@ lightspeed:
 
 **Notebooks Settings**:
 
-- **`Notebooks.enabled`** _(optional)_: Enable or disable the AI Notebooks feature (default: `false`)
+- **`notebooks.enabled`** _(optional)_: Enable or disable the Notebooks feature (default: `false`)
 
 **Query Defaults** _(required when enabled)_:
 
 - **`queryDefaults.model`** _(required)_: The LLM model to use for answering RAG queries. Must be available in the configured provider.
 - **`queryDefaults.provider_id`** _(required)_: The AI provider identifier for the query model (e.g., `ollama`, `vllm`). Both `model` and `provider_id` must be configured together.
 
-**Session Defaults** _(required when enabled)_:
-
-- **`sessionDefaults.provider_id`** _(required)_: Vector store provider identifier. Must match a provider configured in your Llama Stack instance (e.g., `notebooks`, `chromadb`). This determines where document embeddings are stored.
-- **`sessionDefaults.embedding_model`** _(required)_: The embedding model to use for converting documents to vectors (e.g., `sentence-transformers/all-mpnet-base-v2`). Must be available in Llama Stack.
-- **`sessionDefaults.embedding_dimension`** _(required)_: Dimension of the embedding vectors produced by the embedding model. Must match the model's output dimension (commonly `768`, `384`, or `1536`).
+> **Important**: The `model` and `provider_id` values must map to a provider and model that are actually enabled in your Lightspeed config.yaml configuration. If the provider or model is not available in Lightspeed, queries will fail. For example, if `openai` enabled in Lightspeed via ENABLE_OPENAI, then model must be available, e.g (model=gpt-4o-mini).
 
 **Chunking Strategy** _(optional)_:
 
@@ -164,25 +153,26 @@ lightspeed:
 
 #### API Endpoints
 
-When enabled, AI Notebooks exposes the following REST API endpoints:
+When enabled, Notebooks exposes the following REST API endpoints:
 
 - **Health Check**:
-  - `GET /lightspeed/ai-notebooks/health` - Health check endpoint
+  - `GET /lightspeed/notebooks/health` - Health check endpoint
 
 - **Sessions**:
-  - `POST /lightspeed/ai-notebooks/v1/sessions` - Create a new session
-  - `GET /lightspeed/ai-notebooks/v1/sessions` - List all sessions for the current user
-  - `PUT /lightspeed/ai-notebooks/v1/sessions/:sessionId` - Update session details
-  - `DELETE /lightspeed/ai-notebooks/v1/sessions/:sessionId` - Delete session
+  - `POST /lightspeed/notebooks/v1/sessions` - Create a new session
+  - `GET /lightspeed/notebooks/v1/sessions` - List all sessions for the current user
+  - `GET /lightspeed/notebooks/v1/sessions/:sessionId` - Get a specific session given the sessionID
+  - `PUT /lightspeed/notebooks/v1/sessions/:sessionId` - Update session details
+  - `DELETE /lightspeed/notebooks/v1/sessions/:sessionId` - Delete session
 
 - **Documents**:
-  - `PUT /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents` - Upload or update a document (multipart/form-data)
-  - `GET /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents` - List all documents in a session
-  - `GET /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents/:documentId/status` - Get document processing status
-  - `DELETE /lightspeed/ai-notebooks/v1/sessions/:sessionId/documents/:documentId` - Delete a document
+  - `PUT /lightspeed/notebooks/v1/sessions/:sessionId/documents` - Upload or update a document (multipart/form-data)
+  - `GET /lightspeed/notebooks/v1/sessions/:sessionId/documents` - List all documents in a session
+  - `GET /lightspeed/notebooks/v1/sessions/:sessionId/documents/:documentId/status` - Get document processing status
+  - `DELETE /lightspeed/notebooks/v1/sessions/:sessionId/documents/:documentId` - Delete a document
 
 - **Queries**:
-  - `POST /lightspeed/ai-notebooks/v1/sessions/:sessionId/query` - Query documents with RAG
+  - `POST /lightspeed/notebooks/v1/sessions/:sessionId/query` - Query documents with RAG
 
 **Notes**:
 
@@ -191,9 +181,9 @@ When enabled, AI Notebooks exposes the following REST API endpoints:
 - Document endpoints verify session ownership before allowing operations
 - `documentId` in paths is the document title (URL-encoded for special characters)
 
-#### Permission Framework Support for AI Notebooks
+#### Permission Framework Support for Notebooks
 
-When RBAC is enabled, users need the following permission to use AI Notebooks:
+When RBAC is enabled, users need the following permission to use Notebooks:
 
 ```CSV
 p, role:default/team_a, lightspeed.notebooks.use, update, allow

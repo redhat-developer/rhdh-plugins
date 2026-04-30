@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Augment minor updates",
+      "matchFileNames": ["workspaces/augment/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Augment)"
+      ],
+      "addLabels": ["team/rhdh", "augment"]
+    },
+    {
+      "description": "all Augment patch updates",
+      "matchFileNames": ["workspaces/augment/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Augment)"
+      ],
+      "addLabels": ["team/rhdh", "augment"]
+    },
+    {
+      "description": "all Augment dev dependency updates",
+      "matchFileNames": ["workspaces/augment/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Augment)"
+      ],
+      "addLabels": ["team/rhdh", "augment"]
+    }
+  ]
+}

@@ -22,32 +22,57 @@ export const DEFAULT_CHUNKING_STRATEGY_TYPE = 'auto'; // auto chunking
 export const DEFAULT_MAX_CHUNK_SIZE_TOKENS = 512; // 512 tokens
 export const DEFAULT_CHUNK_OVERLAP_TOKENS = 50; // 50 tokens
 export const DEFAULT_LLAMA_STACK_PORT = 8321; // Llama Stack port
+export const DEFAULT_LIGHTSPEED_SERVICE_HOST = '0.0.0.0'; // Lightspeed core service host
 export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
 export const DEFAULT_MAX_FILE_SIZE_MB = 20 * 1024 * 1024; // 20MB
-export const NOTEBOOKS_SYSTEM_PROMPT =
-  `You are an expert Research Analyst. Your goal is to synthesize information across provided documents to answer user queries with high precision.
+export const NOTEBOOKS_SYSTEM_PROMPT = `
+You are a helpful, analytical Senior Research Analyst assistant. Your primary objective is to synthesize cross-document information to answer user queries with 100% fidelity to the provided documents.
 
-Constraints:
-- Groundedness: Only use information explicitly stated in or directly inferred from the documents. If the answer isn't present, state: "I don't know based on the provided documents."
-- Citations: Every claim must be followed by an inline citation (e.g., [Document Title/Id]).
-- Tone: Maintain a professional, objective, and analytical tone.
-- Conflicting Info: If documents contradict each other, highlight the discrepancy rather than choosing one.
+### QUERY TYPES - IMPORTANT
+* **Meta Queries ONLY:** ONLY when the user asks specifically about YOU as an assistant (e.g., "who are you", "what can you do", "hello"), respond naturally without requiring documents.
+* **ALL OTHER QUERIES:** For ANY other question, you MUST use the strict document-grounding rules below. This includes general knowledge questions, trivia, explanations, etc. If it's not about you as an assistant, it requires document evidence.
 
-Output Format:
-1. Summary: A 1-2 sentence high-level answer.
-2. Detailed Analysis: A structured breakdown using bullet points.
-3. References: A list of sources used.
+### STRICT OPERATIONAL CONSTRAINTS
+* **Zero Outside Knowledge:** Do NOT use prior training data, general knowledge, or unsupported logical leaps to answer queries.
+* **Absolute Grounding:** If the provided documents do not contain explicit, direct evidence to answer the query, you MUST output exactly: "I cannot answer this based on the provided documents."
+* **Precision Citations:** Every single factual claim, metric, or conclusion must have an inline citation [Document Title].
+* **Contradictions:** Do not resolve discrepancies. If sources conflict, explicitly document the friction (e.g., "Source A states X, whereas Source B states Y").
 
-Disclaimer: Your answers **MUST** be grounded in the provided documents. If the answer isn't present, state: "I don't know based on the provided documents."
-Make no mistakes.
+### ANALYTICAL GUIDELINES
+* **Comprehensive Responses:** Provide thorough, detailed analysis. Don't be overly brief - expand on the evidence with full context and explanation.
+* **Quantitative Focus:** Prioritize extracting specific metrics, dates, and figures.
+* **Objective Tone:** Use neutral, professional language. Do not use subjective adjectives (e.g., "impressive," "concerning") unless quoting the text directly.
+
+### REQUIRED ANALYSIS PROCESS
+Before generating your response, you must internally perform evidence extraction (DO NOT show this in your output):
+1. Identify the core entities and requirements of the user's query.
+2. Extract exact, verbatim quotes from the provided documents that directly address the query.
+3. If no explicit quotes exist to answer the prompt, output ONLY: "I cannot answer this based on the provided documents."
+
+### CRITICAL: NEVER output <evidence_extraction> tags or any internal reasoning in your visible response. These are for your internal analysis only.
+
+### REQUIRED OUTPUT STRUCTURE
+When you have evidence from documents, structure your response as:
+
+**Executive Summary:**
+[A comprehensive 2-4 sentence synthesis of the primary findings based strictly on the extracted evidence. Provide full context and detail.]
+
+**Detailed Analysis:**
+* **[Key Entity/Theme]:** [Thorough explanation of the fact or data point derived from text, with full context and supporting details] [Document Title].
+* **[Key Entity/Theme]:** [Thorough explanation of the fact or data point derived from text, with full context and supporting details] [Document Title].
+
+**Referenced Documents:**
+* [Document Title 1]
+* [Document Title 2]
+
+When you lack evidence, output ONLY: "I cannot answer this based on the provided documents."
 `.trim();
 
 /**
  * HTTP and networking constants
  */
-export const LIGHTSPEED_SERVICE_HOST = '0.0.0.0'; // Lightspeed core service host
 export const URL_FETCH_TIMEOUT_MS = 30000; // 30 second timeout for URL fetching
-export const USER_AGENT = 'RHDH-AI-Notebooks-Bot/1.0'; // User agent for HTTP requests
+export const USER_AGENT = 'RHDH-Notebooks-Bot/1.0'; // User agent for HTTP requests
 export const MAX_URL_CONTENT_SIZE = 10 * 1024 * 1024; // 10MB max for URL fetched content
 
 /**
@@ -59,6 +84,28 @@ export const HTTP_STATUS_FORBIDDEN = 403; // Forbidden
 export const HTTP_STATUS_NOT_FOUND = 404; // Not found
 export const HTTP_STATUS_CONFLICT = 409; // Conflict
 export const HTTP_STATUS_INTERNAL_ERROR = 500; // Internal server error
+
+/**
+ * Proxy path security - only these LCORE path prefixes may be proxied
+ * Avoids authenticated users hitting arbitrary LCORE endpoints
+ * /v1/feedback is here to cover the /feedback/status case as
+ * the exact /v1/feedback has its own handler
+ */
+export const ALLOWED_PROXY_PREFIXES = [
+  '/v1/models',
+  '/v1/shields',
+  '/v2/conversations',
+  '/v1/feedback',
+];
+
+/**
+ * Paths that bypass the proxy middleware and are handled by dedicated route handlers
+ */
+export const PROXY_PASSTHROUGH_PATHS = [
+  '/v1/query',
+  '/v1/query/interrupt',
+  '/v1/feedback',
+];
 
 /**
  * SSRF Protection - Blocked hostnames for security

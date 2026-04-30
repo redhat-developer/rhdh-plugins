@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 2.7.1
+
+### Patch Changes
+
+- 91e724f: Expose scorecard entity calculation health on drill-down and aggregation APIs, and align the drill-down warning plus homepage subheader with those counts.
+
+## 2.7.0
+
+### Minor Changes
+
+- bf72ffc: Adds `**average**` as an aggregation KPI type alongside `**statusGrouped**`, with configurable `**options.statusScores**` and optional `**options.thresholds**` (same shape as metric thresholds) for homepage donut coloring against `**averageScore × 100**`, with built-in defaults when omitted.
+
+## 2.6.0
+
+## 2.5.2
+
 ## 2.5.1
 
 ## 2.5.0

@@ -62,4 +62,28 @@ export interface MetricProvider<T extends MetricType = MetricType> {
    * @public
    */
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
+
+  /**
+   * Get all metric IDs this provider handles.
+   * For batch providers that handle multiple metrics.
+   * Defaults to [getProviderId()] if not implemented.
+   * @public
+   */
+  getMetricIds?(): string[];
+
+  /**
+   * Get all metrics this provider exposes.
+   * For batch providers that handle multiple metrics.
+   * Defaults to [getMetric()] if not implemented.
+   * @public
+   */
+  getMetrics?(): Metric<T>[];
+
+  /**
+   * Calculate multiple metrics in a single call.
+   * For batch providers that can efficiently compute multiple metrics together.
+   * Defaults to [calculateMetric()] ff not implemented.
+   * @public
+   */
+  calculateMetrics?(entity: Entity): Promise<Map<string, MetricValue<T>>>;
 }

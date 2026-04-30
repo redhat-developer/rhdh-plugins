@@ -19,7 +19,7 @@ import {
   MetricType,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { validateThresholds } from './validateThresholds';
+import { validateThresholdsForMetric } from './validateThresholds';
 
 /**
  * Read and validate threshold configuration from config or return undefined
@@ -33,7 +33,7 @@ export function getThresholdsFromConfig(
   try {
     const thresholdsConfig = config.getOptional(thresholdsPath);
     if (thresholdsConfig) {
-      validateThresholds(thresholdsConfig, expectedMetricType);
+      validateThresholdsForMetric(thresholdsConfig, expectedMetricType);
       return thresholdsConfig;
     }
   } catch (error) {

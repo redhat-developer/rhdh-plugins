@@ -1,6 +1,18 @@
 app:
   title: RHDH Global Header Test App
   baseUrl: http://localhost:3000
+
+  packages: all
+
+  extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'fr', 'it', 'es', 'ja']
+          defaultLanguage: 'en'
+    - page:catalog:
+        config:
+          path: /
+
   support:
     url: https://access.redhat.com/products/red-hat-developer-hub
     items:
@@ -10,6 +22,39 @@ app:
             title: Product Info
           - url: https://access.redhat.com/documentation/en-us/red_hat_developer_hub
             title: Documentation
+
+globalHeader:
+  components:
+    - title: Visualizer Dashboard
+      icon: dashboard
+      link: /visualizer/tree
+      priority: 75
+
+  menuItems:
+    - target: app-launcher
+      title: Internal Wiki
+      icon: article
+      link: https://wiki.internal.example.com
+      sectionLabel: Resources
+      priority: 80
+    - target: app-launcher
+      title: Issue Tracker
+      icon: bug_report
+      link: https://issues.internal.example.com
+      sectionLabel: Resources
+      priority: 70
+    - target: help
+      title: FAQ
+      icon: quiz
+      link: https://faq.example.com
+      sectionLabel: Support
+      priority: 90
+    - target: help
+      title: Community Forum
+      icon: forum
+      link: https://forum.example.com
+      sectionLabel: Support
+      priority: 80
 
 organization:
   name: My Company

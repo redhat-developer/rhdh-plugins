@@ -51,6 +51,7 @@ type LightspeedChatBoxHeaderProps = {
   onPinnedChatsToggle: (state: boolean) => void;
   onMcpSettingsClick: () => void;
   isModelSelectorDisabled?: boolean;
+  hideModelSelector?: boolean;
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
 
@@ -85,6 +86,7 @@ export const LightspeedChatBoxHeader = ({
   onPinnedChatsToggle,
   onMcpSettingsClick,
   isModelSelectorDisabled = false,
+  hideModelSelector = false,
   setDisplayMode,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
@@ -136,35 +138,37 @@ export const LightspeedChatBoxHeader = ({
 
   return (
     <ChatbotHeaderActions>
-      <Dropdown
-        className={styles.dropdown}
-        isOpen={isOptionsMenuOpen}
-        onSelect={(_e, value) => {
-          handleSelectedModel(value as string);
-          setIsOptionsMenuOpen(false);
-        }}
-        onOpenChange={isOpen => setIsOptionsMenuOpen(isOpen)}
-        popperProps={{ position: 'right' }}
-        shouldFocusToggleOnSelect
-        shouldFocusFirstItemOnOpen={false}
-        toggle={toggle}
-        isScrollable={isModelDropdownScrollable}
-        maxMenuHeight={isModelDropdownScrollable ? '240px' : undefined}
-      >
-        <DropdownList>
-          {models.map(model => (
-            <DropdownGroup className={styles.groupTitle} key={model.label}>
-              <DropdownItem
-                value={model.value}
-                key={model.value}
-                isSelected={selectedModel === model.value}
-              >
-                {model.label}
-              </DropdownItem>
-            </DropdownGroup>
-          ))}
-        </DropdownList>
-      </Dropdown>
+      {!hideModelSelector && (
+        <Dropdown
+          className={styles.dropdown}
+          isOpen={isOptionsMenuOpen}
+          onSelect={(_e, value) => {
+            handleSelectedModel(value as string);
+            setIsOptionsMenuOpen(false);
+          }}
+          onOpenChange={isOpen => setIsOptionsMenuOpen(isOpen)}
+          popperProps={{ position: 'right' }}
+          shouldFocusToggleOnSelect
+          shouldFocusFirstItemOnOpen={false}
+          toggle={toggle}
+          isScrollable={isModelDropdownScrollable}
+          maxMenuHeight={isModelDropdownScrollable ? '240px' : undefined}
+        >
+          <DropdownList>
+            {models.map(model => (
+              <DropdownGroup className={styles.groupTitle} key={model.label}>
+                <DropdownItem
+                  value={model.value}
+                  key={model.value}
+                  isSelected={selectedModel === model.value}
+                >
+                  {model.label}
+                </DropdownItem>
+              </DropdownGroup>
+            ))}
+          </DropdownList>
+        </Dropdown>
+      )}
       <ChatbotHeaderOptionsDropdown
         isCompact
         toggleProps={{

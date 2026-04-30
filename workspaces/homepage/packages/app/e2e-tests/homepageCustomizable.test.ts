@@ -69,7 +69,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
   test('Verify Restore Default Cards', async ({
     browser: _browser,
   }, testInfo) => {
-    await homePageCustomization.restoreDefaultCards();
+    await homePageCustomization.restoreDefaultWidgets();
     await homePageCustomization.verifyCardsRestored();
     await runAccessibilityTests(sharedPage, testInfo);
   });

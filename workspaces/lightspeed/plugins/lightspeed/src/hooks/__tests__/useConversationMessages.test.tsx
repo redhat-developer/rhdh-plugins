@@ -21,6 +21,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { TEMP_CONVERSATION_ID } from '../../const';
 import { getTimestamp } from '../../utils/lightspeed-chatbox-utils';
+import { resetSharedToolCallsCacheStoreForTests } from '../toolCallsCacheStore';
 import {
   useConversationMessages,
   useFetchConversationMessages,
@@ -154,6 +155,7 @@ describe('useFetchConversations', () => {
 describe('useConversationMesages', () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    resetSharedToolCallsCacheStoreForTests();
   });
 
   it('should initialize conversations with the given conversationId', () => {
@@ -837,5 +839,92 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
         result.current.conversations[TEMP_CONVERSATION_ID],
       ).toBeUndefined();
     });
+  });
+
+  it('preserves temp thread when switching conversations mid-stream and returning (RHDHBUGS-3040)', async () => {
+    mockLightspeedApi.getConversationMessages.mockResolvedValue([]);
+    const onComplete = jest.fn();
+
+    let resolveSecondRead!: (value: IteratorResult<Uint8Array | null>) => void;
+    const secondReadPromise = new Promise<IteratorResult<Uint8Array | null>>(
+      resolve => {
+        resolveSecondRead = resolve;
+      },
+    );
+
+    const firstChunk = createSSEStream([
+      { event: 'start', data: { conversation_id: 'persisted-after-stream' } },
+      { event: 'token', data: { id: 0, token: 'Hello ', role: 'inference' } },
+    ]);
+    const secondChunk = createSSEStream([
+      { event: 'token', data: { id: 1, token: 'world!', role: 'inference' } },
+    ]);
+
+    const read = jest
+      .fn()
+      .mockResolvedValueOnce({
+        done: false,
+        value: new TextEncoder().encode(firstChunk),
+      })
+      .mockImplementationOnce(() => secondReadPromise)
+      .mockResolvedValueOnce({ done: true, value: null });
+
+    const lightSpeedApi = {
+      ...mockLightspeedApi,
+      createMessage: jest.fn().mockResolvedValue({ read }),
+    };
+    (useApi as jest.Mock).mockReturnValue(lightSpeedApi);
+
+    const { result, rerender } = renderHook(
+      ({ conversationId }) =>
+        useConversationMessages(
+          conversationId,
+          'test-user',
+          'gpt-3',
+          'openai',
+          'user.png',
+          onComplete,
+        ),
+      {
+        initialProps: { conversationId: TEMP_CONVERSATION_ID },
+        wrapper,
+      },
+    );
+
+    await act(async () => {
+      void result.current.handleInputPrompt('Hi');
+    });
+
+    await waitFor(() => {
+      const msgs = result.current.conversations[TEMP_CONVERSATION_ID];
+      expect(msgs?.[1]?.content).toContain('Hello ');
+    });
+
+    expect(result.current.streamingConversationId).toBe(TEMP_CONVERSATION_ID);
+
+    rerender({ conversationId: 'other-conv-id' });
+
+    expect(result.current.streamingConversationId).toBe(TEMP_CONVERSATION_ID);
+
+    rerender({ conversationId: TEMP_CONVERSATION_ID });
+
+    await waitFor(() => {
+      const msgs = result.current.conversations[TEMP_CONVERSATION_ID] ?? [];
+      expect(msgs.length).toBeGreaterThanOrEqual(2);
+      expect(String(msgs[1]?.content ?? '')).toContain('Hello ');
+    });
+
+    await act(async () => {
+      resolveSecondRead({
+        done: false,
+        value: new TextEncoder().encode(secondChunk),
+      });
+    });
+
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalled();
+    });
+
+    expect(result.current.streamingConversationId).toBeNull();
   });
 });

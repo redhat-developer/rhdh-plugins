@@ -39,6 +39,9 @@ const scorecardTranslationFr = createTranslationMessages({
     'permissionRequired.button': 'En savoir plus',
     'permissionRequired.altText': 'Autorisation requise',
 
+    // Common UI
+    'common.loading': 'Chargement',
+
     // Not found state
     'notFound.title': "404 Nous n'avons pas trouvé cette page",
     'notFound.description':
@@ -68,12 +71,10 @@ const scorecardTranslationFr = createTranslationMessages({
       'Entité utilisateur non trouvée dans le catalogue',
     'errors.noDataFoundMessage':
       'Pour voir vos données ici, vérifiez que vos entités communiquent les valeurs liées à cet indicateur.',
+    'errors.unsupportedAggregationType':
+      "Cette fiche d'évaluation utilise un type d'agrégation non pris en charge par cette version du plugin.",
     'errors.authenticationErrorMessage':
       'Veuillez vous connecter pour afficher vos données.',
-    'errors.noMetricsFound':
-      "Aucune métrique trouvée pour l'ID de métrique spécifié.",
-    'errors.multipleMetricsFound':
-      "Plusieurs métriques trouvées pour l'ID de métrique spécifié. Une seule attendue.",
 
     // Metric translations
     'metric.github.open_prs.title': 'GitHub ouvre des PR',
@@ -124,15 +125,32 @@ const scorecardTranslationFr = createTranslationMessages({
       'SonarQube Duplications de code',
     'metric.sonarqube.code_duplications.description':
       'Pourcentage de lignes dupliquées dans SonarQube.',
+    'metric.filecheck.title': 'Vérification de fichier : {{name}}',
+    'metric.filecheck.description':
+      'Vérifie si le fichier {{name}} existe dans le dépôt.',
     'metric.lastUpdated': 'Dernière mise à jour: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Dernière mise à jour: Non disponible',
     'metric.someEntitiesNotReportingValues':
       'Certaines entités ne communiquent pas de valeurs liées à cette métrique.',
+    'metric.averageCenterTooltipTotalLabel': 'Score total',
+    'metric.averageCenterTooltipMaxLabel': 'Score maximum possible',
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} entité, chacune {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
+      '{{count}} entités, chacune {{score}}',
+    'metric.averageLegendTooltipRowTotal': 'Score total {{total}}',
+    'metric.drillDownCalculationFailures':
+      'Le calcul de cette métrique a échoué pour une ou plusieurs entités.',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entités',
+    'metric.homepageEntityCalculationHealth':
+      '{{healthy}} / {{total}} entités sans erreur de calcul de métrique',
 
     // Threshold translations
     'thresholds.success': 'Succès',
     'thresholds.warning': 'Attention',
     'thresholds.error': 'Erreur',
+    'thresholds.exist': 'Existant',
+    'thresholds.missing': 'Manquant',
     'thresholds.noEntities': "Aucune entité dans l'état {{category}}",
     'thresholds.entities_one': '{{count}} entité',
     'thresholds.entities_other': '{{count}} entités',

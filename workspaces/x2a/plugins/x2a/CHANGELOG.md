@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 1.2.2
+
+### Patch Changes
+
+- 321f6dd: Stream logs in real-time as backend jobs produce them. Exclude row numbers from copy selection.
+
 ## 1.2.1
 
 ### Patch Changes

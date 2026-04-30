@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "18 || 20"
+    "node": "22"
   },
   "scripts": {
     "start": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start-app\" \"yarn start-backend\"",
@@ -40,9 +40,10 @@
     "directory": "workspaces/cost-management"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.29.4",
-    "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.13.3",
+    "@backstage/cli": "^0.36.0",
+    "@backstage/cli-defaults": "^0.1.0",
+    "@backstage/e2e-test-utils": "^0.1.2",
+    "@backstage/repo-tools": "^0.17.0",
     "@changesets/cli": "^2.27.1",
     "@microsoft/api-extractor-model": "^7.29.2",
     "@microsoft/tsdoc": "^0.16.0",
@@ -52,21 +53,18 @@
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",
-    "typescript": "~5.3.0"
+    "typescript": "~5.8.0"
   },
   "resolutions": {
-    "@backstage/plugin-catalog-backend": "1.30.0",
-    "@backstage/plugin-catalog-backend-module-logs": "0.1.6",
-    "@backstage/plugin-catalog-backend-module-scaffolder-entity-model": "0.2.4",
-    "@backstage/plugin-catalog-backend-module-unprocessed": "0.5.4",
-    "@backstage/plugin-scaffolder": "1.27.5",
-    "@backstage/plugin-scaffolder-backend": "1.29.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "react": "^18",
     "react-dom": "^18",
-    "@rjsf/core": "5.24.13",
-    "@rjsf/utils": "5.24.13"
+    "@protobufjs/inquire": "1.1.0",
+    "linkifyjs": "4.3.2",
+    "@aws-sdk/core/fast-xml-parser": "4.5.4",
+    "request/form-data": "2.5.4",
+    "@types/request/form-data": "2.5.4"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

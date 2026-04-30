@@ -130,13 +130,18 @@ export const EntitiesTable = ({
   const entities = aggregatedScorecardEntities?.entities ?? [];
 
   const total = aggregatedScorecardEntities?.pagination?.total ?? 0;
+  const calculationErrorCount =
+    aggregatedScorecardEntities?.entityHealth?.calculationErrorCount ?? 0;
   const entitiesTableTitle =
     total > 0
       ? t('entitiesPage.entitiesTable.titleWithCount', { count: total } as any)
       : t('entitiesPage.entitiesTable.title');
 
   return (
-    <EntitiesTableWrapper title={entitiesTableTitle} isError={!!entitiesError}>
+    <EntitiesTableWrapper
+      title={entitiesTableTitle}
+      showCalculationWarning={calculationErrorCount > 0}
+    >
       <Table sx={{ width: '100%', tableLayout: 'fixed' }}>
         <EntitiesTableHeader
           orderBy={orderBy}
@@ -151,7 +156,7 @@ export const EntitiesTable = ({
                 colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
                 align="center"
               >
-                <CircularProgress />
+                <CircularProgress aria-label={t('common.loading')} />
               </TableCell>
             </TableRow>
           )}

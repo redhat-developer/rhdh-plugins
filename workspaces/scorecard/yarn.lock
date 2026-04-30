@@ -7150,7 +7150,6 @@ __metadata:
     "@backstage/repo-tools": "npm:^0.17.0"
     "@changesets/cli": "npm:^2.27.1"
     "@playwright/test": "npm:^1.56.1"
-    "@spotify/prettier-config": "npm:^15.0.0"
     changeset: "npm:^0.2.6"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
@@ -12577,6 +12576,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck@workspace:plugins/scorecard-backend-module-filecheck":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck@workspace:plugins/scorecard-backend-module-filecheck"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.8.0"
+    "@backstage/backend-test-utils": "npm:^1.11.1"
+    "@backstage/catalog-client": "npm:^1.14.0"
+    "@backstage/catalog-model": "npm:^1.7.7"
+    "@backstage/cli": "npm:^0.36.0"
+    "@backstage/config": "npm:^1.3.6"
+    "@backstage/errors": "npm:^1.2.7"
+    "@backstage/integration": "npm:^2.0.0"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github@workspace:plugins/scorecard-backend-module-github":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github@workspace:plugins/scorecard-backend-module-github"
@@ -14339,15 +14355,6 @@ __metadata:
     "@typescript-eslint/parser": ">=5"
     eslint: ">=8.x"
   checksum: 10c0/b6187252bd0bf2e55e023dcfff6d4cf6f8f3fdacd6baa2c597e94e843c725563552fc15fda7c17a4b1f0d10673792b1f90566763f14499e6b7854b1e3d3d459a
-  languageName: node
-  linkType: hard
-
-"@spotify/prettier-config@npm:^15.0.0":
-  version: 15.0.0
-  resolution: "@spotify/prettier-config@npm:15.0.0"
-  peerDependencies:
-    prettier: 2.x
-  checksum: 10c0/d7033f9f3ab255b490084f72928d4df086f6a51bb6f88b0d3678a5a63e46fc58ad025a0a709f96d8ae91b82093d991d54ea6a48b7d3f2c7f3f747c1853b76532
   languageName: node
   linkType: hard
 
@@ -18286,6 +18293,7 @@ __metadata:
     "@backstage/plugin-techdocs-backend": "npm:^2.1.6"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf": "workspace:^"

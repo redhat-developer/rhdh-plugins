@@ -70,10 +70,16 @@ const vectorStores = new Map<string, any>();
 const files = new Map<string, any>();
 const vectorStoreFiles = new Map<string, any[]>();
 
+/** Monotonic suffix so vector store IDs never collide when Date.now() repeats (fast CI). */
+let nextVectorStoreSeq = 0;
+let nextFileSeq = 0;
+
 export function resetMockStorage() {
   vectorStores.clear();
   files.clear();
   vectorStoreFiles.clear();
+  nextVectorStoreSeq = 0;
+  nextFileSeq = 0;
 }
 
 /**
@@ -84,7 +90,7 @@ export const lightspeedCoreHandlers: HttpHandler[] = [
   // Create vector store
   http.post(`${LIGHTSPEED_CORE_ADDR}/v1/vector-stores`, async ({ request }) => {
     const body = (await request.json()) as any;
-    const id = `vs-${Date.now()}`;
+    const id = `vs-${Date.now()}-${nextVectorStoreSeq++}`;
     const vectorStore = {
       id,
       name: body.name,
@@ -155,7 +161,7 @@ export const lightspeedCoreHandlers: HttpHandler[] = [
 
   // Upload file
   http.post(`${LIGHTSPEED_CORE_ADDR}/v1/files`, async () => {
-    const fileId = `file-${Date.now()}`;
+    const fileId = `file-${Date.now()}-${nextFileSeq++}`;
     const file = {
       id: fileId,
       created_at: Date.now(),

@@ -51,6 +51,11 @@ export const scorecardMessages = {
     altText: 'Permission required',
   },
 
+  // Common UI
+  common: {
+    loading: 'Loading',
+  },
+
   // Error messages
   errors: {
     entityMissingProperties:
@@ -69,10 +74,9 @@ export const scorecardMessages = {
     userNotFoundInCatalogMessage: 'User entity not found in catalog.',
     noDataFoundMessage:
       'To see your data here, check that your entities are reporting values related to this metric.',
+    unsupportedAggregationType:
+      'This scorecard uses an aggregation type that is not supported by this version of the plugin.',
     authenticationErrorMessage: 'Please sign in to view your data.',
-    noMetricsFound: 'No metrics found for the specified metric ID.',
-    multipleMetricsFound:
-      'Multiple metrics found for the specified metric ID. Expected exactly one.',
   },
 
   // Metric translations
@@ -136,10 +140,25 @@ export const scorecardMessages = {
       title: 'SonarQube Code Duplications',
       description: 'Percentage of duplicated lines in SonarQube.',
     },
+    filecheck: {
+      title: 'File check: {{name}}',
+      description: 'Checks whether the {{name}} file exists in the repository.',
+    },
     lastUpdated: 'Last updated: {{timestamp}}',
     lastUpdatedNotAvailable: 'Last updated: Not available',
     someEntitiesNotReportingValues:
       'Some entities are not reporting values related to this metric.',
+    averageCenterTooltipTotalLabel: 'Total score',
+    averageCenterTooltipMaxLabel: 'Max possible score',
+    averageLegendTooltipEntitiesEach_one: '{{count}} entity, each {{score}}',
+    averageLegendTooltipEntitiesEach_other:
+      '{{count}} entities, each {{score}}',
+    averageLegendTooltipRowTotal: 'Total score {{total}}',
+    drillDownCalculationFailures:
+      'One or more entities failed while calculating this metric.',
+    homepageEntityHealthRatio: '{{healthy}}/{{total}} entities',
+    homepageEntityCalculationHealth:
+      '{{healthy}} / {{total}} entities without metric calculation errors',
   },
 
   // Threshold translations
@@ -147,6 +166,8 @@ export const scorecardMessages = {
     success: 'Success',
     warning: 'Warning',
     error: 'Error',
+    exist: 'Exist',
+    missing: 'Missing',
     noEntities: 'No entities in {{category}} state',
     entities_one: '{{count}} entity',
     entities_other: '{{count}} entities',

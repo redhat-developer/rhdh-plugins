@@ -1,5 +1,76 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.6.0
+
+### Patch Changes
+
+- 9f5f22a: Fix new chat streams when switching threads and scope Stop to the streaming conversation (RHDHBUGS-3040).
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.0
+
+## 2.5.1
+
+### Patch Changes
+
+- d621f93: Improved notebook upload modal and MessageBar UX.
+- d621f93: Fixed overwrite flow to add duplicate files to the Add Document modal instead of uploading immediately. Reduced notebook delete toast timeout to 2 seconds.
+- 5d17950: Retain Lightspeed chat and tool-call state when the chat UI remounts (for example when switching display mode between embedded and overlay), so the active thread and tool metadata are not dropped while messages are still streaming or before history refetches.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.5.1
+
+## 2.5.0
+
+### Minor Changes
+
+- d9df5b8: Add notebook chat with streaming support, document management, and UI improvements.
+  - Backend: add SSE transform to normalize Responses API format to legacy streaming format so notebook chat streams token-by-token like the chat tab.
+  - Frontend: add notebook chat view with conversation messages, document sidebar with per-document delete, and topic summary display.
+  - Fix stale document list when re-opening a notebook by setting query staleTime to 0.
+  - Hide model selector on the Notebooks tab while keeping the settings ellipsis menu visible.
+
+- 8b0cb12: Add dedicated route for individual notebook view (/lightspeed/notebooks/:notebookId).
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.5.0
+
+## 2.4.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.4.0
+
+## 2.3.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.3.0
+
+## 2.2.1
+
+### Patch Changes
+
+- 0c0e14e: Add an empty state for unconfigured LLM.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.2.1
+
+## 2.2.0
+
+### Minor Changes
+
+- 82a9ee8: Add notebook creation and document upload flow with file type validation, overwrite confirmation, collapsible document sidebar, file type icons, i18n support, and unit tests.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.2.0
+
+## 2.1.0
+
+### Minor Changes
+
+- cc98168: Migrated AI Notebooks from direct Llama Stack server to Lightspeed-Core integration
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.1.0
+
 ## 2.0.0
 
 ### Minor Changes

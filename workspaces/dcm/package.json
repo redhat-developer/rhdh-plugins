@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "18 || 20"
+    "node": "18 || 20 || 22"
   },
   "scripts": {
     "start": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start-app\" \"yarn start-backend\"",
@@ -40,12 +40,15 @@
     "url": "https://github.com/redhat-developer/rhdh-plugins",
     "directory": "workspaces/dcm"
   },
-  "packageManager": "yarn@3.8.7",
+  "packageManager": "yarn@4.12.0",
   "devDependencies": {
     "@backstage/cli": "^0.35.2",
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.16.2",
     "@changesets/cli": "^2.27.1",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.0.0",
+    "@types/webpack-env": "^1.18.4",
     "concurrently": "^9.0.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
@@ -53,6 +56,8 @@
     "typescript": "~5.3.0"
   },
   "resolutions": {
+    "isolated-vm": "6.0.2",
+    "better-sqlite3": "^12.0.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "fsevents": "~2.3.2",

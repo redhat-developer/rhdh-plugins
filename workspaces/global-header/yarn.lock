@@ -5924,7 +5924,6 @@ __metadata:
     "@backstage/repo-tools": "npm:^0.17.0"
     "@changesets/cli": "npm:^2.27.1"
     "@playwright/test": "npm:1.58.2"
-    "@spotify/prettier-config": "npm:^12.0.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
     prettier: "npm:^2.3.2"
@@ -10694,7 +10693,9 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.8"
     "@backstage/core-plugin-api": "npm:^1.12.4"
     "@backstage/dev-utils": "npm:^1.1.21"
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
     "@backstage/frontend-test-utils": "npm:^0.5.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
     "@backstage/plugin-catalog-react": "npm:^2.1.0"
     "@backstage/plugin-notifications": "npm:^0.5.15"
     "@backstage/plugin-notifications-common": "npm:^0.2.1"
@@ -10742,6 +10743,22 @@ __metadata:
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   checksum: 10c0/9ccc7f5360089f5efe98e85eeb68af061e75306b09f2386605306c8b362b67f79855592f90e7ddb63c051dd585dd3bab7d8e5ff300f9f8cc6370ccef18aea983
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.13.0"
+  dependencies:
+    "@mui/icons-material": "npm:^5.17.1"
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.12.0
+    "@backstage/theme": ^0.7.0
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/561c04203e9047f4df3fd9a0c29eb0e6b578740899dc3da07870f807a4c3324fb6880e2501f168b60d9a121521eb1f6a9d65d9d837e803f469415e2c0f526053
   languageName: node
   linkType: hard
 
@@ -12502,15 +12519,6 @@ __metadata:
     "@typescript-eslint/parser": ">=5"
     eslint: ">=8.x"
   checksum: 10c0/b6187252bd0bf2e55e023dcfff6d4cf6f8f3fdacd6baa2c597e94e843c725563552fc15fda7c17a4b1f0d10673792b1f90566763f14499e6b7854b1e3d3d459a
-  languageName: node
-  linkType: hard
-
-"@spotify/prettier-config@npm:^12.0.0":
-  version: 12.0.0
-  resolution: "@spotify/prettier-config@npm:12.0.0"
-  peerDependencies:
-    prettier: 2.x
-  checksum: 10c0/c19ea09a0c6937dc08917a5890a01c800450ed8f20f614ec2239e09a5897a7d40eb28e5af70ae58c7f41d56769c0fc516ab0ae672d2fd7585016cd54ad514336
   languageName: node
   linkType: hard
 
@@ -15434,12 +15442,15 @@ __metadata:
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@playwright/test": "npm:1.58.2"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.13.0"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
     "@types/react-dom": "npm:*"
     cross-env: "npm:^7.0.0"
+    material-icons: "npm:^1.13.14"
     react: "npm:^18.0.2"
     react-dom: "npm:^18.0.2"
     react-router: "npm:^6.30.2"
@@ -24529,6 +24540,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"material-icons@npm:^1.13.14":
+  version: 1.13.14
+  resolution: "material-icons@npm:1.13.14"
+  checksum: 10c0/4c0f9a8ff02545ce7747c621b5ffa1738212628189c9419f4cd2e75f7f8cf9e98ed5f946724a2d7e169cfebc439875df0ba9f79ba94a574e16cbb0c5ce26e55a
+  languageName: node
+  linkType: hard
+
 "material-ui-confirm@npm:^3.0.12":
   version: 3.0.18
   resolution: "material-ui-confirm@npm:3.0.18"
@@ -28244,8 +28262,8 @@ __metadata:
   linkType: hard
 
 "protobufjs@npm:^7.0.0, protobufjs@npm:^7.2.5, protobufjs@npm:^7.2.6, protobufjs@npm:^7.3.2, protobufjs@npm:^7.4.0":
-  version: 7.5.4
-  resolution: "protobufjs@npm:7.5.4"
+  version: 7.5.5
+  resolution: "protobufjs@npm:7.5.5"
   dependencies:
     "@protobufjs/aspromise": "npm:^1.1.2"
     "@protobufjs/base64": "npm:^1.1.2"
@@ -28259,7 +28277,7 @@ __metadata:
     "@protobufjs/utf8": "npm:^1.1.0"
     "@types/node": "npm:>=13.7.0"
     long: "npm:^5.0.0"
-  checksum: 10c0/913b676109ffb3c05d3d31e03a684e569be91f3bba8613da4a683d69d9dba948daa2afd7d2e7944d1aa6c417890c35d9d9a8883c1160affafb0f9670d59ef722
+  checksum: 10c0/3d48896a916761e3e60b52f80027eb4fba3f5a6e3f8461e04939db18812db2cb0db4c73d03e1134a960e99525ae1d236f076a0bc01273016f573b76f33ffbd47
   languageName: node
   linkType: hard
 

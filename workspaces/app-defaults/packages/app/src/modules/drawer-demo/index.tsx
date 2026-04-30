@@ -16,7 +16,12 @@
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-import { ChatDrawerContent, HelpDrawerContent } from './DrawerDemoContent';
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import {
+  ChatDrawerContent,
+  HelpDrawerContent,
+  HelpDrawerMenuItem,
+} from './DrawerDemoContent';
 
 const chatDrawer = AppDrawerContentBlueprint.make({
   name: 'demo-chat',
@@ -37,7 +42,16 @@ const helpDrawer = AppDrawerContentBlueprint.make({
   },
 });
 
+const helpMenuItem = GlobalHeaderMenuItemBlueprint.make({
+  name: 'demo-help',
+  params: {
+    target: 'help',
+    component: HelpDrawerMenuItem,
+    priority: 50,
+  },
+});
+
 export const drawerDemoModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [chatDrawer, helpDrawer],
+  extensions: [chatDrawer, helpDrawer, helpMenuItem],
 });

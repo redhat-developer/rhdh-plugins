@@ -15,6 +15,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+
 import { useExtensionsApi } from './useExtensionsApi';
 
 export const usePackageConfig = (namespace: string, name: string) => {

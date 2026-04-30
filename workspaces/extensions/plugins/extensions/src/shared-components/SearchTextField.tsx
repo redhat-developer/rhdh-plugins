@@ -82,8 +82,8 @@ export const SearchTextField = (props: SearchTextFieldProps) => {
               window.clearTimeout(timerRef.current);
             }
             timerRef.current = window.setTimeout(() => {
-              fullTextSearch.onChange({ target: { value } } as any);
-            }, 300) as unknown as number;
+              fullTextSearch.set(value);
+            }, 300);
           },
           [fullTextSearch],
         )}

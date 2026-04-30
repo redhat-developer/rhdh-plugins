@@ -368,6 +368,12 @@ export interface ProcessInstanceDTO {
      */
     'id': string;
     /**
+     * Process definition version
+     * @type {string}
+     * @memberof ProcessInstanceDTO
+     */
+    'version'?: string;
+    /**
      * 
      * @type {string}
      * @memberof ProcessInstanceDTO
@@ -712,6 +718,12 @@ export interface WorkflowOverviewDTO {
      * @memberof WorkflowOverviewDTO
      */
     'isAvailable'?: boolean;
+    /**
+     * Workflow definition version
+     * @type {string}
+     * @memberof WorkflowOverviewDTO
+     */
+    'version'?: string;
 }
 
 

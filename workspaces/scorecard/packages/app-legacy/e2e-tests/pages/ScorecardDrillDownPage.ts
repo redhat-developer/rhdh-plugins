@@ -163,6 +163,18 @@ export class ScorecardDrillDownPage {
     await expect(this.page.locator('tbody')).toContainText(noDataText);
   }
 
+  /**
+   * When mocks report no calculation failures, the drill-down must not show the
+   * calculation-warning icon next to the Entities heading.
+   */
+  async expectNoDrillDownCalculationErrorWarningIcon() {
+    const heading = this.page.getByRole('heading', {
+      level: 3,
+      name: this.translations.entitiesPage.entitiesTable.title,
+    });
+    await expect(heading.locator('svg.MuiSvgIcon-colorWarning')).toHaveCount(0);
+  }
+
   /** Verifies the "some entities not reporting" icon tooltip on the drill-down card. */
   async verifySomeEntitiesNotReportingTooltip() {
     const icon = this.page.getByTestId('ReportProblemOutlinedIcon');
@@ -190,9 +202,21 @@ export class ScorecardDrillDownPage {
     }
   }
 
+  /**
+   * Asserts each entity row is present. Uses the catalog entity link `href`
+   * (…/component/&lt;slug&gt;) so it works when the UI shows `metadata.title`
+   * (e.g. "Red Hat Developer Hub") instead of `metadata.name` (slug).
+   */
   async expectEntityNamesVisible(entityNames: string[]) {
+    const entitiesTable = this.getEntitiesTable();
     for (const name of entityNames) {
-      await expect(this.page.getByText(name, { exact: true })).toBeVisible();
+      const slug = encodeURIComponent(name);
+      await expect(
+        entitiesTable
+          .locator('tbody')
+          .locator(`a[href*="/catalog/default/component/${slug}"]`)
+          .first(),
+      ).toBeVisible({ timeout: 15_000 });
     }
   }
 

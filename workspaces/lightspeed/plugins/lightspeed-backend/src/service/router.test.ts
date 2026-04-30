@@ -29,6 +29,7 @@ import request from 'supertest';
 import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
 import { lcsHandlers, LOCAL_LCS_ADDR } from '../../__fixtures__/lcsHandlers';
 import { lightspeedPlugin } from '../plugin';
+import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 
 const mockUserId = `user: default/user1`;
 const mockConversationId = 'conversation-id-1';
@@ -106,6 +107,10 @@ describe('lightspeed router tests', () => {
   afterAll(() => {
     server.close();
     rcs.close();
+  });
+
+  beforeEach(() => {
+    VectorStoresOperator.resetInstance(); // Reset singleton before each test
   });
 
   afterEach(() => {
@@ -703,6 +708,51 @@ describe('lightspeed router tests', () => {
           query: 'Hello',
         });
       expect(response.statusCode).toEqual(500);
+    });
+  });
+
+  describe('proxy path allowlist', () => {
+    it('should return 404 for non-allowlisted path /v1/admin', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/lightspeed/v1/admin',
+      );
+      expect(response.statusCode).toEqual(404);
+      expect(response.body).toEqual({
+        error: 'Requested path is not available',
+      });
+    });
+
+    it('should return 404 for non-allowlisted path /internal/config', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/lightspeed/internal/config',
+      );
+      expect(response.statusCode).toEqual(404);
+      expect(response.body).toEqual({
+        error: 'Requested path is not available',
+      });
+    });
+
+    it('should return 404 for POST to arbitrary path', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/lightspeed/some/arbitrary/path')
+        .send({});
+      expect(response.statusCode).toEqual(404);
+      expect(response.body).toEqual({
+        error: 'Requested path is not available',
+      });
+    });
+
+    it('should reject dot-segment path traversal attempts', async () => {
+      const backendServer = await startBackendServer();
+      // Express normalizes /v1/models/../admin to /v1/admin before
+      // the request reaches our middleware, so the allowlist rejects it.
+      const response = await request(backendServer).get(
+        '/api/lightspeed/v1/models/../admin',
+      );
+      expect(response.statusCode).toEqual(404);
     });
   });
 

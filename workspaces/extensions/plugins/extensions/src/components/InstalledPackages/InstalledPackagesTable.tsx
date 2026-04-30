@@ -23,23 +23,20 @@ import {
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
-import { Query, QueryResult } from '@material-table/core';
+import { Query } from '@material-table/core';
 import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import {
-  ExtensionsPackage,
-  ExtensionsPackageInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+import { ExtensionsPackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useExtensionsApi } from '../../hooks/useExtensionsApi';
 import { getReadableName } from '../../utils/pluginProcessing';
 import { useQueryFullTextSearch } from '../../hooks/useQueryFullTextSearch';
 import { SearchTextField } from '../../shared-components/SearchTextField';
 import { useTranslation } from '../../hooks/useTranslation';
-import { DynamicPluginInfo, dynamicPluginsInfoApiRef } from '../../api';
+import { dynamicPluginsInfoApiRef } from '../../api';
 import {
   DownloadPackageYaml,
   EditPackage,
@@ -211,9 +208,7 @@ export const InstalledPackagesTable = () => {
       sorting: false,
     },
   ];
-  const fetchData = async (
-    query: Query<InstalledPackageRow>,
-  ): Promise<QueryResult<InstalledPackageRow>> => {
+  const fetchData = async (query: Query<InstalledPackageRow>) => {
     const { page = 0, pageSize = 5 } = query || {};
 
     try {
@@ -222,57 +217,53 @@ export const InstalledPackagesTable = () => {
       const packagesResponse = packagesQuery.data ?? { items: [] as any[] };
 
       const entitiesByName = new Map(
-        (packagesResponse.items ?? []).map((entity: ExtensionsPackage) => [
+        (packagesResponse.items ?? []).map(entity => [
           (entity.metadata?.name ?? '').toLowerCase(),
           entity,
         ]),
       );
 
       // Build rows for ALL installed items; if no matching entity, mark missing
-      const rows: InstalledPackageRow[] = installed.map(
-        (p: DynamicPluginInfo) => {
-          const normalized = p.name
-            .replace(/[@/]/g, '-')
-            .replace(/-dynamic$/, '')
-            .replace(/^-+/, '')
-            .toLowerCase();
-          const entity = entitiesByName.get(normalized) as any | undefined;
-          const rawName = entity
-            ? (entity.metadata?.title as string) ||
-              (entity.metadata?.name as string)
-            : getReadableName(p.name);
-          const cleanedName = rawName.replace(/\s+(frontend|backend)$/i, ''); // NOSONAR
-          return {
-            displayName: cleanedName,
-            // Show the npm package name directly from dynamic-plugins-info record
-            packageName: p.name,
-            parentPlugin: entity?.spec?.partOf?.[0] ?? '',
-            // If entity exists, use its installStatus; otherwise, since the package is installed,
-            // set installStatus to Installed (matching the Catalog tab behavior)
-            installStatus:
-              entity?.spec?.installStatus ??
-              ExtensionsPackageInstallStatus.Installed,
-            // Humanized role from dynamic-plugins-info
-            role: (p as any).role
-              ? (() => {
-                  const raw = ((p as any).role as string).replace(/-/g, ' ');
-                  return (
-                    raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase()
-                  );
-                })()
-              : undefined,
-            // Prefer dynamic-plugins-info version, then fallback to entity spec.version
-            version:
-              (p.version as string | undefined) ??
-              (entity?.spec?.version as string | undefined) ??
-              undefined,
-            hasEntity: !!entity,
-            missingDynamicArtifact: !entity?.spec?.dynamicArtifact,
-            namespace: entity?.metadata?.namespace ?? 'default',
-            name: entity?.metadata?.name,
-          } as InstalledPackageRow;
-        },
-      );
+      const rows: InstalledPackageRow[] = installed.map(p => {
+        const normalized = p.name
+          .replace(/[@/]/g, '-')
+          .replace(/-dynamic$/, '')
+          .replace(/^-+/, '')
+          .toLowerCase();
+        const entity = entitiesByName.get(normalized) as any | undefined;
+        const rawName = entity
+          ? (entity.metadata?.title as string) ||
+            (entity.metadata?.name as string)
+          : getReadableName(p.name);
+        const cleanedName = rawName.replace(/\s+(frontend|backend)$/i, ''); // NOSONAR
+        return {
+          displayName: cleanedName,
+          // Show the npm package name directly from dynamic-plugins-info record
+          packageName: p.name,
+          parentPlugin: entity?.spec?.partOf?.[0] ?? '',
+          // If entity exists, use its installStatus; otherwise, since the package is installed,
+          // set installStatus to Installed (matching the Catalog tab behavior)
+          installStatus:
+            entity?.spec?.installStatus ??
+            ExtensionsPackageInstallStatus.Installed,
+          // Humanized role from dynamic-plugins-info
+          role: (p as any).role
+            ? (() => {
+                const raw = ((p as any).role as string).replace(/-/g, ' ');
+                return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+              })()
+            : undefined,
+          // Prefer dynamic-plugins-info version, then fallback to entity spec.version
+          version:
+            (p.version as string | undefined) ??
+            (entity?.spec?.version as string | undefined) ??
+            undefined,
+          hasEntity: !!entity,
+          missingDynamicArtifact: !entity?.spec?.dynamicArtifact,
+          namespace: entity?.metadata?.namespace ?? 'default',
+          name: entity?.metadata?.name,
+        } as InstalledPackageRow;
+      });
 
       const sortField =
         ((query as any)?.orderBy?.field as string) || 'displayName';

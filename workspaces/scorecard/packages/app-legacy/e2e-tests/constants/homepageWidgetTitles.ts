@@ -19,6 +19,7 @@ export const AGGREGATED_CARDS_METRIC_IDS = {
   withDefaultAggregation: 'github.open_prs',
   withGithubOpenPrs: 'openPrsKpi',
   withJiraOpenIssuesKpi: 'openIssuesKpi',
+  withOpenPrsWeightedKpi: 'openPrsWeightedKpi',
 } as const;
 
 export const AGGREGATED_CARDS_WIDGET_TITLES = {
@@ -27,4 +28,5 @@ export const AGGREGATED_CARDS_WIDGET_TITLES = {
   withDefaultAggregation: 'Scorecard: With default aggregation config (GitHub)',
   withGithubOpenPrs: 'Scorecard: GitHub open PRs',
   withJiraOpenIssuesKpi: 'Scorecard: Jira open blocking tickets',
+  withOpenPrsWeightedKpi: 'Scorecard: GitHub open PRs (weighted health)',
 } as const;

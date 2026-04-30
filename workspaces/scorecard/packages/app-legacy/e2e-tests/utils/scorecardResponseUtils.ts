@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 // Inline default thresholds for e2e mocks (matches scorecard-common DEFAULT_NUMBER_THRESHOLDS)
 const DEFAULT_NUMBER_THRESHOLDS = {
   rules: [
@@ -201,6 +203,76 @@ export const openIssuesKpiMetadataResponse = {
   aggregationType: 'statusGrouped',
 };
 
+/** Matches `scorecard.aggregationKPIs.openPrsWeightedKpi` in app-config.yaml */
+export const openPrsWeightedKpiMetadataResponse = {
+  title: 'GitHub Open PRs (weighted health)',
+  description:
+    'Weighted health average for open PRs by threshold status across your entities.',
+  type: 'number',
+  history: true,
+  aggregationType: aggregationTypes.average,
+};
+
+/**
+ * Average KPI: 3×100 + 5×40 + 2×0 = 500 weighted sum; max 100×10 entities → 50% score.
+ * Colors align with aggregation KPI `options.thresholds` warning band (30–79%) in app-config.
+ */
+export const openPrsWeightedAggregatedResponse = {
+  id: 'github.open_prs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    values: [
+      { count: 3, name: 'success', score: 100 },
+      { count: 5, name: 'warning', score: 40 },
+      { count: 2, name: 'error', score: 0 },
+    ],
+    total: 10,
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    averageScore: 0.5,
+    averageWeightedSum: 500,
+    averageMaxPossible: 1000,
+    aggregationChartDisplayColor: 'rgb(224, 189, 108)',
+  },
+};
+
+export const emptyOpenPrsWeightedAggregatedResponse = {
+  id: 'github.open_prs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    total: 0,
+    values: [
+      { count: 0, name: 'success', score: 100 },
+      { count: 0, name: 'warning', score: 40 },
+      { count: 0, name: 'error', score: 0 },
+    ],
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    averageScore: 0,
+    averageWeightedSum: 0,
+    averageMaxPossible: 0,
+    aggregationChartDisplayColor: '#6bb300',
+  },
+};
+
+/** Deliberately unknown `aggregationType` for UnsupportedAggregationType UI tests. */
+export const openPrsWeightedUnsupportedAggregationResponse = {
+  id: 'github.open_prs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+    aggregationType: 'customUnknownAggregationKind',
+  },
+  result: openPrsWeightedAggregatedResponse.result,
+};
+
+// Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
 /** Response for GET /api/scorecard/metrics?metricIds=jira.open_issues (metric metadata only). */
 export const jiraMetricMetadataResponse = {
   metrics: [
@@ -433,6 +505,8 @@ export const githubAggregatedResponse = {
     total: 10,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
   },
 };
 
@@ -456,6 +530,8 @@ export const jiraAggregatedResponse = {
     total: 10,
     timestamp: '2026-01-24T14:10:32.776Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
   },
 };
 
@@ -479,6 +555,8 @@ export const emptyJiraAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
   },
 };
 
@@ -502,6 +580,8 @@ export const emptyGithubAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
   },
 };
 
@@ -623,6 +703,11 @@ export const githubEntitiesDrillDownResponse = {
     totalPages: 1,
     isCapped: false,
   },
+  entityHealth: {
+    totalEntities: 10,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
 };
 
 /** Mock response for GET .../api/scorecard/metrics/jira.open_issues/catalog/aggregations/entities (in sync with jiraAggregatedResponse) */
@@ -683,6 +768,11 @@ export const jiraEntitiesDrillDownResponse = {
     totalPages: 1,
     isCapped: false,
   },
+  entityHealth: {
+    totalEntities: 4,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
 };
 
 /** Mock response for Jira entities drill-down when aggregation has no data (empty list). */
@@ -702,4 +792,80 @@ export const jiraEntitiesDrillDownNoDataResponse = {
     totalPages: 0,
     isCapped: false,
   },
+  entityHealth: {
+    totalEntities: 0,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
 };
+
+export const fileCheckScorecardResponse = [
+  {
+    id: 'filecheck.readme',
+    status: 'success',
+    metadata: {
+      title: 'GitHub File: README.md',
+      description: 'Checks if README.md exists in the repository.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: true,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: 'success.main',
+              icon: 'scorecardSuccessStatusIcon',
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: 'error.main',
+              icon: 'scorecardErrorStatusIcon',
+            },
+          ],
+        },
+        status: 'success',
+        evaluation: 'exist',
+      },
+    },
+  },
+  {
+    id: 'filecheck.codeowners',
+    status: 'success',
+    metadata: {
+      title: 'GitHub File: CODEOWNERS',
+      description: 'Checks if CODEOWNERS exists in the repository.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: false,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: 'success.main',
+              icon: 'scorecardSuccessStatusIcon',
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: 'error.main',
+              icon: 'scorecardErrorStatusIcon',
+            },
+          ],
+        },
+        status: 'success',
+        evaluation: 'missing',
+      },
+    },
+  },
+];

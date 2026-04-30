@@ -15,13 +15,16 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import { mockT } from '../../../test-utils/mockTranslations';
 import { CardLoading } from '../CardLoading';
 
 describe('CardLoading', () => {
   it('renders a CircularProgress inside a Box', () => {
     render(<CardLoading />);
 
-    const progress = screen.getByRole('progressbar');
+    const progress = screen.getByRole('progressbar', {
+      name: mockT('common.loading'),
+    });
     expect(progress).toBeInTheDocument();
   });
 });

@@ -48,7 +48,7 @@ type CustomLegendProps = {
   pieData: PieDataProps[];
   activeIndex: number | null;
   setActiveIndex: (index: number | null) => void;
-  setTooltipPosition: (position: { x: number; y: number } | null) => void;
+  setTooltipPosition: (position: { left: number; top: number } | null) => void;
 };
 
 const CustomLegend = (props: CustomLegendProps) => {
@@ -71,28 +71,18 @@ const CustomLegend = (props: CustomLegendProps) => {
               if (activeIndex === index) return;
               setActiveIndex(index);
               const rect = e.currentTarget.getBoundingClientRect();
-              const containerRect = e.currentTarget
-                .closest('[data-chart-container]')
-                ?.getBoundingClientRect();
-              if (containerRect) {
-                setTooltipPosition({
-                  x: rect.left - containerRect.left + rect.width / 2,
-                  y: rect.top - containerRect.top,
-                });
-              }
+              setTooltipPosition({
+                left: rect.left + rect.width / 2,
+                top: rect.top,
+              });
             }}
             onMouseMove={e => {
               if (activeIndex === index) return;
               const rect = e.currentTarget.getBoundingClientRect();
-              const containerRect = e.currentTarget
-                .closest('[data-chart-container]')
-                ?.getBoundingClientRect();
-              if (containerRect) {
-                setTooltipPosition({
-                  x: rect.left - containerRect.left + rect.width / 2,
-                  y: rect.top - containerRect.top,
-                });
-              }
+              setTooltipPosition({
+                left: rect.left + rect.width / 2,
+                top: rect.top,
+              });
             }}
             onMouseLeave={e => {
               const relatedTarget = e.relatedTarget as Node | null;
@@ -118,10 +108,12 @@ const CustomLegend = (props: CustomLegendProps) => {
             >
               {(() => {
                 const translated = t(`thresholds.${category.name}` as any, {});
-                return translated === `thresholds.${category.name}`
-                  ? category.name.charAt(0).toUpperCase() +
-                      category.name.slice(1)
-                  : translated;
+                const label =
+                  typeof translated === 'string' &&
+                  translated.startsWith('thresholds.')
+                    ? category.name
+                    : translated;
+                return label.charAt(0).toUpperCase() + label.slice(1);
               })()}
             </Typography>
           </StyledLegendItem>

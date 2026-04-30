@@ -70,8 +70,8 @@ describe('CustomLegend', () => {
     expect(setActiveIndex).toHaveBeenCalledWith(0);
     expect(setTooltipPosition).toHaveBeenCalledWith(
       expect.objectContaining({
-        x: expect.any(Number),
-        y: expect.any(Number),
+        left: expect.any(Number),
+        top: expect.any(Number),
       }),
     );
   });
@@ -143,6 +143,30 @@ describe('CustomLegend', () => {
     );
     expect(screen.getByTestId('legend-colorbox-error')).toHaveStyle(
       'background-color: #C9190B',
+    );
+  });
+
+  it('should render two legend items for average donut segment names with translation key fallback', () => {
+    const averagePieData = [
+      { name: 'averageScoreFill', value: 75, color: '#F0AB00' },
+      { name: 'averageScoreRemainder', value: 25, color: '#e0e0e0' },
+    ];
+
+    render(
+      <div data-chart-container>
+        <CustomLegend
+          pieData={averagePieData}
+          activeIndex={null}
+          setActiveIndex={jest.fn()}
+          setTooltipPosition={jest.fn()}
+        />
+      </div>,
+    );
+
+    expect(screen.getByText('AverageScoreFill')).toBeInTheDocument();
+    expect(screen.getByText('AverageScoreRemainder')).toBeInTheDocument();
+    expect(screen.getByTestId('legend-colorbox-averageScoreFill')).toHaveStyle(
+      'background-color: #F0AB00',
     );
   });
 });
