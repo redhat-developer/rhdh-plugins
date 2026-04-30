@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
+import {
+  LoggerService,
+  SchedulerServiceTaskRunner,
+} from '@backstage/backend-plugin-api';
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
   Entity,
+  stringifyEntityRef,
 } from '@backstage/catalog-model';
 import {
   EntityProvider,
@@ -39,26 +43,23 @@ export abstract class BaseEntityProvider<T extends Entity>
   private connection?: EntityProviderConnection;
   private taskRunner: SchedulerServiceTaskRunner;
   private config?: Config;
+  private logger?: LoggerService;
 
   private static readonly EXTENSIONS_DIRECTORY = '/extensions';
   private static readonly DEPRECATED_MARKETPLACE_DIRECTORY = '/marketplace';
 
-  constructor(taskRunner: SchedulerServiceTaskRunner, config?: Config) {
+  constructor(
+    taskRunner: SchedulerServiceTaskRunner,
+    config?: Config,
+    logger?: LoggerService,
+  ) {
     this.taskRunner = taskRunner;
     this.config = config;
+    this.logger = logger;
   }
 
   abstract getProviderName(): string;
   abstract getKind(): string;
-
-  private getEntityIdentity(entity: Entity): string {
-    const namespace = entity.metadata.namespace ?? 'default';
-    return [
-      entity.kind.toLocaleLowerCase('en-US'),
-      namespace.toLocaleLowerCase('en-US'),
-      entity.metadata.name.toLocaleLowerCase('en-US'),
-    ].join('/');
-  }
 
   private addProviderAnnotations(entity: T): T {
     return {
@@ -79,7 +80,7 @@ export abstract class BaseEntityProvider<T extends Entity>
       return [];
     }
 
-    const entitiesByIdentity = new Map<
+    const entitiesByEntityRef = new Map<
       string,
       { entity: T; filePath: string }
     >();
@@ -89,10 +90,14 @@ export abstract class BaseEntityProvider<T extends Entity>
         continue;
       }
 
-      const identity = this.getEntityIdentity(fileData.content);
-      const existing = entitiesByIdentity.get(identity);
+      const identity = stringifyEntityRef({
+        kind: fileData.content.kind,
+        namespace: fileData.content.metadata.namespace ?? 'default',
+        name: fileData.content.metadata.name,
+      }).toLocaleLowerCase('en-US');
+      const existing = entitiesByEntityRef.get(identity);
       if (!existing) {
-        entitiesByIdentity.set(identity, {
+        entitiesByEntityRef.set(identity, {
           entity: fileData.content,
           filePath: fileData.filePath,
         });
@@ -100,18 +105,19 @@ export abstract class BaseEntityProvider<T extends Entity>
       }
 
       if (isDeepStrictEqual(existing.entity, fileData.content)) {
-        console.warn(
+        this.logger?.warn(
           `Skipping duplicate Extensions entity '${identity}' from '${fileData.filePath}'. Keeping first definition from '${existing.filePath}'.`,
         );
         continue;
       }
 
-      throw new Error(
-        `Conflicting Extensions entities detected for '${identity}' in '${existing.filePath}' and '${fileData.filePath}'.`,
+      this.logger?.warn(
+        `Conflicting Extensions entities detected for '${identity}' in '${existing.filePath}' and '${fileData.filePath}'. Skipping conflicting definition from '${fileData.filePath}'.`,
       );
+      continue;
     }
 
-    return Array.from(entitiesByIdentity.values()).map(({ entity }) =>
+    return Array.from(entitiesByEntityRef.values()).map(({ entity }) =>
       this.addProviderAnnotations(entity),
     );
   }

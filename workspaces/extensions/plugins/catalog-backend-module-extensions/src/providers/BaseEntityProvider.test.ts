@@ -15,7 +15,10 @@
  */
 
 import { Entity } from '@backstage/catalog-model';
-import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
+import {
+  LoggerService,
+  SchedulerServiceTaskRunner,
+} from '@backstage/backend-plugin-api';
 import { BaseEntityProvider } from './BaseEntityProvider';
 import { JsonFileData } from '../types';
 
@@ -31,6 +34,13 @@ class TestEntityProvider extends BaseEntityProvider<Entity> {
 
 const taskRunner: SchedulerServiceTaskRunner = {
   run: jest.fn(async ({ fn }) => fn(new AbortController().signal)),
+};
+const logger: LoggerService = {
+  warn: jest.fn(),
+  error: jest.fn(),
+  info: jest.fn(),
+  debug: jest.fn(),
+  child: jest.fn(),
 };
 
 const createEntity = (overrides?: Partial<Entity>): Entity => ({
@@ -57,7 +67,7 @@ const createFileData = (
 
 describe('BaseEntityProvider collision policy', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
@@ -65,7 +75,7 @@ describe('BaseEntityProvider collision policy', () => {
   });
 
   it('keeps first definition when duplicate entities are equivalent', () => {
-    const provider = new TestEntityProvider(taskRunner);
+    const provider = new TestEntityProvider(taskRunner, undefined, logger);
     const duplicate = createEntity();
 
     const entities = provider.getEntities([
@@ -74,15 +84,15 @@ describe('BaseEntityProvider collision policy', () => {
     ]);
 
     expect(entities).toHaveLength(1);
-    expect(console.warn).toHaveBeenCalledWith(
+    expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining(
-        "Skipping duplicate Extensions entity 'plugin/default/duplicate-plugin'",
+        "Skipping duplicate Extensions entity 'plugin:default/duplicate-plugin'",
       ),
     );
   });
 
-  it('throws when duplicate entities have conflicting definitions', () => {
-    const provider = new TestEntityProvider(taskRunner);
+  it('warns and skips when duplicate entities have conflicting definitions', () => {
+    const provider = new TestEntityProvider(taskRunner, undefined, logger);
     const firstEntity = createEntity({
       spec: { owner: 'owner-a' },
     });
@@ -90,18 +100,21 @@ describe('BaseEntityProvider collision policy', () => {
       spec: { owner: 'owner-b' },
     });
 
-    expect(() =>
-      provider.getEntities([
-        createFileData('/extensions/primary/plugin.yaml', firstEntity),
-        createFileData('/extensions/extra/community/plugin.yaml', secondEntity),
-      ]),
-    ).toThrow(
-      "Conflicting Extensions entities detected for 'plugin/default/duplicate-plugin'",
+    const entities = provider.getEntities([
+      createFileData('/extensions/primary/plugin.yaml', firstEntity),
+      createFileData('/extensions/extra/community/plugin.yaml', secondEntity),
+    ]);
+
+    expect(entities).toHaveLength(1);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Conflicting Extensions entities detected for 'plugin:default/duplicate-plugin'",
+      ),
     );
   });
 
   it('keeps entities with same name when namespaces differ', () => {
-    const provider = new TestEntityProvider(taskRunner);
+    const provider = new TestEntityProvider(taskRunner, undefined, logger);
     const defaultNamespaceEntity = createEntity({
       metadata: { name: 'shared-name' },
     });
