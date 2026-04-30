@@ -170,6 +170,8 @@ export function DcmCrudTabLayout<T extends object>({
               sorting: true,
               padding: 'default',
               toolbar: false,
+              /** Avoid blank rows padding the table to `pageSize` when fewer rows exist. */
+              emptyRowsWhenPaging: false,
             }}
             totalCount={filtered.length}
             page={page}

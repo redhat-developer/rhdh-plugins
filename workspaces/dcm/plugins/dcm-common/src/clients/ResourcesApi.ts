@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { Router } from './Router';
-export { dcmPlugin, DcmPage } from './plugin';
-export {
-  catalogApiRef,
-  policyManagerApiRef,
-  providersApiRef,
-  resourcesApiRef,
-} from './apis';
-export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
-export { RhdhLogoFull } from './components/RhdhLogoFull';
-export { RhdhLogoIcon } from './components/RhdhLogoIcon';
+
+import type {
+  ListServiceTypeInstancesParams,
+  ServiceTypeInstanceList,
+} from '../types/resources';
+
+/**
+ * Client interface for the DCM Resources (service-type-instances) API.
+ *
+ * @public
+ */
+export interface ResourcesApi {
+  /**
+   * Returns a paginated list of service type instances.
+   * Maps to `GET /service-type-instances`.
+   */
+  listServiceTypeInstances(
+    params?: ListServiceTypeInstancesParams,
+  ): Promise<ServiceTypeInstanceList>;
+}
