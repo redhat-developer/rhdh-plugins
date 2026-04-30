@@ -375,7 +375,6 @@ test.describe('Scorecard Plugin Tests', () => {
       ).toBeVisible({ timeout: 10000 });
 
       const expectedValues: Record<string, string> = {
-        [translations.metric['sonarqube.quality_gate'].title]: 'true',
         [translations.metric['sonarqube.open_issues'].title]: '3',
         [translations.metric['sonarqube.security_rating'].title]: '1',
         [translations.metric['sonarqube.security_issues'].title]: '0',
@@ -396,6 +395,16 @@ test.describe('Scorecard Plugin Tests', () => {
           .first();
         await expect(card).toContainText(value);
       }
+
+      const qualityGateCard = page
+        .locator('[role="article"]')
+        .filter({
+          hasText: translations.metric['sonarqube.quality_gate'].title,
+        })
+        .first();
+      await expect(
+        qualityGateCard.getByTestId('CheckCircleOutlineIcon'),
+      ).toBeVisible();
     });
 
     test('Verify SonarQube quality gate failure state', async () => {
@@ -418,7 +427,9 @@ test.describe('Scorecard Plugin Tests', () => {
           hasText: translations.metric['sonarqube.quality_gate'].description,
         })
         .first();
-      await expect(qualityGateCard).toContainText('false');
+      await expect(
+        qualityGateCard.getByTestId('DangerousOutlinedIcon'),
+      ).toBeVisible();
     });
 
     test('Verify empty state for sonarqube entity with no metrics', async () => {
