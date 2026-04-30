@@ -95,13 +95,15 @@ export function StoreConfigFields({
           label="Max Results"
           size="small"
           type="number"
+          inputProps={{ min: 1, max: 50 }}
           value={localConfig.fileSearchMaxResults ?? ''}
-          onChange={e =>
+          onChange={e => {
+            const v = parseInt(e.target.value, 10);
             onUpdate(
               'fileSearchMaxResults',
-              parseInt(e.target.value, 10) || undefined,
-            )
-          }
+              Number.isFinite(v) ? Math.min(50, Math.max(1, v)) : undefined,
+            );
+          }}
           helperText="1-50 chunks/query"
         />
       )}
@@ -121,13 +123,15 @@ export function StoreConfigFields({
             label="Max Results"
             size="small"
             type="number"
+            inputProps={{ min: 1, max: 50 }}
             value={localConfig.fileSearchMaxResults ?? ''}
-            onChange={e =>
+            onChange={e => {
+              const v = parseInt(e.target.value, 10);
               onUpdate(
                 'fileSearchMaxResults',
-                parseInt(e.target.value, 10) || undefined,
-              )
-            }
+                Number.isFinite(v) ? Math.min(50, Math.max(1, v)) : undefined,
+              );
+            }}
             helperText="1-50 chunks/query"
           />
         </>
@@ -138,12 +142,13 @@ export function StoreConfigFields({
         type="number"
         inputProps={{ min: 0, max: 1, step: 0.05 }}
         value={localConfig.fileSearchScoreThreshold ?? ''}
-        onChange={e =>
+        onChange={e => {
+          const v = parseFloat(e.target.value);
           onUpdate(
             'fileSearchScoreThreshold',
-            parseFloat(e.target.value) || undefined,
-          )
-        }
+            Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : undefined,
+          );
+        }}
         helperText="0.0 – 1.0"
       />
       {isHybrid && (
