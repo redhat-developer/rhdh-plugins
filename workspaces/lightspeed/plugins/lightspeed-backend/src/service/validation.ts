@@ -16,7 +16,14 @@
 
 import type { NextFunction, Request, Response } from 'express';
 
+import { ALLOWED_PROXY_PREFIXES } from './constant';
 import { QueryRequestBody } from './types';
+
+export function isAllowedProxyPath(path: string): boolean {
+  return ALLOWED_PROXY_PREFIXES.some(
+    prefix => path === prefix || path.startsWith(`${prefix}/`),
+  );
+}
 
 export const validateCompletionsRequest = (
   req: Request,
