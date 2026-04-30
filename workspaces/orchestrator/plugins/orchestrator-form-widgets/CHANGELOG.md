@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.6.9
+
+### Patch Changes
+
+- af7a353: Fix type errors in orchestrator form widgets
+
 ## 1.6.8
 
 ### Patch Changes
