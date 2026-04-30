@@ -15,17 +15,13 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Table,
-  TableColumn,
-  InfoCard,
-  Progress,
-} from '@backstage/core-components';
+import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
+import { TableColumn, Progress } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { Box, Chip, Typography } from '@material-ui/core';
 import type { ServiceType } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef } from '../../apis';
-import { DcmSearchCardAction } from '../../components/dcmTabListHelpers';
+import { DcmSearchTableCard } from '../../components/dcmTabListHelpers';
 import { useDcmStyles } from '../../components/dcmStyles';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { DcmDataCenterTabEmptyState } from '../../components/DcmDataCenterTabEmptyState';
@@ -41,7 +37,7 @@ export function ServiceTypesTabContent() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = usePersistedPageSize('service-types');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -153,45 +149,18 @@ export function ServiceTypesTabContent() {
           illustrationSrc={emptyIllustration}
         />
       ) : (
-        <InfoCard
+        <DcmSearchTableCard<ServiceType>
           title={`Service types (${filtered.length})`}
-          action={
-            <DcmSearchCardAction
-              value={search}
-              setValue={setSearch}
-              classes={classes}
-            />
-          }
-          className={classes.dataCard}
-          titleTypographyProps={{ className: classes.cardTitle }}
-        >
-          <Box className={classes.cardContent}>
-            <Table<ServiceType>
-              data={paginated}
-              columns={columns}
-              options={{
-                paging: true,
-                pageSize,
-                pageSizeOptions: [5, 10, 25],
-                search: false,
-                sorting: true,
-                padding: 'default',
-                toolbar: false,
-              }}
-              totalCount={filtered.length}
-              page={page}
-              onPageChange={(p, ps) => {
-                setPage(p);
-                setPageSize(ps);
-              }}
-              onRowsPerPageChange={ps => {
-                setPageSize(ps);
-                setPage(0);
-              }}
-              localization={{ pagination: { labelRowsPerPage: 'rows' } }}
-            />
-          </Box>
-        </InfoCard>
+          data={paginated}
+          columns={columns}
+          totalCount={filtered.length}
+          page={page}
+          pageSize={pageSize}
+          setPage={setPage}
+          setPageSize={setPageSize}
+          search={search}
+          setSearch={setSearch}
+        />
       )}
     </Box>
   );

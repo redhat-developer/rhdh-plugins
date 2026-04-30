@@ -111,6 +111,18 @@ export class CatalogClient extends DcmBaseClient implements CatalogApi {
     });
   }
 
+  /**
+   * @public
+   */
+  async rehydrateCatalogItemInstance(
+    catalogItemInstanceId: string,
+  ): Promise<CatalogItemInstance> {
+    return this.fetch<CatalogItemInstance>(
+      `catalog-item-instances/${catalogItemInstanceId}:rehydrate`,
+      { method: 'POST', body: '{}' },
+    );
+  }
+
   async deleteCatalogItemInstance(
     catalogItemInstanceId: string,
   ): Promise<void> {

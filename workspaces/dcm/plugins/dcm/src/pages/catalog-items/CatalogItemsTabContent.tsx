@@ -123,6 +123,7 @@ export function CatalogItemsTabContent() {
     emptyForm: emptyCatalogItemForm,
     isValid: isCatalogItemFormValid,
     itemToForm: catalogItemToForm,
+    storageKey: 'catalog-items',
   });
 
   const columns = useMemo<TableColumn<CatalogItem>[]>(

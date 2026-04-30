@@ -17,26 +17,20 @@
 import { useCallback, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { Chip, IconButton, Tooltip, Typography } from '@material-ui/core';
+import { Box, Chip, IconButton, Tooltip, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-
-const useStyles = makeStyles(() => ({
-  catalogItemChip: {
-    maxWidth: 180,
-  },
-  apiVersionChip: {
-    maxWidth: 140,
-  },
-}));
+import AutorenewIcon from '@material-ui/icons/Autorenew';
 import DeleteIcon from '@material-ui/icons/Delete';
 import type {
   CatalogItem,
   CatalogItemInstance,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmErrorSnackbar } from '../../components/DcmErrorSnackbar';
+import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
@@ -50,11 +44,33 @@ import {
 } from './instanceFormTypes';
 import type { InstanceForm } from './instanceFormTypes';
 
+const useStyles = makeStyles(() => ({
+  catalogItemChip: {
+    maxWidth: 180,
+  },
+  apiVersionChip: {
+    maxWidth: 140,
+  },
+  actionsCell: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+    gap: 4,
+  },
+  /** Lets Tooltip wrap disabled IconButton (ref + layout) without raw `<span>`. */
+  tooltipTrigger: {
+    display: 'inline-flex',
+  },
+}));
+
 export function CatalogItemInstancesTabContent() {
   const classes = useStyles();
   const catalogApi = useApi(catalogApiRef);
 
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
+  const [rehydratingId, setRehydratingId] = useState<string | null>(null);
+  const [rehydrateError, setRehydrateError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const crud = useCrudTab<CatalogItemInstance, InstanceForm>({
     loadFn: async () => {
@@ -77,9 +93,30 @@ export function CatalogItemInstancesTabContent() {
     ],
     emptyForm: emptyInstanceForm,
     isValid: isInstanceFormValid,
+    storageKey: 'catalog-item-instances',
   });
 
-  const { handleOpenDelete } = crud;
+  const { handleOpenDelete, setItems } = crud;
+
+  const handleRehydrate = useCallback(
+    async (inst: CatalogItemInstance) => {
+      const id = inst.uid ?? '';
+      if (!id) return;
+      setRehydratingId(id);
+      setRehydrateError(null);
+      setSuccessMessage(null);
+      try {
+        const updated = await catalogApi.rehydrateCatalogItemInstance(id);
+        setItems(prev => prev.map(row => (row.uid === id ? updated : row)));
+        setSuccessMessage('Catalog item instance rehydrated successfully.');
+      } catch (err) {
+        setRehydrateError(extractApiError(err));
+      } finally {
+        setRehydratingId(null);
+      }
+    },
+    [catalogApi, setItems],
+  );
 
   const catalogItemName = useCallback(
     (id: string) => {
@@ -159,21 +196,55 @@ export function CatalogItemInstancesTabContent() {
         title: 'Actions',
         field: 'actions',
         sorting: false,
-        width: '80px',
-        render: inst => (
-          <Tooltip title="Delete">
-            <IconButton
-              size="small"
-              aria-label="Delete instance"
-              onClick={() => handleOpenDelete(inst)}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        ),
+        width: '120px',
+        render: inst => {
+          const busy = rehydratingId === inst.uid;
+          return (
+            <Box className={classes.actionsCell}>
+              <Tooltip title="Rehydrate">
+                <Typography
+                  component="span"
+                  variant="inherit"
+                  className={classes.tooltipTrigger}
+                >
+                  <IconButton
+                    size="small"
+                    aria-label="Rehydrate instance"
+                    disabled={busy}
+                    onClick={() => handleRehydrate(inst)}
+                  >
+                    <AutorenewIcon fontSize="small" />
+                  </IconButton>
+                </Typography>
+              </Tooltip>
+              <Tooltip title="Delete">
+                <Typography
+                  component="span"
+                  variant="inherit"
+                  className={classes.tooltipTrigger}
+                >
+                  <IconButton
+                    size="small"
+                    aria-label="Delete instance"
+                    disabled={busy}
+                    onClick={() => handleOpenDelete(inst)}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Typography>
+              </Tooltip>
+            </Box>
+          );
+        },
       },
     ],
-    [classes, handleOpenDelete, catalogItemName],
+    [
+      classes,
+      handleOpenDelete,
+      handleRehydrate,
+      catalogItemName,
+      rehydratingId,
+    ],
   );
 
   type ScalarTouched = Partial<
@@ -247,6 +318,16 @@ export function CatalogItemInstancesTabContent() {
       <DcmErrorSnackbar
         error={crud.deleteError}
         onClose={() => crud.setDeleteError(null)}
+      />
+
+      <DcmErrorSnackbar
+        error={rehydrateError}
+        onClose={() => setRehydrateError(null)}
+      />
+
+      <DcmSuccessSnackbar
+        message={successMessage}
+        onClose={() => setSuccessMessage(null)}
       />
     </>
   );
