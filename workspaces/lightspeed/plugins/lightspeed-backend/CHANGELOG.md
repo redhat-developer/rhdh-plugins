@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.6.0
+
+### Minor Changes
+
+- c346ec1: updated config.d.ts to reflect app-config.yaml notebooks settings. Update notebooks system prompting
+
+### Patch Changes
+
+- cd803ed: harden proxy passthrough by adding allowlist for routes
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.0
+
 ## 2.5.1
 
 ### Patch Changes

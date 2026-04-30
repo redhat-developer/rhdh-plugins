@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-common
 
+## 2.6.0
+
 ## 2.5.1
 
 ## 2.5.0
