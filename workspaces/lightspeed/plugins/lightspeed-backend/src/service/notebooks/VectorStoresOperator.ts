@@ -74,7 +74,16 @@ async function handleHttpError(
     error = { detail: await response.text() };
   }
   logger.error(`Failed to ${operation}:`, error);
-  throw mapHttpStatusToError(response.status, `Failed to ${operation}`, error);
+
+  let status = response.status;
+  if (status === 500 && operation === 'retrieve vector store') {
+    logger.warn(
+      `Treating 500 error as 404 for ${operation} (lightspeed-core limitation)`,
+    );
+    status = 404;
+  }
+
+  throw mapHttpStatusToError(status, `Failed to ${operation}`, error);
 }
 
 /**
@@ -171,7 +180,6 @@ export class VectorStoresOperator {
           },
         },
       );
-
       if (!response.ok) {
         await handleHttpError(response, this.logger, 'retrieve vector store');
       }

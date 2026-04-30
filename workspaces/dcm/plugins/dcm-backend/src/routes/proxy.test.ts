@@ -42,7 +42,11 @@ function makeApp(configData: Record<string, Record<string, string>> = {}) {
     cache: mockServices.cache.mock(),
   };
   const app = express();
-  app.use(express.json());
+  app.use(
+    express.json({
+      type: ['application/json', 'application/merge-patch+json'],
+    }),
+  );
   // Mount using a wildcard path matching the router convention
   app.all('/proxy/*', createDcmProxy(options));
   return app;
@@ -183,6 +187,44 @@ describe('createDcmProxy', () => {
     const upstreamCall = fetchSpy.mock.calls[1];
     expect(upstreamCall[1].method).toBe('POST');
     expect(JSON.parse(upstreamCall[1].body)).toEqual(requestBody);
+  });
+
+  it('proxies a PATCH request with application/merge-patch+json and forwards the body', async () => {
+    const patch = { display_name: 'updated', spec: { fields: [] } };
+    fetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(TOKEN_RESPONSE)
+      .mockResolvedValueOnce({
+        status: 200,
+        ok: true,
+        headers: {
+          get: (h: string) =>
+            h === 'content-type' ? 'application/json' : null,
+        },
+        text: async () => JSON.stringify(patch),
+      } as unknown as Response);
+
+    const app = makeApp({
+      dcm: {
+        apiGatewayUrl: 'https://gateway.example.com',
+        clientId: 'id',
+        clientSecret: 'secret',
+      },
+    });
+
+    const res = await request(app)
+      .patch('/proxy/catalog-items/test-id')
+      .send(patch)
+      .set('Content-Type', 'application/merge-patch+json');
+
+    expect(res.status).toBe(200);
+
+    const upstreamCall = fetchSpy.mock.calls[1];
+    expect(upstreamCall[1].method).toBe('PATCH');
+    expect(upstreamCall[1].headers['Content-Type']).toBe(
+      'application/merge-patch+json',
+    );
+    expect(JSON.parse(upstreamCall[1].body)).toEqual(patch);
   });
 
   it('handles 204 No Content upstream responses without a body', async () => {

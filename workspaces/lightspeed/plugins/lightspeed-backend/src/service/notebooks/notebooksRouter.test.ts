@@ -155,7 +155,43 @@ describe('Notebooks Router', () => {
       });
     });
 
+    describe('GET /v1/sessions/:sessionId', () => {
+      it('should return 404 for non-existing session', async () => {
+        const response = await request(app).get(
+          '/notebooks/v1/sessions/non-existing-session-id',
+        );
+
+        expect(response.status).toBe(404);
+        expect(response.body.status).toBe('error');
+      });
+
+      it('should retrieve an existing session', async () => {
+        const createResponse = await request(app)
+          .post('/notebooks/v1/sessions')
+          .send({ name: 'Test Session' });
+
+        const sessionId = createResponse.body.session.session_id;
+        const response = await request(app).get(
+          `/notebooks/v1/sessions/${sessionId}`,
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.status).toBe('success');
+        expect(response.body.session.session_id).toBe(sessionId);
+        expect(response.body.session.name).toBe('Test Session');
+      });
+    });
+
     describe('PUT /v1/sessions/:sessionId', () => {
+      it('should return 404 for non-existing session', async () => {
+        const response = await request(app)
+          .put('/notebooks/v1/sessions/non-existing-session-id')
+          .send({ name: 'Updated Name' });
+
+        expect(response.status).toBe(404);
+        expect(response.body.status).toBe('error');
+      });
+
       it('should update session', async () => {
         const createResponse = await request(app)
           .post('/notebooks/v1/sessions')
@@ -172,6 +208,15 @@ describe('Notebooks Router', () => {
     });
 
     describe('DELETE /v1/sessions/:sessionId', () => {
+      it('should return 404 for non-existing session', async () => {
+        const response = await request(app).delete(
+          '/notebooks/v1/sessions/non-existing-session-id',
+        );
+
+        expect(response.status).toBe(404);
+        expect(response.body.status).toBe('error');
+      });
+
       it('should delete session', async () => {
         const createResponse = await request(app)
           .post('/notebooks/v1/sessions')
@@ -297,6 +342,15 @@ describe('Notebooks Router', () => {
         .post('/notebooks/v1/sessions')
         .send({ name: 'Test Session' });
       sessionId = response.body.session.session_id;
+    });
+
+    it('should return 404 for non-existing session', async () => {
+      const response = await request(app)
+        .post('/notebooks/v1/sessions/non-existing-session/query')
+        .send({ query: 'What is this about?' });
+
+      expect(response.status).toBe(404);
+      expect(response.body.status).toBe('error');
     });
 
     it('should return 400 if query missing', async () => {
