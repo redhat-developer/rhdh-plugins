@@ -165,10 +165,6 @@ export const RepositoriesTable = ({
     return filteredData?.slice(startIndex, startIndex + rowsPerPage) || [];
   }, [filteredData, effectivePage, rowsPerPage]);
 
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    effectivePage > 0 ? Math.max(0, rowsPerPage - paginatedData.length) : 0;
-
   const handleClickAllForRepositoriesTable = (drawer?: boolean) => {
     let newSelectedRows: AddedRepositories = { ...selected };
 
@@ -321,7 +317,7 @@ export const RepositoriesTable = ({
           </div>
         )}
         <Table
-          style={{ minWidth: 750, height: '70%' }}
+          style={{ minWidth: 750 }}
           size="small"
           data-testid={ariaLabel()}
           className={classes.repositoriesTableFixedColumns}
@@ -343,7 +339,6 @@ export const RepositoriesTable = ({
             loading={loading}
             ariaLabel={ariaLabel()}
             rows={paginatedData}
-            emptyRows={emptyRows}
             onOrgRowSelected={handleOrgRowSelected}
             onClick={handleClick}
             selectedRepos={selected}
@@ -354,7 +349,6 @@ export const RepositoriesTable = ({
         </Table>
         {!isOpen && tableData?.length > 0 && (
           <TablePagination
-            style={{ height: '30%' }}
             rowsPerPageOptions={[
               { value: 5, label: t('table.pagination.rows5') },
               { value: 10, label: t('table.pagination.rows10') },
