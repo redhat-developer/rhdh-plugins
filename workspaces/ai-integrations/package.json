@@ -2,7 +2,7 @@
   "name": "@internal/ai-integrations",
   "version": "1.0.0",
   "engines": {
-    "node": "18 || 20"
+    "node": "22 || 24"
   },
   "scripts": {
     "dev": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start",
@@ -50,7 +50,8 @@
   },
   "resolutions": {
     "@types/react": "^18",
-    "@types/react-dom": "^18"
+    "@types/react-dom": "^18",
+    "isolated-vm": "^6.0.1"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
