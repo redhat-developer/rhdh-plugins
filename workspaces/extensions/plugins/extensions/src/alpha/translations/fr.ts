@@ -176,6 +176,9 @@ const extensionsTranslationFr = createTranslationMessages({
       'Aucun résultat trouvé. Essayez un autre terme de recherche.',
     'installedPackages.table.emptyMessages.noRecords':
       'Aucun enregistrement à afficher',
+    'installedPackages.table.pagination.labelRowsPerPage': 'lignes',
+    'installedPackages.table.pagination.labelDisplayedRows':
+      '{from}-{to} sur {count}',
     'actions.install': 'Installer',
     'actions.view': 'Voir',
     'actions.edit': 'Modifier',
