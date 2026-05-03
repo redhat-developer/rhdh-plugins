@@ -144,6 +144,9 @@ const extensionsPlugin: OverridableFrontendPlugin<
     >;
     catalogTabRouteRef: SubRouteRef<undefined>;
     installedTabRouteRef: SubRouteRef<undefined>;
+    installedPackageRouteRef: SubRouteRef<
+      PathParams<'/installed-packages/:namespace/:name'>
+    >;
   },
   {},
   {
