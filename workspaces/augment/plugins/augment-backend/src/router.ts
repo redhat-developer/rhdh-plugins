@@ -39,6 +39,7 @@ import {
   registerKagentiAdminRoutes,
   registerDevSpacesRoutes,
   registerAgentRoutes,
+  registerToolLifecycleRoutes,
   registerWorkflowRoutes,
 } from './routes';
 import { toErrorMessage } from './services/utils';
@@ -278,6 +279,36 @@ export async function createRouter({
   // Authenticated routes
   registerChatRoutes(ctx);
   registerAgentRoutes(ctx, adminConfig);
+
+  // Tool lifecycle routes -- unified tool listing with lifecycle overlay
+  {
+    const kagentiProvider = providerManager.provider.id === 'kagenti'
+      ? providerManager.provider as import('./providers/kagenti').KagentiProvider
+      : undefined;
+
+    registerToolLifecycleRoutes(ctx, adminConfig, {
+      async listProviderTools() {
+        if (!kagentiProvider) return [];
+        try {
+          const apiClient = kagentiProvider.getApiClient();
+          const kagentiConfig = kagentiProvider.getConfig();
+          const { getVisibleNamespaces } = await import('./providers/kagenti/kagentiNamespaceUtils');
+          const namespaces = await getVisibleNamespaces(apiClient, kagentiConfig, logger);
+          const allTools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary[] = [];
+          for (const ns of namespaces) {
+            try {
+              const result = await apiClient.listTools(ns);
+              allTools.push(...(result.items ?? []));
+            } catch { /* skip unavailable namespace */ }
+          }
+          return allTools;
+        } catch {
+          return [];
+        }
+      },
+    });
+  }
+
   const workflowService = new WorkflowConfigService(adminConfig, logger);
   registerWorkflowRoutes(ctx, workflowService, adminConfig);
   registerDocumentRoutes(ctx);

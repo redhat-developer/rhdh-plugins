@@ -26,4 +26,5 @@ export { registerKagentiSandboxRoutes } from './kagentiSandboxRoutes';
 export { registerKagentiAdminRoutes } from './kagentiAdminRoutes';
 export { registerDevSpacesRoutes } from './devSpacesRoutes';
 export { registerAgentRoutes } from './agentRoutes';
+export { registerToolLifecycleRoutes } from './toolLifecycleRoutes';
 export { registerWorkflowRoutes } from './workflowRoutes';

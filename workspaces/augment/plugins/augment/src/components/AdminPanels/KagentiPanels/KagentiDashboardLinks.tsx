@@ -127,7 +127,7 @@ export function KagentiDashboardLinks({
     return (
       <Card variant="outlined">
         <CardContent>
-          <Typography variant="h6" sx={{ fontSize: '1rem', mb: 2 }}>
+          <Typography variant="h6" sx={{ fontSize: '1rem', mb: 2, color: 'text.primary' }}>
             Dashboards
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -166,7 +166,7 @@ export function KagentiDashboardLinks({
     return (
       <Card variant="outlined">
         <CardContent>
-          <Typography variant="h6" sx={{ fontSize: '1rem', mb: 2 }}>
+          <Typography variant="h6" sx={{ fontSize: '1rem', mb: 2, color: 'text.primary' }}>
             Dashboards
           </Typography>
           <Box

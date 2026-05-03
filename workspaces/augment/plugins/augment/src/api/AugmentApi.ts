@@ -104,6 +104,21 @@ export interface AugmentApi {
   updateAgentConfig(agentId: string, config: Partial<import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig>): Promise<void>;
 
   /**
+   * List tools with lifecycle overlay in a provider-agnostic format.
+   */
+  listToolsWithLifecycle(options?: { published?: boolean }): Promise<(import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & { published?: boolean; lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage; version?: number })[]>;
+
+  /**
+   * Promote a tool to the next lifecycle stage (draft → registered → deployed).
+   */
+  promoteToolLifecycle(toolId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string; version: number }>;
+
+  /**
+   * Demote a tool to a previous lifecycle stage (deployed → registered → draft).
+   */
+  demoteToolLifecycle(toolId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string }>;
+
+  /**
    * Get branding configuration for enterprise customization
    */
   getBranding(): Promise<BrandingConfig>;
@@ -729,6 +744,28 @@ export class AugmentApiClient implements AugmentApi {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
+    });
+  }
+
+  async listToolsWithLifecycle(options?: { published?: boolean }): Promise<(import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & { published?: boolean; lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage; version?: number })[]> {
+    const qs = options?.published ? '?published=true' : '';
+    const data = await this.fetchJson<{ tools: (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & { published?: boolean; lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage; version?: number })[] }>(`/tools${qs}`);
+    return data.tools ?? [];
+  }
+
+  async promoteToolLifecycle(toolId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string; version: number }> {
+    return this.fetchJson(`/tools/${encodeURIComponent(toolId)}/promote`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetStage }),
+    });
+  }
+
+  async demoteToolLifecycle(toolId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string }> {
+    return this.fetchJson(`/tools/${encodeURIComponent(toolId)}/demote`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetStage }),
     });
   }
 

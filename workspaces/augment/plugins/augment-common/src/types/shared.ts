@@ -395,6 +395,32 @@ export interface ChatAgentConfig {
 }
 
 /**
+ * Per-tool lifecycle configuration set by admins.
+ * Controls which tools are published to end users, mirroring the agent lifecycle.
+ * @public
+ */
+export interface ChatToolConfig {
+  /** Tool identifier: "namespace/name" */
+  toolId: string;
+  /** Whether this tool is published to the end-user catalog (derived from lifecycleStage === 'deployed') */
+  published: boolean;
+  /** Whether this tool appears in end-user listings (only applies when published) */
+  visible: boolean;
+  /** Lifecycle stage: draft → registered → deployed */
+  lifecycleStage?: AgentLifecycleStage;
+  /** Promotion version — incremented each time the tool is promoted forward */
+  version?: number;
+  /** ISO timestamp of last promotion */
+  promotedAt?: string;
+  /** User ref of who last promoted this tool */
+  promotedBy?: string;
+  /** User ref of who created this tool */
+  createdBy?: string;
+  /** ISO timestamp of creation */
+  createdAt?: string;
+}
+
+/**
  * A group of related prompts displayed on the welcome screen
  * @public
  */
@@ -524,7 +550,7 @@ export function deriveRoleFromTopology(
   const isTarget = Object.entries(allAgents).some(
     ([k, a]) =>
       k !== agentKey &&
-      a != null &&
+      a !== null && a !== undefined &&
       ((a.handoffs ?? []).includes(agentKey) ||
         (a.asTools ?? []).includes(agentKey)),
   );

@@ -102,7 +102,6 @@ export function registerKagentiToolRoutes(
 
   router.post(
     '/kagenti/tools',
-    requireAdminAccess,
     withRoute(
       'POST /kagenti/tools',
       'Failed to create tool',
