@@ -86,7 +86,7 @@ export function GeneratedAnswerCard({
               <AccessTimeIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
               <Typography
                 variant="caption"
-                color="textSecondary"
+                color="text.secondary"
                 sx={{ fontVariantNumeric: 'tabular-nums' }}
               >
                 {timeMs < 1000

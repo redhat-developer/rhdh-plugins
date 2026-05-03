@@ -65,6 +65,7 @@ import { MessageInspectorPanel } from './MessageInspectorPanel';
 import { useChatActions } from './useChatActions';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ExecutionTracePanel } from '../ExecutionTrace';
+import { typeScale, iconSize, layout, containerPadding } from '../../theme/tokens';
 
 // ============================================================================
 // Main Component
@@ -398,7 +399,12 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          marginRight: rightPaneCollapsed ? '56px' : '340px',
+          marginRight: {
+            xs: 0,
+            md: rightPaneCollapsed
+              ? layout.sidebar.widthCollapsed
+              : layout.sidebar.widthExpanded,
+          },
           transition: 'margin-right 0.3s ease',
           willChange: 'margin-right',
           overflow: 'hidden',
@@ -431,7 +437,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
                 display: 'flex',
                 justifyContent: 'flex-end',
                 gap: 0.5,
-                px: { xs: 2, sm: 3, md: 4 },
+                px: containerPadding,
                 py: 0.25,
               }}
             >
@@ -465,9 +471,9 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
                   }}
                 >
                   {isDev ? (
-                    <CodeIcon sx={{ fontSize: 16 }} />
+                    <CodeIcon sx={{ fontSize: iconSize.sm }} />
                   ) : (
-                    <PersonOutlineIcon sx={{ fontSize: 16 }} />
+                    <PersonOutlineIcon sx={{ fontSize: iconSize.sm }} />
                   )}
                 </IconButton>
               </Tooltip>
@@ -484,7 +490,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
                     '&:hover': { color: 'primary.main' },
                   }}
                 >
-                  <FileDownloadOutlinedIcon sx={{ fontSize: 18 }} />
+                  <FileDownloadOutlinedIcon sx={{ fontSize: iconSize.md }} />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -547,7 +553,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           ) : (
             <Box
               sx={{
-                px: { xs: 2, sm: 3, md: 4 },
+                px: containerPadding,
                 py: 2,
                 display: 'flex',
                 flexDirection: 'column',
@@ -556,7 +562,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
             >
               <Box
                 sx={{
-                  maxWidth: '1200px',
+                  maxWidth: layout.content.maxWidth,
                   width: '100%',
                   mx: 'auto',
                 }}
@@ -652,7 +658,7 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           sx={{
             textAlign: 'center',
             color: theme.palette.text.disabled,
-            fontSize: '0.6875rem',
+            fontSize: typeScale.micro.fontSize,
             py: 0.5,
             px: 2,
             flexShrink: 0,

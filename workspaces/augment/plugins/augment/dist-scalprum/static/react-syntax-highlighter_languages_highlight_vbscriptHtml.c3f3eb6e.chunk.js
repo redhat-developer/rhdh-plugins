@@ -1,0 +1,2 @@
+(self.webpackChunkred_hat_developer_hub_backstage_plugin_augment=self.webpackChunkred_hat_developer_hub_backstage_plugin_augment||[]).push([[6152],{80052(e){e.exports=function(e){return{name:"VBScript in HTML",subLanguage:"xml",contains:[{begin:"<%",end:"%>",subLanguage:"vbscript"}]}}}}]);
+//# sourceMappingURL=react-syntax-highlighter_languages_highlight_vbscriptHtml.c3f3eb6e.chunk.js.map

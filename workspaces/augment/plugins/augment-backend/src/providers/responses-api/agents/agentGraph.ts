@@ -15,23 +15,13 @@
  */
 
 /**
- * Agent graph types and resolution — delegates to the ADK.
+ * Agent graph types and resolution.
  *
- * This module re-exports the core graph types from `@augment-adk/augment-adk`
- * and adds plugin-specific callback types (BuildDepsForAgent, etc.) that
- * reference Backstage service interfaces.
- *
- * The `resolveAgentGraph` function wraps the ADK's version, adapting the
- * Backstage LoggerService to the ADK's ILogger interface.
+ * These types were previously re-exported from @augment-adk/augment-adk.
+ * They are now defined locally to remove that dependency while maintaining
+ * the same interface for AgentGraphManager and ResponsesApiCoordinator.
  */
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import {
-  resolveAgentGraph as adkResolveAgentGraph,
-  sanitizeName,
-  type AgentGraphSnapshot as AdkSnapshot,
-  type ResolvedAgent as AdkResolvedAgent,
-} from '@augment-adk/augment-adk';
-import { toAdkLogger } from '../../llamastack/adk-adapters/BackstageLoggerAdapter';
 import type { ChatDeps } from '../chat/ResponsesApiService';
 import type {
   AgentConfig,
@@ -40,41 +30,48 @@ import type {
   ResponsesApiResponse,
 } from '../../../types';
 
-/*
- * Re-export ADK types. Plugin AgentConfig is a structural superset of
- * ADK AgentConfig (adding only the deprecated `inheritSystemPrompt`),
- * so the cast is safe at runtime.
- */
-export type ResolvedAgent = AdkResolvedAgent;
-export type AgentGraphSnapshot = AdkSnapshot;
+export interface ResolvedAgent {
+  key: string;
+  functionName: string;
+  config: AgentConfig;
+  handoffTools: Array<{ type: string; name: string; description?: string; parameters?: unknown; strict?: boolean }>;
+  agentAsToolTools: Array<{ type: string; name: string; description?: string; parameters?: unknown; strict?: boolean }>;
+  handoffTargetKeys: Set<string>;
+  asToolTargetKeys: Set<string>;
+}
 
-/** Alias for ADK's sanitizeName — kept for backward compatibility. */
+export interface AgentGraphSnapshot {
+  agents: Map<string, ResolvedAgent>;
+  defaultAgentKey: string;
+  maxTurns: number;
+}
+
+export function sanitizeName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+}
+
 export const toFunctionToolName = sanitizeName;
 
-/** Callback the orchestrator provides to build per-agent ChatDeps. */
 export type BuildDepsForAgent = (agent: ResolvedAgent) => Promise<ChatDeps>;
 
-/** Callback invoked when the runner exceeds maxTurns. */
 export type MaxTurnsExceededHandler = (ctx: {
   agentPath: string[];
   lastResponse?: ResponsesApiResponse;
 }) => ChatResponse | undefined;
 
-/** Pre-model-call hook: can inspect/modify the input before each chatTurn. */
 export type InputFilterFn = (
   input: string | ResponsesApiInputItem[],
   agentKey: string,
   turn: number,
 ) => string | ResponsesApiInputItem[];
 
-/** Customizable formatter for tool execution errors. */
 export type ToolErrorFormatterFn = (toolName: string, error: string) => string;
 
 /**
  * Build and validate an AgentGraphSnapshot from raw AgentConfig records.
  *
- * Delegates to the ADK's `resolveAgentGraph`, adapting the Backstage
- * LoggerService to the ADK's ILogger interface.
+ * This is a local implementation that replaces the ADK's resolveAgentGraph.
+ * It builds a map of agents with their handoff/delegation relationships.
  */
 export function resolveAgentGraph(
   configs: Record<string, AgentConfig>,
@@ -82,10 +79,63 @@ export function resolveAgentGraph(
   maxAgentTurns: number | undefined,
   logger: LoggerService,
 ): AgentGraphSnapshot {
-  return adkResolveAgentGraph(
-    configs as Record<string, import('@augment-adk/augment-adk').AgentConfig>,
-    defaultAgent,
-    maxAgentTurns,
-    toAdkLogger(logger),
-  );
+  const agents = new Map<string, ResolvedAgent>();
+
+  for (const [key, config] of Object.entries(configs)) {
+    const handoffTargetKeys = new Set<string>(config.handoffs ?? []);
+    const asToolTargetKeys = new Set<string>(config.asTools ?? []);
+
+    const handoffTools = [...handoffTargetKeys]
+      .filter(targetKey => configs[targetKey])
+      .map(targetKey => ({
+        type: 'function' as const,
+        name: `transfer_to_${sanitizeName(targetKey)}`,
+        description:
+          configs[targetKey]?.handoffDescription ??
+          `Transfer to ${configs[targetKey]?.name ?? targetKey}`,
+        parameters: { type: 'object', properties: {} } as unknown,
+        strict: false,
+      }));
+
+    const agentAsToolTools = [...asToolTargetKeys]
+      .filter(targetKey => configs[targetKey])
+      .map(targetKey => ({
+        type: 'function' as const,
+        name: `delegate_to_${sanitizeName(targetKey)}`,
+        description:
+          configs[targetKey]?.handoffDescription ??
+          `Delegate task to ${configs[targetKey]?.name ?? targetKey}`,
+        parameters: { type: 'object', properties: {} } as unknown,
+        strict: false,
+      }));
+
+    agents.set(key, {
+      key,
+      functionName: sanitizeName(key),
+      config,
+      handoffTools,
+      agentAsToolTools,
+      handoffTargetKeys,
+      asToolTargetKeys,
+    });
+  }
+
+  let defaultAgentKey = defaultAgent;
+  if (!agents.has(defaultAgentKey)) {
+    const firstKey = Object.keys(configs)[0];
+    if (firstKey) {
+      logger.warn(
+        `Default agent "${defaultAgent}" not found in config, falling back to "${firstKey}"`,
+      );
+      defaultAgentKey = firstKey;
+    } else {
+      logger.warn('No agents configured, creating empty graph');
+    }
+  }
+
+  return {
+    agents,
+    defaultAgentKey,
+    maxTurns: maxAgentTurns ?? 10,
+  };
 }

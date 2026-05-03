@@ -14,43 +14,12 @@
  * limitations under the License.
  */
 import { type Theme, type SxProps, alpha } from '@mui/material/styles';
-
-/**
- * Mode-aware surface opacity helpers.
- * Use these instead of hardcoding rgba values throughout component styles.
- *
- * Scale:
- *   faint  — barely visible (containers holding interactive elements)
- *   subtle — default card / panel background
- *   medium — general-purpose overlay
- *   strong — emphasis, pills, hover states
- */
-export function surfaceOverlay(
-  theme: Theme,
-  level: 'faint' | 'subtle' | 'medium' | 'strong' = 'medium',
-): string {
-  const isDark = theme.palette.mode === 'dark';
-  const base = isDark ? theme.palette.common.white : theme.palette.common.black;
-  const map = {
-    faint: alpha(base, isDark ? 0.04 : 0.02),
-    subtle: alpha(base, isDark ? 0.06 : 0.03),
-    medium: alpha(base, isDark ? 0.08 : 0.05),
-    strong: alpha(base, isDark ? 0.12 : 0.08),
-  };
-  return map[level];
-}
-
-export function subtleBorder(
-  theme: Theme,
-  level: 'subtle' | 'strong' = 'subtle',
-): string {
-  const isDark = theme.palette.mode === 'dark';
-  const base = isDark ? theme.palette.common.white : theme.palette.common.black;
-  if (level === 'strong') {
-    return alpha(base, isDark ? 0.15 : 0.12);
-  }
-  return alpha(base, 0.08);
-}
+import {
+  surfaceOverlay,
+  subtleBorder,
+  typeScale,
+  typography as typographyTokens,
+} from './tokens';
 
 /**
  * Inset code-block background — uses a black overlay in both modes
@@ -63,19 +32,13 @@ export function codeBlockBackground(theme: Theme): string {
 
 /**
  * Shared markdown content styles used by both ChatMessage and StreamingMessage.
- * Extracted to avoid the ~150 lines of duplicated styles that previously
- * had to be manually kept in sync across both components.
- *
- * @param theme - MUI theme
- * @param isUser - Whether this is a user message (affects text/link colors).
- *                 Default false for assistant/streaming context.
+ * Extracted to avoid duplicated styles across components.
  */
 export function getSharedMarkdownSx(
   theme: Theme,
   isUser: boolean = false,
 ): SxProps<Theme> {
   const isDark = theme.palette.mode === 'dark';
-
   const textColor = theme.palette.text.primary;
   const secondaryTextColor = theme.palette.text.secondary;
 
@@ -92,7 +55,7 @@ export function getSharedMarkdownSx(
   const border = subtleBorder(theme);
 
   return {
-    fontSize: '0.9375rem',
+    fontSize: typeScale.body.fontSize,
     lineHeight: 1.65,
     color: textColor,
     wordBreak: 'break-word',
@@ -104,7 +67,7 @@ export function getSharedMarkdownSx(
       fontSize: '1.375rem',
       mt: 3,
       mb: 1,
-      fontWeight: 700,
+      fontWeight: typographyTokens.fontWeight.bold,
       lineHeight: 1.3,
       color: textColor,
     },
@@ -112,7 +75,7 @@ export function getSharedMarkdownSx(
       fontSize: '1.2rem',
       mt: 2.5,
       mb: 1,
-      fontWeight: 650,
+      fontWeight: typographyTokens.fontWeight.semibold,
       lineHeight: 1.35,
       color: textColor,
     },
@@ -120,29 +83,32 @@ export function getSharedMarkdownSx(
       fontSize: '1.0625rem',
       mt: 2,
       mb: 0.75,
-      fontWeight: 600,
+      fontWeight: typographyTokens.fontWeight.semibold,
       lineHeight: 1.4,
       color: textColor,
     },
     '& h4': {
-      fontSize: '0.9375rem',
+      fontSize: typeScale.body.fontSize,
       mt: 1.5,
       mb: 0.5,
-      fontWeight: 600,
+      fontWeight: typographyTokens.fontWeight.semibold,
       lineHeight: 1.4,
       color: textColor,
     },
 
-    '& strong, & b': { fontWeight: 600, color: textColor },
+    '& strong, & b': {
+      fontWeight: typographyTokens.fontWeight.semibold,
+      color: textColor,
+    },
     '& em, & i': { fontStyle: 'italic' },
 
     '& code': {
       backgroundColor: codeBg,
       padding: '2px 6px',
       borderRadius: '4px',
-      fontFamily: '"SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", monospace',
+      fontFamily: typographyTokens.fontFamily.mono,
       fontSize: '0.85em',
-      fontWeight: 400,
+      fontWeight: typographyTokens.fontWeight.regular,
       wordBreak: 'break-all' as const,
     },
 
@@ -156,8 +122,8 @@ export function getSharedMarkdownSx(
       '& code': {
         backgroundColor: 'transparent',
         padding: 0,
-        fontSize: '0.8125rem',
-        fontWeight: 400,
+        fontSize: typeScale.code.fontSize,
+        fontWeight: typographyTokens.fontWeight.regular,
         wordBreak: 'normal' as const,
       },
     },
@@ -183,7 +149,10 @@ export function getSharedMarkdownSx(
     },
 
     '& blockquote': {
-      borderLeft: `3px solid ${subtleBorder(theme, 'strong')}`,
+      borderLeft: `3px solid ${alpha(
+        isDark ? theme.palette.common.white : theme.palette.common.black,
+        isDark ? 0.15 : 0.12,
+      )}`,
       pl: 2,
       ml: 0,
       my: 1.5,
@@ -191,7 +160,7 @@ export function getSharedMarkdownSx(
       fontStyle: 'italic',
     },
 
-    '& hr': { border: 'none', borderTop: `1px solid ${border}`, my: 2 },
+    '& hr': { border: 'none', borderTop: border, my: 2 },
 
     '& input[type="checkbox"]': { mr: 1 },
 
@@ -204,7 +173,7 @@ export function getSharedMarkdownSx(
     '& table': {
       borderCollapse: 'collapse' as const,
       width: '100%',
-      fontSize: '0.8125rem',
+      fontSize: typeScale.bodySmall.fontSize,
       lineHeight: 1.5,
       tableLayout: 'auto' as const,
     },
@@ -217,7 +186,7 @@ export function getSharedMarkdownSx(
     },
     '& th': {
       backgroundColor: surfaceOverlay(theme, 'subtle'),
-      fontWeight: 600,
+      fontWeight: typographyTokens.fontWeight.semibold,
       color: textColor,
       whiteSpace: 'nowrap' as const,
     },

@@ -529,7 +529,7 @@ export function KagentiAdminPanel({
   }
 
   return (
-    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH, width: '100%', minWidth: 0 }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" sx={PAGE_TITLE_SX}>
           Administration

@@ -26,6 +26,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import Fade from '@mui/material/Fade';
 import Skeleton from '@mui/material/Skeleton';
+import Alert from '@mui/material/Alert';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTheme, alpha } from '@mui/material/styles';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
@@ -37,6 +39,7 @@ import { augmentApiRef } from '../../api';
 import { useBranding } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { sanitizeBrandingUrl } from '../../theme/branding';
+import { typeScale, iconSize } from '../../theme/tokens';
 import { useAgentGalleryData } from './useAgentGalleryData';
 import type {
   PromptGroup,
@@ -90,7 +93,7 @@ interface WelcomeScreenProps {
 
 const TAGLINE_SX = {
   color: 'text.secondary',
-  fontSize: '0.8rem',
+  fontSize: typeScale.bodySmall.fontSize,
 } as const;
 
 const LOGO_SX = {
@@ -121,7 +124,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { t } = useTranslation();
   const [logoError, setLogoError] = useState(false);
   const [agentSearch, setAgentSearch] = useState('');
-  const { agents: allAgents, loading: agentsLoading } = useAgentGalleryData(api);
+  const { agents: allAgents, loading: agentsLoading, error: agentsError, fetchAgents: retryFetchAgents } = useAgentGalleryData(api);
 
   const safeLogoUrl = useMemo(
     () => sanitizeBrandingUrl(branding.logoUrl),
@@ -294,11 +297,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             <Button
               variant="outlined"
               size="small"
-              startIcon={<SwapHorizIcon sx={{ fontSize: 16 }} />}
+              startIcon={<SwapHorizIcon sx={{ fontSize: iconSize.sm }} />}
               onClick={onChangeAgent}
               sx={{
                 textTransform: 'none',
-                fontSize: '0.8rem',
+                fontSize: typeScale.bodySmall.fontSize,
                 borderColor: alpha(theme.palette.divider, 0.5),
                 color: theme.palette.text.secondary,
                 borderRadius: 5,
@@ -357,7 +360,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                   >
                     <ChatBubbleOutlineIcon
                       sx={{
-                        fontSize: 14,
+                        fontSize: iconSize.xs,
                         color: alpha(avatarColor, 0.5),
                         mt: 0.25,
                         flexShrink: 0,
@@ -366,7 +369,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                     <Typography
                       variant="body2"
                       sx={{
-                        fontSize: '0.82rem',
+                        fontSize: typeScale.bodySmall.fontSize,
                         color: theme.palette.text.primary,
                         lineHeight: 1.5,
                       }}
@@ -404,12 +407,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           >
             <HubOutlinedIcon
               sx={{
-                fontSize: 24,
+                fontSize: iconSize.xl,
                 color: branding.primaryColor || theme.palette.primary.main,
               }}
             />
           </Box>
-          <Typography variant="h5" sx={{ ...titleSx, fontSize: '1.4rem', mb: 0.5 }}>
+          <Typography variant="h5" sx={{ ...titleSx, fontSize: typeScale.pageTitle.fontSize, mb: 0.5 }}>
             Agent Playground
           </Typography>
           <Typography variant="body2" sx={TAGLINE_SX}>
@@ -419,7 +422,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             variant="caption"
             sx={{
               color: theme.palette.text.disabled,
-              fontSize: '0.7rem',
+              fontSize: typeScale.micro.fontSize,
               mt: 0.5,
               display: 'block',
             }}
@@ -436,21 +439,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             value={agentSearch}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgentSearch(e.target.value)}
             fullWidth
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ fontSize: 18, color: theme.palette.text.disabled }} />
-                  </InputAdornment>
-                ),
-                endAdornment: agentSearch ? (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setAgentSearch('')}>
-                      <ClearIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null,
-              },
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ fontSize: iconSize.md, color: theme.palette.text.disabled }} />
+                </InputAdornment>
+              ),
+              endAdornment: agentSearch ? (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setAgentSearch('')}>
+                    <ClearIcon sx={{ fontSize: iconSize.sm }} />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
             }}
             sx={{ maxWidth: 480 }}
           />
@@ -469,6 +470,20 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                   animation="wave"
                 />
               ))}
+            </Box>
+          ) : agentsError ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2, px: 3 }}>
+              <Alert
+                severity="warning"
+                sx={{ maxWidth: 480, width: '100%' }}
+                action={
+                  <Button color="inherit" size="small" startIcon={<RefreshIcon />} onClick={retryFetchAgents}>
+                    Retry
+                  </Button>
+                }
+              >
+                {agentsError}
+              </Alert>
             </Box>
           ) : filteredAgents.length === 0 ? (
             <Box
@@ -629,7 +644,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                 <Typography
                                   variant="subtitle2"
                                   noWrap
-                                  sx={{ fontWeight: 700, fontSize: '0.88rem', lineHeight: 1.3 }}
+                                  sx={{ fontWeight: 700, fontSize: typeScale.body.fontSize, lineHeight: 1.3 }}
                                 >
                                   {displayName}
                                 </Typography>
@@ -639,7 +654,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                 noWrap
                                 sx={{
                                   color: theme.palette.text.disabled,
-                                  fontSize: '0.65rem',
+                                  fontSize: typeScale.micro.fontSize,
                                   display: 'block',
                                 }}
                               >
@@ -652,7 +667,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                             variant="body2"
                             color="text.secondary"
                             sx={{
-                              fontSize: '0.76rem',
+                              fontSize: typeScale.caption.fontSize,
                               display: '-webkit-box',
                               WebkitLineClamp: 3,
                               WebkitBoxOrient: 'vertical',
@@ -674,7 +689,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                 variant="outlined"
                                 sx={{
                                   height: 20,
-                                  fontSize: '0.65rem',
+                                  fontSize: typeScale.micro.fontSize,
                                   borderRadius: 1.5,
                                   borderColor: alpha(theme.palette.divider, 0.3),
                                   color: theme.palette.text.secondary,
@@ -688,7 +703,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                 variant="outlined"
                                 sx={{
                                   height: 20,
-                                  fontSize: '0.65rem',
+                                  fontSize: typeScale.micro.fontSize,
                                   borderRadius: 1.5,
                                   borderColor: alpha(theme.palette.divider, 0.3),
                                   color: theme.palette.text.secondary,
@@ -702,7 +717,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                 variant="outlined"
                                 sx={{
                                   height: 20,
-                                  fontSize: '0.65rem',
+                                  fontSize: typeScale.micro.fontSize,
                                   borderRadius: 1.5,
                                   borderColor: alpha(theme.palette.divider, 0.3),
                                   color: theme.palette.text.secondary,
@@ -746,7 +761,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             variant="caption"
             sx={{
               color: 'warning.main',
-              fontSize: '0.7rem',
+              fontSize: typeScale.micro.fontSize,
               mb: 0.5,
             }}
           >

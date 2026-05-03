@@ -37,7 +37,7 @@ import { useAdminConfig } from '../../../hooks';
 import { useEffectiveConfig } from '../../../hooks/useEffectiveConfig';
 import { agentFromConfig } from '../AgentsPanel/agentValidation';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
-import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
+import { CONTENT_MAX_WIDTH, PAGE_TITLE_SX } from '../shared/commandCenterStyles';
 
 export interface OrchAgentDetailViewProps {
   agent: ChatAgent;
@@ -175,7 +175,7 @@ export function OrchAgentDetailView({
     : 'Standalone';
 
   return (
-    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH, width: '100%', minWidth: 0 }}>
       <Button
         size="small"
         startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
@@ -206,7 +206,7 @@ export function OrchAgentDetailView({
           >
             <Typography
               variant="h5"
-              sx={{ fontWeight: 700, color: 'text.primary' }}
+              sx={PAGE_TITLE_SX}
             >
               {agent.name}
             </Typography>

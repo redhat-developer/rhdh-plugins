@@ -34,6 +34,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 
+import { typeScale } from '../../theme/tokens';
 import { useBranding } from '../../hooks/useBranding';
 import { useChatViewMode } from '../../hooks/useChatViewMode';
 import { InlineCode, PreBlock } from '../CodeBlock';
@@ -265,7 +266,7 @@ export const StreamingMessage: React.FC<StreamingMessageProps> = memo(
                 sx={{
                   color: 'text.secondary',
                   fontWeight: 600,
-                  fontSize: '0.8125rem',
+                  fontSize: typeScale.bodySmall.fontSize,
                 }}
               >
                 {state.currentAgent || branding.appName}

@@ -20,6 +20,8 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
+import Drawer from '@mui/material/Drawer';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme, alpha } from '@mui/material/styles';
 import HomeIcon from '@mui/icons-material/Home';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -38,9 +40,10 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import type { AdminPanel } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { NamespacePicker } from '../AdminPanels/KagentiPanels';
+import { typeScale, iconSize } from '../../theme/tokens';
 
-const SIDEBAR_WIDTH = 240;
-const SIDEBAR_COLLAPSED_WIDTH = 56;
+const SIDEBAR_WIDTH = 190;
+const SIDEBAR_COLLAPSED_WIDTH = 48;
 
 interface NavItem {
   id: AdminPanel;
@@ -73,8 +76,11 @@ export function KagentiSidebar({
   const theme = useTheme();
   const { t } = useTranslation();
   const isDark = theme.palette.mode === 'dark';
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [collapsed, setCollapsed] = useState(false);
-  const width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const effectiveCollapsed = isMobile ? false : collapsed;
+  const width = effectiveCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
   const navGroups = useMemo<NavGroup[]>(
     () => [
@@ -84,7 +90,7 @@ export function KagentiSidebar({
           {
             id: 'kagenti-home' as AdminPanel,
             label: t('commandCenter.home'),
-            icon: <HomeIcon sx={{ fontSize: 22 }} />,
+            icon: <HomeIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'Dashboard overview and quick actions',
             tourId: 'nav-home',
           },
@@ -96,28 +102,28 @@ export function KagentiSidebar({
           {
             id: 'kagenti-agents' as AdminPanel,
             label: t('commandCenter.agentCatalog'),
-            icon: <SmartToyIcon sx={{ fontSize: 22 }} />,
+            icon: <SmartToyIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'Deploy, manage, and chat with AI agents',
             tourId: 'nav-agents',
           },
           {
             id: 'kagenti-tools' as AdminPanel,
             label: t('commandCenter.toolCatalog'),
-            icon: <BuildIcon sx={{ fontSize: 22 }} />,
+            icon: <BuildIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'Register MCP tool servers for your agents',
             tourId: 'nav-tools',
           },
           {
             id: 'kagenti-builds' as AdminPanel,
             label: t('commandCenter.buildPipelines'),
-            icon: <RocketLaunchIcon sx={{ fontSize: 22 }} />,
+            icon: <RocketLaunchIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'View and trigger container image builds',
             tourId: 'nav-builds',
           },
           {
             id: 'kagenti-sandbox' as AdminPanel,
             label: t('commandCenter.sandbox'),
-            icon: <ScienceIcon sx={{ fontSize: 22 }} />,
+            icon: <ScienceIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'Interactive testing sessions for agents',
             tourId: 'nav-sandbox',
           },
@@ -129,28 +135,28 @@ export function KagentiSidebar({
           {
             id: 'kagenti-registry' as AdminPanel,
             label: 'Agent Registry',
-            icon: <StorefrontIcon sx={{ fontSize: 22 }} />,
+            icon: <StorefrontIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'Agent lifecycle — promote from draft to deployment',
             tourId: 'nav-registry',
           },
           {
             id: 'kagenti-dashboards' as AdminPanel,
             label: t('commandCenter.observability'),
-            icon: <MonitorHeartIcon sx={{ fontSize: 22 }} />,
+            icon: <MonitorHeartIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'Dashboards for traces and monitoring',
             tourId: 'nav-observability',
           },
           {
             id: 'kagenti-platform' as AdminPanel,
             label: t('commandCenter.platformConfig'),
-            icon: <TuneIcon sx={{ fontSize: 22 }} />,
+            icon: <TuneIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'Model, tools, RAG, and safety settings',
             tourId: 'nav-platform',
           },
           {
             id: 'kagenti-branding' as AdminPanel,
             label: t('commandCenter.branding'),
-            icon: <PaletteIcon sx={{ fontSize: 22 }} />,
+            icon: <PaletteIcon sx={{ fontSize: iconSize.lg }} />,
             description:
               'Customize appearance, prompt groups, and chat experience',
             tourId: 'nav-branding',
@@ -158,14 +164,14 @@ export function KagentiSidebar({
           {
             id: 'kagenti-admin' as AdminPanel,
             label: t('commandCenter.administration'),
-            icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: 22 }} />,
+            icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'Users, namespaces, and build config',
             tourId: 'nav-admin',
           },
           {
             id: 'kagenti-docs' as AdminPanel,
             label: 'Documentation',
-            icon: <MenuBookIcon sx={{ fontSize: 22 }} />,
+            icon: <MenuBookIcon sx={{ fontSize: iconSize.lg }} />,
             description: 'Product guides, feature reference, and how-to docs',
             tourId: 'nav-docs',
           },
@@ -178,24 +184,26 @@ export function KagentiSidebar({
   const handleNavClick = useCallback(
     (panel: AdminPanel) => {
       onAdminPanelChange(panel);
+      if (isMobile) setMobileOpen(false);
     },
-    [onAdminPanelChange],
+    [onAdminPanelChange, isMobile],
   );
 
-  return (
+  const sidebarContent = (
     <Box
       sx={{
-        width,
-        minWidth: width,
+        width: isMobile ? SIDEBAR_WIDTH : width,
+        minWidth: isMobile ? SIDEBAR_WIDTH : width,
         display: 'flex',
         flexDirection: 'column',
-        borderRight: `1px solid ${theme.palette.divider}`,
+        borderRight: isMobile ? 'none' : `1px solid ${theme.palette.divider}`,
         background: isDark
           ? alpha(theme.palette.background.paper, 0.6)
           : alpha(theme.palette.background.paper, 0.95),
         transition: 'width 0.2s ease',
         overflow: 'hidden',
         flexShrink: 0,
+        height: '100%',
       }}
     >
       {/* Sidebar Header */}
@@ -217,7 +225,7 @@ export function KagentiSidebar({
             sx={{
               fontWeight: 700,
               flex: 1,
-              fontSize: '0.875rem',
+              fontSize: typeScale.body.fontSize,
               color: theme.palette.text.primary,
             }}
           >
@@ -228,12 +236,13 @@ export function KagentiSidebar({
           <IconButton
             size="small"
             onClick={() => setCollapsed(c => !c)}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             sx={{ ml: collapsed ? 'auto' : 0, mr: collapsed ? 'auto' : 0 }}
           >
             {collapsed ? (
-              <ChevronRightIcon sx={{ fontSize: 18 }} />
+              <ChevronRightIcon sx={{ fontSize: iconSize.md }} />
             ) : (
-              <ChevronLeftIcon sx={{ fontSize: 18 }} />
+              <ChevronLeftIcon sx={{ fontSize: iconSize.md }} />
             )}
           </IconButton>
         </Tooltip>
@@ -246,7 +255,7 @@ export function KagentiSidebar({
           sx={{
             px: 1.5,
             py: 1,
-            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+            borderBottom: `1px solid ${alpha(theme.palette.divider, isDark ? 0.25 : 0.15)}`,
           }}
         >
           <NamespacePicker
@@ -275,7 +284,7 @@ export function KagentiSidebar({
                 sx={{
                   mx: collapsed ? 0.5 : 1.5,
                   my: 1,
-                  borderTop: `1px solid ${alpha(theme.palette.divider, 0.4)}`,
+                  borderTop: `1px solid ${alpha(theme.palette.divider, isDark ? 0.25 : 0.15)}`,
                 }}
               />
             )}
@@ -289,7 +298,7 @@ export function KagentiSidebar({
                   px: 2,
                   pt: groupIdx === 0 ? 0.5 : 1.5,
                   pb: 0.5,
-                  fontSize: '0.75rem',
+                  fontSize: typeScale.caption.fontSize,
                   fontWeight: 600,
                   color: theme.palette.text.secondary,
                   letterSpacing: '0.04em',
@@ -307,6 +316,8 @@ export function KagentiSidebar({
                   data-tour={item.tourId}
                   role="button"
                   tabIndex={0}
+                  aria-current={isActive ? 'page' : undefined}
+                  aria-label={item.label}
                   onClick={() => handleNavClick(item.id)}
                   onKeyDown={e => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -353,7 +364,7 @@ export function KagentiSidebar({
                       variant="body2"
                       noWrap
                       sx={{
-                        fontSize: '0.875rem',
+                        fontSize: typeScale.body.fontSize,
                         fontWeight: isActive ? 600 : 400,
                       }}
                     >
@@ -407,7 +418,7 @@ export function KagentiSidebar({
         {collapsed ? (
           <Tooltip title={t('commandCenter.backToChat')} placement="right">
             <IconButton size="small" onClick={onBackToChat}>
-              <ArrowBackIcon sx={{ fontSize: 18 }} />
+              <ArrowBackIcon sx={{ fontSize: iconSize.md }} />
             </IconButton>
           </Tooltip>
         ) : (
@@ -415,13 +426,13 @@ export function KagentiSidebar({
             fullWidth
             size="small"
             variant="outlined"
-            startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
+            startIcon={<ArrowBackIcon sx={{ fontSize: iconSize.sm }} />}
             onClick={onBackToChat}
             sx={{
               textTransform: 'none',
               fontWeight: 500,
-              fontSize: '0.875rem',
-              borderColor: alpha(theme.palette.divider, 0.6),
+              fontSize: typeScale.body.fontSize,
+              borderColor: alpha(theme.palette.divider, isDark ? 0.4 : 0.25),
               color: theme.palette.text.secondary,
               '&:hover': {
                 color: theme.palette.text.primary,
@@ -435,4 +446,38 @@ export function KagentiSidebar({
       </Box>
     </Box>
   );
+
+  if (isMobile) {
+    return (
+      <>
+        <IconButton
+          onClick={() => setMobileOpen(true)}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            zIndex: 10,
+            display: { xs: 'inline-flex', md: 'none' },
+          }}
+          aria-label="Open navigation"
+        >
+          <ChevronRightIcon />
+        </IconButton>
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': { width: SIDEBAR_WIDTH },
+          }}
+        >
+          {sidebarContent}
+        </Drawer>
+      </>
+    );
+  }
+
+  return sidebarContent;
 }

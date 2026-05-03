@@ -39,10 +39,12 @@ import {
   registerKagentiAdminRoutes,
   registerDevSpacesRoutes,
   registerAgentRoutes,
+  registerWorkflowRoutes,
 } from './routes';
 import { toErrorMessage } from './services/utils';
 import { sanitizeErrorMessage } from './services/utils/errorSanitizer';
 import type { AdminConfigService } from './services/AdminConfigService';
+import { WorkflowConfigService } from './services/WorkflowConfigService';
 import { ResponsesApiProvider } from './providers/llamastack';
 import { createSecurityMiddleware } from './middleware/security';
 import { createRateLimiter } from './middleware/rateLimiter';
@@ -276,6 +278,8 @@ export async function createRouter({
   // Authenticated routes
   registerChatRoutes(ctx);
   registerAgentRoutes(ctx, adminConfig);
+  const workflowService = new WorkflowConfigService(adminConfig, logger);
+  registerWorkflowRoutes(ctx, workflowService, adminConfig);
   registerDocumentRoutes(ctx);
   registerConfigRoutes(ctx, adminConfig);
   registerSessionRoutes(ctx);

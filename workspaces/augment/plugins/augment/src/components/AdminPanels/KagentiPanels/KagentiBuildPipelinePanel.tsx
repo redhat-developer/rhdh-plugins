@@ -266,12 +266,12 @@ export function KagentiBuildPipelinePanel({
             />
           </TableCell>
           <TableCell>
-            <Typography variant="caption" color="textSecondary">
+            <Typography variant="caption" color="text.secondary">
               {b.namespace}
             </Typography>
           </TableCell>
           <TableCell>
-            <Typography variant="caption" color="textSecondary">
+            <Typography variant="caption" color="text.secondary">
               {b.strategy ?? '--'}
             </Typography>
           </TableCell>
@@ -317,7 +317,7 @@ export function KagentiBuildPipelinePanel({
             </Box>
           </TableCell>
           <TableCell>
-            <Typography variant="caption" color="textSecondary">
+            <Typography variant="caption" color="text.secondary">
               {timeAgo(b.creationTimestamp)}
             </Typography>
           </TableCell>
@@ -345,7 +345,7 @@ export function KagentiBuildPipelinePanel({
   }
 
   return (
-    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH, width: '100%', minWidth: 0 }}>
       <Card variant="outlined">
         <CardContent>
           <PanelIntroBanner storageKey="builds-panel">
@@ -402,7 +402,7 @@ export function KagentiBuildPipelinePanel({
             </Box>
           ) : (
             <>
-              <TableContainer sx={tableContainerSx(theme)}>
+              <TableContainer sx={{ ...tableContainerSx(theme), overflowX: 'auto' }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>

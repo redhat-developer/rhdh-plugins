@@ -63,7 +63,7 @@ export function buildEffectivePromptGroups({
     categoryMap.get(cat)!.push({
       title: w.name,
       description: w.description,
-      prompt: w.steps[0]?.prompt || '',
+      prompt: w.steps?.[0]?.prompt || '',
       icon: w.icon,
       comingSoon: w.comingSoon,
       comingSoonLabel: w.comingSoonLabel,

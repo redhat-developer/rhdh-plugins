@@ -260,6 +260,10 @@ export const augmentPlugin = createBackendPlugin({
           '/prompt-groups',
           '/admin',
           '/kagenti',
+          '/scoring-functions',
+          '/scoring',
+          '/benchmarks',
+          '/datasets',
         ];
 
         for (const path of protectedPaths) {

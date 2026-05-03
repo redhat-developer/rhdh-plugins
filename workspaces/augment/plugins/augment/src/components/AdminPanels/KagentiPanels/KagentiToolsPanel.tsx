@@ -199,7 +199,7 @@ export function KagentiToolsPanel({
   );
 
   return (
-    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH, width: '100%', minWidth: 0 }}>
       <Box
         sx={{
           display: 'flex',
@@ -318,7 +318,7 @@ export function KagentiToolsPanel({
         <>
           <TableContainer
             data-tour="tools-table"
-            sx={tableContainerSx(theme)}
+            sx={{ ...tableContainerSx(theme), overflowX: 'auto' }}
           >
             <Table size="small">
               <TableHead>

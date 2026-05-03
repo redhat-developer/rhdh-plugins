@@ -169,7 +169,7 @@ export const ChunkCard = ({
       >
         <Typography
           variant="caption"
-          color="textSecondary"
+          color="text.secondary"
           sx={{ fontSize: '0.65rem' }}
         >
           {chunk.text.length.toLocaleString()} chars / ~

@@ -29,7 +29,7 @@ import { McpServersSection } from './McpServersSection';
 import { SafetyEvalPanel } from '../SafetyEvalPanel/SafetyEvalPanel';
 import { EvaluationSection } from '../SafetyEvalPanel/EvaluationSection';
 import { KnowledgeBasePanel } from '../KnowledgeBasePanel';
-import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
+import { CONTENT_MAX_WIDTH, PAGE_TITLE_SX, PAGE_SUBTITLE_SX } from '../shared/commandCenterStyles';
 import { PanelIntroBanner } from '../shared/PanelIntroBanner';
 
 type SubTab =
@@ -73,7 +73,7 @@ const TABS_SX = {
   '& .MuiTab-root': {
     minHeight: 40,
     textTransform: 'none',
-    fontSize: '0.8125rem',
+    fontSize: '0.8125rem' /* typeScale.bodySmall */,
     minWidth: 'auto',
     px: 2,
     mr: 0.5,
@@ -132,7 +132,7 @@ export const AgentConfigPanel = () => {
       <Box sx={{ width: '100%' }}>
         <Box sx={HEADER_OUTER_SX}>
           <Box sx={HEADER_ROW_SX}>
-            <Typography variant="h5">Platform</Typography>
+            <Typography variant="h5" sx={PAGE_TITLE_SX}>Platform</Typography>
             <ProviderSelector
               providers={providers}
               activeProviderId={activeProviderId}
@@ -150,10 +150,10 @@ export const AgentConfigPanel = () => {
       <Box sx={HEADER_OUTER_SX}>
         <Box sx={HEADER_ROW_SX}>
           <Box>
-            <Typography variant="h5" sx={{ mb: 0.5 }}>
+            <Typography variant="h5" sx={{ ...PAGE_TITLE_SX, mb: 0.5 }}>
               Platform
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" sx={PAGE_SUBTITLE_SX}>
               Configure the shared infrastructure &mdash; model, tools,
               knowledge base, and safety &mdash; that powers all agents.
             </Typography>
@@ -222,7 +222,11 @@ export const AgentConfigPanel = () => {
           />
         </Box>
       )}
-      {activeTab === 'knowledge' && <KnowledgeBasePanel />}
+      {activeTab === 'knowledge' && (
+        <Box sx={CONTENT_SX}>
+          <KnowledgeBasePanel />
+        </Box>
+      )}
       {activeTab === 'safety' && (
         <SafetyEvalPanel
           effectiveConfig={effectiveConfig}

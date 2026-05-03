@@ -44,7 +44,7 @@ import {
   ConversationFacadeContext,
 } from './ConversationFacade';
 import { initializeOrchestrator } from './OrchestratorInitializer';
-import { AdkOrchestrator } from './adk-adapters/AdkOrchestrator';
+import { OpenAIAgentsOrchestrator } from './openai-agents-adapters/OpenAIAgentsOrchestrator';
 import { AgentGraphManager } from './AgentGraphManager';
 import { BackendApprovalStore } from './BackendApprovalStore';
 import { BackendToolExecutor } from './BackendToolExecutor';
@@ -82,7 +82,7 @@ export class ResponsesApiCoordinator {
   private securityConfig: SecurityConfig = { mode: 'plugin-only' };
 
   private readonly chatDepsBuilder: ChatDepsBuilder;
-  private adkOrchestrator: AdkOrchestrator | null = null;
+  private orchestrator: OpenAIAgentsOrchestrator | null = null;
   private agentGraphManager: AgentGraphManager | null = null;
   private backendToolExecutor: BackendToolExecutor | null = null;
   private readonly backendApprovalStore = new BackendApprovalStore();
@@ -235,7 +235,7 @@ export class ResponsesApiCoordinator {
         this.configLoader,
         this.logger,
       );
-      this.adkOrchestrator = new AdkOrchestrator({
+      this.orchestrator = new OpenAIAgentsOrchestrator({
         chatService: this.chatService,
         logger: this.logger,
         backendApprovalStore: this.backendApprovalStore,
@@ -293,13 +293,12 @@ export class ResponsesApiCoordinator {
       });
     }
 
-    // Eagerly discover MCP tools so the first chat request doesn't block
-    if (this.adkOrchestrator && this.mcpServers.length > 0) {
+    if (this.orchestrator && this.mcpServers.length > 0) {
       warmupTasks.push({
         name: 'tool-discovery-warmup',
         task: this.chatDepsBuilder
           .buildChatDeps()
-          .then(deps => this.adkOrchestrator!.warmUpToolCache(deps)),
+          .then(deps => this.orchestrator!.warmUpToolCache(deps)),
       });
     }
 
@@ -342,13 +341,12 @@ export class ResponsesApiCoordinator {
   invalidateRuntimeConfig(): void {
     this.configResolution.invalidateCache();
     this.agentGraphManager?.invalidate();
-    this.adkOrchestrator?.invalidateToolCache();
+    this.orchestrator?.invalidateToolCache();
 
-    // Re-warm the tool cache in the background so the next chat request is fast
-    if (this.adkOrchestrator && this.mcpServers.length > 0) {
+    if (this.orchestrator && this.mcpServers.length > 0) {
       this.chatDepsBuilder
         .buildChatDeps()
-        .then(deps => this.adkOrchestrator!.warmUpToolCache(deps))
+        .then(deps => this.orchestrator!.warmUpToolCache(deps))
         .catch(err =>
           this.logger.warn(
             `Background tool re-warm after config invalidation failed: ${toErrorMessage(err)}`,
@@ -358,56 +356,138 @@ export class ResponsesApiCoordinator {
   }
 
   /**
-   * Send a chat message. All requests go through the AdkOrchestrator,
-   * which handles both single-agent (auto-synthesized) and multi-agent
-   * (YAML-configured) scenarios through the same code path.
-   *
-   * The agent graph snapshot is resolved per-request from the effective
-   * config (YAML + DB overrides), following the OpenAI SDK pattern where
-   * the Runner receives agents at call time.
+   * Send a chat message through the unified workflow execution path.
+   * Converts the agent graph snapshot to a WorkflowDefinition, hydrates
+   * it with the OpenAI Agents SDK, and runs.
    */
   async chat(request: ChatRequest): Promise<ChatResponse> {
-    const orchestrator = this.getAdkOrchestrator();
-    const snapshot = await this.requireAgentGraphManager().getSnapshot();
-    const userQuery = this.chatDepsBuilder.extractUserQuery(request);
+    const { WorkflowHydrator } = await import('./workflow/WorkflowHydrator');
+    const { LlamaStackProvider } = await import('./openai-agents-adapters/LlamaStackProvider');
+    const { toChatResponse } = await import('./openai-agents-adapters/responseMapper');
+    const { requireLastUserMessage } = await import('../responses-api/chat/chatUtils');
+    const { migrateAgentConfigsToWorkflow } = await import('../../services/WorkflowMigration');
 
-    return orchestrator.chat(
-      request,
-      snapshot,
-      this.chatDepsBuilder.makeBuildDepsForAgent(userQuery),
+    const snapshot = await this.requireAgentGraphManager().getSnapshot();
+    const deps = await this.chatDepsBuilder.buildChatDeps();
+    const orchestrator = this.getOrchestrator();
+    const backendTools = await (orchestrator as any).discoverBackendTools(deps);
+
+    const agentConfigs: Record<string, any> = {};
+    for (const [key, resolved] of snapshot.agents) {
+      agentConfigs[key] = resolved.config;
+    }
+
+    const workflowDef = migrateAgentConfigsToWorkflow(
+      agentConfigs,
+      snapshot.defaultAgentKey,
     );
+    workflowDef.settings.maxTurns = snapshot.maxTurns;
+
+    const provider = new LlamaStackProvider(
+      this.chatService,
+      deps.client,
+      () => deps.config,
+    );
+
+    const hydrator = new WorkflowHydrator(this.logger);
+    const { runner, entryAgent, maxTurns } = hydrator.hydrate(
+      workflowDef,
+      provider,
+      backendTools,
+    );
+
+    const userInput = requireLastUserMessage(request, '[Chat] ');
+    const result = await runner.run(entryAgent, userInput, { maxTurns });
+
+    return toChatResponse(result);
   }
 
   /**
-   * Stream a chat message with real-time events.
-   * Uses AdkOrchestrator.chatStream() for real per-token SSE
-   * streaming (thinking, tool calls, handoffs, text deltas).
+   * Stream a chat message with real-time SSE events via the
+   * unified workflow execution path.
    */
   async chatStream(
     request: ChatRequest,
     onEvent: (event: string) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    const orchestrator = this.getAdkOrchestrator();
+    const { WorkflowHydrator } = await import('./workflow/WorkflowHydrator');
+    const { LlamaStackProvider } = await import('./openai-agents-adapters/LlamaStackProvider');
+    const { mapRunStreamEventToFrontend } = await import('./openai-agents-adapters/streamMapper');
+    const { requireLastUserMessage } = await import('../responses-api/chat/chatUtils');
+    const { migrateAgentConfigsToWorkflow } = await import('../../services/WorkflowMigration');
+
     const snapshot = await this.requireAgentGraphManager().getSnapshot();
-    const userQuery = this.chatDepsBuilder.extractUserQuery(request);
+    const deps = await this.chatDepsBuilder.buildChatDeps();
+    const orchestrator = this.getOrchestrator();
+    const backendTools = await (orchestrator as any).discoverBackendTools(deps);
 
-    await orchestrator.chatStream(
-      request,
-      snapshot,
-      onEvent,
-      this.chatDepsBuilder.makeBuildDepsForAgent(userQuery),
-      signal,
+    const agentConfigs: Record<string, any> = {};
+    for (const [key, resolved] of snapshot.agents) {
+      agentConfigs[key] = resolved.config;
+    }
+
+    const workflowDef = migrateAgentConfigsToWorkflow(
+      agentConfigs,
+      snapshot.defaultAgentKey,
     );
-  }
+    workflowDef.settings.maxTurns = snapshot.maxTurns;
 
-  private getAdkOrchestrator(): AdkOrchestrator {
-    if (!this.adkOrchestrator) {
-      throw new Error(
-        'AdkOrchestrator not initialized. Call initialize() first.',
+    const provider = new LlamaStackProvider(
+      this.chatService,
+      deps.client,
+      () => deps.config,
+    );
+
+    const hydrator = new WorkflowHydrator(this.logger);
+    const { runner, entryAgent, maxTurns } = hydrator.hydrate(
+      workflowDef,
+      provider,
+      backendTools,
+    );
+
+    const userInput = requireLastUserMessage(request, '[ChatStream] ');
+
+    try {
+      const streamed = await runner.run(entryAgent, userInput, {
+        stream: true,
+        maxTurns,
+        signal,
+      });
+
+      for await (const event of streamed) {
+        for (const fe of mapRunStreamEventToFrontend(event)) {
+          onEvent(fe);
+        }
+      }
+
+      onEvent(
+        JSON.stringify({
+          type: 'stream.completed',
+          agentName: streamed.lastAgent?.name,
+        }),
+      );
+    } catch (error) {
+      if (signal?.aborted) return;
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('[ChatStream] Stream error', { error: message });
+      onEvent(
+        JSON.stringify({
+          type: 'stream.error',
+          error: message,
+          code: 'execution_error',
+        }),
       );
     }
-    return this.adkOrchestrator;
+  }
+
+  private getOrchestrator(): OpenAIAgentsOrchestrator {
+    if (!this.orchestrator) {
+      throw new Error(
+        'OpenAIAgentsOrchestrator not initialized. Call initialize() first.',
+      );
+    }
+    return this.orchestrator;
   }
 
   getAgentGraphManager(): AgentGraphManager | null {

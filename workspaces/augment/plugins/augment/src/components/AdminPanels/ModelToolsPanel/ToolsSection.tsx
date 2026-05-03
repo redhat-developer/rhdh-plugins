@@ -213,7 +213,7 @@ export const ToolsSection = ({ effectiveConfig, onConfigSaved }: Props) => {
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
                     {option}
                   </Typography>
-                  <Typography variant="caption" color="textSecondary">
+                  <Typography variant="caption" color="text.secondary">
                     {TOOL_CHOICE_DESCRIPTIONS[option]}
                   </Typography>
                 </Box>

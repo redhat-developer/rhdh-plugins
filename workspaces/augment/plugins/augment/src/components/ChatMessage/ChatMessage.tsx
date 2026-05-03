@@ -64,6 +64,7 @@ import {
   getTimestampSx,
   getUserTimestampSx,
 } from './styles';
+import { typeScale, iconSize } from '../../theme/tokens';
 import { useMessageEdit } from './useMessageEdit';
 import { MessageActionButtons } from './MessageActionButtons';
 import type { MessageFeedbackData } from './MessageFeedback';
@@ -75,7 +76,7 @@ function OutputValidationWarning({ error }: { error: string }) {
   return (
     <Alert
       severity="warning"
-      sx={{ mt: 1, fontSize: '0.8rem' }}
+      sx={{ mt: 1, fontSize: typeScale.bodySmall.fontSize }}
       action={
         <IconButton
           size="small"
@@ -83,9 +84,9 @@ function OutputValidationWarning({ error }: { error: string }) {
           aria-label={expanded ? 'Hide details' : 'Show details'}
         >
           {expanded ? (
-            <ExpandLessIcon sx={{ fontSize: 16 }} />
+            <ExpandLessIcon sx={{ fontSize: iconSize.sm }} />
           ) : (
-            <ExpandMoreIcon sx={{ fontSize: 16 }} />
+            <ExpandMoreIcon sx={{ fontSize: iconSize.sm }} />
           )}
         </IconButton>
       }
@@ -101,7 +102,7 @@ function OutputValidationWarning({ error }: { error: string }) {
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
             fontFamily: 'monospace',
-            fontSize: '0.7rem',
+            fontSize: typeScale.micro.fontSize,
           }}
         >
           {error}
@@ -228,7 +229,7 @@ export const ChatMessage = React.memo(function ChatMessage({
           sx={getAvatarSx(theme, message.isUser)}
         >
           {message.isUser ? (
-            <PersonIcon sx={{ fontSize: 18 }} />
+            <PersonIcon sx={{ fontSize: iconSize.md }} />
           ) : (
             <BotAvatarIcon botAvatarUrl={branding.botAvatarUrl} />
           )}
@@ -273,7 +274,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                 aria-label={`Handoff path: ${message.handoffPath.filter(Boolean).join(' to ')}`}
                 sx={{
                   display: 'block',
-                  fontSize: '0.6875rem',
+                  fontSize: typeScale.micro.fontSize,
                   color: theme.palette.text.disabled,
                   mt: -0.25,
                   mb: 0.5,
@@ -304,7 +305,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                     size="small"
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        fontSize: '0.9rem',
+                        fontSize: typeScale.body.fontSize,
                         borderRadius: 2,
                       },
                     }}
@@ -321,7 +322,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                       onClick={handleCancelEdit}
                       aria-label="Cancel edit"
                     >
-                      <CloseIcon sx={{ fontSize: 16 }} />
+                      <CloseIcon sx={{ fontSize: iconSize.sm }} />
                     </IconButton>
                     <IconButton
                       size="small"
@@ -332,7 +333,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                       }
                       color="primary"
                     >
-                      <SendIcon sx={{ fontSize: 16 }} />
+                      <SendIcon sx={{ fontSize: iconSize.sm }} />
                     </IconButton>
                   </Box>
                 </Box>
@@ -417,7 +418,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                           variant="caption"
                           sx={{
                             color: theme.palette.text.secondary,
-                            fontSize: '0.7rem',
+                            fontSize: typeScale.micro.fontSize,
                           }}
                         >
                           Searched {ragSources.length} source
@@ -494,7 +495,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                         },
                       }}
                     >
-                      <BugReportOutlinedIcon sx={{ fontSize: 14 }} />
+                      <BugReportOutlinedIcon sx={{ fontSize: iconSize.xs }} />
                     </IconButton>
                   </Tooltip>
                 )}
@@ -549,7 +550,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                   },
                 }}
               >
-                <EditIcon sx={{ fontSize: 13 }} />
+                <EditIcon sx={{ fontSize: iconSize.xs }} />
               </IconButton>
             </Tooltip>
           )}

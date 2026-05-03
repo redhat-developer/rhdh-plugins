@@ -158,7 +158,7 @@ export function McpServerCard({
           </Box>
           <Typography
             variant="caption"
-            color="textSecondary"
+            color="text.secondary"
             noWrap
             sx={{ display: 'block' }}
           >

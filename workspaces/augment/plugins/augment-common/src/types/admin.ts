@@ -59,7 +59,11 @@ export type AdminConfigKey =
   | 'temperature'
   | 'safetyIdentifier'
   | 'chatAgents'
-  | 'devSpacesApiUrl';
+  | 'devSpacesApiUrl'
+  | 'workflows'
+  | 'workflowVersions'
+  | 'workflowTestSuites'
+  | 'workflowEvaluations';
 
 /**
  * A single admin config entry stored in the database.

@@ -41,9 +41,10 @@ export function StoreConfigFields({
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
         gap: 1.5,
         mt: 1.5,
+        overflow: 'hidden',
       }}
     >
       <Autocomplete
@@ -152,7 +153,7 @@ export function StoreConfigFields({
         helperText="0.0 – 1.0"
       />
       {isHybrid && (
-        <Box sx={{ gridColumn: { xs: 1, md: '1 / -1' } }}>
+        <Box sx={{ gridColumn: '1 / -1' }}>
           <HybridSearchConfig
             bm25Weight={localConfig.bm25Weight ?? 0.5}
             semanticWeight={localConfig.semanticWeight ?? 0.5}

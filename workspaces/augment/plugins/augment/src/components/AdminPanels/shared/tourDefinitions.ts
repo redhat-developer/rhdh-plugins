@@ -482,32 +482,11 @@ export const TOUR_STEPS: Record<TourId, EnhancedDriveStep[]> = {
     },
     {
       tourAction: { type: 'selectAgentIntent', cardId: 'configure' },
-      tourSelector: '[data-tour="intent-configure-single"]',
+      tourSelector: '[data-tour="intent-configure"]',
       popover: {
-        title: 'Step 3: Single Agent',
+        title: 'Step 3: Agent Builder',
         description:
-          'Choose "Single Agent" to create a standalone agent with its own instructions, model, and tools. Ideal for focused tasks like Q&A, code review, or data analysis.',
-        side: 'bottom',
-        align: 'center',
-      },
-    },
-    {
-      tourSelector: '[data-tour="intent-configure-multi"]',
-      popover: {
-        title: 'Step 4: Multi Agent',
-        description:
-          'Or choose "Multi Agent" to create a team of agents with a router that hands off to specialists. Best for complex workflows that require different expertise.',
-        side: 'bottom',
-        align: 'center',
-      },
-    },
-    {
-      tourAction: { type: 'selectAgentIntent', cardId: 'configure-single' },
-      tourSelector: '[data-tour="orch-toolbar"]',
-      popover: {
-        title: 'Step 5: Agent Toolbar',
-        description:
-          'The toolbar lets you create new agents, save your configuration, and \u2014 when you have multiple agents \u2014 select the Starting Agent and set Max Turns.',
+          'Opens the visual Agent Builder where you design your agent with instructions, tools, and optional handoffs to other agents. Start with one agent and expand as needed.',
         side: 'bottom',
         align: 'center',
       },

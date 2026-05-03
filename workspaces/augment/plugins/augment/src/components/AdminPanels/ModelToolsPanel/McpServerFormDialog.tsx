@@ -110,7 +110,7 @@ export function McpServerFormDialog({
           <Box>
             <Typography
               variant="caption"
-              color="textSecondary"
+              color="text.secondary"
               sx={{ mb: 0.5, display: 'block' }}
             >
               Server Type
@@ -182,7 +182,7 @@ export function McpServerFormDialog({
           <Box>
             <Typography
               variant="caption"
-              color="textSecondary"
+              color="text.secondary"
               sx={{ mb: 0.5, display: 'block' }}
             >
               Tool Approval (HITL)
@@ -205,7 +205,7 @@ export function McpServerFormDialog({
             </ToggleButtonGroup>
             <Typography
               variant="caption"
-              color="textSecondary"
+              color="text.secondary"
               sx={{ mt: 0.5, display: 'block' }}
             >
               Require Approval pauses each tool call for human confirmation

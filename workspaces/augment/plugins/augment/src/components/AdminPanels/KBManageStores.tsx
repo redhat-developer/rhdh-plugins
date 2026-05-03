@@ -106,7 +106,7 @@ function StoreDetailHeader({
           <Tooltip title={store.id}>
             <Typography
               variant="caption"
-              color="textSecondary"
+              color="text.secondary"
               sx={{ fontFamily: 'monospace', fontSize: '0.6875rem' }}
               noWrap
             >
@@ -216,7 +216,7 @@ function UnconnectedStoresSection({
       </Box>
       <Typography
         variant="caption"
-        color="textSecondary"
+        color="text.secondary"
         sx={{ px: 2, pb: 1, display: 'block' }}
       >
         These vector stores exist on the server. Connect one to start managing
@@ -277,7 +277,7 @@ function UnconnectedStoresSection({
                   {s.name !== s.id && (
                     <Typography
                       variant="caption"
-                      color="textSecondary"
+                      color="text.secondary"
                       display="block"
                       sx={{ fontFamily: 'monospace', fontSize: '0.625rem' }}
                       noWrap
@@ -305,7 +305,7 @@ function UnconnectedStoresSection({
                   {s.embeddingDimension && (
                     <Typography
                       variant="caption"
-                      color="textSecondary"
+                      color="text.secondary"
                       display="block"
                     >
                       {s.embeddingDimension}d
@@ -552,7 +552,7 @@ export const KBManageStores = ({
                   </Box>
                 ) : documents.length === 0 && !docsError ? (
                   <Box sx={{ textAlign: 'center', py: 2 }}>
-                    <Typography variant="body2" color="textSecondary">
+                    <Typography variant="body2" color="text.secondary">
                       No documents yet.
                     </Typography>
                     <Button

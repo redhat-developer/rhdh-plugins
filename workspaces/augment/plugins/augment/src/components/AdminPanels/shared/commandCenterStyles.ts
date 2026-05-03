@@ -16,59 +16,65 @@
 
 import type { Theme, SxProps } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import {
+  layout,
+  typeScale,
+  typography as typographyTokens,
+  subtleBorder as canonicalSubtleBorder,
+  surface,
+} from '../../../theme/tokens';
 
-export const CONTENT_MAX_WIDTH = 1200;
+export const CONTENT_MAX_WIDTH = layout.content.adminMaxWidth;
 
 export const HOVER_TRANSITION =
   'background-color 0.15s ease, border-color 0.15s ease';
 
 export const PAGE_TITLE_SX: SxProps<Theme> = {
-  fontWeight: 700,
-  letterSpacing: '-0.01em',
+  ...typeScale.pageTitle,
   color: 'text.primary',
 };
 
 export const PAGE_SUBTITLE_SX: SxProps<Theme> = {
+  ...typeScale.bodySmall,
   color: 'text.secondary',
   mt: 0.25,
 };
 
 export const SECTION_LABEL_SX: SxProps<Theme> = {
-  fontSize: '0.75rem',
-  fontWeight: 600,
-  letterSpacing: '0.04em',
+  ...typeScale.micro,
+  fontWeight: typographyTokens.fontWeight.semibold,
   textTransform: 'uppercase',
   color: 'text.secondary',
 };
 
 export const TABLE_HEADER_CELL_SX = {
-  fontWeight: 600,
-  fontSize: '0.8125rem',
+  fontWeight: typographyTokens.fontWeight.semibold,
+  fontSize: typeScale.caption.fontSize,
   textTransform: 'uppercase',
-  letterSpacing: '0.04em',
+  letterSpacing: '0.02em',
   bgcolor: 'background.default',
 } as const;
 
 export const TABLE_CELL_NAME_SX = {
-  fontWeight: 600,
-  fontSize: '0.875rem',
+  fontWeight: typographyTokens.fontWeight.semibold,
+  fontSize: typeScale.body.fontSize,
 } as const;
 
 export const CHIP_SX = {
   height: 24,
-  fontSize: '0.75rem',
+  fontSize: typeScale.caption.fontSize,
 } as const;
 
 function surfaceBg(theme: Theme): string {
-  const isDark = theme.palette.mode === 'dark';
-  return isDark
-    ? theme.palette.background.paper
-    : alpha(theme.palette.background.paper, 0.6);
+  return surface(theme, 'raised');
 }
 
+/**
+ * Returns a full CSS border declaration.
+ * Delegates to the canonical subtleBorder from tokens.
+ */
 export function subtleBorder(theme: Theme): string {
-  const isDark = theme.palette.mode === 'dark';
-  return `1px solid ${alpha(theme.palette.divider, isDark ? 0.4 : 1)}`;
+  return canonicalSubtleBorder(theme, 'medium');
 }
 
 export function cardOutlineSx(theme: Theme): SxProps<Theme> {

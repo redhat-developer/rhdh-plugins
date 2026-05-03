@@ -30,6 +30,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
 import { useStatus, useChatViewMode } from '../../hooks';
+import { typeScale, containerPadding } from '../../theme/tokens';
 import type { KagentiAgentCard } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ChatAgentConfig } from '../../types';
 
@@ -111,7 +112,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
         display: 'flex',
         alignItems: 'center',
         gap: 1.5,
-        px: { xs: 2, sm: 3, md: 4 },
+        px: containerPadding,
         py: 1,
         borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
         bgcolor: alpha(theme.palette.background.paper, isDark ? 0.6 : 0.8),
@@ -170,20 +171,20 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
           <Typography
             variant="body2"
             noWrap
-            sx={{ fontWeight: 600, fontSize: '0.85rem' }}
+            sx={{ fontWeight: 600, fontSize: typeScale.body.fontSize }}
           >
             {displayName}
           </Typography>
           {/* Streaming badge */}
           {agentCard && (
             <Chip
-              icon={<StreamIcon sx={{ fontSize: '12px !important' }} />}
+              icon={<StreamIcon sx={{ fontSize: 12 }} />}
               label={agentCard.streaming ? 'Streaming' : 'Non-streaming'}
               size="small"
               variant="outlined"
               sx={{
                 height: 20,
-                fontSize: '0.65rem',
+                fontSize: typeScale.micro.fontSize,
                 '& .MuiChip-label': { px: 0.5 },
               }}
             />
@@ -195,14 +196,17 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
                 label="A2A"
                 size="small"
                 variant="outlined"
-                sx={{ height: 20, fontSize: '0.65rem' }}
+                sx={{ height: 20, fontSize: typeScale.micro.fontSize }}
               />
             )}
           {/* Health warning */}
           {hasWarning && (
             <Tooltip title={healthWarning}>
               <WarningAmberIcon
-                sx={{ fontSize: 16, color: theme.palette.warning.main }}
+                tabIndex={0}
+                role="img"
+                aria-label={`Warning: ${healthWarning}`}
+                sx={{ fontSize: 16, color: theme.palette.warning.main, cursor: 'help' }}
               />
             </Tooltip>
           )}
@@ -213,7 +217,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
               variant="caption"
               sx={{
                 color: theme.palette.text.disabled,
-                fontSize: '0.65rem',
+                fontSize: typeScale.micro.fontSize,
               }}
             >
               {namespace}
@@ -226,7 +230,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
                   variant="caption"
                   sx={{
                     color: theme.palette.text.disabled,
-                    fontSize: '0.65rem',
+                    fontSize: typeScale.micro.fontSize,
                   }}
                 >
                   &middot;
@@ -237,7 +241,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
                 noWrap
                 sx={{
                   color: theme.palette.text.secondary,
-                  fontSize: '0.65rem',
+                  fontSize: typeScale.micro.fontSize,
                   maxWidth: 300,
                 }}
               >

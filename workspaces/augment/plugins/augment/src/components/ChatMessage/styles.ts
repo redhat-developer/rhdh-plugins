@@ -15,25 +15,22 @@
  */
 
 import { Theme, alpha, SxProps } from '@mui/material/styles';
+import { getSharedMarkdownSx, codeBlockBackground } from '../../theme/markdown';
 import {
-  getSharedMarkdownSx,
   surfaceOverlay,
-  subtleBorder,
-  codeBlockBackground,
-} from '../../theme/markdown';
+  borderColor as tokenBorderColor,
+  typeScale,
+  animations as tokenAnimations,
+} from '../../theme/tokens';
 
 /**
- * Keyframe animations used in ChatMessage
+ * Keyframe animations used in ChatMessage.
+ * fadeInUp delegates to the canonical token animation.
  */
 export const animations = {
-  fadeInUp: {
-    '@keyframes fadeInUp': {
-      '0%': { opacity: 0, transform: 'translateY(10px)' },
-      '100%': { opacity: 1, transform: 'translateY(0)' },
-    },
-  },
+  fadeInUp: tokenAnimations.fadeInUp,
   bounce: {
-    '@keyframes bounce': {
+    '@keyframes augmentBounce': {
       '0%, 100%': { transform: 'translateY(0)' },
       '50%': { transform: 'translateY(-3px)' },
     },
@@ -48,8 +45,8 @@ export const getMessageContainerSx = (isUser: boolean): SxProps<Theme> => ({
   flexDirection: 'column',
   alignItems: isUser ? 'flex-end' : 'flex-start',
   mb: 2.5,
-  animation: 'fadeInUp 0.25s ease-out',
   ...animations.fadeInUp,
+  animation: 'augmentFadeInUp 0.25s ease-out',
 });
 
 /**
@@ -93,7 +90,7 @@ export const getMessageLabelSx = (
   color: theme.palette.text.secondary,
   fontWeight: 600,
   mb: 0.5,
-  fontSize: '0.8125rem',
+  fontSize: typeScale.bodySmall.fontSize,
   display: 'block',
   textAlign: isUser ? 'right' : 'left',
 });
@@ -226,8 +223,8 @@ export const getScrollIndicatorPillSx = (theme: Theme): SxProps<Theme> => ({
   py: 0.5,
   borderRadius: '12px',
   backgroundColor: surfaceOverlay(theme, 'strong'),
-  border: `1px solid ${subtleBorder(theme, 'strong')}`,
-  animation: 'bounce 1.5s ease-in-out infinite',
+  border: `1px solid ${tokenBorderColor(theme, 'strong')}`,
+  animation: 'augmentBounce 1.5s ease-in-out infinite',
   ...animations.bounce,
 });
 
@@ -277,7 +274,7 @@ export const getActionButtonsContainerSx = (
  */
 export const getTimestampSx = (theme: Theme): SxProps<Theme> => ({
   color: theme.palette.text.disabled,
-  fontSize: '0.75rem',
+  fontSize: typeScale.caption.fontSize,
 });
 
 /**
@@ -288,5 +285,5 @@ export const getUserTimestampSx = (theme: Theme): SxProps<Theme> => ({
   mr: 7,
   alignSelf: 'flex-end',
   color: theme.palette.text.disabled,
-  fontSize: '0.75rem',
+  fontSize: typeScale.caption.fontSize,
 });

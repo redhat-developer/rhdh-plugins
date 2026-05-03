@@ -347,7 +347,7 @@ export const StoresTable = ({
                         </Box>
                         <Typography
                           variant="caption"
-                          color="textSecondary"
+                          color="text.secondary"
                           sx={{
                             fontFamily: 'monospace',
                             fontSize: '0.6875rem',
@@ -400,7 +400,7 @@ export const StoresTable = ({
                       <Typography
                         variant="caption"
                         display="block"
-                        color="textSecondary"
+                        color="text.secondary"
                       >
                         {formatBytes(store.usageBytes)}
                       </Typography>
@@ -433,7 +433,7 @@ export const StoresTable = ({
                     {store.embeddingDimension && (
                       <Typography
                         variant="caption"
-                        color="textSecondary"
+                        color="text.secondary"
                         display="block"
                       >
                         {store.embeddingDimension}d
@@ -451,7 +451,7 @@ export const StoresTable = ({
                     >
                       <Typography
                         variant="caption"
-                        color="textSecondary"
+                        color="text.secondary"
                         display="block"
                       >
                         {formatRelativeTime(

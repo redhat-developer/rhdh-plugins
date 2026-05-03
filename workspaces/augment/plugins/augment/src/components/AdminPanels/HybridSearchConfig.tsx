@@ -44,7 +44,7 @@ export function HybridSearchConfig({
       }}
     >
       <Box>
-        <Typography variant="caption" color="textSecondary">
+        <Typography variant="caption" color="text.secondary">
           BM25 Weight: {bm25Weight}
         </Typography>
         <Slider
@@ -57,7 +57,7 @@ export function HybridSearchConfig({
         />
       </Box>
       <Box>
-        <Typography variant="caption" color="textSecondary">
+        <Typography variant="caption" color="text.secondary">
           Semantic Weight: {semanticWeight}
         </Typography>
         <Slider

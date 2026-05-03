@@ -40,7 +40,7 @@ augment:
       - 'user:default/guest'
   llamaStack:
     baseUrl: ${AUGMENT_LLAMA_STACK_URL:-https://llamastack-llamastack.apps.ocp.v7hjl.sandbox2288.opentlc.com}
-    model: ${AUGMENT_MODEL:-vllm-inference/gpt-oss-120b}
+    model: ${AUGMENT_MODEL:-gemini/models/gemini-2.5-flash}
     skipTlsVerify: ${AUGMENT_SKIP_TLS:-true}
   kagenti:
     baseUrl: https://kagenti-api-kagenti-system.apps.ocp.v7hjl.sandbox2288.opentlc.com

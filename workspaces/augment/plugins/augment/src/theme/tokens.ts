@@ -14,36 +14,48 @@
  * limitations under the License.
  */
 
+import { type Theme, alpha } from '@mui/material/styles';
+
 /**
  * Augment Design Tokens
  *
- * These tokens define the visual foundation of the plugin.
- * Enterprises can override these values for custom branding.
+ * Single source of truth for the plugin's visual language.
+ * Every component should import from this file (via the theme barrel)
+ * rather than defining ad-hoc values.
+ *
+ * CSS custom properties on `.augment-plugin-root` allow host Backstage
+ * instances to override key values without forking the plugin.
  */
 
 // =============================================================================
-// SPACING SCALE
+// SPACING SCALE (MUI spacing multipliers — 1 unit = 8px)
 // =============================================================================
 
 export const spacing = {
   /** 4px */
-  xs: 0.5,
+  xxs: 0.5,
   /** 8px */
-  sm: 1,
+  xs: 1,
   /** 12px */
-  md: 1.5,
+  sm: 1.5,
   /** 16px */
-  lg: 2,
+  md: 2,
   /** 24px */
-  xl: 3,
+  lg: 3,
   /** 32px */
-  xxl: 4,
+  xl: 4,
   /** 48px */
-  xxxl: 6,
+  xxl: 6,
 } as const;
 
+/**
+ * Responsive horizontal padding for page-level containers.
+ * Use as `px: containerPadding` inside `sx`.
+ */
+export const containerPadding = { xs: 2, sm: 3, md: 4 } as const;
+
 // =============================================================================
-// BORDER RADIUS
+// BORDER RADIUS (MUI spacing multipliers)
 // =============================================================================
 
 export const borderRadius = {
@@ -64,14 +76,106 @@ export const borderRadius = {
 } as const;
 
 // =============================================================================
-// SHADOWS
+// TYPOGRAPHY SCALE
 // =============================================================================
 
-/**
- * Static shadow tokens — used as fallback values for non-themed contexts
- * (e.g. token type definitions, tests). Prefer {@link createThemeShadows}
- * for runtime code where a MUI `Theme` is available.
- */
+export const typeScale = {
+  pageTitle: {
+    fontSize: '1.25rem',
+    lineHeight: 1.3,
+    fontWeight: 700,
+    letterSpacing: '-0.01em',
+  },
+  sectionTitle: {
+    fontSize: '1rem',
+    lineHeight: 1.4,
+    fontWeight: 600,
+    letterSpacing: '-0.005em',
+  },
+  body: {
+    fontSize: '0.875rem',
+    lineHeight: 1.5,
+    fontWeight: 400,
+    letterSpacing: '0em',
+  },
+  bodySmall: {
+    fontSize: '0.8125rem',
+    lineHeight: 1.5,
+    fontWeight: 400,
+    letterSpacing: '0em',
+  },
+  caption: {
+    fontSize: '0.75rem',
+    lineHeight: 1.4,
+    fontWeight: 400,
+    letterSpacing: '0.01em',
+  },
+  micro: {
+    fontSize: '0.6875rem',
+    lineHeight: 1.3,
+    fontWeight: 500,
+    letterSpacing: '0.02em',
+  },
+  code: {
+    fontSize: '0.8125rem',
+    lineHeight: 1.5,
+    fontWeight: 400,
+    letterSpacing: '0em',
+  },
+} as const;
+
+export const typography = {
+  fontFamily: {
+    primary:
+      '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", "Roboto", sans-serif',
+    mono: '"SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", "Monaco", monospace',
+  },
+  fontWeight: {
+    regular: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
+  },
+} as const;
+
+// =============================================================================
+// ICON SIZE SCALE
+// =============================================================================
+
+export const iconSize = {
+  /** 14px — inline decorators, chip delete */
+  xs: 14,
+  /** 16px — compact controls, secondary actions */
+  sm: 16,
+  /** 18px — standard toolbar/action icons */
+  md: 18,
+  /** 22px — sidebar navigation icons */
+  lg: 22,
+  /** 24px — primary feature icons, cards */
+  xl: 24,
+} as const;
+
+// =============================================================================
+// INTERACTIVE ELEMENT SIZES
+// =============================================================================
+
+export const controlSize = {
+  /** 6px — status dots */
+  dot: 6,
+  /** 32px — compact avatars, small controls */
+  sm: 32,
+  /** 36px — standard controls, buttons */
+  md: 36,
+  /** 40px — touch targets, large controls */
+  lg: 40,
+  /** 48px — prominent actions, mobile touch targets */
+  xl: 48,
+} as const;
+
+// =============================================================================
+// ELEVATION / SHADOWS
+// =============================================================================
+
 export const shadows = {
   /** Subtle elevation */
   sm: '0 1px 3px rgba(0,0,0,0.08)',
@@ -85,159 +189,6 @@ export const shadows = {
   inset: 'inset 0 1px 2px rgba(0,0,0,0.1)',
 } as const;
 
-// =============================================================================
-// COLORS - Brand Palette
-// =============================================================================
-
-export const colors = {
-  // Primary brand colors (can be overridden for enterprise branding)
-  brand: {
-    primary: '#1e40af', // Steel blue - professional, enterprise-grade
-    primaryHover: '#2563eb',
-    primaryLight: '#3b82f6',
-    secondary: '#475569', // Slate - neutral complement
-    secondaryHover: '#64748b',
-  },
-
-  // Semantic colors
-  semantic: {
-    success: '#059669', // Emerald 600 - deeper for better contrast
-    successLight: '#10b981',
-    successBg: 'rgba(5, 150, 105, 0.1)',
-
-    warning: '#d97706', // Amber 600
-    warningLight: '#f59e0b',
-    warningBg: 'rgba(217, 119, 6, 0.1)',
-
-    error: '#dc2626', // Red 600
-    errorLight: '#ef4444',
-    errorBg: 'rgba(220, 38, 38, 0.1)',
-
-    info: '#2563eb', // Blue 600
-    infoLight: '#3b82f6',
-    infoBg: 'rgba(37, 99, 235, 0.1)',
-  },
-
-  // Surface colors for elevated panels
-  surface: {
-    background: 'rgba(255, 255, 255, 0.06)',
-    backgroundHover: 'rgba(255, 255, 255, 0.09)',
-    border: 'rgba(255, 255, 255, 0.12)',
-    borderHover: 'rgba(255, 255, 255, 0.18)',
-    backgroundLight: 'rgba(0, 0, 0, 0.03)',
-    backgroundHoverLight: 'rgba(0, 0, 0, 0.05)',
-    borderLight: 'rgba(0, 0, 0, 0.10)',
-    borderHoverLight: 'rgba(0, 0, 0, 0.15)',
-  },
-
-  // Chat-specific colors
-  chat: {
-    userBubble: '#f1f5f9', // Slate-100 — subtle, doesn't overpower assistant text
-    userBubbleDark: '#334155', // Slate-700
-    aiBubble: 'transparent',
-    aiBubbleLight: 'transparent',
-  },
-
-  // Scrollbar colors
-  scrollbar: {
-    thumb: 'rgba(100, 116, 139, 0.35)',
-    thumbHover: 'rgba(100, 116, 139, 0.55)',
-    track: 'rgba(255, 255, 255, 0.05)',
-  },
-} as const;
-
-// =============================================================================
-// TYPOGRAPHY
-// =============================================================================
-
-export const typography = {
-  fontFamily: {
-    primary:
-      '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", "Roboto", sans-serif',
-    mono: '"SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", "Monaco", monospace',
-  },
-
-  fontSize: {
-    xs: '0.75rem', // 12px
-    sm: '0.8125rem', // 13px
-    md: '0.875rem', // 14px
-    lg: '1rem', // 16px
-    xl: '1.125rem', // 18px
-    xxl: '1.25rem', // 20px
-    h1: '1.75rem', // 28px
-    h2: '1.375rem', // 22px
-    h3: '1.125rem', // 18px
-  },
-
-  fontWeight: {
-    regular: 400,
-    medium: 500,
-    semibold: 600,
-    bold: 700,
-  },
-
-  lineHeight: {
-    tight: 1.2,
-    normal: 1.5,
-    relaxed: 1.75,
-  },
-} as const;
-
-// =============================================================================
-// TRANSITIONS
-// =============================================================================
-
-export const transitions = {
-  fast: 'all 0.15s ease',
-  normal: 'all 0.2s ease',
-  slow: 'all 0.3s ease',
-  spring: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-} as const;
-
-// =============================================================================
-// Z-INDEX SCALE
-// =============================================================================
-
-export const zIndex = {
-  base: 0,
-  dropdown: 100,
-  sticky: 200,
-  fixed: 300,
-  modal: 400,
-  popover: 500,
-  tooltip: 600,
-} as const;
-
-// =============================================================================
-// LAYOUT
-// =============================================================================
-
-export const layout = {
-  sidebar: {
-    widthCollapsed: '56px',
-    widthExpanded: '340px',
-  },
-  chat: {
-    maxWidth: '1200px',
-    inputMaxWidth: '1000px',
-  },
-  card: {
-    width: 340,
-    height: 130,
-  },
-} as const;
-
-// =============================================================================
-// THEME-AWARE SHADOWS
-// =============================================================================
-
-/**
- * Create shadows that adapt to the current theme mode.
- *
- * In dark mode, black shadows are nearly invisible against dark backgrounds,
- * so opacity is increased. Uses `alpha()` with `theme.palette.common.black`
- * to integrate with MUI's color system.
- */
 export function createThemeShadows(
   themeAlpha: (color: string, opacity: number) => string,
   isDark: boolean,
@@ -252,63 +203,198 @@ export function createThemeShadows(
   };
 }
 
-// =============================================================================
-// TYPE EXPORTS
-// =============================================================================
+export const elevation = {
+  none: 'none',
+  low: shadows.sm,
+  medium: shadows.md,
+  high: shadows.lg,
+} as const;
 
-export type Spacing = typeof spacing;
-export type BorderRadius = typeof borderRadius;
-export type Shadows = typeof shadows;
-export type Colors = typeof colors;
-export type Typography = typeof typography;
-export type Transitions = typeof transitions;
-export type ZIndex = typeof zIndex;
-export type Layout = typeof layout;
+// =============================================================================
+// SURFACE HELPERS
+// =============================================================================
 
 /**
- * Complete design token configuration
+ * Mode-aware surface background helper.
+ * Provides consistent surface hierarchy across light/dark modes.
  */
-export interface DesignTokens {
-  spacing: Spacing;
-  borderRadius: BorderRadius;
-  shadows: Shadows;
-  colors: Colors;
-  typography: Typography;
-  transitions: Transitions;
-  zIndex: ZIndex;
-  layout: Layout;
+export function surface(
+  theme: Theme,
+  level: 'base' | 'raised' | 'overlay' | 'inset' = 'raised',
+): string {
+  const isDark = theme.palette.mode === 'dark';
+  switch (level) {
+    case 'base':
+      return theme.palette.background.default;
+    case 'raised':
+      return theme.palette.background.paper;
+    case 'overlay':
+      return isDark
+        ? alpha(theme.palette.background.paper, 0.95)
+        : theme.palette.background.paper;
+    case 'inset':
+      return alpha(
+        isDark ? theme.palette.common.white : theme.palette.common.black,
+        isDark ? 0.06 : 0.03,
+      );
+    default:
+      return theme.palette.background.paper;
+  }
 }
 
 /**
- * Default design tokens
+ * Mode-aware surface overlay (alpha blend on top of existing background).
  */
-export const defaultTokens: DesignTokens = {
-  spacing,
-  borderRadius,
-  shadows,
-  colors,
-  typography,
-  transitions,
-  zIndex,
-  layout,
-};
+export function surfaceOverlay(
+  theme: Theme,
+  level: 'faint' | 'subtle' | 'medium' | 'strong' = 'medium',
+): string {
+  const isDark = theme.palette.mode === 'dark';
+  const base = isDark ? theme.palette.common.white : theme.palette.common.black;
+  const map = {
+    faint: alpha(base, isDark ? 0.04 : 0.02),
+    subtle: alpha(base, isDark ? 0.06 : 0.03),
+    medium: alpha(base, isDark ? 0.08 : 0.05),
+    strong: alpha(base, isDark ? 0.12 : 0.08),
+  };
+  return map[level];
+}
+
+// =============================================================================
+// BORDER HELPERS
+// =============================================================================
 
 /**
- * Theme preset interface for createTokensFromPreset.
- * Defines color, typography, and spacing overrides for a preset.
+ * Canonical subtle border — returns a full CSS border declaration.
+ * Use this everywhere instead of ad-hoc `1px solid ${alpha(...)}`.
  */
-export interface ThemePresetInput {
-  colors?: Partial<Colors>;
-  typography?: Partial<Typography>;
-  spacing?: Partial<Spacing>;
+export function subtleBorder(
+  theme: Theme,
+  level: 'subtle' | 'medium' | 'strong' = 'subtle',
+): string {
+  const isDark = theme.palette.mode === 'dark';
+  const alphaMap = {
+    subtle: isDark ? 0.12 : 0.08,
+    medium: isDark ? 0.25 : 0.15,
+    strong: isDark ? 0.4 : 0.25,
+  };
+  return `1px solid ${alpha(
+    isDark ? theme.palette.common.white : theme.palette.common.black,
+    alphaMap[level],
+  )}`;
 }
 
 /**
- * Built-in theme presets. Each defines color overrides for a distinct visual style.
- * Precedence: explicit branding color fields > preset colors > default tokens.
+ * Returns just the border color (not the full declaration).
+ * Useful for composing with other border properties.
  */
+export function borderColor(
+  theme: Theme,
+  level: 'subtle' | 'medium' | 'strong' = 'subtle',
+): string {
+  const isDark = theme.palette.mode === 'dark';
+  const alphaMap = {
+    subtle: isDark ? 0.12 : 0.08,
+    medium: isDark ? 0.25 : 0.15,
+    strong: isDark ? 0.4 : 0.25,
+  };
+  return alpha(
+    isDark ? theme.palette.common.white : theme.palette.common.black,
+    alphaMap[level],
+  );
+}
+
+// =============================================================================
+// SCROLLBAR
+// =============================================================================
+
+/**
+ * Canonical scrollbar styles. Use this as the single scrollbar implementation.
+ */
+export function scrollbarStyles(theme: Theme): Record<string, unknown> {
+  const thumbColor = alpha(theme.palette.text.primary, 0.15);
+  const thumbHover = alpha(theme.palette.text.primary, 0.25);
+  return {
+    scrollbarWidth: 'thin' as const,
+    scrollbarColor: `${thumbColor} transparent`,
+    '&::-webkit-scrollbar': { width: 6, height: 6 },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: thumbColor,
+      borderRadius: 3,
+    },
+    '&::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: thumbHover,
+    },
+    '&::-webkit-scrollbar-track': { background: 'transparent' },
+  };
+}
+
+// =============================================================================
+// TRANSITIONS
+// =============================================================================
+
+export const transitions = {
+  fast: 'all 0.15s ease',
+  normal: 'all 0.2s ease',
+  slow: 'all 0.3s ease',
+  spring: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+} as const;
+
+// =============================================================================
+// ANIMATIONS
+// =============================================================================
+
+export const animations = {
+  fadeInUp: {
+    '@keyframes augmentFadeInUp': {
+      from: { opacity: 0, transform: 'translateY(10px)' },
+      to: { opacity: 1, transform: 'translateY(0)' },
+    },
+    animation: 'augmentFadeInUp 0.3s ease-out',
+  },
+  fadeSlideIn: {
+    '@keyframes augmentFadeSlideIn': {
+      from: { opacity: 0, transform: 'translateY(4px)' },
+      to: { opacity: 1, transform: 'translateY(0)' },
+    },
+    animation: 'augmentFadeSlideIn 0.25s ease-out',
+  },
+  pulse: {
+    '@keyframes augmentPulse': {
+      '0%, 100%': { opacity: 1 },
+      '50%': { opacity: 0.5 },
+    },
+    animation: 'augmentPulse 2s infinite',
+  },
+  shimmer: {
+    '@keyframes augmentShimmer': {
+      '0%': { backgroundPosition: '-200% 0' },
+      '100%': { backgroundPosition: '200% 0' },
+    },
+    animation: 'augmentShimmer 2s infinite linear',
+  },
+} as const;
+
+// =============================================================================
+// LAYOUT
+// =============================================================================
+
+export const layout = {
+  sidebar: {
+    widthCollapsed: '56px',
+    widthExpanded: '340px',
+  },
+  content: {
+    maxWidth: '1200px',
+    adminMaxWidth: 960,
+  },
+} as const;
+
+// =============================================================================
+// THEME PRESETS
+// =============================================================================
+
 export const THEME_PRESETS = Object.freeze({
-  /** Default blue/slate palette -- professional, balanced. */
   default: {
     colors: {
       brand: {
@@ -320,7 +406,6 @@ export const THEME_PRESETS = Object.freeze({
       },
     },
   },
-  /** Enterprise -- neutral grays, conservative, corporate. */
   enterprise: {
     colors: {
       brand: {
@@ -332,7 +417,6 @@ export const THEME_PRESETS = Object.freeze({
       },
     },
   },
-  /** Vibrant -- saturated colors, energetic. */
   vibrant: {
     colors: {
       brand: {
@@ -344,7 +428,6 @@ export const THEME_PRESETS = Object.freeze({
       },
     },
   },
-  /** Dark Accent -- deep backgrounds, bright accent highlights. */
   'dark-accent': {
     colors: {
       brand: {
@@ -358,36 +441,20 @@ export const THEME_PRESETS = Object.freeze({
   },
 });
 
-/** Valid theme preset name. Derived from THEME_PRESETS keys. */
 export type ThemePresetName = keyof typeof THEME_PRESETS;
 
-/** Type guard for validating preset names against THEME_PRESETS. */
 export function isValidPresetName(name: string): name is ThemePresetName {
   return name in THEME_PRESETS;
 }
 
-/**
- * Create design tokens from a theme preset.
- *
- * @param preset - Theme preset containing color overrides
- * @returns Complete design token configuration with preset colors applied
- */
-export const createTokensFromPreset = (
-  preset: ThemePresetInput,
-): DesignTokens => {
-  return {
-    ...defaultTokens,
-    colors: {
-      ...defaultTokens.colors,
-      ...preset.colors,
-    },
-    typography: {
-      ...defaultTokens.typography,
-      ...(preset.typography || {}),
-    },
-    spacing: {
-      ...defaultTokens.spacing,
-      ...(preset.spacing || {}),
-    },
-  };
-};
+// =============================================================================
+// TYPE EXPORTS
+// =============================================================================
+
+export type Spacing = typeof spacing;
+export type BorderRadius = typeof borderRadius;
+export type Shadows = typeof shadows;
+export type TypeScale = typeof typeScale;
+export type Typography = typeof typography;
+export type Transitions = typeof transitions;
+export type Layout = typeof layout;
