@@ -22,6 +22,17 @@ const STORAGE_KEY_PANEL = 'augment:admin-panel';
 
 export type ViewMode = 'chat' | 'admin';
 export type AdminPanel =
+  // Command Center (Ops)
+  | 'ops-home'
+  | 'ops-review-queue'
+  | 'ops-registry'
+  | 'ops-platform'
+  | 'ops-observability'
+  | 'ops-tool-review'
+  | 'ops-branding'
+  | 'ops-admin'
+  | 'ops-docs'
+  // Legacy (kept for backward compatibility during migration)
   | 'platform'
   | 'agents'
   | 'branding'
@@ -48,7 +59,7 @@ export interface UseAdminViewReturn {
   setAdminPanel: (panel: AdminPanel) => void;
   showAdminBanner: boolean;
   setShowAdminBanner: (show: boolean) => void;
-  switchToAdmin: (providerId?: string) => void;
+  switchToAdmin: (providerId?: string, targetPanel?: AdminPanel) => void;
   switchToChat: () => void;
   dismissAdminBanner: () => void;
 }
@@ -75,7 +86,7 @@ export function useAdminView({
     } catch {
       /* sessionStorage unavailable */
     }
-    return 'kagenti-home';
+    return 'ops-home';
   });
   const setAdminPanel = useCallback((panel: AdminPanel) => {
     setAdminPanelRaw(panel);
@@ -107,10 +118,10 @@ export function useAdminView({
     }
   }, [isAdmin]);
 
-  const switchToAdmin = useCallback((providerId?: string) => {
+  const switchToAdmin = useCallback((providerId?: string, targetPanel?: AdminPanel) => {
     setViewMode('admin');
-    const defaultPanel: AdminPanel = providerId === 'kagenti' ? 'kagenti-home' : 'platform';
-    setAdminPanel(defaultPanel);
+    const panel = targetPanel ?? (providerId === 'kagenti' ? 'ops-home' : 'platform');
+    setAdminPanel(panel);
     setShowAdminBanner(false);
     try {
       localStorage.setItem(STORAGE_KEY_MODE, 'admin');

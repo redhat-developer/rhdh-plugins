@@ -44,6 +44,7 @@ export {
 } from './useToolApproval';
 export { useAdminConfig } from './useAdminConfig';
 export { useChatAgentConfig } from './useChatAgentConfig';
+export { useChatToolConfig } from './useChatToolConfig';
 export { useEffectiveConfig } from './useEffectiveConfig';
 export { useGeneratePrompt } from './useGeneratePrompt';
 export { useModels, type ModelInfo } from './useModels';

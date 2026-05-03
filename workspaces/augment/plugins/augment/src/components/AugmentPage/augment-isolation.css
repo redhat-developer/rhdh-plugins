@@ -46,11 +46,39 @@
 .augment-plugin-root h6 {
   margin-top: 0;
   margin-bottom: 0;
+  color: inherit;
 }
 
 .augment-plugin-root p {
   margin-top: 0;
   margin-bottom: 0;
+  color: inherit;
+}
+
+/* Prevent PF from overriding MUI text colors in dark mode */
+.pf-v5-c-page .augment-plugin-root,
+.pf-v6-c-page .augment-plugin-root {
+  color: inherit;
+}
+.pf-v5-c-page .augment-plugin-root h1,
+.pf-v5-c-page .augment-plugin-root h2,
+.pf-v5-c-page .augment-plugin-root h3,
+.pf-v5-c-page .augment-plugin-root h4,
+.pf-v5-c-page .augment-plugin-root h5,
+.pf-v5-c-page .augment-plugin-root h6,
+.pf-v5-c-page .augment-plugin-root p,
+.pf-v5-c-page .augment-plugin-root span,
+.pf-v5-c-page .augment-plugin-root label,
+.pf-v6-c-page .augment-plugin-root h1,
+.pf-v6-c-page .augment-plugin-root h2,
+.pf-v6-c-page .augment-plugin-root h3,
+.pf-v6-c-page .augment-plugin-root h4,
+.pf-v6-c-page .augment-plugin-root h5,
+.pf-v6-c-page .augment-plugin-root h6,
+.pf-v6-c-page .augment-plugin-root p,
+.pf-v6-c-page .augment-plugin-root span,
+.pf-v6-c-page .augment-plugin-root label {
+  color: inherit;
 }
 
 /* ── PF page section padding override ─────────────────────────────

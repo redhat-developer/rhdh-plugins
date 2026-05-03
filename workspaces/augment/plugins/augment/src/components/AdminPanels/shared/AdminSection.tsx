@@ -17,12 +17,14 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import SaveIcon from '@mui/icons-material/Save';
 import RestoreIcon from '@mui/icons-material/Restore';
+import { useTheme, alpha } from '@mui/material/styles';
+import { glassSurface, borderRadius, transitions } from '../../../theme/tokens';
 
 export interface AdminSectionProps {
   title: string;
@@ -74,8 +76,28 @@ export const AdminSection = ({
     </Box>
   );
 
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const glass = glassSurface(theme, 8);
+
   return (
-    <Paper variant="outlined" sx={{ mb: 3, overflow: 'hidden' }}>
+    <Box
+      sx={{
+        ...glass,
+        mb: 3,
+        overflow: 'hidden',
+        borderRadius: borderRadius.md,
+        transition: transitions.normal,
+        position: 'relative',
+      }}
+    >
+      {/* Saving progress indicator */}
+      {saving && (
+        <LinearProgress
+          sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 1 }}
+        />
+      )}
+
       {/* Header bar — only when a title is provided */}
       {hasHeader && (
         <Box
@@ -85,11 +107,13 @@ export const AdminSection = ({
             alignItems: 'center',
             px: 2.5,
             py: 1.5,
-            borderBottom: '1px solid',
-            borderColor: 'divider',
+            borderBottom: `1px solid ${alpha(
+              isDark ? theme.palette.common.white : theme.palette.common.black,
+              isDark ? 0.1 : 0.06,
+            )}`,
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: '1rem' }}>
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600, color: 'text.primary' }}>
             {title}
           </Typography>
           {actionCluster}
@@ -121,7 +145,12 @@ export const AdminSection = ({
             onClick={onSave}
             disabled={saving || saveDisabled}
             aria-busy={saving}
-            sx={{ textTransform: 'none' }}
+            sx={{
+              textTransform: 'none',
+              borderRadius: borderRadius.sm,
+              boxShadow: 'none',
+              '&:hover': { boxShadow: 'none' },
+            }}
           >
             Save
           </Button>
@@ -135,6 +164,6 @@ export const AdminSection = ({
           </Alert>
         )}
       </Box>
-    </Paper>
+    </Box>
   );
 };

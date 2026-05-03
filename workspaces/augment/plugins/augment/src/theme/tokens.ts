@@ -261,6 +261,62 @@ export function surfaceOverlay(
 }
 
 // =============================================================================
+// GLASSMORPHISM
+// =============================================================================
+
+/**
+ * Mode-aware glassmorphism surface properties.
+ * Returns an sx-compatible object with backdrop blur, translucent background,
+ * subtle border shimmer, and soft shadow. Adapts to light/dark palette.
+ *
+ * @param theme - MUI theme
+ * @param blur - Blur intensity in px (default 12)
+ * @param opacity - Background opacity 0-1 (default varies by mode)
+ */
+export function glassSurface(
+  theme: Theme,
+  blur = 12,
+  opacity?: number,
+): Record<string, unknown> {
+  const isDark = theme.palette.mode === 'dark';
+  const defaultOpacity = opacity ?? (isDark ? 0.6 : 0.7);
+  const bgBase = isDark
+    ? theme.palette.background.paper
+    : theme.palette.common.white;
+  const borderBase = isDark
+    ? theme.palette.common.white
+    : theme.palette.common.black;
+
+  return {
+    backdropFilter: `blur(${blur}px)`,
+    WebkitBackdropFilter: `blur(${blur}px)`,
+    backgroundColor: alpha(bgBase, defaultOpacity),
+    border: `1px solid ${alpha(borderBase, isDark ? 0.12 : 0.08)}`,
+    boxShadow: isDark
+      ? `0 4px 24px ${alpha('#000', 0.3)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}`
+      : `0 4px 24px ${alpha('#000', 0.06)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.8)}`,
+  };
+}
+
+/**
+ * Hover glow effect for glass surfaces.
+ * Returns sx properties for the `&:hover` pseudo-class.
+ */
+export function glassHoverGlow(
+  theme: Theme,
+  color?: string,
+): Record<string, unknown> {
+  const isDark = theme.palette.mode === 'dark';
+  const glowColor = color ?? theme.palette.primary.main;
+  return {
+    borderColor: alpha(glowColor, isDark ? 0.3 : 0.2),
+    boxShadow: isDark
+      ? `0 8px 32px ${alpha('#000', 0.4)}, 0 0 0 1px ${alpha(glowColor, 0.15)}`
+      : `0 8px 32px ${alpha('#000', 0.08)}, 0 0 0 1px ${alpha(glowColor, 0.1)}`,
+  };
+}
+
+// =============================================================================
 // BORDER HELPERS
 // =============================================================================
 
@@ -374,6 +430,94 @@ export const animations = {
     animation: 'augmentShimmer 2s infinite linear',
   },
 } as const;
+
+// =============================================================================
+// ANIMATION UTILITIES
+// =============================================================================
+
+/**
+ * Generates a staggered animation delay for list items.
+ * Use in `sx` as `animationDelay: staggerDelay(index)`.
+ */
+export function staggerDelay(index: number, baseMs = 50): string {
+  return `${index * baseMs}ms`;
+}
+
+/**
+ * CSS for the `prefers-reduced-motion` media query wrapper.
+ * Apply as `'@media (prefers-reduced-motion: reduce)': reducedMotion`.
+ */
+export const reducedMotion = {
+  animation: 'none !important',
+  transition: 'none !important',
+} as const;
+
+/**
+ * Scale-in keyframe for card mount animations.
+ */
+export const scaleIn = {
+  '@keyframes augmentScaleIn': {
+    from: { opacity: 0, transform: 'scale(0.95)' },
+    to: { opacity: 1, transform: 'scale(1)' },
+  },
+  animation: 'augmentScaleIn 0.25s ease-out',
+} as const;
+
+// =============================================================================
+// SURFACE ELEVATION (Dark Mode Luminance Hierarchy)
+// =============================================================================
+
+/**
+ * Luminance-based surface elevation for proper dark mode hierarchy.
+ * Instead of using shadows (which are invisible on dark backgrounds),
+ * surfaces step up in luminance by 5-8% per level.
+ *
+ * @param theme - MUI theme
+ * @param level - Elevation level 0-4
+ */
+export function surfaceElevation(theme: Theme, level: 0 | 1 | 2 | 3 | 4): string {
+  const isDark = theme.palette.mode === 'dark';
+  if (!isDark) {
+    return theme.palette.background[level === 0 ? 'default' : 'paper'];
+  }
+  const base = theme.palette.common.white;
+  const alphaSteps = [0, 0.05, 0.08, 0.11, 0.14];
+  return alpha(base, alphaSteps[level]);
+}
+
+// =============================================================================
+// SEMANTIC COLORS
+// =============================================================================
+
+/**
+ * Mode-aware semantic status colors derived from theme palette.
+ */
+export function statusColors(theme: Theme) {
+  return {
+    success: theme.palette.success.main,
+    warning: theme.palette.warning.main,
+    error: theme.palette.error.main,
+    info: theme.palette.info.main,
+    neutral: theme.palette.text.secondary,
+  };
+}
+
+/**
+ * Node type colors for workflow builder (adapts to dark/light mode).
+ */
+export function nodeTypeColors(theme: Theme) {
+  const isDark = theme.palette.mode === 'dark';
+  return {
+    agent: isDark ? '#60a5fa' : '#2563eb',
+    tool: isDark ? '#a78bfa' : '#7c3aed',
+    guardrail: isDark ? '#f97316' : '#ea580c',
+    fileSearch: isDark ? '#34d399' : '#059669',
+    start: isDark ? '#6ee7b7' : '#10b981',
+    end: isDark ? '#f87171' : '#ef4444',
+    transform: isDark ? '#fbbf24' : '#d97706',
+    classify: isDark ? '#c084fc' : '#9333ea',
+  };
+}
 
 // =============================================================================
 // LAYOUT
