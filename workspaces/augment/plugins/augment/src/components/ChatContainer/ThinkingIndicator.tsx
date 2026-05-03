@@ -70,7 +70,7 @@ export const ThinkingIndicator = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 0.8,
+          gap: 0.75,
           px: 2,
           py: 1.5,
           borderRadius: 2,

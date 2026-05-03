@@ -85,10 +85,10 @@ export function registerConfigRoutes(
   const withRoute = createWithRoute(logger, sendRouteError);
 
   router.get(
-    '/workflows',
+    '/guided-workflows',
     withRoute(
-      'GET /workflows',
-      'Failed to get workflows',
+      'GET /guided-workflows',
+      'Failed to get guided workflows',
       async (_req, res) => {
         const workflows = workflowsFromYaml(config);
         res.json({

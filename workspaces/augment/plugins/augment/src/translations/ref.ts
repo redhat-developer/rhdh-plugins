@@ -227,7 +227,7 @@ export const augmentMessages = {
     reset: 'Reset',
     noAgentsTitle: 'No agents configured',
     noAgentsSubtitle:
-      'Create your first agent to get started with multi-agent orchestration.',
+      'Create your first agent to get started.',
     createFirstAgent: 'Create Your First Agent',
     selectAgent: 'Select an agent from the list',
     topology: 'Topology',

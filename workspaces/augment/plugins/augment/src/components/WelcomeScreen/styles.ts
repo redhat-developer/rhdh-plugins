@@ -15,7 +15,7 @@
  */
 
 import { Theme, alpha, SxProps } from '@mui/material/styles';
-import { createMinimalScrollbarStyles } from '../../theme/styles';
+import { scrollbarStyles } from '../../theme/tokens';
 
 export const CARD_GAP = 16;
 
@@ -65,7 +65,7 @@ export const getPromptGroupsContainerSx = (
   width: '100%',
   mx: 'auto',
   boxSizing: 'border-box',
-  ...(theme ? createMinimalScrollbarStyles(theme) : {}),
+  ...(theme ? scrollbarStyles(theme) : {}),
 });
 
 /** Lane header icon (small colored square). */
@@ -133,7 +133,7 @@ export const getAgentGridSx = (theme: Theme): SxProps<Theme> => ({
   width: '100%',
   mx: 'auto',
   boxSizing: 'border-box',
-  ...(theme ? createMinimalScrollbarStyles(theme) : {}),
+  ...(theme ? scrollbarStyles(theme) : {}),
 });
 
 /** Scrollable wrapper for the grid area. */
@@ -142,7 +142,7 @@ export const getGridScrollAreaSx = (theme: Theme): SxProps<Theme> => ({
   minHeight: 0,
   overflowY: 'auto',
   overflowX: 'clip',
-  ...(theme ? createMinimalScrollbarStyles(theme) : {}),
+  ...(theme ? scrollbarStyles(theme) : {}),
 });
 
 /** Individual swim lane card. */

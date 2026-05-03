@@ -88,7 +88,7 @@ const FieldGroup = ({
   <Box sx={{ mb: 3 }}>
     <Typography
       variant="subtitle2"
-      color="textSecondary"
+      color="text.secondary"
       sx={{
         mb: 1,
         fontWeight: 600,
@@ -334,7 +334,7 @@ export const AppearanceSection = ({
               >
                 {PRESET_NAMES.length === 0 ? (
                   <MenuItem value="" disabled>
-                    <Typography variant="body2" color="textSecondary">
+                    <Typography variant="body2" color="text.secondary">
                       No presets available
                     </Typography>
                   </MenuItem>

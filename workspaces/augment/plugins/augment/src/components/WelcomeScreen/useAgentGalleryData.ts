@@ -38,7 +38,13 @@ export function useAgentGalleryData(api: AugmentApi) {
         setLoading(true);
         setError(null);
 
-        const chatAgents: ChatAgent[] = await api.listAgents({ published: true });
+        const TIMEOUT_MS = 15_000;
+        const chatAgents: ChatAgent[] = await Promise.race([
+          api.listAgents({ published: true }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS),
+          ),
+        ]);
 
         const mapped: AgentWithCard[] = chatAgents.map(agent => {
           const [namespace, ...rest] = agent.id.includes('/')

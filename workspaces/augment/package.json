@@ -27,7 +27,7 @@
     "prettier:fix": "prettier --write .",
     "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "postinstall": "node scripts/patch-agents-core.js && cd ../../ && yarn install"
   },
   "workspaces": {
     "packages": [

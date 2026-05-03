@@ -137,8 +137,8 @@ export function ReasoningDisplay({
               ml: 0.25,
               flexShrink: 0,
               backgroundColor: branding.secondaryColor,
-              animation: 'blink 1s step-end infinite',
-              '@keyframes blink': {
+              animation: 'augmentBlink 1s step-end infinite',
+              '@keyframes augmentBlink': {
                 '50%': { opacity: 0 },
               },
             }}
@@ -187,8 +187,8 @@ export function ReasoningDisplay({
                   height: 14,
                   ml: 0.5,
                   backgroundColor: branding.secondaryColor,
-                  animation: 'blink 1s step-end infinite',
-                  '@keyframes blink': {
+                  animation: 'augmentBlink 1s step-end infinite',
+                  '@keyframes augmentBlink': {
                     '50%': { opacity: 0 },
                   },
                 }}

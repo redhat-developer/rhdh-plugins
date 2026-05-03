@@ -51,10 +51,10 @@ export function ProviderPlaceholder({ provider }: ProviderPlaceholderProps) {
           color: alpha(theme.palette.text.secondary, 0.4),
         }}
       />
-      <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
+      <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.01em', color: 'text.primary' }}>
         {provider.displayName}
       </Typography>
-      <Typography variant="body2" color="textSecondary" sx={{ maxWidth: 400 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>
         The {provider.displayName} provider is not yet configured. Configuration
         options will appear here once the integration is available.
       </Typography>

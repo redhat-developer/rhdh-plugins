@@ -151,7 +151,7 @@ export const RightPane = ({
         backgroundColor: theme.palette.background.default,
         borderLeft: isMobile
           ? 'none'
-          : `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+          : `1px solid ${alpha(theme.palette.divider, isDark ? 0.25 : 0.15)}`,
         display: 'flex',
         flexDirection: 'column',
         // eslint-disable-next-line no-nested-ternary

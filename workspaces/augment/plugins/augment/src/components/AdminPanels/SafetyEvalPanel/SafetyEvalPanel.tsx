@@ -59,10 +59,10 @@ export const SafetyEvalPanel = ({
         mx: 'auto',
       }}
     >
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.01em', color: 'text.primary' }} gutterBottom>
         Safety
       </Typography>
-      <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {`Configure ${providerName} safety shields and keyword-based guardrails.`}
       </Typography>
 

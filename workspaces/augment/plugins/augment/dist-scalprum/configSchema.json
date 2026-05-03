@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "augment": {
+      "description": "Configuration for Augment plugin\n\nNote: Branding configuration (colors, logos, theme presets) is\ndefined in the backend configuration and fetched via the /branding API.\nSee",
+      "type": "object",
+      "properties": {
+        "debug": {
+          "description": "Enable debug logging in the browser console\nCan also be toggled via localStorage or browser console",
+          "visibility": "frontend",
+          "type": "boolean"
+        },
+        "llamaStack": {
+          "description": "Inference server configuration (frontend-visible parts)",
+          "type": "object",
+          "properties": {
+            "baseUrl": {
+              "description": "Base URL for the inference server",
+              "visibility": "frontend",
+              "type": "string"
+            },
+            "model": {
+              "description": "Model to use for chat completions",
+              "visibility": "frontend",
+              "type": "string"
+            }
+          }
+        },
+        "quickPrompts": {
+          "description": "Quick prompts for common queries",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "category",
+              "description",
+              "prompt",
+              "title"
+            ],
+            "properties": {
+              "title": {
+                "description": "Title of the quick prompt",
+                "visibility": "frontend",
+                "type": "string"
+              },
+              "description": {
+                "description": "Description of what this prompt does",
+                "visibility": "frontend",
+                "type": "string"
+              },
+              "prompt": {
+                "description": "The actual prompt text",
+                "visibility": "frontend",
+                "type": "string"
+              },
+              "category": {
+                "description": "Category for grouping prompts",
+                "visibility": "frontend",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -63,6 +63,10 @@ const ALLOWED_KEYS: ReadonlySet<AdminConfigKey> = new Set<AdminConfigKey>([
   'safetyIdentifier',
   'chatAgents',
   'devSpacesApiUrl',
+  'workflows',
+  'workflowVersions',
+  'workflowTestSuites',
+  'workflowEvaluations',
 ]);
 
 interface AdminConfigRow {

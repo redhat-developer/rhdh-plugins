@@ -61,6 +61,7 @@ import {
   subtleBorder,
   tableContainerSx,
 } from '../shared/commandCenterStyles';
+import { typeScale, iconSize } from '../../../theme/tokens';
 import { InfoTip } from '../shared/InfoTip';
 import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
 
@@ -275,7 +276,7 @@ export function KagentiHomeDashboard({
     {
       label: 'Guided Experience',
       description: 'Step-by-step interactive walkthroughs',
-      icon: <ExploreOutlinedIcon sx={{ fontSize: 24 }} />,
+      icon: <ExploreOutlinedIcon sx={{ fontSize: iconSize.xl }} />,
       accent: theme.palette.text.secondary,
       panel: 'kagenti-home' as AdminPanel,
       action: onHelpTours,
@@ -283,7 +284,7 @@ export function KagentiHomeDashboard({
     {
       label: 'New Agent',
       description: 'Import or build a new AI agent',
-      icon: <NoteAddOutlinedIcon sx={{ fontSize: 24 }} />,
+      icon: <NoteAddOutlinedIcon sx={{ fontSize: iconSize.xl }} />,
       accent: theme.palette.primary.main,
       panel: 'kagenti-agents' as AdminPanel,
       action: onCreateAgent,
@@ -291,7 +292,7 @@ export function KagentiHomeDashboard({
     {
       label: 'New Tool',
       description: 'Register an MCP tool server',
-      icon: <ExtensionOutlinedIcon sx={{ fontSize: 24 }} />,
+      icon: <ExtensionOutlinedIcon sx={{ fontSize: iconSize.xl }} />,
       accent: theme.palette.info.main,
       panel: 'kagenti-tools' as AdminPanel,
     },
@@ -341,7 +342,7 @@ export function KagentiHomeDashboard({
     if (healthRows.length === 0) {
       return (
         <Box sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="text.secondary">
             No agents or tools deployed yet. Create one to get started.
           </Typography>
         </Box>
@@ -352,12 +353,12 @@ export function KagentiHomeDashboard({
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={thStyle}>Name</TableCell>
-              <TableCell sx={thStyle}>Type</TableCell>
-              <TableCell sx={thStyle}>Status</TableCell>
-              <TableCell sx={thStyle}>Namespace</TableCell>
-              <TableCell sx={thStyle}>Framework</TableCell>
-              <TableCell sx={thStyle}>Created</TableCell>
+              <TableCell sx={{ ...thStyle, width: '25%' }}>Name</TableCell>
+              <TableCell sx={{ ...thStyle, width: '10%' }}>Type</TableCell>
+              <TableCell sx={{ ...thStyle, width: '12%' }}>Status</TableCell>
+              <TableCell sx={{ ...thStyle, width: '20%' }}>Namespace</TableCell>
+              <TableCell sx={{ ...thStyle, width: '18%' }}>Framework</TableCell>
+              <TableCell sx={{ ...thStyle, width: '15%' }}>Created</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -379,12 +380,13 @@ export function KagentiHomeDashboard({
                     )
                   }
                 >
-                  <TableCell>
+                  <TableCell sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     <Typography
                       variant="body2"
+                      noWrap
                       sx={{
                         fontWeight: 600,
-                        fontSize: '0.875rem',
+                        fontSize: typeScale.body.fontSize,
                         color: 'text.primary',
                       }}
                     >
@@ -397,7 +399,7 @@ export function KagentiHomeDashboard({
                       size="small"
                       variant="outlined"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: typeScale.caption.fontSize,
                         height: 24,
                       }}
                     />
@@ -407,7 +409,7 @@ export function KagentiHomeDashboard({
                       label={row.status || 'Unknown'}
                       size="small"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: typeScale.caption.fontSize,
                         height: 24,
                         fontWeight: 600,
                         bgcolor: alpha(
@@ -420,17 +422,17 @@ export function KagentiHomeDashboard({
                     />
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption" color="textSecondary">
+                    <Typography variant="caption" color="text.secondary">
                       {row.namespace}
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption" color="textSecondary">
+                    <Typography variant="caption" color="text.secondary">
                       {row.framework || '--'}
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption" color="textSecondary">
+                    <Typography variant="caption" color="text.secondary">
                       {timeAgo(row.createdAt)}
                     </Typography>
                   </TableCell>
@@ -452,7 +454,7 @@ export function KagentiHomeDashboard({
           <Typography variant="body2" color="error" sx={{ mb: 0.5 }}>
             Failed to load builds
           </Typography>
-          <Typography variant="caption" color="textSecondary">
+          <Typography variant="caption" color="text.secondary">
             {buildError}
           </Typography>
         </Box>
@@ -461,7 +463,7 @@ export function KagentiHomeDashboard({
     if (recentBuilds.length === 0) {
       return (
         <Box sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="text.secondary">
             No builds yet. Trigger a build from an agent or tool to see activity
             here.
           </Typography>
@@ -473,11 +475,11 @@ export function KagentiHomeDashboard({
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={thStyle}>Build</TableCell>
-              <TableCell sx={thStyle}>Namespace</TableCell>
-              <TableCell sx={thStyle}>Status</TableCell>
-              <TableCell sx={thStyle}>Strategy</TableCell>
-              <TableCell sx={thStyle}>Started</TableCell>
+              <TableCell sx={{ ...thStyle, width: '28%' }}>Build</TableCell>
+              <TableCell sx={{ ...thStyle, width: '20%' }}>Namespace</TableCell>
+              <TableCell sx={{ ...thStyle, width: '18%' }}>Status</TableCell>
+              <TableCell sx={{ ...thStyle, width: '18%' }}>Strategy</TableCell>
+              <TableCell sx={{ ...thStyle, width: '16%' }}>Started</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -499,7 +501,7 @@ export function KagentiHomeDashboard({
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <BuildCircleOutlinedIcon
                         sx={{
-                          fontSize: 18,
+                          fontSize: iconSize.md,
                           color: theme.palette.text.secondary,
                         }}
                       />
@@ -507,7 +509,7 @@ export function KagentiHomeDashboard({
                         variant="body2"
                         sx={{
                           fontWeight: 600,
-                          fontSize: '0.875rem',
+                          fontSize: typeScale.body.fontSize,
                           color: 'text.primary',
                         }}
                       >
@@ -516,7 +518,7 @@ export function KagentiHomeDashboard({
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption" color="textSecondary">
+                    <Typography variant="caption" color="text.secondary">
                       {build.namespace}
                     </Typography>
                   </TableCell>
@@ -525,7 +527,7 @@ export function KagentiHomeDashboard({
                       label={build.registered ? 'Registered' : 'Pending'}
                       size="small"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: typeScale.caption.fontSize,
                         height: 24,
                         fontWeight: 600,
                         bgcolor: alpha(regColor, isDark ? 0.15 : 0.1),
@@ -535,12 +537,12 @@ export function KagentiHomeDashboard({
                     />
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption" color="textSecondary">
+                    <Typography variant="caption" color="text.secondary">
                       {build.strategy || '--'}
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption" color="textSecondary">
+                    <Typography variant="caption" color="text.secondary">
                       {timeAgo(build.creationTimestamp)}
                     </Typography>
                   </TableCell>
@@ -554,9 +556,9 @@ export function KagentiHomeDashboard({
   }
 
   return (
-    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH, width: '100%', minWidth: 0 }}>
       {/* Page Title */}
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 2 }}>
         <Typography variant="h5" sx={PAGE_TITLE_SX}>
           Overview
         </Typography>
@@ -576,9 +578,9 @@ export function KagentiHomeDashboard({
         data-tour="stat-cards"
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' },
-          gap: 2.5,
-          mb: 3,
+          gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+          gap: 1.5,
+          mb: 2,
         }}
       >
         {statCards.map(card => (
@@ -586,10 +588,10 @@ export function KagentiHomeDashboard({
             key={card.label}
             variant="outlined"
             sx={{
-              p: 3,
+              p: 1.5,
               display: 'flex',
               flexDirection: 'column',
-              gap: 1.5,
+              gap: 0.5,
               bgcolor: 'background.paper',
               border: subtleBorder(theme),
             }}
@@ -608,13 +610,13 @@ export function KagentiHomeDashboard({
               <Box sx={{ color: theme.palette.text.disabled }}>{card.icon}</Box>
             </Box>
             {loading ? (
-              <Skeleton variant="text" width={60} height={48} />
+              <Skeleton variant="text" width={60} height={32} />
             ) : (
               <Typography
                 sx={{
                   fontWeight: 700,
                   lineHeight: 1,
-                  fontSize: '1.5rem',
+                  fontSize: typeScale.sectionTitle.fontSize,
                   color: 'text.primary',
                 }}
               >
@@ -631,8 +633,8 @@ export function KagentiHomeDashboard({
           data-tour="getting-started"
           variant="outlined"
           sx={{
-            p: 3,
-            mb: 3,
+            p: 2,
+            mb: 2,
             borderRadius: 2,
             bgcolor: 'background.paper',
             border: subtleBorder(theme),
@@ -643,18 +645,18 @@ export function KagentiHomeDashboard({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              mb: 2.5,
+              mb: 1.5,
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <RocketLaunchIcon
-                sx={{ fontSize: 22, color: theme.palette.text.secondary }}
+                sx={{ fontSize: iconSize.lg, color: theme.palette.text.secondary }}
               />
               <Typography
                 variant="h6"
                 sx={{
-                  fontWeight: 700,
-                  fontSize: '1rem',
+                  fontWeight: typeScale.sectionTitle.fontWeight,
+                  fontSize: typeScale.sectionTitle.fontSize,
                   color: 'text.primary',
                 }}
               >
@@ -669,14 +671,14 @@ export function KagentiHomeDashboard({
               </Typography>
             </Box>
             <IconButton size="small" onClick={dismissGettingStarted}>
-              <CloseIcon sx={{ fontSize: 16 }} />
+              <CloseIcon sx={{ fontSize: iconSize.sm }} />
             </IconButton>
           </Box>
           <Box
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-              gap: 2.5,
+              gap: 1.5,
             }}
           >
             {gettingStartedSteps.map(step => (
@@ -723,12 +725,12 @@ export function KagentiHomeDashboard({
                       ? theme.palette.success.main
                       : theme.palette.text.secondary,
                     fontWeight: 700,
-                    fontSize: '0.875rem',
+                    fontSize: typeScale.body.fontSize,
                     flexShrink: 0,
                   }}
                 >
                   {step.done ? (
-                    <CheckCircleIcon sx={{ fontSize: 18 }} />
+                    <CheckCircleIcon sx={{ fontSize: iconSize.md }} />
                   ) : (
                     step.step
                   )}
@@ -753,7 +755,7 @@ export function KagentiHomeDashboard({
                 </Box>
                 <ArrowForwardIcon
                   sx={{
-                    fontSize: 16,
+                    fontSize: iconSize.sm,
                     color: theme.palette.text.disabled,
                     flexShrink: 0,
                     mt: 0.5,
@@ -769,19 +771,21 @@ export function KagentiHomeDashboard({
       <Box data-tour="quick-actions">
         <Typography
           variant="h6"
-          sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}
+          sx={{
+            fontWeight: typeScale.sectionTitle.fontWeight,
+            fontSize: typeScale.sectionTitle.fontSize,
+            mb: 1,
+            color: 'text.primary',
+          }}
         >
           Quick Actions
         </Typography>
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(3, 1fr)',
-            },
-            gap: 2,
-            mb: 3,
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 1.5,
+            mb: 2,
           }}
         >
           {createActions.map(action => (
@@ -801,7 +805,7 @@ export function KagentiHomeDashboard({
                 action.action ? action.action() : onNavigate(action.panel)
               }
               sx={{
-                p: 2,
+                p: 1.5,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.5,
@@ -809,9 +813,9 @@ export function KagentiHomeDashboard({
             >
               <Box
                 sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 2,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 1.5,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -830,7 +834,7 @@ export function KagentiHomeDashboard({
                   variant="subtitle2"
                   sx={{
                     fontWeight: 600,
-                    fontSize: '0.875rem',
+                    fontSize: typeScale.body.fontSize,
                     color: 'text.primary',
                   }}
                 >
@@ -845,7 +849,7 @@ export function KagentiHomeDashboard({
               </Box>
               <ArrowForwardIcon
                 sx={{
-                  fontSize: 16,
+                  fontSize: iconSize.sm,
                   color: theme.palette.text.disabled,
                   flexShrink: 0,
                 }}
@@ -859,7 +863,7 @@ export function KagentiHomeDashboard({
       {/* Agent & Tool Health + Recent Builds (tabbed) */}
       <Box
         data-tour="health-table"
-        sx={{ ...tableContainerSx(theme), overflow: 'hidden' }}
+        sx={{ ...tableContainerSx(theme), overflow: 'hidden', mb: 3 }}
       >
         <Tabs
           value={activeTab}
@@ -873,7 +877,7 @@ export function KagentiHomeDashboard({
               minHeight: 40,
               textTransform: 'none',
               fontWeight: 600,
-              fontSize: '0.8125rem',
+              fontSize: typeScale.bodySmall.fontSize,
               mr: 2,
             },
           }}

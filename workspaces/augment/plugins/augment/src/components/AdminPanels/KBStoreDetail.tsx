@@ -93,7 +93,7 @@ function MetadataRow({
     >
       <Typography
         variant="caption"
-        color="textSecondary"
+        color="text.secondary"
         sx={{ minWidth: 120 }}
       >
         {label}
@@ -166,7 +166,7 @@ function FileCountsBreakdown({
           </Box>
         )}
         {cancelled > 0 && (
-          <Typography variant="caption" color="textSecondary">
+          <Typography variant="caption" color="text.secondary">
             {cancelled} cancelled
           </Typography>
         )}
@@ -215,7 +215,7 @@ function QuickSearch({ vectorStoreId }: QuickSearchProps) {
     <Box sx={{ mt: 1.5 }}>
       <Typography
         variant="caption"
-        color="textSecondary"
+        color="text.secondary"
         fontWeight={600}
         sx={{
           mb: 0.5,
@@ -258,7 +258,7 @@ function QuickSearch({ vectorStoreId }: QuickSearchProps) {
 
       {result !== null && result.chunks.length === 0 && !error && (
         <Box sx={{ mt: 1, textAlign: 'center' }}>
-          <Typography variant="caption" color="textSecondary">
+          <Typography variant="caption" color="text.secondary">
             No results found for &ldquo;{query}&rdquo;
           </Typography>
         </Box>
@@ -270,12 +270,12 @@ function QuickSearch({ vectorStoreId }: QuickSearchProps) {
             <Box
               sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}
             >
-              <Typography variant="caption" color="textSecondary">
+              <Typography variant="caption" color="text.secondary">
                 {result.totalResults} chunk
                 {result.totalResults !== 1 ? 's' : ''} found
               </Typography>
               {searchTimeMs !== null && (
-                <Typography variant="caption" color="textSecondary">
+                <Typography variant="caption" color="text.secondary">
                   in {searchTimeMs}ms
                 </Typography>
               )}
@@ -328,7 +328,7 @@ function QuickSearch({ vectorStoreId }: QuickSearchProps) {
                     />
                   )}
                   {chunk.fileName && (
-                    <Typography variant="caption" color="textSecondary" noWrap>
+                    <Typography variant="caption" color="text.secondary" noWrap>
                       {chunk.fileName}
                     </Typography>
                   )}
@@ -375,7 +375,7 @@ export const KBStoreDetail = ({ store }: KBStoreDetailProps) => {
         <Paper variant="outlined" sx={{ p: 1.5 }}>
           <Typography
             variant="caption"
-            color="textSecondary"
+            color="text.secondary"
             fontWeight={600}
             sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}
           >
@@ -410,7 +410,7 @@ export const KBStoreDetail = ({ store }: KBStoreDetailProps) => {
         <Paper variant="outlined" sx={{ p: 1.5 }}>
           <Typography
             variant="caption"
-            color="textSecondary"
+            color="text.secondary"
             fontWeight={600}
             sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}
           >
@@ -444,10 +444,10 @@ export const KBStoreDetail = ({ store }: KBStoreDetailProps) => {
               >
                 <DescriptionIcon fontSize="small" color="action" />
               </Box>
-              <Typography variant="h5" fontWeight={700}>
+              <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'text.primary' }}>
                 {store.fileCount}
               </Typography>
-              <Typography variant="caption" color="textSecondary">
+              <Typography variant="caption" color="text.secondary">
                 Total Files
               </Typography>
             </Paper>
@@ -471,10 +471,10 @@ export const KBStoreDetail = ({ store }: KBStoreDetailProps) => {
               >
                 <StorageIcon fontSize="small" color="action" />
               </Box>
-              <Typography variant="h5" fontWeight={700}>
+              <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'text.primary' }}>
                 {formatBytes(store.usageBytes)}
               </Typography>
-              <Typography variant="caption" color="textSecondary">
+              <Typography variant="caption" color="text.secondary">
                 Storage Used
               </Typography>
             </Paper>
@@ -485,7 +485,7 @@ export const KBStoreDetail = ({ store }: KBStoreDetailProps) => {
               <Divider sx={{ my: 1.5 }} />
               <Typography
                 variant="caption"
-                color="textSecondary"
+                color="text.secondary"
                 fontWeight={600}
                 sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}
               >
@@ -507,7 +507,7 @@ export const KBStoreDetail = ({ store }: KBStoreDetailProps) => {
                   {store.embeddingDimension && (
                     <Typography
                       variant="caption"
-                      color="textSecondary"
+                      color="text.secondary"
                       display="block"
                     >
                       {store.embeddingDimension} dimensions

@@ -1,0 +1,114 @@
+/*
+ * Plugin-level CSS isolation for the Augment plugin.
+ *
+ * Prevents PatternFly (PF5/PF6) global styles from interfering with
+ * MUI-based layout when deployed inside Red Hat Developer Hub (RHDH).
+ *
+ * All rules are scoped under .augment-plugin-root so they never leak
+ * into other Backstage plugins or the shell.
+ *
+ * Scrollbar styling is handled by scrollbarStyles() in theme/tokens.ts
+ * and applied via sx props — no CSS-level scrollbar overrides here.
+ */
+
+/* ── CSS Custom Properties ─────────────────────────────────────────
+ * Host Backstage instances can override these on .augment-plugin-root
+ * to customize the plugin's appearance without forking.
+ *
+ * Example in host CSS:
+ *   .augment-plugin-root {
+ *     --augment-font-family: 'Your Font', sans-serif;
+ *     --augment-radius-sm: 4px;
+ *     --augment-content-max-width: 960px;
+ *   }
+ */
+.augment-plugin-root {
+  --augment-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "SF Pro Display", "Helvetica Neue", "Segoe UI", "Roboto", sans-serif;
+  --augment-font-family-mono: "SF Mono", "JetBrains Mono", "Fira Code",
+    "Cascadia Code", "Monaco", monospace;
+  --augment-radius-xs: 4px;
+  --augment-radius-sm: 8px;
+  --augment-radius-md: 12px;
+  --augment-radius-lg: 16px;
+  --augment-sidebar-width: 190px;
+  --augment-sidebar-width-collapsed: 48px;
+  --augment-content-max-width: 1200px;
+  --augment-admin-max-width: 960px;
+}
+
+/* ── Typography resets ────────────────────────────────────────────── */
+.augment-plugin-root h1,
+.augment-plugin-root h2,
+.augment-plugin-root h3,
+.augment-plugin-root h4,
+.augment-plugin-root h5,
+.augment-plugin-root h6 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.augment-plugin-root p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* ── PF page section padding override ─────────────────────────────
+ * RHDH wraps Content in .pf-v5-c-page__main-section which adds 24px
+ * padding. We neutralize it inside our root. */
+.augment-plugin-root .pf-v5-c-page__main-section,
+.augment-plugin-root .pf-v6-c-page__main-section {
+  padding: 0;
+}
+
+/* ── PatternFly-specific overrides ────────────────────────────────
+ * These rules ONLY activate when PatternFly is present in the page
+ * (detected via .pf-v5-c-page or .pf-v6-c-page on an ancestor).
+ * Without PF, MUI styles work fine on their own — no overrides needed. */
+
+/* PF overrides <label> font-weight/display which breaks MUI floating labels */
+.pf-v5-c-page .augment-plugin-root label[class*="MuiInputLabel"],
+.pf-v5-c-page .augment-plugin-root label[class*="MuiFormLabel"],
+.pf-v6-c-page .augment-plugin-root label[class*="MuiInputLabel"],
+.pf-v6-c-page .augment-plugin-root label[class*="MuiFormLabel"] {
+  font-weight: 400;
+  line-height: 1.4375em;
+  display: block;
+  padding: 0;
+}
+
+/* PF overrides <fieldset> border/padding/margin, breaking MUI's notched outline */
+.pf-v5-c-page .augment-plugin-root fieldset[class*="MuiOutlinedInput"],
+.pf-v6-c-page .augment-plugin-root fieldset[class*="MuiOutlinedInput"] {
+  border-style: solid;
+  border-width: 1px;
+  padding: 0 8px;
+  margin: 0;
+  min-width: 0;
+  top: -5px;
+  position: absolute;
+}
+
+/* PF overrides <legend> float/width/padding, breaking the notch gap */
+.pf-v5-c-page .augment-plugin-root fieldset[class*="MuiOutlinedInput"] legend,
+.pf-v6-c-page .augment-plugin-root fieldset[class*="MuiOutlinedInput"] legend {
+  float: unset;
+  width: auto;
+  overflow: hidden;
+  display: block;
+  padding: 0;
+  height: 11px;
+  font-size: 0.75em;
+  visibility: hidden;
+  max-width: 100%;
+}
+
+/* PF resets list styles; restore for MUI menus */
+.pf-v5-c-page .augment-plugin-root [class*="MuiMenu-list"],
+.pf-v5-c-page .augment-plugin-root [class*="MuiList-root"],
+.pf-v6-c-page .augment-plugin-root [class*="MuiMenu-list"],
+.pf-v6-c-page .augment-plugin-root [class*="MuiList-root"] {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

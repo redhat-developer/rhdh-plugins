@@ -1,0 +1,2 @@
+(self.webpackChunkred_hat_developer_hub_backstage_plugin_augment=self.webpackChunkred_hat_developer_hub_backstage_plugin_augment||[]).push([[464],{61949(e){e.exports=function(e){return{name:"Shell Session",aliases:["console"],contains:[{className:"meta",begin:/^\s{0,3}[/~\w\d[\]()@-]*[>%$#]/,starts:{end:/[^\\](?=\s*$)/,subLanguage:"bash"}}]}}}}]);
+//# sourceMappingURL=react-syntax-highlighter_languages_highlight_shell.949ae676.chunk.js.map

@@ -24,8 +24,6 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import LaptopMacOutlinedIcon from '@mui/icons-material/LaptopMacOutlined';
 import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
-import PersonIcon from '@mui/icons-material/Person';
-import GroupsIcon from '@mui/icons-material/Groups';
 import { useTheme } from '@mui/material/styles';
 import type { DeploymentMethod } from './agentWizardTypes';
 import { AgentTemplateBrowser } from './AgentTemplateBrowser';
@@ -37,16 +35,14 @@ import type { IntentCard } from './IntentDialogParts';
 // Types
 // ---------------------------------------------------------------------------
 
-export type ConfigureType = 'single' | 'multi';
-
 export interface AgentCreateIntentDialogProps {
   open: boolean;
   onClose: () => void;
   onSelectDeploy: (method?: DeploymentMethod) => void;
-  onSelectConfigure?: (type: ConfigureType) => void;
+  onSelectConfigure?: () => void;
 }
 
-type View = 'intent' | 'develop-sub' | 'configure-sub' | 'templates' | 'devspaces';
+type View = 'intent' | 'develop-sub' | 'templates' | 'devspaces';
 
 // ---------------------------------------------------------------------------
 // Card definitions
@@ -76,30 +72,9 @@ const INTENT_CARDS: IntentCard[] = [
     tourId: 'intent-configure',
     icon: <TuneIcon />,
     title: 'Configure',
-    subtitle: 'Define agents and capabilities',
+    subtitle: 'Visual agent builder',
     description:
-      'Define agent roles, instructions, handoff routing, and per-agent tool/RAG settings.',
-  },
-];
-
-const CONFIGURE_SUB_CARDS: IntentCard[] = [
-  {
-    id: 'single',
-    tourId: 'intent-configure-single',
-    icon: <PersonIcon />,
-    title: 'Single Agent',
-    subtitle: 'Standalone agent',
-    description:
-      'Create a standalone agent with its own instructions, model, and tools. Ideal for focused tasks like Q&A, code review, or data analysis.',
-  },
-  {
-    id: 'multi',
-    tourId: 'intent-configure-multi',
-    icon: <GroupsIcon />,
-    title: 'Multi Agent',
-    subtitle: 'Agent team with routing',
-    description:
-      'Create a team of agents with a router that hands off to specialists. Best for complex workflows that require different expertise.',
+      'Design an agent with instructions, tools, handoffs, and guardrails using the visual workflow builder.',
   },
 ];
 
@@ -154,19 +129,10 @@ export function AgentCreateIntentDialog({
       } else if (cardId === 'deploy') {
         onSelectDeploy();
       } else if (cardId === 'configure') {
-        setView('configure-sub');
+        onSelectConfigure?.();
       }
     },
-    [onSelectDeploy],
-  );
-
-  const handleConfigureSubClick = useCallback(
-    (cardId: string) => {
-      if (cardId === 'single' || cardId === 'multi') {
-        onSelectConfigure?.(cardId);
-      }
-    },
-    [onSelectConfigure],
+    [onSelectDeploy, onSelectConfigure],
   );
 
   const handleDevelopSubClick = useCallback((cardId: string) => {
@@ -235,36 +201,6 @@ export function AgentCreateIntentDialog({
             <CardGrid
               cards={DEVELOP_SUB_CARDS}
               onCardClick={handleDevelopSubClick}
-              columns={2}
-            />
-          </DialogContent>
-          <DialogActions
-            sx={{
-              px: 3,
-              pb: 2,
-              borderTop: `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <Button onClick={handleClose} sx={{ textTransform: 'none' }}>
-              Cancel
-            </Button>
-          </DialogActions>
-        </>
-      )}
-
-      {/* --- Configure sub-options --- */}
-      {view === 'configure-sub' && (
-        <>
-          <DialogHeader
-            titleId={titleId}
-            title="Configure"
-            subtitle="Choose the type of agent you want to create."
-            onBack={() => setView('intent')}
-          />
-          <DialogContent sx={{ px: 3, pt: 3, pb: 3 }}>
-            <CardGrid
-              cards={CONFIGURE_SUB_CARDS}
-              onCardClick={handleConfigureSubClick}
               columns={2}
             />
           </DialogContent>

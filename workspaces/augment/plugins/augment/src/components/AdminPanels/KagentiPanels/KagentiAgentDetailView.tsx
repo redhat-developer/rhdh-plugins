@@ -38,7 +38,7 @@ import { AgentDetailsTab } from './AgentDetailsTab';
 import { AgentStatusTab } from './AgentStatusTab';
 import { AgentResourceTab } from './AgentResourceTab';
 import { AgentCardTab } from './AgentCardTab';
-import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
+import { CONTENT_MAX_WIDTH, PAGE_TITLE_SX } from '../shared/commandCenterStyles';
 import { useKagentiAgentDetail } from './useKagentiAgentDetail';
 
 export interface KagentiAgentDetailViewProps {
@@ -112,7 +112,7 @@ export function KagentiAgentDetailView({
   }, [api, agentId, isPublished]);
 
   return (
-    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH, width: '100%', minWidth: 0 }}>
       <Button
         size="small"
         startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
@@ -142,7 +142,7 @@ export function KagentiAgentDetailView({
           >
             <Typography
               variant="h5"
-              sx={{ fontWeight: 700, color: 'text.primary' }}
+              sx={PAGE_TITLE_SX}
             >
               {displayName}
             </Typography>

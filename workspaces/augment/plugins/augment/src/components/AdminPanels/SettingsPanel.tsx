@@ -130,7 +130,7 @@ export const SettingsPanel = () => {
 
   return (
     <Box sx={{ p: 3, width: '100%', maxWidth: 900, mx: 'auto' }}>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.01em', color: 'text.primary' }} gutterBottom>
         Settings
       </Typography>
 

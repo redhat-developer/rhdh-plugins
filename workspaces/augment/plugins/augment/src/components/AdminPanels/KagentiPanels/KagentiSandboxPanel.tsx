@@ -614,7 +614,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
   let tokenUsagePanel: ReactNode;
   if (!selected) {
     tokenUsagePanel = (
-      <Typography variant="body2" color="textSecondary">
+      <Typography variant="body2" color="text.secondary">
         Select a session to view token usage.
       </Typography>
     );
@@ -645,7 +645,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
     );
   } else {
     tokenUsagePanel = (
-      <Typography variant="body2" color="textSecondary">
+      <Typography variant="body2" color="text.secondary">
         No usage data.
       </Typography>
     );
@@ -1016,7 +1016,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
           <CircularProgress size={28} />
         </Box>
       ) : sandboxAgents.length === 0 ? (
-        <Typography variant="body2" color="textSecondary">
+        <Typography variant="body2" color="text.secondary">
           No sandbox agents.
         </Typography>
       ) : (
@@ -1200,7 +1200,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
               [];
             if (!Array.isArray(entries) || entries.length === 0)
               return (
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" color="text.secondary">
                   Empty directory
                 </Typography>
               );
@@ -1363,7 +1363,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
         </TableContainer>
       )}
       {!sidecarsLoading && sidecars.length === 0 && sidecarContextId && (
-        <Typography variant="body2" color="textSecondary">
+        <Typography variant="body2" color="text.secondary">
           No sidecars loaded. Click &quot;Load sidecars&quot; to fetch.
         </Typography>
       )}
@@ -1458,7 +1458,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
           <CircularProgress size={28} />
         </Box>
       ) : sandboxAgents.length === 0 ? (
-        <Typography variant="body2" color="textSecondary">
+        <Typography variant="body2" color="text.secondary">
           No sandbox agents found.
         </Typography>
       ) : (
@@ -1684,7 +1684,7 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
                   (sessionDetail ? (
                     jsonBlock(sessionDetail)
                   ) : (
-                    <Typography color="textSecondary">
+                    <Typography color="text.secondary">
                       No detail data
                     </Typography>
                   ))}
@@ -1692,13 +1692,13 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
                   (sessionChain ? (
                     jsonBlock(sessionChain)
                   ) : (
-                    <Typography color="textSecondary">No chain data</Typography>
+                    <Typography color="text.secondary">No chain data</Typography>
                   ))}
                 {detailTab === 2 &&
                   (sessionHistory ? (
                     jsonBlock(sessionHistory)
                   ) : (
-                    <Typography color="textSecondary">
+                    <Typography color="text.secondary">
                       No history data
                     </Typography>
                   ))}

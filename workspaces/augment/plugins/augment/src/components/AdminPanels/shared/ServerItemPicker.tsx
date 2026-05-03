@@ -114,7 +114,7 @@ export const ServerItemPicker = ({
       >
         <Typography
           variant="caption"
-          color="textSecondary"
+          color="text.secondary"
           sx={{ fontWeight: 600 }}
         >
           {label}
@@ -202,7 +202,7 @@ export const ServerItemPicker = ({
         <Box sx={{ mb: 1.5 }}>
           <Typography
             variant="caption"
-            color="textSecondary"
+            color="text.secondary"
             sx={{ fontSize: '0.7rem', mb: 0.5, display: 'block' }}
           >
             Custom (not on server)

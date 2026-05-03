@@ -77,7 +77,7 @@ export const CreateAgentModal = React.memo(function CreateAgentModal({
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ pb: 0.5 }}>New Agent</DialogTitle>
       <DialogContent>
-        <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {isFirstAgent
             ? 'Create your first agent. Its role will be determined automatically from its connections.'
             : 'Add another agent. Its role (Router, Specialist, or Standalone) will be determined automatically based on how you connect it to other agents.'}

@@ -52,8 +52,9 @@ export function CreateStoreForm({
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
         gap: 1.5,
+        overflow: 'hidden',
       }}
     >
       <TextField
@@ -64,7 +65,7 @@ export function CreateStoreForm({
         onChange={e => onUpdate('vectorStoreName', e.target.value)}
         error={!nameValid}
         helperText={nameValid ? 'Unique name' : 'Name is required'}
-        sx={{ gridColumn: { md: 'span 1' } }}
+        sx={{ minWidth: 0 }}
       />
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
         <Autocomplete

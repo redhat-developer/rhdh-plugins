@@ -1,0 +1,2 @@
+(self.webpackChunkred_hat_developer_hub_backstage_plugin_augment=self.webpackChunkred_hat_developer_hub_backstage_plugin_augment||[]).push([[8705],{69697(e){e.exports=function(e){return{name:"Node REPL",contains:[{className:"meta",starts:{end:/ |$/,starts:{end:"$",subLanguage:"javascript"}},variants:[{begin:/^>(?=[ ]|$)/},{begin:/^\.\.\.(?=[ ]|$)/}]}]}}}}]);
+//# sourceMappingURL=react-syntax-highlighter_languages_highlight_nodeRepl.e4686338.chunk.js.map

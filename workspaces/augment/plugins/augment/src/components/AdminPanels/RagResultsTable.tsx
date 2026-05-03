@@ -78,7 +78,7 @@ function ScoreStats({ chunks }: { chunks: RagTestResult['chunks'] }) {
         >
           <Typography
             variant="caption"
-            color="textSecondary"
+            color="text.secondary"
             sx={{ fontSize: '0.675rem' }}
           >
             {item.label}:
@@ -99,7 +99,7 @@ function ScoreStats({ chunks }: { chunks: RagTestResult['chunks'] }) {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <Typography
           variant="caption"
-          color="textSecondary"
+          color="text.secondary"
           sx={{ fontSize: '0.675rem' }}
         >
           Spread:
@@ -223,7 +223,7 @@ export function RagResultsTable({
               <AccessTimeIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
               <Typography
                 variant="caption"
-                color="textSecondary"
+                color="text.secondary"
                 sx={{ fontVariantNumeric: 'tabular-nums' }}
               >
                 {searchTimeMs < 1000
@@ -250,10 +250,10 @@ export function RagResultsTable({
           variant="outlined"
           sx={{ p: 2.5, textAlign: 'center', borderStyle: 'dashed' }}
         >
-          <Typography variant="body2" color="textSecondary" gutterBottom>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
             No matching chunks found.
           </Typography>
-          <Typography variant="caption" color="textSecondary" component="div">
+          <Typography variant="caption" color="text.secondary" component="div">
             Try broader search terms, check that your documents cover this
             topic, or verify that files are properly ingested and chunked.
           </Typography>
@@ -298,7 +298,7 @@ export function RagResultsTable({
                 />
                 <Typography
                   variant="caption"
-                  color="textSecondary"
+                  color="text.secondary"
                   sx={{ fontSize: '0.675rem' }}
                 >
                   {item.label}
@@ -319,7 +319,7 @@ export function RagResultsTable({
           >
             <Typography
               variant="caption"
-              color="textSecondary"
+              color="text.secondary"
               sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}
             >
               Score threshold:

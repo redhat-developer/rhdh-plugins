@@ -20,8 +20,7 @@ import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import { useTheme } from '@mui/material/styles';
 import { Content, Page, ErrorBoundary } from '@backstage/core-components';
-import { createMinimalScrollbarStyles } from '../../theme/styles';
-import { typography } from '../../theme/tokens';
+import { typography, scrollbarStyles, animations as tokenAnimations } from '../../theme/tokens';
 import { useApi } from '@backstage/core-plugin-api';
 import { ChatContainer, type ChatContainerRef } from '../ChatContainer';
 import { RightPane } from '../RightPane';
@@ -66,12 +65,13 @@ import {
   TourLauncherDialog,
   useFirstVisitTourDialog,
 } from '../AdminPanels/shared/TourLauncherDialog';
+import './augment-isolation.css';
 
 const AugmentPageContent = () => {
   const theme = useTheme();
   const { branding } = useBranding();
   const adminScrollSx = useMemo(
-    () => createMinimalScrollbarStyles(theme),
+    () => scrollbarStyles(theme),
     [theme],
   );
 
@@ -324,6 +324,7 @@ const AugmentPageContent = () => {
           branding={branding}
         >
           <Box
+            className="augment-plugin-root"
             sx={{
               display: 'flex',
               flexDirection: 'column',
@@ -332,9 +333,6 @@ const AugmentPageContent = () => {
               backgroundColor: theme.palette.background.default,
               overflow: 'hidden',
               fontFamily: typography.fontFamily.primary,
-              '& *': {
-                fontFamily: 'inherit',
-              },
               '& code, & pre, & .MuiChip-label': {
                 fontFamily: typography.fontFamily.mono,
               },
@@ -360,7 +358,7 @@ const AugmentPageContent = () => {
               liveStatus?.providerId === 'kagenti' && (
                 <TourControllerProvider callbacks={tourCallbacks}>
                   <TourProvider>
-                    <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
+                    <Box sx={{ display: 'flex', flex: 1, minHeight: 0, minWidth: 0 }}>
                       {!sidebarHidden && (
                         <KagentiSidebar
                           adminPanel={adminPanel}
@@ -378,38 +376,23 @@ const AugmentPageContent = () => {
                         sx={{
                           flex: 1,
                           minHeight: 0,
+                          minWidth: 0,
                           display: 'flex',
                           flexDirection: 'column',
                         }}
                       >
                         <Box
+                          key={adminPanel}
                           sx={{
                             flex: 1,
                             minHeight: 0,
-                            position: 'relative',
+                            overflowY: sidebarHidden ? 'hidden' : 'auto',
+                            overflowX: 'hidden',
+                            p: sidebarHidden ? 0 : 2,
+                            ...tokenAnimations.fadeSlideIn,
+                            ...(sidebarHidden ? {} : adminScrollSx),
                           }}
                         >
-                          <Box
-                            key={adminPanel}
-                            sx={{
-                              position: 'absolute',
-                              inset: 0,
-                              overflow: 'auto',
-                              p: 3,
-                              animation: 'fadeSlideIn 0.2s ease-out',
-                              '@keyframes fadeSlideIn': {
-                                '0%': {
-                                  opacity: 0,
-                                  transform: 'translateY(4px)',
-                                },
-                                '100%': {
-                                  opacity: 1,
-                                  transform: 'translateY(0)',
-                                },
-                              },
-                              ...adminScrollSx,
-                            }}
-                          >
                             {adminPanel === 'kagenti-home' && (
                               <KagentiHomeDashboard
                                 namespace={kagentiNamespace || undefined}
@@ -485,7 +468,6 @@ const AugmentPageContent = () => {
                             )}
                             {adminPanel === 'kagenti-docs' && <DocsPanel />}
                           </Box>
-                        </Box>
                       </Box>
                     </Box>
                   </TourProvider>
@@ -513,12 +495,9 @@ const AugmentPageContent = () => {
                       sx={{
                         position: 'absolute',
                         inset: 0,
-                        overflow: 'auto',
-                        animation: 'fadeSlideIn 0.2s ease-out',
-                        '@keyframes fadeSlideIn': {
-                          '0%': { opacity: 0, transform: 'translateY(4px)' },
-                          '100%': { opacity: 1, transform: 'translateY(0)' },
-                        },
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        ...tokenAnimations.fadeSlideIn,
                         ...adminScrollSx,
                       }}
                     >

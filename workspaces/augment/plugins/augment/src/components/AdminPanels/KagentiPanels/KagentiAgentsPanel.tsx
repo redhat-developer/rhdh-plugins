@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useApi } from '@backstage/core-plugin-api';
+import { useApi, configApiRef } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -42,6 +42,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 import type {
   KagentiAgentSummary,
   ChatAgent,
+  WorkflowDefinition,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import AddIcon from '@mui/icons-material/Add';
@@ -49,6 +50,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { AgentsPanel } from '../AgentsPanel';
+import { WorkflowEditor } from '../../WorkflowBuilder/WorkflowEditor';
+import { WorkflowDashboard } from '../../WorkflowBuilder/WorkflowDashboard';
+import { WorkflowErrorBoundary } from '../../WorkflowBuilder/WorkflowErrorBoundary';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { AgentCreateIntentDialog } from './AgentCreateIntentDialog';
 import { CreateAgentWizard } from './CreateAgentWizard';
@@ -155,6 +159,7 @@ export function KagentiAgentsPanel({
 }: KagentiAgentsPanelProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
+  const configApi = useApi(configApiRef);
   const [rows, setRows] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -176,7 +181,9 @@ export function KagentiAgentsPanel({
   const [showOrchestration, setShowOrchestration] = useState(false);
   const [orchFocusKey, setOrchFocusKey] = useState<string | undefined>();
   const [autoCreateAgent, setAutoCreateAgent] = useState(false);
-  const [createType, setCreateType] = useState<'single' | 'multi' | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [showWorkflowCanvas, setShowWorkflowCanvas] = useState(false);
+  const [activeWorkflow, setActiveWorkflow] = useState<WorkflowDefinition | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState<SortField>('name');
@@ -227,16 +234,6 @@ export function KagentiAgentsPanel({
             }
           } else if (cardId === 'configure') {
             const card = document.querySelector('[data-tour="intent-configure"]');
-            if (card instanceof HTMLElement) {
-              card.click();
-            }
-          } else if (cardId === 'configure-single') {
-            const card = document.querySelector('[data-tour="intent-configure-single"]');
-            if (card instanceof HTMLElement) {
-              card.click();
-            }
-          } else if (cardId === 'configure-multi') {
-            const card = document.querySelector('[data-tour="intent-configure-multi"]');
             if (card instanceof HTMLElement) {
               card.click();
             }
@@ -347,14 +344,138 @@ export function KagentiAgentsPanel({
     );
   }
 
-  if (showOrchestration) {
-    const title = orchFocusKey
-      ? 'Edit Agent'
-      : createType === 'multi'
-        ? 'Create Agent Team'
-        : 'Create Agent';
+  if (showDashboard && !showWorkflowCanvas) {
     return (
-      <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+      <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, flex: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', py: 1, px: 0.5, gap: 1, flexShrink: 0 }}>
+          <IconButton
+            size="small"
+            onClick={() => {
+              setShowDashboard(false);
+              onFullScreenChange?.(false);
+              loadAgents();
+            }}
+            aria-label="Back to agents"
+          >
+            <ArrowBackIcon fontSize="small" />
+          </IconButton>
+        </Box>
+        <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+          <WorkflowDashboard
+            onOpenWorkflow={(wf) => {
+              setActiveWorkflow(wf);
+              setShowWorkflowCanvas(true);
+            }}
+            onCreateWorkflow={async (wf) => {
+              setActiveWorkflow(wf);
+              setShowWorkflowCanvas(true);
+              try {
+                const backendUrl = configApi.getString('backend.baseUrl');
+                await fetch(`${backendUrl}/api/augment/workflows`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(wf),
+                });
+              } catch (_e) { /* best-effort persist */ }
+            }}
+          />
+        </Box>
+      </Box>
+    );
+  }
+
+  if (showWorkflowCanvas && activeWorkflow) {
+    return (
+      <Box
+        className="workflow-fullscreen-container"
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+          minWidth: 0,
+          flex: 1,
+          overflow: 'hidden',
+        }}
+      >
+        <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, position: 'relative' }}>
+          <WorkflowErrorBoundary fallbackTitle="Workflow builder encountered an error">
+            <WorkflowEditor
+              workflow={activeWorkflow}
+              onSave={async (updated) => {
+                setActiveWorkflow(updated);
+                try {
+                  const backendUrl = configApi.getString('backend.baseUrl');
+                  const resp = await fetch(`${backendUrl}/api/augment/workflows/${updated.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updated),
+                  });
+                  if (!resp.ok) throw new Error(`Save failed: ${resp.status}`);
+                  setSuccessToast('Workflow saved');
+                } catch (e) {
+                  setError(getErrorMessage(e));
+                }
+              }}
+              onPublish={async () => {
+                if (!activeWorkflow) return;
+                try {
+                  const backendUrl = configApi.getString('backend.baseUrl');
+                  const resp = await fetch(`${backendUrl}/api/augment/workflows/${activeWorkflow.id}/publish`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ changelog: 'Published from Agent Builder' }),
+                  });
+                  if (!resp.ok) {
+                    const errText = await resp.text().catch(() => '');
+                    throw new Error(`Publish failed: ${resp.status} ${errText}`);
+                  }
+                  const published = await resp.json();
+                  setActiveWorkflow(published);
+                  setSuccessToast(`Workflow published (v${published.version})`);
+                } catch (e) {
+                  setError(getErrorMessage(e));
+                }
+              }}
+              onPreview={() => {
+                setSuccessToast('Preview coming soon');
+              }}
+              onDelete={async () => {
+                if (activeWorkflow) {
+                  try {
+                    const backendUrl = configApi.getString('backend.baseUrl');
+                    const resp = await fetch(`${backendUrl}/api/augment/workflows/${activeWorkflow.id}`, {
+                      method: 'DELETE',
+                    });
+                    if (!resp.ok) throw new Error(`Delete failed: ${resp.status}`);
+                    setSuccessToast('Workflow deleted');
+                  } catch (e) {
+                    setError(getErrorMessage(e));
+                  }
+                }
+                setShowWorkflowCanvas(false);
+                setActiveWorkflow(null);
+                if (!showDashboard) onFullScreenChange?.(false);
+                loadAgents();
+              }}
+              onBack={() => {
+                setShowWorkflowCanvas(false);
+                setActiveWorkflow(null);
+                if (!showDashboard) onFullScreenChange?.(false);
+                loadAgents();
+              }}
+            />
+          </WorkflowErrorBoundary>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (showOrchestration) {
+    const title = orchFocusKey ? 'Edit Agent' : 'Create Agent';
+    return (
+      <Box sx={{ maxWidth: CONTENT_MAX_WIDTH, width: '100%', minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
           <IconButton
             size="small"
@@ -362,7 +483,6 @@ export function KagentiAgentsPanel({
               setShowOrchestration(false);
               setOrchFocusKey(undefined);
               setAutoCreateAgent(false);
-              setCreateType(null);
               loadAgents();
               onFullScreenChange?.(false);
             }}
@@ -377,22 +497,13 @@ export function KagentiAgentsPanel({
         <AgentsPanel
           focusAgentKey={orchFocusKey}
           autoCreate={autoCreateAgent}
-          createType={createType}
           onSaved={() => {
-            const savedType = createType;
             setShowOrchestration(false);
             setOrchFocusKey(undefined);
             setAutoCreateAgent(false);
-            setCreateType(null);
             loadAgents();
             onFullScreenChange?.(false);
-            setSuccessToast(
-              savedType
-                ? savedType === 'multi'
-                  ? 'Agent team created and registered — ready to publish.'
-                  : 'Agent created and registered — ready to publish.'
-                : 'Agent configuration saved.',
-            );
+            setSuccessToast('Agent configuration saved.');
           }}
         />
       </Box>
@@ -416,7 +527,7 @@ export function KagentiAgentsPanel({
   );
 
   return (
-    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+    <Box sx={{ maxWidth: CONTENT_MAX_WIDTH, width: '100%', minWidth: 0 }}>
       <Box
         sx={{
           display: 'flex',
@@ -511,7 +622,7 @@ export function KagentiAgentsPanel({
             }}
           >
             Create your first agent to get started. Agents can be deployed as
-            Kubernetes workloads or configured as multi-agent teams.
+            Kubernetes workloads or designed in the visual Agent Builder.
           </Typography>
           <Button
             variant="outlined"
@@ -527,7 +638,7 @@ export function KagentiAgentsPanel({
       )}
       {!loading && rows.length > 0 && (
         <>
-          <TableContainer data-tour="agents-table" sx={tableContainerSx(theme)}>
+          <TableContainer data-tour="agents-table" sx={{ ...tableContainerSx(theme), overflowX: 'auto' }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -724,13 +835,10 @@ export function KagentiAgentsPanel({
           setInitialDeployMethod(method);
           setCreateOpen(true);
         }}
-        onSelectConfigure={(type) => {
+        onSelectConfigure={() => {
           setIntentOpen(false);
-          setOrchFocusKey(undefined);
-          setShowOrchestration(true);
-          setAutoCreateAgent(true);
-          setCreateType(type === 'multi' ? 'multi' : 'single');
-          if (type === 'single') onFullScreenChange?.(true);
+          setShowDashboard(true);
+          onFullScreenChange?.(true);
         }}
       />
 

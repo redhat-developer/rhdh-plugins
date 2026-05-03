@@ -91,7 +91,7 @@ export const IngestDropZone = ({
         <Typography variant="body2">
           Drag & drop files or click to browse
         </Typography>
-        <Typography variant="caption" color="textSecondary" component="div">
+        <Typography variant="caption" color="text.secondary" component="div">
           .md, .txt, .pdf, .json, .yaml, .yml (max 10 MB)
         </Typography>
         {uploading && (

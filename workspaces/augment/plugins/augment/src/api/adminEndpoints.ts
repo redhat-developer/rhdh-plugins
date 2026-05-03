@@ -207,7 +207,7 @@ export async function testMcpConnection(
 // ---------------------------------------------------------------------------
 
 export async function getWorkflows(deps: AdminApiDeps): Promise<Workflow[]> {
-  const data = await deps.fetchJson<{ workflows?: Workflow[] }>('/workflows');
+  const data = await deps.fetchJson<{ workflows?: Workflow[] }>('/guided-workflows');
   return data.workflows || [];
 }
 

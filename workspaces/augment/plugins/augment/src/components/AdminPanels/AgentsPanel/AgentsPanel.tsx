@@ -1409,7 +1409,7 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
                                 </Typography>
                                 <Typography
                                   variant="caption"
-                                  color="textSecondary"
+                                  color="text.secondary"
                                 >
                                   Inherit from platform settings
                                 </Typography>
@@ -1425,7 +1425,7 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
                                 </Typography>
                                 <Typography
                                   variant="caption"
-                                  color="textSecondary"
+                                  color="text.secondary"
                                 >
                                   Model decides when to call tools
                                 </Typography>
@@ -1441,7 +1441,7 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
                                 </Typography>
                                 <Typography
                                   variant="caption"
-                                  color="textSecondary"
+                                  color="text.secondary"
                                 >
                                   Always call tools
                                 </Typography>
@@ -1457,7 +1457,7 @@ export const AgentsPanel = ({ focusAgentKey, autoCreate, createType, onSaved }: 
                                 </Typography>
                                 <Typography
                                   variant="caption"
-                                  color="textSecondary"
+                                  color="text.secondary"
                                 >
                                   Never call tools
                                 </Typography>
