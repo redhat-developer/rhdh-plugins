@@ -21,4 +21,4 @@
 /**
  * @public
  */
-export type SourceTechnology = 'chef' | 'legacy-ansible' | 'powershell';
+export type SourceTechnology = 'chef' | 'ansible' | 'powershell';

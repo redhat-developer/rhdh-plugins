@@ -1180,7 +1180,7 @@ export const spec = {
         "type": "string",
         "enum": [
           "chef",
-          "legacy-ansible",
+          "ansible",
           "powershell"
         ],
         "description": "Source configuration-management technology being converted to Ansible"

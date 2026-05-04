@@ -5,7 +5,7 @@ The CSV bulk import lets the user create multiple conversion projects at once by
 ## How to Access
 
 1. Open the Backstage instance and navigate to `/create`.
-2. Select the **Legacy-to-Ansible Conversion Project** template (`x2a-conversion-project-template`).
+2. Select the **Infrastructure Conversion Project** template (`x2a-conversion-project-template`).
 3. On the first page, choose **CSV upload** as the input method.
 4. Upload the CSV file and proceed through the wizard.
 
@@ -74,9 +74,9 @@ For self-hosted instances (e.g. GitHub Enterprise, self-hosted GitLab), the corr
 
 ```csv
 name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch,description,ownedByGroup
-web-app,wapp,https://github.com/myorg/web-app-legacy,main,https://github.com/myorg/web-app-ansible,main,Convert web app configuration,team-platform
-db-setup,dbset,gitlab.com?owner=myorg&repo=db-legacy,develop,gitlab.com?owner=myorg&repo=db-ansible,main,,
-cache-svc,cache,bitbucket.org?workspace=myws&project=x2a&repo=cache-legacy,main,,main,Cache service conversion,
+web-app,wapp,https://github.com/myorg/web-app-chef,main,https://github.com/myorg/web-app-ansible,main,Convert web app cookbook,team-platform
+db-setup,dbset,gitlab.com?owner=myorg&repo=db-chef,develop,gitlab.com?owner=myorg&repo=db-ansible,main,,
+cache-svc,cache,bitbucket.org?workspace=myws&project=x2a&repo=cache-chef,main,,main,Cache service conversion,
 ```
 
 Notes on the example:

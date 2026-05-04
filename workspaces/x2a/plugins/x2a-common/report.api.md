@@ -473,7 +473,7 @@ export type ScmProviderName = 'github' | 'gitlab' | 'bitbucket';
 export const SOURCE_TECHNOLOGY_ALIASES: Record<SourceTechnology, string[]>;
 
 // @public (undocumented)
-export type SourceTechnology = 'chef' | 'legacy-ansible' | 'powershell';
+export type SourceTechnology = 'chef' | 'ansible' | 'powershell';
 
 // @public
 export interface Telemetry {

@@ -209,7 +209,7 @@ curl -X POST http://localhost:7007/api/x2a/projects \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${TOKEN}" \
   -d '{
-    "name": "My Legacy Project Migration",
+    "name": "My source automation project migration",
     "description": "Test migration",
     "abbreviation": "TEST"
   }'

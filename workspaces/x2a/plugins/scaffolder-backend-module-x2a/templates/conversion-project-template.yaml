@@ -2,7 +2,7 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: x2a-conversion-project-template
-  title: Legacy-to-Ansible Conversion Project
+  title: Infrastructure Conversion Project
   description: Initiate a conversion of existing automation (e.g. Chef, Puppet, Salt, Powershell) into a new Ansible Playbook repository.
 spec:
   type: service
