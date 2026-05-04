@@ -277,7 +277,6 @@ describe('SonataFlowService', () => {
       expect(result?.id).toBe('12345');
     });
 
-
     it('should error on a bad connection', async () => {
       const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
         clientId: 'kafkaClientId',
