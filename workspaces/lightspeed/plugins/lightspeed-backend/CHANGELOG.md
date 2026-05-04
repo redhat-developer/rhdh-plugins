@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.6.1
+
+### Patch Changes
+
+- 3dfbbee: Update multer to v2.1.1
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.1
+
 ## 2.6.0
 
 ### Minor Changes
