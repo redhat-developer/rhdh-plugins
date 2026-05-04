@@ -46,7 +46,7 @@
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.16.2",
     "@changesets/cli": "^2.27.1",
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
     "@types/webpack-env": "^1.18.4",
     "concurrently": "^9.0.0",

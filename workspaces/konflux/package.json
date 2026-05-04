@@ -44,6 +44,7 @@
     "@backstage/repo-tools": "^0.17.0",
     "@changesets/cli": "^2.27.1",
     "@types/cookie-parser": "^1.4.3",
+    "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.1",
     "@types/lodash": "^4.14.175",
     "knip": "^5.27.4",
