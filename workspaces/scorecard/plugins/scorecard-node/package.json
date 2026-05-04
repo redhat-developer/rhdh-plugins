@@ -47,7 +47,7 @@
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^2.1.0",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
-    "uuid": "^9.0.1"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.11.1",
