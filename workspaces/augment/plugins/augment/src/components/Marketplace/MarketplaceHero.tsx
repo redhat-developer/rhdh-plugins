@@ -22,15 +22,28 @@ import { heroSx } from './marketplace.styles';
 interface MarketplaceHeroProps {
   isAdmin?: boolean;
   onOpenCommandCenter?: () => void;
+  onOpenGuidedTour?: () => void;
 }
 
-export function MarketplaceHero({ isAdmin, onOpenCommandCenter }: MarketplaceHeroProps) {
+export function MarketplaceHero({
+  isAdmin,
+  onOpenCommandCenter,
+  onOpenGuidedTour,
+}: MarketplaceHeroProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
   return (
-    <Box sx={heroSx(theme, isDark)}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+    <Box data-tour="marketplace-hero" sx={heroSx(theme, isDark)}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
         <Box>
           <Typography
             variant="h5"
@@ -45,30 +58,58 @@ export function MarketplaceHero({ isAdmin, onOpenCommandCenter }: MarketplaceHer
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: theme.palette.text.secondary, mt: 0.5, fontSize: '0.85rem' }}
+            sx={{
+              color: theme.palette.text.secondary,
+              mt: 0.5,
+              fontSize: '0.85rem',
+            }}
           >
             Discover and use AI agents built by your team.
           </Typography>
         </Box>
-        {isAdmin && onOpenCommandCenter && (
-          <Typography
-            component="button"
-            onClick={onOpenCommandCenter}
-            sx={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '0.8rem',
-              fontWeight: 500,
-              color: theme.palette.text.secondary,
-              textDecoration: 'none',
-              '&:hover': { color: theme.palette.primary.main, textDecoration: 'underline' },
-              p: 0,
-            }}
-          >
-            Command Center
-          </Typography>
-        )}
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          {onOpenGuidedTour && (
+            <Typography
+              component="button"
+              onClick={onOpenGuidedTour}
+              sx={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: theme.palette.primary.main,
+                textDecoration: 'none',
+                '&:hover': { textDecoration: 'underline' },
+                p: 0,
+              }}
+            >
+              Guided Tours
+            </Typography>
+          )}
+          {isAdmin && onOpenCommandCenter && (
+            <Typography
+              component="button"
+              onClick={onOpenCommandCenter}
+              sx={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                fontWeight: 500,
+                color: theme.palette.text.secondary,
+                textDecoration: 'none',
+                '&:hover': {
+                  color: theme.palette.primary.main,
+                  textDecoration: 'underline',
+                },
+                p: 0,
+              }}
+            >
+              Command Center
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Box>
   );

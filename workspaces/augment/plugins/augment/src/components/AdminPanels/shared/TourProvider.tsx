@@ -27,8 +27,9 @@ import { driver, type DriveStep, type Driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import './tourStyles.css';
 import type { TourId, EnhancedDriveStep, TourAction } from './tourDefinitions';
-import { TOUR_STEPS, TOUR_ORDER, TOUR_LIST } from './tourDefinitions';
 import { useTourController, type TourControllerAPI } from './TourController';
+import type { TourDefinition, TourStepConfig } from './defaultTours';
+import { DEFAULT_TOURS } from './defaultTours';
 import { useTourVoice, type TourVoice } from './useTourVoice';
 
 const STORAGE_PREFIX = 'augment:tour-completed-';
@@ -53,7 +54,8 @@ interface TourContextValue {
   startTour: (id: TourId, autoAdvance?: boolean) => void;
   isCompleted: (id: TourId) => boolean;
   activeTour: TourId | null;
-  startAutoPlay: () => void;
+  /** Auto-play tours. Pass specific IDs to only play a subset. */
+  startAutoPlay: (tourIds?: TourId[]) => void;
   stopAutoPlay: () => void;
   isAutoPlaying: boolean;
   voice: TourVoice;
@@ -118,6 +120,12 @@ async function executeTourAction(
       if (el instanceof HTMLElement) el.click();
       break;
     }
+    case 'switchToMarketplace':
+      ctrl.switchToMarketplace();
+      break;
+    case 'switchToCommandCenter':
+      ctrl.switchToCommandCenter();
+      break;
     default:
       break;
   }
@@ -162,6 +170,28 @@ function injectVoiceButton(toggle: VoiceToggle): void {
     } else {
       footer.prepend(btn);
     }
+  });
+}
+
+function configToEnhancedSteps(steps: TourStepConfig[]): EnhancedDriveStep[] {
+  return steps.map(s => {
+    const enhanced: EnhancedDriveStep = {
+      element: s.target || undefined,
+      popover: {
+        title: s.title,
+        description: s.description,
+        side: s.side as 'top' | 'bottom' | 'left' | 'right' | undefined,
+      },
+    };
+    if (s.action) {
+      enhanced.tourAction = s.action as TourAction;
+    }
+    if (s.waitFor) {
+      enhanced.tourSelector = s.waitFor;
+    } else if (s.target && s.action) {
+      enhanced.tourSelector = s.target;
+    }
+    return enhanced;
   });
 }
 
@@ -225,7 +255,22 @@ function buildDriverSteps(
 const AUTO_ADVANCE_DELAY = 4000;
 const INTER_TOUR_DELAY = 2000;
 
-export function TourProvider({ children }: { children: React.ReactNode }) {
+export function TourProvider({
+  children,
+  tours,
+}: {
+  children: React.ReactNode;
+  tours?: TourDefinition[];
+}) {
+  const tourData = tours && tours.length > 0 ? tours : DEFAULT_TOURS;
+  const tourStepsMap = useMemo(() => {
+    const map: Record<string, TourStepConfig[]> = {};
+    for (const t of tourData) {
+      map[t.id] = t.steps;
+    }
+    return map;
+  }, [tourData]);
+  const tourOrder = useMemo(() => tourData.map(t => t.id), [tourData]);
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const [activeTour, setActiveTour] = useState<TourId | null>(null);
@@ -233,8 +278,13 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   const [, setVersion] = useState(0);
   const driverRef = useRef<Driver | null>(null);
   const autoPlayQueueRef = useRef<TourId[]>([]);
-  const autoAdvanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startTourRef = useRef<(id: TourId, autoAdvance?: boolean) => void>(() => {});
+  const autoPlayFullListRef = useRef<TourId[]>([]);
+  const autoAdvanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const startTourRef = useRef<(id: TourId, autoAdvance?: boolean) => void>(
+    () => {},
+  );
   const ctrl = useTourController();
   const voice = useTourVoice();
 
@@ -253,7 +303,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
   const startTour = useCallback(
     (id: TourId, autoAdvance?: boolean) => {
-      const rawSteps = TOUR_STEPS[id];
+      const rawSteps = tourStepsMap[id];
       if (!rawSteps?.length) return;
 
       if (driverRef.current) {
@@ -283,7 +333,10 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
                 const queue = autoPlayQueueRef.current;
                 if (queue.length > 0) {
                   const nextId = queue.shift()!;
-                  setTimeout(() => startTourRef.current(nextId, true), INTER_TOUR_DELAY);
+                  setTimeout(
+                    () => startTourRef.current(nextId, true),
+                    INTER_TOUR_DELAY,
+                  );
                 } else {
                   setIsAutoPlaying(false);
                   ctrl.returnToGuidedExperience();
@@ -303,15 +356,24 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
           voice.setVoiceEnabled(next);
         },
       };
-      const builtSteps = buildDriverSteps(rawSteps, ctrl, speakFn, voiceToggle, autoAdvanceHook);
+      const enhancedSteps = configToEnhancedSteps(rawSteps);
+      const builtSteps = buildDriverSteps(
+        enhancedSteps,
+        ctrl,
+        speakFn,
+        voiceToggle,
+        autoAdvanceHook,
+      );
 
       const steps: DriveStep[] = [];
       if (autoAdvance) {
-        const meta = TOUR_LIST.find(t => t.id === id);
-        const tourIndex = TOUR_ORDER.indexOf(id) + 1;
+        const meta = tourData.find(t => t.id === id);
+        const playList = autoPlayFullListRef.current;
+        const tourIndex = playList.indexOf(id) + 1;
+        const tourTotal = playList.length;
         const titleCard: DriveStep = {
           popover: {
-            title: `▶ Tour ${tourIndex} of ${TOUR_ORDER.length}: ${meta?.title ?? id}`,
+            title: `▶ Tour ${tourIndex || 1} of ${tourTotal || 1}: ${meta?.title ?? id}`,
             description: meta?.description ?? '',
           },
         };
@@ -373,19 +435,24 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       d.drive();
       driverRef.current = d;
     },
-    [isDark, ctrl, clearAutoAdvanceTimer, stopAutoPlay, voice],
+    [isDark, ctrl, clearAutoAdvanceTimer, voice, tourData, tourStepsMap],
   );
 
   startTourRef.current = startTour;
 
-  const startAutoPlay = useCallback(() => {
-    const queue = [...TOUR_ORDER];
-    const first = queue.shift();
-    if (!first) return;
-    autoPlayQueueRef.current = queue;
-    setIsAutoPlaying(true);
-    startTourRef.current(first, true);
-  }, []);
+  const startAutoPlay = useCallback(
+    (tourIds?: TourId[]) => {
+      const fullList = tourIds ?? [...tourOrder];
+      const queue = [...fullList];
+      const first = queue.shift();
+      if (!first) return;
+      autoPlayFullListRef.current = fullList;
+      autoPlayQueueRef.current = queue;
+      setIsAutoPlaying(true);
+      startTourRef.current(first, true);
+    },
+    [tourOrder],
+  );
 
   const isCompleted = useCallback((id: TourId) => isTourCompleted(id), []);
 
@@ -399,7 +466,15 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       isAutoPlaying,
       voice,
     }),
-    [startTour, isCompleted, activeTour, startAutoPlay, stopAutoPlay, isAutoPlaying, voice],
+    [
+      startTour,
+      isCompleted,
+      activeTour,
+      startAutoPlay,
+      stopAutoPlay,
+      isAutoPlaying,
+      voice,
+    ],
   );
 
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
