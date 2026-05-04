@@ -135,3 +135,24 @@ flag_management:
     - name: x2a
       paths:
         - workspaces/x2a/
+    # E2E coverage flags — cross-repo uploads from rhdh-plugin-export-overlays
+    # Overlay E2E tests run instrumented plugins on a real RHDH/K8s deployment
+    # and upload Istanbul coverage attributed to this repo. See: RHIDP-13411
+    - name: e2e-adoption-insights
+      paths:
+        - workspaces/adoption-insights/
+    - name: e2e-global-header
+      paths:
+        - workspaces/global-header/
+    - name: e2e-homepage
+      paths:
+        - workspaces/homepage/
+    - name: e2e-quickstart
+      paths:
+        - workspaces/quickstart/
+    - name: e2e-scorecard
+      paths:
+        - workspaces/scorecard/
+    - name: e2e-theme
+      paths:
+        - workspaces/theme/
