@@ -68,6 +68,23 @@ export async function mockApiTextResponse(
   });
 }
 
+const SONARQUBE_SCORECARD_API_ROUTE =
+  '**/api/scorecard/metrics/catalog/Component/default/sonarqube-scorecard-only';
+
+export async function mockSonarqubeScorecardResponse(
+  page: Page,
+  responseData: object,
+  status = 200,
+) {
+  await page.route(SONARQUBE_SCORECARD_API_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(responseData),
+    });
+  });
+}
+
 /** Mocks only the GitHub aggregations API (for tests that only load the GitHub card/drill-down). */
 export async function mockGitHubAggregationResponse(
   page: Page,

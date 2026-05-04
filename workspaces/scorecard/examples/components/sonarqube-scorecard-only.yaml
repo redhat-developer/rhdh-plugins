@@ -1,0 +1,12 @@
+---
+# Component with SonarQube Scorecard only
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: sonarqube-scorecard-only
+  annotations:
+    sonarqube.org/project-key: redhat-developer_rhdh-plugins
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: experimental

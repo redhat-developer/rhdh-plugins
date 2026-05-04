@@ -204,6 +204,18 @@ permission:
       users:
         - name: user:development/guest
 
+# SonarQube configuration (optional - defaults to https://sonarcloud.io, no auth for public projects)
+sonarqube:
+  baseUrl: https://sonarcloud.io
+  apiKey: ${SONARQUBE_TOKEN}
+  instances:
+    - name: internal
+      baseUrl: https://sonarcloud.io
+      apiKey: ${SONARQUBE_INTERNAL_KEY}
+      authType: Basic # optional, defaults to Basic
+    - name: cloud
+      baseUrl: https://sonarcloud.io
+
 # Scorecard development configuration
 scorecard:
   aggregationKPIs:
@@ -249,13 +261,13 @@ scorecard:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
-          initialDelay: { seconds: 5 }
+          initialDelay: { seconds: 10 }
     github:
       open_prs:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
-          initialDelay: { seconds: 5 }
+          initialDelay: { seconds: 10 }
     filecheck:
       files:
         license: 'LICENSE'
@@ -263,4 +275,4 @@ scorecard:
       schedule:
         frequency: { minutes: 5 }
         timeout: { minutes: 10 }
-        initialDelay: { seconds: 5 }
+        initialDelay: { seconds: 10 }

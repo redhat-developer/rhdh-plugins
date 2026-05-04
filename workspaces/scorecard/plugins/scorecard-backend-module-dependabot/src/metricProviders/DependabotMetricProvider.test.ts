@@ -18,6 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { DependabotMetricProvider } from './DependabotMetricProvider';
 import { DEPENDABOT_SEVERITY_METRIC } from './DependabotConfig';
+import { mockServices } from '@backstage/backend-test-utils';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -39,13 +40,7 @@ beforeEach(() => {
 const mockConfig = new ConfigReader({
   integrations: { github: [{ host: 'github.com', token: 'test-token' }] },
 });
-const mockLogger = {
-  child: jest.fn().mockReturnThis(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn(),
-  error: jest.fn(),
-} as any;
+const mockLogger = mockServices.logger.mock();
 
 function entity(projectSlug = 'owner/repo'): Entity {
   return {
