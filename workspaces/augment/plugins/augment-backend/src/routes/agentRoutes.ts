@@ -94,6 +94,27 @@ export function registerAgentRoutes(
   }
 
   /**
+   * Load published workflows as agents (workflow-builder-sourced agents).
+   */
+  async function loadWorkflowAgents(): Promise<ChatAgent[]> {
+    const raw = await adminConfig.get('workflows');
+    if (!raw || typeof raw !== 'object') return [];
+    const workflows = Array.isArray(raw) ? raw : Object.values(raw);
+    return workflows
+      .filter((w: Record<string, unknown>) => w && w.id && w.name)
+      .map((w: Record<string, unknown>) => ({
+        id: w.id as string,
+        name: w.name as string,
+        description: (w.description as string) || undefined,
+        status: (w.status as string) === 'published' ? 'ready' : 'config',
+        isDefault: false,
+        providerType: 'orchestration',
+        framework: 'workflow-builder',
+        source: 'orchestration',
+      }));
+  }
+
+  /**
    * Merge agents from all sources and overlay publish state.
    */
   async function buildUnifiedAgentList(): Promise<{
@@ -103,10 +124,11 @@ export function registerAgentRoutes(
     const provider = ctx.provider;
 
     const orchProvider = ctx.orchestrationProvider;
-    const [providerAgents, orchAgents, orchProviderAgents, chatConfigs] = await Promise.all([
+    const [providerAgents, orchAgents, orchProviderAgents, workflowAgents, chatConfigs] = await Promise.all([
       provider.listAgents ? provider.listAgents() : Promise.resolve([]),
       loadOrchestrationAgents(),
       orchProvider?.listAgents ? orchProvider.listAgents() : Promise.resolve([]),
+      loadWorkflowAgents(),
       loadChatAgentConfigs(),
     ]);
 
@@ -144,6 +166,13 @@ export function registerAgentRoutes(
     }
 
     for (const agent of orchProviderAgents) {
+      if (seen.has(agent.id)) continue;
+      seen.add(agent.id);
+      const cfg = configMap.get(agent.id);
+      merged.push(overlayConfig(agent, cfg));
+    }
+
+    for (const agent of workflowAgents) {
       if (seen.has(agent.id)) continue;
       seen.add(agent.id);
       const cfg = configMap.get(agent.id);

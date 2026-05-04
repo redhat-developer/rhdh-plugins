@@ -41,7 +41,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { useTheme, alpha } from '@mui/material/styles';
-import { useApi, configApiRef } from '@backstage/core-plugin-api';
+import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import type { WorkflowDefinition } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { createDefaultWorkflow, WORKFLOW_TEMPLATES } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { elevationShadow, TYPE_SCALE } from './theme/tokens';
@@ -93,6 +93,7 @@ function sortWorkflows(list: WorkflowDefinition[], sortBy: SortBy): WorkflowDefi
 export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: WorkflowDashboardProps) {
   const theme = useTheme();
   const configApi = useApi(configApiRef);
+  const { fetch: authFetch } = useApi(fetchApiRef);
   const [workflows, setWorkflows] = useState<WorkflowDefinition[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +112,7 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${backendUrl}/api/augment/workflows`);
+      const res = await authFetch(`${backendUrl}/api/augment/workflows`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setWorkflows(data.workflows || []);
@@ -120,7 +121,7 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
     } finally {
       setLoading(false);
     }
-  }, [backendUrl]);
+  }, [backendUrl, authFetch]);
 
   useEffect(() => { loadWorkflows(); }, [loadWorkflows]);
 
@@ -159,7 +160,7 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
   const handleRename = async () => {
     if (!renameDialog || !renameName.trim()) return;
     try {
-      await fetch(`${backendUrl}/api/augment/workflows/${renameDialog.id}`, {
+      await authFetch(`${backendUrl}/api/augment/workflows/${renameDialog.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...renameDialog, name: renameName.trim() }),
@@ -174,7 +175,7 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
   const handleDelete = async () => {
     if (!deleteDialog) return;
     try {
-      await fetch(`${backendUrl}/api/augment/workflows/${deleteDialog.id}`, { method: 'DELETE' });
+      await authFetch(`${backendUrl}/api/augment/workflows/${deleteDialog.id}`, { method: 'DELETE' });
       setDeleteDialog(null);
       loadWorkflows();
     } catch {
@@ -193,7 +194,7 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
       version: 0,
     };
     try {
-      await fetch(`${backendUrl}/api/augment/workflows`, {
+      await authFetch(`${backendUrl}/api/augment/workflows`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dup),
@@ -288,7 +289,7 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
   );
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', py: 3, px: 2, overflowX: 'hidden' }}>
+    <Box sx={{ maxWidth: 1200, py: 3, px: { xs: 2, sm: 3, md: 4 }, overflowX: 'hidden' }}>
       <Typography variant="h4" fontWeight={700} sx={{ mb: 0.5, color: 'text.primary' }}>
         Agent Builder
       </Typography>
@@ -312,23 +313,6 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
         </Alert>
       )}
 
-      {/* Create section */}
-      <Box sx={{ textAlign: 'center', py: 4 }}>
-        <Typography variant="h6" fontWeight={600} sx={{ mb: 1, color: 'text.primary' }}>
-          Create a workflow
-        </Typography>
-        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-          Build a chat agent workflow with custom logic and tools
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreate}
-          sx={{ textTransform: 'none', borderRadius: 2, px: 3 }}
-        >
-          Create
-        </Button>
-      </Box>
 
       {/* Tabs + search + sort */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, flexWrap: 'wrap' }}>

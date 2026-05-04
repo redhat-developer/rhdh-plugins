@@ -21,7 +21,7 @@ import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { useTheme, alpha } from '@mui/material/styles';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import StreamIcon from '@mui/icons-material/Stream';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
@@ -120,6 +120,30 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
         minHeight: 52,
       }}
     >
+      {/* Marketplace back button */}
+      {onChangeAgent && (
+        <Tooltip title="Agent Marketplace" placement="bottom">
+          <IconButton
+            size="small"
+            onClick={onChangeAgent}
+            aria-label="Agent Marketplace"
+            sx={{
+              p: 0.75,
+              borderRadius: 1.5,
+              border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+              color: theme.palette.text.secondary,
+              '&:hover': {
+                color: theme.palette.primary.main,
+                borderColor: alpha(theme.palette.primary.main, 0.4),
+                bgcolor: alpha(theme.palette.primary.main, 0.06),
+              },
+            }}
+          >
+            <StorefrontOutlinedIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+      )}
+
       {/* Agent Avatar */}
       {avatarUrl ? (
         <Box
@@ -302,27 +326,6 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
               }}
             >
               <FileDownloadOutlinedIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Tooltip>
-        )}
-        {/* Change Agent */}
-        {onChangeAgent && (
-          <Tooltip title="Change agent" placement="bottom">
-            <IconButton
-              size="small"
-              onClick={onChangeAgent}
-              aria-label="Change agent"
-              sx={{
-                p: 0.5,
-                borderRadius: 1.5,
-                color: theme.palette.text.secondary,
-                '&:hover': {
-                  color: theme.palette.primary.main,
-                  bgcolor: alpha(theme.palette.primary.main, 0.08),
-                },
-              }}
-            >
-              <SwapHorizIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
         )}

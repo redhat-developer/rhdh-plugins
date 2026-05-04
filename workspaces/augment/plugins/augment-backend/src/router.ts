@@ -267,6 +267,30 @@ export async function createRouter({
   // Public routes (before auth middleware)
   registerStatusRoutes(ctx, adminConfig, providerManager.initializationError);
 
+  // Tours route is public (static config, no sensitive data)
+  router.get('/tours', (_req, res) => {
+    try {
+      const arr = config.getOptionalConfigArray('augment.tours') || [];
+      const tours = arr.map(tour => {
+        const steps = (tour.getOptionalConfigArray('steps') || []).map(step => {
+          const actionCfg = step.getOptionalConfig('action');
+          return {
+            target: step.getOptionalString('target'),
+            title: step.getString('title'),
+            description: step.getOptionalString('description'),
+            side: step.getOptionalString('side'),
+            action: actionCfg ? { type: actionCfg.getString('type'), panel: actionCfg.getOptionalString('panel'), selector: actionCfg.getOptionalString('selector'), step: actionCfg.getOptionalNumber('step'), method: actionCfg.getOptionalString('method'), cardId: actionCfg.getOptionalString('cardId') } : undefined,
+            waitFor: step.getOptionalString('waitFor'),
+          };
+        });
+        return { id: tour.getString('id'), title: tour.getString('title'), description: tour.getOptionalString('description'), category: tour.getOptionalString('category'), estimatedMinutes: tour.getOptionalNumber('estimatedMinutes'), persona: tour.getOptionalString('persona'), steps };
+      });
+      res.json({ success: true, tours, source: tours.length > 0 ? 'yaml' : 'defaults' });
+    } catch {
+      res.json({ success: true, tours: [], source: 'defaults' });
+    }
+  });
+
   // Apply plugin-level access control to ALL subsequent routes
   router.use(requirePluginAccess);
 
@@ -295,11 +319,11 @@ export async function createRouter({
           const { getVisibleNamespaces } = await import('./providers/kagenti/kagentiNamespaceUtils');
           const namespaces = await getVisibleNamespaces(apiClient, kagentiConfig, logger);
           const allTools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary[] = [];
-          for (const ns of namespaces) {
-            try {
-              const result = await apiClient.listTools(ns);
-              allTools.push(...(result.items ?? []));
-            } catch { /* skip unavailable namespace */ }
+          const toolResults = await Promise.allSettled(
+            namespaces.map(ns => apiClient.listTools(ns)),
+          );
+          for (const r of toolResults) {
+            if (r.status === 'fulfilled') allTools.push(...(r.value.items ?? []));
           }
           return allTools;
         } catch {

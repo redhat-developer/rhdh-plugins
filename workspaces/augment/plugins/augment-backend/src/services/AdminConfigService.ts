@@ -41,6 +41,7 @@ const ALLOWED_KEYS: ReadonlySet<AdminConfigKey> = new Set<AdminConfigKey>([
   'activeVectorStoreIds',
   'model',
   'baseUrl',
+  'kagentiBaseUrl',
   'toolChoice',
   'enableWebSearch',
   'enableCodeInterpreter',

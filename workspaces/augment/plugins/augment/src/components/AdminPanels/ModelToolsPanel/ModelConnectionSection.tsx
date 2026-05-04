@@ -205,10 +205,10 @@ export const ModelConnectionSection = ({
       >
         <Box
           sx={{
-            display: 'flex',
-            gap: 2,
-            flexWrap: 'wrap',
-            alignItems: 'flex-start',
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+            gap: 2.5,
+            pt: 1,
           }}
         >
           <ModelSelector
@@ -226,11 +226,10 @@ export const ModelConnectionSection = ({
             onChange={e => setBaseUrl(e.target.value)}
             placeholder="e.g. http://localhost:8321"
             helperText={`${providerName} server endpoint`}
-            sx={{ flex: 1, minWidth: 280 }}
             error={!!baseUrl && !URL_RE.test(baseUrl)}
           />
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 2 }}>
           <Button
             variant="outlined"
             size="small"

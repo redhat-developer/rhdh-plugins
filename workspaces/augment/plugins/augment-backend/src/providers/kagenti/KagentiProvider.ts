@@ -22,6 +22,7 @@ import { InputError } from '@backstage/errors';
 import type {
   NormalizedStreamEvent,
   ChatAgent,
+  KagentiAgentSummary,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import {
   isProviderScopedKey,
@@ -67,6 +68,7 @@ export class KagentiProvider implements AgenticProvider {
   private kagentiConfig: KagentiConfig | undefined;
   private tokenManager: KeycloakTokenManager | undefined;
   private apiClient: KagentiApiClient | undefined;
+  private activeBaseUrl: string | undefined;
   private sandboxClient: KagentiSandboxClient | undefined;
   private adminClient: KagentiAdminClient | undefined;
   private featureFlags: FeatureFlagsResponse = {
@@ -157,6 +159,43 @@ export class KagentiProvider implements AgenticProvider {
     };
   }
 
+  private async resolveKagentiBaseUrl(): Promise<string> {
+    if (this.adminConfig) {
+      try {
+        const dbUrl = await this.adminConfig.getScopedValue('kagentiBaseUrl', 'kagenti');
+        if (typeof dbUrl === 'string' && dbUrl) {
+          return dbUrl;
+        }
+      } catch {
+        // DB lookup failed — fall back to YAML
+      }
+    }
+    return this.kagentiConfig?.baseUrl ?? '';
+  }
+
+  private async ensureClientUrl(): Promise<void> {
+    const resolved = await this.resolveKagentiBaseUrl();
+    if (!resolved || resolved === this.activeBaseUrl) return;
+
+    const { tokenManager } = this.requireInitialized();
+    this.logger.info(`Kagenti baseUrl changed from ${this.activeBaseUrl} to ${resolved}, rebuilding client`);
+    this.activeBaseUrl = resolved;
+    this.apiClient = new KagentiApiClient({
+      baseUrl: resolved,
+      tokenManager,
+      skipTlsVerify: this.kagentiConfig!.skipTlsVerify,
+      logger: this.logger,
+      requestTimeoutMs: this.kagentiConfig!.requestTimeoutMs,
+      streamTimeoutMs: this.kagentiConfig!.streamTimeoutMs,
+      maxRetries: this.kagentiConfig!.maxRetries,
+      retryBaseDelayMs: this.kagentiConfig!.retryBaseDelayMs,
+    });
+    this.adminClient = new KagentiAdminClient(this.apiClient);
+    if (this.featureFlags.sandbox) {
+      this.sandboxClient = new KagentiSandboxClient(this.apiClient);
+    }
+  }
+
   async initialize(): Promise<void> {
     this.kagentiConfig = loadKagentiConfig(this.rootConfig);
     this.logger.info(
@@ -182,8 +221,9 @@ export class KagentiProvider implements AgenticProvider {
       tokenExpiryBufferSeconds: this.kagentiConfig.tokenExpiryBufferSeconds,
     });
 
+    this.activeBaseUrl = this.kagentiConfig.baseUrl;
     this.apiClient = new KagentiApiClient({
-      baseUrl: this.kagentiConfig.baseUrl,
+      baseUrl: this.activeBaseUrl,
       tokenManager: this.tokenManager,
       skipTlsVerify: this.kagentiConfig.skipTlsVerify,
       logger: this.logger,
@@ -296,6 +336,7 @@ export class KagentiProvider implements AgenticProvider {
   }
 
   async getEffectiveConfig(): Promise<Record<string, unknown>> {
+    await this.ensureClientUrl();
     const { config } = this.requireInitialized();
     const ls = this.rootConfig.getOptionalConfig('augment.llamaStack');
     let model = ls?.getOptionalString('model') ?? '';
@@ -322,6 +363,7 @@ export class KagentiProvider implements AgenticProvider {
     const result: Record<string, unknown> = {
       model,
       baseUrl: llamaStackBaseUrl || config.baseUrl,
+      kagentiBaseUrl: this.activeBaseUrl || config.baseUrl,
       systemPrompt:
         this.rootConfig.getOptionalString('augment.systemPrompt') ?? '',
       toolChoice: ls?.getOptionalString('toolChoice') ?? 'auto',
@@ -339,6 +381,7 @@ export class KagentiProvider implements AgenticProvider {
       const dbKeys: AdminConfigKey[] = [
         'model',
         'baseUrl',
+        'kagentiBaseUrl',
         'systemPrompt',
         'toolChoice',
         'enableWebSearch',
@@ -372,6 +415,7 @@ export class KagentiProvider implements AgenticProvider {
   }
 
   async chat(request: AugmentChatRequest): Promise<AugmentChatResponse> {
+    await this.ensureClientUrl();
     const { apiClient } = this.requireInitialized();
     const { namespace, name } = this.resolveAgent(request);
     const userMessage = this.extractLastUserMessage(request);
@@ -420,6 +464,7 @@ export class KagentiProvider implements AgenticProvider {
     onEvent: (event: NormalizedStreamEvent) => void,
     signal?: AbortSignal,
   ): Promise<void> {
+    await this.ensureClientUrl();
     const { config, apiClient } = this.requireInitialized();
     const { namespace, name } = this.resolveAgent(request);
     const userMessage = this.extractLastUserMessage(request);
@@ -590,6 +635,7 @@ export class KagentiProvider implements AgenticProvider {
   }
 
   async listAgents(): Promise<ChatAgent[]> {
+    await this.ensureClientUrl();
     const { config, apiClient } = this.requireInitialized();
     const namespaces = await getVisibleNamespaces(
       apiClient,
@@ -597,50 +643,43 @@ export class KagentiProvider implements AgenticProvider {
       this.logger,
     );
 
-    const agents: ChatAgent[] = [];
-    for (const ns of namespaces) {
-      try {
-        const result = await apiClient.listAgents(ns);
-        for (const agent of result.items ?? []) {
-          const id = `${agent.namespace}/${agent.name}`;
-          let card: { name?: string; description?: string; skills?: Array<{ examples?: string[] }> } | undefined;
-          try {
-            card = await this.getAgentCardCached(agent.namespace, agent.name)
-              .then(entry => entry.card)
-              .catch(() => undefined);
-          } catch {
-            // agent card not available
-          }
+    const CARD_CONCURRENCY = 6;
+    const allItems: KagentiAgentSummary[] = [];
 
-          const starters = card?.skills
-            ?.flatMap(s => s.examples ?? [])
-            .slice(0, 4);
-
-          agents.push({
-            id,
-            name: card?.name || agent.name,
-            description: card?.description || agent.description,
-            status: agent.status,
-            isDefault: false,
-            providerType: 'kagenti',
-            starters: starters?.length ? starters : undefined,
-            createdAt: agent.createdAt,
-            framework: agent.labels?.framework,
-            protocols: agent.labels?.protocol
-              ? Array.isArray(agent.labels.protocol)
-                ? agent.labels.protocol
-                : [agent.labels.protocol]
-              : undefined,
-            source: 'kagenti',
-            namespace: agent.namespace,
-          });
+    const nsResults = await Promise.allSettled(
+      namespaces.map(ns => apiClient.listAgents(ns)),
+    );
+    for (let i = 0; i < nsResults.length; i++) {
+      const r = nsResults[i];
+      if (r.status === 'fulfilled') {
+        for (const agent of r.value.items ?? []) {
+          allItems.push(agent);
         }
-      } catch (err) {
+      } else {
         this.logger.warn(
-          `Failed to list agents in namespace ${ns}: ${err instanceof Error ? err.message : err}`,
+          `Failed to list agents in namespace ${namespaces[i]}: ${r.reason instanceof Error ? r.reason.message : r.reason}`,
         );
       }
     }
+
+    const agents: ChatAgent[] = allItems.map(agent => ({
+      id: `${agent.namespace}/${agent.name}`,
+      name: agent.name,
+      description: agent.description,
+      status: agent.status,
+      isDefault: false,
+      providerType: 'kagenti',
+      createdAt: agent.createdAt,
+      framework: agent.labels?.framework,
+      protocols: agent.labels?.protocol
+        ? Array.isArray(agent.labels.protocol)
+          ? agent.labels.protocol
+          : [agent.labels.protocol]
+        : undefined,
+      source: 'kagenti',
+      namespace: agent.namespace,
+    }));
+
     return agents;
   }
 
@@ -822,6 +861,7 @@ export class KagentiProvider implements AgenticProvider {
   async getAgentCardCached(
     namespace: string,
     name: string,
+    options?: { retries?: number },
   ): Promise<AgentCardCacheEntry> {
     const { config, apiClient } = this.requireInitialized();
     return this.cardCache.getAgentCardCached(
@@ -829,6 +869,7 @@ export class KagentiProvider implements AgenticProvider {
       config,
       namespace,
       name,
+      options,
     );
   }
 

@@ -16,10 +16,7 @@
 
 import { type ReactNode } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { AdminPanel } from '../../hooks';
 
@@ -35,6 +32,7 @@ interface CommandBarProps {
   activePanel: AdminPanel;
   onNavigate: (panel: AdminPanel) => void;
   onBackToMarketplace: () => void;
+  onOpenGuidedTours?: () => void;
   contextPicker?: ReactNode;
 }
 
@@ -48,6 +46,7 @@ export function CommandBar({
   activePanel,
   onNavigate,
   onBackToMarketplace,
+  onOpenGuidedTours,
   contextPicker,
 }: CommandBarProps) {
   const theme = useTheme();
@@ -73,21 +72,6 @@ export function CommandBar({
         flexShrink: 0,
       }}
     >
-      {/* Title */}
-      <Typography
-        variant="caption"
-        sx={{
-          fontWeight: 700,
-          fontSize: '0.7rem',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          color: theme.palette.text.secondary,
-          mr: 2,
-          whiteSpace: 'nowrap',
-        }}
-      >
-        Command Center
-      </Typography>
 
       {/* Section Pills */}
       <Box
@@ -95,7 +79,6 @@ export function CommandBar({
           display: 'flex',
           alignItems: 'center',
           gap: 0.25,
-          flex: 1,
           overflowX: 'auto',
           scrollbarWidth: 'none',
           '&::-webkit-scrollbar': { display: 'none' },
@@ -109,14 +92,15 @@ export function CommandBar({
               role="tab"
               tabIndex={0}
               aria-selected={isActive}
+              data-tour={`nav-${item.label.toLowerCase()}`}
               onClick={() => onNavigate(item.id)}
               onKeyDown={e => { if (e.key === 'Enter') onNavigate(item.id); }}
               sx={{
-                px: 1.5,
-                py: 0.6,
+                px: 2,
+                py: 0.75,
                 borderRadius: 1.5,
                 cursor: 'pointer',
-                fontSize: '0.78rem',
+                fontSize: '0.875rem',
                 fontWeight: isActive ? 700 : 500,
                 color: isActive ? theme.palette.primary.main : theme.palette.text.secondary,
                 bgcolor: isActive ? alpha(theme.palette.primary.main, isDark ? 0.12 : 0.06) : 'transparent',
@@ -167,32 +151,49 @@ export function CommandBar({
         })}
       </Box>
 
-      {/* Right: namespace picker + marketplace */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 1, flexShrink: 0 }}>
+      {/* Right: context picker + actions */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2, flexShrink: 0 }}>
         {contextPicker && (
           <Box sx={{ maxWidth: 160 }}>
             {contextPicker}
           </Box>
         )}
-        <Tooltip title="Back to Marketplace">
+        {onOpenGuidedTours && (
           <Button
             size="small"
             variant="text"
-            startIcon={<StorefrontOutlinedIcon sx={{ fontSize: 16 }} />}
-            onClick={onBackToMarketplace}
+            data-tour="guided-tours"
+            onClick={onOpenGuidedTours}
             sx={{
               textTransform: 'none',
-              fontSize: '0.75rem',
-              fontWeight: 600,
+              fontSize: '0.82rem',
+              fontWeight: 500,
               color: theme.palette.text.secondary,
               px: 1.5,
               minWidth: 'auto',
               '&:hover': { color: theme.palette.primary.main },
             }}
           >
-            Marketplace
+            Tours
           </Button>
-        </Tooltip>
+        )}
+        <Button
+          size="small"
+          variant="text"
+          data-tour="back-to-marketplace"
+          onClick={onBackToMarketplace}
+          sx={{
+            textTransform: 'none',
+            fontSize: '0.82rem',
+            fontWeight: 500,
+            color: theme.palette.text.secondary,
+            px: 1,
+            minWidth: 'auto',
+            '&:hover': { color: theme.palette.primary.main },
+          }}
+        >
+          Marketplace
+        </Button>
       </Box>
     </Box>
   );

@@ -70,6 +70,7 @@
     "@rrbanda"
   ],
   "dependencies": {
-    "driver.js": "^1.4.0"
+    "driver.js": "^1.4.0",
+    "motion": "^12.38.0"
   }
 }

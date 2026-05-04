@@ -285,7 +285,7 @@ export function AdminLayout({
                       py: 0.5,
                       borderRadius: 1,
                       cursor: 'pointer',
-                      fontSize: '0.78rem',
+                      fontSize: '0.82rem',
                       fontWeight: adminPanel === t.id ? 700 : 500,
                       color:
                         adminPanel === t.id ? 'primary.main' : 'text.secondary',
@@ -347,7 +347,7 @@ export function AdminLayout({
                       py: 0.5,
                       borderRadius: 1,
                       cursor: 'pointer',
-                      fontSize: '0.78rem',
+                      fontSize: '0.82rem',
                       fontWeight: adminPanel === t.id ? 700 : 500,
                       color:
                         adminPanel === t.id ? 'primary.main' : 'text.secondary',
@@ -403,7 +403,7 @@ export function AdminLayout({
                       py: 0.5,
                       borderRadius: 1,
                       cursor: 'pointer',
-                      fontSize: '0.78rem',
+                      fontSize: '0.82rem',
                       fontWeight: adminPanel === t.id ? 700 : 500,
                       color:
                         adminPanel === t.id ? 'primary.main' : 'text.secondary',

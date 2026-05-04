@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useApi, configApiRef } from '@backstage/core-plugin-api';
+import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -47,6 +47,12 @@ import type {
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { AgentCatalogCard } from './AgentCatalogCard';
+import { CardGridSkeleton } from '../shared/CardGridSkeleton';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { AgentsPanel } from '../AgentsPanel';
@@ -56,7 +62,7 @@ import { WorkflowErrorBoundary } from '../../WorkflowBuilder/WorkflowErrorBounda
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { AgentCreateIntentDialog } from './AgentCreateIntentDialog';
 import { CreateAgentWizard } from './CreateAgentWizard';
-import { KagentiAgentDetailView } from './KagentiAgentDetailView';
+import { AgentLifecycleDetail } from './AgentLifecycleDetail';
 import { OrchAgentDetailView } from './OrchAgentDetailView';
 import { statusChipColor, formatDateTime } from './kagentiDisplayUtils';
 import type { DeploymentMethod } from './agentWizardTypes';
@@ -145,6 +151,7 @@ export interface KagentiAgentsPanelProps {
   initialAgentName?: string;
   onFocusConsumed?: () => void;
   tourControlRef?: React.MutableRefObject<AgentPanelTourControl | null>;
+  onAgentCreated?: () => void;
 }
 
 export function KagentiAgentsPanel({
@@ -156,10 +163,12 @@ export function KagentiAgentsPanel({
   initialAgentName,
   onFocusConsumed,
   tourControlRef,
+  onAgentCreated,
 }: KagentiAgentsPanelProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
   const configApi = useApi(configApiRef);
+  const { fetch: authFetch } = useApi(fetchApiRef);
   const [rows, setRows] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -186,6 +195,7 @@ export function KagentiAgentsPanel({
   const [activeWorkflow, setActiveWorkflow] = useState<WorkflowDefinition | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [catalogView, setCatalogView] = useState<'grid' | 'table'>('grid');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [page, setPage] = useState(0);
@@ -194,9 +204,12 @@ export function KagentiAgentsPanel({
   const loadAgents = useCallback(() => {
     setLoading(true);
     setError(null);
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Request timed out — the Kagenti backend may be unreachable')), 15_000),
+    );
     Promise.all([
-      api.listKagentiAgents(namespace || undefined).catch(() => ({ agents: [] as KagentiAgentSummary[] })),
-      api.listAgents().catch(() => [] as ChatAgent[]),
+      Promise.race([api.listKagentiAgents(namespace || undefined), timeout]).catch(() => ({ agents: [] as KagentiAgentSummary[] })),
+      Promise.race([api.listAgents(), timeout]).catch(() => [] as ChatAgent[]),
     ]).then(([kagentiRes, allAgents]) => {
       const kagentiRows = (kagentiRes.agents ?? []).map(kagentiToRow);
       const orchRows = allAgents
@@ -315,7 +328,7 @@ export function KagentiAgentsPanel({
 
   if (selectedAgent) {
     return (
-      <KagentiAgentDetailView
+      <AgentLifecycleDetail
         agent={selectedAgent}
         onBack={() => {
           setSelectedAgent(null);
@@ -371,7 +384,7 @@ export function KagentiAgentsPanel({
               setShowWorkflowCanvas(true);
               try {
                 const backendUrl = configApi.getString('backend.baseUrl');
-                await fetch(`${backendUrl}/api/augment/workflows`, {
+                await authFetch(`${backendUrl}/api/augment/workflows`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(wf),
@@ -407,7 +420,7 @@ export function KagentiAgentsPanel({
                 setActiveWorkflow(updated);
                 try {
                   const backendUrl = configApi.getString('backend.baseUrl');
-                  const resp = await fetch(`${backendUrl}/api/augment/workflows/${updated.id}`, {
+                  const resp = await authFetch(`${backendUrl}/api/augment/workflows/${updated.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updated),
@@ -422,7 +435,7 @@ export function KagentiAgentsPanel({
                 if (!activeWorkflow) return;
                 try {
                   const backendUrl = configApi.getString('backend.baseUrl');
-                  const resp = await fetch(`${backendUrl}/api/augment/workflows/${activeWorkflow.id}/publish`, {
+                  const resp = await authFetch(`${backendUrl}/api/augment/workflows/${activeWorkflow.id}/publish`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ changelog: 'Published from Agent Builder' }),
@@ -445,7 +458,7 @@ export function KagentiAgentsPanel({
                 if (activeWorkflow) {
                   try {
                     const backendUrl = configApi.getString('backend.baseUrl');
-                    const resp = await fetch(`${backendUrl}/api/augment/workflows/${activeWorkflow.id}`, {
+                    const resp = await authFetch(`${backendUrl}/api/augment/workflows/${activeWorkflow.id}`, {
                       method: 'DELETE',
                     });
                     if (!resp.ok) throw new Error(`Delete failed: ${resp.status}`);
@@ -570,25 +583,41 @@ export function KagentiAgentsPanel({
       </Box>
 
       {!loading && rows.length > 0 && (
-        <TextField
-          size="small"
-          data-tour="agents-search"
-          placeholder="Search agents by name or description…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          sx={{ mb: 2, maxWidth: 400 }}
-          fullWidth
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon
-                  fontSize="small"
-                  sx={{ color: theme.palette.text.disabled }}
-                />
-              </InputAdornment>
-            ),
-          }}
-        />
+        <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+          <TextField
+            size="small"
+            data-tour="agents-search"
+            placeholder="Search agents by name or description…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            sx={{ maxWidth: 400, flex: 1 }}
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon
+                    fontSize="small"
+                    sx={{ color: theme.palette.text.disabled }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <ToggleButtonGroup
+            value={catalogView}
+            exclusive
+            onChange={(_, val) => val && setCatalogView(val)}
+            size="small"
+            aria-label="View mode"
+          >
+            <ToggleButton value="grid" aria-label="Grid view">
+              <ViewModuleIcon fontSize="small" />
+            </ToggleButton>
+            <ToggleButton value="table" aria-label="Table view">
+              <ViewListIcon fontSize="small" />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
       )}
 
       {error && (
@@ -597,7 +626,8 @@ export function KagentiAgentsPanel({
         </Alert>
       )}
 
-      {loading && (
+      {loading && catalogView === 'grid' && <CardGridSkeleton cards={6} cardHeight={180} />}
+      {loading && catalogView === 'table' && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={32} />
         </Box>
@@ -636,7 +666,59 @@ export function KagentiAgentsPanel({
           </Button>
         </Box>
       )}
-      {!loading && rows.length > 0 && (
+      {/* Card Grid View */}
+      {!loading && rows.length > 0 && catalogView === 'grid' && (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: 2,
+            mb: 2,
+          }}
+        >
+          {paginatedRows.map((row, idx) => (
+            <AgentCatalogCard
+              key={row.id}
+              id={row.id}
+              name={row.name}
+              namespace={row.namespace}
+              description={row.description}
+              status={row.status}
+              labels={row.labels}
+              source={row.source}
+              agentRole={row.agentRole}
+              createdAt={row.createdAt}
+              kagentiAgent={row.kagentiAgent}
+              index={idx}
+              onClick={() => {
+                if (row.source === 'orchestration') {
+                  const orchAgent = rows.find(r => r.id === row.id);
+                  if (orchAgent) {
+                    setSelectedOrchAgent({
+                      id: orchAgent.id,
+                      name: orchAgent.name,
+                      description: orchAgent.description || undefined,
+                      status: orchAgent.status,
+                      providerType: 'orchestration',
+                      source: 'orchestration',
+                      agentRole: orchAgent.agentRole as ChatAgent['agentRole'],
+                    });
+                  }
+                } else if (row.kagentiAgent) {
+                  setSelectedAgent(row.kagentiAgent);
+                }
+              }}
+              onChat={onChatWithAgent ? () => onChatWithAgent(row.id) : undefined}
+              onDelete={row.source === 'kagenti' && row.kagentiAgent ? () => {
+                setDeleteTarget(row.kagentiAgent!);
+              } : undefined}
+            />
+          ))}
+        </Box>
+      )}
+
+      {/* Table View */}
+      {!loading && rows.length > 0 && catalogView === 'table' && (
         <>
           <TableContainer data-tour="agents-table" sx={{ ...tableContainerSx(theme), overflowX: 'auto' }}>
             <Table size="small">
@@ -850,7 +932,7 @@ export function KagentiAgentsPanel({
           setCreateOpen(false);
           setInitialDeployMethod(undefined);
         }}
-        onCreated={loadAgents}
+        onCreated={() => { loadAgents(); onAgentCreated?.(); }}
         onStepControl={setter => {
           wizardStepRef.current = setter;
         }}

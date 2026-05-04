@@ -18,61 +18,18 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Snackbar from '@mui/material/Snackbar';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import {
   useAdminConfig,
   useBranding,
   dispatchBrandingRefresh,
 } from '../../hooks';
 import { AdminSection } from './shared/AdminSection';
-import { SELECT_MENU_PROPS } from './shared/selectMenuProps';
 import { ColorInput } from './shared/ColorInput';
 import {
   DEFAULT_BRANDING,
   type BrandingConfig,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import {
-  THEME_PRESETS,
-  isValidPresetName,
-  type ThemePresetName,
-} from '../../theme/tokens';
-
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
-
-const PRESET_NAMES = Object.keys(THEME_PRESETS) as ThemePresetName[];
-
-const PresetSwatch = ({ presetName }: { presetName: ThemePresetName }) => {
-  const preset = THEME_PRESETS[presetName];
-  const primary = preset.colors?.brand?.primary ?? '#888';
-  const secondary = preset.colors?.brand?.secondary ?? '#ccc';
-  return (
-    <Box
-      sx={{ display: 'inline-flex', gap: 0.5, mr: 1, verticalAlign: 'middle' }}
-    >
-      <Box
-        sx={{
-          width: 14,
-          height: 14,
-          borderRadius: '50%',
-          backgroundColor: primary,
-          border: '1px solid rgba(0,0,0,0.15)',
-        }}
-      />
-      <Box
-        sx={{
-          width: 14,
-          height: 14,
-          borderRadius: '50%',
-          backgroundColor: secondary,
-          border: '1px solid rgba(0,0,0,0.15)',
-        }}
-      />
-    </Box>
-  );
-};
 
 // ---------------------------------------------------------------------------
 // Field group header
@@ -146,25 +103,6 @@ export const AppearanceSection = ({
     [],
   );
 
-  const handlePresetChange = useCallback(
-    (presetName: string) => {
-      set('themePreset', presetName || undefined);
-      if (presetName && isValidPresetName(presetName)) {
-        const preset = THEME_PRESETS[presetName];
-        const brand = preset.colors?.brand;
-        if (brand) {
-          setLocal(prev => ({
-            ...prev,
-            themePreset: presetName,
-            ...(brand.primary && { primaryColor: brand.primary }),
-            ...(brand.secondary && { secondaryColor: brand.secondary }),
-          }));
-        }
-      }
-    },
-    [set],
-  );
-
   // Validate all color fields
   const colorFields: (keyof BrandingConfig)[] = [
     'primaryColor',
@@ -220,40 +158,18 @@ export const AppearanceSection = ({
       >
         {/* Identity */}
         <FieldGroup title="Identity">
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 1 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, pt: 1 }}>
             <TextField
               label="App Name"
               size="small"
               value={local.appName}
               onChange={e => set('appName', e.target.value)}
-              sx={{ flex: 1, minWidth: 200 }}
             />
-            <TextField
-              label="Tagline"
-              size="small"
-              value={local.tagline}
-              onChange={e => set('tagline', e.target.value)}
-              sx={{ flex: 1, minWidth: 200 }}
-            />
-          </Box>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <TextField
               label="Input Placeholder"
               size="small"
               value={local.inputPlaceholder}
               onChange={e => set('inputPlaceholder', e.target.value)}
-              sx={{ flex: 1, minWidth: 200 }}
-            />
-          </Box>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 1 }}>
-            <TextField
-              label="Logo URL"
-              size="small"
-              value={local.logoUrl ?? ''}
-              onChange={e => set('logoUrl', e.target.value || undefined)}
-              placeholder="https://example.com/logo.png"
-              helperText="Must be https:// or http://"
-              sx={{ flex: 1, minWidth: 200 }}
             />
             <TextField
               label="Favicon URL"
@@ -261,8 +177,15 @@ export const AppearanceSection = ({
               value={local.faviconUrl ?? ''}
               onChange={e => set('faviconUrl', e.target.value || undefined)}
               placeholder="https://example.com/favicon.ico"
-              helperText="Must be https:// or http://"
-              sx={{ flex: 1, minWidth: 200 }}
+              helperText="Tab icon URL"
+            />
+            <TextField
+              label="Bot Avatar URL"
+              size="small"
+              value={local.botAvatarUrl ?? ''}
+              onChange={e => set('botAvatarUrl', e.target.value || undefined)}
+              placeholder="https://example.com/avatar.png"
+              helperText="Assistant avatar in chat"
             />
           </Box>
         </FieldGroup>
@@ -309,47 +232,6 @@ export const AppearanceSection = ({
           </Box>
         </FieldGroup>
 
-        {/* Theme */}
-        <FieldGroup title="Theme">
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 2,
-              flexWrap: 'wrap',
-              alignItems: 'center',
-            }}
-          >
-            <FormControl
-              size="small"
-              sx={{ width: 200 }}
-              disabled={PRESET_NAMES.length === 0}
-            >
-              <InputLabel id="theme-preset-label">Theme Preset</InputLabel>
-              <Select
-                labelId="theme-preset-label"
-                value={local.themePreset ?? 'default'}
-                label="Theme Preset"
-                onChange={e => handlePresetChange(e.target.value)}
-                MenuProps={SELECT_MENU_PROPS}
-              >
-                {PRESET_NAMES.length === 0 ? (
-                  <MenuItem value="" disabled>
-                    <Typography variant="body2" color="text.secondary">
-                      No presets available
-                    </Typography>
-                  </MenuItem>
-                ) : (
-                  PRESET_NAMES.map(name => (
-                    <MenuItem key={name} value={name}>
-                      <PresetSwatch presetName={name} />
-                      {name.charAt(0).toUpperCase() + name.slice(1)}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
-          </Box>
-        </FieldGroup>
       </AdminSection>
 
       <Snackbar

@@ -25,7 +25,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useApi, configApiRef } from '@backstage/core-plugin-api';
+import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import { InlineCode, PreBlock } from '../CodeBlock';
 import { SPACING } from './theme/tokens';
 
@@ -91,6 +91,7 @@ function parseSSELines(chunk: string, buffer: string): { events: string[]; remai
 
 export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps) {
   const configApi = useApi(configApiRef);
+  const { fetch: authFetch } = useApi(fetchApiRef);
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const [messages, setMessages] = useState<Message[]>([]);
@@ -158,7 +159,7 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
 
     try {
       const backendUrl = configApi.getString('backend.baseUrl');
-      const res = await fetch(`${backendUrl}/api/augment/workflows/${workflowId}/run/stream`, {
+      const res = await authFetch(`${backendUrl}/api/augment/workflows/${workflowId}/run/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input: text }),

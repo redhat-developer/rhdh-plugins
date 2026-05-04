@@ -19,5 +19,7 @@ export { CommandBar } from './CommandBar';
 export { StatusBar } from './StatusBar';
 export { MetricTile } from './MetricTile';
 export { HealthMosaic } from './HealthMosaic';
+export { OverviewHero } from './OverviewHero';
+export { ActivityFeed } from './ActivityFeed';
 export { ReviewQueue } from './ReviewQueue';
 export { ToolReviewQueue } from './ToolReviewQueue';

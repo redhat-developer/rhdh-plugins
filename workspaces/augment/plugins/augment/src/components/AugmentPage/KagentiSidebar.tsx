@@ -130,7 +130,7 @@ export function KagentiSidebar({
         ],
       },
       {
-        title: 'Agent Ops',
+        title: 'Operations',
         items: [
           {
             id: 'kagenti-registry' as AdminPanel,

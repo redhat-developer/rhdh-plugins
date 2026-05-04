@@ -90,6 +90,7 @@ export function registerKagentiAgentRoutes(
               const cached = await kagenti.getAgentCardCached(
                 agent.namespace,
                 agent.name,
+                { retries: 0 },
               );
               enriched[idx] = { ...agent, agentCard: cached.card };
             } catch (err) {
@@ -194,7 +195,6 @@ export function registerKagentiAgentRoutes(
 
   router.post(
     '/kagenti/agents',
-    requireAdminAccess,
     withRoute(
       'POST /kagenti/agents',
       'Failed to create agent',

@@ -150,10 +150,8 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
 
     const handleChangeAgent = useCallback(() => {
       resetAgentSelection();
-      if (messages.length > 0 && onNewChat) {
-        onNewChat();
-      }
-    }, [messages.length, onNewChat, resetAgentSelection]);
+      onNewChat?.();
+    }, [onNewChat, resetAgentSelection]);
 
     const handleStarterClick = useCallback((prompt: string) => {
       setInputValue(prompt);

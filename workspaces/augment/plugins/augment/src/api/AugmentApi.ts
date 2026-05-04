@@ -134,6 +134,11 @@ export interface AugmentApi {
   getQuickActions(): Promise<QuickAction[]>;
 
   /**
+   * Get configured guided experience tours (from YAML or defaults)
+   */
+  getTours(): Promise<import('../components/AdminPanels/shared/defaultTours').TourDefinition[]>;
+
+  /**
    * Get configured prompt groups (grouped prompt cards for the welcome screen)
    */
   getPromptGroups(): Promise<PromptGroup[]>;
@@ -782,6 +787,11 @@ export class AugmentApiClient implements AugmentApi {
 
   async getQuickActions(): Promise<QuickAction[]> {
     return adminEndpoints.getQuickActions(this.adminDeps);
+  }
+
+  async getTours(): Promise<import('../components/AdminPanels/shared/defaultTours').TourDefinition[]> {
+    const data = await this.fetchJson<{ tours: import('../components/AdminPanels/shared/defaultTours').TourDefinition[] }>('/tours');
+    return data.tours ?? [];
   }
 
   async getPromptGroups(): Promise<PromptGroup[]> {

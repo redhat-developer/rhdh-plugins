@@ -260,9 +260,10 @@ export function CreateAgentWizard({
             <Button
               onClick={onClose}
               disabled={form.submitting}
+              startIcon={<span style={{ fontSize: '1.1em' }}>&larr;</span>}
               sx={{ textTransform: 'none' }}
             >
-              Cancel
+              {form.activeStep === 0 ? 'Back' : 'Cancel'}
             </Button>
             <Box sx={{ display: 'flex', gap: 1 }}>
               {form.activeStep > 0 && (

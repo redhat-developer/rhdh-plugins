@@ -26,7 +26,7 @@ import Chip from '@mui/material/Chip';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme, alpha } from '@mui/material/styles';
-import { useApi, configApiRef } from '@backstage/core-plugin-api';
+import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import type { NodeExecutionRecord } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ExecutionTrace } from './ExecutionTrace';
 
@@ -55,6 +55,7 @@ export function WorkflowPreview({
 }: WorkflowPreviewProps) {
   const theme = useTheme();
   const configApi = useApi(configApiRef);
+  const { fetch: authFetch } = useApi(fetchApiRef);
   const [messages, setMessages] = useState<PreviewMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,7 +74,7 @@ export function WorkflowPreview({
   }, [messages, loading]);
 
   const defaultOnRun = useCallback(async (text: string) => {
-    const resp = await fetch(`${backendUrl}/api/augment/workflows/${workflowId}/run`, {
+    const resp = await authFetch(`${backendUrl}/api/augment/workflows/${workflowId}/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: text }),

@@ -16,18 +16,20 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
+import Button from '@mui/material/Button';
+import { useTheme, alpha } from '@mui/material/styles';
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import ExtensionOutlinedIcon from '@mui/icons-material/ExtensionOutlined';
 import { useApi } from '@backstage/core-plugin-api';
 import type { ChatAgent, KagentiToolSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../api';
-import { StatusBar } from './StatusBar';
+import { OverviewHero } from './OverviewHero';
 import { MetricTile } from './MetricTile';
 import { HealthMosaic } from './HealthMosaic';
-import { statRowSx, sectionCardSx, pageTitleSx, pageSubtitleSx } from './commandcenter.styles';
+import { ActivityFeed } from './ActivityFeed';
+import { statRowSx, sectionCardSx } from './commandcenter.styles';
 import { STATUS_COLORS, LIFECYCLE_COLORS } from './commandcenter.constants';
 import type { AdminPanel } from '../../hooks';
 
@@ -37,8 +39,8 @@ interface OpsOverviewProps {
 }
 
 /**
- * Command Center Overview -- the first thing Agent Ops sees.
- * Answers: "What needs my attention?" with actionable metrics.
+ * Command Center Overview -- the ops dashboard.
+ * Rich visual hierarchy with hero ring, metric tiles, fleet health, activity, and quick actions.
  */
 export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
   const theme = useTheme();
@@ -73,28 +75,20 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%', minWidth: 0, overflow: 'hidden' }}>
-      {/* Header */}
-      <Box>
-        <Typography sx={pageTitleSx(theme)}>Overview</Typography>
-        <Typography sx={pageSubtitleSx(theme)}>
-          Platform health and operational status at a glance.
-        </Typography>
-      </Box>
+      {/* Hero -- health ring + status */}
+      <OverviewHero
+        ready={stats.ready}
+        total={stats.total}
+        pendingReview={stats.pendingReview}
+        loading={loading}
+      />
 
-      {/* Status Bar */}
-      {!loading && (
-        <StatusBar
-          ready={stats.ready}
-          total={stats.total}
-          pendingReview={stats.pendingReview}
-        />
-      )}
-
-      {/* Metric Tiles */}
-      <Box sx={statRowSx()}>
+      {/* Metric Tiles -- 2x2 responsive grid */}
+      <Box data-tour="metric-tiles" sx={statRowSx()}>
         <MetricTile
           label="Agents"
           value={loading ? '...' : stats.total}
+          subtitle={stats.allHealthy ? 'All healthy' : `${stats.total - stats.ready} need attention`}
           icon={<HubOutlinedIcon />}
           color={theme.palette.primary.main}
           loading={loading}
@@ -102,6 +96,7 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
         <MetricTile
           label="Ready"
           value={loading ? '...' : `${stats.ready}/${stats.total}`}
+          subtitle={stats.allHealthy ? 'Fleet fully operational' : `${stats.total - stats.ready} degraded`}
           icon={stats.allHealthy ? <CheckCircleIcon /> : <WarningAmberIcon />}
           color={stats.allHealthy ? STATUS_COLORS.healthy : STATUS_COLORS.warning}
           loading={loading}
@@ -110,6 +105,7 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
         <MetricTile
           label="Published"
           value={loading ? '...' : stats.deployed}
+          subtitle={stats.deployed > 0 ? 'In marketplace catalog' : 'None published yet'}
           icon={<CheckCircleIcon />}
           color={LIFECYCLE_COLORS.deployed}
           loading={loading}
@@ -117,19 +113,93 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
         <MetricTile
           label="Queue"
           value={loading ? '...' : stats.pendingReview}
+          subtitle={stats.pendingReview > 0 ? 'Awaiting your approval' : 'All clear'}
           color={stats.pendingReview > 0 ? LIFECYCLE_COLORS.registered : STATUS_COLORS.neutral}
           loading={loading}
           glow={stats.pendingReview > 0}
-          onClick={() => onNavigate?.('ops-review-queue' as AdminPanel)}
+          onClick={stats.pendingReview > 0 ? () => onNavigate?.('ops-review-queue' as AdminPanel) : undefined}
         />
       </Box>
 
-      {/* Health Mosaic -- fleet heatmap */}
-      {!loading && (
-        <Box sx={sectionCardSx(theme, isDark)}>
-          <HealthMosaic agents={agents} />
+      {/* Bottom section -- two-column grid */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1.5fr 1fr' },
+          gap: 3,
+        }}
+      >
+        {/* Left: Fleet Health */}
+        {!loading && (
+          <Box data-tour="fleet-health" sx={sectionCardSx(theme, isDark)}>
+            <HealthMosaic agents={agents} />
+          </Box>
+        )}
+
+        {/* Right: Activity + Quick Actions */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          {!loading && (
+            <Box sx={sectionCardSx(theme, isDark)}>
+              <ActivityFeed agents={agents} />
+            </Box>
+          )}
+
+          {/* Quick Actions */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {stats.pendingReview > 0 && (
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => onNavigate?.('ops-review-queue' as AdminPanel)}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.72rem',
+                  borderRadius: 2,
+                  borderColor: alpha(LIFECYCLE_COLORS.registered, 0.4),
+                  color: LIFECYCLE_COLORS.registered,
+                  '&:hover': { borderColor: LIFECYCLE_COLORS.registered, bgcolor: alpha(LIFECYCLE_COLORS.registered, 0.08) },
+                }}
+              >
+                Review Queue ({stats.pendingReview})
+              </Button>
+            )}
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => onNavigate?.('ops-platform' as AdminPanel)}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.72rem',
+                borderRadius: 2,
+                color: 'text.secondary',
+                borderColor: alpha(isDark ? theme.palette.common.white : theme.palette.common.black, 0.12),
+                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.06) },
+              }}
+            >
+              Platform Config
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<ExtensionOutlinedIcon sx={{ fontSize: 14 }} />}
+              onClick={() => onNavigate?.('kagenti-tools' as AdminPanel)}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.72rem',
+                borderRadius: 2,
+                color: 'text.secondary',
+                borderColor: alpha(isDark ? theme.palette.common.white : theme.palette.common.black, 0.12),
+                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.06) },
+              }}
+            >
+              Tools ({stats.totalTools})
+            </Button>
+          </Box>
         </Box>
-      )}
+      </Box>
     </Box>
   );
 }

@@ -20,6 +20,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { alpha, useTheme } from '@mui/material/styles';
+import { glassSurface, borderRadius, transitions, typeScale, animations, staggerDelay, reducedMotion } from '../../../theme/tokens';
 
 export interface IntentCard {
   id: string;
@@ -40,34 +41,42 @@ export function CardGrid({
   columns: number;
 }) {
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   return (
     <Box
       sx={{
         display: 'grid',
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap: 2,
+        gap: 2.5,
       }}
     >
-      {cards.map(card => (
+      {cards.map((card, idx) => (
         <ButtonBase
           key={card.id}
           data-tour={card.tourId}
           onClick={() => onCardClick(card.id)}
           sx={{
+            ...glassSurface(theme, 6, isDark ? 0.5 : 0.75),
+            ...animations.fadeSlideIn,
+            animationDelay: staggerDelay(idx, 60),
+            animationFillMode: 'both',
+            '@media (prefers-reduced-motion: reduce)': reducedMotion,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
             textAlign: 'left',
-            p: 2.5,
-            borderRadius: 2,
-            border: `1px solid ${theme.palette.divider}`,
-            bgcolor: theme.palette.background.paper,
-            transition: 'border-color 0.15s, box-shadow 0.15s, transform 0.1s',
+            p: 3,
+            borderRadius: borderRadius.lg,
+            transition: transitions.normal,
             '&:hover': {
-              borderColor: theme.palette.primary.main,
-              boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.25)}, 0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
-              transform: 'translateY(-1px)',
+              borderColor: alpha(theme.palette.primary.main, 0.4),
+              boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}, 0 8px 24px ${alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08)}`,
+              transform: 'translateY(-3px) scale(1.01)',
+            },
+            '&:focus-visible': {
+              outline: `2px solid ${theme.palette.primary.main}`,
+              outlineOffset: -2,
             },
           }}
         >
@@ -76,20 +85,25 @@ export function CardGrid({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 44,
-              height: 44,
-              borderRadius: 1.5,
-              bgcolor: alpha(theme.palette.primary.main, 0.08),
+              width: 48,
+              height: 48,
+              borderRadius: borderRadius.md,
+              bgcolor: alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08),
               color: theme.palette.primary.main,
-              mb: 1.5,
-              '& .MuiSvgIcon-root': { fontSize: 24 },
+              mb: 2,
+              '& .MuiSvgIcon-root': { fontSize: 26 },
             }}
           >
             {card.icon}
           </Box>
           <Typography
             variant="subtitle1"
-            sx={{ fontWeight: 700, mb: 0.25, lineHeight: 1.3 }}
+            sx={{
+              fontWeight: 700,
+              mb: 0.5,
+              lineHeight: 1.3,
+              fontSize: typeScale.sectionTitle.fontSize,
+            }}
           >
             {card.title}
           </Typography>
@@ -99,6 +113,7 @@ export function CardGrid({
               color: theme.palette.primary.main,
               fontWeight: 600,
               mb: 1,
+              fontSize: typeScale.caption.fontSize,
             }}
           >
             {card.subtitle}
@@ -106,7 +121,7 @@ export function CardGrid({
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ lineHeight: 1.45, fontSize: '0.8125rem' }}
+            sx={{ lineHeight: 1.5, fontSize: typeScale.bodySmall.fontSize }}
           >
             {card.description}
           </Typography>
@@ -128,15 +143,18 @@ export function DialogHeader({
   onBack?: () => void;
 }) {
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   return (
     <Box
       sx={{
         px: 3,
         pt: 3,
-        pb: 2,
-        background: alpha(theme.palette.primary.main, 0.03),
-        borderBottom: `1px solid ${theme.palette.divider}`,
+        pb: 2.5,
+        background: isDark
+          ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`
+          : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`,
+        borderBottom: `1px solid ${alpha(theme.palette.divider, isDark ? 0.2 : 0.1)}`,
         display: 'flex',
         alignItems: 'flex-start',
         gap: 1,
@@ -156,11 +174,11 @@ export function DialogHeader({
         <Typography
           id={titleId}
           variant="h6"
-          sx={{ fontWeight: 700, mb: 0.5 }}
+          sx={{ fontWeight: 700, mb: 0.5, fontSize: typeScale.pageTitle.fontSize }}
         >
           {title}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ fontSize: typeScale.bodySmall.fontSize }}>
           {subtitle}
         </Typography>
       </Box>
