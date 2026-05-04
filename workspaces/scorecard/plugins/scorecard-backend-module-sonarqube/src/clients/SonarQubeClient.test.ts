@@ -16,6 +16,7 @@
 
 import { ConfigReader } from '@backstage/config';
 import { SonarQubeClient } from './SonarQubeClient';
+import { mockServices } from '@backstage/backend-test-utils';
 
 const mockFetch = jest.fn();
 globalThis.fetch = mockFetch;
@@ -27,13 +28,7 @@ describe('SonarQubeClient', () => {
       apiKey: 'test-key',
     },
   });
-  const logger = {
-    child: jest.fn().mockReturnThis(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn(),
-  } as any;
+  const logger = mockServices.logger.mock();
 
   let client: SonarQubeClient;
 

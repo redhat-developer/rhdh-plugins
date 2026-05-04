@@ -16,17 +16,12 @@
 
 import { ConfigReader } from '@backstage/config';
 import { SonarQubeMetricProviderFactory } from './SonarQubeMetricProviderFactory';
+import { mockServices } from '@backstage/backend-test-utils';
 
 jest.mock('../clients/SonarQubeClient');
 
 const mockConfig = new ConfigReader({});
-const mockLogger = {
-  child: jest.fn().mockReturnThis(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn(),
-  error: jest.fn(),
-} as any;
+const mockLogger = mockServices.logger.mock();
 
 describe('createMetricProvider', () => {
   it('returns a boolean provider for quality_gate', () => {

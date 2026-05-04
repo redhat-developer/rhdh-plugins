@@ -275,4 +275,4 @@ scorecard:
       schedule:
         frequency: { minutes: 5 }
         timeout: { minutes: 10 }
-        initialDelay: { seconds: 5 }
+        initialDelay: { seconds: 10 }
