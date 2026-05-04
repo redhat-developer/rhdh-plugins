@@ -1,5 +1,11 @@
 # app
 
+## 0.0.10
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed@2.6.1
+
 ## 0.0.9
 
 ### Patch Changes
