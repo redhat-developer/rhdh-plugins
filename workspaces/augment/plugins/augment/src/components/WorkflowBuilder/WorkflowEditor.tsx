@@ -14,7 +14,7 @@ import { PreviewChatPanel } from './PreviewChatPanel';
 import { WorkflowCodeExport } from './WorkflowCodeExport';
 import { WorkflowSettingsDialog } from './WorkflowSettingsDialog';
 import { WorkflowEvaluation } from './WorkflowEvaluation';
-import { useApi, configApiRef } from '@backstage/core-plugin-api';
+import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../api';
 import './WorkflowEditor.css';
 
@@ -33,6 +33,7 @@ export interface WorkflowEditorProps {
 export function WorkflowEditor({ workflow, onSave, onPublish, onBack, onDelete, readOnly }: WorkflowEditorProps) {
   const api = useApi(augmentApiRef);
   const configApi = useApi(configApiRef);
+  const { fetch: authFetch } = useApi(fetchApiRef);
   const editorTheme = useTheme();
   const isNarrow = useMediaQuery(editorTheme.breakpoints.down('md'));
   const [mode, setMode] = useState<EditorMode>('edit');
@@ -260,7 +261,7 @@ export function WorkflowEditor({ workflow, onSave, onPublish, onBack, onDelete, 
           onClose={() => setEvalOpen(false)}
           onRunEvaluation={async (testCases, scoringFunctions) => {
             const backendUrl = configApi.getString('backend.baseUrl');
-            const resp = await fetch(`${backendUrl}/api/augment/workflows/${workflow.id}/evaluate`, {
+            const resp = await authFetch(`${backendUrl}/api/augment/workflows/${workflow.id}/evaluate`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ testCases, scoringFunctions }),

@@ -20,6 +20,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import { ErrorBoundary } from '@backstage/core-components';
+import { useApi, discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import { ChatContainer, type ChatContainerRef } from '../ChatContainer';
 import { RightPane } from '../RightPane';
 import { ChatViewModeProvider } from '../../hooks';
@@ -35,7 +36,8 @@ import { ToolCreateIntentDialog } from '../AdminPanels/KagentiPanels/ToolCreateI
 import { CreateToolWizard } from '../AdminPanels/KagentiPanels/CreateToolWizard';
 import { AgentLifecycleDetail } from '../AdminPanels/KagentiPanels/AgentLifecycleDetail';
 import { WorkflowDashboard } from '../WorkflowBuilder/WorkflowDashboard';
-import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { WorkflowEditor } from '../WorkflowBuilder/WorkflowEditor';
+import type { KagentiAgentSummary, WorkflowDefinition } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { WorkflowErrorBoundary } from '../WorkflowBuilder/WorkflowErrorBoundary';
 import type { DeploymentMethod } from '../AdminPanels/KagentiPanels/agentWizardTypes';
 import type { AdminTourActions } from './AdminLayout';
@@ -80,6 +82,9 @@ export function ChatView({
     kagentiNamespace,
   } = useAppState();
 
+  const discoveryApi = useApi(discoveryApiRef);
+  const { fetch: authFetch } = useApi(fetchApiRef);
+
   const [rightPaneCollapsed, setRightPaneCollapsed] = useState(true);
   const [currentAgent, setCurrentAgent] = useState<string | undefined>();
   const [showMarketplace, setShowMarketplace] = useState(true);
@@ -92,6 +97,7 @@ export function ChatView({
     DeploymentMethod | undefined
   >();
   const [showWorkflowBuilder, setShowWorkflowBuilder] = useState(false);
+  const [activeWorkflow, setActiveWorkflow] = useState<WorkflowDefinition | null>(null);
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
 
   // Tool creation state
@@ -187,6 +193,7 @@ export function ChatView({
 
   const handleCloseWorkflowBuilder = useCallback(() => {
     setShowWorkflowBuilder(false);
+    setActiveWorkflow(null);
     setShowMarketplace(true);
   }, []);
 
@@ -324,10 +331,62 @@ export function ChatView({
             </Box>
             <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
               <WorkflowErrorBoundary>
-                <WorkflowDashboard
-                  onOpenWorkflow={() => {}}
-                  onCreateWorkflow={() => {}}
-                />
+                {activeWorkflow ? (
+                  <WorkflowEditor
+                    workflow={activeWorkflow}
+                    onBack={() => setActiveWorkflow(null)}
+                    onSave={async (wf) => {
+                      setActiveWorkflow(wf);
+                      try {
+                        const baseUrl = await discoveryApi.getBaseUrl('augment');
+                        await authFetch(`${baseUrl}/workflows/${wf.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(wf),
+                        });
+                      } catch { /* silent -- editor still works locally */ }
+                    }}
+                    onPublish={async () => {
+                      if (!activeWorkflow) return;
+                      try {
+                        const baseUrl = await discoveryApi.getBaseUrl('augment');
+                        // 1. Publish the workflow
+                        const resp = await authFetch(`${baseUrl}/workflows/${activeWorkflow.id}/publish`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ changelog: 'Published from Agent Builder' }),
+                        });
+                        if (resp.ok) {
+                          const published = await resp.json();
+                          setActiveWorkflow(published);
+                        }
+                        // 2. Submit the workflow-agent for review (registered lifecycle = review queue)
+                        const agentId = activeWorkflow.id;
+                        await authFetch(`${baseUrl}/agents/${encodeURIComponent(agentId)}/promote`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ targetStage: 'registered' }),
+                        });
+                        setCreateSuccess('Workflow submitted for review! It will appear in the marketplace once approved.');
+                      } catch { /* silent */ }
+                    }}
+                  />
+                ) : (
+                  <WorkflowDashboard
+                    onOpenWorkflow={(wf) => setActiveWorkflow(wf)}
+                    onCreateWorkflow={async (wf) => {
+                      setActiveWorkflow(wf);
+                      try {
+                        const baseUrl = await discoveryApi.getBaseUrl('augment');
+                        await authFetch(`${baseUrl}/workflows`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(wf),
+                        });
+                      } catch { /* silent -- workflow created locally */ }
+                    }}
+                  />
+                )}
               </WorkflowErrorBoundary>
             </Box>
           </Box>
@@ -404,7 +463,7 @@ export function ChatView({
               activeSessionId={activeSessionId ?? undefined}
             />
 
-            {!showMarketplaceView && (
+            {!showMarketplaceView && !showWorkflowBuilder && !detailAgent && (
               <RightPane
                 sidebarCollapsed={rightPaneCollapsed}
                 onToggleSidebar={toggleRightPane}

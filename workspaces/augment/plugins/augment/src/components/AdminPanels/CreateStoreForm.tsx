@@ -53,8 +53,8 @@ export function CreateStoreForm({
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
-        gap: 1.5,
-        overflow: 'hidden',
+        gap: 2,
+        pt: 1,
       }}
     >
       <TextField

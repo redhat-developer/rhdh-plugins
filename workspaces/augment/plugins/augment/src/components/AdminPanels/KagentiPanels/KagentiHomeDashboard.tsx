@@ -61,7 +61,7 @@ import {
   subtleBorder,
   tableContainerSx,
 } from '../shared/commandCenterStyles';
-import { typeScale, iconSize } from '../../../theme/tokens';
+import { typeScale, iconSize, glassSurface, borderRadius, transitions } from '../../../theme/tokens';
 import { InfoTip } from '../shared/InfoTip';
 import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
 
@@ -584,16 +584,21 @@ export function KagentiHomeDashboard({
         }}
       >
         {statCards.map(card => (
-          <Card
+          <Box
             key={card.label}
-            variant="outlined"
             sx={{
-              p: 1.5,
+              ...glassSurface(theme, 6),
+              p: 2,
               display: 'flex',
               flexDirection: 'column',
-              gap: 0.5,
-              bgcolor: 'background.paper',
-              border: subtleBorder(theme),
+              gap: 0.75,
+              borderRadius: borderRadius.md,
+              borderLeft: `3px solid ${card.accent}`,
+              transition: transitions.fast,
+              '&:hover': {
+                transform: 'translateY(-1px)',
+                boxShadow: `0 6px 20px ${alpha(card.accent, isDark ? 0.15 : 0.1)}`,
+              },
             }}
           >
             <Box
@@ -607,7 +612,7 @@ export function KagentiHomeDashboard({
                 {card.label}
                 {card.tip && <InfoTip text={card.tip} />}
               </Typography>
-              <Box sx={{ color: theme.palette.text.disabled }}>{card.icon}</Box>
+              <Box sx={{ color: alpha(card.accent, 0.7) }}>{card.icon}</Box>
             </Box>
             {loading ? (
               <Skeleton variant="text" width={60} height={32} />
@@ -616,14 +621,14 @@ export function KagentiHomeDashboard({
                 sx={{
                   fontWeight: 700,
                   lineHeight: 1,
-                  fontSize: typeScale.sectionTitle.fontSize,
+                  fontSize: '1.5rem',
                   color: 'text.primary',
                 }}
               >
                 {card.value}
               </Typography>
             )}
-          </Card>
+          </Box>
         ))}
       </Box>
 

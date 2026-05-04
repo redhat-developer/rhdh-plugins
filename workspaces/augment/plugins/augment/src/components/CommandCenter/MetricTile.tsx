@@ -23,6 +23,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 interface MetricTileProps {
   label: string;
   value: string | number;
+  subtitle?: string;
   icon?: ReactNode;
   color: string;
   loading?: boolean;
@@ -32,9 +33,9 @@ interface MetricTileProps {
 
 /**
  * A cockpit-style metric tile with optional animated glow border.
- * Dark glass background, large centered value, subtle color accent.
+ * Dark glass background, large centered value, contextual subtitle.
  */
-export function MetricTile({ label, value, icon, color, loading, glow, onClick }: MetricTileProps) {
+export function MetricTile({ label, value, subtitle, icon, color, loading, glow, onClick }: MetricTileProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
@@ -112,6 +113,37 @@ export function MetricTile({ label, value, icon, color, loading, glow, onClick }
           }}
         >
           {value}
+        </Typography>
+      )}
+
+      {/* Contextual subtitle */}
+      {subtitle && (
+        <Typography
+          sx={{
+            fontSize: '0.65rem',
+            color: 'text.secondary',
+            mt: 0.75,
+            lineHeight: 1.3,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {subtitle}
+        </Typography>
+      )}
+
+      {/* Click hint */}
+      {onClick && (
+        <Typography
+          sx={{
+            fontSize: '0.6rem',
+            color: alpha(color, 0.7),
+            mt: 0.5,
+            fontWeight: 600,
+          }}
+        >
+          View &rarr;
         </Typography>
       )}
     </Box>

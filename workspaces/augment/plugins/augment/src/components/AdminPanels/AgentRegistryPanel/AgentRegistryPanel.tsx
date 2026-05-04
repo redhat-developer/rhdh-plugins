@@ -178,7 +178,11 @@ function timeAgo(dateStr?: string): string {
   return `${days}d ago`;
 }
 
-export const AgentRegistryPanel: FC = () => {
+interface AgentRegistryPanelProps {
+  initialStageFilter?: StageFilter;
+}
+
+export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFilter }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
@@ -198,7 +202,7 @@ export const AgentRegistryPanel: FC = () => {
   const [dirty, setDirty] = useState(false);
   const [search, setSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
-  const [stageFilter, setStageFilter] = useState<StageFilter>('all');
+  const [stageFilter, setStageFilter] = useState<StageFilter>(initialStageFilter ?? 'all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [promoting, setPromoting] = useState<string | null>(null);
   const [promoteDialog, setPromoteDialog] = useState<{ agentId: string; action: 'promote' | 'demote'; fromStage: AgentLifecycleStage; toStage: AgentLifecycleStage } | null>(null);
@@ -257,7 +261,10 @@ export const AgentRegistryPanel: FC = () => {
   const fetchAgents = useCallback(async () => {
     try {
       setAgentsLoading(true);
-      const result = await api.listAgents();
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out — the backend may be unreachable')), 15_000),
+      );
+      const result = await Promise.race([api.listAgents(), timeout]);
       setAgents(result);
     } catch (err) {
       setToast(`Failed to load agents: ${err instanceof Error ? err.message : 'Unknown error'}`);

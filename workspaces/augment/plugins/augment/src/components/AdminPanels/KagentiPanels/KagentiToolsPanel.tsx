@@ -207,7 +207,7 @@ export function KagentiToolsPanel({
           justifyContent: 'space-between',
           mb: 3,
           flexWrap: 'wrap',
-          gap: 1,
+          gap: 2,
         }}
       >
         <Box>
@@ -320,7 +320,7 @@ export function KagentiToolsPanel({
             data-tour="tools-table"
             sx={{ ...tableContainerSx(theme), overflowX: 'auto' }}
           >
-            <Table size="small">
+            <Table size="small" sx={{ '& .MuiTableCell-root': { py: 1.5 } }}>
               <TableHead>
                 <TableRow>
                   {sortableHead('name', 'Name')}
@@ -355,7 +355,7 @@ export function KagentiToolsPanel({
                         variant="body2"
                         color="text.secondary"
                         sx={{
-                          maxWidth: 220,
+                          minWidth: 0,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',

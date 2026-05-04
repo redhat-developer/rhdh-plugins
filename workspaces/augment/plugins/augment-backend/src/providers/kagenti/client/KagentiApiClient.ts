@@ -484,10 +484,14 @@ export class KagentiApiClient {
   async getAgentCard(
     namespace: string,
     name: string,
+    options?: { retries?: number },
   ): Promise<AgentCardResponse> {
-    return this.request<AgentCardResponse>(
+    return this.requestWithRetry<AgentCardResponse>(
       'GET',
       `${API_PREFIX}/chat/${e(namespace)}/${e(name)}/agent-card`,
+      undefined,
+      false,
+      options?.retries,
     );
   }
 

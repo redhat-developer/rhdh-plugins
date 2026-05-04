@@ -17,6 +17,8 @@
 import { useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
+import { useTheme } from '@mui/material/styles';
+import { glassSurface, borderRadius } from '../../../theme/tokens';
 
 interface PanelIntroBannerProps {
   storageKey: string;
@@ -27,6 +29,7 @@ export function PanelIntroBanner({
   storageKey,
   children,
 }: PanelIntroBannerProps) {
+  const theme = useTheme();
   const fullKey = `augment:intro-${storageKey}`;
   const [visible, setVisible] = useState(() => {
     try {
@@ -51,7 +54,11 @@ export function PanelIntroBanner({
         severity="info"
         variant="outlined"
         onClose={dismiss}
-        sx={{ mb: 2 }}
+        sx={{
+          mb: 2,
+          ...glassSurface(theme, 8),
+          borderRadius: borderRadius.sm,
+        }}
       >
         {children}
       </Alert>

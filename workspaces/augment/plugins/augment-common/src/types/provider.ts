@@ -140,6 +140,7 @@ export const GLOBAL_CONFIG_KEYS = [
 export const PROVIDER_SCOPED_KEYS = [
   'model',
   'baseUrl',
+  'kagentiBaseUrl',
   'toolChoice',
   'enableWebSearch',
   'enableCodeInterpreter',

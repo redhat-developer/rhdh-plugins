@@ -13,31 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { Progress } from '@backstage/core-components';
 import { useEffectiveConfig } from '../../hooks';
 import { AppearanceSection } from './AppearanceSection';
-import { PromptsPanel } from './PromptsPanel/PromptsPanel';
-type SubTab = 'appearance' | 'promptGroups';
-
-const TABS_SX = {
-  minHeight: 36,
-  '& .MuiTab-root': {
-    minHeight: 36,
-    textTransform: 'none',
-    fontSize: '0.8125rem',
-    minWidth: 'auto',
-    px: 2,
-    mr: 0.5,
-  },
-} as const;
 
 export const BrandingPanel = () => {
-  const [activeTab, setActiveTab] = useState<SubTab>('appearance');
   const { config: effectiveConfig, loading: ecLoading } = useEffectiveConfig();
 
   if (ecLoading) {
@@ -46,44 +28,18 @@ export const BrandingPanel = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Box sx={{ px: 3, pt: 2, maxWidth: 960, mx: 'auto' }}>
+      <Box sx={{ px: 3, pt: 2, maxWidth: 960 }}>
         <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.01em', color: 'text.primary' }} gutterBottom>
           Branding
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
-          Customize how the chat interface looks and feels to users.
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+          Customize the chat interface identity and colors.
         </Typography>
       </Box>
 
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          mb: 0,
-          px: 3,
-          maxWidth: 960,
-          mx: 'auto',
-        }}
-      >
-        <Tabs
-          value={activeTab}
-          onChange={(_, v) => setActiveTab(v as SubTab)}
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          sx={TABS_SX}
-        >
-          <Tab label="Appearance" value="appearance" />
-          <Tab label="Prompt Groups" value="promptGroups" />
-        </Tabs>
+      <Box sx={{ px: 3, py: 1, maxWidth: 960 }}>
+        <AppearanceSection effectiveConfig={effectiveConfig} />
       </Box>
-
-      {activeTab === 'appearance' && (
-        <Box sx={{ px: 3, py: 2, maxWidth: 960, mx: 'auto' }}>
-          <AppearanceSection effectiveConfig={effectiveConfig} />
-        </Box>
-      )}
-      {activeTab === 'promptGroups' && <PromptsPanel />}
     </Box>
   );
 };

@@ -140,8 +140,9 @@ export function ToolCreateIntentDialog({
       fullWidth
       aria-labelledby={titleId}
       PaperProps={{
+        'data-tour': 'tool-intent-dialog',
         sx: { borderRadius: 2, overflow: 'hidden' },
-      }}
+      } as Record<string, unknown>}
     >
       {view === 'intent' && (
         <>

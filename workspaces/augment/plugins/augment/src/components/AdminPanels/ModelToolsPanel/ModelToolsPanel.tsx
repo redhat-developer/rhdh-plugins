@@ -24,6 +24,7 @@ import { useEffectiveConfig, useProviders } from '../../../hooks';
 import { ProviderSelector } from '../ProviderSelector';
 import { ProviderPlaceholder } from '../ProviderPlaceholder';
 import { ModelConnectionSection } from './ModelConnectionSection';
+import { KagentiConnectionSection } from './KagentiConnectionSection';
 import { ToolsSection } from './ToolsSection';
 import { McpServersSection } from './McpServersSection';
 import { SafetyEvalPanel } from '../SafetyEvalPanel/SafetyEvalPanel';
@@ -178,7 +179,8 @@ export const AgentConfigPanel = () => {
         sx={{
           borderBottom: 1,
           borderColor: 'divider',
-          mb: 1,
+          mb: 2,
+          px: 3,
           maxWidth: CONTENT_MAX_WIDTH,
           mx: 'auto',
         }}
@@ -204,6 +206,12 @@ export const AgentConfigPanel = () => {
             onConfigSaved={refreshConfig}
             providerName={providerName}
           />
+          {activeProviderId === 'kagenti' && (
+            <KagentiConnectionSection
+              effectiveConfig={effectiveConfig}
+              onConfigSaved={refreshConfig}
+            />
+          )}
         </Box>
       )}
       {activeTab === 'tools' && (

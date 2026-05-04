@@ -44,6 +44,7 @@ export class KagentiAgentCardCache {
     config: KagentiConfig,
     namespace: string,
     name: string,
+    options?: { retries?: number },
   ): Promise<AgentCardCacheEntry> {
     const key = `${namespace}/${name}`;
     const cached = this.cache.get(key);
@@ -52,7 +53,7 @@ export class KagentiAgentCardCache {
       return cached;
     }
 
-    const card = await apiClient.getAgentCard(namespace, name);
+    const card = await apiClient.getAgentCard(namespace, name, options);
 
     if (config.validateResponses) {
       const result = agentCardSchema.safeParse(card);

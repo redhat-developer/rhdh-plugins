@@ -46,7 +46,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DownloadIcon from '@mui/icons-material/Download';
-import { useApi, configApiRef } from '@backstage/core-plugin-api';
+import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import type {
   WorkflowTestCase,
   WorkflowEvaluationResult,
@@ -103,6 +103,7 @@ export function WorkflowEvaluation({
   previousResults = [],
 }: WorkflowEvaluationProps) {
   const configApi = useApi(configApiRef);
+  const { fetch: authFetch } = useApi(fetchApiRef);
   const [activeTab, setActiveTab] = useState(0);
 
   // Test Cases state
@@ -136,7 +137,7 @@ export function WorkflowEvaluation({
     const load = async () => {
       setLoadingFunctions(true);
       try {
-        const resp = await fetch(`${backendUrl}/api/augment/scoring-functions`);
+        const resp = await authFetch(`${backendUrl}/api/augment/scoring-functions`);
         if (resp.ok) {
           const json = await resp.json();
           const fns = json.data || json || [];
@@ -156,7 +157,7 @@ export function WorkflowEvaluation({
   const loadBenchmarks = useCallback(async () => {
     setLoadingBenchmarks(true);
     try {
-      const resp = await fetch(`${backendUrl}/api/augment/benchmarks`);
+      const resp = await authFetch(`${backendUrl}/api/augment/benchmarks`);
       if (resp.ok) {
         const json = await resp.json();
         const data = json.data || json || [];
@@ -222,7 +223,7 @@ export function WorkflowEvaluation({
     setSavingBenchmark(true);
     try {
       const validCases = testCases.filter(tc => tc.input.trim());
-      const resp = await fetch(`${backendUrl}/api/augment/benchmarks`, {
+      const resp = await authFetch(`${backendUrl}/api/augment/benchmarks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -255,7 +256,7 @@ export function WorkflowEvaluation({
   const handleRunBenchmark = useCallback(async (benchmarkId: string) => {
     setRunningBenchmark(benchmarkId);
     try {
-      const resp = await fetch(`${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}/run`, {
+      const resp = await authFetch(`${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -315,7 +316,7 @@ export function WorkflowEvaluation({
   // Delete benchmark
   const handleDeleteBenchmark = useCallback(async (benchmarkId: string) => {
     try {
-      await fetch(`${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}`, {
+      await authFetch(`${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}`, {
         method: 'DELETE',
       });
       loadBenchmarks();

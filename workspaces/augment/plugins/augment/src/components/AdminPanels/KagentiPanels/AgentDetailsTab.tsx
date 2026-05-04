@@ -238,7 +238,7 @@ export function AgentDetailsTab({
                     {row.label}
                   </TableCell>
                   <TableCell
-                    sx={{ fontSize: '0.8125rem', border: 'none', py: 1 }}
+                    sx={{ fontSize: '0.8125rem', border: 'none', py: 1, color: 'text.primary' }}
                   >
                     {row.value}
                   </TableCell>
@@ -284,7 +284,7 @@ export function AgentDetailsTab({
                     {row.label}
                   </TableCell>
                   <TableCell
-                    sx={{ fontSize: '0.8125rem', border: 'none', py: 1 }}
+                    sx={{ fontSize: '0.8125rem', border: 'none', py: 1, color: 'text.primary' }}
                   >
                     {row.value}
                   </TableCell>

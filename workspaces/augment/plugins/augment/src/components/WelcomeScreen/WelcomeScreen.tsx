@@ -292,7 +292,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             </Typography>
           )}
 
-          {/* Change agent — visible escape hatch above starters */}
+          {/* Back to marketplace */}
           {onChangeAgent && (
             <Button
               variant="outlined"
@@ -312,7 +312,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 },
               }}
             >
-              Change agent
+              Agent Marketplace
             </Button>
           )}
         </Box>

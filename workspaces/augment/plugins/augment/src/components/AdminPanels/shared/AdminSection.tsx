@@ -84,7 +84,7 @@ export const AdminSection = ({
     <Box
       sx={{
         ...glass,
-        mb: 3,
+        mb: 3.5,
         overflow: 'hidden',
         borderRadius: borderRadius.md,
         transition: transitions.normal,
@@ -105,8 +105,8 @@ export const AdminSection = ({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            px: 2.5,
-            py: 1.5,
+            px: 3,
+            py: 2,
             borderBottom: `1px solid ${alpha(
               isDark ? theme.palette.common.white : theme.palette.common.black,
               isDark ? 0.1 : 0.06,
@@ -121,7 +121,7 @@ export const AdminSection = ({
       )}
 
       {/* Section body */}
-      <Box sx={{ p: 2.5 }}>
+      <Box sx={{ p: 3 }}>
         {description && (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             {description}

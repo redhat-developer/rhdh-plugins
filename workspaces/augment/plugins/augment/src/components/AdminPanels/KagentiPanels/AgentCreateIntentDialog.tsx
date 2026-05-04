@@ -156,8 +156,9 @@ export function AgentCreateIntentDialog({
       fullWidth
       aria-labelledby={titleId}
       PaperProps={{
-        sx: { borderRadius: 2, overflow: 'hidden' },
-      }}
+        'data-tour': 'intent-dialog',
+        sx: { borderRadius: 3, overflow: 'hidden' },
+      } as Record<string, unknown>}
     >
       {/* --- Top-level intent selection --- */}
       {view === 'intent' && (

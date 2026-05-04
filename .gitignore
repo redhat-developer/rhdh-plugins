@@ -64,3 +64,4 @@ site
 
 # Cursor IDE configuration files
 .cursorrules
+workspaces/augment/scripts/test-openai-reference.ts
