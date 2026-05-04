@@ -46,10 +46,10 @@ You can follow one of these options for installing `Cost Management` plugin depe
 
 #### Dependency on Orchestrator plugin and Workflow details
 
-The Cost Management plugin's Optimizations section is dependent on [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/index) to run the workflow for applying the recommendation. Make sure you have installed the [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/index) by following one of these options depending on your environment:
+The Cost Management plugin's Optimizations section is dependent on [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/orchestrator_in_red_hat_developer_hub/index) to run the workflow for applying the recommendation. Make sure you have installed the [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/orchestrator_in_red_hat_developer_hub/index) by following one of these options depending on your environment:
 
-- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Operator](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-operator)
-- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Helm chart](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-helm)
+- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Operator](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-operator)
+- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Helm chart](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-helm)
 
 For vanilla Backstage local development, see the [Local Development with Orchestrator](#local-development-with-orchestrator) section below.
 
@@ -214,4 +214,4 @@ For the full orchestrator setup guide, see: [Install as a static plugin for loca
 
 - [Documentation to understand how to export, package & publish plugin as a dynamic plugin](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/packaging-dynamic-plugins.md#packaging-and-publishing-backstage-plugin-as-a-dynamic-plugin)
 
-- For comprehensive RHDH documentation, visit: [Red Hat Developer Hub 1.8 Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/)
+- For comprehensive RHDH documentation, visit: [Red Hat Developer Hub 1.9 Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/)
