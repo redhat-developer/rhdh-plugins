@@ -84,4 +84,5 @@ sonarqube:
       authType: Bearer # optional, defaults to Basic
     - name: cloud
       baseUrl: https://sonarcloud.io
+      # apiKey optional for public SonarCloud projects (omit if not needed)
 ```

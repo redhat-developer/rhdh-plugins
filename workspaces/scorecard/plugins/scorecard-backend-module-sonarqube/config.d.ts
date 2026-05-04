@@ -46,10 +46,11 @@ export interface Config {
       baseUrl: string;
 
       /**
-       * The api key to access the sonarqube instance.
+       * The api key to access the sonarqube instance. Optional for public projects
+       * (same as top-level `sonarqube.apiKey`).
        * @visibility secret
        */
-      apiKey: string;
+      apiKey?: string;
 
       /**
        * This is an optional descriptor of the type of token used to access the Sonarqube server.
