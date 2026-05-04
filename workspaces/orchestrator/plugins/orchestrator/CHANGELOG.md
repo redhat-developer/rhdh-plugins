@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.7
+
+### Patch Changes
+
+- 384ade8: Expose the Alpha Scalprum module and `orchestratorTranslations` for dynamic plugins, and document `translationResources` in the plugin `app-config.yaml` for loading translations from the Alpha bundle.
+
 ## 5.7.6
 
 ### Patch Changes
