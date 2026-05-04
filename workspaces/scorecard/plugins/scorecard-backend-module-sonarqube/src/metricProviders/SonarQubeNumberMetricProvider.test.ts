@@ -20,7 +20,7 @@ import type { Entity } from '@backstage/catalog-model';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { SonarQubeNumberMetricProvider } from './SonarQubeNumberMetricProvider';
-import { SONARQUBE_METRIC_CONFIG } from './SonarQubeConfig';
+import { mockServices } from '@backstage/backend-test-utils';
 
 jest.mock('../clients/SonarQubeClient');
 
@@ -37,13 +37,7 @@ beforeEach(() => {
 });
 
 const mockConfig = new ConfigReader({});
-const mockLogger = {
-  child: jest.fn().mockReturnThis(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn(),
-  error: jest.fn(),
-} as any;
+const mockLogger = mockServices.logger.mock();
 
 function entity(projectKey = 'my-project'): Entity {
   return {
@@ -57,98 +51,8 @@ function entity(projectKey = 'my-project'): Entity {
 }
 
 describe('SonarQubeNumberMetricProvider', () => {
-  describe('getProviderDatasourceId', () => {
-    it('returns sonarqube', () => {
-      const provider = SonarQubeNumberMetricProvider.fromConfig(
-        mockConfig,
-        mockLogger,
-        'open_issues',
-      );
-      expect(provider.getProviderDatasourceId()).toBe('sonarqube');
-    });
-  });
-
-  describe('getProviderId / getMetric', () => {
-    it.each([
-      ['open_issues', 'sonarqube.open_issues', 'SonarQube Open Issues'],
-      [
-        'security_rating',
-        'sonarqube.security_rating',
-        'SonarQube Security Rating',
-      ],
-      [
-        'security_issues',
-        'sonarqube.security_issues',
-        'SonarQube Security Issues',
-      ],
-      [
-        'security_review_rating',
-        'sonarqube.security_review_rating',
-        'SonarQube Security Review Rating',
-      ],
-      [
-        'security_hotspots',
-        'sonarqube.security_hotspots',
-        'SonarQube Security Hotspots',
-      ],
-      [
-        'reliability_rating',
-        'sonarqube.reliability_rating',
-        'SonarQube Reliability Rating',
-      ],
-      [
-        'reliability_issues',
-        'sonarqube.reliability_issues',
-        'SonarQube Reliability Issues',
-      ],
-      [
-        'maintainability_rating',
-        'sonarqube.maintainability_rating',
-        'SonarQube Maintainability Rating',
-      ],
-      [
-        'maintainability_issues',
-        'sonarqube.maintainability_issues',
-        'SonarQube Maintainability Issues',
-      ],
-      ['code_coverage', 'sonarqube.code_coverage', 'SonarQube Code Coverage'],
-      [
-        'code_duplications',
-        'sonarqube.code_duplications',
-        'SonarQube Code Duplications',
-      ],
-    ] as const)(
-      'for %s returns id %s and title %s',
-      (metricId, expectedId, expectedTitle) => {
-        const provider = SonarQubeNumberMetricProvider.fromConfig(
-          mockConfig,
-          mockLogger,
-          metricId,
-        );
-        expect(provider.getProviderId()).toBe(expectedId);
-        const metric = provider.getMetric();
-        expect(metric.id).toBe(expectedId);
-        expect(metric.title).toBe(expectedTitle);
-        expect(metric.description).toBe(
-          SONARQUBE_METRIC_CONFIG[metricId].description,
-        );
-      },
-    );
-  });
-
-  describe('getMetricType', () => {
-    it('returns number', () => {
-      const provider = SonarQubeNumberMetricProvider.fromConfig(
-        mockConfig,
-        mockLogger,
-        'open_issues',
-      );
-      expect(provider.getMetricType()).toBe('number');
-    });
-  });
-
   describe('getMetricThresholds', () => {
-    it('returns default thresholds when none provided', () => {
+    it('should return default thresholds when none provided', () => {
       const provider = SonarQubeNumberMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
@@ -158,7 +62,7 @@ describe('SonarQubeNumberMetricProvider', () => {
       expect(provider.getMetricThresholds().rules).toBeDefined();
     });
 
-    it('returns custom thresholds when provided', () => {
+    it('should return custom thresholds when provided', () => {
       const custom: ThresholdConfig = {
         rules: [{ key: 'ok', expression: '<5', color: '#00ff00', icon: 'ok' }],
       };
@@ -182,22 +86,8 @@ describe('SonarQubeNumberMetricProvider', () => {
     });
   });
 
-  describe('getCatalogFilter', () => {
-    it('requires sonarqube.org/project-key annotation', () => {
-      const provider = SonarQubeNumberMetricProvider.fromConfig(
-        mockConfig,
-        mockLogger,
-        'open_issues',
-      );
-      const filter = provider.getCatalogFilter();
-      expect(
-        filter['metadata.annotations.sonarqube.org/project-key'],
-      ).toBeDefined();
-    });
-  });
-
   describe('calculateMetric', () => {
-    it('calls getOpenIssuesCount for open_issues metric', async () => {
+    it('should call getOpenIssuesCount for open_issues metric', async () => {
       mockGetOpenIssuesCount.mockResolvedValue(42);
       const provider = SonarQubeNumberMetricProvider.fromConfig(
         mockConfig,
@@ -227,7 +117,7 @@ describe('SonarQubeNumberMetricProvider', () => {
       ['code_coverage', 'coverage', 82.5],
       ['code_duplications', 'duplicated_lines_density', 3.2],
     ] as const)(
-      'calls getMeasures with %s API key for %s metric',
+      'should call getMeasures with %s API key for %s metric',
       async (metricId, apiKey, value) => {
         mockGetMeasures.mockResolvedValue({ [apiKey]: value });
         const provider = SonarQubeNumberMetricProvider.fromConfig(
@@ -248,7 +138,7 @@ describe('SonarQubeNumberMetricProvider', () => {
       },
     );
 
-    it('passes instanceName when annotation has instance prefix', async () => {
+    it('should pass instanceName when annotation has instance prefix', async () => {
       mockGetOpenIssuesCount.mockResolvedValue(5);
       const provider = SonarQubeNumberMetricProvider.fromConfig(
         mockConfig,
@@ -264,7 +154,7 @@ describe('SonarQubeNumberMetricProvider', () => {
       );
     });
 
-    it('throws when annotation is missing', async () => {
+    it('should throw when annotation is missing', async () => {
       const provider = SonarQubeNumberMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
@@ -278,7 +168,7 @@ describe('SonarQubeNumberMetricProvider', () => {
       );
     });
 
-    it('returns 0 when no open issues', async () => {
+    it('should return 0 when no open issues', async () => {
       mockGetOpenIssuesCount.mockResolvedValue(0);
       const provider = SonarQubeNumberMetricProvider.fromConfig(
         mockConfig,

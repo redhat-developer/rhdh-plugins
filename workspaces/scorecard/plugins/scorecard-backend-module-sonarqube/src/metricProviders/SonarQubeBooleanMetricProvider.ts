@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  Metric,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   getThresholdsFromConfig,
   MetricProvider,
@@ -25,67 +22,26 @@ import {
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { type Entity } from '@backstage/catalog-model';
-import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 import { SonarQubeClient } from '../clients/SonarQubeClient';
+import { SonarQubeBasicMetricProvider } from './SonarQubeBasicMetricProvider';
 import {
   type SonarQubeBooleanMetricId,
   SONARQUBE_API_METRIC_KEYS,
   SONARQUBE_BOOLEAN_THRESHOLDS,
-  SONARQUBE_METRIC_CONFIG,
-  SONARQUBE_PROJECT_KEY_ANNOTATION,
   parseProjectKeyAnnotation,
 } from './SonarQubeConfig';
 
 export class SonarQubeBooleanMetricProvider
+  extends SonarQubeBasicMetricProvider<'boolean'>
   implements MetricProvider<'boolean'>
 {
-  private readonly client: SonarQubeClient;
-  private readonly metricId: SonarQubeBooleanMetricId;
-  private readonly thresholds: ThresholdConfig;
-
   constructor(
     client: SonarQubeClient,
     metricId: SonarQubeBooleanMetricId,
     thresholds: ThresholdConfig,
   ) {
-    this.client = client;
-    this.metricId = metricId;
-    this.thresholds = thresholds;
-  }
-
-  getProviderDatasourceId(): string {
-    return 'sonarqube';
-  }
-
-  getProviderId(): string {
-    return SONARQUBE_METRIC_CONFIG[this.metricId].id;
-  }
-
-  getMetricType(): 'boolean' {
-    return 'boolean';
-  }
-
-  getMetric(): Metric<'boolean'> {
-    const meta = SONARQUBE_METRIC_CONFIG[this.metricId];
-    return {
-      id: meta.id,
-      title: meta.title,
-      description: meta.description,
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
-  }
-
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
-    return {
-      [`metadata.annotations.${SONARQUBE_PROJECT_KEY_ANNOTATION}`]:
-        CATALOG_FILTER_EXISTS,
-    };
+    super(client, metricId, thresholds, 'boolean');
   }
 
   async calculateMetric(entity: Entity): Promise<boolean> {

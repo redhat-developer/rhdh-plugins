@@ -20,6 +20,7 @@ import type { Entity } from '@backstage/catalog-model';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { SonarQubeBooleanMetricProvider } from './SonarQubeBooleanMetricProvider';
+import { mockServices } from '@backstage/backend-test-utils';
 
 jest.mock('../clients/SonarQubeClient');
 
@@ -34,13 +35,7 @@ beforeEach(() => {
 });
 
 const mockConfig = new ConfigReader({});
-const mockLogger = {
-  child: jest.fn().mockReturnThis(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn(),
-  error: jest.fn(),
-} as any;
+const mockLogger = mockServices.logger.mock();
 
 function entity(projectKey = 'my-project'): Entity {
   return {
@@ -54,56 +49,8 @@ function entity(projectKey = 'my-project'): Entity {
 }
 
 describe('SonarQubeBooleanMetricProvider', () => {
-  describe('getProviderDatasourceId', () => {
-    it('returns sonarqube', () => {
-      const provider = SonarQubeBooleanMetricProvider.fromConfig(
-        mockConfig,
-        mockLogger,
-        'quality_gate',
-      );
-      expect(provider.getProviderDatasourceId()).toBe('sonarqube');
-    });
-  });
-
-  describe('getProviderId', () => {
-    it('returns sonarqube.quality_gate', () => {
-      const provider = SonarQubeBooleanMetricProvider.fromConfig(
-        mockConfig,
-        mockLogger,
-        'quality_gate',
-      );
-      expect(provider.getProviderId()).toBe('sonarqube.quality_gate');
-    });
-  });
-
-  describe('getMetricType', () => {
-    it('returns boolean', () => {
-      const provider = SonarQubeBooleanMetricProvider.fromConfig(
-        mockConfig,
-        mockLogger,
-        'quality_gate',
-      );
-      expect(provider.getMetricType()).toBe('boolean');
-    });
-  });
-
-  describe('getMetric', () => {
-    it('returns quality gate metric metadata', () => {
-      const provider = SonarQubeBooleanMetricProvider.fromConfig(
-        mockConfig,
-        mockLogger,
-        'quality_gate',
-      );
-      const metric = provider.getMetric();
-      expect(metric.id).toBe('sonarqube.quality_gate');
-      expect(metric.title).toBe('SonarQube Quality Gate Status');
-      expect(metric.type).toBe('boolean');
-      expect(metric.history).toBe(true);
-    });
-  });
-
   describe('getMetricThresholds', () => {
-    it('returns default thresholds when none provided', () => {
+    it('should return default thresholds when none provided', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
@@ -113,7 +60,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       expect(provider.getMetricThresholds().rules).toHaveLength(2);
     });
 
-    it('returns custom thresholds when provided', () => {
+    it('should return custom thresholds when provided', () => {
       const custom: ThresholdConfig = {
         rules: [
           { key: 'ok', expression: '==true', color: '#00ff00', icon: 'ok' },
@@ -139,22 +86,8 @@ describe('SonarQubeBooleanMetricProvider', () => {
     });
   });
 
-  describe('getCatalogFilter', () => {
-    it('requires sonarqube.org/project-key annotation', () => {
-      const provider = SonarQubeBooleanMetricProvider.fromConfig(
-        mockConfig,
-        mockLogger,
-        'quality_gate',
-      );
-      const filter = provider.getCatalogFilter();
-      expect(
-        filter['metadata.annotations.sonarqube.org/project-key'],
-      ).toBeDefined();
-    });
-  });
-
   describe('calculateMetric', () => {
-    it('returns true when quality gate passes', async () => {
+    it('should return true when quality gate passes', async () => {
       mockGetQualityGateStatus.mockResolvedValue(true);
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
@@ -171,7 +104,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       );
     });
 
-    it('returns false when quality gate fails', async () => {
+    it('should return false when quality gate fails', async () => {
       mockGetQualityGateStatus.mockResolvedValue(false);
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
@@ -184,7 +117,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       expect(result).toBe(false);
     });
 
-    it('passes instanceName when annotation has instance prefix', async () => {
+    it('should pass instanceName when annotation has instance prefix', async () => {
       mockGetQualityGateStatus.mockResolvedValue(true);
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
@@ -200,7 +133,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       );
     });
 
-    it('throws when annotation is missing', async () => {
+    it('should throw when annotation is missing', async () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
