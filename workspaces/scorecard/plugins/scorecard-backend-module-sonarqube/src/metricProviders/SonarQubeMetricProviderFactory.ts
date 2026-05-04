@@ -20,12 +20,7 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 
 import { SonarQubeBooleanMetricProvider } from './SonarQubeBooleanMetricProvider';
 import { SonarQubeNumberMetricProvider } from './SonarQubeNumberMetricProvider';
-import {
-  SONARQUBE_METRICS,
-  type SonarQubeBooleanMetricId,
-  type SonarQubeMetricId,
-  type SonarQubeNumberMetricId,
-} from './SonarQubeConfig';
+import { SONARQUBE_METRICS, type SonarQubeMetricId } from './SonarQubeConfig';
 
 export class SonarQubeMetricProviderFactory {
   private constructor() {}
@@ -39,7 +34,7 @@ export class SonarQubeMetricProviderFactory {
       return SonarQubeBooleanMetricProvider.fromConfig(
         config,
         logger,
-        metricId as SonarQubeBooleanMetricId,
+        metricId,
       );
     }
     return SonarQubeNumberMetricProvider.fromConfig(config, logger, metricId);
