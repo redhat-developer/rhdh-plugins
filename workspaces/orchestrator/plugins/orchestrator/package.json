@@ -130,7 +130,8 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-orchestrator",
     "exposedModules": {
-      "PluginRoot": "./src/index.ts"
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha.tsx"
     }
   },
   "maintainers": [
