@@ -16,6 +16,7 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import type { ComponentType, CSSProperties } from 'react';
+import type { MenuItemProps } from '@mui/material/MenuItem';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useDropdownManager } from '../../hooks';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
@@ -25,6 +26,7 @@ import { DropdownEmptyState } from './DropdownEmptyState';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import { useValidComponentTracker } from '../../hooks/useValidComponentTracker';
 import { useTranslation } from '../../hooks/useTranslation';
+import type { MenuItemLinkProps } from '../MenuItemLink/MenuItemLink';
 
 /**
  * @public
@@ -102,14 +104,17 @@ export const HelpDropdown = ({ layout }: HelpDropdownProps) => {
 
         return {
           componentId,
-          Component: () => (
-            <ValidityTracker
-              Component={mp.Component}
-              props={mp.config?.props || {}}
-              componentId={componentId}
-              onValidityChange={updateComponentValidity}
-            />
-          ),
+          Component: (props: MenuItemLinkProps | MenuItemProps | {}) => {
+            const onClick = 'onClick' in props ? props.onClick : undefined;
+            return (
+              <ValidityTracker
+                Component={mp.Component}
+                props={{ ...(mp.config?.props || {}), onClick }}
+                componentId={componentId}
+                onValidityChange={updateComponentValidity}
+              />
+            );
+          },
           icon: mp.config?.props?.icon,
           label: mp.config?.props?.title,
           link: mp.config?.props?.link,

@@ -15,6 +15,7 @@
  */
 
 import type { ChangeEvent, FC } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import HelpIcon from '@mui/icons-material/HelpOutline';
 import Box from '@mui/material/Box';
@@ -38,11 +39,18 @@ const ApprovalTool: FC<ApprovalToolProps> = ({
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const handleApprovalToolChange = (
     _event: ChangeEvent<{}>,
     newValue: string,
   ) => {
     setFieldValue('approvalTool', newValue);
+
+    // Persist approval tool selection in URL
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('approvalTool', newValue);
+    setSearchParams(newSearchParams, { replace: true });
   };
   return (
     <Box

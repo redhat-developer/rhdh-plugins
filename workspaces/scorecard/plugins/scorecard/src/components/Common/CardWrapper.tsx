@@ -22,6 +22,7 @@ import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 
 interface CardWrapperProps extends HTMLProps<HTMLDivElement> {
   children: ReactNode;
@@ -62,7 +63,11 @@ export const CardWrapper = ({
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <CardHeader
-          title={title}
+          title={
+            <Tooltip title={title}>
+              <div>{title}</div>
+            </Tooltip>
+          }
           subheader={subheader ?? undefined}
           sx={{
             '& .v5-MuiCardHeader-title, & .v5-MuiCardHeader-subheader': {

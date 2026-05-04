@@ -1,7 +1,10 @@
+.eslintrc.js
+.vscode
+coverage
 dist
 dist-types
-coverage
-.vscode
-.eslintrc.js
+e2e-test-report
+e2e-test-report-legacy
+knip-report.md
 report-alpha.api.md
 report.api.md

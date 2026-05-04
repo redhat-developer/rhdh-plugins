@@ -22,6 +22,7 @@ import {
   mockJiraDrillDownMissingPermission,
   mockMetricsApi,
   mockApiResponse,
+  mockSonarqubeScorecardResponse,
 } from './utils/apiUtils';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
@@ -46,6 +47,8 @@ import {
   jiraEntitiesDrillDownResponse,
   jiraEntitiesDrillDownNoDataResponse,
   jiraMetricMetadataResponse,
+  sonarqubeScorecardResponse,
+  sonarqubeFailedQualityGateResponse,
   fileCheckScorecardResponse,
 } from './utils/scorecardResponseUtils';
 import {
@@ -330,6 +333,113 @@ test.describe('Scorecard Plugin Tests', () => {
       ).toBeVisible();
 
       await runAccessibilityTests(page, testInfo);
+    });
+  });
+
+  test.describe('SonarQube Entity Scorecards', () => {
+    test('Verify all SonarQube metrics display correctly', async ({
+      browser,
+    }, testInfo) => {
+      const sonarqubeMetrics = Object.entries(translations.metric)
+        .filter(([key]) => key.startsWith('sonarqube.'))
+        .map(
+          ([_key, value]) => value as { title: string; description: string },
+        );
+
+      await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('sonarqube-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      for (const sonarqubeMetric of sonarqubeMetrics) {
+        await expect(
+          page.getByText(sonarqubeMetric.title, { exact: true }),
+        ).toBeVisible({
+          timeout: 10000,
+        });
+      }
+
+      await runAccessibilityTests(page, testInfo);
+    });
+
+    test('Verify SonarQube metric values', async () => {
+      await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('sonarqube-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      await expect(
+        page.getByText(translations.metric['sonarqube.quality_gate'].title),
+      ).toBeVisible({ timeout: 10000 });
+
+      const expectedValues: Record<string, string> = {
+        [translations.metric['sonarqube.open_issues'].title]: '3',
+        [translations.metric['sonarqube.security_rating'].title]: '1',
+        [translations.metric['sonarqube.security_issues'].title]: '0',
+        [translations.metric['sonarqube.security_review_rating'].title]: '1',
+        [translations.metric['sonarqube.security_hotspots'].title]: '2',
+        [translations.metric['sonarqube.reliability_rating'].title]: '1',
+        [translations.metric['sonarqube.reliability_issues'].title]: '0',
+        [translations.metric['sonarqube.maintainability_rating'].title]: '1',
+        [translations.metric['sonarqube.maintainability_issues'].title]: '12',
+        [translations.metric['sonarqube.code_coverage'].title]: '82.5',
+        [translations.metric['sonarqube.code_duplications'].title]: '3.2',
+      };
+
+      for (const [title, value] of Object.entries(expectedValues)) {
+        const card = page
+          .locator('[role="article"]')
+          .filter({ hasText: title })
+          .first();
+        await expect(card).toContainText(value);
+      }
+
+      const qualityGateCard = page
+        .locator('[role="article"]')
+        .filter({
+          hasText: translations.metric['sonarqube.quality_gate'].title,
+        })
+        .first();
+      await expect(
+        qualityGateCard.getByTestId('CheckCircleOutlineIcon'),
+      ).toBeVisible();
+    });
+
+    test('Verify SonarQube quality gate failure state', async () => {
+      await mockSonarqubeScorecardResponse(
+        page,
+        sonarqubeFailedQualityGateResponse,
+      );
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('sonarqube-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      await expect(
+        page.getByText(translations.metric['sonarqube.quality_gate'].title),
+      ).toBeVisible({ timeout: 10000 });
+
+      const qualityGateCard = page
+        .locator('[role="article"]')
+        .filter({
+          hasText: translations.metric['sonarqube.quality_gate'].description,
+        })
+        .first();
+      await expect(
+        qualityGateCard.getByTestId('DangerousOutlinedIcon'),
+      ).toBeVisible();
+    });
+
+    test('Verify empty state for sonarqube entity with no metrics', async () => {
+      await mockSonarqubeScorecardResponse(page, emptyScorecardResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('sonarqube-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      await expect(page.getByText(translations.emptyState.title)).toBeVisible();
     });
   });
 
