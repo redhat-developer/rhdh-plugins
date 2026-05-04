@@ -18,7 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import { SonarQubeClient } from './SonarQubeClient';
 
 const mockFetch = jest.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 describe('SonarQubeClient', () => {
   const config = new ConfigReader({
@@ -123,7 +123,7 @@ describe('SonarQubeClient', () => {
         'vulnerabilities',
       ]);
 
-      expect(result).toEqual({ security_rating: 2.0, vulnerabilities: 5 });
+      expect(result).toEqual({ security_rating: 2, vulnerabilities: 5 });
       expect(mockFetch).toHaveBeenCalledWith(
         'https://sonarcloud.io/api/measures/component?component=my-project&metricKeys=security_rating%2Cvulnerabilities',
         expect.any(Object),

@@ -42,11 +42,7 @@ export class SonarQubeMetricProviderFactory {
         metricId as SonarQubeBooleanMetricId,
       );
     }
-    return SonarQubeNumberMetricProvider.fromConfig(
-      config,
-      logger,
-      metricId as SonarQubeNumberMetricId,
-    );
+    return SonarQubeNumberMetricProvider.fromConfig(config, logger, metricId);
   }
 
   static fromConfig(config: Config, logger: LoggerService): MetricProvider[] {
