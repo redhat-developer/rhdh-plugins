@@ -27,6 +27,8 @@ export interface TourControllerAPI {
   setWizardStep: (step: number) => void;
   setDeployMethod: (method: string) => void;
   returnToGuidedExperience: () => void;
+  switchToMarketplace: () => void;
+  switchToCommandCenter: () => void;
   waitForSelector: (
     selector: string,
     timeoutMs?: number,
@@ -46,6 +48,8 @@ const TourControllerContext = createContext<TourControllerAPI>({
   setWizardStep: noop,
   setDeployMethod: noop,
   returnToGuidedExperience: noop,
+  switchToMarketplace: noop,
+  switchToCommandCenter: noop,
   waitForSelector: noopAsync,
 });
 
@@ -63,6 +67,8 @@ export interface TourControllerCallbacks {
   setWizardStep: (step: number) => void;
   setDeployMethod: (method: string) => void;
   returnToGuidedExperience: () => void;
+  switchToMarketplace: () => void;
+  switchToCommandCenter: () => void;
 }
 
 interface Props {
@@ -111,10 +117,7 @@ export function TourControllerProvider({ callbacks, children }: Props) {
     (cardId: string) => cbRef.current.selectAgentIntent(cardId),
     [],
   );
-  const openToolIntent = useCallback(
-    () => cbRef.current.openToolIntent(),
-    [],
-  );
+  const openToolIntent = useCallback(() => cbRef.current.openToolIntent(), []);
   const selectToolDeploy = useCallback(
     () => cbRef.current.selectToolDeploy(),
     [],
@@ -135,6 +138,14 @@ export function TourControllerProvider({ callbacks, children }: Props) {
     () => cbRef.current.returnToGuidedExperience(),
     [],
   );
+  const switchToMarketplace = useCallback(
+    () => cbRef.current.switchToMarketplace(),
+    [],
+  );
+  const switchToCommandCenter = useCallback(
+    () => cbRef.current.switchToCommandCenter(),
+    [],
+  );
   const waitForSelector = useCallback(
     (selector: string, timeoutMs?: number) =>
       waitForSelectorImpl(selector, timeoutMs),
@@ -152,6 +163,8 @@ export function TourControllerProvider({ callbacks, children }: Props) {
       setWizardStep,
       setDeployMethod,
       returnToGuidedExperience,
+      switchToMarketplace,
+      switchToCommandCenter,
       waitForSelector,
     }),
     [
@@ -164,6 +177,8 @@ export function TourControllerProvider({ callbacks, children }: Props) {
       setWizardStep,
       setDeployMethod,
       returnToGuidedExperience,
+      switchToMarketplace,
+      switchToCommandCenter,
       waitForSelector,
     ],
   );

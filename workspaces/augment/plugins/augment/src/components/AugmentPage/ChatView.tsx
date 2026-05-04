@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useCallback, type Ref } from 'react';
+import { useState, useCallback, useEffect, type Ref } from 'react';
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import Alert from '@mui/material/Alert';
@@ -38,6 +38,12 @@ import { WorkflowDashboard } from '../WorkflowBuilder/WorkflowDashboard';
 import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { WorkflowErrorBoundary } from '../WorkflowBuilder/WorkflowErrorBoundary';
 import type { DeploymentMethod } from '../AdminPanels/KagentiPanels/agentWizardTypes';
+import type { AdminTourActions } from './AdminLayout';
+
+interface ChatViewProps {
+  onOpenGuidedTours?: () => void;
+  marketplaceTourActionsRef?: React.MutableRefObject<AdminTourActions>;
+}
 
 /**
  * The Front Door experience.
@@ -46,7 +52,10 @@ import type { DeploymentMethod } from '../AdminPanels/KagentiPanels/agentWizardT
  * (browse, chat, create agent) happen here without entering admin mode.
  * Only the Command Center button (visible to admins) exits to admin mode.
  */
-export function ChatView() {
+export function ChatView({
+  onOpenGuidedTours,
+  marketplaceTourActionsRef,
+}: ChatViewProps = {}) {
   const {
     isAdmin,
     switchToAdmin,
@@ -74,11 +83,14 @@ export function ChatView() {
   const [rightPaneCollapsed, setRightPaneCollapsed] = useState(true);
   const [currentAgent, setCurrentAgent] = useState<string | undefined>();
   const [showMarketplace, setShowMarketplace] = useState(true);
+  const [marketplaceRefreshKey, setMarketplaceRefreshKey] = useState(0);
 
   // Agent creation state (all dialogs live in the front door)
   const [intentDialogOpen, setIntentDialogOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
-  const [wizardDeployMethod, setWizardDeployMethod] = useState<DeploymentMethod | undefined>();
+  const [wizardDeployMethod, setWizardDeployMethod] = useState<
+    DeploymentMethod | undefined
+  >();
   const [showWorkflowBuilder, setShowWorkflowBuilder] = useState(false);
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
 
@@ -86,8 +98,41 @@ export function ChatView() {
   const [toolIntentOpen, setToolIntentOpen] = useState(false);
   const [toolWizardOpen, setToolWizardOpen] = useState(false);
 
+  useEffect(() => {
+    if (marketplaceTourActionsRef) {
+      marketplaceTourActionsRef.current = {
+        openAgentIntent: () => setIntentDialogOpen(true),
+        selectAgentIntent: (_cardId: string) => {
+          setIntentDialogOpen(false);
+          setWizardOpen(true);
+        },
+        openToolIntent: () => setToolIntentOpen(true),
+        selectToolDeploy: () => {
+          setToolIntentOpen(false);
+          setToolWizardOpen(true);
+        },
+        closeAllDialogs: () => {
+          setIntentDialogOpen(false);
+          setWizardOpen(false);
+          setWizardDeployMethod(undefined);
+          setToolIntentOpen(false);
+          setToolWizardOpen(false);
+        },
+        setWizardStep: () => {},
+        setDeployMethod: (method: string) =>
+          setWizardDeployMethod(method as DeploymentMethod),
+      };
+    }
+  });
+
+  const handleOpenGuidedTour = useCallback(() => {
+    onOpenGuidedTours?.();
+  }, [onOpenGuidedTours]);
+
   // Agent detail state (view draft agent details in front door)
-  const [detailAgent, setDetailAgent] = useState<KagentiAgentSummary | null>(null);
+  const [detailAgent, setDetailAgent] = useState<KagentiAgentSummary | null>(
+    null,
+  );
 
   const handleCurrentAgentChange = useCallback(
     (agent: string | undefined) => setCurrentAgent(agent),
@@ -148,7 +193,13 @@ export function ChatView() {
   const handleAgentDetail = useCallback((agentId: string) => {
     const parts = agentId.split('/');
     if (parts.length === 2) {
-      setDetailAgent({ namespace: parts[0], name: parts[1], description: '', status: '', labels: {} } as KagentiAgentSummary);
+      setDetailAgent({
+        namespace: parts[0],
+        name: parts[1],
+        description: '',
+        status: '',
+        labels: {},
+      } as KagentiAgentSummary);
       setShowMarketplace(false);
     }
   }, []);
@@ -161,7 +212,10 @@ export function ChatView() {
   const handleAgentCreated = useCallback(() => {
     setWizardOpen(false);
     setWizardDeployMethod(undefined);
-    setCreateSuccess('Agent created successfully! It will appear in your agents list.');
+    setCreateSuccess(
+      'Agent created successfully! It will appear in your agents list.',
+    );
+    setMarketplaceRefreshKey(k => k + 1);
   }, []);
 
   // --- Tool Creation Flow ---
@@ -181,7 +235,10 @@ export function ChatView() {
 
   const handleToolCreated = useCallback(() => {
     setToolWizardOpen(false);
-    setCreateSuccess('Tool created successfully! It will appear in your My Tools list.');
+    setCreateSuccess(
+      'Tool created successfully! It will appear in your My Tools list.',
+    );
+    setMarketplaceRefreshKey(k => k + 1);
   }, []);
 
   // Show marketplace overlay
@@ -237,6 +294,8 @@ export function ChatView() {
               onAgentDetail={handleAgentDetail}
               isAdmin={isAdmin}
               onOpenCommandCenter={handleSwitchToAdmin}
+              onOpenGuidedTour={handleOpenGuidedTour}
+              refreshKey={marketplaceRefreshKey}
             />
           </Box>
         )}
@@ -334,7 +393,10 @@ export function ChatView() {
               rightPaneCollapsed={rightPaneCollapsed}
               messages={messages}
               onMessagesChange={handleMessagesChange}
-              onNewChat={() => { handleNewChat(); handleBackToMarketplace(); }}
+              onNewChat={() => {
+                handleNewChat();
+                handleBackToMarketplace();
+              }}
               onSessionCreated={handleSessionCreated}
               loadingConversation={loadingConversation}
               messagesUnavailable={messagesUnavailable}
@@ -346,8 +408,14 @@ export function ChatView() {
               <RightPane
                 sidebarCollapsed={rightPaneCollapsed}
                 onToggleSidebar={toggleRightPane}
-                onSelectSession={(id: string) => { setShowMarketplace(false); guardedSelectSession(id); }}
-                onActiveSessionDeleted={() => { handleNewChat(); handleBackToMarketplace(); }}
+                onSelectSession={(id: string) => {
+                  setShowMarketplace(false);
+                  guardedSelectSession(id);
+                }}
+                onActiveSessionDeleted={() => {
+                  handleNewChat();
+                  handleBackToMarketplace();
+                }}
                 activeSessionId={activeSessionId ?? undefined}
                 refreshTrigger={sessionRefreshTrigger}
                 isAdmin={isAdmin}

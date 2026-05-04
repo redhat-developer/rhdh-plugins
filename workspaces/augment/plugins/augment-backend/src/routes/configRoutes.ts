@@ -73,6 +73,74 @@ function promptGroupsFromYaml(config: import('@backstage/config').Config) {
   }));
 }
 
+interface TourStepConfig {
+  target?: string;
+  title: string;
+  description?: string;
+  side?: string;
+  action?: {
+    type: string;
+    panel?: string;
+    selector?: string;
+    step?: number;
+    method?: string;
+    cardId?: string;
+  };
+  waitFor?: string;
+}
+
+interface TourConfig {
+  id: string;
+  title: string;
+  description?: string;
+  category?: string;
+  estimatedMinutes?: number;
+  persona?: string;
+  page?: string;
+  steps: TourStepConfig[];
+}
+
+function toursFromYaml(
+  config: import('@backstage/config').Config,
+): TourConfig[] {
+  const arr = config.getOptionalConfigArray('augment.tours') || [];
+  return arr.map(tour => {
+    const steps = (tour.getOptionalConfigArray('steps') || []).map(step => {
+      const actionCfg = step.getOptionalConfig('action');
+      const action = actionCfg
+        ? {
+            type: actionCfg.getString('type'),
+            panel: actionCfg.getOptionalString('panel'),
+            selector: actionCfg.getOptionalString('selector'),
+            step: actionCfg.getOptionalNumber('step'),
+            method: actionCfg.getOptionalString('method'),
+            cardId: actionCfg.getOptionalString('cardId'),
+          }
+        : undefined;
+
+      return {
+        target: step.getOptionalString('target'),
+        title: step.getString('title'),
+        description: step.getOptionalString('description'),
+        side: step.getOptionalString('side'),
+        action,
+        waitFor: step.getOptionalString('waitFor'),
+      };
+    });
+
+    return {
+      id: tour.getString('id'),
+      title: tour.getString('title'),
+      description: tour.getOptionalString('description'),
+      category: tour.getOptionalString('category'),
+      estimatedMinutes: tour.getOptionalNumber('estimatedMinutes'),
+      persona: tour.getOptionalString('persona'),
+      page: tour.getOptionalString('page'),
+      steps,
+    };
+  });
+}
+
 /**
  * Registers endpoints for workflows, quick actions, and prompt groups.
  * When adminConfig is provided, DB values take precedence over YAML.
@@ -155,5 +223,19 @@ export function registerConfigRoutes(
       'Failed to get prompt groups',
       handlePromptGroups,
     ),
+  );
+
+  router.get(
+    '/tours',
+    withRoute('GET /tours', 'Failed to get tours', async (_req, res) => {
+      const tours = toursFromYaml(config);
+      res.json({
+        success: true,
+        tours,
+        totalTours: tours.length,
+        source: tours.length > 0 ? 'yaml' : 'defaults',
+        timestamp: new Date().toISOString(),
+      });
+    }),
   );
 }

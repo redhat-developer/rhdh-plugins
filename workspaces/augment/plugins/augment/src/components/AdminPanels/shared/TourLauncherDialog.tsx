@@ -28,62 +28,110 @@ import Grow from '@mui/material/Grow';
 import { useTheme, alpha } from '@mui/material/styles';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import CloudDownloadOutlinedIcon from '@mui/icons-material/CloudDownloadOutlined';
-import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
 import TerminalOutlinedIcon from '@mui/icons-material/TerminalOutlined';
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import ExtensionOutlinedIcon from '@mui/icons-material/ExtensionOutlined';
-import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import {
-  TOUR_LIST,
-  TOUR_CATEGORIES,
-  getTourStepCount,
-} from './tourDefinitions';
-import type { TourId, TourCategory } from './tourDefinitions';
+import type { TourId } from './tourDefinitions';
 import { useTour } from './TourProvider';
+import { DEFAULT_TOURS, type TourDefinition } from './defaultTours';
 
-const WELCOME_STORAGE_KEY = 'augment:welcome-seen';
+const WELCOME_STORAGE_PREFIX = 'augment:welcome-seen';
 
-function hasSeenWelcome(): boolean {
+function getWelcomeKey(page?: string): string {
+  return page ? `${WELCOME_STORAGE_PREFIX}:${page}` : WELCOME_STORAGE_PREFIX;
+}
+
+function hasSeenWelcome(page?: string): boolean {
   try {
-    return localStorage.getItem(WELCOME_STORAGE_KEY) === '1';
+    return localStorage.getItem(getWelcomeKey(page)) === '1';
   } catch {
     return false;
   }
 }
 
-function markWelcomeSeen(): void {
+function markWelcomeSeen(page?: string): void {
   try {
-    localStorage.setItem(WELCOME_STORAGE_KEY, '1');
+    localStorage.setItem(getWelcomeKey(page), '1');
   } catch {
     /* noop */
   }
 }
 
 const TOUR_ICONS: Record<TourId, React.ReactNode> = {
-  welcome: <ExploreOutlinedIcon />,
-  'agent-import-image': <CloudDownloadOutlinedIcon />,
-  'agent-import-source': <CodeOutlinedIcon />,
-  'agent-develop': <TerminalOutlinedIcon />,
-  'agent-configure': <HubOutlinedIcon />,
-  tools: <ExtensionOutlinedIcon />,
-  operations: <DashboardOutlinedIcon />,
+  'marketplace-welcome': <StorefrontOutlinedIcon />,
+  'marketplace-import-agent': <CloudDownloadOutlinedIcon />,
+  'marketplace-develop-agent': <TerminalOutlinedIcon />,
+  'marketplace-configure-agent': <HubOutlinedIcon />,
+  'marketplace-create-tool': <ExtensionOutlinedIcon />,
+  'cc-overview': <ExploreOutlinedIcon />,
+  'cc-agents': <SmartToyOutlinedIcon />,
+  'cc-platform': <ExtensionOutlinedIcon />,
+  'cc-settings': <SettingsOutlinedIcon />,
 };
 
 interface TourLauncherDialogProps {
   open: boolean;
   onClose: () => void;
+  tours?: TourDefinition[];
+  persona?: 'developer' | 'admin';
+  page?: 'marketplace' | 'command-center';
 }
 
-export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
+export function TourLauncherDialog({
+  open,
+  onClose,
+  tours,
+  persona,
+  page,
+}: TourLauncherDialogProps) {
+  const allTours = tours && tours.length > 0 ? tours : DEFAULT_TOURS;
+  const TOUR_LIST = useMemo(
+    () =>
+      allTours.filter(t => {
+        if (
+          persona &&
+          t.persona &&
+          t.persona !== 'both' &&
+          t.persona !== persona
+        )
+          return false;
+        if (page && t.page && t.page !== 'any' && t.page !== page) return false;
+        return true;
+      }),
+    [allTours, persona, page],
+  );
+  const categories = useMemo(() => {
+    const seen = new Set<string>();
+    const cats: { key: string; label: string }[] = [];
+    for (const t of TOUR_LIST) {
+      const cat = t.category || 'general';
+      if (!seen.has(cat)) {
+        seen.add(cat);
+        cats.push({
+          key: cat,
+          label: cat
+            .split('-')
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' '),
+        });
+      }
+    }
+    return cats;
+  }, [TOUR_LIST]);
+  const getTourStepCount = (id: string) =>
+    TOUR_LIST.find(t => t.id === id)?.steps.length ?? 0;
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const { startTour, isCompleted, startAutoPlay, voice } = useTour();
@@ -103,24 +151,25 @@ export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
 
   const handleAutoPlay = useCallback(() => {
     onClose();
-    setTimeout(() => startAutoPlay(), 300);
-  }, [onClose, startAutoPlay]);
+    const ids = TOUR_LIST.map(t => t.id);
+    setTimeout(() => startAutoPlay(ids), 300);
+  }, [onClose, startAutoPlay, TOUR_LIST]);
 
   const totalMinutes = useMemo(
-    () => TOUR_LIST.reduce((sum, t) => sum + t.estimatedMinutes, 0),
-    [],
+    () => TOUR_LIST.reduce((sum, t) => sum + (t.estimatedMinutes ?? 0), 0),
+    [TOUR_LIST],
   );
 
   const grouped = useMemo(() => {
-    const map = new Map<TourCategory, typeof TOUR_LIST>();
-    for (const cat of TOUR_CATEGORIES) {
+    const map = new Map<string, TourDefinition[]>();
+    for (const cat of categories) {
       map.set(
         cat.key,
-        TOUR_LIST.filter(t => t.category === cat.key),
+        TOUR_LIST.filter(t => (t.category || 'general') === cat.key),
       );
     }
     return map;
-  }, []);
+  }, [categories, TOUR_LIST]);
 
   const completedCount = TOUR_LIST.filter(t => isCompleted(t.id)).length;
 
@@ -158,13 +207,20 @@ export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
             left: 0,
             right: 0,
             height: 1,
-            background: isDark
-              ? 'rgba(255,255,255,0.08)'
-              : 'rgba(0,0,0,0.06)',
+            pointerEvents: 'none',
+            background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
           },
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1.5,
+            mb: 1,
+          }}
+        >
           <Box
             sx={{
               width: 40,
@@ -216,11 +272,22 @@ export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
             />
           )}
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1,
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
           <Button
             variant="contained"
             size="small"
-            startIcon={<PlayCircleOutlineIcon sx={{ fontSize: '16px !important' }} />}
+            startIcon={
+              <PlayCircleOutlineIcon sx={{ fontSize: '16px !important' }} />
+            }
             onClick={handleAutoPlay}
             sx={{
               bgcolor: 'rgba(255,255,255,0.2)',
@@ -244,7 +311,11 @@ export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
           </Button>
           {voice.isSupported && (
             <Tooltip
-              title={voice.isVoiceEnabled ? 'Default voice on (per-tour overrides below)' : 'Default voice off (per-tour overrides below)'}
+              title={
+                voice.isVoiceEnabled
+                  ? 'Default voice on (per-tour overrides below)'
+                  : 'Default voice off (per-tour overrides below)'
+              }
               arrow
             >
               <IconButton
@@ -288,9 +359,9 @@ export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
 
       {/* Tour cards */}
       <DialogContent sx={{ px: 3, py: 2 }}>
-        {TOUR_CATEGORIES.map(cat => {
-          const tours = grouped.get(cat.key);
-          if (!tours?.length) return null;
+        {categories.map(cat => {
+          const catTours = grouped.get(cat.key);
+          if (!catTours?.length) return null;
           return (
             <Box key={cat.key} sx={{ mb: 2, '&:last-child': { mb: 0 } }}>
               <Typography
@@ -313,7 +384,7 @@ export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
                   gap: 1,
                 }}
               >
-                {tours.map(tour => {
+                {catTours.map(tour => {
                   const done = isCompleted(tour.id);
                   const steps = getTourStepCount(tour.id);
                   return (
@@ -340,7 +411,13 @@ export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
                     >
                       <CardActionArea
                         onClick={() => handleLaunch(tour.id)}
-                        sx={{ px: 1.5, py: 1.25, display: 'flex', alignItems: 'flex-start', gap: 1.5 }}
+                        sx={{
+                          px: 1.5,
+                          py: 1.25,
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 1.5,
+                        }}
                       >
                         <Box
                           sx={{
@@ -353,8 +430,14 @@ export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
                             flexShrink: 0,
                             position: 'relative',
                             bgcolor: done
-                              ? alpha(theme.palette.success.main, isDark ? 0.15 : 0.08)
-                              : alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08),
+                              ? alpha(
+                                  theme.palette.success.main,
+                                  isDark ? 0.15 : 0.08,
+                                )
+                              : alpha(
+                                  theme.palette.primary.main,
+                                  isDark ? 0.15 : 0.08,
+                                ),
                             color: done
                               ? theme.palette.success.main
                               : theme.palette.primary.main,
@@ -536,21 +619,23 @@ export function TourLauncherDialog({ open, onClose }: TourLauncherDialogProps) {
   );
 }
 
-export function useFirstVisitTourDialog() {
+export function useFirstVisitTourDialog(
+  page?: 'marketplace' | 'command-center',
+) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!hasSeenWelcome()) {
+    if (!hasSeenWelcome(page)) {
       const timer = setTimeout(() => setOpen(true), 600);
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, []);
+  }, [page]);
 
   const close = useCallback(() => {
     setOpen(false);
-    markWelcomeSeen();
-  }, []);
+    markWelcomeSeen(page);
+  }, [page]);
 
   const openDialog = useCallback(() => {
     setOpen(true);

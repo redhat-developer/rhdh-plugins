@@ -1279,5 +1279,115 @@ export interface Config {
         description?: string;
       }>;
     }>;
+
+    /**
+     * Interactive guided experience tours for onboarding and feature discovery.
+     * Each tour is a named walkthrough with ordered steps that highlight UI elements.
+     * @visibility frontend
+     */
+    tours?: Array<{
+      /**
+       * Unique tour identifier
+       * @visibility frontend
+       */
+      id: string;
+      /**
+       * Display title shown in the tour launcher
+       * @visibility frontend
+       */
+      title: string;
+      /**
+       * Short description of what this tour covers
+       * @visibility frontend
+       */
+      description?: string;
+      /**
+       * Category for grouping: getting-started, agent-journeys, platform
+       * @visibility frontend
+       */
+      category?: string;
+      /**
+       * Estimated minutes to complete
+       * @visibility frontend
+       */
+      estimatedMinutes?: number;
+      /**
+       * Which persona this tour targets: developer, admin, or both
+       * @visibility frontend
+       */
+      persona?: 'developer' | 'admin' | 'both';
+      /**
+       * Which page this tour is designed for: marketplace, command-center, or any
+       * @visibility frontend
+       */
+      page?: 'marketplace' | 'command-center' | 'any';
+      /**
+       * Ordered steps in the tour
+       * @visibility frontend
+       */
+      steps: Array<{
+        /**
+         * CSS selector or [data-tour="..."] attribute to highlight
+         * @visibility frontend
+         */
+        target?: string;
+        /**
+         * Step title shown in the popover
+         * @visibility frontend
+         */
+        title: string;
+        /**
+         * Step description/body shown in the popover
+         * @visibility frontend
+         */
+        description?: string;
+        /**
+         * Popover position relative to target: top, bottom, left, right
+         * @visibility frontend
+         */
+        side?: string;
+        /**
+         * Action to execute before highlighting this step
+         * @visibility frontend
+         */
+        action?: {
+          /**
+           * Action type: navigate, openAgentIntent, selectAgentIntent, openToolIntent, selectToolDeploy, closeDialogs, setWizardStep, setDeployMethod, clickSelector
+           * @visibility frontend
+           */
+          type: string;
+          /**
+           * Target panel for navigate action
+           * @visibility frontend
+           */
+          panel?: string;
+          /**
+           * CSS selector for clickSelector action
+           * @visibility frontend
+           */
+          selector?: string;
+          /**
+           * Wizard step index for setWizardStep action
+           * @visibility frontend
+           */
+          step?: number;
+          /**
+           * Deployment method for setDeployMethod action
+           * @visibility frontend
+           */
+          method?: string;
+          /**
+           * Card ID for selectAgentIntent action
+           * @visibility frontend
+           */
+          cardId?: string;
+        };
+        /**
+         * Selector to wait for after action executes (if different from target)
+         * @visibility frontend
+         */
+        waitFor?: string;
+      }>;
+    }>;
   };
 }

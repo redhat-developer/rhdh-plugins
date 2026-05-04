@@ -45,6 +45,7 @@ export {
 export { useAdminConfig } from './useAdminConfig';
 export { useChatAgentConfig } from './useChatAgentConfig';
 export { useChatToolConfig } from './useChatToolConfig';
+export { useTours } from './useTours';
 export { useEffectiveConfig } from './useEffectiveConfig';
 export { useGeneratePrompt } from './useGeneratePrompt';
 export { useModels, type ModelInfo } from './useModels';
