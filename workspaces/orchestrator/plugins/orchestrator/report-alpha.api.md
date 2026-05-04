@@ -25,6 +25,7 @@ import { RouteRef } from '@backstage/core-plugin-api';
 import { RouteRef as RouteRef_2 } from '@backstage/frontend-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @alpha
 const _default: OverridableFrontendPlugin<
@@ -385,6 +386,9 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'aria.close': string;
   }
 >;
+
+// @public
+export const orchestratorTranslations: TranslationResource<'plugin.orchestrator'>;
 
 // @alpha
 export const orchestratorTranslationsModule: FrontendModule;
