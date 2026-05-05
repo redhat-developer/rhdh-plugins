@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.9.3
+
+### Patch Changes
+
+- 46d0a50: fix: input data added to the cloudevent should be one level deep and not be inputData.workflowData
+- 46d0a50: fix: workflow start state might also be in the start.stateName variable when compiled
+
 ## 8.9.2
 
 ### Patch Changes
