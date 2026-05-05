@@ -188,7 +188,7 @@ describe('ScorecardApiClient', () => {
       });
 
       await expect(client.getAggregatedScorecard('myKpi')).rejects.toThrow(
-        TypeError,
+        'Invalid response format from aggregated scorecard API',
       );
     });
 
@@ -199,7 +199,7 @@ describe('ScorecardApiClient', () => {
       });
 
       await expect(client.getAggregatedScorecard('myKpi')).rejects.toThrow(
-        TypeError,
+        'Invalid response format from aggregated scorecard API',
       );
     });
 
@@ -290,7 +290,7 @@ describe('ScorecardApiClient', () => {
       });
 
       await expect(client.getAggregationMetadata('myKpi')).rejects.toThrow(
-        TypeError,
+        'Invalid response format from aggregation metadata API',
       );
     });
 
