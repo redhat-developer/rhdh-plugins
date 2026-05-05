@@ -130,12 +130,19 @@ export class KeycloakTokenManager {
         res.on('end', () => {
           const raw = Buffer.concat(chunks).toString('utf-8');
           if (!res.statusCode || res.statusCode >= 400) {
+            let detail = '';
+            try {
+              detail = raw.substring(0, 500);
+            } catch {
+              /* ignore */
+            }
             this.logger.error(
-              `Keycloak token request failed: status ${res.statusCode}`,
+              `Keycloak token request failed: status ${res.statusCode} from ${this.tokenEndpoint}${detail ? ` - ${detail}` : ''}`,
             );
             reject(
               new Error(
-                `Keycloak token request failed with status ${res.statusCode}`,
+                `Keycloak token request failed with status ${res.statusCode} from ${this.tokenEndpoint}. ` +
+                  `Verify the client "${this.clientId}" is configured for client_credentials grant in Keycloak.`,
               ),
             );
             return;

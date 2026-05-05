@@ -43,11 +43,12 @@ augment:
     model: ${AUGMENT_MODEL:-gemini/models/gemini-2.5-flash}
     skipTlsVerify: ${AUGMENT_SKIP_TLS:-true}
   kagenti:
-    baseUrl: https://kagenti-api-kagenti-system.apps.ocp.v7hjl.sandbox2288.opentlc.com
-    namespace: team1
+    baseUrl: ${KAGENTI_BASE_URL:-https://kagenti-api-kagenti-system.apps.ocp.v7hjl.sandbox2288.opentlc.com}
+    namespace: ${KAGENTI_NAMESPACE:-team1}
     auth:
-      tokenEndpoint: https://keycloak-keycloak.apps.ocp.v7hjl.sandbox2288.opentlc.com/realms/kagenti/protocol/openid-connect/token
-      clientId: kagenti-api
+      tokenEndpoint: ${KAGENTI_TOKEN_ENDPOINT:-https://keycloak-keycloak.apps.ocp.v7hjl.sandbox2288.opentlc.com/realms/kagenti/protocol/openid-connect/token}
+      clientId: ${KAGENTI_CLIENT_ID:-kagenti-api}
       clientSecret: ${KAGENTI_CLIENT_SECRET}
     showAllNamespaces: true
     skipTlsVerify: true
+    verboseStreamLogging: true

@@ -270,13 +270,22 @@ export class KagentiApiClient {
 
       req.on('error', err => {
         cleanupAbort();
-        reject(err);
+        const errMsg = err instanceof Error ? err.message : String(err);
+        reject(
+          new Error(
+            `Kagenti stream connection error to ${url.href}: ${errMsg}`,
+          ),
+        );
       });
 
       req.on('timeout', () => {
         req.destroy();
         cleanupAbort();
-        reject(new Error(`Kagenti stream request timed out`));
+        reject(
+          new Error(
+            `Kagenti stream request timed out after ${this.streamTimeoutMs}ms to ${url.href}`,
+          ),
+        );
       });
 
       if (signal) {
@@ -883,8 +892,12 @@ export class KagentiApiClient {
     _allNamespaces = false,
   ): Promise<ShipwrightBuildListResponse> {
     const [agentBuilds, toolBuilds] = await Promise.all([
-      this.listAgentBuilds(namespace).catch(() => ({ items: [] as ShipwrightBuildListItem[] })),
-      this.listToolBuilds(namespace).catch(() => ({ items: [] as ShipwrightBuildListItem[] })),
+      this.listAgentBuilds(namespace).catch(() => ({
+        items: [] as ShipwrightBuildListItem[],
+      })),
+      this.listToolBuilds(namespace).catch(() => ({
+        items: [] as ShipwrightBuildListItem[],
+      })),
     ]);
     return { items: [...agentBuilds.items, ...toolBuilds.items] };
   }
