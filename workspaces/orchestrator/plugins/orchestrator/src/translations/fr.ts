@@ -43,6 +43,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'table.headers.lastRun': 'Dernière course',
     'table.headers.lastRunStatus': 'Statut de la dernière exécution',
     'table.headers.workflowName': 'Nom du flux de travail',
+    'table.headers.version': 'Version',
     'table.actions.run': 'Exécution',
     'table.actions.runAsEvent': "Exécuter en tant qu'événement",
     'table.actions.viewRuns': 'Voir les exécutions',
@@ -73,6 +74,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.fields.workflowId': "ID d'exécution",
     'workflow.fields.workflowIdCopied':
       "ID d'exécution copié dans le presse-papiers",
+    'workflow.fields.version': 'Version',
     'workflow.errors.retriggerFailed': 'Échec du re-déclenchement : {{reason}}',
     'workflow.errors.abortFailed':
       "Échec de l'abandon : l'exécution a déjà été terminée.",
@@ -193,6 +195,9 @@ const orchestratorTranslationFr = createTranslationMessages({
     'duration.months': '{{count}} mois',
     'duration.aYear': 'un an',
     'duration.years': '{{count}} ans',
+    'alerts.duplicateWorkflowIds.message':
+      'Plusieurs workflows avec le même ID ont été détectés. Utilisez des ID uniques entre les versions.',
+    'alerts.duplicateWorkflowIds.learnMore': 'En savoir plus',
     'stepperObjectField.error':
       "Le champ d'objet Stepper n'est pas pris en charge pour les schémas qui ne contiennent pas de propriétés",
     'formDecorator.error':

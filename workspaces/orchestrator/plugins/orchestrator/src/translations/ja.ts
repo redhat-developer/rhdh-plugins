@@ -43,6 +43,7 @@ const orchestratorTranslationJa = createTranslationMessages({
     'table.headers.lastRun': '最終実行',
     'table.headers.lastRunStatus': '最終実行のステータス',
     'table.headers.workflowName': 'ワークフロー名',
+    'table.headers.version': 'バージョン',
     'table.actions.run': '実行',
     'table.actions.runAsEvent': 'イベントとして実行',
     'table.actions.viewRuns': '実行の表示',
@@ -73,6 +74,7 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.fields.workflowId': '実行 ID',
     'workflow.fields.workflowIdCopied':
       '実行 ID がクリップボードにコピーされました',
+    'workflow.fields.version': 'バージョン',
     'workflow.errors.retriggerFailed': '再トリガーに失敗しました: {{reason}}',
     'workflow.errors.abortFailed':
       '中止に失敗しました: すでに実行が完了しています。',
@@ -164,6 +166,9 @@ const orchestratorTranslationJa = createTranslationMessages({
     'common.next': '次へ',
     'common.review': '確認',
     'common.unavailable': '---',
+    'alerts.duplicateWorkflowIds.message':
+      '同じ ID のワークフローが複数検出されました。バージョン間で一意の ID を使用してください。',
+    'alerts.duplicateWorkflowIds.learnMore': '詳細情報',
     'stepperObjectField.error':
       'ステッパーオブジェクトフィールドは、プロパティーを含まないスキーマではサポートされていません',
     'formDecorator.error':
