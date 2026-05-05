@@ -172,7 +172,7 @@ export abstract class BaseEntityProvider<T extends Entity>
           }
         }
       } catch (error) {
-        console.warn(
+        this.logger?.warn(
           'Failed to read extensions directory from config, falling back to hardcoded fallbacks',
           error,
         );
@@ -192,7 +192,7 @@ export abstract class BaseEntityProvider<T extends Entity>
       }
     }
 
-    console.warn(
+    this.logger?.warn(
       `Extensions directory not found. Checked: configured directory "${BaseEntityProvider.EXTENSIONS_DIRECTORY}" and "${BaseEntityProvider.DEPRECATED_MARKETPLACE_DIRECTORY}"`,
     );
     return null;
@@ -210,7 +210,7 @@ export abstract class BaseEntityProvider<T extends Entity>
       try {
         yamlData = readYamlFiles(extensionsFilePath);
       } catch (error) {
-        console.error(error.message);
+        this.logger?.error(error.message);
       }
     }
 
