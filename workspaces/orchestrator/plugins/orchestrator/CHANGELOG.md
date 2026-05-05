@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.9
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.4
+
 ## 5.7.8
 
 ### Patch Changes
