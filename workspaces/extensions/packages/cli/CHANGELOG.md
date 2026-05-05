@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/extensions-cli
 
+## 0.16.1
+
+### Patch Changes
+
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.16.1
+
 ## 0.16.0
 
 ### Minor Changes
