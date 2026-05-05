@@ -62,6 +62,8 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.fields.workflowId': 'Ausführungs-ID',
     'workflow.fields.workflowIdCopied':
       'Ausführungs-ID wurde in die Zwischenablage kopiert',
+    'workflow.fields.version': 'Version',
+    'table.headers.version': 'Version',
     'workflow.errors.retriggerFailed':
       'Erneuter Auslöser fehlgeschlagen: {{reason}}',
     'workflow.errors.abortFailedWithReason':
@@ -153,6 +155,9 @@ const orchestratorTranslationDe = createTranslationMessages({
     'duration.months': '{{count}} Monate',
     'duration.aYear': 'Ein Jahr',
     'duration.years': '{{count}} Jahre',
+    'alerts.duplicateWorkflowIds.message':
+      'Es wurden mehrere Workflows mit derselben ID erkannt. Verwenden Sie eindeutige IDs über verschiedene Versionen hinweg.',
+    'alerts.duplicateWorkflowIds.learnMore': 'Weitere Informationen',
     'stepperObjectField.error':
       'Das Stepper-Objektfeld wird für Schemata, die keine Eigenschaften enthalten, nicht unterstützt.',
     'formDecorator.error':

@@ -62,6 +62,8 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.fields.workflowId': 'ID de ejecución',
     'workflow.fields.workflowIdCopied':
       'ID de ejecución copiado en el portapapeles',
+    'workflow.fields.version': 'Versión',
+    'table.headers.version': 'Versión',
     'workflow.errors.retriggerFailed': 'Error al reactivar: {{reason}}',
     'workflow.errors.abortFailedWithReason': 'Error al cancelar: {{reason}}',
     'workflow.buttons.runAsEvent': 'Ejecutar como evento',
@@ -151,6 +153,9 @@ const orchestratorTranslationEs = createTranslationMessages({
     'duration.months': '{{count}} meses',
     'duration.aYear': 'un año',
     'duration.years': '{{count}} años',
+    'alerts.duplicateWorkflowIds.message':
+      'Se detectaron varios flujos de trabajo con el mismo ID. Use identificadores únicos entre versiones.',
+    'alerts.duplicateWorkflowIds.learnMore': 'Más información',
     'stepperObjectField.error':
       'El campo de objeto paso a paso no es compatible con esquemas que no contienen propiedades',
     'formDecorator.error':

@@ -57,7 +57,7 @@ const WorkflowDefinitionDetailsCard = ({
 
   return (
     <InfoCard title={t('workflow.details')} className={classes.details}>
-      <Grid container spacing={7} alignContent="flex-start" wrap="nowrap">
+      <Grid container spacing={7} alignContent="flex-start" wrap="wrap">
         <Grid item key="workflow status">
           {/* AboutField requires the value to be defined as a prop as well */}
           <AboutField
@@ -84,6 +84,18 @@ const WorkflowDefinitionDetailsCard = ({
               <Skeleton variant="text" />
             ) : (
               formattedWorkflowOverview?.description
+            )}
+          </AboutField>
+        </Grid>
+        <Grid item key="version">
+          <AboutField
+            label={t('workflow.fields.version')}
+            value={formattedWorkflowOverview?.version}
+          >
+            {loading ? (
+              <Skeleton variant="text" />
+            ) : (
+              formattedWorkflowOverview?.version
             )}
           </AboutField>
         </Grid>

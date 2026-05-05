@@ -44,6 +44,7 @@ const orchestratorTranslationIt = createTranslationMessages({
     'table.headers.lastRun': 'Ultima esecuzione',
     'table.headers.lastRunStatus': "Stato dell'ultima esecuzione",
     'table.headers.workflowName': 'Nome flusso di lavoro',
+    'table.headers.version': 'Versione',
     'table.actions.run': 'Esecuzione',
     'table.actions.runAsEvent': 'Esegui come evento',
     'table.actions.viewRuns': 'Visualizza esecuzioni',
@@ -73,6 +74,7 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.fields.started': 'Iniziata',
     'workflow.fields.workflowId': 'ID esecuzione',
     'workflow.fields.workflowIdCopied': 'ID esecuzione copiato negli appunti',
+    'workflow.fields.version': 'Versione',
     'workflow.errors.retriggerFailed': 'Riattivazione non riuscita: {{reason}}',
     'workflow.errors.abortFailed':
       "Interruzione non riuscita: l'esecuzione è già stata completata.",
@@ -194,6 +196,9 @@ const orchestratorTranslationIt = createTranslationMessages({
     'duration.months': '{{count}} mesi',
     'duration.aYear': 'un anno',
     'duration.years': '{{count}} anni',
+    'alerts.duplicateWorkflowIds.message':
+      'Sono stati rilevati più flussi di lavoro con lo stesso ID. Assicurati di utilizzare ID univoci tra le versioni.',
+    'alerts.duplicateWorkflowIds.learnMore': 'Ulteriori informazioni',
     'stepperObjectField.error':
       "Il campo dell'oggetto Stepper non è supportato per lo schema che non contiene proprietà",
     'formDecorator.error':
