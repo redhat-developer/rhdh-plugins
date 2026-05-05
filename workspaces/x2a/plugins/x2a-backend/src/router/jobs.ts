@@ -20,6 +20,7 @@ import { InputError, NotFoundError } from '@backstage/errors';
 import {
   ModulePhase,
   Job,
+  Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
@@ -151,7 +152,7 @@ export function registerJobRoutes(
     const phase = req.query.phase as ModulePhase;
 
     // Validate phase parameter (required)
-    if (!phase || !['analyze', 'migrate', 'publish'].includes(phase)) {
+    if (!phase || !Phase.modulePhaseValues().includes(phase)) {
       throw new InputError(
         'phase query parameter is required and must be one of: analyze, migrate, publish',
       );

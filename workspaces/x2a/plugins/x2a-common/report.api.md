@@ -196,6 +196,40 @@ export function normalizeSourceTechnology(raw: string | undefined): SourceTechno
 // @public
 export function parseCsvContent(dataUrl: string): CsvProjectRow[];
 
+// @public (undocumented)
+export class Phase {
+    // (undocumented)
+    static all(): readonly Phase[];
+    // (undocumented)
+    static readonly ANALYZE: Phase;
+    // (undocumented)
+    equals(other: Phase): boolean;
+    // (undocumented)
+    static from(raw: string): Phase;
+    // (undocumented)
+    static readonly INIT: Phase;
+    // (undocumented)
+    isModulePhase(): boolean;
+    // (undocumented)
+    isProjectPhase(): boolean;
+    // (undocumented)
+    static readonly MIGRATE: Phase;
+    // (undocumented)
+    static modulePhases(): readonly Phase[];
+    // (undocumented)
+    static modulePhaseValues(): readonly ModulePhase[];
+    // (undocumented)
+    readonly ordinal: number;
+    // (undocumented)
+    static readonly PUBLISH: Phase;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly value: MigrationPhase;
+    // (undocumented)
+    static values(): readonly MigrationPhase[];
+}
+
 // @public
 export const POLLING_INTERVAL_MS: number;
 
