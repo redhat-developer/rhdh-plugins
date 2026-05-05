@@ -313,6 +313,9 @@ export function useLightspeedProviderState(): {
         }
         setIsOpen(true);
       } else {
+        // Notebooks exist only in fullscreen; leaving embedded for overlay/docked
+        // must not keep shellViewTab on Notebooks (next fullscreen open should be Chat).
+        setShellViewTab(0);
         if (isLightspeedRoute) {
           leavingLightspeedForNonEmbeddedShellRef.current = true;
           pendingOverlayThreadHandoffRef.current = true;
@@ -328,6 +331,7 @@ export function useLightspeedProviderState(): {
       leaveLightspeedRouteForShellDisplayMode,
       navigate,
       setPersistedDisplayMode,
+      setShellViewTab,
       syncShellDrawerForMode,
     ],
   );

@@ -51,6 +51,8 @@ export interface LightspeedDrawerContextType {
    * Set the display mode (overlay, docked, or fullscreen/embedded).
    * When entering embedded mode, optional `embeddedNotebooks` navigates to
    * `/lightspeed/notebooks` (or a session URL) instead of the chat route.
+   * Leaving embedded for overlay or docked resets the shell tab to Chat
+   * (Notebooks is only available in fullscreen).
    */
   setDisplayMode: (
     mode: ChatbotDisplayMode,

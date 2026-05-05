@@ -68,6 +68,7 @@ function HookHarness() {
       <div data-testid="conversation-id">
         {contextValue.currentConversationId ?? 'none'}
       </div>
+      <div data-testid="shell-view-tab">{contextValue.shellViewTab}</div>
       <button
         type="button"
         data-testid="toggle-button"
@@ -380,6 +381,30 @@ describe('useLightspeedProviderState', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('pathname')).toHaveTextContent('/lightspeed');
+      });
+    });
+
+    it('resets shellViewTab to Chat when leaving embedded for overlay while on Notebooks', async () => {
+      renderWithRouter(['/catalog']);
+
+      screen.getByTestId('set-shell-notebooks-tab').click();
+      screen.getByTestId('set-embedded-plain').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/lightspeed/notebooks',
+        );
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.embedded,
+        );
+        expect(screen.getByTestId('shell-view-tab')).toHaveTextContent('1');
+      });
+
+      screen.getByTestId('set-overlay-mode').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent('/catalog');
+        expect(screen.getByTestId('shell-view-tab')).toHaveTextContent('0');
       });
     });
   });

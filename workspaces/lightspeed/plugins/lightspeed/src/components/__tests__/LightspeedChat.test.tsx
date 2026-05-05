@@ -621,7 +621,46 @@ describe('LightspeedChat', () => {
       );
     });
 
-    it('should pass notebooks navigation when clicking Fullscreen on Notebooks tab from overlay', async () => {
+    it('should call setDisplayMode with default when leaving fullscreen from notebooks', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: false,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.embedded,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 1,
+        setShellViewTab: jest.fn(),
+      });
+
+      render(setupLightspeedChat('/lightspeed/notebooks'));
+
+      await waitFor(() => {
+        expect(screen.getByText('My Notebooks')).toBeInTheDocument();
+      });
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      await userEvent.click(settingsButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Overlay')).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getByText('Overlay'));
+
+      expect(mockSetDisplayMode).toHaveBeenCalledWith(
+        ChatbotDisplayMode.default,
+      );
+    });
+
+    it('should not render Chat/Notebooks tabs in overlay mode', async () => {
       mockUseLightspeedDrawerContext.mockReturnValue({
         isChatbotActive: true,
         toggleChatbot: jest.fn(),
@@ -642,22 +681,49 @@ describe('LightspeedChat', () => {
 
       render(setupLightspeedChat());
 
-      await userEvent.click(screen.getByText('Notebooks'));
-
-      const settingsButton = screen.getByLabelText('Chatbot options');
-      await userEvent.click(settingsButton);
-
       await waitFor(() => {
-        expect(screen.getByText('Fullscreen')).toBeInTheDocument();
+        expect(screen.getByLabelText('Chatbot options')).toBeInTheDocument();
       });
 
-      await userEvent.click(screen.getByText('Fullscreen'));
+      expect(
+        screen.queryByRole('tab', { name: 'Chat' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('tab', { name: 'Notebooks' }),
+      ).not.toBeInTheDocument();
+    });
 
-      expect(mockSetDisplayMode).toHaveBeenCalledWith(
-        ChatbotDisplayMode.embedded,
-        undefined,
-        'notebooks',
-      );
+    it('should not render Chat/Notebooks tabs in docked mode', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: true,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.docked,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
+      });
+
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Chatbot options')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole('tab', { name: 'Chat' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('tab', { name: 'Notebooks' }),
+      ).not.toBeInTheDocument();
     });
 
     it('should show current display mode as selected in full-screen mode', async () => {
@@ -847,6 +913,9 @@ describe('LightspeedChat', () => {
 
       const chatTab = screen.getByRole('tab', { name: 'Chat' });
       expect(chatTab).toHaveAttribute('aria-selected', 'true');
+      expect(
+        screen.getByRole('button', { name: 'Chat history menu' }),
+      ).toBeInTheDocument();
     });
 
     it('redirects /lightspeed to /lightspeed/notebooks in fullscreen when shellViewTab is 1', async () => {
@@ -886,6 +955,9 @@ describe('LightspeedChat', () => {
 
       const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
       expect(notebooksTab).toHaveAttribute('aria-selected', 'true');
+      expect(
+        screen.queryByRole('button', { name: 'Chat history menu' }),
+      ).not.toBeInTheDocument();
     });
 
     it('should navigate to /lightspeed/notebooks when clicking the Notebooks tab', async () => {
