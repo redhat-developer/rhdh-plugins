@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras
 
+## 0.4.2
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
 ## 0.4.1
 
 ### Patch Changes
