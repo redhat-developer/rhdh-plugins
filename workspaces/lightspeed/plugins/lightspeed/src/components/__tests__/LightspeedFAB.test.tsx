@@ -41,6 +41,8 @@ describe('LightspeedFAB', () => {
     setDraftMessage: jest.fn(),
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
+    shellViewTab: 0,
+    setShellViewTab: jest.fn(),
     ...overrides,
   });
 

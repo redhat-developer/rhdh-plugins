@@ -21,7 +21,10 @@ import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
-import type { LightspeedDrawerContextType } from '../components/LightspeedDrawerContext';
+import type {
+  LightspeedDrawerContextType,
+  LightspeedEmbeddedNotebooksTarget,
+} from '../components/LightspeedDrawerContext';
 import { LIGHTSPEED_APP_DRAWER_ID } from '../const';
 import type { FileContent } from '../types';
 import { useBackstageUserIdentity } from './useBackstageUserIdentity';
@@ -65,12 +68,22 @@ export function useLightspeedProviderState(): {
   const [draftFileContents, setDraftFileContentsState] = useState<
     FileContent[]
   >([]);
+  const [shellViewTab, setShellViewTabState] = useState(0);
+  const shellViewTabRef = useRef(shellViewTab);
+  shellViewTabRef.current = shellViewTab;
+  const setShellViewTab = useCallback((tab: number) => {
+    const next = tab === 1 ? 1 : 0;
+    shellViewTabRef.current = next;
+    setShellViewTabState(next);
+  }, []);
   const openedViaFABRef = useRef(false);
   const dockedAfterLeavingFullscreenRef = useRef(false);
   /** True while navigating off /lightspeed after user chose overlay/docked (URL can lag persisted mode). */
   const leavingLightspeedForNonEmbeddedShellRef = useRef(false);
   /** True until overlay/docked LightspeedChat consumes it (new mount after leaving fullscreen route). */
   const pendingOverlayThreadHandoffRef = useRef(false);
+  /** Used to detect in-app moves (e.g. Chat ↔ Notebooks) so display mode is not reset to embedded. */
+  const lightspeedPathnamePrevRef = useRef<string | null>(null);
 
   const isLightspeedRouteRef = useRef(false);
   const persistedDisplayModeRef = useRef(persistedDisplayMode);
@@ -117,6 +130,15 @@ export function useLightspeedProviderState(): {
   }, [navigate]);
 
   useEffect(() => {
+    const pathname = location.pathname;
+    const prevPathname = lightspeedPathnamePrevRef.current;
+    const isUnderLightspeedPath = (p: string | null) =>
+      Boolean(p && p.startsWith(LIGHTSPEED_PATH));
+    const isInternalLightspeedRouteChange =
+      isUnderLightspeedPath(prevPathname) &&
+      isUnderLightspeedPath(pathname) &&
+      prevPathname !== pathname;
+
     if (!isLightspeedRoute) {
       leavingLightspeedForNonEmbeddedShellRef.current = false;
     }
@@ -131,13 +153,15 @@ export function useLightspeedProviderState(): {
     }
 
     if (isLightspeedRoute) {
-      if (
-        leavingLightspeedForNonEmbeddedShellRef.current &&
-        persistedDisplayMode !== ChatbotDisplayMode.embedded
-      ) {
-        setDisplayModeState(persistedDisplayMode);
-      } else {
-        setDisplayModeState(ChatbotDisplayMode.embedded);
+      if (!isInternalLightspeedRouteChange) {
+        if (
+          leavingLightspeedForNonEmbeddedShellRef.current &&
+          persistedDisplayMode !== ChatbotDisplayMode.embedded
+        ) {
+          setDisplayModeState(persistedDisplayMode);
+        } else {
+          setDisplayModeState(ChatbotDisplayMode.embedded);
+        }
       }
       setIsOpen(true);
       if (!dockedAfterLeavingFullscreenRef.current) {
@@ -150,7 +174,15 @@ export function useLightspeedProviderState(): {
     } else {
       setDisplayModeState(persistedDisplayMode);
     }
-  }, [closeDrawer, conversationId, isLightspeedRoute, persistedDisplayMode]);
+
+    lightspeedPathnamePrevRef.current = pathname;
+  }, [
+    closeDrawer,
+    conversationId,
+    isLightspeedRoute,
+    location.pathname,
+    persistedDisplayMode,
+  ]);
 
   useEffect(() => {
     if (
@@ -169,7 +201,11 @@ export function useLightspeedProviderState(): {
 
     if (rawMode === ChatbotDisplayMode.embedded) {
       if (!isLightspeedRoute) {
-        navigate(lightspeedRoutePath(currentConversationIdState));
+        if (shellViewTabRef.current === 1) {
+          navigate(`${LIGHTSPEED_PATH}/notebooks`);
+        } else {
+          navigate(lightspeedRoutePath(currentConversationIdState));
+        }
       }
       setDisplayModeState(ChatbotDisplayMode.embedded);
       closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
@@ -251,7 +287,11 @@ export function useLightspeedProviderState(): {
   }, []);
 
   const setDisplayMode = useCallback(
-    (mode: ChatbotDisplayMode, conversationIdParam?: string) => {
+    (
+      mode: ChatbotDisplayMode,
+      conversationIdParam?: string,
+      embeddedNotebooks?: LightspeedEmbeddedNotebooksTarget,
+    ) => {
       if (mode === displayModeState) {
         return;
       }
@@ -259,8 +299,18 @@ export function useLightspeedProviderState(): {
       syncShellDrawerForMode(mode);
 
       if (mode === ChatbotDisplayMode.embedded) {
-        const convId = conversationIdParam ?? currentConversationIdState;
-        navigate(lightspeedRoutePath(convId));
+        if (embeddedNotebooks) {
+          const path =
+            embeddedNotebooks === 'notebooks'
+              ? `${LIGHTSPEED_PATH}/notebooks`
+              : `${LIGHTSPEED_PATH}/notebooks/${embeddedNotebooks.notebookSessionId}`;
+          navigate(path);
+        } else if (shellViewTabRef.current === 1) {
+          navigate(`${LIGHTSPEED_PATH}/notebooks`);
+        } else {
+          const convId = conversationIdParam ?? currentConversationIdState;
+          navigate(lightspeedRoutePath(convId));
+        }
         setIsOpen(true);
       } else {
         if (isLightspeedRoute) {
@@ -302,6 +352,8 @@ export function useLightspeedProviderState(): {
       draftFileContents,
       setDraftFileContents,
       consumePendingOverlayThreadHandoff,
+      shellViewTab,
+      setShellViewTab,
     }),
     [
       isOpen,
@@ -316,6 +368,8 @@ export function useLightspeedProviderState(): {
       draftFileContents,
       setDraftFileContents,
       consumePendingOverlayThreadHandoff,
+      shellViewTab,
+      setShellViewTab,
     ],
   );
 

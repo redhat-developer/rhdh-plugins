@@ -112,6 +112,58 @@ function HookHarness() {
       >
         Go lightspeed base
       </button>
+      <button
+        type="button"
+        data-testid="go-notebooks"
+        onClick={() => navigate('/lightspeed/notebooks')}
+      >
+        Go notebooks
+      </button>
+      <button
+        type="button"
+        data-testid="set-embedded-notebooks"
+        onClick={() =>
+          contextValue.setDisplayMode(
+            ChatbotDisplayMode.embedded,
+            undefined,
+            'notebooks',
+          )
+        }
+      >
+        Set embedded notebooks
+      </button>
+      <button
+        type="button"
+        data-testid="set-embedded-notebook-session"
+        onClick={() =>
+          contextValue.setDisplayMode(ChatbotDisplayMode.embedded, undefined, {
+            notebookSessionId: 'sess-1',
+          })
+        }
+      >
+        Set embedded notebook session
+      </button>
+      <button
+        type="button"
+        data-testid="set-shell-notebooks-tab"
+        onClick={() => contextValue.setShellViewTab(1)}
+      >
+        Shell notebooks tab
+      </button>
+      <button
+        type="button"
+        data-testid="set-shell-chat-tab"
+        onClick={() => contextValue.setShellViewTab(0)}
+      >
+        Shell chat tab
+      </button>
+      <button
+        type="button"
+        data-testid="set-embedded-plain"
+        onClick={() => contextValue.setDisplayMode(ChatbotDisplayMode.embedded)}
+      >
+        Set embedded plain
+      </button>
     </div>
   );
 }
@@ -279,6 +331,57 @@ describe('useLightspeedProviderState', () => {
         );
       });
     });
+
+    it('navigates to /lightspeed/notebooks when setDisplayMode(embedded, undefined, notebooks)', async () => {
+      renderWithRouter(['/catalog']);
+
+      screen.getByTestId('set-embedded-notebooks').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/lightspeed/notebooks',
+        );
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.embedded,
+        );
+      });
+    });
+
+    it('navigates to notebook session URL when setDisplayMode passes notebookSessionId', async () => {
+      renderWithRouter(['/catalog']);
+
+      screen.getByTestId('set-embedded-notebook-session').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/lightspeed/notebooks/sess-1',
+        );
+      });
+    });
+
+    it('navigates to /lightspeed/notebooks when setDisplayMode(embedded) if shellViewTab is 1', async () => {
+      renderWithRouter(['/catalog']);
+
+      screen.getByTestId('set-shell-notebooks-tab').click();
+      screen.getByTestId('set-embedded-plain').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/lightspeed/notebooks',
+        );
+      });
+    });
+
+    it('navigates to /lightspeed when setDisplayMode(embedded) if shellViewTab is 0', async () => {
+      renderWithRouter(['/catalog']);
+
+      screen.getByTestId('set-shell-chat-tab').click();
+      screen.getByTestId('set-embedded-plain').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent('/lightspeed');
+      });
+    });
   });
 
   describe('/lightspeed route handling', () => {
@@ -305,6 +408,40 @@ describe('useLightspeedProviderState', () => {
           ChatbotDisplayMode.embedded,
         );
       });
+    });
+
+    it('keeps display mode when navigating between Lightspeed sub-routes (e.g. Chat ↔ Notebooks)', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter(['/lightspeed']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-mode')).toHaveTextContent(
+          ChatbotDisplayMode.embedded,
+        );
+      });
+
+      screen.getByTestId('go-notebooks').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/lightspeed/notebooks',
+        );
+      });
+
+      expect(screen.getByTestId('display-mode')).toHaveTextContent(
+        ChatbotDisplayMode.embedded,
+      );
+
+      screen.getByTestId('go-lightspeed-base').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent('/lightspeed');
+      });
+
+      expect(screen.getByTestId('display-mode')).toHaveTextContent(
+        ChatbotDisplayMode.embedded,
+      );
     });
 
     it('restores persisted docked mode after navigating away from /lightspeed', async () => {

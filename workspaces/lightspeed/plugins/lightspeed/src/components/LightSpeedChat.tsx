@@ -29,7 +29,7 @@ import {
   FileRejection,
   type DropEvent as ReactDropzoneDropEvent,
 } from 'react-dropzone';
-import { useMatch, useNavigate } from 'react-router-dom';
+import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { Button, makeStyles } from '@material-ui/core';
 import {
@@ -166,6 +166,7 @@ const useStyles = makeStyles(theme => ({
       },
     '& .pf-v6-c-tabs__link, & .pf-v5-c-tabs__link': {
       backgroundColor: 'transparent',
+      paddingTop: theme.spacing(2),
       paddingBottom: theme.spacing(2),
       fontWeight: 700,
       cursor: 'pointer',
@@ -478,12 +479,41 @@ export const LightspeedChat = ({
   const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
   const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
   const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
+  const {
+    displayMode,
+    setDisplayMode,
+    currentConversationId: routeConversationId,
+    setCurrentConversationId,
+    draftMessage,
+    setDraftMessage,
+    consumePendingOverlayThreadHandoff,
+    shellViewTab,
+    setShellViewTab,
+  } = useLightspeedDrawerContext();
+  const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  const location = useLocation();
+  const isNotebooksFullscreenPath =
+    location.pathname === '/lightspeed/notebooks' ||
+    location.pathname.startsWith('/lightspeed/notebooks/');
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<number>(
-    notebooksRouteMatch || notebookViewRouteMatch ? 1 : 0,
-  );
+  const [activeTab, setActiveTab] = useState<number>(() => {
+    if (notebooksRouteMatch || notebookViewRouteMatch) {
+      return 1;
+    }
+    if (!isFullscreenMode) {
+      return shellViewTab;
+    }
+    const p = location.pathname;
+    if (p.startsWith('/lightspeed/conversation/')) {
+      return 0;
+    }
+    if (shellViewTab === 1) {
+      return 1;
+    }
+    return 0;
+  });
   const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
     useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
@@ -547,20 +577,40 @@ export const LightspeedChat = ({
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
-  const {
-    displayMode,
-    setDisplayMode,
-    currentConversationId: routeConversationId,
-    setCurrentConversationId,
-    draftMessage,
-    setDraftMessage,
-    consumePendingOverlayThreadHandoff,
-  } = useLightspeedDrawerContext();
-  const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
-  const showChatPanel = !isFullscreenMode || activeTab === 0;
-  const showNotebooksPanel = isFullscreenMode && activeTab !== 0;
+  // Tab choice (Chat vs Notebooks) is honored in overlay and docked, not only fullscreen.
+  const showChatPanel = activeTab === 0;
+  const showNotebooksPanel = activeTab !== 0;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
+
+  // Fullscreen: URL drives Chat vs Notebooks, but shellViewTab must win when entering
+  // fullscreen from overlay/docked on Notebooks while navigation still lands on /lightspeed.
+  useLayoutEffect(() => {
+    if (!isFullscreenMode) {
+      return;
+    }
+    if (isNotebooksFullscreenPath) {
+      setActiveTab(1);
+      setShellViewTab(1);
+      return;
+    }
+    const isBaseLightspeedChatRoute =
+      location.pathname === '/lightspeed' ||
+      location.pathname === '/lightspeed/';
+    if (shellViewTab === 1 && isBaseLightspeedChatRoute) {
+      navigate('/lightspeed/notebooks', { replace: true });
+      return;
+    }
+    setActiveTab(0);
+    setShellViewTab(0);
+  }, [
+    isFullscreenMode,
+    isNotebooksFullscreenPath,
+    shellViewTab,
+    location.pathname,
+    navigate,
+    setShellViewTab,
+  ]);
 
   const handleNotebookTabSelect = (
     _event: React.MouseEvent<any>,
@@ -568,6 +618,13 @@ export const LightspeedChat = ({
   ) => {
     const nextTab = Number(tabIndex);
     setActiveTab(nextTab);
+    setShellViewTab(nextTab);
+    if (!isFullscreenMode) {
+      if (nextTab === 1 && notebooksPermissionResolved) {
+        refetchNotebooks();
+      }
+      return;
+    }
     if (nextTab === 1) {
       navigate('/lightspeed/notebooks');
       if (notebooksPermissionResolved) {
@@ -582,21 +639,51 @@ export const LightspeedChat = ({
     }
   };
 
+  const setDisplayModeFromHeader = useCallback(
+    (mode: ChatbotDisplayMode) => {
+      if (mode !== ChatbotDisplayMode.embedded) {
+        setDisplayMode(mode);
+        return;
+      }
+      if (activeTab === 1) {
+        const sid = activeNotebook?.session_id;
+        setDisplayMode(
+          mode,
+          undefined,
+          sid ? { notebookSessionId: sid } : 'notebooks',
+        );
+      } else {
+        setDisplayMode(mode);
+      }
+    },
+    [setDisplayMode, activeTab, activeNotebook?.session_id],
+  );
+
   const handleCreateNotebook = useCallback(() => {
     createNotebookMutation.mutate(
       { name: UNTITLED_NOTEBOOK_NAME },
       {
         onSuccess: (session: NotebookSession) => {
-          navigate(`/lightspeed/notebooks/${session.session_id}`);
+          if (isFullscreenMode) {
+            navigate(`/lightspeed/notebooks/${session.session_id}`);
+          } else {
+            setActiveNotebook(session);
+            setActiveTab(1);
+            setShellViewTab(1);
+          }
         },
       },
     );
-  }, [createNotebookMutation, navigate]);
+  }, [createNotebookMutation, navigate, isFullscreenMode, setShellViewTab]);
 
   const handleCloseNotebook = useCallback(() => {
-    navigate('/lightspeed/notebooks');
+    if (isFullscreenMode) {
+      navigate('/lightspeed/notebooks');
+    } else {
+      setActiveNotebook(null);
+    }
     refetchNotebooks();
-  }, [navigate, refetchNotebooks]);
+  }, [navigate, refetchNotebooks, isFullscreenMode]);
 
   const handleRemoveNotebookAlert = (key: React.Key) => {
     setNotebookAlerts(prevAlerts =>
@@ -1667,26 +1754,23 @@ export const LightspeedChat = ({
             isPinningChatsEnabled={isPinningChatsEnabled}
             isModelSelectorDisabled={isSendButtonDisabled}
             hideModelSelector={showNotebooksPanel}
-            setDisplayMode={setDisplayMode}
+            showChatTabOptions={!showNotebooksPanel}
+            setDisplayMode={setDisplayModeFromHeader}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
             onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
-        {isFullscreenMode && (
-          <>
-            <Tabs
-              activeKey={activeTab}
-              onSelect={handleNotebookTabSelect}
-              aria-label={t('tabs.ariaLabel')}
-              className={classes.tabs}
-            >
-              <Tab eventKey={0} title={t('tabs.chat')} />
-              <Tab eventKey={1} title={t('tabs.notebooks')} />
-            </Tabs>
-            <div className={classes.tabsDivider} />
-          </>
-        )}
+        <Tabs
+          activeKey={activeTab}
+          onSelect={handleNotebookTabSelect}
+          aria-label={t('tabs.ariaLabel')}
+          className={classes.tabs}
+        >
+          <Tab eventKey={0} title={t('tabs.chat')} />
+          <Tab eventKey={1} title={t('tabs.notebooks')} />
+        </Tabs>
+        <div className={classes.tabsDivider} />
         {showChatPanel && (
           <ChatbotConversationHistoryNav
             drawerPanelContentProps={{
@@ -1793,9 +1877,13 @@ export const LightspeedChat = ({
               classes={classes}
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
-              onSelectNotebook={(notebook: NotebookSession) =>
-                navigate(`/lightspeed/notebooks/${notebook.session_id}`)
-              }
+              onSelectNotebook={(notebook: NotebookSession) => {
+                if (isFullscreenMode) {
+                  navigate(`/lightspeed/notebooks/${notebook.session_id}`);
+                } else {
+                  setActiveNotebook(notebook);
+                }
+              }}
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}
               onCreateNotebook={handleCreateNotebook}
@@ -1813,7 +1901,10 @@ export const LightspeedChat = ({
                   variant="outlined"
                   color="primary"
                   style={{ borderRadius: '20px' }}
-                  onClick={() => setActiveTab(0)}
+                  onClick={() => {
+                    setActiveTab(0);
+                    setShellViewTab(0);
+                  }}
                 >
                   {t('permission.notebooks.goBack')}
                 </Button>
