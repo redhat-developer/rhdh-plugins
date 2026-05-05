@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.3.1
+
+### Patch Changes
+
+- 4522d8c: - Fixed duplicate header in NFS app by adding `noHeader: true` to the PageBlueprint configuration
+  - Persist selected approval tool (GitHub/GitLab) in URL parameter to survive page refresh
+  - Fixed large empty space between table rows and pagination on the last page when rows is less than rows-per-page
+- ef36dbb: Corrected `dataFetcher` return type to include `Response` and replaced unsafe type casts with `instanceof` narrowing.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.1
+
 ## 7.3.0
 
 ### Minor Changes
