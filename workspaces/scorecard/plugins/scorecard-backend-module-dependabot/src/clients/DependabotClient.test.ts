@@ -15,7 +15,10 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { DefaultGithubCredentialsProvider } from '@backstage/integration';
+import {
+  DefaultGithubCredentialsProvider,
+  ScmIntegrations,
+} from '@backstage/integration';
 import { DependabotClient } from './DependabotClient';
 
 const mockPaginate = jest.fn();
@@ -109,6 +112,22 @@ describe('DependabotClient', () => {
     await expect(client.getAlerts(url, repo, 'critical')).rejects.toThrow(
       `Missing GitHub token for '${url}'`,
     );
+    expect(mockPaginate).not.toHaveBeenCalled();
+  });
+
+  it('throws when GitHub API base URL is missing', async () => {
+    jest.spyOn(ScmIntegrations, 'fromConfig').mockReturnValueOnce({
+      github: {
+        byUrl: jest.fn().mockReturnValue({
+          config: {},
+        }),
+      },
+    } as any);
+    const clientWithoutApiBaseUrl = new DependabotClient(config, logger);
+
+    await expect(
+      clientWithoutApiBaseUrl.getAlerts(url, repo, 'critical'),
+    ).rejects.toThrow(`Missing GitHub API base URL for '${url}'`);
     expect(mockPaginate).not.toHaveBeenCalled();
   });
 
