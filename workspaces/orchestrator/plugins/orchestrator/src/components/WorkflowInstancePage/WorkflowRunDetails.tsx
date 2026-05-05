@@ -149,6 +149,17 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
+      <Grid item md={12} key="Version">
+        <AboutField label={t('workflow.fields.version')}>
+          <Typography variant="subtitle2" component="div">
+            <b>
+              {!error && !loading
+                ? (value?.version ?? VALUE_UNAVAILABLE)
+                : VALUE_UNAVAILABLE}
+            </b>
+          </Typography>
+        </AboutField>
+      </Grid>
     </Grid>
   );
 };

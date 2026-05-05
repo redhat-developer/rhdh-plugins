@@ -381,7 +381,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
       )}
       <Box sx={{ mb: showDuplicateWorkflowIdAlert ? 2 : 0 }}>
         {showDuplicateWorkflowIdAlert ? (
-          <Alert severity="info">
+          <Alert severity="warning">
             {t('alerts.duplicateWorkflowIds.message')}{' '}
             <MuiLink
               href={ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL}
