@@ -32,14 +32,14 @@ export const DEFAULT_PAGE_SORT = 'created_at';
 export const DEFAULT_PAGE_ORDER = 'desc';
 
 /**
- * Path to the default chef conversion project scaffolder template.
+ * Path to the default conversion project scaffolder template.
  *
  * This might be subject to exposing as a plugin configuration option in the future.
  *
  * @public
  */
-export const CREATE_CHEF_PROJECT_TEMPLATE_PATH =
-  '/create/templates/default/chef-conversion-project-template';
+export const CREATE_PROJECT_TEMPLATE_PATH =
+  '/create/templates/default/x2a-conversion-project-template';
 
 /**
  * Prefix for the scaffolder secret keys for the SCM provider tokens.

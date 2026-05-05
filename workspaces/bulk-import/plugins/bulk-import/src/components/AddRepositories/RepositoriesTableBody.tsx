@@ -19,8 +19,6 @@ import type { MouseEvent } from 'react';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddedRepositories, AddRepositoryData } from '../../types';
@@ -33,7 +31,6 @@ export const RepositoriesTableBody = ({
   ariaLabel,
   showOrganizations,
   rows,
-  emptyRows,
   onOrgRowSelected,
   onClick,
   selectedRepos,
@@ -42,7 +39,6 @@ export const RepositoriesTableBody = ({
 }: {
   loading: boolean;
   ariaLabel: string;
-  emptyRows: number;
   rows: AddRepositoryData[];
   onOrgRowSelected: (org: AddRepositoryData) => void;
   onClick: (_event: MouseEvent, repo: AddRepositoryData) => void;
@@ -100,15 +96,6 @@ export const RepositoriesTableBody = ({
             />
           );
         })}
-        {emptyRows > 0 && (
-          <TableRow
-            style={{
-              height: 55 * emptyRows,
-            }}
-          >
-            <TableCell />
-          </TableRow>
-        )}
       </TableBody>
     );
   }

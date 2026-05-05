@@ -20,6 +20,7 @@ import { InputError, NotFoundError } from '@backstage/errors';
 import {
   ModulePhase,
   Job,
+  Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
@@ -34,6 +35,7 @@ async function sendJobLogs(
   deps: Pick<RouterDeps, 'x2aDatabase' | 'kubeService' | 'logger'>,
 ): Promise<void> {
   const { x2aDatabase, kubeService, logger } = deps;
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
 
   if (
     job.status === 'success' ||
@@ -43,7 +45,6 @@ async function sendJobLogs(
     logger.info(
       `Job ${job.id} is finished (status: ${job.status}), returning logs from database`,
     );
-    res.setHeader('Content-Type', 'text/plain');
     const log = await x2aDatabase.getJobLogs({ jobId: job.id });
     if (!log) {
       logger.error(`Log not found for a finished job ${job.id}`);
@@ -54,14 +55,15 @@ async function sendJobLogs(
 
   if (!job.k8sJobName) {
     logger.warn(`Job ${job.id} has no k8sJobName, returning empty logs`);
-    res.setHeader('Content-Type', 'text/plain');
     res.send('');
     return;
   }
 
   const logs = await kubeService.getJobLogs(job.k8sJobName, streaming);
-  res.setHeader('Content-Type', 'text/plain');
   if (streaming && typeof logs !== 'string') {
+    // Hints to proxies (e.g. nginx, OpenShift route) not to buffer the body.
+    res.setHeader('Cache-Control', 'no-store, no-transform, must-revalidate');
+    res.setHeader('X-Accel-Buffering', 'no');
     const stream = logs as Readable;
     stream.on('error', err => {
       logger.error(
@@ -150,7 +152,7 @@ export function registerJobRoutes(
     const phase = req.query.phase as ModulePhase;
 
     // Validate phase parameter (required)
-    if (!phase || !['analyze', 'migrate', 'publish'].includes(phase)) {
+    if (!phase || !Phase.modulePhaseValues().includes(phase)) {
       throw new InputError(
         'phase query parameter is required and must be one of: analyze, migrate, publish',
       );

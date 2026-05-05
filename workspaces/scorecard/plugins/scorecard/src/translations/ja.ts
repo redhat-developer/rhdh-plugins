@@ -23,6 +23,7 @@ import { scorecardTranslationRef } from './ref';
  */
 const scorecardTranslationJa = createTranslationMessages({
   ref: scorecardTranslationRef,
+  full: true,
   messages: {
     // Empty state translations
     'emptyState.title': 'スコアカードはまだ追加されていません',
@@ -37,6 +38,9 @@ const scorecardTranslationJa = createTranslationMessages({
       'スコアカードプラグインを表示するには、管理者に連絡して {{permission}} 権限を付与してもらうよう依頼してください。',
     'permissionRequired.button': 'さらに表示する',
     'permissionRequired.altText': '権限が必要',
+
+    // Common UI
+    'common.loading': '読み込み中',
 
     // Not found state
     'notFound.title': '404 ページが見つかりません',
@@ -66,12 +70,10 @@ const scorecardTranslationJa = createTranslationMessages({
       'ユーザーエンティティーがカタログに見つかりません',
     'errors.noDataFoundMessage':
       'ここでデータを確認するには、エンティティがこの指標に関連する値を報告していることを確認してください。',
+    'errors.unsupportedAggregationType':
+      'このスコアカードの集計タイプは、使用中のプラグインのバージョンではサポートされていません。',
     'errors.authenticationErrorMessage':
       'データを確認するにはサインインしてください。',
-    'errors.noMetricsFound':
-      '指定されたメトリクス ID に対するメトリクスが見つかりません。',
-    'errors.multipleMetricsFound':
-      '指定されたメトリクス ID に対するメトリクスが複数見つかりました。1つのみが期待されています。',
 
     // Metric translations
     'metric.github.open_prs.title': 'GitHub のオープン状態の PR',
@@ -81,6 +83,48 @@ const scorecardTranslationJa = createTranslationMessages({
       'Jira のオープン状態の進行を妨げているチケット',
     'metric.jira.open_issues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
+    'metric.sonarqube.quality_gate.title':
+      'SonarQube クオリティゲートのステータス',
+    'metric.sonarqube.quality_gate.description':
+      'プロジェクトが SonarQube のクオリティゲートに合格しているかどうか。',
+    'metric.sonarqube.open_issues.title': 'SonarQube のオープンな課題',
+    'metric.sonarqube.open_issues.description':
+      'SonarQube におけるオープンな課題 (OPEN、CONFIRMED、REOPENED) の数。',
+    'metric.sonarqube.security_rating.title': 'SonarQube セキュリティ評価',
+    'metric.sonarqube.security_rating.description':
+      'SonarQube のセキュリティ評価。',
+    'metric.sonarqube.security_issues.title':
+      'SonarQube のセキュリティ上の課題',
+    'metric.sonarqube.security_issues.description':
+      'SonarQube におけるオープンなセキュリティ脆弱性の数。',
+    'metric.sonarqube.security_review_rating.title':
+      'SonarQube セキュリティレビュー評価',
+    'metric.sonarqube.security_review_rating.description':
+      'SonarQube のセキュリティレビュー評価。',
+    'metric.sonarqube.security_hotspots.title':
+      'SonarQube セキュリティホットスポット',
+    'metric.sonarqube.security_hotspots.description':
+      'SonarQube でレビューが必要なセキュリティホットスポットの数。',
+    'metric.sonarqube.reliability_rating.title': 'SonarQube 信頼性評価',
+    'metric.sonarqube.reliability_rating.description':
+      'SonarQube の信頼性評価。',
+    'metric.sonarqube.reliability_issues.title':
+      'SonarQube の信頼性に関する課題',
+    'metric.sonarqube.reliability_issues.description':
+      'SonarQube におけるオープンなバグの数。',
+    'metric.sonarqube.maintainability_rating.title': 'SonarQube 保守性評価',
+    'metric.sonarqube.maintainability_rating.description':
+      'SonarQube の保守性評価。',
+    'metric.sonarqube.maintainability_issues.title':
+      'SonarQube の保守性に関する課題',
+    'metric.sonarqube.maintainability_issues.description':
+      'SonarQube におけるオープンなコードスメルの数。',
+    'metric.sonarqube.code_coverage.title': 'SonarQube コードカバレッジ',
+    'metric.sonarqube.code_coverage.description':
+      'SonarQube における全体のコードカバレッジの割合。',
+    'metric.sonarqube.code_duplications.title': 'SonarQube コードの重複',
+    'metric.sonarqube.code_duplications.description':
+      'SonarQube における重複した行の割合。',
     'metric.filecheck.title': 'ファイル確認: {{name}}',
     'metric.filecheck.description':
       'リポジトリーに {{name}} ファイルが存在するかを確認します。',
@@ -88,6 +132,18 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.lastUpdatedNotAvailable': '最終更新日: 利用不可',
     'metric.someEntitiesNotReportingValues':
       'エンティティーがこの指標に関連する値を報告していません。',
+    'metric.averageCenterTooltipTotalLabel': '合計スコア',
+    'metric.averageCenterTooltipMaxLabel': '最大可能スコア',
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} 件のエンティティー、各 {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
+      '{{count}} 件のエンティティー、各 {{score}}',
+    'metric.averageLegendTooltipRowTotal': '合計スコア {{total}}',
+    'metric.drillDownCalculationFailures':
+      '1 件以上のエンティティーでこの指標の計算に失敗しました。',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} エンティティー',
+    'metric.homepageEntityCalculationHealth':
+      '指標の計算エラーがないエンティティー {{healthy}} / {{total}}',
 
     // Threshold translations
     'thresholds.success': '成功',

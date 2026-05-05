@@ -37,4 +37,61 @@ describe('buildAggregationConfig', () => {
       metricId: 'github.open_prs',
     });
   });
+
+  it('maps average KPI config including statusScores', () => {
+    const config = new ConfigReader({
+      title: 'Weighted health',
+      description: 'Average across statuses',
+      type: aggregationTypes.average,
+      metricId: 'github.open_prs',
+      options: {
+        statusScores: {
+          error: 0,
+          warning: 50,
+          success: 100,
+        },
+      },
+    });
+
+    const result = buildAggregationConfig('avgKpi', { config });
+
+    expect(result).toEqual({
+      id: 'avgKpi',
+      title: 'Weighted health',
+      description: 'Average across statuses',
+      type: aggregationTypes.average,
+      metricId: 'github.open_prs',
+      options: {
+        statusScores: { error: 0, warning: 50, success: 100 },
+      },
+    });
+    expect(result.options?.thresholds).toBeUndefined();
+  });
+
+  it('maps optional thresholds for average KPIs', () => {
+    const config = new ConfigReader({
+      title: 'Weighted health',
+      description: 'Average across statuses',
+      type: aggregationTypes.average,
+      metricId: 'github.open_prs',
+      options: {
+        statusScores: { success: 100, warning: 50, error: 0 },
+        thresholds: {
+          rules: [
+            { key: 'success', expression: '>=75', color: 'success.main' },
+            { key: 'warning', expression: '10-74', color: 'warning.main' },
+            { key: 'error', expression: '<10', color: 'error.main' },
+          ],
+        },
+      },
+    });
+
+    const result = buildAggregationConfig('avgKpi', { config });
+
+    expect(result.options?.thresholds?.rules).toEqual([
+      { key: 'success', expression: '>=75', color: 'success.main' },
+      { key: 'warning', expression: '10-74', color: 'warning.main' },
+      { key: 'error', expression: '<10', color: 'error.main' },
+    ]);
+  });
 });

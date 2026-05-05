@@ -16,7 +16,6 @@
 import { Page, expect } from '@playwright/test';
 import { ScorecardRoutes } from '../constants/routes';
 
-/** Metric-id aggregation URLs (drill-down uses `github.open_prs` / `jira.open_issues`). */
 const GITHUB_AGGREGATION_ROUTE =
   ScorecardRoutes.GITHUB_OPEN_PRS_METRIC_AGGREGATION_ROUTE;
 const JIRA_AGGREGATION_ROUTE =
@@ -65,6 +64,23 @@ export async function mockApiTextResponse(
       status,
       contentType: 'text/plain',
       body,
+    });
+  });
+}
+
+const SONARQUBE_SCORECARD_API_ROUTE =
+  '**/api/scorecard/metrics/catalog/Component/default/sonarqube-scorecard-only';
+
+export async function mockSonarqubeScorecardResponse(
+  page: Page,
+  responseData: object,
+  status = 200,
+) {
+  await page.route(SONARQUBE_SCORECARD_API_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(responseData),
     });
   });
 }

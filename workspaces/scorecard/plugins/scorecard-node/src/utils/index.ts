@@ -15,7 +15,10 @@
  */
 
 export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
-export { validateThresholds } from './thresholds/validateThresholds';
+export {
+  validateThresholdsForMetric,
+  validateThresholdsForAggregation,
+} from './thresholds/validateThresholds';
 export { getThresholdsFromConfig } from './thresholds/getThresholdsFromConfig';
 export type {
   ComparisonSign,

@@ -23,6 +23,7 @@ import { scorecardTranslationRef } from './ref';
  */
 const scorecardTranslationDe = createTranslationMessages({
   ref: scorecardTranslationRef,
+  full: true,
   messages: {
     // Empty state translations
     'emptyState.title': 'Noch keine Scorecards hinzugefügt',
@@ -37,6 +38,9 @@ const scorecardTranslationDe = createTranslationMessages({
       'Wenn Sie das Scorecard-Plugin anzeigen möchten, wenden Sie sich an den Administrator, um die Berechtigung {{permission}} zu erhalten.',
     'permissionRequired.button': 'Mehr erfahren',
     'permissionRequired.altText': 'Berechtigung erforderlich',
+
+    // Common UI
+    'common.loading': 'Wird geladen',
 
     // Not found state
     'notFound.title': '404 Diese Seite wurde nicht gefunden',
@@ -65,12 +69,10 @@ const scorecardTranslationDe = createTranslationMessages({
       'Benutzer-Element nicht im Katalog gefunden.',
     'errors.noDataFoundMessage':
       'Um Ihre Daten hier anzuzeigen, überprüfen Sie, ob Ihre Elemente Werte melden, die mit dieser Metrik in Verbindung stehen.',
+    'errors.unsupportedAggregationType':
+      'Diese Scorecard verwendet einen Aggregationstyp, der von dieser Plugin-Version nicht unterstützt wird.',
     'errors.authenticationErrorMessage':
       'Bitte melden Sie sich an, um Ihre Daten anzuzeigen.',
-    'errors.noMetricsFound':
-      'Keine Metriken für die angegebene Metrik-ID gefunden.',
-    'errors.multipleMetricsFound':
-      'Mehrere Metriken für die angegebene Metrik-ID gefunden. Genau eine erwartet.',
 
     // Metric translations
     'metric.github.open_prs.title': 'GitHub PRs offen',
@@ -79,6 +81,48 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.jira.open_issues.title': 'Jira offene blockierende Tickets',
     'metric.jira.open_issues.description':
       'Hervorhebt die Anzahl der kritischen, blockierenden Probleme, die derzeit in Jira offen sind.',
+    'metric.sonarqube.quality_gate.title': 'SonarQube Quality-Gate-Status',
+    'metric.sonarqube.quality_gate.description':
+      'Gibt an, ob das Projekt sein SonarQube-Quality-Gate besteht.',
+    'metric.sonarqube.open_issues.title': 'SonarQube offene Probleme',
+    'metric.sonarqube.open_issues.description':
+      'Anzahl der offenen Probleme (OPEN, CONFIRMED, REOPENED) in SonarQube.',
+    'metric.sonarqube.security_rating.title': 'SonarQube Sicherheitsbewertung',
+    'metric.sonarqube.security_rating.description':
+      'SonarQube Sicherheitsbewertung.',
+    'metric.sonarqube.security_issues.title': 'SonarQube Sicherheitsprobleme',
+    'metric.sonarqube.security_issues.description':
+      'Anzahl der offenen Sicherheitslücken in SonarQube.',
+    'metric.sonarqube.security_review_rating.title':
+      'SonarQube Bewertung der Sicherheitsüberprüfung',
+    'metric.sonarqube.security_review_rating.description':
+      'SonarQube Bewertung der Sicherheitsüberprüfung.',
+    'metric.sonarqube.security_hotspots.title':
+      'SonarQube Sicherheits-Hotspots',
+    'metric.sonarqube.security_hotspots.description':
+      'Anzahl der zu überprüfenden Sicherheits-Hotspots in SonarQube.',
+    'metric.sonarqube.reliability_rating.title':
+      'SonarQube Zuverlässigkeitsbewertung',
+    'metric.sonarqube.reliability_rating.description':
+      'SonarQube Zuverlässigkeitsbewertung.',
+    'metric.sonarqube.reliability_issues.title':
+      'SonarQube Zuverlässigkeitsprobleme',
+    'metric.sonarqube.reliability_issues.description':
+      'Anzahl der offenen Fehler in SonarQube.',
+    'metric.sonarqube.maintainability_rating.title':
+      'SonarQube Wartbarkeitsbewertung',
+    'metric.sonarqube.maintainability_rating.description':
+      'SonarQube Wartbarkeitsbewertung.',
+    'metric.sonarqube.maintainability_issues.title':
+      'SonarQube Wartbarkeitsprobleme',
+    'metric.sonarqube.maintainability_issues.description':
+      'Anzahl der offenen Code Smells in SonarQube.',
+    'metric.sonarqube.code_coverage.title': 'SonarQube Code-Abdeckung',
+    'metric.sonarqube.code_coverage.description':
+      'Gesamtprozentsatz der Code-Abdeckung in SonarQube.',
+    'metric.sonarqube.code_duplications.title': 'SonarQube Code-Duplikate',
+    'metric.sonarqube.code_duplications.description':
+      'Prozentsatz der duplizierten Zeilen in SonarQube.',
     'metric.filecheck.title': 'Dateiprüfung: {{name}}',
     'metric.filecheck.description':
       'Prüft, ob die Datei {{name}} im Repository vorhanden ist.',
@@ -86,6 +130,18 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.lastUpdatedNotAvailable': 'Zuletzt aktualisiert: Nicht verfügbar',
     'metric.someEntitiesNotReportingValues':
       'Einige Elemente melden keine Werte, die mit dieser Metrik in Verbindung stehen.',
+    'metric.averageCenterTooltipTotalLabel': 'Gesamtpunktzahl',
+    'metric.averageCenterTooltipMaxLabel': 'Maximal mögliche Punktzahl',
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} Element, je {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
+      '{{count}} Elemente, je {{score}}',
+    'metric.averageLegendTooltipRowTotal': 'Gesamtpunktzahl {{total}}',
+    'metric.drillDownCalculationFailures':
+      'Mindestens ein Element konnte diese Metrik nicht berechnen.',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} Elemente',
+    'metric.homepageEntityCalculationHealth':
+      '{{healthy}} / {{total}} Elemente ohne Metrik-Berechnungsfehler',
 
     // Threshold translations
     'thresholds.success': 'Erfolg',

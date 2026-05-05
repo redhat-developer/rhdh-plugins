@@ -340,6 +340,14 @@ export class JobResourceBuilder {
                         },
                       ]
                     : []),
+                  ...(params.sourceTechnology
+                    ? [
+                        {
+                          name: 'SOURCE_TECHNOLOGY',
+                          value: params.sourceTechnology,
+                        },
+                      ]
+                    : []),
                   ...(params.userPrompt
                     ? [
                         {

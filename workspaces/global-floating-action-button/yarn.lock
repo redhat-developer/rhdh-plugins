@@ -9869,19 +9869,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.12.0":
-  version: 0.12.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.12.1"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.0":
+  version: 0.14.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.3"
   dependencies:
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
     "@mui/icons-material": "npm:^5.17.1"
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.12.0
-    "@backstage/theme": ^0.7.0
+    "@backstage/core-plugin-api": ^1.12.4
+    "@backstage/theme": ^0.7.2
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/99506cde84cf8ad35c367a9625ea19e453685f0067f8ba6e058e90daf427e11b009e2c83f06b3a0ab23bd2395116ef9005262128553b098db97ef48b187fd06b
+  checksum: 10c0/0ee4af21b78919b27e77db527f22b5f7b424a003186f245807cd876333d92ff621f55d8feb07b6deaf8f0867581357761b6488c06eb7d5a016b8060d268dbeee
   languageName: node
   linkType: hard
 
@@ -13958,7 +13960,7 @@ __metadata:
     "@mui/styles": "npm:5.18.0"
     "@playwright/test": "npm:^1.56.1"
     "@red-hat-developer-hub/backstage-plugin-global-floating-action-button": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@types/react-dom": "npm:*"

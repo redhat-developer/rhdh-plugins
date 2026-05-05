@@ -18,6 +18,7 @@ export type PieData = {
   name: string;
   value: number;
   color?: string;
+  score?: number;
 };
 
 export type EntityMetadata = {

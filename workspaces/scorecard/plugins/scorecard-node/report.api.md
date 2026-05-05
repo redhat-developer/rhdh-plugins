@@ -71,7 +71,13 @@ export class ThresholdConfigFormatError extends CustomErrorBase {
 }
 
 // @public
-export function validateThresholds(
+export function validateThresholdsForAggregation(
+  thresholds: JsonValue,
+  expectedMetricType: MetricType,
+): asserts thresholds is ThresholdConfig;
+
+// @public
+export function validateThresholdsForMetric(
   thresholds: JsonValue,
   expectedMetricType: MetricType,
 ): asserts thresholds is ThresholdConfig;

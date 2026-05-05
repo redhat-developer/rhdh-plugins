@@ -46,7 +46,7 @@ import {
 } from '@material-ui/core';
 
 import {
-  CREATE_CHEF_PROJECT_TEMPLATE_PATH,
+  CREATE_PROJECT_TEMPLATE_PATH,
   Module,
   Project,
   PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD,
@@ -797,7 +797,7 @@ export const ProjectTable = ({
           <LinkButton
             variant="contained"
             color="primary"
-            to={CREATE_CHEF_PROJECT_TEMPLATE_PATH}
+            to={CREATE_PROJECT_TEMPLATE_PATH}
           >
             {t('common.newProject')}
           </LinkButton>

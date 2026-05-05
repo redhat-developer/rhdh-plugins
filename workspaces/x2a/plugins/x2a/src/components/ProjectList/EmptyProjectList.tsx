@@ -17,7 +17,7 @@ import { makeStyles } from '@material-ui/core';
 import { EmptyState, LinkButton, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 import {
-  CREATE_CHEF_PROJECT_TEMPLATE_PATH,
+  CREATE_PROJECT_TEMPLATE_PATH,
   x2aAdminViewPermission,
   x2aAdminWritePermission,
   x2aUserPermission,
@@ -56,7 +56,7 @@ const NextSteps = ({ canCreate }: { canCreate: boolean }) => {
         <LinkButton
           variant="contained"
           color="primary"
-          to={CREATE_CHEF_PROJECT_TEMPLATE_PATH}
+          to={CREATE_PROJECT_TEMPLATE_PATH}
           disabled={!canCreate}
         >
           {t('emptyPage.startFirstConversion')}

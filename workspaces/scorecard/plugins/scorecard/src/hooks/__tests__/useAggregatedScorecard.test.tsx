@@ -57,6 +57,8 @@ describe('useAggregatedScorecard', () => {
       values: [{ name: 'success', count: 1 }],
       timestamp: '2025-01-01T00:00:00Z',
       thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      entitiesConsidered: 1,
+      calculationErrorCount: 0,
     },
   };
 

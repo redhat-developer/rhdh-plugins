@@ -1,0 +1,137 @@
+# Codecov configuration for redhat-developer/rhdh-plugins
+# Reference: https://docs.codecov.com/docs/codecov-yaml
+#
+# Feature umbrella: RHDHPLAN-851
+# Epic: RHIDP-11862 — Unit Test Coverage for RHDH Plugins Repository
+#
+# Each workspace uploads coverage with its own flag (e.g., lightspeed,
+# orchestrator). individual_flags scope each flag to its workspace path
+# so the Flags page shows per-workspace coverage correctly.
+
+codecov:
+  require_ci_to_pass: false
+  notify:
+    wait_for_ci: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "40...80"
+
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 100%
+        informational: true
+        only_pulls: false
+        paths:
+          - "workspaces/*/plugins/*/src/**"
+    patch:
+      default:
+        target: auto
+        threshold: 100%
+        informational: true
+        paths:
+          - "workspaces/*/plugins/*/src/**"
+
+comment:
+  layout: "header, diff, flags, footer"
+  behavior: default
+  require_changes: false
+  show_carryforward_flags: true
+
+ignore:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/index.ts"
+  - "**/__fixtures__/**"
+  - "**/__tests__/**"
+  - "**/__mocks__/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/node_modules/**"
+  - "**/setupTests.*"
+  - "**/playwright.config.ts"
+  - "**/scripts/**"
+  - "**/docs/**"
+
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 100%
+      - type: patch
+        target: auto
+        threshold: 100%
+  individual_flags:
+    - name: adoption-insights
+      paths:
+        - workspaces/adoption-insights/
+    - name: ai-integrations
+      paths:
+        - workspaces/ai-integrations/
+    - name: app-defaults
+      paths:
+        - workspaces/app-defaults/
+    - name: augment
+      paths:
+        - workspaces/augment/
+    - name: bulk-import
+      paths:
+        - workspaces/bulk-import/
+    - name: cost-management
+      paths:
+        - workspaces/cost-management/
+    - name: dcm
+      paths:
+        - workspaces/dcm/
+    - name: extensions
+      paths:
+        - workspaces/extensions/
+    - name: global-floating-action-button
+      paths:
+        - workspaces/global-floating-action-button/
+    - name: global-header
+      paths:
+        - workspaces/global-header/
+    - name: homepage
+      paths:
+        - workspaces/homepage/
+    - name: konflux
+      paths:
+        - workspaces/konflux/
+    - name: lightspeed
+      paths:
+        - workspaces/lightspeed/
+    - name: mcp-integrations
+      paths:
+        - workspaces/mcp-integrations/
+    - name: orchestrator
+      paths:
+        - workspaces/orchestrator/
+    - name: quickstart
+      paths:
+        - workspaces/quickstart/
+    - name: repo-tools
+      paths:
+        - workspaces/repo-tools/
+    - name: sandbox
+      paths:
+        - workspaces/sandbox/
+    - name: scorecard
+      paths:
+        - workspaces/scorecard/
+    - name: theme
+      paths:
+        - workspaces/theme/
+    - name: translations
+      paths:
+        - workspaces/translations/
+    - name: x2a
+      paths:
+        - workspaces/x2a/

@@ -52,5 +52,13 @@ export interface CatalogApi {
   createCatalogItemInstance(
     instance: CatalogItemInstance,
   ): Promise<CatalogItemInstance>;
+  /**
+   * Triggers catalog item instance rehydrate (placement); may assign a new resource id.
+   *
+   * @public
+   */
+  rehydrateCatalogItemInstance(
+    catalogItemInstanceId: string,
+  ): Promise<CatalogItemInstance>;
   deleteCatalogItemInstance(catalogItemInstanceId: string): Promise<void>;
 }

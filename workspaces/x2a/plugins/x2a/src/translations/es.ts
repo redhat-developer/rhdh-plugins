@@ -27,7 +27,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'sidebar.x2a.title': 'Hub de conversión',
     'page.title': 'Hub de conversión',
     'page.subtitle':
-      'Inicie y realice el seguimiento de las conversiones asíncronas de archivos Chef a playbooks Ansible listos para producción.',
+      'Inicie y realice el seguimiento de la conversión asíncrona de automatización existente a playbooks Ansible listos para producción.',
     'table.columns.name': 'Nombre',
     'table.columns.status': 'Estado',
     'table.columns.statusSortDisabledTooltip':
@@ -83,7 +83,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'emptyPage.noConversionInitiatedYet':
       'Aún no se ha iniciado ninguna conversión',
     'emptyPage.noConversionInitiatedYetDescription':
-      'Inicie y realice el seguimiento de la conversión de archivos Chef a Ansible listos para producción',
+      'Inicie y realice el seguimiento de la conversión de automatización existente a Ansible listo para producción',
     'emptyPage.startFirstConversion': 'Iniciar primera conversión',
     'emptyPage.notAllowedTitle': 'Acceso denegado',
     'emptyPage.notAllowedDescription':
@@ -158,7 +158,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'Antes de ejecutar el análisis, revise primero el plan de migración general del proyecto; su contenido guiará el análisis del módulo.',
     'modulePage.phases.runAnalyze': 'Crear plan de migración del módulo',
     'modulePage.phases.migrateInstructions':
-      'Antes de ejecutar la migración, revise el plan de migración del módulo. El proceso de migración convertirá el código Chef a Ansible basado en el plan.',
+      'Antes de ejecutar la migración, revise el plan de migración del módulo. El proceso de migración convertirá el código fuente a Ansible basado en el plan.',
     'modulePage.phases.runMigrate': 'Migrar fuentes del módulo',
     'modulePage.phases.remigrateInstructions':
       'Las fuentes migradas ya existen. Vuelva a ejecutar la migración para recrear el código Ansible convertido.',
@@ -177,6 +177,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.viewLog': 'Ver registro',
     'modulePage.phases.hideLog': 'Ocultar registro',
     'modulePage.phases.noLogsAvailable': 'Aún no hay registros disponibles...',
+    'modulePage.phases.logWaitingForStream':
+      'Esperando la salida de registro del clúster...',
     'modulePage.phases.telemetry.title': 'Telemetría',
     'modulePage.phases.telemetry.noTelemetryAvailable':
       'No hay telemetría disponible',

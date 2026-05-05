@@ -18,6 +18,7 @@ import type {
   JobStatusEnum,
   MigrationPhase,
   Artifact,
+  SourceTechnology,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
@@ -112,6 +113,7 @@ export interface JobCreateParams {
   callbackUrl: string;
   moduleId?: string;
   moduleName?: string;
+  sourceTechnology?: SourceTechnology;
   sourceRepo: GitRepo;
   targetRepo: GitRepo;
   aapCredentials?: AAPCredentials;

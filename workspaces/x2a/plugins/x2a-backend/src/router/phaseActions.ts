@@ -19,6 +19,7 @@ import type {
   Artifact,
   MigrationPhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { normalizeSourceTechnology } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
 
@@ -86,11 +87,20 @@ class InitPhaseAction implements PhaseAction {
 
     await Promise.all(
       toAdd.map(m => {
-        logger.info(`Creating module "${m.name}" for project ${projectId}`);
+        const technology = normalizeSourceTechnology(m.technology);
+        if (m.technology && !technology) {
+          logger.warn(
+            `Unrecognized source technology "${m.technology}" for module "${m.name}" - storing as undefined`,
+          );
+        }
+        logger.info(
+          `Creating module "${m.name}" for project ${projectId} with technology ${technology}`,
+        );
         return x2aDatabase.createModule({
           name: m.name,
           sourcePath: m.path,
           projectId,
+          technology,
         });
       }),
     );

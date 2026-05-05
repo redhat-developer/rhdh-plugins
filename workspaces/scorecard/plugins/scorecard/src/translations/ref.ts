@@ -51,6 +51,11 @@ export const scorecardMessages = {
     altText: 'Permission required',
   },
 
+  // Common UI
+  common: {
+    loading: 'Loading',
+  },
+
   // Error messages
   errors: {
     entityMissingProperties:
@@ -69,10 +74,9 @@ export const scorecardMessages = {
     userNotFoundInCatalogMessage: 'User entity not found in catalog.',
     noDataFoundMessage:
       'To see your data here, check that your entities are reporting values related to this metric.',
+    unsupportedAggregationType:
+      'This scorecard uses an aggregation type that is not supported by this version of the plugin.',
     authenticationErrorMessage: 'Please sign in to view your data.',
-    noMetricsFound: 'No metrics found for the specified metric ID.',
-    multipleMetricsFound:
-      'Multiple metrics found for the specified metric ID. Expected exactly one.',
   },
 
   // Metric translations
@@ -87,6 +91,55 @@ export const scorecardMessages = {
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
     },
+    'sonarqube.quality_gate': {
+      title: 'SonarQube Quality Gate Status',
+      description: 'Whether the project passes its SonarQube quality gate.',
+    },
+    'sonarqube.open_issues': {
+      title: 'SonarQube Open Issues',
+      description:
+        'Count of open issues (OPEN, CONFIRMED, REOPENED) in SonarQube.',
+    },
+    'sonarqube.security_rating': {
+      title: 'SonarQube Security Rating',
+      description: 'SonarQube security rating.',
+    },
+    'sonarqube.security_issues': {
+      title: 'SonarQube Security Issues',
+      description: 'Count of open security vulnerabilities in SonarQube.',
+    },
+    'sonarqube.security_review_rating': {
+      title: 'SonarQube Security Review Rating',
+      description: 'SonarQube security review rating.',
+    },
+    'sonarqube.security_hotspots': {
+      title: 'SonarQube Security Hotspots',
+      description: 'Count of security hotspots to review in SonarQube.',
+    },
+    'sonarqube.reliability_rating': {
+      title: 'SonarQube Reliability Rating',
+      description: 'SonarQube reliability rating.',
+    },
+    'sonarqube.reliability_issues': {
+      title: 'SonarQube Reliability Issues',
+      description: 'Count of open bugs in SonarQube.',
+    },
+    'sonarqube.maintainability_rating': {
+      title: 'SonarQube Maintainability Rating',
+      description: 'SonarQube maintainability rating.',
+    },
+    'sonarqube.maintainability_issues': {
+      title: 'SonarQube Maintainability Issues',
+      description: 'Count of open code smells in SonarQube.',
+    },
+    'sonarqube.code_coverage': {
+      title: 'SonarQube Code Coverage',
+      description: 'Overall code coverage percentage in SonarQube.',
+    },
+    'sonarqube.code_duplications': {
+      title: 'SonarQube Code Duplications',
+      description: 'Percentage of duplicated lines in SonarQube.',
+    },
     filecheck: {
       title: 'File check: {{name}}',
       description: 'Checks whether the {{name}} file exists in the repository.',
@@ -95,6 +148,17 @@ export const scorecardMessages = {
     lastUpdatedNotAvailable: 'Last updated: Not available',
     someEntitiesNotReportingValues:
       'Some entities are not reporting values related to this metric.',
+    averageCenterTooltipTotalLabel: 'Total score',
+    averageCenterTooltipMaxLabel: 'Max possible score',
+    averageLegendTooltipEntitiesEach_one: '{{count}} entity, each {{score}}',
+    averageLegendTooltipEntitiesEach_other:
+      '{{count}} entities, each {{score}}',
+    averageLegendTooltipRowTotal: 'Total score {{total}}',
+    drillDownCalculationFailures:
+      'One or more entities failed while calculating this metric.',
+    homepageEntityHealthRatio: '{{healthy}}/{{total}} entities',
+    homepageEntityCalculationHealth:
+      '{{healthy}} / {{total}} entities without metric calculation errors',
   },
 
   // Threshold translations

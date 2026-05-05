@@ -74,11 +74,13 @@ describe('phaseActions', () => {
         name: 'cookbook-a',
         sourcePath: '/cookbooks/a',
         projectId,
+        technology: 'chef',
       });
       expect(context.x2aDatabase.createModule).toHaveBeenCalledWith({
         name: 'cookbook-b',
         sourcePath: '/cookbooks/b',
         projectId,
+        technology: 'chef',
       });
     });
 
@@ -116,6 +118,7 @@ describe('phaseActions', () => {
         name: 'added',
         sourcePath: '/cookbooks/added',
         projectId,
+        technology: undefined,
       });
     });
 

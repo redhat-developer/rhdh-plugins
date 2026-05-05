@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.7
+
+### Patch Changes
+
+- 384ade8: Expose the Alpha Scalprum module and `orchestratorTranslations` for dynamic plugins, and document `translationResources` in the plugin `app-config.yaml` for loading translations from the Alpha bundle.
+
+## 5.7.6
+
+### Patch Changes
+
+- 8e0ba0a: Update uuid to v14.0.0
+
+## 5.7.5
+
+### Patch Changes
+
+- Updated dependencies [dfd28b3]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.3
+
 ## 5.7.4
 
 ### Patch Changes

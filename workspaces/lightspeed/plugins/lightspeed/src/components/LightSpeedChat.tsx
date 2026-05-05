@@ -554,6 +554,7 @@ export const LightspeedChat = ({
     setCurrentConversationId,
     draftMessage,
     setDraftMessage,
+    consumePendingOverlayThreadHandoff,
   } = useLightspeedDrawerContext();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const showChatPanel = !isFullscreenMode || activeTab === 0;
@@ -647,12 +648,55 @@ export const LightspeedChat = ({
     setUploadError,
   } = useFileAttachmentContext();
 
-  // Sync conversationId with lastOpenedId whenever lastOpenedId changes
-  useEffect(() => {
-    if (isReady && lastOpenedId !== null) {
+  // After leaving fullscreen for overlay/docked, provider signals a one-shot handoff so a
+  // new LightspeedChat mount does not briefly apply stale lastOpened from storage.
+  useLayoutEffect(() => {
+    if (!isReady) return;
+
+    if (isFullscreenMode) {
+      return;
+    }
+
+    const handoff = consumePendingOverlayThreadHandoff?.() ?? false;
+    if (handoff) {
+      if (routeConversationId) {
+        setConversationId(routeConversationId);
+        setNewChatCreated(false);
+      } else {
+        setConversationId(TEMP_CONVERSATION_ID);
+        setNewChatCreated(true);
+      }
+      return;
+    }
+
+    if (routeConversationId && routeConversationId !== conversationId) {
+      setConversationId(routeConversationId);
+      setNewChatCreated(false);
+    } else if (
+      !routeConversationId &&
+      conversationId === '' &&
+      lastOpenedId !== null
+    ) {
       setConversationId(lastOpenedId);
     }
-  }, [lastOpenedId, isReady]);
+  }, [
+    isReady,
+    isFullscreenMode,
+    routeConversationId,
+    conversationId,
+    lastOpenedId,
+    consumePendingOverlayThreadHandoff,
+  ]);
+
+  // Sync conversationId with lastOpenedId — fullscreen only (overlay uses layout effect above).
+  useEffect(() => {
+    if (!isReady || !isFullscreenMode) {
+      return;
+    }
+    if (lastOpenedId !== null) {
+      setConversationId(lastOpenedId);
+    }
+  }, [lastOpenedId, isReady, isFullscreenMode]);
 
   const queryClient = useQueryClient();
 
@@ -667,13 +711,32 @@ export const LightspeedChat = ({
   const samplePrompts = useWelcomePrompts();
   useEffect(() => {
     if (!user || !isReady) return;
+    const onOverlayLikeSurface = isFullscreenMode || !routeConversationId;
+    const stillOnProvisionalThread =
+      !conversationId || conversationId === TEMP_CONVERSATION_ID;
+
     if (lastOpenedId === null) {
-      setConversationId(TEMP_CONVERSATION_ID);
+      if (onOverlayLikeSurface && stillOnProvisionalThread) {
+        setConversationId(TEMP_CONVERSATION_ID);
+      }
     }
+    // Only treat as blank "new chat" while there is no persisted thread id yet. Otherwise
+    // after the first stream assigns a real conversationId, lastOpenedId can lag one frame
+    // and this effect would flip newChatCreated back to true and hide the New chat button.
     if (lastOpenedId === TEMP_CONVERSATION_ID || lastOpenedId === null) {
-      setNewChatCreated(true);
+      if (onOverlayLikeSurface && stillOnProvisionalThread) {
+        setNewChatCreated(true);
+      }
     }
-  }, [user, isReady, lastOpenedId, setConversationId]);
+  }, [
+    user,
+    isReady,
+    lastOpenedId,
+    setConversationId,
+    isFullscreenMode,
+    routeConversationId,
+    conversationId,
+  ]);
 
   useEffect(() => {
     // Clear last opened conversationId when there are no conversations.
@@ -684,8 +747,20 @@ export const LightspeedChat = ({
       lastOpenedId
     ) {
       clearLastOpenedId();
+      // Stale last-opened pointed at a missing thread; align with blank new chat so
+      // provisional UI (e.g. hide New chat) matches storage.
+      setConversationId(TEMP_CONVERSATION_ID);
+      setNewChatCreated(true);
+      setCurrentConversationId(undefined);
     }
-  }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
+  }, [
+    isLoading,
+    isRefetching,
+    conversations,
+    lastOpenedId,
+    clearLastOpenedId,
+    setCurrentConversationId,
+  ]);
 
   useEffect(() => {
     if (
@@ -698,10 +773,14 @@ export const LightspeedChat = ({
         (c: ConversationSummary) => c.conversation_id === routeConversationId,
       );
       if (!conversationExists) {
-        // Conversation from route doesn't exist, start a new chat
-        setConversationId(TEMP_CONVERSATION_ID);
-        setCurrentConversationId(undefined);
-        setNewChatCreated(true);
+        // New threads can be missing from the summaries list until refetch completes; if we
+        // already show this id locally (e.g. streaming), do not reset to a new chat.
+        if (routeConversationId !== conversationId) {
+          // Conversation from route doesn't exist, start a new chat
+          setConversationId(TEMP_CONVERSATION_ID);
+          setCurrentConversationId(undefined);
+          setNewChatCreated(true);
+        }
       } else if (conversationId !== routeConversationId) {
         setConversationId(routeConversationId);
       }
@@ -724,6 +803,14 @@ export const LightspeedChat = ({
     }
   }, [conversationId, setLastOpenedId]);
 
+  const viewConversationId = useMemo(
+    () =>
+      !isFullscreenMode && routeConversationId
+        ? routeConversationId
+        : conversationId,
+    [isFullscreenMode, routeConversationId, conversationId],
+  );
+
   const onStart = (conv_id: string) => {
     setConversationId(conv_id);
     setCurrentConversationId(conv_id);
@@ -743,23 +830,32 @@ export const LightspeedChat = ({
       queryKey: ['conversations'],
     });
     queryClient.invalidateQueries({
-      queryKey: ['conversationMessages', conversationId],
+      queryKey: ['conversationMessages', viewConversationId],
     });
     setNewChatCreated(false);
   };
 
-  const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
-    useConversationMessages(
-      conversationId,
-      userName,
-      selectedModel,
-      selectedProvider,
-      avatar,
-      onComplete,
-      onStart,
-      undefined,
-      onRequestIdReady,
-    );
+  const {
+    conversationMessages,
+    handleInputPrompt,
+    scrollToBottomRef,
+    streamingConversationId,
+  } = useConversationMessages(
+    viewConversationId,
+    userName,
+    selectedModel,
+    selectedProvider,
+    avatar,
+    onComplete,
+    onStart,
+    undefined,
+    onRequestIdReady,
+  );
+
+  const streamingUiMatchesView =
+    isSendButtonDisabled &&
+    streamingConversationId !== null &&
+    viewConversationId === streamingConversationId;
 
   const [messages, setMessages] =
     useState<MessageProps[]>(conversationMessages);
@@ -768,7 +864,7 @@ export const LightspeedChat = ({
     if (!message.toString().trim()) return;
 
     wasStoppedByUserRef.current = false;
-    if (conversationId !== TEMP_CONVERSATION_ID) {
+    if (viewConversationId !== TEMP_CONVERSATION_ID) {
       setNewChatCreated(false);
     }
     setAnnouncement(
@@ -1027,7 +1123,7 @@ export const LightspeedChat = ({
   );
 
   const conversationFound = !!conversations.find(
-    (c: ConversationSummary) => c.conversation_id === conversationId,
+    (c: ConversationSummary) => c.conversation_id === viewConversationId,
   );
 
   const getMaxPrompts = () => {
@@ -1376,7 +1472,7 @@ export const LightspeedChat = ({
             ref={scrollToBottomRef}
             welcomePrompts={welcomePrompts}
             conversationId={conversationId}
-            isStreaming={isSendButtonDisabled}
+            isStreaming={streamingUiMatchesView}
             topicRestrictionEnabled={topicRestrictionEnabled}
             displayMode={displayMode}
           />
@@ -1400,8 +1496,10 @@ export const LightspeedChat = ({
           hasMicrophoneButton
           value={draftMessage}
           onChange={handleDraftMessage}
-          hasStopButton={isSendButtonDisabled}
-          handleStopButton={isSendButtonDisabled ? handleStopButton : undefined}
+          hasStopButton={streamingUiMatchesView}
+          handleStopButton={
+            streamingUiMatchesView ? handleStopButton : undefined
+          }
           buttonProps={{
             attach: {
               inputTestId: 'attachment-input',
@@ -1483,7 +1581,7 @@ export const LightspeedChat = ({
               variant={AlertVariant[variant ?? 'success']}
               title={title}
               className={classes.toastAlert}
-              timeout={8000}
+              timeout={2000}
               onTimeout={() => handleRemoveNotebookAlert(key as React.Key)}
               actionClose={
                 <AlertActionCloseButton
@@ -1606,7 +1704,7 @@ export const LightspeedChat = ({
               'aria-label': t('aria.closeDrawerPanel'),
             }}
             setIsDrawerOpen={setIsChatHistoryDrawerOpen}
-            activeItemId={conversationId}
+            activeItemId={viewConversationId}
             onSelectActiveItem={onSelectActiveItem}
             conversations={filterConversations(filterValue)}
             onNewChat={newChatCreated ? undefined : onNewChat}
@@ -1681,6 +1779,7 @@ export const LightspeedChat = ({
               avatar={avatar}
               profileLoading={profileLoading}
               topicRestrictionEnabled={topicRestrictionEnabled}
+              selectedModel={selectedModel}
               onClose={handleCloseNotebook}
             />
           )}

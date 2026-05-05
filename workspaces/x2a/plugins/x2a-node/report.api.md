@@ -12,12 +12,13 @@ import type { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { JobStatusEnum } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import type { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ServiceRef } from '@backstage/backend-plugin-api';
+import type { SourceTechnology } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { Telemetry } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 // @public (undocumented)
@@ -116,6 +117,8 @@ export interface JobCreateParams {
     projectName: string;
     // (undocumented)
     sourceRepo: GitRepo;
+    // (undocumented)
+    sourceTechnology?: SourceTechnology;
     // (undocumented)
     targetRepo: GitRepo;
     // (undocumented)
@@ -240,6 +243,7 @@ export interface X2ADatabaseServiceApi {
         name: string;
         sourcePath: string;
         projectId: string;
+        technology?: SourceTechnology;
     }): Promise<Module>;
     // (undocumented)
     createProject(input: {

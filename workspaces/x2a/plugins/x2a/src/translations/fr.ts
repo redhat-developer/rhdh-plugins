@@ -27,7 +27,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'sidebar.x2a.title': 'Hub de conversion',
     'page.title': 'Hub de conversion',
     'page.subtitle':
-      'Lancez et suivez les conversions asynchrones de fichiers Chef en playbooks Ansible prêts pour la production.',
+      "Lancez et suivez la conversion asynchrone d'automatisation existante en playbooks Ansible prêts pour la production.",
     'table.columns.name': 'Nom',
     'table.columns.status': 'Statut',
     'table.columns.statusSortDisabledTooltip':
@@ -84,7 +84,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'emptyPage.noConversionInitiatedYet':
       'Aucune conversion initiée pour le moment',
     'emptyPage.noConversionInitiatedYetDescription':
-      'Lancez et suivez la conversion de fichiers Chef en playbooks Ansible prêts pour la production',
+      "Lancez et suivez la conversion d'automatisation existante en Ansible prêt pour la production",
     'emptyPage.startFirstConversion': 'Démarrer la première conversion',
     'emptyPage.notAllowedTitle': 'Accès refusé',
     'emptyPage.notAllowedDescription':
@@ -157,7 +157,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
       "Avant de lancer l'analyse, consultez d'abord le plan de migration global du projet ; son contenu guidera l'analyse du module.",
     'modulePage.phases.runAnalyze': 'Créer le plan de migration du module',
     'modulePage.phases.migrateInstructions':
-      'Avant de lancer la migration, consultez le plan de migration du module. Le processus de migration convertira le code Chef en Ansible en fonction du plan.',
+      'Avant de lancer la migration, consultez le plan de migration du module. Le processus de migration convertira le code source en Ansible en fonction du plan.',
     'modulePage.phases.runMigrate': 'Migrer les sources du module',
     'modulePage.phases.remigrateInstructions':
       'Les sources migrées sont déjà présentes. Relancez la migration pour recréer le code Ansible converti.',
@@ -178,6 +178,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.hideLog': 'Masquer le journal',
     'modulePage.phases.noLogsAvailable':
       'Aucun journal disponible pour le moment...',
+    'modulePage.phases.logWaitingForStream':
+      'En attente des journaux du cluster...',
     'modulePage.phases.telemetry.title': 'Télémétrie',
     'modulePage.phases.telemetry.noTelemetryAvailable':
       'Aucune télémétrie disponible',

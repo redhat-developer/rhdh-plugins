@@ -15,5 +15,6 @@
  */
 
 export * from './normalizeRepoUrl';
+export * from './normalizeSourceTechnology';
 export * from './toSorted';
 export * from './tokenDescriptorTypes';

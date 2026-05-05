@@ -1,6 +1,10 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-orchestrator:
+      translationResources:
+        - importName: orchestratorTranslations
+          module: Alpha
+          ref: orchestratorTranslationRef
       appIcons:
         - name: orchestratorIcon
           importName: OrchestratorIcon

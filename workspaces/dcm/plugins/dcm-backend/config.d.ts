@@ -42,13 +42,13 @@ export interface Config {
      *
      * @visibility secret
      */
-    clientId: string;
+    clientId?: string;
 
     /**
      * SSO client secret used to obtain a bearer token for upstream API calls.
      *
      * @visibility secret
      */
-    clientSecret: string;
+    clientSecret?: string;
   };
 }

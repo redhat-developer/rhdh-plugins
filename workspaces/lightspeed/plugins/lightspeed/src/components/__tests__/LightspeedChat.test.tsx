@@ -236,6 +236,7 @@ describe('LightspeedChat', () => {
       setDraftMessage: jest.fn(),
       draftFileContents: [],
       setDraftFileContents: jest.fn(),
+      consumePendingOverlayThreadHandoff: jest.fn(() => false),
     });
 
     localStorage.clear();
@@ -632,6 +633,7 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
       });
 
       render(setupLightspeedChat());
@@ -663,6 +665,7 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
       });
 
       render(setupLightspeedChat());
@@ -694,6 +697,7 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
       });
 
       render(setupLightspeedChat());

@@ -8,9 +8,9 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import type { CatalogApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { PathParams } from '@backstage/core-plugin-api';
-import type { PlacementApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import type { PolicyManagerApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import type { ProvidersApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import type { ResourcesApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 import { Theme } from '@material-ui/core/styles';
@@ -43,13 +43,13 @@ export const dcmPlugin: BackstagePlugin<
 export function isDarkMode(theme: Theme): boolean;
 
 // @public
-export const placementApiRef: ApiRef<PlacementApi>;
-
-// @public
 export const policyManagerApiRef: ApiRef<PolicyManagerApi>;
 
 // @public
 export const providersApiRef: ApiRef<ProvidersApi>;
+
+// @public
+export const resourcesApiRef: ApiRef<ResourcesApi>;
 
 // @public
 export const RhdhLogoFull: () => JSX_2.Element;

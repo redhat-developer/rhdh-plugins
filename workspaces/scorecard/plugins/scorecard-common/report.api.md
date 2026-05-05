@@ -10,6 +10,16 @@ export type AggregatedMetric = {
   values: Record<string, number>;
   total: number;
   timestamp: string;
+  entitiesConsidered: number;
+  calculationErrorCount: number;
+};
+
+// @public (undocumented)
+export type AggregatedMetricAverageResult = StatusGroupedAggregationResult & {
+  averageScore: number;
+  averageWeightedSum: number;
+  averageMaxPossible: number;
+  aggregationChartDisplayColor: string;
 };
 
 // @public (undocumented)
@@ -17,16 +27,30 @@ export type AggregatedMetricResult = {
   id: string;
   status: 'success' | 'error';
   metadata: AggregationMetadata;
-  result: Omit<AggregatedMetric, 'values'> & {
-    values: AggregatedMetricValue[];
-    thresholds: ThresholdConfig;
-  };
+  result: AggregationResultByType;
 };
 
 // @public (undocumented)
 export type AggregatedMetricValue = {
   count: number;
   name: string;
+  score?: number;
+};
+
+// @public (undocumented)
+export type AggregationConfig = {
+  id: string;
+  title: string;
+  description: string;
+  type: AggregationType;
+  metricId: string;
+  options?: AggregationConfigOptions;
+};
+
+// @public (undocumented)
+export type AggregationConfigOptions = {
+  statusScores: Record<string, number>;
+  thresholds?: ThresholdConfig;
 };
 
 // @public (undocumented)
@@ -39,12 +63,24 @@ export type AggregationMetadata = {
 };
 
 // @public (undocumented)
+export type AggregationResultByType =
+  | StatusGroupedAggregationResult
+  | AggregatedMetricAverageResult;
+
+// @public
+export type AggregationThresholdRule = Pick<
+  ThresholdRule,
+  'key' | 'expression' | 'color'
+>;
+
+// @public (undocumented)
 export type AggregationType =
   (typeof aggregationTypes)[keyof typeof aggregationTypes];
 
-// @public (undocumented)
+// @public
 export const aggregationTypes: Readonly<{
   statusGrouped: 'statusGrouped';
+  average: 'average';
 }>;
 
 // @public
@@ -78,6 +114,7 @@ export type EntityMetricDetailResponse = {
     totalPages: number;
     isCapped: boolean;
   };
+  entityHealth: ScorecardEntityHealthSummary;
 };
 
 // @public (undocumented)
@@ -128,6 +165,13 @@ export const SCORECARD_THRESHOLD_RULE_COLOR_VALUES: (
 )[];
 
 // @public
+export type ScorecardEntityHealthSummary = {
+  totalEntities: number;
+  calculationErrorCount: number;
+  countsArePartial: boolean;
+};
+
+// @public
 export type ScorecardMetricPermission = ResourcePermission<
   typeof RESOURCE_TYPE_SCORECARD_METRIC
 >;
@@ -143,6 +187,15 @@ export const ScorecardThresholdRuleColors: {
   readonly SUCCESS: 'success.main';
   readonly WARNING: 'warning.main';
   readonly ERROR: 'error.main';
+};
+
+// @public (undocumented)
+export type StatusGroupedAggregationResult = Omit<
+  AggregatedMetric,
+  'values'
+> & {
+  values: AggregatedMetricValue[];
+  thresholds: ThresholdConfig;
 };
 
 // @public

@@ -15,15 +15,44 @@
  */
 
 import type { Config } from '@backstage/config';
-import { AggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  type ThresholdConfig,
+  aggregationTypes,
+  type AggregationConfigOptions,
+  type AggregationConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export type AggregationConfig = {
-  id: string;
-  title: string;
-  description: string;
-  type: AggregationType;
-  metricId: string;
-};
+function buildStatusScores(
+  config: Config,
+): AggregationConfigOptions['statusScores'] {
+  const statusScores: AggregationConfigOptions['statusScores'] = {};
+  const statusScoresConfig = config
+    .getConfig('options')
+    .getConfig('statusScores');
+
+  for (const key of statusScoresConfig.keys()) {
+    statusScores[key] = statusScoresConfig.getNumber(key);
+  }
+
+  return statusScores;
+}
+
+function buildAggregationThresholdsConfig(
+  config: Config,
+): ThresholdConfig | undefined {
+  const thresholdsConfig = config.getOptionalConfig('options.thresholds');
+  if (thresholdsConfig) {
+    return {
+      rules: thresholdsConfig.getConfigArray('rules').map(rule => ({
+        key: rule.getString('key'),
+        expression: rule.getString('expression'),
+        color: rule.getString('color'),
+      })),
+    };
+  }
+
+  return undefined;
+}
 
 export function buildAggregationConfig(
   aggregationId: string,
@@ -33,11 +62,20 @@ export function buildAggregationConfig(
 ): AggregationConfig {
   const { config } = options;
 
-  return {
+  const aggregationConfig: AggregationConfig = {
     id: aggregationId,
     type: config.getString('type'),
     title: config.getString('title'),
     metricId: config.getString('metricId'),
     description: config.getString('description'),
   } as AggregationConfig;
+
+  if (aggregationConfig.type === aggregationTypes.average) {
+    aggregationConfig.options = {
+      statusScores: buildStatusScores(config),
+      thresholds: buildAggregationThresholdsConfig(config),
+    };
+  }
+
+  return aggregationConfig;
 }

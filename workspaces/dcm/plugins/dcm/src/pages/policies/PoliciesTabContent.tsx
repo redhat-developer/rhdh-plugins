@@ -106,6 +106,7 @@ export function PoliciesTabContent() {
     emptyForm: emptyPolicyForm,
     isValid: isPolicyFormValid,
     itemToForm: policyToForm,
+    storageKey: 'policies',
   });
 
   const { setItems, handleOpenEdit, handleOpenDelete } = crud;
@@ -209,7 +210,11 @@ export function PoliciesTabContent() {
                 title={isEnabled ? 'Disable policy' : 'Enable policy'}
                 placement="top"
               >
-                <span className={classes.toggleSpan}>
+                <Typography
+                  component="span"
+                  variant="inherit"
+                  className={classes.toggleSpan}
+                >
                   {isToggling ? (
                     <CircularProgress
                       size={16}
@@ -227,7 +232,7 @@ export function PoliciesTabContent() {
                       }}
                     />
                   )}
-                </span>
+                </Typography>
               </Tooltip>
               <Tooltip title="Edit" placement="top">
                 <IconButton

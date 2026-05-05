@@ -46,14 +46,12 @@ You can follow one of these options for installing `Cost Management` plugin depe
 
 #### Dependency on Orchestrator plugin and Workflow details
 
-The Cost Management plugin's Optimizations section is dependent on [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/index) to run the workflow for applying the recommendation. Make sure you have installed the [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/index) by following one of these options depending on your environment:
+The Cost Management plugin's Optimizations section is dependent on [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/orchestrator_in_red_hat_developer_hub/index) to run the workflow for applying the recommendation. Make sure you have installed the [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/orchestrator_in_red_hat_developer_hub/index) by following one of these options depending on your environment:
 
-- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Operator](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-operator)
-- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Helm chart](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-helm)
+- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Operator](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-operator)
+- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Helm chart](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-helm)
 
-This method requires vanilla backstage to be used:
-
-- [Install as a static plugin for local development](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator#install-as-a-static-plugin)
+For vanilla Backstage local development, see the [Local Development with Orchestrator](#local-development-with-orchestrator) section below.
 
 **Workflow details** : [Here is the link to the workflow](https://github.com/rhdhorchestrator/serverless-workflows/tree/main/workflows/patch-k8s-resource) which is being used for manually applying the recommendation from the Resource Optimization plugin.
 
@@ -176,10 +174,44 @@ The HTTP endpoints exposed by the cost-management-backend can enforce authorizat
 
 An application for applying the recommendations automatically. The application makes use of OSL (OpenShift Serverless Logic, a.k.a. SonataFlow) which is part of the Orchestrator installation. If you already have the [Orchestrator plugin and the workflow](#dependency-on-orchestrator-plugin-and-workflow-details) installed then you are ready for installing the Optimizer application. Follow the [application instructions](https://github.com/rhdhorchestrator/optimizer/tree/main) for installing and configuring it.
 
+## Local Development with Orchestrator
+
+The orchestrator plugin is **not** included in the dev app by default. The cost-management plugin communicates with the orchestrator backend at runtime via the Backstage discovery API, so the orchestrator packages are not a compile-time dependency.
+
+If you need to test the "Apply Recommendation" workflow locally, add the orchestrator packages to the dev app:
+
+```sh
+# From the cost-management workspace root
+yarn --cwd packages/app add @red-hat-developer-hub/backstage-plugin-orchestrator
+yarn --cwd packages/backend add @red-hat-developer-hub/backstage-plugin-orchestrator-backend
+```
+
+Then register the plugins in the dev app:
+
+1. In `packages/app/src/App.tsx`, add:
+
+   ```tsx
+   import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+   // ... inside <FlatRoutes>:
+   <Route path="/orchestrator" element={<OrchestratorPage />} />;
+   ```
+
+2. In `packages/backend/src/index.ts`, add:
+
+   ```ts
+   backend.add(
+     import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend'),
+   );
+   backend.add(import('@backstage/plugin-notifications-backend'));
+   backend.add(import('@backstage/plugin-signals-backend'));
+   ```
+
+For the full orchestrator setup guide, see: [Install as a static plugin for local development](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator#install-as-a-static-plugin)
+
 ## References
 
 - [Installing ROS-OCP RHDH plugin on Red Hat Developer Hub on a Openshift Cluster](https://docs.google.com/document/d/1tExe7cEBYMJplkk9ppSdBINwE-14KmxURczGjloHqZ4/edit?usp=sharing)
 
 - [Documentation to understand how to export, package & publish plugin as a dynamic plugin](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/packaging-dynamic-plugins.md#packaging-and-publishing-backstage-plugin-as-a-dynamic-plugin)
 
-- For comprehensive RHDH documentation, visit: [Red Hat Developer Hub 1.8 Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/)
+- For comprehensive RHDH documentation, visit: [Red Hat Developer Hub 1.9 Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/)

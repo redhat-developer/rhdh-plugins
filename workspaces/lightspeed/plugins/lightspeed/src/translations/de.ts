@@ -64,10 +64,14 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Laden Sie eine Ressource hoch, um zu beginnen',
     'notebook.view.upload.action': 'Ressource hochladen',
     'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Dokumenten...',
+    'notebook.view.input.disabledTooltip':
+      'Wählen Sie mindestens eine geladene Ressource aus, um den Chat zu starten',
     'notebook.view.sidebar.collapse': 'Seitenleiste einklappen',
     'notebook.view.sidebar.expand': 'Seitenleiste ausklappen',
     'notebook.view.sidebar.resize': 'Größe der Seitenleiste ändern',
     'notebook.view.documents.uploading': 'Dokument wird hochgeladen',
+    'notebook.view.documents.maxReached':
+      'Maximal 10 Dokumente sind erlaubt. Löschen Sie ein Dokument, um ein neues hochzuladen.',
     'notebook.upload.success': '{{fileName}} erfolgreich hochgeladen.',
     'notebook.upload.failed': 'Hochladen von {{fileName}} fehlgeschlagen.',
 
@@ -78,6 +82,10 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.upload.modal.separator': 'oder',
     'notebook.upload.modal.infoText':
       'Akzeptierte Dateitypen: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.selectedFiles':
+      '{{count}} von {{max}} Dateien ausgewählt',
+    'notebook.upload.modal.addButton': 'Hinzufügen ({{count}})',
+    'notebook.upload.modal.removeFile': '{{fileName}} entfernen',
     'notebook.upload.error.unsupportedType':
       'Upload-Fehler: Nicht unterstützte Dateitypen gefunden. Bitte laden Sie nur unterstützte Dateitypen hoch.',
     'notebook.upload.error.fileTooLarge':

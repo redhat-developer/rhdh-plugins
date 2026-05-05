@@ -73,6 +73,7 @@ const bulkImportPage = PageBlueprint.make({
   params: {
     path: '/bulk-import',
     routeRef: rootRouteRef,
+    noHeader: true,
     loader: () => import('./components').then(({ Router }) => <Router />),
   },
 });

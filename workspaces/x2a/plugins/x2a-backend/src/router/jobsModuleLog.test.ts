@@ -197,6 +197,57 @@ describe('createRouter – jobs (module log)', () => {
       );
 
       it(
+        'should return 200 with empty body when streaming and kube has no log data yet',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'analyze',
+            status: 'running',
+            k8sJobName: 'test-k8s-job',
+          });
+          const mockGetJobLogs = jest.fn().mockResolvedValue('');
+          const app = await createApp(client, undefined, undefined, {
+            getJobLogs: mockGetJobLogs,
+          });
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=analyze&streaming=true`,
+            )
+            .send();
+          expect(response.status).toBe(200);
+          expect(response.text).toBe('');
+          expect(mockGetJobLogs).toHaveBeenCalledWith('test-k8s-job', true);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should not call getJobLogs for module streaming when job has no k8sJobName yet',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'publish',
+            status: 'pending',
+          });
+          const mockGetJobLogs = jest.fn();
+          const app = await createApp(client, undefined, undefined, {
+            getJobLogs: mockGetJobLogs,
+          });
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=publish&streaming=true`,
+            )
+            .send();
+          expect(response.status).toBe(200);
+          expect(response.text).toBe('');
+          expect(mockGetJobLogs).not.toHaveBeenCalled();
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
         'should return 400 when phase parameter is missing',
         async () => {
           const app = await createApp(client);

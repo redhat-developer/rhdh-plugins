@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 // Inline default thresholds for e2e mocks (matches scorecard-common DEFAULT_NUMBER_THRESHOLDS)
 const DEFAULT_NUMBER_THRESHOLDS = {
   rules: [
@@ -201,6 +203,75 @@ export const openIssuesKpiMetadataResponse = {
   aggregationType: 'statusGrouped',
 };
 
+/** Matches `scorecard.aggregationKPIs.openPrsWeightedKpi` in app-config.yaml */
+export const openPrsWeightedKpiMetadataResponse = {
+  title: 'GitHub Open PRs (weighted health)',
+  description:
+    'Weighted health average for open PRs by threshold status across your entities.',
+  type: 'number',
+  history: true,
+  aggregationType: aggregationTypes.average,
+};
+
+/**
+ * Average KPI: 3×100 + 5×40 + 2×0 = 500 weighted sum; max 100×10 entities → 50% score.
+ * Colors align with aggregation KPI `options.thresholds` warning band (30–79%) in app-config.
+ */
+export const openPrsWeightedAggregatedResponse = {
+  id: 'github.open_prs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    values: [
+      { count: 3, name: 'success', score: 100 },
+      { count: 5, name: 'warning', score: 40 },
+      { count: 2, name: 'error', score: 0 },
+    ],
+    total: 10,
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    averageScore: 0.5,
+    averageWeightedSum: 500,
+    averageMaxPossible: 1000,
+    aggregationChartDisplayColor: 'rgb(224, 189, 108)',
+  },
+};
+
+export const emptyOpenPrsWeightedAggregatedResponse = {
+  id: 'github.open_prs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    total: 0,
+    values: [
+      { count: 0, name: 'success', score: 100 },
+      { count: 0, name: 'warning', score: 40 },
+      { count: 0, name: 'error', score: 0 },
+    ],
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    averageScore: 0,
+    averageWeightedSum: 0,
+    averageMaxPossible: 0,
+    aggregationChartDisplayColor: '#6bb300',
+  },
+};
+
+/** Deliberately unknown `aggregationType` for UnsupportedAggregationType UI tests. */
+export const openPrsWeightedUnsupportedAggregationResponse = {
+  id: 'github.open_prs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+    aggregationType: 'customUnknownAggregationKind',
+  },
+  result: openPrsWeightedAggregatedResponse.result,
+};
+
 // Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
 /** Response for GET /api/scorecard/metrics?metricIds=jira.open_issues (metric metadata only). */
 export const jiraMetricMetadataResponse = {
@@ -216,6 +287,204 @@ export const jiraMetricMetadataResponse = {
   ],
 };
 
+// SonarQube scorecard responses
+
+function sonarqubeNumberMetric(
+  id: string,
+  title: string,
+  description: string,
+  value: number,
+  thresholdRules: Array<{ key: string; expression: string }>,
+  evaluation: string,
+) {
+  return {
+    id,
+    status: 'success',
+    metadata: { title, description, type: 'number', history: true },
+    result: {
+      value,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: { rules: thresholdRules },
+        status: 'success',
+        evaluation,
+      },
+    },
+  };
+}
+
+const ratingRules = [
+  { key: 'a', expression: '<2' },
+  { key: 'b', expression: '2-3' },
+  { key: 'c', expression: '>3' },
+  { key: 'd', expression: '>3' },
+  { key: 'e', expression: '>3' },
+];
+
+const securityRules = [
+  { key: 'success', expression: '==0' },
+  { key: 'error', expression: '>=1' },
+];
+
+const issueRules = [
+  { key: 'success', expression: '<1' },
+  { key: 'warning', expression: '1-5' },
+  { key: 'error', expression: '>5' },
+];
+
+export const sonarqubeScorecardResponse = [
+  {
+    id: 'sonarqube.quality_gate',
+    status: 'success',
+    metadata: {
+      title: 'SonarQube Quality Gate Status',
+      description: 'Whether the project passes its SonarQube quality gate.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: true,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            { key: 'success', expression: '==true' },
+            { key: 'error', expression: '==false' },
+          ],
+        },
+        status: 'success',
+        evaluation: 'success',
+      },
+    },
+  },
+  sonarqubeNumberMetric(
+    'sonarqube.open_issues',
+    'SonarQube Open Issues',
+    'Count of open issues (OPEN, CONFIRMED, REOPENED) in SonarQube.',
+    3,
+    [
+      { key: 'success', expression: '<1' },
+      { key: 'warning', expression: '1-10' },
+      { key: 'error', expression: '>10' },
+    ],
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.security_rating',
+    'SonarQube Security Rating',
+    'SonarQube security rating.',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.security_issues',
+    'SonarQube Security Issues',
+    'Count of open security vulnerabilities in SonarQube.',
+    0,
+    securityRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.security_review_rating',
+    'SonarQube Security Review Rating',
+    'SonarQube security review rating.',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.security_hotspots',
+    'SonarQube Security Hotspots',
+    'Count of security hotspots to review in SonarQube.',
+    2,
+    issueRules,
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.reliability_rating',
+    'SonarQube Reliability Rating',
+    'SonarQube reliability rating.',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.reliability_issues',
+    'SonarQube Reliability Issues',
+    'Count of open bugs in SonarQube.',
+    0,
+    issueRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.maintainability_rating',
+    'SonarQube Maintainability Rating',
+    'SonarQube maintainability rating.',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.maintainability_issues',
+    'SonarQube Maintainability Issues',
+    'Count of open code smells in SonarQube.',
+    12,
+    [
+      { key: 'success', expression: '<10' },
+      { key: 'warning', expression: '10-50' },
+      { key: 'error', expression: '>50' },
+    ],
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.code_coverage',
+    'SonarQube Code Coverage',
+    'Overall code coverage percentage in SonarQube.',
+    82.5,
+    [
+      { key: 'success', expression: '>80' },
+      { key: 'warning', expression: '50-80' },
+      { key: 'error', expression: '<50' },
+    ],
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.code_duplications',
+    'SonarQube Code Duplications',
+    'Percentage of duplicated lines in SonarQube.',
+    3.2,
+    [
+      { key: 'success', expression: '<3' },
+      { key: 'warning', expression: '3-10' },
+      { key: 'error', expression: '>10' },
+    ],
+    'warning',
+  ),
+];
+
+export const sonarqubeFailedQualityGateResponse = [
+  {
+    ...sonarqubeScorecardResponse[0],
+    result: {
+      value: false,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            { key: 'success', expression: '==true' },
+            { key: 'error', expression: '==false' },
+          ],
+        },
+        status: 'success',
+        evaluation: 'error',
+      },
+    },
+  },
+  ...sonarqubeScorecardResponse.slice(1),
+];
+
+// Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
 export const githubAggregatedResponse = {
   id: 'github.open_prs',
   status: 'success',
@@ -236,6 +505,8 @@ export const githubAggregatedResponse = {
     total: 10,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
   },
 };
 
@@ -259,6 +530,8 @@ export const jiraAggregatedResponse = {
     total: 10,
     timestamp: '2026-01-24T14:10:32.776Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
   },
 };
 
@@ -282,6 +555,8 @@ export const emptyJiraAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
   },
 };
 
@@ -305,6 +580,8 @@ export const emptyGithubAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
   },
 };
 
@@ -426,6 +703,11 @@ export const githubEntitiesDrillDownResponse = {
     totalPages: 1,
     isCapped: false,
   },
+  entityHealth: {
+    totalEntities: 10,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
 };
 
 /** Mock response for GET .../api/scorecard/metrics/jira.open_issues/catalog/aggregations/entities (in sync with jiraAggregatedResponse) */
@@ -486,6 +768,11 @@ export const jiraEntitiesDrillDownResponse = {
     totalPages: 1,
     isCapped: false,
   },
+  entityHealth: {
+    totalEntities: 4,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
 };
 
 /** Mock response for Jira entities drill-down when aggregation has no data (empty list). */
@@ -504,6 +791,11 @@ export const jiraEntitiesDrillDownNoDataResponse = {
     total: 0,
     totalPages: 0,
     isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 0,
+    calculationErrorCount: 0,
+    countsArePartial: false,
   },
 };
 

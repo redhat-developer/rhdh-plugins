@@ -119,30 +119,6 @@ test.describe('Lightspeed UI', () => {
     await runAccessibilityTests(sharedPage, testInfo);
   });
 
-  test('Validate Empty State', async () => {
-    await sharedPage.unroute(`${modelBaseUrl}/v1/shields`);
-    await sharedPage.unroute(`${modelBaseUrl}/v1/models`);
-    await mockShields(sharedPage, []);
-    await mockModels(sharedPage, []);
-
-    await sharedPage.goto('/lightspeed');
-    await sharedPage
-      .getByTestId('lightspeed-lcore-not-configured')
-      .waitFor({ state: 'visible' });
-
-    await expect(
-      sharedPage.getByLabel(translations['lcore.notConfigured.title']),
-    ).toMatchAriaSnapshot(`
-    - region "${translations['lcore.notConfigured.title']}":
-      - heading "${translations['lcore.notConfigured.title']}" [level=2]
-      - paragraph: ${translations['lcore.notConfigured.description']}
-      - link "${translations['lcore.notConfigured.developerLightspeedDocs']}":
-        - /url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/interacting_with_red_hat_developer_lightspeed_for_red_hat_developer_hub/developer-lightspeed#proc-installing-and-configuring-lightspeed_developer-lightspeed
-      - link "${translations['lcore.notConfigured.backendDocs']}":
-        - /url: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md
-    `);
-  });
-
   test('Verify disclaimer to be visible', async () => {
     await expect(sharedPage.getByLabel('Scrollable message log'))
       .toMatchAriaSnapshot(`
@@ -263,5 +239,29 @@ test.describe('Lightspeed UI', () => {
 
       await assertVisibilityState('hidden', heading, text, closeBtn);
     });
+  });
+
+  test('Validate Empty State', async () => {
+    await sharedPage.unroute(`${modelBaseUrl}/v1/shields`);
+    await sharedPage.unroute(`${modelBaseUrl}/v1/models`);
+    await mockShields(sharedPage, []);
+    await mockModels(sharedPage, []);
+
+    await sharedPage.goto('/lightspeed');
+    await sharedPage
+      .getByTestId('lightspeed-lcore-not-configured')
+      .waitFor({ state: 'visible' });
+
+    await expect(
+      sharedPage.getByLabel(translations['lcore.notConfigured.title']),
+    ).toMatchAriaSnapshot(`
+    - region "${translations['lcore.notConfigured.title']}":
+      - heading "${translations['lcore.notConfigured.title']}" [level=2]
+      - paragraph: ${translations['lcore.notConfigured.description']}
+      - link "${translations['lcore.notConfigured.developerLightspeedDocs']}":
+        - /url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/interacting_with_red_hat_developer_lightspeed_for_red_hat_developer_hub/developer-lightspeed#proc-installing-and-configuring-lightspeed_developer-lightspeed
+      - link "${translations['lcore.notConfigured.backendDocs']}":
+        - /url: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md
+    `);
   });
 });

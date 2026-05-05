@@ -96,11 +96,13 @@ describe('collectArtifacts routes (actions & signatures)', () => {
         name: 'module-a',
         sourcePath: '/cookbooks/a',
         projectId,
+        technology: 'chef',
       });
       expect(mockDeps.x2aDatabase.createModule).toHaveBeenCalledWith({
         name: 'module-b',
         sourcePath: '/cookbooks/b',
         projectId,
+        technology: 'chef',
       });
     });
 
@@ -164,6 +166,7 @@ describe('collectArtifacts routes (actions & signatures)', () => {
         name: 'new-module',
         sourcePath: '/cookbooks/new',
         projectId,
+        technology: undefined,
       });
       expect(mockDeps.x2aDatabase.deleteModule).toHaveBeenCalledTimes(1);
       expect(mockDeps.x2aDatabase.deleteModule).toHaveBeenCalledWith({
