@@ -74,7 +74,8 @@ export const AverageCardComponent = ({
     });
   };
 
-  const rawPercent = scorecard.result.averageScore * 100;
+  const rawPercent = scorecard.result.averageScore;
+
   const { fill: chartFillPercent, remainder: chartRemainderPercent } =
     clampPercentForDonut(rawPercent);
 
