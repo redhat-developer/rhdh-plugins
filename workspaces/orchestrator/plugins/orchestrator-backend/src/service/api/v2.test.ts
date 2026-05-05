@@ -42,6 +42,7 @@ import {
   generateTestWorkflowInfoForEventype,
   generateTestWorkflowInfoForEventypeNoEventRef,
   generateTestWorkflowInfoForEventypeNoStartStateForEventRef,
+  generateTestWorkflowInfoForEventypeNoStartStateNameStates,
   generateTestWorkflowInfoForEventypeNoStartStates,
   generateTestWorkflowInfoForEventypeWithNoCorrelationContextAttribute,
   generateTestWorkflowOverview,
@@ -497,6 +498,38 @@ describe('executeWorkflow as event type', () => {
   it('executes a given workflow: event type, no start state error', async () => {
     // Arrange
     const workflowInfo = generateTestWorkflowInfoForEventypeNoStartStates();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    try {
+      await v2.executeWorkflow(
+        {
+          inputData: workflowData,
+          targetEntity: 'someEntity',
+        },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      );
+    } catch (err) {
+      // Assert
+      // eslint-disable-next-line jest/no-conditional-expect
+      expect(err.message).toEqual(
+        'Error executing workflow with id test_workflowId, No States that match the start state',
+      );
+    }
+  });
+
+  it('executes a given workflow: event type, no start.stateName error', async () => {
+    // Arrange
+    const workflowInfo =
+      generateTestWorkflowInfoForEventypeNoStartStateNameStates();
     (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
       workflowInfo,
     );
