@@ -19,6 +19,7 @@ import express from 'express';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
+  JobStatus,
   x2aAdminWritePermission,
   x2aUserPermission,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -209,7 +210,7 @@ export function registerProjectRoutes(
     // Cancel any active k8s jobs before deleting DB records
     const jobs = await x2aDatabase.listJobsForProject({ projectId });
     const activeJobs = jobs.filter(
-      job => ['pending', 'running'].includes(job.status) && job.k8sJobName,
+      job => JobStatus.from(job.status).isActive() && job.k8sJobName,
     );
     await Promise.all(
       activeJobs.map(job => {
@@ -308,8 +309,7 @@ export function registerProjectRoutes(
       // Check for existing running init job
       const existingJobs = await x2aDatabase.listJobsForProject({ projectId });
       const activeInitJobs = existingJobs.filter(
-        job =>
-          job.phase === 'init' && ['pending', 'running'].includes(job.status),
+        job => job.phase === 'init' && JobStatus.from(job.status).isActive(),
       );
       const reconciledInitJobs = await Promise.all(
         activeInitJobs.map(job =>
@@ -317,7 +317,7 @@ export function registerProjectRoutes(
         ),
       );
       const hasActiveInitJob = reconciledInitJobs.some(job =>
-        ['pending', 'running'].includes(job.status),
+        JobStatus.from(job.status).isActive(),
       );
 
       if (hasActiveInitJob) {

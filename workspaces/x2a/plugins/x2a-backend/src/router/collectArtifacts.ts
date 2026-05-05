@@ -24,7 +24,7 @@ import {
 import {
   MigrationPhase,
   Artifact,
-  JobStatusEnum,
+  JobStatus,
   Telemetry,
   Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -335,12 +335,13 @@ async function processJobCompletion(
   logger: RouterDeps['logger'],
   job: JobWithToken,
 ): Promise<{ message: string }> {
-  let status: JobStatusEnum =
-    validatedRequest.status === 'success' ? 'success' : 'error';
+  let jobStatus = JobStatus.from(
+    validatedRequest.status === 'success' ? 'success' : 'error',
+  );
   let errorDetails = validatedRequest.errorDetails || null;
 
-  if (status === 'success') {
-    status = await executePhaseActionsWithErrorHandling(
+  if (jobStatus.isSuccess()) {
+    jobStatus = await executePhaseActionsWithErrorHandling(
       phase,
       projectId,
       validatedRequest,
@@ -348,7 +349,7 @@ async function processJobCompletion(
       logger,
     );
 
-    if (status === 'error') {
+    if (jobStatus.isError()) {
       errorDetails = 'Phase actions failed';
     }
   }
@@ -357,7 +358,7 @@ async function processJobCompletion(
 
   await x2aDatabase.updateJob({
     id: validatedRequest.jobId,
-    status,
+    status: jobStatus.value,
     finishedAt: new Date(),
     errorDetails,
     log: logs,
@@ -375,7 +376,7 @@ async function executePhaseActionsWithErrorHandling(
   validatedRequest: CollectArtifactsRequestBody,
   x2aDatabase: RouterDeps['x2aDatabase'],
   logger: RouterDeps['logger'],
-): Promise<JobStatusEnum> {
+): Promise<JobStatus> {
   try {
     await executePhaseActions(phase, {
       projectId,
@@ -383,12 +384,12 @@ async function executePhaseActionsWithErrorHandling(
       x2aDatabase,
       logger,
     });
-    return 'success';
+    return JobStatus.SUCCESS;
   } catch (error) {
     logger.error(
       `Phase actions failed for job ${validatedRequest.jobId}: ${error instanceof Error ? error.message : String(error)}`,
     );
-    return 'error';
+    return JobStatus.ERROR;
   }
 }
 

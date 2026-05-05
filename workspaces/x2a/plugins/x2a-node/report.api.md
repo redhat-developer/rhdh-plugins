@@ -8,12 +8,12 @@ import type { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-commo
 import type { BackstageCredentials } from '@backstage/backend-plugin-api';
 import type { BackstageUserPrincipal } from '@backstage/backend-plugin-api';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
-import type { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { JobStatusEnum } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import type { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';

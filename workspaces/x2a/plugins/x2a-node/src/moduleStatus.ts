@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import type {
-  Job,
-  ModuleStatus,
+import {
+  type Job,
+  JobStatus,
+  type ModuleStatus,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
@@ -39,7 +40,7 @@ export function calculateModuleStatus({
   publish?: Job;
 }): { status: ModuleStatus; errorDetails?: string } {
   const latestPhaseJob = publish ?? migrate ?? analyze;
-  if (latestPhaseJob?.status === 'cancelled') {
+  if (latestPhaseJob && JobStatus.from(latestPhaseJob.status).isCancelled()) {
     return { status: 'cancelled', errorDetails: undefined };
   }
 

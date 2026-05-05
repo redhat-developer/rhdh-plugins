@@ -21,7 +21,10 @@ import type {
 } from '@backstage/backend-plugin-api';
 import { RELATION_MEMBER_OF } from '@backstage/catalog-model';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
-import type { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  type Job,
+  JobStatus,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { ReconcileJobDeps } from './services';
 
@@ -121,7 +124,7 @@ export async function reconcileJobStatus(
   job: Job,
   deps: ReconcileJobDeps,
 ): Promise<Job> {
-  if (!['pending', 'running'].includes(job.status)) {
+  if (!JobStatus.from(job.status).isActive()) {
     return job;
   }
   if (!job.k8sJobName) {
@@ -133,7 +136,8 @@ export async function reconcileJobStatus(
   );
   const k8sStatus = await deps.kubeService.getJobStatus(job.k8sJobName);
 
-  if (k8sStatus.status === 'success' || k8sStatus.status === 'error') {
+  const k8sJobStatus = JobStatus.from(k8sStatus.status);
+  if (k8sJobStatus.isSuccess() || k8sJobStatus.isError()) {
     let log: string | null = null;
     try {
       log = (await deps.kubeService.getJobLogs(job.k8sJobName)) as string;
