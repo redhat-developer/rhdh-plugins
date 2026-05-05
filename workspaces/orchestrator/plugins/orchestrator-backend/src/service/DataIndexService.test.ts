@@ -174,7 +174,9 @@ describe('initInputArgs', () => {
 describe('fetchWorkflowInfos', () => {
   let loggerMock: LoggerService;
   let buildFilterConditionSpy: any;
-  let buildGraphQlQuerySpy: jest.SpyInstance;
+  let buildGraphQlQuerySpy: jest.Spied<
+    typeof buildGrahQLQueryUtils.buildGraphQlQuery
+  >;
   let dataIndexService: DataIndexService;
   let mockClient: jest.Mocked<Client>;
 

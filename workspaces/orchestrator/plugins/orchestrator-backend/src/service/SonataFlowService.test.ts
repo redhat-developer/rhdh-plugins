@@ -21,6 +21,7 @@ import { DataIndexService } from './DataIndexService';
 import { SonataFlowService } from './SonataFlowService';
 
 jest.mock('node:crypto', () => ({
+  ...jest.requireActual('node:crypto'),
   randomUUID: () => '12345',
 }));
 
