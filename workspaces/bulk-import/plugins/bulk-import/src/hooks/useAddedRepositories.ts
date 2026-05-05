@@ -120,10 +120,10 @@ export const useAddedRepositories = (
     loading: isLoadingTable,
     error: {
       ...(error ?? {}),
-      ...((value as Response)?.statusText
+      ...(value instanceof Response
         ? {
             name: 'Error',
-            message: (value as Response)?.statusText,
+            message: value.statusText,
           }
         : {}),
     },

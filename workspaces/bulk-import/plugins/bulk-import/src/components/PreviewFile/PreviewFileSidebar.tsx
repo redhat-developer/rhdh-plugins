@@ -95,14 +95,14 @@ export const PreviewFileSidebar = ({
       branch || 'main',
       approvalTool,
     );
-    if ((result as Response)?.statusText) {
+    if (result instanceof Response) {
       setStatus({
         ...status,
         errors: {
           ...(status?.errors || {}),
           [id]: {
             error: {
-              title: (result as Response)?.statusText,
+              title: result.statusText,
               message: [t('previewFile.failedToFetchPR')],
             },
           },

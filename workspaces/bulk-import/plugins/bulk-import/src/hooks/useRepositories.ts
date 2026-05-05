@@ -158,16 +158,24 @@ export const useRepositories = (
     );
   }, [options?.showOrganizations, value, user, baseUrl]);
 
+  const errors: string[] = [];
+
+  if (tokenFetchError) {
+    errors.push(tokenFetchError.message);
+  }
+
+  if (value instanceof Response) {
+    errors.push(value.statusText);
+  } else if (value?.errors && value.errors.length > 0) {
+    errors.push(...value.errors);
+  }
+
   return {
     loading: tokenLoading || isQueryLoading,
     data: prepareData,
     error: {
-      ...(tokenFetchError ? { errors: [tokenFetchError.message] } : {}),
       ...(error ?? {}),
-      ...((value?.errors && value.errors.length > 0) ||
-      (value as any as Response)?.statusText
-        ? { errors: value?.errors || (value as any as Response)?.statusText }
-        : {}),
+      ...(errors.length > 0 ? { errors } : {}),
     } as RepositoriesError,
   };
 };
