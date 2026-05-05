@@ -51,15 +51,19 @@ add-backend-to-rhdh:
 	@echo
 	@echo Will build and install ${workspace} backend plugins into ${rhdh}
 	@echo
-	cd plugins/custom-authentication-provider-module-backend && npx --yes @red-hat-developer-hub/cli plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
-	cd plugins/orchestrator-backend && npx --yes @red-hat-developer-hub/cli plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
+	# Backend plugins need a two-step export: rhdh cli to build, then janus-idp cli to package.
+	# Using only rhdh cli plugin export for backends causes RHDH to fail to start.
+	# Clean existing dproot destinations to avoid "copy to subdirectory of itself" errors on re-runs.
+	cd plugins/custom-authentication-provider-module-backend && rm -rf dist-dynamic "${dproot}/custom-authentication-provider-module-backend" && npx --yes @red-hat-developer-hub/cli@1.9.1 plugin export && npx --yes @janus-idp/cli package package-dynamic-plugins --export-to "${dproot}"
+	cd plugins/orchestrator-backend && rm -rf dist-dynamic "${dproot}/red-hat-developer-hub-backstage-plugin-orchestrator-backend" && npx --yes @red-hat-developer-hub/cli@1.9.1 plugin export && npx --yes @janus-idp/cli package package-dynamic-plugins --export-to "${dproot}"
 
 add-backend-modules-to-rhdh:
 	@echo
 	@echo Will build and install ${workspace} backend modules into ${rhdh}
 	@echo
-	cd plugins/orchestrator-backend-module-loki && npx --yes @red-hat-developer-hub/cli plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
-	cd plugins/scaffolder-backend-module-orchestrator && npx --yes @red-hat-developer-hub/cli plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}" --embed-package "@red-hat-developer-hub/backstage-plugin-orchestrator-common"
+	# Backend modules also need the two-step export (see add-backend-to-rhdh).
+	cd plugins/orchestrator-backend-module-loki && rm -rf dist-dynamic "${dproot}/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki" && npx --yes @red-hat-developer-hub/cli@1.9.1 plugin export && npx --yes @janus-idp/cli package package-dynamic-plugins --export-to "${dproot}"
+	cd plugins/scaffolder-backend-module-orchestrator && rm -rf dist-dynamic "${dproot}/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator" && npx --yes @red-hat-developer-hub/cli@1.9.1 plugin export --embed-package @red-hat-developer-hub/backstage-plugin-orchestrator-common && npx --yes @janus-idp/cli package package-dynamic-plugins --export-to "${dproot}"
 
 copy-config-to-rhdh:
 	@echo
@@ -77,9 +81,10 @@ remove-from-rhdh:
 	@echo Remove packages from ${rhdh}
 	@echo
 	rm -rf "${dproot}/custom-authentication-provider-module"
-	rm -rf "${dproot}/custom-authentication-provider-module-backend-dynamic"
+	rm -rf "${dproot}/custom-authentication-provider-module-backend"
 	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-orchestrator"
-	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-orchestrator-backend-dynamic"
-	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki-dynamic"
+	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-orchestrator-backend"
+	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki"
 	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
-	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator-dynamic"
+	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
+	rm -f "${rhdh}/app-config-orchestrator.local.yaml"
