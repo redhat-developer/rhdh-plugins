@@ -63,8 +63,8 @@ describe('config', () => {
   let mockCatalog: CatalogService;
   let mockCredentials: BackstageCredentials;
   let mockLogger: KonfluxLogger;
-  let mockError: jest.SpyInstance;
-  let mockWarn: jest.SpyInstance;
+  let mockError: jest.Spied<typeof mockLogger.error>;
+  let mockWarn: jest.Spied<typeof mockLogger.warn>;
 
   const createMockEntity = (
     name: string,
