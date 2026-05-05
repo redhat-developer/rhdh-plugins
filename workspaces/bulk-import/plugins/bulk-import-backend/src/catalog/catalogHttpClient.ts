@@ -102,6 +102,42 @@ export class CatalogHttpClient {
     };
   }
 
+  async listCatalogComponentManagedByUrlLocations(): Promise<Set<string>> {
+    const result = await this.catalogApi.queryEntities(
+      {
+        fields: ['metadata.annotations'],
+        query: {
+          $all: [
+            { kind: 'Component' },
+            {
+              'metadata.annotations.backstage.io/managed-by-location': {
+                $hasPrefix: 'url:',
+              },
+            },
+          ],
+        },
+        // We need all imported component targets to reliably exclude already-imported repositories.
+        // That's why we are retrieving this hard-coded high number of Components.
+        limit: 9999,
+      },
+      {
+        token: await getTokenForPlugin(this.auth, 'catalog'),
+      },
+    );
+
+    const entities = result?.items ?? [];
+    return new Set(
+      entities
+        .map(
+          entity =>
+            entity.metadata.annotations?.[
+              'backstage.io/managed-by-location'
+            ]?.slice(4), // remove 'url:' prefix
+        )
+        .filter((repoUrl): repoUrl is string => !!repoUrl),
+    );
+  }
+
   async listCatalogUrlLocationsById(
     search?: string,
     pageNumber?: number,

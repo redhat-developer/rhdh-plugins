@@ -18,9 +18,16 @@ import {
   BackendFeature,
   createServiceFactory,
 } from '@backstage/backend-plugin-api';
-import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
-import type { CatalogClient } from '@backstage/catalog-client';
+import {
+  mockServices,
+  startTestBackend,
+  type ServiceMock,
+} from '@backstage/backend-test-utils';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
+import {
+  catalogServiceMock,
+  type CatalogServiceMock,
+} from '@backstage/plugin-catalog-node/testUtils';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import { rest } from 'msw';
@@ -170,7 +177,7 @@ export function addHandlersForGHTokenAppErrors(server: SetupServer) {
 }
 
 export async function startBackendServer(
-  mockCatalogClient: CatalogClient,
+  mockCatalogClient: ServiceMock<CatalogServiceMock>,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
   config?: any,
   db?: any,
@@ -201,7 +208,7 @@ export async function startBackendServer(
 
 export function setupTest() {
   let server: SetupServer;
-  let mockCatalogClient: CatalogClient;
+  let mockCatalogClient: ServiceMock<CatalogServiceMock>;
 
   beforeAll(() => {
     server = setupServer(...DEFAULT_TEST_HANDLERS);
@@ -223,24 +230,7 @@ export function setupTest() {
   afterAll(() => server.close());
 
   beforeEach(() => {
-    // TODO(rm3l): Use 'catalogServiceMock' from '@backstage/plugin-catalog-node/testUtils'
-    //  once '@backstage/plugin-catalog-node' is upgraded
-    mockCatalogClient = {
-      getEntities: jest.fn(),
-      getEntitiesByRefs: jest.fn(),
-      queryEntities: jest.fn(),
-      getEntityAncestors: jest.fn(),
-      getEntityByRef: jest.fn(),
-      removeEntityByUid: jest.fn(),
-      refreshEntity: jest.fn(),
-      getEntityFacets: jest.fn(),
-      getLocationById: jest.fn(),
-      getLocationByRef: jest.fn(),
-      addLocation: jest.fn(),
-      removeLocationById: jest.fn(),
-      getLocationByEntity: jest.fn(),
-      validateEntity: jest.fn(),
-    } as unknown as CatalogClient;
+    mockCatalogClient = catalogServiceMock.mock();
   });
 
   afterEach(() => {
