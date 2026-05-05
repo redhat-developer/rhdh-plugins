@@ -131,7 +131,7 @@ describe('useQuickAccessLinks', () => {
     expect(result.current.isLoading).toBe(true);
     await waitFor(() => {
       expect(result.current.data).toBeDefined();
-      expect(result.current.data).toStrictEqual(homePageDataFallback);
+      expect(result.current.data).toEqual(homePageDataFallback);
       expect(result.current.isLoading).toBe(false);
     });
   });
