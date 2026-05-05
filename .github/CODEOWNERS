@@ -13,26 +13,26 @@
 # The workspace list is alphabetical ordered.
 # In VS code: select the lines and select ">Sort Lines Ascending" from the Commands menu.
 
-*                                                   @redhat-developer/rhdh-cope   @redhat-developer/rhdh-security
+*                                                   @rhdh-plugins-maintainers @redhat-developer/rhdh-cope   @redhat-developer/rhdh-security
 
-/workspaces/adoption-insights                       @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @eswaraiahsapram
-/workspaces/ai-integrations                         @redhat-developer/rhdh-ui @redhat-developer/rhdh-ai @rohitkrai03 @karthikjeeyar @lucifergene   @johnmcollier @gabemontero
-/workspaces/augment                                 @pkliczewski @rrbanda
-/workspaces/app-defaults                            @redhat-developer/rhdh-ui @rohitkrai03 @christoph-jerolimov
-/workspaces/bulk-import                             @redhat-developer/rhdh-plugins @rm3l   @redhat-developer/rhdh-ui @debsmita1 @its-mitesh-kumar
-/workspaces/extensions                              @redhat-developer/rhdh-ui @christoph-jerolimov @karthikjeeyar
-/workspaces/global-floating-action-button           @redhat-developer/rhdh-ui @debsmita1 @divyanshiGupta
-/workspaces/global-header                           @redhat-developer/rhdh-ui @ciiay @divyanshiGupta
-/workspaces/homepage                                @redhat-developer/rhdh-ui @christoph-jerolimov @eswaraiahsapram
-/workspaces/lightspeed                              @redhat-developer/rhdh-ui @redhat-developer/rhdh-ai @karthikjeeyar @rohitkrai03 @yangcao77
-/workspaces/mcp-integrations                        @johnmcollier @gabemontero @thepetk @redhat-developer/rhdh-ai
-/workspaces/orchestrator                            @lholmquist @lokanandaprabhu @redhat-developer/rhdh-plugins @karthikjeeyar @christoph-jerolimov
-/workspaces/quickstart                              @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
-/workspaces/cost-management                         @ydayagi @mareklibra @batzionb @PreetiW @asmasarw
-/workspaces/sandbox                                 @lucifergene @rohitkrai03 @karthikjeeyar @xcoulon @alexeykazakov @mfrancisc @rsoaresd @jrosental @rajivnathan @MatousJobanek
-/workspaces/scorecard                               @redhat-developer/rhdh-plugins   @redhat-developer/rhdh-ui @christoph-jerolimov @its-mitesh-kumar @eswaraiahsapram
-/workspaces/theme                                   @redhat-developer/rhdh-ui @ciiay   @logonoff
-/workspaces/translations                            @redhat-developer/rhdh-ui @ciiay @debsmita1 @karthikjeeyar
-/workspaces/konflux                                 @rrosatti @sahil143 @milantaky
-/workspaces/x2a                                     @mareklibra @elai-shalev @eloycoto
-/workspaces/dcm                                     @asmasarw @jkilzi @mareklibra
+/workspaces/adoption-insights                       @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @eswaraiahsapram
+/workspaces/ai-integrations                         @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @redhat-developer/rhdh-ai @rohitkrai03 @karthikjeeyar @lucifergene   @johnmcollier @gabemontero
+/workspaces/augment                                 @rhdh-plugins-maintainers @pkliczewski @rrbanda
+/workspaces/app-defaults                            @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @rohitkrai03 @christoph-jerolimov
+/workspaces/bulk-import                             @rhdh-plugins-maintainers @redhat-developer/rhdh-plugins @rm3l   @redhat-developer/rhdh-ui @debsmita1 @its-mitesh-kumar
+/workspaces/extensions                              @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @christoph-jerolimov @karthikjeeyar
+/workspaces/global-floating-action-button           @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @debsmita1 @divyanshiGupta
+/workspaces/global-header                           @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @ciiay @divyanshiGupta
+/workspaces/homepage                                @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @christoph-jerolimov @eswaraiahsapram
+/workspaces/lightspeed                              @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @redhat-developer/rhdh-ai @karthikjeeyar @rohitkrai03 @yangcao77
+/workspaces/mcp-integrations                        @rhdh-plugins-maintainers @johnmcollier @gabemontero @thepetk @redhat-developer/rhdh-ai
+/workspaces/orchestrator                            @rhdh-plugins-maintainers @lholmquist @lokanandaprabhu @redhat-developer/rhdh-plugins @karthikjeeyar @christoph-jerolimov
+/workspaces/quickstart                              @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
+/workspaces/cost-management                         @rhdh-plugins-maintainers @ydayagi @mareklibra @batzionb @PreetiW @asmasarw
+/workspaces/sandbox                                 @rhdh-plugins-maintainers @lucifergene @rohitkrai03 @karthikjeeyar @xcoulon @alexeykazakov @mfrancisc @rsoaresd @jrosental @rajivnathan @MatousJobanek
+/workspaces/scorecard                               @rhdh-plugins-maintainers @redhat-developer/rhdh-plugins   @redhat-developer/rhdh-ui @christoph-jerolimov @its-mitesh-kumar @eswaraiahsapram
+/workspaces/theme                                   @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @ciiay   @logonoff
+/workspaces/translations                            @rhdh-plugins-maintainers @redhat-developer/rhdh-ui @ciiay @debsmita1 @karthikjeeyar
+/workspaces/konflux                                 @rhdh-plugins-maintainers @rrosatti @sahil143 @milantaky
+/workspaces/x2a                                     @rhdh-plugins-maintainers @mareklibra @elai-shalev @eloycoto
+/workspaces/dcm                                     @rhdh-plugins-maintainers @asmasarw @jkilzi @mareklibra
