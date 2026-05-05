@@ -21,8 +21,8 @@ import { Event } from '../../models/Event';
 import { mockServices } from '@backstage/backend-test-utils';
 
 describe('BaseAdapter', () => {
-  let infoLog: jest.SpyInstance;
-  let errorLog: jest.SpyInstance;
+  let infoLog: jest.Spied<typeof logger.info>;
+  let errorLog: jest.Spied<typeof logger.error>;
   const logger = mockServices.logger.mock();
   const mockKnex = {
     returning: jest.fn().mockReturnThis(),
