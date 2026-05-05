@@ -17,7 +17,10 @@
 import { Knex } from 'knex';
 import crypto from 'node:crypto';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  Module,
+  SourceTechnology,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { mapRowToModule } from './mappers';
 
@@ -34,6 +37,7 @@ export class ModuleOperations {
     name: string;
     sourcePath: string;
     projectId: string;
+    technology?: SourceTechnology;
   }): Promise<Module> {
     const id = crypto.randomUUID();
 
@@ -41,6 +45,7 @@ export class ModuleOperations {
       id,
       name: module.name,
       sourcePath: module.sourcePath,
+      technology: module.technology,
       projectId: module.projectId,
     };
 
@@ -48,6 +53,7 @@ export class ModuleOperations {
       id,
       name: module.name,
       source_path: module.sourcePath,
+      technology: module.technology,
       project_id: module.projectId,
     });
 

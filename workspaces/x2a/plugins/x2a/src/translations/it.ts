@@ -27,7 +27,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'sidebar.x2a.title': 'Hub di conversione',
     'page.title': 'Hub di conversione',
     'page.subtitle':
-      'Avvia e monitora le conversioni asincrone di file Chef in playbook Ansible pronti per la produzione.',
+      'Avvia e monitora la conversione asincrona di automazione esistente in playbook Ansible pronti per la produzione.',
     'table.columns.name': 'Nome',
     'table.columns.status': 'Stato',
     'table.columns.statusSortDisabledTooltip':
@@ -83,7 +83,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'common.newProject': 'Nuovo progetto',
     'emptyPage.noConversionInitiatedYet': 'Nessuna conversione avviata ancora',
     'emptyPage.noConversionInitiatedYetDescription':
-      'Avvia e monitora la conversione di file Chef in playbook Ansible pronti per la produzione',
+      'Avvia e monitora la conversione di automazione esistente in Ansible pronto per la produzione',
     'emptyPage.startFirstConversion': 'Avvia prima conversione',
     'emptyPage.notAllowedTitle': 'Accesso negato',
     'emptyPage.notAllowedDescription':
@@ -158,7 +158,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
       "Prima di eseguire l'analisi, esamina il piano di migrazione complessivo del progetto; il suo contenuto guiderà l'analisi del modulo.",
     'modulePage.phases.runAnalyze': 'Crea il piano di migrazione del modulo',
     'modulePage.phases.migrateInstructions':
-      'Prima di eseguire la migrazione, esamina il piano di migrazione del modulo. Il processo di migrazione convertirà il codice Chef in Ansible in base al piano.',
+      'Prima di eseguire la migrazione, esamina il piano di migrazione del modulo. Il processo di migrazione convertirà il codice sorgente in Ansible in base al piano.',
     'modulePage.phases.runMigrate': 'Migra le sorgenti del modulo',
     'modulePage.phases.remigrateInstructions':
       'Le sorgenti migrate sono già presenti. Riavvia la migrazione per ricreare il codice Ansible convertito.',

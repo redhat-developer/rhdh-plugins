@@ -31,7 +31,7 @@ export const x2aPluginMessages = {
   page: {
     title: 'Conversion Hub',
     subtitle:
-      'Initiate and track the asynchronous conversions of Chef files into production-ready Ansible Playbooks.',
+      'Initiate and track the asynchronous conversion of existing automation into production-ready Ansible Playbooks.',
   },
   projectPage: {
     title: 'Project',
@@ -104,7 +104,7 @@ export const x2aPluginMessages = {
         'Before running the analysis, review the overall project migration plan first. Its content will drive the analysis of the module.',
       runAnalyze: 'Create module migration plan',
       migrateInstructions:
-        'Before running the migration, review the module migration plan. The migration process will convert the Chef code to Ansible based on the plan.',
+        'Before running the migration, review the module migration plan. The migration process will convert the source code to Ansible based on the plan.',
       runMigrate: 'Migrate module sources',
       remigrateInstructions:
         'The migrated sources are already present. Retrigger the migration to recreate the converted Ansible code.',
@@ -176,7 +176,7 @@ export const x2aPluginMessages = {
   emptyPage: {
     noConversionInitiatedYet: 'No conversion initiated yet',
     noConversionInitiatedYetDescription:
-      'Initiate and track conversion of Chef files into production-ready Ansible',
+      'Initiate and track conversion of existing automation into production-ready Ansible',
     startFirstConversion: 'Start first conversion',
     notAllowedTitle: 'Access denied',
     notAllowedDescription: 'You are not allowed to access conversion projects.',

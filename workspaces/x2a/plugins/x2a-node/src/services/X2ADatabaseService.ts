@@ -24,6 +24,7 @@ import type {
   Job,
   JobStatusEnum,
   MigrationPhase,
+  SourceTechnology,
   Artifact,
   Telemetry,
   ProjectsGet,
@@ -87,6 +88,7 @@ export interface X2ADatabaseServiceApi {
     name: string;
     sourcePath: string;
     projectId: string;
+    technology?: SourceTechnology;
   }): Promise<Module>;
 
   getModule(args: {

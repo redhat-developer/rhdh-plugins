@@ -5,7 +5,7 @@ The CSV bulk import lets the user create multiple conversion projects at once by
 ## How to Access
 
 1. Open the Backstage instance and navigate to `/create`.
-2. Select the **Chef-to-Ansible Conversion Project** template (`chef-conversion-project-template`).
+2. Select the **Infrastructure Conversion Project** template (`x2a-conversion-project-template`).
 3. On the first page, choose **CSV upload** as the input method.
 4. Upload the CSV file and proceed through the wizard.
 
@@ -21,7 +21,7 @@ The file must be UTF-8 encoded with a header row. Column order does not matter, 
 | ------------------ | --------------------------------------------------------------------------------------------------------- |
 | `name`             | Unique project name                                                                                       |
 | `abbreviation`     | Short project identifier, 1-5 alphanumeric characters matching `^([a-zA-Z][a-zA-Z0-9]*)(-[a-zA-Z0-9]+)*$` |
-| `sourceRepoUrl`    | URL of the repository containing the Chef cookbook to convert                                             |
+| `sourceRepoUrl`    | URL of the source repository to convert                                                                   |
 | `sourceRepoBranch` | Branch to read from in the source repository                                                              |
 | `targetRepoBranch` | Branch to write converted Ansible output to                                                               |
 

@@ -67,7 +67,7 @@ export const bitbucketProvider: ScmProvider;
 export function buildScmHostMap(config: Config): Map<string, ScmProviderName>;
 
 // @public
-export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
+export const CREATE_PROJECT_TEMPLATE_PATH = "/create/templates/default/x2a-conversion-project-template";
 
 // @public
 export type CsvProjectRow = ProjectsPost['body'];
@@ -166,6 +166,8 @@ export interface Module {
     sourcePath: string;
     // (undocumented)
     status?: ModuleStatus;
+    // (undocumented)
+    technology?: SourceTechnology;
 }
 
 // @public (undocumented)
@@ -187,6 +189,9 @@ export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancel
 
 // @public
 export function normalizeRepoUrl(url: string): string;
+
+// @public
+export function normalizeSourceTechnology(raw: string | undefined): SourceTechnology | undefined;
 
 // @public
 export function parseCsvContent(dataUrl: string): CsvProjectRow[];
@@ -463,6 +468,12 @@ export interface ScmProvider {
 
 // @public
 export type ScmProviderName = 'github' | 'gitlab' | 'bitbucket';
+
+// @public
+export const SOURCE_TECHNOLOGY_ALIASES: Record<SourceTechnology, string[]>;
+
+// @public (undocumented)
+export type SourceTechnology = 'chef' | 'ansible' | 'powershell';
 
 // @public
 export interface Telemetry {

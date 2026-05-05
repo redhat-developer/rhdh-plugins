@@ -1,9 +1,9 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: chef-conversion-project-template
-  title: Chef-to-Ansible Conversion Project
-  description: Initiate a conversion of a Chef cookbook or directory into a new Ansible Playbook repository.
+  name: x2a-conversion-project-template
+  title: Infrastructure Conversion Project
+  description: Initiate a conversion of existing automation (e.g. Chef, Puppet, Salt, Powershell) into a new Ansible Playbook repository.
 spec:
   type: service
 
@@ -121,7 +121,7 @@ spec:
                   sourceRepoUrl:
                     title: Conversion source repository
                     description: |
-                      The Owner should be your SCM (Source Code Management) username. The repository name should be a name that already exists in your SCM account and contains a Chef cookbook or directory to convert.
+                      The Owner should be your SCM (Source Code Management) username. The repository name should be a name that already exists in your SCM account and contains the existing automation (like Chef cookbook, Puppet module, Salt, Powershell DSC, etc.) to convert.
                     type: string
                     ui:field: RepoUrlPicker
                     ui:options:

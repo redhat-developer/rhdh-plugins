@@ -899,6 +899,9 @@ export const spec = {
             "type": "string",
             "description": "Path to the module in the source repository"
           },
+          "technology": {
+            "$ref": "#/components/schemas/SourceTechnology"
+          },
           "projectId": {
             "type": "string",
             "description": "UUID of the owning project"
@@ -1172,6 +1175,15 @@ export const spec = {
           "publish"
         ],
         "description": "Phases to execute on a module"
+      },
+      "SourceTechnology": {
+        "type": "string",
+        "enum": [
+          "chef",
+          "ansible",
+          "powershell"
+        ],
+        "description": "Source configuration-management technology being converted to Ansible"
       },
       "Telemetry": {
         "type": "object",

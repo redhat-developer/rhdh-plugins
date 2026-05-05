@@ -54,8 +54,7 @@ report_result() {
 }
 
 # Strip git tokens from files before committing to prevent secret leaks.
-# The x2a tool may embed SOURCE_REPO_TOKEN in generated files (e.g., Policyfile.lock.json)
-# when Chef resolves cookbook sources using authenticated URLs.
+# The x2a tool may embed SOURCE_REPO_TOKEN in generated files (e.g., Policyfile.lock.json).
 sanitize_secrets() {
   local dir="$1"
   echo "=== Sanitizing secrets from output files ==="
@@ -290,7 +289,7 @@ case "${PHASE}" in
     # Run the init command
     # Usage: app.py init [OPTIONS] USER_REQUIREMENTS
     #   --source-dir DIRECTORY  Source directory to analyze
-    USER_REQ="${USER_PROMPT:-Analyze the Chef cookbooks and create a migration plan}"
+    USER_REQ="${USER_PROMPT:-Analyze the source configuration and create a migration plan}"
     run_x2a uv run app.py init --source-dir "${SOURCE_BASE}" "${USER_REQ}"
 
     # Copy output to target location
@@ -361,7 +360,7 @@ case "${PHASE}" in
     cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -rv "${SOURCE_BASE}/migration-dependencies" "${OUTPUT_DIR}/" 2>/dev/null || true
 
-    # Update project-level Policyfile.lock.json — chef-cli may have updated it
+    # Update project-level Policyfile.lock.json - the source tool (like chef-cli) may have updated it
     # during dependency resolution. Keep it at project root only, not per-module.
     cp -v "${SOURCE_BASE}/Policyfile.lock.json" "${PROJECT_PATH}/" 2>/dev/null || true
 
@@ -417,10 +416,15 @@ case "${PHASE}" in
     cd /app
     echo "Working directory: $(pwd)"
 
+    if [ -z "${SOURCE_TECHNOLOGY:-}" ]; then
+      echo "WARNING: SOURCE_TECHNOLOGY not set, defaulting to Chef"
+      SOURCE_TECHNOLOGY="Chef"
+    fi
+
     USER_REQ="${USER_PROMPT:-Migrate this module to Ansible}"
     run_x2a uv run app.py migrate \
       --source-dir "${SOURCE_BASE}" \
-      --source-technology Chef \
+      --source-technology "${SOURCE_TECHNOLOGY}" \
       --high-level-migration-plan "${PROJECT_PATH}/migration-plan.md" \
       --module-migration-plan "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md" \
       "${USER_REQ}"

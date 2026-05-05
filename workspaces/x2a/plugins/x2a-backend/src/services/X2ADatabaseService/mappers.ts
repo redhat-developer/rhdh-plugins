@@ -22,6 +22,7 @@ import {
   Artifact,
   ArtifactType,
   MigrationPhase,
+  SourceTechnology,
   Telemetry,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -45,6 +46,7 @@ export function mapRowToModule(row: Record<string, unknown>): Module {
     id: row.id as string,
     name: row.name as string,
     sourcePath: row.source_path as string,
+    technology: (row.technology as SourceTechnology) || undefined,
     projectId: row.project_id as string,
   };
 }
