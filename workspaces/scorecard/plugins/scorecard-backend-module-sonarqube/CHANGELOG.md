@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube
 
+## 0.1.2
+
+### Patch Changes
+
+- da00ded: Bumped Backstage dependencies to 1.49.4 for RHDH 1.10 compatibility.
+
 ## 0.1.1
 
 ### Patch Changes
