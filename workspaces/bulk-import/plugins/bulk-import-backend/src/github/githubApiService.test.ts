@@ -81,7 +81,7 @@ const ghRepos = [
 
 describe('GithubApiService tests', () => {
   let githubApiService: GithubApiService;
-  let errorLog: jest.SpyInstance;
+  let errorLog: jest.SpiedFunction<typeof console.error>;
 
   beforeEach(() => {
     jest.resetAllMocks();
