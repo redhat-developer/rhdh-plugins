@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.21.2
+
+### Patch Changes
+
+- 4cabc3b: Fix help dropdown not closing when selecting Quick Start menu item.
+
 ## 1.21.1
 
 ### Patch Changes
