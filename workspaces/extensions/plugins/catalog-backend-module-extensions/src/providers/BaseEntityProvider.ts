@@ -43,7 +43,7 @@ export abstract class BaseEntityProvider<T extends Entity>
   private connection?: EntityProviderConnection;
   private taskRunner: SchedulerServiceTaskRunner;
   private config?: Config;
-  private logger?: LoggerService;
+  private readonly logger?: LoggerService;
 
   private static readonly EXTENSIONS_DIRECTORY = '/extensions';
   private static readonly DEPRECATED_MARKETPLACE_DIRECTORY = '/marketplace';
@@ -114,7 +114,6 @@ export abstract class BaseEntityProvider<T extends Entity>
       this.logger?.warn(
         `Conflicting Extensions entities detected for '${identity}' in '${existing.filePath}' and '${fileData.filePath}'. Skipping conflicting definition from '${fileData.filePath}'.`,
       );
-      continue;
     }
 
     return Array.from(entitiesByEntityRef.values()).map(({ entity }) =>
