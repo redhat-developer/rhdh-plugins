@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.7.2
+
+### Patch Changes
+
+- 04e95fe: Add translations for new sonarqube module.
+- 04e95fe: Add tooltip to Scorecard header to show titles that are longer then one line
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.2
+
 ## 2.7.1
 
 ### Patch Changes
