@@ -14,17 +14,4 @@
  * limitations under the License.
  */
 
-/**
- * Common functionalities for the x2a plugin.
- *
- * @packageDocumentation
- */
-export * from '../client/src/schema/openapi';
-export * from './permissions';
-export * from './x2aJobStatusLiterals';
-export * from './x2aArtifactTypeLiterals';
-export * from './constants';
-export * from './utils';
-export * from './scm';
-export * from './csv';
-export * from './domain';
+export { Phase } from './Phase';

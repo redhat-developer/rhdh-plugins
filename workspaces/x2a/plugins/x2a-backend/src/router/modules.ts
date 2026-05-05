@@ -18,6 +18,11 @@ import { z } from 'zod';
 import express from 'express';
 import { InputError, NotFoundError } from '@backstage/errors';
 
+import {
+  type ModulePhase,
+  Phase,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 import type { RouterDeps } from './types';
 import {
   generateCallbackToken,
@@ -179,7 +184,9 @@ export function registerModuleRoutes(
 
       // Validate request body
       const runModuleRequestSchema = z.object({
-        phase: z.enum(['analyze', 'migrate', 'publish']),
+        phase: z.enum(
+          Phase.modulePhaseValues() as [ModulePhase, ...ModulePhase[]],
+        ),
         sourceRepoAuth: z
           .object({
             token: z.string(),
@@ -364,7 +371,9 @@ export function registerModuleRoutes(
       );
 
       const cancelModuleRequestSchema = z.object({
-        phase: z.enum(['analyze', 'migrate', 'publish']),
+        phase: z.enum(
+          Phase.modulePhaseValues() as [ModulePhase, ...ModulePhase[]],
+        ),
       });
 
       const parsedBody = cancelModuleRequestSchema

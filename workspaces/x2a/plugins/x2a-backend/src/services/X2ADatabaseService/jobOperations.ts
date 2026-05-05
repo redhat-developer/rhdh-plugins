@@ -23,6 +23,7 @@ import {
   MigrationPhase,
   Artifact,
   Telemetry,
+  Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { mapRowToJob, mapRowToArtifact } from './mappers';
@@ -253,7 +254,7 @@ export class JobOperations {
         if (moduleId) {
           queryBuilder.where('module_id', moduleId);
         }
-        if (phase === 'init') {
+        if (phase && Phase.from(phase).isProjectPhase()) {
           queryBuilder.whereNull('module_id');
         }
       })

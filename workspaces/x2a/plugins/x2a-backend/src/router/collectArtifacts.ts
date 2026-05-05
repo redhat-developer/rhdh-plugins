@@ -26,6 +26,7 @@ import {
   Artifact,
   JobStatusEnum,
   Telemetry,
+  Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
@@ -165,11 +166,11 @@ class RequestValidator {
     phase: MigrationPhase,
     moduleId: string | undefined,
   ): void {
-    if (phase === 'init' && moduleId) {
+    if (Phase.from(phase).isProjectPhase() && moduleId) {
       throw new InputError('moduleId must not be provided for init phase');
     }
 
-    if (phase !== 'init' && !moduleId) {
+    if (Phase.from(phase).isModulePhase() && !moduleId) {
       throw new InputError(`moduleId is required for ${phase} phase`);
     }
   }
@@ -211,7 +212,7 @@ class RequestValidator {
       );
     }
 
-    if (phase !== 'init' && job.moduleId !== moduleId) {
+    if (Phase.from(phase).isModulePhase() && job.moduleId !== moduleId) {
       throw new InputError(
         `Job moduleId mismatch: expected ${moduleId}, got ${job.moduleId}`,
       );
