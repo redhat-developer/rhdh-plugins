@@ -162,7 +162,10 @@ export class KagentiProvider implements AgenticProvider {
   private async resolveKagentiBaseUrl(): Promise<string> {
     if (this.adminConfig) {
       try {
-        const dbUrl = await this.adminConfig.getScopedValue('kagentiBaseUrl', 'kagenti');
+        const dbUrl = await this.adminConfig.getScopedValue(
+          'kagentiBaseUrl',
+          'kagenti',
+        );
         if (typeof dbUrl === 'string' && dbUrl) {
           return dbUrl;
         }
@@ -178,7 +181,9 @@ export class KagentiProvider implements AgenticProvider {
     if (!resolved || resolved === this.activeBaseUrl) return;
 
     const { tokenManager } = this.requireInitialized();
-    this.logger.info(`Kagenti baseUrl changed from ${this.activeBaseUrl} to ${resolved}, rebuilding client`);
+    this.logger.info(
+      `Kagenti baseUrl changed from ${this.activeBaseUrl} to ${resolved}, rebuilding client`,
+    );
     this.activeBaseUrl = resolved;
     this.apiClient = new KagentiApiClient({
       baseUrl: resolved,
@@ -233,7 +238,34 @@ export class KagentiProvider implements AgenticProvider {
       retryBaseDelayMs: this.kagentiConfig.retryBaseDelayMs,
     });
 
-    const health = await this.apiClient.health();
+    try {
+      await this.tokenManager.getToken();
+      this.logger.info(
+        `Keycloak token acquired successfully from ${this.kagentiConfig.auth.tokenEndpoint}`,
+      );
+    } catch (tokenErr) {
+      const msg =
+        tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
+      this.logger.error(
+        `Failed to acquire Keycloak token from ${this.kagentiConfig.auth.tokenEndpoint}: ${msg}. ` +
+          `Verify augment.kagenti.auth.tokenEndpoint, clientId, and clientSecret are correct.`,
+      );
+    }
+
+    let health: { status: string };
+    try {
+      health = await this.apiClient.health();
+    } catch (healthErr) {
+      const msg =
+        healthErr instanceof Error ? healthErr.message : String(healthErr);
+      this.logger.error(
+        `Cannot reach Kagenti API at ${this.activeBaseUrl}: ${msg}. ` +
+          `If running inside the cluster, consider using the internal service URL ` +
+          `(e.g. http://kagenti-api.kagenti-system.svc.cluster.local:8000) ` +
+          `instead of the external route.`,
+      );
+      health = { status: 'unreachable' };
+    }
     this.logger.info(`Kagenti health: ${health.status}`);
 
     try {
@@ -540,6 +572,35 @@ export class KagentiProvider implements AgenticProvider {
         this.logger.debug('Kagenti chat stream aborted by client');
         return;
       }
+      const errMsg = err instanceof Error ? err.message : String(err);
+      this.logger.error(
+        `Kagenti chatStream failed for agent ${agentId}: ${errMsg}`,
+      );
+
+      if (
+        /ECONNREFUSED|ENOTFOUND|ETIMEDOUT|ECONNRESET|EAI_AGAIN/i.test(errMsg)
+      ) {
+        throw new Error(
+          `Cannot connect to Kagenti at ${this.activeBaseUrl}. ` +
+            `Verify augment.kagenti.baseUrl is reachable from this pod. Error: ${errMsg}`,
+        );
+      }
+
+      if (/status 401/i.test(errMsg)) {
+        throw new Error(
+          `Kagenti rejected the request (401 Unauthorized). ` +
+            `Verify the Keycloak client "${this.kagentiConfig?.auth.clientId}" has ` +
+            `the kagenti-operator role and the client secret is correct. Error: ${errMsg}`,
+        );
+      }
+
+      if (/status 422/i.test(errMsg)) {
+        throw new Error(
+          `Kagenti rejected the request format (422). ` +
+            `The agent "${agentId}" may not accept the request body. Error: ${errMsg}`,
+        );
+      }
+
       throw err;
     }
 
@@ -671,11 +732,11 @@ export class KagentiProvider implements AgenticProvider {
       providerType: 'kagenti',
       createdAt: agent.createdAt,
       framework: agent.labels?.framework,
-      protocols: agent.labels?.protocol
-        ? Array.isArray(agent.labels.protocol)
-          ? agent.labels.protocol
-          : [agent.labels.protocol]
-        : undefined,
+      protocols: (() => {
+        const proto = agent.labels?.protocol;
+        if (!proto) return undefined;
+        return Array.isArray(proto) ? proto : [proto];
+      })(),
       source: 'kagenti',
       namespace: agent.namespace,
     }));
@@ -701,24 +762,28 @@ export class KagentiProvider implements AgenticProvider {
     const model =
       modelOverride || (effectiveConfig.model as string) || 'default';
 
-    const { instructions, input } = buildMetaPrompt(description, {
-      model,
-      baseUrl: llamaStackUrl,
-      systemPrompt: (effectiveConfig.systemPrompt as string) || '',
-      vectorStoreIds: [],
-      vectorStoreName: 'default-vector-store',
-      embeddingModel: 'all-MiniLM-L6-v2',
-      embeddingDimension: 384,
-      chunkingStrategy: 'auto' as const,
-      maxChunkSizeTokens: 800,
-      chunkOverlapTokens: 50,
-      enableWebSearch: (effectiveConfig.enableWebSearch as boolean) || false,
-      enableCodeInterpreter:
-        (effectiveConfig.enableCodeInterpreter as boolean) || false,
-      skipTlsVerify: false,
-      zdrMode: false,
-      verboseStreamLogging: false,
-    }, capabilities);
+    const { instructions, input } = buildMetaPrompt(
+      description,
+      {
+        model,
+        baseUrl: llamaStackUrl,
+        systemPrompt: (effectiveConfig.systemPrompt as string) || '',
+        vectorStoreIds: [],
+        vectorStoreName: 'default-vector-store',
+        embeddingModel: 'all-MiniLM-L6-v2',
+        embeddingDimension: 384,
+        chunkingStrategy: 'auto' as const,
+        maxChunkSizeTokens: 800,
+        chunkOverlapTokens: 50,
+        enableWebSearch: (effectiveConfig.enableWebSearch as boolean) || false,
+        enableCodeInterpreter:
+          (effectiveConfig.enableCodeInterpreter as boolean) || false,
+        skipTlsVerify: false,
+        zdrMode: false,
+        verboseStreamLogging: false,
+      },
+      capabilities,
+    );
 
     const url = `${llamaStackUrl.replace(/\/+$/, '')}/v1/responses`;
     const res = await fetch(url, {
