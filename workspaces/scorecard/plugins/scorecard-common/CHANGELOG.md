@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 2.7.2
+
 ## 2.7.1
 
 ### Patch Changes
