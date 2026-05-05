@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 0.9.1
+
+### Patch Changes
+
+- 4418084: Upgrade workspace to Backstage 1.49.4
+
 ## 0.9.0
 
 ### Minor Changes
