@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.21.4
+
+### Patch Changes
+
+- 7cf6d61: Add missing translations for the global header search experience: localize the autocomplete "All results" link and the clear control tooltip/accessible label (`search.allResults`, `search.clear`), with locale strings for German, Spanish, French, Italian, and Japanese.
+
 ## 1.21.3
 
 ### Patch Changes
