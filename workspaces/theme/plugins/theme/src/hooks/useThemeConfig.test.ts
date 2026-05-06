@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { useApi } from '@backstage/core-plugin-api';
 import { MockConfigApi } from '@backstage/test-utils';
 import { JsonObject } from '@backstage/types';

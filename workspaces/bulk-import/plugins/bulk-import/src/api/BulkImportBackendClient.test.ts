@@ -348,7 +348,7 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
 
       await expect(
         bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git),
-      ).resolves.toEqual(expect.objectContaining([]));
+      ).resolves.toBeInstanceOf(Response);
     });
   });
 
@@ -427,7 +427,7 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
         bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git, {
           fetchOrganizations: true,
         }),
-      ).resolves.toEqual(expect.objectContaining([]));
+      ).resolves.toBeInstanceOf(Response);
     });
   });
 
@@ -459,6 +459,12 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
     });
 
     it('getImportJobs should handle non-200/204 responses correctly', async () => {
+      server.use(
+        rest.get(`${LOCAL_ADDR}/api/bulk-import/imports`, (_req, res, ctx) => {
+          return res(ctx.status(404));
+        }),
+      );
+
       await expect(
         bulkImportApi.getImportJobs(
           1,
@@ -467,7 +473,7 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
           AddedRepositoryColumnNameEnum.repoName,
           SortingOrderEnum.Asc,
         ),
-      ).resolves.toEqual(expect.objectContaining([]));
+      ).resolves.toBeInstanceOf(Response);
     });
   });
 

@@ -11,6 +11,11 @@
   "backstage": {
     "role": "frontend"
   },
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/../jest.setup.js"
+    ]
+  },
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",

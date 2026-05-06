@@ -140,14 +140,31 @@ export class SonataFlowService {
       throw new Error('No Orchestrator kafka implementation added');
     }
     const contextAttributeId = randomUUID();
-
+    // The data that needs to be part of the clouevent data is in the workflowdata key.
+    // We need to spread the workflowdata payload into the clouevent data,
+    // which is slighty different than a regular workflow execution.
+    // We also need to remove the isEvent value from the workflowdata payload.
+    const rawWorkflowdata = args.inputData?.workflowdata;
+    let workflowdataPayload: Record<string, unknown> = {};
+    if (
+      typeof rawWorkflowdata === 'object' &&
+      rawWorkflowdata !== null &&
+      !Array.isArray(rawWorkflowdata)
+    ) {
+      workflowdataPayload = {
+        ...(rawWorkflowdata as Record<string, unknown>),
+      };
+      if (workflowdataPayload.isEvent) {
+        delete workflowdataPayload.isEvent;
+      }
+    }
     const triggeringCloudEvent = new CloudEvent({
       datacontenttype: 'application/json',
       type: args.workflowEventType,
       source: args.workflowSource,
       [args.contextAttribute]: contextAttributeId,
       data: {
-        ...args.inputData,
+        ...workflowdataPayload,
         [args.contextAttribute]: contextAttributeId, // Need this to be able to correlate the workflow run somehow
       },
     });

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  type Module,
+  Phase,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { calculateModuleStatus } from './moduleStatus';
 import type { ReconcileJobDeps } from './services';
@@ -29,7 +32,7 @@ export async function reconcileModuleJobs(
   module: Module,
   deps: ReconcileJobDeps,
 ): Promise<Module> {
-  const phases = ['analyze', 'migrate', 'publish'] as const;
+  const phases = Phase.modulePhaseValues();
   for (const phase of phases) {
     const job = module[phase];
     if (job && ['pending', 'running'].includes(job.status)) {

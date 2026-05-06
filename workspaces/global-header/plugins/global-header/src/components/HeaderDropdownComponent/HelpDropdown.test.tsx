@@ -297,7 +297,7 @@ describe('HelpDropdown', () => {
 
     const button = screen.getByRole('button');
     expect(button).toHaveStyle('margin-left: 16px');
-    expect(button).toHaveStyle('color: red');
+    expect(button).toHaveStyle('color: rgb(255, 0, 0)');
   });
 
   it('processes mount point configurations correctly', async () => {

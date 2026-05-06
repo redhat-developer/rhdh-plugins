@@ -44,7 +44,7 @@ CustomGitlabCredentialsProvider.prototype.getAllCredentials =
 
 describe('GitlabApiService tests', () => {
   let gitlabApiService: GitlabApiService;
-  let errorLog: jest.SpyInstance;
+  let errorLog: jest.SpiedFunction<typeof console.error>;
 
   beforeEach(() => {
     jest.resetAllMocks();

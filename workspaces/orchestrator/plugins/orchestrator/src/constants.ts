@@ -26,3 +26,10 @@ export const WORKFLOW_STATUS_KEYS = {
 export const SHORT_REFRESH_INTERVAL = 5000;
 export const LONG_REFRESH_INTERVAL = 15000;
 export const DEFAULT_TABLE_PAGE_SIZE = 20;
+
+/**
+ * RHDH product docs — Orchestrator · “Learn more” on duplicate workflow ID alert.
+ * Build and deploy Serverless Workflows — unique workflow ID requirements.
+ */
+export const ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL =
+  'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html-single/orchestrator_in_red_hat_developer_hub/index#unique-workflow-id-requirements-to-prevent-duplicates_build-and-deploy-serverless-workflows';

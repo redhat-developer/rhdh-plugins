@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-ai-experience-backend
 
+## 0.4.1
+
+### Patch Changes
+
+- 4418084: Upgrade workspace to Backstage 1.49.4
+- Updated dependencies [4418084]
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-common@0.4.1
+
 ## 0.4.0
 
 ### Minor Changes

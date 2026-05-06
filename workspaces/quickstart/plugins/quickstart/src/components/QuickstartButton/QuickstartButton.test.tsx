@@ -148,6 +148,6 @@ describe('QuickstartButton', () => {
     );
 
     const button = screen.getByTestId('quickstart-button');
-    expect(button).toHaveStyle('background-color: red');
+    expect(button).toHaveStyle('background-color: rgb(255, 0, 0)');
   });
 });

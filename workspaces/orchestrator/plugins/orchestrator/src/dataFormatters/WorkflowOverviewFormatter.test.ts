@@ -40,12 +40,23 @@ describe('WorkflowOverviewAdapter', () => {
 
     expect(adaptedData.id).toBe(mockWorkflowOverview.workflowId);
     expect(adaptedData.name).toBe(mockWorkflowOverview.name);
+    expect(adaptedData.version).toBe('---');
     expect(adaptedData.lastTriggered).toBe(
       new Date(mockWorkflowOverview.lastTriggeredMs!).toLocaleString(),
     );
     expect(adaptedData.lastRunStatus).toBe(mockWorkflowOverview.lastRunStatus);
     expect(adaptedData.description).toBe(mockWorkflowOverview.description);
     expect(adaptedData.format).toBe('yaml'); // Adjust based on your expected value
+  });
+
+  it('should include version when provided', () => {
+    const mockWorkflowOverview: WorkflowOverviewDTO = {
+      workflowId: 'wf-1',
+      format: 'yaml',
+      version: '1.0.0',
+    };
+    const adaptedData = WorkflowOverviewFormatter.format(mockWorkflowOverview);
+    expect(adaptedData.version).toBe('1.0.0');
   });
 
   it('should have --- for undefined data', () => {
@@ -62,6 +73,7 @@ describe('WorkflowOverviewAdapter', () => {
     expect(adaptedData.lastTriggered).toBe('---');
     expect(adaptedData.lastRunStatus).toBe('---');
     expect(adaptedData.description).toBe('---');
+    expect(adaptedData.version).toBe('---');
     expect(adaptedData.format).toBe('yaml');
   });
 });

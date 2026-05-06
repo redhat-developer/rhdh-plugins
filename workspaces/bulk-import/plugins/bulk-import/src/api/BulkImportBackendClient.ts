@@ -47,7 +47,7 @@ export type BulkImportAPI = {
     searchString: string,
     approvalTool: ApprovalTool,
     options?: APITypes,
-  ) => Promise<OrgAndRepoResponse>;
+  ) => Promise<OrgAndRepoResponse | Response>;
   getImportJobs: (
     page: number,
     size: number,

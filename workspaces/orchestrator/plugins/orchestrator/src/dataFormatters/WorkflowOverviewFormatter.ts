@@ -27,6 +27,7 @@ import DataFormatter from './DataFormatter';
 export interface FormattedWorkflowOverview {
   readonly id: string;
   readonly name: string;
+  readonly version: string;
   readonly lastTriggered: string;
   readonly lastRunStatus: string;
   readonly lastRunId: string;
@@ -56,6 +57,7 @@ const WorkflowOverviewFormatter: DataFormatter<
     return {
       id: data.workflowId,
       name: data.name ?? VALUE_UNAVAILABLE,
+      version: data.version ?? VALUE_UNAVAILABLE,
       lastTriggered: data.lastTriggeredMs
         ? DateTime.fromMillis(data.lastTriggeredMs).toLocaleString(
             DateTime.DATETIME_SHORT_WITH_SECONDS,

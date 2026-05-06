@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.6.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.3
+
+## 2.6.2
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.2
+
 ## 2.6.1
 
 ### Patch Changes

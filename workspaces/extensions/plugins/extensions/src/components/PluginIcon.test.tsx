@@ -40,7 +40,7 @@ describe('PluginIcon', () => {
     const { getByRole } = render(<PluginIcon plugin={testPlugin} size={40} />);
     expect(getByRole('img')).toBeInTheDocument();
     expect(getByRole('img').style.backgroundImage).toEqual(
-      'url(https://backstage.io/icons/test-plugin.png)',
+      'url("https://backstage.io/icons/test-plugin.png")',
     );
   });
 

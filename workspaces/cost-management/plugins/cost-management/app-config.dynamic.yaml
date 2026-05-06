@@ -16,10 +16,10 @@ dynamicPlugins:
             icon: costManagementIconOutlined
             text: OpenShift
       menuItems:
-        cost-management/optimizations:
+        cost-management.optimizations:
           parent: cost-management
           priority: 10
-        cost-management/openshift:
+        cost-management.openshift:
           parent: cost-management
           priority: 20
         cost-management:
