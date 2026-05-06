@@ -37,6 +37,8 @@ const globalHeaderTranslationIt = createTranslationMessages({
     'search.placeholder': 'Cerca...',
     'search.noResults': 'Nessun risultato trovato',
     'search.errorFetching': 'Errore durante il recupero dei risultati',
+    'search.allResults': 'Tutti i risultati',
+    'search.clear': 'Cancella',
     'applicationLauncher.tooltip': 'Avvio applicazione',
     'applicationLauncher.noLinksTitle':
       "Nessun collegamento all'applicazione configurato",
