@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.6.5
+
+### Patch Changes
+
+- 96041ee: update default LCORE host from 0.0.0.0 to 127.0.0.1
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.5
+
 ## 2.6.4
 
 ### Patch Changes
