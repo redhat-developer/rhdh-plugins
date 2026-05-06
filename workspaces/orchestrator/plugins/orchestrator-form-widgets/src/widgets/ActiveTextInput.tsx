@@ -38,6 +38,7 @@ import {
   applySelectorString,
   useProcessingState,
   useClearOnRetrigger,
+  evaluateFetchResponseSelectorTemplate,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -138,11 +139,20 @@ export const ActiveTextInput: Widget<
 
     const doItAsync = async () => {
       await wrapProcessing(async () => {
+        const fd = formData ?? {};
         // Only apply fetched value if user hasn't changed the field
         if (!skipInitialValue && !isChangedByUser && defaultValueSelector) {
+          const resolvedSelector = await evaluateFetchResponseSelectorTemplate({
+            template: defaultValueSelector,
+            key: 'fetch:response:value',
+            unitEvaluator: templateUnitEvaluator,
+            formData: fd,
+            responseData: data,
+            uiProps,
+          });
           const fetchedValue = await applySelectorString(
             data,
-            defaultValueSelector,
+            resolvedSelector,
           );
 
           if (
@@ -155,9 +165,20 @@ export const ActiveTextInput: Widget<
         }
 
         if (autocompleteSelector) {
+          const resolvedAutocomplete =
+            await evaluateFetchResponseSelectorTemplate({
+              template: autocompleteSelector,
+              key: 'fetch:response:autocomplete',
+              unitEvaluator: templateUnitEvaluator,
+              formData: fd,
+              responseData: data,
+              uiProps,
+            });
           const autocompleteValues = await applySelectorArray(
             data,
-            autocompleteSelector,
+            resolvedAutocomplete,
+            true,
+            true,
           );
           setAutocompleteOptions(autocompleteValues);
         }
@@ -169,6 +190,9 @@ export const ActiveTextInput: Widget<
     defaultValueSelector,
     autocompleteSelector,
     data,
+    formData,
+    uiProps,
+    templateUnitEvaluator,
     props.id,
     value,
     handleChange,

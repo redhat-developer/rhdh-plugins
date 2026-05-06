@@ -43,6 +43,7 @@ import {
   useRetriggerEvaluate,
   useProcessingState,
   useClearOnRetrigger,
+  evaluateFetchResponseSelectorTemplate,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -168,10 +169,20 @@ export const ActiveMultiSelect: Widget<
 
     const doItAsync = async () => {
       await wrapProcessing(async () => {
+        const fd = formData ?? {};
         if (autocompleteSelector) {
+          const resolvedAutocomplete =
+            await evaluateFetchResponseSelectorTemplate({
+              template: autocompleteSelector,
+              key: 'fetch:response:autocomplete',
+              unitEvaluator: templateUnitEvaluator,
+              formData: fd,
+              responseData: data,
+              uiProps,
+            });
           const autocompleteValues = await applySelectorArray(
             data,
-            autocompleteSelector,
+            resolvedAutocomplete,
             true,
             true,
           );
@@ -192,9 +203,19 @@ export const ActiveMultiSelect: Widget<
         if (!skipInitialValue && !isChangedByUser) {
           // set this just once, when the user has not touched the field
           if (defaultValueSelector) {
+            const resolvedDefault = await evaluateFetchResponseSelectorTemplate(
+              {
+                template: defaultValueSelector,
+                key: 'fetch:response:value',
+                unitEvaluator: templateUnitEvaluator,
+                formData: fd,
+                responseData: data,
+                uiProps,
+              },
+            );
             defaults = await applySelectorArray(
               data,
-              defaultValueSelector,
+              resolvedDefault,
               true,
               true,
             );
@@ -204,7 +225,17 @@ export const ActiveMultiSelect: Widget<
 
         let mandatory: string[] = [];
         if (mandatorySelector) {
-          mandatory = await applySelectorArray(data, mandatorySelector, true);
+          const resolvedMandatory = await evaluateFetchResponseSelectorTemplate(
+            {
+              template: mandatorySelector,
+              key: 'fetch:response:mandatory',
+              unitEvaluator: templateUnitEvaluator,
+              formData: fd,
+              responseData: data,
+              uiProps,
+            },
+          );
+          mandatory = await applySelectorArray(data, resolvedMandatory, true);
 
           // Only update if arrays differ (by item or count).
           const arraysAreEqual =
@@ -236,6 +267,9 @@ export const ActiveMultiSelect: Widget<
     isChangedByUser,
     skipInitialValue,
     data,
+    formData,
+    uiProps,
+    templateUnitEvaluator,
     props.id,
     value,
     onChange,
