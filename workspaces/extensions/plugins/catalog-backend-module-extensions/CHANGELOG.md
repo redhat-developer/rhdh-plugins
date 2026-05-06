@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
 
+## 0.17.0
+
+### Minor Changes
+
+- 12921b4: Enforce collision policy for duplicate entity identities
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.17.0
+
 ## 0.16.1
 
 ### Patch Changes
