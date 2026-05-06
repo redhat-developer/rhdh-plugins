@@ -210,6 +210,7 @@ export const AttachPlusMenu = ({
       <input
         ref={fileInputRef}
         type="file"
+        multiple // keeping the behaviour same as before
         className={classes.hiddenInput}
         onChange={handleFileChange}
         accept={acceptTypes}

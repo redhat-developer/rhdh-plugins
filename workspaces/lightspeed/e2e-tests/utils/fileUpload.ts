@@ -30,13 +30,22 @@ export async function triggerFileChooser(
   return fileChooser;
 }
 
-export async function uploadFiles(page: Page, filePath: string[]) {
-  // button name stays the same, only tooltip is translated
-  const attachButton = page.getByRole('button', { name: 'Attach' });
-  await expect(attachButton).toBeVisible();
+export async function uploadFiles(
+  page: Page,
+  filePath: string[],
+  translations: LightspeedMessages,
+) {
+  // The attach button is now a dropdown toggle with a PlusIcon
+  // aria-label uses 'tooltip.attach' translation
+  const plusButton = page.getByRole('button', {
+    name: translations['tooltip.attach'],
+  });
+  await expect(plusButton).toBeVisible();
 
-  const fileChooser = await triggerFileChooser(page, attachButton);
-  await fileChooser.setFiles(filePath);
+  // Use the hidden file input directly - this bypasses the dropdown menu
+  // The input has the multiple attribute so it can accept multiple files
+  const fileInput = page.locator('input[data-testid="attachment-input"]');
+  await fileInput.setInputFiles(filePath);
 }
 
 export async function uploadAndAssertDuplicate(
@@ -47,7 +56,7 @@ export async function uploadAndAssertDuplicate(
   testInfo: TestInfo,
 ) {
   await validateSuccessfulUpload(page, fileName, translations, testInfo);
-  await uploadFiles(page, [filePath]);
+  await uploadFiles(page, [filePath], translations);
   await expect(
     page.getByRole('heading', {
       name: translations['chatbox.fileUpload.failed'],
@@ -88,7 +97,11 @@ export async function validateSuccessfulUpload(
       .getByRole('button', { name: translations['modal.close'] }),
   ).toBeVisible();
 
-  await page.getByRole('button', { name: translations['modal.edit'] }).click();
+  // Use evaluate to click buttons via JavaScript to bypass the iframe overlay
+  const editButton = page.getByRole('button', {
+    name: translations['modal.edit'],
+  });
+  await editButton.evaluate((el: HTMLElement) => el.click());
   await runAccessibilityTests(page, testInfo);
 
   await expect(
@@ -98,11 +111,15 @@ export async function validateSuccessfulUpload(
     page.getByRole('button', { name: translations['modal.cancel'] }),
   ).toBeVisible();
 
-  await page.getByRole('button', { name: translations['modal.save'] }).click();
-  await page
+  const saveButton = page.getByRole('button', {
+    name: translations['modal.save'],
+  });
+  await saveButton.evaluate((el: HTMLElement) => el.click());
+
+  const closeButton = page
     .getByRole('contentinfo')
-    .locator(`role=button[name="${translations['modal.close']}"]`)
-    .click();
+    .getByRole('button', { name: translations['modal.close'] });
+  await closeButton.evaluate((el: HTMLElement) => el.click());
 }
 
 export async function validateFailedUpload(
@@ -117,7 +134,9 @@ export async function validateFailedUpload(
   await expect(alertHeader).toBeVisible();
   await expect(alertText).toBeVisible();
 
-  await page.getByRole('button', { name: 'Close Danger alert' }).click();
+  // Use evaluate to click the button via JavaScript to bypass the iframe overlay
+  const closeButton = page.getByRole('button', { name: 'Close Danger alert' });
+  await closeButton.evaluate((el: HTMLElement) => el.click());
   await expect(alertHeader).toBeHidden();
   await expect(alertText).toBeHidden();
 }

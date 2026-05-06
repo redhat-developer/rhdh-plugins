@@ -216,6 +216,9 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.send': 'Envoyer',
     'tooltip.microphone.active': 'Cessez d’écouter',
     'tooltip.microphone.inactive': 'Utilisez le micro',
+    'tooltip.expandHistoryPanel': "Développer l'historique du chat",
+    'tooltip.collapseHistoryPanel': "Réduire l'historique du chat",
+    'tooltip.quickNewChat': 'Nouveau chat',
     'button.newChat': 'Nouvelle Conversation',
     'tooltip.chatHistoryMenu': 'Menu de l’historique de conversations',
     'tooltip.responseRecorded': 'Réponse enregistrée',
@@ -225,6 +228,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.close': 'Fermer',
     'tooltip.fab.open': 'Ouvrir Lightspeed',
     'tooltip.fab.close': 'Fermer Lightspeed',
+    'attach.menu.title': 'Attacher',
+    'attach.menu.description': 'Attacher un fichier JSON, YAML, TXT ou XML',
 
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'modal.title.edit': 'Modifier la pièce jointe',
