@@ -245,6 +245,8 @@ export const lightspeedMessages = {
   'tooltip.backToBottom': 'Back to bottom',
   'tooltip.settings': 'Chatbot options',
   'tooltip.close': 'Close',
+  'tooltip.fab.open': 'Open Lightspeed',
+  'tooltip.fab.close': 'Close Lightspeed',
 
   // Modal titles
   'modal.title.preview': 'Preview attachment',

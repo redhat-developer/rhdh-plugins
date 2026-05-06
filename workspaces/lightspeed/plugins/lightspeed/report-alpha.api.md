@@ -325,6 +325,8 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'tooltip.backToBottom': string;
     readonly 'tooltip.settings': string;
     readonly 'tooltip.close': string;
+    readonly 'tooltip.fab.open': string;
+    readonly 'tooltip.fab.close': string;
     readonly 'modal.title.preview': string;
     readonly 'modal.title.edit': string;
     readonly 'icon.lightspeed.alt': string;

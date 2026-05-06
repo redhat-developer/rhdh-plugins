@@ -223,6 +223,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.backToBottom': 'De haut en bas',
     'tooltip.settings': 'Options Chatbot',
     'tooltip.close': 'Fermer',
+    'tooltip.fab.open': 'Ouvrir Lightspeed',
+    'tooltip.fab.close': 'Fermer Lightspeed',
 
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'modal.title.edit': 'Modifier la pièce jointe',
