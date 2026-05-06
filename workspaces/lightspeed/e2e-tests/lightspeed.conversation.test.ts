@@ -129,8 +129,7 @@ test.describe('Lightspeed conversation', () => {
       await assertClipboardContains(sharedPage, botResponse);
     });
 
-    // Remove skip once the NewChat button's functionality is fixed
-    test.skip('Conversation is created and shown in side panel', async () => {
+    test('Conversation is created and shown in side panel', async () => {
       await sendMessage('test', sharedPage, translations);
       await verifySidePanelConversation(sharedPage, translations);
     });
