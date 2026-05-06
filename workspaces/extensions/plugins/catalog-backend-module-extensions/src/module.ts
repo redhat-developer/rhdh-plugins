@@ -73,10 +73,10 @@ export const catalogModuleExtensions = createBackendModule({
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
 
         catalog.addEntityProvider(
-          new ExtensionsPackageProvider(taskRunner, config),
+          new ExtensionsPackageProvider(taskRunner, config, logger),
         );
         catalog.addEntityProvider(
-          new ExtensionsPluginProvider(delayedTaskRunner, config),
+          new ExtensionsPluginProvider(delayedTaskRunner, config, logger),
         );
         // Disabling the collection provider as collections/all.yaml is already commented in RHDH 1.5 image.
         // catalog.addEntityProvider(

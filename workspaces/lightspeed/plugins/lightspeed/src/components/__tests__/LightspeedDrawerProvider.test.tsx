@@ -97,6 +97,8 @@ function baseContextValue(): LightspeedDrawerContextType {
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
     consumePendingOverlayThreadHandoff: jest.fn(() => false),
+    shellViewTab: 0,
+    setShellViewTab: jest.fn(),
   };
 }
 

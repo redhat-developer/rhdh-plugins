@@ -23,6 +23,7 @@ import {
   mockFeedbackStatus,
   mockMcpServers,
   mockModels,
+  mockNotebookLightspeedBackend,
   mockQuery,
   mockShields,
 } from './devMode';
@@ -68,6 +69,7 @@ export async function bootstrapLightspeedE2ePage(
   await mockShields(page, mockedShields);
   await mockMcpServers(page);
   await mockFeedbackStatus(page);
+  await mockNotebookLightspeedBackend(page);
 
   await page.goto('/');
   await loginAsGuest(page);

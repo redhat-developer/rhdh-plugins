@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-app-integrations",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Apache-2.0",
   "description": "RHDH default SCM integrations and scmAuth wiring for the new frontend system",
   "main": "src/alpha.ts",

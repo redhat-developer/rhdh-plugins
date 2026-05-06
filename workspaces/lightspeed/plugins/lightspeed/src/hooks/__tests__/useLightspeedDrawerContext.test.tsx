@@ -35,6 +35,8 @@ describe('useLightspeedDrawerContext', () => {
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
     consumePendingOverlayThreadHandoff: jest.fn(() => false),
+    shellViewTab: 0,
+    setShellViewTab: jest.fn(),
   };
 
   it('should return context value when used within provider', () => {

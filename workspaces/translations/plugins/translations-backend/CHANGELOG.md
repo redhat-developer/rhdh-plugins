@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-translations-backend
 
+## 0.3.1
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
 ## 0.3.0
 
 ### Minor Changes

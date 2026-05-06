@@ -69,7 +69,7 @@ test.describe('Lightspeed MCP', () => {
   test.describe('Chatbot MCP settings', () => {
     async function runMcpPanelScenario(mcpList: McpServersListMock) {
       await mockMcpServers(sharedPage, mcpList);
-      await openChatbot(sharedPage);
+      await openChatbot(sharedPage, translations);
       await verifyMcpSettingsPanel(sharedPage, translations, mcpList);
     }
 
@@ -83,18 +83,18 @@ test.describe('Lightspeed MCP', () => {
 
     test('Overlay', async () => {
       await expectBackstagePageVisible(sharedPage);
-      await openChatbot(sharedPage);
+      await openChatbot(sharedPage, translations);
       await verifyMcpSettingsPanel(sharedPage, translations);
     });
 
     test('Dock to Window', async () => {
-      await openChatbot(sharedPage);
+      await openChatbot(sharedPage, translations);
       await selectDisplayMode(sharedPage, translations, 'Dock to window');
       await verifyMcpSettingsPanel(sharedPage, translations);
     });
 
     test('Fullscreen', async () => {
-      await openChatbot(sharedPage);
+      await openChatbot(sharedPage, translations);
       await selectDisplayMode(sharedPage, translations, 'Fullscreen');
       await verifyMcpSettingsPanel(sharedPage, translations);
     });
@@ -123,7 +123,7 @@ test.describe('Lightspeed MCP', () => {
 
     test('Sort works as expected', async () => {
       await mockMcpServers(sharedPage, mcpServerScenarios.allHealthy);
-      await openChatbot(sharedPage);
+      await openChatbot(sharedPage, translations);
       await openMcpSettingsPanel(sharedPage, translations);
 
       const rows = mcpServersTableBodyRows(sharedPage, translations);
@@ -139,7 +139,7 @@ test.describe('Lightspeed MCP', () => {
 
     test('Toggle works as expected', async () => {
       const serverName = 'mcp-integration-tools';
-      await openChatbot(sharedPage);
+      await openChatbot(sharedPage, translations);
       await openMcpSettingsPanel(sharedPage, translations);
 
       const row = mcpServerRow(sharedPage, serverName, translations);

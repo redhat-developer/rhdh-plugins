@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Page } from '@playwright/test';
+
+import { randomUUID } from 'node:crypto';
+
+import { Page, Route } from '@playwright/test';
 import {
   contentsWithRedactedThinking,
   E2E_MCP_VALID_TOKEN,
@@ -79,6 +82,440 @@ export async function mockChatHistory(page: Page, contents?: any[]) {
  */
 export async function mockChatHistoryWithRedactedThinking(page: Page) {
   await mockChatHistory(page, contentsWithRedactedThinking);
+}
+
+const notebookLightspeedV1RouteMatches = (url: URL): boolean =>
+  url.pathname.includes('/api/lightspeed/notebooks/v1/');
+
+const notebookConversationSeedByPage = new WeakMap<Page, string>();
+
+/** Per-page seed for {@link mockNotebookLightspeedBackend} (`metadata.conversation_id` on sessions). */
+export function notebookE2eSetConversationSeed(
+  page: Page,
+  conversationId: string,
+) {
+  notebookConversationSeedByPage.set(page, conversationId);
+}
+
+export function notebookE2eClearConversationSeed(page: Page) {
+  notebookConversationSeedByPage.delete(page);
+}
+
+const E2E_NB_USER = 'user:development/guest';
+
+function stripTrailingSlashes(path: string): string {
+  let result = path;
+  while (result.endsWith('/')) {
+    result = result.slice(0, -1);
+  }
+  return result;
+}
+
+/** Session list path tail after `/v1/sessions`, or `null` if URL is not notebooks v1 sessions. */
+function notebookV1SessionsPathTail(pathname: string): string[] | null {
+  const normalized = stripTrailingSlashes(pathname);
+  const parts = normalized.split('/').filter(Boolean);
+  const i = parts.indexOf('sessions');
+  if (i < 1 || parts[i - 1] !== 'v1') return null;
+  return parts.slice(i + 1);
+}
+
+/** `name` from JSON body when present and a string (`POST` creates, `PUT` renames); otherwise `undefined`. */
+function notebookRouteJsonName(route: Route): string | undefined {
+  try {
+    const body: unknown = route.request().postDataJSON();
+    if (typeof body !== 'object' || body === null) return undefined;
+    const name = (body as { name?: unknown }).name;
+    return typeof name === 'string' ? name : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Stateful handler for `/api/lightspeed/notebooks/v1/**` (sessions + documents).
+ * Same idea as {@link mockMcpServers}: closure holds maps; one `page.route` callback.
+ */
+function createNotebookLightspeedRouteHandler(page: Page) {
+  const sessionsOrder: string[] = [];
+  const sessions = new Map<string, Record<string, unknown>>();
+  const documents = new Map<string, Map<string, Record<string, unknown>>>();
+  let sessionIdSeq = 0;
+
+  const nextSessionId = () => {
+    sessionIdSeq += 1;
+    return `vs_e2e_${Date.now()}_${sessionIdSeq}`;
+  };
+
+  const docCount = (sessionId: string) => documents.get(sessionId)?.size ?? 0;
+
+  const docsFor = (sessionId: string): Map<string, Record<string, unknown>> => {
+    let m = documents.get(sessionId);
+    if (!m) {
+      m = new Map();
+      documents.set(sessionId, m);
+    }
+    return m;
+  };
+
+  /** Rough `source_type` for uploaded titles (fixture JSON etc.). */
+  const inferSourceType = (fileName: string): string => {
+    const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
+    if (ext === 'yml') return 'yaml';
+    if (
+      ext === 'json' ||
+      ext === 'yaml' ||
+      ext === 'md' ||
+      ext === 'txt' ||
+      ext === 'log'
+    )
+      return ext;
+    return 'text';
+  };
+
+  const decorateSession = (
+    base: Record<string, unknown>,
+  ): Record<string, unknown> => {
+    const cid = notebookConversationSeedByPage.get(page);
+    if (!cid) return base;
+    const meta =
+      (base.metadata as Record<string, unknown> | undefined) ??
+      ({} as Record<string, unknown>);
+    return {
+      ...base,
+      metadata: { ...meta, conversation_id: cid },
+    };
+  };
+
+  const readSessionForApi = (sessionId: string): Record<string, unknown> => {
+    const s = sessions.get(sessionId);
+    if (!s) {
+      throw new Error(`mock notebook: missing session ${sessionId}`);
+    }
+    return decorateSession({
+      ...s,
+      document_count: docCount(sessionId),
+    });
+  };
+
+  const touchSessionAfterDocChange = (sid: string, updatedAt: string) => {
+    const prev = sessions.get(sid);
+    if (!prev) return;
+    sessions.set(sid, {
+      ...prev,
+      updated_at: updatedAt,
+      document_count: docCount(sid),
+    });
+  };
+
+  const fulfillSessionsCollection = async (
+    route: Route,
+    method: string,
+  ): Promise<boolean> => {
+    if (method === 'GET') {
+      const list = sessionsOrder.map(id => readSessionForApi(id));
+      await route.fulfill({
+        json: { status: 'success', sessions: list, count: list.length },
+      });
+      return true;
+    }
+    if (method !== 'POST') return false;
+
+    const name = notebookRouteJsonName(route) ?? 'Untitled Notebook';
+    const id = nextSessionId();
+    const now = new Date().toISOString();
+    const session: Record<string, unknown> = {
+      session_id: id,
+      user_id: E2E_NB_USER,
+      name,
+      description: '',
+      created_at: now,
+      updated_at: now,
+      document_count: 0,
+      metadata: {
+        embedding_model: 'sentence-transformers/e2e-mock',
+        provider_id: 'notebooks',
+        conversation_id: null,
+        embedding_dimension: '768',
+      },
+    };
+    sessions.set(id, session);
+    sessionsOrder.push(id);
+    await route.fulfill({
+      json: {
+        status: 'success',
+        session: readSessionForApi(id),
+      },
+    });
+    return true;
+  };
+
+  const fulfillSessionSingle = async (
+    route: Route,
+    method: string,
+    sid: string,
+  ): Promise<boolean> => {
+    const existing = sessions.get(sid);
+    if (!existing) {
+      await route.fulfill({
+        status: 404,
+        json: { status: 'error', error: 'Session not found' },
+      });
+      return true;
+    }
+    if (method === 'GET') {
+      await route.fulfill({
+        json: { status: 'success', session: readSessionForApi(sid) },
+      });
+      return true;
+    }
+    if (method === 'PUT') {
+      const newName = notebookRouteJsonName(route);
+      const next = { ...existing };
+      if (newName !== undefined) next.name = newName;
+      next.updated_at = new Date().toISOString();
+      sessions.set(sid, next);
+      await route.fulfill({ json: { status: 'success' } });
+      return true;
+    }
+    if (method !== 'DELETE') return false;
+
+    sessions.delete(sid);
+    const ix = sessionsOrder.indexOf(sid);
+    if (ix >= 0) sessionsOrder.splice(ix, 1);
+    documents.delete(sid);
+    await route.fulfill({ json: { status: 'success' } });
+    return true;
+  };
+
+  const fulfillDocumentsDocumentsRoot = async (
+    route: Route,
+    method: string,
+    sid: string,
+  ): Promise<boolean> => {
+    if (method === 'GET') {
+      const arr = Array.from(docsFor(sid).values());
+      await route.fulfill({
+        json: {
+          status: 'success',
+          session_id: sid,
+          documents: arr,
+          count: arr.length,
+        },
+      });
+      return true;
+    }
+    if (method !== 'PUT') return false;
+
+    let fileName = 'upload.json';
+    try {
+      const buf = await route.request().postDataBuffer();
+      if (buf) {
+        const m = /filename="([^"]+)"/.exec(buf.toString('latin1'));
+        if (m?.[1]) fileName = m[1];
+      }
+    } catch {
+      /* keep default */
+    }
+
+    const docId = `doc_e2e_${Date.now()}_${randomUUID()}`;
+    const now = new Date().toISOString();
+    const doc: Record<string, unknown> = {
+      document_id: docId,
+      title: fileName,
+      session_id: sid,
+      user_id: E2E_NB_USER,
+      source_type: inferSourceType(fileName),
+      created_at: now,
+    };
+    docsFor(sid).set(docId, doc);
+    touchSessionAfterDocChange(sid, now);
+
+    await route.fulfill({
+      status: 202,
+      json: {
+        status: 'processing',
+        document_id: docId,
+        session_id: sid,
+        message: 'mock upload accepted',
+      },
+    });
+    return true;
+  };
+
+  const fulfillDocumentDelete = async (
+    route: Route,
+    method: string,
+    sid: string,
+    encodedDocId: string,
+  ): Promise<boolean> => {
+    if (method !== 'DELETE') return false;
+
+    docsFor(sid).delete(decodeURIComponent(encodedDocId));
+    touchSessionAfterDocChange(sid, new Date().toISOString());
+    await route.fulfill({ json: { status: 'success' } });
+    return true;
+  };
+
+  const fulfillDocumentStatus = async (
+    route: Route,
+    method: string,
+    sid: string,
+    encodedDocId: string,
+  ): Promise<boolean> => {
+    if (method !== 'GET') return false;
+
+    const docId = decodeURIComponent(encodedDocId);
+    if (!docsFor(sid).has(docId)) {
+      await route.fulfill({
+        status: 404,
+        json: { status: 'error', error: 'Document not found' },
+      });
+      return true;
+    }
+    await route.fulfill({
+      json: {
+        status: 'completed',
+        document_id: docId,
+        session_id: sid,
+      },
+    });
+    return true;
+  };
+
+  const fulfillDocumentsRoutes = async (
+    route: Route,
+    method: string,
+    tail: string[],
+    sid: string,
+  ): Promise<boolean> => {
+    if (!sessions.has(sid)) {
+      await route.fulfill({
+        status: 404,
+        json: { status: 'error', error: 'Session not found' },
+      });
+      return true;
+    }
+    if (tail.length === 2 && tail[1] === 'documents') {
+      return fulfillDocumentsDocumentsRoot(route, method, sid);
+    }
+    if (
+      tail.length === 4 &&
+      tail[1] === 'documents' &&
+      tail[3] === 'status' &&
+      tail[2]
+    ) {
+      return fulfillDocumentStatus(route, method, sid, tail[2]);
+    }
+    if (tail.length === 3 && tail[1] === 'documents' && tail[2]) {
+      return fulfillDocumentDelete(route, method, sid, tail[2]);
+    }
+    return false;
+  };
+
+  return async (route: Route): Promise<void> => {
+    const req = route.request();
+    const urlObj = new URL(req.url());
+    if (!notebookLightspeedV1RouteMatches(urlObj)) {
+      await route.fallback();
+      return;
+    }
+    const tail = notebookV1SessionsPathTail(urlObj.pathname);
+    if (!tail) {
+      await route.fallback();
+      return;
+    }
+    const method = req.method();
+    try {
+      if (tail.length === 0 && (await fulfillSessionsCollection(route, method)))
+        return;
+      const sessionSegment = tail[0];
+      if (!sessionSegment) {
+        await route.fallback();
+        return;
+      }
+      const sid = decodeURIComponent(sessionSegment);
+      if (
+        tail.length === 1 &&
+        (await fulfillSessionSingle(route, method, sid))
+      ) {
+        return;
+      }
+      if (
+        tail.length >= 2 &&
+        tail[1] === 'documents' &&
+        (await fulfillDocumentsRoutes(route, method, tail, sid))
+      ) {
+        return;
+      }
+    } catch {
+      await route.fulfill({
+        status: 500,
+        json: { status: 'error', error: 'mock notebooks handler error' },
+      });
+      return;
+    }
+    await route.fallback();
+  };
+}
+
+/**
+ * In-memory notebooks API (`NotebooksApiClient`): sessions CRUD, document upload/list/delete/status.
+ * Mirrors how other Lightspeed mocks use `page.route` + in-memory state (see {@link mockMcpServers}).
+ */
+export async function mockNotebookLightspeedBackend(page: Page): Promise<void> {
+  await page.route(
+    notebookLightspeedV1RouteMatches,
+    createNotebookLightspeedRouteHandler(page),
+  );
+}
+
+/**
+ * Notebook tab only loads `/v2/conversations/:id` when `NotebookSession.metadata.conversation_id`
+ * is set. Sets the per-page conversation seed for {@link mockNotebookLightspeedBackend}, overrides
+ * GET `/v2/conversations/*` with seeded `chat_history`. Teardown clears the seed and restores
+ * {@link mockChatHistory}.
+ */
+export async function withNotebookTabSeededConversation(
+  page: Page,
+  options: { conversationId: string; chatHistory: Record<string, unknown>[] },
+): Promise<() => Promise<void>> {
+  const { conversationId, chatHistory } = options;
+
+  notebookE2eSetConversationSeed(page, conversationId);
+
+  const conversationGetHandler = async (route: Route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    const url = route.request().url();
+    const match = url.match(/\/v2\/conversations\/([^/?]+)/);
+    const captured = match?.[1];
+    const id =
+      captured === undefined ? conversationId : decodeURIComponent(captured);
+    await route.fulfill({
+      json: {
+        conversation_id: id,
+        chat_history: chatHistory,
+      },
+    });
+  };
+
+  await page.unroute(`${modelBaseUrl}/v2/conversations/*`);
+  await page.route(
+    `${modelBaseUrl}/v2/conversations/*`,
+    conversationGetHandler,
+  );
+
+  return async () => {
+    notebookE2eClearConversationSeed(page);
+    await page.unroute(
+      `${modelBaseUrl}/v2/conversations/*`,
+      conversationGetHandler,
+    );
+    await mockChatHistory(page);
+  };
 }
 
 export async function mockQuery(
@@ -181,7 +618,12 @@ export async function mockMcpServers(
       segments.length === 2 &&
       segments[1] === 'validate'
     ) {
-      const name = decodeURIComponent(segments[0]!);
+      const nameSeg = segments[0];
+      if (!nameSeg) {
+        await route.fulfill({ status: 400, json: { error: 'Invalid path' } });
+        return;
+      }
+      const name = decodeURIComponent(nameSeg);
       if (mcpMockOptions.failServerValidateFor === name) {
         await route.fulfill({
           json: {
@@ -224,7 +666,12 @@ export async function mockMcpServers(
     }
 
     if (req.method() === 'PATCH' && segments.length === 1) {
-      const name = decodeURIComponent(segments[0]!);
+      const nameSeg = segments[0];
+      if (!nameSeg) {
+        await route.fulfill({ status: 400, json: { error: 'Invalid path' } });
+        return;
+      }
+      const name = decodeURIComponent(nameSeg);
       let body: { enabled?: boolean; token?: string | null };
       try {
         body = req.postDataJSON();

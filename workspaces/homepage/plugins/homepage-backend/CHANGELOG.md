@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-homepage-backend
 
+## 0.1.1
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
