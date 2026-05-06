@@ -505,6 +505,9 @@ const useStyles = makeStyles(theme => ({
     minHeight: 0,
     width: '100%',
     minWidth: 0,
+    whiteSpace: 'normal',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
   },
   mcpSettingsPane: {
     width: '100%',
@@ -515,6 +518,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
+    overflow: 'auto',
   },
   mcpCollapsedDrawerOrderFix: {
     '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
