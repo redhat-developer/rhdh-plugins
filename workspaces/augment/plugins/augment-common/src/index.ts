@@ -161,6 +161,11 @@ export type {
   KagentiTriggerRequest,
   DevSpacesCreateWorkspaceRequest,
   DevSpacesCreateWorkspaceResponse,
+  DevSpacesHealthResponse,
+  DevSpacesWorkspace,
+  DevSpacesListWorkspacesResponse,
+  DevSpacesStopWorkspaceRequest,
+  DevSpacesDeleteWorkspaceRequest,
   // Workflow Builder types
   WorkflowStatus,
   WorkflowNodeType,

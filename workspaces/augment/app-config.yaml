@@ -29,7 +29,24 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
+    - allow: [Component, System, API, Resource, Location, Template]
+  locations:
+    - type: file
+      target: ../../examples/templates/agent-template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../examples/templates/langgraph-agent-template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../examples/templates/crewai-agent-template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../examples/templates/tool-template.yaml
+      rules:
+        - allow: [Template]
 
 augment:
   provider: kagenti

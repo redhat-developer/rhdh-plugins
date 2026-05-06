@@ -18,6 +18,7 @@ import type express from 'express';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import type { AdminConfigService } from '../services/AdminConfigService';
+import { DevSpacesService } from '../services/DevSpacesService';
 import { createWithRoute } from './routeWrapper';
 
 export interface DevSpacesRouteDeps {
@@ -39,9 +40,8 @@ export interface DevSpacesRouteDeps {
 
 /**
  * Registers routes that proxy requests to an external Dev Spaces API.
- * The Dev Spaces API URL is read from admin config (`devSpacesApiUrl`).
- * Authentication uses the platform's Keycloak token when available,
- * removing the need for users to supply an OpenShift token.
+ * Provides full workspace lifecycle management: health check, create,
+ * list, get status, stop, and delete.
  */
 export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
   const {
@@ -53,7 +53,23 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
     getAuthToken,
   } = deps;
   const withRoute = createWithRoute(logger, sendRouteError);
+  const service = new DevSpacesService({ logger, adminConfig, getAuthToken });
 
+  // ── Health check ──────────────────────────────────────────────────────
+  router.get(
+    '/devspaces/health',
+    requireAdminAccess,
+    withRoute(
+      'GET /devspaces/health',
+      'Failed to check Dev Spaces health',
+      async (_req, res) => {
+        const result = await service.healthCheck();
+        res.json(result);
+      },
+    ),
+  );
+
+  // ── Create workspace ──────────────────────────────────────────────────
   router.post(
     '/devspaces/workspaces',
     requireAdminAccess,
@@ -61,16 +77,6 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
       'POST /devspaces/workspaces',
       'Failed to create Dev Spaces workspace',
       async (req, res) => {
-        const devSpacesApiUrl = (await adminConfig.get(
-          'devSpacesApiUrl',
-        )) as string | undefined;
-
-        if (!devSpacesApiUrl || typeof devSpacesApiUrl !== 'string') {
-          throw new InputError(
-            'Dev Spaces API URL is not configured. Set it in Administration → Dev Spaces.',
-          );
-        }
-
         const { namespace, git_repo, memory_limit, cpu_limit } = req.body ?? {};
         if (!namespace || typeof namespace !== 'string') {
           throw new InputError('namespace is required');
@@ -78,68 +84,82 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
         if (!git_repo || typeof git_repo !== 'string') {
           throw new InputError('git_repo is required');
         }
-
-        const adminToken = (await adminConfig.get(
-          'devSpacesToken',
-        )) as string | undefined;
-
-        let token: string;
-        if (adminToken && typeof adminToken === 'string' && adminToken.trim()) {
-          token = adminToken.trim();
-          logger.info('Using admin-configured OpenShift token for Dev Spaces');
-        } else if (getAuthToken) {
-          token = await getAuthToken();
-          logger.info('Using Keycloak token for Dev Spaces (no admin token configured)');
-        } else {
-          throw new InputError(
-            'Dev Spaces authentication is not configured. Either set an OpenShift token ' +
-              'in Administration → Dev Spaces, or ensure the Kagenti provider is active.',
-          );
-        }
-
-        const normalizedUrl = devSpacesApiUrl.replace(/\/+$/, '');
-        const targetUrl = `${normalizedUrl}/workspaces/intellij`;
-
-        logger.info(
-          `Proxying Dev Spaces workspace creation to ${normalizedUrl}`,
-        );
-
-        const upstream = await fetch(targetUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            namespace,
-            git_repo,
-            memory_limit: memory_limit || '8Gi',
-            cpu_limit: cpu_limit || '2000m',
-          }),
+        const result = await service.createWorkspace({
+          namespace,
+          git_repo,
+          memory_limit,
+          cpu_limit,
         });
-
-        const body = await upstream.text();
-        const contentType = upstream.headers.get('content-type') ?? '';
-
-        if (!upstream.ok) {
-          const detail = contentType.includes('json')
-            ? JSON.parse(body)?.detail ?? body
-            : body;
-          logger.error(
-            `Dev Spaces API returned ${upstream.status}: ${detail}`,
-          );
-          res.status(upstream.status).json({
-            error: 'Dev Spaces workspace creation failed',
-            message:
-              typeof detail === 'string'
-                ? detail
-                : JSON.stringify(detail),
-          });
-          return;
-        }
-
-        const result = contentType.includes('json') ? JSON.parse(body) : body;
         res.json(result);
+      },
+    ),
+  );
+
+  // ── List workspaces ───────────────────────────────────────────────────
+  router.get(
+    '/devspaces/workspaces',
+    requireAdminAccess,
+    withRoute(
+      'GET /devspaces/workspaces',
+      'Failed to list Dev Spaces workspaces',
+      async (req, res) => {
+        const namespace = req.query.namespace as string | undefined;
+        if (!namespace) {
+          throw new InputError('namespace query parameter is required');
+        }
+        const result = await service.listWorkspaces(namespace);
+        res.json(result);
+      },
+    ),
+  );
+
+  // ── Get workspace status ──────────────────────────────────────────────
+  router.get(
+    '/devspaces/workspaces/:namespace/:name',
+    requireAdminAccess,
+    withRoute(
+      req =>
+        `GET /devspaces/workspaces/${req.params.namespace}/${req.params.name}`,
+      'Failed to get Dev Spaces workspace',
+      async (req, res) => {
+        const { namespace, name } = req.params;
+        const result = await service.getWorkspace(namespace, name);
+        res.json(result);
+      },
+    ),
+  );
+
+  // ── Stop workspace ────────────────────────────────────────────────────
+  router.patch(
+    '/devspaces/workspaces/:namespace/:name/stop',
+    requireAdminAccess,
+    withRoute(
+      req =>
+        `PATCH /devspaces/workspaces/${req.params.namespace}/${req.params.name}/stop`,
+      'Failed to stop Dev Spaces workspace',
+      async (req, res) => {
+        const { namespace, name } = req.params;
+        await service.stopWorkspace(namespace, name);
+        res.json({
+          success: true,
+          message: `Workspace ${name} stop requested`,
+        });
+      },
+    ),
+  );
+
+  // ── Delete workspace ──────────────────────────────────────────────────
+  router.delete(
+    '/devspaces/workspaces/:namespace/:name',
+    requireAdminAccess,
+    withRoute(
+      req =>
+        `DELETE /devspaces/workspaces/${req.params.namespace}/${req.params.name}`,
+      'Failed to delete Dev Spaces workspace',
+      async (req, res) => {
+        const { namespace, name } = req.params;
+        await service.deleteWorkspace(namespace, name);
+        res.json({ success: true, message: `Workspace ${name} deleted` });
       },
     ),
   );

@@ -1,0 +1,84 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: crewai-agent
+  title: CrewAI Agent
+  description: Scaffold a Python multi-agent system using CrewAI with role-based agents, task delegation, and collaborative workflows.
+  tags:
+    - python
+    - crewai
+    - multi-agent
+    - agent
+spec:
+  owner: user:guest
+  type: agent
+
+  parameters:
+    - title: Agent details
+      required:
+        - name
+        - description
+      properties:
+        name:
+          title: Agent Name
+          type: string
+          description: Unique name for the agent (lowercase, hyphens allowed)
+          ui:autofocus: true
+          pattern: '^[a-z][a-z0-9-]*$'
+        description:
+          title: Description
+          type: string
+          description: Brief description of what the agent does
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the agent (e.g. team or user)
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group, User]
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./agent-content
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: 'CrewAI Agent: ${{ parameters.name }}'
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

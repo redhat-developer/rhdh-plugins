@@ -516,3 +516,44 @@ export interface DevSpacesCreateWorkspaceResponse {
   url?: string;
   created_at?: string;
 }
+
+/** Health check response for the Dev Spaces API. @public */
+export interface DevSpacesHealthResponse {
+  ok: boolean;
+  configured: boolean;
+  message: string;
+  apiUrl?: string;
+  responseTimeMs?: number;
+}
+
+/** A single workspace entry returned by list/get operations. @public */
+export interface DevSpacesWorkspace {
+  name: string;
+  namespace: string;
+  phase: string;
+  url?: string;
+  created_at?: string;
+  started_at?: string;
+  stopped_at?: string;
+  git_repo?: string;
+  memory_limit?: string;
+  cpu_limit?: string;
+}
+
+/** Response from the list-workspaces endpoint. @public */
+export interface DevSpacesListWorkspacesResponse {
+  workspaces: DevSpacesWorkspace[];
+  namespace: string;
+}
+
+/** Request to stop a workspace. @public */
+export interface DevSpacesStopWorkspaceRequest {
+  namespace: string;
+  name: string;
+}
+
+/** Request to delete a workspace. @public */
+export interface DevSpacesDeleteWorkspaceRequest {
+  namespace: string;
+  name: string;
+}

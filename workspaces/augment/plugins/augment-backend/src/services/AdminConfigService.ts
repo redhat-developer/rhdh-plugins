@@ -64,6 +64,7 @@ const ALLOWED_KEYS: ReadonlySet<AdminConfigKey> = new Set<AdminConfigKey>([
   'safetyIdentifier',
   'chatAgents',
   'devSpacesApiUrl',
+  'devSpacesToken',
   'workflows',
   'workflowVersions',
   'workflowTestSuites',
