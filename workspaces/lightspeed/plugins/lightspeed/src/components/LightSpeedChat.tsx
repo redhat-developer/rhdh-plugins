@@ -31,6 +31,8 @@ import {
 } from 'react-dropzone';
 import { useMatch, useNavigate } from 'react-router-dom';
 
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+
 import { Button, makeStyles } from '@material-ui/core';
 import {
   Chatbot,
@@ -475,6 +477,9 @@ export const LightspeedChat = ({
   const classes = useStyles();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const configApi = useApi(configApiRef);
+  const notebooksEnabled =
+    configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
   const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
   const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
   const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
@@ -558,7 +563,7 @@ export const LightspeedChat = ({
   } = useLightspeedDrawerContext();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const showChatPanel = !isFullscreenMode || activeTab === 0;
-  const showNotebooksPanel = isFullscreenMode && activeTab !== 0;
+  const showNotebooksPanel = notebooksEnabled && activeTab !== 0;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
 
@@ -1682,7 +1687,9 @@ export const LightspeedChat = ({
               className={classes.tabs}
             >
               <Tab eventKey={0} title={t('tabs.chat')} />
-              <Tab eventKey={1} title={t('tabs.notebooks')} />
+              {notebooksEnabled && (
+                <Tab eventKey={1} title={t('tabs.notebooks')} />
+              )}
             </Tabs>
             <div className={classes.tabsDivider} />
           </>

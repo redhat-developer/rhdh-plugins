@@ -496,9 +496,9 @@ export async function createNotebooksRouter(
         tools: [{ type: 'file_search', vector_store_ids: [sessionId] }],
         model: `${queryProvider}/${queryModel}`,
         stream: true,
-        temperature: 0.05,
+        temperature: 0.35,
         shield_ids: [],
-        max_tool_calls: 10,
+        max_tool_calls: 15,
         ...(conversationId && { conversation: conversationId }),
       };
 
@@ -558,6 +558,7 @@ export async function createNotebooksRouter(
             .pipe(createResponsesApiTransform(session, sessionId, userId))
             .pipe(res);
         }
+        console.log('response1234', response.body);
         break;
       }
     }),
