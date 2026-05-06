@@ -59,6 +59,14 @@ extensions:
   directory: /path/to/custom/extensions
 ```
 
+### Collision behavior
+
+When multiple YAML sources define the same entity identity (`kind:namespace/name`), the provider handles collisions as follows:
+
+- If definitions are equivalent, it keeps the first definition and logs a warning.
+- If definitions conflict, it logs a warning and skips the conflicting definition.
+- Entities with the same `kind`/`name` but different namespaces are treated as distinct entities and are both ingested.
+
 ## Plugin configuration YAML Guide:
 
 This YAML file is used to add extensions plugin to the Software catalog in your backstage application.

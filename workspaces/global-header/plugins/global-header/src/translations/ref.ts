@@ -35,6 +35,8 @@ export const globalHeaderMessages = {
     placeholder: 'Search...',
     noResults: 'No results found',
     errorFetching: 'Error fetching results',
+    allResults: 'All results',
+    clear: 'Clear',
   },
   applicationLauncher: {
     tooltip: 'Application launcher',

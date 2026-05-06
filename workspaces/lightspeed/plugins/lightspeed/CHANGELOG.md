@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.6.4
+
+### Patch Changes
+
+- cab4992: Internationalize the Lightspeed floating action button: tooltip and `aria-label` use `tooltip.fab.open` / `tooltip.fab.close`, with German, Spanish, French, Italian, and Japanese translations.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.4
+
 ## 2.6.3
 
 ### Patch Changes

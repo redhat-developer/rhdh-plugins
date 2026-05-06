@@ -232,6 +232,8 @@ const lightspeedTranslationEs = createTranslationMessages({
     'attach.menu.description': 'Adjuntar un archivo JSON, YAML, TXT o XML',
     'history.section.pinned': 'Fijados',
     'history.section.recent': 'Recientes',
+    'tooltip.fab.open': 'Abrir Lightspeed',
+    'tooltip.fab.close': 'Cerrar Lightspeed',
     'modal.title.preview': 'Previsualizar archivo adjunto',
     'modal.title.edit': 'Modificar archivo adjunto',
     'icon.lightspeed.alt': 'icono de Lightspeed',
