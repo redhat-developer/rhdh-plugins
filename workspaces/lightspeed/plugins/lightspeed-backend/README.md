@@ -125,7 +125,7 @@ lightspeed:
 
 **Core Settings**:
 
-- **`lightspeed.servicePort`** _(optional)_: Port where Lightspeed Core service is running (default: `8080`). The backend connects to Lightspeed Core at `http://0.0.0.0:{servicePort}` to proxy vector store operations.
+- **`lightspeed.servicePort`** _(optional)_: Port where Lightspeed Core service is running (default: `8080`). The backend connects to Lightspeed Core at `http://{DEFAULT_LIGHTSPEED_SERVICE_HOST}:{servicePort}` to proxy vector store operations. The host is defined by the `DEFAULT_LIGHTSPEED_SERVICE_HOST` constant in the source.
 
 **Notebooks Settings**:
 

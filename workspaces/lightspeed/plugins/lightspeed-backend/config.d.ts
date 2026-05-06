@@ -56,7 +56,7 @@ export interface Config {
       /**
        * Enable/disable AI Notebooks feature
        * When enabled, exposes AI Notebooks REST API endpoints for document-based conversations with RAG.
-       * Requires Lightspeed service to be running (default: http://0.0.0.0:8080).
+       * Requires Lightspeed service to be running (host and port default to 0.0.0.0 and 8080).
        * @default false
        * @visibility frontend
        */
