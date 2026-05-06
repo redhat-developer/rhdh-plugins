@@ -203,7 +203,6 @@ type NotebookViewProps = {
   avatar?: string;
   profileLoading: boolean;
   topicRestrictionEnabled: boolean;
-  selectedModel: string;
   onClose: () => void;
 };
 
@@ -217,7 +216,6 @@ export const NotebookView = ({
   avatar,
   profileLoading,
   topicRestrictionEnabled,
-  selectedModel,
   onClose,
 }: NotebookViewProps) => {
   const classes = useStyles();

@@ -1859,7 +1859,6 @@ export const LightspeedChat = ({
               avatar={avatar}
               profileLoading={profileLoading}
               topicRestrictionEnabled={topicRestrictionEnabled}
-              selectedModel={selectedModel}
               onClose={handleCloseNotebook}
             />
           )}
