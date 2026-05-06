@@ -54,6 +54,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebooks.updated.yesterday': 'Mis à jour il y a 1 jour',
     'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',
     'notebooks.updated.on': 'Mis à jour le',
+    'notebooks.card.openAria': 'Ouvrir le carnet {{name}}',
 
     // Notebook view
     'notebook.view.title': 'Carnet sans titre',

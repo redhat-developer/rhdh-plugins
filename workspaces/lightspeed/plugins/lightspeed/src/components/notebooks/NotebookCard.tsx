@@ -54,95 +54,108 @@ export const NotebookCard = ({
   onRename,
   onDelete,
   t,
-}: NotebookCardProps) => (
-  <Card
-    className={classes.notebookCard}
-    isSelectable
-    isClickable
-    onClick={() => onClick(notebook)}
-  >
-    <CardHeader
-      className={classes.notebookCardHeader}
-      actions={{
-        actions: (
-          <Dropdown
-            className={classes.notebookDropdownMenu}
-            isOpen={openNotebookMenuId === notebook.session_id}
-            popperProps={{
-              position: 'end',
-              preventOverflow: true,
-            }}
-            onOpenChange={isOpen =>
-              setOpenNotebookMenuId(isOpen ? notebook.session_id : null)
-            }
-            toggle={toggleRef => (
-              <MenuToggle
-                ref={toggleRef}
-                variant="plain"
-                className={classes.notebookMenuButton}
-                aria-label={t('aria.options.label')}
-                isExpanded={openNotebookMenuId === notebook.session_id}
-                onClick={event => {
-                  event.stopPropagation();
-                  setOpenNotebookMenuId(current =>
-                    current === notebook.session_id
-                      ? null
-                      : notebook.session_id,
-                  );
-                }}
-              >
-                <EllipsisVIcon />
-              </MenuToggle>
-            )}
-          >
-            <DropdownList className={classes.notebookDropdownList}>
-              <DropdownItem
-                className={classes.notebookDropdownItem}
-                onClick={event => {
-                  event.stopPropagation();
-                  onRename(notebook.session_id);
-                  setOpenNotebookMenuId(null);
-                }}
-              >
-                {t('notebooks.actions.rename')}
-              </DropdownItem>
-              <DropdownItem
-                className={classes.notebookDropdownItem}
-                onClick={event => {
-                  event.stopPropagation();
-                  onDelete(notebook.session_id);
-                  setOpenNotebookMenuId(null);
-                }}
-              >
-                {t('notebooks.actions.delete')}
-              </DropdownItem>
-            </DropdownList>
-          </Dropdown>
-        ),
-        className: classes.notebookCardHeaderActions,
-      }}
+}: NotebookCardProps) => {
+  const isMenuOpen = openNotebookMenuId === notebook.session_id;
+
+  const handleCardKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick(notebook);
+    }
+  };
+
+  return (
+    <Card
+      className={classes.notebookCard}
+      component="div"
+      tabIndex={0}
+      aria-label={t('notebooks.card.openAria' as any, { name: notebook.name })}
+      onClick={() => onClick(notebook)}
+      onKeyDown={handleCardKeyDown}
     >
-      <CardTitle className={classes.notebookTitle}>
-        <CatalogIcon />
-        <Typography component="span" className={classes.notebookTitleText}>
-          {notebook.name}
-        </Typography>
-      </CardTitle>
-    </CardHeader>
-    <div className={classes.notebookCardDivider} />
-    <CardBody className={classes.notebookCardBody}>
-      <div>
-        <div className={classes.notebookDocuments}>
-          <Typography variant="body2">
-            {notebook.document_count ?? 0} {t('notebooks.documents')}
+      <CardHeader
+        className={classes.notebookCardHeader}
+        actions={{
+          actions: (
+            <Dropdown
+              className={classes.notebookDropdownMenu}
+              isOpen={isMenuOpen}
+              popperProps={{
+                position: 'end',
+                preventOverflow: true,
+              }}
+              onOpenChange={isOpen =>
+                setOpenNotebookMenuId(isOpen ? notebook.session_id : null)
+              }
+              toggle={toggleRef => (
+                <MenuToggle
+                  ref={toggleRef}
+                  variant="plain"
+                  className={classes.notebookMenuButton}
+                  aria-label={t('aria.options.label')}
+                  isExpanded={isMenuOpen}
+                  onClick={event => {
+                    event.stopPropagation();
+                    setOpenNotebookMenuId(current =>
+                      current === notebook.session_id
+                        ? null
+                        : notebook.session_id,
+                    );
+                  }}
+                >
+                  <EllipsisVIcon />
+                </MenuToggle>
+              )}
+            >
+              <DropdownList className={classes.notebookDropdownList}>
+                <DropdownItem
+                  className={classes.notebookDropdownItem}
+                  onClick={event => {
+                    event.stopPropagation();
+                    onRename(notebook.session_id);
+                    setOpenNotebookMenuId(null);
+                  }}
+                >
+                  {t('notebooks.actions.rename')}
+                </DropdownItem>
+                <DropdownItem
+                  className={classes.notebookDropdownItem}
+                  onClick={event => {
+                    event.stopPropagation();
+                    onDelete(notebook.session_id);
+                    setOpenNotebookMenuId(null);
+                  }}
+                >
+                  {t('notebooks.actions.delete')}
+                </DropdownItem>
+              </DropdownList>
+            </Dropdown>
+          ),
+          className: classes.notebookCardHeaderActions,
+        }}
+      >
+        <CardTitle className={classes.notebookTitle}>
+          <CatalogIcon />
+          <Typography component="span" className={classes.notebookTitleText}>
+            {notebook.name}
           </Typography>
+        </CardTitle>
+      </CardHeader>
+      <div className={classes.notebookCardDivider} />
+      <CardBody className={classes.notebookCardBody}>
+        <div>
+          <div className={classes.notebookDocuments}>
+            <Typography variant="body2">
+              {notebook.document_count ?? 0} {t('notebooks.documents')}
+            </Typography>
+          </div>
+          <div className={classes.notebookUpdated}>
+            <Typography variant="caption">
+              {formatUpdatedLabel(notebook.updated_at, t)}
+            </Typography>
+          </div>
         </div>
-        <div className={classes.notebookUpdated}>
-          <Typography variant="caption">
-            {formatUpdatedLabel(notebook.updated_at, t)}
-          </Typography>
-        </div>
-      </div>
-    </CardBody>
-  </Card>
-);
+      </CardBody>
+    </Card>
+  );
+};
