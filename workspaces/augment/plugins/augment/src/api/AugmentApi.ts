@@ -86,12 +86,18 @@ export interface AugmentApi {
   /**
    * Promote an agent to the next lifecycle stage (draft → registered → deployed).
    */
-  promoteAgent(agentId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string; version: number }>;
+  promoteAgent(
+    agentId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string; version: number }>;
 
   /**
    * Demote an agent to a previous lifecycle stage (deployed → registered → draft).
    */
-  demoteAgent(agentId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string }>;
+  demoteAgent(
+    agentId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string }>;
 
   /**
    * Bulk publish or unpublish agents.
@@ -101,22 +107,41 @@ export interface AugmentApi {
   /**
    * Update agent display configuration (name, description, starters, etc.)
    */
-  updateAgentConfig(agentId: string, config: Partial<import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig>): Promise<void>;
+  updateAgentConfig(
+    agentId: string,
+    config: Partial<
+      import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig
+    >,
+  ): Promise<void>;
 
   /**
    * List tools with lifecycle overlay in a provider-agnostic format.
    */
-  listToolsWithLifecycle(options?: { published?: boolean }): Promise<(import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & { published?: boolean; lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage; version?: number })[]>;
+  listToolsWithLifecycle(options?: {
+    published?: boolean;
+  }): Promise<
+    (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & {
+      published?: boolean;
+      lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
+      version?: number;
+    })[]
+  >;
 
   /**
    * Promote a tool to the next lifecycle stage (draft → registered → deployed).
    */
-  promoteToolLifecycle(toolId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string; version: number }>;
+  promoteToolLifecycle(
+    toolId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string; version: number }>;
 
   /**
    * Demote a tool to a previous lifecycle stage (deployed → registered → draft).
    */
-  demoteToolLifecycle(toolId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string }>;
+  demoteToolLifecycle(
+    toolId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string }>;
 
   /**
    * Get branding configuration for enterprise customization
@@ -136,7 +161,9 @@ export interface AugmentApi {
   /**
    * Get configured guided experience tours (from YAML or defaults)
    */
-  getTours(): Promise<import('../components/AdminPanels/shared/defaultTours').TourDefinition[]>;
+  getTours(): Promise<
+    import('../components/AdminPanels/shared/defaultTours').TourDefinition[]
+  >;
 
   /**
    * Get configured prompt groups (grouped prompt cards for the welcome screen)
@@ -585,6 +612,22 @@ export interface AugmentApi {
   ): Promise<
     import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesCreateWorkspaceResponse
   >;
+  checkDevSpacesHealth(): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesHealthResponse
+  >;
+  listDevSpacesWorkspaces(
+    namespace: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesListWorkspacesResponse
+  >;
+  getDevSpacesWorkspace(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesWorkspace
+  >;
+  stopDevSpacesWorkspace(namespace: string, name: string): Promise<void>;
+  deleteDevSpacesWorkspace(namespace: string, name: string): Promise<void>;
 }
 
 /**
@@ -720,7 +763,10 @@ export class AugmentApiClient implements AugmentApi {
     });
   }
 
-  async promoteAgent(agentId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string; version: number }> {
+  async promoteAgent(
+    agentId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string; version: number }> {
     return this.fetchJson(`/agents/${encodeURIComponent(agentId)}/promote`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -728,7 +774,10 @@ export class AugmentApiClient implements AugmentApi {
     });
   }
 
-  async demoteAgent(agentId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string }> {
+  async demoteAgent(
+    agentId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string }> {
     return this.fetchJson(`/agents/${encodeURIComponent(agentId)}/demote`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -736,7 +785,10 @@ export class AugmentApiClient implements AugmentApi {
     });
   }
 
-  async bulkPublishAgents(agentIds: string[], published: boolean): Promise<void> {
+  async bulkPublishAgents(
+    agentIds: string[],
+    published: boolean,
+  ): Promise<void> {
     await this.fetchJson('/agents/bulk-publish', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -744,7 +796,12 @@ export class AugmentApiClient implements AugmentApi {
     });
   }
 
-  async updateAgentConfig(agentId: string, config: Partial<import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig>): Promise<void> {
+  async updateAgentConfig(
+    agentId: string,
+    config: Partial<
+      import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig
+    >,
+  ): Promise<void> {
     await this.fetchJson(`/agents/${encodeURIComponent(agentId)}/config`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -752,13 +809,30 @@ export class AugmentApiClient implements AugmentApi {
     });
   }
 
-  async listToolsWithLifecycle(options?: { published?: boolean }): Promise<(import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & { published?: boolean; lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage; version?: number })[]> {
+  async listToolsWithLifecycle(options?: {
+    published?: boolean;
+  }): Promise<
+    (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & {
+      published?: boolean;
+      lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
+      version?: number;
+    })[]
+  > {
     const qs = options?.published ? '?published=true' : '';
-    const data = await this.fetchJson<{ tools: (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & { published?: boolean; lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage; version?: number })[] }>(`/tools${qs}`);
+    const data = await this.fetchJson<{
+      tools: (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & {
+        published?: boolean;
+        lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
+        version?: number;
+      })[];
+    }>(`/tools${qs}`);
     return data.tools ?? [];
   }
 
-  async promoteToolLifecycle(toolId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string; version: number }> {
+  async promoteToolLifecycle(
+    toolId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string; version: number }> {
     return this.fetchJson(`/tools/${encodeURIComponent(toolId)}/promote`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -766,7 +840,10 @@ export class AugmentApiClient implements AugmentApi {
     });
   }
 
-  async demoteToolLifecycle(toolId: string, targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage): Promise<{ lifecycleStage: string }> {
+  async demoteToolLifecycle(
+    toolId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string }> {
     return this.fetchJson(`/tools/${encodeURIComponent(toolId)}/demote`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -789,8 +866,12 @@ export class AugmentApiClient implements AugmentApi {
     return adminEndpoints.getQuickActions(this.adminDeps);
   }
 
-  async getTours(): Promise<import('../components/AdminPanels/shared/defaultTours').TourDefinition[]> {
-    const data = await this.fetchJson<{ tours: import('../components/AdminPanels/shared/defaultTours').TourDefinition[] }>('/tours');
+  async getTours(): Promise<
+    import('../components/AdminPanels/shared/defaultTours').TourDefinition[]
+  > {
+    const data = await this.fetchJson<{
+      tours: import('../components/AdminPanels/shared/defaultTours').TourDefinition[];
+    }>('/tours');
     return data.tours ?? [];
   }
 
@@ -1335,5 +1416,35 @@ export class AugmentApiClient implements AugmentApi {
     request: import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesCreateWorkspaceRequest,
   ) {
     return kagentiEndpoints.createDevSpacesWorkspace(this.kagentiDeps, request);
+  }
+  async checkDevSpacesHealth() {
+    return kagentiEndpoints.checkDevSpacesHealth(this.kagentiDeps);
+  }
+  async listDevSpacesWorkspaces(namespace: string) {
+    return kagentiEndpoints.listDevSpacesWorkspaces(
+      this.kagentiDeps,
+      namespace,
+    );
+  }
+  async getDevSpacesWorkspace(namespace: string, name: string) {
+    return kagentiEndpoints.getDevSpacesWorkspace(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
+  }
+  async stopDevSpacesWorkspace(namespace: string, name: string) {
+    return kagentiEndpoints.stopDevSpacesWorkspace(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
+  }
+  async deleteDevSpacesWorkspace(namespace: string, name: string) {
+    return kagentiEndpoints.deleteDevSpacesWorkspace(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
   }
 }

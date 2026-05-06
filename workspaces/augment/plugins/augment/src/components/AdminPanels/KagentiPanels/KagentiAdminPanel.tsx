@@ -217,6 +217,33 @@ export function KagentiAdminPanel({
     }
   }, [devSpacesConfig, devSpacesTokenConfig]);
 
+  const [devSpacesTestResult, setDevSpacesTestResult] = useState<{
+    testing: boolean;
+    ok?: boolean;
+    message?: string;
+    responseTimeMs?: number;
+  }>({ testing: false });
+
+  const handleTestDevSpaces = useCallback(async () => {
+    setDevSpacesTestResult({ testing: true });
+    try {
+      const result = await api.checkDevSpacesHealth();
+      setDevSpacesTestResult({
+        testing: false,
+        ok: result.ok,
+        message: result.message,
+        responseTimeMs: result.responseTimeMs,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setDevSpacesTestResult({
+        testing: false,
+        ok: false,
+        message: msg,
+      });
+    }
+  }, [api]);
+
   useEffect(() => {
     setLoading(true);
     api
@@ -814,7 +841,7 @@ export function KagentiAdminPanel({
             }
             disabled={devSpacesTokenConfig.saving}
           />
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Button
               size="small"
               variant="contained"
@@ -834,6 +861,18 @@ export function KagentiAdminPanel({
             <Button
               size="small"
               variant="outlined"
+              onClick={handleTestDevSpaces}
+              disabled={devSpacesTestResult.testing || !devSpacesUrl.trim()}
+              sx={{ textTransform: 'none' }}
+            >
+              {devSpacesTestResult.testing ? (
+                <CircularProgress size={16} sx={{ mr: 0.5 }} />
+              ) : null}
+              Test Connection
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
               onClick={handleResetDevSpaces}
               disabled={
                 devSpacesConfig.saving ||
@@ -846,6 +885,25 @@ export function KagentiAdminPanel({
               Reset to Default
             </Button>
           </Box>
+          {devSpacesTestResult.ok !== undefined &&
+            !devSpacesTestResult.testing && (
+              <Alert
+                severity={devSpacesTestResult.ok ? 'success' : 'error'}
+                onClose={() => setDevSpacesTestResult({ testing: false })}
+                sx={{ mt: 1 }}
+              >
+                {devSpacesTestResult.message}
+                {devSpacesTestResult.responseTimeMs !== undefined && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mt: 0.25 }}
+                  >
+                    Response time: {devSpacesTestResult.responseTimeMs}ms
+                  </Typography>
+                )}
+              </Alert>
+            )}
         </Box>,
       )}
 

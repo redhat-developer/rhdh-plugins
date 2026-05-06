@@ -21,7 +21,6 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Skeleton from '@mui/material/Skeleton';
@@ -57,10 +56,7 @@ export interface AgentTemplateBrowserProps {
 }
 
 function templateTitle(entity: Entity): string {
-  return (
-    (entity.metadata.title as string | undefined) ??
-    entity.metadata.name
-  );
+  return (entity.metadata.title as string | undefined) ?? entity.metadata.name;
 }
 
 function templateDescription(entity: Entity): string {
@@ -105,7 +101,8 @@ export function AgentTemplateBrowser({
   tag,
   onOpenInDevSpace,
   title: titleLabel = 'Agent Templates',
-  description: descriptionLabel = 'Choose a software template to scaffold a new agent project. Templates are discovered from the catalog automatically.',
+  description:
+    descriptionLabel = 'Choose a software template to scaffold a new agent project. Templates are discovered from the catalog automatically.',
   emptyTitle = 'No agent templates found',
   emptyDescription,
   devSpaceLabel = 'Open in Agent DevSpace',
@@ -143,10 +140,17 @@ export function AgentTemplateBrowser({
         <IconButton onClick={onBack} size="small" aria-label="Back">
           <ArrowBackIcon fontSize="small" />
         </IconButton>
-        <Typography variant="h6" sx={{ fontWeight: 700, flex: 1, color: 'text.primary' }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 700, flex: 1, color: 'text.primary' }}
+        >
           {titleLabel}
         </Typography>
-        <IconButton onClick={reload} size="small" aria-label="Refresh templates">
+        <IconButton
+          onClick={reload}
+          size="small"
+          aria-label="Refresh templates"
+        >
           <RefreshIcon fontSize="small" />
         </IconButton>
       </Box>
@@ -233,25 +237,28 @@ export function AgentTemplateBrowser({
             color="text.disabled"
             sx={{ textAlign: 'center', maxWidth: 400, px: 2 }}
           >
-            {emptyDescription ?? (
-              <>
-                Templates with the tag{' '}
-                <Typography
-                  component="code"
-                  variant="body2"
-                  sx={{
-                    px: 0.5,
-                    bgcolor: alpha(theme.palette.action.hover, 0.1),
-                    borderRadius: 0.5,
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  {tag ?? 'kagenti-agent'}
-                </Typography>{' '}
-                will appear here automatically. Add this tag to any Backstage
-                software template to include it.
-              </>
-            )}
+            {emptyDescription ??
+              (tag ? (
+                <>
+                  Templates with the tag{' '}
+                  <Typography
+                    component="code"
+                    variant="body2"
+                    sx={{
+                      px: 0.5,
+                      bgcolor: alpha(theme.palette.action.hover, 0.1),
+                      borderRadius: 0.5,
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {tag}
+                  </Typography>{' '}
+                  will appear here automatically. Add this tag to any Backstage
+                  software template to include it.
+                </>
+              ) : (
+                'All Backstage software templates (kind: Template) registered in the catalog will appear here automatically.'
+              ))}
           </Typography>
         </Box>
       )}
@@ -375,7 +382,9 @@ export function AgentTemplateBrowser({
                   <Button
                     size="small"
                     variant="outlined"
-                    endIcon={<OpenInNewIcon sx={{ fontSize: '0.875rem !important' }} />}
+                    endIcon={
+                      <OpenInNewIcon sx={{ fontSize: '0.875rem !important' }} />
+                    }
                     onClick={e => {
                       e.stopPropagation();
                       handleLaunch(entity);
@@ -408,18 +417,6 @@ export function AgentTemplateBrowser({
               </Card>
             );
           })}
-        </Box>
-      )}
-
-      {loading && (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            py: 2,
-          }}
-        >
-          <CircularProgress size={24} />
         </Box>
       )}
     </Box>

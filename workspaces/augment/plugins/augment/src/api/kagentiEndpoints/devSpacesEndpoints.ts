@@ -17,9 +17,21 @@
 import type {
   DevSpacesCreateWorkspaceRequest,
   DevSpacesCreateWorkspaceResponse,
+  DevSpacesHealthResponse,
+  DevSpacesListWorkspacesResponse,
+  DevSpacesWorkspace,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { KagentiApiDeps } from './types';
-import { jsonBody } from './types';
+import { jsonBody, e } from './types';
+
+/**
+ * Check Dev Spaces API health and configuration status.
+ */
+export async function checkDevSpacesHealth(
+  deps: KagentiApiDeps,
+): Promise<DevSpacesHealthResponse> {
+  return deps.fetchJson('/devspaces/health');
+}
 
 /**
  * Create a Dev Spaces workspace via the backend proxy.
@@ -31,4 +43,52 @@ export async function createDevSpacesWorkspace(
   request: DevSpacesCreateWorkspaceRequest,
 ): Promise<DevSpacesCreateWorkspaceResponse> {
   return deps.fetchJson('/devspaces/workspaces', jsonBody(request));
+}
+
+/**
+ * List workspaces in a namespace.
+ */
+export async function listDevSpacesWorkspaces(
+  deps: KagentiApiDeps,
+  namespace: string,
+): Promise<DevSpacesListWorkspacesResponse> {
+  return deps.fetchJson(`/devspaces/workspaces?namespace=${e(namespace)}`);
+}
+
+/**
+ * Get a single workspace's status.
+ */
+export async function getDevSpacesWorkspace(
+  deps: KagentiApiDeps,
+  namespace: string,
+  name: string,
+): Promise<DevSpacesWorkspace> {
+  return deps.fetchJson(`/devspaces/workspaces/${e(namespace)}/${e(name)}`);
+}
+
+/**
+ * Stop a running workspace.
+ */
+export async function stopDevSpacesWorkspace(
+  deps: KagentiApiDeps,
+  namespace: string,
+  name: string,
+): Promise<void> {
+  await deps.fetchJson(
+    `/devspaces/workspaces/${e(namespace)}/${e(name)}/stop`,
+    { method: 'PATCH' },
+  );
+}
+
+/**
+ * Delete a workspace.
+ */
+export async function deleteDevSpacesWorkspace(
+  deps: KagentiApiDeps,
+  namespace: string,
+  name: string,
+): Promise<void> {
+  await deps.fetchJson(`/devspaces/workspaces/${e(namespace)}/${e(name)}`, {
+    method: 'DELETE',
+  });
 }

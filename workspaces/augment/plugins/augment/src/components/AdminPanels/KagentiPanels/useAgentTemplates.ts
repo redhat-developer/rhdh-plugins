@@ -20,8 +20,6 @@ import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import type { Entity } from '@backstage/catalog-model';
 import { getErrorMessage } from '../../../utils';
 
-const DEFAULT_AGENT_TEMPLATE_TAG = 'kagenti-agent';
-
 export interface UseAgentTemplatesReturn {
   templates: Entity[];
   loading: boolean;
@@ -29,29 +27,30 @@ export interface UseAgentTemplatesReturn {
   reload: () => void;
 }
 
-export function useAgentTemplates(
-  tag?: string,
-): UseAgentTemplatesReturn {
+/**
+ * Fetches `kind: Template` entities from the Backstage catalog.
+ * When `tag` is provided, only templates with that `metadata.tags` value are
+ * returned. When omitted, **all** catalog templates are returned.
+ */
+export function useAgentTemplates(tag?: string): UseAgentTemplatesReturn {
   const catalogApi = useApi(catalogApiRef);
   const [templates, setTemplates] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
-  const filterTag = tag ?? DEFAULT_AGENT_TEMPLATE_TAG;
-
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
 
+    const filter: Record<string, string> = { kind: 'Template' };
+    if (tag) {
+      filter['metadata.tags'] = tag;
+    }
+
     catalogApi
-      .getEntities({
-        filter: {
-          kind: 'Template',
-          'metadata.tags': filterTag,
-        },
-      })
+      .getEntities({ filter })
       .then(res => {
         if (!cancelled) setTemplates(res.items);
       })
@@ -65,7 +64,7 @@ export function useAgentTemplates(
     return () => {
       cancelled = true;
     };
-  }, [catalogApi, filterTag, tick]);
+  }, [catalogApi, tag, tick]);
 
   const reload = () => setTick(t => t + 1);
 

@@ -62,6 +62,7 @@ export type AdminConfigKey =
   | 'chatAgents'
   | 'chatTools'
   | 'devSpacesApiUrl'
+  | 'devSpacesToken'
   | 'workflows'
   | 'workflowVersions'
   | 'workflowTestSuites'

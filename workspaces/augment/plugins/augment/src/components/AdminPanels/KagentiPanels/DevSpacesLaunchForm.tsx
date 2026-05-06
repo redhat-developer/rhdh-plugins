@@ -14,58 +14,72 @@
  * limitations under the License.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Collapse from '@mui/material/Collapse';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
+import Skeleton from '@mui/material/Skeleton';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CodeIcon from '@mui/icons-material/Code';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LaptopMacOutlinedIcon from '@mui/icons-material/LaptopMacOutlined';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
+import StopCircleOutlinedIcon from '@mui/icons-material/StopCircleOutlined';
 import TerminalOutlinedIcon from '@mui/icons-material/TerminalOutlined';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
-import type { DevSpacesCreateWorkspaceResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  DevSpacesCreateWorkspaceResponse,
+  DevSpacesWorkspace,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { NamespacePicker } from './NamespacePicker';
 
-/**
- * Extracts a cloneable Git repository URL from GitHub/GitLab blob/tree URLs.
- * Returns the input unchanged if it is already a plain repo URL.
- */
 function normalizeGitRepoUrl(url: string): string {
   const trimmed = url.trim().replace(/\/+$/, '');
-
-  // GitHub / GitLab blob or tree URLs:
-  // https://github.com/org/repo/blob/main/path  →  https://github.com/org/repo
-  // https://github.com/org/repo/tree/branch/...  →  https://github.com/org/repo
   const match = trimmed.match(
     /^(https?:\/\/(?:github\.com|gitlab\.com)\/[^/]+\/[^/]+)\/(?:blob|tree)\/.+/i,
   );
   if (match) return match[1];
-
   return trimmed;
 }
 
+const PHASE_COLORS: Record<
+  string,
+  'success' | 'warning' | 'error' | 'default'
+> = {
+  Running: 'success',
+  Starting: 'warning',
+  Stopping: 'warning',
+  Stopped: 'default',
+  Failed: 'error',
+  Failing: 'error',
+};
+
+const STATUS_POLL_INTERVAL_MS = 5_000;
+
 export interface DevSpacesLaunchFormProps {
   onBack: () => void;
-  /** Pre-fill the git repo field, e.g. from a template's source URL. */
   initialGitRepo?: string;
-  /** Controls terminology throughout the form. Defaults to 'agent'. */
   resourceKind?: 'agent' | 'tool';
 }
 
-type FormStatus = 'idle' | 'creating' | 'success' | 'error';
+type FormStatus = 'idle' | 'creating' | 'polling' | 'success' | 'error';
+type HealthState = 'loading' | 'ok' | 'not-configured' | 'error';
 
 function NextStep({
   icon,
@@ -79,7 +93,6 @@ function NextStep({
   description: React.ReactNode;
 }) {
   const theme = useTheme();
-
   return (
     <Box sx={{ display: 'flex', gap: 1.5 }}>
       <Box
@@ -123,6 +136,37 @@ export function DevSpacesLaunchForm({
   const label = resourceKind === 'tool' ? 'tool' : 'agent';
   const Label = resourceKind === 'tool' ? 'Tool' : 'Agent';
 
+  // ── Health check ────────────────────────────────────────────────────
+  const [health, setHealth] = useState<HealthState>('loading');
+  const [healthMsg, setHealthMsg] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .checkDevSpacesHealth()
+      .then(resp => {
+        if (cancelled) return;
+        if (!resp.configured) {
+          setHealth('not-configured');
+          setHealthMsg(resp.message);
+        } else if (resp.ok) {
+          setHealth('ok');
+        } else {
+          setHealth('error');
+          setHealthMsg(resp.message);
+        }
+      })
+      .catch(err => {
+        if (cancelled) return;
+        setHealth('error');
+        setHealthMsg(getErrorMessage(err));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [api]);
+
+  // ── Form state ──────────────────────────────────────────────────────
   const [namespace, setNamespace] = useState<string | undefined>(undefined);
   const [gitRepo, setGitRepo] = useState(initialGitRepo ?? '');
   const [memoryLimit, setMemoryLimit] = useState('8Gi');
@@ -130,10 +174,74 @@ export function DevSpacesLaunchForm({
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const [status, setStatus] = useState<FormStatus>('idle');
-  const [result, setResult] = useState<DevSpacesCreateWorkspaceResponse | null>(null);
+  const [result, setResult] = useState<DevSpacesCreateWorkspaceResponse | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState('');
   const [urlCorrected, setUrlCorrected] = useState(false);
 
+  // ── Existing workspaces ─────────────────────────────────────────────
+  const [workspaces, setWorkspaces] = useState<DevSpacesWorkspace[]>([]);
+  const [wsLoading, setWsLoading] = useState(false);
+
+  const loadWorkspaces = useCallback(
+    async (ns: string) => {
+      setWsLoading(true);
+      try {
+        const resp = await api.listDevSpacesWorkspaces(ns);
+        setWorkspaces(resp.workspaces);
+      } catch {
+        setWorkspaces([]);
+      } finally {
+        setWsLoading(false);
+      }
+    },
+    [api],
+  );
+
+  useEffect(() => {
+    if (namespace && health === 'ok') {
+      loadWorkspaces(namespace);
+    } else {
+      setWorkspaces([]);
+    }
+  }, [namespace, health, loadWorkspaces]);
+
+  // ── Status polling after creation ───────────────────────────────────
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startPolling = useCallback(
+    (ws: DevSpacesCreateWorkspaceResponse) => {
+      setStatus('polling');
+      pollRef.current = setInterval(async () => {
+        try {
+          const updated = await api.getDevSpacesWorkspace(
+            ws.namespace,
+            ws.name,
+          );
+          setResult(prev =>
+            prev ? { ...prev, phase: updated.phase, url: updated.url } : prev,
+          );
+          if (updated.phase === 'Running' || updated.phase === 'Failed') {
+            if (pollRef.current) clearInterval(pollRef.current);
+            pollRef.current = null;
+            setStatus('success');
+          }
+        } catch {
+          // keep polling on transient errors
+        }
+      }, STATUS_POLL_INTERVAL_MS);
+    },
+    [api],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  // ── Create handler ──────────────────────────────────────────────────
   const isValid = !!namespace && gitRepo.trim().length > 0;
 
   const handleCreate = useCallback(async () => {
@@ -157,18 +265,147 @@ export function DevSpacesLaunchForm({
         cpu_limit: cpuLimit.trim() || '2000m',
       });
       setResult(response);
-      setStatus('success');
+
+      if (response.phase !== 'Running') {
+        startPolling(response);
+      } else {
+        setStatus('success');
+      }
     } catch (err) {
       let msg = getErrorMessage(err);
       if (err && typeof err === 'object' && 'body' in err) {
         const body = (err as { body?: { message?: string } }).body;
         if (body?.message) msg = body.message;
       }
+      if (
+        msg.toLowerCase().includes('not configured') ||
+        msg.toLowerCase().includes('authentication is not configured')
+      ) {
+        msg = `${msg} Go to the Administration panel → Dev Spaces section to configure the API URL and authentication token.`;
+      }
       setErrorMessage(msg);
       setStatus('error');
     }
-  }, [api, namespace, gitRepo, memoryLimit, cpuLimit, isValid]);
+  }, [api, namespace, gitRepo, memoryLimit, cpuLimit, isValid, startPolling]);
 
+  // ── Workspace actions ───────────────────────────────────────────────
+  const handleStop = useCallback(
+    async (ws: DevSpacesWorkspace) => {
+      try {
+        await api.stopDevSpacesWorkspace(ws.namespace, ws.name);
+        if (namespace) loadWorkspaces(namespace);
+      } catch {
+        /* best effort */
+      }
+    },
+    [api, namespace, loadWorkspaces],
+  );
+
+  const handleDelete = useCallback(
+    async (ws: DevSpacesWorkspace) => {
+      try {
+        await api.deleteDevSpacesWorkspace(ws.namespace, ws.name);
+        if (namespace) loadWorkspaces(namespace);
+      } catch {
+        /* best effort */
+      }
+    },
+    [api, namespace, loadWorkspaces],
+  );
+
+  // ── Render: health loading ──────────────────────────────────────────
+  if (health === 'loading') {
+    return (
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <IconButton onClick={onBack} size="small" aria-label="Back">
+            <ArrowBackIcon fontSize="small" />
+          </IconButton>
+          <LaptopMacOutlinedIcon
+            sx={{ fontSize: 22, color: theme.palette.primary.main }}
+          />
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, flex: 1, color: 'text.primary' }}
+          >
+            {Label} DevSpace
+          </Typography>
+        </Box>
+        <Skeleton variant="rounded" height={80} />
+      </Box>
+    );
+  }
+
+  // ── Render: not configured ──────────────────────────────────────────
+  if (health === 'not-configured') {
+    return (
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <IconButton onClick={onBack} size="small" aria-label="Back">
+            <ArrowBackIcon fontSize="small" />
+          </IconButton>
+          <LaptopMacOutlinedIcon
+            sx={{ fontSize: 22, color: theme.palette.primary.main }}
+          />
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, flex: 1, color: 'text.primary' }}
+          >
+            {Label} DevSpace
+          </Typography>
+        </Box>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+            Dev Spaces is not configured
+          </Typography>
+          <Typography variant="body2">
+            {healthMsg || 'The Dev Spaces API URL has not been set.'} Go to{' '}
+            <strong>Administration → Dev Spaces</strong> to configure the API
+            URL and authentication token, then return here.
+          </Typography>
+        </Alert>
+        <Button onClick={onBack} sx={{ textTransform: 'none' }}>
+          Back
+        </Button>
+      </Box>
+    );
+  }
+
+  // ── Render: health error (configured but unreachable) ───────────────
+  if (health === 'error') {
+    return (
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <IconButton onClick={onBack} size="small" aria-label="Back">
+            <ArrowBackIcon fontSize="small" />
+          </IconButton>
+          <LaptopMacOutlinedIcon
+            sx={{ fontSize: 22, color: theme.palette.primary.main }}
+          />
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, flex: 1, color: 'text.primary' }}
+          >
+            {Label} DevSpace
+          </Typography>
+        </Box>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+            Cannot reach Dev Spaces API
+          </Typography>
+          <Typography variant="body2">
+            {healthMsg} Check the API URL and authentication token in{' '}
+            <strong>Administration → Dev Spaces</strong>.
+          </Typography>
+        </Alert>
+        <Button onClick={onBack} sx={{ textTransform: 'none' }}>
+          Back
+        </Button>
+      </Box>
+    );
+  }
+
+  // ── Render: main form ───────────────────────────────────────────────
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
@@ -178,7 +415,10 @@ export function DevSpacesLaunchForm({
         <LaptopMacOutlinedIcon
           sx={{ fontSize: 22, color: theme.palette.primary.main }}
         />
-        <Typography variant="h6" sx={{ fontWeight: 700, flex: 1, color: 'text.primary' }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 700, flex: 1, color: 'text.primary' }}
+        >
           {Label} DevSpace
         </Typography>
       </Box>
@@ -188,169 +428,214 @@ export function DevSpacesLaunchForm({
         tools, and runtime pre-configured.
       </Typography>
 
-      {status === 'success' && result && (
+      {/* ── Success / polling state ─────────────────────────────────── */}
+      {(status === 'success' || status === 'polling') && result && (
         <Box>
-          {/* Confirmation */}
           <Alert
-            severity="success"
-            icon={<CheckCircleOutlineIcon />}
+            severity={status === 'polling' ? 'info' : 'success'}
+            icon={
+              status === 'polling' ? (
+                <CircularProgress size={20} />
+              ) : (
+                <CheckCircleOutlineIcon />
+              )
+            }
             sx={{ mb: 2.5 }}
           >
             <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.25 }}>
-              Workspace created
+              {status === 'polling'
+                ? 'Workspace starting...'
+                : 'Workspace created'}
             </Typography>
             <Typography variant="body2">
               <strong>{result.name}</strong> in {result.namespace} &mdash;{' '}
-              {result.phase}
+              <Chip
+                label={result.phase}
+                size="small"
+                color={PHASE_COLORS[result.phase] ?? 'default'}
+                sx={{ height: 20, fontSize: '0.75rem' }}
+              />
             </Typography>
             {result.created_at && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mt: 0.25 }}
+              >
                 Created {new Date(result.created_at).toLocaleString()}
-              </Typography>
-            )}
-            {result.message && (
-              <Typography variant="caption" color="text.secondary">
-                {result.message}
               </Typography>
             )}
           </Alert>
 
-          {/* Next steps */}
-          <Box
-            sx={{
-              border: `1px solid ${theme.palette.divider}`,
-              borderRadius: 2,
-              overflow: 'hidden',
-              mb: 2,
-            }}
-          >
-            <Box
-              sx={{
-                px: 2.5,
-                py: 1.5,
-                bgcolor: alpha(theme.palette.primary.main, 0.04),
-                borderBottom: `1px solid ${theme.palette.divider}`,
-              }}
-            >
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                Next Steps
-              </Typography>
-            </Box>
-
-            <Box sx={{ px: 2.5, py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <NextStep
-                icon={<CodeIcon sx={{ fontSize: 18 }} />}
-                step="1"
-                title={`Open your ${Label} DevSpace`}
-                description={
-                  result.url ? (
-                    <>
-                      Your cloud IDE is ready.{' '}
-                      <a
-                        href={result.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ fontWeight: 600 }}
-                      >
-                        Open DevSpace
-                      </a>{' '}
-                      to start writing your {label} code with full tooling and
-                      runtime support.
-                    </>
-                  ) : (
-                    `Your cloud IDE is ready. Open it to start writing your ${label} code with full tooling and runtime support.`
-                  )
-                }
-              />
-
-              <NextStep
-                icon={<TerminalOutlinedIcon sx={{ fontSize: 18 }} />}
-                step="2"
-                title="Build and push from the IDE"
-                description={`Use the integrated terminal in DevSpaces to build your ${label} container image and push it to your registry.`}
-              />
-
-              <NextStep
-                icon={<RocketLaunchOutlinedIcon sx={{ fontSize: 18 }} />}
-                step="3"
-                title={`Deploy your ${label}`}
-                description={
-                  <>
-                    Once your image is ready, return here and use{' '}
-                    <strong>Create {Label} &rarr; Deploy</strong> to deploy it
-                    to the platform.
-                  </>
-                }
-              />
-            </Box>
-
-            <Divider />
-
-            <Box
-              sx={{
-                px: 2.5,
-                py: 1.5,
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 1,
-                bgcolor: alpha(theme.palette.info.main, 0.04),
-              }}
-            >
-              <InfoOutlinedIcon
+          {status === 'success' && (
+            <>
+              <Box
                 sx={{
-                  fontSize: 16,
-                  mt: 0.25,
-                  color: theme.palette.info.main,
-                  flexShrink: 0,
+                  border: `1px solid ${theme.palette.divider}`,
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  mb: 2,
                 }}
-              />
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ lineHeight: 1.5 }}
               >
-                Building and pushing your {label}&apos;s container image is done
-                through the IDE terminal in DevSpaces, not from this UI. This
-                gives you full control over your build pipeline, Dockerfile, and
-                registry configuration.
-              </Typography>
-            </Box>
-          </Box>
+                <Box
+                  sx={{
+                    px: 2.5,
+                    py: 1.5,
+                    bgcolor: alpha(theme.palette.primary.main, 0.04),
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 700, color: 'text.primary' }}
+                  >
+                    Next Steps
+                  </Typography>
+                </Box>
 
-          {/* Actions */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
-            <Button
-              size="small"
-              onClick={() => {
-                setStatus('idle');
-                setResult(null);
-              }}
-              sx={{ textTransform: 'none' }}
-            >
-              Create Another
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={onBack}
-              sx={{ textTransform: 'none' }}
-            >
-              Done
-            </Button>
-          </Box>
+                <Box
+                  sx={{
+                    px: 2.5,
+                    py: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                  }}
+                >
+                  <NextStep
+                    icon={<CodeIcon sx={{ fontSize: 18 }} />}
+                    step="1"
+                    title={`Open your ${Label} DevSpace`}
+                    description={
+                      result.url ? (
+                        <>
+                          Your cloud IDE is ready.{' '}
+                          <a
+                            href={result.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontWeight: 600 }}
+                          >
+                            Open DevSpace
+                          </a>{' '}
+                          to start writing your {label} code.
+                        </>
+                      ) : (
+                        `Your cloud IDE is ready. Open it to start writing your ${label} code.`
+                      )
+                    }
+                  />
+                  <NextStep
+                    icon={<TerminalOutlinedIcon sx={{ fontSize: 18 }} />}
+                    step="2"
+                    title="Build and push from the IDE"
+                    description={`Use the integrated terminal in DevSpaces to build your ${label} container image and push it to your registry.`}
+                  />
+                  <NextStep
+                    icon={<RocketLaunchOutlinedIcon sx={{ fontSize: 18 }} />}
+                    step="3"
+                    title={`Deploy your ${label}`}
+                    description={
+                      <>
+                        Once your image is ready, return here and use{' '}
+                        <strong>Create {Label} &rarr; Deploy</strong> to deploy
+                        it to the platform.
+                      </>
+                    }
+                  />
+                </Box>
+
+                <Divider />
+
+                <Box
+                  sx={{
+                    px: 2.5,
+                    py: 1.5,
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 1,
+                    bgcolor: alpha(theme.palette.info.main, 0.04),
+                  }}
+                >
+                  <InfoOutlinedIcon
+                    sx={{
+                      fontSize: 16,
+                      mt: 0.25,
+                      color: theme.palette.info.main,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ lineHeight: 1.5 }}
+                  >
+                    Building and pushing your {label}&apos;s container image is
+                    done through the IDE terminal in DevSpaces, not from this
+                    UI.
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box
+                sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}
+              >
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setStatus('idle');
+                    setResult(null);
+                  }}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Create Another
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={onBack}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Done
+                </Button>
+              </Box>
+            </>
+          )}
         </Box>
       )}
 
+      {/* ── Error state ─────────────────────────────────────────────── */}
       {status === 'error' && errorMessage && (
-        <Alert severity="error" sx={{ mb: 2.5 }}>
+        <Alert
+          severity="error"
+          sx={{ mb: 2.5 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => {
+                setStatus('idle');
+                setErrorMessage('');
+              }}
+              sx={{ textTransform: 'none', fontWeight: 600 }}
+            >
+              Dismiss
+            </Button>
+          }
+        >
           {errorMessage}
         </Alert>
       )}
 
-      {status !== 'success' && (
+      {/* ── Form ────────────────────────────────────────────────────── */}
+      {status !== 'success' && status !== 'polling' && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {urlCorrected && (
-            <Alert severity="info" onClose={() => setUrlCorrected(false)} sx={{ mb: 0 }}>
+            <Alert
+              severity="info"
+              onClose={() => setUrlCorrected(false)}
+              sx={{ mb: 0 }}
+            >
               The URL was auto-corrected to a cloneable repository URL.
             </Alert>
           )}
@@ -359,11 +644,11 @@ export function DevSpacesLaunchForm({
             label="Git Repository"
             placeholder={`https://github.com/your-org/${label}-repo`}
             value={gitRepo}
-            onChange={e => setGitRepo(e.target.value)}
+            onChange={ev => setGitRepo(ev.target.value)}
             required
             fullWidth
             size="small"
-            helperText={`Git repository clone URL. Links to specific files or branches will be auto-corrected.`}
+            helperText="Git repository clone URL. Links to specific files or branches will be auto-corrected."
             disabled={status === 'creating'}
           />
 
@@ -388,7 +673,10 @@ export function DevSpacesLaunchForm({
                   }}
                 />
               }
-              sx={{ textTransform: 'none', color: theme.palette.text.secondary }}
+              sx={{
+                textTransform: 'none',
+                color: theme.palette.text.secondary,
+              }}
             >
               Resource Limits
             </Button>
@@ -408,7 +696,7 @@ export function DevSpacesLaunchForm({
                 <TextField
                   label="Memory Limit"
                   value={memoryLimit}
-                  onChange={e => setMemoryLimit(e.target.value)}
+                  onChange={ev => setMemoryLimit(ev.target.value)}
                   size="small"
                   helperText="e.g. 8Gi, 4Gi"
                   disabled={status === 'creating'}
@@ -416,7 +704,7 @@ export function DevSpacesLaunchForm({
                 <TextField
                   label="CPU Limit"
                   value={cpuLimit}
-                  onChange={e => setCpuLimit(e.target.value)}
+                  onChange={ev => setCpuLimit(ev.target.value)}
                   size="small"
                   helperText="e.g. 2000m, 4000m"
                   disabled={status === 'creating'}
@@ -425,7 +713,14 @@ export function DevSpacesLaunchForm({
             </Collapse>
           </Box>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 1 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 1.5,
+              mt: 1,
+            }}
+          >
             <Button
               onClick={onBack}
               disabled={status === 'creating'}
@@ -447,6 +742,123 @@ export function DevSpacesLaunchForm({
               {status === 'creating' ? 'Creating...' : 'Create Workspace'}
             </Button>
           </Box>
+
+          {/* ── Existing workspaces ─────────────────────────────────── */}
+          {namespace && (
+            <Box sx={{ mt: 1 }}>
+              <Divider sx={{ mb: 2 }} />
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>
+                  Existing Workspaces
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => loadWorkspaces(namespace)}
+                  aria-label="Refresh workspaces"
+                >
+                  <RefreshIcon fontSize="small" />
+                </IconButton>
+              </Box>
+
+              {wsLoading && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Skeleton variant="rounded" height={48} />
+                  <Skeleton variant="rounded" height={48} />
+                </Box>
+              )}
+
+              {!wsLoading && workspaces.length === 0 && (
+                <Typography
+                  variant="body2"
+                  color="text.disabled"
+                  sx={{ py: 1 }}
+                >
+                  No workspaces in this namespace.
+                </Typography>
+              )}
+
+              {!wsLoading &&
+                workspaces.map(ws => (
+                  <Box
+                    key={ws.name}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1.5,
+                      py: 1,
+                      px: 1.5,
+                      mb: 0.5,
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.divider}`,
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.action.hover, 0.04),
+                      },
+                    }}
+                  >
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 600 }}
+                        noWrap
+                      >
+                        {ws.name}
+                      </Typography>
+                      {ws.git_repo && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                        >
+                          {ws.git_repo}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Chip
+                      label={ws.phase}
+                      size="small"
+                      color={PHASE_COLORS[ws.phase] ?? 'default'}
+                      sx={{ height: 20, fontSize: '0.7rem', flexShrink: 0 }}
+                    />
+                    {ws.url && (
+                      <Tooltip title="Open in DevSpace">
+                        <IconButton
+                          size="small"
+                          href={ws.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Open workspace"
+                        >
+                          <OpenInNewIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {ws.phase === 'Running' && (
+                      <Tooltip title="Stop workspace">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleStop(ws)}
+                          aria-label="Stop workspace"
+                        >
+                          <StopCircleOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Delete workspace">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDelete(ws)}
+                        aria-label="Delete workspace"
+                        sx={{ color: theme.palette.error.main }}
+                      >
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                ))}
+            </Box>
+          )}
         </Box>
       )}
     </Box>
