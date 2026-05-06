@@ -35,7 +35,7 @@ const prettyPrintToolJson = (value: unknown): string => {
   return JSON.stringify(value);
 };
 
-const tryParseJson = (value: string): unknown | undefined => {
+const tryParseJson = (value: string) => {
   try {
     return JSON.parse(value);
   } catch {
@@ -43,9 +43,28 @@ const tryParseJson = (value: string): unknown | undefined => {
   }
 };
 
+const deepParseJson = (value: unknown): unknown => {
+  let current = value;
+
+  while (typeof current === 'string') {
+    try {
+      const parsed = JSON.parse(current);
+
+      // stop if parsing doesn't change type
+      if (parsed === current) break;
+
+      current = parsed;
+    } catch {
+      break;
+    }
+  }
+
+  return current;
+};
+
 const formatPayload = (payload: unknown): string => {
   if (typeof payload === 'string') {
-    const nested = tryParseJson(payload);
+    const nested = deepParseJson(payload);
     if (nested !== undefined && nested !== null && typeof nested === 'object') {
       return `\`\`\`json\n${JSON.stringify(nested, null, 2)}\n\`\`\``;
     }
@@ -59,13 +78,18 @@ const formatPayload = (payload: unknown): string => {
   return `\`\`\`json\n${body}\n\`\`\``;
 };
 
+const STATUS_PREFIX_REGEX = /^\[([^\]]+)\]\s+([\s\S]+)$/;
+
 const extractToolResultPayload = (raw: string): unknown | undefined => {
   const trimmed = raw.trim();
-  const statusPrefixedMatch = trimmed.match(/^\[[^\]]+\]\s+([\s\S]+)$/);
-  if (statusPrefixedMatch?.[1]) {
-    const statusPayload = tryParseJson(statusPrefixedMatch[1].trim());
-    if (statusPayload !== undefined) {
-      return statusPayload;
+
+  const match = STATUS_PREFIX_REGEX.exec(trimmed);
+  if (match) {
+    const [, , payload] = match;
+
+    const parsed = tryParseJson(payload.trim());
+    if (parsed !== undefined) {
+      return parsed;
     }
   }
 
@@ -74,23 +98,24 @@ const extractToolResultPayload = (raw: string): unknown | undefined => {
     : trimmed;
 
   const parsed = tryParseJson(jsonSegment);
-  if (parsed === undefined || parsed === null || typeof parsed !== 'object') {
+  if (!parsed || typeof parsed !== 'object') {
     return undefined;
   }
 
   const parsedRecord = parsed as Record<string, unknown>;
-  const isToolResultEvent = parsedRecord.event === 'tool_result';
-  const eventData =
-    parsedRecord.data && typeof parsedRecord.data === 'object'
-      ? (parsedRecord.data as Record<string, unknown>)
-      : undefined;
 
-  if (isToolResultEvent && eventData && 'content' in eventData) {
-    const content = eventData.content;
+  if (
+    parsedRecord.event === 'tool_result' &&
+    parsedRecord.data &&
+    typeof parsedRecord.data === 'object' &&
+    'content' in parsedRecord.data
+  ) {
+    const content = (parsedRecord.data as Record<string, unknown>).content;
+
     if (typeof content === 'string') {
-      const nested = tryParseJson(content);
-      return nested ?? content;
+      return deepParseJson(content);
     }
+
     return content;
   }
 
@@ -98,24 +123,15 @@ const extractToolResultPayload = (raw: string): unknown | undefined => {
 };
 
 export const formatToolResponseForMarkdown = (raw: string): string => {
-  if (raw === null) return '';
-  const trimmed = raw.trim();
-  if (!trimmed) return '';
+  if (!raw?.trim()) return '';
 
-  if (/^```/m.test(trimmed)) {
-    return raw;
+  if (/^```/.test(raw)) return raw;
+
+  const payload = extractToolResultPayload(raw);
+
+  if (payload !== undefined) {
+    return formatPayload(payload);
   }
 
-  const extractedPayload = extractToolResultPayload(trimmed);
-  if (extractedPayload !== undefined) {
-    return formatPayload(extractedPayload);
-  }
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(trimmed);
-  } catch {
-    return formatPayload(trimmed);
-  }
-  return formatPayload(parsed);
+  return formatPayload(raw);
 };
