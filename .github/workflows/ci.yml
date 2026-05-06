@@ -51,7 +51,7 @@ jobs:
     strategy:
       matrix:
         workspace: ${{ fromJSON(needs.find-changed-workspaces.outputs.workspaces) }}
-        node-version: [24]
+        node-version: [22, 24]
       fail-fast: false
     defaults:
       run:
