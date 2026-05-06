@@ -43,12 +43,17 @@ test.describe('Lightspeed notebooks conversation', () => {
   let sharedPage: Page;
   let translations: LightspeedMessages;
   let notebooks: NotebookSurfacePage;
+  let endMocks: (() => Promise<void>) | undefined;
 
   test.beforeAll(async ({ browser }) => {
     const boot = await bootstrapLightspeedE2ePage(browser);
     sharedPage = boot.page;
     translations = boot.translations;
     notebooks = new NotebookSurfacePage(sharedPage, translations);
+  });
+
+  test.afterAll(async () => {
+    await endMocks?.();
   });
 
   test('notebook tab: seeded conversation, feedback, clipboard, and delete notebook', async ({}, testInfo) => {
@@ -58,59 +63,53 @@ test.describe('Lightspeed notebooks conversation', () => {
     const chatHistory =
       notebookRagConversationChatHistoryForUploadTitle(fileName);
 
-    const endMocks = await withNotebookTabSeededConversation(sharedPage, {
+    endMocks = await withNotebookTabSeededConversation(sharedPage, {
       conversationId: NOTEBOOK_E2E_RAG_CONVERSATION_ID,
       chatHistory,
     });
 
-    try {
-      await notebooks.gotoFullscreenNotebooksTab();
-      await notebooks.clickPrimaryNotebookCreate();
-      await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
+    await notebooks.gotoFullscreenNotebooksTab();
+    await notebooks.clickPrimaryNotebookCreate();
+    await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
 
-      const region = notebooks.chatbotRegion();
-      const userMessage = region.locator('.pf-chatbot__message--user');
-      const botMessage = region.locator('.pf-chatbot__message--bot');
-      const copyButton = sharedPage.getByRole('button', { name: 'Copy' });
+    const region = notebooks.chatbotRegion();
+    const userMessage = region.locator('.pf-chatbot__message--user');
+    const botMessage = region.locator('.pf-chatbot__message--bot');
+    const copyButton = sharedPage.getByRole('button', { name: 'Copy' });
 
-      await expect(userMessage).toContainText(
-        notebookRagConversationUserPromptForUploadTitle(fileName),
-        { timeout: 5_000 },
-      );
-      await expect(botMessage).toContainText(assistantPlain, {
-        timeout: 5_000,
-      });
+    await expect(userMessage).toContainText(
+      notebookRagConversationUserPromptForUploadTitle(fileName),
+      { timeout: 5_000 },
+    );
+    await expect(botMessage).toContainText(assistantPlain, {
+      timeout: 5_000,
+    });
 
-      await verifyFeedbackButtons(sharedPage);
-      await submitFeedback(sharedPage, 'Good response', translations);
-      await submitFeedback(sharedPage, 'Bad response', translations);
+    await verifyFeedbackButtons(sharedPage);
+    await submitFeedback(sharedPage, 'Good response', translations);
+    await submitFeedback(sharedPage, 'Bad response', translations);
 
-      await copyButton.click();
-      await assertClipboardContains(sharedPage, assistantPlain);
+    await copyButton.click();
+    await assertClipboardContains(sharedPage, assistantPlain);
 
-      await notebooks.clickCloseNotebookEditor();
-      const untitledCountBeforeDelete = await notebooks
-        .untitledNotebookCards()
-        .count();
+    await notebooks.clickCloseNotebookEditor();
+    const untitledCountBeforeDelete = await notebooks
+      .untitledNotebookCards()
+      .count();
 
-      const cardCreatedThisTest = notebooks.newestUntitledNotebookCard();
-      await notebooks
-        .notebookCardOverflowMenuButton(cardCreatedThisTest)
-        .click();
-      await notebooks.deleteNotebookOverflowMenuItem().click();
+    const cardCreatedThisTest = notebooks.newestUntitledNotebookCard();
+    await notebooks.notebookCardOverflowMenuButton(cardCreatedThisTest).click();
+    await notebooks.deleteNotebookOverflowMenuItem().click();
 
-      const confirmDelete = notebooks.notebookDeleteConfirmationDialog(
-        NOTEBOOK_UNTITLED_GRID_NAME,
-      );
-      await confirmDelete.expectDialogVisible();
-      await confirmDelete.expectPermanentDeletionWarningText();
-      await confirmDelete.confirmDeletion();
+    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(
+      NOTEBOOK_UNTITLED_GRID_NAME,
+    );
+    await confirmDelete.expectDialogVisible();
+    await confirmDelete.expectPermanentDeletionWarningText();
+    await confirmDelete.confirmDeletion();
 
-      await notebooks.expectUntitledNotebookCardCount(
-        untitledCountBeforeDelete - 1,
-      );
-    } finally {
-      await endMocks();
-    }
+    await notebooks.expectUntitledNotebookCardCount(
+      untitledCountBeforeDelete - 1,
+    );
   });
 });
