@@ -37,6 +37,8 @@ const globalHeaderTranslationEs = createTranslationMessages({
     'search.placeholder': 'Buscar...',
     'search.noResults': 'No se encontraron resultados',
     'search.errorFetching': 'Error al extraer los resultados',
+    'search.allResults': 'Todos los resultados',
+    'search.clear': 'Limpiar',
     'applicationLauncher.tooltip': 'Iniciador de aplicaciones',
     'applicationLauncher.noLinksTitle':
       'No hay enlaces de aplicación configurados',

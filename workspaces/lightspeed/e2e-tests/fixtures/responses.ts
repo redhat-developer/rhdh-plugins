@@ -15,6 +15,7 @@
  */
 
 export const modelBaseUrl = '*/**/api/lightspeed';
+
 export const createdAt = Date.now();
 
 export const models = [
@@ -147,6 +148,84 @@ export const demoChatContent = [
 ];
 
 export const botResponse = `This is a placeholder message`;
+
+/** Stable conversation id aligned with seeded `chat_history` for notebook-tab e2e. */
+export const NOTEBOOK_E2E_RAG_CONVERSATION_ID =
+  '98f24095a40b95ce4d929bbee4aeb26759275bc7b0a5791e';
+
+/** Assistant message body built from {@link notebookRagConversationChatHistoryForUploadTitle} (assertions + clipboard). */
+export function notebookRagConversationAssistantPlainTextForUploadTitle(
+  uploadDocumentTitle: string,
+): string {
+  return `E2E summary: ${uploadDocumentTitle} describes an uploaded fixture. [${uploadDocumentTitle}]`;
+}
+
+/** User bubble text in {@link notebookRagConversationChatHistoryForUploadTitle} (assert in notebook conversation e2e). */
+export function notebookRagConversationUserPromptForUploadTitle(
+  uploadDocumentTitle: string,
+): string {
+  return `Tell me about ${uploadDocumentTitle} in one line.`;
+}
+
+/**
+ * One `chat_history` entry as returned by `GET /v2/conversations/:id` (notebook RAG + referenced_documents).
+ * `uploadDocumentTitle` must match an attached notebook document basename (e.g. {@link localeNotebookUpload1Path}).
+ */
+export function notebookRagConversationChatHistoryForUploadTitle(
+  uploadDocumentTitle: string,
+): Record<string, unknown>[] {
+  const userPrompt =
+    notebookRagConversationUserPromptForUploadTitle(uploadDocumentTitle);
+  const assistantText =
+    notebookRagConversationAssistantPlainTextForUploadTitle(
+      uploadDocumentTitle,
+    );
+  return [
+    {
+      provider: 'vllm',
+      model: 'llama3.2:3b',
+      messages: [
+        {
+          content: userPrompt,
+          type: 'user',
+          referenced_documents: null,
+        },
+        {
+          content: assistantText,
+          type: 'assistant',
+          referenced_documents: [
+            {
+              doc_url: null,
+              doc_title: uploadDocumentTitle,
+              source: 'vs_e2e_notebook_rag',
+            },
+          ],
+        },
+      ],
+      tool_calls: [
+        {
+          id: 'fc_e2e_notebook_file_search',
+          name: 'file_search',
+          args: {
+            queries: [uploadDocumentTitle.replace(/\.[^.]+$/, '')],
+          },
+          type: 'file_search_call',
+        },
+      ],
+      tool_results: [
+        {
+          id: 'fc_e2e_notebook_file_search',
+          status: 'completed',
+          content: JSON.stringify({ results: [] }),
+          type: 'file_search_call',
+          round: 1,
+        },
+      ],
+      started_at: '2026-05-04T12:08:13Z',
+      completed_at: '2026-05-04T12:08:26Z',
+    },
+  ];
+}
 
 /** SSE `start.request_id` in {@link generateQueryResponse}. */
 const mockStreamRequestId = '0e3c4cd7-2817-4c34-91a2-6944550364df';

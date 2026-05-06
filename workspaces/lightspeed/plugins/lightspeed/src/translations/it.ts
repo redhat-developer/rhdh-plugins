@@ -224,6 +224,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tooltip.backToBottom': 'Torna alla fine',
     'tooltip.settings': 'Opzioni chatbot',
     'tooltip.close': 'Chiudi',
+    'tooltip.fab.open': 'Apri Lightspeed',
+    'tooltip.fab.close': 'Chiudi Lightspeed',
     'modal.title.preview': 'Anteprima allegato',
     'modal.title.edit': 'Modifica allegato',
     'icon.lightspeed.alt': 'icona di lightspeed',

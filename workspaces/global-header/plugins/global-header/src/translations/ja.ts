@@ -37,6 +37,8 @@ const globalHeaderTranslationJa = createTranslationMessages({
     'search.placeholder': '検索...',
     'search.noResults': '結果が見つかりません',
     'search.errorFetching': '結果の取得中にエラーが発生しました',
+    'search.allResults': 'すべての結果',
+    'search.clear': 'クリア',
     'applicationLauncher.tooltip': 'アプリケーションランチャー',
     'applicationLauncher.noLinksTitle':
       'アプリケーションリンクが設定されていません',

@@ -27,7 +27,11 @@ import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 export abstract class BaseEntityProvider<T extends Entity>
   implements EntityProvider
 {
-  constructor(taskRunner: SchedulerServiceTaskRunner, config?: Config);
+  constructor(
+    taskRunner: SchedulerServiceTaskRunner,
+    config?: Config,
+    logger?: LoggerService,
+  );
   // (undocumented)
   connect(connection: EntityProviderConnection): Promise<void>;
   // (undocumented)

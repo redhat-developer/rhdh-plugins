@@ -36,7 +36,7 @@
     "dist/**/*.js"
   ],
   "engines": {
-    "node": ">=20"
+    "node": "22 || 24"
   },
   "dependencies": {
     "@backstage/cli": "^0.36.0",

@@ -90,6 +90,25 @@ flag_management:
     - name: dcm
       paths:
         - workspaces/dcm/
+    # E2E coverage flags — cross-repo uploads from overlay E2E pipeline (RHIDP-13411)
+    - name: e2e-adoption-insights
+      paths:
+        - workspaces/adoption-insights/
+    - name: e2e-global-header
+      paths:
+        - workspaces/global-header/
+    - name: e2e-homepage
+      paths:
+        - workspaces/homepage/
+    - name: e2e-quickstart
+      paths:
+        - workspaces/quickstart/
+    - name: e2e-scorecard
+      paths:
+        - workspaces/scorecard/
+    - name: e2e-theme
+      paths:
+        - workspaces/theme/
     - name: extensions
       paths:
         - workspaces/extensions/

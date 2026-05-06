@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.6.4
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.4
+
+## 2.6.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.3
+
 ## 2.6.2
 
 ### Patch Changes
