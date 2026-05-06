@@ -89,6 +89,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
   useLightspeedNotebooksPermission,
+  useNotebookConversationIds,
   useNotebookSession,
   useNotebookSessions,
   usePinnedChatsSettings,
@@ -493,6 +494,9 @@ export const LightspeedChat = ({
     useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
     !notebooksPermissionLoading && hasNotebooksAccess;
+
+  const { data: notebookConversationIdsArray = [] } =
+    useNotebookConversationIds();
   const { data: notebooks = [], refetch: refetchNotebooks } =
     useNotebookSessions(notebooksPermissionResolved);
   const hasNotebooks = notebooks.length > 0;
@@ -989,13 +993,8 @@ export const LightspeedChat = ({
   );
 
   const notebookConversationIds = useMemo(
-    () =>
-      new Set(
-        notebooks
-          .map(n => n.metadata?.conversation_id)
-          .filter((id): id is string => !!id),
-      ),
-    [notebooks],
+    () => new Set(notebookConversationIdsArray),
+    [notebookConversationIdsArray],
   );
 
   const chatOnlyConversations = useMemo(

@@ -413,6 +413,43 @@ export async function createRouter(
     }
   });
 
+  // Returns conversation IDs associated with notebook sessions for filtering
+  router.get('/notebook-conversation-ids', async (req, res) => {
+    try {
+      const credentials = await httpAuth.credentials(req);
+      const user = await userInfo.getUserInfo(credentials);
+      const userId = user.userEntityRef;
+
+      const vectorStoresPage = await vectorStoresOperator.vectorStores.list();
+      const vectorStores = vectorStoresPage.data || [];
+
+      const conversationIds: string[] = [];
+
+      for (const store of vectorStores) {
+        const sessionUserId = store.metadata?.user_id as string;
+        const conversationId = store.metadata?.conversation_id as string | null;
+
+        // Only include this user's sessions with a conversation_id
+        if (sessionUserId === userId && conversationId) {
+          conversationIds.push(conversationId);
+        }
+      }
+
+      res.json({
+        conversation_ids: conversationIds,
+      });
+    } catch (error) {
+      const errormsg = `Error fetching notebook conversation IDs: ${error}`;
+      logger.error(errormsg);
+
+      if (error instanceof NotAllowedError) {
+        res.status(403).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: errormsg });
+      }
+    }
+  });
+
   // ─── Proxy Middleware (existing) ────────────────────────────────────
 
   router.use('/', async (req, res, next) => {
