@@ -237,6 +237,8 @@ describe('LightspeedChat', () => {
       draftFileContents: [],
       setDraftFileContents: jest.fn(),
       consumePendingOverlayThreadHandoff: jest.fn(() => false),
+      shellViewTab: 0,
+      setShellViewTab: jest.fn(),
     });
 
     localStorage.clear();
@@ -619,6 +621,111 @@ describe('LightspeedChat', () => {
       );
     });
 
+    it('should call setDisplayMode with default when leaving fullscreen from notebooks', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: false,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.embedded,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 1,
+        setShellViewTab: jest.fn(),
+      });
+
+      render(setupLightspeedChat('/lightspeed/notebooks'));
+
+      await waitFor(() => {
+        expect(screen.getByText('My Notebooks')).toBeInTheDocument();
+      });
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      await userEvent.click(settingsButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Overlay')).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getByText('Overlay'));
+
+      expect(mockSetDisplayMode).toHaveBeenCalledWith(
+        ChatbotDisplayMode.default,
+      );
+    });
+
+    it('should not render Chat/Notebooks tabs in overlay mode', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: true,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.default,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
+      });
+
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Chatbot options')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole('tab', { name: 'Chat' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('tab', { name: 'Notebooks' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not render Chat/Notebooks tabs in docked mode', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: true,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.docked,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
+      });
+
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Chatbot options')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole('tab', { name: 'Chat' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('tab', { name: 'Notebooks' }),
+      ).not.toBeInTheDocument();
+    });
+
     it('should show current display mode as selected in full-screen mode', async () => {
       mockUseLightspeedDrawerContext.mockReturnValue({
         isChatbotActive: false,
@@ -634,6 +741,8 @@ describe('LightspeedChat', () => {
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -666,6 +775,8 @@ describe('LightspeedChat', () => {
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -698,6 +809,8 @@ describe('LightspeedChat', () => {
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -785,6 +898,9 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
       });
     });
 
@@ -797,6 +913,37 @@ describe('LightspeedChat', () => {
 
       const chatTab = screen.getByRole('tab', { name: 'Chat' });
       expect(chatTab).toHaveAttribute('aria-selected', 'true');
+      expect(
+        screen.getByRole('button', { name: 'Chat history menu' }),
+      ).toBeInTheDocument();
+    });
+
+    it('redirects /lightspeed to /lightspeed/notebooks in fullscreen when shellViewTab is 1', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: false,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.embedded,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 1,
+        setShellViewTab: jest.fn(),
+      });
+
+      render(setupLightspeedChat('/lightspeed'));
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/lightspeed/notebooks', {
+          replace: true,
+        });
+      });
     });
 
     it('should initialize to notebooks tab when path is /lightspeed/notebooks', async () => {
@@ -808,6 +955,9 @@ describe('LightspeedChat', () => {
 
       const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
       expect(notebooksTab).toHaveAttribute('aria-selected', 'true');
+      expect(
+        screen.queryByRole('button', { name: 'Chat history menu' }),
+      ).not.toBeInTheDocument();
     });
 
     it('should navigate to /lightspeed/notebooks when clicking the Notebooks tab', async () => {
@@ -850,6 +1000,9 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
       });
 
       render(setupLightspeedChat('/lightspeed/notebooks'));

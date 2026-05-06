@@ -21,6 +21,15 @@ import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { FileContent } from '../types';
 
 /**
+ * When switching to fullscreen (embedded), open the notebooks list or a specific session.
+ *
+ * @public
+ */
+export type LightspeedEmbeddedNotebooksTarget =
+  | 'notebooks'
+  | { notebookSessionId: string };
+
+/**
  * Type for LightspeedDrawerContext
  *
  * @public
@@ -39,9 +48,17 @@ export interface LightspeedDrawerContextType {
    */
   displayMode: ChatbotDisplayMode;
   /**
-   * Set the display mode (overlay, docked, or fullscreen/embedded)
+   * Set the display mode (overlay, docked, or fullscreen/embedded).
+   * When entering embedded mode, optional `embeddedNotebooks` navigates to
+   * `/lightspeed/notebooks` (or a session URL) instead of the chat route.
+   * Leaving embedded for overlay or docked resets the shell tab to Chat
+   * (Notebooks is only available in fullscreen).
    */
-  setDisplayMode: (mode: ChatbotDisplayMode) => void;
+  setDisplayMode: (
+    mode: ChatbotDisplayMode,
+    conversationIdParam?: string,
+    embeddedNotebooks?: LightspeedEmbeddedNotebooksTarget,
+  ) => void;
   /**
    * The drawer width (for docked mode)
    */
@@ -83,6 +100,12 @@ export interface LightspeedDrawerContextType {
    * lastOpened. Returns true at most once per handoff.
    */
   consumePendingOverlayThreadHandoff?: () => boolean;
+  /**
+   * Chat tab is 0, Notebooks tab is 1. Persisted across overlay/docked/fullscreen remounts
+   * (each display mode mounts its own `LightspeedChat` tree).
+   */
+  shellViewTab: number;
+  setShellViewTab: (tab: number) => void;
 }
 
 /**

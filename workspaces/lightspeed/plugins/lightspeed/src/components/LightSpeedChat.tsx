@@ -29,7 +29,7 @@ import {
   FileRejection,
   type DropEvent as ReactDropzoneDropEvent,
 } from 'react-dropzone';
-import { useMatch, useNavigate } from 'react-router-dom';
+import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { Button, makeStyles } from '@material-ui/core';
 import {
@@ -166,6 +166,7 @@ const useStyles = makeStyles(theme => ({
       },
     '& .pf-v6-c-tabs__link, & .pf-v5-c-tabs__link': {
       backgroundColor: 'transparent',
+      paddingTop: theme.spacing(2),
       paddingBottom: theme.spacing(2),
       fontWeight: 700,
       cursor: 'pointer',
@@ -478,12 +479,41 @@ export const LightspeedChat = ({
   const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
   const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
   const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
+  const {
+    displayMode,
+    setDisplayMode,
+    currentConversationId: routeConversationId,
+    setCurrentConversationId,
+    draftMessage,
+    setDraftMessage,
+    consumePendingOverlayThreadHandoff,
+    shellViewTab,
+    setShellViewTab,
+  } = useLightspeedDrawerContext();
+  const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  const location = useLocation();
+  const isNotebooksFullscreenPath =
+    location.pathname === '/lightspeed/notebooks' ||
+    location.pathname.startsWith('/lightspeed/notebooks/');
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<number>(
-    notebooksRouteMatch || notebookViewRouteMatch ? 1 : 0,
-  );
+  const [activeTab, setActiveTab] = useState<number>(() => {
+    if (!isFullscreenMode) {
+      return 0;
+    }
+    if (notebooksRouteMatch || notebookViewRouteMatch) {
+      return 1;
+    }
+    const p = location.pathname;
+    if (p.startsWith('/lightspeed/conversation/')) {
+      return 0;
+    }
+    if (shellViewTab === 1) {
+      return 1;
+    }
+    return 0;
+  });
   const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
     useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
@@ -547,20 +577,40 @@ export const LightspeedChat = ({
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
-  const {
-    displayMode,
-    setDisplayMode,
-    currentConversationId: routeConversationId,
-    setCurrentConversationId,
-    draftMessage,
-    setDraftMessage,
-    consumePendingOverlayThreadHandoff,
-  } = useLightspeedDrawerContext();
-  const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  // Chat vs Notebooks tabs are fullscreen-only; overlay and docked always show Chat.
   const showChatPanel = !isFullscreenMode || activeTab === 0;
   const showNotebooksPanel = isFullscreenMode && activeTab !== 0;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
+
+  // Fullscreen: URL drives Chat vs Notebooks, but shellViewTab must win when entering
+  // fullscreen from overlay/docked on Notebooks while navigation still lands on /lightspeed.
+  useLayoutEffect(() => {
+    if (!isFullscreenMode) {
+      return;
+    }
+    if (isNotebooksFullscreenPath) {
+      setActiveTab(1);
+      setShellViewTab(1);
+      return;
+    }
+    const isBaseLightspeedChatRoute =
+      location.pathname === '/lightspeed' ||
+      location.pathname === '/lightspeed/';
+    if (shellViewTab === 1 && isBaseLightspeedChatRoute) {
+      navigate('/lightspeed/notebooks', { replace: true });
+      return;
+    }
+    setActiveTab(0);
+    setShellViewTab(0);
+  }, [
+    isFullscreenMode,
+    isNotebooksFullscreenPath,
+    shellViewTab,
+    location.pathname,
+    navigate,
+    setShellViewTab,
+  ]);
 
   const handleNotebookTabSelect = (
     _event: React.MouseEvent<any>,
@@ -568,6 +618,7 @@ export const LightspeedChat = ({
   ) => {
     const nextTab = Number(tabIndex);
     setActiveTab(nextTab);
+    setShellViewTab(nextTab);
     if (nextTab === 1) {
       navigate('/lightspeed/notebooks');
       if (notebooksPermissionResolved) {
@@ -581,6 +632,26 @@ export const LightspeedChat = ({
       );
     }
   };
+
+  const setDisplayModeFromHeader = useCallback(
+    (mode: ChatbotDisplayMode) => {
+      if (mode !== ChatbotDisplayMode.embedded) {
+        setDisplayMode(mode);
+        return;
+      }
+      if (activeTab === 1) {
+        const sid = activeNotebook?.session_id;
+        setDisplayMode(
+          mode,
+          undefined,
+          sid ? { notebookSessionId: sid } : 'notebooks',
+        );
+      } else {
+        setDisplayMode(mode);
+      }
+    },
+    [setDisplayMode, activeTab, activeNotebook?.session_id],
+  );
 
   const handleCreateNotebook = useCallback(() => {
     createNotebookMutation.mutate(
@@ -1640,13 +1711,15 @@ export const LightspeedChat = ({
       >
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
-            <ChatbotHeaderMenu
-              aria-expanded={isChatHistoryDrawerOpen}
-              onMenuToggle={onChatHistoryDrawerToggle}
-              className={classes.headerMenu}
-              tooltipContent={t('tooltip.chatHistoryMenu')}
-              aria-label={t('aria.chatHistoryMenu')}
-            />
+            {showChatPanel && (
+              <ChatbotHeaderMenu
+                aria-expanded={isChatHistoryDrawerOpen}
+                onMenuToggle={onChatHistoryDrawerToggle}
+                className={classes.headerMenu}
+                tooltipContent={t('tooltip.chatHistoryMenu')}
+                aria-label={t('aria.chatHistoryMenu')}
+              />
+            )}
             {isFullscreenMode && (
               <ChatbotHeaderTitle className={classes.headerTitle}>
                 <Title headingLevel="h1" size="3xl">
@@ -1667,7 +1740,8 @@ export const LightspeedChat = ({
             isPinningChatsEnabled={isPinningChatsEnabled}
             isModelSelectorDisabled={isSendButtonDisabled}
             hideModelSelector={showNotebooksPanel}
-            setDisplayMode={setDisplayMode}
+            showChatTabOptions={!showNotebooksPanel}
+            setDisplayMode={setDisplayModeFromHeader}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
             onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
@@ -1793,9 +1867,9 @@ export const LightspeedChat = ({
               classes={classes}
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
-              onSelectNotebook={(notebook: NotebookSession) =>
-                navigate(`/lightspeed/notebooks/${notebook.session_id}`)
-              }
+              onSelectNotebook={(notebook: NotebookSession) => {
+                navigate(`/lightspeed/notebooks/${notebook.session_id}`);
+              }}
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}
               onCreateNotebook={handleCreateNotebook}
@@ -1813,7 +1887,10 @@ export const LightspeedChat = ({
                   variant="outlined"
                   color="primary"
                   style={{ borderRadius: '20px' }}
-                  onClick={() => setActiveTab(0)}
+                  onClick={() => {
+                    setActiveTab(0);
+                    setShellViewTab(0);
+                  }}
                 >
                   {t('permission.notebooks.goBack')}
                 </Button>
