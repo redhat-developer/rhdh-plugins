@@ -20,6 +20,13 @@ import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import type { Entity } from '@backstage/catalog-model';
 import { getErrorMessage } from '../../../utils';
 
+export interface UseAgentTemplatesOptions {
+  /** Filter by `metadata.tags` value. */
+  tag?: string;
+  /** Filter by `spec.type` (e.g. "agent" or "tool"). */
+  specType?: string;
+}
+
 export interface UseAgentTemplatesReturn {
   templates: Entity[];
   loading: boolean;
@@ -29,15 +36,22 @@ export interface UseAgentTemplatesReturn {
 
 /**
  * Fetches `kind: Template` entities from the Backstage catalog.
- * When `tag` is provided, only templates with that `metadata.tags` value are
- * returned. When omitted, **all** catalog templates are returned.
+ *
+ * - `specType` filters by `spec.type` (recommended for agent vs tool separation).
+ * - `tag` filters by `metadata.tags`.
+ * - When neither is provided, **all** catalog templates are returned.
  */
-export function useAgentTemplates(tag?: string): UseAgentTemplatesReturn {
+export function useAgentTemplates(
+  options?: UseAgentTemplatesOptions,
+): UseAgentTemplatesReturn {
   const catalogApi = useApi(catalogApiRef);
   const [templates, setTemplates] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
+
+  const tag = options?.tag;
+  const specType = options?.specType;
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +61,9 @@ export function useAgentTemplates(tag?: string): UseAgentTemplatesReturn {
     const filter: Record<string, string> = { kind: 'Template' };
     if (tag) {
       filter['metadata.tags'] = tag;
+    }
+    if (specType) {
+      filter['spec.type'] = specType;
     }
 
     catalogApi
@@ -64,7 +81,7 @@ export function useAgentTemplates(tag?: string): UseAgentTemplatesReturn {
     return () => {
       cancelled = true;
     };
-  }, [catalogApi, tag, tick]);
+  }, [catalogApi, tag, specType, tick]);
 
   const reload = () => setTick(t => t + 1);
 

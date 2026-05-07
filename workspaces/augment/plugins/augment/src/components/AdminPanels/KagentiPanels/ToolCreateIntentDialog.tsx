@@ -208,6 +208,7 @@ export function ToolCreateIntentDialog({
           <AgentTemplateBrowser
             onBack={() => setView('develop-sub')}
             onOpenInDevSpace={handleOpenInDevSpace}
+            specType="tool"
             title="Tool Templates"
             description="Choose a software template to scaffold a new MCP tool project. Templates are discovered from the catalog automatically."
             emptyTitle="No tool templates found"

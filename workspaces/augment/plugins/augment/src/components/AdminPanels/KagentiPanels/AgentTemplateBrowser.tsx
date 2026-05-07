@@ -41,6 +41,8 @@ import { useAgentTemplates } from './useAgentTemplates';
 export interface AgentTemplateBrowserProps {
   onBack: () => void;
   tag?: string;
+  /** Filter templates by `spec.type` (e.g. "agent" or "tool"). */
+  specType?: string;
   /** Callback to open a template's source repo in a DevSpace. */
   onOpenInDevSpace?: (gitRepoUrl: string) => void;
   /** Header title. Defaults to "Agent Templates". */
@@ -98,9 +100,58 @@ function buildScaffolderUrl(entity: Entity): string {
   return `/create/templates/${ns}/${name}`;
 }
 
+function defaultEmptyDescription(
+  specType: string | undefined,
+  tag: string | undefined,
+  theme: ReturnType<typeof useTheme>,
+): React.ReactNode {
+  if (specType) {
+    return (
+      <>
+        Register a Backstage software template with{' '}
+        <Typography
+          component="code"
+          variant="body2"
+          sx={{
+            px: 0.5,
+            bgcolor: alpha(theme.palette.action.hover, 0.1),
+            borderRadius: 0.5,
+            fontFamily: 'monospace',
+          }}
+        >
+          spec.type: {specType}
+        </Typography>{' '}
+        in the catalog and it will appear here automatically.
+      </>
+    );
+  }
+  if (tag) {
+    return (
+      <>
+        Templates with the tag{' '}
+        <Typography
+          component="code"
+          variant="body2"
+          sx={{
+            px: 0.5,
+            bgcolor: alpha(theme.palette.action.hover, 0.1),
+            borderRadius: 0.5,
+            fontFamily: 'monospace',
+          }}
+        >
+          {tag}
+        </Typography>{' '}
+        will appear here automatically.
+      </>
+    );
+  }
+  return 'All Backstage software templates (kind: Template) registered in the catalog will appear here automatically.';
+}
+
 export function AgentTemplateBrowser({
   onBack,
   tag,
+  specType,
   onOpenInDevSpace,
   title: titleLabel = 'Agent Templates',
   description:
@@ -111,7 +162,8 @@ export function AgentTemplateBrowser({
 }: AgentTemplateBrowserProps) {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { templates, loading, error, reload } = useAgentTemplates(tag);
+  const hookOpts = tag || specType ? { tag, specType } : undefined;
+  const { templates, loading, error, reload } = useAgentTemplates(hookOpts);
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -239,28 +291,7 @@ export function AgentTemplateBrowser({
             color="text.disabled"
             sx={{ textAlign: 'center', maxWidth: 400, px: 2 }}
           >
-            {emptyDescription ??
-              (tag ? (
-                <>
-                  Templates with the tag{' '}
-                  <Typography
-                    component="code"
-                    variant="body2"
-                    sx={{
-                      px: 0.5,
-                      bgcolor: alpha(theme.palette.action.hover, 0.1),
-                      borderRadius: 0.5,
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    {tag}
-                  </Typography>{' '}
-                  will appear here automatically. Add this tag to any Backstage
-                  software template to include it.
-                </>
-              ) : (
-                'All Backstage software templates (kind: Template) registered in the catalog will appear here automatically.'
-              ))}
+            {emptyDescription ?? defaultEmptyDescription(specType, tag, theme)}
           </Typography>
         </Box>
       )}

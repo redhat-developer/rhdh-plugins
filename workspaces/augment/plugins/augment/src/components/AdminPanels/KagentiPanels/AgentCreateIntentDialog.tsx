@@ -155,10 +155,12 @@ export function AgentCreateIntentDialog({
       maxWidth="md"
       fullWidth
       aria-labelledby={titleId}
-      PaperProps={{
-        'data-tour': 'intent-dialog',
-        sx: { borderRadius: 3, overflow: 'hidden' },
-      } as Record<string, unknown>}
+      PaperProps={
+        {
+          'data-tour': 'intent-dialog',
+          sx: { borderRadius: 3, overflow: 'hidden' },
+        } as Record<string, unknown>
+      }
     >
       {/* --- Top-level intent selection --- */}
       {view === 'intent' && (
@@ -225,6 +227,7 @@ export function AgentCreateIntentDialog({
           <AgentTemplateBrowser
             onBack={() => setView('develop-sub')}
             onOpenInDevSpace={handleOpenInDevSpace}
+            specType="agent"
           />
         </DialogContent>
       )}
