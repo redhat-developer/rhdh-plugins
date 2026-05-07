@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { randomBytes } from 'crypto';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import type {
@@ -35,6 +36,10 @@ const DW_API_VERSION = 'v1alpha2';
 const DW_RESOURCE = 'devworkspaces';
 const DW_BASE_PATH = `/apis/${DW_API_GROUP}/${DW_API_VERSION}`;
 
+const DEFAULT_DEVSPACES_NAMESPACE = 'admin-devspaces';
+const NAME_SUFFIX_LENGTH = 4;
+const MAX_K8S_NAME_LENGTH = 63;
+
 // ---------------------------------------------------------------------------
 // Kubernetes DevWorkspace resource shape (subset we use)
 // ---------------------------------------------------------------------------
@@ -46,6 +51,14 @@ interface KubeDevWorkspaceMeta {
   creationTimestamp?: string;
 }
 
+interface KubeDevWorkspaceContainer {
+  name: string;
+  memoryLimit?: string;
+  memoryRequest?: string;
+  cpuLimit?: string;
+  cpuRequest?: string;
+}
+
 interface KubeDevWorkspaceSpec {
   started?: boolean;
   routingClass?: string;
@@ -53,6 +66,10 @@ interface KubeDevWorkspaceSpec {
     projects?: Array<{
       name: string;
       git?: { remotes?: Record<string, string> };
+    }>;
+    components?: Array<{
+      name: string;
+      container?: KubeDevWorkspaceContainer;
     }>;
   };
 }
@@ -114,8 +131,12 @@ export class DevSpacesService {
 
     try {
       const token = await this.resolveToken();
-      const url = `${apiUrl}${DW_BASE_PATH}/${DW_RESOURCE}?limit=1`;
-      const resp = await this.fetchK8s(url, { method: 'GET' }, token);
+      const ns = await this.resolveNamespace();
+      const url = `${this.dwUrl(apiUrl, ns)}?limit=1`;
+      const resp = await this.fetchWithRetry(url, {
+        method: 'GET',
+        headers: this.jsonHeaders(token),
+      });
       const elapsed = Date.now() - start;
 
       if (resp.ok) {
@@ -158,13 +179,31 @@ export class DevSpacesService {
   ): Promise<DevSpacesCreateWorkspaceResponse> {
     const apiUrl = await this.requireApiUrl();
     const token = await this.resolveToken();
-    const ns = req.namespace;
+    const ns = await this.resolveNamespace(req.namespace);
     const repoName = this.repoNameFromUrl(req.git_repo);
-    const workspaceName = this.sanitizeName(repoName);
+    const suffix = randomBytes(NAME_SUFFIX_LENGTH)
+      .toString('hex')
+      .slice(0, NAME_SUFFIX_LENGTH);
+    const workspaceName = this.sanitizeName(`${repoName}-${suffix}`);
 
     this.logger.info(
       `Creating DevWorkspace ${workspaceName} in ${ns} from ${req.git_repo}`,
     );
+
+    const components: Array<{
+      name: string;
+      container: KubeDevWorkspaceContainer;
+    }> = [];
+    if (req.memory_limit || req.cpu_limit) {
+      components.push({
+        name: 'dev-tools',
+        container: {
+          name: 'dev-tools',
+          ...(req.memory_limit && { memoryLimit: req.memory_limit }),
+          ...(req.cpu_limit && { cpuLimit: req.cpu_limit }),
+        },
+      });
+    }
 
     const devworkspace: KubeDevWorkspace = {
       apiVersion: `${DW_API_GROUP}/${DW_API_VERSION}`,
@@ -180,6 +219,7 @@ export class DevSpacesService {
               git: { remotes: { origin: req.git_repo } },
             },
           ],
+          ...(components.length > 0 && { components }),
         },
       },
     };
@@ -187,7 +227,7 @@ export class DevSpacesService {
     const url = this.dwUrl(apiUrl, ns);
     const resp = await this.fetchWithRetry(url, {
       method: 'POST',
-      headers: this.headers(token),
+      headers: this.jsonHeaders(token),
       body: JSON.stringify(devworkspace),
     });
 
@@ -210,11 +250,12 @@ export class DevSpacesService {
   ): Promise<DevSpacesListWorkspacesResponse> {
     const apiUrl = await this.requireApiUrl();
     const token = await this.resolveToken();
-    const url = this.dwUrl(apiUrl, namespace);
+    const ns = await this.resolveNamespace(namespace);
+    const url = this.dwUrl(apiUrl, ns);
 
     const resp = await this.fetchWithRetry(url, {
       method: 'GET',
-      headers: this.headers(token),
+      headers: this.jsonHeaders(token),
     });
 
     if (!resp.ok) {
@@ -227,7 +268,7 @@ export class DevSpacesService {
 
     const body = (await resp.json()) as KubeDevWorkspaceList;
     const workspaces = (body.items ?? []).map(dw => this.toWorkspace(dw));
-    return { workspaces, namespace };
+    return { workspaces, namespace: ns };
   }
 
   // ── Get ────────────────────────────────────────────────────────────────
@@ -242,7 +283,7 @@ export class DevSpacesService {
 
     const resp = await this.fetchWithRetry(url, {
       method: 'GET',
-      headers: this.headers(token),
+      headers: this.jsonHeaders(token),
     });
 
     if (!resp.ok) {
@@ -262,18 +303,11 @@ export class DevSpacesService {
 
     this.logger.info(`Stopping DevWorkspace ${name} in ${namespace}`);
 
-    const resp = await this.fetchK8s(
-      url,
-      {
-        method: 'PATCH',
-        headers: {
-          ...this.headers(token),
-          'Content-Type': 'application/merge-patch+json',
-        },
-        body: JSON.stringify({ spec: { started: false } }),
-      },
-      token,
-    );
+    const resp = await this.fetchWithRetry(url, {
+      method: 'PATCH',
+      headers: this.patchHeaders(token),
+      body: JSON.stringify({ spec: { started: false } }),
+    });
 
     if (!resp.ok) {
       const detail = await this.extractK8sError(resp);
@@ -291,7 +325,10 @@ export class DevSpacesService {
 
     this.logger.info(`Deleting DevWorkspace ${name} in ${namespace}`);
 
-    const resp = await this.fetchK8s(url, { method: 'DELETE' }, token);
+    const resp = await this.fetchWithRetry(url, {
+      method: 'DELETE',
+      headers: this.jsonHeaders(token),
+    });
 
     if (!resp.ok && resp.status !== 404) {
       const detail = await this.extractK8sError(resp);
@@ -306,13 +343,11 @@ export class DevSpacesService {
   // Internal helpers
   // ═══════════════════════════════════════════════════════════════════════
 
-  /** Build the DevWorkspace API URL for a namespace, optionally a specific resource. */
   private dwUrl(apiUrl: string, namespace: string, name?: string): string {
     const base = `${apiUrl}${DW_BASE_PATH}/namespaces/${encodeURIComponent(namespace)}/${DW_RESOURCE}`;
     return name ? `${base}/${encodeURIComponent(name)}` : base;
   }
 
-  /** Map a K8s DevWorkspace resource to the frontend DevSpacesWorkspace type. */
   private toWorkspace(dw: KubeDevWorkspace): DevSpacesWorkspace {
     const project = dw.spec?.template?.projects?.[0];
     return {
@@ -325,7 +360,6 @@ export class DevSpacesService {
     };
   }
 
-  /** Map a K8s DevWorkspace resource to the create-response type. */
   private toCreateResponse(
     dw: KubeDevWorkspace,
   ): DevSpacesCreateWorkspaceResponse {
@@ -339,20 +373,18 @@ export class DevSpacesService {
     };
   }
 
-  /** Extract repo name from a git URL (e.g. "https://github.com/org/repo.git" → "repo"). */
   private repoNameFromUrl(gitUrl: string): string {
     const last = gitUrl.replace(/\/+$/, '').split('/').pop() ?? 'workspace';
     return last.replace(/\.git$/i, '');
   }
 
-  /** Sanitize a name to be a valid Kubernetes resource name. */
   private sanitizeName(raw: string): string {
     return (
       raw
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, '-')
         .replace(/^-+|-+$/g, '')
-        .slice(0, 63) || 'workspace'
+        .slice(0, MAX_K8S_NAME_LENGTH) || 'workspace'
     );
   }
 
@@ -375,6 +407,24 @@ export class DevSpacesService {
     return url;
   }
 
+  /**
+   * Resolve the Kubernetes namespace for DevWorkspace resources.
+   * Uses the admin-configured `devSpacesNamespace`, falling back to
+   * the provided hint or the default `admin-devspaces`.
+   */
+  private async resolveNamespace(hint?: string): Promise<string> {
+    const configured = (await this.adminConfig.get('devSpacesNamespace')) as
+      | string
+      | undefined;
+    if (configured && typeof configured === 'string' && configured.trim()) {
+      return configured.trim();
+    }
+    if (hint && hint.endsWith('-devspaces')) {
+      return hint;
+    }
+    return hint ? `${hint}-devspaces` : DEFAULT_DEVSPACES_NAMESPACE;
+  }
+
   private async resolveToken(): Promise<string> {
     const adminToken = (await this.adminConfig.get('devSpacesToken')) as
       | string
@@ -394,28 +444,21 @@ export class DevSpacesService {
     );
   }
 
-  private headers(token: string): Record<string, string> {
+  private jsonHeaders(token: string): Record<string, string> {
     return {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
   }
 
-  // ── HTTP helpers ───────────────────────────────────────────────────────
-
-  private async fetchK8s(
-    url: string,
-    init: RequestInit,
-    token?: string,
-  ): Promise<Response> {
-    const hdrs: Record<string, string> = {
-      ...(init.headers as Record<string, string>),
+  private patchHeaders(token: string): Record<string, string> {
+    return {
+      'Content-Type': 'application/merge-patch+json',
+      Authorization: `Bearer ${token}`,
     };
-    if (token && !hdrs.Authorization) {
-      hdrs.Authorization = `Bearer ${token}`;
-    }
-    return this.fetchWithTimeout(url, { ...init, headers: hdrs });
   }
+
+  // ── HTTP helpers ───────────────────────────────────────────────────────
 
   private async fetchWithTimeout(
     url: string,
