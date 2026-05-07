@@ -2,11 +2,12 @@
 #
 # Build x2a dynamic plugins and package them as OCI images.
 #
-# Usage: ./scripts/build-dynamic-plugins.sh [--push] [--tag <tag>]
+# Usage: ./scripts/build-dynamic-plugins.sh [--push] [--tag <tag>] [--report]
 #
 # Options:
 #   --push       Push built images to the registry after packaging
 #   --tag <tag>  Additional tag to apply to images (e.g., nightly, latest)
+#   --report     Print a JSON report of all plugin images and exit (no build)
 #
 # Produces OCI images:
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a:<version>
@@ -28,6 +29,7 @@ EMBED_NODE="@red-hat-developer-hub/backstage-plugin-x2a-node"
 IMAGE_REGISTRY="quay.io/x2ansible"
 PUSH_IMAGES=false
 CUSTOM_TAG=""
+REPORT_ONLY=false
 
 # Per-plugin embed packages. Plugins that depend on x2a-node (workspace dep)
 # must embed it alongside x2a-common so the RHDH CLI moves shared deps to
@@ -71,6 +73,45 @@ get_plugin_version() {
   local plugin_dir="$1"
   local pkg_json="${WORKSPACE_DIR}/plugins/${plugin_dir}/package.json"
   node -e "console.log(require('${pkg_json}').version)"
+}
+
+generate_report() {
+  local tag="${CUSTOM_TAG:-latest}"
+
+  # Build a JSON object from the PLUGIN_IMAGES associative array
+  local plugins_json="{"
+  local first=true
+  for plugin_dir in "${!PLUGIN_IMAGES[@]}"; do
+    if [[ "$first" == true ]]; then
+      first=false
+    else
+      plugins_json+=","
+    fi
+    plugins_json+="\"${plugin_dir}\":\"${PLUGIN_IMAGES[$plugin_dir]}\""
+  done
+  plugins_json+="}"
+
+  node -e "
+    const path = require('path');
+    const pluginImages = ${plugins_json};
+    const report = { '${tag}': {} };
+
+    for (const [pluginDir, imageName] of Object.entries(pluginImages)) {
+      const pkgPath = path.join('${WORKSPACE_DIR}', 'plugins', pluginDir, 'package.json');
+      const pkg = require(pkgPath);
+      const version = pkg.version;
+      const backstageVersion = (pkg.backstage || {})['supported-versions'] || '';
+      const imageTag = '${IMAGE_REGISTRY}/' + imageName + ':' + version;
+
+      report['${tag}'][imageName] = {
+        version: version,
+        backstage_version: backstageVersion,
+        container_image: imageTag,
+      };
+    }
+
+    console.log(JSON.stringify(report, null, 2));
+  "
 }
 
 install_dependencies() {
@@ -171,6 +212,10 @@ parse_args() {
         CUSTOM_TAG="$2"
         shift 2
         ;;
+      --report)
+        REPORT_ONLY=true
+        shift
+        ;;
       *)
         echo "ERROR: unknown argument: $1" >&2
         exit 1
@@ -181,6 +226,12 @@ parse_args() {
 
 main() {
   parse_args "$@"
+
+  if [[ "$REPORT_ONLY" == true ]]; then
+    generate_report
+    return
+  fi
+
   check_prerequisites
   install_dependencies
   build_workspace
