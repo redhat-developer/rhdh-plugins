@@ -281,7 +281,7 @@ export function DevSpacesLaunchForm({
         msg.toLowerCase().includes('not configured') ||
         msg.toLowerCase().includes('authentication is not configured')
       ) {
-        msg = `${msg} Go to the Administration panel → Dev Spaces section to configure the API URL and authentication token.`;
+        msg = `${msg} Go to the Administration panel → Dev Spaces section to configure the OpenShift API URL and authentication token.`;
       }
       setErrorMessage(msg);
       setStatus('error');
@@ -359,9 +359,9 @@ export function DevSpacesLaunchForm({
             Dev Spaces is not configured
           </Typography>
           <Typography variant="body2">
-            {healthMsg || 'The Dev Spaces API URL has not been set.'} Go to{' '}
-            <strong>Administration → Dev Spaces</strong> to configure the API
-            URL and authentication token, then return here.
+            {healthMsg || 'The OpenShift API URL has not been set.'} Go to{' '}
+            <strong>Administration → Dev Spaces</strong> to configure the
+            OpenShift API URL and authentication token, then return here.
           </Typography>
         </Alert>
         <Button onClick={onBack} sx={{ textTransform: 'none' }}>
@@ -391,7 +391,7 @@ export function DevSpacesLaunchForm({
         </Box>
         <Alert severity="error" sx={{ mb: 2 }}>
           <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-            Cannot reach Dev Spaces API
+            Cannot reach Kubernetes API
           </Typography>
           <Typography variant="body2">
             {healthMsg} Check the API URL and authentication token in{' '}
