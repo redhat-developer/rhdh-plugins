@@ -230,8 +230,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tooltip.fab.open': 'Lightspeed öffnen',
     'tooltip.fab.close': 'Lightspeed schließen',
     'attach.menu.title': 'Anhängen',
-    'attach.menu.description':
-      'Eine JSON-, YAML-, TXT- oder XML-Datei anhängen',
+    'attach.menu.description': 'Eine JSON-, YAML- oder TXT-Datei anhängen',
     'modal.title.preview': 'Anhang in der Vorschau anzeigen',
     'modal.title.edit': 'Anhang bearbeiten',
     'icon.lightspeed.alt': 'Lightspeed-Symbol',

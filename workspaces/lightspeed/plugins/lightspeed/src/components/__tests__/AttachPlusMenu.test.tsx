@@ -64,7 +64,7 @@ describe('AttachPlusMenu', () => {
     await waitFor(() => {
       expect(screen.getByText('Attach')).toBeInTheDocument();
       expect(
-        screen.getByText('Attach a JSON, YAML, TXT, or XML file'),
+        screen.getByText('Attach a JSON, YAML, or TXT file'),
       ).toBeInTheDocument();
     });
   });
@@ -169,18 +169,16 @@ describe('AttachPlusMenu', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText('Attach a JSON, YAML, TXT, or XML file'),
+        screen.getByText('Attach a JSON, YAML, or TXT file'),
       ).toBeInTheDocument();
     });
 
-    const attachMenuItem = screen.getByText(
-      'Attach a JSON, YAML, TXT, or XML file',
-    );
+    const attachMenuItem = screen.getByText('Attach a JSON, YAML, or TXT file');
     await userEvent.click(attachMenuItem);
 
     await waitFor(() => {
       expect(
-        screen.queryByText('Attach a JSON, YAML, TXT, or XML file'),
+        screen.queryByText('Attach a JSON, YAML, or TXT file'),
       ).not.toBeInTheDocument();
     });
   });

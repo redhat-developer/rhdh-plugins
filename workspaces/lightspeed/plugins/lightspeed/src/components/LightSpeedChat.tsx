@@ -109,7 +109,6 @@ import {
 } from '../utils/lightspeed-chatbox-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
-import { AttachPlusMenu } from './AttachPlusMenu';
 import { CollapsedHistoryStrip, EditSquareIcon } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
@@ -346,58 +345,15 @@ const useStyles = makeStyles(theme => ({
       margin: '0 auto',
     },
   },
-  messageBarContainer: {
+  fullscreenMessageBar: {
     backgroundColor:
       'var(--pf-t--global--background--color--secondary--default)',
     border: '1px solid var(--pf-t--global--border--color--default)',
     borderRadius: 24,
-    padding: 4,
-    paddingBottom: 48,
-    width: '100%',
-    maxWidth: 'unset',
-    margin: '0 auto',
-    position: 'relative',
-    cursor: 'text',
-    '& .pf-chatbot__message-bar': {
-      backgroundColor: 'transparent',
-      position: 'static',
+    padding: theme.spacing(0.5),
+    '&::after': {
+      display: 'none',
     },
-    '& .pf-chatbot__message-bar::after': {
-      border: 'none !important',
-      display: 'none !important',
-    },
-    '& .pf-chatbot__message-bar-input': {
-      backgroundColor: 'transparent',
-    },
-    '& .pf-v6-c-form-control, & .pf-v5-c-form-control': {
-      backgroundColor: 'transparent',
-      '--pf-v6-c-form-control--BackgroundColor': 'transparent',
-      '--pf-v5-c-form-control--BackgroundColor': 'transparent',
-    },
-    '& textarea': {
-      backgroundColor: 'transparent !important',
-      border: 'none !important',
-      boxShadow: 'none !important',
-      outline: 'none !important',
-    },
-    '& textarea:focus, & textarea:hover, & textarea:focus-visible': {
-      border: 'none !important',
-      boxShadow: 'none !important',
-      outline: 'none !important',
-    },
-    '& .pf-chatbot__message-bar-actions': {
-      position: 'absolute',
-      bottom: 4,
-      right: 8,
-    },
-  },
-  messageBarBottomRow: {
-    position: 'absolute',
-    bottom: 4,
-    left: 8,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
   },
   sortDropdown: {
     padding: 0,
@@ -1707,58 +1663,38 @@ export const LightspeedChat = ({
       >
         <FilePreview />
         {isFullscreenMode ? (
-          <div
-            className={classes.messageBarContainer}
-            role="textbox"
-            tabIndex={0}
-            onClick={e => {
-              const textarea = (e.currentTarget as HTMLElement).querySelector(
-                'textarea',
-              );
-              if (textarea) textarea.focus();
-            }}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                const textarea = (e.currentTarget as HTMLElement).querySelector(
-                  'textarea',
-                );
-                if (textarea) textarea.focus();
-              }
-            }}
-          >
-            <MessageBar
-              key={messageBarKey}
-              onSendMessage={sendMessage}
-              isSendButtonDisabled={isSendButtonDisabled}
-              hasAttachButton={false}
-              hasMicrophoneButton
-              value={draftMessage}
-              onChange={handleDraftMessage}
-              hasStopButton={streamingUiMatchesView}
-              handleStopButton={
-                streamingUiMatchesView ? handleStopButton : undefined
-              }
-              buttonProps={{
-                microphone: {
-                  tooltipContent: {
-                    active: t('tooltip.microphone.active'),
-                    inactive: t('tooltip.microphone.inactive'),
-                  },
+          <MessageBar
+            key={messageBarKey}
+            className={classes.fullscreenMessageBar}
+            onSendMessage={sendMessage}
+            isSendButtonDisabled={isSendButtonDisabled}
+            hasAttachButton
+            attachButtonPosition="start"
+            handleAttach={handleAttach}
+            hasMicrophoneButton
+            value={draftMessage}
+            onChange={handleDraftMessage}
+            hasStopButton={streamingUiMatchesView}
+            handleStopButton={
+              streamingUiMatchesView ? handleStopButton : undefined
+            }
+            buttonProps={{
+              attach: {
+                inputTestId: 'attachment-input',
+                tooltipContent: t('tooltip.attach'),
+                icon: <PlusIcon />,
+              },
+              microphone: {
+                tooltipContent: {
+                  active: t('tooltip.microphone.active'),
+                  inactive: t('tooltip.microphone.inactive'),
                 },
-                send: {
-                  tooltipContent: t('tooltip.send'),
-                },
-              }}
-              allowedFileTypes={supportedFileTypes}
-              onAttachRejected={onAttachRejected}
-              placeholder={t('chatbox.message.placeholder')}
-            />
-            <div className={classes.messageBarBottomRow}>
-              <AttachPlusMenu
-                onAttach={handleAttach}
-                allowedFileTypes={supportedFileTypes}
-                onAttachRejected={onAttachRejected}
-              />
+              },
+              send: {
+                tooltipContent: t('tooltip.send'),
+              },
+            }}
+            additionalActions={
               <MessageBarModelSelector
                 selectedModel={selectedModel}
                 models={models}
@@ -1769,8 +1705,12 @@ export const LightspeedChat = ({
                 }}
                 disabled={isSendButtonDisabled}
               />
-            </div>
-          </div>
+            }
+            forceMultilineLayout
+            allowedFileTypes={supportedFileTypes}
+            onAttachRejected={onAttachRejected}
+            placeholder={t('chatbox.message.placeholder')}
+          />
         ) : (
           <MessageBar
             key={messageBarKey}

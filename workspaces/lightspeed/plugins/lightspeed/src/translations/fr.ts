@@ -229,7 +229,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.fab.open': 'Ouvrir Lightspeed',
     'tooltip.fab.close': 'Fermer Lightspeed',
     'attach.menu.title': 'Attacher',
-    'attach.menu.description': 'Attacher un fichier JSON, YAML, TXT ou XML',
+    'attach.menu.description': 'Attacher un fichier JSON, YAML ou TXT',
 
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'modal.title.edit': 'Modifier la pièce jointe',

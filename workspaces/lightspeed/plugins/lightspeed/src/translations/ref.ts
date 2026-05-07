@@ -253,7 +253,7 @@ export const lightspeedMessages = {
 
   // Attach menu
   'attach.menu.title': 'Attach',
-  'attach.menu.description': 'Attach a JSON, YAML, TXT, or XML file',
+  'attach.menu.description': 'Attach a JSON, YAML, or TXT file',
 
   // History panel sections
   'history.section.pinned': 'Pinned',

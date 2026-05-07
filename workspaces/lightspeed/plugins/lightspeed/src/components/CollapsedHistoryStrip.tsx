@@ -80,7 +80,7 @@ const useStyles = makeStyles(theme => ({
     padding: 0,
     minWidth: 0,
     lineHeight: 1,
-    color: '#0066CC',
+    color: 'var(--pf-t--global--color--brand--default)',
     '&:hover': {
       color: 'var(--pf-t--global--color--brand--hover)',
     },

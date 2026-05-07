@@ -228,7 +228,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tooltip.settings': 'Opzioni chatbot',
     'tooltip.close': 'Chiudi',
     'attach.menu.title': 'Allega',
-    'attach.menu.description': 'Allega un file JSON, YAML, TXT o XML',
+    'attach.menu.description': 'Allega un file JSON, YAML o TXT',
     'history.section.pinned': 'Fissati',
     'history.section.recent': 'Recenti',
     'tooltip.fab.open': 'Apri Lightspeed',

@@ -19,7 +19,6 @@ import { Ref, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import {
   Dropdown,
-  DropdownGroup,
   DropdownItem,
   DropdownList,
   MenuToggle,
@@ -36,12 +35,12 @@ type MessageBarModelSelectorProps = {
   disabled?: boolean;
 };
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
   selectorToggle: {
     display: 'flex',
     alignItems: 'center',
     gap: 4,
-    color: '#6a7282',
+    color: theme.palette.text.secondary,
     fontSize: 14,
     fontWeight: 500,
     cursor: 'pointer',
@@ -50,7 +49,7 @@ const useStyles = makeStyles(() => ({
     border: 'none',
     background: 'transparent',
     '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+      backgroundColor: theme.palette.action.hover,
     },
     '&:disabled': {
       cursor: 'not-allowed',
@@ -62,9 +61,6 @@ const useStyles = makeStyles(() => ({
       padding: 0,
       margin: 0,
     },
-  },
-  groupTitle: {
-    fontWeight: 'bold',
   },
 }));
 
@@ -114,15 +110,13 @@ export const MessageBarModelSelector = ({
     >
       <DropdownList>
         {models.map(model => (
-          <DropdownGroup className={classes.groupTitle} key={model.label}>
-            <DropdownItem
-              value={model.value}
-              key={model.value}
-              isSelected={selectedModel === model.value}
-            >
-              {model.label}
-            </DropdownItem>
-          </DropdownGroup>
+          <DropdownItem
+            value={model.value}
+            key={model.value}
+            isSelected={selectedModel === model.value}
+          >
+            {model.label}
+          </DropdownItem>
         ))}
       </DropdownList>
     </Dropdown>

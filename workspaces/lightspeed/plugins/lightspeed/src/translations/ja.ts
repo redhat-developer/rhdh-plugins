@@ -228,7 +228,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'tooltip.fab.open': 'Lightspeed を開く',
     'tooltip.fab.close': 'Lightspeed を閉じる',
     'attach.menu.title': '添付',
-    'attach.menu.description': 'JSON、YAML、TXT、または XML ファイルを添付',
+    'attach.menu.description': 'JSON、YAML、または TXT ファイルを添付',
     'modal.title.preview': '添付ファイルのプレビュー',
     'modal.title.edit': '添付ファイルの編集',
     'icon.lightspeed.alt': 'lightspeed アイコン',

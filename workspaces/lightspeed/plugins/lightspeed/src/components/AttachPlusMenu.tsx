@@ -46,9 +46,9 @@ const useStyles = makeStyles(theme => ({
     minWidth: 0,
     borderRadius: '50%',
     backgroundColor: 'transparent',
-    color: '#6a7282',
+    color: theme.palette.text.secondary,
     '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+      backgroundColor: theme.palette.action.hover,
     },
   },
   dropdown: {
@@ -85,17 +85,17 @@ const useStyles = makeStyles(theme => ({
     gap: 8,
     fontSize: 14,
     fontWeight: 500,
-    color: '#151515',
+    color: theme.palette.text.primary,
   },
   menuItemDescription: {
     fontSize: 14,
-    color: '#707070',
+    color: theme.palette.text.secondary,
     paddingLeft: 26,
   },
   paperclipIcon: {
     width: 17.5,
     height: 20,
-    color: '#151515',
+    color: theme.palette.text.primary,
   },
   hiddenInput: {
     display: 'none',
