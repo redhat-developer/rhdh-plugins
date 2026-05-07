@@ -75,7 +75,6 @@ describe('LokiProvider', () => {
                 },
                 {
                   label: 'custom-selector1',
-                  value: '=~".+"',
                 },
               ],
             },
@@ -158,6 +157,17 @@ describe('LokiProvider', () => {
       expect(workflowLogs.logs[0]).toHaveProperty('log');
       // Sorted correctly, this id is the last in the mockdata and should be first when returned
       expect(workflowLogs.logs[0].id).toEqual('1764952546327102000');
+
+      const calls = jest.mocked(undiciFetch).mock.calls;
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toEqual(urlToFetch);
+      expect(calls[0][1]).toEqual(
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer notsecret',
+          }),
+        }),
+      );
     });
 
     it('should have an enddate that had 5 minutes added to it', async () => {
@@ -190,7 +200,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2025-12-05T17%3A40%3A13.621Z';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2025-12-05T17%3A40%3A13.621Z';
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
@@ -198,6 +208,10 @@ describe('LokiProvider', () => {
       expect(parsedURLToFetch.searchParams.get('end')).toEqual(
         '2025-12-05T17:40:13.621Z',
       ); // Should be 5 minutes after
+
+      const calls = jest.mocked(undiciFetch).mock.calls;
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toEqual(urlToFetch);
     });
 
     it('should have a custom log selector and filter', async () => {
@@ -221,7 +235,6 @@ describe('LokiProvider', () => {
                 },
                 {
                   label: 'custom-selector1',
-                  value: '=~".+"',
                 },
               ],
             },
@@ -240,16 +253,20 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom-selector%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom-selector%3D%7E%22.%2B%22%2Ccustom-selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
+
+      const calls = jest.mocked(undiciFetch).mock.calls;
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toEqual(urlToFetch);
 
       const parsedURLToFetch = new URL(urlToFetch);
 
       expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
       expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
       expect(parsedURLToFetch.searchParams.get('query')).toEqual(
-        `{custom-selector=~".+",custom-selector1=~".+"} |="${workflowInstance.id}"`,
+        `{custom-selector=~".+",custom-selector1="application"} |="${workflowInstance.id}"`,
       );
     });
 
@@ -291,7 +308,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%7E%22.%2B%22%2Ccustom-selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
@@ -299,8 +316,12 @@ describe('LokiProvider', () => {
       expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
       expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
       expect(parsedURLToFetch.searchParams.get('query')).toEqual(
-        `{service_name=~".+",custom-selector1=~".+"} |="${workflowInstance.id}"`,
+        `{openshift_log_type=~".+",custom-selector1="application"} |="${workflowInstance.id}"`,
       );
+
+      const calls = jest.mocked(undiciFetch).mock.calls;
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toEqual(urlToFetch);
     });
 
     it('should have a custom pipeline filter, no label and no value, use defaults', async () => {
@@ -344,6 +365,10 @@ describe('LokiProvider', () => {
       expect(parsedURLToFetch.searchParams.get('query')).toEqual(
         `{openshift_log_type="application"} |="${workflowInstance.id}" | filter1 | json`,
       );
+
+      const calls = jest.mocked(undiciFetch).mock.calls;
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toEqual(urlToFetch);
     });
   });
 });

@@ -113,7 +113,10 @@ export class LokiProvider implements WorkflowLogProvider {
           arr: string | any[],
         ) => {
           // something about that last comma
-          streamSelector += `${entry.label || 'openshift_log_type'}${entry.value || '=~".+"'}${index !== arr.length - 1 ? ',' : ''}`;
+          // TODO: Ensure all queries have at least one strict equality matcher (e.g., {app="frontend"}), not just broad regular expressions (e.g., app=~".*").
+          // TODO: don't allow the =~ or the !~ characters in the value
+          // TODO sanitize the entry.labe and entry.value to prevent injection attacks
+          streamSelector += `${entry.label || 'openshift_log_type'}${entry.value || '="application"'}${index !== arr.length - 1 ? ',' : ''}`;
         },
       );
     }
@@ -125,6 +128,7 @@ export class LokiProvider implements WorkflowLogProvider {
       });
     }
 
+    // TODO: add the limit parameter to the query and make it configurable but default to 100
     const params = new URLSearchParams({
       query: `{${streamSelector}} ${logPipelineFilter}`,
       start: startTime as string,
