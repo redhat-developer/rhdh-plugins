@@ -491,13 +491,15 @@ export const LightspeedChat = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const configApi = useApi(configApiRef);
+  const notebooksEnabled =
+    configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
   const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
   const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
   const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
-  const notebooksEnabled =
-    configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
-  const shouldShowTabs =
-    notebooksEnabled || notebooksRouteMatch || notebookViewRouteMatch;
+  const isOnNotebookRoute = Boolean(
+    notebooksRouteMatch || notebookViewRouteMatch,
+  );
+  const shouldShowTabs = notebooksEnabled || isOnNotebookRoute;
   const {
     displayMode,
     setDisplayMode,
@@ -599,9 +601,9 @@ export const LightspeedChat = ({
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
-  // Chat vs Notebooks tabs are fullscreen-only; overlay and docked always show Chat.
   const showChatPanel = !isFullscreenMode || activeTab === 0;
-  const showNotebooksPanel = notebooksEnabled && activeTab !== 0;
+  const showNotebooksPanel =
+    (notebooksEnabled || isOnNotebookRoute) && activeTab !== 0;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
 
