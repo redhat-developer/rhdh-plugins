@@ -1948,9 +1948,7 @@ export const LightspeedChat = ({
               className={classes.tabs}
             >
               <Tab eventKey={0} title={t('tabs.chat')} />
-              {notebooksEnabled && (
-                <Tab eventKey={1} title={t('tabs.notebooks')} />
-              )}
+              <Tab eventKey={1} title={t('tabs.notebooks')} />
             </Tabs>
             <div className={classes.tabsDivider} />
           </>
