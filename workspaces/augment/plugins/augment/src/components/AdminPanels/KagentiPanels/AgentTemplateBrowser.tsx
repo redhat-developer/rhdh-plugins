@@ -32,7 +32,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LaptopMacOutlinedIcon from '@mui/icons-material/LaptopMacOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { alpha, useTheme } from '@mui/material/styles';
 import type { Entity } from '@backstage/catalog-model';
@@ -62,6 +62,8 @@ function templateTitle(entity: Entity): string {
 function templateDescription(entity: Entity): string {
   return entity.metadata.description ?? '';
 }
+
+const MAX_VISIBLE_TAGS = 4;
 
 function templateTags(entity: Entity): string[] {
   return (entity.metadata.tags as string[] | undefined) ?? [];
@@ -190,19 +192,18 @@ export function AgentTemplateBrowser({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 2,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: 1.5,
           }}
         >
-          {[0, 1, 2].map(i => (
-            <Card key={i} variant="outlined">
-              <CardContent>
-                <Skeleton variant="text" width="60%" height={28} />
-                <Skeleton variant="text" width="100%" />
-                <Skeleton variant="text" width="80%" />
-                <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
-                  <Skeleton variant="rounded" width={60} height={20} />
-                  <Skeleton variant="rounded" width={50} height={20} />
+          {[0, 1, 2, 3].map(i => (
+            <Card key={i} variant="outlined" sx={{ borderRadius: 2 }}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Skeleton variant="text" width="70%" height={20} />
+                <Skeleton variant="text" width="100%" height={16} />
+                <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                  <Skeleton variant="rounded" width={48} height={18} />
+                  <Skeleton variant="rounded" width={40} height={18} />
                 </Box>
               </CardContent>
             </Card>
@@ -267,8 +268,8 @@ export function AgentTemplateBrowser({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 2,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: 1.5,
           }}
         >
           {filtered.map(entity => {
@@ -278,6 +279,8 @@ export function AgentTemplateBrowser({
             const owner = templateOwner(entity);
             const type = templateType(entity);
             const sourceRepo = templateSourceRepo(entity);
+            const visibleTags = tags.slice(0, MAX_VISIBLE_TAGS);
+            const hiddenCount = tags.length - visibleTags.length;
 
             return (
               <Card
@@ -286,28 +289,43 @@ export function AgentTemplateBrowser({
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
+                  borderRadius: 2,
                   transition: 'box-shadow 0.15s, border-color 0.15s',
                   cursor: 'pointer',
                   '&:hover': {
                     borderColor: theme.palette.primary.main,
-                    boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.25)}`,
                   },
                 }}
                 onClick={() => handleLaunch(entity)}
               >
-                <CardContent sx={{ flex: 1, pb: 1 }}>
+                <CardContent
+                  sx={{
+                    flex: 1,
+                    p: 1.5,
+                    '&:last-child': { pb: 1.5 },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 0.5,
+                  }}
+                >
                   <Box
                     sx={{
                       display: 'flex',
-                      alignItems: 'flex-start',
+                      alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: 1,
-                      mb: 0.5,
+                      gap: 0.5,
                     }}
                   >
                     <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 700, lineHeight: 1.3 }}
+                      variant="body2"
+                      sx={{
+                        fontWeight: 700,
+                        lineHeight: 1.3,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
                     >
                       {title}
                     </Typography>
@@ -316,104 +334,150 @@ export function AgentTemplateBrowser({
                         label={type}
                         size="small"
                         variant="outlined"
-                        sx={{ height: 24, fontSize: '0.75rem', flexShrink: 0 }}
+                        sx={{
+                          height: 20,
+                          fontSize: '0.675rem',
+                          flexShrink: 0,
+                          '& .MuiChip-label': { px: 0.75 },
+                        }}
                       />
                     )}
                   </Box>
+
                   {desc && (
                     <Typography
-                      variant="body2"
+                      variant="caption"
                       color="text.secondary"
                       sx={{
-                        mb: 1,
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
-                        lineHeight: 1.4,
+                        lineHeight: 1.35,
                       }}
                     >
                       {desc}
                     </Typography>
                   )}
-                  {tags.length > 0 && (
+
+                  {visibleTags.length > 0 && (
                     <Box
                       sx={{
                         display: 'flex',
                         gap: 0.5,
-                        flexWrap: 'wrap',
-                        mb: 1,
+                        flexWrap: 'nowrap',
+                        overflow: 'hidden',
+                        mt: 0.25,
                       }}
                     >
-                      {tags.map(t => (
+                      {visibleTags.map(t => (
                         <Chip
                           key={t}
                           label={t}
                           size="small"
                           sx={{
-                            height: 24,
-                            fontSize: '0.75rem',
+                            height: 20,
+                            fontSize: '0.675rem',
+                            flexShrink: 0,
                             bgcolor: alpha(theme.palette.primary.main, 0.08),
                             color: theme.palette.primary.main,
+                            '& .MuiChip-label': { px: 0.75 },
                           }}
                         />
                       ))}
+                      {hiddenCount > 0 && (
+                        <Chip
+                          label={`+${hiddenCount}`}
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.675rem',
+                            flexShrink: 0,
+                            bgcolor: alpha(theme.palette.action.hover, 0.08),
+                            color: theme.palette.text.secondary,
+                            '& .MuiChip-label': { px: 0.75 },
+                          }}
+                        />
+                      )}
                     </Box>
                   )}
-                  {owner && (
-                    <Typography
-                      variant="caption"
-                      color="text.disabled"
-                      sx={{ display: 'block' }}
-                    >
-                      Owner: {owner}
-                    </Typography>
-                  )}
-                </CardContent>
-                <Box
-                  sx={{
-                    px: 2,
-                    pb: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                  }}
-                >
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    endIcon={
-                      <OpenInNewIcon sx={{ fontSize: '0.875rem !important' }} />
-                    }
-                    onClick={e => {
-                      e.stopPropagation();
-                      handleLaunch(entity);
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mt: 'auto',
+                      pt: 0.5,
                     }}
-                    sx={{ textTransform: 'none' }}
                   >
-                    Use Template
-                  </Button>
-                  {onOpenInDevSpace && sourceRepo && (
-                    <Tooltip title={devSpaceLabel}>
-                      <IconButton
+                    {owner ? (
+                      <Typography
+                        variant="caption"
+                        color="text.disabled"
+                        sx={{
+                          fontSize: '0.675rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          flex: 1,
+                          mr: 0.5,
+                        }}
+                      >
+                        {owner}
+                      </Typography>
+                    ) : (
+                      <Box sx={{ flex: 1 }} />
+                    )}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Button
                         size="small"
+                        variant="text"
                         onClick={e => {
                           e.stopPropagation();
-                          onOpenInDevSpace(sourceRepo);
+                          handleLaunch(entity);
                         }}
                         sx={{
-                          color: theme.palette.text.secondary,
-                          '&:hover': {
-                            color: theme.palette.primary.main,
-                          },
+                          textTransform: 'none',
+                          fontSize: '0.75rem',
+                          minWidth: 'auto',
+                          px: 1,
+                          py: 0.25,
                         }}
-                        aria-label={devSpaceLabel}
                       >
-                        <LaptopMacOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </Box>
+                        Use
+                      </Button>
+                      {onOpenInDevSpace && sourceRepo && (
+                        <Tooltip title={devSpaceLabel}>
+                          <IconButton
+                            size="small"
+                            onClick={e => {
+                              e.stopPropagation();
+                              onOpenInDevSpace(sourceRepo);
+                            }}
+                            sx={{
+                              p: 0.25,
+                              color: theme.palette.text.secondary,
+                              '&:hover': {
+                                color: theme.palette.primary.main,
+                              },
+                            }}
+                            aria-label={devSpaceLabel}
+                          >
+                            <LaptopMacOutlinedIcon sx={{ fontSize: '1rem' }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                  </Box>
+                </CardContent>
               </Card>
             );
           })}
