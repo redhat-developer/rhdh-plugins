@@ -75,7 +75,7 @@ const PermissionRequiredState = () => {
           <Button
             variant="outlined"
             target="_blank"
-            href="https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html-single/understand_and_visualize_red_hat_developer_hub_project_health_using_scorecards/index#proc-authenticating-and-managing-scorecard-plugins_assembly-setting-up-scorecards-to-monitor-your-rhdh-health"
+            href="https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html-single/evaluate_project_health_using_scorecards/index#set-up-scorecards-to-monitor-your-project-health_evaluate-project-health-using-scorecards"
             sx={theme => ({
               color: theme.palette.primary.main,
             })}

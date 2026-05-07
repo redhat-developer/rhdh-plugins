@@ -40,7 +40,7 @@ app:
       cta:
         text: Learn more
         textKey: steps.configureGit.ctaTitle
-        link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+        link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_your_git_provider/index
     - title: Manage plugins
       titleKey: steps.managePlugins.title
       icon: Plugins

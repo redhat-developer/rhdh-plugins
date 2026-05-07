@@ -28,10 +28,10 @@ import {
 import { useTranslation } from '../hooks/useTranslation';
 
 const PRODUCTION_DOCS_URL =
-  'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/installing_and_viewing_plugins_in_red_hat_developer_hub/rhdh-extensions-plugins_assembly-install-third-party-plugins-rhdh#con-extensions-managing-plugins_rhdh-extensions-plugins';
+  'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/installing_and_viewing_plugins_in_red_hat_developer_hub/extensions-in-rhdh_plugins-in-rhdh#manage-plugins-by-using-extensions_extensions-in-rhdh';
 
 const EXTENSIONS_ENABLE_DOCS_URL =
-  'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/installing_and_viewing_plugins_in_red_hat_developer_hub/rhdh-extensions-plugins_assembly-install-third-party-plugins-rhdh#proc-extensions-enabling-plugins-installation_rhdh-extensions-plugins';
+  'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/installing_and_viewing_plugins_in_red_hat_developer_hub/extensions-in-rhdh_plugins-in-rhdh#configure-rhdh-to-install-plugins-by-using-extensions_extensions-in-rhdh';
 
 export const ProductionEnvironmentAlert = () => {
   const { t } = useTranslation();
