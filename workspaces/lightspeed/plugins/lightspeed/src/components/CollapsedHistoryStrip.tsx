@@ -18,23 +18,11 @@ import { makeStyles } from '@material-ui/core';
 import { Button, Tooltip } from '@patternfly/react-core';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
 
 type IconProps = {
   className?: string;
 };
-
-const ExpandPanelIcon = ({ className }: IconProps) => (
-  <svg
-    className={className}
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M9 21V3H11V21H9ZM13 17V7L18 12L13 17Z" fill="currentColor" />
-  </svg>
-);
 
 export const EditSquareIcon = ({ className }: IconProps) => (
   <svg
@@ -110,7 +98,7 @@ export const CollapsedHistoryStrip = ({
           onClick={onExpand}
           aria-label={t('tooltip.expandHistoryPanel')}
         >
-          <ExpandPanelIcon />
+          <SidebarExpandIcon />
         </Button>
       </Tooltip>
       <Tooltip content={t('tooltip.quickNewChat')} position="right">
