@@ -116,9 +116,9 @@ Thresholds define conditions to assign metric values to specific visual categori
 - **App Configuration**: Override defaults through `app-config.yaml`
 - **Entity Annotations**: Override specific thresholds per entity using catalog annotations
 
-Thresholds are evaluated in order, and the first matching rule determines the category. The plugin supports various operators for number metrics (`>`, `>=`, `<`, `<=`, `==`, `!=`, `-` (range)) and boolean metrics (`==`, `!=`).
+Thresholds are evaluated in order, and the first matching rule determines the category. The plugin supports various operators for number metrics (`>`, `>=`, `<`, `<=`, `==`, `!=`, `-` (range)) and boolean metrics (`==`, `!=`). For **number** metrics, configurations loaded through validated paths must cover the **entire real line** when two or more rules are defined (no gaps between intervals); **`average`** KPI **`options.thresholds`** follow the same rule.
 
-For comprehensive threshold configuration guide, examples, best practices, and **aggregation KPI result thresholds** for **`type: average`**, see [thresholds.md](./docs/thresholds.md).
+For comprehensive threshold configuration guide, examples, best practices, interval validation, and **aggregation KPI result thresholds** for **`type: average`**, see [thresholds.md](./docs/thresholds.md).
 
 ## Aggregation KPIs (homepage and `GET /aggregations`)
 
@@ -154,7 +154,7 @@ scorecard:
               expression: '>=75'
               color: success.main
             - key: warning
-              expression: '10-74'
+              expression: '10-75'
               color: warning.main
             - key: error
               expression: '<10'

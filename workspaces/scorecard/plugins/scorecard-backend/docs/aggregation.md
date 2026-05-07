@@ -53,6 +53,8 @@ For **`average`**:
 
 **`scorecard.aggregationKPIs`** is validated when the backend plugin starts. Invalid entries (unknown **`type`**, missing **`options`** for **`average`**, empty **`statusScores`**, unknown **`metricId`**, invalid threshold expressions, etc.) cause startup to **fail with an error** so misconfiguration is caught early. Fix app-config and redeploy.
 
+For **`type: average`**, optional **`options.thresholds`** must satisfy the same **number interval / gap** rules as metric thresholds when multiple rules apply (union must cover the full real line with no gaps). Errors mention an approximate **first uncovered region**. See [Joint coverage (number metrics)](./thresholds.md#joint-coverage-number-metrics).
+
 Schema reference for config discovery (IDE / `backstage-cli config:schema`): see **`config.d.ts`** on the backend package (`aggregationKPIs` and nested **`options`**).
 
 ## API Endpoint

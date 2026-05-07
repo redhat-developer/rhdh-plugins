@@ -12,6 +12,7 @@ import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common
 import { MetricType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // @public
 export type ComparisonOperator = {
@@ -69,6 +70,12 @@ export class ThresholdConfigFormatError extends CustomErrorBase {
   // (undocumented)
   name: 'ThresholdConfigFormatError';
 }
+
+// @public
+export function validateThresholdNumberIntervals(
+  rules: ThresholdRule[],
+  expectedMetricType: MetricType,
+): void;
 
 // @public
 export function validateThresholdsForAggregation(

@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
-export { validateThresholdNumberIntervals } from './thresholds/intervals/validateThresholdNumberIntervals';
-export {
-  validateThresholdsForMetric,
-  validateThresholdsForAggregation,
-} from './thresholds/validateThresholds';
-export { getThresholdsFromConfig } from './thresholds/getThresholdsFromConfig';
-export type {
-  ComparisonSign,
-  ComparisonOperator,
-  RangeOperator,
-} from './types';
+import { NumberInterval } from './types';
+
+export function hasGapBetweenIntervals(
+  left: NumberInterval,
+  right: NumberInterval,
+): boolean {
+  if (right.min > left.max) {
+    return true;
+  }
+  if (right.min < left.max) {
+    return false;
+  }
+  return !(left.maxClosed || right.minClosed);
+}

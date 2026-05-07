@@ -249,7 +249,7 @@ scorecard:
               expression: '>=80'
               color: '#6bb300' # green
             - key: warning
-              expression: '30-79'
+              expression: '30-80'
               color: 'rgb(224, 189, 108)' # light orange
             - key: error
               expression: '<30'

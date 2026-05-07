@@ -102,6 +102,35 @@ describe('getThresholdsFromConfig', () => {
     );
   });
 
+  it('should wrap real-line interval validation errors from metric thresholds', () => {
+    const { validateThresholdsForMetric: realValidate } = jest.requireActual<
+      typeof import('./validateThresholds')
+    >('./validateThresholds');
+    mockedValidateThresholdsForMetric.mockImplementation(realValidate);
+
+    const gapConfig = {
+      rules: [
+        { key: 'success', expression: '<10' },
+        { key: 'warning', expression: '11-20' },
+        { key: 'error', expression: '>20' },
+      ],
+    };
+
+    mockedConfig = mockServices.rootConfig({
+      data: { scorecard: { defaultMetricThresholds: gapConfig } },
+    });
+
+    expect(() =>
+      getThresholdsFromConfig(
+        mockedConfig,
+        'scorecard.defaultMetricThresholds',
+        'number',
+      ),
+    ).toThrow(
+      /Invalid thresholds configuration at scorecard\.defaultMetricThresholds: .*do not cover the entire real line/,
+    );
+  });
+
   it('should return undefined when thresholds config is not present', () => {
     jest.spyOn(mockedConfig, 'getOptional').mockReturnValue(undefined);
     const thresholds = getThresholdsFromConfig(

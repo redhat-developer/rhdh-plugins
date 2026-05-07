@@ -11,6 +11,42 @@ Thresholds are evaluated in order and the **first matching** threshold rule is a
 - **`color`** (optional): The color to display for this threshold in the UI (see [Threshold Colors](#threshold-colors))
 - **`icon`** (optional): The icon to display for this threshold in the UI (see [Threshold Icons](#threshold-icons))
 
+## Joint coverage (number metrics)
+
+For **number** metrics with **two or more** rules, validation requires that the **union** of all rule expressions covers the **entire real line** (from negative infinity to positive infinity). This matches how the backend evaluates values: numeric ranges use **inclusive** endpoints. Comparison operators keep their usual strict or non-strict boundaries.
+
+**Overlaps:** Overlapping intervals **do not** fail validation—the check only verifies that no **gap** remains. Rule **order** does not affect coverage. It only affects **which key wins** when more than one rule matches ([first-match semantics](#thresholdevaluator)).
+
+### How validation works
+
+For each rule, the validator parses the expression and maps it to one or more intervals on the real line:
+
+- **Range** syntax `min-max` → closed interval `[min, max]`.
+- **Comparisons** (`>`, `>=`, `<`, `<=`) → half-lines or bounded rays.
+- **`==`** → a single point.
+- **`!=`** → **two** intervals (everything except that point), which can help close gaps near a boundary without adding an extra rule.
+
+All intervals from every rule are merged (overlapping or touching intervals combine). The configuration **passes** only if the merged result is a single interval covering **(-∞, +∞)** with both ends included.
+
+### Gap detection and error messages
+
+If the merged union leaves any real number uncovered, validation throws `ThresholdConfigFormatError` with a message similar to:
+
+`Number threshold rules do not cover the entire real line. First uncovered region (approximately): …`
+
+The reported interval is an **approximate** description of the **first** gap found (for example `(10, 11)`, `(-∞, 10)`, or `(74, 75)`). Adjust boundaries so adjacent rules meet or overlap—for example use **`10-20`** instead of **`11-20`** next to **`'<10'`**, or **`10-75`** with **`>=75`** instead of **`10-74`** with **`>=75`**.
+
+**Gap example:** `success: '<10'`, `warning: '11-20'`, `error: '>20'` leaves **`10`** and **`(10, 11)`** uncovered. Prefer **`'<10'`**, **`'10-20'`**, **`'>20'`**, or widen ranges so neighbors touch (**`51-79`** with **`'<51'`** and **`'>=80'`**).
+
+### When full-line coverage is skipped
+
+Validation **does not** require full coverage when:
+
+- The metric type is not **number**, or
+- **`rules`** is empty, or
+- There is **at most one** rule (for example validating a single expression in isolation), or
+- **Every** rule is a numeric **`==`** expression (discrete metrics such as Sonar ratings **`==1`** … **`==5`**).
+
 ## Threshold Configuration Options
 
 ### 1. Provider Default Thresholds
@@ -45,7 +81,8 @@ Duplicated threshold keys are not allowed (throws `ConfigFormatError`).
 ```typescript
 import {
   MetricProvider,
-  validateThresholds,
+  validateThresholdsForMetric,
+  getThresholdsFromConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export class MyMetricProvider implements MetricProvider<'number'> {
@@ -58,12 +95,12 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 
   static fromConfig(config: Config): MyMetricProvider {
     const configPath = 'scorecard.plugins.myDatasource.myMetric.thresholds';
-    const configuredThresholds = config.getOptional(configPath);
-
-    if (configuredThresholds) {
-      // validate threshold configuration is correct, throws ConfigFormatError if not
-      validateThresholds(configuredThresholds, 'number');
-    }
+    // Validates structure, colors/icons, expressions, and number interval coverage (when applicable)
+    const configuredThresholds = getThresholdsFromConfig(
+      config,
+      configPath,
+      'number',
+    );
 
     return new MyMetricProvider(configuredThresholds);
   }
@@ -73,6 +110,8 @@ export class MyMetricProvider implements MetricProvider<'number'> {
   }
 }
 ```
+
+You can also call **`validateThresholdsForMetric(configuredThresholds, 'number')`** directly if you already have a config object (not reading from `Config`).
 
 **Example App Configuration:**
 
@@ -135,7 +174,7 @@ These thresholds are **not** per-entity metric rules. They apply only to homepag
 
 **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, it is not injected at config-parse time. **`AverageAggregationStrategy`** applies **`DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS`** from [`src/constants/aggregationKPIs.ts`](../src/constants/aggregationKPIs.ts) when serving an aggregation: **`<30`** → error, **`30-79`** → warning, **`>=80`** → success (higher percentage = better). When that default path is used, the strategy logs at **info** that the built-in 0–100% scale is in effect.
 
-**Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
+**Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. Average KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)), for example ensure ranges and comparison rules meet at boundaries (**`10-75`** with **`>=75`** and **`<10`**, not **`10-74`** with **`>=75`**, which would leave **`(74, 75)`** uncovered). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
 
 **Further reading:** [Entity Aggregation](./aggregation.md) (`average` algorithm, API, drill-down); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (full **`aggregationKPIs`** example including **`statusScores`**).
 
@@ -204,7 +243,7 @@ finalRules: [
 
 ### Number Metric
 
-Supports operators: `>, >=, <, <=, ==, !=, -`.
+Supports operators: `>, >=, <, <=, ==, !=, -`. The **`!=`** operator matches every value except the given number; in coverage validation it contributes **two** intervals, which can help eliminate small gaps at boundaries when combined with other rules.
 
 Example:
 
@@ -375,7 +414,7 @@ The `ThresholdEvaluator` service processes threshold rules and determines which 
 1. **Order-dependent evaluation**: Rules are evaluated in the order they appear. If provider supports overriding defaults through [app configuration](#App-Configuration-Thresholds), you can change the evaluation order by specifying threshold keys in a different order. Entity annotations cannot alter the evaluation order, which is determined by either the [app configuration](#Provider-Default-Thresholds) or, if not specified, the [default provider configuration](#Provider-Default-Thresholds).
 2. **First-match wins**: Returns the first threshold rule whose condition the value satisfies
 3. **Type-safe**: Validates expressions against metric types
-4. **Error handling**: You should validate your expressions loaded from config in your custom providers using `validateThresholds` from `backstage-plugin-scorecard-node`. Invalid expressions will result in evaluation error.
+4. **Error handling**: Validate expressions loaded from config in custom providers using **`validateThresholdsForMetric`** or **`getThresholdsFromConfig`** from `@red-hat-developer-hub/backstage-plugin-scorecard-node`. Invalid expressions or gap configurations fail at validation time; unchecked configs may error at evaluation time.
 
 ### Best Practices
 
@@ -395,9 +434,9 @@ rules:
     expression: '>30'
 ```
 
-### 2. Avoid Overlapping Ranges
+### 2. Overlaps vs gaps
 
-Ensure threshold ranges don't create gaps or unexpected behavior.
+**Joint coverage** allows overlapping intervals—only **gaps** cause validation to fail. Overlaps do affect **runtime** behavior: the **first** matching rule in list order wins ([Logical Ordering](#1-logical-ordering)). If overlaps are unintentional, reorder or narrow rules so the intended category matches first.
 
 ## Related documentation
 
