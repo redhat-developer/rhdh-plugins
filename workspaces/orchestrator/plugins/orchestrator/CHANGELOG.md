@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.10
+
+### Patch Changes
+
+- f47b22f: Replace values in ActiveMultiSelect when clearOnRetrigger is enabled
+
 ## 5.7.9
 
 ### Patch Changes
