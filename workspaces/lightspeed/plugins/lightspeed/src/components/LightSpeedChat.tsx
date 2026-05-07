@@ -618,8 +618,6 @@ export const LightspeedChat = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const configApi = useApi(configApiRef);
-  const notebooksEnabled =
-    configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
   const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
   const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
   const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
