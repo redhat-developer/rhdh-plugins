@@ -33,6 +33,7 @@ import {
 import { Readable } from 'node:stream';
 
 import {
+  DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   PROXY_PASSTHROUGH_PATHS,
 } from './constant';
@@ -110,9 +111,10 @@ export async function createRouter(
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
+  const lightspeedCoreBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${port}`;
 
   const vectorStoresOperator = VectorStoresOperator.getInstance(
-    `http://0.0.0.0:${port}`,
+    lightspeedCoreBaseUrl,
     logger,
   );
   let lightspeed_vector_store_id: string = '';
@@ -145,7 +147,7 @@ export async function createRouter(
 
   async function refreshLcsUrlCache(): Promise<void> {
     try {
-      const response = await fetch(`http://0.0.0.0:${port}/v1/mcp-servers`, {
+      const response = await fetch(`${lightspeedCoreBaseUrl}/v1/mcp-servers`, {
         signal: AbortSignal.timeout(5000),
       });
       if (!response.ok) {
@@ -492,7 +494,7 @@ export async function createRouter(
     }
     // Proxy middleware configuration
     const apiProxy = createProxyMiddleware({
-      target: `http://0.0.0.0:${port}`,
+      target: lightspeedCoreBaseUrl,
       changeOrigin: true,
       pathRewrite: (path, _) => {
         const isSkippable = Array.from(SKIP_USER_ID_ENDPOINTS).some(endpoint =>
@@ -544,7 +546,7 @@ export async function createRouter(
       const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
       const requestBody = JSON.stringify(request.body);
       const fetchResponse = await fetch(
-        `http://0.0.0.0:${port}/v1/feedback?${userQueryParam}`,
+        `${lightspeedCoreBaseUrl}/v1/feedback?${userQueryParam}`,
         {
           method: 'POST',
           headers: {
@@ -592,7 +594,7 @@ export async function createRouter(
       const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
       const requestBody = JSON.stringify(request.body);
       const fetchResponse = await fetch(
-        `http://0.0.0.0:${port}/v1/streaming_query/interrupt?${userQueryParam}`,
+        `${lightspeedCoreBaseUrl}/v1/streaming_query/interrupt?${userQueryParam}`,
         {
           method: 'POST',
           headers: {
@@ -668,7 +670,7 @@ export async function createRouter(
         );
 
         const fetchResponse = await fetch(
-          `http://0.0.0.0:${port}/v1/streaming_query?${userQueryParam}`,
+          `${lightspeedCoreBaseUrl}/v1/streaming_query?${userQueryParam}`,
           {
             method: 'POST',
             headers: {
@@ -727,7 +729,7 @@ export async function createRouter(
         );
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
         const fetchResponse = await fetch(
-          `http://0.0.0.0:${port}/v2/conversations/${conversation_id}?${userQueryParam}`,
+          `${lightspeedCoreBaseUrl}/v2/conversations/${conversation_id}?${userQueryParam}`,
           {
             method: 'PUT',
             headers: {

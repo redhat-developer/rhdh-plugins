@@ -52,6 +52,7 @@ export const lightspeedMessages = {
   'notebooks.updated.yesterday': 'Updated 1 day ago',
   'notebooks.updated.days': 'Updated {{days}} days ago',
   'notebooks.updated.on': 'Updated on',
+  'notebooks.card.openAria': 'Open notebook {{name}}',
 
   // Notebook view
   'notebook.view.title': 'Untitled notebook',

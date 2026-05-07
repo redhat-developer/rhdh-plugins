@@ -113,8 +113,7 @@ const useStyles = makeStyles(theme => ({
     minHeight: 0,
   },
   drawerContentBody: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--secondary--default)',
+    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
     height: '100%',
   },
   contentColumn: {
@@ -148,6 +147,16 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minHeight: 0,
     overflow: 'auto',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+  },
+  notebookEmptyUpload: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   notebookContentArea: {
     width: '95%',
@@ -179,9 +188,13 @@ const useStyles = makeStyles(theme => ({
     padding: `0 0 ${theme.spacing(1)}px`,
   },
   footer: {
+    backgroundColor: theme.palette.background.paper,
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
+    },
+    '& .pf-chatbot__message-bar': {
+      backgroundColor: theme.palette.grey[300],
     },
   },
   chatContent: {
@@ -493,7 +506,11 @@ export const NotebookView = ({
 
   const renderMainContent = () => {
     if (!hasDocuments && messages.length === 0) {
-      return <UploadResourceScreen onUploadClick={handleOpenUploadModal} />;
+      return (
+        <Typography component="span" className={classes.notebookEmptyUpload}>
+          <UploadResourceScreen onUploadClick={handleOpenUploadModal} />
+        </Typography>
+      );
     }
     if (messages.length > 0) {
       return (
@@ -604,7 +621,7 @@ export const NotebookView = ({
                     }
                     position="right"
                   >
-                    <span>
+                    <Typography component="span">
                       <Button
                         variant="plain"
                         className={classes.addIconButton}
@@ -616,7 +633,7 @@ export const NotebookView = ({
                       >
                         <AddCircleFilledIcon disabled={isAddDisabled} />
                       </Button>
-                    </span>
+                    </Typography>
                   </Tooltip>
                 </div>
               )}

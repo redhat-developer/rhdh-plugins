@@ -55,6 +55,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebooks.updated.yesterday': 'Aggiornato 1 giorno fa',
     'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',
     'notebooks.updated.on': 'Aggiornato il',
+    'notebooks.card.openAria': 'Apri il taccuino {{name}}',
 
     // Notebook view
     'notebook.view.title': 'Quaderno senza titolo',

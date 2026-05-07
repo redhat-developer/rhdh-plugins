@@ -190,6 +190,8 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minHeight: 0,
     overflowY: 'auto',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   notebooksHeader: {
     display: 'flex',
@@ -318,9 +320,14 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(1.5),
   },
   footer: {
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
+    },
+    '& .pf-chatbot__message-bar': {
+      backgroundColor: theme.palette.grey[300],
     },
   },
   sortDropdown: {
@@ -355,6 +362,10 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     overflowY: 'auto',
     WebkitOverflowScrolling: 'touch',
+  },
+  chatbotContentScrollNewChat: {
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   toastAlertGroup: {
     '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
@@ -1535,7 +1546,14 @@ export const LightspeedChat = ({
           hasChatContentOverflow ? classes.chatbotContentHasOverflow : ''
         }`}
       >
-        <div ref={contentScrollRef} className={classes.chatbotContentScroll}>
+        <div
+          ref={contentScrollRef}
+          className={`${classes.chatbotContentScroll}${
+            welcomePrompts.length > 0
+              ? ` ${classes.chatbotContentScrollNewChat}`
+              : ''
+          }`}
+        >
           {welcomePrompts.length > 0 && (
             <div className={classes.chatbotContentSpacer} aria-hidden />
           )}

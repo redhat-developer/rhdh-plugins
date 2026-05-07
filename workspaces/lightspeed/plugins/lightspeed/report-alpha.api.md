@@ -223,6 +223,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebooks.updated.yesterday': string;
     readonly 'notebooks.updated.days': string;
     readonly 'notebooks.updated.on': string;
+    readonly 'notebooks.card.openAria': string;
     readonly 'notebook.view.title': string;
     readonly 'notebook.view.close': string;
     readonly 'notebook.view.documents.count': string;

@@ -19,6 +19,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import clsx from 'clsx';
@@ -98,6 +99,7 @@ export const ActiveMultiSelect: Widget<
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
   const [inProgressItem, setInProgressItem] = useState<string>('');
+  const clearedByRetriggerRef = useRef(false);
 
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
@@ -149,6 +151,7 @@ export const ActiveMultiSelect: Widget<
   );
 
   const handleClear = useCallback(() => {
+    clearedByRetriggerRef.current = true;
     setInProgressItem('');
     onChange([]);
   }, [onChange]);
@@ -217,11 +220,21 @@ export const ActiveMultiSelect: Widget<
           }
         }
 
+        const shouldIgnoreCurrentValue =
+          clearOnRetrigger || clearedByRetriggerRef.current;
+        const valueForMerge = shouldIgnoreCurrentValue ? [] : value;
+
         if (
-          !mandatory.every(item => value.includes(item)) ||
-          !defaults.every(item => value.includes(item))
+          !mandatory.every(item => valueForMerge.includes(item)) ||
+          !defaults.every(item => valueForMerge.includes(item))
         ) {
-          onChange([...new Set([...mandatory, ...value, ...defaults])]);
+          const mergedValues = [
+            ...new Set([...mandatory, ...valueForMerge, ...defaults]),
+          ];
+          clearedByRetriggerRef.current = false;
+          onChange(mergedValues);
+        } else if (clearedByRetriggerRef.current) {
+          clearedByRetriggerRef.current = false;
         }
       });
     };
@@ -238,6 +251,7 @@ export const ActiveMultiSelect: Widget<
     data,
     props.id,
     value,
+    clearOnRetrigger,
     onChange,
     wrapProcessing,
   ]);

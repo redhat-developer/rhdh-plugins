@@ -54,6 +54,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebooks.updated.yesterday': 'Actualizado hace 1 día',
     'notebooks.updated.days': 'Actualizado hace {{days}} días',
     'notebooks.updated.on': 'Actualizado el',
+    'notebooks.card.openAria': 'Abrir el cuaderno {{name}}',
 
     // Notebook view
     'notebook.view.title': 'Cuaderno sin título',

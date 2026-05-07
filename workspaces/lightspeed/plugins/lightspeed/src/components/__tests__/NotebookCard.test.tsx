@@ -34,6 +34,7 @@ const mockNotebook: NotebookSession = {
 
 const mockClasses: Record<string, string> = {
   notebookCard: 'notebookCard',
+  notebookCardMenuOpen: 'notebookCardMenuOpen',
   notebookCardHeader: 'notebookCardHeader',
   notebookDropdownMenu: 'notebookDropdownMenu',
   notebookMenuButton: 'notebookMenuButton',
@@ -81,10 +82,8 @@ describe('NotebookCard', () => {
 
   it('should call onClick with notebook when card is clicked', () => {
     render(<NotebookCard {...defaultProps} />);
-    const card = screen
-      .getByText('My Notebook')
-      .closest('[class*="notebookCard"]');
-    fireEvent.click(card!);
+    const card = screen.getByLabelText(/Open notebook My Notebook/i);
+    fireEvent.click(card);
     expect(onClick).toHaveBeenCalledWith(mockNotebook);
   });
 

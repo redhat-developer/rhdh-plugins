@@ -172,14 +172,44 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    sm: { w: 4, h: 6, x: 4 }
                    xs: { w: 4, h: 6, x: 4 }
                    xxs: { w: 4, h: 6, x: 4 }
+               AggregatedCardWithGithubFilecheckLicense:
+                 priority: 450
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithGithubFilecheckCodeowners:
+                 priority: 460
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 8 }
+                   lg: { w: 4, h: 6, x: 8 }
+                   md: { w: 4, h: 6, x: 8 }
+                   sm: { w: 4, h: 6, x: 8 }
+                   xs: { w: 4, h: 6, x: 8 }
+                   xxs: { w: 4, h: 6, x: 8 }
+               AggregatedCardWithGithubOpenPrsWeighted:
+                 priority: 470
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 8 }
+                   lg: { w: 4, h: 6, x: 8 }
+                   md: { w: 4, h: 6, x: 8 }
+                   sm: { w: 4, h: 6, x: 8 }
+                   xs: { w: 4, h: 6, x: 8 }
+                   xxs: { w: 4, h: 6, x: 8 }
    ```
 
-   The home module contributes four widgets:
+   The home module contributes seven widgets:
 
    - `AggregatedCardWithDeprecatedMetricId` (title: **Scorecard: With deprecated metricId property (Jira)**)
    - `AggregatedCardWithDefaultAggregation` (title: **Scorecard: With default aggregation config (GitHub)**)
    - `AggregatedCardWithJiraOpenIssues` (title: **Scorecard: Jira open blocking tickets**)
    - `AggregatedCardWithGithubOpenPrs` (title: **Scorecard: GitHub open PRs**)
+   - `AggregatedCardWithGithubFilecheckLicense` (title: **Scorecard: LICENSE file exists**)
+   - `AggregatedCardWithGithubFilecheckCodeowners` (title: **Scorecard: CODEOWNERS file exists**)
+   - `AggregatedCardWithGithubOpenPrsWeighted` (title: **Scorecard: GitHub open PRs (weighted health)**)
 
    These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
 
@@ -189,11 +219,11 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 
 **Modules**
 
-| Module                        | Description                                                                                                                                                                                                           |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scorecardHomeModule`         | Registers Scorecard homepage widgets for the home plugin (`AggregatedCardWithDeprecatedMetricId`, `AggregatedCardWithDefaultAggregation`, `AggregatedCardWithJiraOpenIssues`, and `AggregatedCardWithGithubOpenPrs`). |
-| `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3).                                                |
-| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                                                                          |
+| Module                        | Description                                                                                                                                                                                                                                                                                                                                                |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scorecardHomeModule`         | Registers Scorecard homepage widgets for the home plugin (`AggregatedCardWithDeprecatedMetricId`, `AggregatedCardWithDefaultAggregation`, `AggregatedCardWithJiraOpenIssues`, `AggregatedCardWithGithubOpenPrs`, `AggregatedCardWithGithubFilecheckLicense`, `AggregatedCardWithGithubFilecheckCodeowners` and `AggregatedCardWithGithubOpenPrsWeighted`). |
+| `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3).                                                                                                                                                                                     |
+| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                                                                                                                                                                                                               |
 
 **Extensions**
 
@@ -203,6 +233,9 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 - `home-page-widget:home/scorecard-default-aggregation` — Homepage widget using default aggregation config (GitHub open PRs).
 - `home-page-widget:home/scorecard-jira-open-issues` — Homepage widget showing Jira open blocking tickets.
 - `home-page-widget:home/scorecard-github-open-prs` — Homepage widget showing GitHub open PRs.
+- `home-page-widget:home/scorecard-github-filecheck-license` - Homepage widget showing file check "License".
+- `home-page-widget:home/scorecard-github-filecheck-codeowners` - Homepage widget showing file check "Codeowners".
+- `home-page-widget:home/scorecard-github-open-prs-weighted` - Homepage widget showing average GitHub open PRs.
 
 #### Legacy app
 
