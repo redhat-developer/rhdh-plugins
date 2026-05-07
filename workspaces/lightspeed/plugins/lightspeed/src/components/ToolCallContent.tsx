@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { makeStyles } from '@material-ui/core';
 import { Message } from '@patternfly/chatbot';
 import {
   Content,
@@ -37,6 +38,15 @@ interface ToolCallContentProps {
   role?: 'user' | 'bot';
 }
 
+const useStyles = makeStyles(() => ({
+  codeBlock: {
+    '& .pf-chatbot__message-code-block': {
+      border: '1px solid var(--pf-t--global--border--color--default)',
+      borderRadius: 'var(--pf-t--global--border--radius--small)',
+    },
+  },
+}));
+
 /**
  * Lightweight component for rendering tool call expandable content.
  * Used inside PatternFly's ToolCall component's expandableContent prop.
@@ -45,6 +55,7 @@ export const ToolCallContent = ({
   toolCall,
   role = 'bot',
 }: ToolCallContentProps) => {
+  const classes = useStyles();
   const { t } = useTranslation();
 
   const formatExecutionTime = (seconds?: number): string => {
@@ -225,7 +236,7 @@ export const ToolCallContent = ({
                         direction={{ default: 'column' }}
                         spaceItems={{ default: 'spaceItemsXs' }}
                       >
-                        <FlexItem>
+                        <FlexItem className={classes.codeBlock}>
                           <Message
                             content={formatToolResponseForMarkdown(
                               toolCall.response,
