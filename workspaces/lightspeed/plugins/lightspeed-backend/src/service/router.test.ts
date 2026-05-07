@@ -238,7 +238,7 @@ describe('lightspeed router tests', () => {
       expect(response.body.error).toBeDefined();
     });
 
-    it('should return 500 error when conversation does not exist', async () => {
+    it('should return upstream status code when conversation does not exist', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .put(`/api/lightspeed/v2/conversations/${mockAnotherConversationId}`)
@@ -246,7 +246,7 @@ describe('lightspeed router tests', () => {
           topic_summary: 'new topic',
         });
 
-      expect(response.statusCode).toEqual(500);
+      expect(response.statusCode).toEqual(404);
       expect(response.body.error).toContain('not found');
     });
 
@@ -717,7 +717,7 @@ describe('lightspeed router tests', () => {
       );
     });
 
-    it('returns 500 if unexpected error', async () => {
+    it('returns upstream status code on error', async () => {
       const backendServer = await startBackendServer();
       const nonExistentModel = 'nonexistent-model';
       rcs.use(
@@ -741,7 +741,10 @@ describe('lightspeed router tests', () => {
           provider: 'test-server',
           query: 'Hello',
         });
-      expect(response.statusCode).toEqual(500);
+      expect(response.statusCode).toEqual(404);
+      expect(response.body.error).toContain(
+        'Error from lightspeed-core server',
+      );
     });
   });
 
