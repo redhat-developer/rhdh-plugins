@@ -38,6 +38,9 @@ export default defineConfig({
         port: 3000,
         reuseExistingServer: true,
         cwd: __dirname,
+        env: {
+          NOTEBOOKS_ENABLED: 'true',
+        },
       },
 
   retries: process.env.CI ? 2 : 0,

@@ -19,7 +19,7 @@ organization:
 # Disable AI Notebooks feature by default
 lightspeed:
   notebooks:
-    enabled: false
+    enabled: ${NOTEBOOKS_ENABLED:-false}
     queryDefaults:
       model: ${NOTEBOOKS_QUERY_MODEL}
       provider_id: ${NOTEBOOKS_QUERY_PROVIDER_ID}

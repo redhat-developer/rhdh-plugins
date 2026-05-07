@@ -69,19 +69,13 @@ export async function createNotebooksRouter(
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
-  const queryModel = config.getOptionalString(
+  const queryModel = config.getString(
     'lightspeed.notebooks.queryDefaults.model',
   );
-  const queryProvider = config.getOptionalString(
+  const queryProvider = config.getString(
     'lightspeed.notebooks.queryDefaults.provider_id',
   );
   const systemPrompt = NOTEBOOKS_SYSTEM_PROMPT;
-
-  if (!queryModel || !queryProvider) {
-    throw new Error(
-      'Query model and provider are required. Please configure lightspeed.notebooks.queryDefaults.model and lightspeed.notebooks.queryDefaults.provider_id',
-    );
-  }
 
   logger.info(
     `AI Notebooks connecting to Lightspeed-Core at ${lightspeedBaseUrl}`,
