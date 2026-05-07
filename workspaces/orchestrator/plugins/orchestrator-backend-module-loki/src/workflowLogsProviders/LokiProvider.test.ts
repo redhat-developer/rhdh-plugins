@@ -16,8 +16,15 @@
 
 import { ConfigReader } from '@backstage/config';
 import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { fetch as undiciFetch } from 'undici';
+
 import { LokiProvider } from './LokiProvider';
 import mockWorkflowLog from '../../__fixtures__/mockWorkflowLogs';
+
+jest.mock('undici', () => ({
+  ...jest.requireActual('undici'),
+  fetch: jest.fn(),
+}));
 
 describe('LokiProvider', () => {
   describe('FromConfig', () => {
@@ -103,7 +110,7 @@ describe('LokiProvider', () => {
         status: 200,
         json: jest.fn().mockResolvedValue(mockWorkflowLog),
       };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+      jest.mocked(undiciFetch).mockResolvedValue(mockResponse as any);
 
       const lokiAppConfig = {
         orchestrator: {
@@ -159,7 +166,7 @@ describe('LokiProvider', () => {
         status: 200,
         json: jest.fn().mockResolvedValue(mockWorkflowLog),
       };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+      jest.mocked(undiciFetch).mockResolvedValue(mockResponse as any);
 
       const lokiAppConfig = {
         orchestrator: {
@@ -199,7 +206,7 @@ describe('LokiProvider', () => {
         status: 200,
         json: jest.fn().mockResolvedValue(mockWorkflowLog),
       };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+      jest.mocked(undiciFetch).mockResolvedValue(mockResponse as any);
 
       const lokiAppConfig = {
         orchestrator: {
@@ -252,7 +259,7 @@ describe('LokiProvider', () => {
         status: 200,
         json: jest.fn().mockResolvedValue(mockWorkflowLog),
       };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+      jest.mocked(undiciFetch).mockResolvedValue(mockResponse as any);
 
       const lokiAppConfig = {
         orchestrator: {
@@ -302,7 +309,7 @@ describe('LokiProvider', () => {
         status: 200,
         json: jest.fn().mockResolvedValue(mockWorkflowLog),
       };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+      jest.mocked(undiciFetch).mockResolvedValue(mockResponse as any);
 
       const lokiAppConfig = {
         orchestrator: {

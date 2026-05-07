@@ -22,7 +22,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
-import { Agent, setGlobalDispatcher } from 'undici';
+import { Agent, fetch } from 'undici';
 
 export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
@@ -30,6 +30,7 @@ export class LokiProvider implements WorkflowLogProvider {
   private readonly selectors: any;
   private readonly rejectUnauthorized: boolean;
   private readonly logPipelineFilters: any;
+  agent: Agent;
   private constructor(config: Config) {
     this.baseURL = config.getString('baseUrl');
     this.token = config.getString('token');
@@ -39,12 +40,11 @@ export class LokiProvider implements WorkflowLogProvider {
     this.selectors = config.getOptional('logStreamSelectors') || [];
     this.logPipelineFilters = config.getOptional('logPipelineFilters') || [];
 
-    const agent = new Agent({
+    this.agent = new Agent({
       connect: {
         rejectUnauthorized: this.rejectUnauthorized,
       },
     });
-    setGlobalDispatcher(agent);
   }
   getBaseURL(): string {
     return this.baseURL;
@@ -127,6 +127,7 @@ export class LokiProvider implements WorkflowLogProvider {
     let allResults;
     try {
       const response = await fetch(urlToFetch, {
+        dispatcher: this.agent,
         headers: {
           Authorization: `Bearer ${this.token}`,
           'Content-Type': 'application/json',
