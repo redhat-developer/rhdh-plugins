@@ -399,6 +399,40 @@ describe('lightspeed router tests', () => {
         });
       expect(feedbackResponse.statusCode).toEqual(403);
     });
+
+    it('should handle upstream server errors properly', async () => {
+      const backendServer = await startBackendServer();
+      rcs.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/feedback`, () => {
+          return new HttpResponse(
+            JSON.stringify({
+              error: {
+                message: 'Internal server error',
+              },
+            }),
+            {
+              status: 500,
+              headers: { 'Content-Type': 'application/json' },
+            },
+          );
+        }),
+      );
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/feedback')
+        .send({
+          conversation_id: '12345678-abcd-0000-0123-456789abcdef',
+          llm_response: 'bar',
+          sentiment: 1,
+          user_feedback: 'Great service!',
+          user_question: 'foo',
+        });
+
+      expect(response.statusCode).toEqual(500);
+      expect(response.body.error).toContain(
+        'Error from lightspeed-core server',
+      );
+    });
   });
 
   describe('GET /v1/feedback/status', () => {

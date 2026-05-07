@@ -529,6 +529,8 @@ export async function createRouter(
         response.status(500).json({
           error: errormsg,
         });
+
+        return;
       }
 
       const data = await fetchResponse.json();
