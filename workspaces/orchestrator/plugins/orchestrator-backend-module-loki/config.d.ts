@@ -29,6 +29,7 @@ export interface Config {
         /**
          * Auth Token for accessing the loki query url
          */
+        /** @visibility secret */
         token: string;
         /**
          * Set to false if the baseUrl has a self-signed certificate
