@@ -39,7 +39,7 @@ export class LokiProvider implements WorkflowLogProvider {
   private readonly selectors: any;
   private readonly rejectUnauthorized: boolean;
   private readonly logPipelineFilters: any;
-  agent: Agent;
+  private readonly agent: Agent;
   private constructor(config: Config) {
     this.baseURL = config.getString('baseUrl');
     this.token = config.getString('token');
