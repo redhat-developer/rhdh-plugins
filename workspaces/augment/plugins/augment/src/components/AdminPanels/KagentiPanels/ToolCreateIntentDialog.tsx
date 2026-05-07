@@ -139,10 +139,12 @@ export function ToolCreateIntentDialog({
       maxWidth="md"
       fullWidth
       aria-labelledby={titleId}
-      PaperProps={{
-        'data-tour': 'tool-intent-dialog',
-        sx: { borderRadius: 2, overflow: 'hidden' },
-      } as Record<string, unknown>}
+      PaperProps={
+        {
+          'data-tour': 'tool-intent-dialog',
+          sx: { borderRadius: 2, overflow: 'hidden' },
+        } as Record<string, unknown>
+      }
     >
       {view === 'intent' && (
         <>
@@ -206,7 +208,6 @@ export function ToolCreateIntentDialog({
           <AgentTemplateBrowser
             onBack={() => setView('develop-sub')}
             onOpenInDevSpace={handleOpenInDevSpace}
-            tag="kagenti-tool"
             title="Tool Templates"
             description="Choose a software template to scaffold a new MCP tool project. Templates are discovered from the catalog automatically."
             emptyTitle="No tool templates found"
