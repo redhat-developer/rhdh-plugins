@@ -1682,6 +1682,7 @@ export const LightspeedChat = ({
               attach: {
                 inputTestId: 'attachment-input',
                 tooltipContent: t('tooltip.attach'),
+                'aria-label': t('tooltip.attach'),
                 icon: <PlusIcon />,
               },
               microphone: {
@@ -1729,6 +1730,7 @@ export const LightspeedChat = ({
               attach: {
                 inputTestId: 'attachment-input',
                 tooltipContent: t('tooltip.attach'),
+                'aria-label': t('tooltip.attach'),
               },
               microphone: {
                 tooltipContent: {

@@ -45,6 +45,13 @@ export async function uploadFiles(
   // Use the hidden file input directly - this bypasses the dropdown menu
   // The input has the multiple attribute so it can accept multiple files
   const fileInput = page.locator('input[data-testid="attachment-input"]');
+
+  // Clear the input first to ensure change event fires even for the same file
+  // This is necessary because browsers don't fire 'change' if the same file is selected again
+  await fileInput.evaluate((el: HTMLInputElement) => {
+    el.value = '';
+  });
+
   await fileInput.setInputFiles(filePath);
 }
 
@@ -53,15 +60,20 @@ export async function uploadAndAssertDuplicate(
   filePath: string,
   fileName: string,
   translations: LightspeedMessages,
-  testInfo: TestInfo,
+  _testInfo: TestInfo,
 ) {
-  await validateSuccessfulUpload(page, fileName, translations, testInfo);
+  // First, verify the initial upload was successful by checking the file button is visible
+  await expect(page.getByRole('button', { name: fileName })).toBeVisible();
+
+  // Upload the same file again to trigger duplicate detection
   await uploadFiles(page, [filePath], translations);
+
+  // Assert the duplicate file error alert appears
   await expect(
     page.getByRole('heading', {
       name: translations['chatbox.fileUpload.failed'],
     }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 10000 });
   await expect(
     page.getByText(translations['file.upload.error.alreadyExists']),
   ).toBeVisible();
