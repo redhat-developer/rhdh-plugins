@@ -30,6 +30,56 @@ const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 1000;
 const RETRYABLE_STATUS_CODES = new Set([502, 503, 504]);
 
+const DW_API_GROUP = 'workspace.devfile.io';
+const DW_API_VERSION = 'v1alpha2';
+const DW_RESOURCE = 'devworkspaces';
+const DW_BASE_PATH = `/apis/${DW_API_GROUP}/${DW_API_VERSION}`;
+
+// ---------------------------------------------------------------------------
+// Kubernetes DevWorkspace resource shape (subset we use)
+// ---------------------------------------------------------------------------
+
+interface KubeDevWorkspaceMeta {
+  name: string;
+  namespace: string;
+  uid?: string;
+  creationTimestamp?: string;
+}
+
+interface KubeDevWorkspaceSpec {
+  started?: boolean;
+  routingClass?: string;
+  template?: {
+    projects?: Array<{
+      name: string;
+      git?: { remotes?: Record<string, string> };
+    }>;
+  };
+}
+
+interface KubeDevWorkspaceStatus {
+  phase?: string;
+  devworkspaceId?: string;
+  mainUrl?: string;
+  message?: string;
+}
+
+interface KubeDevWorkspace {
+  apiVersion: string;
+  kind: string;
+  metadata: KubeDevWorkspaceMeta;
+  spec?: KubeDevWorkspaceSpec;
+  status?: KubeDevWorkspaceStatus;
+}
+
+interface KubeDevWorkspaceList {
+  items: KubeDevWorkspace[];
+}
+
+// ---------------------------------------------------------------------------
+// Service
+// ---------------------------------------------------------------------------
+
 export interface DevSpacesServiceOptions {
   logger: LoggerService;
   adminConfig: AdminConfigService;
@@ -47,6 +97,8 @@ export class DevSpacesService {
     this.getAuthToken = opts.getAuthToken;
   }
 
+  // ── Health ──────────────────────────────────────────────────────────────
+
   async healthCheck(): Promise<DevSpacesHealthResponse> {
     const start = Date.now();
     const apiUrl = await this.getApiUrl();
@@ -56,25 +108,21 @@ export class DevSpacesService {
         ok: false,
         configured: false,
         message:
-          'Dev Spaces API URL is not configured. Set it in Administration → Dev Spaces.',
+          'OpenShift API URL is not configured. Set it in Administration → Dev Spaces.',
       };
     }
 
     try {
       const token = await this.resolveToken();
-      const resp = await this.fetchWithTimeout(`${apiUrl}/workspaces`, {
-        method: 'GET',
-        headers: this.headers(token),
-      });
+      const url = `${apiUrl}${DW_BASE_PATH}/${DW_RESOURCE}?limit=1`;
+      const resp = await this.fetchK8s(url, { method: 'GET' }, token);
       const elapsed = Date.now() - start;
 
-      if (resp.ok || resp.status === 401 || resp.status === 403) {
+      if (resp.ok) {
         return {
-          ok: resp.ok,
+          ok: true,
           configured: true,
-          message: resp.ok
-            ? 'Connected to Dev Spaces API'
-            : `Dev Spaces API returned ${resp.status} — check your authentication token`,
+          message: 'Connected to Dev Spaces API',
           apiUrl,
           responseTimeMs: elapsed,
         };
@@ -83,7 +131,10 @@ export class DevSpacesService {
       return {
         ok: false,
         configured: true,
-        message: `Dev Spaces API returned ${resp.status}`,
+        message:
+          resp.status === 401 || resp.status === 403
+            ? `Kubernetes API returned ${resp.status} — check your OpenShift token`
+            : `Kubernetes API returned ${resp.status}`,
         apiUrl,
         responseTimeMs: elapsed,
       };
@@ -93,64 +144,93 @@ export class DevSpacesService {
       return {
         ok: false,
         configured: true,
-        message: `Cannot reach Dev Spaces API: ${msg}`,
+        message: `Cannot reach Kubernetes API: ${msg}`,
         apiUrl,
         responseTimeMs: elapsed,
       };
     }
   }
 
+  // ── Create ─────────────────────────────────────────────────────────────
+
   async createWorkspace(
     req: DevSpacesCreateWorkspaceRequest,
   ): Promise<DevSpacesCreateWorkspaceResponse> {
     const apiUrl = await this.requireApiUrl();
     const token = await this.resolveToken();
-    const targetUrl = `${apiUrl}/workspaces/intellij`;
+    const ns = req.namespace;
+    const repoName = this.repoNameFromUrl(req.git_repo);
+    const workspaceName = this.sanitizeName(repoName);
 
-    this.logger.info(`Creating Dev Spaces workspace in ${req.namespace}`);
+    this.logger.info(
+      `Creating DevWorkspace ${workspaceName} in ${ns} from ${req.git_repo}`,
+    );
 
-    const resp = await this.fetchWithRetry(targetUrl, {
+    const devworkspace: KubeDevWorkspace = {
+      apiVersion: `${DW_API_GROUP}/${DW_API_VERSION}`,
+      kind: 'DevWorkspace',
+      metadata: { name: workspaceName, namespace: ns },
+      spec: {
+        started: true,
+        routingClass: 'che',
+        template: {
+          projects: [
+            {
+              name: repoName,
+              git: { remotes: { origin: req.git_repo } },
+            },
+          ],
+        },
+      },
+    };
+
+    const url = this.dwUrl(apiUrl, ns);
+    const resp = await this.fetchWithRetry(url, {
       method: 'POST',
       headers: this.headers(token),
-      body: JSON.stringify({
-        namespace: req.namespace,
-        git_repo: req.git_repo,
-        memory_limit: req.memory_limit || '8Gi',
-        cpu_limit: req.cpu_limit || '2000m',
-      }),
+      body: JSON.stringify(devworkspace),
     });
 
-    return this.parseResponse<DevSpacesCreateWorkspaceResponse>(
-      resp,
-      'create workspace',
-    );
+    if (!resp.ok) {
+      const detail = await this.extractK8sError(resp);
+      this.logger.error(
+        `Create DevWorkspace failed (${resp.status}): ${detail}`,
+      );
+      throw new Error(detail);
+    }
+
+    const created = (await resp.json()) as KubeDevWorkspace;
+    return this.toCreateResponse(created);
   }
+
+  // ── List ───────────────────────────────────────────────────────────────
 
   async listWorkspaces(
     namespace: string,
   ): Promise<DevSpacesListWorkspacesResponse> {
     const apiUrl = await this.requireApiUrl();
     const token = await this.resolveToken();
-    const targetUrl = `${apiUrl}/workspaces?namespace=${encodeURIComponent(namespace)}`;
+    const url = this.dwUrl(apiUrl, namespace);
 
-    const resp = await this.fetchWithRetry(targetUrl, {
+    const resp = await this.fetchWithRetry(url, {
       method: 'GET',
       headers: this.headers(token),
     });
 
     if (!resp.ok) {
-      const detail = await this.extractError(resp);
-      this.logger.error(`List workspaces failed (${resp.status}): ${detail}`);
+      const detail = await this.extractK8sError(resp);
+      this.logger.error(
+        `List DevWorkspaces failed (${resp.status}): ${detail}`,
+      );
       throw new Error(detail);
     }
 
-    const body = await resp.json();
-    const workspaces: DevSpacesWorkspace[] = Array.isArray(body)
-      ? body
-      : ((body as { workspaces?: DevSpacesWorkspace[] }).workspaces ?? []);
-
+    const body = (await resp.json()) as KubeDevWorkspaceList;
+    const workspaces = (body.items ?? []).map(dw => this.toWorkspace(dw));
     return { workspaces, namespace };
   }
+
+  // ── Get ────────────────────────────────────────────────────────────────
 
   async getWorkspace(
     namespace: string,
@@ -158,57 +238,125 @@ export class DevSpacesService {
   ): Promise<DevSpacesWorkspace> {
     const apiUrl = await this.requireApiUrl();
     const token = await this.resolveToken();
-    const targetUrl = `${apiUrl}/workspaces/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`;
+    const url = this.dwUrl(apiUrl, namespace, name);
 
-    const resp = await this.fetchWithRetry(targetUrl, {
+    const resp = await this.fetchWithRetry(url, {
       method: 'GET',
       headers: this.headers(token),
     });
 
-    return this.parseResponse<DevSpacesWorkspace>(resp, 'get workspace');
+    if (!resp.ok) {
+      const detail = await this.extractK8sError(resp);
+      throw new Error(detail);
+    }
+
+    return this.toWorkspace((await resp.json()) as KubeDevWorkspace);
   }
+
+  // ── Stop ───────────────────────────────────────────────────────────────
 
   async stopWorkspace(namespace: string, name: string): Promise<void> {
     const apiUrl = await this.requireApiUrl();
     const token = await this.resolveToken();
-    const targetUrl = `${apiUrl}/workspaces/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/stop`;
+    const url = this.dwUrl(apiUrl, namespace, name);
 
-    this.logger.info(`Stopping workspace ${name} in ${namespace}`);
+    this.logger.info(`Stopping DevWorkspace ${name} in ${namespace}`);
 
-    const resp = await this.fetchWithTimeout(targetUrl, {
-      method: 'PATCH',
-      headers: this.headers(token),
-    });
+    const resp = await this.fetchK8s(
+      url,
+      {
+        method: 'PATCH',
+        headers: {
+          ...this.headers(token),
+          'Content-Type': 'application/merge-patch+json',
+        },
+        body: JSON.stringify({ spec: { started: false } }),
+      },
+      token,
+    );
 
     if (!resp.ok) {
-      const detail = await this.extractError(resp);
-      this.logger.error(`Stop workspace failed (${resp.status}): ${detail}`);
+      const detail = await this.extractK8sError(resp);
+      this.logger.error(`Stop DevWorkspace failed (${resp.status}): ${detail}`);
       throw new Error(detail);
     }
   }
+
+  // ── Delete ─────────────────────────────────────────────────────────────
 
   async deleteWorkspace(namespace: string, name: string): Promise<void> {
     const apiUrl = await this.requireApiUrl();
     const token = await this.resolveToken();
-    const targetUrl = `${apiUrl}/workspaces/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`;
+    const url = this.dwUrl(apiUrl, namespace, name);
 
-    this.logger.info(`Deleting workspace ${name} in ${namespace}`);
+    this.logger.info(`Deleting DevWorkspace ${name} in ${namespace}`);
 
-    const resp = await this.fetchWithTimeout(targetUrl, {
-      method: 'DELETE',
-      headers: this.headers(token),
-    });
+    const resp = await this.fetchK8s(url, { method: 'DELETE' }, token);
 
     if (!resp.ok && resp.status !== 404) {
-      const detail = await this.extractError(resp);
-      this.logger.error(`Delete workspace failed (${resp.status}): ${detail}`);
+      const detail = await this.extractK8sError(resp);
+      this.logger.error(
+        `Delete DevWorkspace failed (${resp.status}): ${detail}`,
+      );
       throw new Error(detail);
     }
   }
 
-  // ---------------------------------------------------------------------------
+  // ═══════════════════════════════════════════════════════════════════════
   // Internal helpers
-  // ---------------------------------------------------------------------------
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /** Build the DevWorkspace API URL for a namespace, optionally a specific resource. */
+  private dwUrl(apiUrl: string, namespace: string, name?: string): string {
+    const base = `${apiUrl}${DW_BASE_PATH}/namespaces/${encodeURIComponent(namespace)}/${DW_RESOURCE}`;
+    return name ? `${base}/${encodeURIComponent(name)}` : base;
+  }
+
+  /** Map a K8s DevWorkspace resource to the frontend DevSpacesWorkspace type. */
+  private toWorkspace(dw: KubeDevWorkspace): DevSpacesWorkspace {
+    const project = dw.spec?.template?.projects?.[0];
+    return {
+      name: dw.metadata.name,
+      namespace: dw.metadata.namespace,
+      phase: dw.status?.phase ?? 'Unknown',
+      url: dw.status?.mainUrl,
+      created_at: dw.metadata.creationTimestamp,
+      git_repo: project?.git?.remotes?.origin,
+    };
+  }
+
+  /** Map a K8s DevWorkspace resource to the create-response type. */
+  private toCreateResponse(
+    dw: KubeDevWorkspace,
+  ): DevSpacesCreateWorkspaceResponse {
+    return {
+      name: dw.metadata.name,
+      namespace: dw.metadata.namespace,
+      phase: dw.status?.phase ?? 'Starting',
+      message: dw.status?.message,
+      url: dw.status?.mainUrl,
+      created_at: dw.metadata.creationTimestamp,
+    };
+  }
+
+  /** Extract repo name from a git URL (e.g. "https://github.com/org/repo.git" → "repo"). */
+  private repoNameFromUrl(gitUrl: string): string {
+    const last = gitUrl.replace(/\/+$/, '').split('/').pop() ?? 'workspace';
+    return last.replace(/\.git$/i, '');
+  }
+
+  /** Sanitize a name to be a valid Kubernetes resource name. */
+  private sanitizeName(raw: string): string {
+    return (
+      raw
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 63) || 'workspace'
+    );
+  }
+
+  // ── Config & auth ──────────────────────────────────────────────────────
 
   private async getApiUrl(): Promise<string | undefined> {
     const raw = (await this.adminConfig.get('devSpacesApiUrl')) as
@@ -221,7 +369,7 @@ export class DevSpacesService {
     const url = await this.getApiUrl();
     if (!url) {
       throw new InputError(
-        'Dev Spaces API URL is not configured. Set it in Administration → Dev Spaces.',
+        'OpenShift API URL is not configured. Set it in Administration → Dev Spaces.',
       );
     }
     return url;
@@ -253,6 +401,22 @@ export class DevSpacesService {
     };
   }
 
+  // ── HTTP helpers ───────────────────────────────────────────────────────
+
+  private async fetchK8s(
+    url: string,
+    init: RequestInit,
+    token?: string,
+  ): Promise<Response> {
+    const hdrs: Record<string, string> = {
+      ...(init.headers as Record<string, string>),
+    };
+    if (token && !hdrs.Authorization) {
+      hdrs.Authorization = `Bearer ${token}`;
+    }
+    return this.fetchWithTimeout(url, { ...init, headers: hdrs });
+  }
+
   private async fetchWithTimeout(
     url: string,
     init: RequestInit,
@@ -282,49 +446,28 @@ export class DevSpacesService {
           return resp;
         }
         this.logger.warn(
-          `Dev Spaces API returned ${resp.status}, retrying (${attempt + 1}/${MAX_RETRIES})`,
+          `K8s API returned ${resp.status}, retrying (${attempt + 1}/${MAX_RETRIES})`,
         );
       } catch (err) {
         lastError = err;
         if (attempt === MAX_RETRIES) break;
         this.logger.warn(
-          `Dev Spaces request failed, retrying (${attempt + 1}/${MAX_RETRIES}): ${err}`,
+          `K8s request failed, retrying (${attempt + 1}/${MAX_RETRIES}): ${err}`,
         );
       }
       await new Promise(r => setTimeout(r, RETRY_DELAY_MS * (attempt + 1)));
     }
 
-    throw lastError ?? new Error('Dev Spaces request failed after retries');
+    throw lastError ?? new Error('Kubernetes API request failed after retries');
   }
 
-  private async parseResponse<T>(
-    resp: Response,
-    operation: string,
-  ): Promise<T> {
-    const body = await resp.text();
-    const contentType = resp.headers.get('content-type') ?? '';
-
-    if (!resp.ok) {
-      const detail = contentType.includes('json')
-        ? ((JSON.parse(body) as Record<string, unknown>)?.detail ?? body)
-        : body;
-      const msg = typeof detail === 'string' ? detail : JSON.stringify(detail);
-      this.logger.error(
-        `Dev Spaces ${operation} failed (${resp.status}): ${msg}`,
-      );
-      throw new Error(msg);
-    }
-
-    return contentType.includes('json') ? JSON.parse(body) : body;
-  }
-
-  private async extractError(resp: Response): Promise<string> {
+  private async extractK8sError(resp: Response): Promise<string> {
     try {
       const body = await resp.text();
       const contentType = resp.headers.get('content-type') ?? '';
       if (contentType.includes('json')) {
         const parsed = JSON.parse(body) as Record<string, unknown>;
-        return (parsed.detail as string) ?? (parsed.message as string) ?? body;
+        return (parsed.message as string) ?? (parsed.reason as string) ?? body;
       }
       return body || `HTTP ${resp.status}`;
     } catch {

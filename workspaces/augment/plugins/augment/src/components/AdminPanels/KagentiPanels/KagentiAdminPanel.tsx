@@ -809,12 +809,12 @@ export function KagentiAdminPanel({
 
       {sectionShell(
         'Dev Spaces',
-        'Configure the Dev Spaces API endpoint used to provision cloud IDE workspaces for agent development.',
+        'Configure the OpenShift API endpoint used to provision cloud IDE workspaces for agent development via the Kubernetes DevWorkspace API.',
         undefined,
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
-            label="Dev Spaces API URL"
-            placeholder="https://devspaces-api.example.com"
+            label="OpenShift API URL"
+            placeholder="https://api.cluster.example.com:6443"
             value={devSpacesUrl}
             onChange={e => setDevSpacesUrl(e.target.value)}
             size="small"
