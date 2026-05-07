@@ -54,6 +54,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebooks.updated.yesterday': 'Vor 1 Tag aktualisiert',
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',
     'notebooks.updated.on': 'Aktualisiert am',
+    'notebooks.card.openAria': 'Notizbuch {{name}} öffnen',
 
     // Notebook view
     'notebook.view.title': 'Unbenanntes Notizbuch',

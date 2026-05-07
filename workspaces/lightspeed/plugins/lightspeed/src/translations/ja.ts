@@ -54,6 +54,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebooks.updated.yesterday': '1日前に更新',
     'notebooks.updated.days': '{{days}}日前に更新',
     'notebooks.updated.on': '更新日',
+    'notebooks.card.openAria': 'ノートブック {{name}} を開く',
 
     // Notebook view
     'notebook.view.title': '無題のノートブック',
