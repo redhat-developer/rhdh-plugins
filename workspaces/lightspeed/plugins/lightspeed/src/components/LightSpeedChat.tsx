@@ -507,6 +507,10 @@ const useStyles = makeStyles(theme => ({
       {
         display: 'none',
       },
+    '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
+      marginTop: -48,
+      marginRight: -24,
+    },
     '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
       {
         display: 'none',

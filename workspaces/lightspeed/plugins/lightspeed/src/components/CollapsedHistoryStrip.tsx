@@ -56,12 +56,15 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
   },
   iconButton: {
-    padding: 0,
+    padding: 8,
     minWidth: 0,
     lineHeight: 1,
+    borderRadius: '50%',
     color: 'var(--pf-t--global--icon--color--regular)',
     '&:hover': {
       color: 'var(--pf-t--global--icon--color--hover)',
+      backgroundColor:
+        'var(--pf-t--global--background--color--action--plain--hover)',
     },
   },
   newChatIconButton: {
