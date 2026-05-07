@@ -37,8 +37,9 @@ export interface UseAgentTemplatesReturn {
 /**
  * Fetches `kind: Template` entities from the Backstage catalog.
  *
- * - `specType` filters by `spec.type` (recommended for agent vs tool separation).
- * - `tag` filters by `metadata.tags`.
+ * - `specType` prefers templates with that `spec.type` but falls back to
+ *   showing **all** templates if none match (graceful degradation).
+ * - `tag` filters by `metadata.tags` (hard filter, no fallback).
  * - When neither is provided, **all** catalog templates are returned.
  */
 export function useAgentTemplates(
@@ -58,18 +59,25 @@ export function useAgentTemplates(
     setLoading(true);
     setError(null);
 
-    const filter: Record<string, string> = { kind: 'Template' };
+    const baseFilter: Record<string, string> = { kind: 'Template' };
     if (tag) {
-      filter['metadata.tags'] = tag;
-    }
-    if (specType) {
-      filter['spec.type'] = specType;
+      baseFilter['metadata.tags'] = tag;
     }
 
-    catalogApi
-      .getEntities({ filter })
-      .then(res => {
-        if (!cancelled) setTemplates(res.items);
+    async function fetchTemplates(): Promise<Entity[]> {
+      if (specType) {
+        const typed = await catalogApi.getEntities({
+          filter: { ...baseFilter, 'spec.type': specType },
+        });
+        if (typed.items.length > 0) return typed.items;
+      }
+      const all = await catalogApi.getEntities({ filter: baseFilter });
+      return all.items;
+    }
+
+    fetchTemplates()
+      .then(items => {
+        if (!cancelled) setTemplates(items);
       })
       .catch(err => {
         if (!cancelled) setError(getErrorMessage(err));
