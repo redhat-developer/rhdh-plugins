@@ -24,6 +24,15 @@ import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orc
 
 import { Agent, fetch } from 'undici';
 
+/** Fields read from Loki `query_range` JSON responses in this provider. */
+interface LokiQueryRangeJsonBody {
+  data: {
+    result: Array<{ values: [string, string][] }>;
+  };
+}
+
+type LokiParsedLogLine = { id: string; log: string };
+
 export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
   private readonly token: string;
@@ -124,7 +133,7 @@ export class LokiProvider implements WorkflowLogProvider {
 
     const urlToFetch = `${this.baseURL}${lokiApiEndpoint}?${params.toString()}`;
 
-    let allResults;
+    let allResults!: LokiParsedLogLine[];
     try {
       const response = await fetch(urlToFetch, {
         dispatcher: this.agent,
@@ -137,7 +146,7 @@ export class LokiProvider implements WorkflowLogProvider {
         throw new Error(await response.text());
       }
 
-      const jsonResponse = await response.json();
+      const jsonResponse = (await response.json()) as LokiQueryRangeJsonBody;
 
       /**
       Data should look like this
@@ -160,24 +169,18 @@ export class LokiProvider implements WorkflowLogProvider {
        * }
        */
       allResults = jsonResponse.data.result
-        .flatMap((val: any[]) => {
-          return val.values;
-        })
-        .map((val: any[]) => {
-          return {
-            id: val[0],
-            log: val[1],
-          };
-        });
+        .flatMap(entry => entry.values)
+        .map(([id, log]) => ({ id, log }));
     } catch (error) {
       throw new Error(`Problem fetching loki logs: ${error.message}`);
     }
 
     const workflowLogsResponse: WorkflowLogsResponse = {
       instanceId: instance.id,
-      logs: allResults.sort((a: { id: number }, b: { id: number }) => {
-        return Number(a.id) - Number(b.id);
-      }),
+      logs: allResults.sort(
+        (a: LokiParsedLogLine, b: LokiParsedLogLine) =>
+          Number(a.id) - Number(b.id),
+      ),
     };
     return workflowLogsResponse;
   }
