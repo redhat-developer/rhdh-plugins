@@ -192,18 +192,19 @@ export function AgentTemplateBrowser({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             gap: 1.5,
           }}
         >
-          {[0, 1, 2, 3].map(i => (
+          {[0, 1, 2].map(i => (
             <Card key={i} variant="outlined" sx={{ borderRadius: 2 }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-                <Skeleton variant="text" width="70%" height={20} />
+              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                <Skeleton variant="text" width="70%" height={22} />
                 <Skeleton variant="text" width="100%" height={16} />
-                <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-                  <Skeleton variant="rounded" width={48} height={18} />
-                  <Skeleton variant="rounded" width={40} height={18} />
+                <Skeleton variant="text" width="80%" height={16} />
+                <Box sx={{ display: 'flex', gap: 0.5, mt: 0.75 }}>
+                  <Skeleton variant="rounded" width={52} height={20} />
+                  <Skeleton variant="rounded" width={44} height={20} />
                 </Box>
               </CardContent>
             </Card>
@@ -268,7 +269,7 @@ export function AgentTemplateBrowser({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             gap: 1.5,
           }}
         >
@@ -302,11 +303,11 @@ export function AgentTemplateBrowser({
                 <CardContent
                   sx={{
                     flex: 1,
-                    p: 1.5,
-                    '&:last-child': { pb: 1.5 },
+                    p: 2,
+                    '&:last-child': { pb: 2 },
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 0.5,
+                    gap: 0.75,
                   }}
                 >
                   <Box
@@ -314,7 +315,7 @@ export function AgentTemplateBrowser({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: 0.5,
+                      gap: 1,
                     }}
                   >
                     <Typography
@@ -334,26 +335,22 @@ export function AgentTemplateBrowser({
                         label={type}
                         size="small"
                         variant="outlined"
-                        sx={{
-                          height: 20,
-                          fontSize: '0.675rem',
-                          flexShrink: 0,
-                          '& .MuiChip-label': { px: 0.75 },
-                        }}
+                        sx={{ height: 22, fontSize: '0.7rem', flexShrink: 0 }}
                       />
                     )}
                   </Box>
 
                   {desc && (
                     <Typography
-                      variant="caption"
+                      variant="body2"
                       color="text.secondary"
                       sx={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
-                        lineHeight: 1.35,
+                        lineHeight: 1.4,
+                        fontSize: '0.8rem',
                       }}
                     >
                       {desc}
@@ -367,7 +364,6 @@ export function AgentTemplateBrowser({
                         gap: 0.5,
                         flexWrap: 'nowrap',
                         overflow: 'hidden',
-                        mt: 0.25,
                       }}
                     >
                       {visibleTags.map(t => (
@@ -376,12 +372,11 @@ export function AgentTemplateBrowser({
                           label={t}
                           size="small"
                           sx={{
-                            height: 20,
-                            fontSize: '0.675rem',
+                            height: 22,
+                            fontSize: '0.7rem',
                             flexShrink: 0,
                             bgcolor: alpha(theme.palette.primary.main, 0.08),
                             color: theme.palette.primary.main,
-                            '& .MuiChip-label': { px: 0.75 },
                           }}
                         />
                       ))}
@@ -390,12 +385,11 @@ export function AgentTemplateBrowser({
                           label={`+${hiddenCount}`}
                           size="small"
                           sx={{
-                            height: 20,
-                            fontSize: '0.675rem',
+                            height: 22,
+                            fontSize: '0.7rem',
                             flexShrink: 0,
                             bgcolor: alpha(theme.palette.action.hover, 0.08),
                             color: theme.palette.text.secondary,
-                            '& .MuiChip-label': { px: 0.75 },
                           }}
                         />
                       )}
@@ -411,23 +405,20 @@ export function AgentTemplateBrowser({
                       pt: 0.5,
                     }}
                   >
-                    {owner ? (
+                    {owner && (
                       <Typography
                         variant="caption"
                         color="text.disabled"
                         sx={{
-                          fontSize: '0.675rem',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                           flex: 1,
-                          mr: 0.5,
+                          mr: 1,
                         }}
                       >
                         {owner}
                       </Typography>
-                    ) : (
-                      <Box sx={{ flex: 1 }} />
                     )}
                     <Box
                       sx={{
@@ -435,11 +426,12 @@ export function AgentTemplateBrowser({
                         alignItems: 'center',
                         gap: 0.5,
                         flexShrink: 0,
+                        ml: 'auto',
                       }}
                     >
                       <Button
                         size="small"
-                        variant="text"
+                        variant="outlined"
                         onClick={e => {
                           e.stopPropagation();
                           handleLaunch(entity);
@@ -447,12 +439,11 @@ export function AgentTemplateBrowser({
                         sx={{
                           textTransform: 'none',
                           fontSize: '0.75rem',
-                          minWidth: 'auto',
-                          px: 1,
                           py: 0.25,
+                          px: 1.5,
                         }}
                       >
-                        Use
+                        Use Template
                       </Button>
                       {onOpenInDevSpace && sourceRepo && (
                         <Tooltip title={devSpaceLabel}>
@@ -463,7 +454,6 @@ export function AgentTemplateBrowser({
                               onOpenInDevSpace(sourceRepo);
                             }}
                             sx={{
-                              p: 0.25,
                               color: theme.palette.text.secondary,
                               '&:hover': {
                                 color: theme.palette.primary.main,
@@ -471,7 +461,7 @@ export function AgentTemplateBrowser({
                             }}
                             aria-label={devSpaceLabel}
                           >
-                            <LaptopMacOutlinedIcon sx={{ fontSize: '1rem' }} />
+                            <LaptopMacOutlinedIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       )}
