@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.6.8
+
+### Patch Changes
+
+- 02f64dc: add return statement to /v1/feedback error handler to prevent unhandled error fallthrough
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.8
+
 ## 2.6.7
 
 ### Patch Changes
