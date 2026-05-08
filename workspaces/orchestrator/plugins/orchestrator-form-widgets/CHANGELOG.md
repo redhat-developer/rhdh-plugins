@@ -1,11 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+<<<<<<< HEAD
 ## 1.10.7
 
 ### Patch Changes
 
 - a034e0e: Make fetch-driven form widgets resilient to invalid or partial JSONata and dynamic selector input so the UI no longer crashes while users edit fields.
 
+=======
+>>>>>>> 496d53df0 (Version Packages (#3073))
 ## 1.10.6
 
 ### Patch Changes
