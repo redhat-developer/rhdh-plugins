@@ -133,6 +133,7 @@ export const evaluateTemplateString = async (
 export const evaluateFetchResponseSelectorTemplate = async (
   props: evaluateTemplateStringProps,
 ): Promise<string> => {
+<<<<<<< HEAD
   let evaluated: JsonValue;
   try {
     evaluated = await evaluateTemplateString(props);
@@ -152,6 +153,15 @@ export const evaluateFetchResponseSelectorTemplate = async (
   }
   // Solo object/array from template expansion is not a usable JSONata selector string.
   return '';
+=======
+  const evaluated = await evaluateTemplateString(props);
+  if (typeof evaluated !== 'string') {
+    throw new Error(
+      `Template evaluation for "${props.key}" must produce a string (JSONata expression), got ${typeof evaluated}`,
+    );
+  }
+  return evaluated;
+>>>>>>> d4fe2733f (fix(orchestrator-form-widgets): evaluate templates in fetch response selectors (#3058))
 };
 
 export const evaluateTemplate = async (

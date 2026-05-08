@@ -153,7 +153,6 @@ export const ActiveTextInput: Widget<
           const fetchedValue = await applySelectorString(
             data,
             resolvedSelector,
-            true,
           );
 
           if (
