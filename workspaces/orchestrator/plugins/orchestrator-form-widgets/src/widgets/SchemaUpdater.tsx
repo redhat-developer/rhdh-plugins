@@ -29,6 +29,7 @@ import {
   useFetch,
   applySelectorObject,
   useProcessingState,
+  evaluateFetchResponseSelectorTemplate,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -86,9 +87,17 @@ export const SchemaUpdater: Widget<
         let typedData: SchemaChunksResponse =
           data as unknown as SchemaChunksResponse;
         if (valueSelector) {
+          const resolvedSelector = await evaluateFetchResponseSelectorTemplate({
+            template: valueSelector,
+            key: 'fetch:response:value',
+            unitEvaluator: templateUnitEvaluator,
+            formData: formData ?? {},
+            responseData: data,
+            uiProps,
+          });
           typedData = (await applySelectorObject(
             data,
-            valueSelector,
+            resolvedSelector,
           )) as unknown as SchemaChunksResponse;
         }
 
@@ -115,7 +124,16 @@ export const SchemaUpdater: Widget<
       });
     };
     doItAsync();
-  }, [data, props.id, updateSchema, valueSelector, wrapProcessing]);
+  }, [
+    data,
+    formData,
+    props.id,
+    updateSchema,
+    valueSelector,
+    uiProps,
+    templateUnitEvaluator,
+    wrapProcessing,
+  ]);
 
   const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
   const displayError = localError ?? (shouldShowFetchError ? error : undefined);

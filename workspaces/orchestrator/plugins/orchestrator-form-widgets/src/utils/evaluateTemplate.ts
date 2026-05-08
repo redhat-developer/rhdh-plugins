@@ -126,6 +126,22 @@ export const evaluateTemplateString = async (
   return evaluated;
 };
 
+/**
+ * Substitutes `$${{…}}` in a fetch response selector (JSONata string) using the same rules as
+ * `fetch:body` / `fetch:url`, then returns a plain string for JSONata evaluation against the response.
+ */
+export const evaluateFetchResponseSelectorTemplate = async (
+  props: evaluateTemplateStringProps,
+): Promise<string> => {
+  const evaluated = await evaluateTemplateString(props);
+  if (typeof evaluated !== 'string') {
+    throw new Error(
+      `Template evaluation for "${props.key}" must produce a string (JSONata expression), got ${typeof evaluated}`,
+    );
+  }
+  return evaluated;
+};
+
 export const evaluateTemplate = async (
   props: evaluateTemplateProps,
 ): Promise<JsonValue> => {

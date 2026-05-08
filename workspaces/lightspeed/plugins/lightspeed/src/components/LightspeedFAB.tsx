@@ -22,6 +22,7 @@ import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { LightspeedFABIcon } from './LightspeedIcon';
 
 const useStyles = makeStyles(theme => ({
@@ -56,6 +57,7 @@ const useStyles = makeStyles(theme => ({
  */
 
 export const LightspeedFAB = () => {
+  const { t } = useTranslation();
   const { isChatbotActive, toggleChatbot, displayMode } =
     useLightspeedDrawerContext();
   const fabButton = useStyles();
@@ -71,7 +73,7 @@ export const LightspeedFAB = () => {
       data-testid="lightspeed-fab"
     >
       <Tooltip
-        title={isChatbotActive ? 'Close Lightspeed' : 'Open Lightspeed'}
+        title={isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')}
         placement="left"
       >
         <Fab
@@ -79,7 +81,9 @@ export const LightspeedFAB = () => {
           variant="circular"
           size="small"
           onClick={toggleChatbot}
-          aria-label={isChatbotActive ? 'lightspeed-close' : 'lightspeed-open'}
+          aria-label={
+            isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')
+          }
           className={fabButton.fab}
           sx={{ borderRadius: '100% !important' }}
         >

@@ -30,8 +30,8 @@ import {
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
 
 // Actions
-export async function openChatbot(page: Page) {
-  await page.getByRole('button', { name: 'lightspeed-open' }).click();
+export async function openChatbot(page: Page, t: LightspeedMessages) {
+  await page.getByRole('button', { name: t['tooltip.fab.open'] }).click();
 }
 
 export async function selectDisplayMode(

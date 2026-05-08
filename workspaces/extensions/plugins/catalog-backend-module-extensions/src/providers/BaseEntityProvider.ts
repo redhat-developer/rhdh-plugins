@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
+import {
+  LoggerService,
+  SchedulerServiceTaskRunner,
+} from '@backstage/backend-plugin-api';
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
   Entity,
+  stringifyEntityRef,
 } from '@backstage/catalog-model';
 import {
   EntityProvider,
@@ -28,6 +32,7 @@ import { readYamlFiles } from '../utils/file-utils';
 import { JsonFileData } from '../types';
 import path from 'path';
 import fs from 'fs';
+import { isDeepStrictEqual } from 'node:util';
 
 /**
  * @public
@@ -38,35 +43,82 @@ export abstract class BaseEntityProvider<T extends Entity>
   private connection?: EntityProviderConnection;
   private taskRunner: SchedulerServiceTaskRunner;
   private config?: Config;
+  private readonly logger?: LoggerService;
 
   private static readonly EXTENSIONS_DIRECTORY = '/extensions';
   private static readonly DEPRECATED_MARKETPLACE_DIRECTORY = '/marketplace';
 
-  constructor(taskRunner: SchedulerServiceTaskRunner, config?: Config) {
+  constructor(
+    taskRunner: SchedulerServiceTaskRunner,
+    config?: Config,
+    logger?: LoggerService,
+  ) {
     this.taskRunner = taskRunner;
     this.config = config;
+    this.logger = logger;
   }
 
   abstract getProviderName(): string;
   abstract getKind(): string;
 
+  private addProviderAnnotations(entity: T): T {
+    return {
+      ...entity,
+      metadata: {
+        ...entity.metadata,
+        annotations: {
+          ...entity.metadata.annotations,
+          [ANNOTATION_LOCATION]: `file:${this.getProviderName()}`,
+          [ANNOTATION_ORIGIN_LOCATION]: `file:${this.getProviderName()}`,
+        },
+      },
+    };
+  }
+
   getEntities(allEntities: JsonFileData<T>[]): T[] {
     if (allEntities.length === 0) {
       return [];
     }
-    return allEntities
-      .filter(d => d.content.kind === this.getKind())
-      .map(file => ({
-        ...file.content,
-        metadata: {
-          ...file.content.metadata,
-          annotations: {
-            ...file.content.metadata.annotations,
-            [ANNOTATION_LOCATION]: `file:${this.getProviderName()}`,
-            [ANNOTATION_ORIGIN_LOCATION]: `file:${this.getProviderName()}`,
-          },
-        },
-      }));
+
+    const entitiesByEntityRef = new Map<
+      string,
+      { entity: T; filePath: string }
+    >();
+
+    for (const fileData of allEntities) {
+      if (fileData.content.kind !== this.getKind()) {
+        continue;
+      }
+
+      const identity = stringifyEntityRef({
+        kind: fileData.content.kind,
+        namespace: fileData.content.metadata.namespace ?? 'default',
+        name: fileData.content.metadata.name,
+      }).toLocaleLowerCase('en-US');
+      const existing = entitiesByEntityRef.get(identity);
+      if (!existing) {
+        entitiesByEntityRef.set(identity, {
+          entity: fileData.content,
+          filePath: fileData.filePath,
+        });
+        continue;
+      }
+
+      if (isDeepStrictEqual(existing.entity, fileData.content)) {
+        this.logger?.warn(
+          `Skipping duplicate Extensions entity '${identity}' from '${fileData.filePath}'. Keeping first definition from '${existing.filePath}'.`,
+        );
+        continue;
+      }
+
+      this.logger?.warn(
+        `Conflicting Extensions entities detected for '${identity}' in '${existing.filePath}' and '${fileData.filePath}'. Skipping conflicting definition from '${fileData.filePath}'.`,
+      );
+    }
+
+    return Array.from(entitiesByEntityRef.values()).map(({ entity }) =>
+      this.addProviderAnnotations(entity),
+    );
   }
 
   async connect(connection: EntityProviderConnection): Promise<void> {
@@ -119,7 +171,7 @@ export abstract class BaseEntityProvider<T extends Entity>
           }
         }
       } catch (error) {
-        console.warn(
+        this.logger?.warn(
           'Failed to read extensions directory from config, falling back to hardcoded fallbacks',
           error,
         );
@@ -139,7 +191,7 @@ export abstract class BaseEntityProvider<T extends Entity>
       }
     }
 
-    console.warn(
+    this.logger?.warn(
       `Extensions directory not found. Checked: configured directory "${BaseEntityProvider.EXTENSIONS_DIRECTORY}" and "${BaseEntityProvider.DEPRECATED_MARKETPLACE_DIRECTORY}"`,
     );
     return null;
@@ -157,7 +209,7 @@ export abstract class BaseEntityProvider<T extends Entity>
       try {
         yamlData = readYamlFiles(extensionsFilePath);
       } catch (error) {
-        console.error(error.message);
+        this.logger?.error(error.message);
       }
     }
 

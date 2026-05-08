@@ -90,6 +90,10 @@ export const SearchBar = (props: SearchBarProps) => {
                       : '0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.30)',
                 },
               },
+              clearIndicator: {
+                title: t('search.clear'),
+                'aria-label': t('search.clear'),
+              },
             }}
             sx={{
               width: '100%',

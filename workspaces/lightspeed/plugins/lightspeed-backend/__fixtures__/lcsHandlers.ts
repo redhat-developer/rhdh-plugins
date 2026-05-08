@@ -16,7 +16,12 @@
 
 import { http, HttpResponse, type HttpHandler } from 'msw';
 
-export const LOCAL_LCS_ADDR = 'http://0.0.0.0:8080';
+import {
+  DEFAULT_LIGHTSPEED_SERVICE_HOST,
+  DEFAULT_LIGHTSPEED_SERVICE_PORT,
+} from '../src/service/constant';
+
+export const LOCAL_LCS_ADDR = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${DEFAULT_LIGHTSPEED_SERVICE_PORT}`;
 
 function loadTestFixture(filePathFromFixturesDir: string) {
   return require(`${__dirname}/${filePathFromFixturesDir}`);

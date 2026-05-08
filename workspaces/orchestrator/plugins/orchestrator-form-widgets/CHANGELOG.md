@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.10.6
+
+### Patch Changes
+
+- acfcb4c: Evaluate `${{…}}` placeholders in `fetch:response:value`, `fetch:response:autocomplete`, `fetch:response:label`, and `fetch:response:value` (dropdown) before applying JSONata to the fetch response, consistent with other fetch template fields. Align `ActiveDropdown` and `ActiveTextInput` autocomplete with `ActiveMultiSelect` by treating undefined selector results as empty string arrays when building options, so invalid paths while editing do not surface as hard errors.
+
+## 1.10.5
+
+### Patch Changes
+
+- f47b22f: Replace values in ActiveMultiSelect when clearOnRetrigger is enabled
+- 646c581: Fix type errors in orchestrator form widgets
+
 ## 1.10.4
 
 ### Patch Changes
