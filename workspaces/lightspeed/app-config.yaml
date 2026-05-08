@@ -119,3 +119,6 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
+  locations:
+    - type: file
+      target: ./catalog-info.yaml

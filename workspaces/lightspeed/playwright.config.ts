@@ -40,6 +40,8 @@ export default defineConfig({
         cwd: __dirname,
         env: {
           NOTEBOOKS_ENABLED: 'true',
+          NOTEBOOKS_QUERY_MODEL: 'gpt-4',
+          NOTEBOOKS_QUERY_PROVIDER_ID: 'openai',
         },
       },
 

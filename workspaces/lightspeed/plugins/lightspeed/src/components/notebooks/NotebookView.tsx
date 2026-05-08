@@ -239,9 +239,9 @@ export const NotebookView = ({
   const { mutateAsync: notebookCreateMessage } = useCreateNotebookMessage();
 
   // Use notebook-specific model from config instead of chat's selected model
-  const notebookModel = configApi.getString(
-    'lightspeed.notebooks.queryDefaults.model',
-  );
+  const notebookModel =
+    configApi.getOptionalString('lightspeed.notebooks.queryDefaults.model') ||
+    '';
 
   const [conversationId, setConversationId] = useState(
     metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
