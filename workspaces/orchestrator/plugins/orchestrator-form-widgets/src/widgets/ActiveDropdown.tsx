@@ -35,6 +35,7 @@ import {
   resolveDropdownDefault,
   useProcessingState,
   useClearOnRetrigger,
+  evaluateFetchResponseSelectorTemplate,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -126,13 +127,36 @@ export const ActiveDropdown: Widget<
 
     const doItAsync = async () => {
       await wrapProcessing(async () => {
+        const fd = formData ?? {};
+        const resolvedLabelSelector =
+          await evaluateFetchResponseSelectorTemplate({
+            template: labelSelector,
+            key: 'fetch:response:label',
+            unitEvaluator: templateUnitEvaluator,
+            formData: fd,
+            responseData: data,
+            uiProps,
+          });
+        const resolvedValueSelector =
+          await evaluateFetchResponseSelectorTemplate({
+            template: valueSelector,
+            key: 'fetch:response:value',
+            unitEvaluator: templateUnitEvaluator,
+            formData: fd,
+            responseData: data,
+            uiProps,
+          });
         const selectedLabels = await applySelectorArray(
-          getSelectorContext(labelSelector),
-          labelSelector,
+          getSelectorContext(resolvedLabelSelector),
+          resolvedLabelSelector,
+          true,
+          true,
         );
         const selectedValues = await applySelectorArray(
-          getSelectorContext(valueSelector),
-          valueSelector,
+          getSelectorContext(resolvedValueSelector),
+          resolvedValueSelector,
+          true,
+          true,
         );
 
         if (selectedLabels.length !== selectedValues.length) {
@@ -148,7 +172,16 @@ export const ActiveDropdown: Widget<
     };
 
     doItAsync();
-  }, [labelSelector, valueSelector, data, formData, props.id, wrapProcessing]);
+  }, [
+    labelSelector,
+    valueSelector,
+    data,
+    formData,
+    uiProps,
+    templateUnitEvaluator,
+    props.id,
+    wrapProcessing,
+  ]);
 
   const handleChange = useCallback(
     (changed: string, isByUser: boolean) => {
