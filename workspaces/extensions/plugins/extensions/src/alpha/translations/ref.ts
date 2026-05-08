@@ -222,6 +222,10 @@ export const extensionsMessages = {
         noResults: 'No results found. Try a different search term.',
         noRecords: 'No records to display',
       },
+      pagination: {
+        labelRowsPerPage: 'rows',
+        labelDisplayedRows: '{from}-{to} of {count}',
+      },
     },
   },
 

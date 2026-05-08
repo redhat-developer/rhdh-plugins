@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   ResponseErrorPanel,
   Table,
@@ -69,6 +69,12 @@ export const InstalledPackagesTable = () => {
   const dynamicPluginInfo = useApi(dynamicPluginsInfoApiRef);
   const extensionsApi = useExtensionsApi();
   const fullTextSearch = useQueryFullTextSearch();
+  const searchTerm = fullTextSearch.current;
+  const tableRef = useRef<any>(null);
+
+  useEffect(() => {
+    tableRef.current?.onQueryChange();
+  }, [searchTerm]);
 
   const showUninstall = false;
   const isProductionEnvironment =
@@ -330,7 +336,8 @@ export const InstalledPackagesTable = () => {
         <SearchTextField variant="search" />
       </div>
       <Table
-        key={`${installedQuery.data?.length ?? 0}-${packagesQuery.data?.items?.length ?? 0}-${fullTextSearch.current || ''}`}
+        tableRef={tableRef}
+        key={`${installedQuery.data?.length ?? 0}-${packagesQuery.data?.items?.length ?? 0}`}
         title={t('installedPackages.table.title' as any, {
           count: filteredCount.toString(),
         })}
@@ -354,6 +361,18 @@ export const InstalledPackagesTable = () => {
           },
           toolbar: {
             searchPlaceholder: t('installedPackages.table.searchPlaceholder'),
+          },
+          pagination: {
+            labelRowsPerPage: t(
+              'installedPackages.table.pagination.labelRowsPerPage',
+            ),
+            labelRowsSelect: t(
+              'installedPackages.table.pagination.labelRowsPerPage',
+            ),
+            labelDisplayedRows: t(
+              'installedPackages.table.pagination.labelDisplayedRows',
+              {},
+            ),
           },
         }}
       />
