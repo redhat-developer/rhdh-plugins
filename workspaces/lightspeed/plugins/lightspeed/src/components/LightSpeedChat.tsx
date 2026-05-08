@@ -99,7 +99,7 @@ import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext'
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
-import roundedLogo from '../images/rounded-logo.svg';
+import logo from '../images/logo.svg';
 import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
@@ -147,6 +147,8 @@ const useStyles = makeStyles(theme => ({
     padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
       3,
     )}px !important`,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default) !important',
   },
   errorContainer: {
     padding: theme.spacing(3),
@@ -183,7 +185,7 @@ const useStyles = makeStyles(theme => ({
     },
   },
   tabs: {
-    padding: `${theme.spacing(2)}px ${theme.spacing(3)}px 0`,
+    padding: `0 ${theme.spacing(2)}px`,
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
     '& .pf-v6-c-tabs__item, & .pf-v5-c-tabs__item': {
@@ -207,6 +209,12 @@ const useStyles = makeStyles(theme => ({
   },
   tabsDivider: {
     borderTop: '1px solid var(--pf-t--global--border--color--default)',
+  },
+  headerDivider: {
+    paddingTop: 8,
+    borderBottom: '1px solid var(--pf-t--global--border--color--default)',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   notebooksContainer: {
     padding: theme.spacing(3),
@@ -1870,7 +1878,7 @@ export const LightspeedChat = ({
             {isFullscreenMode && (
               <>
                 <img
-                  src={roundedLogo as any}
+                  src={logo as any}
                   alt={t('icon.lightspeed.alt')}
                   className={classes.headerLogo}
                 />
@@ -1901,6 +1909,7 @@ export const LightspeedChat = ({
             onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
+        {isFullscreenMode && <div className={classes.headerDivider} />}
         {isFullscreenMode && (
           <>
             <Tabs
