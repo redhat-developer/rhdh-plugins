@@ -46,12 +46,17 @@ export const applySelectorArray = async (
 export const applySelectorString = async (
   data: JsonObject,
   selector: string,
+  emptyStringWhenMissing: boolean = false,
 ): Promise<string> => {
   const expression = jsonata(selector);
   const value = await expression.evaluate(data);
 
   if (typeof value === 'string') {
     return value;
+  }
+
+  if (emptyStringWhenMissing && (value === undefined || value === null)) {
+    return '';
   }
 
   throw new Error(

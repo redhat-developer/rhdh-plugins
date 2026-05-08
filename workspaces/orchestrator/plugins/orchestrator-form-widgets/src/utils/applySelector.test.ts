@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { applySelectorArray } from './applySelector';
+import { applySelectorArray, applySelectorString } from './applySelector';
 import { JsonObject } from '@backstage/types';
 
 describe('applySelectorArray', () => {
@@ -255,6 +255,40 @@ describe('applySelectorArray', () => {
     await expect(
       applySelectorArray(deepData, 'level1.level2.level3.items'),
     ).resolves.toStrictEqual(['deep1', 'deep2', 'deep3']);
+  });
+});
+
+describe('applySelectorString', () => {
+  const data: JsonObject = { status: 'UP', nested: { name: 'x' } };
+
+  it('returns string when selector evaluates to a string', async () => {
+    await expect(applySelectorString(data, 'status')).resolves.toBe('UP');
+  });
+
+  it('throws when selector is missing and emptyStringWhenMissing is false', async () => {
+    await expect(applySelectorString(data, 'doesNotExist')).rejects.toThrow(
+      'Unexpected result of "doesNotExist" selector, expected string type',
+    );
+  });
+
+  it('returns empty string when selector is missing and emptyStringWhenMissing is true', async () => {
+    await expect(applySelectorString(data, 'doesNotExist', true)).resolves.toBe(
+      '',
+    );
+  });
+
+  it('returns empty string when JSONata yields null and emptyStringWhenMissing is true', async () => {
+    const withNull: JsonObject = { absent: null };
+    await expect(applySelectorString(withNull, 'absent', true)).resolves.toBe(
+      '',
+    );
+  });
+
+  it('still throws for non-string non-nullish when emptyStringWhenMissing is true', async () => {
+    const withNum: JsonObject = { n: 42 };
+    await expect(applySelectorString(withNum, 'n', true)).rejects.toThrow(
+      'expected string type',
+    );
   });
 });
 
