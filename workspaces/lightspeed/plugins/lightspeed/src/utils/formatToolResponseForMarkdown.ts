@@ -35,25 +35,103 @@ const prettyPrintToolJson = (value: unknown): string => {
   return JSON.stringify(value);
 };
 
-export const formatToolResponseForMarkdown = (raw: string): string => {
-  if (raw === null) return '';
-  const trimmed = raw.trim();
-  if (!trimmed) return '';
-
-  if (/^```/m.test(trimmed)) {
-    return raw;
-  }
-
-  let parsed: unknown;
+const tryParseJson = (value: string) => {
   try {
-    parsed = JSON.parse(trimmed);
+    return JSON.parse(value);
   } catch {
-    if (trimmed.length > 120 || trimmed.includes('\n')) {
-      return `\`\`\`\n${trimmed}\n\`\`\``;
+    return undefined;
+  }
+};
+
+const deepParseJson = (value: unknown): unknown => {
+  let current = value;
+
+  while (typeof current === 'string') {
+    try {
+      const parsed = JSON.parse(current);
+
+      // stop if parsing doesn't change type
+      if (parsed === current) break;
+
+      current = parsed;
+    } catch {
+      break;
     }
-    return trimmed;
   }
 
-  const body = prettyPrintToolJson(parsed);
+  return current;
+};
+
+const formatPayload = (payload: unknown): string => {
+  if (typeof payload === 'string') {
+    const nested = deepParseJson(payload);
+    if (nested !== undefined && nested !== null && typeof nested === 'object') {
+      return `\`\`\`json\n${JSON.stringify(nested, null, 2)}\n\`\`\``;
+    }
+    if (payload.length > 120 || payload.includes('\n')) {
+      return `\`\`\`\n${payload}\n\`\`\``;
+    }
+    return payload;
+  }
+
+  const body = prettyPrintToolJson(payload);
   return `\`\`\`json\n${body}\n\`\`\``;
+};
+
+const STATUS_PREFIX_REGEX = /^\[([^\]]+)\]\s+([\s\S]+)$/;
+
+const extractToolResultPayload = (raw: string): unknown | undefined => {
+  const trimmed = raw.trim();
+
+  const match = STATUS_PREFIX_REGEX.exec(trimmed);
+  if (match) {
+    const [, , payload] = match;
+
+    const parsed = tryParseJson(payload.trim());
+    if (parsed !== undefined) {
+      return parsed;
+    }
+  }
+
+  const jsonSegment = trimmed.startsWith('data:')
+    ? trimmed.slice('data:'.length).trim()
+    : trimmed;
+
+  const parsed = tryParseJson(jsonSegment);
+  if (!parsed || typeof parsed !== 'object') {
+    return undefined;
+  }
+
+  const parsedRecord = parsed as Record<string, unknown>;
+
+  if (
+    parsedRecord.event === 'tool_result' &&
+    parsedRecord.data &&
+    typeof parsedRecord.data === 'object' &&
+    'content' in parsedRecord.data
+  ) {
+    const content = (parsedRecord.data as Record<string, unknown>).content;
+
+    if (typeof content === 'string') {
+      return deepParseJson(content);
+    }
+
+    return content;
+  }
+
+  return parsed;
+};
+
+export const formatToolResponseForMarkdown = (raw: string): string => {
+  if (!raw?.trim()) return '';
+
+  if (/^```/.test(raw)) return raw;
+
+  const payload = extractToolResultPayload(raw);
+
+  if (payload !== undefined) {
+    return formatPayload(payload);
+  }
+
+  return formatPayload(raw);
 };
