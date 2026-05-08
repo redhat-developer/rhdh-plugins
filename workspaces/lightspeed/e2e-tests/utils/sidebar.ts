@@ -23,9 +23,20 @@ export async function assertChatDialogInitialState(
   await expect(page.getByLabel('Chatbot', { exact: true })).toContainText(
     translations['chatbox.header.title'],
   );
-  await expect(
-    page.getByRole('button', { name: translations['aria.chatHistoryMenu'] }),
-  ).toBeVisible();
+
+  const chatHistoryMenuButton = page.getByRole('button', {
+    name: translations['aria.chatHistoryMenu'],
+  });
+  const closeDrawerButton = page.getByRole('button', {
+    name: translations['aria.closeDrawerPanel'],
+  });
+
+  if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
+    await expect(chatHistoryMenuButton).toBeVisible();
+  } else {
+    await expect(closeDrawerButton).toBeVisible();
+  }
+
   await assertDrawerState(page, 'open', translations);
 
   await expect(page.getByLabel(translations['conversation.category.recent']))
@@ -53,10 +64,27 @@ export async function openChatDrawer(
   page: Page,
   translations: LightspeedMessages,
 ) {
-  const toggleButton = page.getByRole('button', {
+  const chatHistoryMenuButton = page.getByRole('button', {
     name: translations['aria.chatHistoryMenu'],
   });
-  await toggleButton.click();
+  const expandHistoryButton = page.getByRole('button', {
+    name: translations['tooltip.expandHistoryPanel'],
+  });
+
+  // Try the hamburger menu first (overlay/docked mode)
+  if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
+    await chatHistoryMenuButton.click();
+  } else {
+    // In fullscreen mode, use the expand button from CollapsedHistoryStrip
+    await expect(expandHistoryButton).toBeVisible({ timeout: 5000 });
+    await expandHistoryButton.click();
+  }
+
+  // Wait for the drawer to open
+  const closeButton = page.getByRole('button', {
+    name: translations['aria.closeDrawerPanel'],
+  });
+  await expect(closeButton).toBeVisible({ timeout: 5000 });
 }
 
 export async function assertDrawerState(
