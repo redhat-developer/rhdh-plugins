@@ -144,6 +144,9 @@ const extensionsPlugin: OverridableFrontendPlugin<
     >;
     catalogTabRouteRef: SubRouteRef<undefined>;
     installedTabRouteRef: SubRouteRef<undefined>;
+    installedPackageRouteRef: SubRouteRef<
+      PathParams<'/installed-packages/:namespace/:name'>
+    >;
   },
   {},
   {
@@ -361,6 +364,8 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'installedPackages.table.tooltips.disablePackage': string;
     readonly 'installedPackages.table.emptyMessages.noResults': string;
     readonly 'installedPackages.table.emptyMessages.noRecords': string;
+    readonly 'installedPackages.table.pagination.labelRowsPerPage': string;
+    readonly 'installedPackages.table.pagination.labelDisplayedRows': string;
     readonly 'button.update': string;
     readonly 'button.install': string;
     readonly 'button.uninstall': string;

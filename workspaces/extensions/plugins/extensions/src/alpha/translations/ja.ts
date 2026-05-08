@@ -177,6 +177,9 @@ const extensionsTranslationJa = createTranslationMessages({
       '結果が見つかりません。別の検索語句を試してください。',
     'installedPackages.table.emptyMessages.noRecords':
       '表示するレコードがありません',
+    'installedPackages.table.pagination.labelRowsPerPage': '行',
+    'installedPackages.table.pagination.labelDisplayedRows':
+      '{from}-{to} / {count}',
     'actions.install': 'インストール',
     'actions.view': '表示',
     'actions.edit': '編集',

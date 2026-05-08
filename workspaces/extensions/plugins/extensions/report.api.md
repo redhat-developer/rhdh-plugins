@@ -49,6 +49,9 @@ export const extensionsPlugin: BackstagePlugin<
     >;
     catalogTabRouteRef: SubRouteRef<undefined>;
     installedTabRouteRef: SubRouteRef<undefined>;
+    installedPackageRouteRef: SubRouteRef<
+      PathParams<'/installed-packages/:namespace/:name'>
+    >;
   },
   {},
   {}
@@ -88,6 +91,9 @@ export const marketplacePlugin: BackstagePlugin<
     >;
     catalogTabRouteRef: SubRouteRef<undefined>;
     installedTabRouteRef: SubRouteRef<undefined>;
+    installedPackageRouteRef: SubRouteRef<
+      PathParams<'/installed-packages/:namespace/:name'>
+    >;
   },
   {},
   {}

@@ -30,7 +30,7 @@ import Box from '@mui/material/Box';
 import { ExtensionsPackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { packageInstallRouteRef, packageRouteRef } from '../../routes';
+import { packageInstallRouteRef, installedPackageRouteRef } from '../../routes';
 import { usePackageConfig } from '../../hooks/usePackageConfig';
 import { usePackage } from '../../hooks/usePackage';
 import { downloadPackageYAML } from '../../utils/downloadPackageYaml';
@@ -433,12 +433,13 @@ export const UninstallPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
 };
 
 export const PackageName = ({ pkg }: { pkg: InstalledPackageRow }) => {
-  const packagePath = useRouteRef(packageRouteRef);
+  const packagePath = useRouteRef(installedPackageRouteRef);
+  const [searchParams] = useSearchParams();
 
   if (!pkg.hasEntity) return <>{pkg.displayName}</>;
-  return (
-    <Link to={packagePath({ namespace: pkg.namespace!, name: pkg.name! })}>
-      {pkg.displayName}
-    </Link>
-  );
+
+  const path = packagePath({ namespace: pkg.namespace!, name: pkg.name! });
+  const searchParamString = searchParams.size > 0 ? `?${searchParams}` : '';
+
+  return <Link to={`${path}${searchParamString}`}>{pkg.displayName}</Link>;
 };
