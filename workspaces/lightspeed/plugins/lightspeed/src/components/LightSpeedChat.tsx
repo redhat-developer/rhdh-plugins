@@ -138,7 +138,7 @@ const ConditionalWrapper = ({
 const useStyles = makeStyles(theme => ({
   body: {
     // remove default margin and padding from common elements
-    '& h1, & h2, & h3, & h4, & h5, & h6, & p, & ul, & ol, & li': {
+    '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
       margin: 0,
       padding: 0,
     },
