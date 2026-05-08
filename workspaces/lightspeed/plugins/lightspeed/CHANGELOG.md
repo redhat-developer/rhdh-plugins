@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.6.7
+
+### Patch Changes
+
+- 3d2854b: fixed tool call response
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.7
+
 ## 2.6.6
 
 ### Patch Changes
