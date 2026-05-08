@@ -11,9 +11,6 @@
   "backstage": {
     "role": "frontend"
   },
-  "jest": {
-    "testEnvironment": "@internal/jest-environment-jsdom-suppress-css"
-  },
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
@@ -59,7 +56,6 @@
   },
   "devDependencies": {
     "@backstage/frontend-test-utils": "^0.5.1",
-    "@internal/jest-environment-jsdom-suppress-css": "workspace:^",
     "@playwright/test": "^1.58.2",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.0.0",

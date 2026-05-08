@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.21.4
+
+### Patch Changes
+
+- 7cf6d61: Add missing translations for the global header search experience: localize the autocomplete "All results" link and the clear control tooltip/accessible label (`search.allResults`, `search.clear`), with locale strings for German, Spanish, French, Italian, and Japanese.
+
+## 1.21.3
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
+## 1.21.2
+
+### Patch Changes
+
+- 4cabc3b: Fix help dropdown not closing when selecting Quick Start menu item.
+
 ## 1.21.1
 
 ### Patch Changes

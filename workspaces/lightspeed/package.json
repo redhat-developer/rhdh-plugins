@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "22"
+    "node": "22 || 24"
   },
   "scripts": {
     "start": "backstage-cli repo start",
@@ -53,9 +53,13 @@
     "@backstage/repo-tools": "^0.17.0",
     "@changesets/cli": "^2.27.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
+    "@jest/environment-jsdom-abstract": "^30.3.0",
     "@playwright/test": "1.58.2",
     "@spotify/prettier-config": "^12.0.0",
     "@types/jest": "^30.0.0",
+    "@types/jsdom": "^27.0.0",
+    "jest": "^30.3.0",
+    "jsdom": "^27.1.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "3.8.3",
@@ -71,7 +75,7 @@
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
     "@backstage/frontend-plugin-api": "0.15.1",
     "infinispan": "0.13.0",
-    "protobufjs": "7.5.5",
+    "@protobufjs/inquire": "1.1.0",
     "langsmith": "^0.6.0"
   },
   "prettier": "@spotify/prettier-config",

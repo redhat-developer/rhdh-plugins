@@ -118,7 +118,9 @@ describe('OrchestratorClient', () => {
     const getExpectations = (
       result: any,
       mockExecResponse: ExecuteWorkflowResponseDTO,
-      executeWorkflowSpy: jest.SpyInstance,
+      executeWorkflowSpy: jest.Spied<
+        typeof DefaultApi.prototype.executeWorkflow
+      >,
       parameters: JsonObject,
     ) => {
       return () => {

@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 2.7.3
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.3
+
+## 2.7.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.2
+
 ## 2.7.1
 
 ### Patch Changes

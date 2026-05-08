@@ -54,6 +54,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebooks.updated.yesterday': '1日前に更新',
     'notebooks.updated.days': '{{days}}日前に更新',
     'notebooks.updated.on': '更新日',
+    'notebooks.card.openAria': 'ノートブック {{name}} を開く',
 
     // Notebook view
     'notebook.view.title': '無題のノートブック',
@@ -222,6 +223,8 @@ const lightspeedTranslationJa = createTranslationMessages({
     'tooltip.backToBottom': '一番下に戻る',
     'tooltip.settings': 'チャットボットのオプション',
     'tooltip.close': '閉じる',
+    'tooltip.fab.open': 'Lightspeed を開く',
+    'tooltip.fab.close': 'Lightspeed を閉じる',
     'modal.title.preview': '添付ファイルのプレビュー',
     'modal.title.edit': '添付ファイルの編集',
     'icon.lightspeed.alt': 'lightspeed アイコン',

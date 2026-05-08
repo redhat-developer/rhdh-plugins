@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 7.3.2
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.2
+
+## 7.3.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.1
+
 ## 7.3.0
 
 ### Minor Changes

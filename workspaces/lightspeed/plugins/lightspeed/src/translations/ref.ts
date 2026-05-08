@@ -52,6 +52,7 @@ export const lightspeedMessages = {
   'notebooks.updated.yesterday': 'Updated 1 day ago',
   'notebooks.updated.days': 'Updated {{days}} days ago',
   'notebooks.updated.on': 'Updated on',
+  'notebooks.card.openAria': 'Open notebook {{name}}',
 
   // Notebook view
   'notebook.view.title': 'Untitled notebook',
@@ -245,6 +246,8 @@ export const lightspeedMessages = {
   'tooltip.backToBottom': 'Back to bottom',
   'tooltip.settings': 'Chatbot options',
   'tooltip.close': 'Close',
+  'tooltip.fab.open': 'Open Lightspeed',
+  'tooltip.fab.close': 'Close Lightspeed',
 
   // Modal titles
   'modal.title.preview': 'Preview attachment',

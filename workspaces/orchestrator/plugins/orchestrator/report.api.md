@@ -42,6 +42,7 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'table.title.allWorkflowRuns': string;
     readonly 'table.headers.name': string;
     readonly 'table.headers.description': string;
+    readonly 'table.headers.version': string;
     readonly 'table.headers.duration': string;
     readonly 'table.headers.status': string;
     readonly 'table.headers.runStatus': string;
@@ -135,6 +136,7 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.status.available': string;
     readonly 'workflow.status.unavailable': string;
     readonly 'workflow.fields.description': string;
+    readonly 'workflow.fields.version': string;
     readonly 'workflow.fields.workflowId': string;
     readonly 'workflow.fields.duration': string;
     readonly 'workflow.fields.runStatus': string;
@@ -175,6 +177,8 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'permissions.contactAdmin': string;
     readonly 'permissions.missingOwnership': string;
     readonly 'permissions.notYourRun': string;
+    readonly 'alerts.duplicateWorkflowIds.message': string;
+    readonly 'alerts.duplicateWorkflowIds.learnMore': string;
     readonly 'stepperObjectField.error': string;
     readonly 'formDecorator.error': string;
     readonly 'aria.close': string;

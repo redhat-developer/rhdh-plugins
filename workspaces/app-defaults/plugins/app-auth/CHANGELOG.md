@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-auth
 
+## 0.0.2
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
 ## 0.0.1
 
 ### Patch Changes

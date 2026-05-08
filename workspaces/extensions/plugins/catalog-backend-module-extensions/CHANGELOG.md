@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
 
+## 0.17.0
+
+### Minor Changes
+
+- 12921b4: Enforce collision policy for duplicate entity identities
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.17.0
+
+## 0.16.1
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.16.1
+
 ## 0.16.0
 
 ### Minor Changes

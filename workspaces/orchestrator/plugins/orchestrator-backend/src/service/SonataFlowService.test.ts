@@ -21,6 +21,7 @@ import { DataIndexService } from './DataIndexService';
 import { SonataFlowService } from './SonataFlowService';
 
 jest.mock('node:crypto', () => ({
+  ...jest.requireActual('node:crypto'),
   randomUUID: () => '12345',
 }));
 
@@ -221,6 +222,60 @@ describe('SonataFlowService', () => {
       expect(result).toBeDefined();
       expect(result?.id).toBeDefined();
       expect(result?.id).toEqual('12345');
+    });
+
+    it('should pass data from workflowdata payload into the clouevent data', async () => {
+      const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
+        clientId: 'kafkaClientId',
+        brokers: ['localhost:9091'],
+      };
+      const sonataFlowServiceWithKafka = new SonataFlowService(
+        dataIndexServiceMock,
+        loggerMock,
+        kafkaServiceOptionsMock,
+      );
+
+      const sendMock = jest.fn();
+
+      jest
+        .spyOn(
+          sonataFlowServiceWithKafka.getOrchestratorKafkaImpl() as any,
+          'producer',
+        )
+        .mockImplementation(() => ({
+          connect: jest.fn(),
+          send: sendMock,
+          disconnect: jest.fn(),
+        }));
+
+      const result =
+        await sonataFlowServiceWithKafka.executeWorkflowAsCloudEvent({
+          definitionId,
+          workflowSource: 'workflowSource',
+          workflowEventType: 'workflowEventType',
+          contextAttribute: 'lockid',
+          inputData: {
+            workflowdata: {
+              paramter1: '12345',
+              isEvent: true,
+            },
+          },
+        });
+
+      expect(sendMock).toHaveBeenCalled();
+
+      const { messages } = sendMock.mock.calls[0][0];
+      const parsed = JSON.parse(messages[0].value);
+
+      expect(parsed.data).toEqual({
+        paramter1: '12345',
+        lockid: '12345',
+      });
+
+      expect(parsed.isEvent).toBeUndefined();
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe('12345');
     });
 
     it('should error on a bad connection', async () => {

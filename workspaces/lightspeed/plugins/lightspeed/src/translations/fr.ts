@@ -54,6 +54,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebooks.updated.yesterday': 'Mis à jour il y a 1 jour',
     'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',
     'notebooks.updated.on': 'Mis à jour le',
+    'notebooks.card.openAria': 'Ouvrir le carnet {{name}}',
 
     // Notebook view
     'notebook.view.title': 'Carnet sans titre',
@@ -223,6 +224,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.backToBottom': 'De haut en bas',
     'tooltip.settings': 'Options Chatbot',
     'tooltip.close': 'Fermer',
+    'tooltip.fab.open': 'Ouvrir Lightspeed',
+    'tooltip.fab.close': 'Fermer Lightspeed',
 
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'modal.title.edit': 'Modifier la pièce jointe',

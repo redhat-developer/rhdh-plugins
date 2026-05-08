@@ -48,7 +48,7 @@ export class McpConfigureTokenPage {
     mockOptions?: MockMcpServersOptions,
   ): Promise<void> {
     await mockMcpServers(this.page, mcpList, mockOptions ?? {});
-    await openChatbot(this.page);
+    await openChatbot(this.page, this.t);
     await selectDisplayMode(this.page, this.t, mode);
     await openMcpSettingsPanel(this.page, this.t);
   }

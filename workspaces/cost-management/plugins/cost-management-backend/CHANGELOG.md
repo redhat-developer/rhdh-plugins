@@ -1,5 +1,52 @@
 # @red-hat-developer-hub/plugin-cost-management-backend
 
+## 2.2.0
+
+### Minor Changes
+
+- ce8cb07: Add authorization, input validation, and confirmation dialog for Apply Recommendation workflow.
+
+  - New `ros.apply` permission required to execute the Apply Recommendation workflow
+  - New backend `POST /apply-recommendation` endpoint validates `resourceType` against server-side allowlist and checks `ros.apply` permission before forwarding to Orchestrator
+  - Workflow execution now routes through the cost-management backend instead of directly to the Orchestrator plugin, enabling server-side authorization and audit logging
+  - Confirmation dialog added before workflow execution to prevent accidental clicks
+
+- 7b7bab9: **BREAKING**: Changed permission name separator from `.` to `/` for cluster-specific and cluster-project-specific permissions.
+
+  This resolves an ambiguity where dotted cluster names (e.g., `my.cluster`) could not be distinguished from the separator in permission names like `ros.my.cluster.project`.
+
+  New format:
+
+  - `ros/{clusterName}` and `ros/{clusterName}/{projectName}` (was `ros.{clusterName}` and `ros.{clusterName}.{projectName}`)
+  - `cost/{clusterName}` and `cost/{clusterName}/{projectName}` (was `cost.{clusterName}` and `cost.{clusterName}.{projectName}`)
+
+  Generic permissions (`ros.plugin`, `ros.apply`, `cost.plugin`) are unchanged.
+
+  See `docs/rbac.md` for a migration guide.
+
+- ab26a80: Move Cost Management data fetching server-side to eliminate token exposure and RBAC bypass
+
+  - Added secure backend proxy (`/api/cost-management/proxy/*`) that authenticates requests via Backstage httpAuth, checks RBAC permissions, retrieves SSO tokens internally, and injects server-side cluster/project filters before forwarding to the Cost Management API
+  - Removed `/token` endpoint that exposed SSO service account credentials to the browser
+  - Removed `dangerously-allow-unauthenticated` proxy configuration from `app-config.dynamic.yaml`
+  - Updated `OptimizationsClient` and `CostManagementSlimClient` to route through the new secure backend proxy instead of the old Backstage proxy
+  - Eliminated client-side RBAC filter injection that could be bypassed by calling the proxy directly
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- 1df822e: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@types/lodash` to `4.17.21`.
+- 1df822e: Updated dependency `lodash` to `4.17.23`.
+- 1df822e: Updated dependency `@types/lodash` to `4.17.23`.
+- 1df822e: Updated dependency `@types/lodash` to `4.17.22`.
+- 4f8c5f7: Updated dependency `@types/lodash` to `4.17.24`.
+- Updated dependencies [ce8cb07]
+- Updated dependencies [5148408]
+- Updated dependencies [7b7bab9]
+- Updated dependencies [ab26a80]
+  - @red-hat-developer-hub/plugin-cost-management-common@2.2.0
+
 ## 2.0.2
 
 ### Patch Changes

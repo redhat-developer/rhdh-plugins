@@ -44,6 +44,7 @@ export const orchestratorMessages = {
       lastRun: 'Last run',
       lastRunStatus: 'Last run status',
       workflowName: 'Workflow name',
+      version: 'Version',
     },
     actions: {
       run: 'Run',
@@ -87,6 +88,7 @@ export const orchestratorMessages = {
       started: 'Started',
       workflowId: 'Run ID',
       workflowIdCopied: 'Run ID copied to clipboard',
+      version: 'Version',
     },
     errors: {
       retriggerFailed: 'Retrigger failed: {{reason}}',
@@ -224,6 +226,13 @@ export const orchestratorMessages = {
     months: '{{count}} months',
     aYear: 'a year',
     years: '{{count}} years',
+  },
+  alerts: {
+    duplicateWorkflowIds: {
+      message:
+        'Multiple workflows with the same ID detected. Please ensure unique IDs are used across different versions.',
+      learnMore: 'Learn more',
+    },
   },
   stepperObjectField: {
     error:

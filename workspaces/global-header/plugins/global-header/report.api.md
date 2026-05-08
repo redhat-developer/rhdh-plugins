@@ -88,6 +88,8 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'search.placeholder': string;
     readonly 'search.noResults': string;
     readonly 'search.errorFetching': string;
+    readonly 'search.allResults': string;
+    readonly 'search.clear': string;
     readonly 'help.tooltip': string;
     readonly 'help.noSupportLinks': string;
     readonly 'help.noSupportLinksSubtitle': string;

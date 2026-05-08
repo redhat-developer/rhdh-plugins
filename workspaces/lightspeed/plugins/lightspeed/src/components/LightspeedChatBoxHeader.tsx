@@ -52,6 +52,8 @@ type LightspeedChatBoxHeaderProps = {
   onMcpSettingsClick: () => void;
   isModelSelectorDisabled?: boolean;
   hideModelSelector?: boolean;
+  /** When false, omits pinned-chats and MCP entries (Chat tab only). */
+  showChatTabOptions?: boolean;
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
 
@@ -87,6 +89,7 @@ export const LightspeedChatBoxHeader = ({
   onMcpSettingsClick,
   isModelSelectorDisabled = false,
   hideModelSelector = false,
+  showChatTabOptions = true,
   setDisplayMode,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
@@ -213,40 +216,44 @@ export const LightspeedChatBoxHeader = ({
             </DropdownItem>
           </DropdownList>
         </DropdownGroup>
-        <Divider />
-        <DropdownGroup>
-          <DropdownList>
-            {isPinningChatsEnabled ? (
-              <DropdownItem
-                value="disablePinningChats"
-                key="disablePinningChat"
-                icon={<ToggleOnOutlinedIcon sx={{ marginTop: '8px' }} />}
-                description={t('settings.pinned.enabled.description')}
-                onClick={() => handlePinningChatsToggle(false)}
-              >
-                {t('settings.pinned.disable')}
-              </DropdownItem>
-            ) : (
-              <DropdownItem
-                value="enablePinningChats"
-                key="enablePinningChats"
-                icon={<ToggleOffOutlinedIcon sx={{ marginTop: '8px' }} />}
-                description={t('settings.pinned.disabled.description')}
-                onClick={() => handlePinningChatsToggle(true)}
-              >
-                {t('settings.pinned.enable')}
-              </DropdownItem>
-            )}
-            <DropdownItem
-              value="mcpSettings"
-              key="mcpSettings"
-              icon={<McpSettingsIcon />}
-              onClick={onMcpSettingsClick}
-            >
-              {t('settings.mcp.label')}
-            </DropdownItem>
-          </DropdownList>
-        </DropdownGroup>
+        {showChatTabOptions && (
+          <>
+            <Divider />
+            <DropdownGroup>
+              <DropdownList>
+                {isPinningChatsEnabled ? (
+                  <DropdownItem
+                    value="disablePinningChats"
+                    key="disablePinningChat"
+                    icon={<ToggleOnOutlinedIcon sx={{ marginTop: '8px' }} />}
+                    description={t('settings.pinned.enabled.description')}
+                    onClick={() => handlePinningChatsToggle(false)}
+                  >
+                    {t('settings.pinned.disable')}
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    value="enablePinningChats"
+                    key="enablePinningChats"
+                    icon={<ToggleOffOutlinedIcon sx={{ marginTop: '8px' }} />}
+                    description={t('settings.pinned.disabled.description')}
+                    onClick={() => handlePinningChatsToggle(true)}
+                  >
+                    {t('settings.pinned.enable')}
+                  </DropdownItem>
+                )}
+                <DropdownItem
+                  value="mcpSettings"
+                  key="mcpSettings"
+                  icon={<McpSettingsIcon />}
+                  onClick={onMcpSettingsClick}
+                >
+                  {t('settings.mcp.label')}
+                </DropdownItem>
+              </DropdownList>
+            </DropdownGroup>
+          </>
+        )}
       </ChatbotHeaderOptionsDropdown>
     </ChatbotHeaderActions>
   );

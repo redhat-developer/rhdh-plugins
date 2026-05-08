@@ -1,5 +1,43 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.6.6
+
+### Patch Changes
+
+- c6824df: fixed notebooks empty state backgroundColor
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.6
+
+## 2.6.5
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.5
+
+## 2.6.4
+
+### Patch Changes
+
+- cab4992: Internationalize the Lightspeed floating action button: tooltip and `aria-label` use `tooltip.fab.open` / `tooltip.fab.close`, with German, Spanish, French, Italian, and Japanese translations.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.4
+
+## 2.6.3
+
+### Patch Changes
+
+- d4d74cf: ### Lightspeed shell and Notebooks
+  - **Fullscreen**: Chat and Notebooks stay on separate tabs. While the Notebooks tab is active, chat-only header actions (for example chat history, pinned chats, and MCP settings) are hidden so the header matches the active surface.
+  - **Overlay and docked**: Only the **Chat** surface is shown; the Chat/Notebooks tab strip is not shown, because Notebooks is intended for the fullscreen experience only.
+  - **Leaving fullscreen from Notebooks**: If you switch from fullscreen while on Notebooks to overlay or docked, you land on **Chat** in the shell, and the next time you open fullscreen you start on **Chat** again (no lingering Notebooks selection).
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.3
+
+## 2.6.2
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.2
+
 ## 2.6.1
 
 ### Patch Changes

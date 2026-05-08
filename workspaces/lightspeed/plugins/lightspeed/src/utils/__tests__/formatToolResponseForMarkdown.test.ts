@@ -52,4 +52,52 @@ describe('formatToolResponseForMarkdown', () => {
     expect(out).toContain('```');
     expect(out).toContain(long);
   });
+
+  it('unwraps SSE tool_result envelope with data prefix', () => {
+    const input =
+      'data: {"event":"tool_result","data":{"id":"abc","status":"completed","content":"{\\"results\\":[{\\"score\\":1.23}]}"}}';
+    const out = formatToolResponseForMarkdown(input);
+    expect(out).toContain('```json');
+    expect(out).toContain('"results"');
+    expect(out).toContain('"score": 1.23');
+    expect(out).not.toContain('"event"');
+  });
+
+  it('unwraps tool_result envelope object and formats content field', () => {
+    const input = JSON.stringify({
+      event: 'tool_result',
+      data: {
+        id: 'fc_123',
+        status: 'completed',
+        content: JSON.stringify({
+          results: [
+            {
+              attributes: {
+                title: 'Sample title',
+              },
+            },
+          ],
+        }),
+      },
+    });
+
+    const out = formatToolResponseForMarkdown(input);
+    expect(out).toContain('```json');
+    expect(out).toContain('"results"');
+    expect(out).toContain('"title": "Sample title"');
+    expect(out).not.toContain('"event"');
+  });
+
+  it('parses status-prefixed JSON payloads from tool result logs', () => {
+    const input =
+      '[completed] {"results":[{"attributes":{"title":"Evaluate project health using Scorecards"},"score":1.0647}]}';
+
+    const out = formatToolResponseForMarkdown(input);
+    expect(out).toContain('```json');
+    expect(out).toContain('"results"');
+    expect(out).toContain('"score": 1.0647');
+    expect(out).toContain(
+      '"title": "Evaluate project health using Scorecards"',
+    );
+  });
 });

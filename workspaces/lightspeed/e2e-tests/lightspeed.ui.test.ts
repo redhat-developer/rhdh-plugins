@@ -66,7 +66,7 @@ test.describe('Lightspeed UI', () => {
 
     test('should display chatbot in overlay mode with backstage page visible', async () => {
       await expectBackstagePageVisible(sharedPage);
-      await openChatbot(sharedPage);
+      await openChatbot(sharedPage, translations);
 
       await expectConversationArea(sharedPage, translations, 'Overlay');
       await expectChatInputAreaVisible(sharedPage, translations);
@@ -81,7 +81,7 @@ test.describe('Lightspeed UI', () => {
     });
 
     test('should display chatbot in dock to window mode with backstage page visible', async () => {
-      await openChatbot(sharedPage);
+      await openChatbot(sharedPage, translations);
       await selectDisplayMode(sharedPage, translations, 'Dock to window');
 
       await expectConversationArea(sharedPage, translations, 'Dock to window');
@@ -95,7 +95,7 @@ test.describe('Lightspeed UI', () => {
     });
 
     test('should display chatbot in fullscreen mode with backstage page hidden', async () => {
-      await openChatbot(sharedPage);
+      await openChatbot(sharedPage, translations);
       await selectDisplayMode(sharedPage, translations, 'Fullscreen');
 
       await expectConversationArea(sharedPage, translations, 'Fullscreen');

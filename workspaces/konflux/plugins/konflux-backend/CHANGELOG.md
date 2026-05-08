@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-konflux-backend
 
+## 0.1.8
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.8
+
 ## 0.1.7
 
 ### Patch Changes

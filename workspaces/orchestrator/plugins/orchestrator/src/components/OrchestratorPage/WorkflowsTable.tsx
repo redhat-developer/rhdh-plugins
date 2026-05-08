@@ -25,7 +25,11 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import { SvgIcon } from '@material-ui/core';
 import DeveloperModeOutlinedMui from '@mui/icons-material/DeveloperModeOutlined';
 import FormatListBulletedMui from '@mui/icons-material/FormatListBulleted';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PlayArrowMui from '@mui/icons-material/PlayArrow';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import MuiLink from '@mui/material/Link';
 
 import {
   orchestratorWorkflowPermission,
@@ -36,6 +40,7 @@ import {
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL } from '../../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
@@ -296,6 +301,11 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     ],
   );
 
+  const showDuplicateWorkflowIdAlert = useMemo(() => {
+    const ids = items.map(i => i.workflowId);
+    return new Set(ids).size < ids.length;
+  }, [items]);
+
   const columns = useMemo<TableColumn<FormattedWorkflowOverview>[]>(
     () => [
       {
@@ -341,6 +351,10 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         field: 'description',
         minWidth: '25vw',
       },
+      {
+        title: t('table.headers.version'),
+        field: 'version',
+      },
     ],
     [t, canViewWorkflow, entityLink, items, instanceLink],
   );
@@ -365,13 +379,35 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
           toggleInputSchemaDialog={toggleInputSchemaDialog}
         />
       )}
-      <OverrideBackstageTable<FormattedWorkflowOverview>
-        title={t('table.title.workflows')}
-        options={options}
-        columns={columns}
-        data={data}
-        actions={actions}
-      />
+      <Box sx={{ mb: showDuplicateWorkflowIdAlert ? 2 : 0 }}>
+        {showDuplicateWorkflowIdAlert ? (
+          <Alert severity="warning">
+            {t('alerts.duplicateWorkflowIds.message')}{' '}
+            <MuiLink
+              href={ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              color="primary"
+              underline="always"
+              variant="body2"
+              sx={{ fontWeight: 600 }}
+            >
+              {t('alerts.duplicateWorkflowIds.learnMore')}
+              <OpenInNewIcon
+                sx={{ ml: 0.5, fontSize: '1em', verticalAlign: 'text-bottom' }}
+                aria-hidden
+              />
+            </MuiLink>
+          </Alert>
+        ) : null}
+        <OverrideBackstageTable<FormattedWorkflowOverview>
+          title={t('table.title.workflows')}
+          options={options}
+          columns={columns}
+          data={data}
+          actions={actions}
+        />
+      </Box>
     </>
   );
 };

@@ -23,6 +23,7 @@ import {
   AnalyticsEvent,
 } from '@backstage/core-plugin-api';
 import { QUERY_TYPES, QueryParams } from '../types/event-request';
+import type { AuditorServiceEvent } from '@backstage/backend-plugin-api';
 import { toEndOfDayUTC, toStartOfDayUTC } from '../utils/date';
 import { TechDocsCount, TopTechDocsCount } from '../types/event';
 
@@ -70,8 +71,10 @@ const mockEvent: AnalyticsEvent = {
 };
 
 describe('trackEvents', () => {
-  let mockProcessIncomingEvents: jest.SpyInstance;
-  let mockProcessorAddEvent: jest.SpyInstance;
+  let mockProcessIncomingEvents: jest.Spied<
+    (events: AnalyticsEvent[], auditEvent: AuditorServiceEvent) => void
+  >;
+  let mockProcessorAddEvent: jest.Spied<EventBatchProcessor['addEvent']>;
 
   beforeEach(() => {
     controller = new EventApiController(
@@ -82,13 +85,10 @@ describe('trackEvents', () => {
     );
 
     mockProcessIncomingEvents = jest.spyOn(
-      controller,
-      'processIncomingEvents' as keyof EventApiController,
-    );
-    mockProcessorAddEvent = jest.spyOn(
-      mockProcessor,
-      'addEvent' as keyof EventBatchProcessor,
-    );
+      controller as any,
+      'processIncomingEvents',
+    ) as typeof mockProcessIncomingEvents;
+    mockProcessorAddEvent = jest.spyOn(mockProcessor, 'addEvent');
 
     req = {
       body: [{ action: 'click' }] as AnalyticsEvent[],

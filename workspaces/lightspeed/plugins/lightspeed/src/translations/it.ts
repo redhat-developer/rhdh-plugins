@@ -55,6 +55,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebooks.updated.yesterday': 'Aggiornato 1 giorno fa',
     'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',
     'notebooks.updated.on': 'Aggiornato il',
+    'notebooks.card.openAria': 'Apri il taccuino {{name}}',
 
     // Notebook view
     'notebook.view.title': 'Quaderno senza titolo',
@@ -224,6 +225,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tooltip.backToBottom': 'Torna alla fine',
     'tooltip.settings': 'Opzioni chatbot',
     'tooltip.close': 'Chiudi',
+    'tooltip.fab.open': 'Apri Lightspeed',
+    'tooltip.fab.close': 'Chiudi Lightspeed',
     'modal.title.preview': 'Anteprima allegato',
     'modal.title.edit': 'Modifica allegato',
     'icon.lightspeed.alt': 'icona di lightspeed',
