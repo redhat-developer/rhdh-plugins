@@ -238,7 +238,7 @@ describe('lightspeed router tests', () => {
       expect(response.body.error).toBeDefined();
     });
 
-    it('should return 500 error when conversation does not exist', async () => {
+    it('should return upstream status code when conversation does not exist', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .put(`/api/lightspeed/v2/conversations/${mockAnotherConversationId}`)
@@ -246,7 +246,7 @@ describe('lightspeed router tests', () => {
           topic_summary: 'new topic',
         });
 
-      expect(response.statusCode).toEqual(500);
+      expect(response.statusCode).toEqual(404);
       expect(response.body.error).toContain('not found');
     });
 
@@ -398,6 +398,40 @@ describe('lightspeed router tests', () => {
           user_question: 'foo',
         });
       expect(feedbackResponse.statusCode).toEqual(403);
+    });
+
+    it('should handle upstream server errors properly', async () => {
+      const backendServer = await startBackendServer();
+      rcs.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/feedback`, () => {
+          return new HttpResponse(
+            JSON.stringify({
+              error: {
+                message: 'Internal server error',
+              },
+            }),
+            {
+              status: 500,
+              headers: { 'Content-Type': 'application/json' },
+            },
+          );
+        }),
+      );
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/feedback')
+        .send({
+          conversation_id: '12345678-abcd-0000-0123-456789abcdef',
+          llm_response: 'bar',
+          sentiment: 1,
+          user_feedback: 'Great service!',
+          user_question: 'foo',
+        });
+
+      expect(response.statusCode).toEqual(500);
+      expect(response.body.error).toContain(
+        'Error from lightspeed-core server',
+      );
     });
   });
 
@@ -683,7 +717,7 @@ describe('lightspeed router tests', () => {
       );
     });
 
-    it('returns 500 if unexpected error', async () => {
+    it('returns upstream status code on error', async () => {
       const backendServer = await startBackendServer();
       const nonExistentModel = 'nonexistent-model';
       rcs.use(
@@ -707,7 +741,10 @@ describe('lightspeed router tests', () => {
           provider: 'test-server',
           query: 'Hello',
         });
-      expect(response.statusCode).toEqual(500);
+      expect(response.statusCode).toEqual(404);
+      expect(response.body.error).toContain(
+        'Error from lightspeed-core server',
+      );
     });
   });
 
