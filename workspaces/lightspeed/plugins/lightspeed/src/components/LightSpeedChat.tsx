@@ -123,6 +123,18 @@ import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 
+const COLLAPSE_PANEL_ICON_SVG = `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`;
+
+const ConditionalWrapper = ({
+  condition,
+  wrapper,
+  children,
+}: {
+  condition: boolean;
+  wrapper: (children: React.ReactNode) => React.ReactNode;
+  children: React.ReactNode;
+}) => (condition ? wrapper(children) : children);
+
 const useStyles = makeStyles(theme => ({
   body: {
     // remove default margin and padding from common elements
@@ -488,6 +500,10 @@ const useStyles = makeStyles(theme => ({
         transition: 'none !important',
       },
   },
+  // TODO: These PatternFly drawer overrides are needed because PF Chatbot doesn't
+  // provide clean APIs for custom expand/collapse icons and positioning.
+  // Remove once PatternFly supports these features.
+  // See: https://github.com/patternfly/chatbot/issues/834
   fullscreenChatLayout: {
     display: 'flex',
     flexDirection: 'row',
@@ -525,8 +541,8 @@ const useStyles = makeStyles(theme => ({
           display: 'block',
           width: 24,
           height: 24,
-          mask: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`,
-          WebkitMask: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`,
+          mask: COLLAPSE_PANEL_ICON_SVG,
+          WebkitMask: COLLAPSE_PANEL_ICON_SVG,
           backgroundColor: 'currentColor',
         },
       },
@@ -1666,40 +1682,42 @@ export const LightspeedChat = ({
         }
       >
         <FilePreview />
-        {isFullscreenMode ? (
-          <MessageBar
-            key={messageBarKey}
-            className={classes.fullscreenMessageBar}
-            onSendMessage={sendMessage}
-            isSendButtonDisabled={isSendButtonDisabled}
-            hasAttachButton
-            attachButtonPosition="start"
-            handleAttach={handleAttach}
-            hasMicrophoneButton
-            value={draftMessage}
-            onChange={handleDraftMessage}
-            hasStopButton={streamingUiMatchesView}
-            handleStopButton={
-              streamingUiMatchesView ? handleStopButton : undefined
-            }
-            buttonProps={{
-              attach: {
-                inputTestId: 'attachment-input',
-                tooltipContent: t('tooltip.attach'),
-                'aria-label': t('tooltip.attach'),
-                icon: <PlusIcon />,
+        <MessageBar
+          key={messageBarKey}
+          className={
+            isFullscreenMode ? classes.fullscreenMessageBar : undefined
+          }
+          onSendMessage={sendMessage}
+          isSendButtonDisabled={isSendButtonDisabled}
+          hasAttachButton
+          attachButtonPosition={isFullscreenMode ? 'start' : undefined}
+          handleAttach={handleAttach}
+          hasMicrophoneButton
+          value={draftMessage}
+          onChange={handleDraftMessage}
+          hasStopButton={streamingUiMatchesView}
+          handleStopButton={
+            streamingUiMatchesView ? handleStopButton : undefined
+          }
+          buttonProps={{
+            attach: {
+              inputTestId: 'attachment-input',
+              tooltipContent: t('tooltip.attach'),
+              'aria-label': t('tooltip.attach'),
+              ...(isFullscreenMode && { icon: <PlusIcon /> }),
+            },
+            microphone: {
+              tooltipContent: {
+                active: t('tooltip.microphone.active'),
+                inactive: t('tooltip.microphone.inactive'),
               },
-              microphone: {
-                tooltipContent: {
-                  active: t('tooltip.microphone.active'),
-                  inactive: t('tooltip.microphone.inactive'),
-                },
-              },
-              send: {
-                tooltipContent: t('tooltip.send'),
-              },
-            }}
-            additionalActions={
+            },
+            send: {
+              tooltipContent: t('tooltip.send'),
+            },
+          }}
+          additionalActions={
+            isFullscreenMode ? (
               <MessageBarModelSelector
                 selectedModel={selectedModel}
                 models={models}
@@ -1710,47 +1728,13 @@ export const LightspeedChat = ({
                 }}
                 disabled={isSendButtonDisabled}
               />
-            }
-            forceMultilineLayout
-            allowedFileTypes={supportedFileTypes}
-            onAttachRejected={onAttachRejected}
-            placeholder={t('chatbox.message.placeholder')}
-          />
-        ) : (
-          <MessageBar
-            key={messageBarKey}
-            onSendMessage={sendMessage}
-            isSendButtonDisabled={isSendButtonDisabled}
-            hasAttachButton
-            handleAttach={handleAttach}
-            hasMicrophoneButton
-            value={draftMessage}
-            onChange={handleDraftMessage}
-            hasStopButton={streamingUiMatchesView}
-            handleStopButton={
-              streamingUiMatchesView ? handleStopButton : undefined
-            }
-            buttonProps={{
-              attach: {
-                inputTestId: 'attachment-input',
-                tooltipContent: t('tooltip.attach'),
-                'aria-label': t('tooltip.attach'),
-              },
-              microphone: {
-                tooltipContent: {
-                  active: t('tooltip.microphone.active'),
-                  inactive: t('tooltip.microphone.inactive'),
-                },
-              },
-              send: {
-                tooltipContent: t('tooltip.send'),
-              },
-            }}
-            allowedFileTypes={supportedFileTypes}
-            onAttachRejected={onAttachRejected}
-            placeholder={t('chatbox.message.placeholder')}
-          />
-        )}
+            ) : undefined
+          }
+          forceMultilineLayout={isFullscreenMode}
+          allowedFileTypes={supportedFileTypes}
+          onAttachRejected={onAttachRejected}
+          placeholder={t('chatbox.message.placeholder')}
+        />
         <ChatbotFootnote {...getFootnoteProps(t)} />
       </ChatbotFooter>
     </>
@@ -1931,19 +1915,26 @@ export const LightspeedChat = ({
             <div className={classes.tabsDivider} />
           </>
         )}
-        {showChatPanel && isFullscreenMode && (
-          <div className={classes.fullscreenChatLayout}>
-            {!isChatHistoryDrawerOpen && (
-              <CollapsedHistoryStrip
-                onExpand={() => setIsChatHistoryDrawerOpen(true)}
-                onNewChat={onNewChat}
-                newChatDisabled={newChatCreated}
-              />
+        {showChatPanel && (
+          <ConditionalWrapper
+            condition={isFullscreenMode}
+            wrapper={children => (
+              <div className={classes.fullscreenChatLayout}>
+                {!isChatHistoryDrawerOpen && (
+                  <CollapsedHistoryStrip
+                    onExpand={() => setIsChatHistoryDrawerOpen(true)}
+                    onNewChat={onNewChat}
+                    newChatDisabled={newChatCreated}
+                  />
+                )}
+                {children}
+              </div>
             )}
+          >
             <ChatbotConversationHistoryNav
               drawerPanelContentProps={{
-                isResizable: true,
-                hasNoBorder: false,
+                isResizable: isFullscreenMode,
+                hasNoBorder: !isFullscreenMode,
                 style: drawerPanelStyle,
               }}
               reverseButtonOrder
@@ -1962,7 +1953,7 @@ export const LightspeedChat = ({
               onNewChat={newChatCreated ? undefined : onNewChat}
               newChatButtonText={t('button.newChat')}
               newChatButtonProps={{
-                icon: <EditSquareIcon />,
+                icon: isFullscreenMode ? <EditSquareIcon /> : <PlusIcon />,
               }}
               handleTextInputChange={handleFilter}
               searchInputPlaceholder={t('chatbox.search.placeholder')}
@@ -2010,79 +2001,7 @@ export const LightspeedChat = ({
                 </FileDropZone>
               }
             />
-          </div>
-        )}
-        {showChatPanel && !isFullscreenMode && (
-          <ChatbotConversationHistoryNav
-            drawerPanelContentProps={{
-              isResizable: false,
-              hasNoBorder: true,
-              style: drawerPanelStyle,
-            }}
-            reverseButtonOrder
-            displayMode={ChatbotDisplayMode.embedded}
-            onDrawerToggle={onChatHistoryDrawerToggle}
-            title=""
-            navTitleIcon={null}
-            isDrawerOpen={isChatHistoryDrawerOpen}
-            drawerCloseButtonProps={{
-              'aria-label': t('aria.closeDrawerPanel'),
-            }}
-            setIsDrawerOpen={setIsChatHistoryDrawerOpen}
-            activeItemId={viewConversationId}
-            onSelectActiveItem={onSelectActiveItem}
-            conversations={filterConversations(filterValue)}
-            onNewChat={newChatCreated ? undefined : onNewChat}
-            newChatButtonText={t('button.newChat')}
-            newChatButtonProps={{
-              icon: <PlusIcon />,
-            }}
-            handleTextInputChange={handleFilter}
-            searchInputPlaceholder={t('chatbox.search.placeholder')}
-            searchInputAriaLabel={t('aria.search.placeholder')}
-            searchInputProps={{
-              value: filterValue,
-              onClear: () => {
-                setFilterValue('');
-              },
-            }}
-            searchActionEnd={sortDropdown}
-            noResultsState={
-              filterValue &&
-              Object.keys(filterConversations(filterValue)).length === 0
-                ? {
-                    bodyText: t('chatbox.emptyState.noResults.body'),
-                    titleText: t('chatbox.emptyState.noResults.title'),
-                    icon: SearchIcon,
-                  }
-                : undefined
-            }
-            drawerContent={
-              <FileDropZone
-                className={classes.drawerFileDropZone}
-                onFileDrop={(e, data) => handleAttach(data, e)}
-                displayMode={ChatbotDisplayMode.embedded}
-                infoText={t('chatbox.fileUpload.infoText')}
-                allowedFileTypes={supportedFileTypes}
-                onAttachRejected={onAttachRejected}
-              >
-                {showAlert && uploadError.message && (
-                  <div className={classes.errorContainer}>
-                    <ChatbotAlert
-                      component="h4"
-                      title={t('chatbox.fileUpload.failed')}
-                      variant={uploadError.type ?? 'danger'}
-                      isInline
-                      onClose={() => setUploadError({ message: null })}
-                    >
-                      {uploadError.message}
-                    </ChatbotAlert>
-                  </div>
-                )}
-                {mainPanelContent}
-              </FileDropZone>
-            }
-          />
+          </ConditionalWrapper>
         )}
         {showNotebooksPanel &&
           !notebooksPermissionLoading &&
