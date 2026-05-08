@@ -562,10 +562,11 @@ export async function createRouter(
         const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
         logger.error(errormsg);
 
-        // Return a 500 status for any upstream error
-        response.status(500).json({
+        response.status(fetchResponse.status).json({
           error: errormsg,
         });
+
+        return;
       }
 
       const data = await fetchResponse.json();
@@ -607,7 +608,7 @@ export async function createRouter(
         const errorBody = await fetchResponse.json();
         const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
         logger.error(errormsg);
-        response.status(500).json({ error: errormsg });
+        response.status(fetchResponse.status).json({ error: errormsg });
         return;
       }
       response.status(fetchResponse.status).json(await fetchResponse.json());
@@ -687,8 +688,7 @@ export async function createRouter(
           const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
           logger.error(errormsg);
 
-          // Return a 500 status for any upstream error
-          response.status(500).json({
+          response.status(fetchResponse.status).json({
             error: errormsg,
           });
 
@@ -744,8 +744,7 @@ export async function createRouter(
           const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
           logger.error(errormsg);
 
-          // Return a 500 status for any upstream error
-          response.status(500).json({
+          response.status(fetchResponse.status).json({
             error: errormsg,
           });
           return;
