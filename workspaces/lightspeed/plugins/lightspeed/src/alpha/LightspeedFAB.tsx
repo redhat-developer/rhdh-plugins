@@ -15,40 +15,14 @@
  */
 
 import Close from '@mui/icons-material/Close';
+import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles } from '@mui/styles';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { LightspeedFABIcon } from '../components/LightspeedIcon';
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
-
-const useStyles = makeStyles(theme => ({
-  fab: {
-    opacity: '1 !important',
-    backgroundColor: `${theme?.palette?.primary?.main ?? '#1976d2'} !important`,
-    color: `${theme?.palette?.primary?.contrastText ?? '#fff'} !important`,
-    boxShadow: `${
-      theme?.shadows?.[6] ??
-      '0px 3px 5px -1px rgba(0,0,0,0.2), 0px 6px 10px 0px rgba(0,0,0,0.14), 0px 1px 18px 0px rgba(0,0,0,0.12)'
-    } !important`,
-  },
-  'fab-button': {
-    bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
-    right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
-    alignItems: 'end',
-    zIndex: 200,
-    display: 'flex',
-    position: 'fixed',
-
-    // When ApplicationDrawer is docked, match main content inset
-    'body.docked-drawer-open &': {
-      transition: 'margin-right 0.3s ease',
-      marginRight: DOCKED_CONTENT_OFFSET,
-    },
-  },
-}));
 
 /**
  * @alpha
@@ -58,17 +32,27 @@ const useStyles = makeStyles(theme => ({
 export const LightspeedFAB = () => {
   const { isChatbotActive, toggleChatbot, displayMode } =
     useLightspeedDrawerContext();
-  const fabButton = useStyles();
 
   if (displayMode === ChatbotDisplayMode.embedded) {
     return null;
   }
 
   return (
-    <div
-      className={fabButton['fab-button']}
+    <Box
       id="lightspeed-fab"
       data-testid="lightspeed-fab"
+      sx={theme => ({
+        bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
+        right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
+        alignItems: 'end',
+        zIndex: 200,
+        display: 'flex',
+        position: 'fixed',
+        'body.docked-drawer-open &': {
+          transition: 'margin-right 0.3s ease',
+          marginRight: DOCKED_CONTENT_OFFSET,
+        },
+      })}
     >
       <Tooltip
         title={isChatbotActive ? 'Close Lightspeed' : 'Open Lightspeed'}
@@ -80,12 +64,22 @@ export const LightspeedFAB = () => {
           size="small"
           onClick={toggleChatbot}
           aria-label={isChatbotActive ? 'lightspeed-close' : 'lightspeed-open'}
-          className={fabButton.fab}
-          sx={{ borderRadius: '100% !important' }}
+          sx={theme => ({
+            opacity: 1,
+            backgroundColor: theme?.palette?.primary?.main ?? '#1976d2',
+            color: theme?.palette?.primary?.contrastText ?? '#fff',
+            boxShadow:
+              theme?.shadows?.[6] ??
+              '0px 3px 5px -1px rgba(0,0,0,0.2), 0px 6px 10px 0px rgba(0,0,0,0.14), 0px 1px 18px 0px rgba(0,0,0,0.12)',
+            borderRadius: '100%',
+            '&:hover': {
+              backgroundColor: theme?.palette?.primary?.dark ?? '#1565c0',
+            },
+          })}
         >
           {isChatbotActive ? <Close fontSize="small" /> : <LightspeedFABIcon />}
         </Fab>
       </Tooltip>
-    </div>
+    </Box>
   );
 };

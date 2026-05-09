@@ -22,9 +22,9 @@ import { useApi } from '@backstage/core-plugin-api';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Checkbox from '@mui/material/Checkbox';
+import type { SxProps, Theme } from '@mui/material/styles';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import { makeStyles } from '@mui/styles';
 import { useQuery } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -38,13 +38,11 @@ import {
 import { urlHelper } from '../../utils/repository-utils';
 import { CatalogInfoStatus } from './CatalogInfoStatus';
 
-const useStyles = makeStyles(() => ({
-  tableCellStyle: {
-    lineHeight: '1.5rem',
-    fontSize: '0.875rem',
-    padding: '15px 16px 15px 6px',
-  },
-}));
+const tableCellSx: SxProps<Theme> = {
+  lineHeight: '1.5rem',
+  fontSize: '0.875rem',
+  padding: '15px 16px 15px 6px',
+};
 
 export const RepositoryTableRow = ({
   handleClick,
@@ -57,7 +55,6 @@ export const RepositoryTableRow = ({
   data: AddRepositoryData;
   isDrawer?: boolean;
 }) => {
-  const classes = useStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
   const startTimeRef = useRef(Date.now());
 
@@ -121,12 +118,7 @@ export const RepositoryTableRow = ({
       key={data.id}
       selected={isItemSelected}
     >
-      <TableCell
-        component="th"
-        scope="row"
-        padding="none"
-        className={classes.tableCellStyle}
-      >
+      <TableCell component="th" scope="row" padding="none" sx={tableCellSx}>
         <Checkbox
           disableRipple
           color="primary"
@@ -158,7 +150,7 @@ export const RepositoryTableRow = ({
         />
         {data.repoName}
       </TableCell>
-      <TableCell align="left" className={classes.tableCellStyle}>
+      <TableCell align="left" sx={tableCellSx}>
         {data.repoUrl ? (
           <Link to={data.repoUrl}>
             {urlHelper(data.repoUrl)}
@@ -171,7 +163,7 @@ export const RepositoryTableRow = ({
         )}
       </TableCell>
       {!isDrawer && (
-        <TableCell align="left" className={classes.tableCellStyle}>
+        <TableCell align="left" sx={tableCellSx}>
           {data?.organizationUrl ? (
             <Link to={data.organizationUrl}>
               {data.orgName}
@@ -185,7 +177,7 @@ export const RepositoryTableRow = ({
         </TableCell>
       )}
 
-      <TableCell align="left" className={classes.tableCellStyle}>
+      <TableCell align="left" sx={tableCellSx}>
         <CatalogInfoStatus
           data={data}
           importStatus={value?.status as string}

@@ -16,7 +16,7 @@
 
 import { PropsWithChildren } from 'react';
 
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { ChatbotModal } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
@@ -24,18 +24,18 @@ import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState'
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 
-const useStyles = makeStyles(theme => ({
-  chatbotModal: {
+const StyledChatbotModal = styled(ChatbotModal)(({ theme }) => ({
+  '&&': {
     boxShadow:
-      '0 14px 20px -7px rgba(0, 0, 0, 0.22), 0 32px 50px 6px rgba(0, 0, 0, 0.16), 0 12px 60px 12px rgba(0, 0, 0, 0.14) !important',
-    bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 5em)`,
-    right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
-    maxWidth: 'min(30rem, calc(100vw - 32px)) !important',
-    overflowX: 'hidden' as const,
-    transition: 'margin-right 0.3s ease',
-    'body.docked-drawer-open &': {
-      marginRight: DOCKED_CONTENT_OFFSET,
-    },
+      '0 14px 20px -7px rgba(0, 0, 0, 0.22), 0 32px 50px 6px rgba(0, 0, 0, 0.16), 0 12px 60px 12px rgba(0, 0, 0, 0.14)',
+    maxWidth: 'min(30rem, calc(100vw - 32px))',
+  },
+  bottom: `calc(${theme.spacing(2)} + 5em)`,
+  right: `calc(${theme.spacing(2)} + 1.5em)`,
+  overflowX: 'hidden',
+  transition: 'margin-right 0.3s ease',
+  'body.docked-drawer-open &': {
+    marginRight: DOCKED_CONTENT_OFFSET,
   },
 }));
 
@@ -43,7 +43,6 @@ const useStyles = makeStyles(theme => ({
  * @public
  */
 export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
-  const classes = useStyles();
   const { contextValue, shouldRenderOverlayModal, closeChatbot } =
     useLightspeedProviderState();
 
@@ -51,17 +50,16 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
     <LightspeedDrawerContext.Provider value={contextValue}>
       {children}
       {shouldRenderOverlayModal && (
-        <ChatbotModal
+        <StyledChatbotModal
           isOpen
           displayMode={contextValue.displayMode}
           disableFocusTrap
           onEscapePress={() => closeChatbot()}
           ouiaId="LightspeedChatbotModal"
           aria-labelledby="lightspeed-chatpopup-modal"
-          className={classes.chatbotModal}
         >
           <LightspeedChatContainer />
-        </ChatbotModal>
+        </StyledChatbotModal>
       )}
     </LightspeedDrawerContext.Provider>
   );
