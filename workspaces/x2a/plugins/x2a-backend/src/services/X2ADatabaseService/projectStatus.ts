@@ -16,6 +16,7 @@
 
 import {
   Job,
+  JobStatus,
   Module,
   ProjectStatus,
   ProjectStatusState,
@@ -48,34 +49,39 @@ export function calculateProjectStatus(
     };
   }
 
-  const error = projectModules.filter(
-    module => module.status === 'error',
+  const modulesWithStatus = projectModules.map(module => ({
+    module,
+    status: module.status ? JobStatus.from(module.status) : undefined,
+    publishStatus: module.publish?.status
+      ? JobStatus.from(module.publish.status)
+      : undefined,
+  }));
+
+  const error = modulesWithStatus.filter(m => m.status?.isError()).length;
+  const finished = modulesWithStatus.filter(
+    m => m.status?.isSuccess() && m.publishStatus?.isSuccess(),
   ).length;
-  const finished = projectModules.filter(
-    module =>
-      module.status === 'success' && module.publish?.status === 'success',
+  const waiting = modulesWithStatus.filter(
+    m =>
+      m.status?.isSuccess() &&
+      (!m.module.publish || m.publishStatus?.isCancelled()),
   ).length;
-  const waiting = projectModules.filter(
-    module =>
-      module.status === 'success' &&
-      (!module.publish || module.publish.status === 'cancelled'),
+  const pending = modulesWithStatus.filter(m => m.status?.isPending()).length;
+  const running = modulesWithStatus.filter(m => m.status?.isRunning()).length;
+  const cancelled = modulesWithStatus.filter(m =>
+    m.status?.isCancelled(),
   ).length;
-  const pending = projectModules.filter(
-    module => module.status === 'pending',
-  ).length;
-  const running = projectModules.filter(
-    module => module.status === 'running',
-  ).length;
-  const cancelled = projectModules.filter(
-    module => module.status === 'cancelled',
-  ).length;
+
+  const initStatus = initJob?.status
+    ? JobStatus.from(initJob.status)
+    : undefined;
 
   let state: ProjectStatusState;
   if (error > 0) {
     state = 'failed'; // At least one module is in error state
-  } else if (['pending', 'running'].includes(initJob?.status ?? '')) {
+  } else if (initStatus?.isActive()) {
     state = 'initializing'; // Project's init job is running or scheduling
-  } else if (initJob?.status === 'success') {
+  } else if (initStatus?.isSuccess()) {
     if (total > 0 && finished === total) {
       state = 'completed'; // All modules are in success state
     } else if (total === 0 || pending + cancelled === total) {

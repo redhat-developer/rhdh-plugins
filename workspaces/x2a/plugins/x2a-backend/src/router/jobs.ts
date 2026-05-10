@@ -20,6 +20,7 @@ import { InputError, NotFoundError } from '@backstage/errors';
 import {
   ModulePhase,
   Job,
+  JobStatus,
   Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -37,11 +38,7 @@ async function sendJobLogs(
   const { x2aDatabase, kubeService, logger } = deps;
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
 
-  if (
-    job.status === 'success' ||
-    job.status === 'error' ||
-    job.status === 'cancelled'
-  ) {
+  if (JobStatus.from(job.status).isFinished()) {
     logger.info(
       `Job ${job.id} is finished (status: ${job.status}), returning logs from database`,
     );
