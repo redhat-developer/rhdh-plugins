@@ -1936,8 +1936,10 @@ export const LightspeedChat = ({
             onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
-        {isFullscreenMode && <div className={classes.headerDivider} />}
-        {isFullscreenMode && (
+        {isFullscreenMode && shouldShowTabs && (
+          <div className={classes.headerDivider} />
+        )}
+        {isFullscreenMode && shouldShowTabs && (
           <>
             <Tabs
               activeKey={activeTab}
