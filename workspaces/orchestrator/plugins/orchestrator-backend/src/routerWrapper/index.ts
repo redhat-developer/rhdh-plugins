@@ -19,6 +19,7 @@ import type {
   DiscoveryService,
   HttpAuthService,
   LoggerService,
+  PermissionsRegistryService,
   PermissionsService,
   SchedulerService,
   UrlReaderService,
@@ -40,6 +41,7 @@ export interface RouterOptions {
   urlReader: UrlReaderService;
   scheduler: SchedulerService;
   permissions: PermissionsService;
+  permissionsRegistry: PermissionsRegistryService;
   httpAuth: HttpAuthService;
   userInfo: UserInfoService;
   workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry;
@@ -71,6 +73,7 @@ export async function createRouter(
     urlReader: args.urlReader,
     scheduler: args.scheduler,
     permissions: args.permissions,
+    permissionsRegistry: args.permissionsRegistry,
     httpAuth: args.httpAuth,
     userInfo: args.userInfo,
     workflowLogsProvidersRegistry: args.workflowLogsProvidersRegistry,
