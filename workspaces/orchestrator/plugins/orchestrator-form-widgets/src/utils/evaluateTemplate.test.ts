@@ -278,4 +278,48 @@ describe('evaluate template', () => {
       }),
     ).resolves.toBe("a in $split(a,b, ',') ? 'update' : 'create'");
   });
+
+  it('evaluateFetchResponseSelectorTemplate stringifies numeric template results for JSONata', async () => {
+    await expect(
+      evaluateFetchResponseSelectorTemplate({
+        unitEvaluator: unitEvaluatorAsInWidgets,
+        key: 'fetch:response:value',
+        formData: { step: { sel: 1 } },
+        template: '$${{current.step.sel}}',
+      }),
+    ).resolves.toBe('1');
+  });
+
+  it('evaluateFetchResponseSelectorTemplate returns empty string for null template expansion', async () => {
+    await expect(
+      evaluateFetchResponseSelectorTemplate({
+        unitEvaluator: async () => null,
+        key: 'fetch:response:value',
+        formData: {},
+        template: '$${{x}}',
+      }),
+    ).resolves.toBe('');
+  });
+
+  it('evaluateFetchResponseSelectorTemplate returns empty string for solo object expansion', async () => {
+    await expect(
+      evaluateFetchResponseSelectorTemplate({
+        unitEvaluator: async () => ({ a: 1 }),
+        key: 'fetch:response:value',
+        formData: {},
+        template: '$${{x}}',
+      }),
+    ).resolves.toBe('');
+  });
+
+  it('evaluateFetchResponseSelectorTemplate returns empty string on malformed template', async () => {
+    await expect(
+      evaluateFetchResponseSelectorTemplate({
+        unitEvaluator: unitEvaluatorAsInWidgets,
+        key: 'fetch:response:value',
+        formData: {},
+        template: '$${{foo',
+      }),
+    ).resolves.toBe('');
+  });
 });

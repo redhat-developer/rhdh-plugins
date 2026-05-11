@@ -70,6 +70,11 @@ export const applySelectorArray = async (
     return [...value];
   }
 
+  if (emptyArrayIfNeeded) {
+    // Dynamic selectors while typing may yield numbers, objects, or mixed arrays.
+    return [];
+  }
+
   throw new Error(
     `Unexpected result of "${selector}" selector, expected string[] type. Value ${JSON.stringify(value)}`,
   );
@@ -106,7 +111,8 @@ export const applySelectorString = async (
     return value;
   }
 
-  if (emptyStringWhenMissing && (value === undefined || value === null)) {
+  if (emptyStringWhenMissing) {
+    // Missing path, numbers/booleans from literals (e.g. selector "1"), objects, etc.
     return '';
   }
 

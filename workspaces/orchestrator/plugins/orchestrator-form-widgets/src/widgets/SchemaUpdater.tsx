@@ -95,10 +95,19 @@ export const SchemaUpdater: Widget<
             responseData: data,
             uiProps,
           });
-          typedData = (await applySelectorObject(
-            data,
-            resolvedSelector,
-          )) as unknown as SchemaChunksResponse;
+          if (resolvedSelector.trim()) {
+            try {
+              typedData = (await applySelectorObject(
+                data,
+                resolvedSelector,
+              )) as unknown as SchemaChunksResponse;
+            } catch (reason) {
+              setLocalError(
+                reason instanceof Error ? reason.message : String(reason),
+              );
+              return;
+            }
+          }
         }
 
         // validate received response before updating

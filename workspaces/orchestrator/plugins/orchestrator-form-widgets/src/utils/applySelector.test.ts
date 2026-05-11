@@ -284,11 +284,9 @@ describe('applySelectorString', () => {
     );
   });
 
-  it('still throws for non-string non-nullish when emptyStringWhenMissing is true', async () => {
+  it('returns empty string when JSONata yields a number and emptyStringWhenMissing is true', async () => {
     const withNum: JsonObject = { n: 42 };
-    await expect(applySelectorString(withNum, 'n', true)).rejects.toThrow(
-      'expected string type',
-    );
+    await expect(applySelectorString(withNum, 'n', true)).resolves.toBe('');
   });
 
   it('returns empty string for invalid JSONata syntax when emptyStringWhenMissing is true', async () => {
@@ -323,6 +321,13 @@ describe('applySelectorArray invalid JSONata', () => {
     await expect(applySelectorArray(data, '.')).rejects.toThrow(
       'Invalid JSONata',
     );
+  });
+
+  it('returns empty array when JSONata yields a number and emptyArrayIfNeeded is true', async () => {
+    const withNum: JsonObject = { n: 7 };
+    await expect(
+      applySelectorArray(withNum, 'n', true, true),
+    ).resolves.toStrictEqual([]);
   });
 });
 
