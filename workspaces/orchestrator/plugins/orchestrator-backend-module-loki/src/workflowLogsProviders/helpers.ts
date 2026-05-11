@@ -140,7 +140,7 @@ function assertValidLogStreamSelectorValue(
 ): void {
   if (!LOG_STREAM_SELECTOR_VALUE_PATTERN.test(value)) {
     throw new Error(
-      `${context}: value must be a LogQL label matcher (e.g. ="literal", !=\"...\", =~\"re\", or =~\`re\`) with no raw line breaks outside escapes`,
+      `${context}: value must be a LogQL label matcher (e.g. ="literal", !="...", =~"re", or =~\`re\`) with no raw line breaks outside escapes`,
     );
   }
 }
@@ -228,5 +228,5 @@ export function assertSafeWorkflowInstanceIdForLineFilter(id: string): void {
  * Escapes a string for use inside LogQL double-quoted line filter literals (`|="..."`).
  */
 export function escapeLogQlDoubleQuotedLineLiteral(fragment: string): string {
-  return fragment.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  return fragment.replaceAll(/\\/g, '\\\\').replaceAll(/"/g, '\\"');
 }
