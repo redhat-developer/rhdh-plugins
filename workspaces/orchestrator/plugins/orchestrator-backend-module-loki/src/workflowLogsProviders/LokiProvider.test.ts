@@ -27,6 +27,8 @@ jest.mock('undici', () => ({
 }));
 
 describe('LokiProvider', () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+
   describe('FromConfig', () => {
     it('should create a provider when there is an entry in the app-config', () => {
       const lokiAppConfig = {
@@ -97,6 +99,210 @@ describe('LokiProvider', () => {
         lokiAppConfig.orchestrator.workflowLogProvider.loki
           .logStreamSelectors[1],
       );
+    });
+
+    describe('baseUrl validation', () => {
+      afterEach(() => {
+        process.env.NODE_ENV = originalNodeEnv;
+      });
+
+      it('normalizes a trailing slash on baseUrl', () => {
+        const lokiAppConfig = {
+          orchestrator: {
+            workflowLogProvider: {
+              loki: {
+                baseUrl: 'http://localhost:3100/',
+                token: 'notsecret',
+              },
+            },
+          },
+        };
+        const provider = LokiProvider.fromConfig(
+          new ConfigReader(lokiAppConfig),
+        );
+        expect(provider.getBaseURL()).toEqual('http://localhost:3100');
+      });
+
+      it('rejects an empty baseUrl', () => {
+        expect(() =>
+          LokiProvider.fromConfig(
+            new ConfigReader({
+              orchestrator: {
+                workflowLogProvider: {
+                  loki: { baseUrl: '  ', token: 't' },
+                },
+              },
+            }),
+          ),
+        ).toThrow(/must not be empty/);
+      });
+
+      it('rejects a non-absolute baseUrl', () => {
+        expect(() =>
+          LokiProvider.fromConfig(
+            new ConfigReader({
+              orchestrator: {
+                workflowLogProvider: {
+                  loki: { baseUrl: 'not-a-url', token: 't' },
+                },
+              },
+            }),
+          ),
+        ).toThrow(/valid absolute URL/);
+      });
+
+      it('rejects embedded credentials in baseUrl', () => {
+        expect(() =>
+          LokiProvider.fromConfig(
+            new ConfigReader({
+              orchestrator: {
+                workflowLogProvider: {
+                  loki: {
+                    baseUrl: 'http://user:pass@localhost:3100',
+                    token: 't',
+                  },
+                },
+              },
+            }),
+          ),
+        ).toThrow(/credentials/);
+      });
+
+      it('rejects query or fragment on baseUrl', () => {
+        expect(() =>
+          LokiProvider.fromConfig(
+            new ConfigReader({
+              orchestrator: {
+                workflowLogProvider: {
+                  loki: {
+                    baseUrl: 'http://localhost:3100?x=1',
+                    token: 't',
+                  },
+                },
+              },
+            }),
+          ),
+        ).toThrow(/query or fragment/);
+      });
+
+      it('rejects non-http(s) schemes', () => {
+        expect(() =>
+          LokiProvider.fromConfig(
+            new ConfigReader({
+              orchestrator: {
+                workflowLogProvider: {
+                  loki: { baseUrl: 'ftp://localhost:3100', token: 't' },
+                },
+              },
+            }),
+          ),
+        ).toThrow(/http:/);
+      });
+
+      it('rejects http baseUrl in production unless allowInsecureHttp', () => {
+        process.env.NODE_ENV = 'production';
+        expect(() =>
+          LokiProvider.fromConfig(
+            new ConfigReader({
+              orchestrator: {
+                workflowLogProvider: {
+                  loki: {
+                    baseUrl: 'http://loki.example.com',
+                    token: 't',
+                  },
+                },
+              },
+            }),
+          ),
+        ).toThrow(/https in production/);
+      });
+
+      it('allows http in production when allowInsecureHttp is true', () => {
+        process.env.NODE_ENV = 'production';
+        const provider = LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'http://loki.example.com',
+                  token: 't',
+                  allowInsecureHttp: true,
+                },
+              },
+            },
+          }),
+        );
+        expect(provider.getBaseURL()).toEqual('http://loki.example.com');
+      });
+
+      it('allows https in production', () => {
+        process.env.NODE_ENV = 'production';
+        const provider = LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'https://loki.example.com',
+                  token: 't',
+                },
+              },
+            },
+          }),
+        );
+        expect(provider.getBaseURL()).toEqual('https://loki.example.com');
+      });
+
+      it('rejects hostname not in allowedHosts', () => {
+        expect(() =>
+          LokiProvider.fromConfig(
+            new ConfigReader({
+              orchestrator: {
+                workflowLogProvider: {
+                  loki: {
+                    baseUrl: 'https://evil.example.com',
+                    token: 't',
+                    allowedHosts: ['loki.example.com'],
+                  },
+                },
+              },
+            }),
+          ),
+        ).toThrow(/not allowed by allowedHosts/);
+      });
+
+      it('allows exact hostname from allowedHosts', () => {
+        const provider = LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'https://loki.example.com',
+                  token: 't',
+                  allowedHosts: ['loki.example.com'],
+                },
+              },
+            },
+          }),
+        );
+        expect(provider.getBaseURL()).toEqual('https://loki.example.com');
+      });
+
+      it('allows subdomain suffix when allowedHosts entry starts with a dot', () => {
+        const provider = LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'https://loki.prod.example.com',
+                  token: 't',
+                  allowedHosts: ['.example.com'],
+                },
+              },
+            },
+          }),
+        );
+        expect(provider.getBaseURL()).toEqual('https://loki.prod.example.com');
+      });
     });
   });
   describe('fetchWorkflowLogsByInstance', () => {

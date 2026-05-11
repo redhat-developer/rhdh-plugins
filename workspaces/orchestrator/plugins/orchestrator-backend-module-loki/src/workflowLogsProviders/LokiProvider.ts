@@ -23,6 +23,7 @@ import {
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
 import { Agent, fetch } from 'undici';
+import { parseAndValidateLokiBaseUrl } from './helpers';
 
 /** Fields read from Loki `query_range` JSON responses in this provider. */
 interface LokiQueryRangeJsonBody {
@@ -42,7 +43,11 @@ export class LokiProvider implements WorkflowLogProvider {
   private readonly limit: number;
   private readonly agent: Agent;
   private constructor(config: Config) {
-    this.baseURL = config.getString('baseUrl');
+    this.baseURL = parseAndValidateLokiBaseUrl({
+      rawBaseUrl: config.getString('baseUrl'),
+      allowedHosts: config.getOptionalStringArray('allowedHosts'),
+      allowInsecureHttp: config.getOptionalBoolean('allowInsecureHttp'),
+    });
     this.token = config.getString('token');
     // Only should be false if specified, undefined here should be true
     this.rejectUnauthorized =

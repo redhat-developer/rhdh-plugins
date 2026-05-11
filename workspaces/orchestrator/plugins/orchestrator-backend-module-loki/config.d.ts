@@ -24,8 +24,22 @@ export interface Config {
         /**
          * Base URL of the Loki service.
          * /loki/api/v1/query_range will be appended to the baseUrl
+         *
+         * Must be an absolute http(s) URL without credentials, query, or fragment.
+         * In production (NODE_ENV=production), https is required unless allowInsecureHttp is true.
          */
         baseUrl: string;
+        /**
+         * Optional allowlist for the hostname parsed from baseUrl.
+         * Entries are matched case-insensitively. If an entry starts with `.`, the hostname must be
+         * that suffix or a subdomain (e.g. `.example.com` allows `loki.example.com`).
+         */
+        allowedHosts?: string[];
+        /**
+         * When true, allows http:// baseUrl when NODE_ENV is production.
+         * Defaults to false; local/dev typically uses NODE_ENV!=production where http is already allowed.
+         */
+        allowInsecureHttp?: boolean;
         /**
          * Auth Token for accessing the loki query url
          */
