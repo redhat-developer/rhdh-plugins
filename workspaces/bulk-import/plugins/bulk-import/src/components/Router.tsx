@@ -16,6 +16,7 @@
 
 import { Navigate, Route, Routes } from 'react-router-dom';
 
+import { createGenerateClassName, StylesProvider } from '@mui/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { importHistoryRouteRef } from '../routes';
@@ -24,20 +25,26 @@ import { ImportHistoryPage } from './Repositories/ImportHistoryPage';
 
 const queryClient = new QueryClient();
 
+const generateClassName = createGenerateClassName({
+  seed: 'bulk-import',
+});
+
 /**
  *
  * @public
  */
 export const Router = () => (
-  <QueryClientProvider client={queryClient}>
-    <Routes>
-      <Route path="/" element={<AddRepositoriesPage />} />
-      <Route
-        path={importHistoryRouteRef.path}
-        element={<ImportHistoryPage />}
-      />
-      {/* Redirect any undefined paths to the root */}
-      <Route path="*" element={<Navigate to="/bulk-import" replace />} />
-    </Routes>
-  </QueryClientProvider>
+  <StylesProvider generateClassName={generateClassName}>
+    <QueryClientProvider client={queryClient}>
+      <Routes>
+        <Route path="/" element={<AddRepositoriesPage />} />
+        <Route
+          path={importHistoryRouteRef.path}
+          element={<ImportHistoryPage />}
+        />
+        {/* Redirect any undefined paths to the root */}
+        <Route path="*" element={<Navigate to="/bulk-import" replace />} />
+      </Routes>
+    </QueryClientProvider>
+  </StylesProvider>
 );
