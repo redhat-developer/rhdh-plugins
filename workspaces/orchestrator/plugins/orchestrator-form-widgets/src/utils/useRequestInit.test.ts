@@ -95,4 +95,26 @@ describe('getRequestInit', () => {
       name: 'Zara',
     });
   });
+
+  it('omits fetch:body fields when jsonata: expression is invalid syntax', async () => {
+    const uiProps: JsonObject = {
+      'fetch:method': 'POST',
+      'fetch:body': {
+        ok: 'literal-only',
+        badCompile: 'jsonata:.',
+        badSlash: 'jsonata:/',
+      },
+    };
+    const formData: JsonObject = {};
+
+    const requestInit = await getRequestInit(
+      uiProps,
+      'fetch',
+      unitEvaluator,
+      formData,
+    );
+    expect(JSON.parse(requestInit.body as string)).toEqual({
+      ok: 'literal-only',
+    });
+  });
 });
