@@ -23,7 +23,16 @@ import {
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
 import { Agent, fetch } from 'undici';
-import { parseAndValidateLokiBaseUrl } from './helpers';
+import {
+  assertSafeWorkflowInstanceIdForLineFilter,
+  escapeLogQlDoubleQuotedLineLiteral,
+  parseAndValidateLogPipelineFilters,
+  parseAndValidateLogStreamSelectors,
+  parseAndValidateLokiBaseUrl,
+  type ValidatedLogStreamSelector,
+} from './helpers';
+
+const LOKI_CONFIG_PATH = 'orchestrator.workflowLogProvider.loki';
 
 /** Fields read from Loki `query_range` JSON responses in this provider. */
 interface LokiQueryRangeJsonBody {
@@ -37,9 +46,9 @@ type LokiParsedLogLine = { id: string; log: string };
 export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
   private readonly token: string;
-  private readonly selectors: any;
+  private readonly selectors: ValidatedLogStreamSelector[];
   private readonly rejectUnauthorized: boolean;
-  private readonly logPipelineFilters: any;
+  private readonly logPipelineFilters: string[];
   private readonly limit: number;
   private readonly agent: Agent;
   private constructor(config: Config) {
@@ -52,8 +61,14 @@ export class LokiProvider implements WorkflowLogProvider {
     // Only should be false if specified, undefined here should be true
     this.rejectUnauthorized =
       config.getOptionalBoolean('rejectUnauthorized') === false ? false : true;
-    this.selectors = config.getOptional('logStreamSelectors') || [];
-    this.logPipelineFilters = config.getOptional('logPipelineFilters') || [];
+    this.selectors = parseAndValidateLogStreamSelectors(
+      config,
+      `${LOKI_CONFIG_PATH}.logStreamSelectors`,
+    );
+    this.logPipelineFilters = parseAndValidateLogPipelineFilters(
+      config,
+      `${LOKI_CONFIG_PATH}.logPipelineFilters`,
+    );
     this.limit = config.getOptionalNumber('limit') || 100;
     this.agent = new Agent({
       connect: {
@@ -84,6 +99,9 @@ export class LokiProvider implements WorkflowLogProvider {
   async fetchWorkflowLogsByInstance(
     instance: ProcessInstanceDTO,
   ): Promise<WorkflowLogsResponse> {
+    assertSafeWorkflowInstanceIdForLineFilter(instance.id);
+    const escapedInstanceId = escapeLogQlDoubleQuotedLineLiteral(instance.id);
+
     // Because of timing issues, subtract 5 mintues from the start and add 5 minutes to the end
     const startTime = DateTime.fromISO(instance.start as string, {
       setZone: true,
@@ -112,21 +130,19 @@ export class LokiProvider implements WorkflowLogProvider {
     if (this.selectors.length < 1) {
       streamSelector = 'openshift_log_type="application"';
     } else {
-      this.selectors.forEach(
-        (
-          entry: { label: any; value: any },
-          index: number,
-          arr: string | any[],
-        ) => {
-          // something about that last comma
-          streamSelector += `${entry.label || 'openshift_log_type'}${entry.value || '="application"'}${index !== arr.length - 1 ? ',' : ''}`;
-        },
-      );
+      streamSelector = this.selectors
+        .map(
+          (entry, index) =>
+            `${entry.label}${entry.value}${
+              index !== this.selectors.length - 1 ? ',' : ''
+            }`,
+        )
+        .join('');
     }
-    let logPipelineFilter: string = `|="${instance.id}"`;
+    let logPipelineFilter: string = `|="${escapedInstanceId}"`;
 
     if (this.logPipelineFilters.length > 0) {
-      this.logPipelineFilters.forEach((element: any) => {
+      this.logPipelineFilters.forEach(element => {
         logPipelineFilter += ` ${element}`;
       });
     }

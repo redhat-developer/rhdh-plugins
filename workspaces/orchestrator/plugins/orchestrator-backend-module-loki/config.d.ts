@@ -60,9 +60,12 @@ export interface Config {
         // new values will be appened
         logPipelineFilters?: Array<string>;
         logStreamSelectors?: Array<{
-          // label is the selector, something like 'app' or 'service_name', etc...
+          /** Prometheus-style name: [a-zA-Z_][a-zA-Z0-9_]* */
           label: string;
-          // value is the label matching operator, so something like: '=~".+"'
+          /**
+           * Label matcher only, e.g. `="application"` or `=~".+"` (quoted; regex may use backticks).
+           * Validated at startup.
+           */
           value: string;
         }>;
       };

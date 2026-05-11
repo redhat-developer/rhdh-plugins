@@ -72,11 +72,11 @@ describe('LokiProvider', () => {
               rejectUnauthorized: false,
               logStreamSelectors: [
                 {
-                  label: 'custom-selector',
+                  label: 'custom_selector',
                   value: '=~".+"',
                 },
                 {
-                  label: 'custom-selector1',
+                  label: 'custom_selector1',
                 },
               ],
             },
@@ -90,15 +90,76 @@ describe('LokiProvider', () => {
       // Test the rejectUnauthorized value when set to false
       expect(provider.getRejectUnauthorized()).toEqual(false);
 
-      // Test the selectors passed in
+      // Test the selectors passed in (defaults merged at parse time)
       expect(provider.getSelectors()[0]).toEqual(
         lokiAppConfig.orchestrator.workflowLogProvider.loki
           .logStreamSelectors[0],
       );
-      expect(provider.getSelectors()[1]).toEqual(
-        lokiAppConfig.orchestrator.workflowLogProvider.loki
-          .logStreamSelectors[1],
-      );
+      expect(provider.getSelectors()[1]).toEqual({
+        label: 'custom_selector1',
+        value: '="application"',
+      });
+    });
+
+    it('rejects logStreamSelectors with an invalid label name', () => {
+      expect(() =>
+        LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'http://localhost:3100',
+                  token: 't',
+                  logStreamSelectors: [
+                    { label: 'bad-label', value: '="application"' },
+                  ],
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(/Prometheus label name rules/);
+    });
+
+    it('rejects logStreamSelectors with an unsafe value fragment', () => {
+      expect(() =>
+        LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'http://localhost:3100',
+                  token: 't',
+                  logStreamSelectors: [
+                    {
+                      label: 'app',
+                      value: '="unclosed',
+                    },
+                  ],
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(/LogQL label matcher/);
+    });
+
+    it('rejects logPipelineFilters containing brace characters', () => {
+      expect(() =>
+        LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'http://localhost:3100',
+                  token: 't',
+                  logPipelineFilters: ['| json }'],
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(/must not contain/);
     });
 
     describe('baseUrl validation', () => {
@@ -376,6 +437,73 @@ describe('LokiProvider', () => {
       );
     });
 
+    it('rejects workflow instance ids with control characters for LogQL safety', async () => {
+      jest.mocked(undiciFetch).mockResolvedValue({ ok: true } as any);
+
+      const provider = LokiProvider.fromConfig(
+        new ConfigReader({
+          orchestrator: {
+            workflowLogProvider: {
+              loki: {
+                baseUrl: 'http://localhost:3100',
+                token: 'notsecret',
+              },
+            },
+          },
+        }),
+      );
+
+      await expect(
+        provider.fetchWorkflowLogsByInstance({
+          id: 'bad\nid',
+          processId: 'x',
+          start: '2025-12-05T16:35:13.621Z',
+          end: '',
+          nodes: [],
+        }),
+      ).rejects.toThrow(/not allowed in Loki line filters/);
+      expect(jest.mocked(undiciFetch)).not.toHaveBeenCalled();
+    });
+
+    it('escapes quotes in workflow instance ids in the LogQL line filter', async () => {
+      const mockResponse: Partial<Response> = {
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockWorkflowLog),
+      };
+      jest.mocked(undiciFetch).mockResolvedValue(mockResponse as any);
+
+      const provider = LokiProvider.fromConfig(
+        new ConfigReader({
+          orchestrator: {
+            workflowLogProvider: {
+              loki: {
+                baseUrl: 'http://localhost:3100',
+                token: 'notsecret',
+              },
+            },
+          },
+        }),
+      );
+
+      const workflowInstance: ProcessInstanceDTO = {
+        id: '12"45',
+        processId: '54321',
+        start: '2025-12-05T16:35:13.621Z',
+        end: '',
+        nodes: [],
+      };
+
+      await provider.fetchWorkflowLogsByInstance(workflowInstance);
+
+      const parsed = new URL(
+        jest.mocked(undiciFetch).mock.calls[0][0] as string,
+      );
+      expect(parsed.searchParams.get('query')).toEqual(
+        `{openshift_log_type="application"} |="12\\"45"`,
+      );
+    });
+
     it('should have an enddate that had 5 minutes added to it', async () => {
       const mockResponse: Partial<Response> = {
         ok: true,
@@ -436,11 +564,11 @@ describe('LokiProvider', () => {
               token: 'notsecret',
               logStreamSelectors: [
                 {
-                  label: 'custom-selector',
+                  label: 'custom_selector',
                   value: '=~".+"',
                 },
                 {
-                  label: 'custom-selector1',
+                  label: 'custom_selector1',
                 },
               ],
             },
@@ -459,7 +587,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom-selector%3D%7E%22.%2B%22%2Ccustom-selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=100';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom_selector%3D%7E%22.%2B%22%2Ccustom_selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=100';
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
 
@@ -472,7 +600,7 @@ describe('LokiProvider', () => {
       expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
       expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
       expect(parsedURLToFetch.searchParams.get('query')).toEqual(
-        `{custom-selector=~".+",custom-selector1="application"} |="${workflowInstance.id}"`,
+        `{custom_selector=~".+",custom_selector1="application"} |="${workflowInstance.id}"`,
       );
     });
 
@@ -495,7 +623,7 @@ describe('LokiProvider', () => {
                   value: '=~".+"',
                 },
                 {
-                  label: 'custom-selector1',
+                  label: 'custom_selector1',
                 },
               ],
             },
@@ -514,7 +642,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%7E%22.%2B%22%2Ccustom-selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=100';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%7E%22.%2B%22%2Ccustom_selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=100';
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
@@ -522,7 +650,7 @@ describe('LokiProvider', () => {
       expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
       expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
       expect(parsedURLToFetch.searchParams.get('query')).toEqual(
-        `{openshift_log_type=~".+",custom-selector1="application"} |="${workflowInstance.id}"`,
+        `{openshift_log_type=~".+",custom_selector1="application"} |="${workflowInstance.id}"`,
       );
 
       const calls = jest.mocked(undiciFetch).mock.calls;
