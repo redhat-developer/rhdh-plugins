@@ -17,7 +17,7 @@
 import { ERRORS_KEY } from '@rjsf/utils';
 
 import { safeSet } from './safeSet';
-import { JsonObject } from '@backstage/types/index';
+import { JsonObject } from '@backstage/types';
 
 describe('safeSet', () => {
   it('splits only on the first dot so deep paths (e.g. step.x.y) are not truncated', () => {
