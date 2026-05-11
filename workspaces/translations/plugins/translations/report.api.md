@@ -5,9 +5,11 @@
 ```ts
 import { AppLanguageApi } from '@backstage/core-plugin-api/alpha';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import type { ConfigApi } from '@backstage/core-plugin-api';
 import { i18n } from 'i18next';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { Observable } from '@backstage/types';
+import { PropsWithChildren } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { TranslationApi } from '@backstage/core-plugin-api/alpha';
 import { TranslationMessages } from '@backstage/core-plugin-api/alpha';
@@ -15,6 +17,19 @@ import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { TranslationRef as TranslationRef_2 } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 import { TranslationSnapshot } from '@backstage/core-plugin-api/alpha';
+
+// @public
+export function attachPseudolocalization(
+  translationApi: I18nextTranslationApi,
+  options?: PseudolocalizationOptions,
+): void;
+
+// @public
+export function attachPseudolocalizationIfEnabled(
+  translationApi: I18nextTranslationApi,
+  configApi: ConfigApi,
+  locationSearch?: string,
+): void;
 
 // @public
 export const ExportTranslationKeys: (input: {
@@ -52,6 +67,19 @@ export interface I18nextTranslationApiOptions {
   // (undocumented)
   resources?: Array<TranslationMessages | TranslationResource>;
 }
+
+// @public (undocumented)
+export interface PseudolocalizationOptions {
+  // (undocumented)
+  languageToPseudo?: string;
+  // (undocumented)
+  wrapped?: boolean;
+}
+
+// @public
+export const PseudoLocalizationProvider: (
+  input: PropsWithChildren<{}>,
+) => JSX_2.Element;
 
 // @public (undocumented)
 export const TranslationsPage: () => JSX_2.Element;
