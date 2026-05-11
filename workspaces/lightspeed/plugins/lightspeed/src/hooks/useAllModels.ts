@@ -31,5 +31,6 @@ export const useAllModels = (): UseQueryResult<LCSModel[], Error> => {
       return response;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 };
