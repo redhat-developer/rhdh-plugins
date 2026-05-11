@@ -179,12 +179,14 @@ export class LokiProvider implements WorkflowLogProvider {
       throw new Error(`Problem fetching loki logs: ${error.message}`);
     }
 
+    const sortedResults = allResults.sort(
+      (a: LokiParsedLogLine, b: LokiParsedLogLine) =>
+        Number(a.id) - Number(b.id),
+    );
+
     const workflowLogsResponse: WorkflowLogsResponse = {
       instanceId: instance.id,
-      logs: allResults.sort(
-        (a: LokiParsedLogLine, b: LokiParsedLogLine) =>
-          Number(a.id) - Number(b.id),
-      ),
+      logs: sortedResults,
     };
     return workflowLogsResponse;
   }
