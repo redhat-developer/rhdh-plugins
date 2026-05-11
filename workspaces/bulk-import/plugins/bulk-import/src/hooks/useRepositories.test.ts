@@ -347,6 +347,51 @@ describe('useRepositories', () => {
       expect(result.current.loading).toBe(false);
     });
 
+    it('treats login dismissal by message when error name is not RejectedError', async () => {
+      const rejected = new Error('Login failed, rejected by user');
+      rejected.name = 'Error';
+      const mockGetCredentials = jest.fn().mockRejectedValue(rejected);
+      const mockScmAuth = { getCredentials: mockGetCredentials };
+
+      const mockGetSCMHosts = jest.fn().mockResolvedValue({
+        github: ['https://github.com'],
+        gitlab: [],
+      });
+      const mockBulkImportApi = {
+        getSCMHosts: mockGetSCMHosts,
+        dataFetcher: jest.fn(),
+      };
+
+      mockUseApiHolder.mockReturnValue({
+        get: jest.fn().mockReturnValue(mockScmAuth),
+      });
+
+      const mockUseApi = jest.requireMock('@backstage/core-plugin-api').useApi;
+      mockUseApi.mockImplementation((ref: { id: string }) => {
+        if (ref.id === 'plugin.bulk-import.service') return mockBulkImportApi;
+        return undefined;
+      });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const { result } = renderHook(() =>
+        useRepositories({
+          page: 1,
+          querySize: 10,
+          approvalTool: ApprovalTool.Git,
+        }),
+      );
+
+      await waitFor(() => {
+        expect(result.current.loginRejected).toBe(true);
+      });
+    });
+
     it('does not include raw token values in the React Query key', async () => {
       const secretToken = 'super-secret-oauth-token';
       const mockGetCredentials = jest
