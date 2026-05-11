@@ -53,8 +53,6 @@ import { makeStyles } from 'tss-react/mui';
 import {
   AuthTokenDescriptor,
   isJsonObject,
-  orchestratorWorkflowUsePermission,
-  orchestratorWorkflowUseSpecificPermission,
   ProcessInstanceDTO,
   ProcessInstanceStatusDTO,
   QUERY_PARAM_INSTANCE_ID,
@@ -63,7 +61,6 @@ import {
 import { orchestratorApiRef } from '../../api';
 import { SHORT_REFRESH_INTERVAL } from '../../constants';
 import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
-import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import usePolling from '../../hooks/usePolling';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -261,14 +258,9 @@ export const WorkflowInstancePage = () => {
   );
 
   const workflowId = value?.processId;
-  const permittedToUse = usePermissionArrayDecision(
-    workflowId
-      ? [
-          orchestratorWorkflowUsePermission,
-          orchestratorWorkflowUseSpecificPermission(workflowId),
-        ]
-      : [orchestratorWorkflowUsePermission],
-  );
+  // With RBAC conditional policies, permissions are enforced by the backend
+  // Frontend optimistically allows actions - backend will return 403 if not permitted
+  const permittedToUse = { allowed: true, loading: false };
 
   const { value: inputSchema, error: inputSchemaError } =
     useAsync(async (): Promise<JsonObject | undefined> => {

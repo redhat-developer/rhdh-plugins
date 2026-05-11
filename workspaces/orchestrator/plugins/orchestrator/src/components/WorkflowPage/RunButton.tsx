@@ -23,12 +23,6 @@ import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 
-import {
-  orchestratorWorkflowUsePermission,
-  orchestratorWorkflowUseSpecificPermission,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
-
-import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { useTranslation } from '../../hooks/useTranslation';
 import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
 
@@ -56,11 +50,10 @@ export const RunButton = ({
     navigate(buildExecuteUrl());
   };
 
-  const { loading: loadingPermission, allowed: canRun } =
-    usePermissionArrayDecision([
-      orchestratorWorkflowUsePermission,
-      orchestratorWorkflowUseSpecificPermission(workflowId),
-    ]);
+  // With RBAC conditional policies, permissions are enforced by the backend
+  // Frontend optimistically allows - backend will return 403 if not permitted
+  const loadingPermission = false;
+  const canRun = true;
 
   let tooltipText = '';
   if (!canRun) {

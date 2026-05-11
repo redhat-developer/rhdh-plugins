@@ -90,10 +90,11 @@
     "lodash": "^4.18.1",
     "luxon": "^3.7.2",
     "openapi-backend": "^5.10.5",
-    "yn": "^5.0.0"
+    "yn": "^5.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@backstage-community/plugin-rbac-common": "^1.12.1",
+    "@backstage-community/plugin-rbac-common": "^1.26.0",
     "@backstage/backend-test-utils": "^1.11.1",
     "@backstage/cli": "^0.36.0",
     "@janus-idp/backstage-plugin-audit-log-node": "^1.7.1",
