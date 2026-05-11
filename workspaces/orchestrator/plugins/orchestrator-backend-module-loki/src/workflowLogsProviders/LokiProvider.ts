@@ -39,6 +39,7 @@ export class LokiProvider implements WorkflowLogProvider {
   private readonly selectors: any;
   private readonly rejectUnauthorized: boolean;
   private readonly logPipelineFilters: any;
+  private readonly limit: number;
   private readonly agent: Agent;
   private constructor(config: Config) {
     this.baseURL = config.getString('baseUrl');
@@ -48,7 +49,7 @@ export class LokiProvider implements WorkflowLogProvider {
       config.getOptionalBoolean('rejectUnauthorized') === false ? false : true;
     this.selectors = config.getOptional('logStreamSelectors') || [];
     this.logPipelineFilters = config.getOptional('logPipelineFilters') || [];
-
+    this.limit = config.getOptionalNumber('limit') || 100;
     this.agent = new Agent({
       connect: {
         rejectUnauthorized: this.rejectUnauthorized,
@@ -128,11 +129,11 @@ export class LokiProvider implements WorkflowLogProvider {
       });
     }
 
-    // TODO: add the limit parameter to the query and make it configurable but default to 100
     const params = new URLSearchParams({
       query: `{${streamSelector}} ${logPipelineFilter}`,
       start: startTime as string,
       end: endTime as string,
+      limit: this.limit.toString(),
     });
 
     const urlToFetch = `${this.baseURL}${lokiApiEndpoint}?${params.toString()}`;

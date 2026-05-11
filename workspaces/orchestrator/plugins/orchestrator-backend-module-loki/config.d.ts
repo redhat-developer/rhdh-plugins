@@ -32,6 +32,11 @@ export interface Config {
         /** @visibility secret */
         token: string;
         /**
+         * Limit the number of logs to fetch
+         * defaults to 100
+         */
+        limit?: number;
+        /**
          * Set to false if the baseUrl has a self-signed certificate
          * defaults to true
          */

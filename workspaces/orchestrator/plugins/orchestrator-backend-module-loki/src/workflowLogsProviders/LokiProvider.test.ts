@@ -133,7 +133,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=100';
       const workflowLogs =
         await provider.fetchWorkflowLogsByInstance(workflowInstance);
 
@@ -200,7 +200,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2025-12-05T17%3A40%3A13.621Z';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2025-12-05T17%3A40%3A13.621Z&limit=100';
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
@@ -253,7 +253,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom-selector%3D%7E%22.%2B%22%2Ccustom-selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom-selector%3D%7E%22.%2B%22%2Ccustom-selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=100';
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
 
@@ -308,7 +308,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%7E%22.%2B%22%2Ccustom-selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%7E%22.%2B%22%2Ccustom-selector1%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=100';
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
@@ -355,7 +355,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22+%7C+filter1+%7C+json&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22+%7C+filter1+%7C+json&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=100';
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
@@ -369,6 +369,44 @@ describe('LokiProvider', () => {
       const calls = jest.mocked(undiciFetch).mock.calls;
       expect(calls).toHaveLength(1);
       expect(calls[0][0]).toEqual(urlToFetch);
+    });
+
+    it('should have a custom limit', async () => {
+      const mockResponse: Partial<Response> = {
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockWorkflowLog),
+      };
+      jest.mocked(undiciFetch).mockResolvedValue(mockResponse as any);
+
+      const lokiAppConfig = {
+        orchestrator: {
+          workflowLogProvider: {
+            loki: {
+              baseUrl: 'http://localhost:3100',
+              token: 'notsecret',
+              limit: 50,
+            },
+          },
+        },
+      };
+
+      const lokiConfig = new ConfigReader(lokiAppConfig);
+      const provider = LokiProvider.fromConfig(lokiConfig);
+      const workflowInstance: ProcessInstanceDTO = {
+        id: '12345',
+        processId: '54321',
+        start: '2025-12-05T16:35:13.621Z',
+        end: '',
+        nodes: [],
+      };
+
+      const urlToFetch =
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=50';
+
+      await provider.fetchWorkflowLogsByInstance(workflowInstance);
+      const parsedURLToFetch = new URL(urlToFetch);
+      expect(parsedURLToFetch.searchParams.get('limit')).toEqual('50');
     });
   });
 });
