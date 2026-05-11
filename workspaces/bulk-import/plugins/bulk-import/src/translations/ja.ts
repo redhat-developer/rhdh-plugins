@@ -47,6 +47,8 @@ const bulkImportTranslationJa = createTranslationMessages({
     'repositories.noRecordsFound': 'レコードが見つかりません',
     'repositories.noProjectsFound':
       'インポート可能なプロジェクトがありません。',
+    'repositories.logInToViewProjects':
+      'ログインしてプロジェクトを表示します。',
     'repositories.refresh': '更新',
     'repositories.import': 'インポート',
     'repositories.removing': '削除中...',

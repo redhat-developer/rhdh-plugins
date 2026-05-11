@@ -239,6 +239,7 @@ describe('useRepositories', () => {
       expect(result.current.error?.errors).toEqual([
         'No user SCM credentials could be obtained. Please ensure your SCM OAuth integration is configured.',
       ]);
+      expect(result.current.loginRejected).toBe(false);
     });
 
     it('disables the query when tokenFetchError is set (no request fired without tokens)', async () => {
@@ -290,6 +291,60 @@ describe('useRepositories', () => {
       // is fired when user tokens are unavailable.
       const lastOptions = (useQuery as jest.Mock).mock.calls.at(-1)?.[2];
       expect(lastOptions?.enabled).toBe(false);
+      // Disabled TanStack Query v4 observers still report isLoading=true; the
+      // hook must not forward that as UI loading once token fetch failed.
+      expect(result.current.loading).toBe(false);
+    });
+
+    it('treats OAuth login dismissal as loginRejected without surfacing SCM config error', async () => {
+      const rejected = new Error('Login failed, rejected by user');
+      rejected.name = 'RejectedError';
+      const mockGetCredentials = jest.fn().mockRejectedValue(rejected);
+      const mockScmAuth = { getCredentials: mockGetCredentials };
+
+      const mockGetSCMHosts = jest.fn().mockResolvedValue({
+        github: ['https://github.com'],
+        gitlab: ['https://gitlab.example.com'],
+      });
+      const mockBulkImportApi = {
+        getSCMHosts: mockGetSCMHosts,
+        dataFetcher: jest.fn(),
+      };
+
+      mockUseApiHolder.mockReturnValue({
+        get: jest.fn().mockReturnValue(mockScmAuth),
+      });
+
+      const mockUseApi = jest.requireMock('@backstage/core-plugin-api').useApi;
+      mockUseApi.mockImplementation((ref: { id: string }) => {
+        if (ref.id === 'plugin.bulk-import.service') return mockBulkImportApi;
+        return undefined;
+      });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const { result } = renderHook(() =>
+        useRepositories({
+          page: 1,
+          querySize: 10,
+          approvalTool: ApprovalTool.Gitlab,
+        }),
+      );
+
+      await waitFor(() => {
+        expect(result.current.loading).toBeFalsy();
+        expect(result.current.loginRejected).toBe(true);
+      });
+
+      expect(result.current.error?.errors).toBeUndefined();
+      const lastOptions = (useQuery as jest.Mock).mock.calls.at(-1)?.[2];
+      expect(lastOptions?.enabled).toBe(false);
+      expect(result.current.loading).toBe(false);
     });
 
     it('does not include raw token values in the React Query key', async () => {

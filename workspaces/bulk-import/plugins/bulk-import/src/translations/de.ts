@@ -47,6 +47,8 @@ const bulkImportTranslationDe = createTranslationMessages({
     'repositories.noRecordsFound':
       'Keine Repositorys zum Importieren verfügbar.',
     'repositories.noProjectsFound': 'Keine Projekte zum Importieren verfügbar.',
+    'repositories.logInToViewProjects':
+      'Melden Sie sich an, um Projekte anzuzeigen.',
     'repositories.refresh': 'Aktualisieren',
     'repositories.import': 'Importieren',
     'repositories.removing': 'Wird entfernt...',

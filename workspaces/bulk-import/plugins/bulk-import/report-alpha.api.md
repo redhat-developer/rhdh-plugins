@@ -67,6 +67,7 @@ export const bulkImportTranslationRef: TranslationRef<
     readonly 'repositories.importedEntitiesCount': string;
     readonly 'repositories.noRecordsFound': string;
     readonly 'repositories.noProjectsFound': string;
+    readonly 'repositories.logInToViewProjects': string;
     readonly 'repositories.refresh': string;
     readonly 'repositories.import': string;
     readonly 'repositories.removing': string;

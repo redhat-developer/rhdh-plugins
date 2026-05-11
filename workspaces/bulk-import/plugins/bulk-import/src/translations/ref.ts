@@ -45,6 +45,7 @@ export const bulkImportMessages = {
     importedEntitiesCount: 'Imported entities ({{count}})',
     noRecordsFound: 'No repositories available to import.',
     noProjectsFound: 'No projects available to import.',
+    logInToViewProjects: 'Log in to view projects',
     refresh: 'Refresh',
     import: 'Import',
     removing: 'Removing...',
