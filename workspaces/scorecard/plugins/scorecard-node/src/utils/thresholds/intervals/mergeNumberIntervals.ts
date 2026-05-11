@@ -27,16 +27,18 @@ export function mergeNumberIntervals(
 
   const sorted = [...intervals].sort(compareIntervalSort);
 
-  const merged: NumberInterval[] = [{ ...sorted[0]! }];
+  const merged: NumberInterval[] = [{ ...sorted[0] }];
 
   for (let i = 1; i < sorted.length; i++) {
-    const current = sorted[i]!;
-    const previous = merged[merged.length - 1]!;
+    const current = sorted[i];
+    const previous = merged.at(merged.length - 1);
 
-    if (hasGapBetweenIntervals(previous, current)) {
-      merged.push({ ...current });
-    } else {
-      merged[merged.length - 1] = getUnionInterval(previous, current);
+    if (current && previous) {
+      if (hasGapBetweenIntervals(previous, current)) {
+        merged.push({ ...current });
+      } else {
+        merged[merged.length - 1] = getUnionInterval(previous, current);
+      }
     }
   }
 

@@ -85,9 +85,9 @@ export function validateThresholdNumberIntervals(
 function coversFullRealLine(merged: NumberInterval[]): boolean {
   return (
     merged.length === 1 &&
-    merged[0]!.min === -Infinity &&
-    merged[0]!.max === Infinity &&
-    merged[0]!.minClosed &&
-    merged[0]!.maxClosed
+    merged[0].min === -Infinity &&
+    merged[0].max === Infinity &&
+    merged[0].minClosed &&
+    merged[0].maxClosed
   );
 }

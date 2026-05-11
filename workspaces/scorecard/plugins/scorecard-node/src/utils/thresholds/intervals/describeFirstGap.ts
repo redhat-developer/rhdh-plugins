@@ -21,47 +21,57 @@ export function describeFirstGap(merged: NumberInterval[]): string {
     return 'the entire real line (no rules)';
   }
 
-  const first = merged[0]!;
-  if (first.min > -Infinity) {
-    const rightBound = formatReal(first.min);
-    return first.minClosed ? `(-∞, ${rightBound})` : `(-∞, ${rightBound}]`;
+  const leading = describeLeadingGap(merged[0]);
+  if (leading) {
+    return leading;
   }
 
   for (let i = 0; i < merged.length - 1; i++) {
-    const left = merged[i]!;
-    const right = merged[i + 1]!;
-
-    const gapLeft = left.max;
-    const gapRight = right.min;
-
-    const nonEmptyGap =
-      gapLeft < gapRight ||
-      (gapLeft === gapRight && !(left.maxClosed || right.minClosed));
-
-    if (nonEmptyGap) {
-      const l = left.maxClosed ? '(' : '[';
-      const r = right.minClosed ? ')' : ']';
-      return `${l}${formatReal(gapLeft)}, ${formatReal(gapRight)}${r}`;
-    }
+    const between = describeGapBetweenAdjacent(merged[i], merged[i + 1]);
+    if (between) return between;
   }
 
-  const last = merged[merged.length - 1]!;
-
-  if (last.max < Infinity) {
-    const l = last.maxClosed ? '(' : '[';
-    return `${l}${formatReal(last.max)}, ∞)`;
-  }
+  const trailing = describeTrailingGap(merged[merged.length - 1]);
+  if (trailing) return trailing;
 
   return 'unknown gap';
 }
 
+function describeLeadingGap(first: NumberInterval): string | null {
+  if (first.min <= -Infinity) return null;
+
+  const rightBound = formatReal(first.min);
+  return first.minClosed ? `(-∞, ${rightBound})` : `(-∞, ${rightBound}]`;
+}
+
+function describeGapBetweenAdjacent(
+  left: NumberInterval,
+  right: NumberInterval,
+): string | null {
+  const gapLeft = left.max;
+  const gapRight = right.min;
+
+  const nonEmptyGap =
+    gapLeft < gapRight ||
+    (gapLeft === gapRight && !(left.maxClosed || right.minClosed));
+
+  if (!nonEmptyGap) return null;
+
+  const l = left.maxClosed ? '(' : '[';
+  const r = right.minClosed ? ')' : ']';
+  return `${l}${formatReal(gapLeft)}, ${formatReal(gapRight)}${r}`;
+}
+
+function describeTrailingGap(last: NumberInterval): string | null {
+  if (!last || last.max >= Infinity) return null;
+
+  const l = last.maxClosed ? '(' : '[';
+  return `${l}${formatReal(last.max)}, ∞)`;
+}
+
 function formatReal(x: number): string {
-  if (x === -Infinity) {
-    return '-∞';
-  }
-  if (x === Infinity) {
-    return '∞';
-  }
+  if (x === -Infinity) return '-∞';
+  if (x === Infinity) return '∞';
 
   return String(x);
 }
