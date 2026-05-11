@@ -55,7 +55,10 @@ import { SignalsDisplay } from '@backstage/plugin-signals';
 
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
-import { TranslationsPage } from '@red-hat-developer-hub/backstage-plugin-translations';
+import {
+  TranslationsPage,
+  PseudoLocalizationProvider,
+} from '@red-hat-developer-hub/backstage-plugin-translations';
 import { TranslationsTestPage } from '@red-hat-developer-hub/backstage-plugin-translations-test';
 
 const app = createApp({
@@ -127,12 +130,12 @@ const routes = (
 );
 
 export default app.createRoot(
-  <>
+  <PseudoLocalizationProvider>
     <AlertDisplay />
     <OAuthRequestDialog />
     <SignalsDisplay />
     <AppRouter>
       <Root>{routes}</Root>
     </AppRouter>
-  </>,
+  </PseudoLocalizationProvider>,
 );

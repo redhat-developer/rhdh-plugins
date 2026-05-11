@@ -13,6 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './apis';
-export * from './plugin';
-export { PseudoLocalizationProvider } from './components/PseudoLocalizationProvider';
+
+export interface Config {
+  i18n?: {
+    /**
+     * Pseudolocalization stretches translated strings to test layout (i18next-pseudo).
+     * @deepVisibility frontend
+     */
+    pseudolocalization?: {
+      /**
+       * When true, enables i18next-pseudo for strings that go through the translation API.
+       * @visibility frontend
+       */
+      enabled?: boolean;
+      /**
+       * Language code to pseudolocalize (e.g. en, de). Defaults to the active UI language when omitted.
+       * @visibility frontend
+       */
+      language?: string;
+    };
+  };
+}
