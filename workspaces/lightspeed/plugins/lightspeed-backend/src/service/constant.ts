@@ -70,6 +70,7 @@ When you lack evidence, output ONLY: "I cannot answer this based on the provided
 
 /**
  * HTTP and networking constants
+ * @reserved Reserved for future URL file type support
  */
 export const URL_FETCH_TIMEOUT_MS = 30000; // 30 second timeout for URL fetching
 export const USER_AGENT = 'RHDH-Notebooks-Bot/1.0'; // User agent for HTTP requests
@@ -110,6 +111,7 @@ export const PROXY_PASSTHROUGH_PATHS = [
 /**
  * SSRF Protection - Blocked hostnames for security
  * These hostnames are commonly used for Server-Side Request Forgery attacks
+ * @reserved Reserved for future URL file type support
  */
 export const SSRF_BLOCKED_HOSTNAMES = [
   'localhost',
@@ -126,6 +128,7 @@ export const SSRF_BLOCKED_HOSTNAMES = [
 /**
  * Prompt Injection Protection - Patterns to detect and sanitize
  * These patterns are commonly used in prompt injection attacks
+ * @reserved Reserved for future URL file type support
  */
 export const PROMPT_INJECTION_PATTERNS = [
   /ignore\s+(all\s+)?previous\s+(instructions?|prompts?)/gi,
@@ -148,6 +151,7 @@ export const PROMPT_INJECTION_PATTERNS = [
 
 /**
  * Content sanitization constants
+ * @reserved Reserved for future URL file type support
  */
 export const MAX_CONSECUTIVE_NEWLINES = 4; // Max consecutive newlines allowed in content
 export const FILTERED_CONTENT_MARKER = '[CONTENT_FILTERED]'; // Marker for filtered content
@@ -163,7 +167,6 @@ export const FILE_TYPE_TO_MIME: Record<string, string> = {
   yaml: 'application/x-yaml',
   yml: 'application/x-yaml',
   pdf: 'application/pdf',
-  url: 'text/plain', // URLs are stored as plain text content
 };
 
 export const MAX_QUERY_RETRIES = 1; // Max number of retries for query
@@ -188,6 +191,10 @@ export enum SupportedFileType {
   LOG = 'log',
 }
 
+/**
+ * HTML parsing constants for stripping tags and extracting text
+ * @reserved Reserved for future URL file type support
+ */
 export const HTML_BLOCK_TAGS = new Set([
   'div',
   'p',

@@ -402,7 +402,7 @@ export async function createNotebooksRouter(
         handleError(
           logger,
           res,
-          `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log, url`,
+          `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log`,
         );
         return;
       }
