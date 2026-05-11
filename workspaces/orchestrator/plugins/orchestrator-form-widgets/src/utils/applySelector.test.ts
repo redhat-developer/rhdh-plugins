@@ -290,6 +290,40 @@ describe('applySelectorString', () => {
       'expected string type',
     );
   });
+
+  it('returns empty string for invalid JSONata syntax when emptyStringWhenMissing is true', async () => {
+    await expect(
+      applySelectorString({} as JsonObject, '.', true),
+    ).resolves.toBe('');
+    await expect(
+      applySelectorString({} as JsonObject, '/', true),
+    ).resolves.toBe('');
+  });
+
+  it('throws a clear error for invalid JSONata syntax when strict', async () => {
+    await expect(applySelectorString({} as JsonObject, '.')).rejects.toThrow(
+      'Invalid JSONata',
+    );
+  });
+});
+
+describe('applySelectorArray invalid JSONata', () => {
+  const data: JsonObject = { args: { tag: ['a'] } };
+
+  it('returns empty array for invalid syntax when emptyArrayIfNeeded is true', async () => {
+    await expect(
+      applySelectorArray(data, '.', true, true),
+    ).resolves.toStrictEqual([]);
+    await expect(
+      applySelectorArray(data, '/', true, true),
+    ).resolves.toStrictEqual([]);
+  });
+
+  it('throws for invalid syntax when not lenient', async () => {
+    await expect(applySelectorArray(data, '.')).rejects.toThrow(
+      'Invalid JSONata',
+    );
+  });
 });
 
 describe('applySelectorArray - complex queries', () => {

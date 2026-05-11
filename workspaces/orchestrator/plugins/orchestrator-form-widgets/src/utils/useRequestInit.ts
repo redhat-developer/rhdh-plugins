@@ -53,9 +53,16 @@ const evaluateJsonataInValue = async (
     if (!expression) {
       return value;
     }
-    const compiled = jsonata(expression);
-    const evaluated = await compiled.evaluate(formData);
-    return evaluated === undefined ? UNDEFINED_VALUE : (evaluated as JsonValue);
+    try {
+      const compiled = jsonata(expression);
+      const evaluated = await compiled.evaluate(formData);
+      return evaluated === undefined
+        ? UNDEFINED_VALUE
+        : (evaluated as JsonValue);
+    } catch {
+      // Invalid or failing JSONata (e.g. user-typed fragments) must not break fetch body evaluation.
+      return UNDEFINED_VALUE;
+    }
   }
   if (Array.isArray(value)) {
     const evaluatedArray = await Promise.all(
