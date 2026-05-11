@@ -44,7 +44,7 @@
     "@backstage/theme": "^0.7.2",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-app-react": "^0.0.3",
+    "@red-hat-developer-hub/backstage-plugin-app-react": "^0.0.5",
     "@red-hat-developer-hub/backstage-plugin-global-header": "^1.21.0",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "react-use": "^17.6.0"
