@@ -21,19 +21,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 
 import { Readable } from 'stream';
 
-import {
-  MAX_URL_CONTENT_SIZE,
-  SupportedFileType,
-  URL_FETCH_TIMEOUT_MS,
-  USER_AGENT,
-} from '../../constant';
-import {
-  isValidFileType,
-  isValidURL,
-  sanitizeContentForRAG,
-  stripHtmlTags,
-  validateURLForSSRF,
-} from './documentHelpers';
+import { SupportedFileType } from '../../constant';
 
 export interface ParsedDocument {
   content: string;
@@ -173,141 +161,10 @@ async function parsePDFFile(
 }
 
 /**
- * Parse URL and fetch web content
- * Fetches HTML from URL and extracts readable text
- * @param url - URL to fetch
- * @param fileName - File name for metadata
- * @param fileType - File type
- */
-async function parseURLFile(
-  url: string,
-  fileName: string,
-  fileType: string,
-): Promise<ParsedDocument> {
-  try {
-    // Validate URL format
-    if (!isValidURL(url)) {
-      throw new InputError(`Invalid URL format: ${url}`);
-    }
-
-    // Validate URL for SSRF vulnerabilities
-    await validateURLForSSRF(url);
-
-    // Fetch the URL content
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': USER_AGENT,
-      },
-      signal: AbortSignal.timeout(URL_FETCH_TIMEOUT_MS),
-    });
-
-    if (!response.ok) {
-      throw new InputError(
-        `Failed to fetch URL: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    // Check Content-Length header to prevent fetching huge files
-    const contentLength = response.headers.get('content-length');
-    if (contentLength) {
-      const size = parseInt(contentLength, 10);
-      if (size > MAX_URL_CONTENT_SIZE) {
-        throw new InputError(
-          `URL content size (${Math.round(size / 1024 / 1024)}MB) exceeds maximum allowed size (${Math.round(MAX_URL_CONTENT_SIZE / 1024 / 1024)}MB)`,
-        );
-      }
-    }
-
-    // Get content type to determine how to parse
-    const contentType = response.headers.get('content-type') || '';
-
-    // Stream response body with size limit
-    let content: string;
-    if (response.body) {
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      const chunks: string[] = [];
-      let totalSize = 0;
-
-      try {
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          totalSize += value.length;
-          if (totalSize > MAX_URL_CONTENT_SIZE) {
-            throw new InputError(
-              `URL content exceeds maximum allowed size (${Math.round(MAX_URL_CONTENT_SIZE / 1024 / 1024)}MB)`,
-            );
-          }
-
-          chunks.push(decoder.decode(value, { stream: true }));
-        }
-        chunks.push(decoder.decode()); // Flush remaining bytes
-        content = chunks.join('');
-      } finally {
-        reader.releaseLock();
-      }
-    } else {
-      throw new InputError('Response body is not available');
-    }
-
-    // Parse content based on content type
-    let parsedContent: string;
-
-    if (contentType.includes('text/html')) {
-      // HTML content - strip tags and extract text
-      parsedContent = stripHtmlTags(content);
-    } else if (
-      contentType.includes('text/plain') ||
-      contentType.includes('text/markdown')
-    ) {
-      // Plain text or markdown - use as is
-      parsedContent = content;
-    } else if (contentType.includes('application/json')) {
-      // JSON content - validate but keep original
-      JSON.parse(content); // Validate it's valid JSON
-      parsedContent = content;
-    } else {
-      // Try to use as text anyway
-      parsedContent = content;
-    }
-
-    // Validate we got some content
-    if (!parsedContent || parsedContent.trim().length === 0) {
-      throw new InputError('No content extracted from URL');
-    }
-
-    // Sanitize content to prevent prompt injection attacks
-    const sanitizedContent = sanitizeContentForRAG(parsedContent);
-
-    return {
-      content: sanitizedContent,
-      metadata: {
-        fileName: fileName || new URL(url).hostname,
-        fileType,
-        url,
-        parseTimestamp: new Date().toISOString(),
-      },
-    };
-  } catch (error) {
-    // Re-throw InputError from validation functions unchanged
-    if (error instanceof InputError) {
-      throw error;
-    }
-    // Convert other errors to InputError
-    if (error instanceof Error) {
-      throw new InputError(`Error fetching URL: ${error.message}`);
-    }
-    throw new InputError(`Error fetching URL: ${error}`);
-  }
-}
-
-/**
  * Parse file based on its type
- * @param buffer - File buffer (ignored for URL type)
- * @param fileName - File name, or URL string when fileType is 'url'
- * @param fileType - File type (md, txt, pdf, json, yaml, yml, log, url)
+ * @param buffer - File buffer
+ * @param fileName - File name
+ * @param fileType - File type (md, txt, pdf, json, yaml, yml, log)
  * @returns Parsed document with content and metadata
  */
 export async function parseFile(
@@ -315,13 +172,8 @@ export async function parseFile(
   fileName: string,
   fileType: string,
 ): Promise<ParsedDocument> {
-  const normalizedType = fileType
-    .toLowerCase()
-    .replace(/^\./, '') as SupportedFileType;
-
-  if (!isValidFileType(normalizedType)) {
-    throw new InputError(`Unsupported file type: ${fileType}`);
-  }
+  // Normalize file type: lowercase and remove leading dot
+  const normalizedType = fileType.toLowerCase().replace(/^\./, '');
 
   switch (normalizedType) {
     case SupportedFileType.MARKDOWN:
@@ -338,10 +190,6 @@ export async function parseFile(
 
     case SupportedFileType.PDF:
       return parsePDFFile(buffer, fileName, fileType);
-
-    case SupportedFileType.URL:
-      // For URL type, fileName contains the URL
-      return parseURLFile(fileName, fileName, fileType);
 
     default:
       throw new InputError(`Unsupported file type: ${fileType}`);

@@ -186,7 +186,6 @@ export enum SupportedFileType {
   YAML = 'yaml',
   YML = 'yml',
   LOG = 'log',
-  URL = 'url',
 }
 
 export const HTML_BLOCK_TAGS = new Set([

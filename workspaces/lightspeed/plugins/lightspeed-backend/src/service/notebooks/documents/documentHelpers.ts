@@ -75,14 +75,13 @@ export const parseFileContent = async (
   logger: LoggerService,
   fileType: string,
   file?: Express.Multer.File,
-  urlParam?: string,
 ) => {
-  if (fileType === 'url') {
-    if (!urlParam) {
-      throw new InputError('URL is required when fileType is "url"');
-    }
-    logger.info(`Fetching URL ${urlParam} for fileType ${fileType}`);
-    return await parseFile(Buffer.from(''), urlParam, fileType);
+  const normalizedType = fileType
+    .toLowerCase()
+    .replace(/^\./, '') as SupportedFileType;
+
+  if (!isValidFileType(normalizedType)) {
+    throw new InputError(`Unsupported file type: ${fileType}`);
   }
   if (!file) {
     throw new InputError('No file uploaded');
