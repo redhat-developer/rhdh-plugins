@@ -18,8 +18,8 @@ import {
   Job,
   JobStatus,
   Module,
+  ProjectState,
   ProjectStatus,
-  ProjectStatusState,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 export { calculateModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
@@ -36,7 +36,7 @@ export function calculateProjectStatus(
   const total = projectModules.length;
   if (!initJob && total === 0) {
     return {
-      state: 'created',
+      state: ProjectState.CREATED.value,
       modulesSummary: {
         total: 0,
         finished: 0,
@@ -76,25 +76,17 @@ export function calculateProjectStatus(
     ? JobStatus.from(initJob.status)
     : undefined;
 
-  let state: ProjectStatusState;
-  if (error > 0) {
-    state = 'failed'; // At least one module is in error state
-  } else if (initStatus?.isActive()) {
-    state = 'initializing'; // Project's init job is running or scheduling
-  } else if (initStatus?.isSuccess()) {
-    if (total > 0 && finished === total) {
-      state = 'completed'; // All modules are in success state
-    } else if (total === 0 || pending + cancelled === total) {
-      state = 'initialized'; // Module list is empty or all modules are in pending/cancelled state
-    } else {
-      state = 'inProgress'; // At least one module is beyond the pending state
-    }
-  } else {
-    state = 'failed';
-  }
+  const state = determineState({
+    total,
+    error,
+    finished,
+    pending,
+    cancelled,
+    initStatus,
+  });
 
   return {
-    state,
+    state: state.value,
     modulesSummary: {
       total,
       finished,
@@ -105,4 +97,24 @@ export function calculateProjectStatus(
       cancelled,
     },
   };
+}
+
+function determineState(counts: {
+  total: number;
+  error: number;
+  finished: number;
+  pending: number;
+  cancelled: number;
+  initStatus?: JobStatus;
+}): ProjectState {
+  const { total, error, finished, pending, cancelled, initStatus } = counts;
+
+  if (error > 0) return ProjectState.FAILED;
+  if (initStatus?.isActive()) return ProjectState.INITIALIZING;
+  if (!initStatus?.isSuccess()) return ProjectState.FAILED;
+  if (total > 0 && finished === total) return ProjectState.COMPLETED;
+  if (total === 0 || pending + cancelled === total)
+    return ProjectState.INITIALIZED;
+
+  return ProjectState.IN_PROGRESS;
 }
