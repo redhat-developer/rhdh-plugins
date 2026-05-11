@@ -1,5 +1,20 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.7.0
+
+### Minor Changes
+
+- 41c1901: Implemented fullscreen chat UX updates including:
+  - Collapsible history panel with new expand/collapse icons
+  - Redesigned message bar with inline model selector and attachment menu
+  - New collapsed history strip with quick new chat functionality
+  - Updated header with Lightspeed logo
+  - Improved conversation list with hover-only options menu
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.7.0
+
 ## 2.6.8
 
 ### Patch Changes

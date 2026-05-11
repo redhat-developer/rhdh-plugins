@@ -928,7 +928,7 @@ describe('LightspeedChat', () => {
       const chatTab = screen.getByRole('tab', { name: 'Chat' });
       expect(chatTab).toHaveAttribute('aria-selected', 'true');
       expect(
-        screen.getByRole('button', { name: 'Chat history menu' }),
+        screen.getByRole('button', { name: 'New chat' }),
       ).toBeInTheDocument();
     });
 
@@ -1031,6 +1031,109 @@ describe('LightspeedChat', () => {
       expect(mockNavigate).toHaveBeenCalledWith(
         '/lightspeed/conversation/conv-123',
       );
+    });
+  });
+
+  describe('fullscreen mode specific features', () => {
+    beforeEach(() => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: false,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.embedded,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
+      });
+    });
+
+    it('should render Chat and Notebooks tabs in fullscreen mode', async () => {
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByRole('tab', { name: 'Chat' })).toBeInTheDocument();
+        expect(
+          screen.getByRole('tab', { name: 'Notebooks' }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should show history panel with conversations in fullscreen', async () => {
+      mockUseConversations.mockReturnValue({
+        data: [
+          {
+            conversation_id: 'test-id',
+            topic_summary: 'Test Chat',
+            last_message_timestamp: Date.now() / 1000,
+          },
+        ],
+        isRefetching: false,
+        isLoading: false,
+      } as Partial<ReturnType<typeof useConversations>> as ReturnType<
+        typeof useConversations
+      >);
+
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'New chat' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Close drawer panel' }),
+      ).toBeInTheDocument();
+    });
+
+    it('should show EditSquareIcon in new chat button in fullscreen mode', async () => {
+      mockUseConversations.mockReturnValue({
+        data: [
+          {
+            conversation_id: 'test-id',
+            topic_summary: 'Test Chat',
+            last_message_timestamp: Date.now() / 1000,
+          },
+        ],
+        isRefetching: false,
+        isLoading: false,
+      } as Partial<ReturnType<typeof useConversations>> as ReturnType<
+        typeof useConversations
+      >);
+
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'New chat' }),
+      ).toBeInTheDocument();
+    });
+
+    it('should render model selector and attach menu in fullscreen mode', async () => {
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Chatbot selector' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Attach' }),
+      ).toBeInTheDocument();
     });
   });
 });

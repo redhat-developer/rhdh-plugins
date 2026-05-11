@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.14.5
+
+### Patch Changes
+
+- 82cc47d: Fixed the background color of myGroup sidebar submenu in light theme
+
 ## 0.14.4
 
 ### Patch Changes

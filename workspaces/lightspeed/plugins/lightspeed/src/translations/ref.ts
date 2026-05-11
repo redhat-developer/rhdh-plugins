@@ -239,6 +239,9 @@ export const lightspeedMessages = {
   'tooltip.send': 'Send',
   'tooltip.microphone.active': 'Stop listening',
   'tooltip.microphone.inactive': 'Use microphone',
+  'tooltip.expandHistoryPanel': 'Expand chat history',
+  'tooltip.collapseHistoryPanel': 'Collapse chat history',
+  'tooltip.quickNewChat': 'New chat',
   'button.newChat': 'New chat',
   'tooltip.chatHistoryMenu': 'Chat history menu',
   'tooltip.responseRecorded': 'Response recorded',
@@ -248,6 +251,14 @@ export const lightspeedMessages = {
   'tooltip.close': 'Close',
   'tooltip.fab.open': 'Open Lightspeed',
   'tooltip.fab.close': 'Close Lightspeed',
+
+  // Attach menu
+  'attach.menu.title': 'Attach',
+  'attach.menu.description': 'Attach a JSON, YAML, or TXT file',
+
+  // History panel sections
+  'history.section.pinned': 'Pinned',
+  'history.section.recent': 'Recent',
 
   // Modal titles
   'modal.title.preview': 'Preview attachment',

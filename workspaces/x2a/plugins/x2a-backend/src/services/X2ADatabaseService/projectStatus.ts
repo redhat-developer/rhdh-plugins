@@ -16,9 +16,10 @@
 
 import {
   Job,
+  JobStatus,
   Module,
+  ProjectState,
   ProjectStatus,
-  ProjectStatusState,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 export { calculateModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
@@ -35,7 +36,7 @@ export function calculateProjectStatus(
   const total = projectModules.length;
   if (!initJob && total === 0) {
     return {
-      state: 'created',
+      state: ProjectState.CREATED.value,
       modulesSummary: {
         total: 0,
         finished: 0,
@@ -48,47 +49,44 @@ export function calculateProjectStatus(
     };
   }
 
-  const error = projectModules.filter(
-    module => module.status === 'error',
+  const modulesWithStatus = projectModules.map(module => ({
+    module,
+    status: module.status ? JobStatus.from(module.status) : undefined,
+    publishStatus: module.publish?.status
+      ? JobStatus.from(module.publish.status)
+      : undefined,
+  }));
+
+  const error = modulesWithStatus.filter(m => m.status?.isError()).length;
+  const finished = modulesWithStatus.filter(
+    m => m.status?.isSuccess() && m.publishStatus?.isSuccess(),
   ).length;
-  const finished = projectModules.filter(
-    module =>
-      module.status === 'success' && module.publish?.status === 'success',
+  const waiting = modulesWithStatus.filter(
+    m =>
+      m.status?.isSuccess() &&
+      (!m.module.publish || m.publishStatus?.isCancelled()),
   ).length;
-  const waiting = projectModules.filter(
-    module =>
-      module.status === 'success' &&
-      (!module.publish || module.publish.status === 'cancelled'),
-  ).length;
-  const pending = projectModules.filter(
-    module => module.status === 'pending',
-  ).length;
-  const running = projectModules.filter(
-    module => module.status === 'running',
-  ).length;
-  const cancelled = projectModules.filter(
-    module => module.status === 'cancelled',
+  const pending = modulesWithStatus.filter(m => m.status?.isPending()).length;
+  const running = modulesWithStatus.filter(m => m.status?.isRunning()).length;
+  const cancelled = modulesWithStatus.filter(m =>
+    m.status?.isCancelled(),
   ).length;
 
-  let state: ProjectStatusState;
-  if (error > 0) {
-    state = 'failed'; // At least one module is in error state
-  } else if (['pending', 'running'].includes(initJob?.status ?? '')) {
-    state = 'initializing'; // Project's init job is running or scheduling
-  } else if (initJob?.status === 'success') {
-    if (total > 0 && finished === total) {
-      state = 'completed'; // All modules are in success state
-    } else if (total === 0 || pending + cancelled === total) {
-      state = 'initialized'; // Module list is empty or all modules are in pending/cancelled state
-    } else {
-      state = 'inProgress'; // At least one module is beyond the pending state
-    }
-  } else {
-    state = 'failed';
-  }
+  const initStatus = initJob?.status
+    ? JobStatus.from(initJob.status)
+    : undefined;
+
+  const state = determineState({
+    total,
+    error,
+    finished,
+    pending,
+    cancelled,
+    initStatus,
+  });
 
   return {
-    state,
+    state: state.value,
     modulesSummary: {
       total,
       finished,
@@ -99,4 +97,24 @@ export function calculateProjectStatus(
       cancelled,
     },
   };
+}
+
+function determineState(counts: {
+  total: number;
+  error: number;
+  finished: number;
+  pending: number;
+  cancelled: number;
+  initStatus?: JobStatus;
+}): ProjectState {
+  const { total, error, finished, pending, cancelled, initStatus } = counts;
+
+  if (error > 0) return ProjectState.FAILED;
+  if (initStatus?.isActive()) return ProjectState.INITIALIZING;
+  if (!initStatus?.isSuccess()) return ProjectState.FAILED;
+  if (total > 0 && finished === total) return ProjectState.COMPLETED;
+  if (total === 0 || pending + cancelled === total)
+    return ProjectState.INITIALIZED;
+
+  return ProjectState.IN_PROGRESS;
 }

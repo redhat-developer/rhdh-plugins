@@ -20,6 +20,7 @@ import { InputError, NotFoundError } from '@backstage/errors';
 
 import {
   type ModulePhase,
+  JobStatus,
   Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -261,27 +262,25 @@ export function registerModuleRoutes(
       });
 
       // Reconcile jobs that appear active against K8s
-      const reconciledJobs = await Promise.all(
-        existingJobs
-          .filter(job => ['pending', 'running'].includes(job.status))
-          .map(job =>
-            reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
-          ),
+      const activeJobs = existingJobs.filter(job =>
+        JobStatus.from(job.status).isActive(),
       );
-      const hasActiveJob = reconciledJobs.some(job =>
-        ['pending', 'running'].includes(job.status),
+      const reconciledJobs = await Promise.all(
+        activeJobs.map(job =>
+          reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
+        ),
+      );
+      const activeJob = reconciledJobs.find(job =>
+        JobStatus.from(job.status).isActive(),
       );
 
-      if (hasActiveJob) {
-        const activeJob = existingJobs.find(job =>
-          ['pending', 'running'].includes(job.status),
-        );
+      if (activeJob) {
         return res.status(409).json({
           error: 'JobAlreadyRunning',
-          message: `A ${activeJob!.phase} job is already running for this module`,
+          message: `A ${activeJob.phase} job is already running for this module`,
           details: 'Please wait for the current job to complete or cancel it',
-          activeJobId: activeJob!.id,
-          activeJobPhase: activeJob!.phase,
+          activeJobId: activeJob.id,
+          activeJobPhase: activeJob.phase,
         });
       }
 
@@ -328,7 +327,7 @@ export function registerModuleRoutes(
 
       // Re-read the job to detect cancellation during the K8s creation window
       const freshJob = await x2aDatabase.getJob({ id: job.id });
-      if (freshJob?.status === 'cancelled') {
+      if (freshJob && JobStatus.from(freshJob.status).isCancelled()) {
         try {
           await kubeService.deleteJob(k8sJobName);
         } catch (e) {
@@ -422,7 +421,7 @@ export function registerModuleRoutes(
 
       const job = jobs[0];
 
-      if (!['pending', 'running'].includes(job.status)) {
+      if (!JobStatus.from(job.status).isActive()) {
         return res.status(409).json({
           error: 'JobNotCancellable',
           message: `The ${phase} job is in "${job.status}" state and cannot be cancelled.`,

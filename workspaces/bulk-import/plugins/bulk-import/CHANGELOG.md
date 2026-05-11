@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.3.3
+
+### Patch Changes
+
+- 9beb261: Scope JSS class names with a unique seed to prevent style collisions with
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.3
+
 ## 7.3.2
 
 ### Patch Changes

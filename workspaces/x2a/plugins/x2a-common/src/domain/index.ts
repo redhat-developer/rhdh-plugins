@@ -14,4 +14,6 @@
  * limitations under the License.
  */
 
+export { JobStatus } from './JobStatus';
 export { Phase } from './Phase';
+export { ProjectState } from './ProjectState';

@@ -102,6 +102,7 @@ import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext'
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
+import logo from '../images/logo.svg';
 import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
@@ -111,11 +112,13 @@ import {
 } from '../utils/lightspeed-chatbox-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
+import { CollapsedHistoryStrip, EditSquareIcon } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 import { McpServersSettings } from './McpServersSettings';
+import { MessageBarModelSelector } from './MessageBarModelSelector';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebooksTab } from './notebooks/NotebooksTab';
 import { NotebookView } from './notebooks/NotebookView';
@@ -123,10 +126,23 @@ import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 
+const COLLAPSE_PANEL_ICON_SVG = `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`;
+
+const ConditionalWrapper = ({
+  condition,
+  wrapper,
+  children,
+}: {
+  condition: boolean;
+  wrapper: (children: React.ReactNode) => React.ReactNode;
+  children: React.ReactNode;
+}) => (condition ? wrapper(children) : children);
+
 const useStyles = makeStyles(theme => ({
   body: {
     // remove default margin and padding from common elements
-    '& h1, & h2, & h3, & h4, & h5, & h6, & p, & ul, & ol, & li': {
+    // lists excluded for proper formatting
+    '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
       margin: 0,
       padding: 0,
     },
@@ -135,6 +151,8 @@ const useStyles = makeStyles(theme => ({
     padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
       3,
     )}px !important`,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default) !important',
   },
   errorContainer: {
     padding: theme.spacing(3),
@@ -145,6 +163,8 @@ const useStyles = makeStyles(theme => ({
     columnGap: 0,
     '--pf-v6-c-multiple-file-upload--Gap': '0',
     '--pf-v5-c-multiple-file-upload--Gap': '0',
+    flex: 1,
+    minWidth: 0,
   },
   headerMenu: {
     // align hamburger icon with title
@@ -153,11 +173,23 @@ const useStyles = makeStyles(theme => ({
       alignItems: 'center',
     },
   },
+  headerLogo: {
+    width: 48,
+    height: 48,
+    marginRight: theme.spacing(1.5),
+    flexShrink: 0,
+  },
   headerTitle: {
     justifyContent: 'left !important',
+    '& h1': {
+      fontSize: '32px !important',
+      fontWeight: '700 !important',
+      lineHeight: '36.4px !important',
+      fontFamily: '"Red Hat Display", sans-serif !important',
+    },
   },
   tabs: {
-    padding: `${theme.spacing(2)}px ${theme.spacing(3)}px 0`,
+    padding: `0 ${theme.spacing(2)}px`,
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
     '& .pf-v6-c-tabs__item, & .pf-v5-c-tabs__item': {
@@ -181,6 +213,12 @@ const useStyles = makeStyles(theme => ({
   },
   tabsDivider: {
     borderTop: '1px solid var(--pf-t--global--border--color--default)',
+  },
+  headerDivider: {
+    paddingTop: 8,
+    borderBottom: '1px solid var(--pf-t--global--border--color--default)',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   notebooksContainer: {
     padding: theme.spacing(3),
@@ -330,6 +368,24 @@ const useStyles = makeStyles(theme => ({
       backgroundColor: theme.palette.grey[300],
     },
   },
+  fullscreenFooter: {
+    '&>.pf-chatbot__footer-container': {
+      width: '100% !important',
+      padding: theme.spacing(1.5),
+      maxWidth: 'unset !important',
+      margin: '0 auto',
+    },
+  },
+  fullscreenMessageBar: {
+    backgroundColor:
+      'var(--pf-t--global--background--color--secondary--default)',
+    border: '1px solid var(--pf-t--global--border--color--default)',
+    borderRadius: 24,
+    padding: theme.spacing(0.5),
+    '&::after': {
+      display: 'none',
+    },
+  },
   sortDropdown: {
     padding: 0,
     margin: 0,
@@ -440,6 +496,9 @@ const useStyles = makeStyles(theme => ({
     minHeight: 0,
     width: '100%',
     minWidth: 0,
+    whiteSpace: 'normal',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
   },
   mcpSettingsPane: {
     width: '100%',
@@ -450,6 +509,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
+    overflow: 'auto',
   },
   mcpCollapsedDrawerOrderFix: {
     '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
@@ -462,6 +522,73 @@ const useStyles = makeStyles(theme => ({
         opacity: 0,
         transition: 'none !important',
       },
+  },
+  // TODO: These PatternFly drawer overrides are needed because PF Chatbot doesn't
+  // provide clean APIs for custom expand/collapse icons and positioning.
+  // Remove once PatternFly supports these features.
+  // See: https://github.com/patternfly/chatbot/issues/834
+  fullscreenChatLayout: {
+    display: 'flex',
+    flexDirection: 'row',
+    flex: 1,
+    minHeight: 0,
+    height: '100%',
+    width: '100%',
+    '& .pf-v6-c-drawer, & .pf-v5-c-drawer': {
+      flex: 1,
+      minWidth: 0,
+    },
+    '& .pf-v6-c-drawer__content, & .pf-v5-c-drawer__content': {
+      flex: 1,
+      minWidth: 0,
+    },
+    '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
+      {
+        display: 'none',
+      },
+    '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
+      marginTop: -48,
+      marginRight: -24,
+    },
+    '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
+      {
+        display: 'none',
+      },
+    '& .pf-v6-c-drawer__close .pf-v6-c-button, & .pf-v5-c-drawer__close .pf-v5-c-button':
+      {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        '&::before': {
+          content: '""',
+          display: 'block',
+          width: 24,
+          height: 24,
+          mask: COLLAPSE_PANEL_ICON_SVG,
+          WebkitMask: COLLAPSE_PANEL_ICON_SVG,
+          backgroundColor: 'currentColor',
+        },
+      },
+    '& .pf-chatbot__menu-item': {
+      cursor: 'pointer',
+    },
+    '& .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
+      {
+        opacity: 0,
+        transition: 'opacity 0.15s ease-in-out',
+      },
+    '& .pf-chatbot__menu-item:hover .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item:hover .pf-v5-c-menu-toggle':
+      {
+        opacity: 1,
+      },
+  },
+  fullscreenMainContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0,
+    minWidth: 0,
+    overflow: 'hidden',
   },
 }));
 
@@ -1582,13 +1709,23 @@ export const LightspeedChat = ({
           )}
         </div>
       </ChatbotContent>
-      <ChatbotFooter className={classes.footer}>
+      <ChatbotFooter
+        className={
+          isFullscreenMode
+            ? `${classes.footer} ${classes.fullscreenFooter}`
+            : classes.footer
+        }
+      >
         <FilePreview />
         <MessageBar
           key={messageBarKey}
+          className={
+            isFullscreenMode ? classes.fullscreenMessageBar : undefined
+          }
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
+          attachButtonPosition={isFullscreenMode ? 'start' : undefined}
           handleAttach={handleAttach}
           hasMicrophoneButton
           value={draftMessage}
@@ -1601,6 +1738,8 @@ export const LightspeedChat = ({
             attach: {
               inputTestId: 'attachment-input',
               tooltipContent: t('tooltip.attach'),
+              'aria-label': t('tooltip.attach'),
+              ...(isFullscreenMode && { icon: <PlusIcon /> }),
             },
             microphone: {
               tooltipContent: {
@@ -1612,6 +1751,21 @@ export const LightspeedChat = ({
               tooltipContent: t('tooltip.send'),
             },
           }}
+          additionalActions={
+            isFullscreenMode ? (
+              <MessageBarModelSelector
+                selectedModel={selectedModel}
+                models={models}
+                onSelect={item => {
+                  setIsMcpSettingsOpen(false);
+                  onNewChat();
+                  handleSelectedModel(item);
+                }}
+                disabled={isSendButtonDisabled}
+              />
+            ) : undefined
+          }
+          forceMultilineLayout={isFullscreenMode}
           allowedFileTypes={supportedFileTypes}
           onAttachRejected={onAttachRejected}
           placeholder={t('chatbox.message.placeholder')}
@@ -1661,6 +1815,8 @@ export const LightspeedChat = ({
     drawerPanelStyle = { zIndex: 1300 };
   } else if (isMcpSettingsOpen) {
     drawerPanelStyle = { width: 320, minWidth: 320, maxWidth: 320 };
+  } else {
+    drawerPanelStyle = { minWidth: 232, maxWidth: 400 };
   }
 
   return (
@@ -1737,7 +1893,7 @@ export const LightspeedChat = ({
       >
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
-            {showChatPanel && (
+            {showChatPanel && !isFullscreenMode && (
               <ChatbotHeaderMenu
                 aria-expanded={isChatHistoryDrawerOpen}
                 onMenuToggle={onChatHistoryDrawerToggle}
@@ -1747,11 +1903,18 @@ export const LightspeedChat = ({
               />
             )}
             {isFullscreenMode && (
-              <ChatbotHeaderTitle className={classes.headerTitle}>
-                <Title headingLevel="h1" size="3xl">
-                  {t('chatbox.header.title')}
-                </Title>
-              </ChatbotHeaderTitle>
+              <>
+                <img
+                  src={logo as any}
+                  alt={t('icon.lightspeed.alt')}
+                  className={classes.headerLogo}
+                />
+                <ChatbotHeaderTitle className={classes.headerTitle}>
+                  <Title headingLevel="h1" size="3xl">
+                    {t('chatbox.header.title')}
+                  </Title>
+                </ChatbotHeaderTitle>
+              </>
             )}
           </ChatbotHeaderMain>
 
@@ -1765,7 +1928,7 @@ export const LightspeedChat = ({
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
             isModelSelectorDisabled={isSendButtonDisabled}
-            hideModelSelector={showNotebooksPanel}
+            hideModelSelector={showNotebooksPanel || isFullscreenMode}
             showChatTabOptions={!showNotebooksPanel}
             setDisplayMode={setDisplayModeFromHeader}
             displayMode={displayMode}
@@ -1773,7 +1936,8 @@ export const LightspeedChat = ({
             onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
-        {isFullscreenMode && shouldShowTabs && (
+        {isFullscreenMode && <div className={classes.headerDivider} />}
+        {isFullscreenMode && (
           <>
             <Tabs
               activeKey={activeTab}
@@ -1788,76 +1952,92 @@ export const LightspeedChat = ({
           </>
         )}
         {showChatPanel && (
-          <ChatbotConversationHistoryNav
-            drawerPanelContentProps={{
-              isResizable: isFullscreenMode,
-              hasNoBorder: !isFullscreenMode,
-              style: drawerPanelStyle,
-            }}
-            reverseButtonOrder
-            displayMode={ChatbotDisplayMode.embedded}
-            onDrawerToggle={onChatHistoryDrawerToggle}
-            title=""
-            navTitleIcon={null}
-            isDrawerOpen={isChatHistoryDrawerOpen}
-            drawerCloseButtonProps={{
-              'aria-label': t('aria.closeDrawerPanel'),
-            }}
-            setIsDrawerOpen={setIsChatHistoryDrawerOpen}
-            activeItemId={viewConversationId}
-            onSelectActiveItem={onSelectActiveItem}
-            conversations={filterConversations(filterValue)}
-            onNewChat={newChatCreated ? undefined : onNewChat}
-            newChatButtonText={t('button.newChat')}
-            newChatButtonProps={{
-              icon: <PlusIcon />,
-            }}
-            handleTextInputChange={handleFilter}
-            searchInputPlaceholder={t('chatbox.search.placeholder')}
-            searchInputAriaLabel={t('aria.search.placeholder')}
-            searchInputProps={{
-              value: filterValue,
-              onClear: () => {
-                setFilterValue('');
-              },
-            }}
-            searchActionEnd={sortDropdown}
-            noResultsState={
-              filterValue &&
-              Object.keys(filterConversations(filterValue)).length === 0
-                ? {
-                    bodyText: t('chatbox.emptyState.noResults.body'),
-                    titleText: t('chatbox.emptyState.noResults.title'),
-                    icon: SearchIcon,
-                  }
-                : undefined
-            }
-            drawerContent={
-              <FileDropZone
-                className={classes.drawerFileDropZone}
-                onFileDrop={(e, data) => handleAttach(data, e)}
-                displayMode={ChatbotDisplayMode.embedded}
-                infoText={t('chatbox.fileUpload.infoText')}
-                allowedFileTypes={supportedFileTypes}
-                onAttachRejected={onAttachRejected}
-              >
-                {showAlert && uploadError.message && (
-                  <div className={classes.errorContainer}>
-                    <ChatbotAlert
-                      component="h4"
-                      title={t('chatbox.fileUpload.failed')}
-                      variant={uploadError.type ?? 'danger'}
-                      isInline
-                      onClose={() => setUploadError({ message: null })}
-                    >
-                      {uploadError.message}
-                    </ChatbotAlert>
-                  </div>
+          <ConditionalWrapper
+            condition={isFullscreenMode}
+            wrapper={children => (
+              <div className={classes.fullscreenChatLayout}>
+                {!isChatHistoryDrawerOpen && (
+                  <CollapsedHistoryStrip
+                    onExpand={() => setIsChatHistoryDrawerOpen(true)}
+                    onNewChat={onNewChat}
+                    newChatDisabled={newChatCreated}
+                  />
                 )}
-                {mainPanelContent}
-              </FileDropZone>
-            }
-          />
+                {children}
+              </div>
+            )}
+          >
+            <ChatbotConversationHistoryNav
+              drawerPanelContentProps={{
+                isResizable: isFullscreenMode,
+                hasNoBorder: !isFullscreenMode,
+                style: drawerPanelStyle,
+              }}
+              reverseButtonOrder
+              displayMode={ChatbotDisplayMode.embedded}
+              onDrawerToggle={onChatHistoryDrawerToggle}
+              title=""
+              navTitleIcon={null}
+              isDrawerOpen={isChatHistoryDrawerOpen}
+              drawerCloseButtonProps={{
+                'aria-label': t('aria.closeDrawerPanel'),
+              }}
+              setIsDrawerOpen={setIsChatHistoryDrawerOpen}
+              activeItemId={viewConversationId}
+              onSelectActiveItem={onSelectActiveItem}
+              conversations={filterConversations(filterValue)}
+              onNewChat={newChatCreated ? undefined : onNewChat}
+              newChatButtonText={t('button.newChat')}
+              newChatButtonProps={{
+                icon: isFullscreenMode ? <EditSquareIcon /> : <PlusIcon />,
+              }}
+              handleTextInputChange={handleFilter}
+              searchInputPlaceholder={t('chatbox.search.placeholder')}
+              searchInputAriaLabel={t('aria.search.placeholder')}
+              searchInputProps={{
+                value: filterValue,
+                onClear: () => {
+                  setFilterValue('');
+                },
+              }}
+              searchActionEnd={sortDropdown}
+              noResultsState={
+                filterValue &&
+                Object.keys(filterConversations(filterValue)).length === 0
+                  ? {
+                      bodyText: t('chatbox.emptyState.noResults.body'),
+                      titleText: t('chatbox.emptyState.noResults.title'),
+                      icon: SearchIcon,
+                    }
+                  : undefined
+              }
+              drawerContent={
+                <FileDropZone
+                  className={classes.drawerFileDropZone}
+                  onFileDrop={(e, data) => handleAttach(data, e)}
+                  displayMode={ChatbotDisplayMode.embedded}
+                  infoText={t('chatbox.fileUpload.infoText')}
+                  allowedFileTypes={supportedFileTypes}
+                  onAttachRejected={onAttachRejected}
+                >
+                  {showAlert && uploadError.message && (
+                    <div className={classes.errorContainer}>
+                      <ChatbotAlert
+                        component="h4"
+                        title={t('chatbox.fileUpload.failed')}
+                        variant={uploadError.type ?? 'danger'}
+                        isInline
+                        onClose={() => setUploadError({ message: null })}
+                      >
+                        {uploadError.message}
+                      </ChatbotAlert>
+                    </div>
+                  )}
+                  {mainPanelContent}
+                </FileDropZone>
+              }
+            />
+          </ConditionalWrapper>
         )}
         {showNotebooksPanel &&
           !notebooksPermissionLoading &&

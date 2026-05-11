@@ -31,7 +31,7 @@ import {
   MigrationPhase,
   Artifact,
   Telemetry,
-  ProjectStatusState,
+  ProjectState,
   DEFAULT_PAGE_ORDER,
   DEFAULT_PAGE_SIZE,
   IN_MEMORY_SORT_WARN_THRESHOLD,
@@ -116,19 +116,6 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     return this.#projectOps.createProject(input, options);
   }
 
-  /**
-   * Semantic ordering for ProjectStatusState.
-   * Lower values appear first in ascending sort.
-   */
-  static readonly STATE_ORDER: Record<ProjectStatusState, number> = {
-    created: 0,
-    initializing: 1,
-    initialized: 2,
-    inProgress: 3,
-    failed: 4,
-    completed: 5,
-  };
-
   async listProjects(
     query: ProjectsGet['query'],
     options: {
@@ -195,8 +182,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       const sign = order === 'asc' ? 1 : -1;
 
       const stateRank = (p: Project): number =>
-        X2ADatabaseService.STATE_ORDER[p.status?.state as ProjectStatusState] ??
-        99;
+        p.status?.state ? ProjectState.from(p.status.state).ordinal : 99;
 
       result.projects.sort((a, b) => {
         // Primary: project-level state (created to completed).

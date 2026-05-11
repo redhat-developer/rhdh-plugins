@@ -140,6 +140,50 @@ export interface Job {
 }
 
 // @public (undocumented)
+export class JobStatus {
+    // (undocumented)
+    static activeStatuses(): readonly JobStatus[];
+    // (undocumented)
+    static all(): readonly JobStatus[];
+    // (undocumented)
+    static readonly CANCELLED: JobStatus;
+    // (undocumented)
+    equals(other: JobStatus): boolean;
+    // (undocumented)
+    static readonly ERROR: JobStatus;
+    // (undocumented)
+    static finishedStatuses(): readonly JobStatus[];
+    // (undocumented)
+    static from(raw: string): JobStatus;
+    // (undocumented)
+    isActive(): boolean;
+    // (undocumented)
+    isCancelled(): boolean;
+    // (undocumented)
+    isError(): boolean;
+    // (undocumented)
+    isFinished(): boolean;
+    // (undocumented)
+    isPending(): boolean;
+    // (undocumented)
+    isRunning(): boolean;
+    // (undocumented)
+    isSuccess(): boolean;
+    // (undocumented)
+    static readonly PENDING: JobStatus;
+    // (undocumented)
+    static readonly RUNNING: JobStatus;
+    // (undocumented)
+    static readonly SUCCESS: JobStatus;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly value: JobStatusEnum;
+    // (undocumented)
+    static values(): readonly JobStatusEnum[];
+}
+
+// @public (undocumented)
 export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
 
 // @public
@@ -455,6 +499,48 @@ export interface ProjectsProjectIdRunPostRequest {
     // (undocumented)
     targetRepoAuth: GitRepoAuth;
     userPrompt?: string;
+}
+
+// @public (undocumented)
+export class ProjectState {
+    // (undocumented)
+    static all(): readonly ProjectState[];
+    // (undocumented)
+    static readonly COMPLETED: ProjectState;
+    // (undocumented)
+    static readonly CREATED: ProjectState;
+    // (undocumented)
+    equals(other: ProjectState): boolean;
+    // (undocumented)
+    static readonly FAILED: ProjectState;
+    // (undocumented)
+    static from(raw: string): ProjectState;
+    // (undocumented)
+    static readonly IN_PROGRESS: ProjectState;
+    // (undocumented)
+    static readonly INITIALIZED: ProjectState;
+    // (undocumented)
+    static readonly INITIALIZING: ProjectState;
+    // (undocumented)
+    isComplete(): boolean;
+    // (undocumented)
+    isCreated(): boolean;
+    // (undocumented)
+    isFailed(): boolean;
+    // (undocumented)
+    isInitialized(): boolean;
+    // (undocumented)
+    isInitializing(): boolean;
+    // (undocumented)
+    isInProgress(): boolean;
+    // (undocumented)
+    readonly ordinal: number;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly value: ProjectStatusState;
+    // (undocumented)
+    static values(): readonly ProjectStatusState[];
 }
 
 // @public (undocumented)
