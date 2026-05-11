@@ -412,13 +412,7 @@ export async function createNotebooksRouter(
         handleError(logger, res, 'Session not found');
         return;
       }
-
-      const parsedDocument = await parseFileContent(
-        logger,
-        fileType,
-        req.file,
-        req.body.file,
-      );
+      const parsedDocument = await parseFileContent(logger, fileType, req.file);
       const fileId = await documentService.uploadFile(
         parsedDocument.content,
         title,
