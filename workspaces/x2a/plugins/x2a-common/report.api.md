@@ -502,6 +502,48 @@ export interface ProjectsProjectIdRunPostRequest {
 }
 
 // @public (undocumented)
+export class ProjectState {
+    // (undocumented)
+    static all(): readonly ProjectState[];
+    // (undocumented)
+    static readonly COMPLETED: ProjectState;
+    // (undocumented)
+    static readonly CREATED: ProjectState;
+    // (undocumented)
+    equals(other: ProjectState): boolean;
+    // (undocumented)
+    static readonly FAILED: ProjectState;
+    // (undocumented)
+    static from(raw: string): ProjectState;
+    // (undocumented)
+    static readonly IN_PROGRESS: ProjectState;
+    // (undocumented)
+    static readonly INITIALIZED: ProjectState;
+    // (undocumented)
+    static readonly INITIALIZING: ProjectState;
+    // (undocumented)
+    isComplete(): boolean;
+    // (undocumented)
+    isCreated(): boolean;
+    // (undocumented)
+    isFailed(): boolean;
+    // (undocumented)
+    isInitialized(): boolean;
+    // (undocumented)
+    isInitializing(): boolean;
+    // (undocumented)
+    isInProgress(): boolean;
+    // (undocumented)
+    readonly ordinal: number;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly value: ProjectStatusState;
+    // (undocumented)
+    static values(): readonly ProjectStatusState[];
+}
+
+// @public (undocumented)
 export interface ProjectStatus {
     // (undocumented)
     modulesSummary: ModulesStatusSummary;
