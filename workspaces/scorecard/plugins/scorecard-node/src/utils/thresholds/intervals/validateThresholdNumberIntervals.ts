@@ -71,15 +71,13 @@ export function validateThresholdNumberIntervals(
 
   const merged = mergeNumberIntervals(intervals);
 
-  if (coversFullRealLine(merged)) {
-    return;
+  if (!coversFullRealLine(merged)) {
+    const gap = describeFirstGap(merged);
+
+    throw new ThresholdConfigFormatError(
+      `Number threshold rules do not cover the entire real line. First uncovered region (approximately): ${gap}. Adjust expressions so every real value matches at least one rule (union across rules; order only affects which key wins when overlaps exist).`,
+    );
   }
-
-  const gap = describeFirstGap(merged);
-
-  throw new ThresholdConfigFormatError(
-    `Number threshold rules do not cover the entire real line. First uncovered region (approximately): ${gap}. Adjust expressions so every real value matches at least one rule (union across rules; order only affects which key wins when overlaps exist).`,
-  );
 }
 
 function coversFullRealLine(merged: NumberInterval[]): boolean {

@@ -6,4 +6,4 @@
 '@red-hat-developer-hub/backstage-plugin-scorecard': patch
 ---
 
-Implemented threshold interval validation for Scorecard. joint coverage on the real line, gap detection and error messages, overlaps versus rule order.
+Implemented threshold interval validation for Scorecard. Joint coverage on the real line, gap detection and error messages, overlaps versus rule order.

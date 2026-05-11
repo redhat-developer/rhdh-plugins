@@ -55,6 +55,27 @@ jira:
 
 # Optional Scorecard overrides (aggregationKPIs defaults are in app-config.yaml).
 scorecard:
+  openPrsWeightedKpi:
+    title: GitHub Open PRs (weighted health)
+    type: average
+    description: Weighted health average for open PRs by threshold status across your entities.
+    metricId: github.open_prs
+    options:
+      statusScores:
+        success: 100
+        warning: 3
+        error: 0
+      thresholds:
+        rules:
+          - key: success
+            expression: '>=80'
+            color: '#6bb300' # green
+          - key: warning
+            expression: '51-80'
+            color: 'rgb(224, 189, 108)' # light orange
+          - key: error
+            expression: '<51'
+            color: '#be1ec7' # purple
   plugins:
     jira:
       open_issues:

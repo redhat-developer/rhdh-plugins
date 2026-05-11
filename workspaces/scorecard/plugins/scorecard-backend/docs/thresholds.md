@@ -164,6 +164,10 @@ Where:
 - `{thresholdKey}`: The threshold category (e.g., `success`, `warning`, `error`)
 - `{expression}`: The threshold expression (e.g., `>10`, `==true`, `5-15`)
 
+For **number** metrics, each overridden expression is validated in isolation first. If **any** rule was replaced from an annotation, the backend then validates the **merged** rule list for the same **joint full-line coverage** as app-config and provider defaults (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)). If the union of all merged expressions leaves a gap, startup or merge-time evaluation throws **`ThresholdConfigFormatError`** with the usual message starting with `Number threshold rules do not cover the entire real line…` (this is **not** wrapped in the `Invalid threshold annotation '…'` prefix used for single-rule parse errors).
+
+**Counterexample:** Provider rules partition the line (`'<10'`, `'10-20'`, `'>20'`). Overriding only warning to `'11-20'` leaves **`10`** and **`(10, 11)`** uncovered on the merged set—fix the override or adjacent rules so the union again covers **(-∞, +∞)**.
+
 ### 4. Aggregation KPI result thresholds (`average` type)
 
 These thresholds are **not** per-entity metric rules. They apply only to homepage aggregation KPIs where **`scorecard.aggregationKPIs.<aggregationId>.type`** is **`average`**.
@@ -192,6 +196,7 @@ Thresholds are applied with the following priority (highest to lowest):
 - **Entity Annotations**: Merged with existing rules from `app-config` or defaults:
   - Rules with the same `key` are **replaced** by annotation values
   - Missing rules fall back to app-config or provider defaults
+  - For **number** metrics, if at least one rule came from an annotation, the **merged** rules must still satisfy joint full-line coverage together (see [§3 Entity Annotation Overrides](#3-entity-annotation-overrides))
 
 **Example Priority Application:**
 

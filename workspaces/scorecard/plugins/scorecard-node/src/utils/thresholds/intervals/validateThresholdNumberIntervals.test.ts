@@ -76,6 +76,19 @@ describe('validateThresholdNumberIntervals', () => {
         validateThresholdNumberIntervals(rules, 'number'),
       ).not.toThrow();
     });
+
+    it('should accept rules that include != when the union still covers the real line', () => {
+      const rules: ThresholdRule[] = [
+        { key: 'low', expression: '<10' },
+        { key: 'mid', expression: '10-20' },
+        { key: 'high', expression: '>20' },
+        { key: 'punct', expression: '!=15', color: '#333', icon: 'x' },
+      ];
+
+      expect(() =>
+        validateThresholdNumberIntervals(rules, 'number'),
+      ).not.toThrow();
+    });
   });
 
   describe('accepts overlapping intervals', () => {
