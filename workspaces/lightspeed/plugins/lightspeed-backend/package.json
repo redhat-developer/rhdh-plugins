@@ -74,6 +74,9 @@
     "prettier": "3.8.3",
     "supertest": "6.3.4"
   },
+  "resolutions": {
+    "langsmith": "^0.6.0"
+  },
   "files": [
     "dist",
     "config.d.ts",
