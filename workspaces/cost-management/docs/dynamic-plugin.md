@@ -33,7 +33,7 @@ The procedure involves the following steps:
    ```yaml
    # Add to dynamic-plugins-rhdh ConfigMap
 
-   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.1.0!red-hat-developer-hub-plugin-cost-management
+   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.2.0!red-hat-developer-hub-plugin-cost-management
      disabled: false
      pluginConfig:
        dynamicPlugins:
@@ -64,7 +64,7 @@ The procedure involves the following steps:
                cost-management.openshift:
                  parent: cost-management
                  priority: 20
-   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.1.0!red-hat-developer-hub-plugin-cost-management-backend
+   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.2.0!red-hat-developer-hub-plugin-cost-management-backend
      disabled: false
      pluginConfig:
        costManagement:
