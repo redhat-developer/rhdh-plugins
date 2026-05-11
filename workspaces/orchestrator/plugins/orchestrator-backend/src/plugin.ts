@@ -53,6 +53,7 @@ export const orchestratorPlugin = createBackendPlugin({
         discovery: coreServices.discovery,
         urlReader: coreServices.urlReader,
         permissions: coreServices.permissions,
+        permissionsRegistry: coreServices.permissionsRegistry,
         scheduler: coreServices.scheduler,
         httpAuth: coreServices.httpAuth,
         http: coreServices.httpRouter,
