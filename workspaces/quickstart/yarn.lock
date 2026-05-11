@@ -11451,9 +11451,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-app-react@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@npm:0.0.3"
+"@red-hat-developer-hub/backstage-plugin-app-react@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@npm:0.0.5"
   dependencies:
     "@backstage/core-plugin-api": "npm:^1.12.4"
     "@backstage/frontend-plugin-api": "npm:^0.15.1"
@@ -11462,7 +11462,7 @@ __metadata:
     "@mui/material": "npm:5.18.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/033b2908a616f9b3204af19a5203cc038a27cc0bffc51d1da2be0e33fa8ff5b36d049b082d7c4bf0855b3395f0863fc5184e1eb516940181618657d98da01506
+  checksum: 10c0/b993e0cd34abf86a858af6d4c599a831b6cf7282dbe4f4897d75bc2ac027a29addcfc59710cc3fc34c14674ddc181bb3acc638972bbb642ef76b0fc9afd29243
   languageName: node
   linkType: hard
 
@@ -11518,7 +11518,7 @@ __metadata:
     "@backstage/theme": "npm:^0.7.2"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.0.3"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.0.5"
     "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
@@ -16169,7 +16169,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@playwright/test": "npm:1.58.2"
-    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.0.3"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.0.5"
     "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.3"
