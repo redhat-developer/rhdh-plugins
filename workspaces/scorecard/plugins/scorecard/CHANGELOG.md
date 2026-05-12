@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.7.4
+
+### Patch Changes
+
+- 8c129da: Fix default layout for `AggregatedCardWithGithubFilecheckLicense`, `AggregatedCardWithGithubFilecheckCodeowners` and `AggregatedCardWithGithubOpenPrsWeighted` homepage scorecard cards at the new frontend system (NFS)
+- 367195b: Fix drilldown page header showing raw provider title instead of the translated scorecard title
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.4
+
 ## 2.7.3
 
 ### Patch Changes
