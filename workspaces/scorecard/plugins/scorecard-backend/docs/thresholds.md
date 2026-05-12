@@ -174,7 +174,7 @@ These thresholds are **not** per-entity metric rules. They apply only to homepag
 
 **Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
 
-**YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the average KPI donut). Expressions are **number**-style and are evaluated against the **headline percentage** **`averageScore × 100`**, where **`averageScore`** is the backend’s portfolio ratio in **`[0, 1]`** (see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
+**YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the average KPI donut). Expressions are **number**-style and are evaluated against **`averageScore`**, the backend’s portfolio **percentage** in **`[0, 100]`** (one decimal; see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
 
 **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, it is not injected at config-parse time. **`AverageAggregationStrategy`** applies **`DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS`** from [`src/constants/aggregationKPIs.ts`](../src/constants/aggregationKPIs.ts) when serving an aggregation: **`<30`** → error, **`30-79`** → warning, **`>=80`** → success (higher percentage = better). When that default path is used, the strategy logs at **info** that the built-in 0–100% scale is in effect.
 

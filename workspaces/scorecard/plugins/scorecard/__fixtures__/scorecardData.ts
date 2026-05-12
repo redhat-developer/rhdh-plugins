@@ -177,7 +177,7 @@ export const mockAggregatedScorecardData = {
       total: 8,
       timestamp: '2024-01-15T10:30:00Z',
       thresholds: DEFAULT_NUMBER_THRESHOLDS,
-      averageScore: 0.75,
+      averageScore: 75,
       averageWeightedSum: 18,
       averageMaxPossible: 24,
     },
