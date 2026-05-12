@@ -26,6 +26,15 @@ export const orchestratorWorkflowPermission = createPermission({
   resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
 });
 
+// @Deprecated, use conditional policies instead of
+export const orchestratorWorkflowSpecificPermission = (workflowId: string) =>
+  createPermission({
+    name: `orchestrator.workflow.${workflowId}`,
+    attributes: {
+      action: 'read',
+    },
+  });
+
 export const orchestratorWorkflowUsePermission = createPermission({
   name: 'orchestrator.workflow.use',
   attributes: {
@@ -33,6 +42,15 @@ export const orchestratorWorkflowUsePermission = createPermission({
   },
   resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
 });
+
+// @Deprecated, use conditional policies instead of
+export const orchestratorWorkflowUseSpecificPermission = (workflowId: string) =>
+  createPermission({
+    name: `orchestrator.workflow.use.${workflowId}`,
+    attributes: {
+      action: 'update',
+    },
+  });
 
 export const orchestratorAdminViewPermission = createPermission({
   name: 'orchestrator.workflowAdminView',
