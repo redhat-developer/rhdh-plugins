@@ -231,5 +231,5 @@ export function assertSafeWorkflowInstanceIdForLineFilter(id: string): void {
  * Escapes a string for use inside LogQL double-quoted line filter literals (`|="..."`).
  */
 export function escapeLogQlDoubleQuotedLineLiteral(fragment: string): string {
-  return fragment.replaceAll(/\\/g, '\\\\').replaceAll(/"/g, '\\"');
+  return fragment.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 }
