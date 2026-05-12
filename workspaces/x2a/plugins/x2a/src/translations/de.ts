@@ -52,6 +52,19 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'projectDetailsCard.description': 'Beschreibung',
     'projectDetailsCard.sourceRepo': 'Quell-Repository',
     'projectDetailsCard.targetRepo': 'Ziel-Repository',
+    'projectDetailsCard.edit': 'Bearbeiten',
+    'editProjectDialog.title': 'Projekt bearbeiten',
+    'editProjectDialog.cancel': 'Abbrechen',
+    'editProjectDialog.update': 'Aktualisieren',
+    'editProjectDialog.updateError': 'Fehler beim Aktualisieren des Projekts',
+    'editProjectDialog.ownerChangeWarningTitle':
+      'Eigentumsübertragung bestätigen',
+    'editProjectDialog.ownerChangeWarning':
+      'Das Ändern des Eigentümers kann dazu führen, dass Sie den Zugriff auf dieses Projekt verlieren, wenn Ihre Berechtigungen den neuen Eigentümer nicht abdecken. Ein Administrator kann den Zugriff bei Bedarf wiederherstellen.',
+    'editProjectDialog.ownerChangeConfirm': 'Eigentum übertragen',
+    'editProjectDialog.nameRequired': 'Name ist erforderlich',
+    'editProjectDialog.ownerFormatHint':
+      'Muss eine Backstage-Entitätsreferenz sein, z.B. user:default/name oder group:default/team',
     'projectModulesCard.title': 'Module ({{count}})',
     'projectModulesCard.noModules': 'Noch keine Module gefunden...',
     'projectModulesCard.toReview': 'überprüfen',

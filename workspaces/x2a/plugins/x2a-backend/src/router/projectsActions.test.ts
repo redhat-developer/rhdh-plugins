@@ -21,6 +21,8 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import {
   createApp,
   createDatabase,
+  createDatabaseAndService,
+  createTestProject,
   LONG_TEST_TIMEOUT,
   mockInputProject,
   nonExistentId,
@@ -28,7 +30,7 @@ import {
   tearDownDatabases,
 } from '../__testUtils__';
 
-describe('createRouter – projects (delete & run)', () => {
+describe('createRouter – projects (actions)', () => {
   afterEach(async () => {
     await tearDownDatabases();
   });
@@ -221,6 +223,226 @@ describe('createRouter – projects (delete & run)', () => {
     },
   );
 
+  describe('PATCH /projects/:projectId', () => {
+    it.each(supportedDatabaseIds)(
+      'should update project name - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const createResponse = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
+
+        const patchResponse = await request(app)
+          .patch(`/projects/${projectId}`)
+          .send({ name: 'Updated Name' });
+
+        expect(patchResponse.status).toBe(200);
+        expect(patchResponse.body.name).toBe('Updated Name');
+        expect(patchResponse.body.description).toBe(
+          mockInputProject.description,
+        );
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should update project description - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const createResponse = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
+
+        const patchResponse = await request(app)
+          .patch(`/projects/${projectId}`)
+          .send({ description: 'New description' });
+
+        expect(patchResponse.status).toBe(200);
+        expect(patchResponse.body.description).toBe('New description');
+        expect(patchResponse.body.name).toBe(mockInputProject.name);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should update project createdBy - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const createResponse = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
+
+        const patchResponse = await request(app)
+          .patch(`/projects/${projectId}`)
+          .send({ createdBy: 'group:default/team-b' });
+
+        expect(patchResponse.status).toBe(200);
+        expect(patchResponse.body.createdBy).toBe('group:default/team-b');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should update multiple fields at once - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const createResponse = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
+
+        const patchResponse = await request(app)
+          .patch(`/projects/${projectId}`)
+          .send({
+            name: 'New Name',
+            description: 'New Desc',
+            createdBy: 'user:default/other',
+          });
+
+        expect(patchResponse.status).toBe(200);
+        expect(patchResponse.body.name).toBe('New Name');
+        expect(patchResponse.body.description).toBe('New Desc');
+        expect(patchResponse.body.createdBy).toBe('user:default/other');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when updating non-existent project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const response = await request(app)
+          .patch(`/projects/${nonExistentId}`)
+          .send({ name: 'Does not matter' });
+
+        expect(response.status).toBe(404);
+        expect(response.body.error.name).toBe('NotFoundError');
+        expect(response.body.error.message).toMatch(/Project not found/);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should allow admin to update another user project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+
+        const user1Header = mockCredentials.user.header('user:default/user1');
+        const appCreate = await createApp(client, AuthorizeResult.ALLOW);
+        const createResponse = await request(appCreate)
+          .post('/projects')
+          .set('Authorization', user1Header)
+          .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
+
+        const adminHeader = mockCredentials.user.header('user:default/admin');
+        const appAdmin = await createApp(
+          client,
+          AuthorizeResult.ALLOW,
+          AuthorizeResult.ALLOW,
+        );
+        const patchResponse = await request(appAdmin)
+          .patch(`/projects/${projectId}`)
+          .set('Authorization', adminHeader)
+          .send({ name: 'Admin Updated' });
+
+        expect(patchResponse.status).toBe(200);
+        expect(patchResponse.body.name).toBe('Admin Updated');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should deny non-admin from updating another user project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+
+        const user1Header = mockCredentials.user.header('user:default/user1');
+        const appCreate = await createApp(client, AuthorizeResult.ALLOW);
+        const createResponse = await request(appCreate)
+          .post('/projects')
+          .set('Authorization', user1Header)
+          .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
+
+        const user2Header = mockCredentials.user.header('user:default/user2');
+        const appNonAdmin = await createApp(
+          client,
+          AuthorizeResult.ALLOW,
+          AuthorizeResult.DENY,
+        );
+        const patchResponse = await request(appNonAdmin)
+          .patch(`/projects/${projectId}`)
+          .set('Authorization', user2Header)
+          .send({ name: 'Should Fail' });
+
+        expect(patchResponse.status).toBe(404);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 400 when body is empty - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const createResponse = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
+
+        const patchResponse = await request(app)
+          .patch(`/projects/${projectId}`)
+          .send({});
+
+        expect(patchResponse.status).toBe(400);
+        expect(patchResponse.body.error.message).toMatch(
+          /at least one field|must NOT have fewer than 1 properties/i,
+        );
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 400 when createdBy has invalid format - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const createResponse = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
+
+        const patchResponse = await request(app)
+          .patch(`/projects/${projectId}`)
+          .send({ createdBy: 'not-a-valid-ref' });
+
+        expect(patchResponse.status).toBe(400);
+      },
+    );
+  });
+
   describe('POST /projects/:projectId/run', () => {
     const runBody = {
       sourceRepoAuth: { token: 'source-token' },
@@ -329,6 +551,35 @@ describe('createRouter – projects (delete & run)', () => {
           /targetRepoAuth|Target repository token/i,
         );
       },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should forward projectDirName from DB to kubeService.createJob - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const project = await createTestProject(x2aDatabase);
+
+        const mockCreateJob = jest
+          .fn()
+          .mockResolvedValue({ k8sJobName: 'k8s-job' });
+        const appWithMock = await createApp(client, undefined, undefined, {
+          createJob: mockCreateJob,
+        });
+
+        const response = await request(appWithMock)
+          .post(`/projects/${project.id}/run`)
+          .send(runBody);
+
+        expect(response.status).toBe(200);
+        expect(mockCreateJob).toHaveBeenCalledTimes(1);
+        expect(mockCreateJob).toHaveBeenCalledWith(
+          expect.objectContaining({
+            projectDirName: project.dirName,
+          }),
+        );
+      },
+      LONG_TEST_TIMEOUT,
     );
   });
 });

@@ -75,6 +75,20 @@ export interface X2ADatabaseServiceApi {
     },
   ): Promise<Project | undefined>;
 
+  updateProject(
+    args: { projectId: string },
+    input: {
+      name?: string;
+      createdBy?: string;
+      description?: string;
+    },
+    options: {
+      credentials: BackstageCredentials<BackstageUserPrincipal>;
+      canWriteAll?: boolean;
+      groupsOfUser: string[];
+    },
+  ): Promise<Project | undefined>;
+
   deleteProject(
     args: { projectId: string },
     options: {

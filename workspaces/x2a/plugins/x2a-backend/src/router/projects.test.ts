@@ -367,6 +367,7 @@ describe('createRouter – projects', () => {
           target_repo_branch: mockInputProject.targetRepoBranch,
           created_by: 'group:default/team-a',
           created_at: new Date(),
+          dir_name: 'group-project-aaaaaaaa',
         });
         const response = await request(app).get('/projects').send();
 
@@ -428,6 +429,7 @@ describe('createRouter – projects', () => {
           target_repo_branch: mockInputProject.targetRepoBranch,
           created_by: 'group:default/team-a',
           created_at: new Date(),
+          dir_name: 'group-owned-project-bbbbbbbb',
         });
 
         const response = await request(app)
@@ -485,6 +487,7 @@ describe('createRouter – projects', () => {
           target_repo_branch: mockInputProject.targetRepoBranch,
           created_by: 'group:default/team-a',
           created_at: new Date(),
+          dir_name: 'group-project-to-delete-cccccccc',
         });
 
         const deleteResponse = await request(app)

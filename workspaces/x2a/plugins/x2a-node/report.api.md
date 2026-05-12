@@ -112,6 +112,8 @@ export interface JobCreateParams {
     // (undocumented)
     projectAbbrev: string;
     // (undocumented)
+    projectDirName: string;
+    // (undocumented)
     projectId: string;
     // (undocumented)
     projectName: string;
@@ -343,6 +345,18 @@ export interface X2ADatabaseServiceApi {
         telemetry?: Telemetry | null;
         commitId?: string;
     }): Promise<Job | undefined>;
+    // (undocumented)
+    updateProject(args: {
+        projectId: string;
+    }, input: {
+        name?: string;
+        createdBy?: string;
+        description?: string;
+    }, options: {
+        credentials: BackstageCredentials<BackstageUserPrincipal>;
+        canWriteAll?: boolean;
+        groupsOfUser: string[];
+    }): Promise<Project | undefined>;
 }
 
 // @public

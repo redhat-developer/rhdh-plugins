@@ -22,6 +22,7 @@ import {
   createService,
   defaultProjectRepoFields,
   LONG_TEST_TIMEOUT,
+  nonExistentId,
   supportedDatabaseIds,
   tearDownDatabases,
 } from '../../__testUtils__';
@@ -65,6 +66,31 @@ describe('X2ADatabaseService – projects', () => {
         expect(row.name).toBe(input.name);
         expect(row.abbreviation).toBe(input.abbreviation);
         expect(row.created_by).toBe('user:default/mock');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'computes and persists dirName at creation time - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'My Cool Project',
+            abbreviation: 'MCP',
+            description: 'desc',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        expect(project.dirName).toBeDefined();
+        expect(project.dirName).toMatch(/^my-cool-project-/);
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.dir_name).toBe(project.dirName);
       },
       LONG_TEST_TIMEOUT,
     );
@@ -164,6 +190,247 @@ describe('X2ADatabaseService – projects', () => {
         const row = await client('projects').where('id', project.id).first();
         expect(row.created_by).toBe('user:default/jane');
       },
+    );
+  });
+
+  describe('updateProject', () => {
+    it.each(supportedDatabaseIds)(
+      'updates name and persists to DB - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Original',
+            abbreviation: 'OG',
+            description: 'Original desc',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { name: 'Updated' },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.name).toBe('Updated');
+        expect(updated!.description).toBe('Original desc');
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.name).toBe('Updated');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'updates description and persists to DB - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test',
+            abbreviation: 'T',
+            description: 'Old',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { description: 'New description' },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.description).toBe('New description');
+        expect(updated!.name).toBe('Test');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'updates createdBy and persists to DB - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test',
+            abbreviation: 'T',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { createdBy: 'group:default/team-x' },
+          { credentials, canWriteAll: true, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.createdBy).toBe('group:default/team-x');
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.created_by).toBe('group:default/team-x');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'updates multiple fields at once - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Old Name',
+            abbreviation: 'ON',
+            description: 'Old desc',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          {
+            name: 'New Name',
+            description: 'New desc',
+            createdBy: 'user:default/other',
+          },
+          { credentials, canWriteAll: true, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.name).toBe('New Name');
+        expect(updated!.description).toBe('New desc');
+        expect(updated!.createdBy).toBe('user:default/other');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns undefined for non-existent project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+
+        const result = await service.updateProject(
+          { projectId: nonExistentId },
+          { name: 'Does not matter' },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(result).toBeUndefined();
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'respects permission filtering - non-owner cannot update - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const cred1 = mockCredentials.user('user:default/user1');
+        const cred2 = mockCredentials.user('user:default/user2');
+
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            abbreviation: 'U1P',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials: cred1 },
+        );
+
+        const result = await service.updateProject(
+          { projectId: project.id },
+          { name: 'Hijacked' },
+          { credentials: cred2, canWriteAll: false, groupsOfUser: [] },
+        );
+
+        expect(result).toBeUndefined();
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.name).toBe('User1 Project');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'admin with canWriteAll can update any project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const cred1 = mockCredentials.user('user:default/user1');
+        const adminCred = mockCredentials.user('user:default/admin');
+
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            abbreviation: 'U1P',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials: cred1 },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { name: 'Admin Updated' },
+          { credentials: adminCred, canWriteAll: true, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.name).toBe('Admin Updated');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'does not alter dir_name when project name is updated - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Original Name',
+            abbreviation: 'ON',
+            description: 'desc',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const originalDirName = project.dirName;
+        expect(originalDirName).toBeDefined();
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { name: 'Completely Different Name' },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.name).toBe('Completely Different Name');
+        expect(updated!.dirName).toBe(originalDirName);
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.dir_name).toBe(originalDirName);
+      },
+      LONG_TEST_TIMEOUT,
     );
   });
 
@@ -507,6 +774,7 @@ describe('X2ADatabaseService – projects', () => {
           target_repo_branch: defaultProjectRepoFields.targetRepoBranch,
           created_by: 'group:default/team-a',
           created_at: new Date(),
+          dir_name: 'group-project-11111111',
         });
 
         const result = await service.listProjects(

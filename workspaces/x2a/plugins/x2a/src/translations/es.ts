@@ -52,6 +52,19 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'projectDetailsCard.description': 'Descripción',
     'projectDetailsCard.sourceRepo': 'Repositorio de origen',
     'projectDetailsCard.targetRepo': 'Repositorio de destino',
+    'projectDetailsCard.edit': 'Editar',
+    'editProjectDialog.title': 'Editar proyecto',
+    'editProjectDialog.cancel': 'Cancelar',
+    'editProjectDialog.update': 'Actualizar',
+    'editProjectDialog.updateError': 'Error al actualizar el proyecto',
+    'editProjectDialog.ownerChangeWarningTitle':
+      'Confirmar transferencia de propiedad',
+    'editProjectDialog.ownerChangeWarning':
+      'Cambiar el propietario puede hacer que pierda el acceso a este proyecto si sus permisos no cubren al nuevo propietario. Un administrador puede restaurar el acceso si es necesario.',
+    'editProjectDialog.ownerChangeConfirm': 'Transferir propiedad',
+    'editProjectDialog.nameRequired': 'El nombre es obligatorio',
+    'editProjectDialog.ownerFormatHint':
+      'Debe ser una referencia de entidad de Backstage, p.ej. user:default/nombre o group:default/equipo',
     'projectModulesCard.title': 'Módulos ({{count}})',
     'projectModulesCard.noModules': 'Aún no se encontraron módulos...',
     'projectModulesCard.toReview': 'revisar',

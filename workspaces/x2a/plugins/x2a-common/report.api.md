@@ -103,8 +103,12 @@ export class DefaultApiClient {
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
+    projectsProjectIdPatch(request: ProjectsProjectIdPatch, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
 }
+
+// @public
+export const ENTITY_REF_RE: RegExp;
 
 // @public
 export const githubProvider: ScmProvider;
@@ -298,6 +302,7 @@ export interface Project {
     createdAt: Date;
     createdBy: string;
     description?: string;
+    dirName?: string;
     id: string;
     // (undocumented)
     initJob?: Job;
@@ -486,6 +491,21 @@ export type ProjectsProjectIdModulesPost = {
 export interface ProjectsProjectIdModulesPostRequest {
     name: string;
     sourcePath: string;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdPatch = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdPatchRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdPatchRequest {
+    createdBy?: string;
+    description?: string;
+    name?: string;
 }
 
 // @public (undocumented)

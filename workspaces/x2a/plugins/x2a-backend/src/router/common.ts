@@ -32,7 +32,7 @@ import {
   x2aAdminWritePermission,
   x2aUserPermission,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { NotAllowedError, NotFoundError } from '@backstage/errors';
+import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
   getUserRef,
   getGroupsOfUser,
@@ -50,6 +50,21 @@ export {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 export type { UnsecureJob } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
+/**
+ * Asserts that a project has a populated `dirName`.
+ * Throws InputError if missing (pre-migration data).
+ */
+export function assertProjectHasDirName(
+  project: Project,
+): asserts project is Project & { dirName: string } {
+  if (!project.dirName) {
+    throw new InputError(
+      `Project "${project.id}" is missing dirName. ` +
+        'Run the database migration to backfill it.',
+    );
+  }
+}
 
 /**
  * Checks if the user has the x2aAdminViewPermission.

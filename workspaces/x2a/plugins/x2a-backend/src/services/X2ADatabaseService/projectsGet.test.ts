@@ -97,6 +97,7 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
           target_repo_branch: defaultProjectRepoFields.targetRepoBranch,
           created_by: 'group:default/team-x',
           created_at: new Date(),
+          dir_name: 'group-owned-project-22222222',
         });
 
         const retrieved = await service.getProject(

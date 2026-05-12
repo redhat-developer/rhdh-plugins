@@ -244,6 +244,30 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     return project;
   }
 
+  async updateProject(
+    { projectId }: { projectId: string },
+    input: {
+      name?: string;
+      createdBy?: string;
+      description?: string;
+    },
+    options: {
+      credentials: BackstageCredentials<BackstageUserPrincipal>;
+      canWriteAll?: boolean;
+      groupsOfUser: string[];
+    },
+  ): Promise<Project | undefined> {
+    const project = await this.#projectOps.updateProject(
+      { projectId },
+      input,
+      options,
+    );
+    if (project) {
+      await this.enrichProject(project);
+    }
+    return project;
+  }
+
   async deleteProject(
     { projectId }: { projectId: string },
     options: {
