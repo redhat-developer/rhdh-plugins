@@ -24,12 +24,12 @@ import {
   x2aAdminWritePermission,
   x2aUserPermission,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { CallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import type { RouterDeps } from './types';
 import {
   assertProjectHasDirName,
   authorize,
-  generateCallbackToken,
   getGroupsOfUser,
   getUserRef,
   reconcileJobStatus,
@@ -380,13 +380,13 @@ export function registerProjectRoutes(
         });
       }
 
-      const callbackToken = generateCallbackToken();
+      const callbackToken = CallbackToken.generate();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId: undefined, // Init jobs have no module
         phase: 'init',
         status: 'pending',
-        callbackToken,
+        callbackToken: callbackToken.value,
       });
 
       // Create Kubernetes job (will create both project and job secrets)
@@ -405,7 +405,7 @@ export function registerProjectRoutes(
         projectDirName: project.dirName,
         phase: 'init',
         user: userRef,
-        callbackToken,
+        callbackToken: callbackToken.value,
         callbackUrl,
         sourceRepo,
         targetRepo,
