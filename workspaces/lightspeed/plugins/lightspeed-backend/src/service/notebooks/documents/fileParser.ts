@@ -29,7 +29,6 @@ export interface ParsedDocument {
     fileName: string;
     fileType: string;
     pageCount?: number;
-    url?: string;
     parseTimestamp: string;
   };
 }

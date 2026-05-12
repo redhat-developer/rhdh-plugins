@@ -90,13 +90,6 @@ export const parseFileContent = async (
   fileType: string,
   file?: Express.Multer.File,
 ) => {
-  const normalizedType = fileType
-    .toLowerCase()
-    .replace(/^\./, '') as SupportedFileType;
-
-  if (!isValidFileType(normalizedType)) {
-    throw new InputError(`Unsupported file type: ${fileType}`);
-  }
   if (!file) {
     throw new InputError('No file uploaded');
   }
