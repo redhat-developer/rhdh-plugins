@@ -500,7 +500,7 @@ describe('LokiProvider', () => {
         jest.mocked(undiciFetch).mock.calls[0][0] as string,
       );
       expect(parsed.searchParams.get('query')).toEqual(
-        `{openshift_log_type="application"} |="12\\"45"`,
+        String.raw`{openshift_log_type="application"} |="12\"45"`,
       );
     });
 
