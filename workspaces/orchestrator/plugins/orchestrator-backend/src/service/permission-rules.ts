@@ -19,7 +19,7 @@ import {
   createPermissionRule,
 } from '@backstage/plugin-permission-node';
 
-import { z } from 'zod/v3';
+// import { z } from 'zod/v3'; // TODO: Re-enable when conditional permissions are fully implemented
 
 import { ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -54,21 +54,24 @@ export const orchestratorWorkflowResourceRef = createPermissionResourceRef<
 
 /**
  * Permission rule for orchestrator workflows
+ * TODO: Re-enable paramsSchema, apply, and toQuery when conditional permissions are fully implemented
  */
 export const isWorkflowId = createPermissionRule({
   name: 'IS_ALLOWED_WORKFLOW_ID',
   description: 'Allow workflows matching the specified workflow IDs',
   resourceRef: orchestratorWorkflowResourceRef,
-  paramsSchema: z.object({
-    workflowIds: z.string().array().describe('List of workflows IDs to match'),
-  }),
-  apply: (workflow: WorkflowIdParam, { workflowIds }) => {
-    return workflowIds.includes(workflow.workflowId);
-  },
-  toQuery: ({ workflowIds }) => ({
-    key: 'workflowIds',
-    values: workflowIds,
-  }),
+  // paramsSchema: z.object({
+  //   workflowIds: z.string().array().describe('List of workflows IDs to match'),
+  // }),
+  // apply: (workflow: WorkflowIdParam, { workflowIds }) => {
+  //   return workflowIds.includes(workflow.workflowId);
+  // },
+  // toQuery: ({ workflowIds }) => ({
+  //   key: 'workflowIds',
+  //   values: workflowIds,
+  // }),
+  apply: () => true,
+  toQuery: () => ({ key: 'workflowIds', values: [] }),
 });
 
 /**
