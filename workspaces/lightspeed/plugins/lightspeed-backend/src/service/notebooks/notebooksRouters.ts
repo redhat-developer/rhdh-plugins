@@ -402,7 +402,7 @@ export async function createNotebooksRouter(
         handleError(
           logger,
           res,
-          `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log, url`,
+          `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log`,
         );
         return;
       }
@@ -412,13 +412,7 @@ export async function createNotebooksRouter(
         handleError(logger, res, 'Session not found');
         return;
       }
-
-      const parsedDocument = await parseFileContent(
-        logger,
-        fileType,
-        req.file,
-        req.body.file,
-      );
+      const parsedDocument = await parseFileContent(logger, fileType, req.file);
       const fileId = await documentService.uploadFile(
         parsedDocument.content,
         title,
