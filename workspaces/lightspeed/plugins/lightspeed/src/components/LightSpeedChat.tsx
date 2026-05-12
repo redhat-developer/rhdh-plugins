@@ -146,6 +146,10 @@ const useStyles = makeStyles(theme => ({
       margin: 0,
       padding: 0,
     },
+    '& .pf-chatbot__content': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default)',
+    },
   },
   header: {
     padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
@@ -365,7 +369,10 @@ const useStyles = makeStyles(theme => ({
       maxWidth: 'unset !important',
     },
     '& .pf-chatbot__message-bar': {
-      backgroundColor: theme.palette.grey[300],
+      backgroundColor:
+        theme.palette.type === 'light'
+          ? theme.palette.grey[100]
+          : 'var(--pf-t--global--background--color--secondary--default)',
     },
   },
   fullscreenFooter: {
@@ -377,8 +384,6 @@ const useStyles = makeStyles(theme => ({
     },
   },
   fullscreenMessageBar: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--secondary--default)',
     border: '1px solid var(--pf-t--global--border--color--default)',
     borderRadius: 24,
     padding: theme.spacing(0.5),
