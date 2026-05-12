@@ -26,6 +26,7 @@ import { ScorecardQueryProvider } from '../../api';
 import { ScorecardHomepageCard } from '../ScorecardHomepageSection/ScorecardHomepageCard';
 import NotFoundState from '../Common/NotFoundState';
 import { useTranslation } from '../../hooks/useTranslation';
+import { resolveMetricTranslation } from '../../utils/translationUtils';
 
 import { ScorecardPageHeader } from './ScorecardPageHeader';
 import { EntitiesTable } from './EntitiesTable/EntitiesTable';
@@ -44,9 +45,9 @@ export const ScorecardPage = () => {
 
   const { t } = useTranslation();
 
-  const titleKey = `metric.${resolvedMetricId}.title`;
-  const title = t(titleKey as any, {});
-  const finalTitle = title === titleKey ? metricTitle : title;
+  const finalTitle =
+    resolveMetricTranslation(t, resolvedMetricId, 'title', metricTitle) ||
+    metricTitle;
 
   if (metricNotFound) {
     return (
