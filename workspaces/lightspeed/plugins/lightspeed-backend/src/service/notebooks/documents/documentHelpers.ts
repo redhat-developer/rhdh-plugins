@@ -33,8 +33,23 @@ import {
 } from '../../constant';
 import { parseFile } from './fileParser';
 
+// ==============================================================================
+// URL Support Functions (Reserved for Future URL File Type Support)
+// ==============================================================================
+// The following functions are currently unused but reserved for future
+// implementation of URL file type parsing. They provide:
+// - URL validation and format checking
+// - SSRF (Server-Side Request Forgery) protection
+// - HTML content parsing and sanitization
+// - Prompt injection attack prevention
+//
+// These functions were part of the URL parsing implementation that was removed
+// but are kept here to facilitate re-implementation if needed in the future.
+// ==============================================================================
+
 /**
  * Validate URL format
+ * @reserved Reserved for future URL file type support
  */
 export const isValidURL = (urlString: string): boolean => {
   try {
@@ -64,26 +79,17 @@ export const isValidFileType = (fileType: string): boolean => {
 };
 
 /**
- * Parse file from upload or URL
+ * Parse file from upload
  * @param logger - Logger service
  * @param fileType - File type
- * @param file - File
- * @param urlParam - URL parameter
+ * @param file - File to parse
  * @returns Parsed file
  */
 export const parseFileContent = async (
   logger: LoggerService,
   fileType: string,
   file?: Express.Multer.File,
-  urlParam?: string,
 ) => {
-  if (fileType === 'url') {
-    if (!urlParam) {
-      throw new InputError('URL is required when fileType is "url"');
-    }
-    logger.info(`Fetching URL ${urlParam} for fileType ${fileType}`);
-    return await parseFile(Buffer.from(''), urlParam, fileType);
-  }
   if (!file) {
     throw new InputError('No file uploaded');
   }
@@ -99,6 +105,7 @@ export const parseFileContent = async (
 /**
  * Check if an IP address is private, internal, or a metadata endpoint
  * Blocks SSRF attacks to internal networks
+ * @reserved Reserved for future URL file type support
  */
 const isPrivateOrInternalIP = (ip: string): boolean => {
   // Check if it's a valid IP
@@ -189,6 +196,7 @@ const isPrivateOrInternalIP = (ip: string): boolean => {
  *
  * @param urlString - URL to validate
  * @throws InputError if URL points to blocked hostname or private IP
+ * @reserved Reserved for future URL file type support
  */
 export const validateURLForSSRF = async (urlString: string): Promise<void> => {
   const url = new URL(urlString);
@@ -237,7 +245,7 @@ export const validateURLForSSRF = async (urlString: string): Promise<void> => {
 
 /**
  * Strip HTML tags and extract readable text from HTML content
- * @public
+ * @reserved Reserved for future URL file type support
  */
 export const stripHtmlTags = (html: string): string => {
   let text = '';
@@ -273,7 +281,7 @@ export const stripHtmlTags = (html: string): string => {
  * Detects and filters common prompt injection patterns
  * @param content - Raw content to sanitize
  * @returns Sanitized content with prompt injection patterns removed
- * @public
+ * @reserved Reserved for future URL file type support
  */
 export const sanitizeContentForRAG = (content: string): string => {
   let sanitized = content;
