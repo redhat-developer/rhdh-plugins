@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export { GitRepository } from './GitRepository';
 export { JobStatus } from './JobStatus';
 export { Phase } from './Phase';
 export { ProjectState } from './ProjectState';
