@@ -195,7 +195,10 @@ export function parseAndValidateLogPipelineFilters(
 
 function workflowInstanceIdHasDisallowedChars(id: string): boolean {
   for (let i = 0; i < id.length; i++) {
-    const c = id.charCodeAt(i);
+    const c = id.codePointAt(i);
+    if (c === undefined) {
+      continue;
+    }
     if (
       (c >= 0x00 && c <= 0x08) ||
       c === 0x0b ||
