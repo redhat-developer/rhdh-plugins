@@ -19,10 +19,10 @@ organization:
 # Disable AI Notebooks feature by default
 lightspeed:
   notebooks:
-    enabled: false
+    enabled: ${NOTEBOOKS_ENABLED:-false}
     queryDefaults:
-      model: gpt-5.2
-      provider_id: openai
+      model: ${NOTEBOOKS_QUERY_MODEL}
+      provider_id: ${NOTEBOOKS_QUERY_PROVIDER_ID}
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
