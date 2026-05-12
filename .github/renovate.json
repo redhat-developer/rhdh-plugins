@@ -45,6 +45,10 @@
       "allowedVersions": "<5.0.0"
     },
     {
+      "matchPackageNames": ["@protobufjs/inquire"],
+      "allowedVersions": "=1.1.0"
+    },
+    {
       "description": "all RHDH Plugins workspaces",
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-bulk-import-presets",
