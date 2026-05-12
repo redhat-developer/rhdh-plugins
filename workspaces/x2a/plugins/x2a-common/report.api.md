@@ -117,6 +117,21 @@ export interface GitRepoAuth {
     token: string;
 }
 
+// @public (undocumented)
+export class GitRepository {
+    constructor(url: string, branch: string, token: string);
+    // (undocumented)
+    readonly branch: string;
+    // (undocumented)
+    equals(other: GitRepository): boolean;
+    // (undocumented)
+    readonly token: string;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly url: string;
+}
+
 // @public
 export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
 

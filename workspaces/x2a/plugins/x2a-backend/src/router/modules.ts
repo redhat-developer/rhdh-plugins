@@ -30,6 +30,7 @@ import {
   reconcileJobStatus,
   useEnforceProjectPermissions,
 } from './common';
+import { GitRepositoryResolver } from './GitRepositoryResolver';
 import {
   calculateModuleStatus,
   listModulesWithReconciledStatuses,
@@ -50,6 +51,7 @@ export function registerModuleRoutes(
     permissionsSvc,
     catalog,
   } = deps;
+  const gitRepoResolver = new GitRepositoryResolver(config);
 
   router.get('/projects/:projectId/modules', async (req, res) => {
     const endpoint = 'GET /projects/:projectId/modules';
@@ -228,24 +230,12 @@ export function registerModuleRoutes(
         catalog,
       });
 
-      // Get tokens with config-based fallback
-      const sourceToken =
-        sourceRepoAuth?.token ??
-        config.getOptionalString('x2a.git.sourceRepo.token');
-      const targetToken =
-        targetRepoAuth?.token ??
-        config.getOptionalString('x2a.git.targetRepo.token');
-
-      if (!sourceToken) {
-        throw new InputError(
-          'Source repository token is required. Provide it in the request or configure x2a.git.sourceRepo.token.',
-        );
-      }
-      if (!targetToken) {
-        throw new InputError(
-          'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
-        );
-      }
+      // Resolve git repositories with config-based token fallback
+      const { sourceRepo, targetRepo } = gitRepoResolver.resolve({
+        project,
+        sourceRepoAuth,
+        targetRepoAuth,
+      });
 
       // Verify module exists
       const module = await x2aDatabase.getModule({ id: moduleId });
@@ -312,16 +302,8 @@ export function registerModuleRoutes(
         moduleId,
         moduleName: module.name,
         sourceTechnology: module.technology,
-        sourceRepo: {
-          url: project.sourceRepoUrl,
-          branch: project.sourceRepoBranch,
-          token: sourceToken,
-        },
-        targetRepo: {
-          url: project.targetRepoUrl,
-          branch: project.targetRepoBranch,
-          token: targetToken,
-        },
+        sourceRepo,
+        targetRepo,
         aapCredentials,
       });
 

@@ -34,6 +34,7 @@ import {
   useEnforceProjectPermissions,
   useEnforceX2APermissions,
 } from './common';
+import { GitRepositoryResolver } from './GitRepositoryResolver';
 import { ProjectsGet, ProjectsPost } from '../schema/openapi';
 
 export function registerProjectRoutes(
@@ -50,6 +51,7 @@ export function registerProjectRoutes(
     permissionsSvc,
     config,
   } = deps;
+  const gitRepoResolver = new GitRepositoryResolver(config);
 
   router.get('/projects', async (req, res) => {
     const endpoint = 'GET /projects';
@@ -287,24 +289,12 @@ export function registerProjectRoutes(
       const { sourceRepoAuth, targetRepoAuth, aapCredentials, userPrompt } =
         parsedBody.data;
 
-      // Get tokens with config-based fallback
-      const sourceToken =
-        sourceRepoAuth?.token ??
-        config.getOptionalString('x2a.git.sourceRepo.token');
-      const targetToken =
-        targetRepoAuth?.token ??
-        config.getOptionalString('x2a.git.targetRepo.token');
-
-      if (!sourceToken) {
-        throw new InputError(
-          'Source repository token is required. Provide it in the request or configure x2a.git.sourceRepo.token.',
-        );
-      }
-      if (!targetToken) {
-        throw new InputError(
-          'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
-        );
-      }
+      // Resolve git repositories with config-based token fallback
+      const { sourceRepo, targetRepo } = gitRepoResolver.resolve({
+        project,
+        sourceRepoAuth,
+        targetRepoAuth,
+      });
 
       // Check for existing running init job
       const existingJobs = await x2aDatabase.listJobsForProject({ projectId });
@@ -355,16 +345,8 @@ export function registerProjectRoutes(
         user: userRef,
         callbackToken,
         callbackUrl,
-        sourceRepo: {
-          url: project.sourceRepoUrl,
-          branch: project.sourceRepoBranch,
-          token: sourceToken,
-        },
-        targetRepo: {
-          url: project.targetRepoUrl,
-          branch: project.targetRepoBranch,
-          token: targetToken,
-        },
+        sourceRepo,
+        targetRepo,
         aapCredentials,
         userPrompt,
       });

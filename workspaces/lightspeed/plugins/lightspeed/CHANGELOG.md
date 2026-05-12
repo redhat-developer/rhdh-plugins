@@ -1,5 +1,13 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.7.1
+
+### Patch Changes
+
+- 75181f0: preserve indentation for lists in chat window
+- ca793d5: Disable automatic model refetch on window focus to prevent unnecessary network requests
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.7.1
+
 ## 2.7.0
 
 ### Minor Changes
