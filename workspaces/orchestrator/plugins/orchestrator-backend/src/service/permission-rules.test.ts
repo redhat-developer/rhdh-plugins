@@ -16,15 +16,15 @@
 
 import {
   isWorkflowId,
-  IsWorkflowIdRuleParams,
   orchestratorPermissionRules,
+  WorkflowIdRuleParams,
 } from './permission-rules';
 
 describe('permission-rules', () => {
   describe('isWorkflowId', () => {
     it('should return true when workflow ID is in the allowed list', () => {
       const resource = { workflowId: 'approval-workflow-123' };
-      const params: IsWorkflowIdRuleParams = {
+      const params: WorkflowIdRuleParams = {
         workflowIds: ['approval-workflow-123', 'other-workflow'],
       };
 
@@ -35,7 +35,7 @@ describe('permission-rules', () => {
 
     it('should return false when workflow ID is not in the allowed list', () => {
       const resource = { workflowId: 'approval-workflow-123' };
-      const params: IsWorkflowIdRuleParams = {
+      const params: WorkflowIdRuleParams = {
         workflowIds: ['different-workflow-456', 'another-workflow'],
       };
 

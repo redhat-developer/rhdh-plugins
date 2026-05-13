@@ -16,7 +16,7 @@
 
 import {
   createPermissionResourceRef,
-  type PermissionRule,
+  createPermissionRule,
 } from '@backstage/plugin-permission-node';
 
 import { z } from 'zod/v3';
@@ -41,49 +41,42 @@ export type OrchestratorFilters =
 
 export type WorkflowIdParam = { workflowId: string };
 
-/** Params for {@link isWorkflowId}; explicit so TS does not infer `undefined` for rule params. */
-export type IsWorkflowIdRuleParams = {
+export type WorkflowIdRuleParams = {
   workflowIds: string[];
 };
-
-const isWorkflowIdParamsSchema = z.object({
-  workflowIds: z.array(z.string()).describe('List of workflows IDs to match'),
-});
 
 /**
  * Resource reference for orchestrator workflows
  */
 export const orchestratorWorkflowResourceRef = createPermissionResourceRef<
   WorkflowIdParam,
-  OrchestratorFilters
+  OrchestratorFilter
 >().with({
   pluginId: 'orchestrator',
   resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
 });
 
 /**
- * Permission rule for orchestrator workflows.
- *
- * Typed with `as PermissionRule<...>` so TypeScript does not expand the recursive
- * {@link OrchestratorFilters} inside `PermissionCriteria` during inference (TS2589).
+ * Permission rule for orchestrator workflows
  */
-export const isWorkflowId = {
+export const isWorkflowId = createPermissionRule<
+  typeof orchestratorWorkflowResourceRef,
+  WorkflowIdRuleParams
+>({
   name: 'IS_ALLOWED_WORKFLOW_ID',
   description: 'Allow workflows matching the specified workflow IDs',
-  resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
-  paramsSchema: isWorkflowIdParamsSchema,
-  apply: (workflow: WorkflowIdParam, { workflowIds }: IsWorkflowIdRuleParams) =>
-    workflowIds.includes(workflow.workflowId),
-  toQuery: ({ workflowIds }: IsWorkflowIdRuleParams): OrchestratorFilter => ({
+  resourceRef: orchestratorWorkflowResourceRef,
+  paramsSchema: z.object({
+    workflowIds: z.array(z.string()).describe('List of workflows IDs to match'),
+  }),
+  apply: (workflow: WorkflowIdParam, { workflowIds }: WorkflowIdRuleParams) => {
+    return workflowIds.includes(workflow.workflowId);
+  },
+  toQuery: ({ workflowIds }: WorkflowIdRuleParams) => ({
     key: 'workflowIds',
     values: workflowIds,
   }),
-} as unknown as PermissionRule<
-  WorkflowIdParam,
-  OrchestratorFilters,
-  typeof ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
-  IsWorkflowIdRuleParams
->;
+});
 
 /**
  * All orchestrator permission rules
