@@ -41,6 +41,18 @@ import {
   prepareDataForRepositories,
 } from '../utils/repository-utils';
 
+function isLoginRejectedError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.name === 'RejectedError' ||
+      error.message === 'Login failed, rejected by user')
+  );
+}
+
+type ScmTokenFetchResult =
+  | { kind: 'tokens'; tokens: Record<string, string> }
+  | { kind: 'userRejected' };
+
 export const useRepositories = (
   options: DataFetcherQueryParams,
   pollInterval?: number,
@@ -53,6 +65,7 @@ export const useRepositories = (
     totalOrganizations?: number;
   } | null;
   error: RepositoriesError | undefined;
+  loginRejected: boolean;
 } => {
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
@@ -71,10 +84,10 @@ export const useRepositories = (
   });
 
   const {
-    value: scmAuthTokens,
+    value: scmTokenFetchResult,
     loading: tokenLoading,
     error: tokenFetchError,
-  } = useAsync(async () => {
+  } = useAsync(async (): Promise<ScmTokenFetchResult | undefined> => {
     if (!scmAuth) return undefined;
     const hosts = await bulkImportApi.getSCMHosts();
     if (!hosts || hosts instanceof Response || !('github' in hosts))
@@ -87,6 +100,7 @@ export const useRepositories = (
     if (!urls?.length) return undefined;
 
     const tokenRecord: Record<string, string> = {};
+    let sawLoginRejection = false;
     for (const url of urls) {
       try {
         const { token } = await scmAuth.getCredentials({
@@ -94,17 +108,35 @@ export const useRepositories = (
           additionalScope: { repoWrite: false },
         });
         if (token) tokenRecord[url] = token;
-      } catch {
-        // No OAuth provider registered for this host — skip it.
+      } catch (e) {
+        if (isLoginRejectedError(e)) {
+          sawLoginRejection = true;
+        }
+        // Missing OAuth provider or other host-level failure — skip this host.
       }
     }
     if (Object.keys(tokenRecord).length === 0) {
+      if (sawLoginRejection) {
+        return { kind: 'userRejected' };
+      }
       throw new Error(
         'No user SCM credentials could be obtained. Please ensure your SCM OAuth integration is configured.',
       );
     }
-    return tokenRecord;
+    return { kind: 'tokens', tokens: tokenRecord };
   }, [scmAuth, bulkImportApi, options.approvalTool]);
+
+  const scmAuthTokens =
+    scmTokenFetchResult?.kind === 'tokens'
+      ? scmTokenFetchResult.tokens
+      : undefined;
+  const loginRejected = scmTokenFetchResult?.kind === 'userRejected';
+
+  const queryEnabled =
+    !tokenLoading &&
+    !tokenFetchError &&
+    !loginRejected &&
+    (scmAuthTokens === undefined || Object.keys(scmAuthTokens).length > 0);
 
   const fetchRepositories = async (queryOptions: DataFetcherQueryParams) => {
     const apiOptions: APITypes = {
@@ -141,7 +173,7 @@ export const useRepositories = (
     ],
     () => fetchRepositories(options),
     {
-      enabled: !tokenLoading && !tokenFetchError,
+      enabled: queryEnabled,
       refetchInterval: pollInterval || 60000,
       refetchOnWindowFocus: false,
     },
@@ -171,11 +203,12 @@ export const useRepositories = (
   }
 
   return {
-    loading: tokenLoading || isQueryLoading,
+    loading: tokenLoading || (queryEnabled && isQueryLoading),
     data: prepareData,
     error: {
       ...(error ?? {}),
       ...(errors.length > 0 ? { errors } : {}),
     } as RepositoriesError,
+    loginRejected,
   };
 };

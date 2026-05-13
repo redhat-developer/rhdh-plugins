@@ -36,6 +36,7 @@ export const RepositoriesTableBody = ({
   selectedRepos,
   isDrawer,
   isApprovalToolGitlab = false,
+  loginRejected = false,
 }: {
   loading: boolean;
   ariaLabel: string;
@@ -46,6 +47,7 @@ export const RepositoriesTableBody = ({
   isDrawer?: boolean;
   showOrganizations?: boolean;
   isApprovalToolGitlab?: boolean;
+  loginRejected?: boolean;
 }) => {
   const { t } = useTranslation();
   const isSelected = (id: string) => {
@@ -99,6 +101,22 @@ export const RepositoriesTableBody = ({
       </TableBody>
     );
   }
+
+  let emptyStateMessageKey:
+    | 'repositories.logInToViewProjects'
+    | 'repositories.logInToViewRepositories'
+    | 'repositories.noProjectsFound'
+    | 'repositories.noRecordsFound';
+  if (loginRejected) {
+    emptyStateMessageKey = isApprovalToolGitlab
+      ? 'repositories.logInToViewProjects'
+      : 'repositories.logInToViewRepositories';
+  } else if (isApprovalToolGitlab) {
+    emptyStateMessageKey = 'repositories.noProjectsFound';
+  } else {
+    emptyStateMessageKey = 'repositories.noRecordsFound';
+  }
+
   return (
     <tbody>
       <tr>
@@ -113,11 +131,7 @@ export const RepositoriesTableBody = ({
               justifyContent: 'center',
             }}
           >
-            {t(
-              isApprovalToolGitlab
-                ? 'repositories.noProjectsFound'
-                : 'repositories.noRecordsFound',
-            )}
+            {t(emptyStateMessageKey)}
           </Box>
         </td>
       </tr>
