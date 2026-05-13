@@ -74,11 +74,12 @@ export const AverageCardComponent = ({
     });
   };
 
-  const rawPercent = scorecard.result.averageScore * 100;
-  const { fill: chartFillPercent, remainder: chartRemainderPercent } =
-    clampPercentForDonut(rawPercent);
+  const averageScorePercent = scorecard.result.averageScore;
 
-  const centerPercentLabel = `${formatPercentage(rawPercent)}%`;
+  const { fill: chartFillPercent, remainder: chartRemainderPercent } =
+    clampPercentForDonut(averageScorePercent);
+
+  const centerPercentLabel = `${formatPercentage(averageScorePercent)}%`;
 
   const arcResolvedColor = resolveStatusColor(
     theme,

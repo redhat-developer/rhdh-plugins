@@ -229,7 +229,6 @@ export type NotebookSession = {
 export type NotebookDocumentSourceType =
   | 'text'
   | 'pdf'
-  | 'url'
   | 'md'
   | 'json'
   | 'yaml'

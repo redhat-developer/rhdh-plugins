@@ -31,6 +31,8 @@ import {
 } from 'react-dropzone';
 import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+
 import { Button, makeStyles } from '@material-ui/core';
 import {
   Chatbot,
@@ -87,6 +89,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
   useLightspeedNotebooksPermission,
+  useNotebookConversationIds,
   useNotebookSession,
   useNotebookSessions,
   usePinnedChatsSettings,
@@ -614,9 +617,16 @@ export const LightspeedChat = ({
   const classes = useStyles();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const configApi = useApi(configApiRef);
+  const notebooksEnabled =
+    configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
   const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
   const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
   const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
+  const isOnNotebookRoute = Boolean(
+    notebooksRouteMatch || notebookViewRouteMatch,
+  );
+  const shouldShowTabs = notebooksEnabled || isOnNotebookRoute;
   const {
     displayMode,
     setDisplayMode,
@@ -656,6 +666,9 @@ export const LightspeedChat = ({
     useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
     !notebooksPermissionLoading && hasNotebooksAccess;
+
+  const { data: notebookConversationIdsArray = [] } =
+    useNotebookConversationIds();
   const { data: notebooks = [], refetch: refetchNotebooks } =
     useNotebookSessions(notebooksPermissionResolved);
   const hasNotebooks = notebooks.length > 0;
@@ -715,9 +728,9 @@ export const LightspeedChat = ({
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
-  // Chat vs Notebooks tabs are fullscreen-only; overlay and docked always show Chat.
   const showChatPanel = !isFullscreenMode || activeTab === 0;
-  const showNotebooksPanel = isFullscreenMode && activeTab !== 0;
+  const showNotebooksPanel =
+    (notebooksEnabled || isOnNotebookRoute) && activeTab !== 0;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
 
@@ -1193,13 +1206,8 @@ export const LightspeedChat = ({
   );
 
   const notebookConversationIds = useMemo(
-    () =>
-      new Set(
-        notebooks
-          .map(n => n.metadata?.conversation_id)
-          .filter((id): id is string => !!id),
-      ),
-    [notebooks],
+    () => new Set(notebookConversationIdsArray),
+    [notebookConversationIdsArray],
   );
 
   const chatOnlyConversations = useMemo(
@@ -1928,8 +1936,10 @@ export const LightspeedChat = ({
             onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
-        {isFullscreenMode && <div className={classes.headerDivider} />}
-        {isFullscreenMode && (
+        {isFullscreenMode && shouldShowTabs && (
+          <div className={classes.headerDivider} />
+        )}
+        {isFullscreenMode && shouldShowTabs && (
           <>
             <Tabs
               activeKey={activeTab}
@@ -2051,7 +2061,6 @@ export const LightspeedChat = ({
               avatar={avatar}
               profileLoading={profileLoading}
               topicRestrictionEnabled={topicRestrictionEnabled}
-              selectedModel={selectedModel}
               onClose={handleCloseNotebook}
             />
           )}

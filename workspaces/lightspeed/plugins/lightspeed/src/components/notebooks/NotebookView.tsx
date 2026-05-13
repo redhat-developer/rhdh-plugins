@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useApi } from '@backstage/core-plugin-api';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { makeStyles, Typography } from '@material-ui/core';
 import {
@@ -216,7 +216,6 @@ type NotebookViewProps = {
   avatar?: string;
   profileLoading: boolean;
   topicRestrictionEnabled: boolean;
-  selectedModel: string;
   onClose: () => void;
 };
 
@@ -230,14 +229,19 @@ export const NotebookView = ({
   avatar,
   profileLoading,
   topicRestrictionEnabled,
-  selectedModel,
   onClose,
 }: NotebookViewProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const configApi = useApi(configApiRef);
   const notebooksApi = useApi(notebooksApiRef);
   const { mutateAsync: notebookCreateMessage } = useCreateNotebookMessage();
+
+  // Use notebook-specific model from config instead of chat's selected model
+  const notebookModel =
+    configApi.getOptionalString('lightspeed.notebooks.queryDefaults.model') ||
+    '';
 
   const [conversationId, setConversationId] = useState(
     metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
@@ -298,7 +302,7 @@ export const NotebookView = ({
     useConversationMessages(
       conversationId,
       userName,
-      selectedModel,
+      notebookModel,
       '',
       avatar,
       onComplete,

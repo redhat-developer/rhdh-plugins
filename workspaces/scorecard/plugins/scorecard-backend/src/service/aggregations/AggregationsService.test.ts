@@ -133,7 +133,7 @@ describe('AggregationsService', () => {
     const aggregationResult = result.result as AggregatedMetricAverageResult;
 
     expect(result.metadata?.aggregationType).toBe(aggregationTypes.average);
-    expect(aggregationResult.averageScore).toBeCloseTo(0.5, 5);
+    expect(aggregationResult.averageScore).toBe(50);
     expect(aggregationResult.averageWeightedSum).toBe(150);
     expect(aggregationResult.averageMaxPossible).toBe(300);
   });

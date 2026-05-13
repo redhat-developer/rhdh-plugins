@@ -69,19 +69,13 @@ export async function createNotebooksRouter(
     config.getOptionalNumber('lightspeed.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
-  const queryModel = config.getOptionalString(
+  const queryModel = config.getString(
     'lightspeed.notebooks.queryDefaults.model',
   );
-  const queryProvider = config.getOptionalString(
+  const queryProvider = config.getString(
     'lightspeed.notebooks.queryDefaults.provider_id',
   );
   const systemPrompt = NOTEBOOKS_SYSTEM_PROMPT;
-
-  if (!queryModel || !queryProvider) {
-    throw new Error(
-      'Query model and provider are required. Please configure lightspeed.notebooks.queryDefaults.model and lightspeed.notebooks.queryDefaults.provider_id',
-    );
-  }
 
   logger.info(
     `AI Notebooks connecting to Lightspeed-Core at ${lightspeedBaseUrl}`,
@@ -402,7 +396,7 @@ export async function createNotebooksRouter(
         handleError(
           logger,
           res,
-          `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log, url`,
+          `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log`,
         );
         return;
       }
@@ -412,13 +406,7 @@ export async function createNotebooksRouter(
         handleError(logger, res, 'Session not found');
         return;
       }
-
-      const parsedDocument = await parseFileContent(
-        logger,
-        fileType,
-        req.file,
-        req.body.file,
-      );
+      const parsedDocument = await parseFileContent(logger, fileType, req.file);
       const fileId = await documentService.uploadFile(
         parsedDocument.content,
         title,
@@ -496,9 +484,9 @@ export async function createNotebooksRouter(
         tools: [{ type: 'file_search', vector_store_ids: [sessionId] }],
         model: `${queryProvider}/${queryModel}`,
         stream: true,
-        temperature: 0.05,
+        temperature: 0.35,
         shield_ids: [],
-        max_tool_calls: 10,
+        max_tool_calls: 15,
         ...(conversationId && { conversation: conversationId }),
       };
 
@@ -558,6 +546,7 @@ export async function createNotebooksRouter(
             .pipe(createResponsesApiTransform(session, sessionId, userId))
             .pipe(res);
         }
+        console.log('response1234', response.body);
         break;
       }
     }),

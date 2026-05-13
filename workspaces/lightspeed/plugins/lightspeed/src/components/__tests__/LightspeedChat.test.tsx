@@ -154,14 +154,28 @@ const mockUseLightspeedDrawerContext =
     typeof useLightspeedDrawerContext
   >;
 
-const configAPi = mockApis.config({});
+const configAPi = mockApis.config({
+  data: {
+    lightspeed: {
+      notebooks: {
+        enabled: true,
+        queryDefaults: {
+          model: 'gpt-4',
+          provider_id: 'openai',
+        },
+      },
+    },
+  },
+});
 
 const mockLightspeedApi = {
   getAllModels: jest.fn().mockResolvedValue([]),
   getConversationMessages: jest.fn().mockResolvedValue([]),
   createMessage: jest.fn().mockResolvedValue(new Response().body),
   deleteConversation: jest.fn().mockResolvedValue({ success: true }),
+  renameConversation: jest.fn().mockResolvedValue({ success: true }),
   getConversations: jest.fn().mockResolvedValue([]),
+  getNotebookConversationIds: jest.fn().mockResolvedValue([]),
   getFeedbackStatus: jest.fn().mockResolvedValue(false),
   captureFeedback: jest.fn().mockResolvedValue({ response: 'success' }),
   isTopicRestrictionEnabled: jest.fn().mockResolvedValue(false),
