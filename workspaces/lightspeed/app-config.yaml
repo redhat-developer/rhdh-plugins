@@ -122,3 +122,4 @@ catalog:
   locations:
     - type: file
       target: ./catalog-info.yaml
+
