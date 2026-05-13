@@ -35,7 +35,7 @@ export const DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS: ThresholdConfig = {
     },
     {
       key: 'warning',
-      expression: '30-79',
+      expression: '30-80',
       color: ScorecardThresholdRuleColors.WARNING,
     },
     {

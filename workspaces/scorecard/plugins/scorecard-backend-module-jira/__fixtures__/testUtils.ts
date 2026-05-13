@@ -38,9 +38,9 @@ export function newEntityComponent(
 export function newThresholdsConfig(): ThresholdConfig {
   return {
     rules: [
-      { key: 'success', expression: '<3' },
-      { key: 'warning', expression: '11-32' },
-      { key: 'error', expression: '>33' },
+      { key: 'success', expression: '<5' },
+      { key: 'warning', expression: '5-25' },
+      { key: 'error', expression: '>25' },
     ],
   };
 }

@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
-export { validateThresholdNumberIntervals } from './thresholds/intervals/validateThresholdNumberIntervals';
-export {
-  validateThresholdsForMetric,
-  validateThresholdsForAggregation,
-} from './thresholds/validateThresholds';
-export { getThresholdsFromConfig } from './thresholds/getThresholdsFromConfig';
-export type {
-  ComparisonSign,
-  ComparisonOperator,
-  RangeOperator,
-} from './types';
+export interface NumberInterval {
+  min: number;
+  max: number;
+  minClosed: boolean;
+  maxClosed: boolean;
+}

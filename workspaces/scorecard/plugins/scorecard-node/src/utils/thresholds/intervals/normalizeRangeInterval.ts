@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
-export { validateThresholdNumberIntervals } from './thresholds/intervals/validateThresholdNumberIntervals';
-export {
-  validateThresholdsForMetric,
-  validateThresholdsForAggregation,
-} from './thresholds/validateThresholds';
-export { getThresholdsFromConfig } from './thresholds/getThresholdsFromConfig';
-export type {
-  ComparisonSign,
-  ComparisonOperator,
-  RangeOperator,
-} from './types';
+import { RangeOperator } from '../..';
+import { NumberInterval } from './types';
+
+export function normalizeRangeInterval(
+  values: RangeOperator['values'],
+): NumberInterval[] {
+  const [min, max] = values;
+  return [{ min, max, minClosed: true, maxClosed: true }];
+}

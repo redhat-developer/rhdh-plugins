@@ -23,6 +23,7 @@ import type {
 import { SCORECARD_THRESHOLD_RULE_COLOR_VALUES } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfigFormatError } from '../../errors';
 import { parseThresholdExpression } from './parseThresholdExpression';
+import { validateThresholdNumberIntervals } from './intervals/validateThresholdNumberIntervals';
 
 const THRESHOLD_RULE_KEYS = ['success', 'warning', 'error'];
 
@@ -48,6 +49,8 @@ export function validateThresholdsForMetric(
 
     parseThresholdExpression(rule.expression, expectedMetricType);
   }
+
+  validateThresholdNumberIntervals(thresholds.rules, expectedMetricType);
 }
 
 /**
@@ -71,6 +74,8 @@ export function validateThresholdsForAggregation(
 
     parseThresholdExpression(rule.expression, expectedMetricType);
   }
+
+  validateThresholdNumberIntervals(thresholds.rules, expectedMetricType);
 }
 
 /**

@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
-export { validateThresholdNumberIntervals } from './thresholds/intervals/validateThresholdNumberIntervals';
-export {
-  validateThresholdsForMetric,
-  validateThresholdsForAggregation,
-} from './thresholds/validateThresholds';
-export { getThresholdsFromConfig } from './thresholds/getThresholdsFromConfig';
-export type {
-  ComparisonSign,
-  ComparisonOperator,
-  RangeOperator,
-} from './types';
+import { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { parseThresholdExpression } from '../parseThresholdExpression';
+
+/**
+ * Checks if all rules are discrete number equals.
+ */
+export function areAllRulesDiscreteNumberEquals(
+  rules: ThresholdRule[],
+): boolean {
+  return rules.every(
+    rule =>
+      parseThresholdExpression(rule.expression, 'number').operator === '==',
+  );
+}

@@ -64,7 +64,10 @@ describe('SonarQubeNumberMetricProvider', () => {
 
     it('should return custom thresholds when provided', () => {
       const custom: ThresholdConfig = {
-        rules: [{ key: 'ok', expression: '<5', color: '#00ff00', icon: 'ok' }],
+        rules: [
+          { key: 'ok', expression: '<5', color: '#00ff00', icon: 'ok' },
+          { key: 'rest', expression: '>=5', color: '#ff0000', icon: 'bad' },
+        ],
       };
       const mockConfiWithCustomThresholds = new ConfigReader({
         scorecard: {

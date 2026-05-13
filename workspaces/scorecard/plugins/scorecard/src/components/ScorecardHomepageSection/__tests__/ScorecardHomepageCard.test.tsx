@@ -172,7 +172,7 @@ const mockAverageScorecard: AggregatedMetricResult = {
   },
   result: {
     ...mockScorecard.result,
-    averageScore: 0.75,
+    averageScore: 75,
     averageWeightedSum: 18,
     averageMaxPossible: 24,
     aggregationChartDisplayColor: 'warning.main',

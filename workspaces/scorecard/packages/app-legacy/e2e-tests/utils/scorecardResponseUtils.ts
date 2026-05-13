@@ -232,7 +232,7 @@ export const openPrsWeightedAggregatedResponse = {
     total: 10,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
-    averageScore: 0.5,
+    averageScore: 50,
     averageWeightedSum: 500,
     averageMaxPossible: 1000,
     aggregationChartDisplayColor: 'rgb(224, 189, 108)',

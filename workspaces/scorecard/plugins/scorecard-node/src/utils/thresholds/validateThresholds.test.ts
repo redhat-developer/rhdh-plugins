@@ -56,9 +56,9 @@ describe('validateThresholds', () => {
     it('should validate config with range expressions', () => {
       const validConfig = {
         rules: [
-          { key: 'error', expression: '80-100' },
-          { key: 'warning', expression: '50-79' },
-          { key: 'success', expression: '0-49' },
+          { key: 'error', expression: '>=80' },
+          { key: 'warning', expression: '50-80' },
+          { key: 'success', expression: '<=50' },
         ],
       };
 
@@ -86,19 +86,19 @@ describe('validateThresholds', () => {
           },
           {
             key: 'high',
-            expression: '60-79',
+            expression: '60-80',
             color: '#ff9800',
             icon: '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="130"><rect width="300" height="100"x="10" y="10" /></svg>',
           },
           {
             key: 'medium',
-            expression: '40-59',
+            expression: '40-60',
             color: '#ffc107',
             icon: 'kind:component',
           },
           {
             key: 'low',
-            expression: '20-39',
+            expression: '20-40',
             color: '#4caf50',
             icon: 'https://raw.githubusercontent.com/redhat-developer/example/main/icons/scorecard-icon.svg',
           },
@@ -167,13 +167,81 @@ describe('validateThresholds', () => {
       const validConfig = {
         rules: [
           { key: 'warning', expression: '<5', color: 'rgb(255, 87, 51)' },
-          { key: 'error', expression: '<5', color: 'rgba(255, 87, 51, 0.5)' },
+          { key: 'error', expression: '>=5', color: 'rgba(255, 87, 51, 0.5)' },
         ],
       };
 
       expect(() =>
         validateThresholdsForMetric(validConfig, 'number'),
       ).not.toThrow();
+    });
+
+    it('should reject number rules that leave a gap on the real line for metric', () => {
+      const gapConfig = {
+        rules: [
+          { key: 'success', expression: '<10' },
+          { key: 'warning', expression: '11-20' },
+          { key: 'error', expression: '>20' },
+        ],
+      };
+
+      expect(() => validateThresholdsForMetric(gapConfig, 'number')).toThrow(
+        ThresholdConfigFormatError,
+      );
+      expect(() => validateThresholdsForMetric(gapConfig, 'number')).toThrow(
+        /do not cover the entire real line/,
+      );
+    });
+
+    it('should throw error when threshold rules do not cover the entire real line for aggregation', () => {
+      const gapConfig = {
+        rules: [
+          { key: 'success', expression: '<10' },
+          { key: 'warning', expression: '11-20' },
+          { key: 'error', expression: '>20' },
+        ],
+      };
+      expect(() =>
+        validateThresholdsForAggregation(gapConfig, 'number'),
+      ).toThrow(ThresholdConfigFormatError);
+      expect(() =>
+        validateThresholdsForAggregation(gapConfig, 'number'),
+      ).toThrow(/do not cover the entire real line/);
+    });
+
+    it('should accept number rules that partition the real line for metrics and aggregation', () => {
+      const config = {
+        rules: [
+          { key: 'success', expression: '<10' },
+          { key: 'warning', expression: '10-20' },
+          { key: 'error', expression: '>20' },
+        ],
+      };
+
+      expect(() => validateThresholdsForMetric(config, 'number')).not.toThrow();
+      expect(() =>
+        validateThresholdsForAggregation(config, 'number'),
+      ).not.toThrow();
+    });
+
+    it('should not run interval coverage when there is only one number rule', () => {
+      expect(() =>
+        validateThresholdsForMetric(
+          { rules: [{ key: 'success', expression: '<10' }] },
+          'number',
+        ),
+      ).not.toThrow();
+    });
+
+    it('should accept discrete == number rules', () => {
+      const config = {
+        rules: [
+          { key: 'A', expression: '==1', color: '#111', icon: 'a' },
+          { key: 'B', expression: '==2', color: '#222', icon: 'b' },
+        ],
+      };
+
+      expect(() => validateThresholdsForMetric(config, 'number')).not.toThrow();
     });
   });
 
@@ -413,7 +481,7 @@ describe('validateThresholds', () => {
       const aggregationStyleConfig = {
         rules: [
           { key: 'success', expression: '>=75', color: 'success.main' },
-          { key: 'warning', expression: '10-74', color: 'warning.main' },
+          { key: 'warning', expression: '10-75', color: 'warning.main' },
           { key: 'error', expression: '<10', color: 'error.main' },
         ],
       };
