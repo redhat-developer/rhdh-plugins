@@ -14,29 +14,32 @@
  * limitations under the License.
  */
 
-import { isWorkflowId, orchestratorPermissionRules } from './permission-rules';
+import {
+  isWorkflowId,
+  IsWorkflowIdRuleParams,
+  orchestratorPermissionRules,
+} from './permission-rules';
 
 describe('permission-rules', () => {
   describe('isWorkflowId', () => {
     it('should return true when workflow ID is in the allowed list', () => {
       const resource = { workflowId: 'approval-workflow-123' };
-      const params = {
+      const params: IsWorkflowIdRuleParams = {
         workflowIds: ['approval-workflow-123', 'other-workflow'],
       };
 
-      const result = isWorkflowId.apply(resource, params as any);
+      const result = isWorkflowId.apply(resource, params);
 
       expect(result).toBe(true);
     });
 
-    // TODO: Re-enable these tests when conditional permissions are fully implemented
-    it.skip('should return false when workflow ID is not in the allowed list', () => {
+    it('should return false when workflow ID is not in the allowed list', () => {
       const resource = { workflowId: 'approval-workflow-123' };
-      const params = {
+      const params: IsWorkflowIdRuleParams = {
         workflowIds: ['different-workflow-456', 'another-workflow'],
       };
 
-      const result = isWorkflowId.apply(resource, params as any);
+      const result = isWorkflowId.apply(resource, params);
 
       expect(result).toBe(false);
     });

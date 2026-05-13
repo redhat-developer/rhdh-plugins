@@ -103,7 +103,9 @@
     "@types/fs-extra": "11.0.4",
     "@types/json-schema": "7.0.15",
     "@types/luxon": "^3.7.1",
-    "prettier": "3.8.3"
+    "@types/supertest": "^7.2.0",
+    "prettier": "3.8.3",
+    "supertest": "^7.2.2"
   },
   "peerDependencies": {
     "@backstage-community/plugin-rbac-common": "^1.12.1",

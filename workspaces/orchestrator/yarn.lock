@@ -13303,6 +13303,7 @@ __metadata:
     "@types/fs-extra": "npm:11.0.4"
     "@types/json-schema": "npm:7.0.15"
     "@types/luxon": "npm:^3.7.1"
+    "@types/supertest": "npm:^7.2.0"
     "@urql/core": "npm:^6.0.1"
     ajv-formats: "npm:^2.1.1"
     cloudevents: "npm:^10.0.0"
@@ -13316,6 +13317,7 @@ __metadata:
     luxon: "npm:^3.7.2"
     openapi-backend: "npm:^5.10.5"
     prettier: "npm:3.8.3"
+    supertest: "npm:^7.2.2"
     yn: "npm:^5.0.0"
     zod: "npm:^4.3.6"
   peerDependencies:
