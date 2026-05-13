@@ -6,7 +6,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Dcm)"
       ],
-      "addLabels": ["team/rhdh", "dcm"]
+      "addLabels": ["dcm"]
     },
     {
       "description": "all Dcm patch updates",
@@ -14,7 +14,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Dcm)"
       ],
-      "addLabels": ["team/rhdh", "dcm"]
+      "addLabels": ["dcm"]
     },
     {
       "description": "all Dcm dev dependency updates",
@@ -22,7 +22,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Dcm)"
       ],
-      "addLabels": ["team/rhdh", "dcm"]
+      "addLabels": ["dcm"]
     }
   ]
 }

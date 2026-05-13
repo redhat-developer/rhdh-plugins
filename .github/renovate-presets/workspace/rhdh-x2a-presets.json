@@ -14,7 +14,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(X2a)"
       ],
-      "addLabels": ["team/rhdh", "x2a"]
+      "addLabels": ["x2a"]
     },
     {
       "description": "all X2a dev dependency updates",
@@ -22,7 +22,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(X2a)"
       ],
-      "addLabels": ["team/rhdh", "x2a"]
+      "addLabels": ["x2a"]
     }
   ]
 }
