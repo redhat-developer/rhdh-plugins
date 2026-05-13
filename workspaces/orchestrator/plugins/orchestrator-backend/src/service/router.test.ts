@@ -21,14 +21,13 @@
  * and checking the HTTP responses based on permission service mocks.
  *
  * Key authorization behaviors tested:
- * 1. filterAuthorizedWorkflows - filters workflow list based on permissions
- * 2. authorize (anyOf) - returns ALLOW if any permission is granted
- * 3. Generic vs specific permissions - users can have broad or narrow access
- * 4. Empty permission set - users with no permissions see nothing
+ * 1. filterAuthorizedWorkflows — list filtering via authorizeConditional + conditionTransformer/matches
+ * 2. authorize (anyOf) — ALLOW if any permission is granted; CONDITIONAL handled at route via assertWorkflowAccess
+ * 3. Generic vs specific permissions — broad or narrow access
+ * 4. Empty permission set — users with no permissions see nothing
  *
- * NOTE: Due to OpenAPI backend initialization complexity, these tests focus on
- * POST /v2/workflows/overview which reliably works. This endpoint exercises all
- * the core authorization logic that will be refactored.
+ * NOTE: Due to OpenAPI backend initialization complexity, many tests focus on
+ * POST /v2/workflows/overview, which exercises the core authorization paths.
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
@@ -37,6 +36,10 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import express from 'express';
 import request from 'supertest';
 
+import {
+  orchestratorPermissionRules,
+  orchestratorWorkflowResourceRef,
+} from './permission-rules';
 import { createBackendRouter } from './router';
 
 // Mock service dependencies
@@ -298,9 +301,9 @@ describe('Router Authorization Tests', () => {
   beforeEach(async () => {
     mockPermissions = mockServices.permissions.mock();
     // Add authorizeConditional mock - returns DENY by default to fallback to specific permissions
-    mockPermissions.authorizeConditional = jest.fn().mockResolvedValue([
-      { result: AuthorizeResult.DENY },
-    ]);
+    mockPermissions.authorizeConditional = jest
+      .fn()
+      .mockResolvedValue([{ result: AuthorizeResult.DENY }]);
 
     const router = await createBackendRouter({
       config: mockServices.rootConfig({
@@ -321,9 +324,22 @@ describe('Router Authorization Tests', () => {
       permissions: mockPermissions,
       permissionsRegistry: {
         registerPermissions: jest.fn(),
-        getPermissionRuleset: jest.fn().mockReturnValue({
-          rules: {},
-          conditions: {},
+        addResourceType: jest.fn(),
+        getPermissionRuleset: jest.fn().mockImplementation(ref => {
+          if (ref !== orchestratorWorkflowResourceRef) {
+            throw new Error('getPermissionRuleset called with unexpected ref');
+          }
+          return {
+            getRuleByName: (name: string) => {
+              const rule = orchestratorPermissionRules.find(
+                r => r.name === name,
+              );
+              if (!rule) {
+                throw new Error(`Unknown rule: ${name}`);
+              }
+              return rule;
+            },
+          };
         }),
       } as any,
       httpAuth: mockServices.httpAuth.mock({
@@ -347,8 +363,7 @@ describe('Router Authorization Tests', () => {
 
   describe('POST /v2/workflows/overview - Authorization Logic', () => {
     it('should return ALL workflows when user has generic workflow permission (ALLOW)', async () => {
-      // User has orchestrator.workflow permission - can see everything
-      mockPermissions.authorize.mockResolvedValue([
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
         { result: AuthorizeResult.ALLOW },
       ]);
 
@@ -364,19 +379,16 @@ describe('Router Authorization Tests', () => {
         'workflow3',
       ]);
 
-      // Verify only generic permission was checked
-      expect(mockPermissions.authorize).toHaveBeenCalledTimes(1);
+      expect(mockPermissions.authorizeConditional).toHaveBeenCalledTimes(1);
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
     });
 
     it('should FILTER workflows when user has specific permissions only', async () => {
-      // User lacks generic permission but has specific workflow permissions
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Generic: orchestrator.workflow
-        .mockResolvedValueOnce([
-          { result: AuthorizeResult.ALLOW }, // orchestrator.workflow.workflow1
-          { result: AuthorizeResult.DENY }, // orchestrator.workflow.workflow2
-          { result: AuthorizeResult.ALLOW }, // orchestrator.workflow.workflow3
-        ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.ALLOW },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview')
@@ -387,19 +399,16 @@ describe('Router Authorization Tests', () => {
       expect(response.body.overviews[0].workflowId).toBe('workflow1');
       expect(response.body.overviews[1].workflowId).toBe('workflow3');
 
-      // Verify both generic and specific permissions were checked
-      expect(mockPermissions.authorize).toHaveBeenCalledTimes(2);
+      expect(mockPermissions.authorizeConditional).toHaveBeenCalledTimes(1);
+      expect(mockPermissions.authorize).toHaveBeenCalledTimes(1);
     });
 
     it('should return EMPTY array when user has no workflow permissions', async () => {
-      // User has neither generic nor specific permissions
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Generic
-        .mockResolvedValueOnce([
-          { result: AuthorizeResult.DENY }, // workflow1
-          { result: AuthorizeResult.DENY }, // workflow2
-          { result: AuthorizeResult.DENY }, // workflow3
-        ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview')
@@ -410,14 +419,11 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should handle user with permission for only ONE workflow', async () => {
-      // User has access to only workflow2
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }])
-        .mockResolvedValueOnce([
-          { result: AuthorizeResult.DENY }, // workflow1
-          { result: AuthorizeResult.ALLOW }, // workflow2
-          { result: AuthorizeResult.DENY }, // workflow3
-        ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.ALLOW },
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview')
@@ -429,14 +435,11 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should preserve workflow properties during filtering', async () => {
-      // Verify that filtering doesn't lose workflow metadata
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }])
-        .mockResolvedValueOnce([
-          { result: AuthorizeResult.ALLOW }, // workflow1
-          { result: AuthorizeResult.DENY }, // workflow2
-          { result: AuthorizeResult.DENY }, // workflow3
-        ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview')
@@ -451,14 +454,14 @@ describe('Router Authorization Tests', () => {
       });
     });
 
-    it('should call permissions.authorize with correct parameters', async () => {
-      mockPermissions.authorize.mockResolvedValue([
+    it('should call permissions.authorizeConditional with correct parameters', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
         { result: AuthorizeResult.ALLOW },
       ]);
 
       await request(app).post('/v2/workflows/overview').send({});
 
-      expect(mockPermissions.authorize).toHaveBeenCalledWith(
+      expect(mockPermissions.authorizeConditional).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({
             permission: expect.objectContaining({
@@ -473,7 +476,7 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should handle permission service errors gracefully', async () => {
-      mockPermissions.authorize.mockRejectedValue(
+      mockPermissions.authorizeConditional.mockRejectedValue(
         new Error('Permission service unavailable'),
       );
 
@@ -492,10 +495,12 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has generic workflow permission', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValue([ // generic permission
+      mockPermissions.authorizeConditional.mockResolvedValue([
+        // generic permission
         { result: AuthorizeResult.ALLOW },
       ]);
-      mockPermissions.authorize.mockResolvedValue([ // specific permission
+      mockPermissions.authorize.mockResolvedValue([
+        // specific permission
         { result: AuthorizeResult.ALLOW },
       ]);
 
@@ -524,11 +529,13 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has only specific workflow permission', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([ // generic permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        // generic permission
         { result: AuthorizeResult.DENY },
       ]);
-      mockPermissions.authorize
-      .mockResolvedValueOnce([ { result: AuthorizeResult.ALLOW } ]); // specific permission
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // specific permission
 
       const response = await request(app).get('/v2/workflows/workflow1/source');
 
@@ -538,7 +545,8 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should DENY when user lacks all permissions', async () => {
-      mockPermissions.authorize.mockResolvedValue([ // specific permission
+      mockPermissions.authorize.mockResolvedValue([
+        // specific permission
         { result: AuthorizeResult.DENY },
       ]);
 
@@ -594,8 +602,9 @@ describe('Router Authorization Tests', () => {
       mockPermissions.authorizeConditional.mockResolvedValue([
         { result: AuthorizeResult.ALLOW },
       ]);
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/workflow1/execute')
@@ -647,8 +656,9 @@ describe('Router Authorization Tests', () => {
       mockPermissions.authorizeConditional.mockResolvedValueOnce([
         { result: AuthorizeResult.ALLOW },
       ]);
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/workflow1/instance1/retrigger')
@@ -697,7 +707,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has workflow permission', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // Generic workflow permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // Generic workflow permission
       mockPermissions.authorize.mockResolvedValue([
         { result: AuthorizeResult.ALLOW },
       ]);
@@ -713,8 +725,12 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has workflow permission, but denied specific', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // Generic workflow permission
-      mockPermissions.authorize.mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]);
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // Generic workflow permission
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app).get(
         '/v2/workflows/workflow1/overview',
@@ -765,8 +781,12 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has workflow permission, but denied specific', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]);
-      mockPermissions.authorize.mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]);
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app).get(
         '/v2/workflows/workflow1/inputSchema',
@@ -832,8 +852,12 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has workflow permission', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([ { result: AuthorizeResult.ALLOW } ]); // generic permission 
-      mockPermissions.authorize.mockResolvedValue([ { result: AuthorizeResult.ALLOW } ]); // specific permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // generic permission
+      mockPermissions.authorize.mockResolvedValue([
+        { result: AuthorizeResult.ALLOW },
+      ]); // specific permission
 
       const response = await request(app)
         .post('/v2/workflows/workflow1/instances')
@@ -846,9 +870,12 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has allowed workflow permission, but denied specific', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([ { result: AuthorizeResult.ALLOW } ]); // generic permission 
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]);
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // generic permission
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/workflow1/instances')
@@ -861,8 +888,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has denied workflow permission, but allowed specific', async () => {
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/workflow1/instances')
@@ -895,8 +923,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has workflow permission', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce(
-        [ { result: AuthorizeResult.ALLOW } ]); // generic permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // generic permission
       mockPermissions.authorize.mockResolvedValue([
         { result: AuthorizeResult.ALLOW }, // specific permission
       ]);
@@ -912,10 +941,12 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has allowed workflow permission, but denied specific', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce(
-        [ { result: AuthorizeResult.ALLOW } ]); // generic permission
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]); // specific permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // generic permission
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]); // specific permission
 
       const response = await request(app).get(
         '/v2/workflows/workflow1/pingWorkflowService',
@@ -966,9 +997,12 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should return ALL instances when user has generic permission and specific', async () => {
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]) // specific permission 
-        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // admin view permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/instances')
@@ -978,27 +1012,22 @@ describe('Router Authorization Tests', () => {
       expect(response.body).toHaveProperty('items');
       expect(response.body.items).toHaveLength(3);
 
-      // Should include instances for all workflows when user has generic permission
       const processIds = response.body.items.map((item: any) => item.processId);
       expect(processIds).toContain('workflow1');
       expect(processIds).toContain('workflow2');
       expect(processIds).toContain('workflow3');
-      expect(mockPermissions.authorizeConditional).toHaveBeenCalledTimes(0);
-      expect(mockPermissions.authorize).toHaveBeenCalledTimes(2);
+      expect(mockPermissions.authorizeConditional).toHaveBeenCalledTimes(1);
+      expect(mockPermissions.authorize).toHaveBeenCalledTimes(1);
     });
 
     it('should return FILTERED instances when user has specific permissions', async () => {
-      // filterAuthorizedWorkflowIds: checks generic, then batch checks specific permissions
-      // Then checks instanceAdminView permission
       mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Generic workflow permission
         .mockResolvedValueOnce([
-          // Batch check all specific workflow permissions
-          { result: AuthorizeResult.ALLOW }, // workflow1
-          { result: AuthorizeResult.DENY }, // workflow2
-          { result: AuthorizeResult.ALLOW }, // workflow3
+          { result: AuthorizeResult.ALLOW },
+          { result: AuthorizeResult.DENY },
+          { result: AuthorizeResult.ALLOW },
         ])
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]); // instanceAdminView
+        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]);
 
       const response = await request(app)
         .post('/v2/workflows/instances')
@@ -1010,19 +1039,16 @@ describe('Router Authorization Tests', () => {
 
       const processIds = response.body.items.map((item: any) => item.processId);
       expect(processIds).toContain('workflow1');
-      expect(processIds).not.toContain('workflow2'); // User lacks permission for workflow2
+      expect(processIds).not.toContain('workflow2');
       expect(processIds).toContain('workflow3');
     });
 
     it('should return EMPTY array when user has no permissions', async () => {
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Generic
-        .mockResolvedValueOnce([
-          // Batch check all specific workflow permissions - all DENY
-          { result: AuthorizeResult.DENY }, // workflow1
-          { result: AuthorizeResult.DENY }, // workflow2
-          { result: AuthorizeResult.DENY }, // workflow3
-        ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/instances')
@@ -1039,8 +1065,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has workflow permission and is the initiator', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce( // Generic workflow permission
-        [{ result: AuthorizeResult.ALLOW }]
+      mockPermissions.authorizeConditional.mockResolvedValueOnce(
+        // Generic workflow permission
+        [{ result: AuthorizeResult.ALLOW }],
       );
       mockPermissions.authorize
         .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Specific workflow permission
@@ -1061,8 +1088,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has instanceAdminView permission', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce( // Generic workflow permission
-        [{ result: AuthorizeResult.ALLOW }]
+      mockPermissions.authorizeConditional.mockResolvedValueOnce(
+        // Generic workflow permission
+        [{ result: AuthorizeResult.ALLOW }],
       );
       mockPermissions.authorize
         .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Specific workflow permission
@@ -1079,7 +1107,8 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has denied generic permission, but allowed specific and admin permissions', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([ // Generic workflow permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        // Generic workflow permission
         { result: AuthorizeResult.DENY },
       ]);
       mockPermissions.authorize
@@ -1097,7 +1126,8 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has denied generic permission, but allowed specific and denied admin permissions', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([ // Generic workflow permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        // Generic workflow permission
         { result: AuthorizeResult.DENY },
       ]);
       mockPermissions.authorize
@@ -1149,7 +1179,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has workflow permission and is the initiator and has specific and admin permission', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // generic permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // generic permission
       mockPermissions.authorize
         .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]) // specific workflow permission
         .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // instanceAdminView
@@ -1165,7 +1197,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has workflow permission and is the initiator', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // Generic workflow permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // Generic workflow permission
       mockPermissions.authorize
         .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Specific workflow permission
         .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]); // instanceAdminView
@@ -1181,7 +1215,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has instanceAdminView permission', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // Generic workflow permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // Generic workflow permission
       mockPermissions.authorize
         .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Specific workflow permission
         .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // instanceAdminView
@@ -1197,7 +1233,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has instanceAdminView permission and specific permission, but no admin permissions', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // Generic workflow permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // Generic workflow permission
       mockPermissions.authorize
         .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]) // Specific workflow permission
         .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]); // instanceAdminView
@@ -1233,9 +1271,12 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has workflow.use permission and is the initiator', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // Generic workflow permission to read instance
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]); // Specific workflow permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // Generic workflow permission to read instance
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]); // Specific workflow permission
 
       const response = await request(app).delete(
         '/v2/workflows/instances/instance1/abort',
@@ -1264,9 +1305,12 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should ALLOW when user has instanceAdminView permission', async () => {
-      mockPermissions.authorizeConditional.mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // generic workflow permisssion
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // specific workflow permission
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // generic workflow permisssion
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+      ]); // specific workflow permission
 
       const response = await request(app).delete(
         '/v2/workflows/instances/instance1/abort',
@@ -1279,8 +1323,9 @@ describe('Router Authorization Tests', () => {
 
     it('should DENY when user lacks workflow.use permission', async () => {
       // Abort endpoint only checks workflow.use permissions
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]); // Specific workflow permission
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]); // Specific workflow permission
 
       const response = await request(app).delete(
         '/v2/workflows/instances/instance1/abort',
@@ -1298,10 +1343,9 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should return ALL workflows when user has generic workflow permission', async () => {
-      // When user has generic permission, all workflows are returned
-      mockPermissions.authorize.mockResolvedValueOnce([
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
         { result: AuthorizeResult.ALLOW },
-      ]); // Generic workflow permission - ALLOW
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview/entity')
@@ -1320,14 +1364,11 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should FILTER workflows when user has specific permissions only', async () => {
-      // User has permission only for workflow1 and workflow3
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Generic workflow permission
-        .mockResolvedValueOnce([
-          { result: AuthorizeResult.ALLOW }, // workflow1 specific - ALLOW
-          { result: AuthorizeResult.DENY }, // workflow2 specific - DENY
-          { result: AuthorizeResult.ALLOW }, // workflow3 specific - ALLOW
-        ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.ALLOW },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview/entity')
@@ -1345,13 +1386,11 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should return EMPTY array when user has no workflow permissions', async () => {
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Generic workflow permission
-        .mockResolvedValueOnce([
-          { result: AuthorizeResult.DENY }, // workflow1 specific
-          { result: AuthorizeResult.DENY }, // workflow2 specific
-          { result: AuthorizeResult.DENY }, // workflow3 specific
-        ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview/entity')
@@ -1365,14 +1404,11 @@ describe('Router Authorization Tests', () => {
     });
 
     it('should handle user with permission for only ONE workflow', async () => {
-      // User has permission only for workflow2
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // Generic workflow permission
-        .mockResolvedValueOnce([
-          { result: AuthorizeResult.DENY }, // workflow1 specific
-          { result: AuthorizeResult.ALLOW }, // workflow2 specific - ALLOW
-          { result: AuthorizeResult.DENY }, // workflow3 specific
-        ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.ALLOW },
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview/entity')
