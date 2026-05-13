@@ -113,6 +113,7 @@ type AddDocumentModalProps = {
   onClose: () => void;
   sessionId: string;
   existingDocumentNames: string[];
+  hasUploadsInProgress?: boolean;
   onFilesUploading?: (files: File[]) => void;
   onUploadStarted?: (info: { fileName: string; documentId: string }) => void;
   onUploadFailed?: (fileName: string) => void;
@@ -126,6 +127,7 @@ export const AddDocumentModal = ({
   onClose,
   sessionId,
   existingDocumentNames,
+  hasUploadsInProgress,
   onFilesUploading,
   onUploadStarted,
   onUploadFailed,
@@ -261,6 +263,12 @@ export const AddDocumentModal = ({
           </Alert>
         )}
 
+        {hasUploadsInProgress && (
+          <Alert severity="info" className={classes.errorAlert}>
+            {t('notebook.view.documents.uploadsInProgress')}
+          </Alert>
+        )}
+
         {remainingSlots > 0 && (
           <MultipleFileUpload
             className={classes.dropzone}
@@ -320,7 +328,7 @@ export const AddDocumentModal = ({
           className={classes.addButton}
           variant="contained"
           color="primary"
-          disabled={selectedFiles.length === 0}
+          disabled={selectedFiles.length === 0 || hasUploadsInProgress}
         >
           {(t as Function)('notebook.upload.modal.addButton', {
             count: selectedFiles.length,

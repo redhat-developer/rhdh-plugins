@@ -129,6 +129,7 @@ type DocumentSidebarProps = {
   completedFileNames?: Set<string>;
   deletingDocumentIds?: Set<string>;
   collapsed: boolean;
+  hasUploadsInProgress?: boolean;
   onToggleCollapse: () => void;
   onAddDocument: () => void;
   onDeleteDocument?: (documentId: string) => void;
@@ -141,6 +142,7 @@ export const DocumentSidebar = ({
   completedFileNames,
   deletingDocumentIds,
   collapsed,
+  hasUploadsInProgress,
   onToggleCollapse,
   onAddDocument,
   onDeleteDocument,
@@ -184,10 +186,14 @@ export const DocumentSidebar = ({
         </Typography>
         {isAddDisabled ? (
           <Tooltip
-            content={t('notebook.view.documents.maxReached')}
+            content={
+              hasUploadsInProgress
+                ? t('notebook.view.documents.uploadsInProgress')
+                : t('notebook.view.documents.maxReached')
+            }
             position="top"
           >
-            <span>
+            <Typography component="div">
               <Button
                 variant="link"
                 className={classes.addButton}
@@ -196,7 +202,7 @@ export const DocumentSidebar = ({
               >
                 {t('notebook.view.documents.add')}
               </Button>
-            </span>
+            </Typography>
           </Tooltip>
         ) : (
           <Button
