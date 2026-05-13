@@ -16,6 +16,9 @@ import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 // @public (undocumented)
 export const RepoAuthenticationExtension: FieldExtensionComponent<string, {}>;
 
+// @public (undocumented)
+export const RulesAcceptanceExtension: FieldExtensionComponent<string, {}>;
+
 // @public
 export type TFuncX2A = TranslationFunction<typeof x2aPluginTranslationRef.T>;
 
@@ -232,6 +235,28 @@ readonly "artifact.types.module_migration_plan": string;
 readonly "artifact.types.migrated_sources": string;
 readonly "artifact.types.project_metadata": string;
 readonly "artifact.types.ansible_project": string;
+readonly "rulesPage.dialog.cancel": string;
+readonly "rulesPage.dialog.updateError": string;
+readonly "rulesPage.dialog.createTitle": string;
+readonly "rulesPage.dialog.editTitle": string;
+readonly "rulesPage.dialog.titleField": string;
+readonly "rulesPage.dialog.descriptionField": string;
+readonly "rulesPage.dialog.requiredField": string;
+readonly "rulesPage.dialog.save": string;
+readonly "rulesPage.dialog.createError": string;
+readonly "rulesPage.table.title": string;
+readonly "rulesPage.table.id": string;
+readonly "rulesPage.table.required": string;
+readonly "rulesPage.table.description": string;
+readonly "rulesPage.table.createdAt": string;
+readonly "rulesPage.table.optional": string;
+readonly "rulesPage.table.editRule": string;
+readonly "rulesPage.table.noRules": string;
+readonly "rulesPage.title": string;
+readonly "rulesPage.subtitle": string;
+readonly "rulesPage.addRule": string;
+readonly "rulesPage.manageRules": string;
+readonly "rulesPage.notAllowed": string;
 readonly empty: string;
 }>;
 

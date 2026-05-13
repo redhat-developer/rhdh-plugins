@@ -28,7 +28,10 @@ import type {
   Artifact,
   Telemetry,
   ProjectsGet,
+  RuleSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+import { RuleEntity } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { CreateJobInput } from './types';
 
@@ -150,4 +153,32 @@ export interface X2ADatabaseServiceApi {
   }): Promise<Job | undefined>;
 
   deleteJob(args: { id: string }): Promise<number>;
+
+  // Rules
+
+  createRule(input: {
+    title: string;
+    description: string;
+    required?: boolean;
+  }): Promise<RuleEntity>;
+
+  updateRule(args: {
+    id: string;
+    title: string;
+    description: string;
+    required: boolean;
+  }): Promise<RuleEntity | undefined>;
+
+  getRule(args: { id: string }): Promise<RuleEntity | undefined>;
+
+  listRules(): Promise<RuleEntity[]>;
+
+  attachRulesToProject(args: {
+    projectId: string;
+    ruleIds: string[];
+  }): Promise<void>;
+
+  getAcceptedRulesForProject(args: {
+    projectId: string;
+  }): Promise<RuleSnapshot[]>;
 }

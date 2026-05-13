@@ -105,6 +105,10 @@ export class DefaultApiClient {
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdPatch(request: ProjectsProjectIdPatch, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
+    rulesGet(request: RulesGet, options?: RequestOptions): Promise<TypedResponse<RulesGet200Response>>;
+    rulesPost(request: RulesPost, options?: RequestOptions): Promise<TypedResponse<Rule>>;
+    rulesRuleIdGet(request: RulesRuleIdGet, options?: RequestOptions): Promise<TypedResponse<Rule>>;
+    rulesRuleIdPut(request: RulesRuleIdPut, options?: RequestOptions): Promise<TypedResponse<Rule>>;
 }
 
 // @public
@@ -298,6 +302,7 @@ export const POLLING_INTERVAL_MS: number;
 
 // @public (undocumented)
 export interface Project {
+    acceptedRules?: Array<RuleSnapshot>;
     createdAt: Date;
     description?: string;
     dirName?: string;
@@ -342,6 +347,7 @@ export type ProjectsPost = {
 
 // @public (undocumented)
 export interface ProjectsPostRequest {
+    acceptedRuleIds?: Array<string>;
     description: string;
     name: string;
     ownedByGroup?: string;
@@ -598,6 +604,95 @@ export function resolveScmProvider(repoUrl: string, hostProviderMap?: Map<string
 
 // @public
 export function resolveScmProviderByName(name: ScmProviderName): ScmProvider;
+
+// @public (undocumented)
+export interface Rule {
+    createdAt: Date;
+    description: string;
+    id: string;
+    required: boolean;
+    title: string;
+    updatedAt: Date;
+}
+
+// @public (undocumented)
+export class RuleEntity {
+    constructor(id: string, title: string, description: string, required: boolean, createdAt: Date, updatedAt: Date);
+    content(): string;
+    // (undocumented)
+    readonly createdAt: Date;
+    // (undocumented)
+    readonly description: string;
+    // (undocumented)
+    equals(other: RuleEntity): boolean;
+    // (undocumented)
+    static fromJSON(json: unknown): RuleEntity;
+    // (undocumented)
+    static fromRow(row: Record<string, unknown>): RuleEntity;
+    // (undocumented)
+    readonly id: string;
+    path(): string;
+    // (undocumented)
+    readonly required: boolean;
+    // (undocumented)
+    readonly title: string;
+    // (undocumented)
+    toSnapshot(): RuleSnapshot;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly updatedAt: Date;
+}
+
+// @public (undocumented)
+export type RulesGet = {};
+
+// @public (undocumented)
+export interface RulesGet200Response {
+    // (undocumented)
+    items?: Array<Rule>;
+}
+
+// @public
+export interface RuleSnapshot {
+    description: string;
+    id: string;
+    title: string;
+}
+
+// @public (undocumented)
+export type RulesPost = {
+    body: RulesPostRequest;
+};
+
+// @public (undocumented)
+export interface RulesPostRequest {
+    description: string;
+    required?: boolean;
+    title: string;
+}
+
+// @public (undocumented)
+export type RulesRuleIdGet = {
+    path: {
+        ruleId: string;
+    };
+};
+
+// @public (undocumented)
+export type RulesRuleIdPut = {
+    path: {
+        ruleId: string;
+    };
+    body: RulesRuleIdPutRequest;
+};
+
+// @public (undocumented)
+export interface RulesRuleIdPutRequest {
+    description: string;
+    required: boolean;
+    title: string;
+}
 
 // @public
 export const RUN_INIT_DEEP_LINK_HASH = "#runinit";

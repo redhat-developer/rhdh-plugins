@@ -264,6 +264,30 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Fehler beim erneuten Auslösen der Init-Phase für Projekt „{{name}}"',
     'retriggerInit.errorStart':
       'Fehler beim Starten der Projektinitialisierung',
+    'rulesPage.title': 'Konvertierungsregeln',
+    'rulesPage.subtitle':
+      'Verwalten Sie Regeln, die Projekte bei der Erstellung akzeptieren müssen.',
+    'rulesPage.addRule': 'Regel hinzufügen',
+    'rulesPage.manageRules': 'Regeln verwalten',
+    'rulesPage.notAllowed':
+      'Sie haben keine Berechtigung, Regeln zu verwalten.',
+    'rulesPage.table.id': 'ID',
+    'rulesPage.table.title': 'Titel',
+    'rulesPage.table.description': 'Beschreibung',
+    'rulesPage.table.required': 'Erforderlich',
+    'rulesPage.table.optional': 'Optional',
+    'rulesPage.table.createdAt': 'Erstellt',
+    'rulesPage.table.editRule': 'Regel bearbeiten',
+    'rulesPage.table.noRules': 'Noch keine Regeln definiert.',
+    'rulesPage.dialog.createTitle': 'Regel erstellen',
+    'rulesPage.dialog.editTitle': 'Regel bearbeiten',
+    'rulesPage.dialog.titleField': 'Titel',
+    'rulesPage.dialog.descriptionField': 'Beschreibung',
+    'rulesPage.dialog.requiredField': 'Für alle Projekte erforderlich',
+    'rulesPage.dialog.save': 'Speichern',
+    'rulesPage.dialog.cancel': 'Abbrechen',
+    'rulesPage.dialog.createError': 'Fehler beim Erstellen der Regel',
+    'rulesPage.dialog.updateError': 'Fehler beim Aktualisieren der Regel',
   },
 });
 

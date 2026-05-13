@@ -109,6 +109,7 @@ async function handleManualCreation(params: {
     targetRepoUrl?: string;
     targetRepoBranch: string;
     userPrompt?: string;
+    acceptedRuleIds?: string;
   };
   secrets: Record<string, string> | undefined;
   api: DefaultApiClient;
@@ -161,6 +162,16 @@ async function handleManualCreation(params: {
     );
   }
 
+  // Parse acceptedRuleIds from JSON string (scaffolder field value)
+  let acceptedRuleIds: string[] | undefined;
+  if (input.acceptedRuleIds) {
+    try {
+      acceptedRuleIds = JSON.parse(input.acceptedRuleIds);
+    } catch {
+      logger.warn('Failed to parse acceptedRuleIds, ignoring');
+    }
+  }
+
   return createAndInitProject({
     api,
     row: {
@@ -175,6 +186,7 @@ async function handleManualCreation(params: {
     sourceRepoToken,
     targetRepoToken,
     userPrompt: input.userPrompt,
+    acceptedRuleIds,
     backstageToken: token,
     hostProviderMap,
     logger,
@@ -262,6 +274,7 @@ async function handleCsvBulkImport(params: {
         sourceRepoToken,
         targetRepoToken,
         userPrompt,
+        acceptedRuleIds: row.acceptedRuleIds,
         backstageToken: token,
         hostProviderMap,
         logger,
@@ -347,6 +360,11 @@ export function createProjectAction(
                 description: 'The user prompt for the project init phase',
               })
               .optional(),
+            acceptedRuleIds: z
+              .string({
+                description: 'JSON-stringified array of accepted rule UUIDs',
+              })
+              .optional(),
             csvContent: z.string().optional(),
           }),
           z.object({
@@ -378,6 +396,7 @@ export function createProjectAction(
             areTargetAndSourceRepoShared: z.boolean().optional(),
             targetRepoUrl: z.string().optional(),
             targetRepoBranch: z.string().optional(),
+            acceptedRuleIds: z.string().optional(),
           }),
         ]),
       output: {

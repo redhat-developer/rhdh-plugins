@@ -37,6 +37,10 @@ import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectId
 import { ProjectsProjectIdPatchRequest } from '../models/ProjectsProjectIdPatchRequest.model';
 import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
 import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunPostRequest.model';
+import { Rule } from '../models/Rule.model';
+import { RulesGet200Response } from '../models/RulesGet200Response.model';
+import { RulesPostRequest } from '../models/RulesPostRequest.model';
+import { RulesRuleIdPutRequest } from '../models/RulesRuleIdPutRequest.model';
 
 /**
  * Wraps the Response type to convey a type on the json call.
@@ -191,6 +195,33 @@ export type ProjectsProjectIdRunPost = {
     projectId: string;
   };
   body: ProjectsProjectIdRunPostRequest;
+};
+/**
+ * @public
+ */
+export type RulesGet = {};
+/**
+ * @public
+ */
+export type RulesPost = {
+  body: RulesPostRequest;
+};
+/**
+ * @public
+ */
+export type RulesRuleIdGet = {
+  path: {
+    ruleId: string;
+  };
+};
+/**
+ * @public
+ */
+export type RulesRuleIdPut = {
+  path: {
+    ruleId: string;
+  };
+  body: RulesRuleIdPutRequest;
 };
 
 /**
@@ -602,6 +633,108 @@ export class DefaultApiClient {
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
       method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * Returns a list of all rules.
+   */
+  public async rulesGet(
+    // @ts-ignore
+    request: RulesGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<RulesGet200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules`;
+
+    const uri = parser.parse(uriTemplate).expand({});
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Creates a new rule (admin only).
+   * @param rulesPostRequest -
+   */
+  public async rulesPost(
+    // @ts-ignore
+    request: RulesPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Rule>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules`;
+
+    const uri = parser.parse(uriTemplate).expand({});
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * Returns a rule by ID.
+   * @param ruleId -
+   */
+  public async rulesRuleIdGet(
+    // @ts-ignore
+    request: RulesRuleIdGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Rule>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules/{ruleId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      ruleId: request.path.ruleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Updates a rule by ID (admin only).
+   * @param ruleId -
+   * @param rulesRuleIdPutRequest -
+   */
+  public async rulesRuleIdPut(
+    // @ts-ignore
+    request: RulesRuleIdPut,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Rule>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules/{ruleId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      ruleId: request.path.ruleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'PUT',
       body: JSON.stringify(request.body),
     });
   }

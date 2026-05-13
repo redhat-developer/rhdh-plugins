@@ -178,6 +178,9 @@ spec:
                         - bitbucket.org
 
     - title: Conversion parameters
+      ui:order:
+        - userPrompt
+        - acceptedRuleIds
       properties:
         userPrompt:
           title: User prompt
@@ -186,6 +189,10 @@ spec:
           ui:widget: textarea
           ui:options:
             rows: 3
+        acceptedRuleIds:
+          title: Project rules
+          type: string
+          ui:field: RulesAcceptance
 
   steps:
     - id: createProject
@@ -203,6 +210,7 @@ spec:
         targetRepoUrl: ${{ parameters.targetRepoUrl }}
         targetRepoBranch: ${{ parameters.targetRepoBranch }}
         userPrompt: ${{ parameters.userPrompt }}
+        acceptedRuleIds: ${{ parameters.acceptedRuleIds }}
 
   # Outputs are displayed to the user after a successful execution of the template.
   output:

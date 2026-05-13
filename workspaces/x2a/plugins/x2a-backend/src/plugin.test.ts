@@ -136,6 +136,17 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   listJobsForModule: jest
     .fn()
     .mockRejectedValue(new NotAllowedError('mock error')),
+  // rules
+  createRule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  updateRule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getRule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  listRules: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  attachRulesToProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  getAcceptedRulesForProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
 });
 
 const getKubeServiceMock = () =>

@@ -22,6 +22,7 @@ import type { RouterDeps } from './types';
 import { registerProjectRoutes } from './projects';
 import { registerModuleRoutes } from './modules';
 import { registerJobRoutes } from './jobs';
+import { registerRuleRoutes } from './rules';
 import { registerCollectArtifactsRoutes } from './collectArtifacts';
 
 const publicDir = resolvePackagePath(
@@ -45,6 +46,7 @@ export async function createRouter(deps: RouterDeps): Promise<express.Router> {
   registerProjectRoutes(apiRouter, deps);
   registerModuleRoutes(apiRouter, deps);
   registerJobRoutes(apiRouter, deps);
+  registerRuleRoutes(apiRouter, deps);
 
   // Mount API router under main router
   mainRouter.use(apiRouter);

@@ -36,6 +36,8 @@ import {
   DEFAULT_PAGE_SIZE,
   IN_MEMORY_SORT_WARN_THRESHOLD,
   ProjectsGet,
+  RuleEntity,
+  type RuleSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import {
   x2aDatabaseServiceRef,
@@ -48,6 +50,7 @@ import {
 import { JobOperations } from './jobOperations';
 import { ModuleOperations } from './moduleOperations';
 import { ProjectOperations } from './projectOperations';
+import { RuleOperations } from './ruleOperations';
 import { isNonDbSortField } from './queryHelpers';
 import { MAX_CONCURRENT_ENRICHMENT_JOBS } from '../constants';
 import { migrate } from '../dbMigrate';
@@ -59,6 +62,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
   readonly #projectOps: ProjectOperations;
   readonly #moduleOps: ModuleOperations;
   readonly #jobOps: JobOperations;
+  readonly #ruleOps: RuleOperations;
 
   static create(options: { logger: LoggerService; dbClient: Knex }) {
     return new X2ADatabaseService(options.logger, options.dbClient);
@@ -69,6 +73,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     this.#projectOps = new ProjectOperations(logger, dbClient);
     this.#moduleOps = new ModuleOperations(logger, dbClient);
     this.#jobOps = new JobOperations(logger, dbClient);
+    this.#ruleOps = new RuleOperations(logger, dbClient);
   }
 
   /**
@@ -470,6 +475,46 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
 
   async deleteJob({ id }: { id: string }): Promise<number> {
     return this.#jobOps.deleteJob({ id });
+  }
+
+  // Rules
+
+  async createRule(input: {
+    title: string;
+    description: string;
+    required?: boolean;
+  }): Promise<RuleEntity> {
+    return this.#ruleOps.createRule(input);
+  }
+
+  async updateRule(args: {
+    id: string;
+    title: string;
+    description: string;
+    required: boolean;
+  }): Promise<RuleEntity | undefined> {
+    return this.#ruleOps.updateRule(args);
+  }
+
+  async getRule({ id }: { id: string }): Promise<RuleEntity | undefined> {
+    return this.#ruleOps.getRule({ id });
+  }
+
+  async listRules(): Promise<RuleEntity[]> {
+    return this.#ruleOps.listRules();
+  }
+
+  async attachRulesToProject(args: {
+    projectId: string;
+    ruleIds: string[];
+  }): Promise<void> {
+    return this.#ruleOps.attachRulesToProject(args);
+  }
+
+  async getAcceptedRulesForProject(args: {
+    projectId: string;
+  }): Promise<RuleSnapshot[]> {
+    return this.#ruleOps.getAcceptedRulesForProject(args);
   }
 }
 

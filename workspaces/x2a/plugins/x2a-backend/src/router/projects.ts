@@ -148,6 +148,7 @@ export function registerProjectRoutes(
       targetRepoUrl: z.string(),
       sourceRepoBranch: z.string(),
       targetRepoBranch: z.string(),
+      acceptedRuleIds: z.array(z.string()).optional(),
     });
 
     const parsedBody = projectCreateRequestSchema
@@ -176,6 +177,17 @@ export function registerProjectRoutes(
     // create project
     const newProject = await x2aDatabase.createProject(requestBody, {
       credentials: await httpAuth.credentials(req, { allow: ['user'] }),
+    });
+
+    // Attach accepted rules (auto-appends required rules even with empty array)
+    await x2aDatabase.attachRulesToProject({
+      projectId: newProject.id,
+      ruleIds: requestBody.acceptedRuleIds ?? [],
+    });
+
+    // Include accepted rules in the response
+    newProject.acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+      projectId: newProject.id,
     });
 
     const response: ProjectsPost['response'] = newProject;
@@ -395,6 +407,11 @@ export function registerProjectRoutes(
         config.getOptionalString('x2a.callbackBaseUrl') ??
         (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
+      // Read accepted rules snapshot for the K8s job
+      const acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+        projectId,
+      });
+
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
@@ -408,6 +425,7 @@ export function registerProjectRoutes(
         targetRepo,
         aapCredentials,
         userPrompt,
+        acceptedRules,
       });
 
       // Update job with k8s job name

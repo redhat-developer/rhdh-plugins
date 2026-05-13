@@ -271,6 +271,30 @@ const x2aPluginTranslationFr = createTranslationMessages({
       "Erreur lors de la relance de la phase d'initialisation du projet « {{name}} »",
     'retriggerInit.errorStart':
       "Erreur lors du démarrage de l'initialisation du projet",
+    'rulesPage.title': 'Règles de conversion',
+    'rulesPage.subtitle':
+      'Gérez les règles que les projets doivent accepter lors de la création.',
+    'rulesPage.addRule': 'Ajouter une règle',
+    'rulesPage.manageRules': 'Gérer les règles',
+    'rulesPage.notAllowed':
+      "Vous n'avez pas la permission de gérer les règles.",
+    'rulesPage.table.id': 'ID',
+    'rulesPage.table.title': 'Titre',
+    'rulesPage.table.description': 'Description',
+    'rulesPage.table.required': 'Obligatoire',
+    'rulesPage.table.optional': 'Optionnel',
+    'rulesPage.table.createdAt': 'Créé',
+    'rulesPage.table.editRule': 'Modifier la règle',
+    'rulesPage.table.noRules': 'Aucune règle définie pour le moment.',
+    'rulesPage.dialog.createTitle': 'Créer une règle',
+    'rulesPage.dialog.editTitle': 'Modifier la règle',
+    'rulesPage.dialog.titleField': 'Titre',
+    'rulesPage.dialog.descriptionField': 'Description',
+    'rulesPage.dialog.requiredField': 'Obligatoire pour tous les projets',
+    'rulesPage.dialog.save': 'Enregistrer',
+    'rulesPage.dialog.cancel': 'Annuler',
+    'rulesPage.dialog.createError': 'Erreur lors de la création de la règle',
+    'rulesPage.dialog.updateError': 'Erreur lors de la mise à jour de la règle',
   },
 });
 

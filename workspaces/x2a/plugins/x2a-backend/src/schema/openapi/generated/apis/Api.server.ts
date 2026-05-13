@@ -34,6 +34,10 @@ import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectId
 import { ProjectsProjectIdPatchRequest } from '../models/ProjectsProjectIdPatchRequest.model';
 import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
 import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunPostRequest.model';
+import { Rule } from '../models/Rule.model';
+import { RulesGet200Response } from '../models/RulesGet200Response.model';
+import { RulesPostRequest } from '../models/RulesPostRequest.model';
+import { RulesRuleIdPutRequest } from '../models/RulesRuleIdPutRequest.model';
 
 /**
  * @public
@@ -186,6 +190,38 @@ export type ProjectsProjectIdRunPost = {
   body: ProjectsProjectIdRunPostRequest;
   response: ProjectsProjectIdRunPost200Response | void;
 };
+/**
+ * @public
+ */
+export type RulesGet = {
+  response: RulesGet200Response;
+};
+/**
+ * @public
+ */
+export type RulesPost = {
+  body: RulesPostRequest;
+  response: Rule;
+};
+/**
+ * @public
+ */
+export type RulesRuleIdGet = {
+  path: {
+    ruleId: string;
+  };
+  response: Rule | void;
+};
+/**
+ * @public
+ */
+export type RulesRuleIdPut = {
+  path: {
+    ruleId: string;
+  };
+  body: RulesRuleIdPutRequest;
+  response: Rule | void;
+};
 
 export type EndpointMap = {
   '#get|/projects': ProjectsGet;
@@ -215,4 +251,12 @@ export type EndpointMap = {
   '#patch|/projects/{projectId}': ProjectsProjectIdPatch;
 
   '#post|/projects/{projectId}/run': ProjectsProjectIdRunPost;
+
+  '#get|/rules': RulesGet;
+
+  '#post|/rules': RulesPost;
+
+  '#get|/rules/{ruleId}': RulesRuleIdGet;
+
+  '#put|/rules/{ruleId}': RulesRuleIdPut;
 };

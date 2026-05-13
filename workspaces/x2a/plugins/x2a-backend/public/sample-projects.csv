@@ -1,2 +1,2 @@
-name,description,ownedByGroup,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch
-my-examples,Convert existing automation to Ansible,,https://github.com/x2ansible/config-examples,main,https://github.com/my-converted-projects/my-examples,target
+name,description,ownedByGroup,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch,acceptedRuleIds
+my-examples,Convert existing automation to Ansible,,https://github.com/x2ansible/config-examples,main,https://github.com/my-converted-projects/my-examples,target,
