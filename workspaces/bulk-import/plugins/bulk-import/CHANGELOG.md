@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.3.4
+
+### Patch Changes
+
+- f614da8: Fixed the add-repositories table staying in a loading state when the repository query was disabled after SCM token collection failed, and improved the experience when a user dismisses the SCM login prompt by showing a sign-in empty state instead of a configuration error.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.4
+
 ## 7.3.3
 
 ### Patch Changes
