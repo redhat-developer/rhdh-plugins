@@ -16,9 +16,8 @@
 
 import { Content, Header, Page } from '@backstage/core-components';
 
-import { createStyles, makeStyles } from '@material-ui/core/styles';
-
 import { useTranslation } from '../hooks/useTranslation';
+import { createStyles, makeStyles } from '../utils/makeStyles';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 
 const useStyles = makeStyles(() =>

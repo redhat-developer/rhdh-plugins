@@ -34,7 +34,7 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { Button, makeStyles } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import {
@@ -112,6 +112,7 @@ import {
   getFootnoteProps,
   SortOption,
 } from '../utils/lightspeed-chatbox-utils';
+import { makeStyles } from '../utils/makeStyles';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
 import { CollapsedHistoryStrip, EditSquareIcon } from './CollapsedHistoryStrip';
@@ -346,7 +347,7 @@ const useStyles = makeStyles(theme => ({
     },
     '& .pf-chatbot__message-bar': {
       backgroundColor:
-        theme.palette.type === 'light'
+        theme.palette.mode === 'light'
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },

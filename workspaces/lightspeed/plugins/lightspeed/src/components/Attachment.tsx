@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
 import {
   AttachmentEdit,
   ChatbotDisplayMode,
@@ -22,6 +21,7 @@ import {
 } from '@patternfly/chatbot';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { makeStyles } from '../utils/makeStyles';
 import { useFileAttachmentContext } from './AttachmentContext';
 
 const useStyles = makeStyles(() => ({

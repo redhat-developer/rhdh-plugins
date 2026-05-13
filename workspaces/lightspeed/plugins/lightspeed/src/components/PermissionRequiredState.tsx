@@ -19,9 +19,9 @@ import { Fragment } from 'react';
 import { EmptyState } from '@backstage/core-components';
 
 import { Typography } from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { createStyles, makeStyles } from '../utils/makeStyles';
 import { PermissionRequiredIcon } from './PermissionRequiredIcon';
 import { Trans } from './Trans';
 

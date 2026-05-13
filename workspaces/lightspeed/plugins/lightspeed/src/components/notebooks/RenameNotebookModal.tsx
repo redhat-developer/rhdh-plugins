@@ -17,7 +17,6 @@
 import { useEffect, useState } from 'react';
 
 import { TextField } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -31,6 +30,7 @@ import Typography from '@mui/material/Typography';
 
 import { useRenameNotebook } from '../../hooks/notebooks/useRenameNotebook';
 import { useTranslation } from '../../hooks/useTranslation';
+import { makeStyles } from '../../utils/makeStyles';
 
 const useStyles = makeStyles(theme => ({
   dialogPaper: {

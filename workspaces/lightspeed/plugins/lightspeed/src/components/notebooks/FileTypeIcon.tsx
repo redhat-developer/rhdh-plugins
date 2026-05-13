@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '../../utils/makeStyles';
 
 const FILE_TYPE_COLORS: Record<string, string> = {
   pdf: '#C9190B',

@@ -21,12 +21,12 @@ import {
   Link,
   Typography,
 } from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { createStyles, makeStyles } from '../utils/makeStyles';
 
 const LLAMA_STACK_CONFIGURE_DOCS_URL =
   'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/interacting_with_red_hat_developer_lightspeed_for_red_hat_developer_hub/developer-lightspeed#proc-installing-and-configuring-lightspeed_developer-lightspeed';

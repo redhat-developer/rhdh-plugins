@@ -16,7 +16,6 @@
 
 import { Ref, useState } from 'react';
 
-import { createStyles, makeStyles } from '@material-ui/core';
 import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 import Divider from '@mui/material/Divider';
@@ -40,6 +39,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { createStyles, makeStyles } from '../utils/makeStyles';
 import { McpSettingsIcon } from './McpSettingsIcon';
 
 type LightspeedChatBoxHeaderProps = {

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
+import { makeStyles } from '../../utils/makeStyles';
 import { FileTypeIcon } from './FileTypeIcon';
 
 const useStyles = makeStyles(theme => ({
@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     padding: '8px 12px',
     borderRadius: 8,
-    backgroundColor: theme.palette.type === 'dark' ? '#2a2a2a' : '#f5f5f5',
+    backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
     marginBottom: 8,
     '&:last-child': {
       marginBottom: 0,
