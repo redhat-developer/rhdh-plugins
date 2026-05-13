@@ -63,10 +63,26 @@ describe('RepositoriesTableBody', () => {
     mockT.mockImplementation((key: string) => key);
   });
 
-  it('shows log-in empty state when loginRejected is true', () => {
+  it('shows log-in empty state for GitHub when loginRejected is true', () => {
     render(
       <table>
         <RepositoriesTableBody {...defaultProps} rows={[]} loginRejected />
+      </table>,
+    );
+
+    expect(screen.getByTestId('no-repositories-found')).toBeInTheDocument();
+    expect(mockT).toHaveBeenCalledWith('repositories.logInToViewRepositories');
+  });
+
+  it('shows log-in empty state for GitLab when loginRejected is true', () => {
+    render(
+      <table>
+        <RepositoriesTableBody
+          {...defaultProps}
+          rows={[]}
+          loginRejected
+          isApprovalToolGitlab
+        />
       </table>,
     );
 

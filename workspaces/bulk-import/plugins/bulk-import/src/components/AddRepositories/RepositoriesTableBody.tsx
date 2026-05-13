@@ -104,10 +104,13 @@ export const RepositoriesTableBody = ({
 
   let emptyStateMessageKey:
     | 'repositories.logInToViewProjects'
+    | 'repositories.logInToViewRepositories'
     | 'repositories.noProjectsFound'
     | 'repositories.noRecordsFound';
   if (loginRejected) {
-    emptyStateMessageKey = 'repositories.logInToViewProjects';
+    emptyStateMessageKey = isApprovalToolGitlab
+      ? 'repositories.logInToViewProjects'
+      : 'repositories.logInToViewRepositories';
   } else if (isApprovalToolGitlab) {
     emptyStateMessageKey = 'repositories.noProjectsFound';
   } else {
