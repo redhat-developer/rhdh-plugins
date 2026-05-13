@@ -31,10 +31,15 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import {
+  AuthorizeResult,
+  type PolicyDecision,
+} from '@backstage/plugin-permission-common';
 
 import express from 'express';
 import request from 'supertest';
+
+import { ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import {
   orchestratorPermissionRules,
@@ -289,6 +294,23 @@ jest.mock('./api/v2', () => ({
   })),
 }));
 
+function rbacConditionalRead(workflowIds: string[]): PolicyDecision {
+  return {
+    result: AuthorizeResult.CONDITIONAL,
+    pluginId: 'orchestrator',
+    resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
+    conditions: {
+      anyOf: [
+        {
+          rule: 'IS_ALLOWED_WORKFLOW_ID',
+          resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
+          params: { workflowIds },
+        },
+      ],
+    },
+  } as PolicyDecision;
+}
+
 describe('Router Authorization Tests', () => {
   const mockCredentials = {
     $$type: '@backstage/BackstageCredentials' as const,
@@ -486,6 +508,132 @@ describe('Router Authorization Tests', () => {
 
       // Should return 500 when permission check fails
       expect(response.status).toBe(500);
+    });
+  });
+
+  describe('Conditional policies (RBAC CONDITIONAL + IS_ALLOWED_WORKFLOW_ID)', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('POST /v2/workflows/overview filters by workflowIds in condition without per-workflow authorize', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow1', 'workflow3']),
+      ]);
+
+      const response = await request(app)
+        .post('/v2/workflows/overview')
+        .send({});
+
+      expect(response.status).toBe(200);
+      expect(response.body.overviews).toHaveLength(2);
+      expect(
+        response.body.overviews
+          .map((o: { workflowId: string }) => o.workflowId)
+          .sort(),
+      ).toEqual(['workflow1', 'workflow3']);
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
+    });
+
+    it('POST /v2/workflows/overview returns empty when allowed ids do not match catalog', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow99']),
+      ]);
+
+      const response = await request(app)
+        .post('/v2/workflows/overview')
+        .send({});
+
+      expect(response.status).toBe(200);
+      expect(response.body.overviews).toHaveLength(0);
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
+    });
+
+    it('GET /v2/workflows/:workflowId/source allows when workflowId matches condition', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow2']),
+      ]);
+
+      const response = await request(app).get('/v2/workflows/workflow2/source');
+
+      expect(response.status).toBe(200);
+      expect(response.text).toBe('workflow source content');
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
+    });
+
+    it('GET /v2/workflows/:workflowId/source returns 403 when workflowId not in condition', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow1']),
+      ]);
+
+      const response = await request(app).get('/v2/workflows/workflow2/source');
+
+      expect(response.status).toBe(403);
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
+    });
+
+    it('POST /v2/workflows/:workflowId/execute allows when workflowId matches condition', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow1']),
+      ]);
+
+      const response = await request(app)
+        .post('/v2/workflows/workflow1/execute')
+        .send({ inputData: {} });
+
+      expect(response.status).toBe(200);
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
+    });
+
+    it('POST /v2/workflows/:workflowId/execute returns 403 when workflowId not in condition', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow2']),
+      ]);
+
+      const response = await request(app)
+        .post('/v2/workflows/workflow1/execute')
+        .send({ inputData: {} });
+
+      expect(response.status).toBe(403);
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
+    });
+
+    it('POST /v2/workflows/instances returns only instances for allowed workflow ids', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow1', 'workflow3']),
+      ]);
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]);
+
+      const response = await request(app)
+        .post('/v2/workflows/instances')
+        .send({});
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('items');
+      expect(response.body.items).toHaveLength(2);
+      expect(
+        response.body.items
+          .map((i: { processId: string }) => i.processId)
+          .sort(),
+      ).toEqual(['workflow1', 'workflow3']);
+      expect(mockPermissions.authorizeConditional).toHaveBeenCalledTimes(1);
+      expect(mockPermissions.authorize).toHaveBeenCalledTimes(1);
+    });
+
+    it('POST /v2/workflows/instances returns empty array when condition matches no workflows', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow99']),
+      ]);
+
+      const response = await request(app)
+        .post('/v2/workflows/instances')
+        .send({});
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual([]);
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
     });
   });
 
