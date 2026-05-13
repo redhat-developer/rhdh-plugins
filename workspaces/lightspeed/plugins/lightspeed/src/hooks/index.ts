@@ -25,6 +25,7 @@ export * from './useLastOpenedConversation';
 export * from './useLightspeedDeletePermission';
 export * from './notebooks/useLightspeedNotebooksPermission';
 export * from './useLightspeedViewPermission';
+export * from './useNotebookConversationIds';
 export * from './useDisplayModeSettings';
 export * from './notebooks/useNotebookSession';
 export * from './notebooks/useNotebookSessions';

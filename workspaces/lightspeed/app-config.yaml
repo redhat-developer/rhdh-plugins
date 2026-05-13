@@ -16,9 +16,10 @@ app:
 organization:
   name: Red Hat
 
+# Disable AI Notebooks feature by default
 lightspeed:
   notebooks:
-    enabled: false
+    enabled: ${NOTEBOOKS_ENABLED:-false}
     queryDefaults:
       model: ${NOTEBOOKS_QUERY_MODEL}
       provider_id: ${NOTEBOOKS_QUERY_PROVIDER_ID}
@@ -118,3 +119,6 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
+  locations:
+    - type: file
+      target: ./catalog-info.yaml

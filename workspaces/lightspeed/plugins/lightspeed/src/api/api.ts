@@ -47,6 +47,7 @@ export type LightspeedAPI = {
     newName: string,
   ) => Promise<{ success: boolean }>;
   getConversations: () => Promise<ConversationList>;
+  getNotebookConversationIds: () => Promise<string[]>;
   getFeedbackStatus: () => Promise<boolean>;
   captureFeedback: (payload: CaptureFeedback) => Promise<{ response: string }>;
   isTopicRestrictionEnabled: () => Promise<boolean>;

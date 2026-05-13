@@ -38,6 +38,11 @@ export default defineConfig({
         port: 3000,
         reuseExistingServer: true,
         cwd: __dirname,
+        env: {
+          NOTEBOOKS_ENABLED: 'true',
+          NOTEBOOKS_QUERY_MODEL: 'gpt-4',
+          NOTEBOOKS_QUERY_PROVIDER_ID: 'openai',
+        },
       },
 
   retries: process.env.CI ? 2 : 0,
