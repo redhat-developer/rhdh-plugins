@@ -77,7 +77,6 @@ export const spec = {
               "enum": [
                 "createdAt",
                 "name",
-                "abbreviation",
                 "status",
                 "description",
                 "ownedBy"
@@ -134,10 +133,6 @@ export const spec = {
                     "type": "string",
                     "description": "Description of the project"
                   },
-                  "abbreviation": {
-                    "type": "string",
-                    "description": "Project abbreviation"
-                  },
                   "sourceRepoUrl": {
                     "type": "string",
                     "description": "URL of the source repository"
@@ -158,7 +153,6 @@ export const spec = {
                 "required": [
                   "name",
                   "description",
-                  "abbreviation",
                   "sourceRepoUrl",
                   "targetRepoUrl",
                   "sourceRepoBranch",
@@ -878,10 +872,6 @@ export const spec = {
             "type": "string",
             "description": "UUID for the project"
           },
-          "abbreviation": {
-            "type": "string",
-            "description": "Abbreviation of the project"
-          },
           "name": {
             "type": "string",
             "description": "Full name of the project"
@@ -935,7 +925,6 @@ export const spec = {
         "required": [
           "id",
           "name",
-          "abbreviation",
           "sourceRepoUrl",
           "targetRepoUrl",
           "sourceRepoBranch",

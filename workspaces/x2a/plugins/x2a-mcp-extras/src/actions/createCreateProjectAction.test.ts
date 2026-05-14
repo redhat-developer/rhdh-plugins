@@ -23,7 +23,6 @@ import { buildMocks, NOW } from './__testUtils__';
 const createInput = {
   name: 'New Migration',
   description: 'Migrate the thing',
-  abbreviation: 'NM',
   sourceRepoUrl: 'https://github.com/acme/old',
   targetRepoUrl: 'https://github.com/acme/new',
   sourceRepoBranch: 'main',
@@ -52,7 +51,6 @@ describe('x2a-create-project MCP tool', () => {
       output: {
         id: 'proj-new-001',
         name: 'New Migration',
-        abbreviation: 'NM',
         description: 'Migrate the thing',
         sourceRepoUrl: 'https://github.com/acme/old',
         targetRepoUrl: 'https://github.com/acme/new',
@@ -67,7 +65,6 @@ describe('x2a-create-project MCP tool', () => {
     expect(x2aDatabase.createProject).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'New Migration',
-        abbreviation: 'NM',
         sourceRepoUrl: 'https://github.com/acme/old',
       }),
       expect.objectContaining({

@@ -26,6 +26,9 @@ import { useProjectWriteAccess } from '../../hooks/useProjectWriteAccess';
 import { ArtifactLink } from '../Artifacts';
 import { ProjectStatusCell } from '../ProjectStatusCell';
 import { Repository } from '../Repository';
+import { ExternalLink } from '../ExternalLink';
+import { buildProjectDirUrl } from '../tools';
+import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { EditProjectDialog } from './EditProjectDialog';
 
 const gridItemProps: GridProps = {
@@ -45,6 +48,7 @@ export const ProjectDetailsCard = ({
   const [editOpen, setEditOpen] = useState(false);
   const { canWriteProject } = useProjectWriteAccess();
   const canEdit = canWriteProject(project);
+  const hostMap = useScmHostMap();
 
   return (
     <>
@@ -79,8 +83,16 @@ export const ProjectDetailsCard = ({
 
           <Grid {...gridItemProps}>
             <ItemField
-              label={t('projectDetailsCard.abbreviation')}
-              value={project.abbreviation || empty}
+              label={t('projectDetailsCard.dirName')}
+              value={
+                project.dirName ? (
+                  <ExternalLink to={buildProjectDirUrl(project, hostMap)!}>
+                    {project.dirName}
+                  </ExternalLink>
+                ) : (
+                  empty
+                )
+              }
             />
           </Grid>
 

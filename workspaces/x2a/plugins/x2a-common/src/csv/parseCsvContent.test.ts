@@ -22,13 +22,12 @@ function toDataUrl(csv: string): string {
 }
 
 const FULL_HEADERS =
-  'name,description,abbreviation,ownedByGroup,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch';
+  'name,description,ownedByGroup,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch';
 
 function fullRow(overrides: Partial<Record<string, string>> = {}): string {
   const defaults: Record<string, string> = {
     name: 'My Project',
     description: 'A description',
-    abbreviation: 'PRJ',
     ownedByGroup: 'group:default/team-a',
     sourceRepoUrl: 'https://github.com/org/source',
     sourceRepoBranch: 'main',
@@ -39,7 +38,6 @@ function fullRow(overrides: Partial<Record<string, string>> = {}): string {
   return [
     merged.name,
     merged.description,
-    merged.abbreviation,
     merged.ownedByGroup,
     merged.sourceRepoUrl,
     merged.sourceRepoBranch,
@@ -123,21 +121,18 @@ describe('parseCsvContent', () => {
   });
 
   describe('header validation', () => {
-    it.each([
-      'name',
-      'abbreviation',
-      'sourceRepoUrl',
-      'sourceRepoBranch',
-      'targetRepoBranch',
-    ])('should throw when required column "%s" is missing', column => {
-      const headers = FULL_HEADERS.split(',')
-        .filter(h => h !== column)
-        .join(',');
-      const csv = `${headers}\nval1,val2,val3,val4,val5,val6,val7`;
-      expect(() => parseCsvContent(toDataUrl(csv))).toThrow(
-        `CSV is missing required column: "${column}"`,
-      );
-    });
+    it.each(['name', 'sourceRepoUrl', 'sourceRepoBranch', 'targetRepoBranch'])(
+      'should throw when required column "%s" is missing',
+      column => {
+        const headers = FULL_HEADERS.split(',')
+          .filter(h => h !== column)
+          .join(',');
+        const csv = `${headers}\nval1,val2,val3,val4,val5,val6`;
+        expect(() => parseCsvContent(toDataUrl(csv))).toThrow(
+          `CSV is missing required column: "${column}"`,
+        );
+      },
+    );
 
     it('should throw when an unknown column is present', () => {
       const csv = `${FULL_HEADERS},extraCol\n${fullRow()},extra`;
@@ -154,9 +149,8 @@ describe('parseCsvContent', () => {
     });
 
     it('should accept CSV with only required columns', () => {
-      const headers =
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch';
-      const csv = `${headers}\nProj,PRJ,https://github.com/o/r,main,main`;
+      const headers = 'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch';
+      const csv = `${headers}\nProj,https://github.com/o/r,main,main`;
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows).toHaveLength(1);
     });
@@ -168,7 +162,7 @@ describe('parseCsvContent', () => {
 
     it('should trim whitespace from header names', () => {
       const headers =
-        ' name , description , abbreviation , ownedByGroup , sourceRepoUrl , sourceRepoBranch , targetRepoUrl , targetRepoBranch ';
+        ' name , description , ownedByGroup , sourceRepoUrl , sourceRepoBranch , targetRepoUrl , targetRepoBranch ';
       const csv = `${headers}\n${fullRow()}`;
       expect(() => parseCsvContent(toDataUrl(csv))).not.toThrow();
     });
@@ -189,13 +183,7 @@ describe('parseCsvContent', () => {
       );
     });
 
-    it.each([
-      'name',
-      'abbreviation',
-      'sourceRepoUrl',
-      'sourceRepoBranch',
-      'targetRepoBranch',
-    ])(
+    it.each(['name', 'sourceRepoUrl', 'sourceRepoBranch', 'targetRepoBranch'])(
       'should throw when required field "%s" is empty in a data row',
       field => {
         const csv = `${FULL_HEADERS}\n${fullRow({ [field]: '' })}`;
@@ -222,7 +210,6 @@ describe('parseCsvContent', () => {
       expect(rows[0]).toEqual<CsvProjectRow>({
         name: 'My Project',
         description: 'A description',
-        abbreviation: 'PRJ',
         ownedByGroup: 'group:default/team-a',
         sourceRepoUrl: 'https://github.com/org/source',
         sourceRepoBranch: 'main',
@@ -234,9 +221,9 @@ describe('parseCsvContent', () => {
     it('should parse multiple rows', () => {
       const csv = [
         FULL_HEADERS,
-        fullRow({ name: 'Project A', abbreviation: 'PA' }),
-        fullRow({ name: 'Project B', abbreviation: 'PB' }),
-        fullRow({ name: 'Project C', abbreviation: 'PC' }),
+        fullRow({ name: 'Project A' }),
+        fullRow({ name: 'Project B' }),
+        fullRow({ name: 'Project C' }),
       ].join('\n');
 
       const rows = parseCsvContent(toDataUrl(csv));
@@ -264,9 +251,8 @@ describe('parseCsvContent', () => {
 
   describe('optional fields and defaults', () => {
     it('should default description to empty string when missing', () => {
-      const headers =
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch';
-      const csv = `${headers}\nProj,PRJ,https://github.com/o/r,main,develop`;
+      const headers = 'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch';
+      const csv = `${headers}\nProj,https://github.com/o/r,main,develop`;
 
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows[0].description).toBe('');
@@ -279,9 +265,8 @@ describe('parseCsvContent', () => {
     });
 
     it('should set ownedByGroup to undefined when missing from columns', () => {
-      const headers =
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch';
-      const csv = `${headers}\nProj,PRJ,https://github.com/o/r,main,main`;
+      const headers = 'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch';
+      const csv = `${headers}\nProj,https://github.com/o/r,main,main`;
 
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows[0].ownedByGroup).toBeUndefined();
@@ -300,9 +285,8 @@ describe('parseCsvContent', () => {
     });
 
     it('should default targetRepoUrl to sourceRepoUrl when column is missing', () => {
-      const headers =
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch';
-      const csv = `${headers}\nProj,PRJ,https://github.com/o/shared,main,main`;
+      const headers = 'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch';
+      const csv = `${headers}\nProj,https://github.com/o/shared,main,main`;
 
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows[0].targetRepoUrl).toBe('https://github.com/o/shared');
@@ -329,30 +313,29 @@ describe('parseCsvContent', () => {
 
   describe('CSV edge cases', () => {
     it('should handle quoted fields containing commas', () => {
-      const csv = `${FULL_HEADERS}\n"Project, with comma",A description,PRJ,group:default/team,https://github.com/o/r,main,https://github.com/o/t,main`;
+      const csv = `${FULL_HEADERS}\n"Project, with comma",A description,group:default/team,https://github.com/o/r,main,https://github.com/o/t,main`;
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows[0].name).toBe('Project, with comma');
     });
 
     it('should handle quoted fields containing newlines', () => {
-      const csv = `${FULL_HEADERS}\n"Multi\nline name",A description,PRJ,group:default/team,https://github.com/o/r,main,https://github.com/o/t,main`;
+      const csv = `${FULL_HEADERS}\n"Multi\nline name",A description,group:default/team,https://github.com/o/r,main,https://github.com/o/t,main`;
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows[0].name).toBe('Multi\nline name');
     });
 
     it('should handle escaped double quotes inside quoted fields', () => {
-      const csv = `${FULL_HEADERS}\n"Project ""Alpha""",A description,PRJ,group:default/team,https://github.com/o/r,main,https://github.com/o/t,main`;
+      const csv = `${FULL_HEADERS}\n"Project ""Alpha""",A description,group:default/team,https://github.com/o/r,main,https://github.com/o/t,main`;
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows[0].name).toBe('Project "Alpha"');
     });
 
     it('should trim whitespace from field values', () => {
-      const csv = `${FULL_HEADERS}\n  My Project  ,  desc  ,  PRJ  , group:default/team ,https://github.com/o/r, main ,https://github.com/o/t, develop `;
+      const csv = `${FULL_HEADERS}\n  My Project  ,  desc  , group:default/team ,https://github.com/o/r, main ,https://github.com/o/t, develop `;
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows[0]).toMatchObject({
         name: 'My Project',
         description: 'desc',
-        abbreviation: 'PRJ',
         ownedByGroup: 'group:default/team',
         sourceRepoBranch: 'main',
         targetRepoBranch: 'develop',
@@ -360,13 +343,11 @@ describe('parseCsvContent', () => {
     });
 
     it('should handle columns in any order', () => {
-      const headers =
-        'targetRepoBranch,sourceRepoBranch,sourceRepoUrl,abbreviation,name';
-      const csv = `${headers}\ndevelop,main,https://github.com/o/r,ABC,Reverse Order`;
+      const headers = 'targetRepoBranch,sourceRepoBranch,sourceRepoUrl,name';
+      const csv = `${headers}\ndevelop,main,https://github.com/o/r,Reverse Order`;
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows[0]).toMatchObject({
         name: 'Reverse Order',
-        abbreviation: 'ABC',
         sourceRepoUrl: 'https://github.com/o/r',
         sourceRepoBranch: 'main',
         targetRepoBranch: 'develop',
@@ -401,7 +382,7 @@ describe('parseCsvContent', () => {
     });
 
     it('should handle UTF-8 content with special characters', () => {
-      const csv = `${FULL_HEADERS}\nProjekt Ünïcödé,Beschreibung — mit Sonderzeichen,UNI,,https://github.com/o/r,main,,main`;
+      const csv = `${FULL_HEADERS}\nProjekt Ünïcödé,Beschreibung — mit Sonderzeichen,,https://github.com/o/r,main,,main`;
       const rows = parseCsvContent(toDataUrl(csv));
       expect(rows[0].name).toBe('Projekt Ünïcödé');
       expect(rows[0].description).toBe('Beschreibung — mit Sonderzeichen');

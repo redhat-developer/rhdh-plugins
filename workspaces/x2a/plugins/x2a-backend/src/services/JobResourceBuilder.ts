@@ -355,10 +355,6 @@ export class JobResourceBuilder {
                       ]
                     : []),
                   {
-                    name: 'PROJECT_ABBREV',
-                    value: params.projectAbbrev,
-                  },
-                  {
                     name: 'GIT_AUTHOR_NAME',
                     value: config.git?.author?.name,
                   },

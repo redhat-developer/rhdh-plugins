@@ -50,7 +50,6 @@ jest.mock('./services/makeK8sClient', () => ({
 const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
   description: 'Mock Description',
-  abbreviation: 'MP',
   sourceRepoUrl: 'https://github.com/source/repo',
   targetRepoUrl: 'https://github.com/target/repo',
   sourceRepoBranch: 'main',

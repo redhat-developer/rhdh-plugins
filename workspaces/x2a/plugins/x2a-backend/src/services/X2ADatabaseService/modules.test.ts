@@ -41,7 +41,6 @@ describe('X2ADatabaseService – modules', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'A test project',
             ...defaultProjectRepoFields,
           },
@@ -80,7 +79,6 @@ describe('X2ADatabaseService – modules', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -114,7 +112,6 @@ describe('X2ADatabaseService – modules', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'First',
             ...defaultProjectRepoFields,
           },
@@ -123,7 +120,6 @@ describe('X2ADatabaseService – modules', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'Second',
             ...defaultProjectRepoFields,
           },
@@ -167,7 +163,6 @@ describe('X2ADatabaseService – modules', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -197,7 +192,6 @@ describe('X2ADatabaseService – modules', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -233,7 +227,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -266,7 +259,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -317,7 +309,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -359,7 +350,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -400,7 +390,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -447,7 +436,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -500,7 +488,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -548,7 +535,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },

@@ -48,7 +48,6 @@ describe('x2a:project:create', () => {
   it('should create a project and output projectId and nextUrl', async () => {
     const createdProject = {
       id: 'project-uuid-123',
-      abbreviation: 'PRJ',
       name: 'My Project',
       description: 'A test project',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -76,7 +75,6 @@ describe('x2a:project:create', () => {
         inputMethod: 'manual' as const,
         name: 'My Project',
         description: 'A test project',
-        abbreviation: 'PRJ',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
         areTargetAndSourceRepoShared: false,
@@ -105,7 +103,6 @@ describe('x2a:project:create', () => {
   it('should output skippedCount=0 and errorCount=0 in manual mode', async () => {
     const createdProject = {
       id: 'project-manual-counts',
-      abbreviation: 'MC',
       name: 'Manual Counts',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -131,7 +128,6 @@ describe('x2a:project:create', () => {
       input: {
         inputMethod: 'manual' as const,
         name: 'Manual Counts',
-        abbreviation: 'MC',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
         areTargetAndSourceRepoShared: true,
@@ -149,10 +145,9 @@ describe('x2a:project:create', () => {
     expect(mockContext.output).toHaveBeenCalledWith('errorCount', 0);
   });
 
-  it('should send name, description (or empty string), and abbreviation in the request body', async () => {
+  it('should send name and description (or empty string) in the request body', async () => {
     const createdProject = {
       id: 'project-uuid-456',
-      abbreviation: 'ABBR',
       name: 'Another Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -165,7 +160,7 @@ describe('x2a:project:create', () => {
         return Promise.resolve(emptyProjectsResponse);
       }
       const body = options?.body ? JSON.parse(options.body as string) : {};
-      if (body.name && body.abbreviation && !body.sourceRepoAuth) {
+      if (body.name && !body.sourceRepoAuth) {
         createProjectBody = body;
         return Promise.resolve({
           ok: true,
@@ -189,7 +184,6 @@ describe('x2a:project:create', () => {
       input: {
         inputMethod: 'manual' as const,
         name: 'Another Project',
-        abbreviation: 'ABBR',
         sourceRepoUrl: 'https://github.com/org/repo2',
         sourceRepoBranch: 'main',
         areTargetAndSourceRepoShared: true,
@@ -205,7 +199,6 @@ describe('x2a:project:create', () => {
     expect(createProjectBody).toMatchObject({
       name: 'Another Project',
       description: '',
-      abbreviation: 'ABBR',
     });
     expect(mockContext.output).toHaveBeenCalledWith(
       'projectId',
@@ -224,7 +217,6 @@ describe('x2a:project:create', () => {
   it('should send ownedByGroup in the request body when provided', async () => {
     const createdProject = {
       id: 'project-uuid-owned',
-      abbreviation: 'GOP',
       name: 'Group-owned Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -237,7 +229,7 @@ describe('x2a:project:create', () => {
         return Promise.resolve(emptyProjectsResponse);
       }
       const body = options?.body ? JSON.parse(options.body as string) : {};
-      if (body.name && body.abbreviation && !body.sourceRepoAuth) {
+      if (body.name && !body.sourceRepoAuth) {
         createProjectBody = body;
         return Promise.resolve({
           ok: true,
@@ -261,7 +253,6 @@ describe('x2a:project:create', () => {
       input: {
         inputMethod: 'manual' as const,
         name: 'Group-owned Project',
-        abbreviation: 'GOP',
         ownedByGroup: 'group:default/team-a',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
@@ -277,7 +268,6 @@ describe('x2a:project:create', () => {
 
     expect(createProjectBody).toMatchObject({
       name: 'Group-owned Project',
-      abbreviation: 'GOP',
       ownedByGroup: 'group:default/team-a',
     });
   });
@@ -285,7 +275,6 @@ describe('x2a:project:create', () => {
   it('should trim ownedByGroup when provided with whitespace', async () => {
     const createdProject = {
       id: 'project-uuid-trimmed',
-      abbreviation: 'TRM',
       name: 'Trimmed Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -298,7 +287,7 @@ describe('x2a:project:create', () => {
         return Promise.resolve(emptyProjectsResponse);
       }
       const body = options?.body ? JSON.parse(options.body as string) : {};
-      if (body.name && body.abbreviation && !body.sourceRepoAuth) {
+      if (body.name && !body.sourceRepoAuth) {
         createProjectBody = body;
         return Promise.resolve({
           ok: true,
@@ -322,7 +311,6 @@ describe('x2a:project:create', () => {
       input: {
         inputMethod: 'manual' as const,
         name: 'Trimmed Project',
-        abbreviation: 'TRM',
         ownedByGroup: '  group:default/team-b  ',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
@@ -342,7 +330,6 @@ describe('x2a:project:create', () => {
   it('should pass userPrompt to the init-phase API when provided', async () => {
     const createdProject = {
       id: 'project-uuid-prompt',
-      abbreviation: 'PRM',
       name: 'Prompt Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -379,7 +366,6 @@ describe('x2a:project:create', () => {
       input: {
         inputMethod: 'manual' as const,
         name: 'Prompt Project',
-        abbreviation: 'PRM',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
         areTargetAndSourceRepoShared: true,
@@ -409,7 +395,6 @@ describe('x2a:project:create', () => {
   it('should omit ownedByGroup from the request body when not provided', async () => {
     const createdProject = {
       id: 'project-uuid-no-group',
-      abbreviation: 'NOG',
       name: 'No Group Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -422,7 +407,7 @@ describe('x2a:project:create', () => {
         return Promise.resolve(emptyProjectsResponse);
       }
       const body = options?.body ? JSON.parse(options.body as string) : {};
-      if (body.name && body.abbreviation && !body.sourceRepoAuth) {
+      if (body.name && !body.sourceRepoAuth) {
         createProjectBody = body;
         return Promise.resolve({
           ok: true,
@@ -446,7 +431,6 @@ describe('x2a:project:create', () => {
       input: {
         inputMethod: 'manual' as const,
         name: 'No Group Project',
-        abbreviation: 'NOG',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
         areTargetAndSourceRepoShared: true,
@@ -461,7 +445,6 @@ describe('x2a:project:create', () => {
 
     expect(createProjectBody).toMatchObject({
       name: 'No Group Project',
-      abbreviation: 'NOG',
     });
     expect(createProjectBody).not.toHaveProperty('ownedByGroup');
   });
@@ -469,7 +452,6 @@ describe('x2a:project:create', () => {
   it('should include Authorization header when backstageToken is provided', async () => {
     const createdProject = {
       id: 'project-uuid-789',
-      abbreviation: 'TKN',
       name: 'Token Project',
       description: 'With token',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -507,7 +489,6 @@ describe('x2a:project:create', () => {
         inputMethod: 'manual' as const,
         name: 'Token Project',
         description: 'With token',
-        abbreviation: 'TKN',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
         areTargetAndSourceRepoShared: false,
@@ -542,7 +523,6 @@ describe('x2a:project:create', () => {
         json: () =>
           Promise.resolve({
             id: 'log-test-id',
-            abbreviation: 'LOG',
             name: 'Log Test',
             description: '',
             createdAt: '2025-01-01T00:00:00.000Z',
@@ -565,7 +545,6 @@ describe('x2a:project:create', () => {
       input: {
         inputMethod: 'manual' as const,
         name: 'Log Test',
-        abbreviation: 'LOG',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
         areTargetAndSourceRepoShared: false,
@@ -592,7 +571,6 @@ describe('x2a:project:create', () => {
   describe('augmentRepoToken', () => {
     const createdProject = {
       id: 'project-augment',
-      abbreviation: 'AUG',
       name: 'Augment Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -630,7 +608,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Augment Project',
-          abbreviation: 'AUG',
           sourceRepoUrl: 'https://github.com/org/source-repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -680,7 +657,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Augment Project',
-          abbreviation: 'AUG',
           sourceRepoUrl: 'https://gitlab.com/org/source-repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -734,7 +710,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Augment Project',
-          abbreviation: 'AUG',
           sourceRepoUrl: 'https://gitlab.com/org/shared-repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: true,
@@ -786,7 +761,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Augment Project',
-          abbreviation: 'AUG',
           sourceRepoUrl: 'https://github.com/org/source-repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -838,7 +812,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Augment Project',
-          abbreviation: 'AUG',
           sourceRepoUrl: 'https://gitlab.com/org/source-repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -890,7 +863,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Augment Project',
-          abbreviation: 'AUG',
           sourceRepoUrl: 'https://bitbucket.org/ws/source-repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -944,7 +916,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Augment Project',
-          abbreviation: 'AUG',
           sourceRepoUrl: 'https://bitbucket.org/ws/source-repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -969,7 +940,6 @@ describe('x2a:project:create', () => {
   describe('CSV bulk import with per-provider tokens', () => {
     const createdProject = {
       id: 'csv-project-1',
-      abbreviation: 'C1',
       name: 'CSV Project 1',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
@@ -1001,8 +971,8 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'CSV Project 1,C1,https://github.com/org/repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'CSV Project 1,https://github.com/org/repo,main,main',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1061,9 +1031,9 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'GH Project,GH,https://github.com/org/repo,main,main\n' +
-          'GL Project,GL,https://gitlab.com/org/repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'GH Project,https://github.com/org/repo,main,main\n' +
+          'GL Project,https://gitlab.com/org/repo,main,main',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1109,9 +1079,9 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'GH Project,GH,https://github.com/org/repo,main,main\n' +
-          'GL Project,GL,https://gitlab.com/org/repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'GH Project,https://github.com/org/repo,main,main\n' +
+          'GL Project,https://gitlab.com/org/repo,main,main',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1156,8 +1126,8 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch\n' +
-          'Cross Project,CP,https://github.com/org/src,main,https://gitlab.com/org/tgt,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch\n' +
+          'Cross Project,https://github.com/org/src,main,https://gitlab.com/org/tgt,main',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1185,8 +1155,8 @@ describe('x2a:project:create', () => {
     it('should throw when no provider tokens are supplied at all', async () => {
       mockFetch.mockResolvedValueOnce(emptyProjectsResponse);
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'Project,P,https://github.com/org/repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'Project,https://github.com/org/repo,main,main',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1234,10 +1204,10 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'GH Proj,GH,https://github.com/org/repo,main,main\n' +
-          'GL Proj,GL,https://gitlab.com/org/repo,main,main\n' +
-          'BB Proj,BB,https://bitbucket.org/ws/repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'GH Proj,https://github.com/org/repo,main,main\n' +
+          'GL Proj,https://gitlab.com/org/repo,main,main\n' +
+          'BB Proj,https://bitbucket.org/ws/repo,main,main',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1271,13 +1241,13 @@ describe('x2a:project:create', () => {
           return Promise.resolve(emptyProjectsResponse);
         }
         const body = options?.body ? JSON.parse(options.body as string) : {};
-        if (body.name && body.abbreviation && !body.sourceRepoAuth) {
+        if (body.name && !body.sourceRepoAuth) {
           createCallCount++;
           if (createCallCount === 2) {
             return Promise.resolve({
               ok: false,
               status: 400,
-              json: () => Promise.resolve({ message: 'Invalid abbreviation' }),
+              json: () => Promise.resolve({ message: 'Invalid request body' }),
             });
           }
           return Promise.resolve({
@@ -1286,7 +1256,6 @@ describe('x2a:project:create', () => {
               Promise.resolve({
                 id: `proj-${createCallCount}`,
                 name: `Project ${createCallCount}`,
-                abbreviation: `P${createCallCount}`,
                 description: '',
                 createdAt: '2025-01-01T00:00:00.000Z',
                 ownedBy: 'user:default/test',
@@ -1304,9 +1273,9 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'Good Project,GP,https://github.com/org/repo1,main,main\n' +
-          'Bad Project,BP,https://github.com/org/repo2,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'Good Project,https://github.com/org/repo1,main,main\n' +
+          'Bad Project,https://github.com/org/repo2,main,main',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1344,7 +1313,7 @@ describe('x2a:project:create', () => {
           return Promise.resolve(emptyProjectsResponse);
         }
         const body = options?.body ? JSON.parse(options.body as string) : {};
-        if (body.name && body.abbreviation && !body.sourceRepoAuth) {
+        if (body.name && !body.sourceRepoAuth) {
           createProjectBody = body;
           return Promise.resolve({
             ok: true,
@@ -1352,7 +1321,6 @@ describe('x2a:project:create', () => {
               Promise.resolve({
                 id: 'proj-ws',
                 name: 'WS Project',
-                abbreviation: 'WS',
                 description: '',
                 createdAt: '2025-01-01T00:00:00.000Z',
                 ownedBy: 'user:default/test',
@@ -1366,8 +1334,8 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch,ownedByGroup\n' +
-          'WS Project,WS,https://github.com/org/repo,main,main,   ',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch,ownedByGroup\n' +
+          'WS Project,https://github.com/org/repo,main,main,   ',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1399,7 +1367,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Project',
-          abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -1426,7 +1393,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Project',
-          abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -1453,7 +1419,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Project',
-          abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -1487,7 +1452,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Project',
-          abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: true,
@@ -1510,7 +1474,6 @@ describe('x2a:project:create', () => {
             Promise.resolve({
               id: 'project-id',
               name: 'Project',
-              abbreviation: 'P',
               description: '',
               ownedBy: 'user:default/test',
               createdAt: '2025-01-01T00:00:00.000Z',
@@ -1529,7 +1492,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Project',
-          abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: true,
@@ -1554,7 +1516,6 @@ describe('x2a:project:create', () => {
             {
               id: 'existing-id',
               name: 'Existing Project',
-              abbreviation: 'EP',
               description: '',
               sourceRepoUrl: 'https://github.com/org/existing',
               targetRepoUrl: 'https://github.com/org/existing',
@@ -1586,7 +1547,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Existing Project',
-          abbreviation: 'EP',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -1624,7 +1584,6 @@ describe('x2a:project:create', () => {
             Promise.resolve({
               id: 'new-project-id',
               name: 'New Project',
-              abbreviation: 'NP',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
               ownedBy: 'user:default/csv-user',
@@ -1633,9 +1592,9 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'Existing Project,EP,https://github.com/org/repo1,main,main\n' +
-          'New Project,NP,https://github.com/org/repo2,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'Existing Project,https://github.com/org/repo1,main,main\n' +
+          'New Project,https://github.com/org/repo2,main,main',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1683,7 +1642,6 @@ describe('x2a:project:create', () => {
             Promise.resolve({
               id: `csv-project-${createCallCount}`,
               name: 'Duplicate Project',
-              abbreviation: 'DP',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
               ownedBy: 'user:default/csv-user',
@@ -1692,9 +1650,9 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'Duplicate Project,DP,https://github.com/org/repo1,main,main\n' +
-          'Duplicate Project,DP,https://github.com/org/repo2,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'Duplicate Project,https://github.com/org/repo1,main,main\n' +
+          'Duplicate Project,https://github.com/org/repo2,main,main',
       );
 
       const action = createProjectAction(mockDiscoveryApi, mockConfig, {
@@ -1726,7 +1684,6 @@ describe('x2a:project:create', () => {
             Promise.resolve({
               id: 'brand-new-id',
               name: 'Brand New Project',
-              abbreviation: 'BNP',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
               ownedBy: 'user:default/jane',
@@ -1745,7 +1702,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Brand New Project',
-          abbreviation: 'BNP',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: false,
@@ -1772,7 +1728,6 @@ describe('x2a:project:create', () => {
     const projectItem = (name: string, index: number) => ({
       id: `id-${index}`,
       name,
-      abbreviation: `A${index}`,
       description: '',
       sourceRepoUrl: 'https://github.com/org/r',
       targetRepoUrl: 'https://github.com/org/r',
@@ -1806,7 +1761,6 @@ describe('x2a:project:create', () => {
             Promise.resolve({
               id: 'p1',
               name: 'Page Test',
-              abbreviation: 'PT',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
               ownedBy: 'user:default/test',
@@ -1821,7 +1775,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Page Test',
-          abbreviation: 'PT',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: true,
@@ -1880,7 +1833,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Late Duplicate',
-          abbreviation: 'LD',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: true,
@@ -1941,7 +1893,6 @@ describe('x2a:project:create', () => {
             Promise.resolve({
               id: 'new-id',
               name: 'Unique Name',
-              abbreviation: 'UN',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
               ownedBy: 'user:default/test',
@@ -1956,7 +1907,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Unique Name',
-          abbreviation: 'UN',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: true,
@@ -1991,7 +1941,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Any Project',
-          abbreviation: 'AP',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: true,
@@ -2026,7 +1975,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Any Project',
-          abbreviation: 'AP',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: true,
@@ -2062,7 +2010,6 @@ describe('x2a:project:create', () => {
         input: {
           inputMethod: 'manual' as const,
           name: 'Any Project',
-          abbreviation: 'AP',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
           areTargetAndSourceRepoShared: true,
@@ -2119,7 +2066,6 @@ describe('x2a:project:create', () => {
             Promise.resolve({
               id: `proj-${createCallCount}`,
               name: `Project ${createCallCount}`,
-              abbreviation: `P${createCallCount}`,
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
               ownedBy: 'user:default/test',
@@ -2128,10 +2074,10 @@ describe('x2a:project:create', () => {
       });
 
       const csv = encodeCsv(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'GH Proj,GH,https://github.com/org/repo,main,main\n' +
-          'GL Proj,GL,https://gitlab.com/org/repo,main,main\n' +
-          'BB Proj,BB,https://bitbucket.org/ws/repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'GH Proj,https://github.com/org/repo,main,main\n' +
+          'GL Proj,https://gitlab.com/org/repo,main,main\n' +
+          'BB Proj,https://bitbucket.org/ws/repo,main,main',
       );
 
       const ghRaw = 'ghp_abc123';

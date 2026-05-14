@@ -298,7 +298,6 @@ export const POLLING_INTERVAL_MS: number;
 
 // @public (undocumented)
 export interface Project {
-    abbreviation: string;
     createdAt: Date;
     description?: string;
     dirName?: string;
@@ -326,7 +325,7 @@ export type ProjectsGet = {
         page?: number;
         pageSize?: number;
         order?: 'asc' | 'desc';
-        sort?: 'createdAt' | 'name' | 'abbreviation' | 'status' | 'description' | 'ownedBy';
+        sort?: 'createdAt' | 'name' | 'status' | 'description' | 'ownedBy';
     };
 };
 
@@ -343,7 +342,6 @@ export type ProjectsPost = {
 
 // @public (undocumented)
 export interface ProjectsPostRequest {
-    abbreviation: string;
     description: string;
     name: string;
     ownedByGroup?: string;

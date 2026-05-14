@@ -110,8 +110,6 @@ export interface JobCreateParams {
     // (undocumented)
     phase: MigrationPhase;
     // (undocumented)
-    projectAbbrev: string;
-    // (undocumented)
     projectDirName: string;
     // (undocumented)
     projectId: string;
@@ -251,7 +249,6 @@ export interface X2ADatabaseServiceApi {
     createProject(input: {
         name: string;
         ownedByGroup?: string;
-        abbreviation: string;
         description: string;
         sourceRepoUrl: string;
         targetRepoUrl: string;

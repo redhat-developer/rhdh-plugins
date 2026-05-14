@@ -52,7 +52,7 @@ export const x2aPluginMessages = {
   projectDetailsCard: {
     title: 'Project Details',
     name: 'Name',
-    abbreviation: 'Abbreviation',
+    dirName: 'Directory Name',
     status: 'Status',
     ownedBy: 'Owned By',
     description: 'Description',
@@ -171,8 +171,8 @@ export const x2aPluginMessages = {
   project: {
     description: 'Description',
     id: 'ID',
-    abbreviation: 'Abbreviation',
     ownedBy: 'Owned By',
+    dirName: 'Directory Name',
     statuses: {
       none: '-',
       created: 'Created',

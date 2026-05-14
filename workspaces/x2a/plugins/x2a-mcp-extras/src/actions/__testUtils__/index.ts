@@ -162,7 +162,6 @@ export const NOW = new Date('2025-06-01T12:00:00Z');
 export const MOCK_PROJECT = {
   id: 'proj-001',
   name: 'Legacy EAP Migration',
-  abbreviation: 'LEM',
   description: 'Migrate EAP 7 to EAP 8',
   sourceRepoUrl: 'https://github.com/acme/legacy-eap',
   targetRepoUrl: 'https://github.com/acme/new-eap',
