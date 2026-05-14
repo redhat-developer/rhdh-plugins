@@ -102,7 +102,6 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     input: {
       name: string;
       ownedByGroup?: string;
-      abbreviation: string;
       description: string;
       sourceRepoUrl: string;
       targetRepoUrl: string;

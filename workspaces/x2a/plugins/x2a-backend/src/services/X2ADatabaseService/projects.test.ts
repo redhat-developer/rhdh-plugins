@@ -41,7 +41,6 @@ describe('X2ADatabaseService – projects', () => {
         const service = createService(client);
         const input = {
           name: 'Test Project',
-          abbreviation: 'TP',
           description: 'A test project description',
           ...defaultProjectRepoFields,
         };
@@ -50,7 +49,6 @@ describe('X2ADatabaseService – projects', () => {
 
         expect(project).toMatchObject({
           name: input.name,
-          abbreviation: input.abbreviation,
           description: input.description,
           sourceRepoUrl: input.sourceRepoUrl,
           targetRepoUrl: input.targetRepoUrl,
@@ -64,7 +62,6 @@ describe('X2ADatabaseService – projects', () => {
         const row = await client('projects').where('id', project.id).first();
         expect(row).toBeDefined();
         expect(row.name).toBe(input.name);
-        expect(row.abbreviation).toBe(input.abbreviation);
         expect(row.owned_by).toBe('user:default/mock');
       },
       LONG_TEST_TIMEOUT,
@@ -79,7 +76,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'My Cool Project',
-            abbreviation: 'MCP',
             description: 'desc',
             ...defaultProjectRepoFields,
           },
@@ -104,7 +100,6 @@ describe('X2ADatabaseService – projects', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'First',
             ...defaultProjectRepoFields,
           },
@@ -113,7 +108,6 @@ describe('X2ADatabaseService – projects', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'Second',
             ...defaultProjectRepoFields,
           },
@@ -137,7 +131,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Custom',
-            abbreviation: 'CUP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -158,7 +151,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Group-owned Project',
-            abbreviation: 'GOP',
             description: 'Owned by group',
             ownedByGroup: 'group:default/team-a',
             ...defaultProjectRepoFields,
@@ -180,7 +172,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'User-owned Project',
-            abbreviation: 'UOP',
             description: 'Owned by user',
             ...defaultProjectRepoFields,
           },
@@ -203,7 +194,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Original',
-            abbreviation: 'OG',
             description: 'Original desc',
             ...defaultProjectRepoFields,
           },
@@ -235,7 +225,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Test',
-            abbreviation: 'T',
             description: 'Old',
             ...defaultProjectRepoFields,
           },
@@ -264,7 +253,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Test',
-            abbreviation: 'T',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -295,7 +283,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Old Name',
-            abbreviation: 'ON',
             description: 'Old desc',
             ...defaultProjectRepoFields,
           },
@@ -348,7 +335,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -380,7 +366,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -408,7 +393,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Original Name',
-            abbreviation: 'ON',
             description: 'desc',
             ...defaultProjectRepoFields,
           },
@@ -459,7 +443,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -469,7 +452,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -479,7 +461,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 3',
-            abbreviation: 'P3',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -508,7 +489,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: `Project ${i}`,
-              abbreviation: `P${i}`,
               description: `D${i}`,
               ...defaultProjectRepoFields,
             },
@@ -555,7 +535,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: `Project ${i}`,
-              abbreviation: `P${i}`,
               description: `D${i}`,
               ...defaultProjectRepoFields,
             },
@@ -581,7 +560,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Zebra Project',
-            abbreviation: 'ZP',
             description: 'Z',
             ...defaultProjectRepoFields,
           },
@@ -591,7 +569,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Alpha Project',
-            abbreviation: 'AP',
             description: 'A',
             ...defaultProjectRepoFields,
           },
@@ -601,7 +578,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Beta Project',
-            abbreviation: 'BP',
             description: 'B',
             ...defaultProjectRepoFields,
           },
@@ -638,7 +614,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -648,7 +623,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -658,7 +632,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P3',
-            abbreviation: 'P3',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -686,7 +659,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U1P1',
-            abbreviation: 'U1P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -696,7 +668,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U1P2',
-            abbreviation: 'U1P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -706,7 +677,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U2P1',
-            abbreviation: 'U2P1',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -716,7 +686,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U2P2',
-            abbreviation: 'U2P2',
             description: 'D4',
             ...defaultProjectRepoFields,
           },
@@ -754,7 +723,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'User Project',
-            abbreviation: 'UP',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -766,7 +734,6 @@ describe('X2ADatabaseService – projects', () => {
         await client('projects').insert({
           id: groupProjectId,
           name: 'Group Project',
-          abbreviation: 'GP',
           description: 'Project created by group',
           source_repo_url: defaultProjectRepoFields.sourceRepoUrl,
           target_repo_url: defaultProjectRepoFields.targetRepoUrl,
@@ -805,7 +772,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -815,7 +781,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -825,7 +790,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P3',
-            abbreviation: 'P3',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -860,7 +824,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U1',
-            abbreviation: 'U1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -870,7 +833,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U2',
-            abbreviation: 'U2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -897,7 +859,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: `User1 Project ${i}`,
-              abbreviation: `U1P${i}`,
               description: `D${i}`,
               ...defaultProjectRepoFields,
             },
@@ -909,7 +870,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: `User2 Project ${i}`,
-              abbreviation: `U2P${i}`,
               description: `D${i}`,
               ...defaultProjectRepoFields,
             },
@@ -939,7 +899,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -949,7 +908,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -959,7 +917,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 3',
-            abbreviation: 'P3',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -986,7 +943,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -1011,7 +967,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Project with plan',
-            abbreviation: 'PWP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -1046,13 +1001,11 @@ describe('X2ADatabaseService – projects', () => {
       async function makeProject(
         service: ReturnType<typeof createService>,
         name: string,
-        abbrev: string,
         initStatus?: 'success' | 'error' | 'running' | 'pending',
       ) {
         const project = await service.createProject(
           {
             name,
-            abbreviation: abbrev,
             description: name,
             ...defaultProjectRepoFields,
           },
@@ -1129,9 +1082,9 @@ describe('X2ADatabaseService – projects', () => {
           const service = createService(client);
 
           // 'created' (no init), 'failed' (init error), 'initialized' (init success, 0 modules)
-          await makeProject(service, 'P-Created', 'PC');
-          await makeProject(service, 'P-Failed', 'PF', 'error');
-          await makeProject(service, 'P-Initialized', 'PI', 'success');
+          await makeProject(service, 'P-Created');
+          await makeProject(service, 'P-Failed', 'error');
+          await makeProject(service, 'P-Initialized', 'success');
 
           // Semantic order: created(0) < initialized(2) < failed(4)
           const asc = await service.listProjects(
@@ -1163,8 +1116,8 @@ describe('X2ADatabaseService – projects', () => {
           const { client } = await createDatabase(databaseId);
           const service = createService(client);
 
-          await makeProject(service, 'P-Created', 'PC');
-          await makeProject(service, 'P-Initialized', 'PI', 'success');
+          await makeProject(service, 'P-Created');
+          await makeProject(service, 'P-Initialized', 'success');
 
           const result = await service.listProjects(
             { sort: 'status' },
@@ -1187,12 +1140,7 @@ describe('X2ADatabaseService – projects', () => {
 
           // Both 'inProgress': init success, mixed modules, no errors
           // projLow: 1 finished + 1 waiting → finished = 50%
-          const projLow = await makeProject(
-            service,
-            'Low-Finished',
-            'LF',
-            'success',
-          );
+          const projLow = await makeProject(service, 'Low-Finished', 'success');
           await addModule(service, projLow.id, 'lf-m1', 'finished');
           await addModule(service, projLow.id, 'lf-m2', 'waiting');
 
@@ -1200,7 +1148,6 @@ describe('X2ADatabaseService – projects', () => {
           const projHigh = await makeProject(
             service,
             'High-Finished',
-            'HF',
             'success',
           );
           await addModule(service, projHigh.id, 'hf-m1', 'finished');
@@ -1238,12 +1185,7 @@ describe('X2ADatabaseService – projects', () => {
 
           // Both 'failed': init success, 0 finished, different error%
           // projLowErr: 1 error + 3 pending → error = 25%
-          const projLowErr = await makeProject(
-            service,
-            'Low-Error',
-            'LE',
-            'success',
-          );
+          const projLowErr = await makeProject(service, 'Low-Error', 'success');
           await addModule(service, projLowErr.id, 'le-m1', 'error');
           await addModule(service, projLowErr.id, 'le-m2', 'pending');
           await addModule(service, projLowErr.id, 'le-m3', 'pending');
@@ -1253,7 +1195,6 @@ describe('X2ADatabaseService – projects', () => {
           const projHighErr = await makeProject(
             service,
             'High-Error',
-            'HE',
             'success',
           );
           await addModule(service, projHighErr.id, 'he-m1', 'error');
@@ -1290,13 +1231,13 @@ describe('X2ADatabaseService – projects', () => {
           const service = createService(client);
 
           // Project A: 1 finished + 1 error + 1 pending → finished = 1/3, error = 1/3
-          const projA = await makeProject(service, 'Frac-A', 'FA', 'success');
+          const projA = await makeProject(service, 'Frac-A', 'success');
           await addModule(service, projA.id, 'fa-m1', 'finished');
           await addModule(service, projA.id, 'fa-m2', 'error');
           await addModule(service, projA.id, 'fa-m3', 'pending');
 
           // Project B: 2 finished + 4 pending → finished = 2/6 = 1/3, error = 0
-          const projB = await makeProject(service, 'Frac-B', 'FB', 'success');
+          const projB = await makeProject(service, 'Frac-B', 'success');
           await addModule(service, projB.id, 'fb-m1', 'finished');
           await addModule(service, projB.id, 'fb-m2', 'finished');
           await addModule(service, projB.id, 'fb-m3', 'pending');
@@ -1329,12 +1270,12 @@ describe('X2ADatabaseService – projects', () => {
 
           // Both projects: 1 finished + 2 pending → finished = 1/3
           // All summary percentages are identical so the comparator returns 0.
-          const projA = await makeProject(service, 'Same-A', 'SA', 'success');
+          const projA = await makeProject(service, 'Same-A', 'success');
           await addModule(service, projA.id, 'sa-m1', 'finished');
           await addModule(service, projA.id, 'sa-m2', 'pending');
           await addModule(service, projA.id, 'sa-m3', 'pending');
 
-          const projB = await makeProject(service, 'Same-B', 'SB', 'success');
+          const projB = await makeProject(service, 'Same-B', 'success');
           await addModule(service, projB.id, 'sb-m1', 'finished');
           await addModule(service, projB.id, 'sb-m2', 'pending');
           await addModule(service, projB.id, 'sb-m3', 'pending');
@@ -1359,9 +1300,9 @@ describe('X2ADatabaseService – projects', () => {
           const service = createService(client);
 
           // Both 'initialized' with 0 modules: all percentages = 0
-          await makeProject(service, 'Init-A', 'IA', 'success');
+          await makeProject(service, 'Init-A', 'success');
           await delay(10);
-          await makeProject(service, 'Init-B', 'IB', 'success');
+          await makeProject(service, 'Init-B', 'success');
 
           const result = await service.listProjects(
             { sort: 'status', order: 'asc' },
@@ -1382,9 +1323,9 @@ describe('X2ADatabaseService – projects', () => {
           const { client } = await createDatabase(databaseId);
           const service = createService(client);
 
-          await makeProject(service, 'P-Created', 'PC');
-          await makeProject(service, 'P-Failed', 'PF', 'error');
-          await makeProject(service, 'P-Initialized', 'PI', 'success');
+          await makeProject(service, 'P-Created');
+          await makeProject(service, 'P-Failed', 'error');
+          await makeProject(service, 'P-Initialized', 'success');
 
           // Semantic asc: created(0), initialized(2), failed(4)
           const p0 = await service.listProjects(
@@ -1415,7 +1356,7 @@ describe('X2ADatabaseService – projects', () => {
           const { client } = await createDatabase(databaseId);
           const service = createService(client);
 
-          await makeProject(service, 'P-Only', 'PO');
+          await makeProject(service, 'P-Only');
 
           const result = await service.listProjects(
             { sort: 'status', order: 'asc', page: 5, pageSize: 10 },
@@ -1449,31 +1390,29 @@ describe('X2ADatabaseService – projects', () => {
           const service = createService(client);
 
           // created: no init job
-          await makeProject(service, 'P-Created', 'PCR');
+          await makeProject(service, 'P-Created');
 
           // initializing: init job running
-          await makeProject(service, 'P-Initializing', 'PIG', 'running');
+          await makeProject(service, 'P-Initializing', 'running');
 
           // initialized: init success, 0 modules
-          await makeProject(service, 'P-Initialized', 'PID', 'success');
+          await makeProject(service, 'P-Initialized', 'success');
 
           // inProgress: init success, 1 waiting module (beyond pending)
           const projInProgress = await makeProject(
             service,
             'P-InProgress',
-            'PIP',
             'success',
           );
           await addModule(service, projInProgress.id, 'ip-m1', 'waiting');
 
           // failed: init error
-          await makeProject(service, 'P-Failed', 'PFA', 'error');
+          await makeProject(service, 'P-Failed', 'error');
 
           // completed: init success, all modules finished
           const projCompleted = await makeProject(
             service,
             'P-Completed',
-            'PCO',
             'success',
           );
           await addModule(service, projCompleted.id, 'co-m1', 'finished');
@@ -1520,7 +1459,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: 'U1-Created',
-              abbreviation: 'U1C',
               description: 'U1 created',
               ...defaultProjectRepoFields,
             },
@@ -1529,7 +1467,6 @@ describe('X2ADatabaseService – projects', () => {
           const u1Init = await service.createProject(
             {
               name: 'U1-Initialized',
-              abbreviation: 'U1I',
               description: 'U1 initialized',
               ...defaultProjectRepoFields,
             },
@@ -1545,7 +1482,6 @@ describe('X2ADatabaseService – projects', () => {
           const u2Proj = await service.createProject(
             {
               name: 'U2-Failed',
-              abbreviation: 'U2F',
               description: 'U2 failed',
               ...defaultProjectRepoFields,
             },

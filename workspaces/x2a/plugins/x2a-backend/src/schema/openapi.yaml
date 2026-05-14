@@ -40,7 +40,6 @@ paths:
             enum:
               - createdAt
               - name
-              - abbreviation
               - status
               - description
               - ownedBy
@@ -80,9 +79,6 @@ paths:
                 description:
                   type: string
                   description: Description of the project
-                abbreviation:
-                  type: string
-                  description: Project abbreviation
                 sourceRepoUrl:
                   type: string
                   description: URL of the source repository
@@ -98,7 +94,6 @@ paths:
               required:
                 - name
                 - description
-                - abbreviation
                 - sourceRepoUrl
                 - targetRepoUrl
                 - sourceRepoBranch
@@ -588,9 +583,6 @@ components:
         id:
           type: string
           description: UUID for the project
-        abbreviation:
-          type: string
-          description: Abbreviation of the project
         name:
           type: string
           description: Full name of the project
@@ -631,7 +623,6 @@ components:
       required:
         - id
         - name
-        - abbreviation
         - sourceRepoUrl
         - targetRepoUrl
         - sourceRepoBranch

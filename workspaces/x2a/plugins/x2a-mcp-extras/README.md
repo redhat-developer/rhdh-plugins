@@ -198,7 +198,7 @@ Test with any of the three tools:
 
 ```
 x2a-list-projects {}
-x2a-create-project { "name": "test", "abbreviation": "TST", ... }
+x2a-create-project { "name": "test", ... }
 x2a-trigger-next-phase { "projectId": "<uuid>" }
 ```
 

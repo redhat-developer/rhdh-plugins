@@ -297,7 +297,6 @@ export function registerModuleRoutes(
         jobId: job.id,
         projectId,
         projectName: project.name,
-        projectAbbrev: project.abbreviation,
         projectDirName: project.dirName,
         phase,
         user: userRef,

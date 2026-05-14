@@ -41,7 +41,6 @@ type PermResult = { loading: boolean; allowed: boolean };
 const makeProject = (overrides?: Partial<Project>): Project => ({
   id: 'proj-1',
   name: 'Test Project',
-  abbreviation: 'TP',
   sourceRepoUrl: 'https://github.com/org/source',
   targetRepoUrl: 'https://github.com/org/target',
   sourceRepoBranch: 'main',

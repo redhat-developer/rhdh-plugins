@@ -38,7 +38,6 @@ export const createMockProjects = (
     return {
       id: `project-${index}`,
       name: `Project ${index}`,
-      abbreviation: `P${index}`,
       description: `Description ${index}`,
       sourceRepoUrl: `https://github.com/org/source-repo${index}`,
       targetRepoUrl: `https://github.com/org/target-repo${index}`,

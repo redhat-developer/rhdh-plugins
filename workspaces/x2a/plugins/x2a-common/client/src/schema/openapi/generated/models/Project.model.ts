@@ -30,10 +30,6 @@ export interface Project {
    */
   id: string;
   /**
-   * Abbreviation of the project
-   */
-  abbreviation: string;
-  /**
    * Full name of the project
    */
   name: string;

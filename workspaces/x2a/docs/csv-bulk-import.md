@@ -17,13 +17,12 @@ The file must be UTF-8 encoded with a header row. Column order does not matter, 
 
 ### Required Columns
 
-| Column             | Description                                                                                               |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `name`             | Unique project name                                                                                       |
-| `abbreviation`     | Short project identifier, 1-5 alphanumeric characters matching `^([a-zA-Z][a-zA-Z0-9]*)(-[a-zA-Z0-9]+)*$` |
-| `sourceRepoUrl`    | URL of the source repository to convert                                                                   |
-| `sourceRepoBranch` | Branch to read from in the source repository                                                              |
-| `targetRepoBranch` | Branch to write converted Ansible output to                                                               |
+| Column             | Description                                  |
+| ------------------ | -------------------------------------------- |
+| `name`             | Unique project name                          |
+| `sourceRepoUrl`    | URL of the source repository to convert      |
+| `sourceRepoBranch` | Branch to read from in the source repository |
+| `targetRepoBranch` | Branch to write converted Ansible output to  |
 
 ### Optional Columns
 
@@ -73,10 +72,10 @@ For self-hosted instances (e.g. GitHub Enterprise, self-hosted GitLab), the corr
 ### Example
 
 ```csv
-name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch,description,ownedByGroup
-web-app,wapp,https://github.com/myorg/web-app-chef,main,https://github.com/myorg/web-app-ansible,main,Convert web app cookbook,team-platform
-db-setup,dbset,gitlab.com?owner=myorg&repo=db-chef,develop,gitlab.com?owner=myorg&repo=db-ansible,main,,
-cache-svc,cache,bitbucket.org?workspace=myws&project=x2a&repo=cache-chef,main,,main,Cache service conversion,
+name,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch,description,ownedByGroup
+web-app,https://github.com/myorg/web-app-chef,main,https://github.com/myorg/web-app-ansible,main,Convert web app cookbook,team-platform
+db-setup,gitlab.com?owner=myorg&repo=db-chef,develop,gitlab.com?owner=myorg&repo=db-ansible,main,,
+cache-svc,bitbucket.org?workspace=myws&project=x2a&repo=cache-chef,main,,main,Cache service conversion,
 ```
 
 Notes on the example:

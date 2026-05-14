@@ -30,7 +30,6 @@ export function mapRowToProject(row: Record<string, unknown>): Project {
   return {
     id: row.id as string,
     name: row.name as string,
-    abbreviation: row.abbreviation as string,
     description: row.description as string,
     sourceRepoUrl: row.source_repo_url as string,
     targetRepoUrl: row.target_repo_url as string,

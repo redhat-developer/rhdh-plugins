@@ -55,14 +55,7 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
             .optional()
             .describe('Number of results per page (1-100). Defaults to 20.'),
           sort: z
-            .enum([
-              'createdAt',
-              'name',
-              'abbreviation',
-              'status',
-              'description',
-              'ownedBy',
-            ])
+            .enum(['createdAt', 'name', 'status', 'description', 'ownedBy'])
             .optional()
             .describe('Field to sort by. Defaults to createdAt.'),
           order: z
@@ -83,7 +76,6 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
               z.object({
                 id: z.string(),
                 name: z.string(),
-                abbreviation: z.string(),
                 description: z.string().optional(),
                 sourceRepoUrl: z.string(),
                 targetRepoUrl: z.string(),
@@ -137,7 +129,6 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
           items: projects.map(p => ({
             id: p.id,
             name: p.name,
-            abbreviation: p.abbreviation,
             description: p.description,
             sourceRepoUrl: p.sourceRepoUrl,
             targetRepoUrl: p.targetRepoUrl,

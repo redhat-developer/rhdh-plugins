@@ -15,6 +15,7 @@
  */
 
 import {
+  Project,
   resolveScmProvider,
   ScmProviderName,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -39,4 +40,15 @@ export const buildRepoBranchUrl = (
   } catch {
     return baseUrl;
   }
+};
+
+/**
+ * Builds a URL to the project directory inside the target repository.
+ */
+export const buildProjectDirUrl = (
+  project: Pick<Project, 'targetRepoUrl' | 'targetRepoBranch' | 'dirName'>,
+  hostProviderMap?: Map<string, ScmProviderName>,
+): string | undefined => {
+  if (!project.dirName) return undefined;
+  return `${buildRepoBranchUrl(project.targetRepoUrl, project.targetRepoBranch, hostProviderMap)}/${project.dirName}`;
 };

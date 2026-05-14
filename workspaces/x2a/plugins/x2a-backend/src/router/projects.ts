@@ -83,7 +83,6 @@ export function registerProjectRoutes(
         .enum([
           'createdAt',
           'name',
-          'abbreviation',
           // sorting by status is expensive for large datasets
           'status',
           'description',
@@ -144,7 +143,6 @@ export function registerProjectRoutes(
     const projectCreateRequestSchema = z.object({
       name: z.string(),
       description: z.string(),
-      abbreviation: z.string(),
       ownedByGroup: z.string().optional(),
       sourceRepoUrl: z.string(),
       targetRepoUrl: z.string(),
@@ -401,7 +399,6 @@ export function registerProjectRoutes(
         jobId: job.id,
         projectId,
         projectName: project.name,
-        projectAbbrev: project.abbreviation,
         projectDirName: project.dirName,
         phase: 'init',
         user: userRef,
