@@ -40,10 +40,9 @@ paths:
             enum:
               - createdAt
               - name
-              - abbreviation
               - status
               - description
-              - createdBy
+              - ownedBy
           required: false
           description: Sort by field
       responses:
@@ -80,9 +79,6 @@ paths:
                 description:
                   type: string
                   description: Description of the project
-                abbreviation:
-                  type: string
-                  description: Project abbreviation
                 sourceRepoUrl:
                   type: string
                   description: URL of the source repository
@@ -98,7 +94,6 @@ paths:
               required:
                 - name
                 - description
-                - abbreviation
                 - sourceRepoUrl
                 - targetRepoUrl
                 - sourceRepoBranch
@@ -150,6 +145,42 @@ paths:
                     description: Number of projects deleted (0 or 1)
                 required:
                   - deletedCount
+    patch:
+      summary: Updates an existing project.
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                name:
+                  type: string
+                  description: Full name of the project
+                ownedBy:
+                  type: string
+                  description: The user who owns the project (Backstage user reference)
+                description:
+                  type: string
+                  description: Description of the project
+      responses:
+        '200':
+          description: Updated project data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          description: Invalid request data.
+        '404':
+          description: Project not found.
 
   /projects/{projectId}/run:
     post:
@@ -552,9 +583,6 @@ components:
         id:
           type: string
           description: UUID for the project
-        abbreviation:
-          type: string
-          description: Abbreviation of the project
         name:
           type: string
           description: Full name of the project
@@ -577,9 +605,12 @@ components:
           type: string
           format: date-time
           description: Date/time when the project was created
-        createdBy:
+        ownedBy:
           type: string
-          description: The user who created the project (Backstage user reference)
+          description: The user or group who owns the project (Backstage entity reference)
+        dirName:
+          type: string
+          description: Immutable directory name for the project in the target repository (computed once at creation)
         migrationPlan:
           $ref: '#/components/schemas/Artifact'
           description: Project migration plan artifact (by init phase)
@@ -592,13 +623,12 @@ components:
       required:
         - id
         - name
-        - abbreviation
         - sourceRepoUrl
         - targetRepoUrl
         - sourceRepoBranch
         - targetRepoBranch
         - createdAt
-        - createdBy
+        - ownedBy
 
     Module:
       type: object

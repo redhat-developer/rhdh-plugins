@@ -78,6 +78,22 @@ const useStyles = makeStyles(theme => ({
   drawerContainer: {
     flex: 1,
     minHeight: 0,
+    '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default) !important',
+    },
+    '& .pf-v6-c-drawer__panel-main, & .pf-v5-c-drawer__panel-main': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default) !important',
+    },
+    '& .pf-v6-c-drawer__panel-body, & .pf-v5-c-drawer__panel-body': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default) !important',
+    },
+    '& .pf-v6-c-drawer__splitter, & .pf-v5-c-drawer__splitter': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default)',
+    },
   },
   expandStrip: {
     display: 'flex',
@@ -86,6 +102,8 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(1.5),
     gap: theme.spacing(1),
     borderRight: '1px solid var(--pf-t--global--border--color--default)',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   addIconButton: {
     padding: 0,
@@ -102,6 +120,8 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     justifyContent: 'flex-end',
     padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   closeButton: {
     textTransform: 'none',
@@ -124,11 +144,32 @@ const useStyles = makeStyles(theme => ({
     minHeight: 0,
     overflow: 'hidden',
   },
-  alertContainer: {
+  notebookDisclaimerStrip: {
+    width: '100%',
+    maxWidth: 'unset',
+    margin: 0,
+    padding: `0 0 ${theme.spacing(1)}px`,
+    boxSizing: 'border-box',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+    '& .pf-v6-c-alert, & .pf-v5-c-alert': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--secondary--default) !important',
+    },
+    '& .pf-v6-c-alert__content, & .pf-v5-c-alert__content': {
+      backgroundColor: 'transparent !important',
+    },
+    '& .pf-v6-c-alert__body, & .pf-v5-c-alert__body': {
+      backgroundColor: 'transparent !important',
+    },
+    '& .pf-v6-c-alert__description, & .pf-v5-c-alert__description': {
+      backgroundColor: 'transparent !important',
+    },
+  },
+  notebookDisclaimerInner: {
     width: '95%',
     maxWidth: 'unset',
     margin: '0 auto',
-    padding: `0 0 ${theme.spacing(1)}px`,
   },
   toastAlertGroup: {
     '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
@@ -181,20 +222,18 @@ const useStyles = makeStyles(theme => ({
     maxWidth: 'unset',
     margin: '0 auto',
   },
-  footerAlignedAlert: {
-    maxWidth: 'unset',
-    width: '95%',
-    margin: '0 auto',
-    padding: `0 0 ${theme.spacing(1)}px`,
-  },
   footer: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
     },
     '& .pf-chatbot__message-bar': {
-      backgroundColor: theme.palette.grey[300],
+      backgroundColor:
+        theme.palette.type === 'light'
+          ? theme.palette.grey[100]
+          : 'var(--pf-t--global--background--color--secondary--default)',
     },
   },
   chatContent: {
@@ -509,6 +548,16 @@ export const NotebookView = ({
     </DrawerPanelContent>
   );
 
+  const renderNotebookDisclaimerAlert = () => (
+    <div className={classes.notebookDisclaimerStrip}>
+      <div className={classes.notebookDisclaimerInner}>
+        <Alert isInline variant="info" title={t('aria.important')}>
+          {t('disclaimer.withoutValidation')}
+        </Alert>
+      </div>
+    </div>
+  );
+
   const renderMainContent = () => {
     if (!hasDocuments && messages.length === 0) {
       return (
@@ -536,11 +585,7 @@ export const NotebookView = ({
     }
     return (
       <div className={classes.welcomeContainer}>
-        <div className={classes.alertContainer}>
-          <Alert isInline variant="info" title={t('aria.important')}>
-            {t('disclaimer.withoutValidation')}
-          </Alert>
-        </div>
+        {renderNotebookDisclaimerAlert()}
         <div className={classes.notebookContentArea}>
           <Typography className={classes.notebookHeading}>
             {notebookName}
@@ -660,13 +705,9 @@ export const NotebookView = ({
 
                 <div className={classes.mainContent}>{renderMainContent()}</div>
 
-                {!hasDocuments && messages.length === 0 && (
-                  <div className={classes.footerAlignedAlert}>
-                    <Alert isInline variant="info" title={t('aria.important')}>
-                      {t('disclaimer.withoutValidation')}
-                    </Alert>
-                  </div>
-                )}
+                {!hasDocuments &&
+                  messages.length === 0 &&
+                  renderNotebookDisclaimerAlert()}
 
                 <ChatbotFooter className={classes.footer}>
                   {documents.length === 0 ? (

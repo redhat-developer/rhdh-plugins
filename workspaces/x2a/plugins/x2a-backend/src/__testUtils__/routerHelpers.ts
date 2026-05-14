@@ -37,7 +37,6 @@ import { createService } from './testHelpers';
 export const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
   description: 'Mock Description',
-  abbreviation: 'MP',
   sourceRepoUrl: 'https://github.com/source/repo',
   targetRepoUrl: 'https://github.com/target/repo',
   sourceRepoBranch: 'main',
@@ -47,7 +46,6 @@ export const mockInputProject: ProjectsPostRequest = {
 export const mockProject2: ProjectsPostRequest = {
   name: 'Another Project',
   description: 'Another Description',
-  abbreviation: 'AP',
   sourceRepoUrl: 'https://github.com/source/repo2',
   targetRepoUrl: 'https://github.com/target/repo2',
   sourceRepoBranch: 'main',
@@ -240,6 +238,7 @@ export interface MockRouterDeps {
     listProjects: jest.Mock;
     createProject: jest.Mock;
     getProject: jest.Mock;
+    updateProject: jest.Mock;
     deleteProject: jest.Mock;
     listModules: jest.Mock;
     createModule: jest.Mock;
@@ -284,6 +283,7 @@ export function createMockRouterDeps(): MockRouterDeps {
       listProjects: jest.fn(),
       createProject: jest.fn(),
       getProject: jest.fn(),
+      updateProject: jest.fn(),
       deleteProject: jest.fn(),
       listModules: jest.fn().mockResolvedValue([]),
       createModule: jest.fn().mockResolvedValue({ id: 'mock-module-id' }),

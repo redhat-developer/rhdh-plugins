@@ -61,7 +61,7 @@ ownership is attributed to `user:default/system`.
 
 Visibility depends on RBAC permissions: granting `x2aAdminViewPermission`
 or `x2aAdminWritePermission` enables `canViewAll`. With only `x2a.user`,
-the service principal sees only its own projects (created by
+the service principal sees only its own projects (owned by
 `user:default/system`).
 
 This mode is useful for local development or environments where the new
@@ -198,7 +198,7 @@ Test with any of the three tools:
 
 ```
 x2a-list-projects {}
-x2a-create-project { "name": "test", "abbreviation": "TST", ... }
+x2a-create-project { "name": "test", ... }
 x2a-trigger-next-phase { "projectId": "<uuid>" }
 ```
 

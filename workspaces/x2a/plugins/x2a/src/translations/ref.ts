@@ -52,12 +52,26 @@ export const x2aPluginMessages = {
   projectDetailsCard: {
     title: 'Project Details',
     name: 'Name',
-    abbreviation: 'Abbreviation',
+    dirName: 'Directory Name',
     status: 'Status',
-    createdBy: 'Created By',
+    ownedBy: 'Owned By',
     description: 'Description',
     sourceRepo: 'Source Repository',
     targetRepo: 'Target Repository',
+    edit: 'Edit',
+  },
+  editProjectDialog: {
+    title: 'Edit project',
+    cancel: 'Cancel',
+    update: 'Update',
+    updateError: 'Failed to update project',
+    ownerChangeWarningTitle: 'Confirm ownership transfer',
+    ownerChangeWarning:
+      'Changing the owner may cause you to lose access to this project if your permissions do not cover the new owner. An administrator can restore access if needed.',
+    ownerChangeConfirm: 'Transfer ownership',
+    nameRequired: 'Name is required',
+    ownerFormatHint:
+      'Must be a Backstage entity reference, e.g. user:default/name or group:default/team',
   },
   projectModulesCard: {
     title: 'Modules ({{count}})',
@@ -157,8 +171,8 @@ export const x2aPluginMessages = {
   project: {
     description: 'Description',
     id: 'ID',
-    abbreviation: 'Abbreviation',
-    createdBy: 'Owned By',
+    ownedBy: 'Owned By',
+    dirName: 'Directory Name',
     statuses: {
       none: '-',
       created: 'Created',

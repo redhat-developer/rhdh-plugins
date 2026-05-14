@@ -26,6 +26,7 @@ import {
 
 import type { RouterDeps } from './types';
 import {
+  assertProjectHasDirName,
   generateCallbackToken,
   reconcileJobStatus,
   useEnforceProjectPermissions,
@@ -230,6 +231,8 @@ export function registerModuleRoutes(
         catalog,
       });
 
+      assertProjectHasDirName(project);
+
       // Resolve git repositories with config-based token fallback
       const { sourceRepo, targetRepo } = gitRepoResolver.resolve({
         project,
@@ -294,7 +297,7 @@ export function registerModuleRoutes(
         jobId: job.id,
         projectId,
         projectName: project.name,
-        projectAbbrev: project.abbreviation,
+        projectDirName: project.dirName,
         phase,
         user: userRef,
         callbackToken,

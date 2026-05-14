@@ -38,7 +38,6 @@ export const createMockProjects = (
     return {
       id: `project-${index}`,
       name: `Project ${index}`,
-      abbreviation: `P${index}`,
       description: `Description ${index}`,
       sourceRepoUrl: `https://github.com/org/source-repo${index}`,
       targetRepoUrl: `https://github.com/org/target-repo${index}`,
@@ -47,7 +46,7 @@ export const createMockProjects = (
       createdAt: new Date(
         `2024-01-${String(index + 1).padStart(2, '0')}T00:00:00Z`,
       ),
-      createdBy: `user:default/user${index}`,
+      ownedBy: `user:default/user${index}`,
     };
   });
 };

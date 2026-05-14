@@ -41,7 +41,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -62,7 +61,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -101,7 +99,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -110,7 +107,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -154,7 +150,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -186,7 +181,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -270,7 +264,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -298,7 +291,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -338,7 +330,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -402,7 +393,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -411,7 +401,6 @@ describe('X2ADatabaseService – modules (list & delete)', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },

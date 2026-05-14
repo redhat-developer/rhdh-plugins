@@ -55,14 +55,7 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
             .optional()
             .describe('Number of results per page (1-100). Defaults to 20.'),
           sort: z
-            .enum([
-              'createdAt',
-              'name',
-              'abbreviation',
-              'status',
-              'description',
-              'createdBy',
-            ])
+            .enum(['createdAt', 'name', 'status', 'description', 'ownedBy'])
             .optional()
             .describe('Field to sort by. Defaults to createdAt.'),
           order: z
@@ -83,13 +76,12 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
               z.object({
                 id: z.string(),
                 name: z.string(),
-                abbreviation: z.string(),
                 description: z.string().optional(),
                 sourceRepoUrl: z.string(),
                 targetRepoUrl: z.string(),
                 sourceRepoBranch: z.string(),
                 targetRepoBranch: z.string(),
-                createdBy: z.string(),
+                ownedBy: z.string(),
                 createdAt: z.string(),
                 status: z
                   .object({
@@ -137,13 +129,12 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
           items: projects.map(p => ({
             id: p.id,
             name: p.name,
-            abbreviation: p.abbreviation,
             description: p.description,
             sourceRepoUrl: p.sourceRepoUrl,
             targetRepoUrl: p.targetRepoUrl,
             sourceRepoBranch: p.sourceRepoBranch,
             targetRepoBranch: p.targetRepoBranch,
-            createdBy: p.createdBy,
+            ownedBy: p.ownedBy,
             createdAt:
               p.createdAt instanceof Date
                 ? p.createdAt.toISOString()

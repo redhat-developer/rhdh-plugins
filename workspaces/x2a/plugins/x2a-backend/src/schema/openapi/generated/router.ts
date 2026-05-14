@@ -77,10 +77,9 @@ export const spec = {
               "enum": [
                 "createdAt",
                 "name",
-                "abbreviation",
                 "status",
                 "description",
-                "createdBy"
+                "ownedBy"
               ]
             },
             "required": false,
@@ -134,10 +133,6 @@ export const spec = {
                     "type": "string",
                     "description": "Description of the project"
                   },
-                  "abbreviation": {
-                    "type": "string",
-                    "description": "Project abbreviation"
-                  },
                   "sourceRepoUrl": {
                     "type": "string",
                     "description": "URL of the source repository"
@@ -158,7 +153,6 @@ export const spec = {
                 "required": [
                   "name",
                   "description",
-                  "abbreviation",
                   "sourceRepoUrl",
                   "targetRepoUrl",
                   "sourceRepoBranch",
@@ -242,6 +236,62 @@ export const spec = {
                 }
               }
             }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Updates an existing project.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Full name of the project"
+                  },
+                  "ownedBy": {
+                    "type": "string",
+                    "description": "The user who owns the project (Backstage user reference)"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the project"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated project data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data."
+          },
+          "404": {
+            "description": "Project not found."
           }
         }
       }
@@ -822,10 +872,6 @@ export const spec = {
             "type": "string",
             "description": "UUID for the project"
           },
-          "abbreviation": {
-            "type": "string",
-            "description": "Abbreviation of the project"
-          },
           "name": {
             "type": "string",
             "description": "Full name of the project"
@@ -855,9 +901,13 @@ export const spec = {
             "format": "date-time",
             "description": "Date/time when the project was created"
           },
-          "createdBy": {
+          "ownedBy": {
             "type": "string",
-            "description": "The user who created the project (Backstage user reference)"
+            "description": "The user or group who owns the project (Backstage entity reference)"
+          },
+          "dirName": {
+            "type": "string",
+            "description": "Immutable directory name for the project in the target repository (computed once at creation)"
           },
           "migrationPlan": {
             "$ref": "#/components/schemas/Artifact",
@@ -875,13 +925,12 @@ export const spec = {
         "required": [
           "id",
           "name",
-          "abbreviation",
           "sourceRepoUrl",
           "targetRepoUrl",
           "sourceRepoBranch",
           "targetRepoBranch",
           "createdAt",
-          "createdBy"
+          "ownedBy"
         ]
       },
       "Module": {

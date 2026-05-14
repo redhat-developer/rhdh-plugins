@@ -35,10 +35,6 @@ export interface ProjectsPostRequest {
    */
   description: string;
   /**
-   * Project abbreviation
-   */
-  abbreviation: string;
-  /**
    * URL of the source repository
    */
   sourceRepoUrl: string;

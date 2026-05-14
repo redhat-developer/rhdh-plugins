@@ -45,7 +45,6 @@ export interface X2ADatabaseServiceApi {
     input: {
       name: string;
       ownedByGroup?: string;
-      abbreviation: string;
       description: string;
       sourceRepoUrl: string;
       targetRepoUrl: string;
@@ -71,6 +70,20 @@ export interface X2ADatabaseServiceApi {
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
       canViewAll?: boolean;
+      groupsOfUser: string[];
+    },
+  ): Promise<Project | undefined>;
+
+  updateProject(
+    args: { projectId: string },
+    input: {
+      name?: string;
+      ownedBy?: string;
+      description?: string;
+    },
+    options: {
+      credentials: BackstageCredentials<BackstageUserPrincipal>;
+      canWriteAll?: boolean;
       groupsOfUser: string[];
     },
   ): Promise<Project | undefined>;

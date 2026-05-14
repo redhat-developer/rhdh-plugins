@@ -102,7 +102,6 @@ async function handleManualCreation(params: {
   input: {
     name: string;
     description?: string;
-    abbreviation: string;
     ownedByGroup?: string;
     sourceRepoUrl: string;
     sourceRepoBranch: string;
@@ -167,7 +166,6 @@ async function handleManualCreation(params: {
     row: {
       name: input.name,
       description: input.description ?? '',
-      abbreviation: input.abbreviation,
       ownedByGroup: input.ownedByGroup,
       sourceRepoUrl,
       targetRepoUrl,
@@ -325,9 +323,6 @@ export function createProjectAction(
             description: z
               .string({ description: 'The description of the project' })
               .optional(),
-            abbreviation: z.string({
-              description: 'The abbreviation of the project',
-            }),
             ownedByGroup: z
               .string({ description: 'The group that will own the project' })
               .optional(),
@@ -377,7 +372,6 @@ export function createProjectAction(
 
             name: z.string().optional(),
             description: z.string().optional(),
-            abbreviation: z.string().optional(),
             ownedByGroup: z.string().optional(),
             sourceRepoUrl: z.string().optional(),
             sourceRepoBranch: z.string().optional(),

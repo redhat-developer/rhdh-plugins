@@ -21,33 +21,17 @@
 /**
  * @public
  */
-export interface ProjectsPostRequest {
+export interface ProjectsProjectIdPatchRequest {
   /**
    * Full name of the project
    */
-  name: string;
+  name?: string;
   /**
-   * Optional - group that owns the project instead of the creator (logged in user)
+   * The user who owns the project (Backstage user reference)
    */
-  ownedByGroup?: string;
+  ownedBy?: string;
   /**
    * Description of the project
    */
-  description: string;
-  /**
-   * URL of the source repository
-   */
-  sourceRepoUrl: string;
-  /**
-   * URL of the target repository
-   */
-  targetRepoUrl: string;
-  /**
-   * Branch of the source repository (default to main)
-   */
-  sourceRepoBranch: string;
-  /**
-   * Branch of the target repository (default to main)
-   */
-  targetRepoBranch: string;
+  description?: string;
 }

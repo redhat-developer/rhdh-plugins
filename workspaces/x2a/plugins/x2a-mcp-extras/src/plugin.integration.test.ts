@@ -162,7 +162,6 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
       input: {
         name: 'Integration Test Project',
         description: 'Verify end-to-end wiring',
-        abbreviation: 'ITP',
         sourceRepoUrl: 'https://github.com/acme/source',
         targetRepoUrl: 'https://github.com/acme/target',
         sourceRepoBranch: 'main',
@@ -175,8 +174,7 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
     expect(createResult.output).toMatchObject({
       id: expect.any(String),
       name: 'Integration Test Project',
-      abbreviation: 'ITP',
-      createdBy: MOCK_USER,
+      ownedBy: MOCK_USER,
       projectDetailsUrl: expect.stringContaining('/x2a/projects/'),
     });
     const projectId = createResult.output.id;

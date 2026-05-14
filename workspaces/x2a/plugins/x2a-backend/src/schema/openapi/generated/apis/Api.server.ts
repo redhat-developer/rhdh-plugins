@@ -31,6 +31,7 @@ import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdD
 import { ProjectsProjectIdModulesModuleIdCancelPostRequest } from '../models/ProjectsProjectIdModulesModuleIdCancelPostRequest.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
 import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
+import { ProjectsProjectIdPatchRequest } from '../models/ProjectsProjectIdPatchRequest.model';
 import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
 import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunPostRequest.model';
 
@@ -42,13 +43,7 @@ export type ProjectsGet = {
     page?: number;
     pageSize?: number;
     order?: 'asc' | 'desc';
-    sort?:
-      | 'createdAt'
-      | 'name'
-      | 'abbreviation'
-      | 'status'
-      | 'description'
-      | 'createdBy';
+    sort?: 'createdAt' | 'name' | 'status' | 'description' | 'ownedBy';
   };
   response: ProjectsGet200Response;
 };
@@ -174,6 +169,16 @@ export type ProjectsProjectIdModulesPost = {
 /**
  * @public
  */
+export type ProjectsProjectIdPatch = {
+  path: {
+    projectId: string;
+  };
+  body: ProjectsProjectIdPatchRequest;
+  response: Project | void | void;
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdRunPost = {
   path: {
     projectId: string;
@@ -206,6 +211,8 @@ export type EndpointMap = {
   '#post|/projects/{projectId}/modules/{moduleId}/run': ProjectsProjectIdModulesModuleIdRunPost;
 
   '#post|/projects/{projectId}/modules': ProjectsProjectIdModulesPost;
+
+  '#patch|/projects/{projectId}': ProjectsProjectIdPatch;
 
   '#post|/projects/{projectId}/run': ProjectsProjectIdRunPost;
 };

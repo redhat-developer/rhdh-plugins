@@ -51,9 +51,6 @@ The init phase cannot be started automatically from this tool - the user must vi
         z.object({
           name: z.string().describe('Full name of the migration project.'),
           description: z.string().describe('Description of the project.'),
-          abbreviation: z
-            .string()
-            .describe('Short abbreviation for the project.'),
           sourceRepoUrl: z.string().describe('URL of the source repository.'),
           targetRepoUrl: z.string().describe('URL of the target repository.'),
           sourceRepoBranch: z
@@ -74,11 +71,6 @@ The init phase cannot be started automatically from this tool - the user must vi
         z.object({
           id: z.string().describe('UUID of the newly created project.'),
           name: z.string().describe('Full name of the project.'),
-          abbreviation: z
-            .string()
-            .describe(
-              'Short abbreviation for the project (used in labels and URLs).',
-            ),
           description: z
             .string()
             .optional()
@@ -99,7 +91,7 @@ The init phase cannot be started automatically from this tool - the user must vi
           targetRepoBranch: z
             .string()
             .describe('Git branch to write to in the target repository.'),
-          createdBy: z
+          ownedBy: z
             .string()
             .describe(
               'Backstage user entity reference of the project owner (e.g. user:default/jane).',
@@ -138,7 +130,6 @@ The init phase cannot be started automatically from this tool - the user must vi
         {
           name: input.name,
           description: input.description,
-          abbreviation: input.abbreviation,
           sourceRepoUrl: input.sourceRepoUrl,
           targetRepoUrl: input.targetRepoUrl,
           sourceRepoBranch: input.sourceRepoBranch,
@@ -155,13 +146,12 @@ The init phase cannot be started automatically from this tool - the user must vi
         output: {
           id: project.id,
           name: project.name,
-          abbreviation: project.abbreviation,
           description: project.description,
           sourceRepoUrl: project.sourceRepoUrl,
           targetRepoUrl: project.targetRepoUrl,
           sourceRepoBranch: project.sourceRepoBranch,
           targetRepoBranch: project.targetRepoBranch,
-          createdBy: project.createdBy,
+          ownedBy: project.ownedBy,
           createdAt:
             project.createdAt instanceof Date
               ? project.createdAt.toISOString()

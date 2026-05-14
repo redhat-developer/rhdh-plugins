@@ -73,13 +73,12 @@ const mockGetNextPhase = getNextPhase as jest.Mock;
 const makeProject = (overrides?: Partial<Project>): Project => ({
   id: 'proj-1',
   name: 'Test Project',
-  abbreviation: 'TP',
   sourceRepoUrl: 'https://github.com/org/source',
   targetRepoUrl: 'https://github.com/org/target',
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
   createdAt: new Date('2024-01-01'),
-  createdBy: 'user:default/alice',
+  ownedBy: 'user:default/alice',
   ...overrides,
 });
 

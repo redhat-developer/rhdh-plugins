@@ -102,7 +102,6 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     input: {
       name: string;
       ownedByGroup?: string;
-      abbreviation: string;
       description: string;
       sourceRepoUrl: string;
       targetRepoUrl: string;
@@ -239,6 +238,30 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       `this.#projectOps.getProject finished, adding migration plan and status to project`,
     );
     if (!skipEnrichment) {
+      await this.enrichProject(project);
+    }
+    return project;
+  }
+
+  async updateProject(
+    { projectId }: { projectId: string },
+    input: {
+      name?: string;
+      ownedBy?: string;
+      description?: string;
+    },
+    options: {
+      credentials: BackstageCredentials<BackstageUserPrincipal>;
+      canWriteAll?: boolean;
+      groupsOfUser: string[];
+    },
+  ): Promise<Project | undefined> {
+    const project = await this.#projectOps.updateProject(
+      { projectId },
+      input,
+      options,
+    );
+    if (project) {
       await this.enrichProject(project);
     }
     return project;

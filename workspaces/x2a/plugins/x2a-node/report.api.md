@@ -110,7 +110,7 @@ export interface JobCreateParams {
     // (undocumented)
     phase: MigrationPhase;
     // (undocumented)
-    projectAbbrev: string;
+    projectDirName: string;
     // (undocumented)
     projectId: string;
     // (undocumented)
@@ -249,7 +249,6 @@ export interface X2ADatabaseServiceApi {
     createProject(input: {
         name: string;
         ownedByGroup?: string;
-        abbreviation: string;
         description: string;
         sourceRepoUrl: string;
         targetRepoUrl: string;
@@ -343,6 +342,18 @@ export interface X2ADatabaseServiceApi {
         telemetry?: Telemetry | null;
         commitId?: string;
     }): Promise<Job | undefined>;
+    // (undocumented)
+    updateProject(args: {
+        projectId: string;
+    }, input: {
+        name?: string;
+        ownedBy?: string;
+        description?: string;
+    }, options: {
+        credentials: BackstageCredentials<BackstageUserPrincipal>;
+        canWriteAll?: boolean;
+        groupsOfUser: string[];
+    }): Promise<Project | undefined>;
 }
 
 // @public
