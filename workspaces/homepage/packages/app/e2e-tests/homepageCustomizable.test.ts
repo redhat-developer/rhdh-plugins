@@ -89,4 +89,106 @@ test.describe.serial('Dynamic Home Page Customization', () => {
     await homePageCustomization.addWidget('Access');
     await expect(sharedPage.getByText('Quick Access')).toBeVisible();
   });
+
+  // ── Persistent storage ────────────────────────────────────────────────
+
+  test.describe('Persistent storage', () => {
+    test('Customizations persist across page reload', async () => {
+      await homePageCustomization.deleteFirstCard();
+      await homePageCustomization.exitEditMode();
+      const countBeforeReload =
+        await homePageCustomization.getVisibleCardCount();
+      expect(countBeforeReload).toBeGreaterThan(0);
+
+      await sharedPage.reload();
+      await homePageCustomization.verifyCardHidden(
+        'Good (morning|afternoon|evening)',
+      );
+      await homePageCustomization.verifyCardVisible('Quick Access');
+      const countAfterReload =
+        await homePageCustomization.getVisibleCardCount();
+      expect(countAfterReload).toBe(countBeforeReload);
+    });
+
+    test('Customizations persist across sign-out and re-login', async () => {
+      const countBeforeLogout =
+        await homePageCustomization.getVisibleCardCount();
+      expect(countBeforeLogout).toBeGreaterThan(0);
+
+      await testUtils.signOut();
+      const loginUrl = process.env.APP_MODE === 'nfs' ? '/' : '/customizable';
+      await testUtils.loginAsGuest(loginUrl);
+      await homePageCustomization.verifyCardHidden(
+        'Good (morning|afternoon|evening)',
+      );
+      await homePageCustomization.verifyCardVisible('Quick Access');
+      const countAfterLogout =
+        await homePageCustomization.getVisibleCardCount();
+      expect(countAfterLogout).toBe(countBeforeLogout);
+    });
+  });
+});
+
+// ── Persona-based homepages ──────────────────────────────────────────────
+//
+// Three Backstage instances running in parallel:
+// - Port 3000: guest  (`user:default/guest-user`, no groups)
+// - Port 3001: admin  (`user:default/admin-user` in `group:default/admins`)
+// - Port 3002: developer (`user:default/developer-user` in `group:default/developers`)
+
+test.describe('Persona-Based Homepages', () => {
+  test('Groups filters default widgets by persona', async ({ browser }) => {
+    const loginUrl = process.env.APP_MODE === 'nfs' ? '/' : '/customizable';
+
+    // Guest (port 3000, no groups): sees common defaults only
+    const guestPage = await (
+      await browser.newContext({ baseURL: 'http://localhost:3000' })
+    ).newPage();
+    const guestHome = new HomePageCustomization(guestPage);
+    await new TestUtils(guestPage).loginAsGuest(loginUrl);
+    await guestHome.verifyHomePageLoaded();
+
+    await expect(
+      guestPage.getByText(/Good (morning|afternoon|evening), Guest/),
+    ).toBeVisible();
+    await guestHome.verifyCardVisible('Explore Your Software Catalog');
+    await guestHome.verifyCardVisible('Explore Templates');
+    await guestHome.verifyCardVisible('Quick Access');
+    await guestHome.verifyCardHidden('Featured docs');
+    await guestHome.verifyCardHidden('Recently visited');
+
+    // Admin (port 3001, group:default/admins): sees common + Featured Docs, Starred Entities
+    const adminPage = await (
+      await browser.newContext({ baseURL: 'http://localhost:3001' })
+    ).newPage();
+    const adminHome = new HomePageCustomization(adminPage);
+    await new TestUtils(adminPage).loginAsGuest(loginUrl);
+    await adminHome.verifyHomePageLoaded();
+
+    await expect(
+      adminPage.getByText(/Good (morning|afternoon|evening), Admin-user/),
+    ).toBeVisible();
+    await adminHome.verifyCardVisible('Explore Your Software Catalog');
+    await adminHome.verifyCardVisible('Explore Templates');
+    await adminHome.verifyCardVisible('Quick Access');
+    await adminHome.verifyCardVisible('Featured docs');
+    await adminHome.verifyCardHidden('Recently visited');
+
+    // Developer (port 3002, group:default/developers): sees common + Recently Visited, Top Visited
+    const devPage = await (
+      await browser.newContext({ baseURL: 'http://localhost:3002' })
+    ).newPage();
+    const devHome = new HomePageCustomization(devPage);
+    await new TestUtils(devPage).loginAsGuest(loginUrl);
+    await devHome.verifyHomePageLoaded();
+
+    await expect(
+      devPage.getByText(/Good (morning|afternoon|evening), Developer-user/),
+    ).toBeVisible();
+    await devHome.verifyCardVisible('Explore Your Software Catalog');
+    await devHome.verifyCardVisible('Explore Templates');
+    await devHome.verifyCardVisible('Quick Access');
+    await devHome.verifyCardVisible('Recently visited');
+    await devHome.verifyCardHidden('Featured docs');
+  });
 });
