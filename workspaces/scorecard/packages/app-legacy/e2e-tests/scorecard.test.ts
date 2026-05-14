@@ -68,7 +68,7 @@ import {
 import {
   expectAverageCardCenterPercent,
   verifyAverageDonutCenterTooltip,
-  verifyAverageLegendTooltipForStatus,
+  verifyAverageCenterTooltipBreakdownRows,
 } from './utils/averageCardAssertions';
 import { runAccessibilityTests } from './utils/accessibility';
 import { ScorecardRoutes } from './constants/routes';
@@ -1119,12 +1119,11 @@ test.describe('Scorecard Plugin Tests', () => {
           500,
           1000,
         );
-        await verifyAverageLegendTooltipForStatus(
+        await verifyAverageCenterTooltipBreakdownRows(
           page,
           card,
           translations,
           currentLocale,
-          'success',
         );
       });
 

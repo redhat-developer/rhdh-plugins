@@ -136,6 +136,10 @@ const scorecardTranslationEs = createTranslationMessages({
       'Algunas entidades no están reportando valores relacionados con esta métrica.',
     'metric.averageCenterTooltipTotalLabel': 'Puntuación total',
     'metric.averageCenterTooltipMaxLabel': 'Puntuación máxima posible',
+    'metric.averageCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} entidad, puntuación: {{score}}',
+    'metric.averageCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} entidades, puntuación: {{score}}',
     'metric.averageLegendTooltipEntitiesEach_one':
       '{{count}} entidad, cada una {{score}}',
     'metric.averageLegendTooltipEntitiesEach_other':
