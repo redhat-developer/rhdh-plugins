@@ -1,5 +1,20 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.0
+
+### Minor Changes
+
+- 3c9c556: - Hide notebooks tab when `lightspeed.notebooks.enabled: false` in config
+  - Fix notebook queries to display correct model from config instead of chat's selected model
+  - Add `/notebook-conversation-ids` endpoint to filter notebook conversations from chat list even when notebooks disabled
+
+### Patch Changes
+
+- a866b21: fixed dark theme issues
+- 17e0527: Updated dependency `@patternfly/react-core` to `6.4.3`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-app-react` to `^0.0.5`.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.0
+
 ## 2.7.1
 
 ### Patch Changes
