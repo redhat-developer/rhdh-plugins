@@ -67,7 +67,6 @@
     "react-dom": "^18",
     "@protobufjs/inquire": "1.1.0",
     "linkifyjs": "4.3.2",
-    "@aws-sdk/core/fast-xml-parser": "4.5.6",
     "request/form-data": "2.5.5",
     "@types/request/form-data": "2.5.5",
     "jsonpath-plus": "10.3.0",
@@ -88,7 +87,9 @@
     "ip-address": "10.1.1",
     "prismjs": "1.30.0",
     "@backstage-community/plugin-rbac-backend/@backstage/plugin-permission-backend": "0.6.0",
-    "fast-xml-parser": "5.7.3"
+    "fast-xml-parser": "5.7.3",
+    "casbin/minimatch": "7.4.7",
+    "@backstage-community/plugin-rbac-backend/@backstage/backend-defaults": "0.17.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
