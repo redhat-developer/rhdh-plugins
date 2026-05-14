@@ -102,7 +102,7 @@ const mockProject = {
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
   createdAt: new Date('2024-01-01T00:00:00Z'),
-  createdBy: 'user:default/test',
+  ownedBy: 'user:default/test',
 };
 
 const mockModule = {

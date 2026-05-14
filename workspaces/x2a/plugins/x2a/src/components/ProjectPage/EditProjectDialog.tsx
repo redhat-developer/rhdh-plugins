@@ -57,7 +57,7 @@ export const EditProjectDialog = ({
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState(project.name);
-  const [createdBy, setCreatedBy] = useState(project.createdBy);
+  const [ownedBy, setOwnedBy] = useState(project.ownedBy);
   const [description, setDescription] = useState(project.description ?? '');
   const [error, setError] = useState<Error | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,16 +73,16 @@ export const EditProjectDialog = ({
 
   const ownerOptions = useMemo(() => {
     const refs = [...(identity?.ownershipEntityRefs ?? [])];
-    if (project.createdBy && !refs.includes(project.createdBy)) {
-      refs.unshift(project.createdBy);
+    if (project.ownedBy && !refs.includes(project.ownedBy)) {
+      refs.unshift(project.ownedBy);
     }
     return refs;
-  }, [identity?.ownershipEntityRefs, project.createdBy]);
+  }, [identity?.ownershipEntityRefs, project.ownedBy]);
 
   useEffect(() => {
     if (open) {
       setName(project.name);
-      setCreatedBy(project.createdBy);
+      setOwnedBy(project.ownedBy);
       setDescription(project.description ?? '');
       setError(null);
       setShowOwnerConfirm(false);
@@ -90,31 +90,30 @@ export const EditProjectDialog = ({
   }, [open, project]);
 
   const trimmedName = name.trim();
-  const trimmedCreatedBy = createdBy.trim();
+  const trimmedOwnedBy = ownedBy.trim();
   const trimmedDescription = description.trim();
 
   const hasChanges =
     trimmedName !== project.name ||
-    trimmedCreatedBy !== project.createdBy ||
+    trimmedOwnedBy !== project.ownedBy ||
     trimmedDescription !== (project.description ?? '');
 
-  const ownerChanged = trimmedCreatedBy !== project.createdBy;
+  const ownerChanged = trimmedOwnedBy !== project.ownedBy;
 
   const nameError = trimmedName.length === 0;
-  const createdByError =
-    trimmedCreatedBy.length === 0 || !ENTITY_REF_RE.test(trimmedCreatedBy);
-  const hasValidationErrors = nameError || createdByError;
+  const ownedByError =
+    trimmedOwnedBy.length === 0 || !ENTITY_REF_RE.test(trimmedOwnedBy);
+  const hasValidationErrors = nameError || ownedByError;
 
   const submitUpdate = async () => {
     setError(null);
     setIsSubmitting(true);
 
     try {
-      const body: { name?: string; createdBy?: string; description?: string } =
+      const body: { name?: string; ownedBy?: string; description?: string } =
         {};
       if (trimmedName !== project.name) body.name = trimmedName;
-      if (trimmedCreatedBy !== project.createdBy)
-        body.createdBy = trimmedCreatedBy;
+      if (trimmedOwnedBy !== project.ownedBy) body.ownedBy = trimmedOwnedBy;
       if (trimmedDescription !== (project.description ?? ''))
         body.description = trimmedDescription;
 
@@ -182,13 +181,13 @@ export const EditProjectDialog = ({
             freeSolo={isAdmin}
             disableClearable
             options={ownerOptions}
-            value={createdBy}
-            onChange={(_, newValue) => setCreatedBy((newValue as string) || '')}
+            value={ownedBy}
+            onChange={(_, newValue) => setOwnedBy((newValue as string) || '')}
             {...(isAdmin
               ? {
-                  inputValue: createdBy,
+                  inputValue: ownedBy,
                   onInputChange: (_: unknown, newValue: string) =>
-                    setCreatedBy(newValue),
+                    setOwnedBy(newValue),
                 }
               : {})}
             disabled={isSubmitting}
@@ -196,10 +195,10 @@ export const EditProjectDialog = ({
               <TextField
                 {...params}
                 margin="dense"
-                label={t('projectDetailsCard.createdBy')}
-                error={createdByError}
+                label={t('projectDetailsCard.ownedBy')}
+                error={ownedByError}
                 helperText={
-                  createdByError || isAdmin
+                  ownedByError || isAdmin
                     ? t('editProjectDialog.ownerFormatHint')
                     : ''
                 }

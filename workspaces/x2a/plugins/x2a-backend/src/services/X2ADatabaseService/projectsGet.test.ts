@@ -73,7 +73,7 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         expect(retrieved?.description).toBe(created.description);
         expect(retrieved?.sourceRepoUrl).toBe(created.sourceRepoUrl);
         expect(retrieved?.targetRepoUrl).toBe(created.targetRepoUrl);
-        expect(retrieved?.createdBy).toBe(created.createdBy);
+        expect(retrieved?.ownedBy).toBe(created.ownedBy);
         expect(retrieved?.createdAt).toEqual(created.createdAt);
       },
     );
@@ -95,7 +95,7 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
           target_repo_url: defaultProjectRepoFields.targetRepoUrl,
           source_repo_branch: defaultProjectRepoFields.sourceRepoBranch,
           target_repo_branch: defaultProjectRepoFields.targetRepoBranch,
-          created_by: 'group:default/team-x',
+          owned_by: 'group:default/team-x',
           created_at: new Date(),
           dir_name: 'group-owned-project-22222222',
         });
@@ -111,7 +111,7 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(groupProjectId);
         expect(retrieved?.name).toBe('Group-owned Project');
-        expect(retrieved?.createdBy).toBe('group:default/team-x');
+        expect(retrieved?.ownedBy).toBe('group:default/team-x');
       },
     );
 
@@ -235,7 +235,7 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         );
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(project.id);
-        expect(retrieved?.createdBy).toBe('user:default/user1');
+        expect(retrieved?.ownedBy).toBe('user:default/user1');
       },
     );
 
@@ -262,7 +262,7 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         );
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(project.id);
-        expect(retrieved?.createdBy).toBe('user:default/user1');
+        expect(retrieved?.ownedBy).toBe('user:default/user1');
       },
     );
 

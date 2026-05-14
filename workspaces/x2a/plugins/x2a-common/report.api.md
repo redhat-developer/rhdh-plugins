@@ -300,7 +300,6 @@ export const POLLING_INTERVAL_MS: number;
 export interface Project {
     abbreviation: string;
     createdAt: Date;
-    createdBy: string;
     description?: string;
     dirName?: string;
     id: string;
@@ -309,6 +308,7 @@ export interface Project {
     // (undocumented)
     migrationPlan?: Artifact;
     name: string;
+    ownedBy: string;
     sourceRepoBranch: string;
     sourceRepoUrl: string;
     // (undocumented)
@@ -326,7 +326,7 @@ export type ProjectsGet = {
         page?: number;
         pageSize?: number;
         order?: 'asc' | 'desc';
-        sort?: 'createdAt' | 'name' | 'abbreviation' | 'status' | 'description' | 'createdBy';
+        sort?: 'createdAt' | 'name' | 'abbreviation' | 'status' | 'description' | 'ownedBy';
     };
 };
 
@@ -503,9 +503,9 @@ export type ProjectsProjectIdPatch = {
 
 // @public (undocumented)
 export interface ProjectsProjectIdPatchRequest {
-    createdBy?: string;
     description?: string;
     name?: string;
+    ownedBy?: string;
 }
 
 // @public (undocumented)

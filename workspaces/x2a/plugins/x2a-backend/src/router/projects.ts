@@ -42,7 +42,7 @@ import { ProjectsGet, ProjectsPost } from '../schema/openapi';
 const projectUpdateSchema = z
   .object({
     name: z.string().min(1).optional(),
-    createdBy: z.string().regex(ENTITY_REF_RE).optional(),
+    ownedBy: z.string().regex(ENTITY_REF_RE).optional(),
     description: z.string().optional(),
   })
   .strict();
@@ -87,7 +87,7 @@ export function registerProjectRoutes(
           // sorting by status is expensive for large datasets
           'status',
           'description',
-          'createdBy',
+          'ownedBy',
         ])
         .optional(),
     });
@@ -272,20 +272,20 @@ export function registerProjectRoutes(
       throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
     }
 
-    const { name, createdBy, description } = parsedBody.data;
+    const { name, ownedBy, description } = parsedBody.data;
     if (
       name === undefined &&
-      createdBy === undefined &&
+      ownedBy === undefined &&
       description === undefined
     ) {
       throw new InputError(
-        `${endpoint}: At least one field (name, createdBy, description) must be provided`,
+        `${endpoint}: At least one field (name, ownedBy, description) must be provided`,
       );
     }
 
     const updated = await x2aDatabase.updateProject(
       { projectId },
-      { name, createdBy, description },
+      { name, ownedBy, description },
       {
         credentials,
         canWriteAll,

@@ -29,7 +29,7 @@ export interface ProjectsProjectIdPatchRequest {
   /**
    * The user who owns the project (Backstage user reference)
    */
-  createdBy?: string;
+  ownedBy?: string;
   /**
    * Description of the project
    */

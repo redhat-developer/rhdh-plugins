@@ -49,7 +49,7 @@ export type ProjectsGet = {
       | 'abbreviation'
       | 'status'
       | 'description'
-      | 'createdBy';
+      | 'ownedBy';
   };
   response: ProjectsGet200Response;
 };
@@ -180,7 +180,7 @@ export type ProjectsProjectIdPatch = {
     projectId: string;
   };
   body: ProjectsProjectIdPatchRequest;
-  response: Project | void;
+  response: Project | void | void;
 };
 /**
  * @public

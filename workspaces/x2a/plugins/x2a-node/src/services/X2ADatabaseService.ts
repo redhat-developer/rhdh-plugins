@@ -79,7 +79,7 @@ export interface X2ADatabaseServiceApi {
     args: { projectId: string },
     input: {
       name?: string;
-      createdBy?: string;
+      ownedBy?: string;
       description?: string;
     },
     options: {

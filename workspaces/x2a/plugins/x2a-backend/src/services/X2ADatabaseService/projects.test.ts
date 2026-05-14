@@ -56,7 +56,7 @@ describe('X2ADatabaseService – projects', () => {
           targetRepoUrl: input.targetRepoUrl,
           sourceRepoBranch: input.sourceRepoBranch,
           targetRepoBranch: input.targetRepoBranch,
-          createdBy: 'user:default/mock',
+          ownedBy: 'user:default/mock',
         });
         expect(project.id).toBeDefined();
         expect(project.createdAt).toBeInstanceOf(Date);
@@ -65,7 +65,7 @@ describe('X2ADatabaseService – projects', () => {
         expect(row).toBeDefined();
         expect(row.name).toBe(input.name);
         expect(row.abbreviation).toBe(input.abbreviation);
-        expect(row.created_by).toBe('user:default/mock');
+        expect(row.owned_by).toBe('user:default/mock');
       },
       LONG_TEST_TIMEOUT,
     );
@@ -127,7 +127,7 @@ describe('X2ADatabaseService – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
-      'sets createdBy from credentials - %p',
+      'sets ownedBy from credentials - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
@@ -143,14 +143,14 @@ describe('X2ADatabaseService – projects', () => {
           },
           { credentials: customCredentials },
         );
-        expect(project.createdBy).toBe('user:default/custom-user');
+        expect(project.ownedBy).toBe('user:default/custom-user');
         const row = await client('projects').where('id', project.id).first();
-        expect(row.created_by).toBe('user:default/custom-user');
+        expect(row.owned_by).toBe('user:default/custom-user');
       },
     );
 
     it.each(supportedDatabaseIds)(
-      'sets createdBy from ownedByGroup when provided - %p',
+      'sets ownedBy from ownedByGroup when provided - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
@@ -165,9 +165,9 @@ describe('X2ADatabaseService – projects', () => {
           },
           { credentials },
         );
-        expect(project.createdBy).toBe('group:default/team-a');
+        expect(project.ownedBy).toBe('group:default/team-a');
         const row = await client('projects').where('id', project.id).first();
-        expect(row.created_by).toBe('group:default/team-a');
+        expect(row.owned_by).toBe('group:default/team-a');
       },
     );
 
@@ -186,9 +186,9 @@ describe('X2ADatabaseService – projects', () => {
           },
           { credentials },
         );
-        expect(project.createdBy).toBe('user:default/jane');
+        expect(project.ownedBy).toBe('user:default/jane');
         const row = await client('projects').where('id', project.id).first();
-        expect(row.created_by).toBe('user:default/jane');
+        expect(row.owned_by).toBe('user:default/jane');
       },
     );
   });
@@ -256,7 +256,7 @@ describe('X2ADatabaseService – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
-      'updates createdBy and persists to DB - %p',
+      'updates ownedBy and persists to DB - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
@@ -273,15 +273,15 @@ describe('X2ADatabaseService – projects', () => {
 
         const updated = await service.updateProject(
           { projectId: project.id },
-          { createdBy: 'group:default/team-x' },
+          { ownedBy: 'group:default/team-x' },
           { credentials, canWriteAll: true, groupsOfUser: [] },
         );
 
         expect(updated).toBeDefined();
-        expect(updated!.createdBy).toBe('group:default/team-x');
+        expect(updated!.ownedBy).toBe('group:default/team-x');
 
         const row = await client('projects').where('id', project.id).first();
-        expect(row.created_by).toBe('group:default/team-x');
+        expect(row.owned_by).toBe('group:default/team-x');
       },
       LONG_TEST_TIMEOUT,
     );
@@ -307,7 +307,7 @@ describe('X2ADatabaseService – projects', () => {
           {
             name: 'New Name',
             description: 'New desc',
-            createdBy: 'user:default/other',
+            ownedBy: 'user:default/other',
           },
           { credentials, canWriteAll: true, groupsOfUser: [] },
         );
@@ -315,7 +315,7 @@ describe('X2ADatabaseService – projects', () => {
         expect(updated).toBeDefined();
         expect(updated!.name).toBe('New Name');
         expect(updated!.description).toBe('New desc');
-        expect(updated!.createdBy).toBe('user:default/other');
+        expect(updated!.ownedBy).toBe('user:default/other');
       },
       LONG_TEST_TIMEOUT,
     );
@@ -628,7 +628,7 @@ describe('X2ADatabaseService – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
-      'sorts by createdBy when canViewAll is true - %p',
+      'sorts by ownedBy when canViewAll is true - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
@@ -666,18 +666,18 @@ describe('X2ADatabaseService – projects', () => {
         );
 
         const result = await service.listProjects(
-          { sort: 'createdBy', order: 'asc' },
+          { sort: 'ownedBy', order: 'asc' },
           { credentials: cred1, canViewAll: true, groupsOfUser: [] },
         );
         expect(result.projects).toHaveLength(3);
-        expect(result.projects[0].createdBy).toBe('user:default/user1');
-        expect(result.projects[1].createdBy).toBe('user:default/user2');
-        expect(result.projects[2].createdBy).toBe('user:default/user3');
+        expect(result.projects[0].ownedBy).toBe('user:default/user1');
+        expect(result.projects[1].ownedBy).toBe('user:default/user2');
+        expect(result.projects[2].ownedBy).toBe('user:default/user3');
       },
     );
 
     it.each(supportedDatabaseIds)(
-      'filters by createdBy when canViewAll is false - %p',
+      'filters by ownedBy when canViewAll is false - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
@@ -729,7 +729,7 @@ describe('X2ADatabaseService – projects', () => {
         );
         expect(user1Result.totalCount).toBe(2);
         expect(
-          user1Result.projects.every(p => p.createdBy === 'user:default/user1'),
+          user1Result.projects.every(p => p.ownedBy === 'user:default/user1'),
         ).toBe(true);
 
         const user2Result = await service.listProjects(
@@ -738,7 +738,7 @@ describe('X2ADatabaseService – projects', () => {
         );
         expect(user2Result.totalCount).toBe(2);
         expect(
-          user2Result.projects.every(p => p.createdBy === 'user:default/user2'),
+          user2Result.projects.every(p => p.ownedBy === 'user:default/user2'),
         ).toBe(true);
       },
     );
@@ -772,7 +772,7 @@ describe('X2ADatabaseService – projects', () => {
           target_repo_url: defaultProjectRepoFields.targetRepoUrl,
           source_repo_branch: defaultProjectRepoFields.sourceRepoBranch,
           target_repo_branch: defaultProjectRepoFields.targetRepoBranch,
-          created_by: 'group:default/team-a',
+          owned_by: 'group:default/team-a',
           created_at: new Date(),
           dir_name: 'group-project-11111111',
         });
@@ -788,9 +788,9 @@ describe('X2ADatabaseService – projects', () => {
 
         expect(result.totalCount).toBe(2);
         expect(result.projects).toHaveLength(2);
-        const createdBys = result.projects.map(p => p.createdBy);
-        expect(createdBys).toContain('user:default/user1');
-        expect(createdBys).toContain('group:default/team-a');
+        const ownedBys = result.projects.map(p => p.ownedBy);
+        expect(ownedBys).toContain('user:default/user1');
+        expect(ownedBys).toContain('group:default/team-a');
       },
     );
 
@@ -839,13 +839,13 @@ describe('X2ADatabaseService – projects', () => {
         expect(result.totalCount).toBe(3);
         expect(result.projects).toHaveLength(3);
         expect(
-          result.projects.some(p => p.createdBy === 'user:default/user1'),
+          result.projects.some(p => p.ownedBy === 'user:default/user1'),
         ).toBe(true);
         expect(
-          result.projects.some(p => p.createdBy === 'user:default/user2'),
+          result.projects.some(p => p.ownedBy === 'user:default/user2'),
         ).toBe(true);
         expect(
-          result.projects.some(p => p.createdBy === 'user:default/user3'),
+          result.projects.some(p => p.ownedBy === 'user:default/user3'),
         ).toBe(true);
       },
     );
@@ -882,7 +882,7 @@ describe('X2ADatabaseService – projects', () => {
           { credentials: cred1, groupsOfUser: [] },
         );
         expect(result.totalCount).toBe(1);
-        expect(result.projects[0].createdBy).toBe('user:default/user1');
+        expect(result.projects[0].ownedBy).toBe('user:default/user1');
       },
     );
 
@@ -925,7 +925,7 @@ describe('X2ADatabaseService – projects', () => {
         expect(page1.totalCount).toBe(5);
         expect(page1.projects).toHaveLength(2);
         expect(
-          page1.projects.every(p => p.createdBy === 'user:default/user1'),
+          page1.projects.every(p => p.ownedBy === 'user:default/user1'),
         ).toBe(true);
       },
     );
@@ -1565,7 +1565,7 @@ describe('X2ADatabaseService – projects', () => {
           expect(result.totalCount).toBe(2);
           expect(result.projects).toHaveLength(2);
           expect(
-            result.projects.every(p => p.createdBy === 'user:default/user1'),
+            result.projects.every(p => p.ownedBy === 'user:default/user1'),
           ).toBe(true);
           // Semantic asc: created(0) < initialized(2)
           expect(result.projects.map(p => p.status?.state)).toEqual([

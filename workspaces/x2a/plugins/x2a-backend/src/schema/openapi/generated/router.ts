@@ -80,7 +80,7 @@ export const spec = {
                 "abbreviation",
                 "status",
                 "description",
-                "createdBy"
+                "ownedBy"
               ]
             },
             "required": false,
@@ -269,7 +269,7 @@ export const spec = {
                     "type": "string",
                     "description": "Full name of the project"
                   },
-                  "createdBy": {
+                  "ownedBy": {
                     "type": "string",
                     "description": "The user who owns the project (Backstage user reference)"
                   },
@@ -292,6 +292,9 @@ export const spec = {
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request data."
           },
           "404": {
             "description": "Project not found."
@@ -908,9 +911,9 @@ export const spec = {
             "format": "date-time",
             "description": "Date/time when the project was created"
           },
-          "createdBy": {
+          "ownedBy": {
             "type": "string",
-            "description": "The user who created the project (Backstage user reference)"
+            "description": "The user or group who owns the project (Backstage entity reference)"
           },
           "dirName": {
             "type": "string",
@@ -938,7 +941,7 @@ export const spec = {
           "sourceRepoBranch",
           "targetRepoBranch",
           "createdAt",
-          "createdBy"
+          "ownedBy"
         ]
       },
       "Module": {

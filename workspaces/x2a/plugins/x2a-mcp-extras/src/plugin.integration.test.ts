@@ -176,7 +176,7 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
       id: expect.any(String),
       name: 'Integration Test Project',
       abbreviation: 'ITP',
-      createdBy: MOCK_USER,
+      ownedBy: MOCK_USER,
       projectDetailsUrl: expect.stringContaining('/x2a/projects/'),
     });
     const projectId = createResult.output.id;

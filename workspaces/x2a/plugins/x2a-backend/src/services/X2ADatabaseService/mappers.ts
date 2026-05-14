@@ -36,7 +36,7 @@ export function mapRowToProject(row: Record<string, unknown>): Project {
     targetRepoUrl: row.target_repo_url as string,
     sourceRepoBranch: row.source_repo_branch as string,
     targetRepoBranch: row.target_repo_branch as string,
-    createdBy: row.created_by as string,
+    ownedBy: row.owned_by as string,
     createdAt: new Date(row.created_at as string | Date),
     dirName: (row.dir_name as string) || undefined,
   };

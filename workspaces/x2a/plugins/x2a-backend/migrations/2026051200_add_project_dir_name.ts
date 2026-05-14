@@ -18,13 +18,15 @@ import type { Knex } from 'knex';
 import { Project } from '../src/services/Project';
 
 /**
- * Adds the dir_name column to the projects table and backfills existing rows.
+ * Adds the dir_name column and renames created_by to owned_by in the projects table.
+ * Backfills dir_name for existing rows.
  *
  * @public
  */
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.alterTable('projects', table => {
     table.string('dir_name').nullable();
+    table.renameColumn('created_by', 'owned_by');
   });
 
   const rows: Array<{ id: string; name: string }> = await knex('projects')
@@ -46,12 +48,13 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 /**
- * Removes the dir_name column from the projects table.
+ * Reverts: drops dir_name and renames owned_by back to created_by.
  *
  * @public
  */
 export async function down(knex: Knex): Promise<void> {
   await knex.schema.alterTable('projects', table => {
+    table.renameColumn('owned_by', 'created_by');
     table.dropColumn('dir_name');
   });
 }

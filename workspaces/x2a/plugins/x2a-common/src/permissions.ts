@@ -41,7 +41,7 @@ export const x2aAdminWritePermission = createPermission({
 });
 
 /**
- * Can view and manage (read-write) x2a projects created by the user.
+ * Can view and manage (read-write) x2a projects owned by the user.
  *
  * @public
  */

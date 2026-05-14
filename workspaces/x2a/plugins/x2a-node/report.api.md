@@ -350,7 +350,7 @@ export interface X2ADatabaseServiceApi {
         projectId: string;
     }, input: {
         name?: string;
-        createdBy?: string;
+        ownedBy?: string;
         description?: string;
     }, options: {
         credentials: BackstageCredentials<BackstageUserPrincipal>;

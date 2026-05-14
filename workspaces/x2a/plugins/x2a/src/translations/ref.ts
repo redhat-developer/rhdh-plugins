@@ -54,7 +54,7 @@ export const x2aPluginMessages = {
     name: 'Name',
     abbreviation: 'Abbreviation',
     status: 'Status',
-    createdBy: 'Owned By',
+    ownedBy: 'Owned By',
     description: 'Description',
     sourceRepo: 'Source Repository',
     targetRepo: 'Target Repository',
@@ -172,7 +172,7 @@ export const x2aPluginMessages = {
     description: 'Description',
     id: 'ID',
     abbreviation: 'Abbreviation',
-    createdBy: 'Owned By',
+    ownedBy: 'Owned By',
     statuses: {
       none: '-',
       created: 'Created',

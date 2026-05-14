@@ -43,7 +43,7 @@ paths:
               - abbreviation
               - status
               - description
-              - createdBy
+              - ownedBy
           required: false
           description: Sort by field
       responses:
@@ -169,7 +169,7 @@ paths:
                 name:
                   type: string
                   description: Full name of the project
-                createdBy:
+                ownedBy:
                   type: string
                   description: The user who owns the project (Backstage user reference)
                 description:
@@ -182,6 +182,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+        '400':
+          description: Invalid request data.
         '404':
           description: Project not found.
 
@@ -611,9 +613,9 @@ components:
           type: string
           format: date-time
           description: Date/time when the project was created
-        createdBy:
+        ownedBy:
           type: string
-          description: The user who created the project (Backstage user reference)
+          description: The user or group who owns the project (Backstage entity reference)
         dirName:
           type: string
           description: Immutable directory name for the project in the target repository (computed once at creation)
@@ -635,7 +637,7 @@ components:
         - sourceRepoBranch
         - targetRepoBranch
         - createdAt
-        - createdBy
+        - ownedBy
 
     Module:
       type: object

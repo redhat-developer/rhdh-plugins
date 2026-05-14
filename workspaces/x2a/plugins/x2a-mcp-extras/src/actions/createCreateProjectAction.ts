@@ -99,7 +99,7 @@ The init phase cannot be started automatically from this tool - the user must vi
           targetRepoBranch: z
             .string()
             .describe('Git branch to write to in the target repository.'),
-          createdBy: z
+          ownedBy: z
             .string()
             .describe(
               'Backstage user entity reference of the project owner (e.g. user:default/jane).',
@@ -161,7 +161,7 @@ The init phase cannot be started automatically from this tool - the user must vi
           targetRepoUrl: project.targetRepoUrl,
           sourceRepoBranch: project.sourceRepoBranch,
           targetRepoBranch: project.targetRepoBranch,
-          createdBy: project.createdBy,
+          ownedBy: project.ownedBy,
           createdAt:
             project.createdAt instanceof Date
               ? project.createdAt.toISOString()

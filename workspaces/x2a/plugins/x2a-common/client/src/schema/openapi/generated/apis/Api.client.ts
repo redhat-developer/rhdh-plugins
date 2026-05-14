@@ -69,7 +69,7 @@ export type ProjectsGet = {
       | 'abbreviation'
       | 'status'
       | 'description'
-      | 'createdBy';
+      | 'ownedBy';
   };
 };
 /**

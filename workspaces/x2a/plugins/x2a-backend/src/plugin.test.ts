@@ -205,7 +205,7 @@ describe('plugin', () => {
     expect(createRes.status).toBe(200);
     expect(createRes.body).toMatchObject({
       ...mockInputProject,
-      createdBy: 'user: default/user1',
+      ownedBy: 'user: default/user1',
     });
 
     const listRes = await request(server).get('/api/x2a/projects');
@@ -215,7 +215,7 @@ describe('plugin', () => {
       items: [
         {
           ...mockInputProject,
-          createdBy: 'user: default/user1',
+          ownedBy: 'user: default/user1',
         },
       ],
     });
@@ -225,7 +225,7 @@ describe('plugin', () => {
     expect(getRes.status).toBe(200);
     expect(getRes.body).toMatchObject({
       ...mockInputProject,
-      createdBy: 'user: default/user1',
+      ownedBy: 'user: default/user1',
     });
   });
 

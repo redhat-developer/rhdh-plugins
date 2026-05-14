@@ -52,7 +52,7 @@ describe('x2a:project:create', () => {
       name: 'My Project',
       description: 'A test project',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'user:default/jane',
+      ownedBy: 'user:default/jane',
     };
 
     const initJobId = 'init-job-uuid-123';
@@ -109,7 +109,7 @@ describe('x2a:project:create', () => {
       name: 'Manual Counts',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'user:default/jane',
+      ownedBy: 'user:default/jane',
     };
 
     mockFetch
@@ -156,7 +156,7 @@ describe('x2a:project:create', () => {
       name: 'Another Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'user:default/john',
+      ownedBy: 'user:default/john',
     };
 
     let createProjectBody: Record<string, unknown> = {};
@@ -228,7 +228,7 @@ describe('x2a:project:create', () => {
       name: 'Group-owned Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'group:default/team-a',
+      ownedBy: 'group:default/team-a',
     };
 
     let createProjectBody: Record<string, unknown> = {};
@@ -289,7 +289,7 @@ describe('x2a:project:create', () => {
       name: 'Trimmed Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'group:default/team-b',
+      ownedBy: 'group:default/team-b',
     };
 
     let createProjectBody: Record<string, unknown> = {};
@@ -346,7 +346,7 @@ describe('x2a:project:create', () => {
       name: 'Prompt Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'user:default/jane',
+      ownedBy: 'user:default/jane',
     };
 
     let runRequestBody: Record<string, unknown> = {};
@@ -413,7 +413,7 @@ describe('x2a:project:create', () => {
       name: 'No Group Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'user:default/jane',
+      ownedBy: 'user:default/jane',
     };
 
     let createProjectBody: Record<string, unknown> = {};
@@ -473,7 +473,7 @@ describe('x2a:project:create', () => {
       name: 'Token Project',
       description: 'With token',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'user:default/alice',
+      ownedBy: 'user:default/alice',
     };
 
     mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
@@ -546,7 +546,7 @@ describe('x2a:project:create', () => {
             name: 'Log Test',
             description: '',
             createdAt: '2025-01-01T00:00:00.000Z',
-            createdBy: 'user:default/bob',
+            ownedBy: 'user:default/bob',
           }),
       })
       .mockResolvedValueOnce({
@@ -596,7 +596,7 @@ describe('x2a:project:create', () => {
       name: 'Augment Project',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'user:default/test',
+      ownedBy: 'user:default/test',
     };
 
     it('should pass tokens as-is for GitHub URLs (no oauth2: prefix)', async () => {
@@ -973,7 +973,7 @@ describe('x2a:project:create', () => {
       name: 'CSV Project 1',
       description: '',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'user:default/csv-user',
+      ownedBy: 'user:default/csv-user',
     };
 
     it('should use OAUTH_TOKEN_github for GitHub repos in CSV', async () => {
@@ -1289,7 +1289,7 @@ describe('x2a:project:create', () => {
                 abbreviation: `P${createCallCount}`,
                 description: '',
                 createdAt: '2025-01-01T00:00:00.000Z',
-                createdBy: 'user:default/test',
+                ownedBy: 'user:default/test',
               }),
           });
         }
@@ -1355,7 +1355,7 @@ describe('x2a:project:create', () => {
                 abbreviation: 'WS',
                 description: '',
                 createdAt: '2025-01-01T00:00:00.000Z',
-                createdBy: 'user:default/test',
+                ownedBy: 'user:default/test',
               }),
           });
         }
@@ -1512,7 +1512,7 @@ describe('x2a:project:create', () => {
               name: 'Project',
               abbreviation: 'P',
               description: '',
-              createdBy: 'user:default/test',
+              ownedBy: 'user:default/test',
               createdAt: '2025-01-01T00:00:00.000Z',
             }),
         })
@@ -1561,7 +1561,7 @@ describe('x2a:project:create', () => {
               sourceRepoBranch: 'main',
               targetRepoBranch: 'main',
               createdAt: '2025-01-01T00:00:00.000Z',
-              createdBy: 'user:default/someone',
+              ownedBy: 'user:default/someone',
             },
           ],
         }),
@@ -1627,7 +1627,7 @@ describe('x2a:project:create', () => {
               abbreviation: 'NP',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
-              createdBy: 'user:default/csv-user',
+              ownedBy: 'user:default/csv-user',
             }),
         });
       });
@@ -1686,7 +1686,7 @@ describe('x2a:project:create', () => {
               abbreviation: 'DP',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
-              createdBy: 'user:default/csv-user',
+              ownedBy: 'user:default/csv-user',
             }),
         });
       });
@@ -1729,7 +1729,7 @@ describe('x2a:project:create', () => {
               abbreviation: 'BNP',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
-              createdBy: 'user:default/jane',
+              ownedBy: 'user:default/jane',
             }),
         })
         .mockResolvedValueOnce({
@@ -1779,7 +1779,7 @@ describe('x2a:project:create', () => {
       sourceRepoBranch: 'main',
       targetRepoBranch: 'main',
       createdAt: '2025-01-01T00:00:00.000Z',
-      createdBy: 'user:default/test',
+      ownedBy: 'user:default/test',
     });
 
     it('should request page=0 on the first call (0-indexed)', async () => {
@@ -1809,7 +1809,7 @@ describe('x2a:project:create', () => {
               abbreviation: 'PT',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
-              createdBy: 'user:default/test',
+              ownedBy: 'user:default/test',
             }),
         });
       });
@@ -1944,7 +1944,7 @@ describe('x2a:project:create', () => {
               abbreviation: 'UN',
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
-              createdBy: 'user:default/test',
+              ownedBy: 'user:default/test',
             }),
         });
       });
@@ -2122,7 +2122,7 @@ describe('x2a:project:create', () => {
               abbreviation: `P${createCallCount}`,
               description: '',
               createdAt: '2025-01-01T00:00:00.000Z',
-              createdBy: 'user:default/test',
+              ownedBy: 'user:default/test',
             }),
         });
       });

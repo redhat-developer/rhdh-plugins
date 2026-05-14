@@ -65,14 +65,14 @@ describe('createRouter – projects', () => {
         expect(response.status).toBe(200);
         expect(response.body).toMatchObject({
           ...mockInputProject,
-          createdBy: 'user:default/mock',
+          ownedBy: 'user:default/mock',
         });
       },
       LONG_TEST_TIMEOUT,
     );
 
     it.each(supportedDatabaseIds)(
-      'should create a project with ownedByGroup and set createdBy to the group when user is member - %p',
+      'should create a project with ownedByGroup and set ownedBy to the group when user is member - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
 
@@ -108,13 +108,13 @@ describe('createRouter – projects', () => {
         expect(response.body).toMatchObject({
           name: 'Group-owned Project',
           abbreviation: 'GOP',
-          createdBy: 'group:default/team-a',
+          ownedBy: 'group:default/team-a',
         });
 
         const row = await client('projects')
           .where('id', response.body.id)
           .first();
-        expect(row.created_by).toBe('group:default/team-a');
+        expect(row.owned_by).toBe('group:default/team-a');
       },
       LONG_TEST_TIMEOUT,
     );
@@ -232,7 +232,7 @@ describe('createRouter – projects', () => {
         expect(response.status).toBe(200);
         expect(response.body).toMatchObject({
           ...mockInputProject,
-          createdBy: 'user:default/mock',
+          ownedBy: 'user:default/mock',
         });
       },
     );
@@ -250,7 +250,7 @@ describe('createRouter – projects', () => {
         expect(response.status).toBe(200);
         expect(response.body).toMatchObject({
           ...mockInputProject,
-          createdBy: 'user:default/mock',
+          ownedBy: 'user:default/mock',
         });
       },
     );
@@ -298,7 +298,7 @@ describe('createRouter – projects', () => {
         expect(response.body).toMatchObject({
           ...mockInputProject,
           id: projectId,
-          createdBy: 'user:default/mock',
+          ownedBy: 'user:default/mock',
         });
         expect(response.body.createdAt).toBeDefined();
       },
@@ -365,7 +365,7 @@ describe('createRouter – projects', () => {
           target_repo_url: mockInputProject.targetRepoUrl,
           source_repo_branch: mockInputProject.sourceRepoBranch,
           target_repo_branch: mockInputProject.targetRepoBranch,
-          created_by: 'group:default/team-a',
+          owned_by: 'group:default/team-a',
           created_at: new Date(),
           dir_name: 'group-project-aaaaaaaa',
         });
@@ -380,7 +380,7 @@ describe('createRouter – projects', () => {
         expect(names).toContain('Group Project');
 
         const groupProject = response.body.items.find(
-          (p: { createdBy: string }) => p.createdBy === 'group:default/team-a',
+          (p: { ownedBy: string }) => p.ownedBy === 'group:default/team-a',
         );
         expect(groupProject).toBeDefined();
         expect(groupProject.name).toBe('Group Project');
@@ -427,7 +427,7 @@ describe('createRouter – projects', () => {
           target_repo_url: mockInputProject.targetRepoUrl,
           source_repo_branch: mockInputProject.sourceRepoBranch,
           target_repo_branch: mockInputProject.targetRepoBranch,
-          created_by: 'group:default/team-a',
+          owned_by: 'group:default/team-a',
           created_at: new Date(),
           dir_name: 'group-owned-project-bbbbbbbb',
         });
@@ -441,7 +441,7 @@ describe('createRouter – projects', () => {
           id: groupProjectId,
           name: 'Group Owned Project',
           abbreviation: 'GOP',
-          createdBy: 'group:default/team-a',
+          ownedBy: 'group:default/team-a',
         });
         expect(catalogGetEntityByRef).toHaveBeenCalledWith(
           'user:default/mock',
@@ -485,7 +485,7 @@ describe('createRouter – projects', () => {
           target_repo_url: mockInputProject.targetRepoUrl,
           source_repo_branch: mockInputProject.sourceRepoBranch,
           target_repo_branch: mockInputProject.targetRepoBranch,
-          created_by: 'group:default/team-a',
+          owned_by: 'group:default/team-a',
           created_at: new Date(),
           dir_name: 'group-project-to-delete-cccccccc',
         });

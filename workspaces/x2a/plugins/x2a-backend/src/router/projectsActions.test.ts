@@ -103,7 +103,7 @@ describe('createRouter – projects (actions)', () => {
 
       expect(createResponse.status).toBe(200);
       const projectId = createResponse.body.id;
-      expect(createResponse.body.createdBy).toBe('user:default/user1');
+      expect(createResponse.body.ownedBy).toBe('user:default/user1');
 
       // Verify project exists
       const getResponse = await request(appWithCreate)
@@ -184,7 +184,7 @@ describe('createRouter – projects (actions)', () => {
 
       expect(createResponse.status).toBe(200);
       const projectId = createResponse.body.id;
-      expect(createResponse.body.createdBy).toBe('user:default/mock');
+      expect(createResponse.body.ownedBy).toBe('user:default/mock');
 
       // Delete own project (should succeed)
       const deleteResponse = await request(app)
@@ -273,7 +273,7 @@ describe('createRouter – projects (actions)', () => {
     );
 
     it.each(supportedDatabaseIds)(
-      'should update project createdBy - %p',
+      'should update project ownedBy - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const app = await createApp(client);
@@ -286,10 +286,10 @@ describe('createRouter – projects (actions)', () => {
 
         const patchResponse = await request(app)
           .patch(`/projects/${projectId}`)
-          .send({ createdBy: 'group:default/team-b' });
+          .send({ ownedBy: 'group:default/team-b' });
 
         expect(patchResponse.status).toBe(200);
-        expect(patchResponse.body.createdBy).toBe('group:default/team-b');
+        expect(patchResponse.body.ownedBy).toBe('group:default/team-b');
       },
       LONG_TEST_TIMEOUT,
     );
@@ -311,13 +311,13 @@ describe('createRouter – projects (actions)', () => {
           .send({
             name: 'New Name',
             description: 'New Desc',
-            createdBy: 'user:default/other',
+            ownedBy: 'user:default/other',
           });
 
         expect(patchResponse.status).toBe(200);
         expect(patchResponse.body.name).toBe('New Name');
         expect(patchResponse.body.description).toBe('New Desc');
-        expect(patchResponse.body.createdBy).toBe('user:default/other');
+        expect(patchResponse.body.ownedBy).toBe('user:default/other');
       },
       LONG_TEST_TIMEOUT,
     );
@@ -423,7 +423,7 @@ describe('createRouter – projects (actions)', () => {
     );
 
     it.each(supportedDatabaseIds)(
-      'should return 400 when createdBy has invalid format - %p',
+      'should return 400 when ownedBy has invalid format - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const app = await createApp(client);
@@ -436,7 +436,7 @@ describe('createRouter – projects (actions)', () => {
 
         const patchResponse = await request(app)
           .patch(`/projects/${projectId}`)
-          .send({ createdBy: 'not-a-valid-ref' });
+          .send({ ownedBy: 'not-a-valid-ref' });
 
         expect(patchResponse.status).toBe(400);
       },

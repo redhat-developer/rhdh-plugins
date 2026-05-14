@@ -248,7 +248,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     { projectId }: { projectId: string },
     input: {
       name?: string;
-      createdBy?: string;
+      ownedBy?: string;
       description?: string;
     },
     options: {

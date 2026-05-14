@@ -86,8 +86,8 @@ export const ProjectDetailsCard = ({
 
           <Grid {...gridItemProps}>
             <ItemField
-              label={t('projectDetailsCard.createdBy')}
-              value={project.createdBy || empty}
+              label={t('projectDetailsCard.ownedBy')}
+              value={project.ownedBy || empty}
             />
           </Grid>
 

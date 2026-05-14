@@ -59,7 +59,7 @@ export class ProjectOperations {
     },
   ): Promise<Project> {
     const id = crypto.randomUUID();
-    const createdBy = input.ownedByGroup || getUserRef(options.credentials);
+    const ownedBy = input.ownedByGroup || getUserRef(options.credentials);
     const createdAt = new Date();
     const dirName = new ProjectVO(id, input.name).dirName;
 
@@ -72,7 +72,7 @@ export class ProjectOperations {
       targetRepoUrl: input.targetRepoUrl,
       sourceRepoBranch: input.sourceRepoBranch,
       targetRepoBranch: input.targetRepoBranch,
-      createdBy,
+      ownedBy,
       createdAt,
       dirName,
     };
@@ -86,7 +86,7 @@ export class ProjectOperations {
       target_repo_url: input.targetRepoUrl,
       source_repo_branch: input.sourceRepoBranch,
       target_repo_branch: input.targetRepoBranch,
-      created_by: createdBy,
+      owned_by: ownedBy,
       created_at: createdAt,
       dir_name: dirName,
     });
@@ -205,7 +205,7 @@ export class ProjectOperations {
     { projectId }: { projectId: string },
     input: {
       name?: string;
-      createdBy?: string;
+      ownedBy?: string;
       description?: string;
     },
     options: {
@@ -222,8 +222,7 @@ export class ProjectOperations {
 
     const updateFields: Record<string, string> = {};
     if (input.name !== undefined) updateFields.name = input.name;
-    if (input.createdBy !== undefined)
-      updateFields.created_by = input.createdBy;
+    if (input.ownedBy !== undefined) updateFields.owned_by = input.ownedBy;
     if (input.description !== undefined)
       updateFields.description = input.description;
 
