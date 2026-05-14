@@ -42,6 +42,104 @@ export const getTimestampVariablesString = (v: number) => {
   return `${v}`;
 };
 
+const isBlankLine = (line: string) => !line.trim();
+
+/** Ordered list item at line start (CommonMark), ignoring leading spaces. */
+const isOrderedListLine = (line: string) => /^\s*\d+\.\s/.test(line);
+
+const isBulletListLine = (line: string) => /^\s*[-*+]\s/.test(line);
+
+const escapeOrderedListMarker = (line: string) =>
+  line.replace(/^(\s*)(\d+)\.(\s)/, '$1$2\\.$3');
+
+const escapeBulletListMarker = (line: string) =>
+  line.replace(/^(\s*)([*+-])(\s)/, '$1\\$2$3');
+
+/**
+ * Paragraph + ordered list (even with a single newline) parses as two blocks; merge
+ * intro + contiguous numbered lines into one paragraph using hard breaks (two spaces
+ * + newline) and escaped `1.` markers so Markdown stays a single block.
+ */
+const foldOrderedListWithIntro = (s: string): string => {
+  const lines = s.split('\n');
+  let firstListIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (isOrderedListLine(lines[i])) {
+      firstListIdx = i;
+      break;
+    }
+  }
+  if (firstListIdx < 0) {
+    return s;
+  }
+
+  const intro = lines.slice(0, firstListIdx);
+  if (intro.some(isBlankLine)) {
+    return s;
+  }
+
+  const rest = lines.slice(firstListIdx);
+  const restItems = rest.filter(l => !isBlankLine(l));
+  if (restItems.length === 0 || !restItems.every(isOrderedListLine)) {
+    return s;
+  }
+
+  const escaped = restItems.map(escapeOrderedListMarker);
+  if (intro.length === 0) {
+    return escaped.join('  \n');
+  }
+  return `${intro.join('  \n')}  \n${escaped.join('  \n')}`;
+};
+
+/** Same idea as ordered lists for intro + bullet lines. */
+const foldBulletListWithIntro = (s: string): string => {
+  const lines = s.split('\n');
+  let firstListIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (isBulletListLine(lines[i])) {
+      firstListIdx = i;
+      break;
+    }
+  }
+  if (firstListIdx < 0) {
+    return s;
+  }
+
+  const intro = lines.slice(0, firstListIdx);
+  if (intro.some(isBlankLine)) {
+    return s;
+  }
+
+  const rest = lines.slice(firstListIdx);
+  const restItems = rest.filter(l => !isBlankLine(l));
+  if (restItems.length === 0 || !restItems.every(isBulletListLine)) {
+    return s;
+  }
+
+  const escaped = restItems.map(escapeBulletListMarker);
+  if (intro.length === 0) {
+    return escaped.join('  \n');
+  }
+  return `${intro.join('  \n')}  \n${escaped.join('  \n')}`;
+};
+
+/**
+ * Trims user chat input and reduces blank lines that split Markdown blocks
+ * (e.g. paragraph + blank line + ordered list) so PatternFly renders one user bubble.
+ */
+export const normalizeChatUserInput = (input: string): string => {
+  let s = input.replace(/\r\n/g, '\n').trim();
+  if (!s) {
+    return s;
+  }
+  s = s.replace(/\n{3,}/g, '\n\n');
+  s = s.replace(/\n\n(?=\d+\.\s)/gm, '\n');
+  s = s.replace(/\n\n(?=\s*[-*+]\s)/gm, '\n');
+  s = foldOrderedListWithIntro(s);
+  s = foldBulletListWithIntro(s);
+  return s.trim();
+};
+
 export const getTimestamp = (unix_timestamp: number) => {
   if (typeof unix_timestamp !== 'number' || Number.isNaN(unix_timestamp)) {
     // eslint-disable-next-line no-console

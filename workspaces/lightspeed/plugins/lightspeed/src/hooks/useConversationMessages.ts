@@ -38,6 +38,7 @@ import {
   createUserMessage,
   getConversationsData,
   getTimestamp,
+  normalizeChatUserInput,
   transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
 import {
@@ -293,6 +294,11 @@ export const useConversationMessages = (
 
   const handleInputPrompt = useCallback(
     async (prompt: string, attachments: Attachment[] = []) => {
+      const normalizedPrompt = normalizeChatUserInput(prompt);
+      if (!normalizedPrompt) {
+        return;
+      }
+
       const streamStartedOnTemp = currentConversation === TEMP_CONVERSATION_ID;
       if (streamStartedOnTemp) {
         isTempStreamInProgressRef.current = true;
@@ -312,7 +318,7 @@ export const useConversationMessages = (
           createUserMessage({
             avatar,
             name: userName,
-            content: prompt,
+            content: normalizedPrompt,
             timestamp: getTimestamp(Date.now()) ?? '',
           }),
           createBotMessage({
@@ -347,7 +353,7 @@ export const useConversationMessages = (
 
         try {
           const reader = await createMessage({
-            prompt,
+            prompt: normalizedPrompt,
             selectedModel,
             selectedProvider,
             currentConversation,

@@ -26,6 +26,7 @@ import {
   getCategorizeMessages,
   getTimestamp,
   getTimestampVariablesString,
+  normalizeChatUserInput,
   SortOption,
   splitJsonStrings,
   transformDocumentsToSources,
@@ -168,6 +169,42 @@ describe('createMessage', () => {
       content: 'Hello from bot',
       timestamp: '2024-10-30T11:00:00Z',
     });
+  });
+});
+
+describe('normalizeChatUserInput', () => {
+  it('folds intro + ordered list into one paragraph (blank line before list)', () => {
+    const input = `Can you please explain me about:
+
+1. How to deploy RH/DH on Operator
+2. How to deploy RH/DH on Helm`;
+    expect(normalizeChatUserInput(input)).toBe(
+      `Can you please explain me about:  \n1\\. How to deploy RH/DH on Operator  \n2\\. How to deploy RH/DH on Helm`,
+    );
+  });
+
+  it('folds intro + ordered list into one paragraph (single newline before list)', () => {
+    const input = `Can you please explain me about:
+1. How to deploy RH/DH on Operator
+2. How to deploy RH/DH on Helm
+3. How to deploy RH/DH on Podman`;
+    expect(normalizeChatUserInput(input)).toBe(
+      `Can you please explain me about:  \n1\\. How to deploy RH/DH on Operator  \n2\\. How to deploy RH/DH on Helm  \n3\\. How to deploy RH/DH on Podman`,
+    );
+  });
+
+  it('folds intro + bullet list into one paragraph', () => {
+    expect(normalizeChatUserInput('Intro:\n\n- one\n- two')).toBe(
+      'Intro:  \n\\- one  \n\\- two',
+    );
+  });
+
+  it('collapses three or more newlines to at most one blank line', () => {
+    expect(normalizeChatUserInput('a\n\n\n\nb')).toBe('a\n\nb');
+  });
+
+  it('normalizes CRLF and returns empty for whitespace-only', () => {
+    expect(normalizeChatUserInput('  \r\n  \n  ')).toBe('');
   });
 });
 
