@@ -18,6 +18,7 @@ import {
   ChangeEvent,
   MouseEvent,
   Ref,
+  SyntheticEvent,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -34,6 +35,8 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { Button, makeStyles } from '@material-ui/core';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import {
   Chatbot,
   ChatbotAlert,
@@ -62,8 +65,6 @@ import {
   Select,
   SelectList,
   SelectOption,
-  Tab,
-  Tabs,
   Title,
   Tooltip,
   type AlertProps,
@@ -146,6 +147,10 @@ const useStyles = makeStyles(theme => ({
       margin: 0,
       padding: 0,
     },
+    '& .pf-chatbot__content': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default)',
+    },
   },
   header: {
     padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
@@ -187,32 +192,6 @@ const useStyles = makeStyles(theme => ({
       lineHeight: '36.4px !important',
       fontFamily: '"Red Hat Display", sans-serif !important',
     },
-  },
-  tabs: {
-    padding: `0 ${theme.spacing(2)}px`,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-    '& .pf-v6-c-tabs__item, & .pf-v5-c-tabs__item': {
-      backgroundColor: 'transparent',
-    },
-    '& .pf-v6-c-tabs__item:not(:last-child), & .pf-v5-c-tabs__item:not(:last-child)':
-      {
-        marginRight: theme.spacing(5),
-      },
-    '& .pf-v6-c-tabs__link, & .pf-v5-c-tabs__link': {
-      backgroundColor: 'transparent',
-      paddingTop: theme.spacing(2),
-      paddingBottom: theme.spacing(2),
-      fontWeight: 700,
-      cursor: 'pointer',
-    },
-    '& .pf-v6-c-tabs__item.pf-m-current .pf-v6-c-tabs__link, & .pf-v5-c-tabs__item.pf-m-current .pf-v5-c-tabs__link':
-      {
-        color: 'var(--pf-t--global--text--color--brand--default)',
-      },
-  },
-  tabsDivider: {
-    borderTop: '1px solid var(--pf-t--global--border--color--default)',
   },
   headerDivider: {
     paddingTop: 8,
@@ -365,7 +344,10 @@ const useStyles = makeStyles(theme => ({
       maxWidth: 'unset !important',
     },
     '& .pf-chatbot__message-bar': {
-      backgroundColor: theme.palette.grey[300],
+      backgroundColor:
+        theme.palette.type === 'light'
+          ? theme.palette.grey[100]
+          : 'var(--pf-t--global--background--color--secondary--default)',
     },
   },
   fullscreenFooter: {
@@ -377,8 +359,6 @@ const useStyles = makeStyles(theme => ({
     },
   },
   fullscreenMessageBar: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--secondary--default)',
     border: '1px solid var(--pf-t--global--border--color--default)',
     borderRadius: 24,
     padding: theme.spacing(0.5),
@@ -763,11 +743,7 @@ export const LightspeedChat = ({
     setShellViewTab,
   ]);
 
-  const handleNotebookTabSelect = (
-    _event: React.MouseEvent<any>,
-    tabIndex: number | string,
-  ) => {
-    const nextTab = Number(tabIndex);
+  const handleNotebookTabSelect = (_event: SyntheticEvent, nextTab: number) => {
     setActiveTab(nextTab);
     setShellViewTab(nextTab);
     if (nextTab === 1) {
@@ -1936,22 +1912,57 @@ export const LightspeedChat = ({
             onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
+        {isFullscreenMode && <div className={classes.headerDivider} />}
         {isFullscreenMode && shouldShowTabs && (
-          <div className={classes.headerDivider} />
-        )}
-        {isFullscreenMode && shouldShowTabs && (
-          <>
-            <Tabs
-              activeKey={activeTab}
-              onSelect={handleNotebookTabSelect}
-              aria-label={t('tabs.ariaLabel')}
-              className={classes.tabs}
-            >
-              <Tab eventKey={0} title={t('tabs.chat')} />
-              <Tab eventKey={1} title={t('tabs.notebooks')} />
-            </Tabs>
-            <div className={classes.tabsDivider} />
-          </>
+          <Tabs
+            value={activeTab}
+            onChange={handleNotebookTabSelect}
+            aria-label={t('tabs.ariaLabel')}
+            variant="standard"
+            textColor="primary"
+            sx={theme => ({
+              backgroundColor:
+                'var(--pf-t--global--background--color--floating--default)',
+              borderBottom:
+                '1px solid var(--pf-t--global--border--color--default)',
+              minHeight: theme.spacing(6),
+              paddingLeft: theme.spacing(2),
+              paddingRight: theme.spacing(2),
+              '& [role="tab"]': {
+                fontWeight: 700,
+                textTransform: 'none',
+                opacity: 1,
+                '&:not([aria-selected="true"])': {
+                  color: `${theme.palette.text.primary} !important`,
+                },
+                '&:hover': {
+                  background: 'none !important',
+                  backgroundColor: 'transparent !important',
+                  backgroundImage: 'none !important',
+                },
+                '&:not([aria-selected="true"]):hover': {
+                  color: 'var(--pf-t--global--text--color--brand--default)',
+                },
+                '&[aria-selected="true"]:hover': {
+                  color: `${theme.palette.primary.main} !important`,
+                },
+              },
+              '& [class*="Tabs-indicator"]': {
+                height: 3,
+              },
+            })}
+          >
+            <Tab
+              disableRipple
+              label={t('tabs.chat')}
+              aria-label={t('tabs.chat')}
+            />
+            <Tab
+              disableRipple
+              label={t('tabs.notebooks')}
+              aria-label={t('tabs.notebooks')}
+            />
+          </Tabs>
         )}
         {showChatPanel && (
           <ConditionalWrapper
