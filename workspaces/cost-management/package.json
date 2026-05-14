@@ -89,7 +89,7 @@
     "@backstage-community/plugin-rbac-backend/@backstage/plugin-permission-backend": "0.6.0",
     "fast-xml-parser": "5.7.3",
     "casbin/minimatch": "7.4.7",
-    "@backstage-community/plugin-rbac-backend/@backstage/backend-defaults": "0.17.0"
+    "@backstage-community/plugin-rbac-backend/@backstage/backend-defaults": "0.12.2"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
