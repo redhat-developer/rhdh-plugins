@@ -168,7 +168,7 @@ export const MOCK_PROJECT = {
   targetRepoUrl: 'https://github.com/acme/new-eap',
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
-  createdBy: 'user:default/mock',
+  ownedBy: 'user:default/mock',
   createdAt: NOW,
   status: { state: 'new' },
 };

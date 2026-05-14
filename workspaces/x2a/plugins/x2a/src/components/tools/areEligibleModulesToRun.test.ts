@@ -38,7 +38,7 @@ const baseProject: Omit<Project, 'status'> = {
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
   createdAt: new Date('2024-01-01'),
-  createdBy: 'user:default/tester',
+  ownedBy: 'user:default/tester',
   migrationPlan,
 };
 

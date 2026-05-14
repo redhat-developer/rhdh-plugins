@@ -106,6 +106,7 @@ export interface JobCreateParams {
   projectId: string;
   projectName: string;
   projectAbbrev: string;
+  projectDirName: string;
   phase: MigrationPhase;
   user: string;
   userPrompt?: string;

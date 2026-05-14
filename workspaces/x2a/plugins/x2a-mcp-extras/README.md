@@ -61,7 +61,7 @@ ownership is attributed to `user:default/system`.
 
 Visibility depends on RBAC permissions: granting `x2aAdminViewPermission`
 or `x2aAdminWritePermission` enables `canViewAll`. With only `x2a.user`,
-the service principal sees only its own projects (created by
+the service principal sees only its own projects (owned by
 `user:default/system`).
 
 This mode is useful for local development or environments where the new

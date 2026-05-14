@@ -36,7 +36,7 @@ describe('x2a-create-project MCP tool', () => {
     const createdProject = {
       ...createInput,
       id: 'proj-new-001',
-      createdBy: 'user:default/mock',
+      ownedBy: 'user:default/mock',
       createdAt: NOW,
     };
     x2aDatabase.createProject.mockResolvedValue(createdProject);
@@ -58,7 +58,7 @@ describe('x2a-create-project MCP tool', () => {
         targetRepoUrl: 'https://github.com/acme/new',
         sourceRepoBranch: 'main',
         targetRepoBranch: 'main',
-        createdBy: 'user:default/mock',
+        ownedBy: 'user:default/mock',
         createdAt: NOW.toISOString(),
         projectDetailsUrl: `http://localhost:3000/x2a/projects/proj-new-001${RUN_INIT_DEEP_LINK_HASH}`,
       },
@@ -91,7 +91,7 @@ describe('x2a-create-project MCP tool', () => {
       ...createInput,
       id: 'proj-grp',
       ownedByGroup: 'group:default/team-a',
-      createdBy: 'user:default/mock',
+      ownedBy: 'user:default/mock',
       createdAt: NOW,
     };
     x2aDatabase.createProject.mockResolvedValue(createdProject);
@@ -144,7 +144,7 @@ describe('x2a-create-project MCP tool', () => {
     x2aDatabase.createProject.mockResolvedValue({
       ...createInput,
       id: 'proj-str',
-      createdBy: 'user:default/mock',
+      ownedBy: 'user:default/mock',
       createdAt: 'not-a-date',
     });
 

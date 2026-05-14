@@ -62,9 +62,13 @@ export interface Project {
    */
   createdAt: Date;
   /**
-   * The user who created the project (Backstage user reference)
+   * The user or group who owns the project (Backstage entity reference)
    */
-  createdBy: string;
+  ownedBy: string;
+  /**
+   * Immutable directory name for the project in the target repository (computed once at creation)
+   */
+  dirName?: string;
   migrationPlan?: Artifact;
   status?: ProjectStatus;
   initJob?: Job;

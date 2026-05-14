@@ -47,7 +47,7 @@ const makeProject = (overrides?: Partial<Project>): Project => ({
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
   createdAt: new Date('2024-01-01'),
-  createdBy: 'user:default/alice',
+  ownedBy: 'user:default/alice',
   ...overrides,
 });
 
@@ -157,12 +157,12 @@ describe('useProjectWriteAccess', () => {
       expect(result.current.hasAnyWriteAccess).toBe(true);
       expect(
         result.current.canWriteProject(
-          makeProject({ createdBy: 'user:default/alice' }),
+          makeProject({ ownedBy: 'user:default/alice' }),
         ),
       ).toBe(true);
       expect(
         result.current.canWriteProject(
-          makeProject({ createdBy: 'user:default/bob' }),
+          makeProject({ ownedBy: 'user:default/bob' }),
         ),
       ).toBe(true);
     });
@@ -177,14 +177,14 @@ describe('useProjectWriteAccess', () => {
 
       expect(
         result.current.canWriteProject(
-          makeProject({ createdBy: 'group:default/team-x' }),
+          makeProject({ ownedBy: 'group:default/team-x' }),
         ),
       ).toBe(true);
     });
   });
 
   describe('user permission (ownership-based)', () => {
-    it('grants write to a project created by the user', () => {
+    it('grants write to a project owned by the user', () => {
       setupMocks({
         userPerm: { loading: false, allowed: true },
         ownershipEntityRefs: ['user:default/alice'],
@@ -195,12 +195,12 @@ describe('useProjectWriteAccess', () => {
       expect(result.current.hasAnyWriteAccess).toBe(true);
       expect(
         result.current.canWriteProject(
-          makeProject({ createdBy: 'user:default/alice' }),
+          makeProject({ ownedBy: 'user:default/alice' }),
         ),
       ).toBe(true);
     });
 
-    it('denies write to a project created by another user', () => {
+    it('denies write to a project owned by another user', () => {
       setupMocks({
         userPerm: { loading: false, allowed: true },
         ownershipEntityRefs: ['user:default/alice'],
@@ -210,7 +210,7 @@ describe('useProjectWriteAccess', () => {
 
       expect(
         result.current.canWriteProject(
-          makeProject({ createdBy: 'user:default/bob' }),
+          makeProject({ ownedBy: 'user:default/bob' }),
         ),
       ).toBe(false);
     });
@@ -229,12 +229,12 @@ describe('useProjectWriteAccess', () => {
 
       expect(
         result.current.canWriteProject(
-          makeProject({ createdBy: 'group:default/team-a' }),
+          makeProject({ ownedBy: 'group:default/team-a' }),
         ),
       ).toBe(true);
       expect(
         result.current.canWriteProject(
-          makeProject({ createdBy: 'group:default/org' }),
+          makeProject({ ownedBy: 'group:default/org' }),
         ),
       ).toBe(true);
     });
@@ -249,7 +249,7 @@ describe('useProjectWriteAccess', () => {
 
       expect(
         result.current.canWriteProject(
-          makeProject({ createdBy: 'group:default/other-team' }),
+          makeProject({ ownedBy: 'group:default/other-team' }),
         ),
       ).toBe(false);
     });
@@ -266,7 +266,7 @@ describe('useProjectWriteAccess', () => {
       expect(result.current.hasAnyWriteAccess).toBe(false);
       expect(
         result.current.canWriteProject(
-          makeProject({ createdBy: 'user:default/alice' }),
+          makeProject({ ownedBy: 'user:default/alice' }),
         ),
       ).toBe(false);
     });

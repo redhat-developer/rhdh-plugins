@@ -34,6 +34,7 @@ import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdD
 import { ProjectsProjectIdModulesModuleIdCancelPostRequest } from '../models/ProjectsProjectIdModulesModuleIdCancelPostRequest.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
 import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
+import { ProjectsProjectIdPatchRequest } from '../models/ProjectsProjectIdPatchRequest.model';
 import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
 import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunPostRequest.model';
 
@@ -68,7 +69,7 @@ export type ProjectsGet = {
       | 'abbreviation'
       | 'status'
       | 'description'
-      | 'createdBy';
+      | 'ownedBy';
   };
 };
 /**
@@ -178,6 +179,15 @@ export type ProjectsProjectIdModulesPost = {
     projectId: string;
   };
   body: ProjectsProjectIdModulesPostRequest;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdPatch = {
+  path: {
+    projectId: string;
+  };
+  body: ProjectsProjectIdPatchRequest;
 };
 /**
  * @public
@@ -542,6 +552,34 @@ export class DefaultApiClient {
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
       method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * Updates an existing project.
+   * @param projectId -
+   * @param projectsProjectIdPatchRequest -
+   */
+  public async projectsProjectIdPatch(
+    // @ts-ignore
+    request: ProjectsProjectIdPatch,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Project>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'PATCH',
       body: JSON.stringify(request.body),
     });
   }

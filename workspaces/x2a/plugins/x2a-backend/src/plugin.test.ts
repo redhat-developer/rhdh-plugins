@@ -106,6 +106,9 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   createProject: jest
     .fn()
     .mockRejectedValue(new ConflictError('expected mock error')),
+  updateProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('expected mock error')),
   deleteProject: jest
     .fn()
     .mockRejectedValue(new NotAllowedError('expected mock error')),
@@ -202,7 +205,7 @@ describe('plugin', () => {
     expect(createRes.status).toBe(200);
     expect(createRes.body).toMatchObject({
       ...mockInputProject,
-      createdBy: 'user: default/user1',
+      ownedBy: 'user: default/user1',
     });
 
     const listRes = await request(server).get('/api/x2a/projects');
@@ -212,7 +215,7 @@ describe('plugin', () => {
       items: [
         {
           ...mockInputProject,
-          createdBy: 'user: default/user1',
+          ownedBy: 'user: default/user1',
         },
       ],
     });
@@ -222,8 +225,72 @@ describe('plugin', () => {
     expect(getRes.status).toBe(200);
     expect(getRes.body).toMatchObject({
       ...mockInputProject,
-      createdBy: 'user: default/user1',
+      ownedBy: 'user: default/user1',
     });
+  });
+
+  it('should update a project via PATCH', async () => {
+    const server = await startBackendServer();
+
+    const createRes = await request(server)
+      .post('/api/x2a/projects')
+      .send(mockInputProject);
+    expect(createRes.status).toBe(200);
+    const projectId = createRes.body.id;
+
+    const patchRes = await request(server)
+      .patch(`/api/x2a/projects/${projectId}`)
+      .send({ name: 'Updated Name', description: 'Updated Desc' });
+    expect(patchRes.status).toBe(200);
+    expect(patchRes.body.name).toBe('Updated Name');
+    expect(patchRes.body.description).toBe('Updated Desc');
+    expect(patchRes.body.dirName).toBe(createRes.body.dirName);
+
+    const getRes = await request(server).get(`/api/x2a/projects/${projectId}`);
+    expect(getRes.status).toBe(200);
+    expect(getRes.body.name).toBe('Updated Name');
+    expect(getRes.body.description).toBe('Updated Desc');
+  });
+
+  it('should reject PATCH with empty body', async () => {
+    const server = await startBackendServer();
+
+    const createRes = await request(server)
+      .post('/api/x2a/projects')
+      .send(mockInputProject);
+    expect(createRes.status).toBe(200);
+    const projectId = createRes.body.id;
+
+    const patchRes = await request(server)
+      .patch(`/api/x2a/projects/${projectId}`)
+      .send({});
+    expect(patchRes.status).toBe(400);
+    expect(patchRes.body.error.name).toBe('InputError');
+  });
+
+  it('should reject PATCH with unknown fields', async () => {
+    const server = await startBackendServer();
+
+    const createRes = await request(server)
+      .post('/api/x2a/projects')
+      .send(mockInputProject);
+    expect(createRes.status).toBe(200);
+    const projectId = createRes.body.id;
+
+    const patchRes = await request(server)
+      .patch(`/api/x2a/projects/${projectId}`)
+      .send({ name: 'Valid', unknownField: 'bad' });
+    expect(patchRes.status).toBe(400);
+    expect(patchRes.body.error.name).toBe('InputError');
+  });
+
+  it('should return 404 when PATCHing non-existent project', async () => {
+    const server = await startBackendServer();
+
+    const patchRes = await request(server)
+      .patch('/api/x2a/projects/00000000-0000-0000-0000-000000000000')
+      .send({ name: 'Does not exist' });
+    expect(patchRes.status).toBe(404);
   });
 
   it('should allow unauthenticated access to collectArtifacts callback', async () => {

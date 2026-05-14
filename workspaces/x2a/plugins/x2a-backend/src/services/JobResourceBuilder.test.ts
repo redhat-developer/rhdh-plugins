@@ -539,6 +539,7 @@ describe('JobResourceBuilder', () => {
       projectId: 'proj-123',
       projectName: 'Test Project',
       projectAbbrev: 'TP',
+      projectDirName: 'test-project-proj-1',
       phase: 'init',
       user: 'user:default/test',
       callbackToken: 'callback-token-123', // NOSONAR
@@ -689,6 +690,21 @@ describe('JobResourceBuilder', () => {
             { name: 'CALLBACK_TOKEN', value: 'callback-token-123' },
           ]),
         );
+      });
+
+      it('should use projectDirName param as PROJECT_DIR, not recompute from projectName', () => {
+        const renamed = {
+          ...baseParams,
+          projectName: 'Completely Renamed Project',
+          projectDirName: 'original-name-proj-1',
+        };
+        const job = JobResourceBuilder.buildJobSpec(renamed, mockConfig);
+
+        const container = job.spec?.template.spec?.containers![0];
+        const projectDirEnv = container!.env!.find(
+          e => e.name === 'PROJECT_DIR',
+        );
+        expect(projectDirEnv!.value).toBe('original-name-proj-1');
       });
 
       it('should mount both project and job secrets via envFrom', () => {

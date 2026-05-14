@@ -47,7 +47,7 @@ export const createMockProjects = (
       createdAt: new Date(
         `2024-01-${String(index + 1).padStart(2, '0')}T00:00:00Z`,
       ),
-      createdBy: `user:default/user${index}`,
+      ownedBy: `user:default/user${index}`,
     };
   });
 };

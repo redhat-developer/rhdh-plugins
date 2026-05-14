@@ -242,6 +242,7 @@ describe('KubeService', () => {
       projectId: 'proj-123',
       projectName: 'Test Project',
       projectAbbrev: 'TP',
+      projectDirName: 'test-project-proj-1',
       phase: 'init' as const,
       user: 'user:default/test',
       callbackToken: 'callback-token-123', // NOSONAR

@@ -61,7 +61,7 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
               'abbreviation',
               'status',
               'description',
-              'createdBy',
+              'ownedBy',
             ])
             .optional()
             .describe('Field to sort by. Defaults to createdAt.'),
@@ -89,7 +89,7 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
                 targetRepoUrl: z.string(),
                 sourceRepoBranch: z.string(),
                 targetRepoBranch: z.string(),
-                createdBy: z.string(),
+                ownedBy: z.string(),
                 createdAt: z.string(),
                 status: z
                   .object({
@@ -143,7 +143,7 @@ When authenticated via OAuth (DCR), results are scoped to the user's RBAC permis
             targetRepoUrl: p.targetRepoUrl,
             sourceRepoBranch: p.sourceRepoBranch,
             targetRepoBranch: p.targetRepoBranch,
-            createdBy: p.createdBy,
+            ownedBy: p.ownedBy,
             createdAt:
               p.createdAt instanceof Date
                 ? p.createdAt.toISOString()

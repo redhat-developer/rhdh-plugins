@@ -79,7 +79,7 @@ const makeProject = (overrides?: Partial<Project>): Project => ({
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
   createdAt: new Date('2024-01-01'),
-  createdBy: 'user:default/alice',
+  ownedBy: 'user:default/alice',
   ...overrides,
 });
 

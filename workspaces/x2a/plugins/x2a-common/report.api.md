@@ -103,8 +103,12 @@ export class DefaultApiClient {
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
+    projectsProjectIdPatch(request: ProjectsProjectIdPatch, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
 }
+
+// @public
+export const ENTITY_REF_RE: RegExp;
 
 // @public
 export const githubProvider: ScmProvider;
@@ -296,14 +300,15 @@ export const POLLING_INTERVAL_MS: number;
 export interface Project {
     abbreviation: string;
     createdAt: Date;
-    createdBy: string;
     description?: string;
+    dirName?: string;
     id: string;
     // (undocumented)
     initJob?: Job;
     // (undocumented)
     migrationPlan?: Artifact;
     name: string;
+    ownedBy: string;
     sourceRepoBranch: string;
     sourceRepoUrl: string;
     // (undocumented)
@@ -321,7 +326,7 @@ export type ProjectsGet = {
         page?: number;
         pageSize?: number;
         order?: 'asc' | 'desc';
-        sort?: 'createdAt' | 'name' | 'abbreviation' | 'status' | 'description' | 'createdBy';
+        sort?: 'createdAt' | 'name' | 'abbreviation' | 'status' | 'description' | 'ownedBy';
     };
 };
 
@@ -486,6 +491,21 @@ export type ProjectsProjectIdModulesPost = {
 export interface ProjectsProjectIdModulesPostRequest {
     name: string;
     sourcePath: string;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdPatch = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdPatchRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdPatchRequest {
+    description?: string;
+    name?: string;
+    ownedBy?: string;
 }
 
 // @public (undocumented)
