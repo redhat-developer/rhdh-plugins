@@ -193,9 +193,49 @@ describe('normalizeChatUserInput', () => {
     );
   });
 
+  it('folds intro + ordered list when list items are indented with leading spaces (single bubble markdown)', () => {
+    const input = `Can you please explain me about:
+ 1. How to deploy RH/DH on Operator
+ 2. How to deploy RH/DH on Helm`;
+    expect(normalizeChatUserInput(input)).toBe(
+      `Can you please explain me about:  \n 1\\. How to deploy RH/DH on Operator  \n 2\\. How to deploy RH/DH on Helm`,
+    );
+  });
+
+  it('folds intro + indented ordered list with blank line before first item', () => {
+    const input = `Can you please explain me about:
+
+ 1. How to deploy RH/DH on Operator
+ 2. How to deploy RH/DH on Helm`;
+    expect(normalizeChatUserInput(input)).toBe(
+      `Can you please explain me about:  \n 1\\. How to deploy RH/DH on Operator  \n 2\\. How to deploy RH/DH on Helm`,
+    );
+  });
+
   it('folds intro + bullet list into one paragraph', () => {
     expect(normalizeChatUserInput('Intro:\n\n- one\n- two')).toBe(
       'Intro:  \n\\- one  \n\\- two',
+    );
+  });
+
+  it('folds intro + bullet list with single newline before first item', () => {
+    expect(normalizeChatUserInput('Intro:\n- one\n- two')).toBe(
+      'Intro:  \n\\- one  \n\\- two',
+    );
+  });
+
+  it('folds intro + bullet list when items have leading space before marker', () => {
+    expect(normalizeChatUserInput('Intro:\n - one\n - two')).toBe(
+      'Intro:  \n \\- one  \n \\- two',
+    );
+  });
+
+  it('folds intro + unicode bullet (•) lines with hard breaks so they are not one line', () => {
+    const input = `explain this:
+• rhdh
+• backstage`;
+    expect(normalizeChatUserInput(input)).toBe(
+      `explain this:  \n• rhdh  \n• backstage`,
     );
   });
 
