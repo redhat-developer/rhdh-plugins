@@ -30,6 +30,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tabs.ariaLabel': 'Lightspeed-Ansichten',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Notizbücher',
+    'tabs.notebooks.devPreview': 'Entwicklervorschau',
     'tabs.notebooks.empty': 'Inhalte der Notizbücher kommen hierhin.',
     'notebooks.title': 'Meine Notizbücher',
     'notebooks.empty.title': 'Keine erstellten Notizbücher',
@@ -55,6 +56,13 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',
     'notebooks.updated.on': 'Aktualisiert am',
     'notebooks.card.openAria': 'Notizbuch {{name}} öffnen',
+
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title': 'Was sind die Kernkonzepte?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Zeige meine kritischen Schwachstellen',
+    'notebooks.prompts.accessIssue.title': 'Hilf mir bei einem Zugriffsproblem',
+    'notebooks.prompts.somethingElse.title': 'Etwas anderes',
 
     // Notebook view
     'notebook.view.title': 'Unbenanntes Notizbuch',

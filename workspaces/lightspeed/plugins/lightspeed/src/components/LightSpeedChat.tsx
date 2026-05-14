@@ -60,6 +60,7 @@ import {
   AlertGroup,
   AlertVariant,
   DropdownItem,
+  Label,
   MenuToggle,
   MenuToggleElement,
   Select,
@@ -1959,7 +1960,20 @@ export const LightspeedChat = ({
             />
             <Tab
               disableRipple
-              label={t('tabs.notebooks')}
+              label={
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  {t('tabs.notebooks')}
+                  <Label color="purple" isCompact>
+                    {t('tabs.notebooks.devPreview')}
+                  </Label>
+                </span>
+              }
               aria-label={t('tabs.notebooks')}
             />
           </Tabs>

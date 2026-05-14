@@ -197,11 +197,16 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'prompts.openshift.message': string;
     readonly 'prompts.rhdh.title': string;
     readonly 'prompts.rhdh.message': string;
+    readonly 'notebooks.prompts.coreConcepts.title': string;
+    readonly 'notebooks.prompts.vulnerabilities.title': string;
+    readonly 'notebooks.prompts.accessIssue.title': string;
+    readonly 'notebooks.prompts.somethingElse.title': string;
     readonly 'page.title': string;
     readonly 'page.subtitle': string;
     readonly 'tabs.ariaLabel': string;
     readonly 'tabs.chat': string;
     readonly 'tabs.notebooks': string;
+    readonly 'tabs.notebooks.devPreview': string;
     readonly 'tabs.notebooks.empty': string;
     readonly 'notebooks.title': string;
     readonly 'notebooks.empty.title': string;

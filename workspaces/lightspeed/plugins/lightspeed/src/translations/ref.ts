@@ -28,6 +28,7 @@ export const lightspeedMessages = {
   'tabs.ariaLabel': 'Lightspeed views',
   'tabs.chat': 'Chat',
   'tabs.notebooks': 'Notebooks',
+  'tabs.notebooks.devPreview': 'Developer preview',
   'tabs.notebooks.empty': 'Notebooks content goes here.',
   'notebooks.title': 'My Notebooks',
   'notebooks.empty.title': 'No created notebooks',
@@ -53,6 +54,12 @@ export const lightspeedMessages = {
   'notebooks.updated.days': 'Updated {{days}} days ago',
   'notebooks.updated.on': 'Updated on',
   'notebooks.card.openAria': 'Open notebook {{name}}',
+
+  // Notebook sample prompts
+  'notebooks.prompts.coreConcepts.title': 'What are the core concepts?',
+  'notebooks.prompts.vulnerabilities.title': 'Show my critical vulnerabilities',
+  'notebooks.prompts.accessIssue.title': 'Help me with an access issue',
+  'notebooks.prompts.somethingElse.title': 'Something else',
 
   // Notebook view
   'notebook.view.title': 'Untitled notebook',

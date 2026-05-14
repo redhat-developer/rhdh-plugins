@@ -90,6 +90,13 @@ export const RHDH_SAMPLE_PROMPTS: SamplePrompts = [
   createPrompt('prompts.rhdh.title', 'prompts.rhdh.message'),
 ];
 
+export const NOTEBOOK_PROMPT_KEYS: string[] = [
+  'notebooks.prompts.coreConcepts.title',
+  'notebooks.prompts.vulnerabilities.title',
+  'notebooks.prompts.accessIssue.title',
+  'notebooks.prompts.somethingElse.title',
+];
+
 // Topic restriction valid provider IDs
 export const VALID_TOPIC_RESTRICTION_PROVIDER_IDS = [
   'lightspeed_question_validity-shield',
