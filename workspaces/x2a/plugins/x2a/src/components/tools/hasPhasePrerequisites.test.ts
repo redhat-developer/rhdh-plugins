@@ -47,7 +47,6 @@ const makeJob = (
 
 const baseProject: Project = {
   id: 'p1',
-  abbreviation: 'TST',
   name: 'Test Project',
   sourceRepoUrl: 'https://example.com/source',
   targetRepoUrl: 'https://example.com/target',

@@ -100,14 +100,12 @@ describe('createRouter – projects', () => {
           .send({
             ...mockInputProject,
             name: 'Group-owned Project',
-            abbreviation: 'GOP',
             ownedByGroup: 'group:default/team-a',
           });
 
         expect(response.status).toBe(200);
         expect(response.body).toMatchObject({
           name: 'Group-owned Project',
-          abbreviation: 'GOP',
           ownedBy: 'group:default/team-a',
         });
 
@@ -149,7 +147,6 @@ describe('createRouter – projects', () => {
           .send({
             ...mockInputProject,
             name: 'Group-owned Project',
-            abbreviation: 'GOP',
             ownedByGroup: 'group:default/team-a',
           });
 
@@ -185,7 +182,6 @@ describe('createRouter – projects', () => {
           .send({
             ...mockInputProject,
             name: 'Group-owned Project',
-            abbreviation: 'GOP',
             ownedByGroup: 'group:default/team-a',
           });
 
@@ -359,7 +355,6 @@ describe('createRouter – projects', () => {
         await client('projects').insert({
           id: groupProjectId,
           name: 'Group Project',
-          abbreviation: 'GP',
           description: 'From group',
           source_repo_url: mockInputProject.sourceRepoUrl,
           target_repo_url: mockInputProject.targetRepoUrl,
@@ -421,7 +416,6 @@ describe('createRouter – projects', () => {
         await client('projects').insert({
           id: groupProjectId,
           name: 'Group Owned Project',
-          abbreviation: 'GOP',
           description: 'Group owned',
           source_repo_url: mockInputProject.sourceRepoUrl,
           target_repo_url: mockInputProject.targetRepoUrl,
@@ -440,7 +434,6 @@ describe('createRouter – projects', () => {
         expect(response.body).toMatchObject({
           id: groupProjectId,
           name: 'Group Owned Project',
-          abbreviation: 'GOP',
           ownedBy: 'group:default/team-a',
         });
         expect(catalogGetEntityByRef).toHaveBeenCalledWith(
@@ -479,7 +472,6 @@ describe('createRouter – projects', () => {
         await client('projects').insert({
           id: groupProjectId,
           name: 'Group Project To Delete',
-          abbreviation: 'GPTD',
           description: 'Will be deleted by group member',
           source_repo_url: mockInputProject.sourceRepoUrl,
           target_repo_url: mockInputProject.targetRepoUrl,
@@ -518,7 +510,6 @@ describe('createRouter – projects', () => {
           .send({
             ...mockInputProject,
             name: 'Project Alpha',
-            abbreviation: 'PA',
           });
         expect(projectA.status).toBe(200);
 
@@ -527,7 +518,6 @@ describe('createRouter – projects', () => {
           .send({
             ...mockInputProject,
             name: 'Project Beta',
-            abbreviation: 'PB',
           });
         expect(projectB.status).toBe(200);
 
@@ -536,7 +526,6 @@ describe('createRouter – projects', () => {
           .send({
             ...mockInputProject,
             name: 'Project Charlie',
-            abbreviation: 'PC',
           });
         expect(projectC.status).toBe(200);
 

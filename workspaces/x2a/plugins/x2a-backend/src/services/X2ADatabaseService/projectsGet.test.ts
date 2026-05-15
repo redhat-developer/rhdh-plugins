@@ -55,7 +55,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const created = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'Test description',
             ...defaultProjectRepoFields,
           },
@@ -69,7 +68,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(created.id);
         expect(retrieved?.name).toBe(created.name);
-        expect(retrieved?.abbreviation).toBe(created.abbreviation);
         expect(retrieved?.description).toBe(created.description);
         expect(retrieved?.sourceRepoUrl).toBe(created.sourceRepoUrl);
         expect(retrieved?.targetRepoUrl).toBe(created.targetRepoUrl);
@@ -89,7 +87,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         await client('projects').insert({
           id: groupProjectId,
           name: 'Group-owned Project',
-          abbreviation: 'GOP',
           description: 'Created by group',
           source_repo_url: defaultProjectRepoFields.sourceRepoUrl,
           target_repo_url: defaultProjectRepoFields.targetRepoUrl,
@@ -124,7 +121,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Project with plan',
-            abbreviation: 'PWP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -157,7 +153,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'First',
             ...defaultProjectRepoFields,
           },
@@ -166,7 +161,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'Second',
             ...defaultProjectRepoFields,
           },
@@ -198,7 +192,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -222,7 +215,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'My Project',
-            abbreviation: 'MP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -249,7 +241,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -276,7 +267,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -316,7 +306,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'To Delete',
-            abbreviation: 'TD',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -352,7 +341,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -361,7 +349,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -404,7 +391,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -434,7 +420,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'My Project',
-            abbreviation: 'MP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -465,7 +450,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -496,7 +480,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -529,7 +512,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Lifecycle Test',
-            abbreviation: 'LT',
             description: 'Testing full lifecycle',
             ...defaultProjectRepoFields,
           },

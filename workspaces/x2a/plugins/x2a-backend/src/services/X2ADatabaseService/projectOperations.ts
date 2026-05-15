@@ -47,7 +47,6 @@ export class ProjectOperations {
     input: {
       name: string;
       ownedByGroup?: string;
-      abbreviation: string;
       description: string;
       sourceRepoUrl: string;
       targetRepoUrl: string;
@@ -66,7 +65,6 @@ export class ProjectOperations {
     const newProject: Project = {
       id,
       name: input.name,
-      abbreviation: input.abbreviation,
       description: input.description,
       sourceRepoUrl: input.sourceRepoUrl,
       targetRepoUrl: input.targetRepoUrl,
@@ -80,7 +78,6 @@ export class ProjectOperations {
     await this.#dbClient('projects').insert({
       id,
       name: input.name,
-      abbreviation: input.abbreviation,
       description: input.description,
       source_repo_url: input.sourceRepoUrl,
       target_repo_url: input.targetRepoUrl,

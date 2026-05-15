@@ -50,7 +50,6 @@ export const createAndInitProject = async (
   const body: ProjectsPost['body'] = {
     name: row.name,
     description: row.description ?? '',
-    abbreviation: row.abbreviation,
     ownedByGroup: row.ownedByGroup?.trim() || undefined,
     sourceRepoUrl: normalizeRepoUrl(row.sourceRepoUrl),
     targetRepoUrl: normalizeRepoUrl(row.targetRepoUrl),

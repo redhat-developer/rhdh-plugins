@@ -31,7 +31,6 @@ const migrationPlan = {
 
 const baseProject: Omit<Project, 'status'> = {
   id: '123',
-  abbreviation: 'TST',
   name: 'Test Project',
   sourceRepoUrl: 'https://example.com/source',
   targetRepoUrl: 'https://example.com/target',

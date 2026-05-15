@@ -538,7 +538,6 @@ describe('JobResourceBuilder', () => {
       jobId: 'job-123',
       projectId: 'proj-123',
       projectName: 'Test Project',
-      projectAbbrev: 'TP',
       projectDirName: 'test-project-proj-1',
       phase: 'init',
       user: 'user:default/test',

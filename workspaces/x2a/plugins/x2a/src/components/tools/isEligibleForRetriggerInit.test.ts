@@ -24,7 +24,6 @@ import { isEligibleForRetriggerInit } from './isEligibleForRetriggerInit';
 
 const baseProject: Project = {
   id: '123',
-  abbreviation: 'TST',
   name: 'Test Project',
   sourceRepoUrl: 'https://example.com/source',
   targetRepoUrl: 'https://example.com/target',

@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import { Link } from '@backstage/core-components';
 import { Chip, makeStyles, SvgIcon, Typography } from '@material-ui/core';
-import LaunchIcon from '@material-ui/icons/Launch';
 import { buildRepoBranchUrl } from './tools';
 import { useScmHostMap } from '../hooks/useScmHostMap';
+import { ExternalLink } from './ExternalLink';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -30,11 +29,6 @@ const useStyles = makeStyles(theme => ({
   },
   externalLink: {
     wordBreak: 'break-all' as const,
-  },
-  externalIcon: {
-    marginLeft: 4,
-    verticalAlign: 'text-bottom',
-    fontSize: 'inherit',
   },
   branchIcon: {
     marginLeft: '5px',
@@ -80,15 +74,12 @@ export const Repository = ({
         variant="outlined"
       />
       <Typography variant="body2" component="span">
-        <Link
+        <ExternalLink
           to={buildRepoBranchUrl(url, branch, hostMap)}
-          target="_blank"
-          rel="noopener noreferrer"
           className={classes.externalLink}
         >
           {url}
-          <LaunchIcon className={classes.externalIcon} aria-hidden />
-        </Link>
+        </ExternalLink>
       </Typography>
     </div>
   );

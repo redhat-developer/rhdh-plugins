@@ -15,7 +15,6 @@ spec:
         - inputMethod
         - name
         - description
-        - abbreviation
         - ownedByGroup
         - csvContent
       properties:
@@ -40,7 +39,6 @@ spec:
               then:
                 required:
                   - name
-                  - abbreviation
                 properties:
                   name:
                     title: Name
@@ -54,14 +52,6 @@ spec:
                     ui:widget: textarea
                     ui:options:
                       rows: 3
-                  abbreviation:
-                    title: Abbreviation
-                    type: string
-                    default: 'myprj'
-                    description: Abbreviation of the project to ease the project identification in the target repository.
-                    pattern: '^([a-zA-Z][a-zA-Z0-9]*)(-[a-zA-Z0-9]+)*$'
-                    maxLength: 5
-                    minLength: 1
                   ownedByGroup:
                     title: Owned by group
                     type: string
@@ -82,7 +72,7 @@ spec:
                     description: |
                       Upload a UTF-8 encoded CSV file. Duplicates are skipped, so re-uploads are safe.
 
-                      Required: name, abbreviation, sourceRepoUrl, sourceRepoBranch, targetRepoBranch.
+                      Required: name, sourceRepoUrl, sourceRepoBranch, targetRepoBranch.
 
                       Optional: description, ownedByGroup, targetRepoUrl.
 
@@ -206,7 +196,6 @@ spec:
         csvContent: ${{ parameters.csvContent }}
         name: ${{ parameters.name }}
         description: ${{ parameters.description }}
-        abbreviation: ${{ parameters.abbreviation }}
         ownedByGroup: ${{ parameters.ownedByGroup }}
         sourceRepoUrl: ${{ parameters.sourceRepoUrl }}
         sourceRepoBranch: ${{ parameters.sourceRepoBranch }}

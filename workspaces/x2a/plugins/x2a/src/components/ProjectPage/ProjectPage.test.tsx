@@ -186,7 +186,6 @@ import { ProjectPage } from './ProjectPage';
 const mockProject = {
   id: 'proj-1',
   name: 'Test Project',
-  abbreviation: 'TP',
   description: 'Test',
   sourceRepoUrl: 'https://github.com/org/source',
   targetRepoUrl: 'https://github.com/org/target',

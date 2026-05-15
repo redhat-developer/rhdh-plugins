@@ -26,7 +26,6 @@ export type CsvProjectRow = ProjectsPost['body'];
 
 const CSV_REQUIRED_HEADERS: readonly string[] = [
   'name',
-  'abbreviation',
   'sourceRepoUrl',
   'sourceRepoBranch',
   'targetRepoBranch',
@@ -47,7 +46,7 @@ const DATA_URL_BASE64 = /^data:(?:[^;]*;)*base64,(.*)$/;
  * an array of {@link CsvProjectRow} objects ready for project creation.
  *
  * Expected CSV columns (header row required):
- *   name, abbreviation, sourceRepoUrl, sourceRepoBranch, targetRepoBranch
+ *   name, sourceRepoUrl, sourceRepoBranch, targetRepoBranch
  *   (required)
  *   description, ownedByGroup, targetRepoUrl
  *   (optional — targetRepoUrl defaults to sourceRepoUrl when empty)
@@ -127,7 +126,6 @@ export function parseCsvContent(dataUrl: string): CsvProjectRow[] {
     rows.push({
       name: record.name.trim(),
       description: record.description?.trim() || '',
-      abbreviation: record.abbreviation.trim(),
       ownedByGroup: record.ownedByGroup?.trim() || undefined,
       sourceRepoUrl: record.sourceRepoUrl.trim(),
       sourceRepoBranch: record.sourceRepoBranch.trim(),
