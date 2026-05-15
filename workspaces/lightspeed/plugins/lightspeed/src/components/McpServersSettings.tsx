@@ -110,7 +110,7 @@ const useStyles = makeStyles(theme => ({
   closeButton: {
     marginTop: -theme.spacing(1),
     marginRight: -theme.spacing(1),
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.primary,
   },
   nameHeaderButton: {
     paddingLeft: 0,
@@ -189,7 +189,7 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     top: theme.spacing(2),
     right: theme.spacing(-0.5),
-    color: '#1F1F1F',
+    color: theme.palette.text.primary,
   },
   modalHeading: {
     display: 'flex',
@@ -214,7 +214,7 @@ const useStyles = makeStyles(theme => ({
     top: '50%',
     transform: 'translateY(-50%)',
     zIndex: 1,
-    color: theme.palette.text.secondary,
+    color: theme.palette.action.active,
   },
   tokenHelper: {
     color: theme.palette.text.secondary,
@@ -700,7 +700,6 @@ export const McpServersSettings = ({
     >
       <CancelOutlinedIcon
         style={{
-          color: '#6A6E73',
           fontSize: 24,
           width: 24,
           height: 24,

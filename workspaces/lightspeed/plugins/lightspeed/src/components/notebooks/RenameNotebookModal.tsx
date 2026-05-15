@@ -52,7 +52,7 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
-    color: theme.palette.grey[700],
+    color: theme.palette.text.primary,
   },
   dialogContent: {
     paddingTop: 0,

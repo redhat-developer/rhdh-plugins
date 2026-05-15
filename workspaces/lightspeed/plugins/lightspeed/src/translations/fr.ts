@@ -30,6 +30,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tabs.ariaLabel': 'Vues Lightspeed',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Carnets',
+    'tabs.notebooks.devPreview': 'Aperçu développeur',
     'tabs.notebooks.empty': 'Le contenu des carnets s’affichera ici.',
     'notebooks.title': 'Mes carnets',
     'notebooks.empty.title': 'Aucun carnet créé',
@@ -55,6 +56,13 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',
     'notebooks.updated.on': 'Mis à jour le',
     'notebooks.card.openAria': 'Ouvrir le carnet {{name}}',
+
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title':
+      'Quels sont les concepts fondamentaux ?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Afficher mes vulnérabilités critiques',
+    'notebooks.prompts.accessIssue.title': "Aidez-moi avec un problème d'accès",
 
     // Notebook view
     'notebook.view.title': 'Carnet sans titre',

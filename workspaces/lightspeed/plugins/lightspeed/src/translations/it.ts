@@ -31,6 +31,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tabs.ariaLabel': 'Viste di Lightspeed',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Quaderni',
+    'tabs.notebooks.devPreview': 'Anteprima per sviluppatori',
     'tabs.notebooks.empty': 'Il contenuto dei quaderni va qui.',
     'notebooks.title': 'I miei quaderni',
     'notebooks.empty.title': 'Nessun quaderno creato',
@@ -56,6 +57,12 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',
     'notebooks.updated.on': 'Aggiornato il',
     'notebooks.card.openAria': 'Apri il taccuino {{name}}',
+
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title': 'Quali sono i concetti chiave?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Mostra le mie vulnerabilità critiche',
+    'notebooks.prompts.accessIssue.title': 'Aiutami con un problema di accesso',
 
     // Notebook view
     'notebook.view.title': 'Quaderno senza titolo',
