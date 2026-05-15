@@ -1,5 +1,7 @@
 dist
 dist-types
+dist-dynamic
+dist-scalprum
 coverage
 .vscode
 .eslintrc.js
