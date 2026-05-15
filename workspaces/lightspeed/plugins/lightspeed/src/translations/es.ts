@@ -106,6 +106,12 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Los siguientes archivos ya existen en este cuaderno. ¿Desea sobrescribirlos con las nuevas versiones?',
     'notebook.overwrite.modal.action': 'Sobrescribir',
     'notebook.document.delete': 'Eliminar',
+    'notebook.document.delete.title': '¿Eliminar recurso?',
+    'notebook.document.delete.description':
+      '¿Está seguro de que desea eliminar <documentName/> de este cuaderno? Esta acción no se puede deshacer.',
+    'notebook.document.delete.action': 'Eliminar',
+    'notebook.document.delete.success':
+      '«{{documentName}}» se eliminó correctamente.',
 
     'prompts.codeReadability.title':
       'Obtener ayuda sobre la legibilidad del código',

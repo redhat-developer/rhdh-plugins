@@ -105,6 +105,12 @@ const lightspeedTranslationJa = createTranslationMessages({
       '以下のファイルはこのノートブックに既に存在します。新しいバージョンで上書きしますか？',
     'notebook.overwrite.modal.action': '上書き',
     'notebook.document.delete': '削除',
+    'notebook.document.delete.title': 'リソースを削除しますか？',
+    'notebook.document.delete.description':
+      'このノートブックから <documentName/> を削除してもよろしいですか？この操作は元に戻せません。',
+    'notebook.document.delete.action': '削除',
+    'notebook.document.delete.success':
+      '「{{documentName}}」が正常に削除されました。',
 
     'prompts.codeReadability.title': 'コードの可読性に関するヘルプを利用する',
     'prompts.codeReadability.message':

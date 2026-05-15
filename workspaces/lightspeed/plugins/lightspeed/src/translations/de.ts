@@ -106,6 +106,12 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Die folgenden Dateien existieren bereits in diesem Notizbuch. Möchten Sie sie mit den neuen Versionen überschreiben?',
     'notebook.overwrite.modal.action': 'Überschreiben',
     'notebook.document.delete': 'Löschen',
+    'notebook.document.delete.title': 'Ressource entfernen?',
+    'notebook.document.delete.description':
+      'Sind Sie sicher, dass Sie <documentName/> aus diesem Notizbuch entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+    'notebook.document.delete.action': 'Entfernen',
+    'notebook.document.delete.success':
+      '„{{documentName}}" wurde erfolgreich entfernt.',
 
     'prompts.codeReadability.title': 'Hilfe zur Code-Lesbarkeit erhalten',
     'prompts.codeReadability.message':

@@ -107,6 +107,12 @@ const lightspeedTranslationIt = createTranslationMessages({
       'I seguenti file esistono già in questo quaderno. Vuoi sovrascriverli con le nuove versioni?',
     'notebook.overwrite.modal.action': 'Sovrascrivi',
     'notebook.document.delete': 'Elimina',
+    'notebook.document.delete.title': 'Rimuovere la risorsa?',
+    'notebook.document.delete.description':
+      'Sei sicuro di voler rimuovere <documentName/> da questo quaderno? Questa azione non può essere annullata.',
+    'notebook.document.delete.action': 'Rimuovi',
+    'notebook.document.delete.success':
+      '«{{documentName}}» rimosso con successo.',
 
     'prompts.codeReadability.title':
       'Ottenere aiuto sulla leggibilità del codice',

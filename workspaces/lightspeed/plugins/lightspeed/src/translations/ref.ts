@@ -101,6 +101,12 @@ export const lightspeedMessages = {
     'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
   'notebook.overwrite.modal.action': 'Overwrite',
   'notebook.document.delete': 'Delete',
+  'notebook.document.delete.title': 'Remove resource?',
+  'notebook.document.delete.description':
+    'Are you sure you want to remove <documentName/> from this notebook? This action cannot be undone.',
+  'notebook.document.delete.action': 'Remove',
+  'notebook.document.delete.success':
+    '"{{documentName}}" removed successfully.',
 
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',
