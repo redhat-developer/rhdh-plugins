@@ -52,14 +52,12 @@ test.describe('Homepage Card Individual Tests', () => {
     await expect(greetingHeading).toBeVisible();
 
     const actualHeadingText = await greetingHeading.textContent();
-    const greetingPart = actualHeadingText
+    // Use the full greeting phrase (e.g. "Good afternoon") to locate the card.
+    // Using only the first word ("Good") would be too broad — other cards like
+    // Random Joke can contain that word and match first (hasText is case-insensitive).
+    const cardHeading = actualHeadingText
       ? actualHeadingText.split(',')[0].trim()
       : translations.onboarding.greeting.goodMorning;
-
-    // Single-word greetings use full word, multi-word use first word
-    const cardHeading = greetingPart.includes(' ')
-      ? greetingPart.split(' ')[0]
-      : greetingPart;
 
     await testUtils.verifyTextInCard(
       cardHeading,

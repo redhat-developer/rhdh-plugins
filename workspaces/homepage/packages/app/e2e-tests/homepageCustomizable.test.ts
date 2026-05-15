@@ -138,7 +138,14 @@ test.describe.serial('Dynamic Home Page Customization', () => {
 
 test.describe('Persona-Based Homepages', () => {
   test('Groups filters default widgets by persona', async ({ browser }) => {
-    const loginUrl = process.env.APP_MODE === 'nfs' ? '/' : '/customizable';
+    // The `if: groups:` condition in `homepage.defaultWidgets` is a legacy-only
+    // feature — NFS does not implement group-based widget filtering.
+    test.skip(
+      process.env.APP_MODE === 'nfs',
+      '`if: groups:` filtering is not supported in NFS mode',
+    );
+
+    const loginUrl = '/customizable';
 
     // Guest (port 3000, no groups): sees common defaults only
     const guestPage = await (
@@ -154,8 +161,8 @@ test.describe('Persona-Based Homepages', () => {
     await guestHome.verifyCardVisible('Explore Your Software Catalog');
     await guestHome.verifyCardVisible('Explore Templates');
     await guestHome.verifyCardVisible('Quick Access');
-    await guestHome.verifyCardHidden('Featured docs');
-    await guestHome.verifyCardHidden('Recently visited');
+    await guestHome.verifyCardHidden('Featured Docs');
+    await guestHome.verifyCardHidden('Recently Visited');
 
     // Admin (port 3001, group:default/admins): sees common + Featured Docs, Starred Entities
     const adminPage = await (
@@ -171,8 +178,8 @@ test.describe('Persona-Based Homepages', () => {
     await adminHome.verifyCardVisible('Explore Your Software Catalog');
     await adminHome.verifyCardVisible('Explore Templates');
     await adminHome.verifyCardVisible('Quick Access');
-    await adminHome.verifyCardVisible('Featured docs');
-    await adminHome.verifyCardHidden('Recently visited');
+    await adminHome.verifyCardVisible('Featured Docs');
+    await adminHome.verifyCardHidden('Recently Visited');
 
     // Developer (port 3002, group:default/developers): sees common + Recently Visited, Top Visited
     const devPage = await (
@@ -188,7 +195,7 @@ test.describe('Persona-Based Homepages', () => {
     await devHome.verifyCardVisible('Explore Your Software Catalog');
     await devHome.verifyCardVisible('Explore Templates');
     await devHome.verifyCardVisible('Quick Access');
-    await devHome.verifyCardVisible('Recently visited');
-    await devHome.verifyCardHidden('Featured docs');
+    await devHome.verifyCardVisible('Recently Visited');
+    await devHome.verifyCardHidden('Featured Docs');
   });
 });

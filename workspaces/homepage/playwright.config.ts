@@ -87,7 +87,7 @@ export default defineConfig({
     // de, es, fr, it, ja: run only Cards tests (locale-specific content)
     ...LOCALES.filter(locale => locale !== 'en').map(locale => ({
       name: locale,
-      grep: /Cards/,
+      testMatch: '**/homepageCards.test.ts',
       use: {
         channel: 'chrome' as const,
         locale,
