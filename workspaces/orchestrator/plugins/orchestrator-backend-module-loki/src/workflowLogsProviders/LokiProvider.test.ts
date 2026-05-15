@@ -144,7 +144,7 @@ describe('LokiProvider', () => {
       ).toThrow(/LogQL label matcher/);
     });
 
-    it('rejects logPipelineFilters containing brace characters', () => {
+    it('rejects logPipelineFilters containing closing brace', () => {
       expect(() =>
         LokiProvider.fromConfig(
           new ConfigReader({
@@ -159,7 +159,25 @@ describe('LokiProvider', () => {
             },
           }),
         ),
-      ).toThrow(/must not contain/);
+      ).toThrow(/must not contain "\}"/);
+    });
+
+    it('rejects logPipelineFilters containing opening brace', () => {
+      expect(() =>
+        LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'http://localhost:3100',
+                  token: 't',
+                  logPipelineFilters: ['| pattern `{stream}`'],
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(/must not contain "\{"/);
     });
 
     it('rejects a negative limit', () => {

@@ -193,6 +193,9 @@ export function parseAndValidateLogPipelineFilters(
     if (/[\r\n\u2028\u2029]/.test(element)) {
       throw new Error(`${ctx}: entry must not contain line breaks`);
     }
+    if (element.includes('{')) {
+      throw new Error(`${ctx}: entry must not contain "{"`);
+    }
     if (element.includes('}')) {
       throw new Error(`${ctx}: entry must not contain "}"`);
     }
