@@ -27,17 +27,15 @@ type IconProps = {
 export const EditSquareIcon = ({ className }: IconProps) => (
   <svg
     className={className}
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ verticalAlign: 'middle' }}
+    viewBox="0 0 512 512"
+    fill="currentColor"
+    aria-hidden="true"
+    role="img"
+    width="1em"
+    height="1em"
+    style={{ width: 16, height: 16 }}
   >
-    <path
-      d="M5 21C4.45 21 3.97917 20.8042 3.5875 20.4125C3.19583 20.0208 3 19.55 3 19V5C3 4.45 3.19583 3.97917 3.5875 3.5875C3.97917 3.19583 4.45 3 5 3H14L12 5H5V19H19V12L21 10V19C21 19.55 20.8042 20.0208 20.4125 20.4125C20.0208 20.8042 19.55 21 19 21H5ZM16.175 5.775L17.6 7.2L12 12.8V14H13.2L18.8 8.4L20.225 9.825L14.275 15.775C14.1083 15.9417 13.9167 16.0667 13.7 16.15C13.4833 16.2333 13.2583 16.275 13.025 16.275H11C10.7167 16.275 10.4792 16.1792 10.2875 15.9875C10.0958 15.7958 10 15.5583 10 15.275V13.25C10 13.0167 10.0417 12.7917 10.125 12.575C10.2083 12.3583 10.3333 12.1667 10.5 12L16.175 5.775ZM20.225 9.825L16.175 5.775L18.175 3.775C18.5583 3.39167 19.0292 3.2 19.5875 3.2C20.1458 3.2 20.6167 3.39167 21 3.775L22.225 5C22.6083 5.38333 22.8 5.85417 22.8 6.4125C22.8 6.97083 22.6083 7.44167 22.225 7.825L20.225 9.825Z"
-      fill="currentColor"
-    />
+    <path d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3 0-17l-111-111c-4.8-4.7-12.4-4.7-17.1 0zM124.1 339.9c-5.5-5.5-5.5-14.3 0-19.8l154-154c5.5-5.5 14.3-5.5 19.8 0s5.5 14.3 0 19.8l-154 154c-5.5 5.5-14.3 5.5-19.8 0zM88 424h48v36.3l-64.5 11.3-31.1-31.1L51.7 376H88v48z" />
   </svg>
 );
 
@@ -56,24 +54,33 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
   },
   iconButton: {
-    padding: 8,
+    padding: '8px !important',
     minWidth: 0,
     lineHeight: 1,
-    borderRadius: '50%',
+    borderRadius: '8px !important',
+    border: '1px solid var(--pf-t--global--border--color--default) !important',
     color: 'var(--pf-t--global--icon--color--regular)',
+    '& svg': {
+      width: 18,
+      height: 18,
+    },
     '&:hover': {
-      color: 'var(--pf-t--global--icon--color--hover)',
+      color: 'var(--pf-t--global--icon--color--hover) !important',
       backgroundColor:
-        'var(--pf-t--global--background--color--action--plain--hover)',
+        'var(--pf-t--global--background--color--action--plain--hover) !important',
     },
   },
   newChatIconButton: {
-    padding: 0,
+    padding: '8px !important',
     minWidth: 0,
     lineHeight: 1,
+    borderRadius: '8px !important',
+    border: '1px solid var(--pf-t--global--border--color--default) !important',
     color: 'var(--pf-t--global--color--brand--default)',
     '&:hover': {
-      color: 'var(--pf-t--global--color--brand--hover)',
+      color: 'var(--pf-t--global--color--brand--hover) !important',
+      backgroundColor:
+        'var(--pf-t--global--background--color--action--plain--hover) !important',
     },
   },
 }));

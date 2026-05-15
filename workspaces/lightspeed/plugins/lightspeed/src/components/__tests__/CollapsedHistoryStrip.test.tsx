@@ -128,9 +128,9 @@ describe('EditSquareIcon', () => {
 
     const svg = container.querySelector('svg');
     expect(svg).toBeInTheDocument();
-    expect(svg).toHaveAttribute('width', '20');
-    expect(svg).toHaveAttribute('height', '20');
-    expect(svg).toHaveAttribute('viewBox', '0 0 24 24');
+    expect(svg).toHaveAttribute('width', '1em');
+    expect(svg).toHaveAttribute('height', '1em');
+    expect(svg).toHaveAttribute('viewBox', '0 0 512 512');
   });
 
   it('should apply className when provided', () => {
@@ -140,10 +140,10 @@ describe('EditSquareIcon', () => {
     expect(svg).toHaveClass('custom-class');
   });
 
-  it('should have verticalAlign middle style', () => {
+  it('should have correct inline size style', () => {
     const { container } = render(<EditSquareIcon />);
 
     const svg = container.querySelector('svg');
-    expect(svg).toHaveStyle({ verticalAlign: 'middle' });
+    expect(svg).toHaveStyle({ width: '16px', height: '16px' });
   });
 });
