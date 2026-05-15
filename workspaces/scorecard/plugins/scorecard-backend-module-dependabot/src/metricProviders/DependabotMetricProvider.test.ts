@@ -15,6 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import { DependabotMetricProvider } from './DependabotMetricProvider';
 import { DEPENDABOT_SEVERITY_METRIC } from './DependabotConfig';
@@ -86,6 +87,8 @@ describe('DependabotMetricProvider', () => {
         expect(metric.description).toBe(
           DEPENDABOT_SEVERITY_METRIC[severity].description,
         );
+        expect(metric.type).toBe('number');
+        expect(metric.history).toBe(true);
       },
     );
   });
@@ -131,11 +134,10 @@ describe('DependabotMetricProvider', () => {
         mockLogger,
         'critical',
       );
-      const filter = provider.getCatalogFilter();
-      expect(
-        filter['metadata.annotations.github.com/project-slug'],
-      ).toBeDefined();
-      expect(filter['metadata.annotations.github.com/dependabot']).toBe('true');
+      expect(provider.getCatalogFilter()).toEqual({
+        'metadata.annotations.github.com/project-slug': CATALOG_FILTER_EXISTS,
+        'metadata.annotations.github.com/dependabot': 'true',
+      });
     });
   });
 
@@ -175,6 +177,20 @@ describe('DependabotMetricProvider', () => {
         "Invalid format of 'github.com/project-slug'",
       );
     });
+
+    it.each(['/repo', 'owner/'])(
+      'throws when project-slug has an empty owner or repo segment: %s',
+      projectSlug => {
+        const provider = new DependabotMetricProvider(
+          mockConfig,
+          mockLogger,
+          'critical',
+        );
+        expect(() => provider.getRepository(entity(projectSlug))).toThrow(
+          "Invalid format of 'github.com/project-slug'",
+        );
+      },
+    );
   });
 
   describe('calculateMetric', () => {
@@ -213,6 +229,24 @@ describe('DependabotMetricProvider', () => {
         'critical',
       );
       expect(await provider.calculateMetric(entity())).toBe(0);
+    });
+
+    it('propagates errors when getAlerts fails', async () => {
+      mockGetAlerts.mockRejectedValueOnce(new Error('dependabot unavailable'));
+      const provider = new DependabotMetricProvider(
+        mockConfig,
+        mockLogger,
+        'critical',
+      );
+
+      await expect(provider.calculateMetric(entity())).rejects.toThrow(
+        'dependabot unavailable',
+      );
+      expect(mockGetAlerts).toHaveBeenCalledWith(
+        'https://github.com/owner/repo',
+        { owner: 'owner', repo: 'repo' },
+        'critical',
+      );
     });
   });
 });
