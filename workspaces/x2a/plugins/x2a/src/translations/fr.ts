@@ -290,7 +290,15 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'rulesPage.table.optional': 'Optionnel',
     'rulesPage.table.createdAt': 'Créé',
     'rulesPage.table.editRule': 'Modifier la règle',
+    'rulesPage.table.deleteRule': 'Supprimer la règle',
     'rulesPage.table.noRules': 'Aucune règle définie pour le moment.',
+    'rulesPage.deleteConfirm.title': 'Supprimer la règle « {{title}} » ?',
+    'rulesPage.deleteConfirm.message':
+      'Cette règle sera définitivement supprimée. Les projets existants ayant déjà accepté cette règle ne seront pas affectés.',
+    'rulesPage.deleteConfirm.confirm': 'Supprimer',
+    'rulesPage.deleteConfirm.cancel': 'Annuler',
+    'rulesPage.deleteConfirm.deleteError':
+      'Erreur lors de la suppression de la règle',
     'rulesPage.dialog.createTitle': 'Créer une règle',
     'rulesPage.dialog.editTitle': 'Modifier la règle',
     'rulesPage.dialog.titleField': 'Titre',

@@ -107,6 +107,7 @@ export class DefaultApiClient {
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     rulesGet(request: RulesGet, options?: RequestOptions): Promise<TypedResponse<RulesGet200Response>>;
     rulesPost(request: RulesPost, options?: RequestOptions): Promise<TypedResponse<Rule>>;
+    rulesRuleIdDelete(request: RulesRuleIdDelete, options?: RequestOptions): Promise<TypedResponse<RulesRuleIdDelete200Response>>;
     rulesRuleIdGet(request: RulesRuleIdGet, options?: RequestOptions): Promise<TypedResponse<Rule>>;
     rulesRuleIdPut(request: RulesRuleIdPut, options?: RequestOptions): Promise<TypedResponse<Rule>>;
 }
@@ -670,6 +671,18 @@ export interface RulesPostRequest {
     description: string;
     required?: boolean;
     title: string;
+}
+
+// @public (undocumented)
+export type RulesRuleIdDelete = {
+    path: {
+        ruleId: string;
+    };
+};
+
+// @public (undocumented)
+export interface RulesRuleIdDelete200Response {
+    deletedCount: number;
 }
 
 // @public (undocumented)

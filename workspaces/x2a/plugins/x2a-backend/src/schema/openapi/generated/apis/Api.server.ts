@@ -37,6 +37,7 @@ import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunP
 import { Rule } from '../models/Rule.model';
 import { RulesGet200Response } from '../models/RulesGet200Response.model';
 import { RulesPostRequest } from '../models/RulesPostRequest.model';
+import { RulesRuleIdDelete200Response } from '../models/RulesRuleIdDelete200Response.model';
 import { RulesRuleIdPutRequest } from '../models/RulesRuleIdPutRequest.model';
 
 /**
@@ -206,6 +207,15 @@ export type RulesPost = {
 /**
  * @public
  */
+export type RulesRuleIdDelete = {
+  path: {
+    ruleId: string;
+  };
+  response: RulesRuleIdDelete200Response | void;
+};
+/**
+ * @public
+ */
 export type RulesRuleIdGet = {
   path: {
     ruleId: string;
@@ -255,6 +265,8 @@ export type EndpointMap = {
   '#get|/rules': RulesGet;
 
   '#post|/rules': RulesPost;
+
+  '#_delete|/rules/{ruleId}': RulesRuleIdDelete;
 
   '#get|/rules/{ruleId}': RulesRuleIdGet;
 

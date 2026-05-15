@@ -22,14 +22,17 @@ import {
   ResponseErrorPanel,
 } from '@backstage/core-components';
 import { Box, Button, Chip } from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import type { Rule } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
 import { extractResponseError, isHttpSuccessResponse } from '../tools';
+import { DeleteRuleDialog } from './DeleteRuleDialog';
 import { RuleDialog } from './RuleDialog';
 
 const EditIconComponent = () => <EditIcon />;
+const DeleteIconComponent = () => <DeleteIcon />;
 
 export const RulesTable = () => {
   const clientService = useClientService();
@@ -41,6 +44,8 @@ export const RulesTable = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Rule | undefined>(undefined);
+  const [deleteTarget, setDeleteTarget] = useState<Rule | undefined>(undefined);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchRules = useCallback(async () => {
     setLoading(true);
@@ -86,6 +91,31 @@ export const RulesTable = () => {
   const handleSaved = () => {
     handleDialogClose();
     fetchRules();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await clientService.rulesRuleIdDelete({
+        path: { ruleId: deleteTarget.id },
+      });
+      if (!isHttpSuccessResponse(response)) {
+        const message = await extractResponseError(
+          response,
+          t('rulesPage.deleteConfirm.deleteError'),
+        );
+        setError(new Error(message));
+        return;
+      }
+      setDeleteTarget(undefined);
+      fetchRules();
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const columns = useMemo(
@@ -136,6 +166,11 @@ export const RulesTable = () => {
         onClick: () => handleOpenEdit(rowData),
         tooltip: t('rulesPage.table.editRule'),
       }),
+      (rowData: Rule) => ({
+        icon: DeleteIconComponent,
+        onClick: () => setDeleteTarget(rowData),
+        tooltip: t('rulesPage.table.deleteRule'),
+      }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [t],
@@ -172,6 +207,14 @@ export const RulesTable = () => {
         onClose={handleDialogClose}
         onSaved={handleSaved}
         rule={editTarget}
+      />
+
+      <DeleteRuleDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(undefined)}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+        ruleTitle={deleteTarget?.title ?? ''}
       />
     </>
   );

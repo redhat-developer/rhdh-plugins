@@ -40,6 +40,7 @@ import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunP
 import { Rule } from '../models/Rule.model';
 import { RulesGet200Response } from '../models/RulesGet200Response.model';
 import { RulesPostRequest } from '../models/RulesPostRequest.model';
+import { RulesRuleIdDelete200Response } from '../models/RulesRuleIdDelete200Response.model';
 import { RulesRuleIdPutRequest } from '../models/RulesRuleIdPutRequest.model';
 
 /**
@@ -205,6 +206,14 @@ export type RulesGet = {};
  */
 export type RulesPost = {
   body: RulesPostRequest;
+};
+/**
+ * @public
+ */
+export type RulesRuleIdDelete = {
+  path: {
+    ruleId: string;
+  };
 };
 /**
  * @public
@@ -682,6 +691,32 @@ export class DefaultApiClient {
       },
       method: 'POST',
       body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * Deletes a rule by ID (admin only).
+   * @param ruleId -
+   */
+  public async rulesRuleIdDelete(
+    // @ts-ignore
+    request: RulesRuleIdDelete,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<RulesRuleIdDelete200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules/{ruleId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      ruleId: request.path.ruleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'DELETE',
     });
   }
 

@@ -289,6 +289,10 @@ export interface X2ADatabaseServiceApi {
         groupsOfUser: string[];
     }): Promise<number>;
     // (undocumented)
+    deleteRule(args: {
+        id: string;
+    }): Promise<number>;
+    // (undocumented)
     getAcceptedRulesForProject(args: {
         projectId: string;
     }): Promise<RuleSnapshot[]>;

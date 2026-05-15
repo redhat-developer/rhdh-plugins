@@ -345,7 +345,16 @@ export const x2aPluginMessages = {
       optional: 'Optional',
       createdAt: 'Created',
       editRule: 'Edit rule',
+      deleteRule: 'Delete rule',
       noRules: 'No rules defined yet.',
+    },
+    deleteConfirm: {
+      title: 'Delete rule "{{title}}"?',
+      message:
+        'This rule will be permanently deleted. Existing projects that already accepted this rule will not be affected.',
+      confirm: 'Delete',
+      cancel: 'Cancel',
+      deleteError: 'Failed to delete rule',
     },
     dialog: {
       createTitle: 'Create Rule',

@@ -44,6 +44,7 @@ export * from '../models/Rule.model';
 export * from '../models/RuleSnapshot.model';
 export * from '../models/RulesGet200Response.model';
 export * from '../models/RulesPostRequest.model';
+export * from '../models/RulesRuleIdDelete200Response.model';
 export * from '../models/RulesRuleIdPutRequest.model';
 export * from '../models/SourceTechnology.model';
 export * from '../models/Telemetry.model';

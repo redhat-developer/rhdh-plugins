@@ -504,6 +504,10 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     return this.#ruleOps.listRules();
   }
 
+  async deleteRule({ id }: { id: string }): Promise<number> {
+    return this.#ruleOps.deleteRule({ id });
+  }
+
   async attachRulesToProject(args: {
     projectId: string;
     ruleIds: string[];

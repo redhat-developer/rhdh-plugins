@@ -129,4 +129,27 @@ export function registerRuleRoutes(
 
     res.json(rule);
   });
+
+  router.delete('/rules/:ruleId', async (req, res) => {
+    const endpoint = 'DELETE /rules/:ruleId';
+    const { ruleId } = req.params;
+    logger.info(`${endpoint} request received: ruleId=${ruleId}`);
+
+    const decision = await authorize(
+      req,
+      [x2aAdminWritePermission],
+      permissionsSvc,
+      httpAuth,
+    );
+    if (decision.result === AuthorizeResult.DENY) {
+      throw new NotAllowedError('You are not allowed to delete rules');
+    }
+
+    const deletedCount = await x2aDatabase.deleteRule({ id: ruleId });
+    if (deletedCount === 0) {
+      throw new NotFoundError('Rule not found');
+    }
+
+    res.json({ deletedCount });
+  });
 }

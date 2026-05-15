@@ -336,6 +336,43 @@ export const spec = {
             "description": "Rule not found."
           }
         }
+      },
+      "delete": {
+        "summary": "Deletes a rule by ID (admin only).",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ruleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rule deleted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deletedCount": {
+                      "type": "integer",
+                      "description": "Number of rules deleted (0 or 1)"
+                    }
+                  },
+                  "required": [
+                    "deletedCount"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rule not found."
+          }
+        }
       }
     },
     "/projects/{projectId}": {

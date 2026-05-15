@@ -397,4 +397,81 @@ describe('createRouter – rules', () => {
       LONG_TEST_TIMEOUT,
     );
   });
+
+  describe('DELETE /rules/:ruleId', () => {
+    it.each(supportedDatabaseIds)(
+      'should delete a rule and return 200 with deletedCount 1 - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const app = await createApp(client);
+
+        const rule = await x2aDatabase.createRule({
+          title: 'Rule to Delete',
+          description: 'Will be deleted',
+          required: false,
+        });
+
+        const response = await request(app).delete(`/rules/${rule.id}`).send();
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({ deletedCount: 1 });
+
+        // Verify rule no longer exists
+        const listResponse = await request(app).get('/rules').send();
+        expect(listResponse.body.items).toHaveLength(0);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when rule does not exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const response = await request(app)
+          .delete(`/rules/${nonExistentId}`)
+          .send();
+
+        expect(response.status).toBe(404);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotFoundError',
+            message: 'Rule not found',
+          },
+        });
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 403 when user lacks admin write permission - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const rule = await x2aDatabase.createRule({
+          title: 'Protected Rule',
+          description: 'Cannot delete',
+          required: false,
+        });
+
+        const app = await createApp(
+          client,
+          AuthorizeResult.ALLOW,
+          AuthorizeResult.DENY,
+        );
+
+        const response = await request(app).delete(`/rules/${rule.id}`).send();
+
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotAllowedError',
+            message: 'You are not allowed to delete rules',
+          },
+        });
+      },
+      LONG_TEST_TIMEOUT,
+    );
+  });
 });

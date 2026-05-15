@@ -99,6 +99,18 @@ export class RuleOperations {
     return rows.map((row: Record<string, unknown>) => RuleEntity.fromRow(row));
   }
 
+  async deleteRule({ id }: { id: string }): Promise<number> {
+    this.#logger.info(`deleteRule called for id: ${id}`);
+
+    const deletedCount = await this.#dbClient('rules').where('id', id).delete();
+
+    if (deletedCount === 0) {
+      this.#logger.warn(`No rule found with id: ${id}`);
+    }
+
+    return deletedCount;
+  }
+
   async attachRulesToProject(args: {
     projectId: string;
     ruleIds: string[];
