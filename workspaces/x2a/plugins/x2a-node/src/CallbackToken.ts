@@ -16,39 +16,42 @@
 
 import crypto from 'node:crypto';
 
-/**
- * HMAC-SHA256 signature validator for securing callback endpoints
- */
-export class SignatureValidator {
-  /**
-   * Generate HMAC-SHA256 signature from raw body bytes
-   * @param secret - The secret key (callbackToken)
-   * @param rawBody - Raw body buffer
-   * @returns Hex-encoded HMAC signature
-   */
-  generateSignature(secret: string, rawBody: Buffer): string {
-    const hmac = crypto.createHmac('sha256', secret);
+const HEX_64_PATTERN = /^[a-f0-9]{64}$/;
+
+/** @public */
+export class CallbackToken {
+  readonly value: string;
+
+  private constructor(value: string) {
+    if (!HEX_64_PATTERN.test(value)) {
+      throw new Error(
+        'Invalid callback token: must be a 64-character hex string',
+      );
+    }
+    this.value = value;
+  }
+
+  static from(raw: string): CallbackToken {
+    return new CallbackToken(raw);
+  }
+
+  static generate(): CallbackToken {
+    const hex = crypto.randomBytes(32).toString('hex');
+    return new CallbackToken(hex);
+  }
+
+  sign(rawBody: Buffer): string {
+    const hmac = crypto.createHmac('sha256', this.value);
     hmac.update(rawBody);
     return hmac.digest('hex');
   }
 
-  /**
-   * Validate HMAC-SHA256 signature using timing-safe comparison
-   * @param secret - The secret key (callbackToken)
-   * @param rawBody - Raw body buffer
-   * @param providedSignature - The signature to validate
-   * @returns true if signature is valid, false otherwise
-   */
-  validateSignature(
-    secret: string,
-    rawBody: Buffer,
-    providedSignature: string,
-  ): boolean {
-    if (!providedSignature || !secret) {
+  validateSignature(rawBody: Buffer, providedSignature: string): boolean {
+    if (!providedSignature) {
       return false;
     }
 
-    const expectedSignature = this.generateSignature(secret, rawBody);
+    const expectedSignature = this.sign(rawBody);
 
     if (expectedSignature.length !== providedSignature.length) {
       return false;
@@ -62,5 +65,13 @@ export class SignatureValidator {
     }
 
     return crypto.timingSafeEqual(expectedBuffer, providedBuffer);
+  }
+
+  equals(other: CallbackToken): boolean {
+    return this.value === other.value;
+  }
+
+  toString(): string {
+    return this.value;
   }
 }

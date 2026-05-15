@@ -23,7 +23,6 @@ import {
   getUserRef,
   getGroupsOfUser,
   reconcileJobStatus,
-  generateCallbackToken,
   removeSensitiveFromJob,
   type UnsecureJob,
 } from './utils';
@@ -371,22 +370,5 @@ describe('reconcileJobStatus', () => {
     const result = await reconcileJobStatus(job, deps);
 
     expect(result).toBe(job);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// generateCallbackToken
-// ---------------------------------------------------------------------------
-
-describe('generateCallbackToken', () => {
-  it('returns a 64-character hex string (256 bits)', () => {
-    const token = generateCallbackToken();
-    expect(token).toMatch(/^[0-9a-f]{64}$/);
-  });
-
-  it('produces distinct values on successive calls', () => {
-    const a = generateCallbackToken();
-    const b = generateCallbackToken();
-    expect(a).not.toBe(b);
   });
 });

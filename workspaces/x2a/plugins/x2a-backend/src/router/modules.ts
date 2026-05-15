@@ -23,20 +23,20 @@ import {
   JobStatus,
   Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-
-import type { RouterDeps } from './types';
 import {
-  assertProjectHasDirName,
-  generateCallbackToken,
-  reconcileJobStatus,
-  useEnforceProjectPermissions,
-} from './common';
-import { GitRepositoryResolver } from './GitRepositoryResolver';
-import {
+  CallbackToken,
   calculateModuleStatus,
   listModulesWithReconciledStatuses,
   reconcileModuleJobs,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
+import type { RouterDeps } from './types';
+import {
+  assertProjectHasDirName,
+  reconcileJobStatus,
+  useEnforceProjectPermissions,
+} from './common';
+import { GitRepositoryResolver } from './GitRepositoryResolver';
 
 export function registerModuleRoutes(
   router: express.Router,
@@ -277,13 +277,13 @@ export function registerModuleRoutes(
         });
       }
 
-      const callbackToken = generateCallbackToken();
+      const callbackToken = CallbackToken.generate();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId,
         phase,
         status: 'pending',
-        callbackToken,
+        callbackToken: callbackToken.value,
       });
 
       // Create Kubernetes job (will create both project and job secrets)
@@ -300,7 +300,7 @@ export function registerModuleRoutes(
         projectDirName: project.dirName,
         phase,
         user: userRef,
-        callbackToken,
+        callbackToken: callbackToken.value,
         callbackUrl,
         moduleId,
         moduleName: module.name,

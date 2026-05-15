@@ -46,6 +46,24 @@ export function calculateModuleStatus({ analyze, migrate, publish, }: {
 };
 
 // @public (undocumented)
+export class CallbackToken {
+    // (undocumented)
+    equals(other: CallbackToken): boolean;
+    // (undocumented)
+    static from(raw: string): CallbackToken;
+    // (undocumented)
+    static generate(): CallbackToken;
+    // (undocumented)
+    sign(rawBody: Buffer): string;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    validateSignature(rawBody: Buffer, providedSignature: string): boolean;
+    // (undocumented)
+    readonly value: string;
+}
+
+// @public (undocumented)
 export interface CreateJobInput {
     // (undocumented)
     artifacts?: Pick<Artifact, 'type' | 'value'>[];
@@ -70,9 +88,6 @@ export interface CreateJobInput {
     // (undocumented)
     status?: JobStatusEnum;
 }
-
-// @public
-export function generateCallbackToken(): string;
 
 // @public
 export function getGroupsOfUser(userEntityRef: string, options: {
