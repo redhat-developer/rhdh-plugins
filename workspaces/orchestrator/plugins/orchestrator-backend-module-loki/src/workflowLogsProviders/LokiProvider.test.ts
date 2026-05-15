@@ -321,8 +321,8 @@ describe('LokiProvider', () => {
        * Subclass `URL` so we can still cover the defensive check in `parseAndValidateLokiBaseUrl`.
        */
       it('rejects baseUrl when the resolved URL has no hostname', () => {
-        const OriginalURL = global.URL;
-        global.URL = class URLWithEmptyHostname extends OriginalURL {
+        const OriginalURL = globalThis.URL;
+        globalThis.URL = class URLWithEmptyHostname extends OriginalURL {
           get hostname(): string {
             return '';
           }
@@ -343,7 +343,7 @@ describe('LokiProvider', () => {
             ),
           ).toThrow(/must include a hostname/);
         } finally {
-          global.URL = OriginalURL;
+          globalThis.URL = OriginalURL;
         }
       });
 

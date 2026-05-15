@@ -17,9 +17,34 @@
 import type { Config } from '@backstage/config';
 
 import {
+  assertSafeWorkflowInstanceIdForLineFilter,
   hostnameMatchesAllowedHosts,
   parseAndValidateLogPipelineFilters,
 } from './helpers';
+
+describe('assertSafeWorkflowInstanceIdForLineFilter', () => {
+  it('continues when codePointAt returns undefined (defensive branch)', () => {
+    const original = String.prototype.codePointAt;
+    const spy = jest
+      .spyOn(String.prototype, 'codePointAt')
+      .mockImplementation(function mockCodePointAt(this: string, pos: number) {
+        const s = String(this);
+        if (s === '__codepoint_undefined_once__' && pos === 0) {
+          return undefined as unknown as number;
+        }
+        return original.call(this, pos) as number | undefined;
+      });
+    try {
+      expect(() =>
+        assertSafeWorkflowInstanceIdForLineFilter(
+          '__codepoint_undefined_once__',
+        ),
+      ).not.toThrow();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
 
 describe('parseAndValidateLogPipelineFilters', () => {
   it('rejects empty string entries after trim (ConfigReader cannot supply this)', () => {
