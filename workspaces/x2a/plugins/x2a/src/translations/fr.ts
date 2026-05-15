@@ -271,6 +271,11 @@ const x2aPluginTranslationFr = createTranslationMessages({
       "Erreur lors de la relance de la phase d'initialisation du projet « {{name}} »",
     'retriggerInit.errorStart':
       "Erreur lors du démarrage de l'initialisation du projet",
+    'scaffolder.rulesAcceptance.loadingRules': 'Chargement des règles...',
+    'scaffolder.rulesAcceptance.noRulesConfigured': 'Aucune règle configurée.',
+    'scaffolder.rulesAcceptance.required': 'obligatoire',
+    'scaffolder.rulesAcceptance.fetchError':
+      'Erreur lors du chargement des règles',
     'rulesPage.title': 'Règles de conversion',
     'rulesPage.subtitle':
       'Gérez les règles que les projets doivent accepter lors de la création.',

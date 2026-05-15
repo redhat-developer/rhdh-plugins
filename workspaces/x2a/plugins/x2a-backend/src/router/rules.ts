@@ -84,7 +84,7 @@ export function registerRuleRoutes(
       required: z.boolean().optional(),
     });
 
-    const parsedBody = createRuleSchema.passthrough().safeParse(req.body);
+    const parsedBody = createRuleSchema.safeParse(req.body);
     if (!parsedBody.success) {
       throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
     }
@@ -114,7 +114,7 @@ export function registerRuleRoutes(
       required: z.boolean(),
     });
 
-    const parsedBody = updateRuleSchema.passthrough().safeParse(req.body);
+    const parsedBody = updateRuleSchema.safeParse(req.body);
     if (!parsedBody.success) {
       throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
     }

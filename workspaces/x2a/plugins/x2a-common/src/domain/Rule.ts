@@ -52,7 +52,7 @@ export class RuleEntity {
       row.id as string,
       row.title as string,
       row.description as string,
-      row.required as boolean,
+      Boolean(row.required ?? false),
       new Date(row.created_at as string | Date),
       new Date(row.updated_at as string | Date),
     );
@@ -64,7 +64,7 @@ export class RuleEntity {
       obj.id as string,
       obj.title as string,
       obj.description as string,
-      obj.required !== null ? (obj.required as boolean) : false,
+      Boolean(obj.required ?? false),
       obj.createdAt ? new Date(obj.createdAt as string | Date) : new Date(),
       obj.updatedAt ? new Date(obj.updatedAt as string | Date) : new Date(),
     );

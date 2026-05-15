@@ -26,18 +26,22 @@ import {
   CircularProgress,
   Box,
 } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import type { Rule } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { useClientService } from '../ClientService';
+import { useTranslation } from '../hooks/useTranslation';
 import {
-  discoveryApiRef,
-  fetchApiRef,
-  useApi,
-} from '@backstage/core-plugin-api';
+  extractResponseError,
+  isHttpSuccessResponse,
+} from '../components/tools';
 
-interface RuleItem {
-  id: string;
-  title: string;
-  description: string;
-  required: boolean;
-}
+const useStyles = makeStyles(() => ({
+  ruleControl: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+}));
 
 /**
  * RulesAcceptance custom scaffolder field.
@@ -51,10 +55,11 @@ export const RulesAcceptance = ({
   onChange,
   schema,
 }: FieldExtensionComponentProps<string>) => {
-  const discoveryApi = useApi(discoveryApiRef);
-  const fetchApi = useApi(fetchApiRef);
+  const clientService = useClientService();
+  const { t } = useTranslation();
+  const classes = useStyles();
 
-  const [rules, setRules] = useState<RuleItem[]>([]);
+  const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
@@ -65,19 +70,23 @@ export const RulesAcceptance = ({
     let cancelled = false;
     const fetchRules = async () => {
       try {
-        const baseUrl = await discoveryApi.getBaseUrl('x2a');
-        const response = await fetchApi.fetch(`${baseUrl}/rules`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch rules: ${response.statusText}`);
+        const response = await clientService.rulesGet({});
+        if (!isHttpSuccessResponse(response)) {
+          const message = await extractResponseError(
+            response,
+            t('scaffolder.rulesAcceptance.fetchError'),
+          );
+          throw new Error(message);
         }
-        const data = (await response.json()) as { items: RuleItem[] };
+        const data = await response.json();
         if (cancelled) return;
 
-        setRules(data.items);
+        const items = data.items ?? [];
+        setRules(items);
 
         // Pre-check required rules
         const requiredIds = new Set(
-          data.items.filter(r => r.required).map(r => r.id),
+          items.filter(r => r.required).map(r => r.id),
         );
         setCheckedIds(requiredIds);
 
@@ -122,7 +131,7 @@ export const RulesAcceptance = ({
       <Box display="flex" alignItems="center" p={2}>
         <CircularProgress size={20} />
         <Typography variant="body2" style={{ marginLeft: 8 }}>
-          Loading rules...
+          {t('scaffolder.rulesAcceptance.loadingRules')}
         </Typography>
       </Box>
     );
@@ -139,7 +148,7 @@ export const RulesAcceptance = ({
   if (rules.length === 0) {
     return (
       <Typography variant="body2" color="textSecondary">
-        No rules configured.
+        {t('scaffolder.rulesAcceptance.noRulesConfigured')}
       </Typography>
     );
   }
@@ -155,6 +164,7 @@ export const RulesAcceptance = ({
       {rules.map(rule => (
         <FormControlLabel
           key={rule.id}
+          className={classes.ruleControl}
           control={
             <Checkbox
               checked={checkedIds.has(rule.id)}
@@ -173,8 +183,7 @@ export const RulesAcceptance = ({
                     variant="caption"
                     color="textSecondary"
                   >
-                    {' '}
-                    (required)
+                    {` (${t('scaffolder.rulesAcceptance.required')})`}
                   </Typography>
                 )}
               </Typography>
@@ -185,7 +194,6 @@ export const RulesAcceptance = ({
               </Typography>
             </Box>
           }
-          style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 8 }}
         />
       ))}
     </>

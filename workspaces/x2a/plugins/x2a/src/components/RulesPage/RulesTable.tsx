@@ -23,6 +23,7 @@ import {
 } from '@backstage/core-components';
 import { Box, Button, Chip } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
+import type { Rule } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
 import { extractResponseError, isHttpSuccessResponse } from '../tools';
@@ -30,26 +31,16 @@ import { RuleDialog } from './RuleDialog';
 
 const EditIconComponent = () => <EditIcon />;
 
-/** Plain data shape returned by the rules API (subset of the domain Rule class). */
-interface RuleData {
-  id: string;
-  title: string;
-  description: string;
-  required: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export const RulesTable = () => {
   const clientService = useClientService();
   const { t } = useTranslation();
 
-  const [rules, setRules] = useState<RuleData[]>([]);
+  const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<RuleData | undefined>(undefined);
+  const [editTarget, setEditTarget] = useState<Rule | undefined>(undefined);
 
   const fetchRules = useCallback(async () => {
     setLoading(true);
@@ -82,7 +73,7 @@ export const RulesTable = () => {
     setDialogOpen(true);
   };
 
-  const handleOpenEdit = (rule: RuleData) => {
+  const handleOpenEdit = (rule: Rule) => {
     setEditTarget(rule);
     setDialogOpen(true);
   };
@@ -98,7 +89,7 @@ export const RulesTable = () => {
   };
 
   const columns = useMemo(
-    (): TableColumn<RuleData>[] => [
+    (): TableColumn<Rule>[] => [
       {
         title: t('rulesPage.table.id'),
         field: 'id',
@@ -110,7 +101,7 @@ export const RulesTable = () => {
       {
         title: t('rulesPage.table.description'),
         field: 'description',
-        render: (rowData: RuleData) => {
+        render: (rowData: Rule) => {
           const desc = rowData.description ?? '';
           return desc.length > 100 ? `${desc.slice(0, 100)}...` : desc;
         },
@@ -118,7 +109,7 @@ export const RulesTable = () => {
       {
         title: t('rulesPage.table.required'),
         field: 'required',
-        render: (rowData: RuleData) =>
+        render: (rowData: Rule) =>
           rowData.required ? (
             <Chip
               label={t('rulesPage.table.required')}
@@ -140,7 +131,7 @@ export const RulesTable = () => {
 
   const actions = useMemo(
     () => [
-      (rowData: RuleData) => ({
+      (rowData: Rule) => ({
         icon: EditIconComponent,
         onClick: () => handleOpenEdit(rowData),
         tooltip: t('rulesPage.table.editRule'),
@@ -160,7 +151,7 @@ export const RulesTable = () => {
         </Button>
       </Box>
 
-      <Table<RuleData>
+      <Table<Rule>
         title={t('rulesPage.title')}
         columns={columns}
         data={rules}

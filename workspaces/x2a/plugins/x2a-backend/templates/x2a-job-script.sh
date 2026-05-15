@@ -275,7 +275,7 @@ case "${PHASE}" in
 
     # Copy accepted rules into the source directory so the x2a tool can find them
     # Uses -rL to dereference ConfigMap symlinks into regular files
-    if [ -n "${ACCEPTED_RULES_DIR:-}" ] && [ -d "${ACCEPTED_RULES_DIR}" ]; then
+    if [[ -n "${ACCEPTED_RULES_DIR:-}" ]] && [[ -d "${ACCEPTED_RULES_DIR}" ]]; then
       echo "=== Copying accepted rules to source directory ==="
       cp -rL "${ACCEPTED_RULES_DIR}" "${SOURCE_BASE}/x2a-rules"
       ls -la "${SOURCE_BASE}/x2a-rules/"

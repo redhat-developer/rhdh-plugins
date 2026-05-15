@@ -3,6 +3,7 @@
 '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a': minor
 '@red-hat-developer-hub/backstage-plugin-x2a-backend': patch
 '@red-hat-developer-hub/backstage-plugin-x2a': patch
+'@red-hat-developer-hub/backstage-plugin-x2a-node': patch
 '@red-hat-developer-hub/backstage-plugin-x2a-mcp-extras': patch
 ---
 

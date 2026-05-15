@@ -264,6 +264,11 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Fehler beim erneuten Auslösen der Init-Phase für Projekt „{{name}}"',
     'retriggerInit.errorStart':
       'Fehler beim Starten der Projektinitialisierung',
+    'scaffolder.rulesAcceptance.loadingRules': 'Regeln werden geladen...',
+    'scaffolder.rulesAcceptance.noRulesConfigured':
+      'Keine Regeln konfiguriert.',
+    'scaffolder.rulesAcceptance.required': 'erforderlich',
+    'scaffolder.rulesAcceptance.fetchError': 'Fehler beim Laden der Regeln',
     'rulesPage.title': 'Konvertierungsregeln',
     'rulesPage.subtitle':
       'Verwalten Sie Regeln, die Projekte bei der Erstellung akzeptieren müssen.',

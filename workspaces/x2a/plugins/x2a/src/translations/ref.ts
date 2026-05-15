@@ -323,6 +323,14 @@ export const x2aPluginMessages = {
       finished: 'Finished {{timeAgo}} (took {{duration}})',
     },
   },
+  scaffolder: {
+    rulesAcceptance: {
+      loadingRules: 'Loading rules...',
+      noRulesConfigured: 'No rules configured.',
+      required: 'required',
+      fetchError: 'Failed to fetch rules',
+    },
+  },
   rulesPage: {
     title: 'Conversion Rules',
     subtitle: 'Manage rules that projects must accept at creation time.',

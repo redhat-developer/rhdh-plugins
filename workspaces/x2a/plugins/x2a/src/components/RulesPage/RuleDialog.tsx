@@ -28,23 +28,16 @@ import {
   FormControlLabel,
   TextField,
 } from '@material-ui/core';
+import type { Rule } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
 import { extractResponseError, isHttpSuccessResponse } from '../tools';
-
-/** Plain data shape for a rule passed from the table. */
-interface RuleData {
-  id: string;
-  title: string;
-  description: string;
-  required: boolean;
-}
 
 interface RuleDialogProps {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
-  rule?: RuleData;
+  rule?: Rule;
 }
 
 export const RuleDialog = ({
