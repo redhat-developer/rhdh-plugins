@@ -81,8 +81,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebook.view.documents.uploading': 'Chargement du document',
     'notebook.view.documents.maxReached':
       'Maximum 10 documents autorisés. Supprimez un document pour en charger un nouveau.',
-    'notebook.upload.success': '{{fileName}} chargé avec succès.',
-    'notebook.upload.failed': 'Échec du chargement de {{fileName}}.',
+    'notebook.upload.failed': 'Échec du chargement de "{{fileName}}".',
 
     // Notebook upload modal
     'notebook.upload.modal.title': 'Ajouter un document au carnet',

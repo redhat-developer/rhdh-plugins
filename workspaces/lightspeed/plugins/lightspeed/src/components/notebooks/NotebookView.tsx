@@ -495,20 +495,15 @@ export const NotebookView = ({
         newCompletedNames.add(result.fileName);
       }
 
-      if (result.status === 'completed') {
+      if (result.status !== 'completed') {
+        const errorDetail = result.error ? ` ${result.error}` : '';
         newAlerts.push({
           key: Date.now() + result.documentId,
-          title: (t as Function)('notebook.upload.success', {
-            fileName: result.fileName,
-          }) as string,
-          variant: 'success',
-        });
-      } else {
-        newAlerts.push({
-          key: Date.now() + result.documentId,
-          title: (t as Function)('notebook.upload.failed', {
-            fileName: result.fileName,
-          }) as string,
+          title: `${
+            (t as Function)('notebook.upload.failed', {
+              fileName: result.fileName,
+            }) as string
+          }${errorDetail}`,
           variant: 'danger',
         });
       }

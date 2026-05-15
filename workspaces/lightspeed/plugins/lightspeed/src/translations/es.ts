@@ -79,8 +79,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebook.view.documents.uploading': 'Subiendo documento',
     'notebook.view.documents.maxReached':
       'Se permiten un máximo de 10 documentos. Elimina un documento para subir uno nuevo.',
-    'notebook.upload.success': '{{fileName}} subido correctamente.',
-    'notebook.upload.failed': 'Error al subir {{fileName}}.',
+    'notebook.upload.failed': 'Error al subir "{{fileName}}".',
 
     // Notebook upload modal
     'notebook.upload.modal.title': 'Agregar un documento al cuaderno',

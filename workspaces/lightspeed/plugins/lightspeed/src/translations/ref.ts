@@ -76,8 +76,7 @@ export const lightspeedMessages = {
   'notebook.view.documents.uploading': 'Uploading document',
   'notebook.view.documents.maxReached':
     'Maximum 10 documents are allowed. Delete a document to upload a new document.',
-  'notebook.upload.success': '{{fileName}} Successfully Uploaded.',
-  'notebook.upload.failed': '{{fileName}} Upload Failed.',
+  'notebook.upload.failed': '"{{fileName}}" upload failed.',
 
   // Notebook upload modal
   'notebook.upload.modal.title': 'Add a document to Notebook',

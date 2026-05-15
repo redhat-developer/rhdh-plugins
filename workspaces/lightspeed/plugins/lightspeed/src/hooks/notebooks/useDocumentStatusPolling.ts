@@ -30,6 +30,7 @@ export type DocumentPollingResult = {
   fileName: string;
   documentId: string;
   status: DocumentStatus['status'] | 'polling';
+  error?: string;
 };
 
 const POLL_INTERVAL_MS = 5000;
@@ -74,6 +75,7 @@ export const useDocumentStatusPolling = (
       fileName: upload.fileName,
       documentId: upload.documentId,
       status: isQueryError ? 'failed' : (dataStatus ?? 'polling'),
+      error: result?.data?.error,
     };
   });
 };

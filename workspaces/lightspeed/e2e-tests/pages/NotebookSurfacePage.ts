@@ -250,25 +250,6 @@ export class NotebookSurfacePage {
   }
 
   /**
-   * Success toast title uses `notebook.upload.success` (`NotebookView` PF `Alert`), auto-dismiss ~2s after show.
-   */
-  async expectNotebookUploadSuccessToastVisible(
-    fileName: string,
-  ): Promise<void> {
-    const title = substituteNotebookTemplate(
-      this.t['notebook.upload.success'],
-      {
-        fileName,
-      },
-    );
-    await expect(
-      this.page.getByText(title, { exact: true }).first(),
-    ).toBeVisible({
-      timeout: 120_000,
-    });
-  }
-
-  /**
    * Once the notebook reaches the attachment cap, sidebar Add is disabled (`DocumentSidebar.tsx`).
    */
   async expectSidebarDocumentsAddDisabled(): Promise<void> {

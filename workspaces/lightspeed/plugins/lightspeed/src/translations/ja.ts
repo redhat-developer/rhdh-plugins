@@ -79,8 +79,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebook.view.documents.uploading': 'ドキュメントをアップロード中',
     'notebook.view.documents.maxReached':
       '最大10個のドキュメントが許可されています。新しいドキュメントをアップロードするには、ドキュメントを削除してください。',
-    'notebook.upload.success': '{{fileName}} のアップロードに成功しました。',
-    'notebook.upload.failed': '{{fileName}} のアップロードに失敗しました。',
+    'notebook.upload.failed': '「{{fileName}}」のアップロードに失敗しました。',
 
     // Notebook upload modal
     'notebook.upload.modal.title': 'ノートブックにドキュメントを追加',

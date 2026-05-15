@@ -80,8 +80,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.view.documents.uploading': 'Dokument wird hochgeladen',
     'notebook.view.documents.maxReached':
       'Maximal 10 Dokumente sind erlaubt. Löschen Sie ein Dokument, um ein neues hochzuladen.',
-    'notebook.upload.success': '{{fileName}} erfolgreich hochgeladen.',
-    'notebook.upload.failed': 'Hochladen von {{fileName}} fehlgeschlagen.',
+    'notebook.upload.failed': 'Hochladen von "{{fileName}}" fehlgeschlagen.',
 
     // Notebook upload modal
     'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
