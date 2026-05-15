@@ -61,12 +61,12 @@ export interface Config {
         logPipelineFilters?: Array<string>;
         logStreamSelectors?: Array<{
           /** Prometheus-style name: [a-zA-Z_][a-zA-Z0-9_]* */
-          label: string;
+          label?: string;
           /**
            * Label matcher only, e.g. `="application"` or `=~".+"` (quoted; regex may use backticks).
            * Validated at startup.
            */
-          value: string;
+          value?: string;
         }>;
       };
     };
