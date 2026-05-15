@@ -119,8 +119,12 @@ const PROMETHEUS_LABEL_NAME_RULE_DESC = String.raw`[a-zA-Z_]\w*`;
  * Label matcher fragment after the label name: `="..."`, `!=`, regex with `"` or `` ` ``.
  * Requires properly closed quotes and escapes so the fragment cannot break out of `{...}`.
  */
-const LOG_STREAM_SELECTOR_VALUE_PATTERN =
-  /^(?:(?:=|!=)"(?:[^"\\\r\n]|\\.)*"|(?:=~|!~)(?:"(?:[^"\\\r\n]|\\.)*"|`[^`\r\n]*`))$/;
+const LOG_STREAM_SELECTOR_VALUE_PATTERNS: RegExp[] = [
+  /^=(?:"(?:[^"\\\r\n]|\\.)*")$/,
+  /^!=(?:"(?:[^"\\\r\n]|\\.)*")$/,
+  /^=~(?:"(?:[^"\\\r\n]|\\.)*"|`[^`\r\n]*`)$/,
+  /^!~(?:"(?:[^"\\\r\n]|\\.)*"|`[^`\r\n]*`)$/,
+];
 
 export interface ValidatedLogStreamSelector {
   label: string;
@@ -139,7 +143,9 @@ function assertValidLogStreamSelectorValue(
   value: string,
   context: string,
 ): void {
-  if (!LOG_STREAM_SELECTOR_VALUE_PATTERN.test(value)) {
+  if (
+    !LOG_STREAM_SELECTOR_VALUE_PATTERNS.some(pattern => pattern.test(value))
+  ) {
     throw new Error(
       `${context}: value must be a LogQL label matcher (e.g. ="literal", !="...", =~"re", or =~\`re\`) with no raw line breaks outside escapes`,
     );
