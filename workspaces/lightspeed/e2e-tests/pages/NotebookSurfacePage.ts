@@ -17,7 +17,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import type { LightspeedMessages } from '../utils/translations';
-import { substituteNotebookTemplate } from '../utils/notebookTranslation';
 import { openLightspeed } from '../utils/testHelper';
 
 import { NotebookAddDocumentModalPage } from './NotebookAddDocumentModalPage';
