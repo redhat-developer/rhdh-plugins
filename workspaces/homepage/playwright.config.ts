@@ -22,7 +22,7 @@ const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
 
 // Single e2e test suite (packages/app/e2e-tests) runs for both legacy and nfs via APP_MODE
-const testDir = 'packages/app/e2e-tests';
+const testDir = 'e2e-tests';
 
 const baseConfig = `${__dirname}/app-config.yaml`;
 const adminConfig = `${__dirname}/app-config-admin.yaml`;
