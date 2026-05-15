@@ -50,6 +50,7 @@ const orchestratorPage = PageBlueprint.make({
   params: {
     path: '/orchestrator',
     routeRef: orchestratorRootRouteRef,
+    noHeader: true,
     loader: () => import('./components/Router').then(m => <m.Router />),
   },
 });
