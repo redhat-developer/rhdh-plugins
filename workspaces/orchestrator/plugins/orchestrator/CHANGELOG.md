@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.11
+
+### Patch Changes
+
+- a3d18b8: Fixed duplicate header and double scrollbars in the NFS app by adding `noHeader: true` to the PageBlueprint so Backstage does not render a second page shell on top of the plugin's own header.
+
 ## 5.7.10
 
 ### Patch Changes
