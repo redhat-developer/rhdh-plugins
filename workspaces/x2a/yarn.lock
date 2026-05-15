@@ -1947,54 +1947,52 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-backend@npm:7.6.2":
-  version: 7.6.2
-  resolution: "@backstage-community/plugin-rbac-backend@npm:7.6.2"
+"@backstage-community/plugin-rbac-backend@npm:7.12.4":
+  version: 7.12.4
+  resolution: "@backstage-community/plugin-rbac-backend@npm:7.12.4"
   dependencies:
-    "@backstage-community/plugin-rbac-common": "npm:^1.22.0"
-    "@backstage-community/plugin-rbac-node": "npm:^1.16.0"
-    "@backstage/backend-defaults": "npm:^0.13.1"
-    "@backstage/backend-plugin-api": "npm:^1.5.0"
-    "@backstage/catalog-client": "npm:^1.12.1"
-    "@backstage/catalog-model": "npm:^1.7.6"
+    "@backstage-community/plugin-rbac-common": "npm:^1.26.1"
+    "@backstage-community/plugin-rbac-node": "npm:^1.20.1"
+    "@backstage/backend-defaults": "npm:^0.16.0"
+    "@backstage/backend-plugin-api": "npm:^1.8.0"
+    "@backstage/catalog-client": "npm:^1.14.0"
+    "@backstage/catalog-model": "npm:^1.7.7"
+    "@backstage/config": "npm:^1.3.6"
     "@backstage/errors": "npm:^1.2.7"
-    "@backstage/plugin-auth-node": "npm:^0.6.9"
-    "@backstage/plugin-permission-backend": "npm:^0.7.6"
-    "@backstage/plugin-permission-common": "npm:^0.9.3"
-    "@backstage/plugin-permission-node": "npm:^0.10.6"
-    "@dagrejs/graphlib": "npm:^2.1.13"
+    "@backstage/plugin-permission-common": "npm:^0.9.7"
+    "@backstage/plugin-permission-node": "npm:^0.10.11"
+    "@dagrejs/graphlib": "npm:^4.0.0"
     casbin: "npm:^5.27.1"
     chokidar: "npm:^3.6.0"
-    csv-parse: "npm:^5.5.5"
+    csv-parse: "npm:^6.0.0"
     express: "npm:^4.18.2"
     express-promise-router: "npm:^4.1.0"
     js-yaml: "npm:^4.1.0"
     knex: "npm:^3.0.0"
     lodash: "npm:^4.17.21"
     typeorm-adapter: "npm:^1.6.1"
-    zod: "npm:^3.22.4"
-    zod-to-json-schema: "npm:^3.24.5"
-  checksum: 10c0/249c25b613b74bccf0355d38af460f599364a7fbb8a2b4038ab42b9c6d8dea0c7c3e356326136e11531bd7dc9ebda040f1b969fef2c03ffb573a12eb01405f0a
+    zod: "npm:^4.3.6"
+  checksum: 10c0/c3e0ca725e7d1fefd6575b1c1897a33c6833a3a064dcc62474533b04bd18c90ac967b7e4490fbac1a214a532bd6178392937f036d6791090a1f35d0624f7c925
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-common@npm:^1.22.0, @backstage-community/plugin-rbac-common@npm:^1.26.0":
-  version: 1.26.0
-  resolution: "@backstage-community/plugin-rbac-common@npm:1.26.0"
+"@backstage-community/plugin-rbac-common@npm:^1.26.1":
+  version: 1.26.1
+  resolution: "@backstage-community/plugin-rbac-common@npm:1.26.1"
   peerDependencies:
     "@backstage/errors": ^1.2.7
     "@backstage/plugin-permission-common": ^0.9.7
-  checksum: 10c0/b98de22ec09d811584e754409f540273113a862f275c861ee74de0bee738e8f16ece44980a6212ce6d1a19b6fb95acb250f9db7c80758d376939a25e0bed297d
+  checksum: 10c0/2bcc754768100bd7c56d2e8545f72081c6c9e3d41ffd480bddd74c0264e365dfd5899af60af4b6644e4b1a3d3c5662765ed02587cda4cf2a531e182bfe6ce9e5
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-node@npm:^1.16.0":
-  version: 1.20.0
-  resolution: "@backstage-community/plugin-rbac-node@npm:1.20.0"
+"@backstage-community/plugin-rbac-node@npm:^1.20.1":
+  version: 1.20.1
+  resolution: "@backstage-community/plugin-rbac-node@npm:1.20.1"
   dependencies:
-    "@backstage-community/plugin-rbac-common": "npm:^1.26.0"
+    "@backstage-community/plugin-rbac-common": "npm:^1.26.1"
     "@backstage/backend-plugin-api": "npm:^1.8.0"
-  checksum: 10c0/a64ba67256acfa668a7d210003f5164733df1a5c0d23093537f1e4a5c8619d40a5831a22e899185a88fd7b7a1b9ea6b9ce73258df55175f137afa48d8eacd282
+  checksum: 10c0/936f95a638841c1da0a3fd73ac50daf03ba777d829312c05fadedb431f92b5412e71fbd67412411241bb964a659593260ecc94dec8adf788d6fa8aba3c969bb7
   languageName: node
   linkType: hard
 
@@ -5969,10 +5967,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dagrejs/graphlib@npm:2.2.4, @dagrejs/graphlib@npm:^2.1.13":
+"@dagrejs/graphlib@npm:2.2.4":
   version: 2.2.4
   resolution: "@dagrejs/graphlib@npm:2.2.4"
   checksum: 10c0/14597ea9294c46b2571aee78bcaad3a24e3e5e0ebcdf198b6eae5b3805f99af727ac54a477dd9152e8b0a576efea0528fb7d4919c74801e9f669c90e5e6f5bd9
+  languageName: node
+  linkType: hard
+
+"@dagrejs/graphlib@npm:^4.0.0":
+  version: 4.0.1
+  resolution: "@dagrejs/graphlib@npm:4.0.1"
+  checksum: 10c0/03ab574f2eb7d87173af0b9d8bbae87c10e225778b8144a800c663afe307ff71d851c13d96d32ec91db85e325d64914cdabbab1ce76fb043e0a5538e60bb51bd
   languageName: node
   linkType: hard
 
@@ -6887,7 +6892,7 @@ __metadata:
     "@backstage/e2e-test-utils": "npm:^0.1.1"
     "@backstage/repo-tools": "npm:^0.16.0"
     "@changesets/cli": "npm:^2.27.1"
-    "@playwright/test": "npm:1.58.2"
+    "@playwright/test": "npm:1.60.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
     prettier: "npm:^3.7.4"
@@ -9725,14 +9730,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.58.2":
-  version: 1.58.2
-  resolution: "@playwright/test@npm:1.58.2"
+"@playwright/test@npm:1.60.0":
+  version: 1.60.0
+  resolution: "@playwright/test@npm:1.60.0"
   dependencies:
-    playwright: "npm:1.58.2"
+    playwright: "npm:1.60.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/2164c03ad97c3653ff02e8818a71f3b2bbc344ac07924c9d8e31cd57505d6d37596015a41f51396b3ed8de6840f59143eaa9c21bf65515963da20740119811da
+  checksum: 10c0/86b06e6437933e741c7cd43f362024e857e7bc28a55fcbb0553ef55e01a2a403c64f4786868de8af86a6e303fe99e98a18a42ba19489f43ae122e457f9e2d189
   languageName: node
   linkType: hard
 
@@ -16686,7 +16691,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:packages/backend"
   dependencies:
-    "@backstage-community/plugin-rbac-backend": "npm:7.6.2"
+    "@backstage-community/plugin-rbac-backend": "npm:7.12.4"
     "@backstage/backend-defaults": "npm:0.13.2"
     "@backstage/cli": "npm:^0.34.5"
     "@backstage/config": "npm:^1.3.6"
@@ -18921,10 +18926,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csv-parse@npm:^5.5.5, csv-parse@npm:^5.5.6":
+"csv-parse@npm:^5.5.6":
   version: 5.6.0
   resolution: "csv-parse@npm:5.6.0"
   checksum: 10c0/52f5e6c45359902e0c8e57fc2eeed41366dc6b6d283b495b538dd50c8e8510413d6f924096ea056319cbbb8ed26e111c3a3485d7985c021bcf5abaa9e92425c7
+  languageName: node
+  linkType: hard
+
+"csv-parse@npm:^6.0.0":
+  version: 6.2.1
+  resolution: "csv-parse@npm:6.2.1"
+  checksum: 10c0/8b6f14b244ca62476d4217aac721131ba0ada3e4ed7614e43ebc99203807564dcb054144d1de4ef22ee8b0c63b431640f75d46a0e1e0f72853a954b279ba1c61
   languageName: node
   linkType: hard
 
@@ -29260,27 +29272,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.58.2":
-  version: 1.58.2
-  resolution: "playwright-core@npm:1.58.2"
+"playwright-core@npm:1.60.0":
+  version: 1.60.0
+  resolution: "playwright-core@npm:1.60.0"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/5aa15b2b764e6ffe738293a09081a6f7023847a0dbf4cd05fe10eed2e25450d321baf7482f938f2d2eb330291e197fa23e57b29a5b552b89927ceb791266225b
+  checksum: 10c0/99ccd43923b6e9355e0723b7fe221e6326efd4687f8dafff951313662aea11db51f542a9c2122c704c445fb9baae1c9ec9fa6f895126bbddd9fe92313f6942c9
   languageName: node
   linkType: hard
 
-"playwright@npm:1.58.2":
-  version: 1.58.2
-  resolution: "playwright@npm:1.58.2"
+"playwright@npm:1.60.0":
+  version: 1.60.0
+  resolution: "playwright@npm:1.60.0"
   dependencies:
     fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.58.2"
+    playwright-core: "npm:1.60.0"
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 10c0/d060d9b7cc124bd8b5dffebaab5e84f6b34654a553758fe7b19cc598dfbee93f6ecfbdc1832b40a6380ae04eade86ef3285ba03aa0b136799e83402246dc0727
+  checksum: 10c0/714ad76d85b4865d7e43c0012f9039800c1485373388973ed39d79339cee5ad467052d1e2f1eaeca107a1cb6e65342186a8578a4c3504853d84c3a691250d5db
   languageName: node
   linkType: hard
 
@@ -36039,7 +36051,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod-to-json-schema@npm:^3.20.4, zod-to-json-schema@npm:^3.21.4, zod-to-json-schema@npm:^3.24.5, zod-to-json-schema@npm:^3.25.1":
+"zod-to-json-schema@npm:^3.20.4, zod-to-json-schema@npm:^3.21.4, zod-to-json-schema@npm:^3.25.1":
   version: 3.25.2
   resolution: "zod-to-json-schema@npm:3.25.2"
   peerDependencies:
@@ -36073,10 +36085,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.25 || ^4.0, zod@npm:^3.25.76 || ^4.0.0, zod@npm:^4.1.11":
-  version: 4.3.6
-  resolution: "zod@npm:4.3.6"
-  checksum: 10c0/860d25a81ab41d33aa25f8d0d07b091a04acb426e605f396227a796e9e800c44723ed96d0f53a512b57be3d1520f45bf69c0cb3b378a232a00787a2609625307
+"zod@npm:^3.25 || ^4.0, zod@npm:^3.25.76 || ^4.0.0, zod@npm:^4.1.11, zod@npm:^4.3.6":
+  version: 4.4.3
+  resolution: "zod@npm:4.4.3"
+  checksum: 10c0/7ea31b558e88f9faf44f31dd185e2e1cbf51fed3081787fb96cc2534749b50c0acfc6da7f0922a7353ed092dd358c7d50c28ea96c94d04af64191bd33152eca3
   languageName: node
   linkType: hard
 
