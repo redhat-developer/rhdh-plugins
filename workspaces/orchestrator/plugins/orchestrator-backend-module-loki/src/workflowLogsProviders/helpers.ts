@@ -129,7 +129,7 @@ export interface ValidatedLogStreamSelector {
 function assertValidLokiLabelName(label: string, context: string): void {
   if (!LOKI_LABEL_NAME_PATTERN.test(label)) {
     throw new Error(
-      `${context}: label must match Prometheus label name rules [a-zA-Z_]\\w* (got "${label}")`,
+      `${context}: label must match Prometheus label name rules ${String.raw`[a-zA-Z_]\w*`} (got "${label}")`,
     );
   }
 }
