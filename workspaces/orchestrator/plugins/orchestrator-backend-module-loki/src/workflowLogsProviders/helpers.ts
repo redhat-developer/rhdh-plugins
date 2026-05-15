@@ -15,6 +15,7 @@
  */
 
 import type { Config } from '@backstage/config';
+import { InputError } from '@backstage/errors';
 
 /**
  * Returns whether `hostname` matches any entry in `allowedHosts` (case-insensitive).
@@ -49,7 +50,7 @@ export function parseAndValidateLokiBaseUrl(options: {
 }): string {
   const trimmed = options.rawBaseUrl.trim();
   if (!trimmed) {
-    throw new Error(
+    throw new InputError(
       'orchestrator.workflowLogProvider.loki.baseUrl must not be empty',
     );
   }
@@ -58,31 +59,31 @@ export function parseAndValidateLokiBaseUrl(options: {
   try {
     parsed = new URL(trimmed);
   } catch {
-    throw new Error(
+    throw new InputError(
       `orchestrator.workflowLogProvider.loki.baseUrl must be a valid absolute URL, got "${trimmed}"`,
     );
   }
 
   if (parsed.username || parsed.password) {
-    throw new Error(
+    throw new InputError(
       'orchestrator.workflowLogProvider.loki.baseUrl must not include embedded credentials',
     );
   }
 
   if (parsed.search || parsed.hash) {
-    throw new Error(
+    throw new InputError(
       'orchestrator.workflowLogProvider.loki.baseUrl must not include a query or fragment',
     );
   }
 
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new Error(
+    throw new InputError(
       `orchestrator.workflowLogProvider.loki.baseUrl must use http: or https:, got "${parsed.protocol}"`,
     );
   }
 
   if (!parsed.hostname) {
-    throw new Error(
+    throw new InputError(
       'orchestrator.workflowLogProvider.loki.baseUrl must include a hostname',
     );
   }
@@ -93,7 +94,7 @@ export function parseAndValidateLokiBaseUrl(options: {
     parsed.protocol === 'http:' &&
     options.allowInsecureHttp !== true
   ) {
-    throw new Error(
+    throw new InputError(
       'orchestrator.workflowLogProvider.loki.baseUrl must use https in production (set allowInsecureHttp to true only if you explicitly require http)',
     );
   }
@@ -103,7 +104,7 @@ export function parseAndValidateLokiBaseUrl(options: {
     hosts.length > 0 &&
     !hostnameMatchesAllowedHosts(parsed.hostname, hosts)
   ) {
-    throw new Error(
+    throw new InputError(
       `orchestrator.workflowLogProvider.loki.baseUrl hostname "${parsed.hostname}" is not allowed by allowedHosts`,
     );
   }
@@ -192,16 +193,18 @@ export function parseAndValidateLogPipelineFilters(
     const element = raw.trim();
     const ctx = `${configKeyPath}[${i}]`;
     if (!element) {
-      throw new Error(`${ctx}: entry must not be empty or whitespace-only`);
+      throw new InputError(
+        `${ctx}: entry must not be empty or whitespace-only`,
+      );
     }
     if (/[\r\n\u2028\u2029]/.test(element)) {
-      throw new Error(`${ctx}: entry must not contain line breaks`);
+      throw new InputError(`${ctx}: entry must not contain line breaks`);
     }
     if (element.includes('{')) {
-      throw new Error(`${ctx}: entry must not contain "{"`);
+      throw new InputError(`${ctx}: entry must not contain "{"`);
     }
     if (element.includes('}')) {
-      throw new Error(`${ctx}: entry must not contain "}"`);
+      throw new InputError(`${ctx}: entry must not contain "}"`);
     }
     return element;
   });
@@ -235,7 +238,7 @@ function workflowInstanceIdHasDisallowedChars(id: string): boolean {
  */
 export function assertSafeWorkflowInstanceIdForLineFilter(id: string): void {
   if (workflowInstanceIdHasDisallowedChars(id)) {
-    throw new Error(
+    throw new InputError(
       'Workflow instance id contains characters that are not allowed in Loki line filters',
     );
   }
