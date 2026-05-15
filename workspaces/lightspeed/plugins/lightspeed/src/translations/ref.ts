@@ -59,7 +59,6 @@ export const lightspeedMessages = {
   'notebooks.prompts.coreConcepts.title': 'What are the core concepts?',
   'notebooks.prompts.vulnerabilities.title': 'Show my critical vulnerabilities',
   'notebooks.prompts.accessIssue.title': 'Help me with an access issue',
-  'notebooks.prompts.somethingElse.title': 'Something else',
 
   // Notebook view
   'notebook.view.title': 'Untitled notebook',

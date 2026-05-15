@@ -61,7 +61,6 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebooks.prompts.coreConcepts.title': 'コアコンセプトは何ですか？',
     'notebooks.prompts.vulnerabilities.title': '重大な脆弱性を表示してください',
     'notebooks.prompts.accessIssue.title': 'アクセスの問題を解決してください',
-    'notebooks.prompts.somethingElse.title': 'その他',
 
     // Notebook view
     'notebook.view.title': '無題のノートブック',

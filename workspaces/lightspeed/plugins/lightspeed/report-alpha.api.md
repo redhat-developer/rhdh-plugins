@@ -200,7 +200,6 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebooks.prompts.coreConcepts.title': string;
     readonly 'notebooks.prompts.vulnerabilities.title': string;
     readonly 'notebooks.prompts.accessIssue.title': string;
-    readonly 'notebooks.prompts.somethingElse.title': string;
     readonly 'page.title': string;
     readonly 'page.subtitle': string;
     readonly 'tabs.ariaLabel': string;

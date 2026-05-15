@@ -62,7 +62,6 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebooks.prompts.vulnerabilities.title':
       'Mostrar mis vulnerabilidades críticas',
     'notebooks.prompts.accessIssue.title': 'Ayúdame con un problema de acceso',
-    'notebooks.prompts.somethingElse.title': 'Algo más',
 
     // Notebook view
     'notebook.view.title': 'Cuaderno sin título',

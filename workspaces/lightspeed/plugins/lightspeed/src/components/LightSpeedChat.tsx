@@ -1971,10 +1971,10 @@ export const LightspeedChat = ({
                   {t('tabs.notebooks')}
                   <Label
                     color="purple"
-                    isCompact
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
+                      alignSelf: 'center',
+                      margin: 0,
+                      lineHeight: 1,
                     }}
                   >
                     {t('tabs.notebooks.devPreview')}
