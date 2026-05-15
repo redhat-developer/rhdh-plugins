@@ -147,7 +147,7 @@ describe('homepagePlugin', () => {
     });
   });
 
-  it('returns an empty list when no default widgets are configured', async () => {
+  it('returns no items when no default widgets are configured', async () => {
     const { server } = await startTestBackend({
       features: [homepagePlugin],
     });
@@ -155,7 +155,7 @@ describe('homepagePlugin', () => {
     const res = await request(server).get('/api/homepage/default-widgets');
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ items: [] });
+    expect(res.body).toEqual({});
   });
 
   it('rejects unauthenticated requests', async () => {
