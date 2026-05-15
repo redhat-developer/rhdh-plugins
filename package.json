@@ -13,7 +13,7 @@
     "prettier:fix": "prettier --write ."
   },
   "type": "module",
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "yarn@4.14.1",
   "devDependencies": {
     "@backstage/cli": "^0.27.0",
     "@backstage/cli-node": "^0.2.2",
