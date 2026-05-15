@@ -62,7 +62,10 @@ function expectedAverageCenterTooltipBreakdownLine(
   const n = Number.parseInt(count, 10);
   const templateKey = averageCenterTooltipBreakdownTemplateKey(locale, n);
   const template = metricCopy(translations, templateKey);
-  const status = statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
+  const status =
+    statusKey in translations.thresholds
+      ? translations.thresholds[statusKey]
+      : statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
   return interpolate(template, { status, count, score });
 }
 
@@ -103,13 +106,14 @@ export async function verifyAverageDonutCenterTooltip(
 
 /** Matches `openPrsWeightedAggregatedResponse.result.values` in scorecardResponseUtils.ts */
 const OPEN_PRS_WEIGHTED_MOCK_BREAKDOWN: Array<{
-  statusKey: 'success' | 'warning' | 'error';
+  statusKey: 'success' | 'warning' | 'error' | 'critical';
   count: string;
   score: string;
 }> = [
   { statusKey: 'success', count: '3', score: '100' },
   { statusKey: 'warning', count: '5', score: '40' },
-  { statusKey: 'error', count: '2', score: '0' },
+  { statusKey: 'error', count: '1', score: '15' },
+  { statusKey: 'critical', count: '1', score: '0' },
 ];
 
 /**

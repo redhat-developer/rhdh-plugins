@@ -1111,12 +1111,12 @@ test.describe('Scorecard Plugin Tests', () => {
         const card = homePage.getCard(
           AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
         );
-        await expectAverageCardCenterPercent(card, '50%');
+        await expectAverageCardCenterPercent(card, '51.5%');
         await verifyAverageDonutCenterTooltip(
           page,
           card,
           translations,
-          500,
+          515,
           1000,
         );
         await verifyAverageCenterTooltipBreakdownRows(
@@ -1187,7 +1187,13 @@ test.describe('Scorecard Plugin Tests', () => {
         );
         await homePage.saveChanges();
 
-        await homePage.clickDrillDownLink();
+        const weightedEntityTotal = String(
+          openPrsWeightedAggregatedResponse.result.total,
+        );
+        await homePage.clickDrillDownLink({
+          healthy: weightedEntityTotal,
+          total: weightedEntityTotal,
+        });
         await scorecardDrillDownPage.expectOnPage('github.open_prs', {
           aggregationId: AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
         });
@@ -1202,7 +1208,7 @@ test.describe('Scorecard Plugin Tests', () => {
             aggregationId: AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
           },
         );
-        await expectAverageCardCenterPercent(drillCard, '50%');
+        await expectAverageCardCenterPercent(drillCard, '51.5%');
         await scorecardDrillDownPage.expectTableHeadersVisible();
         await scorecardDrillDownPage.expectEntityNamesVisible([
           'all-scorecards-service',
