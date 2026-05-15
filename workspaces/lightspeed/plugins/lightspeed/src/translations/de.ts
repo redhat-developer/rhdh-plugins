@@ -276,8 +276,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'feedback.completion.title': 'Feedback übermittelt',
     'feedback.completion.body':
       'Wir haben Ihre Antwort erhalten. Vielen Dank für Ihr Feedback!',
-    'conversation.category.pinnedChats': 'Angeheftet',
-    'conversation.category.recent': 'Neueste',
+    'conversation.category.pinnedChats': 'Angeheftete Chats',
+    'conversation.category.recent': 'Chats',
     'settings.pinned.enable': 'Angeheftete Chats aktivieren',
     'settings.pinned.disable': 'Angeheftete Chats deaktivieren',
     'settings.pinned.enabled.description':

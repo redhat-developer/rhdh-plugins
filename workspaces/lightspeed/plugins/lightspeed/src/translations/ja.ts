@@ -271,8 +271,8 @@ const lightspeedTranslationJa = createTranslationMessages({
     'feedback.completion.title': 'フィードバックを送信しました',
     'feedback.completion.body':
       'ご回答を受け取りました。ご意見をお聞かせいただきありがとうございました!',
-    'conversation.category.pinnedChats': '固定',
-    'conversation.category.recent': '最近',
+    'conversation.category.pinnedChats': '固定チャット',
+    'conversation.category.recent': 'チャット',
     'settings.pinned.enable': 'チャットの固定の有効化',
     'settings.pinned.disable': 'チャットの固定の無効化',
     'settings.pinned.enabled.description': 'チャットの固定は現在有効です',

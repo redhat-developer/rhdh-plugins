@@ -262,10 +262,6 @@ export const lightspeedMessages = {
   'attach.menu.title': 'Attach',
   'attach.menu.description': 'Attach a JSON, YAML, or TXT file',
 
-  // History panel sections
-  'history.section.pinned': 'Pinned',
-  'history.section.recent': 'Recent',
-
   // Modal titles
   'modal.title.preview': 'Preview attachment',
   'modal.title.edit': 'Edit attachment',
@@ -311,8 +307,8 @@ export const lightspeedMessages = {
     "We've received your response. Thank you for sharing your feedback!",
 
   // Conversation categorization
-  'conversation.category.pinnedChats': 'Pinned',
-  'conversation.category.recent': 'Recent',
+  'conversation.category.pinnedChats': 'Pinned chats',
+  'conversation.category.recent': 'Chats',
 
   // lightspeed settings
   'settings.pinned.enable': 'Enable pinned chats',

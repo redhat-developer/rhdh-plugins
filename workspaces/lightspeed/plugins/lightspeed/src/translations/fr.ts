@@ -277,8 +277,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'feedback.completion.title': 'Commentaire soumis',
     'feedback.completion.body':
       'Nous avons reçu votre réponse. Merci de partager vos commentaires avec nous !',
-    'conversation.category.pinnedChats': 'Épinglé',
-    'conversation.category.recent': 'Récent',
+    'conversation.category.pinnedChats': 'Chats épinglés',
+    'conversation.category.recent': 'Chats',
     'settings.pinned.enable': 'Activer les conversations épinglées',
     'settings.pinned.disable': 'Désactiver les conversations épinglées',
     'settings.pinned.enabled.description':

@@ -1215,7 +1215,8 @@ export const LightspeedChat = ({
 
   const filterConversations = useCallback(
     (targetValue: string) => {
-      const pinnedChatsKey = t('conversation.category.pinnedChats') || 'Pinned';
+      const pinnedChatsKey =
+        t('conversation.category.pinnedChats') || 'Pinned chats';
       let isNoPinnedChatsSearchResults = false;
       let isNoRecentChatsSearchResults = false;
       const filteredConversations = Object.entries(categorizedMessages).reduce(

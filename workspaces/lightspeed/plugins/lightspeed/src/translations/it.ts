@@ -237,8 +237,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tooltip.close': 'Chiudi',
     'attach.menu.title': 'Allega',
     'attach.menu.description': 'Allega un file JSON, YAML o TXT',
-    'history.section.pinned': 'Fissati',
-    'history.section.recent': 'Recenti',
+
     'tooltip.fab.open': 'Apri Lightspeed',
     'tooltip.fab.close': 'Chiudi Lightspeed',
     'modal.title.preview': 'Anteprima allegato',
@@ -277,8 +276,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'feedback.completion.title': 'Feedback inviato',
     'feedback.completion.body':
       'Abbiamo ricevuto la tua risposta. Grazie per aver condiviso i tuoi commenti!',
-    'conversation.category.pinnedChats': 'Bloccata',
-    'conversation.category.recent': 'Recente',
+    'conversation.category.pinnedChats': 'Chat fissate',
+    'conversation.category.recent': 'Chat',
     'settings.pinned.enable': 'Abilita le chat bloccate',
     'settings.pinned.disable': 'Disattiva le chat bloccate',
     'settings.pinned.enabled.description':
