@@ -78,7 +78,7 @@
     "@backstage/core-app-api": "^1.19.6",
     "@backstage/dev-utils": "^1.1.21",
     "@backstage/test-utils": "^1.7.16",
-    "@playwright/test": "1.59.1",
+    "@playwright/test": "1.60.0",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.0",
     "@spotify/prettier-config": "^15.0.0",
     "@testing-library/dom": "^10.0.0",
