@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { JsonObject } from '@backstage/types';
+
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import get from 'lodash/get';
+
+import { HiddenCondition } from '../types/HiddenCondition';
+import { evaluateHiddenCondition } from './evaluateHiddenCondition';
 
 /**
  * Get step entries from the schema sorted by the ui:order property.
@@ -23,10 +28,12 @@ import get from 'lodash/get';
  * Steps where ALL inputs are marked with ui:hidden: true are also automatically filtered out.
  *
  * @param schema - The schema to get the sorted step entries from.
+ * @param formData - Optional form data for evaluating conditional ui:hidden expressions.
  * @returns An array of [key, subSchema] pairs, a subSchema conforms a single wizard step.
  */
 export const getSortedStepEntries = (
   schema: JSONSchema7,
+  formData?: JsonObject,
 ): [string, JSONSchema7Definition][] | undefined => {
   if (!schema.properties) {
     return undefined;
@@ -57,8 +64,18 @@ export const getSortedStepEntries = (
     }
 
     // Check if step itself is explicitly hidden
-    if (get(subSchema, 'ui:hidden') === true) {
+    const uiHidden = get(subSchema, 'ui:hidden');
+    if (uiHidden === true) {
       return false;
+    }
+    if (
+      typeof uiHidden === 'object' &&
+      uiHidden !== null &&
+      formData
+    ) {
+      if (evaluateHiddenCondition(uiHidden as HiddenCondition, formData)) {
+        return false;
+      }
     }
 
     // Check if ALL inputs within this step are hidden
@@ -71,7 +88,21 @@ export const getSortedStepEntries = (
           if (typeof prop === 'boolean') {
             return false;
           }
-          return get(prop, 'ui:hidden') === true;
+          const propHidden = get(prop, 'ui:hidden');
+          if (propHidden === true) {
+            return true;
+          }
+          if (
+            typeof propHidden === 'object' &&
+            propHidden !== null &&
+            formData
+          ) {
+            return evaluateHiddenCondition(
+              propHidden as HiddenCondition,
+              formData,
+            );
+          }
+          return false;
         });
 
         if (allHidden) {
@@ -89,8 +120,9 @@ export const getSortedStepEntries = (
 export const getActiveStepKey = (
   schema: JSONSchema7,
   activeStep: number,
+  formData?: JsonObject,
 ): string => {
-  const sortedStepEntries = getSortedStepEntries(schema) ?? [];
+  const sortedStepEntries = getSortedStepEntries(schema, formData) ?? [];
   const activeKey = sortedStepEntries[activeStep]?.[0];
   if (!activeKey) {
     throw new Error(

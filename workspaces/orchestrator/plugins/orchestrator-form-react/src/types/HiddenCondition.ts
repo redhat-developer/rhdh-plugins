@@ -42,6 +42,20 @@ export interface HiddenConditionObject {
    * Hide if the field is empty (undefined, null, empty string, or empty array)
    */
   isEmpty?: boolean;
+
+  /**
+   * Hide if the field value is a non-empty list (when true) or empty list (when false).
+   * Useful in combination with notContains to check "list is non-empty AND does not contain X".
+   */
+  isNotEmptyList?: boolean;
+
+  /**
+   * Hide if the field value (expected to be an array) does NOT contain this value.
+   * When the field value is an array and does not include the specified value, the condition is met.
+   * If the field value is not an array, the condition is not met.
+   * Typically combined with isNotEmptyList for "non-empty list that doesn't contain X" patterns.
+   */
+  notContains?: JsonValue;
 }
 
 /**

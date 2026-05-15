@@ -83,7 +83,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       return undefined;
     }
 
-    return getActiveStepKey(schema, activeStep);
+    return getActiveStepKey(schema, activeStep, formData);
   };
 
   const onSubmit = async (_formData: JsonObject) => {
