@@ -241,6 +241,11 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.view.sidebar.resize': string;
     readonly 'notebook.view.documents.uploading': string;
     readonly 'notebook.view.documents.maxReached': string;
+<<<<<<< HEAD
+=======
+    readonly 'notebook.view.documents.uploadsInProgress': string;
+    readonly 'notebook.upload.success': string;
+>>>>>>> 419a31963 (Update API reports for new translation key)
     readonly 'notebook.upload.failed': string;
     readonly 'notebook.upload.modal.title': string;
     readonly 'notebook.upload.modal.dragDropTitle': string;
