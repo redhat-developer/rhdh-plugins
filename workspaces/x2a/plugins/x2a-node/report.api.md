@@ -17,6 +17,8 @@ import { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common
 import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { RuleEntity } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import type { RuleSnapshot } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ServiceRef } from '@backstage/backend-plugin-api';
 import type { SourceTechnology } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { Telemetry } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -112,6 +114,8 @@ export function isUserCredentials(credentials: BackstageCredentials): credential
 export interface JobCreateParams {
     // (undocumented)
     aapCredentials?: AAPCredentials;
+    // (undocumented)
+    acceptedRules?: RuleSnapshot[];
     // (undocumented)
     callbackToken: string;
     // (undocumented)
@@ -252,6 +256,11 @@ export interface X2AConfig {
 // @public
 export interface X2ADatabaseServiceApi {
     // (undocumented)
+    attachRulesToProject(args: {
+        projectId: string;
+        ruleIds: string[];
+    }): Promise<void>;
+    // (undocumented)
     createJob(job: CreateJobInput): Promise<Job>;
     // (undocumented)
     createModule(module: {
@@ -273,6 +282,12 @@ export interface X2ADatabaseServiceApi {
         credentials: BackstageCredentials<BackstageUserPrincipal>;
     }): Promise<Project>;
     // (undocumented)
+    createRule(input: {
+        title: string;
+        description: string;
+        required?: boolean;
+    }): Promise<RuleEntity>;
+    // (undocumented)
     deleteJob(args: {
         id: string;
     }): Promise<number>;
@@ -288,6 +303,14 @@ export interface X2ADatabaseServiceApi {
         canWriteAll?: boolean;
         groupsOfUser: string[];
     }): Promise<number>;
+    // (undocumented)
+    deleteRule(args: {
+        id: string;
+    }): Promise<number>;
+    // (undocumented)
+    getAcceptedRulesForProject(args: {
+        projectId: string;
+    }): Promise<RuleSnapshot[]>;
     // (undocumented)
     getJob(args: {
         id: string;
@@ -316,6 +339,10 @@ export interface X2ADatabaseServiceApi {
         canViewAll?: boolean;
         groupsOfUser: string[];
     }): Promise<Project | undefined>;
+    // (undocumented)
+    getRule(args: {
+        id: string;
+    }): Promise<RuleEntity | undefined>;
     // (undocumented)
     listJobs(args: {
         projectId: string;
@@ -346,6 +373,8 @@ export interface X2ADatabaseServiceApi {
         totalCount: number;
     }>;
     // (undocumented)
+    listRules(): Promise<RuleEntity[]>;
+    // (undocumented)
     updateJob(update: {
         id: string;
         log?: string | null;
@@ -369,6 +398,13 @@ export interface X2ADatabaseServiceApi {
         canWriteAll?: boolean;
         groupsOfUser: string[];
     }): Promise<Project | undefined>;
+    // (undocumented)
+    updateRule(args: {
+        id: string;
+        title: string;
+        description: string;
+        required: boolean;
+    }): Promise<RuleEntity | undefined>;
 }
 
 // @public

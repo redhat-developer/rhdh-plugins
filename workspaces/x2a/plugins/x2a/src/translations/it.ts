@@ -271,6 +271,43 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Errore nel riavvio della fase di inizializzazione del progetto "{{name}}"',
     'retriggerInit.errorStart':
       "Errore nell'avvio dell'inizializzazione del progetto",
+    'scaffolder.rulesAcceptance.loadingRules': 'Caricamento regole...',
+    'scaffolder.rulesAcceptance.noRulesConfigured':
+      'Nessuna regola configurata.',
+    'scaffolder.rulesAcceptance.required': 'obbligatorio',
+    'scaffolder.rulesAcceptance.fetchError':
+      'Errore nel caricamento delle regole',
+    'rulesPage.title': 'Regole di conversione',
+    'rulesPage.subtitle':
+      'Gestisci le regole che i progetti devono accettare al momento della creazione.',
+    'rulesPage.addRule': 'Aggiungi regola',
+    'rulesPage.manageRules': 'Gestisci regole',
+    'rulesPage.notAllowed': 'Non hai il permesso di gestire le regole.',
+    'rulesPage.table.id': 'ID',
+    'rulesPage.table.title': 'Titolo',
+    'rulesPage.table.description': 'Descrizione',
+    'rulesPage.table.required': 'Obbligatorio',
+    'rulesPage.table.optional': 'Opzionale',
+    'rulesPage.table.createdAt': 'Creato',
+    'rulesPage.table.editRule': 'Modifica regola',
+    'rulesPage.table.deleteRule': 'Elimina regola',
+    'rulesPage.table.noRules': 'Nessuna regola definita ancora.',
+    'rulesPage.deleteConfirm.title': 'Eliminare la regola "{{title}}"?',
+    'rulesPage.deleteConfirm.message':
+      'Questa regola verrà eliminata permanentemente. I progetti esistenti che hanno già accettato questa regola non saranno interessati.',
+    'rulesPage.deleteConfirm.confirm': 'Elimina',
+    'rulesPage.deleteConfirm.cancel': 'Annulla',
+    'rulesPage.deleteConfirm.deleteError':
+      "Errore nell'eliminazione della regola",
+    'rulesPage.dialog.createTitle': 'Crea regola',
+    'rulesPage.dialog.editTitle': 'Modifica regola',
+    'rulesPage.dialog.titleField': 'Titolo',
+    'rulesPage.dialog.descriptionField': 'Descrizione',
+    'rulesPage.dialog.requiredField': 'Obbligatorio per tutti i progetti',
+    'rulesPage.dialog.save': 'Salva',
+    'rulesPage.dialog.cancel': 'Annulla',
+    'rulesPage.dialog.createError': 'Errore nella creazione della regola',
+    'rulesPage.dialog.updateError': "Errore nell'aggiornamento della regola",
   },
 });
 

@@ -264,6 +264,42 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Fehler beim erneuten Auslösen der Init-Phase für Projekt „{{name}}"',
     'retriggerInit.errorStart':
       'Fehler beim Starten der Projektinitialisierung',
+    'scaffolder.rulesAcceptance.loadingRules': 'Regeln werden geladen...',
+    'scaffolder.rulesAcceptance.noRulesConfigured':
+      'Keine Regeln konfiguriert.',
+    'scaffolder.rulesAcceptance.required': 'erforderlich',
+    'scaffolder.rulesAcceptance.fetchError': 'Fehler beim Laden der Regeln',
+    'rulesPage.title': 'Konvertierungsregeln',
+    'rulesPage.subtitle':
+      'Verwalten Sie Regeln, die Projekte bei der Erstellung akzeptieren müssen.',
+    'rulesPage.addRule': 'Regel hinzufügen',
+    'rulesPage.manageRules': 'Regeln verwalten',
+    'rulesPage.notAllowed':
+      'Sie haben keine Berechtigung, Regeln zu verwalten.',
+    'rulesPage.table.id': 'ID',
+    'rulesPage.table.title': 'Titel',
+    'rulesPage.table.description': 'Beschreibung',
+    'rulesPage.table.required': 'Erforderlich',
+    'rulesPage.table.optional': 'Optional',
+    'rulesPage.table.createdAt': 'Erstellt',
+    'rulesPage.table.editRule': 'Regel bearbeiten',
+    'rulesPage.table.deleteRule': 'Regel löschen',
+    'rulesPage.table.noRules': 'Noch keine Regeln definiert.',
+    'rulesPage.deleteConfirm.title': 'Regel „{{title}}" löschen?',
+    'rulesPage.deleteConfirm.message':
+      'Diese Regel wird dauerhaft gelöscht. Bestehende Projekte, die diese Regel bereits akzeptiert haben, sind nicht betroffen.',
+    'rulesPage.deleteConfirm.confirm': 'Löschen',
+    'rulesPage.deleteConfirm.cancel': 'Abbrechen',
+    'rulesPage.deleteConfirm.deleteError': 'Fehler beim Löschen der Regel',
+    'rulesPage.dialog.createTitle': 'Regel erstellen',
+    'rulesPage.dialog.editTitle': 'Regel bearbeiten',
+    'rulesPage.dialog.titleField': 'Titel',
+    'rulesPage.dialog.descriptionField': 'Beschreibung',
+    'rulesPage.dialog.requiredField': 'Für alle Projekte erforderlich',
+    'rulesPage.dialog.save': 'Speichern',
+    'rulesPage.dialog.cancel': 'Abbrechen',
+    'rulesPage.dialog.createError': 'Fehler beim Erstellen der Regel',
+    'rulesPage.dialog.updateError': 'Fehler beim Aktualisieren der Regel',
   },
 });
 

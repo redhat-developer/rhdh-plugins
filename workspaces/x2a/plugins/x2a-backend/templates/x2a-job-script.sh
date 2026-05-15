@@ -257,6 +257,7 @@ git_clone_repos
 # Define paths
 TARGET_BASE="/workspace/target"
 SOURCE_BASE="/workspace/source"
+
 # PROJECT_DIR is pre-computed by the backend (sanitized name + short UUID)
 PROJECT_PATH="${TARGET_BASE}/${PROJECT_DIR}"
 
@@ -271,6 +272,14 @@ case "${PHASE}" in
     echo "Will read from:  ${SOURCE_BASE}"
     echo "Will write to:   ${PROJECT_PATH}/migration-plan.md"
     echo ""
+
+    # Copy accepted rules into the source directory so the x2a tool can find them
+    # Uses -rL to dereference ConfigMap symlinks into regular files
+    if [[ -n "${ACCEPTED_RULES_DIR:-}" ]] && [[ -d "${ACCEPTED_RULES_DIR}" ]]; then
+      echo "=== Copying accepted rules to source directory ==="
+      cp -rL "${ACCEPTED_RULES_DIR}" "${SOURCE_BASE}/x2a-rules"
+      ls -la "${SOURCE_BASE}/x2a-rules/"
+    fi
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
@@ -295,9 +304,11 @@ case "${PHASE}" in
     # Note: x2a tool writes files to the source directory (--source-dir)
     echo "Copying output to ${PROJECT_PATH}/"
     cp -v "${SOURCE_BASE}/migration-plan.md" "${PROJECT_PATH}/"
-    # Copy any other generated files (like metadata)
+    # Copy any other generated files (like metadata, agent files)
     cp -v "${SOURCE_BASE}"/*.json "${PROJECT_PATH}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${PROJECT_PATH}/" 2>/dev/null || true
+    cp -v "${SOURCE_BASE}/INPUT-AGENTS.md" "${PROJECT_PATH}/" 2>/dev/null || true
+    cp -v "${SOURCE_BASE}/EXPORT-AGENTS.md" "${PROJECT_PATH}/" 2>/dev/null || true
 
     # Show what was created
     echo ""
@@ -336,6 +347,9 @@ case "${PHASE}" in
 
     echo "Copying migration-plan.md from target project directory to source root..."
     cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
+
+    # Copy agent files from init phase output back to source directory
+    cp -v "${PROJECT_PATH}/INPUT-AGENTS.md" "${SOURCE_BASE}/" 2>/dev/null || true
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
@@ -394,6 +408,9 @@ case "${PHASE}" in
     fi
     echo "Copying migration-plan.md from target to source directory..."
     cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
+
+    # Copy agent files from init phase output back to source directory
+    cp -v "${PROJECT_PATH}/EXPORT-AGENTS.md" "${SOURCE_BASE}/" 2>/dev/null || true
 
     # Copy migration-dependencies from target repo back to source dir.
     # The analyze phase created this directory and committed it to the target repo.

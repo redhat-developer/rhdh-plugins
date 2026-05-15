@@ -311,6 +311,52 @@ describe('parseCsvContent', () => {
     });
   });
 
+  describe('acceptedRuleIds column', () => {
+    const uuid1 = '550e8400-e29b-41d4-a716-446655440000';
+    const uuid2 = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+
+    it('should parse semicolon-separated UUIDs', () => {
+      const headers = `${FULL_HEADERS},acceptedRuleIds`;
+      const csv = `${headers}\n${fullRow()},${uuid1};${uuid2}`;
+      const rows = parseCsvContent(toDataUrl(csv));
+      expect(rows[0].acceptedRuleIds).toEqual([uuid1, uuid2]);
+    });
+
+    it('should trim whitespace around UUIDs', () => {
+      const headers = `${FULL_HEADERS},acceptedRuleIds`;
+      const csv = `${headers}\n${fullRow()}, ${uuid1} ; ${uuid2} `;
+      const rows = parseCsvContent(toDataUrl(csv));
+      expect(rows[0].acceptedRuleIds).toEqual([uuid1, uuid2]);
+    });
+
+    it('should return undefined when the column value is empty', () => {
+      const headers = `${FULL_HEADERS},acceptedRuleIds`;
+      const csv = `${headers}\n${fullRow()},`;
+      const rows = parseCsvContent(toDataUrl(csv));
+      expect(rows[0].acceptedRuleIds).toBeUndefined();
+    });
+
+    it('should return undefined when the column is missing (backward compatible)', () => {
+      const csv = `${FULL_HEADERS}\n${fullRow()}`;
+      const rows = parseCsvContent(toDataUrl(csv));
+      expect(rows[0].acceptedRuleIds).toBeUndefined();
+    });
+
+    it('should handle a single UUID without semicolons', () => {
+      const headers = `${FULL_HEADERS},acceptedRuleIds`;
+      const csv = `${headers}\n${fullRow()},${uuid1}`;
+      const rows = parseCsvContent(toDataUrl(csv));
+      expect(rows[0].acceptedRuleIds).toEqual([uuid1]);
+    });
+
+    it('should filter out empty segments from trailing semicolons', () => {
+      const headers = `${FULL_HEADERS},acceptedRuleIds`;
+      const csv = `${headers}\n${fullRow()},${uuid1};;${uuid2};`;
+      const rows = parseCsvContent(toDataUrl(csv));
+      expect(rows[0].acceptedRuleIds).toEqual([uuid1, uuid2]);
+    });
+  });
+
   describe('CSV edge cases', () => {
     it('should handle quoted fields containing commas', () => {
       const csv = `${FULL_HEADERS}\n"Project, with comma",A description,group:default/team,https://github.com/o/r,main,https://github.com/o/t,main`;

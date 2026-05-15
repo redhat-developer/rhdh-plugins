@@ -323,6 +323,51 @@ export const x2aPluginMessages = {
       finished: 'Finished {{timeAgo}} (took {{duration}})',
     },
   },
+  scaffolder: {
+    rulesAcceptance: {
+      loadingRules: 'Loading rules...',
+      noRulesConfigured: 'No rules configured.',
+      required: 'required',
+      fetchError: 'Failed to fetch rules',
+    },
+  },
+  rulesPage: {
+    title: 'Conversion Rules',
+    subtitle: 'Manage rules that projects must accept at creation time.',
+    addRule: 'Add Rule',
+    manageRules: 'Manage Rules',
+    notAllowed: 'You do not have permission to manage rules.',
+    table: {
+      id: 'ID',
+      title: 'Title',
+      description: 'Description',
+      required: 'Required',
+      optional: 'Optional',
+      createdAt: 'Created',
+      editRule: 'Edit rule',
+      deleteRule: 'Delete rule',
+      noRules: 'No rules defined yet.',
+    },
+    deleteConfirm: {
+      title: 'Delete rule "{{title}}"?',
+      message:
+        'This rule will be permanently deleted. Existing projects that already accepted this rule will not be affected.',
+      confirm: 'Delete',
+      cancel: 'Cancel',
+      deleteError: 'Failed to delete rule',
+    },
+    dialog: {
+      createTitle: 'Create Rule',
+      editTitle: 'Edit Rule',
+      titleField: 'Title',
+      descriptionField: 'Description',
+      requiredField: 'Required for all projects',
+      save: 'Save',
+      cancel: 'Cancel',
+      createError: 'Failed to create rule',
+      updateError: 'Failed to update rule',
+    },
+  },
   empty: '-',
 };
 

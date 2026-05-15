@@ -15,9 +15,15 @@
  */
 
 import { resolvePackagePath } from '@backstage/backend-plugin-api';
-import { V1Job, V1OwnerReference, V1Secret } from '@kubernetes/client-node';
+import {
+  V1ConfigMap,
+  V1Job,
+  V1OwnerReference,
+  V1Secret,
+} from '@kubernetes/client-node';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { Phase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { X2AConfig, JobCreateParams, AAPCredentials, GitRepo } from './types';
 
 /**
@@ -205,6 +211,11 @@ export class JobResourceBuilder {
     const jobName = `job-x2a-${params.phase}-${shortId}`;
     const projectSecretName = `x2a-project-secret-${params.projectId}`;
     const jobSecretName = `x2a-job-secret-${params.phase}-${params.jobId}`;
+    const rulesConfigMapName = `x2a-rules-${params.phase}-${params.jobId}`;
+    const hasRules =
+      Phase.from(params.phase).isProjectPhase() &&
+      !!params.acceptedRules &&
+      params.acceptedRules.length > 0;
 
     return {
       apiVersion: 'batch/v1',
@@ -354,6 +365,14 @@ export class JobResourceBuilder {
                         },
                       ]
                     : []),
+                  ...(hasRules
+                    ? [
+                        {
+                          name: 'ACCEPTED_RULES_DIR',
+                          value: '/workspace/x2a-rules',
+                        },
+                      ]
+                    : []),
                   {
                     name: 'GIT_AUTHOR_NAME',
                     value: config.git?.author?.name,
@@ -368,6 +387,15 @@ export class JobResourceBuilder {
                     name: 'workspace',
                     mountPath: '/workspace',
                   },
+                  ...(hasRules
+                    ? [
+                        {
+                          name: 'rules',
+                          mountPath: '/workspace/x2a-rules',
+                          readOnly: true,
+                        },
+                      ]
+                    : []),
                 ],
                 resources: {
                   requests: {
@@ -381,12 +409,22 @@ export class JobResourceBuilder {
                 },
               },
             ],
-            // Shared volume for git repositories
+            // Shared volume for git repositories + optional rules ConfigMap
             volumes: [
               {
                 name: 'workspace',
                 emptyDir: {},
               },
+              ...(hasRules
+                ? [
+                    {
+                      name: 'rules',
+                      configMap: {
+                        name: rulesConfigMapName,
+                      },
+                    },
+                  ]
+                : []),
             ],
           },
         },
@@ -440,6 +478,59 @@ export class JobResourceBuilder {
 
     // Final truncate to ensure 63 char limit
     return sanitized.substring(0, 63);
+  }
+
+  /**
+   * Builds a ConfigMap containing accepted rules as Markdown files.
+   * Each rule becomes a key named `{uuid}.md` with Markdown content.
+   * The ConfigMap is volume-mounted into `/workspace/x2a-rules/` in the job pod.
+   *
+   * @param jobId - The job UUID
+   * @param projectId - The project UUID
+   * @param phase - The migration phase
+   * @param params - Job creation parameters containing accepted rules
+   * @param ownerReference - Owner reference to the parent Job for garbage collection
+   * @returns V1ConfigMap resource, or undefined if no rules
+   */
+  static buildRulesConfigMap(
+    jobId: string,
+    projectId: string,
+    phase: string,
+    params: JobCreateParams,
+    ownerReference: V1OwnerReference,
+  ): V1ConfigMap | undefined {
+    if (!params.acceptedRules || params.acceptedRules.length === 0) {
+      return undefined;
+    }
+
+    const configMapName = `x2a-rules-${phase}-${jobId}`;
+    const data: Record<string, string> = {};
+
+    for (const rule of params.acceptedRules) {
+      data[`${rule.id}.md`] = `# ${rule.title}\n\n${rule.description}`;
+    }
+
+    return {
+      apiVersion: 'v1',
+      kind: 'ConfigMap',
+      metadata: {
+        name: configMapName,
+        labels: {
+          'app.kubernetes.io/name': 'x2a-rules',
+          'app.kubernetes.io/component': 'rules',
+          'app.kubernetes.io/managed-by': 'x2a-backend-plugin',
+          'x2a.redhat.com/job-id': jobId,
+          'x2a.redhat.com/project-id': projectId,
+        },
+        annotations: {
+          'x2a.redhat.com/created-by': 'x2a-backend-plugin',
+          'x2a.redhat.com/description':
+            'Accepted rules for X2A job (auto-deleted with job)',
+        },
+        ownerReferences: [ownerReference],
+      },
+      data,
+    };
   }
 
   /**

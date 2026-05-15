@@ -30,6 +30,9 @@ import {
   TestApiProvider,
 } from '@backstage/test-utils';
 import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
+import { permissionApiRef } from '@backstage/plugin-permission-react';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { rootRouteRef } from '../../routes';
 
 describe('Dashboard component', () => {
   const server = setupServer();
@@ -51,15 +54,25 @@ describe('Dashboard component', () => {
       fetch: jest.fn().mockReturnValue(new Promise(() => {})),
     };
 
+    const permissionApiMock = {
+      authorize: jest.fn().mockResolvedValue({ result: AuthorizeResult.ALLOW }),
+    };
+
     await renderInTestApp(
       <TestApiProvider
         apis={[
           [fetchApiRef, fetchApiMock],
           [discoveryApiRef, discoveryApiMock],
+          [permissionApiRef, permissionApiMock],
         ]}
       >
         <Dashboard />
       </TestApiProvider>,
+      {
+        mountedRoutes: {
+          '/x2a': rootRouteRef,
+        },
+      },
     );
     expect(screen.getByText('Conversion Hub')).toBeInTheDocument();
   });

@@ -35,6 +35,7 @@ const CSV_OPTIONAL_HEADERS: readonly string[] = [
   'description',
   'ownedByGroup',
   'targetRepoUrl',
+  'acceptedRuleIds',
 ];
 
 const CSV_ALL_HEADERS = [...CSV_REQUIRED_HEADERS, ...CSV_OPTIONAL_HEADERS];
@@ -110,30 +111,39 @@ export function parseCsvContent(dataUrl: string): CsvProjectRow[] {
     throw new Error('CSV must contain a header row and at least one data row');
   }
 
-  const rows: CsvProjectRow[] = [];
+  return result.data.map((record, i) => parseRow(record, i));
+}
 
-  for (let i = 0; i < result.data.length; i++) {
-    const record = result.data[i];
+function parseRow(
+  record: Record<string, string>,
+  index: number,
+): CsvProjectRow {
+  const csvRowNumber = index + 2;
 
-    for (const required of CSV_REQUIRED_HEADERS) {
-      if (!record[required]?.trim()) {
-        throw new Error(
-          `CSV row ${i + 2} is missing required field: "${required}"`,
-        );
-      }
+  for (const required of CSV_REQUIRED_HEADERS) {
+    if (!record[required]?.trim()) {
+      throw new Error(
+        `CSV row ${csvRowNumber} is missing required field: "${required}"`,
+      );
     }
-
-    rows.push({
-      name: record.name.trim(),
-      description: record.description?.trim() || '',
-      ownedByGroup: record.ownedByGroup?.trim() || undefined,
-      sourceRepoUrl: record.sourceRepoUrl.trim(),
-      sourceRepoBranch: record.sourceRepoBranch.trim(),
-      targetRepoUrl:
-        record.targetRepoUrl?.trim() || record.sourceRepoUrl.trim(),
-      targetRepoBranch: record.targetRepoBranch.trim(),
-    });
   }
 
-  return rows;
+  const rawRuleIds = record.acceptedRuleIds?.trim();
+  const acceptedRuleIds = rawRuleIds
+    ? rawRuleIds
+        .split(';')
+        .map(id => id.trim())
+        .filter(id => id.length > 0)
+    : undefined;
+
+  return {
+    name: record.name.trim(),
+    description: record.description?.trim() || '',
+    ownedByGroup: record.ownedByGroup?.trim() || undefined,
+    sourceRepoUrl: record.sourceRepoUrl.trim(),
+    sourceRepoBranch: record.sourceRepoBranch.trim(),
+    targetRepoUrl: record.targetRepoUrl?.trim() || record.sourceRepoUrl.trim(),
+    targetRepoBranch: record.targetRepoBranch.trim(),
+    acceptedRuleIds,
+  };
 }

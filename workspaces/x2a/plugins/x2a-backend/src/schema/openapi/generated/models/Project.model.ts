@@ -20,6 +20,7 @@
 import { Artifact } from '../models/Artifact.model';
 import { Job } from '../models/Job.model';
 import { ProjectStatus } from '../models/ProjectStatus.model';
+import { RuleSnapshot } from '../models/RuleSnapshot.model';
 
 /**
  * @public
@@ -68,4 +69,8 @@ export interface Project {
   migrationPlan?: Artifact;
   status?: ProjectStatus;
   initJob?: Job;
+  /**
+   * Snapshot of rules accepted at project creation time
+   */
+  acceptedRules?: Array<RuleSnapshot>;
 }

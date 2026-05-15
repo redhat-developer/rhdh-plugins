@@ -293,6 +293,11 @@ export function registerModuleRoutes(
         config.getOptionalString('x2a.callbackBaseUrl') ??
         (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${moduleBaseUrl}/projects/${projectId}/collectArtifacts`;
+      // Read accepted rules snapshot for the K8s job
+      const acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+        projectId,
+      });
+
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
@@ -308,6 +313,7 @@ export function registerModuleRoutes(
         sourceRepo,
         targetRepo,
         aapCredentials,
+        acceptedRules,
       });
 
       // Re-read the job to detect cancellation during the K8s creation window
