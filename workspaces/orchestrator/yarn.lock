@@ -13271,6 +13271,7 @@ __metadata:
     "@backstage/backend-test-utils": "npm:^1.11.1"
     "@backstage/cli": "npm:^0.36.0"
     "@backstage/config": "npm:^1.3.6"
+    "@backstage/errors": "npm:^1.2.7"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^"
     luxon: "npm:^3.7.2"

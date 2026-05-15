@@ -457,10 +457,11 @@ describe('LokiProvider', () => {
     beforeEach(() => {
       jest.clearAllMocks();
     });
-    it('wraps non-OK Loki responses using response body text', async () => {
+    it('wraps non-OK Loki responses as ServiceUnavailableError with ResponseError cause', async () => {
       const mockResponse: Partial<Response> = {
         ok: false,
         status: 502,
+        statusText: 'Bad Gateway',
         text: jest.fn().mockResolvedValue('bad gateway from loki'),
         json: jest.fn(),
       };
@@ -487,7 +488,9 @@ describe('LokiProvider', () => {
 
       await expect(
         provider.fetchWorkflowLogsByInstance(workflowInstance),
-      ).rejects.toThrow(/Problem fetching loki logs: bad gateway from loki/);
+      ).rejects.toThrow(
+        /Problem fetching loki logs: Request failed with 502 Bad Gateway/,
+      );
 
       expect(mockResponse.text).toHaveBeenCalled();
       expect(mockResponse.json).not.toHaveBeenCalled();

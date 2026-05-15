@@ -15,6 +15,12 @@
  */
 
 import type { Config } from '@backstage/config';
+import {
+  assertError,
+  ServiceUnavailableError,
+  InputError,
+  ResponseError,
+} from '@backstage/errors';
 import { DateTime } from 'luxon';
 import {
   ProcessInstanceDTO,
@@ -71,7 +77,7 @@ export class LokiProvider implements WorkflowLogProvider {
     );
     const limitOpt = config.getOptionalNumber('limit');
     if (limitOpt !== undefined && limitOpt < 0) {
-      throw new Error(`${LOKI_CONFIG_PATH}.limit must not be negative`);
+      throw new InputError(`${LOKI_CONFIG_PATH}.limit must not be negative`);
     }
     this.limit = limitOpt ?? 100;
     this.agent = new Agent({
@@ -170,7 +176,7 @@ export class LokiProvider implements WorkflowLogProvider {
         },
       });
       if (!response.ok) {
-        throw new Error(await response.text());
+        throw await ResponseError.fromResponse(response);
       }
 
       const jsonResponse = (await response.json()) as LokiQueryRangeJsonBody;
@@ -198,8 +204,12 @@ export class LokiProvider implements WorkflowLogProvider {
       allResults = jsonResponse.data.result
         .flatMap(entry => entry.values)
         .map(([id, log]) => ({ id, log }));
-    } catch (error) {
-      throw new Error(`Problem fetching loki logs: ${error.message}`);
+    } catch (error: unknown) {
+      assertError(error);
+      throw new ServiceUnavailableError(
+        `Problem fetching loki logs: ${error.message}`,
+        error,
+      );
     }
 
     allResults.sort(
