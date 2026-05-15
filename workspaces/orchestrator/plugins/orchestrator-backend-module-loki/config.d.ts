@@ -46,8 +46,8 @@ export interface Config {
         /** @visibility secret */
         token: string;
         /**
-         * Limit the number of logs to fetch
-         * defaults to 100
+         * Limit the number of logs to fetch.
+         * Defaults to 100. Must not be negative if set.
          */
         limit?: number;
         /**

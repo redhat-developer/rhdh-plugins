@@ -162,6 +162,24 @@ describe('LokiProvider', () => {
       ).toThrow(/must not contain/);
     });
 
+    it('rejects a negative limit', () => {
+      expect(() =>
+        LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'http://localhost:3100',
+                  token: 't',
+                  limit: -1,
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(/limit must not be negative/);
+    });
+
     describe('baseUrl validation', () => {
       afterEach(() => {
         process.env.NODE_ENV = originalNodeEnv;

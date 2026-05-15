@@ -69,7 +69,11 @@ export class LokiProvider implements WorkflowLogProvider {
       config,
       `${LOKI_CONFIG_PATH}.logPipelineFilters`,
     );
-    this.limit = config.getOptionalNumber('limit') || 100;
+    const limitOpt = config.getOptionalNumber('limit');
+    if (limitOpt !== undefined && limitOpt < 0) {
+      throw new Error(`${LOKI_CONFIG_PATH}.limit must not be negative`);
+    }
+    this.limit = limitOpt ?? 100;
     this.agent = new Agent({
       connect: {
         rejectUnauthorized: this.rejectUnauthorized,
