@@ -33,6 +33,16 @@ export const DonutChartTooltipContent = ({
 }) => {
   const { t } = useTranslation();
 
+  const getStatus = (status: string) => {
+    const translatedStatus = t(`thresholds.${status}` as any, {});
+
+    if (translatedStatus === `thresholds.${status}` && status) {
+      return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+
+    return translatedStatus;
+  };
+
   return (
     <Stack spacing={0.5} sx={{ minWidth: 220 }}>
       <Stack direction="row" spacing={3}>
@@ -62,7 +72,7 @@ export const DonutChartTooltipContent = ({
               >
                 {t('metric.averageCenterTooltipBreakdownRow', {
                   count: row.count,
-                  status: row.name.charAt(0).toUpperCase() + row.name.slice(1),
+                  status: getStatus(row.name),
                   score: formatAggregationScoreDetail(row.score ?? 0),
                 } as any)}
               </Typography>
