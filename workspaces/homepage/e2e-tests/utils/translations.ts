@@ -16,27 +16,32 @@
 
 // These translation files are not exported by the package, so relative imports are necessary for e2e tests
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { homepageMessages } from '../../../../plugins/dynamic-home-page/src/translations/ref.js';
-import homepageTranslationDe from '../../../../plugins/dynamic-home-page/src/translations/de.js';
-import homepageTranslationFr from '../../../../plugins/dynamic-home-page/src/translations/fr.js';
-import homepageTranslationEs from '../../../../plugins/dynamic-home-page/src/translations/es.js';
-import homepageTranslationIt from '../../../../plugins/dynamic-home-page/src/translations/it.js';
-import homepageTranslationJa from '../../../../plugins/dynamic-home-page/src/translations/ja.js';
+import { homepageMessages } from '../../plugins/dynamic-home-page/src/translations/ref.js';
+import homepageTranslationDe from '../../plugins/dynamic-home-page/src/translations/de.js';
+import homepageTranslationFr from '../../plugins/dynamic-home-page/src/translations/fr.js';
+import homepageTranslationEs from '../../plugins/dynamic-home-page/src/translations/es.js';
+import homepageTranslationIt from '../../plugins/dynamic-home-page/src/translations/it.js';
+import homepageTranslationJa from '../../plugins/dynamic-home-page/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type HomepageMessages = typeof homepageMessages;
 
 function transform(messages: typeof homepageTranslationDe.messages) {
-  const result = Object.keys(messages).reduce((res, key) => {
-    const path = key.split('.');
-    const lastIndex = path.length - 1;
-    path.reduce((acc, currentPath, i) => {
-      acc[currentPath] =
-        lastIndex === i ? messages[key] : acc[currentPath] || {};
-      return acc[currentPath];
-    }, res);
-    return res;
-  }, {});
+  const result = Object.keys(messages).reduce(
+    (res, key) => {
+      const path = key.split('.');
+      const lastIndex = path.length - 1;
+      path.reduce((acc, currentPath, i) => {
+        acc[currentPath] =
+          lastIndex === i
+            ? (messages as Record<string, string>)[key]
+            : (acc[currentPath] as Record<string, unknown>) || {};
+        return acc[currentPath] as Record<string, unknown>;
+      }, res);
+      return res;
+    },
+    {} as Record<string, unknown>,
+  );
 
   return result as HomepageMessages;
 }
