@@ -1,5 +1,29 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-mcp-extras
 
+## 0.2.2
+
+### Patch Changes
+
+- f13f2c5: feat(x2a): Add `Rules` API
+
+  This add a way to create into the init phase the x2a-rules introduced on x2a-convertor, and take advantage of the INPUT-AGENTS.md and EXPORT-AGENTS.md
+
+  Summary of Changes:
+  - New /rules/ api endpoints. (only admin can add it)
+  - New Configmap on init phase.
+  - Small changes on the script template.
+  - New MCP tool to list all rules: x2a-list-rules (Also updated the project create)
+  - Change on CSV to support rules.
+
+- 8d71b85: Removing Abbreviation from project's details. Replaced by project directory calculated from the project's name.
+- Updated dependencies [e887fb4]
+- Updated dependencies [b32708f]
+- Updated dependencies [f13f2c5]
+- Updated dependencies [daaea27]
+- Updated dependencies [8d71b85]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.3.0
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes

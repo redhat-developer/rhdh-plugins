@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-common
 
+## 1.3.0
+
+### Minor Changes
+
+- e887fb4: Added "Edit project" action.
+- f13f2c5: feat(x2a): Add `Rules` API
+
+  This add a way to create into the init phase the x2a-rules introduced on x2a-convertor, and take advantage of the INPUT-AGENTS.md and EXPORT-AGENTS.md
+
+  Summary of Changes:
+  - New /rules/ api endpoints. (only admin can add it)
+  - New Configmap on init phase.
+  - Small changes on the script template.
+  - New MCP tool to list all rules: x2a-list-rules (Also updated the project create)
+  - Change on CSV to support rules.
+
+### Patch Changes
+
+- daaea27: Changed the project to be source-technology agnostic. Rephrasing all texts from being Chef-oriented to more generic variants. There is explicit mapping from free-form agentic findings to the new SourceTechnology enum (normalizeSourceTechnology.ts).
+- 8d71b85: Removing Abbreviation from project's details. Replaced by project directory calculated from the project's name.
+
 ## 1.2.1
 
 ### Patch Changes
