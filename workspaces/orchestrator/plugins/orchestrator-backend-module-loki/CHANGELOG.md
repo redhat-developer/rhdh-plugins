@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki
 
+## 1.2.6
+
+### Patch Changes
+
+- 5338947: Address security concerns
+
 ## 1.2.5
 
 ### Patch Changes
