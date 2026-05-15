@@ -326,7 +326,7 @@ describe('LokiProvider', () => {
           get hostname(): string {
             return '';
           }
-        } as typeof URL;
+        };
         try {
           expect(() =>
             LokiProvider.fromConfig(
