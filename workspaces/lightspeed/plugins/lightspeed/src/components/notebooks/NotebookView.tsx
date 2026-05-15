@@ -18,7 +18,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { makeStyles, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import {
   ChatbotContent,
   ChatbotFooter,
@@ -58,6 +58,7 @@ import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage'
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useTranslation } from '../../hooks/useTranslation';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
+import { makeStyles } from '../../utils/makeStyles';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
@@ -118,7 +119,7 @@ const useStyles = makeStyles(theme => ({
   topBar: {
     display: 'flex',
     justifyContent: 'flex-end',
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
+    padding: theme.spacing(1.5, 2),
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
   },
@@ -147,7 +148,7 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     maxWidth: 'unset',
     margin: 0,
-    padding: `0 0 ${theme.spacing(1)}px`,
+    padding: theme.spacing(0, 0, 2, 0),
     boxSizing: 'border-box',
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
@@ -171,8 +172,8 @@ const useStyles = makeStyles(theme => ({
     margin: '0 auto',
   },
   toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': theme.spacing(2.5),
+    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': theme.spacing(2.5),
     '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
   },
   toastAlert: {
@@ -190,6 +191,15 @@ const useStyles = makeStyles(theme => ({
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
   },
+  welcomeBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexShrink: 0,
+    width: '100%',
+    gap: theme.spacing(3),
+    marginTop: theme.spacing(4),
+    paddingBottom: theme.spacing(2),
+  },
   notebookEmptyUpload: {
     flex: 1,
     display: 'flex',
@@ -201,20 +211,22 @@ const useStyles = makeStyles(theme => ({
   notebookContentArea: {
     width: '95%',
     maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto 0 auto`,
+    margin: '0 auto',
     padding: 0,
   },
   notebookHeading: {
     fontSize: '2rem',
     fontWeight: 500,
     lineHeight: 1.25,
-    padding: `${theme.spacing(1)}px 0`,
+    margin: 0,
+    padding: theme.spacing(2, 0, 1, 0),
   },
   notebookSummary: {
     fontSize: '1rem',
     lineHeight: 2,
     color: 'var(--pf-t--global--text--color--regular)',
-    paddingTop: theme.spacing(0.5),
+    margin: 0,
+    paddingTop: theme.spacing(1),
   },
   promptSuggestions: {
     display: 'flex',
@@ -222,7 +234,7 @@ const useStyles = makeStyles(theme => ({
     gap: theme.spacing(1),
     width: '95%',
     maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto ${theme.spacing(3)}px auto`,
+    margin: `0 auto ${theme.spacing(3)} auto`,
     justifyContent: 'flex-start',
   },
   promptPill: {
@@ -230,7 +242,7 @@ const useStyles = makeStyles(theme => ({
     background: 'transparent',
     border: `1px solid var(--pf-t--global--border--color--default)`,
     borderRadius: '999px',
-    padding: `${theme.spacing(1)}px ${theme.spacing(2.5)}px`,
+    padding: theme.spacing(1, 2.5),
     fontSize: '0.875rem',
     color: 'var(--pf-t--global--text--color--regular)',
     cursor: 'pointer',
@@ -250,7 +262,7 @@ const useStyles = makeStyles(theme => ({
     },
     '& .pf-chatbot__message-bar': {
       backgroundColor:
-        theme.palette.type === 'light'
+        theme.palette.mode === 'light'
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
@@ -596,30 +608,32 @@ export const NotebookView = ({
       <div className={classes.welcomeContainer}>
         <div style={{ flex: 1 }} />
         {renderNotebookDisclaimerAlert()}
-        <div className={classes.notebookContentArea}>
-          <Typography className={classes.notebookHeading}>
-            {notebookName}
-          </Typography>
-          {topicSummary && (
-            <Typography className={classes.notebookSummary}>
-              {topicSummary}
+        <div className={classes.welcomeBody}>
+          <div className={classes.notebookContentArea}>
+            <Typography className={classes.notebookHeading}>
+              {notebookName}
             </Typography>
+            {topicSummary && (
+              <Typography className={classes.notebookSummary}>
+                {topicSummary}
+              </Typography>
+            )}
+          </div>
+          {welcomePrompts.length > 0 && (
+            <div className={classes.promptSuggestions}>
+              {welcomePrompts.map(prompt => (
+                <button
+                  key={prompt.title}
+                  type="button"
+                  className={classes.promptPill}
+                  onClick={prompt.onClick}
+                >
+                  {prompt.title}
+                </button>
+              ))}
+            </div>
           )}
         </div>
-        {welcomePrompts.length > 0 && (
-          <div className={classes.promptSuggestions}>
-            {welcomePrompts.map(prompt => (
-              <button
-                key={prompt.title}
-                type="button"
-                className={classes.promptPill}
-                onClick={prompt.onClick}
-              >
-                {prompt.title}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     );
   };

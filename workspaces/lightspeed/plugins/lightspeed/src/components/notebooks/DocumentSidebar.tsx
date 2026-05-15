@@ -16,7 +16,7 @@
 
 import { useState } from 'react';
 
-import { makeStyles, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import {
   Button,
   Dropdown,
@@ -31,6 +31,7 @@ import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
 import { NOTEBOOK_MAX_FILES } from '../../const';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
+import { makeStyles } from '../../utils/makeStyles';
 import { FileTypeIcon } from './FileTypeIcon';
 import { SidebarCollapseIcon } from './SidebarCollapseIcon';
 
@@ -89,7 +90,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-    padding: `${theme.spacing(1)}px ${theme.spacing(0.5)}px`,
+    padding: theme.spacing(1, 1),
     borderRadius: 4,
   },
   fileIcon: {

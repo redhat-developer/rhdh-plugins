@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
 import { Button, Tooltip } from '@patternfly/react-core';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { makeStyles } from '../utils/makeStyles';
 import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
 
 type IconProps = {

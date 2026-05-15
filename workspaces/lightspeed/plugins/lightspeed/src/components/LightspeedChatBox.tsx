@@ -22,7 +22,6 @@ import {
   useRef,
 } from 'react';
 
-import { makeStyles } from '@material-ui/core';
 import {
   ChatbotDisplayMode,
   ChatbotWelcomePrompt,
@@ -42,6 +41,7 @@ import { useBufferedMessages } from '../hooks/useBufferedMessages';
 import { useFeedbackActions } from '../hooks/useFeedbackActions';
 import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
+import { makeStyles } from '../utils/makeStyles';
 import { parseReasoning } from '../utils/reasoningParser';
 import { mapToPatternFlyToolCall } from '../utils/toolCallMapper';
 

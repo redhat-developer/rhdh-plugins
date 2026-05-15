@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('ls-')
+    ? componentName
+    : `ls-${componentName}`;
+});
+
 export {
   lightspeedPlugin,
   LightspeedPage,

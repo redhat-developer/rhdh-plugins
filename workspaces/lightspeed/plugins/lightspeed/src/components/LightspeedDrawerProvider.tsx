@@ -16,11 +16,11 @@
 
 import { PropsWithChildren } from 'react';
 
-import { makeStyles } from '@mui/styles';
 import { ChatbotModal } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
+import { makeStyles } from '../utils/makeStyles';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 

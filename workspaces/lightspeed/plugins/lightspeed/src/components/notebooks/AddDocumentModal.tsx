@@ -17,7 +17,6 @@
 import { useEffect, useState } from 'react';
 import { FileRejection } from 'react-dropzone';
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -37,6 +36,7 @@ import { UploadIcon } from '@patternfly/react-icons';
 import { NOTEBOOK_MAX_FILES } from '../../const';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useTranslation } from '../../hooks/useTranslation';
+import { makeStyles } from '../../utils/makeStyles';
 import {
   getNotebookAcceptedFileTypes,
   validateFiles,

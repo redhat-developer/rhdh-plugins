@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { makeStyles, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { Button } from '@patternfly/react-core';
 import { AddCircleOIcon } from '@patternfly/react-icons';
 import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { makeStyles } from '../../utils/makeStyles';
 
 const useStyles = makeStyles(theme => ({
   container: {

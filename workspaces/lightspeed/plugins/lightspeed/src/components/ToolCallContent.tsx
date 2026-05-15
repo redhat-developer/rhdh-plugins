@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
 import { Message } from '@patternfly/chatbot';
 import {
   Content,
@@ -32,6 +31,7 @@ import { WrenchIcon } from '@patternfly/react-icons';
 import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
 import { formatToolResponseForMarkdown } from '../utils/formatToolResponseForMarkdown';
+import { makeStyles } from '../utils/makeStyles';
 
 interface ToolCallContentProps {
   toolCall: ToolCall;

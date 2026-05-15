@@ -16,7 +16,6 @@
 
 import { Ref, useState } from 'react';
 
-import { makeStyles } from '@material-ui/core';
 import {
   Dropdown,
   DropdownItem,
@@ -27,6 +26,7 @@ import {
 import { AngleDownIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { makeStyles } from '../utils/makeStyles';
 
 type MessageBarModelSelectorProps = {
   selectedModel: string;

@@ -17,12 +17,12 @@
 import Close from '@mui/icons-material/Close';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles } from '@mui/styles';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { makeStyles } from '../utils/makeStyles';
 import { LightspeedFABIcon } from './LightspeedIcon';
 
 const useStyles = makeStyles(theme => ({
