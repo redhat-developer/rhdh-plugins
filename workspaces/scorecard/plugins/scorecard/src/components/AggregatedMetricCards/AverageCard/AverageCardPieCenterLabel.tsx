@@ -15,13 +15,12 @@
  */
 
 import { PieLabelRenderProps } from 'recharts';
+
 import { TooltipPosition } from './types';
 
 type AverageCardPieCenterLabelProps = PieLabelRenderProps & {
   centerPercentLabel: string;
   arcResolvedColor: string;
-  setActiveIndex: (index: number | null) => void;
-  setTooltipPosition: (position: TooltipPosition | null) => void;
   updateCenterTooltipPosition: (e: React.MouseEvent<SVGCircleElement>) => void;
   setCenterTooltipPosition: (position: TooltipPosition | null) => void;
 };
@@ -32,8 +31,6 @@ export function AverageCardPieCenterLabel({
   index,
   centerPercentLabel,
   arcResolvedColor,
-  setActiveIndex,
-  setTooltipPosition,
   updateCenterTooltipPosition,
   setCenterTooltipPosition,
 }: AverageCardPieCenterLabelProps) {
@@ -60,8 +57,6 @@ export function AverageCardPieCenterLabel({
         pointerEvents="all"
         data-testid="average-card-center-percent-hit-area"
         onMouseEnter={e => {
-          setActiveIndex(null);
-          setTooltipPosition(null);
           updateCenterTooltipPosition(e);
         }}
         onMouseMove={updateCenterTooltipPosition}

@@ -214,7 +214,8 @@ export const openPrsWeightedKpiMetadataResponse = {
 };
 
 /**
- * Average KPI: 3×100 + 5×40 + 2×0 = 500 weighted sum; max 100×10 entities → 50% score.
+ * Average KPI: 3×100 + 5×40 + 1×15 + 1×0 = 515 weighted sum; max 100×10 entities → 51.5% score.
+ * Includes `critical` as a non-threshold status name (no `thresholds.critical` copy).
  * Colors align with aggregation KPI `options.thresholds` warning band (30–79%) in app-config.
  */
 export const openPrsWeightedAggregatedResponse = {
@@ -227,13 +228,14 @@ export const openPrsWeightedAggregatedResponse = {
     values: [
       { count: 3, name: 'success', score: 100 },
       { count: 5, name: 'warning', score: 40 },
-      { count: 2, name: 'error', score: 0 },
+      { count: 1, name: 'error', score: 15 },
+      { count: 1, name: 'critical', score: 0 },
     ],
     total: 10,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
-    averageScore: 50,
-    averageWeightedSum: 500,
+    averageScore: 51.5,
+    averageWeightedSum: 515,
     averageMaxPossible: 1000,
     aggregationChartDisplayColor: 'rgb(224, 189, 108)',
   },

@@ -131,7 +131,8 @@ export class HomePage {
   }
 
   /**
-   * Clicks the homepage KPI drill-down link (healthy/total subheader). Mock data uses 10/10.
+   * Clicks the homepage KPI drill-down link (healthy/total subheader).
+   * Defaults to 10/10 (plain “10 entities” link). Pass overrides when mock `result.total` differs.
    */
   async clickDrillDownLink(options?: { healthy?: string; total?: string }) {
     const healthy = options?.healthy ?? '10';

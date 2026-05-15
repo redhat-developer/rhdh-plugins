@@ -134,6 +134,10 @@ const scorecardTranslationJa = createTranslationMessages({
       'エンティティーがこの指標に関連する値を報告していません。',
     'metric.averageCenterTooltipTotalLabel': '合計スコア',
     'metric.averageCenterTooltipMaxLabel': '最大可能スコア',
+    'metric.averageCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} 件、スコア {{score}}',
+    'metric.averageCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} 件、スコア {{score}}',
     'metric.averageLegendTooltipEntitiesEach_one':
       '{{count}} 件のエンティティー、各 {{score}}',
     'metric.averageLegendTooltipEntitiesEach_other':
