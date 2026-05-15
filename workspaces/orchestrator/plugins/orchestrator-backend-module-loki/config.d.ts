@@ -24,12 +24,32 @@ export interface Config {
         /**
          * Base URL of the Loki service.
          * /loki/api/v1/query_range will be appended to the baseUrl
+         *
+         * Must be an absolute http(s) URL without credentials, query, or fragment.
+         * In production (NODE_ENV=production), https is required unless allowInsecureHttp is true.
          */
         baseUrl: string;
         /**
+         * Optional allowlist for the hostname parsed from baseUrl.
+         * Entries are matched case-insensitively. If an entry starts with `.`, the hostname must be
+         * that suffix or a subdomain (e.g. `.example.com` allows `loki.example.com`).
+         */
+        allowedHosts?: string[];
+        /**
+         * When true, allows http:// baseUrl when NODE_ENV is production.
+         * Defaults to false; local/dev typically uses NODE_ENV!=production where http is already allowed.
+         */
+        allowInsecureHttp?: boolean;
+        /**
          * Auth Token for accessing the loki query url
          */
+        /** @visibility secret */
         token: string;
+        /**
+         * Limit the number of logs to fetch.
+         * Defaults to 100. Must not be negative if set.
+         */
+        limit?: number;
         /**
          * Set to false if the baseUrl has a self-signed certificate
          * defaults to true
@@ -40,10 +60,13 @@ export interface Config {
         // new values will be appened
         logPipelineFilters?: Array<string>;
         logStreamSelectors?: Array<{
-          // label is the selector, something like 'app' or 'service_name', etc...
-          label: string;
-          // value is the label matching operator, so something like: '=~".+"'
-          value: string;
+          /** Prometheus-style name: [a-zA-Z_][a-zA-Z0-9_]* */
+          label?: string;
+          /**
+           * Label matcher only, e.g. `="application"` or `=~".+"` (quoted; regex may use backticks).
+           * Validated at startup.
+           */
+          value?: string;
         }>;
       };
     };

@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.8.0",
+    "@backstage/errors": "^1.2.7",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^",
     "luxon": "^3.7.2",

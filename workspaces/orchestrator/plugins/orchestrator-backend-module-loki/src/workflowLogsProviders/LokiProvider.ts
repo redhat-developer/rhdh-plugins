@@ -15,6 +15,12 @@
  */
 
 import type { Config } from '@backstage/config';
+import {
+  assertError,
+  ServiceUnavailableError,
+  InputError,
+  ResponseError,
+} from '@backstage/errors';
 import { DateTime } from 'luxon';
 import {
   ProcessInstanceDTO,
@@ -22,29 +28,63 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
-import { Agent, setGlobalDispatcher } from 'undici';
+import { Agent, fetch } from 'undici';
+import {
+  assertSafeWorkflowInstanceIdForLineFilter,
+  escapeLogQlDoubleQuotedLineLiteral,
+  parseAndValidateLogPipelineFilters,
+  parseAndValidateLogStreamSelectors,
+  parseAndValidateLokiBaseUrl,
+  type ValidatedLogStreamSelector,
+} from './helpers';
+
+const LOKI_CONFIG_PATH = 'orchestrator.workflowLogProvider.loki';
+
+/** Fields read from Loki `query_range` JSON responses in this provider. */
+interface LokiQueryRangeJsonBody {
+  data: {
+    result: Array<{ values: [string, string][] }>;
+  };
+}
+
+type LokiParsedLogLine = { id: string; log: string };
 
 export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
   private readonly token: string;
-  private readonly selectors: any;
+  private readonly selectors: ValidatedLogStreamSelector[];
   private readonly rejectUnauthorized: boolean;
-  private readonly logPipelineFilters: any;
+  private readonly logPipelineFilters: string[];
+  private readonly limit: number;
+  private readonly agent: Agent;
   private constructor(config: Config) {
-    this.baseURL = config.getString('baseUrl');
+    this.baseURL = parseAndValidateLokiBaseUrl({
+      rawBaseUrl: config.getString('baseUrl'),
+      allowedHosts: config.getOptionalStringArray('allowedHosts'),
+      allowInsecureHttp: config.getOptionalBoolean('allowInsecureHttp'),
+    });
     this.token = config.getString('token');
     // Only should be false if specified, undefined here should be true
     this.rejectUnauthorized =
       config.getOptionalBoolean('rejectUnauthorized') === false ? false : true;
-    this.selectors = config.getOptional('logStreamSelectors') || [];
-    this.logPipelineFilters = config.getOptional('logPipelineFilters') || [];
-
-    const agent = new Agent({
+    this.selectors = parseAndValidateLogStreamSelectors(
+      config,
+      `${LOKI_CONFIG_PATH}.logStreamSelectors`,
+    );
+    this.logPipelineFilters = parseAndValidateLogPipelineFilters(
+      config,
+      `${LOKI_CONFIG_PATH}.logPipelineFilters`,
+    );
+    const limitOpt = config.getOptionalNumber('limit');
+    if (limitOpt !== undefined && limitOpt < 0) {
+      throw new InputError(`${LOKI_CONFIG_PATH}.limit must not be negative`);
+    }
+    this.limit = limitOpt ?? 100;
+    this.agent = new Agent({
       connect: {
         rejectUnauthorized: this.rejectUnauthorized,
       },
     });
-    setGlobalDispatcher(agent);
   }
   getBaseURL(): string {
     return this.baseURL;
@@ -69,6 +109,9 @@ export class LokiProvider implements WorkflowLogProvider {
   async fetchWorkflowLogsByInstance(
     instance: ProcessInstanceDTO,
   ): Promise<WorkflowLogsResponse> {
+    assertSafeWorkflowInstanceIdForLineFilter(instance.id);
+    const escapedInstanceId = escapeLogQlDoubleQuotedLineLiteral(instance.id);
+
     // Because of timing issues, subtract 5 mintues from the start and add 5 minutes to the end
     const startTime = DateTime.fromISO(instance.start as string, {
       setZone: true,
@@ -97,21 +140,19 @@ export class LokiProvider implements WorkflowLogProvider {
     if (this.selectors.length < 1) {
       streamSelector = 'openshift_log_type="application"';
     } else {
-      this.selectors.forEach(
-        (
-          entry: { label: any; value: any },
-          index: number,
-          arr: string | any[],
-        ) => {
-          // something about that last comma
-          streamSelector += `${entry.label || 'openshift_log_type'}${entry.value || '=~".+"'}${index !== arr.length - 1 ? ',' : ''}`;
-        },
-      );
+      streamSelector = this.selectors
+        .map(
+          (entry, index) =>
+            `${entry.label}${entry.value}${
+              index === this.selectors.length - 1 ? '' : ','
+            }`,
+        )
+        .join('');
     }
-    let logPipelineFilter: string = `|="${instance.id}"`;
+    let logPipelineFilter: string = `|="${escapedInstanceId}"`;
 
     if (this.logPipelineFilters.length > 0) {
-      this.logPipelineFilters.forEach((element: any) => {
+      this.logPipelineFilters.forEach(element => {
         logPipelineFilter += ` ${element}`;
       });
     }
@@ -120,23 +161,25 @@ export class LokiProvider implements WorkflowLogProvider {
       query: `{${streamSelector}} ${logPipelineFilter}`,
       start: startTime as string,
       end: endTime as string,
+      limit: this.limit.toString(),
     });
 
     const urlToFetch = `${this.baseURL}${lokiApiEndpoint}?${params.toString()}`;
 
-    let allResults;
+    let allResults!: LokiParsedLogLine[];
     try {
       const response = await fetch(urlToFetch, {
+        dispatcher: this.agent,
         headers: {
           Authorization: `Bearer ${this.token}`,
           'Content-Type': 'application/json',
         },
       });
       if (!response.ok) {
-        throw new Error(await response.text());
+        throw await ResponseError.fromResponse(response);
       }
 
-      const jsonResponse = await response.json();
+      const jsonResponse = (await response.json()) as LokiQueryRangeJsonBody;
 
       /**
       Data should look like this
@@ -159,24 +202,24 @@ export class LokiProvider implements WorkflowLogProvider {
        * }
        */
       allResults = jsonResponse.data.result
-        .flatMap((val: any[]) => {
-          return val.values;
-        })
-        .map((val: any[]) => {
-          return {
-            id: val[0],
-            log: val[1],
-          };
-        });
-    } catch (error) {
-      throw new Error(`Problem fetching loki logs: ${error.message}`);
+        .flatMap(entry => entry.values)
+        .map(([id, log]) => ({ id, log }));
+    } catch (error: unknown) {
+      assertError(error);
+      throw new ServiceUnavailableError(
+        `Problem fetching loki logs: ${error.message}`,
+        error,
+      );
     }
+
+    allResults.sort(
+      (a: LokiParsedLogLine, b: LokiParsedLogLine) =>
+        Number(a.id) - Number(b.id),
+    );
 
     const workflowLogsResponse: WorkflowLogsResponse = {
       instanceId: instance.id,
-      logs: allResults.sort((a: { id: number }, b: { id: number }) => {
-        return Number(a.id) - Number(b.id);
-      }),
+      logs: allResults,
     };
     return workflowLogsResponse;
   }
