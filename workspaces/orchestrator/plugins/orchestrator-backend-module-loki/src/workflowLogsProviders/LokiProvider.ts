@@ -134,7 +134,7 @@ export class LokiProvider implements WorkflowLogProvider {
         .map(
           (entry, index) =>
             `${entry.label}${entry.value}${
-              index !== this.selectors.length - 1 ? ',' : ''
+              index === this.selectors.length - 1 ? '' : ','
             }`,
         )
         .join('');
