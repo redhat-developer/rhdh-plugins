@@ -22,15 +22,17 @@ import type { OpenSSFResponse } from './types';
 const mockScorecardLocation =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
 
-function createEntity(scorecardLocation: string): Entity {
+function createEntity(scorecardLocation?: string): Entity {
+  const annotations = scorecardLocation
+    ? { 'openssf/scorecard-location': scorecardLocation }
+    : {};
+
   return {
     apiVersion: 'backstage.io/v1beta1',
     kind: 'Component',
     metadata: {
       name: 'my-service',
-      annotations: {
-        'openssf/scorecard-location': scorecardLocation,
-      },
+      annotations,
     },
     spec: {},
   } as Entity;
@@ -68,6 +70,25 @@ describe('OpenSSFClient', () => {
   });
 
   describe('getScorecard', () => {
+    it.each([
+      ['missing annotation', createEntity(undefined)],
+      ['empty annotation', createEntity('')],
+      ['whitespace annotation', createEntity('   ')],
+      ['non-https annotation', createEntity('http://example.com/scorecard')],
+    ])(
+      'throws when scorecard annotation is invalid (%s)',
+      async (_, testEntity) => {
+        const client = new OpenSSFClient();
+        const request = client.getScorecard(testEntity);
+
+        await expect(request).rejects.toBeInstanceOf(Error);
+        await expect(request).rejects.toThrow(
+          "Invalid annotation 'openssf/scorecard-location' value",
+        );
+        expect(fetch).not.toHaveBeenCalled();
+      },
+    );
+
     it('fetches the scorecard from the entity scorecard URL', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue({
         ok: true,
@@ -92,21 +113,11 @@ describe('OpenSSFClient', () => {
       });
 
       const client = new OpenSSFClient();
+      const request = client.getScorecard(entity);
 
-      await expect(client.getScorecard(entity)).rejects.toThrow(
+      await expect(request).rejects.toBeInstanceOf(Error);
+      await expect(request).rejects.toThrow(
         'OpenSSF API request failed with status 404: Not Found',
-      );
-    });
-
-    it('throws when fetch rejects', async () => {
-      (globalThis.fetch as jest.Mock).mockRejectedValue(
-        new Error('Network error'),
-      );
-
-      const client = new OpenSSFClient();
-
-      await expect(client.getScorecard(entity)).rejects.toThrow(
-        'Network error',
       );
     });
   });

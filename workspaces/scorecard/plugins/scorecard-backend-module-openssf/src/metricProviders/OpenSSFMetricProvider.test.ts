@@ -17,8 +17,11 @@
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 
-import { OpenSSFMetricProvider } from './OpenSSFMetricProvider';
-import { OPENSSF_THRESHOLDS } from './OpenSSFConfig';
+import {
+  createOpenSSFMetricProvider,
+  OpenSSFMetricProvider,
+} from './OpenSSFMetricProvider';
+import { OPENSSF_METRICS, OPENSSF_THRESHOLDS } from './OpenSSFConfig';
 
 const scorecardLocation =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
@@ -39,6 +42,12 @@ const maintainedConfig = {
   name: 'Maintained',
   displayTitle: 'OpenSSF Maintained',
   description: 'Determines if the project is actively maintained.',
+};
+
+const hyphenatedCheckConfig = {
+  name: 'Code-Review',
+  displayTitle: 'OpenSSF Code Review',
+  description: 'Determines if the project requires code review.',
 };
 
 describe('OpenSSFMetricProvider', () => {
@@ -73,6 +82,14 @@ describe('OpenSSFMetricProvider', () => {
         OPENSSF_THRESHOLDS,
       );
       expect(provider.getProviderId()).toBe('openssf.maintained');
+    });
+
+    it('normalizes hyphenated check names for provider id', () => {
+      const provider = new OpenSSFMetricProvider(
+        hyphenatedCheckConfig,
+        OPENSSF_THRESHOLDS,
+      );
+      expect(provider.getProviderId()).toBe('openssf.code_review');
     });
 
     it('returns openssf as provider datasource id', () => {
@@ -124,6 +141,38 @@ describe('OpenSSFMetricProvider', () => {
   });
 
   describe('calculateMetric', () => {
+    it.each([0, 10])(
+      'returns the score when the check is at boundary %i',
+      async boundaryScore => {
+        (globalThis.fetch as jest.Mock).mockResolvedValue({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            date: '2024-01-15',
+            repo: { name: 'github.com/owner/repo', commit: 'x' },
+            scorecard: { version: '4.0.0', commit: 'y' },
+            score: 7,
+            checks: [
+              {
+                name: 'Maintained',
+                score: boundaryScore,
+                reason: null,
+                details: null,
+                documentation: { short: '', url: '' },
+              },
+            ],
+          }),
+        });
+
+        const provider = new OpenSSFMetricProvider(
+          maintainedConfig,
+          OPENSSF_THRESHOLDS,
+        );
+        const result = await provider.calculateMetric(entity);
+
+        expect(result).toBe(boundaryScore);
+      },
+    );
+
     it('returns the score for the configured check', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue({
         ok: true,
@@ -152,6 +201,23 @@ describe('OpenSSFMetricProvider', () => {
 
       expect(result).toBe(8);
       expect(fetch).toHaveBeenCalledWith(scorecardLocation, expect.any(Object));
+    });
+
+    it('propagates errors from the OpenSSF client', async () => {
+      const provider = new OpenSSFMetricProvider(
+        maintainedConfig,
+        OPENSSF_THRESHOLDS,
+      );
+      const propagatedError = new Error('OpenSSF client failed');
+      const getScorecardSpy = jest
+        .spyOn((provider as any).openSSFClient, 'getScorecard')
+        .mockRejectedValue(propagatedError);
+
+      await expect(provider.calculateMetric(entity)).rejects.toBe(
+        propagatedError,
+      );
+      expect(getScorecardSpy).toHaveBeenCalledWith(entity);
+      expect(fetch).not.toHaveBeenCalled();
     });
 
     it('throws when the check is not in the scorecard', async () => {
@@ -212,6 +278,33 @@ describe('OpenSSFMetricProvider', () => {
       await expect(provider.calculateMetric(entity)).rejects.toThrow(
         "OpenSSF check 'Maintained' has invalid score 11",
       );
+    });
+  });
+
+  describe('createOpenSSFMetricProvider', () => {
+    it('creates one provider per configured OpenSSF metric', () => {
+      const providers = createOpenSSFMetricProvider();
+
+      expect(providers).toHaveLength(OPENSSF_METRICS.length);
+      expect(
+        providers.every(provider => provider instanceof OpenSSFMetricProvider),
+      ).toBe(true);
+    });
+
+    it('returns providers with normalized ids and configured thresholds', () => {
+      const providers = createOpenSSFMetricProvider();
+
+      const providerIds = providers.map(provider => provider.getProviderId());
+      const expectedProviderIds = OPENSSF_METRICS.map(metric => {
+        const normalizedName = metric.name.toLowerCase().replace(/-/g, '_');
+        return `openssf.${normalizedName}`;
+      });
+
+      expect(providerIds).toEqual(expectedProviderIds);
+      providers.forEach(provider => {
+        expect(provider.getProviderDatasourceId()).toBe('openssf');
+        expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);
+      });
     });
   });
 });
