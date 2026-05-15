@@ -180,6 +180,26 @@ describe('LokiProvider', () => {
       ).toThrow(/must not contain "\{"/);
     });
 
+    it('rejects logPipelineFilters entries that trim to empty (whitespace-only)', () => {
+      expect(() =>
+        LokiProvider.fromConfig(
+          new ConfigReader({
+            orchestrator: {
+              workflowLogProvider: {
+                loki: {
+                  baseUrl: 'http://localhost:3100',
+                  token: 't',
+                  logPipelineFilters: ['   \t  ', '| json'],
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(
+        /orchestrator\.workflowLogProvider\.loki\.logPipelineFilters\[0\]: entry must not be empty or whitespace-only/,
+      );
+    });
+
     it('rejects a negative limit', () => {
       expect(() =>
         LokiProvider.fromConfig(
@@ -296,6 +316,37 @@ describe('LokiProvider', () => {
         ).toThrow(/http:/);
       });
 
+      /**
+       * WHATWG `URL` normally never yields an empty `hostname` for strings that parse as http(s).
+       * Subclass `URL` so we can still cover the defensive check in `parseAndValidateLokiBaseUrl`.
+       */
+      it('rejects baseUrl when the resolved URL has no hostname', () => {
+        const OriginalURL = global.URL;
+        global.URL = class URLWithEmptyHostname extends OriginalURL {
+          get hostname(): string {
+            return '';
+          }
+        } as typeof URL;
+        try {
+          expect(() =>
+            LokiProvider.fromConfig(
+              new ConfigReader({
+                orchestrator: {
+                  workflowLogProvider: {
+                    loki: {
+                      baseUrl: 'http://localhost:3100',
+                      token: 't',
+                    },
+                  },
+                },
+              }),
+            ),
+          ).toThrow(/must include a hostname/);
+        } finally {
+          global.URL = OriginalURL;
+        }
+      });
+
       it('rejects http baseUrl in production unless allowInsecureHttp', () => {
         process.env.NODE_ENV = 'production';
         expect(() =>
@@ -405,6 +456,41 @@ describe('LokiProvider', () => {
   describe('fetchWorkflowLogsByInstance', () => {
     beforeEach(() => {
       jest.clearAllMocks();
+    });
+    it('wraps non-OK Loki responses using response body text', async () => {
+      const mockResponse: Partial<Response> = {
+        ok: false,
+        status: 502,
+        text: jest.fn().mockResolvedValue('bad gateway from loki'),
+        json: jest.fn(),
+      };
+      jest.mocked(undiciFetch).mockResolvedValue(mockResponse as any);
+
+      const lokiConfig = new ConfigReader({
+        orchestrator: {
+          workflowLogProvider: {
+            loki: {
+              baseUrl: 'http://localhost:3100',
+              token: 'notsecret',
+            },
+          },
+        },
+      });
+      const provider = LokiProvider.fromConfig(lokiConfig);
+      const workflowInstance: ProcessInstanceDTO = {
+        id: '12345',
+        processId: '54321',
+        start: '2025-12-05T16:35:13.621Z',
+        end: '',
+        nodes: [],
+      };
+
+      await expect(
+        provider.fetchWorkflowLogsByInstance(workflowInstance),
+      ).rejects.toThrow(/Problem fetching loki logs: bad gateway from loki/);
+
+      expect(mockResponse.text).toHaveBeenCalled();
+      expect(mockResponse.json).not.toHaveBeenCalled();
     });
     it('should pass with defaults', async () => {
       const mockResponse: Partial<Response> = {

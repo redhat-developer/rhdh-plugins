@@ -16,7 +16,11 @@
 
 import type { Config } from '@backstage/config';
 
-function hostnameMatchesAllowedHosts(
+/**
+ * Returns whether `hostname` matches any entry in `allowedHosts` (case-insensitive).
+ * Empty or whitespace-only patterns are ignored.
+ */
+export function hostnameMatchesAllowedHosts(
   hostname: string,
   allowedHosts: string[],
 ): boolean {
