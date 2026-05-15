@@ -90,7 +90,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-    padding: `${theme.spacing(1)}px ${theme.spacing(0.5)}px`,
+    padding: theme.spacing(1, 1),
     borderRadius: 4,
   },
   fileIcon: {

@@ -155,9 +155,7 @@ const useStyles = makeStyles(theme => ({
     },
   },
   header: {
-    padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
-      3,
-    )}px !important`,
+    padding: `${theme.spacing(3, 3, 0, 3)} !important`,
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default) !important',
   },
@@ -406,8 +404,8 @@ const useStyles = makeStyles(theme => ({
       'var(--pf-t--global--background--color--floating--default)',
   },
   toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': theme.spacing(2.5),
+    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': theme.spacing(2.5),
     '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
   },
   toastAlert: {

@@ -60,7 +60,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-    padding: `${theme.spacing(2)}px 0`,
+    padding: theme.spacing(2, 0),
     borderBottom:
       '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
     cursor: 'pointer',

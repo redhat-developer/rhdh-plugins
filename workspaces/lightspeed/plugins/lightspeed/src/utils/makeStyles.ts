@@ -23,6 +23,12 @@ import { insertStyles, registerStyles } from '@emotion/utils';
 import type { Theme } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 
+/**
+ * Emotion-backed makeStyles uses `useTheme` from `@mui/material` (MUI v5).
+ * Unlike MUI v4, `theme.spacing(n)` returns strings with units (e.g. `"8px"`).
+ * Do not append `px` after `theme.spacing(...)` in style objects — that produces
+ * invalid values like `16pxpx` and drops the whole declaration in the browser.
+ */
 const emotionCache = createCache({ key: 'ls' });
 
 type StylesObj<K extends string> = Record<K, CSSInterpolation>;
