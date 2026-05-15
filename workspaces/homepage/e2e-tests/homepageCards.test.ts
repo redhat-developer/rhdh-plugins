@@ -16,11 +16,7 @@
 
 import { test, expect, BrowserContext, Page } from '@playwright/test';
 import { TestUtils } from './utils/testUtils.js';
-import {
-  HomepageMessages,
-  evaluateMessage,
-  getTranslations,
-} from './utils/translations.js';
+import { HomepageMessages, getTranslations } from './utils/translations.js';
 
 test.describe('Homepage Card Individual Tests', () => {
   let testUtils: TestUtils;

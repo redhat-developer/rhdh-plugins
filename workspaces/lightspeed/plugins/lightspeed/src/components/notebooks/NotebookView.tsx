@@ -23,7 +23,6 @@ import {
   ChatbotContent,
   ChatbotFooter,
   ChatbotFootnote,
-  ChatbotWelcomePrompt,
   MessageBar,
   MessageProps,
 } from '@patternfly/chatbot';
@@ -56,8 +55,8 @@ import {
 } from '../../hooks/notebooks/useDocumentStatusPolling';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
+import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useWelcomePrompts } from '../../hooks/useWelcomePrompts';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { AddDocumentModal } from './AddDocumentModal';
@@ -218,9 +217,29 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(0.5),
   },
   promptSuggestions: {
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    gap: theme.spacing(1),
     width: '95%',
     maxWidth: 'unset',
-    margin: '0 auto',
+    margin: `${theme.spacing(3)}px auto ${theme.spacing(3)}px auto`,
+    justifyContent: 'flex-start',
+  },
+  promptPill: {
+    appearance: 'none' as const,
+    background: 'transparent',
+    border: `1px solid var(--pf-t--global--border--color--default)`,
+    borderRadius: '999px',
+    padding: `${theme.spacing(1)}px ${theme.spacing(2.5)}px`,
+    fontSize: '0.875rem',
+    color: 'var(--pf-t--global--text--color--regular)',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s, border-color 0.15s',
+    '&:hover': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--secondary--default)',
+      borderColor: 'var(--pf-t--global--border--color--hover)',
+    },
   },
   footer: {
     backgroundColor:
@@ -369,16 +388,11 @@ export const NotebookView = ({
     [handleInputPrompt, t],
   );
 
-  const samplePrompts = useWelcomePrompts();
-  const welcomePrompts =
-    samplePrompts?.map(prompt => {
-      const p = prompt as { title: string; message: string };
-      return {
-        title: p.title,
-        message: p.message,
-        onClick: () => sendMessage(p.message),
-      };
-    }) ?? [];
+  const notebookPrompts = useNotebookWelcomePrompts();
+  const welcomePrompts = notebookPrompts.map(title => ({
+    title,
+    onClick: () => sendMessage(title),
+  }));
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -580,6 +594,7 @@ export const NotebookView = ({
     }
     return (
       <div className={classes.welcomeContainer}>
+        <div style={{ flex: 1 }} />
         {renderNotebookDisclaimerAlert()}
         <div className={classes.notebookContentArea}>
           <Typography className={classes.notebookHeading}>
@@ -593,11 +608,16 @@ export const NotebookView = ({
         </div>
         {welcomePrompts.length > 0 && (
           <div className={classes.promptSuggestions}>
-            <ChatbotWelcomePrompt
-              title=""
-              description=""
-              prompts={welcomePrompts}
-            />
+            {welcomePrompts.map(prompt => (
+              <button
+                key={prompt.title}
+                type="button"
+                className={classes.promptPill}
+                onClick={prompt.onClick}
+              >
+                {prompt.title}
+              </button>
+            ))}
           </div>
         )}
       </div>

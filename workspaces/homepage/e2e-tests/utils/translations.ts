@@ -27,16 +27,21 @@ import homepageTranslationJa from '../../plugins/dynamic-home-page/src/translati
 export type HomepageMessages = typeof homepageMessages;
 
 function transform(messages: typeof homepageTranslationDe.messages) {
-  const result = Object.keys(messages).reduce((res, key) => {
-    const path = key.split('.');
-    const lastIndex = path.length - 1;
-    path.reduce((acc, currentPath, i) => {
-      acc[currentPath] =
-        lastIndex === i ? messages[key] : acc[currentPath] || {};
-      return acc[currentPath];
-    }, res);
-    return res;
-  }, {});
+  const result = Object.keys(messages).reduce(
+    (res, key) => {
+      const path = key.split('.');
+      const lastIndex = path.length - 1;
+      path.reduce((acc, currentPath, i) => {
+        acc[currentPath] =
+          lastIndex === i
+            ? (messages as Record<string, string>)[key]
+            : (acc[currentPath] as Record<string, unknown>) || {};
+        return acc[currentPath] as Record<string, unknown>;
+      }, res);
+      return res;
+    },
+    {} as Record<string, unknown>,
+  );
 
   return result as HomepageMessages;
 }

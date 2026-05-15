@@ -30,6 +30,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'tabs.ariaLabel': 'Lightspeed のビュー',
     'tabs.chat': 'チャット',
     'tabs.notebooks': 'ノートブック',
+    'tabs.notebooks.devPreview': '開発者プレビュー',
     'tabs.notebooks.empty': 'ノートブックの内容はここに表示されます。',
     'notebooks.title': 'マイノートブック',
     'notebooks.empty.title': '作成されたノートブックはありません',
@@ -55,6 +56,11 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebooks.updated.days': '{{days}}日前に更新',
     'notebooks.updated.on': '更新日',
     'notebooks.card.openAria': 'ノートブック {{name}} を開く',
+
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title': 'コアコンセプトは何ですか？',
+    'notebooks.prompts.vulnerabilities.title': '重大な脆弱性を表示してください',
+    'notebooks.prompts.accessIssue.title': 'アクセスの問題を解決してください',
 
     // Notebook view
     'notebook.view.title': '無題のノートブック',
