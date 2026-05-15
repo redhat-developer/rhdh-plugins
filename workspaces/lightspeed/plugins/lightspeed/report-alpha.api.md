@@ -241,6 +241,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.view.sidebar.resize': string;
     readonly 'notebook.view.documents.uploading': string;
     readonly 'notebook.view.documents.maxReached': string;
+    readonly 'notebook.view.documents.uploadsInProgress': string;
     readonly 'notebook.upload.success': string;
     readonly 'notebook.upload.failed': string;
     readonly 'notebook.upload.modal.title': string;

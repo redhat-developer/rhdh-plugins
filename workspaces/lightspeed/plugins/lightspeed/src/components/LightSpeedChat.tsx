@@ -688,9 +688,8 @@ export const LightspeedChat = ({
     [],
   );
   const createNotebookMutation = useCreateNotebook();
-  const { data: notebookDocuments = [] } = useNotebookDocuments(
-    activeNotebook?.session_id,
-  );
+  const { data: notebookDocuments = [], isFetching: isDocumentsFetching } =
+    useNotebookDocuments(activeNotebook?.session_id);
   const [conversationId, setConversationId] = useState<string>('');
   const [requestId, setRequestId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
@@ -2081,6 +2080,7 @@ export const LightspeedChat = ({
               sessionId={activeNotebook.session_id}
               notebookName={activeNotebook.name}
               documents={notebookDocuments}
+              isDocumentsFetching={isDocumentsFetching}
               metadata={activeNotebook.metadata}
               topicSummary={
                 conversations.find(

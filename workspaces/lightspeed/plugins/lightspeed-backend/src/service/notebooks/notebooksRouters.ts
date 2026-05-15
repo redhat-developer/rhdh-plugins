@@ -226,49 +226,14 @@ export async function createNotebooksRouter(
             };
             this.push(`data: ${JSON.stringify(legacy)}\n\n`);
           } else if (eventType === 'response.completed') {
-            const usage = parsed?.response?.usage;
-
             // Log the full response to see what we're getting
             logger.info(
               `Full response.completed event: ${JSON.stringify(parsed?.response, null, 2)}`,
             );
 
             // Extract citations/sources from tool calls (file_search results)
-            const toolCalls = parsed?.response?.tool_calls || [];
-            logger.info(
-              `Tool calls received: ${JSON.stringify(toolCalls, null, 2)}`,
-            );
 
-            const referencedDocuments: any[] = [];
-
-            for (const toolCall of toolCalls) {
-              if (toolCall.tool_name === 'file_search') {
-                logger.info(
-                  `Found file_search tool call: ${JSON.stringify(toolCall, null, 2)}`,
-                );
-                const citations = toolCall.content?.citations || [];
-                for (const citation of citations) {
-                  referencedDocuments.push({
-                    document_id: citation.document_id || citation.file_id,
-                    content: citation.text || citation.content,
-                  });
-                }
-              }
-            }
-
-            logger.info(
-              `Referenced documents: ${JSON.stringify(referencedDocuments)}`,
-            );
-
-            const legacy = {
-              event: 'end',
-              data: {
-                referenced_documents: referencedDocuments,
-                input_tokens: usage?.input_tokens,
-                output_tokens: usage?.output_tokens,
-              },
-            };
-            this.push(`data: ${JSON.stringify(legacy)}\n\n`);
+            // this.push(`data: ${JSON.stringify(legacy)}\n\n`);
           } else {
             // Log unhandled event types to help identify what we're missing
             logger.debug(`Unhandled SSE event type: ${eventType}`, parsed);
@@ -482,6 +447,7 @@ export async function createNotebooksRouter(
         input: query,
         instructions: systemPrompt,
         tools: [{ type: 'file_search', vector_store_ids: [sessionId] }],
+        tool_choice: 'required',
         model: `${queryProvider}/${queryModel}`,
         stream: true,
         temperature: 0.35,

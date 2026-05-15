@@ -268,6 +268,7 @@ type NotebookViewProps = {
   sessionId: string;
   notebookName?: string;
   documents?: SessionDocument[];
+  isDocumentsFetching?: boolean;
   metadata?: NotebookSessionMetadata;
   topicSummary?: string;
   userName?: string;
@@ -281,6 +282,7 @@ export const NotebookView = ({
   sessionId,
   notebookName = UNTITLED_NOTEBOOK_NAME,
   documents = [],
+  isDocumentsFetching = false,
   metadata,
   topicSummary,
   userName,
@@ -533,7 +535,9 @@ export const NotebookView = ({
 
   const hasDocuments = documents.length > 0 || uploadingFileNames.length > 0;
   const totalDocumentCount = documents.length + uploadingFileNames.length;
-  const isAddDisabled = totalDocumentCount >= NOTEBOOK_MAX_FILES;
+  const hasUploadsInProgress = pendingUploads.length > 0 || isDocumentsFetching;
+  const isAddDisabled =
+    totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
 
   const panelContent = (
     <DrawerPanelContent
@@ -550,6 +554,7 @@ export const NotebookView = ({
         completedFileNames={completedFileNames}
         deletingDocumentIds={deletingDocumentIds}
         collapsed={sidebarCollapsed}
+        hasUploadsInProgress={hasUploadsInProgress}
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
@@ -679,11 +684,13 @@ export const NotebookView = ({
                     </Button>
                   </Tooltip>
                   <Tooltip
-                    content={
-                      isAddDisabled
-                        ? t('notebook.view.documents.maxReached')
-                        : t('notebook.view.documents.add')
-                    }
+                    content={(() => {
+                      if (hasUploadsInProgress)
+                        return t('notebook.view.documents.uploadsInProgress');
+                      if (isAddDisabled)
+                        return t('notebook.view.documents.maxReached');
+                      return t('notebook.view.documents.add');
+                    })()}
                     position="right"
                   >
                     <Typography component="span">
@@ -763,6 +770,7 @@ export const NotebookView = ({
         onClose={handleCloseUploadModal}
         sessionId={sessionId}
         existingDocumentNames={documents.map(d => d.title)}
+        hasUploadsInProgress={hasUploadsInProgress}
         onFilesUploading={handleFilesUploading}
         onUploadStarted={handleUploadStarted}
         onUploadFailed={handleUploadFailed}
