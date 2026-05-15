@@ -113,6 +113,7 @@ export function parseAndValidateLokiBaseUrl(options: {
 
 /** Prometheus / Loki stream label names: `[a-zA-Z_]\w*` (ASCII `\w` only; no `/u` flag). */
 const LOKI_LABEL_NAME_PATTERN = /^[a-zA-Z_]\w*$/;
+const PROMETHEUS_LABEL_NAME_RULE_DESC = String.raw`[a-zA-Z_]\w*`;
 
 /**
  * Label matcher fragment after the label name: `="..."`, `!=`, regex with `"` or `` ` ``.
@@ -129,7 +130,7 @@ export interface ValidatedLogStreamSelector {
 function assertValidLokiLabelName(label: string, context: string): void {
   if (!LOKI_LABEL_NAME_PATTERN.test(label)) {
     throw new Error(
-      `${context}: label must match Prometheus label name rules ${String.raw`[a-zA-Z_]\w*`} (got "${label}")`,
+      `${context}: label must match Prometheus label name rules ${PROMETHEUS_LABEL_NAME_RULE_DESC} (got "${label}")`,
     );
   }
 }
