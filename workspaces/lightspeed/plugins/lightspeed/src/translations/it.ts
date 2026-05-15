@@ -290,6 +290,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'settings.pinned.disabled.description':
       'Le chat bloccate sono attualmente disabilitate',
     'settings.mcp.label': 'Impostazioni MCP',
+    'settings.mcp.badge': 'Nuovo',
     'mcp.settings.title': 'Server MCP',
     'mcp.settings.selectedCount':
       '{{selectedCount}} di {{totalCount}} selezionati',

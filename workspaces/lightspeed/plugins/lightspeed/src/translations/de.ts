@@ -290,6 +290,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'settings.pinned.disabled.description':
       'Angeheftete Chats sind derzeit deaktiviert.',
     'settings.mcp.label': 'MCP-Einstellungen',
+    'settings.mcp.badge': 'Neu',
     'mcp.settings.title': 'MCP-Server',
     'mcp.settings.selectedCount':
       '{{selectedCount}} von {{totalCount}} ausgewählt',

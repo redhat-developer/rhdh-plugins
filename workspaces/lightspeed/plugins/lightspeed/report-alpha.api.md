@@ -375,6 +375,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'settings.pinned.enabled.description': string;
     readonly 'settings.pinned.disabled.description': string;
     readonly 'settings.mcp.label': string;
+    readonly 'settings.mcp.badge': string;
     readonly 'mcp.settings.title': string;
     readonly 'mcp.settings.selectedCount': string;
     readonly 'mcp.settings.closeAriaLabel': string;

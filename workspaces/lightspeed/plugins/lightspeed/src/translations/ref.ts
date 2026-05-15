@@ -321,6 +321,7 @@ export const lightspeedMessages = {
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
   'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
   'settings.mcp.label': 'MCP settings',
+  'settings.mcp.badge': 'New',
 
   // MCP settings
   'mcp.settings.title': 'MCP servers',

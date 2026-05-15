@@ -283,6 +283,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'settings.pinned.enabled.description': 'チャットの固定は現在有効です',
     'settings.pinned.disabled.description': 'チャットの固定は現在無効です',
     'settings.mcp.label': 'MCP 設定',
+    'settings.mcp.badge': '新規',
     'mcp.settings.title': 'MCP サーバー',
     'mcp.settings.selectedCount':
       '{{totalCount}} 件中 {{selectedCount}} 件を選択',

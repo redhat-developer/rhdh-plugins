@@ -289,6 +289,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'settings.pinned.disabled.description':
       'Los chats fijados están deshabilitados actualmente',
     'settings.mcp.label': 'Configuración de MCP',
+    'settings.mcp.badge': 'Nuevo',
     'mcp.settings.title': 'Servidores MCP',
     'mcp.settings.selectedCount':
       '{{selectedCount}} de {{totalCount}} seleccionados',

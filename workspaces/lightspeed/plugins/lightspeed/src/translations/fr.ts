@@ -291,6 +291,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'settings.pinned.disabled.description':
       'Les conversations épinglées sont actuellement désactivées',
     'settings.mcp.label': 'Paramètres MCP',
+    'settings.mcp.badge': 'Nouveau',
     'mcp.settings.title': 'Serveurs MCP',
     'mcp.settings.selectedCount':
       '{{selectedCount}} sur {{totalCount}} sélectionnés',
