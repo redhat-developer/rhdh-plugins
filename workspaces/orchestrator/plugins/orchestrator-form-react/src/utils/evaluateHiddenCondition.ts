@@ -58,32 +58,56 @@ function matchesAny(
 }
 
 /**
- * Evaluate a simple condition object
+ * Evaluate a simple condition object.
+ * All specified operators are ANDed together — every operator present must
+ * evaluate to true for the field to be hidden.
  */
 function evaluateConditionObject(
   condition: HiddenConditionObject,
   formData: JsonObject,
 ): boolean {
   const fieldValue = get(formData, condition.when);
+  let result = true;
+  let hasCondition = false;
 
-  // Check isEmpty condition
+  // Check isEmpty condition (hide if field is empty / not empty)
   if (condition.isEmpty !== undefined) {
+    hasCondition = true;
     const empty = isEmptyValue(fieldValue);
-    return condition.isEmpty ? empty : !empty;
+    if (!(condition.isEmpty ? empty : !empty)) result = false;
   }
 
   // Check 'is' condition (hide if field equals any value)
   if (condition.is !== undefined) {
-    return matchesAny(fieldValue, condition.is);
+    hasCondition = true;
+    if (!matchesAny(fieldValue, condition.is)) result = false;
   }
 
   // Check 'isNot' condition (hide if field does NOT equal any value)
   if (condition.isNot !== undefined) {
-    return !matchesAny(fieldValue, condition.isNot);
+    hasCondition = true;
+    if (matchesAny(fieldValue, condition.isNot)) result = false;
   }
 
-  // No valid condition found, don't hide
-  return false;
+  // Check 'isNotEmptyList' condition (hide if field is a non-empty array)
+  if (condition.isNotEmptyList !== undefined) {
+    hasCondition = true;
+    const isNonEmptyList = Array.isArray(fieldValue) && fieldValue.length > 0;
+    if (condition.isNotEmptyList ? !isNonEmptyList : isNonEmptyList)
+      result = false;
+  }
+
+  // Check 'notContains' condition (hide if array does NOT contain value)
+  if (condition.notContains !== undefined) {
+    hasCondition = true;
+    if (
+      Array.isArray(fieldValue) &&
+      fieldValue.includes(condition.notContains)
+    )
+      result = false;
+  }
+
+  return hasCondition ? result : false;
 }
 
 /**
