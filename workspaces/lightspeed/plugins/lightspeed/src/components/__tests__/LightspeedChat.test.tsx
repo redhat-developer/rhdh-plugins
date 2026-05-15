@@ -1121,7 +1121,7 @@ describe('LightspeedChat', () => {
       ).toBeInTheDocument();
     });
 
-    it('should render model selector and attach menu in fullscreen mode', async () => {
+    it('should render model selector and attach menu in message bar', async () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
