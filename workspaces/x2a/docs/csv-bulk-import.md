@@ -128,4 +128,4 @@ import { RepoAuthenticationExtension } from '@red-hat-developer-hub/backstage-pl
 </ScaffolderFieldExtensions>
 ```
 
-For Red Hat Developer Hub (RHDH) with dynamic plugins, the extension is registered via configuration instead. See [Providing custom Scaffolder field extensions](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html/installing_and_viewing_plugins_in_red_hat_developer_hub/assembly-front-end-plugin-wiring.adoc_rhdh-extensions-plugins#con-providing-custom-scaffolder-field-extensions.adoc_assembly-front-end-plugin-wiring) in the RHDH documentation.
+For Red Hat Developer Hub (RHDH) with dynamic plugins, the extension is registered via configuration instead. See [Providing custom Scaffolder field extensions](https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/installing_and_viewing_plugins_in_red_hat_developer_hub/front-end-plugin-wiring_plugins-in-rhdh#providing-custom-scaffolder-field-extensions_front-end-plugin-wiring) in the RHDH documentation.
