@@ -236,10 +236,24 @@ export class NotebookSurfacePage {
     });
   }
 
-  /** Opens the overflow menu on the first sidebar document and chooses Delete document. */
+  /** The confirmation dialog that appears after choosing Delete document. */
+  deleteDocumentConfirmDialog(): Locator {
+    return this.page.getByRole('dialog');
+  }
+
+  deleteDocumentConfirmButton(): Locator {
+    return this.deleteDocumentConfirmDialog().getByRole('button', {
+      name: this.t['notebook.document.delete.action'],
+      exact: true,
+    });
+  }
+
+  /** Opens the overflow menu on the first sidebar document, chooses Delete document, and confirms the deletion. */
   async deleteFirstListedDocumentFromSidebarOverflowMenu(): Promise<void> {
     await this.firstListedDocumentOverflowMenuToggle().click();
     await this.documentRowDeleteMenuItem().click();
+    await expect(this.deleteDocumentConfirmDialog()).toBeVisible();
+    await this.deleteDocumentConfirmButton().click();
   }
 
   async expectDocumentFileListedInSidebar(fileName: string): Promise<void> {

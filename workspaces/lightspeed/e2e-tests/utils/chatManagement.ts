@@ -330,7 +330,7 @@ export const verifyEmptySearchResults = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await expect(page.getByLabel(translations['conversation.category.recent']))
+  await expect(page.locator('.pf-v6-c-drawer__panel-main'))
     .toMatchAriaSnapshot(`
     - heading "${translations['conversation.category.pinnedChats']}"
     - menu:
