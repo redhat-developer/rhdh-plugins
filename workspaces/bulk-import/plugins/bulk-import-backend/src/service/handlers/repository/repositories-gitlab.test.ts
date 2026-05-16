@@ -19,10 +19,7 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { rest } from 'msw';
 import request from 'supertest';
 
-import {
-  CATALOG_API_LOCATIONS_LOCAL_ADDR,
-  LOCAL_ADDR,
-} from '../../../../__fixtures__/handlers';
+import { LOCAL_ADDR } from '../../../../__fixtures__/handlers';
 import {
   setupTest,
   startBackendServer,
@@ -210,25 +207,24 @@ describe('repositories', () => {
       });
 
       it('returns filtered (not yet imported) repos when some repos are already imported', async () => {
-        const { server, mockCatalogClient } = useTestData();
-
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-funtimes',
-                    target:
-                      'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
-                    type: 'url',
-                  },
+        const { mockCatalogClient } = useTestData();
+        mockCatalogClient.queryEntities.mockResolvedValue({
+          items: [
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'funtimes',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
                 },
-              ]),
-            ),
-          ),
-        );
+              },
+            },
+          ],
+          totalItems: 1,
+          pageInfo: {},
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,
@@ -269,41 +265,46 @@ describe('repositories', () => {
       });
 
       it('returns empty array when all repos are already imported', async () => {
-        const { server, mockCatalogClient } = useTestData();
-
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-dolbear',
-                    target:
-                      'http://localhost:8765/saltypig1/dolbear/blob/main/catalog-info.yaml',
-                    type: 'url',
-                  },
+        const { mockCatalogClient } = useTestData();
+        mockCatalogClient.queryEntities.mockResolvedValue({
+          items: [
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'dolbear',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/saltypig1/dolbear/blob/main/catalog-info.yaml',
                 },
-                {
-                  data: {
-                    id: 'imported-funtimes',
-                    target:
-                      'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
-                    type: 'url',
-                  },
+              },
+            },
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'funtimes',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
                 },
-                {
-                  data: {
-                    id: 'imported-swapi-node',
-                    target:
-                      'http://localhost:8765/saltypig1/swapi-node/blob/main/catalog-info.yaml',
-                    type: 'url',
-                  },
+              },
+            },
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'swapi-node',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/saltypig1/swapi-node/blob/main/catalog-info.yaml',
                 },
-              ]),
-            ),
-          ),
-        );
+              },
+            },
+          ],
+          totalItems: 3,
+          pageInfo: {},
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,
@@ -325,25 +326,24 @@ describe('repositories', () => {
       });
 
       it('returns all repos even though a non-root catalog location exists', async () => {
-        const { server, mockCatalogClient } = useTestData();
-
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-funtimes-nested',
-                    target:
-                      'http://localhost:8765/saltypig1/funtimes/blob/main/packages/backend/catalog-info.yaml',
-                    type: 'url',
-                  },
+        const { mockCatalogClient } = useTestData();
+        mockCatalogClient.queryEntities.mockResolvedValue({
+          items: [
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'funtimes-nested',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/saltypig1/funtimes/blob/main/packages/backend/catalog-info.yaml',
                 },
-              ]),
-            ),
-          ),
-        );
+              },
+            },
+          ],
+          totalItems: 1,
+          pageInfo: {},
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,
