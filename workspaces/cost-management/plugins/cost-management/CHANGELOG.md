@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/plugin-cost-management
 
+## 2.2.1
+
+### Patch Changes
+
+- 558b7c3: fix: patch transitive dependency CVEs via yarn resolutions
+
+  Pins vulnerable transitive dependencies to patched versions to address open Dependabot alerts:
+
+- Updated dependencies [558b7c3]
+  - @red-hat-developer-hub/plugin-cost-management-common@2.2.1
+
 ## 2.2.0
 
 ### Minor Changes
