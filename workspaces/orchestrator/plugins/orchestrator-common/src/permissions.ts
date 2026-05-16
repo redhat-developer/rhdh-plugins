@@ -16,13 +16,17 @@
 
 import { createPermission } from '@backstage/plugin-permission-common';
 
+export const ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE = 'orchestrator-workflow';
+
 export const orchestratorWorkflowPermission = createPermission({
   name: 'orchestrator.workflow',
   attributes: {
     action: 'read',
   },
+  resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
 });
 
+// @Deprecated, use conditional policies instead of
 export const orchestratorWorkflowSpecificPermission = (workflowId: string) =>
   createPermission({
     name: `orchestrator.workflow.${workflowId}`,
@@ -36,8 +40,10 @@ export const orchestratorWorkflowUsePermission = createPermission({
   attributes: {
     action: 'update',
   },
+  resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
 });
 
+// @Deprecated, use conditional policies instead of
 export const orchestratorWorkflowUseSpecificPermission = (workflowId: string) =>
   createPermission({
     name: `orchestrator.workflow.use.${workflowId}`,

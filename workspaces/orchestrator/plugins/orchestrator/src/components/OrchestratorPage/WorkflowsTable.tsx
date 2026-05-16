@@ -19,7 +19,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { Link, TableColumn, TableProps } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
-import { usePermission } from '@backstage/plugin-permission-react';
 
 // Workaround since we use the newer @mui library but Backstage still uses deprecated @material-ui
 import { SvgIcon } from '@material-ui/core';
@@ -32,10 +31,6 @@ import Box from '@mui/material/Box';
 import MuiLink from '@mui/material/Link';
 
 import {
-  orchestratorWorkflowPermission,
-  orchestratorWorkflowSpecificPermission,
-  orchestratorWorkflowUsePermission,
-  orchestratorWorkflowUseSpecificPermission,
   ProcessInstanceStatusDTO,
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -44,7 +39,6 @@ import { ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL } from '../../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
-import { usePermissionArray } from '../../hooks/usePermissionArray';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
@@ -73,47 +67,21 @@ const DeveloperModeOutlined =
 const usePermittedToUseBatch = (
   items: WorkflowOverviewDTO[],
 ): { allowed: boolean[] } => {
-  const generic = usePermission({
-    permission: orchestratorWorkflowUsePermission,
-  });
-
-  let workflowIds: string[] = [];
-  if (!generic.loading && !generic.allowed) {
-    // This will effectively skip the requests if the generic permission grants the access
-    workflowIds = items.map(i => i.workflowId);
-  }
-
-  const specific = usePermissionArray(
-    workflowIds.map(workflowId =>
-      orchestratorWorkflowUseSpecificPermission(workflowId),
-    ),
-  );
+  // With RBAC conditional policies, the backend filters workflows by permission
+  // If a workflow is returned in the list, the user has permission to view it
+  // For "use" permission, we optimistically allow - the backend will deny if not permitted
   return {
-    allowed: items.map((_, idx) => generic.allowed || specific.allowed[idx]),
+    allowed: items.map(() => true),
   };
 };
 
 const usePermittedToViewBatch = (
   items: WorkflowOverviewDTO[],
 ): { allowed: boolean[] } => {
-  const generic = usePermission({
-    permission: orchestratorWorkflowPermission,
-  });
-
-  let workflowIds: string[] = [];
-  if (!generic.loading && !generic.allowed) {
-    // This will effectively skip the subsequent "specific" requests if the generic permission is granted
-    workflowIds = items.map(i => i.workflowId);
-  }
-
-  const specific = usePermissionArray(
-    workflowIds.map(workflowId =>
-      orchestratorWorkflowSpecificPermission(workflowId),
-    ),
-  );
-
+  // With RBAC conditional policies, the backend filters workflows by permission
+  // If a workflow is returned in the list, the user has permission to view it
   return {
-    allowed: items.map((_, idx) => generic.allowed || specific.allowed[idx]),
+    allowed: items.map(() => true),
   };
 };
 

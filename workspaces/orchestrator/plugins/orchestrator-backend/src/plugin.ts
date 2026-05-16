@@ -55,6 +55,7 @@ export const orchestratorPlugin = createBackendPlugin({
         catalogApi: catalogServiceRef,
         urlReader: coreServices.urlReader,
         permissions: coreServices.permissions,
+        permissionsRegistry: coreServices.permissionsRegistry,
         scheduler: coreServices.scheduler,
         httpAuth: coreServices.httpAuth,
         http: coreServices.httpRouter,
