@@ -76,8 +76,7 @@ export const lightspeedMessages = {
   'notebook.view.documents.uploading': 'Uploading document',
   'notebook.view.documents.maxReached':
     'Maximum 10 documents are allowed. Delete a document to upload a new document.',
-  'notebook.upload.success': '{{fileName}} Successfully Uploaded.',
-  'notebook.upload.failed': '{{fileName}} Upload Failed.',
+  'notebook.upload.failed': '"{{fileName}}" upload failed.',
 
   // Notebook upload modal
   'notebook.upload.modal.title': 'Add a document to Notebook',
@@ -102,6 +101,12 @@ export const lightspeedMessages = {
     'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
   'notebook.overwrite.modal.action': 'Overwrite',
   'notebook.document.delete': 'Delete',
+  'notebook.document.delete.title': 'Remove resource?',
+  'notebook.document.delete.description':
+    'Are you sure you want to remove <documentName/> from this notebook? This action cannot be undone.',
+  'notebook.document.delete.action': 'Remove',
+  'notebook.document.delete.success':
+    '"{{documentName}}" removed successfully.',
 
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',
@@ -262,10 +267,6 @@ export const lightspeedMessages = {
   'attach.menu.title': 'Attach',
   'attach.menu.description': 'Attach a JSON, YAML, or TXT file',
 
-  // History panel sections
-  'history.section.pinned': 'Pinned',
-  'history.section.recent': 'Recent',
-
   // Modal titles
   'modal.title.preview': 'Preview attachment',
   'modal.title.edit': 'Edit attachment',
@@ -311,8 +312,8 @@ export const lightspeedMessages = {
     "We've received your response. Thank you for sharing your feedback!",
 
   // Conversation categorization
-  'conversation.category.pinnedChats': 'Pinned',
-  'conversation.category.recent': 'Recent',
+  'conversation.category.pinnedChats': 'Pinned chats',
+  'conversation.category.recent': 'Chats',
 
   // lightspeed settings
   'settings.pinned.enable': 'Enable pinned chats',
@@ -320,6 +321,7 @@ export const lightspeedMessages = {
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
   'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
   'settings.mcp.label': 'MCP settings',
+  'settings.mcp.badge': 'New',
 
   // MCP settings
   'mcp.settings.title': 'MCP servers',

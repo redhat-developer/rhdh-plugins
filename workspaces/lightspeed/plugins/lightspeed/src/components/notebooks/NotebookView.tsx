@@ -60,6 +60,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { AddDocumentModal } from './AddDocumentModal';
+import { DeleteDocumentModal } from './DeleteDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
 import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
@@ -311,25 +312,14 @@ export const NotebookView = ({
   const [deletingDocumentIds, setDeletingDocumentIds] = useState<Set<string>>(
     new Set(),
   );
+  const [deleteDocumentTarget, setDeleteDocumentTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
-  const handleDeleteDocument = useCallback(
-    async (documentId: string) => {
-      setDeletingDocumentIds(prev => new Set(prev).add(documentId));
-      try {
-        await notebooksApi.deleteDocument(sessionId, documentId);
-        queryClient.invalidateQueries({
-          queryKey: ['notebooks', 'documents', sessionId],
-        });
-      } finally {
-        setDeletingDocumentIds(prev => {
-          const next = new Set(prev);
-          next.delete(documentId);
-          return next;
-        });
-      }
-    },
-    [notebooksApi, sessionId, queryClient],
-  );
+  const handleDeleteDocument = useCallback((documentId: string) => {
+    setDeleteDocumentTarget({ id: documentId, name: documentId });
+  }, []);
 
   const onComplete = useCallback(
     (message: string) => {
@@ -406,6 +396,35 @@ export const NotebookView = ({
   const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
+
+  const confirmDeleteDocument = useCallback(async () => {
+    if (!deleteDocumentTarget) return;
+    const { id: documentId, name: documentName } = deleteDocumentTarget;
+    setDeleteDocumentTarget(null);
+    setDeletingDocumentIds(prev => new Set(prev).add(documentId));
+    try {
+      await notebooksApi.deleteDocument(sessionId, documentId);
+      queryClient.invalidateQueries({
+        queryKey: ['notebooks', 'documents', sessionId],
+      });
+      setToastAlerts(prev => [
+        {
+          key: Date.now() + documentId,
+          title: (t as Function)('notebook.document.delete.success', {
+            documentName,
+          }) as string,
+          variant: 'success',
+        },
+        ...prev,
+      ]);
+    } finally {
+      setDeletingDocumentIds(prev => {
+        const next = new Set(prev);
+        next.delete(documentId);
+        return next;
+      });
+    }
+  }, [deleteDocumentTarget, notebooksApi, sessionId, queryClient, t]);
 
   const handleOpenUploadModal = () => setIsUploadModalOpen(true);
   const handleCloseUploadModal = () => setIsUploadModalOpen(false);
@@ -495,20 +514,15 @@ export const NotebookView = ({
         newCompletedNames.add(result.fileName);
       }
 
-      if (result.status === 'completed') {
+      if (result.status !== 'completed') {
+        const errorDetail = result.error ? ` ${result.error}` : '';
         newAlerts.push({
           key: Date.now() + result.documentId,
-          title: (t as Function)('notebook.upload.success', {
-            fileName: result.fileName,
-          }) as string,
-          variant: 'success',
-        });
-      } else {
-        newAlerts.push({
-          key: Date.now() + result.documentId,
-          title: (t as Function)('notebook.upload.failed', {
-            fileName: result.fileName,
-          }) as string,
+          title: `${
+            (t as Function)('notebook.upload.failed', {
+              fileName: result.fileName,
+            }) as string
+          }${errorDetail}`,
           variant: 'danger',
         });
       }
@@ -776,6 +790,13 @@ export const NotebookView = ({
         onClose={handleOverwriteCancel}
         onConfirm={handleOverwriteConfirm}
         fileNames={filesToOverwrite.map(f => f.name)}
+      />
+
+      <DeleteDocumentModal
+        isOpen={deleteDocumentTarget !== null}
+        onClose={() => setDeleteDocumentTarget(null)}
+        onConfirm={confirmDeleteDocument}
+        documentName={deleteDocumentTarget?.name ?? ''}
       />
     </div>
   );
