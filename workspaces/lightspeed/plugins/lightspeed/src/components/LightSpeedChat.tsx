@@ -413,6 +413,7 @@ const useStyles = makeStyles(theme => ({
     '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
     '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
     '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
+    '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
   },
   toastAlert: {
     maxWidth: '350px',
