@@ -22,11 +22,11 @@ import {
 import express from 'express';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import type { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { CallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { Knex } from 'knex';
 
 import { createRouter } from '../router';
 import { registerCollectArtifactsRoutes } from '../router/collectArtifacts';
-import { SignatureValidator } from '../router/utils/SignatureValidator';
 import { X2ADatabaseService } from '../services/X2ADatabaseService';
 import { createService } from './testHelpers';
 
@@ -334,20 +334,19 @@ export interface CollectArtifactsTestApp {
   signRequestBody: (body: object, secret: string) => string;
 }
 
+function signRequestBody(body: object, secret: string): string {
+  const token = CallbackToken.from(secret);
+  const bodyBuffer = Buffer.from(JSON.stringify(body), 'utf-8');
+  return token.sign(bodyBuffer);
+}
+
 export function setupCollectArtifactsApp(): CollectArtifactsTestApp {
   const mockDeps = createMockRouterDeps();
-  const signatureValidator = new SignatureValidator();
   const app = express();
   const router = express.Router();
   registerCollectArtifactsRoutes(router, mockDeps as any);
   app.use(router);
   app.use(mockErrorHandler());
-
-  function signRequestBody(body: object, secret: string): string {
-    const bodyJson = JSON.stringify(body);
-    const bodyBuffer = Buffer.from(bodyJson, 'utf-8');
-    return signatureValidator.generateSignature(secret, bodyBuffer);
-  }
 
   return { app, mockDeps, signRequestBody };
 }
