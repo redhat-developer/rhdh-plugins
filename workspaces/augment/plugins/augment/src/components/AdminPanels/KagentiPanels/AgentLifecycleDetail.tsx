@@ -33,7 +33,10 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
-import { getLifecycleTransition } from './lifecycleTransitions';
+import {
+  getLifecycleTransition,
+  getLifecycleStep,
+} from './lifecycleTransitions';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -63,18 +66,6 @@ const LIFECYCLE_STAGES = [
   'Production',
   'Retired',
 ];
-
-function getLifecycleStep(
-  _status: string,
-  lifecycleStage?: string | null,
-): number {
-  if (lifecycleStage === 'retired') return 4;
-  if (lifecycleStage === 'production' || lifecycleStage === 'deployed')
-    return 3;
-  if (lifecycleStage === 'staging') return 2;
-  if (lifecycleStage === 'review' || lifecycleStage === 'registered') return 1;
-  return 0;
-}
 
 export interface AgentLifecycleDetailProps {
   agent: KagentiAgentSummary;
@@ -165,7 +156,7 @@ export function AgentLifecycleDetail({
     }
   }, [api, agentId, nextTransition]);
 
-  const currentStep = getLifecycleStep(agent.status, lifecycleStage);
+  const currentStep = getLifecycleStep(lifecycleStage);
   const glass = glassSurface(theme, 6);
 
   return (
