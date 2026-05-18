@@ -44,9 +44,6 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-/**
- * @public
- */
 const LightspeedDrawerProviderInner = ({ children }: PropsWithChildren) => {
   const classes = useStyles();
   const { contextValue, shouldRenderOverlayModal, closeChatbot } =
@@ -72,6 +69,9 @@ const LightspeedDrawerProviderInner = ({ children }: PropsWithChildren) => {
   );
 };
 
+/**
+ * @public
+ */
 export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => (
   <StylesProvider generateClassName={generateClassName}>
     <StylesProviderV4 generateClassName={generateClassNameV4}>

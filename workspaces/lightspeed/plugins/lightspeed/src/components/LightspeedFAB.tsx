@@ -56,11 +56,6 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-/**
- * @public
- * Lightspeed Floating action button to open/close the lightspeed chatbot
- */
-
 const LightspeedFABInner = () => {
   const { t } = useTranslation();
   const { isChatbotActive, toggleChatbot, displayMode } =
@@ -99,6 +94,10 @@ const LightspeedFABInner = () => {
   );
 };
 
+/**
+ * @public
+ * Lightspeed Floating action button to open/close the lightspeed chatbot
+ */
 export const LightspeedFAB = () => (
   <StylesProvider generateClassName={generateClassName}>
     <StylesProviderV4 generateClassName={generateClassNameV4}>
