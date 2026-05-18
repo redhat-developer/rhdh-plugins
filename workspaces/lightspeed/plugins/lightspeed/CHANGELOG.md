@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.3
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.3
+
 ## 2.8.2
 
 ### Patch Changes
