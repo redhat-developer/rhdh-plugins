@@ -114,7 +114,7 @@ import {
 } from '../utils/lightspeed-chatbox-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
-import { CollapsedHistoryStrip, EditSquareIcon } from './CollapsedHistoryStrip';
+import { CollapsedHistoryStrip, PencilIcon } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
@@ -2021,7 +2021,7 @@ export const LightspeedChat = ({
               onNewChat={newChatCreated ? undefined : onNewChat}
               newChatButtonText={t('button.newChat')}
               newChatButtonProps={{
-                icon: isFullscreenMode ? <EditSquareIcon /> : <PlusIcon />,
+                icon: isFullscreenMode ? <PencilIcon /> : <PlusIcon />,
               }}
               handleTextInputChange={handleFilter}
               searchInputPlaceholder={t('chatbox.search.placeholder')}

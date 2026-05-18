@@ -24,7 +24,7 @@ type IconProps = {
   className?: string;
 };
 
-export const EditSquareIcon = ({ className }: IconProps) => (
+export const PencilIcon = ({ className }: IconProps) => (
   <svg
     className={className}
     viewBox="0 0 512 512"
@@ -119,7 +119,7 @@ export const CollapsedHistoryStrip = ({
           aria-label={t('tooltip.quickNewChat')}
           isDisabled={newChatDisabled}
         >
-          <EditSquareIcon />
+          <PencilIcon />
         </Button>
       </Tooltip>
     </div>

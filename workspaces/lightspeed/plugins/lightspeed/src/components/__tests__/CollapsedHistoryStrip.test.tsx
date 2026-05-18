@@ -17,10 +17,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
-import {
-  CollapsedHistoryStrip,
-  EditSquareIcon,
-} from '../CollapsedHistoryStrip';
+import { CollapsedHistoryStrip, PencilIcon } from '../CollapsedHistoryStrip';
 
 jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: jest.fn(() => mockUseTranslation()),
@@ -122,9 +119,9 @@ describe('CollapsedHistoryStrip', () => {
   });
 });
 
-describe('EditSquareIcon', () => {
-  it('should render the EditSquareIcon SVG', () => {
-    const { container } = render(<EditSquareIcon />);
+describe('PencilIcon', () => {
+  it('should render the PencilIcon SVG', () => {
+    const { container } = render(<PencilIcon />);
 
     const svg = container.querySelector('svg');
     expect(svg).toBeInTheDocument();
@@ -134,14 +131,14 @@ describe('EditSquareIcon', () => {
   });
 
   it('should apply className when provided', () => {
-    const { container } = render(<EditSquareIcon className="custom-class" />);
+    const { container } = render(<PencilIcon className="custom-class" />);
 
     const svg = container.querySelector('svg');
     expect(svg).toHaveClass('custom-class');
   });
 
   it('should have correct inline size style', () => {
-    const { container } = render(<EditSquareIcon />);
+    const { container } = render(<PencilIcon />);
 
     const svg = container.querySelector('svg');
     expect(svg).toHaveStyle({ width: '16px', height: '16px' });
