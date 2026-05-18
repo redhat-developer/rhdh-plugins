@@ -74,6 +74,10 @@ const scorecardTranslationJa = createTranslationMessages({
       'カタログにユーザーエンティティーが見つかりません。',
     'metric.averageCenterTooltipMaxLabel': '最高スコア',
     'metric.averageCenterTooltipTotalLabel': '合計スコア',
+    'metric.averageCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} entity, score: {{score}}',
+    'metric.averageCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} entities, score: {{score}}',
     'metric.averageLegendTooltipEntitiesEach_one':
       '{{count}} 個のエンティティー、各 {{score}}',
     'metric.averageLegendTooltipEntitiesEach_other':

@@ -74,6 +74,10 @@ const scorecardTranslationEs = createTranslationMessages({
       'No se encontró la entidad de usuario en el catálogo.',
     'metric.averageCenterTooltipMaxLabel': 'Puntuación máxima posible',
     'metric.averageCenterTooltipTotalLabel': 'Puntuación total',
+    'metric.averageCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} entity, score: {{score}}',
+    'metric.averageCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} entities, score: {{score}}',
     'metric.averageLegendTooltipEntitiesEach_one':
       '{{count}} entidad, cada una con {{score}}',
     'metric.averageLegendTooltipEntitiesEach_other':

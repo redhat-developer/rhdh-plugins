@@ -75,6 +75,10 @@ const scorecardTranslationIt = createTranslationMessages({
       'Entità utente non trovata nel catalogo.',
     'metric.averageCenterTooltipMaxLabel': 'Punteggio massimo possibile',
     'metric.averageCenterTooltipTotalLabel': 'Punteggio totale',
+    'metric.averageCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} entity, score: {{score}}',
+    'metric.averageCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} entities, score: {{score}}',
     'metric.averageLegendTooltipEntitiesEach_one':
       '{{count}} entità, ciascuna {{score}}',
     'metric.averageLegendTooltipEntitiesEach_other':

@@ -75,6 +75,10 @@ const scorecardTranslationFr = createTranslationMessages({
       'Entité utilisateur introuvable dans le catalogue.',
     'metric.averageCenterTooltipMaxLabel': 'Score maximal possible',
     'metric.averageCenterTooltipTotalLabel': 'Score total',
+    'metric.averageCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} entity, score: {{score}}',
+    'metric.averageCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} entities, score: {{score}}',
     'metric.averageLegendTooltipEntitiesEach_one':
       'Entité {{count}}, chaque {{score}}',
     'metric.averageLegendTooltipEntitiesEach_other':
