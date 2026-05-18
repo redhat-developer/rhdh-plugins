@@ -25,253 +25,249 @@ import { bulkImportTranslationRef } from './ref';
 const bulkImportTranslationJa = createTranslationMessages({
   ref: bulkImportTranslationRef,
   messages: {
-    'page.title': '一括インポート',
-    'page.subtitle': 'Red Hat Developer Hub へのエンティティーのインポート',
-    'page.addRepositoriesTitle': 'リポジトリーの追加',
-    'page.importEntitiesTitle': 'エンティティーのインポート',
-    'page.addRepositoriesSubtitle':
-      '4 ステップで Red Hat Developer Hub にリポジトリーを追加',
-    'page.importEntitiesSubtitle': 'Red Hat Developer Hub へのインポート',
-    'page.typeLink': '一括インポート',
-    'sidebar.bulkImport': '一括インポート',
-    'permissions.title': '権限が必要',
-    'permissions.addRepositoriesMessage':
-      'リポジトリーを追加するには、管理者に連絡して `bulk.import` 権限を付与してもらうよう依頼してください。',
-    'permissions.viewRepositoriesMessage':
-      '追加されたリポジトリーを表示するには、管理者に連絡して `bulk.import` 権限を付与してもらうよう依頼してください。',
-    'repositories.addedRepositories': '追加されたリポジトリー',
-    'repositories.importedEntities': 'インポートされたエンティティー',
-    'repositories.addedRepositoriesCount': '追加されたリポジトリー ({{count}})',
-    'repositories.importedEntitiesCount':
-      'インポートされたエンティティー ({{count}})',
-    'repositories.noRecordsFound': 'レコードが見つかりません',
-    'repositories.noProjectsFound':
-      'インポート可能なプロジェクトがありません。',
-    'repositories.logInToViewProjects':
-      'ログインしてプロジェクトを表示します。',
-    'repositories.logInToViewRepositories':
-      'ログインしてリポジトリーを表示します。',
-    'repositories.refresh': '更新',
-    'repositories.import': 'インポート',
-    'repositories.removing': '削除中...',
-    'repositories.deleteRepository': 'リポジトリーの削除',
-    'repositories.removeRepositoryQuestion':
-      '{{repoName}} {{repositoryText}} を削除しますか?',
-    'repositories.repositoryText': 'リポジトリー',
-    'repositories.removeRepositoryWarningScaffolder':
-      'リポジトリーを削除すると、関連するすべての scaffolder タスク情報も削除されます。',
-    'repositories.removeRepositoryWarningOrchestrator':
-      'リポジトリーと関連するオーケストレーターのワークフロー情報を削除します。',
-    'repositories.removeRepositoryWarning':
-      'リポジトリーを削除すると、関連するすべての情報がカタログページから消去されます。',
-    'repositories.removeRepositoryWarningGitlab':
-      '削除すると、関連するすべての情報がカタログページから消去されます。',
-    'repositories.cannotRemoveRepositoryUrl':
-      'リポジトリー URL がないため、リポジトリーを削除できません。',
-    'repositories.unableToRemoveRepository':
-      'リポジトリーを削除できません。{{error}}',
-    'repositories.removeTooltipDisabled':
-      'このリポジトリーは app-config ファイルに追加されています。削除するにはファイルを直接変更してください',
-    'repositories.removeTooltipRepositoryScaffolder':
-      'リポジトリーと関連する scaffolder タスク情報を削除します',
-    'repositories.removeTooltipRepositoryOrchestrator':
-      'リポジトリーと関連するオーケストレーターのワークフロー情報を削除します',
-    'repositories.errorOccuredWhileFetching':
-      'プルリクエストの取得中にエラーが発生しました',
-    'repositories.failedToCreatePullRequest':
-      'プルリクエストの作成に失敗しました',
-    'repositories.errorOccured': 'エラーが発生しました',
-    'repositories.editCatalogInfoTooltip':
-      'catalog-info.yaml プルリクエストを編集する',
-    'repositories.viewCatalogInfoTooltip':
-      'catalog-info.yaml ファイルを表示する',
-    'repositories.pr': 'PR',
-    'status.alreadyImported': 'インポート済み',
-    'status.added': '追加済み',
-    'status.waitingForApproval': '承認待ち',
-    'status.imported': 'インポート',
-    'status.readyToImport': 'インポート準備完了',
-    'status.waitingForPullRequestToStart': 'プルリクエストの開始を待機中',
-    'status.missingConfigurations': '設定が不足しています',
-    'status.failedCreatingPR': 'PR の作成に失敗しました',
-    'status.pullRequestRejected': 'プルリクエストが拒否されました',
-    'errors.prErrorPermissions':
-      '権限が不十分なため、新しい PR を作成できませんでした。管理者に問い合わせてください。',
-    'errors.catalogInfoExists':
-      'catalog-info.yaml がリポジトリーにすでに存在するため、新しい PR は作成されません。ただし、エンティティーはカタログページに登録されます。',
-    'errors.catalogEntityConflict':
-      'カタログエンティティーの競合のため、新しい PR を作成できませんでした。',
-    'errors.repoEmpty':
-      'リポジトリーが空のため、新しい PR を作成できませんでした。最初のコミットをリポジトリーにプッシュしてください。',
-    'errors.codeOwnersNotFound':
-      'リポジトリーに CODEOWNERS ファイルがありません。新しい PR を作成するには、CODEOWNERS ファイルを追加してください。',
-    'errors.errorOccurred': 'エラーが発生しました',
-    'errors.failedToCreatePullRequest': 'プルリクエストの作成に失敗しました',
-    'errors.noIntegrationsConfigured':
-      'GitHub または GitLab の統合が設定されていません。一括インポート機能を使用するには、少なくとも 1 つの統合を追加してください。',
-    'errors.addIntegrationsToConfig':
-      'この問題を解決するには、統合が Backstage 設定ファイル (app-config.yaml) に追加されていることを確認してください。',
-    'validation.componentNameInvalid':
-      '"{{value}}" は無効です。[a-zA-Z0-9] から成り、[-_.] のいずれかで区切られた一連の文字列 (合計最大 63 文字) が必要です。カタログファイル形式の詳細は、https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md を参照してください',
-    'validation.componentNameRequired': 'コンポーネント名は必須です',
-    'validation.entityOwnerRequired': 'エンティティー所有者は必須です',
-    'validation.titleRequired': '{{approvalTool}} のタイトルは必須です',
-    'validation.descriptionRequired': '{{approvalTool}} の説明は必須です',
-    'validation.keyValuePairFormat':
-      '各エントリーは、コロンで区切ったキーと値の形で指定する必要があります。',
-    'table.headers.name': '名前',
-    'table.headers.url': 'URL',
-    'table.headers.repoUrl': 'Git リポジトリー URL',
-    'table.headers.organization': '組織',
-    'table.headers.organizationGroup': '組織/グループ',
-    'table.headers.group': 'グループ',
-    'table.headers.status': 'ステータス',
-    'table.headers.taskStatus': 'タスクステータス',
-    'table.headers.lastUpdated': '最終更新',
-    'table.headers.actions': 'アクション',
-    'table.headers.catalogInfoYaml': 'catalog-info.yaml',
-    'table.pagination.rows5': '5 行',
-    'table.pagination.rows10': '10 行',
-    'table.pagination.rows20': '20 行',
-    'table.pagination.rows50': '50 行',
-    'table.pagination.rows100': '100 行',
-    'steps.chooseApprovalTool':
-      'PR 作成用の承認ツール (GitHub/GitLab) を選択する',
-    'steps.chooseRepositories': '追加するリポジトリーを選択する',
-    'steps.chooseItems': 'インポートする項目を選択する',
-    'steps.generateCatalogInfo':
-      '各リポジトリーの catalog-info.yaml ファイルを生成する',
-    'steps.generateCatalogInfoItems':
-      '選択した各項目の catalog-info.yaml ファイルを生成する',
-    'steps.editPullRequest': '必要に応じてプルリクエストの詳細を編集する',
-    'steps.trackStatus': '承認ステータスを追跡する',
-    'addRepositories.approvalTool.title': '承認ツール',
-    'addRepositories.approvalTool.description':
-      'PR 作成用の承認ツールを選択する',
-    'addRepositories.approvalTool.tooltip':
-      'インポートには承認が必要です。プル/マージリクエストが承認されると、リポジトリー/プロジェクトがカタログページにインポートされます。',
-    'addRepositories.approvalTool.github': 'GitHub',
-    'addRepositories.approvalTool.gitlab': 'GitLab',
-    'addRepositories.repositoryType.title': 'リポジトリーの種類',
-    'addRepositories.repositoryType.repository': 'リポジトリー',
-    'addRepositories.repositoryType.organization': '組織',
-    'addRepositories.repositoryType.project': 'プロジェクト',
-    'addRepositories.repositoryType.group': 'グループ',
-    'addRepositories.searchPlaceholder': '検索',
-    'addRepositories.clearSearch': '検索のクリア',
-    'addRepositories.noRepositoriesFound': 'リポジトリーが見つかりません',
+    'addRepositories.addSelected': '選択した項目の追加',
     'addRepositories.allRepositoriesAdded':
       'すべてのリポジトリーが追加されました',
-    'addRepositories.noSelection': 'なし',
-    'addRepositories.selectRepositories': 'リポジトリーの選択',
-    'addRepositories.selectedRepositories': 'リポジトリー',
-    'addRepositories.selectedProjects': 'プロジェクト',
-    'addRepositories.selectedLabel': '選択済み',
-    'addRepositories.selectedCount': '{{count}} 件を選択済み',
-    'addRepositories.addSelected': '選択した項目の追加',
-    'addRepositories.generateCatalogInfo': 'catalog-info.yaml の生成',
+    'addRepositories.approvalTool.description':
+      'PR 作成用のソース管理ツールを選択してください',
+    'addRepositories.approvalTool.github': 'GitHub',
+    'addRepositories.approvalTool.gitlab': 'GitLab',
+    'addRepositories.approvalTool.title': 'ソース管理ツール',
+    'addRepositories.approvalTool.tooltip':
+      'インポートには承認が必要です。プルリクエストが承認されると、リポジトリーがカタログページにインポートされます。',
+    'addRepositories.clearSearch': '検索のクリア',
     'addRepositories.editPullRequest': 'プルリクエストの編集',
+    'addRepositories.generateCatalogInfo': 'catalog-info.yaml の生成',
+    'addRepositories.noRepositoriesFound': 'リポジトリーが見つかりません',
+    'addRepositories.noSelection': 'なし',
     'addRepositories.preview': 'プレビュー',
+    'addRepositories.repositoryType.group': 'グループ',
+    'addRepositories.repositoryType.organization': '組織',
+    'addRepositories.repositoryType.project': 'プロジェクト',
+    'addRepositories.repositoryType.repository': 'リポジトリー',
+    'addRepositories.repositoryType.title': 'リポジトリーの種類',
+    'addRepositories.searchPlaceholder': '検索',
+    'addRepositories.selectRepositories': 'リポジトリーの選択',
+    'addRepositories.selectedCount': '{{count}} 件を選択済み',
+    'addRepositories.selectedLabel': '選択済み',
+    'addRepositories.selectedProjects': 'プロジェクト',
+    'addRepositories.selectedRepositories': 'リポジトリー',
     'catalogInfo.status.generating': '生成中',
     'common.add': '追加',
     'common.cancel': 'キャンセル',
     'common.close': '閉じる',
     'common.delete': '削除',
+    'common.documentation': 'ドキュメント',
     'common.edit': '編集',
     'common.filter': 'フィルター',
     'common.import': 'インポート',
     'common.remove': '削除',
     'common.save': '保存',
-    'common.documentation': 'ドキュメント',
     'common.select': '選択',
     'common.update': '更新',
     'common.view': '表示',
-    'time.daysAgo': '{{count}} 日前',
-    'time.hoursAgo': '{{count}} 時間前',
-    'time.minutesAgo': '{{count}} 分前',
-    'time.secondsAgo': '{{count}} 秒前',
-    'previewFile.previewFile': 'ファイルのプレビュー',
-    'previewFile.previewFiles': 'ファイルのプレビュー',
-    'previewFile.failedToCreatePR': 'PR の作成に失敗しました',
-    'previewFile.prCreationUnsuccessful':
-      '一部のリポジトリーで PR の作成に失敗しました。理由を確認するには、`編集` をクリックしてください。',
-    'previewFile.failedToFetchPR':
-      'プルリクエストの取得に失敗しました。以下に新しい YAML が生成されました。',
-    'previewFile.invalidEntityYaml':
-      'プルリクエスト内のエンティティー YAML が無効です (ファイルが空であるか、apiVersion、kind、または metadata.name がありません)。以下に新しい YAML が生成されました。',
-    'previewFile.pullRequestPendingApproval':
-      '[{{pullRequestText}}]({{pullRequestUrl}}) は承認待ちです',
-    'previewFile.pullRequestText': 'プルリクエスト',
-    'previewFile.viewRepository': 'リポジトリーの表示',
-    'previewFile.closeDrawer': 'ドロワーを閉じる',
-    'previewFile.keyValuePlaceholder': 'key1: value2; key2: value2',
-    'previewFile.useSemicolonSeparator':
-      'セミコロンを使用して {{label}} を区切ってください',
-    'previewFile.preview': 'プレビュー',
-    'previewFile.pullRequest.title': 'プルリクエスト',
-    'previewFile.pullRequest.mergeRequest': 'マージリクエスト',
-    'previewFile.pullRequest.serviceNowTicket': 'ServiceNow チケット',
-    'previewFile.pullRequest.details': '{{tool}} の詳細',
-    'previewFile.pullRequest.titleLabel': '{{tool}} のタイトル',
-    'previewFile.pullRequest.bodyLabel': '{{tool}} のボディー',
-    'previewFile.pullRequest.titlePlaceholder':
-      'Backstage カタログエンティティー記述子ファイルの追加',
-    'previewFile.pullRequest.bodyPlaceholder': '説明文 (Markdown 対応)',
-    'previewFile.pullRequest.entityConfiguration': 'エンティティー設定',
-    'previewFile.pullRequest.componentNameLabel':
-      '作成されるコンポーネントの名前',
-    'previewFile.pullRequest.componentNamePlaceholder': 'コンポーネント名',
-    'previewFile.pullRequest.entityOwnerLabel': 'エンティティー所有者',
-    'previewFile.pullRequest.entityOwnerPlaceholder': 'グループとユーザー',
-    'previewFile.pullRequest.entityOwnerHelper':
-      'リストから所有者を選択するか、グループまたはユーザーへの参照を入力してください',
-    'previewFile.pullRequest.loadingText':
-      'グループとユーザーを読み込んでいます',
-    'previewFile.pullRequest.previewEntities': 'エンティティーのプレビュー',
-    'previewFile.pullRequest.annotations': 'アノテーション',
-    'previewFile.pullRequest.labels': 'ラベル',
-    'previewFile.pullRequest.spec': '仕様',
-    'previewFile.pullRequest.useCodeOwnersFile':
-      'エンティティー所有者として *CODEOWNERS* ファイルを使用する',
-    'previewFile.pullRequest.codeOwnersWarning':
-      '警告: ターゲットの場所に CODEOWNERS ファイルが見つからない場合、失敗する可能性があります。',
-    'forms.footer.createServiceNowTicket': 'ServiceNow チケットの作成',
-    'forms.footer.createServiceNowTickets': 'ServiceNow チケットの作成',
+    'errors.addIntegrationsToConfig':
+      'この問題を解決するには、Backstage の設定ファイル (app-config.yaml) に統合が追加されていることを確認してください。',
+    'errors.catalogEntityConflict':
+      'カタログエンティティーの競合のため、新しい PR を作成できませんでした。',
+    'errors.catalogInfoExists':
+      'catalog-info.yaml がリポジトリーにすでに存在するため、新しい PR は作成されません。ただし、エンティティーはカタログページに登録されます。',
+    'errors.codeOwnersNotFound':
+      'リポジトリーに CODEOWNERS ファイルがありません。新しい PR を作成するには、CODEOWNERS ファイルを追加してください。',
+    'errors.errorOccurred': 'エラーが発生しました',
+    'errors.failedToCreatePullRequest': 'プルリクエストの作成に失敗しました',
+    'errors.noIntegrationsConfigured':
+      'GitHub または GitLab との統合が設定されていません。一括インポート機能を使用するには、少なくとも 1 つの統合を追加してください。',
+    'errors.prErrorPermissions':
+      '権限が不十分なため、新しい PR を作成できませんでした。管理者に問い合わせてください。',
+    'errors.repoEmpty':
+      'リポジトリーが空のため、新しい PR を作成できませんでした。最初のコミットをリポジトリーにプッシュしてください。',
     'forms.footer.createPullRequest': 'プルリクエストの作成',
     'forms.footer.createPullRequests': 'プルリクエストの作成',
-    'forms.footer.selectRepositoryTooltip':
-      'インポートするリポジトリーを選択してください。',
-    'forms.footer.serviceNowTooltip':
-      'ServiceNow チケットを作成する前に、Catalog-info.yaml ファイルを生成する必要があります',
+    'forms.footer.createServiceNowTicket': 'ServiceNow チケットの作成',
+    'forms.footer.createServiceNowTickets': 'ServiceNow チケットの作成',
     'forms.footer.importTooltip':
       'インポート用に Catalog-info.yaml ファイルを生成する必要があります。',
     'forms.footer.pullRequestTooltip':
       'プルリクエストを作成する前に、Catalog-info.yaml ファイルを生成する必要があります',
-    'tasks.tasksFor': '{{importJobStatusId}} のタスク',
+    'forms.footer.selectRepositoryTooltip':
+      'インポートするリポジトリーを選択してください。',
+    'forms.footer.serviceNowTooltip':
+      'ServiceNow チケットを作成する前に、Catalog-info.yaml ファイルを生成する必要があります',
+    'importActions.errorFetchingData': 'データの取得中にエラーが発生しました',
+    'importActions.loading': '読み込み中...',
+    'importActions.noActions':
+      'このリポジトリーに対するインポート操作が見つかりません。',
+    'page.addRepositoriesSubtitle':
+      '4 ステップで Red Hat Developer Hub にリポジトリーを追加',
+    'page.addRepositoriesTitle': 'リポジトリーの追加',
+    'page.importEntitiesSubtitle': 'Red Hat Developer Hub へのインポート',
+    'page.importEntitiesTitle': 'エンティティーのインポート',
+    'page.subtitle': 'Red Hat Developer Hub へのエンティティーのインポート',
+    'page.title': '一括インポート',
+    'page.typeLink': '一括インポート',
+    'permissions.addRepositoriesMessage':
+      'リポジトリーを追加するには、管理者に連絡して `bulk.import` 権限を付与してもらうよう依頼してください。',
+    'permissions.title': '権限が必要',
+    'permissions.viewRepositoriesMessage':
+      '追加されたリポジトリーを表示するには、管理者に連絡して `bulk.import` 権限を付与してもらうよう依頼してください。',
+    'previewFile.closeDrawer': 'ドロワーを閉じる',
+    'previewFile.failedToCreatePR': 'PR の作成に失敗しました',
+    'previewFile.failedToFetchPR':
+      'プルリクエストの取得に失敗しました。以下に新しい YAML が生成されました。',
+    'previewFile.invalidEntityYaml':
+      'プルリクエスト内のエンティティー YAML が無効です (ファイルが空であるか、apiVersion、kind、または metadata.name がありません)。以下に新しい YAML が生成されました。',
+    'previewFile.keyValuePlaceholder': 'key1: value2; key2: value2',
+    'previewFile.prCreationUnsuccessful':
+      '一部のリポジトリーで PR の作成に失敗しました。理由を確認するには、`編集` をクリックしてください。',
+    'previewFile.preview': 'プレビュー',
+    'previewFile.previewFile': 'ファイルのプレビュー',
+    'previewFile.previewFiles': 'ファイルのプレビュー',
+    'previewFile.pullRequest.annotations': 'アノテーション',
+    'previewFile.pullRequest.bodyLabel': '{{tool}} のボディー',
+    'previewFile.pullRequest.bodyPlaceholder': '説明文 (Markdown 対応)',
+    'previewFile.pullRequest.codeOwnersWarning':
+      '警告: ターゲットのロケーションに CODEOWNERS ファイルが見つからない場合、失敗する可能性があります。',
+    'previewFile.pullRequest.componentNameLabel':
+      '作成するコンポーネントの名前',
+    'previewFile.pullRequest.componentNamePlaceholder': 'コンポーネント名',
+    'previewFile.pullRequest.details': '{{tool}} の詳細',
+    'previewFile.pullRequest.entityConfiguration': 'エンティティー設定',
+    'previewFile.pullRequest.entityOwnerHelper':
+      'リストから所有者を選択するか、グループまたはユーザーへの参照を入力してください',
+    'previewFile.pullRequest.entityOwnerLabel': 'エンティティー所有者',
+    'previewFile.pullRequest.entityOwnerPlaceholder': 'グループとユーザー',
+    'previewFile.pullRequest.labels': 'ラベル',
+    'previewFile.pullRequest.loadingText':
+      'グループとユーザーを読み込んでいます',
+    'previewFile.pullRequest.mergeRequest': 'マージリクエスト',
+    'previewFile.pullRequest.previewEntities': 'エンティティーのプレビュー',
+    'previewFile.pullRequest.serviceNowTicket': 'ServiceNow チケット',
+    'previewFile.pullRequest.spec': '仕様',
+    'previewFile.pullRequest.title': 'プルリクエスト',
+    'previewFile.pullRequest.titleLabel': '{{tool}} のタイトル',
+    'previewFile.pullRequest.titlePlaceholder':
+      'Backstage カタログエンティティー記述子ファイルの追加',
+    'previewFile.pullRequest.useCodeOwnersFile':
+      'エンティティー所有者として *CODEOWNERS* ファイルを使用する',
+    'previewFile.pullRequestPendingApproval':
+      '[{{pullRequestText}}]({{pullRequestUrl}}) は承認待ちです',
+    'previewFile.pullRequestText': 'プルリクエスト',
+    'previewFile.useSemicolonSeparator':
+      'セミコロンを使用して {{label}} を区切ってください',
+    'previewFile.viewRepository': 'リポジトリーの表示',
+    'repositories.addedRepositories': '追加されたリポジトリー',
+    'repositories.addedRepositoriesCount': '追加されたリポジトリー ({{count}})',
+    'repositories.cannotRemoveRepositoryUrl':
+      'リポジトリー URL がないため、リポジトリーを削除できません。',
+    'repositories.deleteRepository': 'リポジトリーの削除',
+    'repositories.editCatalogInfoTooltip':
+      'catalog-info.yaml プルリクエストを編集する',
+    'repositories.errorOccured': 'エラーが発生しました',
+    'repositories.errorOccuredWhileFetching':
+      'プルリクエストの取得中にエラーが発生しました',
+    'repositories.failedToCreatePullRequest':
+      'プルリクエストの作成に失敗しました',
+    'repositories.import': 'インポート',
+    'repositories.importedEntities': 'インポートされたエンティティー',
+    'repositories.importedEntitiesCount':
+      'インポートされたエンティティー ({{count}})',
+    'repositories.noProjectsFound':
+      'インポート可能なプロジェクトがありません。',
+    'repositories.noRecordsFound': 'インポート可能なリポジトリーがありません。',
+    'repositories.pr': 'PR',
+    'repositories.refresh': '更新',
+    'repositories.removeRepositoryQuestion':
+      '{{repoName}} {{repositoryText}} を削除しますか?',
+    'repositories.removeRepositoryWarning':
+      'リポジトリーを削除すると、関連するすべての情報がカタログページから消去されます。',
+    'repositories.removeRepositoryWarningGitlab':
+      '削除すると、関連するすべての情報がカタログページから消去されます。',
+    'repositories.removeRepositoryWarningOrchestrator':
+      'リポジトリーと関連するオーケストレーターワークフロー情報を削除します。',
+    'repositories.removeRepositoryWarningScaffolder':
+      'リポジトリーを削除すると、関連するすべての scaffolder タスク情報も削除されます。',
+    'repositories.removeTooltipDisabled':
+      'このリポジトリーは app-config ファイルに追加されています。削除するにはファイルを直接変更してください',
+    'repositories.removeTooltipRepositoryOrchestrator':
+      'リポジトリーと関連するオーケストレーターワークフロー情報を削除します',
+    'repositories.removeTooltipRepositoryScaffolder':
+      'リポジトリーと関連する scaffolder タスク情報を削除します',
+    'repositories.removing': '削除中...',
+    'repositories.repositoryText': 'リポジトリー',
+    'repositories.unableToRemoveRepository':
+      'リポジトリーを削除できません。{{error}}',
+    'repositories.viewCatalogInfoTooltip':
+      'catalog-info.yaml ファイルを表示する',
+    'sidebar.bulkImport': '一括インポート',
+    'status.added': '追加済み',
+    'status.alreadyImported': 'インポート済み',
+    'status.failedCreatingPR': 'PR の作成に失敗しました',
+    'status.imported': 'インポート',
+    'status.missingConfigurations': '設定の不足',
+    'status.pullRequestRejected': 'プルリクエストが拒否されました',
+    'status.readyToImport': 'インポート準備完了',
+    'status.waitingForApproval': '承認待ち',
+    'status.waitingForPullRequestToStart': 'プルリクエスト開始待ち',
+    'steps.chooseApprovalTool':
+      'プルリクエスト作成用のソース管理ツールを選択する',
+    'steps.chooseItems': 'インポートする項目を選択する',
+    'steps.chooseRepositories': 'インポートする項目を選択する',
+    'steps.editPullRequest': 'プル/マージリクエストの詳細を表示する',
+    'steps.generateCatalogInfo':
+      '選択した各項目の catalog-info.yaml ファイルを生成する',
+    'steps.generateCatalogInfoItems':
+      '選択した各項目の catalog-info.yaml ファイルを生成する',
+    'steps.trackStatus': '承認ステータスを追跡する',
+    'table.headers.actions': 'アクション',
+    'table.headers.catalogInfoYaml': 'catalog-info.yaml',
+    'table.headers.group': 'グループ',
+    'table.headers.lastUpdated': '最終更新',
+    'table.headers.name': '名前',
+    'table.headers.organization': '組織',
+    'table.headers.organizationGroup': '組織/グループ',
+    'table.headers.repoUrl': 'Git リポジトリー URL',
+    'table.headers.status': 'ステータス',
+    'table.headers.taskStatus': 'タスクのステータス',
+    'table.headers.url': 'URL',
+    'table.pagination.rows10': '10 行',
+    'table.pagination.rows100': '100 行',
+    'table.pagination.rows20': '20 行',
+    'table.pagination.rows5': '5 行',
+    'table.pagination.rows50': '50 行',
+    'tasks.taskCancelled': 'キャンセル済み',
+    'tasks.taskCompleted': '完了済み',
+    'tasks.taskFailed': '失敗',
     'tasks.taskId': 'タスク ID',
     'tasks.taskLink': 'タスクのリンク',
+    'tasks.taskOpen': '開',
+    'tasks.taskProcessing': '処理中',
+    'tasks.taskSkipped': 'スキップ済み',
+    'tasks.tasksFor': '{{importJobStatusId}} のタスク',
     'tasks.viewTask': 'タスクの表示',
-    'tasks.taskCancelled': 'キャンセルされたタスク',
-    'tasks.taskCompleted': '完了したタスク',
-    'tasks.taskFailed': '失敗したタスク',
-    'tasks.taskOpen': '未処理のタスク',
-    'tasks.taskProcessing': '処理中のタスク',
-    'tasks.taskSkipped': 'スキップされたタスク',
-    'workflows.workflowsFor': '{{importJobStatusId}} のワークフロー',
+    'time.daysAgo': '{{count}} 日前',
+    'time.hoursAgo': '{{count}} 時間前',
+    'time.minutesAgo': '{{count}} 分前',
+    'time.secondsAgo': '{{count}} 秒前',
+    'validation.componentNameInvalid':
+      '"{{value}}" は無効です。[a-zA-Z0-9] から成り、[-_.] のいずれかで区切られた一連の文字列 (合計最大 63 文字) が必要です。カタログファイル形式の詳細は、https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md を参照してください',
+    'validation.componentNameRequired': 'コンポーネント名は必須です',
+    'validation.descriptionRequired': '{{approvalTool}} の説明は必須です',
+    'validation.entityOwnerRequired': 'エンティティー所有者は必須です',
+    'validation.keyValuePairFormat':
+      '各エントリーは、コロンで区切ったキーと値の形で指定する必要があります。',
+    'validation.titleRequired': '{{approvalTool}} のタイトルは必須です',
+    'workflows.viewWorkflow': 'ワークフローの表示',
+    'workflows.workflowAborted': '中止',
+    'workflows.workflowActive': 'アクティブ',
+    'workflows.workflowCompleted': '完了済み',
+    'workflows.workflowError': 'エラー',
+    'workflows.workflowFetchError': 'ワークフロー取得エラー',
     'workflows.workflowId': 'ワークフロー ID',
     'workflows.workflowLink': 'ワークフローのリンク',
-    'workflows.viewWorkflow': 'ワークフローの表示',
     'workflows.workflowPending': '保留中',
-    'workflows.workflowActive': 'アクティブ',
-    'workflows.workflowCompleted': '完了',
-    'workflows.workflowAborted': '中止',
-    'workflows.workflowError': 'エラー',
-    'workflows.workflowSuspended': '一時停止',
-    'workflows.workflowFetchError': 'ワークフローの取得エラー',
-    'importActions.loading': '読み込み中...',
-    'importActions.errorFetchingData': 'データの取得中にエラーが発生しました',
-    'importActions.noActions':
-      'このリポジトリーのインポートアクションが見つかりませんでした。',
+    'workflows.workflowSuspended': '一時停止中',
+    'workflows.workflowsFor': '{{importJobStatusId}} のワークフロー',
   },
 });
 

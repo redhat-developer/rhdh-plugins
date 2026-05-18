@@ -25,7 +25,7 @@ const globalFloatingActionButtonTranslationDe = createTranslationMessages({
   ref: globalFloatingActionButtonTranslationRef,
   messages: {
     'fab.create.label': 'Erstellen',
-    'fab.create.tooltip': 'Element erstellen',
+    'fab.create.tooltip': 'Entity erstellen',
     'fab.docs.label': 'Dokumente',
     'fab.docs.tooltip': 'Dokumentation',
     'fab.apis.label': 'APIs',
@@ -35,7 +35,7 @@ const globalFloatingActionButtonTranslationDe = createTranslationMessages({
     'fab.bulkImport.label': 'Massenimport',
     'fab.bulkImport.tooltip': 'Mehrere Repositorys gleichzeitig registrieren',
     'fab.quay.label': 'Quay',
-    'fab.quay.tooltip': 'Quay Container Registry',
+    'fab.quay.tooltip': 'Quay-Containerregistrierung',
     'fab.menu.tooltip': 'Menü',
   },
 });

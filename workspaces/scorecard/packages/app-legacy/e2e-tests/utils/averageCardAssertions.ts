@@ -42,14 +42,10 @@ function averageCenterTooltipBreakdownTemplateKey(
   if (Number.isNaN(count)) {
     return 'averageCenterTooltipBreakdownRow_other';
   }
-  // Align with i18next-style pluralization for `metric.averageCenterTooltipBreakdownRow`.
-  if (locale.startsWith('fr') && count === 0) {
-    return 'averageCenterTooltipBreakdownRow_one';
-  }
-  if (count === 1) {
-    return 'averageCenterTooltipBreakdownRow_one';
-  }
-  return 'averageCenterTooltipBreakdownRow_other';
+  const category = new Intl.PluralRules(locale).select(count);
+  return category === 'one'
+    ? 'averageCenterTooltipBreakdownRow_one'
+    : 'averageCenterTooltipBreakdownRow_other';
 }
 
 function expectedAverageCenterTooltipBreakdownLine(
