@@ -24,81 +24,55 @@ import { quickstartTranslationRef } from './ref';
 const quickstartTranslationFr = createTranslationMessages({
   ref: quickstartTranslationRef,
   messages: {
-    'header.title': 'Commençons par vous familiariser avec Developer Hub',
-    'header.subtitle': 'Nous vous guiderons à travers quelques étapes rapides',
-    'steps.setupAuthentication.title': "Configurer l'authentification",
-    'steps.setupAuthentication.description':
-      'Configurez des informations de connexion sécurisées pour protéger votre compte contre tout accès non autorisé.',
+    'header.title': 'Commençons par le Developer Hub',
+    'header.subtitle': 'Nous allons vous guider à travers quelques étapes rapides.',
+    'steps.setupAuthentication.title': 'Configurer l\'authentification',
+    'steps.setupAuthentication.description': 'Configurez des identifiants de connexion sécurisés pour protéger votre compte contre tout accès non autorisé.',
     'steps.setupAuthentication.ctaTitle': 'En savoir plus',
-    'steps.configureRbac.title': 'Configurer RBAC',
-    'steps.configureRbac.description':
-      'Attribuez des rôles et des autorisations pour contrôler qui peut afficher, créer ou modifier des ressources, garantissant ainsi une collaboration sécurisée et efficace.',
-    'steps.configureRbac.ctaTitle': "Gérer l'accès",
+    'steps.configureRbac.title': 'Configurer le contrôle d\'accès basé sur les rôles (RBAC)',
+    'steps.configureRbac.description': 'Attribuez des rôles et des autorisations pour contrôler qui peut consulter, créer ou modifier des ressources, garantissant ainsi une collaboration sécurisée et efficace.',
     'steps.configureGit.title': 'Configurer Git',
-    'steps.configureGit.description':
-      'Connectez vos fournisseurs Git, tels que GitHub pour gérer le code, automatiser les flux de travail et intégrer les fonctionnalités de la plateforme.',
-    'steps.configureGit.ctaTitle': 'En savoir plus',
+    'steps.configureGit.description': 'Connectez vos fournisseurs Git, tels que GitHub, pour gérer le code, automatiser les flux de travail et vous intégrer aux fonctionnalités de la plateforme.',
     'steps.managePlugins.title': 'Gérer les plugins',
-    'steps.managePlugins.description':
-      'Parcourez et installez des extensions pour ajouter des fonctionnalités, vous connecter à des outils externes et personnaliser votre expérience.',
-    'steps.managePlugins.ctaTitle': 'Explorer les plugins',
-    'steps.importApplication.title': "Demande d'importation",
-    'steps.importApplication.description':
-      'Importez votre code et vos services existants dans le catalogue pour les organiser et y accéder via votre portail de développeur.',
+    'steps.managePlugins.description': 'Parcourez et installez des extensions pour ajouter des fonctionnalités, vous connecter à des outils externes et personnaliser votre expérience.',
+    'steps.importApplication.title': 'Application d\'importation',
+    'steps.importApplication.description': 'Importez votre code et vos services existants dans le catalogue pour les organiser et y accéder via votre portail développeur.',
     'steps.importApplication.ctaTitle': 'Importer',
-    'steps.learnAboutCatalog.title': 'En savoir plus sur le catalogue',
-    'steps.learnAboutCatalog.description':
-      'Découvrir tous les composants logiciels, services et API, et affichez leurs propriétaires et leur documentation.',
-    'steps.learnAboutCatalog.ctaTitle': 'Voir le catalogue',
-    'steps.exploreSelfServiceTemplates.title':
-      'Explorer les modèles en libre-service',
-    'steps.exploreSelfServiceTemplates.description':
-      'Utiliser nos modèles en libre-service pour configurer rapidement de nouveaux projets, services ou documentations.',
-    'steps.exploreSelfServiceTemplates.ctaTitle': 'Explorer les modèles',
-    'steps.findAllLearningPaths.title': 'Trouver tous les Learning Paths',
-    'steps.findAllLearningPaths.description':
-      'Intégrez l’apprentissage en ligne personnalisé dans vos flux de travail avec Learning Paths pour accélérer l’intégration, combler les lacunes en matière de compétences et promouvoir les meilleures pratiques.',
-    'steps.findAllLearningPaths.ctaTitle': 'Voir Learning Paths',
-    'steps.setupLightspeed.title': 'Configurer Lightspeed',
-    'steps.setupLightspeed.description':
-      'Connectez Lightspeed à un modèle de langage volumineux (LLM) pris en charge et configurez les autorisations afin d’offrir à vos développeurs une assistance optimisée par l’IA.',
+    'steps.learnAboutCatalog.title': 'Découvrez le catalogue',
+    'steps.learnAboutCatalog.description': 'Découvrez tous les composants logiciels, services et API, et consultez leurs propriétaires et leur documentation.',
+    'steps.exploreSelfServiceTemplates.title': 'Explorez les modèles en libre-service',
+    'steps.exploreSelfServiceTemplates.description': 'Utilisez nos modèles en libre-service pour configurer rapidement de nouveaux projets, services ou documents.',
+    'steps.findAllLearningPaths.title': 'Trouver tous les parcours d\'apprentissage',
+    'steps.findAllLearningPaths.description': 'Intégrez des formations en ligne personnalisées à vos flux de travail grâce aux parcours d\'apprentissage pour accélérer l\'intégration, combler les lacunes en compétences et promouvoir les meilleures pratiques.',
+    'steps.setupLightspeed.title': 'Configurer à la vitesse de la lumière',
+    'steps.setupLightspeed.description': 'Connectez Lightspeed à un modèle de langage étendu (LLM) pris en charge et configurez les autorisations pour fournir votre assistance basée sur l\'IA à vos développeurs.',
     'steps.setupLightspeed.ctaTitle': 'En savoir plus',
-    'steps.getStartedWithLightspeed.title': 'Premiers pas avec Lightspeed',
-    'steps.getStartedWithLightspeed.description':
-      'Dépanner des problèmes, générer du code et en savoir plus sur les ressources de la plateforme grâce au chat piloté par l’IA.',
-    'steps.getStartedWithLightspeed.ctaTitle': 'En savoir plus',
+    'steps.getStartedWithLightspeed.title': 'Démarrez avec Lightspeed',
+    'steps.getStartedWithLightspeed.description': 'Résolvez les problèmes, générez du code et découvrez les ressources de la plateforme grâce à un chat basé sur l\'IA.',
     'button.quickstart': 'Démarrage rapide',
     'button.openQuickstartGuide': 'Ouvrir le guide de démarrage rapide',
     'button.closeDrawer': 'Fermer le tiroir',
-    'button.gotIt': "J'ai compris!",
-    'snackbar.helpPrompt':
-      'Besoin d’aide ? Consultez le guide de démarrage rapide en cliquant sur l’icône (?) dans l’en-tête !',
-    'footer.progress': '{{progress}}% de progrès',
+    'button.gotIt': 'J\'ai compris',
+    'snackbar.helpPrompt': 'Besoin d\'aide ? Consultez le guide de démarrage rapide en cliquant sur cette icône (?) dans l\'en-tête !',
+    'footer.progress': '{{progress}}% de progression',
     'footer.notStarted': 'Non démarré',
-    'footer.hide': 'Cacher',
-    'content.emptyState.title':
-      "Le contenu de démarrage rapide n'est pas disponible pour votre rôle.",
+    'footer.hide': 'Masquer',
+    'content.emptyState.title': 'Le contenu de démarrage rapide n\'est pas disponible pour votre rôle.',
     'item.expandAriaLabel': 'Développer les détails de {{title}}',
     'item.collapseAriaLabel': 'Réduire les détails de {{title}}',
-    'item.expandButtonAriaLabel': "Développer l'élément",
-    'item.collapseButtonAriaLabel': "Réduire l'élément",
-    'dev.pageTitle': 'Page de test du plugin de démarrage rapide',
-    'dev.pageDescription':
-      'Ceci est une page de test pour le plugin Quickstart. Utilisez les boutons ci-dessous pour interagir avec le tiroir de démarrage rapide.',
-    'dev.drawerControls': 'Commandes des tiroirs',
+    'item.expandButtonAriaLabel': 'Développer l\'élément',
+    'item.collapseButtonAriaLabel': 'Réduire l\'élément',
+    'dev.pageTitle': 'Page de test du plugin Quickstart',
+    'dev.pageDescription': 'Ceci est une page de test pour l\'extension Quickstart. Utilisez les boutons ci-dessous pour interagir avec le tiroir de démarrage rapide.',
+    'dev.drawerControls': 'Commandes de tiroir',
     'dev.currentState': 'État actuel du tiroir : {{state}}',
-    'dev.stateOpen': 'Ouvrir',
     'dev.stateClosed': 'Fermé',
     'dev.instructions': 'Instructions',
-    'dev.step1':
-      '1. Cliquez sur « Ouvrir le guide de démarrage rapide » pour ouvrir le tiroir',
-    'dev.step2': '2. Parcourez les étapes de démarrage rapide',
-    'dev.step3':
-      '3. Testez le suivi de la progression en complétant les étapes',
-    'dev.step4':
-      "4. Le tiroir peut être fermé à l'aide du bouton de fermeture ou des commandes du tiroir",
-    'dev.step5':
-      '5. La progression est automatiquement enregistrée dans le stockage local',
+    'dev.step1': '1. Cliquez sur « Ouvrir le guide de démarrage rapide » pour ouvrir le tiroir',
+    'dev.step2': '2. Suivez les étapes de démarrage rapide',
+    'dev.step3': '3. Testez le suivi des progrès en complétant les étapes',
+    'dev.step4': '4. Le tiroir peut être fermé à l\'aide du bouton de fermeture ou des commandes intégrées au tiroir.',
+    'dev.step5': '5. La progression est automatiquement enregistrée dans le stockage local.',
   },
 });
 

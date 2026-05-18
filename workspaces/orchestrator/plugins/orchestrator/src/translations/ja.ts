@@ -15,7 +15,6 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-
 import { orchestratorTranslationRef } from './ref';
 
 /**
@@ -32,18 +31,6 @@ const orchestratorTranslationJa = createTranslationMessages({
     'page.tabs.workflowRuns': 'ワークフロー実行',
     'table.title.workflows': 'ワークフロー',
     'table.title.allRuns': 'すべての実行 ({{count}})',
-    'table.title.allWorkflowRuns': 'ワークフロー実行 ({{count}})',
-    'table.headers.name': '名前',
-    'table.headers.runStatus': '実行ステータス',
-    'table.headers.started': '開始済み',
-    'table.headers.status': 'ステータス',
-    'table.headers.workflowStatus': 'ワークフローステータス',
-    'table.headers.duration': '期間',
-    'table.headers.description': '説明',
-    'table.headers.lastRun': '最終実行',
-    'table.headers.lastRunStatus': '最終実行のステータス',
-    'table.headers.workflowName': 'ワークフロー名',
-    'table.headers.version': 'バージョン',
     'table.actions.run': '実行',
     'table.actions.runAsEvent': 'イベントとして実行',
     'table.actions.viewRuns': '実行の表示',
@@ -72,61 +59,27 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.fields.description': '説明',
     'workflow.fields.started': '開始済み',
     'workflow.fields.workflowId': '実行 ID',
-    'workflow.fields.workflowIdCopied':
-      '実行 ID がクリップボードにコピーされました',
+    'workflow.fields.workflowIdCopied': '実行 ID がクリップボードにコピーされました',
     'workflow.fields.version': 'バージョン',
     'workflow.errors.retriggerFailed': '再トリガーに失敗しました: {{reason}}',
-    'workflow.errors.abortFailed':
-      '中止に失敗しました: すでに実行が完了しています。',
     'workflow.errors.abortFailedWithReason': '中止に失敗しました: {{reason}}',
-    'workflow.errors.failedToLoadDetails':
-      'ワークフロー ID: {{id}} の詳細の読み込みに失敗しました',
-    'workflow.messages.areYouSureYouWantToRunThisWorkflow':
-      'このワークフローを実行してもよろしいですか?',
-    'workflow.messages.userNotAuthorizedExecute':
-      'ユーザーにワークフローの実行権限がありません。',
-    'workflow.messages.workflowDown':
-      'ワークフローは現在停止しているかエラー状態です。今実行すると、失敗や予期しない結果が生じる可能性があります。',
-    'workflow.buttons.run': '実行',
-    'workflow.buttons.runAsEvent': 'イベントとして実行',
-    'workflow.buttons.runWorkflow': 'ワークフローの実行',
-    'workflow.buttons.runAgain': '再実行',
-    'workflow.buttons.running': '実行中...',
-    'workflow.buttons.fromFailurePoint': '失敗箇所から',
-    'workflow.buttons.runFailedAgain': '実行が再び失敗しました',
     'run.title': 'ワークフローの実行',
     'run.pageTitle': '{{processName}} の実行',
     'run.variables': '実行変数',
     'run.inputs': '入力',
     'run.results': '結果',
-    'run.logs.viewLogs': 'ログを表示',
+    'run.logs.viewLogs': 'ログの表示',
     'run.logs.title': '実行ログ',
-    'run.logs.noLogsAvailable': 'このワークフロー実行のログは利用できません。',
+    'run.logs.noLogsAvailable': 'このワークフロー実行に関するログは利用できません。',
     'run.abort.title': 'ワークフローの実行を中止しますか?',
     'run.abort.button': '中止',
-    'run.abort.warning':
-      '中止すると、進行中および保留中のすべてのステップが直ちに停止されます。進行中の作業がすべて失われます。',
+    'run.abort.warning': '中止すると、進行中および保留中のすべてのステップが直ちに停止されます。進行中の作業がすべて失われます。',
     'run.abort.completed.title': '実行完了',
-    'run.abort.completed.message':
-      '実行はすでに完了しているため、中止することはできません。',
-    'run.status.completed': '実行は完了しました',
+    'run.abort.completed.message': '実行はすでに完了しているため、中止することはできません。',
+    'run.status.completed': '実行完了',
     'run.status.failed': '実行は {{time}} に失敗しました',
-    'run.messages.eventTriggered':
-      'このワークフローを起動するためのイベントが送信されました。実行が開始すると一覧に表示されます。',
-    'run.status.aborted': '実行は中止されました',
-    'run.status.completedWithMessage':
-      '実行は {{time}} に完了しました。メッセージ:',
+    'run.status.completedWithMessage': '実行は {{time}} に完了しました。メッセージ:',
     'run.status.failedAt': '実行は {{time}} に失敗しました',
-    'run.status.completedAt': '実行は {{time}} に完了しました',
-    'run.status.running': 'ワークフローは実行中です。{{time}} に開始',
-    'run.status.runningWaitingAtNode':
-      'ワークフローは実行中です - ノード {{node}} で {{formattedTime}} から待機しています',
-    'run.status.workflowIsRunning': 'ワークフローは実行中です。{{time}} に開始',
-    'run.status.noAdditionalInfo':
-      'このワークフローにはステータスに関する追加情報はありません。',
-    'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
-      '実行が完了すると、結果がここに表示されます。',
-    'run.retrigger': '再トリガー',
     'run.viewVariables': '変数の表示',
     'run.suggestedNextWorkflow': '推奨される次のワークフロー',
     'run.suggestedNextWorkflows': '推奨される次のワークフロー',
@@ -136,25 +89,16 @@ const orchestratorTranslationJa = createTranslationMessages({
     'tooltips.suspended': '一時停止中',
     'tooltips.pending': '保留中',
     'tooltips.workflowDown': 'ワークフローは現在停止しているかエラー状態です',
-    'tooltips.userNotAuthorizedAbort':
-      'ユーザーにワークフローの中止権限がありません',
-    'tooltips.userNotAuthorizedExecute':
-      'ユーザーにワークフローの実行権限がありません',
+    'tooltips.userNotAuthorizedAbort': 'ユーザーにワークフローの中止権限がありません',
+    'tooltips.userNotAuthorizedExecute': 'ユーザーにワークフローの実行権限がありません',
     'messages.noDataAvailable': '利用可能なデータはありません',
     'messages.noVariablesFound': 'この実行の変数が見つかりません。',
-    'messages.noInputSchemaWorkflow':
-      'このワークフローには入力スキーマが定義されていません。',
-    'messages.workflowInstanceNoInputs':
-      'このワークフローインスタンスには入力がありません',
-    'messages.missingJsonSchema.title':
-      '入力フォームの JSON スキーマがありません',
-    'messages.missingJsonSchema.message':
-      'このワークフローには、入力検証用に定義された JSON スキーマがありません。ワークフローの実行は可能ですが、入力の検証は限定的になります。',
-    'messages.additionalDetailsAboutThisErrorAreNotAvailable':
-      'このエラーに関する追加情報はありません',
-    'reviewStep.hiddenFieldsNote':
-      'このページでは一部のパラメーターが非表示です。',
-    'reviewStep.showHiddenParameters': '非表示のパラメーターを表示',
+    'messages.noInputSchemaWorkflow': 'このワークフローには入力スキーマが定義されていません。',
+    'messages.workflowInstanceNoInputs': 'このワークフローインスタンスには入力がありません',
+    'messages.missingJsonSchema.title': '入力フォームの JSON スキーマがありません',
+    'messages.missingJsonSchema.message': 'このワークフローには、入力検証用に定義された JSON スキーマがありません。ワークフローの実行は可能ですが、入力の検証は限定的になります。',
+    'reviewStep.hiddenFieldsNote': 'このページでは一部のパラメーターが非表示になっています。',
+    'reviewStep.showHiddenParameters': '非表示のパラメーターの表示',
     'common.close': '閉じる',
     'common.cancel': 'キャンセル',
     'common.execute': '実行',
@@ -164,15 +108,32 @@ const orchestratorTranslationJa = createTranslationMessages({
     'common.back': '戻る',
     'common.run': '実行',
     'common.next': '次へ',
-    'common.review': '確認',
+    'common.review': 'レビュー',
     'common.unavailable': '---',
-    'alerts.duplicateWorkflowIds.message':
-      '同じ ID のワークフローが複数検出されました。バージョン間で一意の ID を使用してください。',
-    'alerts.duplicateWorkflowIds.learnMore': '詳細情報',
-    'stepperObjectField.error':
-      'ステッパーオブジェクトフィールドは、プロパティーを含まないスキーマではサポートされていません',
-    'formDecorator.error':
-      'フォームデコレーターはコンテキストデータを提供する必要があります。',
+    'common.goBack': '戻る',
+    'permissions.accessDenied': 'アクセス拒否',
+    'permissions.accessDeniedDescription': 'このワークフローの実行結果を表示する権限がありません。',
+    'permissions.requiredPermission': '必要な権限',
+    'permissions.contactAdmin': '管理者に連絡して必要な権限を要求してください。',
+    'permissions.missingOwnership': 'このワークフロー実行には、所有者情報が記録されていません。',
+    'permissions.notYourRun': 'このワークフロー実行は、別のユーザーによって開始されました。',
+    'duration.aFewSeconds': '数秒',
+    'duration.aSecond': '1 秒',
+    'duration.seconds': '{{count}} 秒',
+    'duration.aMinute': '1 分',
+    'duration.minutes': '{{count}} 分',
+    'duration.anHour': '1 時間',
+    'duration.hours': '{{count}} 時間',
+    'duration.aDay': '1 日',
+    'duration.days': '{{count}} 日',
+    'duration.aMonth': '1 カ月',
+    'duration.months': '{{count}} カ月',
+    'duration.aYear': '1 年',
+    'duration.years': '{{count}} 年',
+    'alerts.duplicateWorkflowIds.message': '同じ ID を持つ複数のワークフローが検出されました。各バージョンに必ず一意の ID を使用してください。',
+    'alerts.duplicateWorkflowIds.learnMore': '詳細',
+    'stepperObjectField.error': 'ステッパーオブジェクトフィールドは、プロパティーを含まないスキーマではサポートされていません',
+    'formDecorator.error': 'フォームデコレーターはコンテキストデータを提供する必要があります。',
     'aria.close': '閉じる',
   },
 });

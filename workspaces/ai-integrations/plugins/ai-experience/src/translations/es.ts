@@ -25,23 +25,19 @@ const aiExperienceTranslationEs = createTranslationMessages({
   ref: aiExperienceTranslationRef,
   messages: {
     'page.title': 'Experiencia de IA',
-    'page.subtitle':
-      'Explore modelos, servidores, novedades y recursos de aprendizaje con tecnología de IA',
+    'page.subtitle': 'Explore modelos, servidores, novedades y recursos de aprendizaje con tecnología de IA',
     'learn.getStarted.title': 'Empezar',
-    'learn.getStarted.description':
-      'Obtenga información sobre Red Hat Developer Hub.',
+    'learn.getStarted.description': 'Obtenga información sobre Red Hat Developer Hub.',
     'learn.getStarted.cta': 'Ir a Documentos técnicos',
     'learn.explore.title': 'Explorar',
-    'learn.explore.description':
-      'Explore modelos, servidores y plantillas con tecnología de IA.',
+    'learn.explore.description': 'Explore modelos, servidores y plantillas con tecnología de IA.',
     'learn.learn.title': 'Aprender',
     'learn.learn.description': 'Explore y desarrolle nuevas habilidades de IA.',
     'learn.learn.cta': 'Ir a Rutas de aprendizaje',
     'news.pageTitle': 'Novedades de IA',
     'news.fetchingRssFeed': 'Extrayendo documentos RSS',
     'news.noContentAvailable': 'No hay contenido disponible',
-    'news.noContentDescription':
-      'Parece que no pudimos obtener contenido de ese documento RSS. Puede verificar la URL o cambiar a una fuente diferente; para ello, actualice el archivo de configuración del complemento.',
+    'news.noContentDescription': 'Parece que no pudimos obtener contenido de ese documento RSS. Puede verificar la URL o cambiar a una fuente diferente; para ello, actualice el archivo de configuración del complemento.',
     'news.noRssContent': 'No hay contenido RSS',
     'modal.title.preview': 'Previsualizar archivo adjunto',
     'modal.title.edit': 'Modificar archivo adjunto',
@@ -59,8 +55,7 @@ const aiExperienceTranslationEs = createTranslationMessages({
     'greeting.goodEvening': 'Buenas noches',
     'sections.exploreAiModels': 'Explorar modelos de IA',
     'sections.exploreAiTemplates': 'Explorar plantillas de IA',
-    'sections.discoverModels':
-      'Descubra los modelos y servicios de IA que están disponibles en su organización',
+    'sections.discoverModels': 'Descubra los modelos y servicios de IA que están disponibles en su organización',
     'sections.viewAllModels': 'Ver todos los {{count}} modelos',
     'sections.viewAllTemplates': 'Ver todas las {{count}} plantillas',
     'accessibility.close': 'cerrar',

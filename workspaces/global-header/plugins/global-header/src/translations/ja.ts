@@ -26,8 +26,7 @@ const globalHeaderTranslationJa = createTranslationMessages({
   messages: {
     'help.tooltip': 'ヘルプ',
     'help.noSupportLinks': 'サポートリンクがありません',
-    'help.noSupportLinksSubtitle':
-      '管理者がサポートリンクを設定する必要があります。',
+    'help.noSupportLinksSubtitle': '管理者がサポートリンクを設定する必要があります。',
     'help.quickStart': 'クイックスタート',
     'help.supportTitle': 'サポート',
     'profile.picture': 'プロファイル写真',
@@ -40,10 +39,8 @@ const globalHeaderTranslationJa = createTranslationMessages({
     'search.allResults': 'すべての結果',
     'search.clear': 'クリア',
     'applicationLauncher.tooltip': 'アプリケーションランチャー',
-    'applicationLauncher.noLinksTitle':
-      'アプリケーションリンクが設定されていません',
-    'applicationLauncher.noLinksSubtitle':
-      'ここからすばやくアクセスできるように、動的プラグイン設定でアプリケーションリンクを設定してください。',
+    'applicationLauncher.noLinksTitle': 'アプリケーションリンクが設定されていません',
+    'applicationLauncher.noLinksSubtitle': 'ここからすばやくアクセスできるように、動的プラグイン設定でアプリケーションリンクを設定してください。',
     'applicationLauncher.developerHub': 'Developer Hub',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
     'applicationLauncher.sections.documentation': 'ドキュメント',
@@ -51,20 +48,9 @@ const globalHeaderTranslationJa = createTranslationMessages({
     'starred.title': 'スター付き項目',
     'starred.removeTooltip': 'リストから削除',
     'starred.noItemsTitle': 'スター付き項目はまだありません',
-    'starred.noItemsSubtitle':
-      'エンティティーの名前の横にある星のアイコンをクリックすると、すぐにアクセスできるように、ここに保存されます。',
+    'starred.noItemsSubtitle': 'エンティティーの名前の横にある星のアイコンをクリックすると、すぐにアクセスできるように、ここに保存されます。',
     'notifications.title': '通知',
-    'notifications.unsupportedDismissOption':
-      '終了オプション "{{option}}" はサポートされていません。現在サポートされているのは、"none"、"session"、または "localstorage" です!',
-    'create.title': 'セルフサービス',
-    'create.registerComponent.title': 'コンポーネントの登録',
-    'create.registerComponent.subtitle': 'カタログページへのインポート',
-    'create.templates.sectionTitle': 'テンプレートの使用',
-    'create.templates.allTemplates': 'すべてのテンプレート',
-    'create.templates.errorFetching':
-      'テンプレートの取得中にエラーが発生しました',
-    'create.templates.noTemplatesAvailable':
-      '利用できるテンプレートがありません',
+    'notifications.unsupportedDismissOption': '非表示オプション "{{option}}" はサポートされていません。現在サポートされているのは、"none"、"session"、または "localstorage" です!',
   },
 });
 

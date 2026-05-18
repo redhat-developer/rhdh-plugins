@@ -39,11 +39,8 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'header.dateRange.startDate': 'Fecha de inicio',
     'header.dateRange.endDate': 'Fecha de finalización',
     'activeUsers.title': 'Usuarios activos',
-    'activeUsers.averagePrefix':
-      'El promedio del número máximo de usuarios activos fue de',
+    'activeUsers.averagePrefix': 'El promedio del número máximo de usuarios activos fue de',
     'activeUsers.averageText': '{{count}} por {{period}}',
-    'activeUsers.averageSuffix': ' para este período.',
-    'activeUsers.hour': 'hora',
     'activeUsers.day': 'día',
     'activeUsers.week': 'semana',
     'activeUsers.month': 'mes',
@@ -65,8 +62,6 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'searches.totalCount': '{{count}} búsquedas',
     'searches.averagePrefix': 'El recuento promedio de búsquedas fue de',
     'searches.averageText': '{{count}} por {{period}}',
-    'searches.averageSuffix': ' para este período.',
-    'searches.hour': 'hora',
     'searches.day': 'día',
     'searches.week': 'semana',
     'searches.month': 'mes',
@@ -76,8 +71,6 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'users.licensed': 'Con licencia',
     'users.licensedNotLoggedIn': 'Con licencia (no conectados)',
     'users.ofTotal': 'de {{total}}',
-    'users.tooltip':
-      'Establezca el número de usuarios con licencia en el archivo app-config.yaml',
     'table.headers.name': 'Nombre',
     'table.headers.kind': 'Tipo',
     'table.headers.lastUsed': 'Último uso',
@@ -86,8 +79,6 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'table.headers.trend': 'Tendencia',
     'table.headers.entity': 'Entidad',
     'table.pagination.topN': '{{count}} principales',
-    'filter.all': 'Todo',
-    'filter.selectKind': 'Seleccionar tipo',
     'common.noResults': 'No hay resultados para este rango de fechas.',
     'common.readMore': 'Leer más',
     'common.exportCSV': 'Exportar CSV',
@@ -99,8 +90,7 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'common.invalidDateFormat': 'Formato de fecha no válido',
     'common.csvFilename': 'active_users',
     'permission.title': 'Permisos faltantes',
-    'permission.description':
-      'Para ver el complemento "Adoption Insights", comuníquese con su administrador para que le otorgue permisos a adoption-insights.events.read.',
+    'permission.description': 'Para ver el complemento "Adoption Insights", comuníquese con su administrador para que le otorgue permisos a adoption-insights.events.read.',
   },
 });
 

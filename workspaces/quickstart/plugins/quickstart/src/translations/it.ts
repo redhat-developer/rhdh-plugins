@@ -24,83 +24,55 @@ import { quickstartTranslationRef } from './ref';
 const quickstartTranslationIt = createTranslationMessages({
   ref: quickstartTranslationRef,
   messages: {
-    'header.title': 'Muoviamo insieme i primi passi con Developer Hub',
-    'header.subtitle': 'Ti guideremo attraverso alcuni rapidi passaggi',
-    'steps.setupAuthentication.title': "Impostazione dell'autenticazione",
-    'steps.setupAuthentication.description':
-      "Impostazione di credenziali di accesso sicure per proteggere l'account da accessi non autorizzati.",
-    'steps.setupAuthentication.ctaTitle': 'Per saperne di più',
-    'steps.configureRbac.title': 'Configurazione di RBAC',
-    'steps.configureRbac.description':
-      'Assegnare ruoli e autorizzazioni per controllare chi può visualizzare, creare o modificare le risorse, per garantire una collaborazione sicura ed efficiente.',
-    'steps.configureRbac.ctaTitle': "Gestisci l'accesso",
-    'steps.configureGit.title': 'Configurazione di Git',
-    'steps.configureGit.description':
-      'Collegare i provider Git, come GitHub, per gestire il codice, automatizzare i flussi di lavoro e integrare le funzionalità della piattaforma.',
-    'steps.configureGit.ctaTitle': 'Per saperne di più',
-    'steps.managePlugins.title': 'Gestione dei plugin',
-    'steps.managePlugins.description':
-      "Sfogliare e installare le estensioni per aggiungere funzionalità, connettersi a strumenti esterni e personalizzare l'esperienza utente.",
-    'steps.managePlugins.ctaTitle': 'Esplora i plugin',
-    'steps.importApplication.title': "Importare l'applicazione",
-    'steps.importApplication.description':
-      'Importare il codice e i servizi esistenti nel catalogo per organizzarli e accedervi tramite il portale per sviluppatori.',
+    'header.title': 'Iniziamo a usare Developer Hub',
+    'header.subtitle': 'Ti guideremo attraverso alcuni semplici passaggi',
+    'steps.setupAuthentication.title': 'Configura l\'autenticazione',
+    'steps.setupAuthentication.description': 'Imposta credenziali di accesso sicure per proteggere il tuo account da accessi non autorizzati.',
+    'steps.setupAuthentication.ctaTitle': 'Scopri di più',
+    'steps.configureRbac.title': 'Configura RBAC',
+    'steps.configureRbac.description': 'Assegna ruoli e autorizzazioni per controllare chi può visualizzare, creare o modificare le risorse, garantendo una collaborazione sicura ed efficiente.',
+    'steps.configureGit.title': 'Configura Git',
+    'steps.configureGit.description': 'Collega i tuoi provider Git, come GitHub, per gestire il codice, automatizzare i flussi di lavoro e integrarli con le funzionalità della piattaforma.',
+    'steps.managePlugins.title': 'Gestisci i plugin',
+    'steps.managePlugins.description': 'Esplora e installa estensioni per aggiungere funzionalità, connetterti con strumenti esterni e personalizzare la tua esperienza.',
+    'steps.importApplication.title': 'Importa applicazione',
+    'steps.importApplication.description': 'Importa codice e servizi esistenti nel catalogo per organizzarli e accedervi tramite il tuo portale per sviluppatori.',
     'steps.importApplication.ctaTitle': 'Importa',
-    'steps.learnAboutCatalog.title': 'Analisi del catalogo',
-    'steps.learnAboutCatalog.description':
-      'Scoprire tutti i componenti software, i servizi e le API e visualizzarne proprietari e documentazione.',
-    'steps.learnAboutCatalog.ctaTitle': 'Visualizza catalogo',
-    'steps.exploreSelfServiceTemplates.title':
-      'Esplorare i modelli self-service',
-    'steps.exploreSelfServiceTemplates.description':
-      'Utilizzare i nostri modelli self-service per configurare rapidamente nuovi progetti, servizi o documentazione.',
-    'steps.exploreSelfServiceTemplates.ctaTitle': 'Esplora i modelli',
-    'steps.findAllLearningPaths.title':
-      'Individuare tutti i percorsi di apprendimento',
-    'steps.findAllLearningPaths.description':
-      "Integrare l'e-learning personalizzato nei flussi di lavoro con i percorsi di apprendimento per accelerare l'onboarding, colmare le lacune di competenze e promuovere le best practice.",
-    'steps.findAllLearningPaths.ctaTitle':
-      'Visualizzare i percorsi di apprendimento',
-    'steps.setupLightspeed.title': 'Impostare Lightspeed',
-    'steps.setupLightspeed.description':
-      'Connetti Lightspeed a un modello di linguaggio di grandi dimensioni (LLM) supportato e configura le autorizzazioni per fornire ai tuoi sviluppatori assistenza basata sull’intelligenza artificiale.',
-    'steps.setupLightspeed.ctaTitle': 'Per saperne di più',
-    'steps.getStartedWithLightspeed.title': 'Iniziare con Lightspeed',
-    'steps.getStartedWithLightspeed.description':
-      'Risolvere problemi, generare codice e conoscere le risorse della piattaforma con la chat basata sull’intelligenza artificiale.',
-    'steps.getStartedWithLightspeed.ctaTitle': 'Per saperne di più',
+    'steps.learnAboutCatalog.title': 'Scopri il Catalogo',
+    'steps.learnAboutCatalog.description': 'Scopri tutti i componenti software, i servizi e le API, e visualizza i relativi proprietari e la documentazione.',
+    'steps.exploreSelfServiceTemplates.title': 'Esplora i modelli self service',
+    'steps.exploreSelfServiceTemplates.description': 'Utilizza i nostri modelli self service per configurare rapidamente nuovi progetti, servizi o documentazione.',
+    'steps.findAllLearningPaths.title': 'Trova tutti i Learning Path',
+    'steps.findAllLearningPaths.description': 'Integra un e-learning personalizzato nei tuoi flussi di lavoro con i Learning Path per accelerare l\'onboarding, colmare le lacune di competenze e promuovere le migliori pratiche.',
+    'steps.setupLightspeed.title': 'Configura Lightspeed',
+    'steps.setupLightspeed.description': 'Collega Lightspeed a un modello linguistico di grandi dimensioni (LLM) supportato e configura le autorizzazioni per fornire l\'assistenza basata su IA ai tuoi sviluppatori.',
+    'steps.setupLightspeed.ctaTitle': 'Scopri di più',
+    'steps.getStartedWithLightspeed.title': 'Inizia subito con Lightspeed',
+    'steps.getStartedWithLightspeed.description': 'Risolvi i problemi, genera codice e scopri le risorse della piattaforma grazie alla chat basata su IA.',
     'button.quickstart': 'Avvio rapido',
-    'button.openQuickstartGuide': "Apri la Guida all'avvio rapido",
-    'button.closeDrawer': 'Chiudi riquadro',
-    'button.gotIt': 'Ho capito!',
-    'snackbar.helpPrompt':
-      "Hai bisogno di aiuto? Apri la Guida all'avvio rapido facendo clic sull'icona (?) nell'intestazione.",
-    'footer.progress': '{{progress}}% di avanzamento',
-    'footer.notStarted': 'Non iniziato',
+    'button.openQuickstartGuide': 'Apri guida rapida',
+    'button.closeDrawer': 'Chiudi cassetto',
+    'button.gotIt': 'Fatto!',
+    'snackbar.helpPrompt': 'Hai bisogno di assistenza? Consulta la guida rapida cliccando su (?) nell\'intestazione!',
+    'footer.progress': '{{progress}}% di progresso',
+    'footer.notStarted': 'Non avviato',
     'footer.hide': 'Nascondi',
-    'content.emptyState.title':
-      'Contenuto di avvio rapido non disponibile per il ruolo utente.',
+    'content.emptyState.title': 'Il contenuto di avvio rapido non è disponibile per il tuo ruolo.',
     'item.expandAriaLabel': 'Espandi i dettagli di {{title}}',
     'item.collapseAriaLabel': 'Comprimi i dettagli di {{title}}',
     'item.expandButtonAriaLabel': 'Espandi elemento',
     'item.collapseButtonAriaLabel': 'Comprimi elemento',
-    'dev.pageTitle': 'Pagina di prova del plugin di avvio rapido',
-    'dev.pageDescription':
-      'Questa è una pagina di prova per il plugin di avvio rapido. Utilizzare i pulsanti sottostanti per interagire con il riquadro di avvio rapido.',
-    'dev.drawerControls': 'Comandi del riquadro',
-    'dev.currentState': 'Stato attuale del riquadro: {{state}}',
-    'dev.stateOpen': 'Aperto',
+    'dev.pageTitle': 'Pagina di prova del plugin Quickstart',
+    'dev.pageDescription': 'Questa è una pagina di prova per il plugin Quickstart. Utilizza i pulsanti sottostanti per interagire con il pannello di avvio rapido.',
+    'dev.drawerControls': 'Comandi drawer',
+    'dev.currentState': 'Stato attuale del cassetto: {{state}}',
     'dev.stateClosed': 'Chiuso',
     'dev.instructions': 'Istruzioni',
-    'dev.step1':
-      '1. Fare clic su "Apri la Guida all\'avvio rapido" per aprire il riquadro',
-    'dev.step2': '2. Navigare tra i passaggi di avvio rapido',
-    'dev.step3':
-      '3. Testare il monitoraggio dei progressi completando i passaggi',
-    'dev.step4':
-      '4. È possibile chiudere il riquadro utilizzando il pulsante di chiusura o i comandi del riquadro stesso',
-    'dev.step5':
-      '5. I progressi vengono salvati automaticamente su localStorage',
+    'dev.step1': '1. Fai clic su "Apri guida rapida" per aprire il cassetto',
+    'dev.step2': '2. Naviga tra i passaggi della guida rapida',
+    'dev.step3': '3. Verifica il monitoraggio dei progressi completando i passaggi',
+    'dev.step4': '4. È possibile chiudere il cassetto utilizzando il pulsante di chiusura o i comandi integrati nel cassetto stesso',
+    'dev.step5': '5. I progressi vengono salvati automaticamente in localStorage',
   },
 });
 

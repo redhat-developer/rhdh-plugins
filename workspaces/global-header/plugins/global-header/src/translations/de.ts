@@ -25,9 +25,8 @@ const globalHeaderTranslationDe = createTranslationMessages({
   ref: globalHeaderTranslationRef,
   messages: {
     'help.tooltip': 'Hilfe',
-    'help.noSupportLinks': 'Keine Support-Verknüpfungen',
-    'help.noSupportLinksSubtitle':
-      'Ihr Administrator muss Support-Verknüpfungen einrichten.',
+    'help.noSupportLinks': 'Keine Supportverknüpfungen',
+    'help.noSupportLinksSubtitle': 'Supportverknüpfungen müssen vom Administrator eingerichtet werden.',
     'help.quickStart': 'Schnellstart',
     'help.supportTitle': 'Support',
     'profile.picture': 'Profilbild',
@@ -40,29 +39,18 @@ const globalHeaderTranslationDe = createTranslationMessages({
     'search.allResults': 'Alle Ergebnisse',
     'search.clear': 'Löschen',
     'applicationLauncher.tooltip': 'Anwendungsstartprogramm',
-    'applicationLauncher.noLinksTitle':
-      'Keine Anwendungsverknüpfungen konfiguriert',
-    'applicationLauncher.noLinksSubtitle':
-      'Konfigurieren Sie Anwendungsverknüpfungen in der dynamischen Plugin-Konfiguration, um von hier aus schnell darauf zugreifen zu können.',
+    'applicationLauncher.noLinksTitle': 'Keine Anwendungsverknüpfungen konfiguriert',
+    'applicationLauncher.noLinksSubtitle': 'Konfigurieren Sie Anwendungsverknüpfungen in der Konfiguration für dynamische Plugins, um von hier aus schnell darauf zugreifen zu können.',
     'applicationLauncher.developerHub': 'Developer Hub',
-    'applicationLauncher.rhdhLocal': 'RHDH Local',
+    'applicationLauncher.rhdhLocal': 'RHDH lokal',
     'applicationLauncher.sections.documentation': 'Dokumentation',
     'applicationLauncher.sections.developerTools': 'Entwicklertools',
-    'starred.title': 'Ihre markierten Elemente',
+    'starred.title': 'Ihre mit Sternchen gekennzeichneten Elemente',
     'starred.removeTooltip': 'Aus der Liste entfernen',
-    'starred.noItemsTitle': 'Noch keine markierten Elemente',
-    'starred.noItemsSubtitle':
-      'Klicken Sie auf das Sternsymbol neben dem Namen eines Elements, um es hier für den Schnellzugriff zu speichern.',
+    'starred.noItemsTitle': 'Noch keine mit Sternchen gekennzeichneten Elemente',
+    'starred.noItemsSubtitle': 'Klicken Sie auf das Sternsymbol neben dem Namen einer Entity, um sie hier für den Schnellzugriff zu speichern.',
     'notifications.title': 'Benachrichtigungen',
-    'notifications.unsupportedDismissOption':
-      'Option "{{option}}" zum Verwerfen nicht unterstützt; aktuell werden "none", "session" oder "localstorage" unterstützt.',
-    'create.title': 'Self-Service',
-    'create.registerComponent.title': 'Komponente registrieren',
-    'create.registerComponent.subtitle': 'Zum Katalog importieren',
-    'create.templates.sectionTitle': 'Vorlage verwenden',
-    'create.templates.allTemplates': 'Alle Vorlagen',
-    'create.templates.errorFetching': 'Fehler beim Abrufen der Vorlagen',
-    'create.templates.noTemplatesAvailable': 'Keine Vorlagen verfügbar',
+    'notifications.unsupportedDismissOption': 'Verwerfen-Option „{{option}}“ nicht unterstützt; derzeit werden „none“, „session“ oder „localstorage“ unterstützt!',
   },
 });
 

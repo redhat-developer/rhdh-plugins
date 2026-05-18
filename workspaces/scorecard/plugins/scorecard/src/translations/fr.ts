@@ -23,163 +23,38 @@ import { scorecardTranslationRef } from './ref';
  */
 const scorecardTranslationFr = createTranslationMessages({
   ref: scorecardTranslationRef,
-  full: true,
   messages: {
-    // Empty state translations
-    'emptyState.title': "Aucune carte de score n'a encore été ajoutée",
-    'emptyState.description':
-      'Les tableaux de bord vous aident à surveiller l’état des composants en un coup d’œil. Pour commencer, explorez notre documentation pour obtenir des instructions de configuration.',
-    'emptyState.button': 'Voir la documentation',
-    'emptyState.altText': 'Pas de tableau de bord',
-
-    // Permission required translations
-    'permissionRequired.title': 'Autorisations manquantes',
-    'permissionRequired.description':
-      "Pour afficher le plugin Scorecard, contactez votre administrateur pour lui accorder l'autorisation {{permission}}.",
-    'permissionRequired.button': 'En savoir plus',
-    'permissionRequired.altText': 'Autorisation requise',
-
-    // Common UI
-    'common.loading': 'Chargement',
-
-    // Not found state
-    'notFound.title': "404 Nous n'avons pas trouvé cette page",
-    'notFound.description':
-      "Essayez d'ajouter un fichier {{indexFile}} à la racine du répertoire docs de ce dépôt.",
-    'notFound.readMore': 'En savoir plus',
+    'emptyState.title': 'Aucune fiche de score ajoutée pour le moment',
+    'emptyState.description': 'Les tableaux de bord vous permettent de surveiller l\'état des composants en un coup d\'œil. Pour commencer, consultez notre documentation pour obtenir des instructions d\'installation.',
+    'emptyState.altText': 'Pas de tableaux de score',
+    'notFound.title': 'Nous n\'avons pas pu trouver cette page.',
+    'notFound.description': 'Essayez d\'ajouter un fichier {{indexFile}} à la racine du répertoire docs de ce référentiel.',
     'notFound.goBack': 'Retour',
-    'notFound.contactSupport': 'Contacter le support',
+    'notFound.contactSupport': 'Contactez l\'assistance',
     'notFound.altText': 'Page introuvable',
-
-    // Error messages
-    'errors.entityMissingProperties':
-      "Entité manquant les propriétés requises pour la recherche dans la fiche d'évaluation",
-    'errors.missingAggregationId':
-      "La fiche de suivi est mal configurée ; la propriété « ID d'agrégation » (ou « ID de métrique ») n'est pas fournie",
-    'errors.invalidApiResponse':
-      "Format de réponse non valide de l'API de scorecard",
-    'errors.fetchError':
-      'Erreur lors de la récupération des tableaux de bord : {{error}}',
-    'errors.metricDataUnavailable': 'Données métriques indisponibles',
+    'permissionRequired.title': 'Autorisation manquante',
+    'permissionRequired.description': 'Pour afficher le plugin Scorecard, contactez votre administrateur pour lui accorder l\'autorisation {{permission}}.',
+    'permissionRequired.altText': 'Autorisation requise',
+    'common.loading': 'Chargement',
+    'errors.entityMissingProperties': 'Entité ne possédant pas les propriétés requises pour la recherche dans le tableau de bord.',
+    'errors.missingAggregationId': 'Tableau de bord mal configuré, l\'identifiant d\'agrégation (ou l\'identifiant de la métrique) n\'est pas fourni.',
+    'errors.invalidApiResponse': 'Format de réponse invalide de l\'API de scorecard',
+    'errors.fetchError': 'Erreur lors de la récupération des fiches de score : {{error}}',
     'errors.invalidThresholds': 'Seuils invalides',
-    'errors.missingPermission': 'Permission manquante',
+    'errors.missingPermission': 'Autorisation manquante',
     'errors.noDataFound': 'Aucune donnée trouvée',
-    'errors.authenticationError': "Erreur d'authentification",
-    'errors.missingPermissionMessage':
-      'Pour voir les métriques de scorecard, votre administrateur doit vous donner la permission requise.',
-    'errors.userNotFoundInCatalogMessage':
-      'Entité utilisateur non trouvée dans le catalogue',
-    'errors.noDataFoundMessage':
-      'Pour voir vos données ici, vérifiez que vos entités communiquent les valeurs liées à cet indicateur.',
-    'errors.unsupportedAggregationType':
-      "Cette fiche d'évaluation utilise un type d'agrégation non pris en charge par cette version du plugin.",
-    'errors.authenticationErrorMessage':
-      'Veuillez vous connecter pour afficher vos données.',
-
-    // Metric translations
-    'metric.github.open_prs.title': 'GitHub ouvre des PR',
-    'metric.github.open_prs.description':
-      "Nombre actuel de requêtes d'extraction ouvertes pour un référentiel GitHub donné.",
-    'metric.jira.open_issues.title': 'Jira ouvre des tickets bloquants',
-    'metric.jira.open_issues.description':
-      'Met en évidence le nombre de problèmes critiques et bloquants actuellement ouverts dans Jira.',
-    'metric.sonarqube.quality_gate.title': 'SonarQube Statut du Quality Gate',
-    'metric.sonarqube.quality_gate.description':
-      'Indique si le projet passe son Quality Gate SonarQube.',
-    'metric.sonarqube.open_issues.title': 'SonarQube Problèmes ouverts',
-    'metric.sonarqube.open_issues.description':
-      'Nombre de problèmes ouverts (OPEN, CONFIRMED, REOPENED) dans SonarQube.',
-    'metric.sonarqube.security_rating.title': 'SonarQube Note de sécurité',
-    'metric.sonarqube.security_rating.description':
-      'Note de sécurité SonarQube.',
-    'metric.sonarqube.security_issues.title': 'SonarQube Problèmes de sécurité',
-    'metric.sonarqube.security_issues.description':
-      'Nombre de vulnérabilités de sécurité ouvertes dans SonarQube.',
-    'metric.sonarqube.security_review_rating.title':
-      'SonarQube Note de revue de sécurité',
-    'metric.sonarqube.security_review_rating.description':
-      'Note de revue de sécurité SonarQube.',
-    'metric.sonarqube.security_hotspots.title':
-      'SonarQube Points chauds de sécurité',
-    'metric.sonarqube.security_hotspots.description':
-      'Nombre de points chauds de sécurité à examiner dans SonarQube.',
-    'metric.sonarqube.reliability_rating.title': 'SonarQube Note de fiabilité',
-    'metric.sonarqube.reliability_rating.description':
-      'Note de fiabilité SonarQube.',
-    'metric.sonarqube.reliability_issues.title':
-      'SonarQube Problèmes de fiabilité',
-    'metric.sonarqube.reliability_issues.description':
-      'Nombre de bugs ouverts dans SonarQube.',
-    'metric.sonarqube.maintainability_rating.title':
-      'SonarQube Note de maintenabilité',
-    'metric.sonarqube.maintainability_rating.description':
-      'Note de maintenabilité SonarQube.',
-    'metric.sonarqube.maintainability_issues.title':
-      'SonarQube Problèmes de maintenabilité',
-    'metric.sonarqube.maintainability_issues.description':
-      'Nombre de code smells ouverts dans SonarQube.',
-    'metric.sonarqube.code_coverage.title': 'SonarQube Couverture de code',
-    'metric.sonarqube.code_coverage.description':
-      'Pourcentage global de couverture de code dans SonarQube.',
-    'metric.sonarqube.code_duplications.title':
-      'SonarQube Duplications de code',
-    'metric.sonarqube.code_duplications.description':
-      'Pourcentage de lignes dupliquées dans SonarQube.',
-    'metric.filecheck.title': 'Vérification de fichier : {{name}}',
-    'metric.filecheck.description':
-      'Vérifie si le fichier {{name}} existe dans le dépôt.',
-    'metric.lastUpdated': 'Dernière mise à jour: {{timestamp}}',
-    'metric.lastUpdatedNotAvailable': 'Dernière mise à jour: Non disponible',
-    'metric.someEntitiesNotReportingValues':
-      'Certaines entités ne communiquent pas de valeurs liées à cette métrique.',
-    'metric.averageCenterTooltipTotalLabel': 'Score total',
-    'metric.averageCenterTooltipMaxLabel': 'Score maximum possible',
-    'metric.averageCenterTooltipBreakdownRow_one':
-      '{{status}} : {{count}} entité, score : {{score}}',
-    'metric.averageCenterTooltipBreakdownRow_other':
-      '{{status}} : {{count}} entités, score : {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_one':
-      '{{count}} entité, chacune {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_other':
-      '{{count}} entités, chacune {{score}}',
-    'metric.averageLegendTooltipRowTotal': 'Score total {{total}}',
-    'metric.drillDownCalculationFailures':
-      'Le calcul de cette métrique a échoué pour une ou plusieurs entités.',
-    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entités',
-    'metric.homepageEntityCalculationHealth':
-      '{{healthy}} / {{total}} entités sans erreur de calcul de métrique',
-
-    // Threshold translations
+    'errors.authenticationError': 'Erreur d’authentification',
+    'errors.missingPermissionMessage': 'Pour consulter les indicateurs du tableau de bord, votre administrateur doit vous accorder l\'autorisation requise.',
     'thresholds.success': 'Succès',
-    'thresholds.warning': 'Attention',
+    'thresholds.warning': 'Avertissement',
     'thresholds.error': 'Erreur',
-    'thresholds.exist': 'Existant',
+    'thresholds.exist': 'Exister',
     'thresholds.missing': 'Manquant',
-    'thresholds.noEntities': "Aucune entité dans l'état {{category}}",
-    'thresholds.entities_one': '{{count}} entité',
+    'thresholds.noEntities': 'Aucune entité dans l\'état {{category}}',
+    'thresholds.entities_one': 'entité {{count}}',
     'thresholds.entities_other': '{{count}} entités',
-
-    // Entities page translations
     'entitiesPage.unknownMetric': 'Métrique inconnue',
-    'entitiesPage.noDataFound':
-      'Pour voir vos données ici, vérifiez que vos entités communiquent les valeurs liées à cet indicateur.',
-    'entitiesPage.missingPermission':
-      'Pour voir les métriques de scorecard, votre administrateur doit vous donner la permission requise.',
-    'entitiesPage.metricProviderNotRegistered':
-      'Fournisseur de métrique avec ID {{metricId}} non enregistré.',
-    'entitiesPage.entitiesTable.title': 'Entités',
-    'entitiesPage.entitiesTable.unavailable': 'Non disponible',
-    'entitiesPage.entitiesTable.titleWithCount': 'Entités ({{count}})',
-    'entitiesPage.entitiesTable.header.status': 'Statut',
-    'entitiesPage.entitiesTable.header.value': 'Valeur',
-    'entitiesPage.entitiesTable.header.entity': 'Entité',
-    'entitiesPage.entitiesTable.header.owner': 'Propriétaire',
-    'entitiesPage.entitiesTable.header.kind': 'Type',
-    'entitiesPage.entitiesTable.header.lastUpdated': 'Dernière mise à jour',
-    'entitiesPage.entitiesTable.footer.allRows': 'Toutes les lignes',
-    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} ligne',
-    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} lignes',
-    'entitiesPage.entitiesTable.footer.of': 'de',
+    'entitiesPage.noDataFound': 'Pour que vos données apparaissent ici, vérifiez que vos entités communiquent bien des valeurs relatives à cette métrique.',
   },
 });
 
