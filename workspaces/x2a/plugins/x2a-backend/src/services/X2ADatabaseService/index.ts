@@ -30,6 +30,7 @@ import {
   JobStatusEnum,
   MigrationPhase,
   Artifact,
+  ArtifactKind,
   Telemetry,
   ProjectState,
   DEFAULT_PAGE_ORDER,
@@ -94,8 +95,8 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       lastInitJob,
     );
 
-    project.migrationPlan = lastInitJob?.artifacts?.find(
-      artifact => artifact.type === 'migration_plan',
+    project.migrationPlan = lastInitJob?.artifacts?.find(artifact =>
+      ArtifactKind.from(artifact.type).isMigrationPlan(),
     );
 
     project.initJob = removeSensitiveFromJob(lastInitJob);
