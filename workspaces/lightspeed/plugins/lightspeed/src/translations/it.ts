@@ -81,8 +81,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebook.view.documents.uploading': 'Caricamento documento',
     'notebook.view.documents.maxReached':
       'Sono consentiti al massimo 10 documenti. Elimina un documento per caricarne uno nuovo.',
-    'notebook.upload.success': '{{fileName}} caricato con successo.',
-    'notebook.upload.failed': 'Caricamento di {{fileName}} non riuscito.',
+    'notebook.upload.failed': 'Caricamento di "{{fileName}}" non riuscito.',
 
     // Notebook upload modal
     'notebook.upload.modal.title': 'Aggiungi un documento al quaderno',
@@ -108,6 +107,12 @@ const lightspeedTranslationIt = createTranslationMessages({
       'I seguenti file esistono già in questo quaderno. Vuoi sovrascriverli con le nuove versioni?',
     'notebook.overwrite.modal.action': 'Sovrascrivi',
     'notebook.document.delete': 'Elimina',
+    'notebook.document.delete.title': 'Rimuovere la risorsa?',
+    'notebook.document.delete.description':
+      'Sei sicuro di voler rimuovere <documentName/> da questo quaderno? Questa azione non può essere annullata.',
+    'notebook.document.delete.action': 'Rimuovi',
+    'notebook.document.delete.success':
+      '«{{documentName}}» rimosso con successo.',
 
     'prompts.codeReadability.title':
       'Ottenere aiuto sulla leggibilità del codice',
@@ -237,8 +242,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tooltip.close': 'Chiudi',
     'attach.menu.title': 'Allega',
     'attach.menu.description': 'Allega un file JSON, YAML o TXT',
-    'history.section.pinned': 'Fissati',
-    'history.section.recent': 'Recenti',
+
     'tooltip.fab.open': 'Apri Lightspeed',
     'tooltip.fab.close': 'Chiudi Lightspeed',
     'modal.title.preview': 'Anteprima allegato',
@@ -277,8 +281,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'feedback.completion.title': 'Feedback inviato',
     'feedback.completion.body':
       'Abbiamo ricevuto la tua risposta. Grazie per aver condiviso i tuoi commenti!',
-    'conversation.category.pinnedChats': 'Bloccata',
-    'conversation.category.recent': 'Recente',
+    'conversation.category.pinnedChats': 'Chat fissate',
+    'conversation.category.recent': 'Chat',
     'settings.pinned.enable': 'Abilita le chat bloccate',
     'settings.pinned.disable': 'Disattiva le chat bloccate',
     'settings.pinned.enabled.description':
@@ -286,6 +290,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'settings.pinned.disabled.description':
       'Le chat bloccate sono attualmente disabilitate',
     'settings.mcp.label': 'Impostazioni MCP',
+    'settings.mcp.badge': 'Nuovo',
     'mcp.settings.title': 'Server MCP',
     'mcp.settings.selectedCount':
       '{{selectedCount}} di {{totalCount}} selezionati',
