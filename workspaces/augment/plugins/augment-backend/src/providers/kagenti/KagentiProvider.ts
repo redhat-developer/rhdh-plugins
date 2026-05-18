@@ -704,7 +704,6 @@ export class KagentiProvider implements AgenticProvider {
       this.logger,
     );
 
-    const CARD_CONCURRENCY = 6;
     const allItems: KagentiAgentSummary[] = [];
 
     const nsResults = await Promise.allSettled(

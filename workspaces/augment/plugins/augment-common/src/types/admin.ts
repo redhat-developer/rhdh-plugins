@@ -63,6 +63,7 @@ export type AdminConfigKey =
   | 'chatTools'
   | 'devSpacesApiUrl'
   | 'devSpacesToken'
+  | 'devSpacesNamespace'
   | 'workflows'
   | 'workflowVersions'
   | 'workflowTestSuites'

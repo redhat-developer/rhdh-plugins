@@ -122,23 +122,29 @@ export function agentToConfig(agent: AgentFormData): Record<string, unknown> {
     name: agent.name,
     instructions: agent.instructions,
   };
-  if (agent.handoffDescription) entry.handoffDescription = agent.handoffDescription;
+  if (agent.handoffDescription)
+    entry.handoffDescription = agent.handoffDescription;
   if (agent.model) entry.model = agent.model;
   if (agent.handoffs.length > 0) entry.handoffs = agent.handoffs;
   if (agent.asTools.length > 0) entry.asTools = agent.asTools;
   if (agent.mcpServers.length > 0) entry.mcpServers = agent.mcpServers;
   if (agent.enableRAG) entry.enableRAG = true;
-  if (agent.vectorStoreIds.length > 0) entry.vectorStoreIds = agent.vectorStoreIds;
+  if (agent.vectorStoreIds.length > 0)
+    entry.vectorStoreIds = agent.vectorStoreIds;
   if (agent.enableWebSearch) entry.enableWebSearch = true;
   if (agent.enableCodeInterpreter) entry.enableCodeInterpreter = true;
   if (agent.toolChoice) entry.toolChoice = agent.toolChoice;
   if (agent.temperature !== undefined) entry.temperature = agent.temperature;
-  if (agent.maxOutputTokens !== undefined) entry.maxOutputTokens = agent.maxOutputTokens;
+  if (agent.maxOutputTokens !== undefined)
+    entry.maxOutputTokens = agent.maxOutputTokens;
   if (agent.maxToolCalls !== undefined) entry.maxToolCalls = agent.maxToolCalls;
-  if (agent.guardrails && agent.guardrails.length > 0) entry.guardrails = agent.guardrails;
+  if (agent.guardrails && agent.guardrails.length > 0)
+    entry.guardrails = agent.guardrails;
   if (agent.reasoning) entry.reasoning = agent.reasoning;
-  if (agent.resetToolChoice !== undefined) entry.resetToolChoice = agent.resetToolChoice;
-  if (agent.nestHandoffHistory !== undefined) entry.nestHandoffHistory = agent.nestHandoffHistory;
+  if (agent.resetToolChoice !== undefined)
+    entry.resetToolChoice = agent.resetToolChoice;
+  if (agent.nestHandoffHistory !== undefined)
+    entry.nestHandoffHistory = agent.nestHandoffHistory;
   return entry;
 }
 
@@ -177,6 +183,7 @@ export interface ValidationResult {
 export function validateAgents(
   agents: Record<string, AgentFormData>,
   defaultAgentKey: string,
+  _availableMcpServerIds?: string[],
 ): ValidationResult {
   const errors: string[] = [];
   const agentKeys = Object.keys(agents);
@@ -198,7 +205,11 @@ export function validateAgents(
     const r = deriveAgentRole(k, agents);
     return r === 'router' || r === 'specialist';
   });
-  if (hasAnyRouterOrSpecialist && agentKeys.length > 0 && !agents[defaultAgentKey]) {
+  if (
+    hasAnyRouterOrSpecialist &&
+    agentKeys.length > 0 &&
+    !agents[defaultAgentKey]
+  ) {
     errors.push(`Default agent "${defaultAgentKey}" not found`);
   }
 
@@ -290,6 +301,31 @@ export function buildAgentContext(
     lines.push(`Temperature: ${agent.temperature}`);
 
   return lines.join('\n');
+}
+
+export function getTabCompletionStatus(
+  agent: AgentFormData,
+): Record<string, boolean> {
+  return {
+    basics: Boolean(agent.name.trim() && agent.instructions.trim()),
+    tools:
+      agent.mcpServers.length > 0 ||
+      agent.enableRAG ||
+      agent.enableWebSearch ||
+      agent.enableCodeInterpreter,
+    connections: agent.handoffs.length > 0 || agent.asTools.length > 0,
+  };
+}
+
+export function generateUniqueAgentKey(existingKeys: string[]): string {
+  const base = 'agent';
+  let idx = 1;
+  let key = base;
+  while (existingKeys.includes(key)) {
+    idx++;
+    key = `${base}_${idx}`;
+  }
+  return key;
 }
 
 function detectSmartWarnings(

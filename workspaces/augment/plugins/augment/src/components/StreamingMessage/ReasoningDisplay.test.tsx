@@ -21,8 +21,14 @@ import { ReasoningDisplay } from './ReasoningDisplay';
 const theme = createTheme();
 const branding = {
   appName: 'Test',
+  tagline: 'Test tagline',
+  inputPlaceholder: 'Ask a question...',
   primaryColor: '#1e40af',
   secondaryColor: '#475569',
+  successColor: '#16a34a',
+  warningColor: '#d97706',
+  errorColor: '#dc2626',
+  infoColor: '#2563eb',
 };
 
 function renderWithTheme(ui: React.ReactElement) {

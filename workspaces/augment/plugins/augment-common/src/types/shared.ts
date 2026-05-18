@@ -261,6 +261,18 @@ export interface VectorStoreInfo {
   status: string;
   fileCount: number;
   createdAt: number;
+  embeddingModel?: string;
+  embeddingDimension?: number;
+  providerType?: string;
+  usageBytes?: number;
+  lastActiveAt?: number;
+  fileCounts?: {
+    completed: number;
+    inProgress: number;
+    failed: number;
+    cancelled: number;
+    total: number;
+  };
 }
 
 /**

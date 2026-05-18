@@ -53,7 +53,7 @@ function createOptions(
         contextId: 'ctx-1',
         form: {
           title: 'Test Form',
-          fields: [{ id: 'name', type: 'string', title: 'Name' }],
+          fields: [{ id: 'name', name: 'name', type: 'string', title: 'Name' }],
         },
       },
     }),
