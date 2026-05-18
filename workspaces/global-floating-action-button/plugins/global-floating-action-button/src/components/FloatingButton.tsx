@@ -18,31 +18,30 @@ import { useRef, useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box';
 import { FABWithSubmenu } from './FABWithSubmenu';
 import { CustomFab } from './CustomFab';
 import { FloatingActionButton, Slot } from '../types';
 import { filterAndSortButtons } from '../utils';
 import { useTranslation } from '../hooks/useTranslation';
+import type { SxProps, Theme } from '@mui/material/styles';
 
-const useStyles = makeStyles(theme => ({
-  'page-end': {
+const slotSx: Record<Slot, SxProps<Theme>> = {
+  [Slot.PAGE_END]: theme => ({
     bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
     right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
     alignItems: 'end',
-
-    // When drawer is docked, adjust margin
     '.docked-drawer-open &': {
       transition: 'margin-right 0.3s ease',
-      marginRight: 'var(--docked-drawer-width, 500px) ',
+      marginRight: 'var(--docked-drawer-width, 500px)',
     },
-  },
-  'bottom-left': {
+  }),
+  [Slot.BOTTOM_LEFT]: theme => ({
     bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
     paddingLeft: theme?.spacing?.(2) ?? '16px',
     alignItems: 'start',
-  },
-}));
+  }),
+};
 
 export const FloatingButton = ({
   floatingButtons,
@@ -53,7 +52,6 @@ export const FloatingButton = ({
 }) => {
   const timeoutRef = useRef<NodeJS.Timeout>();
   const { pathname } = useLocation();
-  const fabButton = useStyles();
   const [targetElement, setTargetElement] = useState<Element | null>(null);
   const { t } = useTranslation();
 
@@ -85,18 +83,18 @@ export const FloatingButton = ({
 
   let fabDiv;
   if (fabs.length > 1) {
-    fabDiv = (
-      <FABWithSubmenu className={fabButton[slot]} fabs={fabs} slot={slot} />
-    );
+    fabDiv = <FABWithSubmenu sx={slotSx[slot]} fabs={fabs} slot={slot} />;
   } else {
     fabDiv = (
-      <div
-        style={{
-          zIndex: 200,
-          display: 'flex',
-          position: 'fixed',
-        }}
-        className={fabButton[slot]}
+      <Box
+        sx={[
+          {
+            zIndex: 200,
+            display: 'flex',
+            position: 'fixed',
+          },
+          ...(Array.isArray(slotSx[slot]) ? slotSx[slot] : [slotSx[slot]]),
+        ]}
         id="floating-button"
         data-testid="floating-button"
       >
@@ -104,7 +102,7 @@ export const FloatingButton = ({
           actionButton={{ color: 'info', iconColor: 'white', ...fabs[0] }}
           t={t}
         />
-      </div>
+      </Box>
     );
   }
   return targetElement

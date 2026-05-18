@@ -21,20 +21,14 @@ import { useTheme } from '@mui/material/styles';
 
 import { CardWrapper } from '../../Common/CardWrapper';
 import type { PieData } from '../../types';
-import {
-  getThresholdRuleColor,
-  resolveStatusColor,
-  SCORECARD_ERROR_STATE_COLOR,
-} from '../../../utils';
+import { resolveStatusColor } from '../../../utils';
 import { ResponsivePieChart } from '../../ScorecardHomepageSection/ResponsivePieChart';
 import { CardInfoButton } from '../components/CardInfoButton';
 import { CardSubheader } from '../components/CardSubheader';
 import { CardChartContainer } from '../components/CardChartContainer';
 import { CardTooltip } from '../components/CardTooltip';
-import { LegendTooltipContent } from './LegendTooltipContent';
 import { DonutChartTooltipContent } from './DonutChartTooltipContent';
 import type { AverageCardComponentProps, TooltipPosition } from './types';
-import { CardLegendContent } from '../components/CardLegendContent';
 import { AverageCardPieCenterLabel } from './AverageCardPieCenterLabel';
 import { formatPercentage } from '../../../utils/formatPercentage';
 
@@ -60,9 +54,6 @@ export const AverageCardComponent = ({
 }: AverageCardComponentProps) => {
   const theme = useTheme();
 
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [tooltipPosition, setTooltipPosition] =
-    useState<TooltipPosition | null>(null);
   const [centerTooltipPosition, setCenterTooltipPosition] =
     useState<TooltipPosition | null>(null);
 
@@ -99,18 +90,6 @@ export const AverageCardComponent = ({
     },
   ];
 
-  const statusPieData: PieData[] =
-    scorecard.result.values?.map(value => ({
-      name: value.name,
-      value: value.count,
-      score: value.score,
-      color: resolveStatusColor(
-        theme,
-        getThresholdRuleColor(scorecard.result.thresholds.rules, value.name) ??
-          SCORECARD_ERROR_STATE_COLOR,
-      ),
-    })) ?? [];
-
   const subheader = showSubheader ? (
     <CardSubheader
       aggregationId={aggregationId}
@@ -141,19 +120,8 @@ export const AverageCardComponent = ({
               {...props}
               centerPercentLabel={centerPercentLabel}
               arcResolvedColor={arcResolvedColor}
-              setActiveIndex={setActiveIndex}
-              setTooltipPosition={setTooltipPosition}
               updateCenterTooltipPosition={updateCenterTooltipPosition}
               setCenterTooltipPosition={setCenterTooltipPosition}
-            />
-          )}
-          legendContent={props => (
-            <CardLegendContent
-              {...props}
-              activeIndex={activeIndex}
-              setActiveIndex={setActiveIndex}
-              setTooltipPosition={setTooltipPosition}
-              pieData={statusPieData}
             />
           )}
         />
@@ -173,32 +141,11 @@ export const AverageCardComponent = ({
               <DonutChartTooltipContent
                 weightedSum={scorecard.result.averageWeightedSum}
                 maxPossible={scorecard.result.averageMaxPossible}
+                statusValues={scorecard.result.values}
               />
             }
           />
         )}
-
-        {activeIndex !== null &&
-          tooltipPosition &&
-          statusPieData[activeIndex] && (
-            <CardTooltip
-              tooltipPosition={tooltipPosition}
-              pieData={statusPieData}
-              payload={[
-                {
-                  name: statusPieData[activeIndex].name,
-                  value: statusPieData[activeIndex].value || 1,
-                  payload: statusPieData[activeIndex],
-                },
-              ]}
-              customContent={
-                <LegendTooltipContent
-                  row={statusPieData[activeIndex]}
-                  maxPossible={scorecard.result.averageMaxPossible}
-                />
-              }
-            />
-          )}
       </CardChartContainer>
     </CardWrapper>
   );

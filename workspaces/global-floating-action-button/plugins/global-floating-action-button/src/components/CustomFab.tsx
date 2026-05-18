@@ -16,7 +16,6 @@
 
 import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { makeStyles } from '@mui/styles';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -27,10 +26,7 @@ import { getSlotOptions } from '../utils';
 import { getTranslatedTextWithFallback } from '../utils/translationUtils';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import { globalFloatingActionButtonTranslationRef } from '../translations';
-
-const useStyles = makeStyles(() => ({
-  openInNew: { paddingBottom: '5px', paddingTop: '3px' },
-}));
+import type { SxProps, Theme } from '@mui/material/styles';
 
 const FABLabel = ({
   label,
@@ -45,14 +41,17 @@ const FABLabel = ({
   icon?: string | ReactElement;
   order: { externalIcon?: number; icon?: number };
 }) => {
-  const styles = useStyles();
   const marginStyle = getSlotOptions(slot).margin;
   return (
     <>
       {showExternalIcon && (
         <OpenInNewIcon
-          className={styles.openInNew}
-          sx={{ ...marginStyle, order: order.externalIcon }}
+          sx={{
+            pb: '5px',
+            pt: '3px',
+            ...marginStyle,
+            order: order.externalIcon,
+          }}
         />
       )}
       {label && (
@@ -79,12 +78,12 @@ const FABLabel = ({
 export const CustomFab = ({
   actionButton,
   size,
-  className,
+  sx,
   t,
 }: {
   actionButton: FloatingActionButton;
   size?: 'small' | 'medium' | 'large';
-  className?: string;
+  sx?: SxProps<Theme>;
   t: TranslationFunction<typeof globalFloatingActionButtonTranslationRef.T>;
 }) => {
   const navigate = useNavigate();
@@ -138,7 +137,7 @@ export const CustomFab = ({
     >
       <Fab
         {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
-        className={className}
+        sx={sx}
         style={{
           color: actionButton?.iconColor || '#1f1f1f',
           backgroundColor: actionButton.color ? '' : 'white',

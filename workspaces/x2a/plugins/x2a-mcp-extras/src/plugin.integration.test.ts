@@ -148,6 +148,7 @@ describe('x2aMcpExtrasPlugin integration (real SQLite)', () => {
       'x2a-create-project',
       'x2a-list-modules',
       'x2a-list-projects',
+      'x2a-list-rules',
       'x2a-trigger-next-phase',
     ]);
   });

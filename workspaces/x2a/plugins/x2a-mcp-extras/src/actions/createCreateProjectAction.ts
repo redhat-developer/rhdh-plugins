@@ -66,6 +66,14 @@ The init phase cannot be started automatically from this tool - the user must vi
               'Optional Backstage group entity ref to own this project. ' +
                 'The user must be a member of this group.',
             ),
+          acceptedRuleIds: z
+            .array(z.string())
+            .optional()
+            .describe(
+              'UUIDs of rules to accept for this project. ' +
+                'Required rules are auto-appended. ' +
+                'Use x2a-list-rules to discover available rules.',
+            ),
         }),
       output: z =>
         z.object({
@@ -138,6 +146,12 @@ The init phase cannot be started automatically from this tool - the user must vi
         },
         { credentials: ctx.credentials },
       );
+
+      // Attach accepted rules (auto-appends required rules even with empty array)
+      await x2aDatabase.attachRulesToProject({
+        projectId: project.id,
+        ruleIds: input.acceptedRuleIds ?? [],
+      });
 
       const appBaseUrl = config.getString('app.baseUrl');
       const projectDetailsUrl = `${appBaseUrl}/x2a/projects/${project.id}${RUN_INIT_DEEP_LINK_HASH}`;

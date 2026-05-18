@@ -23,20 +23,20 @@ import {
   JobStatus,
   Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-
-import type { RouterDeps } from './types';
 import {
-  assertProjectHasDirName,
-  generateCallbackToken,
-  reconcileJobStatus,
-  useEnforceProjectPermissions,
-} from './common';
-import { GitRepositoryResolver } from './GitRepositoryResolver';
-import {
+  CallbackToken,
   calculateModuleStatus,
   listModulesWithReconciledStatuses,
   reconcileModuleJobs,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
+import type { RouterDeps } from './types';
+import {
+  assertProjectHasDirName,
+  reconcileJobStatus,
+  useEnforceProjectPermissions,
+} from './common';
+import { GitRepositoryResolver } from './GitRepositoryResolver';
 
 export function registerModuleRoutes(
   router: express.Router,
@@ -277,13 +277,13 @@ export function registerModuleRoutes(
         });
       }
 
-      const callbackToken = generateCallbackToken();
+      const callbackToken = CallbackToken.generate();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId,
         phase,
         status: 'pending',
-        callbackToken,
+        callbackToken: callbackToken.value,
       });
 
       // Create Kubernetes job (will create both project and job secrets)
@@ -293,6 +293,11 @@ export function registerModuleRoutes(
         config.getOptionalString('x2a.callbackBaseUrl') ??
         (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${moduleBaseUrl}/projects/${projectId}/collectArtifacts`;
+      // Read accepted rules snapshot for the K8s job
+      const acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+        projectId,
+      });
+
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
@@ -300,7 +305,7 @@ export function registerModuleRoutes(
         projectDirName: project.dirName,
         phase,
         user: userRef,
-        callbackToken,
+        callbackToken: callbackToken.value,
         callbackUrl,
         moduleId,
         moduleName: module.name,
@@ -308,6 +313,7 @@ export function registerModuleRoutes(
         sourceRepo,
         targetRepo,
         aapCredentials,
+        acceptedRules,
       });
 
       // Re-read the job to detect cancellation during the K8s creation window

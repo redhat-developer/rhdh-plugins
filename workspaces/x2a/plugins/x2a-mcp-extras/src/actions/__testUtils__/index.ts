@@ -116,6 +116,12 @@ export function buildMocks(overrides?: Partial<X2aActionsOptions>) {
     getArtifacts: jest.fn(),
     getMigrationPlan: jest.fn(),
     updateMigrationPlan: jest.fn(),
+    createRule: jest.fn(),
+    updateRule: jest.fn(),
+    getRule: jest.fn(),
+    listRules: jest.fn().mockResolvedValue([]),
+    attachRulesToProject: jest.fn().mockResolvedValue(undefined),
+    getAcceptedRulesForProject: jest.fn().mockResolvedValue([]),
   };
 
   const options: X2aActionsOptions = {

@@ -23,9 +23,9 @@ export class HomePageCustomization {
 
   private readonly expectedCards = [
     'Good (morning|afternoon|evening)',
-    'Quick Access',
     'Explore Your Software Catalog',
     'Explore Templates',
+    'Quick Access',
   ];
 
   // Locators
@@ -233,5 +233,29 @@ export class HomePageCustomization {
     // Select the specific widget type from the dialog
     await this.page.getByRole('button', { name: title }).click();
     await this.page.waitForTimeout(1000);
+  }
+
+  /** Returns count of visible widget cards on the homepage grid. */
+  async getVisibleCardCount(): Promise<number> {
+    await this.page.waitForTimeout(500);
+    return this.page.locator('[class*="react-grid-item"]').count();
+  }
+
+  /** Verifies a specific text is visible on the homepage. */
+  async verifyCardVisible(text: string): Promise<void> {
+    await expect(
+      this.page.getByText(text, { exact: true }).first(),
+    ).toBeVisible();
+  }
+
+  /** Verifies a specific text is NOT visible on the homepage. */
+  async verifyCardHidden(text: string): Promise<void> {
+    await expect(
+      this.page.getByText(text, { exact: true }).first(),
+    ).toBeHidden();
+  }
+
+  async deleteFirstCard(): Promise<void> {
+    await this.deleteButtons().first().click();
   }
 }

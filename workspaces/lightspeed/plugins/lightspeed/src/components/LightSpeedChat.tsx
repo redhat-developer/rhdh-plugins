@@ -60,6 +60,7 @@ import {
   AlertGroup,
   AlertVariant,
   DropdownItem,
+  Label,
   MenuToggle,
   MenuToggleElement,
   Select,
@@ -113,7 +114,7 @@ import {
 } from '../utils/lightspeed-chatbox-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
-import { CollapsedHistoryStrip, EditSquareIcon } from './CollapsedHistoryStrip';
+import { CollapsedHistoryStrip, PencilIcon } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
@@ -358,7 +359,7 @@ const useStyles = makeStyles(theme => ({
       margin: '0 auto',
     },
   },
-  fullscreenMessageBar: {
+  messageBar: {
     border: '1px solid var(--pf-t--global--border--color--default)',
     borderRadius: 24,
     padding: theme.spacing(0.5),
@@ -382,6 +383,11 @@ const useStyles = makeStyles(theme => ({
       transform: 'translateX(-50%)',
       visibility: 'hidden',
       pointerEvents: 'none',
+    },
+    '& .pf-chatbot__message-contents': {
+      overflowX: 'hidden',
+      overflowWrap: 'break-word',
+      wordBreak: 'break-word',
     },
   },
   chatbotContentHasOverflow: {
@@ -1213,7 +1219,8 @@ export const LightspeedChat = ({
 
   const filterConversations = useCallback(
     (targetValue: string) => {
-      const pinnedChatsKey = t('conversation.category.pinnedChats') || 'Pinned';
+      const pinnedChatsKey =
+        t('conversation.category.pinnedChats') || 'Pinned chats';
       let isNoPinnedChatsSearchResults = false;
       let isNoRecentChatsSearchResults = false;
       const filteredConversations = Object.entries(categorizedMessages).reduce(
@@ -1685,22 +1692,16 @@ export const LightspeedChat = ({
         </div>
       </ChatbotContent>
       <ChatbotFooter
-        className={
-          isFullscreenMode
-            ? `${classes.footer} ${classes.fullscreenFooter}`
-            : classes.footer
-        }
+        className={`${classes.footer} ${classes.fullscreenFooter}`}
       >
         <FilePreview />
         <MessageBar
           key={messageBarKey}
-          className={
-            isFullscreenMode ? classes.fullscreenMessageBar : undefined
-          }
+          className={classes.messageBar}
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
-          attachButtonPosition={isFullscreenMode ? 'start' : undefined}
+          attachButtonPosition="start"
           handleAttach={handleAttach}
           hasMicrophoneButton
           value={draftMessage}
@@ -1714,7 +1715,7 @@ export const LightspeedChat = ({
               inputTestId: 'attachment-input',
               tooltipContent: t('tooltip.attach'),
               'aria-label': t('tooltip.attach'),
-              ...(isFullscreenMode && { icon: <PlusIcon /> }),
+              icon: <PlusIcon />,
             },
             microphone: {
               tooltipContent: {
@@ -1727,20 +1728,18 @@ export const LightspeedChat = ({
             },
           }}
           additionalActions={
-            isFullscreenMode ? (
-              <MessageBarModelSelector
-                selectedModel={selectedModel}
-                models={models}
-                onSelect={item => {
-                  setIsMcpSettingsOpen(false);
-                  onNewChat();
-                  handleSelectedModel(item);
-                }}
-                disabled={isSendButtonDisabled}
-              />
-            ) : undefined
+            <MessageBarModelSelector
+              selectedModel={selectedModel}
+              models={models}
+              onSelect={item => {
+                setIsMcpSettingsOpen(false);
+                onNewChat();
+                handleSelectedModel(item);
+              }}
+              disabled={isSendButtonDisabled}
+            />
           }
-          forceMultilineLayout={isFullscreenMode}
+          forceMultilineLayout
           allowedFileTypes={supportedFileTypes}
           onAttachRejected={onAttachRejected}
           placeholder={t('chatbox.message.placeholder')}
@@ -1903,7 +1902,7 @@ export const LightspeedChat = ({
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
             isModelSelectorDisabled={isSendButtonDisabled}
-            hideModelSelector={showNotebooksPanel || isFullscreenMode}
+            hideModelSelector
             showChatTabOptions={!showNotebooksPanel}
             setDisplayMode={setDisplayModeFromHeader}
             displayMode={displayMode}
@@ -1958,7 +1957,27 @@ export const LightspeedChat = ({
             />
             <Tab
               disableRipple
-              label={t('tabs.notebooks')}
+              label={
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  {t('tabs.notebooks')}
+                  <Label
+                    color="purple"
+                    style={{
+                      alignSelf: 'center',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {t('tabs.notebooks.devPreview')}
+                  </Label>
+                </span>
+              }
               aria-label={t('tabs.notebooks')}
             />
           </Tabs>
@@ -2001,7 +2020,7 @@ export const LightspeedChat = ({
               onNewChat={newChatCreated ? undefined : onNewChat}
               newChatButtonText={t('button.newChat')}
               newChatButtonProps={{
-                icon: isFullscreenMode ? <EditSquareIcon /> : <PlusIcon />,
+                icon: isFullscreenMode ? <PencilIcon /> : <PlusIcon />,
               }}
               handleTextInputChange={handleFilter}
               searchInputPlaceholder={t('chatbox.search.placeholder')}

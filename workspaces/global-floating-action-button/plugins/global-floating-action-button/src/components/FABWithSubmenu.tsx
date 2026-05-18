@@ -15,10 +15,8 @@
  */
 
 import { useRef, useState, useEffect } from 'react';
-import classnames from 'classnames';
 
 import { useLocation } from 'react-router-dom';
-import { makeStyles } from '@mui/styles';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
@@ -32,39 +30,18 @@ import { FloatingActionButton, Slot } from '../types';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from '../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../utils/translationUtils';
-
-const useStyles = makeStyles(theme => ({
-  fabContainer: {
-    zIndex: 200,
-    display: 'flex',
-    position: 'fixed',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  button: {
-    zIndex: 205,
-    color:
-      theme && Object.keys(theme).length > 0
-        ? theme.palette.grey[500]
-        : '#9e9e9e',
-  },
-  menuButtonStyle: {
-    color: 'white',
-  },
-}));
+import type { SxProps, Theme } from '@mui/material/styles';
 
 export const FABWithSubmenu = ({
-  className,
+  sx: sxProp,
   fabs,
   slot,
 }: {
   fabs: FloatingActionButton[];
   slot: Slot;
-  className?: string;
+  sx?: SxProps<Theme>;
 }) => {
   const containerRef = useRef<HTMLElement>(null);
-  const styles = useStyles();
-  const fab = useStyles();
   const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -88,10 +65,17 @@ export const FABWithSubmenu = ({
   const { t } = useTranslation();
   return (
     <Box
-      className={classnames(fab.fabContainer, className)}
-      sx={{
-        flexDirection: 'column-reverse',
-      }}
+      sx={[
+        {
+          zIndex: 200,
+          display: 'flex',
+          position: 'fixed',
+          alignItems: 'center',
+          gap: '10px',
+          flexDirection: 'column-reverse',
+        },
+        ...(Array.isArray(sxProp) ? sxProp : [sxProp]),
+      ]}
       id="floating-button-with-submenu"
       data-testid="floating-button-with-submenu"
     >
@@ -110,9 +94,9 @@ export const FABWithSubmenu = ({
             sx={{ zIndex: 1000 }}
           >
             {isMenuOpen ? (
-              <CloseIcon className={styles.menuButtonStyle} />
+              <CloseIcon sx={{ color: 'white' }} />
             ) : (
-              <MenuIcon className={styles.menuButtonStyle} />
+              <MenuIcon sx={{ color: 'white' }} />
             )}
           </Fab>
         </Typography>
@@ -134,7 +118,13 @@ export const FABWithSubmenu = ({
                 t={t}
                 size="medium"
                 key={fb.label}
-                className={styles.button}
+                sx={theme => ({
+                  zIndex: 205,
+                  color:
+                    theme && Object.keys(theme).length > 0
+                      ? theme.palette.grey[500]
+                      : '#9e9e9e',
+                })}
               />
             </Box>
           </Slide>

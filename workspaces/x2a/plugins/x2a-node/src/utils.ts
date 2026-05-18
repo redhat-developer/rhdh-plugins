@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import crypto from 'node:crypto';
 import type {
   BackstageCredentials,
   BackstageUserPrincipal,
@@ -159,12 +158,4 @@ export async function reconcileJobStatus(
   }
 
   return job;
-}
-
-/**
- * Generate a 256-bit hex callback token to match HMAC-SHA256 strength.
- * @public
- */
-export function generateCallbackToken(): string {
-  return crypto.randomBytes(32).toString('hex');
 }

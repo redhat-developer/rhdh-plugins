@@ -77,6 +77,12 @@ export class TestUtils {
     }
   }
 
+  async signOut(): Promise<void> {
+    await this.page.getByRole('link', { name: 'Settings' }).click();
+    await this.page.getByTestId('user-settings-menu').click();
+    await this.page.getByTestId('sign-out').click();
+  }
+
   async switchToLocale(locale: string): Promise<void> {
     const baseLocale = locale.split('-')[0];
     if (baseLocale !== 'en') {

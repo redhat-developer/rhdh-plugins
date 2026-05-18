@@ -50,4 +50,8 @@ export interface ProjectsPostRequest {
    * Branch of the target repository (default to main)
    */
   targetRepoBranch: string;
+  /**
+   * UUIDs of rules the project accepts (required rules auto-appended)
+   */
+  acceptedRuleIds?: Array<string>;
 }

@@ -26,11 +26,12 @@ The file must be UTF-8 encoded with a header row. Column order does not matter, 
 
 ### Optional Columns
 
-| Column          | Description                                                                              |
-| --------------- | ---------------------------------------------------------------------------------------- |
-| `description`   | Project description (defaults to empty)                                                  |
-| `ownedByGroup`  | Backstage group that owns the project. When empty, the signed-in user becomes the owner. |
-| `targetRepoUrl` | Repository for converted output. Defaults to `sourceRepoUrl` when empty.                 |
+| Column            | Description                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------- |
+| `description`     | Project description (defaults to empty)                                                   |
+| `ownedByGroup`    | Backstage group that owns the project. When empty, the signed-in user becomes the owner.  |
+| `targetRepoUrl`   | Repository for converted output. Defaults to `sourceRepoUrl` when empty.                  |
+| `acceptedRuleIds` | Semicolon-separated UUIDs of rules the project accepts. Required rules are auto-appended. |
 
 No extra columns are allowed -- the import will reject unknown headers.
 
@@ -72,16 +73,16 @@ For self-hosted instances (e.g. GitHub Enterprise, self-hosted GitLab), the corr
 ### Example
 
 ```csv
-name,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch,description,ownedByGroup
-web-app,https://github.com/myorg/web-app-chef,main,https://github.com/myorg/web-app-ansible,main,Convert web app cookbook,team-platform
-db-setup,gitlab.com?owner=myorg&repo=db-chef,develop,gitlab.com?owner=myorg&repo=db-ansible,main,,
-cache-svc,bitbucket.org?workspace=myws&project=x2a&repo=cache-chef,main,,main,Cache service conversion,
+name,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch,description,ownedByGroup,acceptedRuleIds
+web-app,https://github.com/myorg/web-app-chef,main,https://github.com/myorg/web-app-ansible,main,Convert web app cookbook,team-platform,550e8400-e29b-41d4-a716-446655440000;6ba7b810-9dad-11d1-80b4-00c04fd430c8
+db-setup,gitlab.com?owner=myorg&repo=db-chef,develop,gitlab.com?owner=myorg&repo=db-ansible,main,,,
+cache-svc,bitbucket.org?workspace=myws&project=x2a&repo=cache-chef,main,,main,Cache service conversion,,
 ```
 
 Notes on the example:
 
-- Row 1 (`web-app`): uses plain HTTPS URLs.
-- Row 2 (`db-setup`): uses RepoUrlPicker-style URLs for GitLab. `description` and `ownedByGroup` are left empty.
+- Row 1 (`web-app`): uses plain HTTPS URLs. `acceptedRuleIds` specifies two rules separated by semicolons.
+- Row 2 (`db-setup`): uses RepoUrlPicker-style URLs for GitLab. `description`, `ownedByGroup`, and `acceptedRuleIds` are left empty.
 - Row 3 (`cache-svc`): uses RepoUrlPicker-style URL for Bitbucket. `targetRepoUrl` is empty, so the source repository is used as the target.
 
 ### CSV file template

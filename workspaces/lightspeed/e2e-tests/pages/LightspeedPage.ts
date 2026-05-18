@@ -359,9 +359,6 @@ export async function verifyMcpSettingsPanel(
   }
 
   await expect(
-    page.getByRole('button', { name: t['aria.chatbotSelector'] }),
-  ).toBeVisible();
-  await expect(
     page.getByRole('button', { name: t['aria.settings.label'] }),
   ).toBeVisible();
 
@@ -428,7 +425,10 @@ export async function expectEmptyChatHistory(
     page.getByRole('menuitem', { name: t['chatbox.emptyState.noPinnedChats'] }),
   ).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: t['conversation.category.recent'] }),
+    page.getByRole('heading', {
+      name: t['conversation.category.recent'],
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     page.getByRole('menuitem', { name: t['chatbox.emptyState.noRecentChats'] }),

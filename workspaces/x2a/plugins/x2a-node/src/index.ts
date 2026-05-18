@@ -33,13 +33,14 @@ export {
   KUBE_SERVICE_ID,
 } from './services';
 
+export { CallbackToken } from './CallbackToken';
+
 export {
   SYSTEM_USER_REF,
   isUserCredentials,
   getUserRef,
   getGroupsOfUser,
   reconcileJobStatus,
-  generateCallbackToken,
   removeSensitiveFromJob,
 } from './utils';
 

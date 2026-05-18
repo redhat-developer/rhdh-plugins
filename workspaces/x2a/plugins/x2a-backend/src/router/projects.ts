@@ -24,12 +24,12 @@ import {
   x2aAdminWritePermission,
   x2aUserPermission,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { CallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import type { RouterDeps } from './types';
 import {
   assertProjectHasDirName,
   authorize,
-  generateCallbackToken,
   getGroupsOfUser,
   getUserRef,
   reconcileJobStatus,
@@ -148,6 +148,7 @@ export function registerProjectRoutes(
       targetRepoUrl: z.string(),
       sourceRepoBranch: z.string(),
       targetRepoBranch: z.string(),
+      acceptedRuleIds: z.array(z.string()).optional(),
     });
 
     const parsedBody = projectCreateRequestSchema
@@ -176,6 +177,17 @@ export function registerProjectRoutes(
     // create project
     const newProject = await x2aDatabase.createProject(requestBody, {
       credentials: await httpAuth.credentials(req, { allow: ['user'] }),
+    });
+
+    // Attach accepted rules (auto-appends required rules even with empty array)
+    await x2aDatabase.attachRulesToProject({
+      projectId: newProject.id,
+      ruleIds: requestBody.acceptedRuleIds ?? [],
+    });
+
+    // Include accepted rules in the response
+    newProject.acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+      projectId: newProject.id,
     });
 
     const response: ProjectsPost['response'] = newProject;
@@ -378,13 +390,13 @@ export function registerProjectRoutes(
         });
       }
 
-      const callbackToken = generateCallbackToken();
+      const callbackToken = CallbackToken.generate();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId: undefined, // Init jobs have no module
         phase: 'init',
         status: 'pending',
-        callbackToken,
+        callbackToken: callbackToken.value,
       });
 
       // Create Kubernetes job (will create both project and job secrets)
@@ -395,6 +407,11 @@ export function registerProjectRoutes(
         config.getOptionalString('x2a.callbackBaseUrl') ??
         (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
+      // Read accepted rules snapshot for the K8s job
+      const acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+        projectId,
+      });
+
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
@@ -402,12 +419,13 @@ export function registerProjectRoutes(
         projectDirName: project.dirName,
         phase: 'init',
         user: userRef,
-        callbackToken,
+        callbackToken: callbackToken.value,
         callbackUrl,
         sourceRepo,
         targetRepo,
         aapCredentials,
         userPrompt,
+        acceptedRules,
       });
 
       // Update job with k8s job name

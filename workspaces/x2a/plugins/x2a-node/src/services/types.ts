@@ -19,6 +19,7 @@ import type {
   MigrationPhase,
   Artifact,
   SourceTechnology,
+  RuleSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
@@ -117,4 +118,5 @@ export interface JobCreateParams {
   sourceRepo: GitRepo;
   targetRepo: GitRepo;
   aapCredentials?: AAPCredentials;
+  acceptedRules?: RuleSnapshot[];
 }

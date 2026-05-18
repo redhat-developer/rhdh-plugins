@@ -26,15 +26,6 @@ jest.mock('react-router-dom', () => ({
   })),
 }));
 
-jest.mock('@mui/styles', () => ({
-  ...jest.requireActual('@mui/styles'),
-  makeStyles: () => () => {
-    return {
-      button: 'button',
-    };
-  },
-}));
-
 jest.mock('@backstage/core-plugin-api', () => ({
   useApp: jest.fn(() => ({
     getSystemIcon: jest.fn(),

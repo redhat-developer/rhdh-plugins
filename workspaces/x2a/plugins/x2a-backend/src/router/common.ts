@@ -45,7 +45,6 @@ export {
   getUserRef,
   getGroupsOfUser,
   reconcileJobStatus,
-  generateCallbackToken,
   removeSensitiveFromJob,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 

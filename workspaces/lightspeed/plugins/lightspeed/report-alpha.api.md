@@ -197,11 +197,15 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'prompts.openshift.message': string;
     readonly 'prompts.rhdh.title': string;
     readonly 'prompts.rhdh.message': string;
+    readonly 'notebooks.prompts.coreConcepts.title': string;
+    readonly 'notebooks.prompts.vulnerabilities.title': string;
+    readonly 'notebooks.prompts.accessIssue.title': string;
     readonly 'page.title': string;
     readonly 'page.subtitle': string;
     readonly 'tabs.ariaLabel': string;
     readonly 'tabs.chat': string;
     readonly 'tabs.notebooks': string;
+    readonly 'tabs.notebooks.devPreview': string;
     readonly 'tabs.notebooks.empty': string;
     readonly 'notebooks.title': string;
     readonly 'notebooks.empty.title': string;
@@ -255,6 +259,10 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.overwrite.modal.description': string;
     readonly 'notebook.overwrite.modal.action': string;
     readonly 'notebook.document.delete': string;
+    readonly 'notebook.document.delete.title': string;
+    readonly 'notebook.document.delete.description': string;
+    readonly 'notebook.document.delete.action': string;
+    readonly 'notebook.document.delete.success': string;
     readonly 'conversation.delete.confirm.title': string;
     readonly 'conversation.delete.confirm.message': string;
     readonly 'conversation.delete.confirm.action': string;
@@ -334,8 +342,6 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'tooltip.fab.close': string;
     readonly 'attach.menu.title': string;
     readonly 'attach.menu.description': string;
-    readonly 'history.section.pinned': string;
-    readonly 'history.section.recent': string;
     readonly 'modal.title.preview': string;
     readonly 'modal.title.edit': string;
     readonly 'icon.lightspeed.alt': string;
@@ -371,6 +377,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'settings.pinned.enabled.description': string;
     readonly 'settings.pinned.disabled.description': string;
     readonly 'settings.mcp.label': string;
+    readonly 'settings.mcp.badge': string;
     readonly 'mcp.settings.title': string;
     readonly 'mcp.settings.selectedCount': string;
     readonly 'mcp.settings.closeAriaLabel': string;
