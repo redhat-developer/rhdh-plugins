@@ -354,7 +354,7 @@ test.describe('Scorecard Plugin Tests', () => {
 
       for (const sonarqubeMetric of sonarqubeMetrics) {
         await expect(
-          page.getByText(sonarqubeMetric.title, { exact: true }),
+          page.getByText(sonarqubeMetric.title, { exact: true }).first(),
         ).toBeVisible({
           timeout: 10000,
         });

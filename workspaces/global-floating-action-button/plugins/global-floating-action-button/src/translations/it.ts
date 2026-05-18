@@ -31,11 +31,11 @@ const globalFloatingActionButtonTranslationIt = createTranslationMessages({
     'fab.apis.label': 'API',
     'fab.apis.tooltip': 'Documentazione API',
     'fab.github.label': 'GitHub',
-    'fab.github.tooltip': 'Repository GitHub',
+    'fab.github.tooltip': 'Repository di GitHub',
     'fab.bulkImport.label': 'Importazione in blocco',
     'fab.bulkImport.tooltip': 'Registra più repository in blocco',
     'fab.quay.label': 'Quay',
-    'fab.quay.tooltip': 'Registro dei container di Quay',
+    'fab.quay.tooltip': 'Registro container Quay',
     'fab.menu.tooltip': 'Menu',
   },
 });
