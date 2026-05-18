@@ -48,17 +48,6 @@ jest.mock('../hooks/useTranslation', () => ({
   })),
 }));
 
-jest.mock('@mui/styles', () => ({
-  ...jest.requireActual('@mui/styles'),
-  makeStyles: () => () => {
-    return {
-      fabContainer: 'fabContainer',
-      'page-end': 'page-end',
-      'bottom-left': 'bottom-left',
-    };
-  },
-}));
-
 beforeEach(() => {
   document.body.innerHTML = '<div class="BackstagePage-root-123"></div>';
 });
