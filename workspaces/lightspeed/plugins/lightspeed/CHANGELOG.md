@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.4
+
+### Patch Changes
+
+- 556c5a1: fix(lightspeed): fix toast notifications being obscured by Global Header
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.4
+
 ## 2.8.3
 
 ### Patch Changes
