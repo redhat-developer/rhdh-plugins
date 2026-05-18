@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.9.3
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+- 6e7d784: Replace JSS `makeStyles` with MUI `sx` props to prevent CSS class name collisions with other dynamically loaded plugins in RHDH.
+
 ## 1.9.2
 
 ### Patch Changes
