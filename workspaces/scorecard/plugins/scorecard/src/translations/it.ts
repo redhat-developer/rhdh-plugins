@@ -24,46 +24,146 @@ import { scorecardTranslationRef } from './ref';
 const scorecardTranslationIt = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
-    'emptyState.title': 'Non è stata ancora aggiunta alcuna scorecard',
+    'common.loading': 'Caricamento',
+    'emptyState.altText': 'Nessuna scorecard',
+    'emptyState.button': 'Visualizza documentazione',
     'emptyState.description':
       'Le scorecard permettono di valutare rapidamente lo stato di salute dei componenti. Per iniziare, consulta la nostra documentazione per le linee guida di configurazione.',
-    'emptyState.altText': 'Nessuna scorecard',
-    'notFound.title': '404 Pagina non trovata',
+    'emptyState.title': 'Non è stata ancora aggiunta alcuna scorecard',
+    'entitiesPage.entitiesTable.footer.allRows': 'Tutte le righe',
+    'entitiesPage.entitiesTable.footer.of': 'di',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} riga',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} righe',
+    'entitiesPage.entitiesTable.header.entity': 'Entità',
+    'entitiesPage.entitiesTable.header.kind': 'Tipo',
+    'entitiesPage.entitiesTable.header.lastUpdated': 'Ultimo aggiornamento',
+    'entitiesPage.entitiesTable.header.owner': 'Proprietario',
+    'entitiesPage.entitiesTable.header.status': 'Stato',
+    'entitiesPage.entitiesTable.header.value': 'Valore',
+    'entitiesPage.entitiesTable.title': 'Entità',
+    'entitiesPage.entitiesTable.titleWithCount': 'Entità ({{count}})',
+    'entitiesPage.entitiesTable.unavailable': 'Non disponibile',
+    'entitiesPage.metricProviderNotRegistered':
+      'Il fornitore di metriche con ID {{metricId}} non è registrato.',
+    'entitiesPage.missingPermission':
+      "Per visualizzare le metriche della scorecard, l'amministratore deve concederti l'autorizzazione obbligatoria.",
+    'entitiesPage.noDataFound':
+      'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano segnalando valori relativi a questa metrica.',
+    'entitiesPage.unknownMetric': 'Metrica sconosciuta',
+    'errors.authenticationError': 'Errore di autenticazione',
+    'errors.authenticationErrorMessage':
+      "Effettua l'accesso per visualizzare i tuoi dati.",
+    'errors.entityMissingProperties':
+      "L'entità non possiede le proprietà obbligatorie per la ricerca della scorecard",
+    'errors.fetchError':
+      "Errore durante l'estrazione delle scorecard: {{error}}",
+    'errors.invalidApiResponse':
+      "Formato di risposta non valido dall'API della scorecard",
+    'errors.invalidThresholds': 'Soglie non valide',
+    'errors.metricDataUnavailable': 'Dati metrici non disponibili',
+    'errors.missingAggregationId':
+      'La scorecard non è configurata correttamente, la proprietà ID di aggregazione (o ID metrica) non è fornita',
+    'errors.missingPermission': 'Autorizzazione mancante',
+    'errors.missingPermissionMessage':
+      "Per visualizzare le metriche della scorecard, l'amministratore deve concederti l'autorizzazione obbligatoria.",
+    'errors.noDataFound': 'Nessun dato trovato',
+    'errors.noDataFoundMessage':
+      'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano segnalando valori relativi a questa metrica.',
+    'errors.unsupportedAggregationType':
+      'Questa scorecard utilizza un tipo di aggregazione non supportato da questa versione del plugin.',
+    'errors.userNotFoundInCatalogMessage':
+      'Entità utente non trovata nel catalogo.',
+    'metric.averageCenterTooltipMaxLabel': 'Punteggio massimo possibile',
+    'metric.averageCenterTooltipTotalLabel': 'Punteggio totale',
+    'metric.averageLegendTooltipEntitiesEach_one':
+      '{{count}} entità, ciascuna {{score}}',
+    'metric.averageLegendTooltipEntitiesEach_other':
+      '{{count}} entità, ciascuna {{score}}',
+    'metric.averageLegendTooltipRowTotal': 'Punteggio totale {{total}}',
+    'metric.drillDownCalculationFailures':
+      'Si è verificato un errore durante il calcolo di questa metrica da parte di una o più entità.',
+    'metric.filecheck.description':
+      'Verifica se il file {{name}} esiste nel repository.',
+    'metric.filecheck.title': 'Verifica del file: {{name}}',
+    'metric.github.open_prs.description':
+      'Numero attuale di richiesta pull aperte per un determinato repository di GitHub.',
+    'metric.github.open_prs.title': 'RP aperte su GitHub',
+    'metric.homepageEntityCalculationHealth':
+      '{{healthy}} / {{total}} entità senza errori di calcolo della metrica',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entità',
+    'metric.jira.open_issues.description':
+      'Evidenzia il numero di problemi critici e bloccanti attualmente aperti in Jira.',
+    'metric.jira.open_issues.title': 'Ticket di blocco aperti in Jira',
+    'metric.lastUpdated': 'Ultimo aggiornamento: {{timestamp}}',
+    'metric.lastUpdatedNotAvailable': 'Ultimo aggiornamento: non disponibile',
+    'metric.someEntitiesNotReportingValues':
+      'Alcune entità non comunicano i valori relativi a questa metrica.',
+    'metric.sonarqube.code_coverage.description':
+      'Percentuale complessiva di copertura codice in SonarQube.',
+    'metric.sonarqube.code_coverage.title': 'Copertura codice in SonarQube',
+    'metric.sonarqube.code_duplications.description':
+      'Percentuale di linee duplicate in SonarQube.',
+    'metric.sonarqube.code_duplications.title':
+      'Duplicazioni del codice in SonarQube',
+    'metric.sonarqube.maintainability_issues.description':
+      'Numero di code smell non risolti in SonarQube.',
+    'metric.sonarqube.maintainability_issues.title':
+      'Problemi di manutenibilità di SonarQube',
+    'metric.sonarqube.maintainability_rating.description':
+      'Valutazione di manutenibilità di SonarQube.',
+    'metric.sonarqube.maintainability_rating.title':
+      'Valutazione di manutenibilità di SonarQube',
+    'metric.sonarqube.open_issues.description':
+      'Numero dei problemi aperti (APERTI, CONFERMATI, RIAPERTI) in SonarQube.',
+    'metric.sonarqube.open_issues.title': 'Problemi aperti in SonarQube',
+    'metric.sonarqube.quality_gate.description':
+      'Se il progetto supera il quality gate di SonarQube.',
+    'metric.sonarqube.quality_gate.title':
+      'Stato del Quality Gate di SonarQube',
+    'metric.sonarqube.reliability_issues.description':
+      'Numero di bug aperti in SonarQube.',
+    'metric.sonarqube.reliability_issues.title':
+      'Problemi di affidabilità di SonarQube',
+    'metric.sonarqube.reliability_rating.description':
+      'Valutazione di affidabilità di SonarQube.',
+    'metric.sonarqube.reliability_rating.title':
+      'Valutazione di affidabilità di SonarQube',
+    'metric.sonarqube.security_hotspots.description':
+      'Numero di hotspot di sicurezza da rivedere in SonarQube.',
+    'metric.sonarqube.security_hotspots.title':
+      'Hotspot di sicurezza di SonarQube',
+    'metric.sonarqube.security_issues.description':
+      'Numero di vulnerabilità di sicurezza aperte in SonarQube.',
+    'metric.sonarqube.security_issues.title':
+      'Problemi di sicurezza di SonarQube',
+    'metric.sonarqube.security_rating.description':
+      'Valutazione di sicurezza di SonarQube.',
+    'metric.sonarqube.security_rating.title':
+      'Valutazione di sicurezza di SonarQube',
+    'metric.sonarqube.security_review_rating.description':
+      'Valutazione di sicurezza di SonarQube.',
+    'metric.sonarqube.security_review_rating.title':
+      'Valutazione di sicurezza di SonarQube',
+    'notFound.altText': 'Pagina non trovata',
+    'notFound.contactSupport': 'Contatta il supporto',
     'notFound.description':
       'Prova ad aggiungere un file {{indexFile}} nella root della directory dei documenti di questo repository.',
     'notFound.goBack': 'Torna indietro',
-    'notFound.contactSupport': 'Contatta il supporto',
-    'notFound.altText': 'Pagina non trovata',
-    'permissionRequired.title': 'Autorizzazione mancante',
+    'notFound.readMore': 'Leggi altri contenuti',
+    'notFound.title': '404 Pagina non trovata',
+    'permissionRequired.altText': 'Autorizzazione obbligatoria',
+    'permissionRequired.button': 'Leggi altri contenuti',
     'permissionRequired.description':
       "Per visualizzare il plugin Scorecard, contatta il tuo amministratore per concedere l'autorizzazione {{permission}}.",
-    'permissionRequired.altText': 'Autorizzazione obbligatoria',
-    'common.loading': 'Caricamento',
-    'errors.entityMissingProperties':
-      "L'entità non possiede le proprietà obbligatorie per la ricerca della scorecard",
-    'errors.missingAggregationId':
-      'La scorecard non è configurata correttamente, la proprietà ID di aggregazione (o ID metrica) non è fornita',
-    'errors.invalidApiResponse':
-      "Formato di risposta non valido dall'API della scorecard",
-    'errors.fetchError':
-      "Errore durante l'estrazione delle scorecard: {{error}}",
-    'errors.invalidThresholds': 'Soglie non valide',
-    'errors.missingPermission': 'Autorizzazione mancante',
-    'errors.noDataFound': 'Nessun dato trovato',
-    'errors.authenticationError': 'Errore di autenticazione',
-    'errors.missingPermissionMessage':
-      "Per visualizzare le metriche della scorecard, l'amministratore deve concederti l'autorizzazione obbligatoria.",
-    'thresholds.success': 'Successo',
-    'thresholds.warning': 'Avviso',
+    'permissionRequired.title': 'Autorizzazione mancante',
+    'thresholds.entities_one': '{{count}} entità',
+    'thresholds.entities_other': '{{count}} entità',
     'thresholds.error': 'Errore',
     'thresholds.exist': 'Esiste',
     'thresholds.missing': 'Mancante',
     'thresholds.noEntities': 'Nessuna entità nello stato {{category}}',
-    'thresholds.entities_one': '{{count}} entità',
-    'thresholds.entities_other': '{{count}} entità',
-    'entitiesPage.unknownMetric': 'Metrica sconosciuta',
-    'entitiesPage.noDataFound':
-      'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano segnalando valori relativi a questa metrica.',
+    'thresholds.success': 'Successo',
+    'thresholds.warning': 'Avviso',
   },
 });
 

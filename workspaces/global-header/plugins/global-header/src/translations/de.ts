@@ -57,6 +57,13 @@ const globalHeaderTranslationDe = createTranslationMessages({
     'notifications.title': 'Benachrichtigungen',
     'notifications.unsupportedDismissOption':
       'Verwerfen-Option „{{option}}“ nicht unterstützt; derzeit werden „none“, „session“ oder „localstorage“ unterstützt!',
+    'create.title': 'Self-Service',
+    'create.registerComponent.title': 'Eine Komponente registrieren',
+    'create.registerComponent.subtitle': 'In die Katalogseite importieren',
+    'create.templates.sectionTitle': 'Eine Vorlage verwenden',
+    'create.templates.allTemplates': 'Alle Vorlagen',
+    'create.templates.errorFetching': 'Fehler beim Abrufen der Vorlagen',
+    'create.templates.noTemplatesAvailable': 'Keine Vorlagen verfügbar',
   },
 });
 

@@ -56,6 +56,15 @@ const globalHeaderTranslationJa = createTranslationMessages({
     'notifications.title': '通知',
     'notifications.unsupportedDismissOption':
       '非表示オプション "{{option}}" はサポートされていません。現在サポートされているのは、"none"、"session"、または "localstorage" です!',
+    'create.title': 'セルフサービス',
+    'create.registerComponent.title': 'コンポーネントの登録',
+    'create.registerComponent.subtitle': 'カタログページへのインポート',
+    'create.templates.sectionTitle': 'テンプレートの使用',
+    'create.templates.allTemplates': 'すべてのテンプレート',
+    'create.templates.errorFetching':
+      'テンプレートの取得中にエラーが発生しました',
+    'create.templates.noTemplatesAvailable':
+      '利用できるテンプレートがありません',
   },
 });
 

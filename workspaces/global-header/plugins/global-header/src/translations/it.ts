@@ -56,6 +56,13 @@ const globalHeaderTranslationIt = createTranslationMessages({
     'notifications.title': 'Notifiche',
     'notifications.unsupportedDismissOption':
       'Opzione di chiusura non supportata "{{option}}", attualmente supportate "none", "session" o "localstorage"!',
+    'create.title': 'Self service',
+    'create.registerComponent.title': 'Registra un componente',
+    'create.registerComponent.subtitle': 'Importalo nella pagina del catalogo',
+    'create.templates.sectionTitle': 'Utilizza un modello',
+    'create.templates.allTemplates': 'Tutti i modelli',
+    'create.templates.errorFetching': "Errore durante l'estrazione dei modelli",
+    'create.templates.noTemplatesAvailable': 'Nessun modello disponibile',
   },
 });
 
