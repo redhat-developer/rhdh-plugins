@@ -24,7 +24,7 @@ export interface DefaultWidgetNode {
 // @public (undocumented)
 export interface DefaultWidgetsResponse {
   // (undocumented)
-  items: VisibleDefaultWidget[];
+  items?: VisibleDefaultWidget[];
 }
 
 // @public (undocumented)
