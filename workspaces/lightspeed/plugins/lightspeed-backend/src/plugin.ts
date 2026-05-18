@@ -64,22 +64,38 @@ export const lightspeedPlugin = createBackendPlugin({
 
         const aiNotebooksEnabled =
           config.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
-        if (aiNotebooksEnabled) {
-          http.use(
-            await createNotebooksRouter({
-              config: config,
-              logger: logger,
-              httpAuth: httpAuth,
-              userInfo: userInfo,
-              permissions,
-            }),
-          );
-          logger.info('AI Notebooks enabled');
 
-          http.addAuthPolicy({
-            path: '/notebooks/health',
-            allow: 'unauthenticated',
-          });
+        if (aiNotebooksEnabled) {
+          const queryModel = config.getOptionalString(
+            'lightspeed.notebooks.queryDefaults.model',
+          );
+          const queryProvider = config.getOptionalString(
+            'lightspeed.notebooks.queryDefaults.provider_id',
+          );
+
+          if (!queryModel || !queryProvider) {
+            logger.warn(
+              'AI Notebooks feature is enabled but required configuration is missing. ' +
+                'Please configure lightspeed.notebooks.queryDefaults.model and lightspeed.notebooks.queryDefaults.provider_id. ' +
+                'Notebooks will not be available until these are set.',
+            );
+          } else {
+            http.use(
+              await createNotebooksRouter({
+                config: config,
+                logger: logger,
+                httpAuth: httpAuth,
+                userInfo: userInfo,
+                permissions,
+              }),
+            );
+            logger.info('AI Notebooks enabled');
+
+            http.addAuthPolicy({
+              path: '/notebooks/health',
+              allow: 'unauthenticated',
+            });
+          }
         }
 
         // Configure authentication policies

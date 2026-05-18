@@ -30,6 +30,7 @@ import {
   DropdownGroup,
   DropdownItem,
   DropdownList,
+  Label,
   MenuToggle,
   MenuToggleElement,
 } from '@patternfly/react-core';
@@ -173,6 +174,7 @@ export const LightspeedChatBoxHeader = ({
         </Dropdown>
       )}
       <ChatbotHeaderOptionsDropdown
+        className={styles.dropdown}
         isCompact
         toggleProps={{
           'aria-label': t('aria.settings.label'),
@@ -249,6 +251,9 @@ export const LightspeedChatBoxHeader = ({
                   onClick={onMcpSettingsClick}
                 >
                   {t('settings.mcp.label')}
+                  <Label color="purple" isCompact style={{ marginLeft: 8 }}>
+                    {t('settings.mcp.badge')}
+                  </Label>
                 </DropdownItem>
               </DropdownList>
             </DropdownGroup>

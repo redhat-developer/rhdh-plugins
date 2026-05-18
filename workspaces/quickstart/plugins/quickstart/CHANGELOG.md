@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.9.4
+
+### Patch Changes
+
+- 498beb5: add react-router-dom in devDependencies
+- 6b8046b: Updated dependency `@red-hat-developer-hub/backstage-plugin-app-react` to `^0.0.5`.
+
 ## 1.9.3
 
 ### Patch Changes

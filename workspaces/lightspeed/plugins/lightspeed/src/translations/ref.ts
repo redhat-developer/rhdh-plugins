@@ -28,6 +28,7 @@ export const lightspeedMessages = {
   'tabs.ariaLabel': 'Lightspeed views',
   'tabs.chat': 'Chat',
   'tabs.notebooks': 'Notebooks',
+  'tabs.notebooks.devPreview': 'Developer preview',
   'tabs.notebooks.empty': 'Notebooks content goes here.',
   'notebooks.title': 'My Notebooks',
   'notebooks.empty.title': 'No created notebooks',
@@ -54,6 +55,11 @@ export const lightspeedMessages = {
   'notebooks.updated.on': 'Updated on',
   'notebooks.card.openAria': 'Open notebook {{name}}',
 
+  // Notebook sample prompts
+  'notebooks.prompts.coreConcepts.title': 'What are the core concepts?',
+  'notebooks.prompts.vulnerabilities.title': 'Show my critical vulnerabilities',
+  'notebooks.prompts.accessIssue.title': 'Help me with an access issue',
+
   // Notebook view
   'notebook.view.title': 'Untitled notebook',
   'notebook.view.close': 'Close notebook',
@@ -70,8 +76,7 @@ export const lightspeedMessages = {
   'notebook.view.documents.uploading': 'Uploading document',
   'notebook.view.documents.maxReached':
     'Maximum 10 documents are allowed. Delete a document to upload a new document.',
-  'notebook.upload.success': '{{fileName}} Successfully Uploaded.',
-  'notebook.upload.failed': '{{fileName}} Upload Failed.',
+  'notebook.upload.failed': '"{{fileName}}" upload failed.',
 
   // Notebook upload modal
   'notebook.upload.modal.title': 'Add a document to Notebook',
@@ -96,6 +101,12 @@ export const lightspeedMessages = {
     'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
   'notebook.overwrite.modal.action': 'Overwrite',
   'notebook.document.delete': 'Delete',
+  'notebook.document.delete.title': 'Remove resource?',
+  'notebook.document.delete.description':
+    'Are you sure you want to remove <documentName/> from this notebook? This action cannot be undone.',
+  'notebook.document.delete.action': 'Remove',
+  'notebook.document.delete.success':
+    '"{{documentName}}" removed successfully.',
 
   // Sample prompts - General Development
   'prompts.codeReadability.title': 'Get Help On Code Readability',
@@ -239,6 +250,9 @@ export const lightspeedMessages = {
   'tooltip.send': 'Send',
   'tooltip.microphone.active': 'Stop listening',
   'tooltip.microphone.inactive': 'Use microphone',
+  'tooltip.expandHistoryPanel': 'Expand chat history',
+  'tooltip.collapseHistoryPanel': 'Collapse chat history',
+  'tooltip.quickNewChat': 'New chat',
   'button.newChat': 'New chat',
   'tooltip.chatHistoryMenu': 'Chat history menu',
   'tooltip.responseRecorded': 'Response recorded',
@@ -248,6 +262,10 @@ export const lightspeedMessages = {
   'tooltip.close': 'Close',
   'tooltip.fab.open': 'Open Lightspeed',
   'tooltip.fab.close': 'Close Lightspeed',
+
+  // Attach menu
+  'attach.menu.title': 'Attach',
+  'attach.menu.description': 'Attach a JSON, YAML, or TXT file',
 
   // Modal titles
   'modal.title.preview': 'Preview attachment',
@@ -294,8 +312,8 @@ export const lightspeedMessages = {
     "We've received your response. Thank you for sharing your feedback!",
 
   // Conversation categorization
-  'conversation.category.pinnedChats': 'Pinned',
-  'conversation.category.recent': 'Recent',
+  'conversation.category.pinnedChats': 'Pinned chats',
+  'conversation.category.recent': 'Chats',
 
   // lightspeed settings
   'settings.pinned.enable': 'Enable pinned chats',
@@ -303,6 +321,7 @@ export const lightspeedMessages = {
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
   'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
   'settings.mcp.label': 'MCP settings',
+  'settings.mcp.badge': 'New',
 
   // MCP settings
   'mcp.settings.title': 'MCP servers',

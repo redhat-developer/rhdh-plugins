@@ -38,8 +38,8 @@ const getMatchedPattern = (args: unknown[]): string | null => {
       : String(first?.toString?.() ?? first ?? '');
   return suppressPatterns.find(p => msg.includes(p)) ?? null;
 };
-const handleFiltered = (pattern: string): void => {
-  process.stdout.write(`[Suppressed] ${pattern}\n`);
+const handleFiltered = (_pattern: string): void => {
+  // Silently swallow matched warnings
 };
 console.error = (...args: unknown[]) => {
   const pattern = getMatchedPattern(args);

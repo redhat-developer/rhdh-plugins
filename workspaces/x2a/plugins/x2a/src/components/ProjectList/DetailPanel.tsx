@@ -20,10 +20,13 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { ModuleTable } from '../ModuleTable';
 import { ItemField } from '../ItemField';
 import { ArtifactLink } from '../Artifacts';
+import { ExternalLink } from '../ExternalLink';
+import { buildProjectDirUrl } from '../tools';
 
 const useStyles = makeStyles(() => ({
   detailPanel: {
@@ -56,6 +59,7 @@ export const DetailPanel = ({
 }: DetailPanelProps) => {
   const { t } = useTranslation();
   const styles = useStyles();
+  const hostMap = useScmHostMap();
 
   return (
     <Grid container spacing={3} direction="row" className={styles.detailPanel}>
@@ -67,8 +71,14 @@ export const DetailPanel = ({
 
       <Grid {...gridItemProps} xs={2}>
         <ItemField
-          label={t('project.abbreviation')}
-          value={project.abbreviation}
+          label={t('project.dirName')}
+          value={
+            project.dirName ? (
+              <ExternalLink to={buildProjectDirUrl(project, hostMap)!}>
+                {project.dirName}
+              </ExternalLink>
+            ) : undefined
+          }
         />
       </Grid>
 

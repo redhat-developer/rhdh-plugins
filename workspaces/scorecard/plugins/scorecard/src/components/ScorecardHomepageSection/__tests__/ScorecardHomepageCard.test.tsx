@@ -66,8 +66,8 @@ jest.mock('../ResponsivePieChart', () => ({
     pieData,
     LabelContent,
   }: {
-    legendContent: (props: unknown) => React.ReactNode;
-    tooltipContent: (props: {
+    legendContent?: (props: unknown) => React.ReactNode;
+    tooltipContent?: (props: {
       active?: boolean;
       payload?: unknown[];
     }) => React.ReactNode;
@@ -92,7 +92,9 @@ jest.mock('../ResponsivePieChart', () => ({
           ) : null}
         </svg>
       </div>
-      <div data-testid="legend">{legendContent({})}</div>
+      {legendContent ? (
+        <div data-testid="legend">{legendContent({})}</div>
+      ) : null}
       <div data-testid="tooltip">
         {typeof tooltipContent === 'function'
           ? tooltipContent({ active: true, payload: [] })
@@ -172,7 +174,7 @@ const mockAverageScorecard: AggregatedMetricResult = {
   },
   result: {
     ...mockScorecard.result,
-    averageScore: 0.75,
+    averageScore: 75,
     averageWeightedSum: 18,
     averageMaxPossible: 24,
     aggregationChartDisplayColor: 'warning.main',

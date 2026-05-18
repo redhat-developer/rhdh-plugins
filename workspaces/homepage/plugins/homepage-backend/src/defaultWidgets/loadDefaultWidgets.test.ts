@@ -22,9 +22,9 @@ import {
 import { DefaultWidgetNode } from './types';
 
 describe('loadDefaultWidgets', () => {
-  it('returns an empty array when homepage.defaultWidgets is absent', () => {
+  it('returns undefined when homepage.defaultWidgets is absent', () => {
     const config = mockServices.rootConfig({ data: {} });
-    expect(loadDefaultWidgets(config)).toEqual([]);
+    expect(loadDefaultWidgets(config)).toBeUndefined();
   });
 
   it('parses a valid tree', () => {

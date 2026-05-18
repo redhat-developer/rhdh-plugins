@@ -30,6 +30,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tabs.ariaLabel': 'Lightspeed-Ansichten',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Notizbücher',
+    'tabs.notebooks.devPreview': 'Entwicklervorschau',
     'tabs.notebooks.empty': 'Inhalte der Notizbücher kommen hierhin.',
     'notebooks.title': 'Meine Notizbücher',
     'notebooks.empty.title': 'Keine erstellten Notizbücher',
@@ -56,6 +57,12 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebooks.updated.on': 'Aktualisiert am',
     'notebooks.card.openAria': 'Notizbuch {{name}} öffnen',
 
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title': 'Was sind die Kernkonzepte?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Zeige meine kritischen Schwachstellen',
+    'notebooks.prompts.accessIssue.title': 'Hilf mir bei einem Zugriffsproblem',
+
     // Notebook view
     'notebook.view.title': 'Unbenanntes Notizbuch',
     'notebook.view.close': 'Notizbuch schließen',
@@ -73,8 +80,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.view.documents.uploading': 'Dokument wird hochgeladen',
     'notebook.view.documents.maxReached':
       'Maximal 10 Dokumente sind erlaubt. Löschen Sie ein Dokument, um ein neues hochzuladen.',
-    'notebook.upload.success': '{{fileName}} erfolgreich hochgeladen.',
-    'notebook.upload.failed': 'Hochladen von {{fileName}} fehlgeschlagen.',
+    'notebook.upload.failed': 'Hochladen von "{{fileName}}" fehlgeschlagen.',
 
     // Notebook upload modal
     'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
@@ -100,6 +106,12 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Die folgenden Dateien existieren bereits in diesem Notizbuch. Möchten Sie sie mit den neuen Versionen überschreiben?',
     'notebook.overwrite.modal.action': 'Überschreiben',
     'notebook.document.delete': 'Löschen',
+    'notebook.document.delete.title': 'Ressource entfernen?',
+    'notebook.document.delete.description':
+      'Sind Sie sicher, dass Sie <documentName/> aus diesem Notizbuch entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+    'notebook.document.delete.action': 'Entfernen',
+    'notebook.document.delete.success':
+      '„{{documentName}}" wurde erfolgreich entfernt.',
 
     'prompts.codeReadability.title': 'Hilfe zur Code-Lesbarkeit erhalten',
     'prompts.codeReadability.message':
@@ -218,6 +230,9 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tooltip.send': 'Senden',
     'tooltip.microphone.active': 'Überwachen beenden',
     'tooltip.microphone.inactive': 'Mikrofon verwenden',
+    'tooltip.expandHistoryPanel': 'Chatverlauf erweitern',
+    'tooltip.collapseHistoryPanel': 'Chatverlauf minimieren',
+    'tooltip.quickNewChat': 'Neuer Chat',
     'button.newChat': 'Neuer Chat',
     'tooltip.chatHistoryMenu': 'Chatverlauf-Menü',
     'tooltip.responseRecorded': 'Antwort aufgezeichnet',
@@ -227,6 +242,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tooltip.close': 'Schließen',
     'tooltip.fab.open': 'Lightspeed öffnen',
     'tooltip.fab.close': 'Lightspeed schließen',
+    'attach.menu.title': 'Anhängen',
+    'attach.menu.description': 'Eine JSON-, YAML- oder TXT-Datei anhängen',
     'modal.title.preview': 'Anhang in der Vorschau anzeigen',
     'modal.title.edit': 'Anhang bearbeiten',
     'icon.lightspeed.alt': 'Lightspeed-Symbol',
@@ -264,8 +281,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'feedback.completion.title': 'Feedback übermittelt',
     'feedback.completion.body':
       'Wir haben Ihre Antwort erhalten. Vielen Dank für Ihr Feedback!',
-    'conversation.category.pinnedChats': 'Angeheftet',
-    'conversation.category.recent': 'Neueste',
+    'conversation.category.pinnedChats': 'Angeheftete Chats',
+    'conversation.category.recent': 'Chats',
     'settings.pinned.enable': 'Angeheftete Chats aktivieren',
     'settings.pinned.disable': 'Angeheftete Chats deaktivieren',
     'settings.pinned.enabled.description':
@@ -273,6 +290,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'settings.pinned.disabled.description':
       'Angeheftete Chats sind derzeit deaktiviert.',
     'settings.mcp.label': 'MCP-Einstellungen',
+    'settings.mcp.badge': 'Neu',
     'mcp.settings.title': 'MCP-Server',
     'mcp.settings.selectedCount':
       '{{selectedCount}} von {{totalCount}} ausgewählt',

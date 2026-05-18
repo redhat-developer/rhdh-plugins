@@ -219,7 +219,7 @@ describe('validateAggregationConfig', () => {
                   },
                   {
                     key: 'warning',
-                    expression: '10-74',
+                    expression: '10-75',
                     color: 'warning.main',
                   },
                   { key: 'error', expression: '<10', color: 'error.main' },
@@ -267,6 +267,50 @@ describe('validateAggregationConfig', () => {
 
     expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
       /Invalid thresholds configuration|Invalid threshold expression/,
+    );
+  });
+
+  it('should throw when average KPI thresholds leave a gap on the number line', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          avgKpi: {
+            title: 'Avg KPI',
+            type: aggregationTypes.average,
+            description: 'Weighted health',
+            metricId: 'github.open_prs',
+            options: {
+              statusScores: { success: 100, warning: 50, error: 0 },
+              thresholds: {
+                rules: [
+                  {
+                    key: 'success',
+                    expression: '<10',
+                    color: 'success.main',
+                  },
+                  {
+                    key: 'warning',
+                    expression: '11-20',
+                    color: 'warning.main',
+                  },
+                  {
+                    key: 'error',
+                    expression: '>20',
+                    color: 'error.main',
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      /do not cover the entire real line/,
     );
   });
 });

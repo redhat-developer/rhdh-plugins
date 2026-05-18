@@ -377,7 +377,7 @@ export const ProjectPage = () => {
         {!isLoading && project && (
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <ProjectDetailsCard project={project} />
+              <ProjectDetailsCard project={project} onUpdated={forceRefresh} />
             </Grid>
 
             <Grid item xs={6}>

@@ -36,6 +36,7 @@ jest.mock('../../hooks', () => ({
     loading: false,
     data: null,
     error: undefined,
+    loginRejected: false,
   })),
   useNumberOfApprovalTools: jest.fn(() => ({
     numberOfApprovalTools: 1,
@@ -155,6 +156,7 @@ describe('AddRepositoriesTable', () => {
         totalOrganizations: 0,
       },
       error: undefined,
+      loginRejected: false,
     });
 
     // Mock formik context with selected repositories

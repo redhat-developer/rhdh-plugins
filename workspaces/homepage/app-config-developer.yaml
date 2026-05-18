@@ -1,0 +1,25 @@
+app:
+  title: Homepage Backstage App
+  baseUrl: http://localhost:3002
+
+backend:
+  baseUrl: http://localhost:7009
+  listen:
+    port: 7009
+  cors:
+    origin: http://localhost:3002
+
+auth:
+  providers:
+    guest:
+      userEntityRef: user:default/developer-user
+      ownershipEntityRefs: [group:default/developers]
+      dangerouslyAllowOutsideDevelopment: false
+
+permission:
+  rbac:
+    admin:
+      users:
+        - name: user:default/developer-user
+      superUsers:
+        - name: user:default/developer-user

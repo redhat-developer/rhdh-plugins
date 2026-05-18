@@ -36,5 +36,35 @@ export interface Config {
        */
       message: string;
     }>;
+    /**
+     * Configuration for AI Notebooks
+     * @visibility frontend
+     */
+    notebooks?: {
+      /**
+       * Enable/disable AI Notebooks feature
+       * When enabled, exposes AI Notebooks REST API endpoints for document-based conversations with RAG.
+       * Requires Lightspeed service to be running (default: http://0.0.0.0:8080).
+       * @default false
+       * @visibility frontend
+       */
+      enabled: boolean;
+      /**
+       * Query configuration for notebooks
+       * @visibility frontend
+       */
+      queryDefaults?: {
+        /**
+         * Model to use for answering queries
+         * @visibility frontend
+         */
+        model: string;
+        /**
+         * AI provider for the query model
+         * @visibility frontend
+         */
+        provider_id: string;
+      };
+    };
   };
 }

@@ -45,10 +45,6 @@ export const NOTEBOOK_ALLOWED_EXTENSIONS: Record<string, string[]> = {
   'application/pdf': ['.pdf'],
   'application/json': ['.json'],
   'application/x-yaml': ['.yaml', '.yml'],
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [
-    '.docx',
-  ],
-  'application/vnd.oasis.opendocument.text': ['.odt'],
 };
 
 export const NOTEBOOK_EXTENSION_TO_FILE_TYPE: Record<string, string> = {
@@ -59,8 +55,6 @@ export const NOTEBOOK_EXTENSION_TO_FILE_TYPE: Record<string, string> = {
   '.yaml': 'yaml',
   '.yml': 'yaml',
   '.log': 'log',
-  '.docx': 'txt',
-  '.odt': 'txt',
 };
 
 export const DEFAULT_SAMPLE_PROMPTS: SamplePrompts = [
@@ -94,6 +88,12 @@ export const RHDH_SAMPLE_PROMPTS: SamplePrompts = [
   createPrompt('prompts.tekton.title', 'prompts.tekton.message'),
   createPrompt('prompts.openshift.title', 'prompts.openshift.message'),
   createPrompt('prompts.rhdh.title', 'prompts.rhdh.message'),
+];
+
+export const NOTEBOOK_PROMPT_KEYS: string[] = [
+  'notebooks.prompts.coreConcepts.title',
+  'notebooks.prompts.vulnerabilities.title',
+  'notebooks.prompts.accessIssue.title',
 ];
 
 // Topic restriction valid provider IDs

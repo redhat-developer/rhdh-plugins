@@ -28,7 +28,7 @@ import {
  * Determines whether the current user has write access to a given project.
  *
  * - x2aAdminWritePermission grants write to ALL projects.
- * - x2aUserPermission grants write to projects whose createdBy matches
+ * - x2aUserPermission grants write to projects whose ownedBy matches
  *   the user's entity ref or any of their group memberships.
  */
 export const useProjectWriteAccess = () => {
@@ -53,7 +53,7 @@ export const useProjectWriteAccess = () => {
       if (!userPerm.allowed) return false;
 
       const ownershipRefs = identity?.ownershipEntityRefs ?? [];
-      return ownershipRefs.includes(project.createdBy);
+      return ownershipRefs.includes(project.ownedBy);
     },
     [loading, adminWrite.allowed, userPerm.allowed, identity],
   );

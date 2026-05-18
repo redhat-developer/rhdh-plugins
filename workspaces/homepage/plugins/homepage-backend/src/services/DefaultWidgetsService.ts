@@ -43,7 +43,7 @@ export interface DefaultWidgetsService {
 }
 
 export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
-  readonly #tree: DefaultWidgetNode[];
+  readonly #tree: DefaultWidgetNode[] | undefined;
   readonly #referencedPermissions: Set<string>;
   readonly #catalog: typeof catalogServiceRef.T;
   readonly #permissions: PermissionsService;
@@ -56,10 +56,14 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
     logger: LoggerService;
   }): DefaultWidgetsServiceImpl {
     const tree = loadDefaultWidgets(options.config);
-    const referencedPermissions = collectReferencedPermissions(tree);
-    options.logger.info(
-      `Loaded ${tree.length} default homepage card root node(s) referencing ${referencedPermissions.size} permission(s)`,
-    );
+    const referencedPermissions = collectReferencedPermissions(tree ?? []);
+    if (tree) {
+      options.logger.info(
+        `Loaded ${tree.length} default homepage card root node(s) referencing ${referencedPermissions.size} permission(s)`,
+      );
+    } else {
+      options.logger.info('No default homepage widgets configured');
+    }
     return new DefaultWidgetsServiceImpl(
       tree,
       referencedPermissions,
@@ -70,7 +74,7 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
   }
 
   private constructor(
-    tree: DefaultWidgetNode[],
+    tree: DefaultWidgetNode[] | undefined,
     referencedPermissions: Set<string>,
     catalog: typeof catalogServiceRef.T,
     permissions: PermissionsService,
@@ -88,6 +92,9 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
   }: {
     credentials: BackstageCredentials<BackstageUserPrincipal>;
   }): Promise<DefaultWidgetsResponse> {
+    if (!this.#tree) {
+      return {};
+    }
     const ctx = await buildUserContext({
       credentials,
       catalog: this.#catalog,

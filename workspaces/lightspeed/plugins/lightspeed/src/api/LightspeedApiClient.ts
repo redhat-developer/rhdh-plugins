@@ -183,6 +183,20 @@ export class LightspeedApiClient implements LightspeedAPI {
     return response.conversations ?? [];
   }
 
+  async getNotebookConversationIds() {
+    const baseUrl = await this.getBaseUrl();
+    const result = await this.fetcher(`${baseUrl}/notebook-conversation-ids`);
+
+    if (!result.ok) {
+      throw new Error(
+        `failed to get notebook conversation IDs, status ${result.status}: ${result.statusText}`,
+      );
+    }
+
+    const response = await result.json();
+    return response.conversation_ids ?? [];
+  }
+
   async stopMessage(requestId: string): Promise<{ success: boolean }> {
     const baseUrl = await this.getBaseUrl();
     const response = await this.fetchApi.fetch(

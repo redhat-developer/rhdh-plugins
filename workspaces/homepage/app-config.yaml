@@ -123,23 +123,48 @@ homepage:
         sm: { w: 12, h: 8, x: 6 }
         xs: { w: 12, h: 8, x: 6 }
         xxs: { w: 12, h: 8, x: 6 }
-    - id: visit-card
-      ref: VisitCard
-      layout:
-        xl: { w: 12, h: 5 }
-        lg: { w: 12, h: 5 }
-        md: { w: 12, h: 6 }
-        sm: { w: 12, h: 7 }
-        xs: { w: 12, h: 9 }
-        xxs: { w: 12, h: 14 }
     - if:
         groups: [group:default/admins]
       children:
-        - id: rbac
-          ref: RBAC
+        - id: featured-docs-card
+          ref: featured-docs-card
           layout:
-            xl: { w: 12, h: 6 }
-            lg: { w: 12, h: 6 }
+            xl: { w: 6, h: 4 }
+            lg: { w: 6, h: 4 }
+            md: { w: 6, h: 4 }
+            sm: { w: 12, h: 4 }
+            xs: { w: 12, h: 4 }
+            xxs: { w: 12, h: 4 }
+        - id: catalog-starred-entities-card
+          ref: catalog-starred-entities-card
+          layout:
+            xl: { w: 6, h: 4 }
+            lg: { w: 6, h: 4 }
+            md: { w: 6, h: 4 }
+            sm: { w: 12, h: 4 }
+            xs: { w: 12, h: 4 }
+            xxs: { w: 12, h: 4 }
+    - if:
+        groups: [group:default/developers]
+      children:
+        - id: recently-visited-card
+          ref: recently-visited-card
+          layout:
+            xl: { w: 6, h: 4 }
+            lg: { w: 6, h: 4 }
+            md: { w: 6, h: 4 }
+            sm: { w: 12, h: 4 }
+            xs: { w: 12, h: 4 }
+            xxs: { w: 12, h: 4 }
+        - id: top-visited-card
+          ref: top-visited-card
+          layout:
+            xl: { w: 6, h: 4 }
+            lg: { w: 6, h: 4 }
+            md: { w: 6, h: 4 }
+            sm: { w: 12, h: 4 }
+            xs: { w: 12, h: 4 }
+            xxs: { w: 12, h: 4 }
 
 organization:
   name: My Company
@@ -205,7 +230,9 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest:
+      userEntityRef: user:default/guest-user
+      ownershipEntityRefs: []
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -252,6 +279,6 @@ permission:
       - homepage
     admin:
       users:
-        - name: user:development/guest
+        - name: user:default/guest-user
       superUsers:
-        - name: user:development/guest
+        - name: user:default/guest-user

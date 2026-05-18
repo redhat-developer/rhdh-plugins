@@ -92,7 +92,7 @@ export const RepositoriesTable = ({
   const [localPage, setLocalPage] = useState(0);
   const [drawerPage, setDrawerPage] = useState(0);
 
-  const { loading, data, error } = useRepositories({
+  const { loading, data, error, loginRejected } = useRepositories({
     showOrganizations,
     orgName: drawerOrganization,
     approvalTool: values.approvalTool,
@@ -345,6 +345,7 @@ export const RepositoriesTable = ({
             isDrawer={!!drawerOrganization}
             isApprovalToolGitlab={isApprovalToolGitlab}
             showOrganizations={showOrganizations}
+            loginRejected={loginRejected}
           />
         </Table>
         {!isOpen && tableData?.length > 0 && (

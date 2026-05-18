@@ -586,7 +586,7 @@ export const ExtensionsPluginContent = ({
                       {index > 0 ? t('metadata.comma') : t('metadata.by')}
                       <Link
                         key={author.name}
-                        to={withFilter('spec.authors.name', author.name)}
+                        to={withFilter('author', author.name)}
                         color="primary"
                         onClick={e => e.stopPropagation()}
                       >
@@ -604,7 +604,7 @@ export const ExtensionsPluginContent = ({
                   {t('metadata.by')}{' '}
                   <Link
                     key={plugin.spec?.author}
-                    to={withFilter('spec.author', plugin.spec?.author)}
+                    to={withFilter('author', plugin.spec?.author)}
                     color="primary"
                     onClick={e => e.stopPropagation()}
                   >

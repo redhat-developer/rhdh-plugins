@@ -100,6 +100,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.someEntitiesNotReportingValues': string;
     readonly 'metric.averageCenterTooltipTotalLabel': string;
     readonly 'metric.averageCenterTooltipMaxLabel': string;
+    readonly 'metric.averageCenterTooltipBreakdownRow_one': string;
+    readonly 'metric.averageCenterTooltipBreakdownRow_other': string;
     readonly 'metric.averageLegendTooltipEntitiesEach_one': string;
     readonly 'metric.averageLegendTooltipEntitiesEach_other': string;
     readonly 'metric.averageLegendTooltipRowTotal': string;

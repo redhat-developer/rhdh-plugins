@@ -1,5 +1,55 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.8.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.2
+
+## 2.8.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.1
+
+## 2.8.0
+
+### Minor Changes
+
+- 3c9c556: - Hide notebooks tab when `lightspeed.notebooks.enabled: false` in config
+  - Fix notebook queries to display correct model from config instead of chat's selected model
+  - Add `/notebook-conversation-ids` endpoint to filter notebook conversations from chat list even when notebooks disabled
+- 674f043: URL filetype backend support removed
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.0
+
+## 2.7.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.7.1
+
+## 2.7.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.7.0
+
+## 2.6.8
+
+### Patch Changes
+
+- 02f64dc: add return statement to /v1/feedback error handler to prevent unhandled error fallthrough
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.8
+
+## 2.6.7
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.7
+
 ## 2.6.6
 
 ### Patch Changes

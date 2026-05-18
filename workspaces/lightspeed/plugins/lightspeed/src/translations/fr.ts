@@ -30,6 +30,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tabs.ariaLabel': 'Vues Lightspeed',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Carnets',
+    'tabs.notebooks.devPreview': 'Aperçu développeur',
     'tabs.notebooks.empty': 'Le contenu des carnets s’affichera ici.',
     'notebooks.title': 'Mes carnets',
     'notebooks.empty.title': 'Aucun carnet créé',
@@ -56,6 +57,13 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebooks.updated.on': 'Mis à jour le',
     'notebooks.card.openAria': 'Ouvrir le carnet {{name}}',
 
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title':
+      'Quels sont les concepts fondamentaux ?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Afficher mes vulnérabilités critiques',
+    'notebooks.prompts.accessIssue.title': "Aidez-moi avec un problème d'accès",
+
     // Notebook view
     'notebook.view.title': 'Carnet sans titre',
     'notebook.view.close': 'Fermer le carnet',
@@ -73,8 +81,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebook.view.documents.uploading': 'Chargement du document',
     'notebook.view.documents.maxReached':
       'Maximum 10 documents autorisés. Supprimez un document pour en charger un nouveau.',
-    'notebook.upload.success': '{{fileName}} chargé avec succès.',
-    'notebook.upload.failed': 'Échec du chargement de {{fileName}}.',
+    'notebook.upload.failed': 'Échec du chargement de "{{fileName}}".',
 
     // Notebook upload modal
     'notebook.upload.modal.title': 'Ajouter un document au carnet',
@@ -100,6 +107,12 @@ const lightspeedTranslationFr = createTranslationMessages({
       'Les fichiers suivants existent déjà dans ce carnet. Voulez-vous les écraser avec les nouvelles versions ?',
     'notebook.overwrite.modal.action': 'Écraser',
     'notebook.document.delete': 'Supprimer',
+    'notebook.document.delete.title': 'Supprimer la ressource ?',
+    'notebook.document.delete.description':
+      'Êtes-vous sûr de vouloir supprimer <documentName/> de ce carnet ? Cette action est irréversible.',
+    'notebook.document.delete.action': 'Supprimer',
+    'notebook.document.delete.success':
+      '« {{documentName}} » supprimé avec succès.',
 
     'prompts.codeReadability.title': 'Obtenir de l’aide pour Décrypter le Code',
     'prompts.codeReadability.message':
@@ -217,6 +230,9 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.send': 'Envoyer',
     'tooltip.microphone.active': 'Cessez d’écouter',
     'tooltip.microphone.inactive': 'Utilisez le micro',
+    'tooltip.expandHistoryPanel': "Développer l'historique du chat",
+    'tooltip.collapseHistoryPanel': "Réduire l'historique du chat",
+    'tooltip.quickNewChat': 'Nouveau chat',
     'button.newChat': 'Nouvelle Conversation',
     'tooltip.chatHistoryMenu': 'Menu de l’historique de conversations',
     'tooltip.responseRecorded': 'Réponse enregistrée',
@@ -226,6 +242,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.close': 'Fermer',
     'tooltip.fab.open': 'Ouvrir Lightspeed',
     'tooltip.fab.close': 'Fermer Lightspeed',
+    'attach.menu.title': 'Attacher',
+    'attach.menu.description': 'Attacher un fichier JSON, YAML ou TXT',
 
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'modal.title.edit': 'Modifier la pièce jointe',
@@ -264,8 +282,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'feedback.completion.title': 'Commentaire soumis',
     'feedback.completion.body':
       'Nous avons reçu votre réponse. Merci de partager vos commentaires avec nous !',
-    'conversation.category.pinnedChats': 'Épinglé',
-    'conversation.category.recent': 'Récent',
+    'conversation.category.pinnedChats': 'Chats épinglés',
+    'conversation.category.recent': 'Chats',
     'settings.pinned.enable': 'Activer les conversations épinglées',
     'settings.pinned.disable': 'Désactiver les conversations épinglées',
     'settings.pinned.enabled.description':
@@ -273,6 +291,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'settings.pinned.disabled.description':
       'Les conversations épinglées sont actuellement désactivées',
     'settings.mcp.label': 'Paramètres MCP',
+    'settings.mcp.badge': 'Nouveau',
     'mcp.settings.title': 'Serveurs MCP',
     'mcp.settings.selectedCount':
       '{{selectedCount}} sur {{totalCount}} sélectionnés',

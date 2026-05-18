@@ -77,10 +77,9 @@ export const spec = {
               "enum": [
                 "createdAt",
                 "name",
-                "abbreviation",
                 "status",
                 "description",
-                "createdBy"
+                "ownedBy"
               ]
             },
             "required": false,
@@ -134,10 +133,6 @@ export const spec = {
                     "type": "string",
                     "description": "Description of the project"
                   },
-                  "abbreviation": {
-                    "type": "string",
-                    "description": "Project abbreviation"
-                  },
                   "sourceRepoUrl": {
                     "type": "string",
                     "description": "URL of the source repository"
@@ -153,12 +148,18 @@ export const spec = {
                   "targetRepoBranch": {
                     "type": "string",
                     "description": "Branch of the target repository (default to main)"
+                  },
+                  "acceptedRuleIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "UUIDs of rules the project accepts (required rules auto-appended)"
                   }
                 },
                 "required": [
                   "name",
                   "description",
-                  "abbreviation",
                   "sourceRepoUrl",
                   "targetRepoUrl",
                   "sourceRepoBranch",
@@ -178,6 +179,198 @@ export const spec = {
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/rules": {
+      "get": {
+        "summary": "Returns a list of all rules.",
+        "responses": {
+          "200": {
+            "description": "All rules.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Rule"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new rule (admin only).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Title of the rule"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the rule"
+                  },
+                  "required": {
+                    "type": "boolean",
+                    "description": "Whether the rule is required for all projects"
+                  }
+                },
+                "required": [
+                  "title",
+                  "description"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rule"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rules/{ruleId}": {
+      "get": {
+        "summary": "Returns a rule by ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ruleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rule data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rule"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rule not found."
+          }
+        }
+      },
+      "put": {
+        "summary": "Updates a rule by ID (admin only).",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ruleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Title of the rule"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the rule"
+                  },
+                  "required": {
+                    "type": "boolean",
+                    "description": "Whether the rule is required for all projects"
+                  }
+                },
+                "required": [
+                  "title",
+                  "description",
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rule"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rule not found."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes a rule by ID (admin only).",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ruleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rule deleted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deletedCount": {
+                      "type": "integer",
+                      "description": "Number of rules deleted (0 or 1)"
+                    }
+                  },
+                  "required": [
+                    "deletedCount"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rule not found."
           }
         }
       }
@@ -242,6 +435,62 @@ export const spec = {
                 }
               }
             }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Updates an existing project.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Full name of the project"
+                  },
+                  "ownedBy": {
+                    "type": "string",
+                    "description": "The user who owns the project (Backstage user reference)"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the project"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated project data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data."
+          },
+          "404": {
+            "description": "Project not found."
           }
         }
       }
@@ -822,10 +1071,6 @@ export const spec = {
             "type": "string",
             "description": "UUID for the project"
           },
-          "abbreviation": {
-            "type": "string",
-            "description": "Abbreviation of the project"
-          },
           "name": {
             "type": "string",
             "description": "Full name of the project"
@@ -855,9 +1100,13 @@ export const spec = {
             "format": "date-time",
             "description": "Date/time when the project was created"
           },
-          "createdBy": {
+          "ownedBy": {
             "type": "string",
-            "description": "The user who created the project (Backstage user reference)"
+            "description": "The user or group who owns the project (Backstage entity reference)"
+          },
+          "dirName": {
+            "type": "string",
+            "description": "Immutable directory name for the project in the target repository (computed once at creation)"
           },
           "migrationPlan": {
             "$ref": "#/components/schemas/Artifact",
@@ -870,18 +1119,24 @@ export const spec = {
           "initJob": {
             "$ref": "#/components/schemas/Job",
             "description": "Project's init job"
+          },
+          "acceptedRules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleSnapshot"
+            },
+            "description": "Snapshot of rules accepted at project creation time"
           }
         },
         "required": [
           "id",
           "name",
-          "abbreviation",
           "sourceRepoUrl",
           "targetRepoUrl",
           "sourceRepoBranch",
           "targetRepoBranch",
           "createdAt",
-          "createdBy"
+          "ownedBy"
         ]
       },
       "Module": {
@@ -1219,6 +1474,68 @@ export const spec = {
           "summary",
           "phase",
           "startedAt"
+        ]
+      },
+      "Rule": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID for the rule"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the rule"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the rule"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether the rule is required for all projects"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date/time when the rule was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date/time when the rule was last updated"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "required",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RuleSnapshot": {
+        "type": "object",
+        "description": "Snapshot of a rule at the time it was accepted by a project",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID of the rule"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the rule at acceptance time"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the rule at acceptance time"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description"
         ]
       },
       "AgentMetrics": {

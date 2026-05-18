@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.9.2
+
+### Patch Changes
+
+- 498beb5: Add react-router-dom in devDependencies
+
 ## 1.9.1
 
 ### Patch Changes

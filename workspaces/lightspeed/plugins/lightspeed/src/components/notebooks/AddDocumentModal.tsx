@@ -61,7 +61,7 @@ const useStyles = makeStyles(theme => ({
     letterSpacing: '-0.25px',
   },
   closeButton: {
-    color: theme.palette.grey[700],
+    color: theme.palette.text.primary,
   },
   dialogContent: {
     padding: '0 24px 24px',

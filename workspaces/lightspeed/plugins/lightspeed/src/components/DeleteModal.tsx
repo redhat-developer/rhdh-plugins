@@ -88,7 +88,7 @@ export const DeleteModal = ({
               position: 'absolute',
               right: 1,
               top: 1,
-              color: 'grey.700',
+              color: 'text.primary',
             }}
           >
             <CloseIcon />
