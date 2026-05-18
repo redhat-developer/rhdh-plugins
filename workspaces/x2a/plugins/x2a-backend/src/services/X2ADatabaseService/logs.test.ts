@@ -50,7 +50,6 @@ describe('X2ADatabaseService – logs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -82,7 +81,6 @@ describe('X2ADatabaseService – logs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -115,7 +113,6 @@ describe('X2ADatabaseService – logs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -160,7 +157,6 @@ describe('X2ADatabaseService – logs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -197,7 +193,6 @@ describe('X2ADatabaseService – logs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },

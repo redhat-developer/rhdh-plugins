@@ -15,6 +15,7 @@
  */
 
 export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
+export { validateThresholdNumberIntervals } from './thresholds/intervals/validateThresholdNumberIntervals';
 export {
   validateThresholdsForMetric,
   validateThresholdsForAggregation,

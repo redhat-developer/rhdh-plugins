@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.17.1
+
+### Patch Changes
+
+- f3da767: Fix pagination state reset when searching in the Installed Packages table, add localization support for pagination labels, fix table state being lost when opening package drawer, and fix author filter appearing cleared when clicking author link in plugin drawer.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.17.1
+
 ## 0.17.0
 
 ### Patch Changes

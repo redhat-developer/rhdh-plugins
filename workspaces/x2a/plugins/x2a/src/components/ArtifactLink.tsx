@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Link } from '@backstage/core-components';
 import { makeStyles } from '@material-ui/core';
-import LaunchIcon from '@material-ui/icons/Launch';
 import { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useScmHostMap } from '../hooks/useScmHostMap';
 import { useTranslation } from '../hooks/useTranslation';
 import { buildArtifactUrl, humanizeArtifactType } from './tools';
+import { ExternalLink } from './ExternalLink';
 
 const useStyles = makeStyles({
   artifact: {
@@ -28,10 +27,6 @@ const useStyles = makeStyles({
     padding: 0,
     display: 'inline-flex',
     alignItems: 'center',
-  },
-  externalIcon: {
-    marginLeft: 4,
-    fontSize: 'inherit',
   },
 });
 
@@ -62,14 +57,8 @@ export const ArtifactLink = ({
           hostMap,
         );
   return (
-    <Link
-      to={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={classes.artifact}
-    >
+    <ExternalLink to={url} className={classes.artifact}>
       {humanizeArtifactType(t, artifact.type)}
-      <LaunchIcon className={classes.externalIcon} aria-hidden />
-    </Link>
+    </ExternalLink>
   );
 };

@@ -20,20 +20,23 @@ import { InputError, NotFoundError } from '@backstage/errors';
 
 import {
   type ModulePhase,
+  JobStatus,
   Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-
-import type { RouterDeps } from './types';
 import {
-  generateCallbackToken,
-  reconcileJobStatus,
-  useEnforceProjectPermissions,
-} from './common';
-import {
+  CallbackToken,
   calculateModuleStatus,
   listModulesWithReconciledStatuses,
   reconcileModuleJobs,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
+import type { RouterDeps } from './types';
+import {
+  assertProjectHasDirName,
+  reconcileJobStatus,
+  useEnforceProjectPermissions,
+} from './common';
+import { GitRepositoryResolver } from './GitRepositoryResolver';
 
 export function registerModuleRoutes(
   router: express.Router,
@@ -49,6 +52,7 @@ export function registerModuleRoutes(
     permissionsSvc,
     catalog,
   } = deps;
+  const gitRepoResolver = new GitRepositoryResolver(config);
 
   router.get('/projects/:projectId/modules', async (req, res) => {
     const endpoint = 'GET /projects/:projectId/modules';
@@ -227,24 +231,14 @@ export function registerModuleRoutes(
         catalog,
       });
 
-      // Get tokens with config-based fallback
-      const sourceToken =
-        sourceRepoAuth?.token ??
-        config.getOptionalString('x2a.git.sourceRepo.token');
-      const targetToken =
-        targetRepoAuth?.token ??
-        config.getOptionalString('x2a.git.targetRepo.token');
+      assertProjectHasDirName(project);
 
-      if (!sourceToken) {
-        throw new InputError(
-          'Source repository token is required. Provide it in the request or configure x2a.git.sourceRepo.token.',
-        );
-      }
-      if (!targetToken) {
-        throw new InputError(
-          'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
-        );
-      }
+      // Resolve git repositories with config-based token fallback
+      const { sourceRepo, targetRepo } = gitRepoResolver.resolve({
+        project,
+        sourceRepoAuth,
+        targetRepoAuth,
+      });
 
       // Verify module exists
       const module = await x2aDatabase.getModule({ id: moduleId });
@@ -261,37 +255,35 @@ export function registerModuleRoutes(
       });
 
       // Reconcile jobs that appear active against K8s
-      const reconciledJobs = await Promise.all(
-        existingJobs
-          .filter(job => ['pending', 'running'].includes(job.status))
-          .map(job =>
-            reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
-          ),
+      const activeJobs = existingJobs.filter(job =>
+        JobStatus.from(job.status).isActive(),
       );
-      const hasActiveJob = reconciledJobs.some(job =>
-        ['pending', 'running'].includes(job.status),
+      const reconciledJobs = await Promise.all(
+        activeJobs.map(job =>
+          reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
+        ),
+      );
+      const activeJob = reconciledJobs.find(job =>
+        JobStatus.from(job.status).isActive(),
       );
 
-      if (hasActiveJob) {
-        const activeJob = existingJobs.find(job =>
-          ['pending', 'running'].includes(job.status),
-        );
+      if (activeJob) {
         return res.status(409).json({
           error: 'JobAlreadyRunning',
-          message: `A ${activeJob!.phase} job is already running for this module`,
+          message: `A ${activeJob.phase} job is already running for this module`,
           details: 'Please wait for the current job to complete or cancel it',
-          activeJobId: activeJob!.id,
-          activeJobPhase: activeJob!.phase,
+          activeJobId: activeJob.id,
+          activeJobPhase: activeJob.phase,
         });
       }
 
-      const callbackToken = generateCallbackToken();
+      const callbackToken = CallbackToken.generate();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId,
         phase,
         status: 'pending',
-        callbackToken,
+        callbackToken: callbackToken.value,
       });
 
       // Create Kubernetes job (will create both project and job secrets)
@@ -301,34 +293,32 @@ export function registerModuleRoutes(
         config.getOptionalString('x2a.callbackBaseUrl') ??
         (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${moduleBaseUrl}/projects/${projectId}/collectArtifacts`;
+      // Read accepted rules snapshot for the K8s job
+      const acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+        projectId,
+      });
+
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
         projectName: project.name,
-        projectAbbrev: project.abbreviation,
+        projectDirName: project.dirName,
         phase,
         user: userRef,
-        callbackToken,
+        callbackToken: callbackToken.value,
         callbackUrl,
         moduleId,
         moduleName: module.name,
         sourceTechnology: module.technology,
-        sourceRepo: {
-          url: project.sourceRepoUrl,
-          branch: project.sourceRepoBranch,
-          token: sourceToken,
-        },
-        targetRepo: {
-          url: project.targetRepoUrl,
-          branch: project.targetRepoBranch,
-          token: targetToken,
-        },
+        sourceRepo,
+        targetRepo,
         aapCredentials,
+        acceptedRules,
       });
 
       // Re-read the job to detect cancellation during the K8s creation window
       const freshJob = await x2aDatabase.getJob({ id: job.id });
-      if (freshJob?.status === 'cancelled') {
+      if (freshJob && JobStatus.from(freshJob.status).isCancelled()) {
         try {
           await kubeService.deleteJob(k8sJobName);
         } catch (e) {
@@ -422,7 +412,7 @@ export function registerModuleRoutes(
 
       const job = jobs[0];
 
-      if (!['pending', 'running'].includes(job.status)) {
+      if (!JobStatus.from(job.status).isActive()) {
         return res.status(409).json({
           error: 'JobNotCancellable',
           message: `The ${phase} job is in "${job.status}" state and cannot be cancelled.`,

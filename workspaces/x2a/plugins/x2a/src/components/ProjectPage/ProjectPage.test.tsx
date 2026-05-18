@@ -186,14 +186,13 @@ import { ProjectPage } from './ProjectPage';
 const mockProject = {
   id: 'proj-1',
   name: 'Test Project',
-  abbreviation: 'TP',
   description: 'Test',
   sourceRepoUrl: 'https://github.com/org/source',
   targetRepoUrl: 'https://github.com/org/target',
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
   createdAt: new Date('2024-01-01T00:00:00Z'),
-  createdBy: 'user:default/test',
+  ownedBy: 'user:default/test',
 };
 
 const mockModules = [

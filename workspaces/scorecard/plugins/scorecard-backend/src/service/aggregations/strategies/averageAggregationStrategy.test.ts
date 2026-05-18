@@ -79,7 +79,7 @@ describe('AverageAggregationStrategy', () => {
         calculationErrorCount: 2,
         averageWeightedSum: 150,
         averageMaxPossible: 300,
-        averageScore: 0.5,
+        averageScore: 50,
         aggregationChartDisplayColor: 'warning.main',
       }),
     );
@@ -197,7 +197,7 @@ describe('AverageAggregationStrategy', () => {
         calculationErrorCount: 1,
         averageWeightedSum: 100,
         averageMaxPossible: 300,
-        averageScore: 0.333,
+        averageScore: 33.3,
       }),
     );
   });

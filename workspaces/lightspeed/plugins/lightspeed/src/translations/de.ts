@@ -30,6 +30,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tabs.ariaLabel': 'Lightspeed-Ansichten',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Notizbücher',
+    'tabs.notebooks.devPreview': 'Entwicklervorschau',
     'tabs.notebooks.empty': 'Inhalte der Notizbücher kommen hierhin.',
     'notebooks.title': 'Meine Notizbücher',
     'notebooks.empty.title': 'Keine erstellten Notizbücher',
@@ -55,6 +56,12 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',
     'notebooks.updated.on': 'Aktualisiert am',
     'notebooks.card.openAria': 'Notizbuch {{name}} öffnen',
+
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title': 'Was sind die Kernkonzepte?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Zeige meine kritischen Schwachstellen',
+    'notebooks.prompts.accessIssue.title': 'Hilf mir bei einem Zugriffsproblem',
 
     // Notebook view
     'notebook.view.title': 'Unbenanntes Notizbuch',
@@ -218,6 +225,9 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tooltip.send': 'Senden',
     'tooltip.microphone.active': 'Überwachen beenden',
     'tooltip.microphone.inactive': 'Mikrofon verwenden',
+    'tooltip.expandHistoryPanel': 'Chatverlauf erweitern',
+    'tooltip.collapseHistoryPanel': 'Chatverlauf minimieren',
+    'tooltip.quickNewChat': 'Neuer Chat',
     'button.newChat': 'Neuer Chat',
     'tooltip.chatHistoryMenu': 'Chatverlauf-Menü',
     'tooltip.responseRecorded': 'Antwort aufgezeichnet',
@@ -227,6 +237,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tooltip.close': 'Schließen',
     'tooltip.fab.open': 'Lightspeed öffnen',
     'tooltip.fab.close': 'Lightspeed schließen',
+    'attach.menu.title': 'Anhängen',
+    'attach.menu.description': 'Eine JSON-, YAML- oder TXT-Datei anhängen',
     'modal.title.preview': 'Anhang in der Vorschau anzeigen',
     'modal.title.edit': 'Anhang bearbeiten',
     'icon.lightspeed.alt': 'Lightspeed-Symbol',

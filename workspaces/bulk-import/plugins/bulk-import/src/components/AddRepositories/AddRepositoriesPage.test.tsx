@@ -132,6 +132,7 @@ describe('AddRepositoriesPage', () => {
       loading: false,
       data: [],
       error: null,
+      loginRejected: false,
     });
     (useInstructionsConfig as jest.Mock).mockReturnValue({
       enabled: true,

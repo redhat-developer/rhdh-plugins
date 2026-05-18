@@ -1,5 +1,64 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.1
+
+### Patch Changes
+
+- e5d33ba: Improved normalization of user chat input before send and display. A short intro followed by a numbered list, ASCII bullet lists (hyphen, asterisk, or plus, with optional indentation), or Unicode bullet lines is folded into one Markdown paragraph using hard line breaks and marker escaping where needed. That preserves intended line breaks (soft breaks no longer collapse list lines into one sentence) and keeps list-oriented prompts from splitting awkwardly in the chat UI. Excessive blank lines are tightened, CRLF is normalized, and whitespace-only prompts are not submitted.
+- e6cd084: Fix notebook prompts and add Developer preview badge for Notebooks tab
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.1
+
+## 2.8.0
+
+### Minor Changes
+
+- 3c9c556: - Hide notebooks tab when `lightspeed.notebooks.enabled: false` in config
+  - Fix notebook queries to display correct model from config instead of chat's selected model
+  - Add `/notebook-conversation-ids` endpoint to filter notebook conversations from chat list even when notebooks disabled
+
+### Patch Changes
+
+- a866b21: fixed dark theme issues
+- 17e0527: Updated dependency `@patternfly/react-core` to `6.4.3`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-app-react` to `^0.0.5`.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.0
+
+## 2.7.1
+
+### Patch Changes
+
+- 75181f0: preserve indentation for lists in chat window
+- ca793d5: Disable automatic model refetch on window focus to prevent unnecessary network requests
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.7.1
+
+## 2.7.0
+
+### Minor Changes
+
+- 41c1901: Implemented fullscreen chat UX updates including:
+  - Collapsible history panel with new expand/collapse icons
+  - Redesigned message bar with inline model selector and attachment menu
+  - New collapsed history strip with quick new chat functionality
+  - Updated header with Lightspeed logo
+  - Improved conversation list with hover-only options menu
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.7.0
+
+## 2.6.8
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.8
+
+## 2.6.7
+
+### Patch Changes
+
+- 3d2854b: fixed tool call response
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.6.7
+
 ## 2.6.6
 
 ### Patch Changes

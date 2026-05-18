@@ -1,0 +1,25 @@
+app:
+  title: Homepage Backstage App
+  baseUrl: http://localhost:3001
+
+backend:
+  baseUrl: http://localhost:7008
+  listen:
+    port: 7008
+  cors:
+    origin: http://localhost:3001
+
+auth:
+  providers:
+    guest:
+      userEntityRef: user:default/admin-user
+      ownershipEntityRefs: [group:default/admins]
+      dangerouslyAllowOutsideDevelopment: false
+
+permission:
+  rbac:
+    admin:
+      users:
+        - name: user:default/admin-user
+      superUsers:
+        - name: user:default/admin-user

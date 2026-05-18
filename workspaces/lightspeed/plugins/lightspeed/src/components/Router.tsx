@@ -16,12 +16,18 @@
 
 import { Route, Routes } from 'react-router-dom';
 
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+
 import { LightspeedPage } from './LightspeedPage';
 
 /**
  * @public
  */
 export const Router = () => {
+  const configApi = useApi(configApiRef);
+  const notebooksEnabled =
+    configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
+
   return (
     <Routes>
       <Route path="/" element={<LightspeedPage />} />
@@ -29,8 +35,12 @@ export const Router = () => {
         path="/conversation/:conversationId"
         element={<LightspeedPage />}
       />
-      <Route path="/notebooks" element={<LightspeedPage />} />
-      <Route path="/notebooks/:notebookId" element={<LightspeedPage />} />
+      {notebooksEnabled && (
+        <>
+          <Route path="/notebooks" element={<LightspeedPage />} />
+          <Route path="/notebooks/:notebookId" element={<LightspeedPage />} />
+        </>
+      )}
     </Routes>
   );
 };

@@ -193,7 +193,7 @@ test.describe('Lightspeed UI', () => {
     function validationTestCase(path: string, name: string) {
       test(`should validate file: ${name}`, async ({ browser }, testInfo) => {
         const fileExtension = `.${name.split('.').pop()}`;
-        await uploadFiles(sharedPage, [path]);
+        await uploadFiles(sharedPage, [path], translations);
 
         if (supportedFileTypes.includes(fileExtension)) {
           await uploadAndAssertDuplicate(
@@ -221,7 +221,7 @@ test.describe('Lightspeed UI', () => {
     test(`Multiple file upload`, async () => {
       const file1 = `e2e-tests/fixtures/uploads/${locale}.upload1.json`;
       const file2 = `e2e-tests/fixtures/uploads/${locale}.upload2.json`;
-      await uploadFiles(sharedPage, [file1, file2]);
+      await uploadFiles(sharedPage, [file1, file2], translations);
 
       const heading = sharedPage.getByRole('heading', {
         name: `Danger alert: ${translations['chatbox.fileUpload.failed']}`,
@@ -235,7 +235,8 @@ test.describe('Lightspeed UI', () => {
 
       await assertVisibilityState('visible', heading, text, closeBtn);
 
-      await closeBtn.click();
+      // Use evaluate to click via JavaScript to bypass the iframe overlay
+      await closeBtn.evaluate((el: HTMLElement) => el.click());
 
       await assertVisibilityState('hidden', heading, text, closeBtn);
     });

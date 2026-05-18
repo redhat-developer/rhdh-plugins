@@ -57,7 +57,7 @@ const useStyles = makeStyles(theme => ({
   },
   removeButton: {
     padding: 4,
-    color: theme.palette.grey[600],
+    color: theme.palette.action.active,
     '&:hover': {
       color: theme.palette.error.main,
     },

@@ -173,6 +173,7 @@ export const LightspeedChatBoxHeader = ({
         </Dropdown>
       )}
       <ChatbotHeaderOptionsDropdown
+        className={styles.dropdown}
         isCompact
         toggleProps={{
           'aria-label': t('aria.settings.label'),

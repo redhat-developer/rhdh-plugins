@@ -35,7 +35,7 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
       hoverBackground: '#ffffff',
     },
     submenu: {
-      background: '#222427',
+      background: '#FFF',
     },
   },
   text: {

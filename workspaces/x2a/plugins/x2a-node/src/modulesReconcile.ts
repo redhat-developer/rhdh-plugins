@@ -16,6 +16,7 @@
 
 import {
   type Module,
+  JobStatus,
   Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -35,7 +36,7 @@ export async function reconcileModuleJobs(
   const phases = Phase.modulePhaseValues();
   for (const phase of phases) {
     const job = module[phase];
-    if (job && ['pending', 'running'].includes(job.status)) {
+    if (job && JobStatus.from(job.status).isActive()) {
       const reconciled = await reconcileJobStatus(job, deps);
       module[phase] = removeSensitiveFromJob(reconciled);
     }

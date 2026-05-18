@@ -1,5 +1,50 @@
 # app
 
+## 0.0.22
+
+### Patch Changes
+
+- Updated dependencies [e5d33ba]
+- Updated dependencies [e6cd084]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed@2.8.1
+
+## 0.0.21
+
+### Patch Changes
+
+- Updated dependencies [3c9c556]
+- Updated dependencies [a866b21]
+- Updated dependencies [17e0527]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed@2.8.0
+
+## 0.0.20
+
+### Patch Changes
+
+- Updated dependencies [75181f0]
+- Updated dependencies [ca793d5]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed@2.7.1
+
+## 0.0.19
+
+### Patch Changes
+
+- Updated dependencies [41c1901]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed@2.7.0
+
+## 0.0.18
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed@2.6.8
+
+## 0.0.17
+
+### Patch Changes
+
+- Updated dependencies [3d2854b]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed@2.6.7
+
 ## 0.0.16
 
 ### Patch Changes

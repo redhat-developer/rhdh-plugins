@@ -415,6 +415,43 @@ export async function createRouter(
     }
   });
 
+  // Returns conversation IDs associated with notebook sessions for filtering
+  router.get('/notebook-conversation-ids', async (req, res) => {
+    try {
+      const credentials = await httpAuth.credentials(req);
+      const user = await userInfo.getUserInfo(credentials);
+      const userId = user.userEntityRef;
+
+      const vectorStoresPage = await vectorStoresOperator.vectorStores.list();
+      const vectorStores = vectorStoresPage.data || [];
+
+      const conversationIds: string[] = [];
+
+      for (const store of vectorStores) {
+        const sessionUserId = store.metadata?.user_id as string;
+        const conversationId = store.metadata?.conversation_id as string | null;
+
+        // Only include this user's sessions with a conversation_id
+        if (sessionUserId === userId && conversationId) {
+          conversationIds.push(conversationId);
+        }
+      }
+
+      res.json({
+        conversation_ids: conversationIds,
+      });
+    } catch (error) {
+      const errormsg = `Error fetching notebook conversation IDs: ${error}`;
+      logger.error(errormsg);
+
+      if (error instanceof NotAllowedError) {
+        res.status(403).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: errormsg });
+      }
+    }
+  });
+
   // ─── Proxy Middleware (existing) ────────────────────────────────────
 
   router.use('/', async (req, res, next) => {
@@ -525,10 +562,11 @@ export async function createRouter(
         const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
         logger.error(errormsg);
 
-        // Return a 500 status for any upstream error
-        response.status(500).json({
+        response.status(fetchResponse.status).json({
           error: errormsg,
         });
+
+        return;
       }
 
       const data = await fetchResponse.json();
@@ -570,7 +608,7 @@ export async function createRouter(
         const errorBody = await fetchResponse.json();
         const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
         logger.error(errormsg);
-        response.status(500).json({ error: errormsg });
+        response.status(fetchResponse.status).json({ error: errormsg });
         return;
       }
       response.status(fetchResponse.status).json(await fetchResponse.json());
@@ -650,8 +688,7 @@ export async function createRouter(
           const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
           logger.error(errormsg);
 
-          // Return a 500 status for any upstream error
-          response.status(500).json({
+          response.status(fetchResponse.status).json({
             error: errormsg,
           });
 
@@ -707,8 +744,7 @@ export async function createRouter(
           const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
           logger.error(errormsg);
 
-          // Return a 500 status for any upstream error
-          response.status(500).json({
+          response.status(fetchResponse.status).json({
             error: errormsg,
           });
           return;

@@ -31,6 +31,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tabs.ariaLabel': 'Viste di Lightspeed',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Quaderni',
+    'tabs.notebooks.devPreview': 'Anteprima per sviluppatori',
     'tabs.notebooks.empty': 'Il contenuto dei quaderni va qui.',
     'notebooks.title': 'I miei quaderni',
     'notebooks.empty.title': 'Nessun quaderno creato',
@@ -56,6 +57,12 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',
     'notebooks.updated.on': 'Aggiornato il',
     'notebooks.card.openAria': 'Apri il taccuino {{name}}',
+
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title': 'Quali sono i concetti chiave?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Mostra le mie vulnerabilità critiche',
+    'notebooks.prompts.accessIssue.title': 'Aiutami con un problema di accesso',
 
     // Notebook view
     'notebook.view.title': 'Quaderno senza titolo',
@@ -218,6 +225,9 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tooltip.send': 'Invia',
     'tooltip.microphone.active': 'Non ascoltare più',
     'tooltip.microphone.inactive': 'Usa il microfono',
+    'tooltip.expandHistoryPanel': 'Espandi cronologia chat',
+    'tooltip.collapseHistoryPanel': 'Comprimi cronologia chat',
+    'tooltip.quickNewChat': 'Nuova chat',
     'button.newChat': 'Nuova chat',
     'tooltip.chatHistoryMenu': 'Menu cronologia chat',
     'tooltip.responseRecorded': 'Risposta registrata',
@@ -225,6 +235,10 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tooltip.backToBottom': 'Torna alla fine',
     'tooltip.settings': 'Opzioni chatbot',
     'tooltip.close': 'Chiudi',
+    'attach.menu.title': 'Allega',
+    'attach.menu.description': 'Allega un file JSON, YAML o TXT',
+    'history.section.pinned': 'Fissati',
+    'history.section.recent': 'Recenti',
     'tooltip.fab.open': 'Apri Lightspeed',
     'tooltip.fab.close': 'Chiudi Lightspeed',
     'modal.title.preview': 'Anteprima allegato',

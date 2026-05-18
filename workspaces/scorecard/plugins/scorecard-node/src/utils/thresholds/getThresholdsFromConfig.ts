@@ -34,6 +34,7 @@ export function getThresholdsFromConfig(
     const thresholdsConfig = config.getOptional(thresholdsPath);
     if (thresholdsConfig) {
       validateThresholdsForMetric(thresholdsConfig, expectedMetricType);
+
       return thresholdsConfig;
     }
   } catch (error) {

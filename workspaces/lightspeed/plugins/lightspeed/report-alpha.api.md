@@ -197,11 +197,15 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'prompts.openshift.message': string;
     readonly 'prompts.rhdh.title': string;
     readonly 'prompts.rhdh.message': string;
+    readonly 'notebooks.prompts.coreConcepts.title': string;
+    readonly 'notebooks.prompts.vulnerabilities.title': string;
+    readonly 'notebooks.prompts.accessIssue.title': string;
     readonly 'page.title': string;
     readonly 'page.subtitle': string;
     readonly 'tabs.ariaLabel': string;
     readonly 'tabs.chat': string;
     readonly 'tabs.notebooks': string;
+    readonly 'tabs.notebooks.devPreview': string;
     readonly 'tabs.notebooks.empty': string;
     readonly 'notebooks.title': string;
     readonly 'notebooks.empty.title': string;
@@ -319,6 +323,9 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'tooltip.send': string;
     readonly 'tooltip.microphone.active': string;
     readonly 'tooltip.microphone.inactive': string;
+    readonly 'tooltip.expandHistoryPanel': string;
+    readonly 'tooltip.collapseHistoryPanel': string;
+    readonly 'tooltip.quickNewChat': string;
     readonly 'button.newChat': string;
     readonly 'tooltip.chatHistoryMenu': string;
     readonly 'tooltip.responseRecorded': string;
@@ -328,6 +335,10 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'tooltip.close': string;
     readonly 'tooltip.fab.open': string;
     readonly 'tooltip.fab.close': string;
+    readonly 'attach.menu.title': string;
+    readonly 'attach.menu.description': string;
+    readonly 'history.section.pinned': string;
+    readonly 'history.section.recent': string;
     readonly 'modal.title.preview': string;
     readonly 'modal.title.edit': string;
     readonly 'icon.lightspeed.alt': string;

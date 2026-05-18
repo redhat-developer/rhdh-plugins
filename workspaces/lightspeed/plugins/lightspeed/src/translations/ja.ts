@@ -30,6 +30,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'tabs.ariaLabel': 'Lightspeed のビュー',
     'tabs.chat': 'チャット',
     'tabs.notebooks': 'ノートブック',
+    'tabs.notebooks.devPreview': '開発者プレビュー',
     'tabs.notebooks.empty': 'ノートブックの内容はここに表示されます。',
     'notebooks.title': 'マイノートブック',
     'notebooks.empty.title': '作成されたノートブックはありません',
@@ -55,6 +56,11 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebooks.updated.days': '{{days}}日前に更新',
     'notebooks.updated.on': '更新日',
     'notebooks.card.openAria': 'ノートブック {{name}} を開く',
+
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title': 'コアコンセプトは何ですか？',
+    'notebooks.prompts.vulnerabilities.title': '重大な脆弱性を表示してください',
+    'notebooks.prompts.accessIssue.title': 'アクセスの問題を解決してください',
 
     // Notebook view
     'notebook.view.title': '無題のノートブック',
@@ -216,6 +222,9 @@ const lightspeedTranslationJa = createTranslationMessages({
     'tooltip.send': '送信',
     'tooltip.microphone.active': '聞き取りを停止',
     'tooltip.microphone.inactive': 'マイクを使用する',
+    'tooltip.expandHistoryPanel': 'チャット履歴を展開',
+    'tooltip.collapseHistoryPanel': 'チャット履歴を折りたたむ',
+    'tooltip.quickNewChat': '新しいチャット',
     'button.newChat': '新しいチャット',
     'tooltip.chatHistoryMenu': 'チャット履歴メニュー',
     'tooltip.responseRecorded': '回答が記録されました',
@@ -225,6 +234,8 @@ const lightspeedTranslationJa = createTranslationMessages({
     'tooltip.close': '閉じる',
     'tooltip.fab.open': 'Lightspeed を開く',
     'tooltip.fab.close': 'Lightspeed を閉じる',
+    'attach.menu.title': '添付',
+    'attach.menu.description': 'JSON、YAML、または TXT ファイルを添付',
     'modal.title.preview': '添付ファイルのプレビュー',
     'modal.title.edit': '添付ファイルの編集',
     'icon.lightspeed.alt': 'lightspeed アイコン',

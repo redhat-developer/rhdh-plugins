@@ -30,6 +30,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tabs.ariaLabel': 'Vues Lightspeed',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Carnets',
+    'tabs.notebooks.devPreview': 'Aperçu développeur',
     'tabs.notebooks.empty': 'Le contenu des carnets s’affichera ici.',
     'notebooks.title': 'Mes carnets',
     'notebooks.empty.title': 'Aucun carnet créé',
@@ -55,6 +56,13 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',
     'notebooks.updated.on': 'Mis à jour le',
     'notebooks.card.openAria': 'Ouvrir le carnet {{name}}',
+
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title':
+      'Quels sont les concepts fondamentaux ?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Afficher mes vulnérabilités critiques',
+    'notebooks.prompts.accessIssue.title': "Aidez-moi avec un problème d'accès",
 
     // Notebook view
     'notebook.view.title': 'Carnet sans titre',
@@ -217,6 +225,9 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.send': 'Envoyer',
     'tooltip.microphone.active': 'Cessez d’écouter',
     'tooltip.microphone.inactive': 'Utilisez le micro',
+    'tooltip.expandHistoryPanel': "Développer l'historique du chat",
+    'tooltip.collapseHistoryPanel': "Réduire l'historique du chat",
+    'tooltip.quickNewChat': 'Nouveau chat',
     'button.newChat': 'Nouvelle Conversation',
     'tooltip.chatHistoryMenu': 'Menu de l’historique de conversations',
     'tooltip.responseRecorded': 'Réponse enregistrée',
@@ -226,6 +237,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.close': 'Fermer',
     'tooltip.fab.open': 'Ouvrir Lightspeed',
     'tooltip.fab.close': 'Fermer Lightspeed',
+    'attach.menu.title': 'Attacher',
+    'attach.menu.description': 'Attacher un fichier JSON, YAML ou TXT',
 
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'modal.title.edit': 'Modifier la pièce jointe',

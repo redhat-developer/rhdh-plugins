@@ -17,14 +17,46 @@ import jsonata from 'jsonata';
 import { JsonArray, JsonObject } from '@backstage/types';
 import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+const jsonataReason = (reason: unknown): string =>
+  reason instanceof Error ? reason.message : String(reason);
+
+const compileJsonata = (selector: string) => {
+  try {
+    return jsonata(selector);
+  } catch (reason) {
+    throw new Error(
+      `Invalid JSONata selector ${JSON.stringify(selector)}: ${jsonataReason(reason)}`,
+    );
+  }
+};
+
 export const applySelectorArray = async (
   data: JsonObject | JsonArray,
   selector: string,
   createArrayIfNeeded: boolean = false,
   emptyArrayIfNeeded: boolean = false,
 ): Promise<string[]> => {
-  const expression = jsonata(selector);
-  const value = await expression.evaluate(data);
+  let expression;
+  try {
+    expression = compileJsonata(selector);
+  } catch (reason) {
+    if (emptyArrayIfNeeded) {
+      return [];
+    }
+    throw reason;
+  }
+
+  let value;
+  try {
+    value = await expression.evaluate(data);
+  } catch (reason) {
+    if (emptyArrayIfNeeded) {
+      return [];
+    }
+    throw new Error(
+      `JSONata evaluation failed for ${JSON.stringify(selector)}: ${jsonataReason(reason)}`,
+    );
+  }
 
   if (emptyArrayIfNeeded && !value) {
     return [];
@@ -38,6 +70,11 @@ export const applySelectorArray = async (
     return [...value];
   }
 
+  if (emptyArrayIfNeeded) {
+    // Dynamic selectors while typing may yield numbers, objects, or mixed arrays.
+    return [];
+  }
+
   throw new Error(
     `Unexpected result of "${selector}" selector, expected string[] type. Value ${JSON.stringify(value)}`,
   );
@@ -46,12 +83,37 @@ export const applySelectorArray = async (
 export const applySelectorString = async (
   data: JsonObject,
   selector: string,
+  emptyStringWhenMissing: boolean = false,
 ): Promise<string> => {
-  const expression = jsonata(selector);
-  const value = await expression.evaluate(data);
+  let expression;
+  try {
+    expression = compileJsonata(selector);
+  } catch (reason) {
+    if (emptyStringWhenMissing) {
+      return '';
+    }
+    throw reason;
+  }
+
+  let value;
+  try {
+    value = await expression.evaluate(data);
+  } catch (reason) {
+    if (emptyStringWhenMissing) {
+      return '';
+    }
+    throw new Error(
+      `JSONata evaluation failed for ${JSON.stringify(selector)}: ${jsonataReason(reason)}`,
+    );
+  }
 
   if (typeof value === 'string') {
     return value;
+  }
+
+  if (emptyStringWhenMissing) {
+    // Missing path, numbers/booleans from literals (e.g. selector "1"), objects, etc.
+    return '';
   }
 
   throw new Error(
@@ -63,8 +125,15 @@ export const applySelectorObject = async (
   data: JsonObject,
   selector: string,
 ): Promise<JsonObject> => {
-  const expression = jsonata(selector);
-  const value = await expression.evaluate(data);
+  const expression = compileJsonata(selector);
+  let value;
+  try {
+    value = await expression.evaluate(data);
+  } catch (reason) {
+    throw new Error(
+      `JSONata evaluation failed for ${JSON.stringify(selector)}: ${jsonataReason(reason)}`,
+    );
+  }
 
   if (isJsonObject(value)) {
     return value;

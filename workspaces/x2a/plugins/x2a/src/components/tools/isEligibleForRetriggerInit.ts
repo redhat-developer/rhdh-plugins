@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  JobStatus,
+  Project,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
  * A project is eligible for init-phase retrigger when it has no modules
@@ -22,7 +25,7 @@ import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 export const isEligibleForRetriggerInit = (project: Project): boolean => {
   const initJobStatus = project.initJob?.status;
   const initRunning =
-    initJobStatus === 'running' || initJobStatus === 'pending';
+    !!initJobStatus && JobStatus.from(initJobStatus).isActive();
   const hasModules =
     !!project.status?.modulesSummary && project.status.modulesSummary.total > 0;
   return !hasModules && !initRunning;

@@ -30,6 +30,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'tabs.ariaLabel': 'Vistas de Lightspeed',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Cuadernos',
+    'tabs.notebooks.devPreview': 'Vista previa para desarrolladores',
     'tabs.notebooks.empty': 'El contenido de los cuadernos va aquí.',
     'notebooks.title': 'Mis cuadernos',
     'notebooks.empty.title': 'No hay cuadernos creados',
@@ -55,6 +56,12 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebooks.updated.days': 'Actualizado hace {{days}} días',
     'notebooks.updated.on': 'Actualizado el',
     'notebooks.card.openAria': 'Abrir el cuaderno {{name}}',
+
+    // Notebook sample prompts
+    'notebooks.prompts.coreConcepts.title': '¿Cuáles son los conceptos clave?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Mostrar mis vulnerabilidades críticas',
+    'notebooks.prompts.accessIssue.title': 'Ayúdame con un problema de acceso',
 
     // Notebook view
     'notebook.view.title': 'Cuaderno sin título',
@@ -219,6 +226,9 @@ const lightspeedTranslationEs = createTranslationMessages({
     'tooltip.send': 'Enviar',
     'tooltip.microphone.active': 'Dejar de escuchar',
     'tooltip.microphone.inactive': 'Usar micrófono',
+    'tooltip.expandHistoryPanel': 'Expandir historial de chat',
+    'tooltip.collapseHistoryPanel': 'Colapsar historial de chat',
+    'tooltip.quickNewChat': 'Nuevo chat',
     'button.newChat': 'Nuevo chat',
     'tooltip.chatHistoryMenu': 'Menú del historial de chat',
     'tooltip.responseRecorded': 'Respuesta grabada',
@@ -226,6 +236,10 @@ const lightspeedTranslationEs = createTranslationMessages({
     'tooltip.backToBottom': 'Volver al final',
     'tooltip.settings': 'Opciones de chatbot',
     'tooltip.close': 'Cerrar',
+    'attach.menu.title': 'Adjuntar',
+    'attach.menu.description': 'Adjuntar un archivo JSON, YAML o TXT',
+    'history.section.pinned': 'Fijados',
+    'history.section.recent': 'Recientes',
     'tooltip.fab.open': 'Abrir Lightspeed',
     'tooltip.fab.close': 'Cerrar Lightspeed',
     'modal.title.preview': 'Previsualizar archivo adjunto',

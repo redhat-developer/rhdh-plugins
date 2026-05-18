@@ -20,6 +20,7 @@
 import { Artifact } from '../models/Artifact.model';
 import { Job } from '../models/Job.model';
 import { ProjectStatus } from '../models/ProjectStatus.model';
+import { RuleSnapshot } from '../models/RuleSnapshot.model';
 
 /**
  * @public
@@ -29,10 +30,6 @@ export interface Project {
    * UUID for the project
    */
   id: string;
-  /**
-   * Abbreviation of the project
-   */
-  abbreviation: string;
   /**
    * Full name of the project
    */
@@ -62,10 +59,18 @@ export interface Project {
    */
   createdAt: Date;
   /**
-   * The user who created the project (Backstage user reference)
+   * The user or group who owns the project (Backstage entity reference)
    */
-  createdBy: string;
+  ownedBy: string;
+  /**
+   * Immutable directory name for the project in the target repository (computed once at creation)
+   */
+  dirName?: string;
   migrationPlan?: Artifact;
   status?: ProjectStatus;
   initJob?: Job;
+  /**
+   * Snapshot of rules accepted at project creation time
+   */
+  acceptedRules?: Array<RuleSnapshot>;
 }
