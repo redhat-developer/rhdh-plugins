@@ -68,6 +68,8 @@ type McpServer = {
 type McpServersSettingsProps = {
   onClose: () => void;
   backgroundColor?: string;
+  /** Portal target for the configure modal; use a root outside the chatbot tree to avoid z-index clashes. */
+  getModalAppendTo?: () => HTMLElement;
 };
 
 type TokenValidationState = 'idle' | 'validating' | 'success' | 'error';
@@ -75,20 +77,14 @@ type TokenValidationState = 'idle' | 'validating' | 'success' | 'error';
 const SAVED_TOKEN_MASK = '********************';
 
 const useStyles = makeStyles(theme => ({
-  '@global': {
-    '.pf-v6-c-backdrop': {
-      zIndex: '1400 !important',
-    },
-    '.pf-v5-c-backdrop': {
-      zIndex: '1400 !important',
-    },
-  },
   root: {
     padding: 0,
     height: '100%',
     minHeight: '100%',
     width: '100%',
     overflow: 'auto',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   headerRow: {
     display: 'flex',
@@ -288,13 +284,15 @@ const useStyles = makeStyles(theme => ({
       backgroundColor: 'rgba(201, 25, 11, 0.08)',
     },
   },
+  configureModalBackdrop: {
+    zIndex: 1,
+  },
   configureModal: {
-    '& .pf-v6-c-modal-box': {
-      width: '608px',
-      maxWidth: '608px',
-      height: '326px',
-      minHeight: '326px',
-    },
+    width: '608px',
+    maxWidth: '608px',
+    height: '326px',
+    minHeight: '326px',
+    zIndex: 2,
     '& .pf-v6-c-modal-box__title, & .pf-v6-c-modal-box__title-text, & .pf-v5-c-modal-box__title, & .pf-v5-c-modal-box__title-text':
       {
         fontSize: '1.25rem !important',
@@ -316,6 +314,12 @@ const useStyles = makeStyles(theme => ({
   },
   table: {
     width: '100%',
+    // Match panel background (PF table defaults to primary in dark mode).
+    '--pf-v6-c-table--BackgroundColor': 'transparent',
+    '--pf-v6-c-table__tr--m-ghost-row--BackgroundColor': 'transparent',
+    '--pf-v6-c-table__expandable-row-content--BackgroundColor': 'transparent',
+    '--pf-v6-c-table__control-row--BackgroundColor': 'transparent',
+    backgroundColor: 'transparent',
     '& th': {
       borderBottom: 0,
       fontSize: '0.75rem',
@@ -407,6 +411,7 @@ const toUiServer = (
 export const McpServersSettings = ({
   onClose,
   backgroundColor,
+  getModalAppendTo,
 }: McpServersSettingsProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -1016,6 +1021,8 @@ export const McpServersSettings = ({
         })}
         isOpen={Boolean(editingServer)}
         onClose={closeConfigureModal}
+        appendTo={getModalAppendTo ?? (() => document.body)}
+        backdropClassName={classes.configureModalBackdrop}
         className={classes.configureModal}
       >
         <div className={classes.modalContent}>

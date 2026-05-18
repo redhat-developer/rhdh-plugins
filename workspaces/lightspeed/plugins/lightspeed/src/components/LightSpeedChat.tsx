@@ -423,8 +423,7 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     width: '100%',
     '&.pf-chatbot__settings-form-container': {
-      background:
-        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      background: 'var(--pf-t--global--background--color--floating--default)',
       padding: 0,
       margin: 0,
       minHeight: '100%',
@@ -436,8 +435,7 @@ const useStyles = makeStyles(theme => ({
     '& .pf-chatbot__settings-form': {
       margin: 0,
       padding: 0,
-      background:
-        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      background: 'var(--pf-t--global--background--color--floating--default)',
       minHeight: '100%',
       display: 'flex',
       flexDirection: 'column',
@@ -445,8 +443,7 @@ const useStyles = makeStyles(theme => ({
       maxWidth: 'none',
     },
     '& .pf-chatbot__settings-form-row': {
-      background:
-        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      background: 'var(--pf-t--global--background--color--floating--default)',
       border: 0,
       margin: 0,
       padding: 0,
@@ -485,7 +482,7 @@ const useStyles = makeStyles(theme => ({
     minWidth: 0,
     borderLeft: `1px solid ${theme.palette.divider}`,
     backgroundColor:
-      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      'var(--pf-t--global--background--color--floating--default)',
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
@@ -569,6 +566,16 @@ const useStyles = makeStyles(theme => ({
     minHeight: 0,
     minWidth: 0,
     overflow: 'hidden',
+  },
+  /** Renders MCP configure modals above chatbot drawer / split MCP pane (z-index 1300). */
+  mcpConfigureModalPortal: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 1500,
+    pointerEvents: 'none',
+    '& .pf-v6-c-backdrop, & .pf-v5-c-backdrop': {
+      pointerEvents: 'auto',
+    },
   },
 }));
 
@@ -703,6 +710,11 @@ export const LightspeedChat = ({
   const [chatHeaderBgColor, setChatHeaderBgColor] = useState<string>();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
+  const mcpConfigureModalPortalRef = useRef<HTMLDivElement>(null);
+  const getMcpConfigureModalAppendTo = useCallback(
+    () => mcpConfigureModalPortalRef.current ?? document.body,
+    [],
+  );
   const [messageBarKey, setMessageBarKey] = useState(0);
   const [hasChatContentOverflow, setHasChatContentOverflow] = useState(false);
   const wasStoppedByUserRef = useRef(false);
@@ -1755,6 +1767,7 @@ export const LightspeedChat = ({
     <McpServersSettings
       onClose={() => setIsMcpSettingsOpen(false)}
       backgroundColor={chatHeaderBgColor}
+      getModalAppendTo={getMcpConfigureModalAppendTo}
     />
   );
 
@@ -1859,6 +1872,11 @@ export const LightspeedChat = ({
           }
         />
       )}
+      <div
+        ref={mcpConfigureModalPortalRef}
+        className={classes.mcpConfigureModalPortal}
+        data-testid="lightspeed-mcp-configure-modal-portal"
+      />
       <Chatbot
         displayMode={ChatbotDisplayMode.embedded}
         className={`${classes.body} ${
