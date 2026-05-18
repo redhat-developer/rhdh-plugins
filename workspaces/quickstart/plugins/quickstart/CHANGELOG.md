@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.9.5
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+
 ## 1.9.4
 
 ### Patch Changes

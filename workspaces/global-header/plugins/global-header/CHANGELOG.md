@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.21.5
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+
 ## 1.21.4
 
 ### Patch Changes
