@@ -127,10 +127,19 @@ export function KagentiDashboardLinks({
     return (
       <Card variant="outlined">
         <CardContent>
-          <Typography variant="h6" sx={{ fontSize: '1rem', mb: 2, color: 'text.primary' }}>
+          <Typography
+            variant="h6"
+            sx={{ fontSize: '1rem', mb: 2, color: 'text.primary' }}
+          >
             Dashboards
           </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 2 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+              gap: 2,
+            }}
+          >
             {[1, 2, 3].map(i => (
               <Skeleton
                 key={i}
@@ -165,7 +174,10 @@ export function KagentiDashboardLinks({
     return (
       <Card variant="outlined">
         <CardContent>
-          <Typography variant="h6" sx={{ fontSize: '1rem', mb: 2, color: 'text.primary' }}>
+          <Typography
+            variant="h6"
+            sx={{ fontSize: '1rem', mb: 2, color: 'text.primary' }}
+          >
             Dashboards
           </Typography>
           <Box
@@ -229,7 +241,13 @@ export function KagentiDashboardLinks({
               >
                 {group.category}
               </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 2 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                  gap: 2,
+                }}
+              >
                 {group.items.map(
                   ({ key, label, description, href, icon: Icon }) => (
                     <Card

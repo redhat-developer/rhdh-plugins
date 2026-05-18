@@ -444,7 +444,14 @@ export const KBStoreDetail = ({ store }: KBStoreDetailProps) => {
               >
                 <DescriptionIcon fontSize="small" color="action" />
               </Box>
-              <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'text.primary' }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontSize: '1.25rem',
+                  fontWeight: 700,
+                  color: 'text.primary',
+                }}
+              >
                 {store.fileCount}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -471,7 +478,14 @@ export const KBStoreDetail = ({ store }: KBStoreDetailProps) => {
               >
                 <StorageIcon fontSize="small" color="action" />
               </Box>
-              <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'text.primary' }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontSize: '1.25rem',
+                  fontWeight: 700,
+                  color: 'text.primary',
+                }}
+              >
                 {formatBytes(store.usageBytes)}
               </Typography>
               <Typography variant="caption" color="text.secondary">

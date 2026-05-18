@@ -90,7 +90,8 @@ export function ModelStep({
           sx={{ maxWidth: 500 }}
         />
         <Typography variant="caption" color="text.secondary">
-          Lower values make output more deterministic; higher values more creative
+          Lower values make output more deterministic; higher values more
+          creative
         </Typography>
       </Box>
 
@@ -128,7 +129,11 @@ export function ModelStep({
             None
           </ToggleButton>
         </ToggleButtonGroup>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mt: 0.5 }}
+        >
           Auto: model decides; Required: must use a tool; None: no tool use
         </Typography>
       </Box>
@@ -155,8 +160,13 @@ export function ModelStep({
             High
           </ToggleButton>
         </ToggleButtonGroup>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-          Higher reasoning effort produces more thorough analysis at the cost of speed
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mt: 0.5 }}
+        >
+          Higher reasoning effort produces more thorough analysis at the cost of
+          speed
         </Typography>
       </Box>
 

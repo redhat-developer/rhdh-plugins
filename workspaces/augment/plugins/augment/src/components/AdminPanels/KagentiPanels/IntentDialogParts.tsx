@@ -20,7 +20,15 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { alpha, useTheme } from '@mui/material/styles';
-import { glassSurface, borderRadius, transitions, typeScale, animations, staggerDelay, reducedMotion } from '../../../theme/tokens';
+import {
+  glassSurface,
+  borderRadius,
+  transitions,
+  typeScale,
+  animations,
+  staggerDelay,
+  reducedMotion,
+} from '../../../theme/tokens';
 
 export interface IntentCard {
   id: string;
@@ -174,11 +182,19 @@ export function DialogHeader({
         <Typography
           id={titleId}
           variant="h6"
-          sx={{ fontWeight: 700, mb: 0.5, fontSize: typeScale.pageTitle.fontSize }}
+          sx={{
+            fontWeight: 700,
+            mb: 0.5,
+            fontSize: typeScale.pageTitle.fontSize,
+          }}
         >
           {title}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ fontSize: typeScale.bodySmall.fontSize }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: typeScale.bodySmall.fontSize }}
+        >
           {subtitle}
         </Typography>
       </Box>

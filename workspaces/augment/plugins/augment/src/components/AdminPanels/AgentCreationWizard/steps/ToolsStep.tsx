@@ -59,9 +59,7 @@ export function ToolsStep({
           renderTags={(value, getTagProps) =>
             value.map((option, index) => {
               const { key, ...rest } = getTagProps({ index });
-              return (
-                <Chip key={key} label={option} size="small" {...rest} />
-              );
+              return <Chip key={key} label={option} size="small" {...rest} />;
             })
           }
           renderInput={params => (
@@ -103,9 +101,7 @@ export function ToolsStep({
             renderTags={(value, getTagProps) =>
               value.map((option, index) => {
                 const { key, ...rest } = getTagProps({ index });
-                return (
-                  <Chip key={key} label={option} size="small" {...rest} />
-                );
+                return <Chip key={key} label={option} size="small" {...rest} />;
               })
             }
             renderInput={params => (

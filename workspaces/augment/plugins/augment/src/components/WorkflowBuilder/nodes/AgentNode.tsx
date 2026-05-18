@@ -3,7 +3,10 @@ import type { NodeProps } from '@xyflow/react';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { BaseNode } from './BaseNode';
 
-export const AgentNode = memo(function AgentNode({ data, selected }: NodeProps) {
+export const AgentNode = memo(function AgentNode({
+  data,
+  selected,
+}: NodeProps) {
   const d = data as Record<string, unknown>;
   const name = (d.name as string) || (d.agentKey as string) || 'Agent';
   const desc = (d.instructions as string) || '';

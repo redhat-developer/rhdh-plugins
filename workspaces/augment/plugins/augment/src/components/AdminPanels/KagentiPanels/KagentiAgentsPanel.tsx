@@ -185,14 +185,16 @@ export function KagentiAgentsPanel({
 
   const [selectedAgent, setSelectedAgent] =
     useState<KagentiAgentSummary | null>(null);
-  const [selectedOrchAgent, setSelectedOrchAgent] =
-    useState<ChatAgent | null>(null);
+  const [selectedOrchAgent, setSelectedOrchAgent] = useState<ChatAgent | null>(
+    null,
+  );
   const [showOrchestration, setShowOrchestration] = useState(false);
   const [orchFocusKey, setOrchFocusKey] = useState<string | undefined>();
   const [autoCreateAgent, setAutoCreateAgent] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showWorkflowCanvas, setShowWorkflowCanvas] = useState(false);
-  const [activeWorkflow, setActiveWorkflow] = useState<WorkflowDefinition | null>(null);
+  const [activeWorkflow, setActiveWorkflow] =
+    useState<WorkflowDefinition | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [catalogView, setCatalogView] = useState<'grid' | 'table'>('grid');
@@ -205,18 +207,31 @@ export function KagentiAgentsPanel({
     setLoading(true);
     setError(null);
     const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Request timed out — the Kagenti backend may be unreachable')), 15_000),
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              'Request timed out — the Kagenti backend may be unreachable',
+            ),
+          ),
+        15_000,
+      ),
     );
     Promise.all([
-      Promise.race([api.listKagentiAgents(namespace || undefined), timeout]).catch(() => ({ agents: [] as KagentiAgentSummary[] })),
+      Promise.race([
+        api.listKagentiAgents(namespace || undefined),
+        timeout,
+      ]).catch(() => ({ agents: [] as KagentiAgentSummary[] })),
       Promise.race([api.listAgents(), timeout]).catch(() => [] as ChatAgent[]),
-    ]).then(([kagentiRes, allAgents]) => {
-      const kagentiRows = (kagentiRes.agents ?? []).map(kagentiToRow);
-      const orchRows = allAgents
-        .filter(a => a.source === 'orchestration')
-        .map(orchAgentToRow);
-      setRows([...kagentiRows, ...orchRows]);
-    }).catch(e => setError(getErrorMessage(e)))
+    ])
+      .then(([kagentiRes, allAgents]) => {
+        const kagentiRows = (kagentiRes.agents ?? []).map(kagentiToRow);
+        const orchRows = allAgents
+          .filter(a => a.source === 'orchestration')
+          .map(orchAgentToRow);
+        setRows([...kagentiRows, ...orchRows]);
+      })
+      .catch(e => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [api, namespace]);
 
@@ -246,7 +261,9 @@ export function KagentiAgentsPanel({
               card.click();
             }
           } else if (cardId === 'configure') {
-            const card = document.querySelector('[data-tour="intent-configure"]');
+            const card = document.querySelector(
+              '[data-tour="intent-configure"]',
+            );
             if (card instanceof HTMLElement) {
               card.click();
             }
@@ -273,7 +290,9 @@ export function KagentiAgentsPanel({
 
   useEffect(() => {
     if (initialAgentName && !loading && rows.length > 0) {
-      const match = rows.find(r => r.name === initialAgentName && r.kagentiAgent);
+      const match = rows.find(
+        r => r.name === initialAgentName && r.kagentiAgent,
+      );
       if (match?.kagentiAgent) {
         setSelectedAgent(match.kagentiAgent);
       }
@@ -347,7 +366,7 @@ export function KagentiAgentsPanel({
           setSelectedOrchAgent(null);
           loadAgents();
         }}
-        onEditConfig={(agentKey) => {
+        onEditConfig={agentKey => {
           setSelectedOrchAgent(null);
           setOrchFocusKey(agentKey);
           setShowOrchestration(true);
@@ -359,8 +378,27 @@ export function KagentiAgentsPanel({
 
   if (showDashboard && !showWorkflowCanvas) {
     return (
-      <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, flex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', py: 1, px: 0.5, gap: 1, flexShrink: 0 }}>
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+          minWidth: 0,
+          flex: 1,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            py: 1,
+            px: 0.5,
+            gap: 1,
+            flexShrink: 0,
+          }}
+        >
           <IconButton
             size="small"
             onClick={() => {
@@ -375,11 +413,11 @@ export function KagentiAgentsPanel({
         </Box>
         <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
           <WorkflowDashboard
-            onOpenWorkflow={(wf) => {
+            onOpenWorkflow={wf => {
               setActiveWorkflow(wf);
               setShowWorkflowCanvas(true);
             }}
-            onCreateWorkflow={async (wf) => {
+            onCreateWorkflow={async wf => {
               setActiveWorkflow(wf);
               setShowWorkflowCanvas(true);
               try {
@@ -389,7 +427,9 @@ export function KagentiAgentsPanel({
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(wf),
                 });
-              } catch (_e) { /* best-effort persist */ }
+              } catch (_e) {
+                /* best-effort persist */
+              }
             }}
           />
         </Box>
@@ -416,15 +456,18 @@ export function KagentiAgentsPanel({
           <WorkflowErrorBoundary fallbackTitle="Workflow builder encountered an error">
             <WorkflowEditor
               workflow={activeWorkflow}
-              onSave={async (updated) => {
+              onSave={async updated => {
                 setActiveWorkflow(updated);
                 try {
                   const backendUrl = configApi.getString('backend.baseUrl');
-                  const resp = await authFetch(`${backendUrl}/api/augment/workflows/${updated.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updated),
-                  });
+                  const resp = await authFetch(
+                    `${backendUrl}/api/augment/workflows/${updated.id}`,
+                    {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(updated),
+                    },
+                  );
                   if (!resp.ok) throw new Error(`Save failed: ${resp.status}`);
                   setSuccessToast('Workflow saved');
                 } catch (e) {
@@ -435,14 +478,21 @@ export function KagentiAgentsPanel({
                 if (!activeWorkflow) return;
                 try {
                   const backendUrl = configApi.getString('backend.baseUrl');
-                  const resp = await authFetch(`${backendUrl}/api/augment/workflows/${activeWorkflow.id}/publish`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ changelog: 'Published from Agent Builder' }),
-                  });
+                  const resp = await authFetch(
+                    `${backendUrl}/api/augment/workflows/${activeWorkflow.id}/publish`,
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        changelog: 'Published from Agent Builder',
+                      }),
+                    },
+                  );
                   if (!resp.ok) {
                     const errText = await resp.text().catch(() => '');
-                    throw new Error(`Publish failed: ${resp.status} ${errText}`);
+                    throw new Error(
+                      `Publish failed: ${resp.status} ${errText}`,
+                    );
                   }
                   const published = await resp.json();
                   setActiveWorkflow(published);
@@ -458,10 +508,14 @@ export function KagentiAgentsPanel({
                 if (activeWorkflow) {
                   try {
                     const backendUrl = configApi.getString('backend.baseUrl');
-                    const resp = await authFetch(`${backendUrl}/api/augment/workflows/${activeWorkflow.id}`, {
-                      method: 'DELETE',
-                    });
-                    if (!resp.ok) throw new Error(`Delete failed: ${resp.status}`);
+                    const resp = await authFetch(
+                      `${backendUrl}/api/augment/workflows/${activeWorkflow.id}`,
+                      {
+                        method: 'DELETE',
+                      },
+                    );
+                    if (!resp.ok)
+                      throw new Error(`Delete failed: ${resp.status}`);
                     setSuccessToast('Workflow deleted');
                   } catch (e) {
                     setError(getErrorMessage(e));
@@ -626,7 +680,9 @@ export function KagentiAgentsPanel({
         </Alert>
       )}
 
-      {loading && catalogView === 'grid' && <CardGridSkeleton cards={6} cardHeight={180} />}
+      {loading && catalogView === 'grid' && (
+        <CardGridSkeleton cards={6} cardHeight={180} />
+      )}
       {loading && catalogView === 'table' && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={32} />
@@ -708,10 +764,16 @@ export function KagentiAgentsPanel({
                   setSelectedAgent(row.kagentiAgent);
                 }
               }}
-              onChat={onChatWithAgent ? () => onChatWithAgent(row.id) : undefined}
-              onDelete={row.source === 'kagenti' && row.kagentiAgent ? () => {
-                setDeleteTarget(row.kagentiAgent!);
-              } : undefined}
+              onChat={
+                onChatWithAgent ? () => onChatWithAgent(row.id) : undefined
+              }
+              onDelete={
+                row.source === 'kagenti' && row.kagentiAgent
+                  ? () => {
+                      setDeleteTarget(row.kagentiAgent!);
+                    }
+                  : undefined
+              }
             />
           ))}
         </Box>
@@ -720,7 +782,10 @@ export function KagentiAgentsPanel({
       {/* Table View */}
       {!loading && rows.length > 0 && catalogView === 'table' && (
         <>
-          <TableContainer data-tour="agents-table" sx={{ ...tableContainerSx(theme), overflowX: 'auto' }}>
+          <TableContainer
+            data-tour="agents-table"
+            sx={{ ...tableContainerSx(theme), overflowX: 'auto' }}
+          >
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -752,7 +817,8 @@ export function KagentiAgentsPanel({
                             status: orchAgent.status,
                             providerType: 'orchestration',
                             source: 'orchestration',
-                            agentRole: orchAgent.agentRole as ChatAgent['agentRole'],
+                            agentRole:
+                              orchAgent.agentRole as ChatAgent['agentRole'],
                           };
                           setSelectedOrchAgent(chatAgent);
                         }
@@ -799,12 +865,13 @@ export function KagentiAgentsPanel({
                       />
                     </TableCell>
                     <TableCell>
-                      <Box
-                        sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}
-                      >
+                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                         {row.agentRole && (
                           <Chip
-                            label={row.agentRole.charAt(0).toUpperCase() + row.agentRole.slice(1)}
+                            label={
+                              row.agentRole.charAt(0).toUpperCase() +
+                              row.agentRole.slice(1)
+                            }
                             size="small"
                             color="secondary"
                             variant="filled"
@@ -836,18 +903,24 @@ export function KagentiAgentsPanel({
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={row.source === 'orchestration' ? 'Responses API' : 'Kagenti'}
+                        label={
+                          row.source === 'orchestration'
+                            ? 'Responses API'
+                            : 'Kagenti'
+                        }
                         size="small"
                         variant="outlined"
                         sx={{
                           height: 24,
                           fontSize: '0.75rem',
-                          borderColor: row.source === 'orchestration'
-                            ? alpha(theme.palette.info.main, 0.5)
-                            : undefined,
-                          color: row.source === 'orchestration'
-                            ? theme.palette.info.main
-                            : undefined,
+                          borderColor:
+                            row.source === 'orchestration'
+                              ? alpha(theme.palette.info.main, 0.5)
+                              : undefined,
+                          color:
+                            row.source === 'orchestration'
+                              ? theme.palette.info.main
+                              : undefined,
                         }}
                       />
                     </TableCell>
@@ -856,10 +929,7 @@ export function KagentiAgentsPanel({
                         {formatDateTime(row.createdAt)}
                       </Typography>
                     </TableCell>
-                    <TableCell
-                      align="right"
-                      onClick={e => e.stopPropagation()}
-                    >
+                    <TableCell align="right" onClick={e => e.stopPropagation()}>
                       {onChatWithAgent && (
                         <Tooltip title="Chat with agent">
                           <IconButton
@@ -878,7 +948,8 @@ export function KagentiAgentsPanel({
                             color="error"
                             aria-label="Delete agent"
                             onClick={() => {
-                              if (row.kagentiAgent) setDeleteTarget(row.kagentiAgent);
+                              if (row.kagentiAgent)
+                                setDeleteTarget(row.kagentiAgent);
                             }}
                           >
                             <DeleteOutlineIcon fontSize="small" />
@@ -932,7 +1003,10 @@ export function KagentiAgentsPanel({
           setCreateOpen(false);
           setInitialDeployMethod(undefined);
         }}
-        onCreated={() => { loadAgents(); onAgentCreated?.(); }}
+        onCreated={() => {
+          loadAgents();
+          onAgentCreated?.();
+        }}
         onStepControl={setter => {
           wizardStepRef.current = setter;
         }}

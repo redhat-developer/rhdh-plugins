@@ -65,7 +65,12 @@ import { MessageInspectorPanel } from './MessageInspectorPanel';
 import { useChatActions } from './useChatActions';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ExecutionTracePanel } from '../ExecutionTrace';
-import { typeScale, iconSize, layout, containerPadding } from '../../theme/tokens';
+import {
+  typeScale,
+  iconSize,
+  layout,
+  containerPadding,
+} from '../../theme/tokens';
 
 // ============================================================================
 // Main Component
@@ -256,7 +261,10 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     const handleShowShortcuts = useCallback(() => setShortcutsOpen(true), []);
 
     const [attachedFile, setAttachedFile] = useState<File | null>(null);
-    const handleFileSelect = useCallback((file: File) => setAttachedFile(file), []);
+    const handleFileSelect = useCallback(
+      (file: File) => setAttachedFile(file),
+      [],
+    );
     const handleClearFile = useCallback(() => setAttachedFile(null), []);
 
     const sendMessageWithFile = useCallback(
@@ -669,7 +677,6 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
           open={shortcutsOpen}
           onClose={() => setShortcutsOpen(false)}
         />
-
 
         {/* Message Inspector (dev mode only) */}
         {isDev && (

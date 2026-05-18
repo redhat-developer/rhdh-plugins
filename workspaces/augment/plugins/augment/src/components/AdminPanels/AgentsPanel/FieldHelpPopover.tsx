@@ -114,9 +114,7 @@ export const FieldHelpButton = React.memo(function FieldHelpButton({
         sx={{ '& .MuiPopover-paper': { maxWidth: 320, p: 2 } }}
       >
         <Box>
-          <Typography
-            sx={{ fontWeight: 600, fontSize: '0.85rem', mb: 0.75 }}
-          >
+          <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', mb: 0.75 }}>
             {info.title}
           </Typography>
           <Typography

@@ -20,11 +20,11 @@ workspaces/augment/
     augment-backend/   -- Backend plugin (routes, providers, services)
 ```
 
-| Package | npm Name | Backstage Role | Version |
-|---------|----------|---------------|---------|
-| augment-common | @red-hat-developer-hub/backstage-plugin-augment-common | common-library | 0.1.0 |
-| augment | @red-hat-developer-hub/backstage-plugin-augment | frontend-plugin | 0.1.0 |
-| augment-backend | @red-hat-developer-hub/backstage-plugin-augment-backend | backend-plugin | 0.1.0 |
+| Package         | npm Name                                                | Backstage Role  | Version |
+| --------------- | ------------------------------------------------------- | --------------- | ------- |
+| augment-common  | @red-hat-developer-hub/backstage-plugin-augment-common  | common-library  | 0.1.0   |
+| augment         | @red-hat-developer-hub/backstage-plugin-augment         | frontend-plugin | 0.1.0   |
+| augment-backend | @red-hat-developer-hub/backstage-plugin-augment-backend | backend-plugin  | 0.1.0   |
 
 ---
 
@@ -35,6 +35,7 @@ workspaces/augment/
 **File:** `plugins/augment-backend/src/providers/types.ts` (lines 252-367)
 
 Required methods:
+
 - `initialize(): Promise<void>`
 - `postInitialize(): Promise<void>`
 - `getStatus(): Promise<AgenticProviderStatus>`
@@ -42,23 +43,25 @@ Required methods:
 - `chatStream(request: ChatRequest, onEvent: (event: NormalizedStreamEvent) => void, signal?: AbortSignal): Promise<void>`
 
 Optional capabilities:
+
 - `conversations?: ConversationCapability`
 - `rag?: RAGCapability`
 - `safety?: SafetyCapability`
 - `evaluation?: EvaluationCapability`
 
 Optional admin methods:
+
 - `listModels?()`, `testModel?()`, `generateSystemPrompt?()`, `getEffectiveConfig?()`
 
 ### 2.2 Built-in Providers
 
 **File:** `plugins/augment-backend/src/providers/registry.ts`
 
-| Provider | ID | Class | Capabilities |
-|----------|----|-------|-------------|
+| Provider   | ID         | Class                | Capabilities                                                  |
+| ---------- | ---------- | -------------------- | ------------------------------------------------------------- |
 | LlamaStack | llamastack | ResponsesApiProvider | chat, rag, safety, evaluation, conversations, mcpTools, tools |
-| Kagenti | kagenti | KagentiProvider | chat, mcpTools |
-| Google ADK | googleadk | (stub) | Not implemented |
+| Kagenti    | kagenti    | KagentiProvider      | chat, mcpTools                                                |
+| Google ADK | googleadk  | (stub)               | Not implemented                                               |
 
 ### 2.3 Provider Factory
 
@@ -73,7 +76,7 @@ switch (providerType) {
   case 'googleadk':
     throw new Error('Google ADK provider is not yet implemented.');
   default:
-    // Check extension-registered factories
+  // Check extension-registered factories
 }
 ```
 
@@ -100,6 +103,7 @@ External backend modules call `registerProvider(descriptor, factory)` to add cus
 **Entry:** `plugins/augment-backend/src/providers/llamastack/ResponsesApiProvider.ts`
 
 ResponsesApiProvider composes:
+
 - ResponsesApiCoordinator (central wiring)
   - AdkOrchestrator (@augment-adk/augment-adk)
   - ClientManager (caches ResponsesApiClient, probes /v1/version)
@@ -119,21 +123,21 @@ ResponsesApiProvider composes:
 
 ### 3.2 Key Files
 
-| File | Purpose |
-|------|---------|
-| `llamastack/ResponsesApiProvider.ts` | AgenticProvider implementation |
-| `llamastack/ResponsesApiCoordinator.ts` | Central wiring, delegates to AdkOrchestrator |
-| `llamastack/adk-adapters/AdkOrchestrator.ts` | @augment-adk/augment-adk integration |
-| `llamastack/ClientManager.ts` | HTTP client caching |
-| `llamastack/config/ConfigResolutionService.ts` | Config merge + cache |
-| `llamastack/config/ConfigLoader.ts` | YAML config loading |
-| `llamastack/config/McpConfigLoader.ts` | MCP server configs |
-| `llamastack/auth/McpAuthService.ts` | MCP authentication |
-| `llamastack/AgentGraphManager.ts` | Multi-agent graph |
-| `llamastack/VectorStoreFacade.ts` | RAG lifecycle |
-| `llamastack/safety/SafetyService.ts` | Safety shields |
-| `llamastack/safety/EvaluationService.ts` | Quality evaluation |
-| `llamastack/status/StatusService.ts` | Health checks |
+| File                                           | Purpose                                      |
+| ---------------------------------------------- | -------------------------------------------- |
+| `llamastack/ResponsesApiProvider.ts`           | AgenticProvider implementation               |
+| `llamastack/ResponsesApiCoordinator.ts`        | Central wiring, delegates to AdkOrchestrator |
+| `llamastack/adk-adapters/AdkOrchestrator.ts`   | @augment-adk/augment-adk integration         |
+| `llamastack/ClientManager.ts`                  | HTTP client caching                          |
+| `llamastack/config/ConfigResolutionService.ts` | Config merge + cache                         |
+| `llamastack/config/ConfigLoader.ts`            | YAML config loading                          |
+| `llamastack/config/McpConfigLoader.ts`         | MCP server configs                           |
+| `llamastack/auth/McpAuthService.ts`            | MCP authentication                           |
+| `llamastack/AgentGraphManager.ts`              | Multi-agent graph                            |
+| `llamastack/VectorStoreFacade.ts`              | RAG lifecycle                                |
+| `llamastack/safety/SafetyService.ts`           | Safety shields                               |
+| `llamastack/safety/EvaluationService.ts`       | Quality evaluation                           |
+| `llamastack/status/StatusService.ts`           | Health checks                                |
 
 ### 3.3 Stream Normalization
 
@@ -150,6 +154,7 @@ Maps Llama Stack SSE event types (response.output_text.delta, MCP call events, e
 **Entry:** `plugins/augment-backend/src/providers/kagenti/KagentiProvider.ts`
 
 KagentiProvider composes:
+
 - KagentiApiClient (REST + SSE to Kagenti API, ~50 endpoints)
 - KagentiSandboxClient (sandbox operations)
 - KagentiAdminClient (models, LLM, integrations)
@@ -160,23 +165,24 @@ KagentiProvider composes:
 
 ### 4.2 Key Files
 
-| File | Purpose |
-|------|---------|
-| `kagenti/KagentiProvider.ts` | AgenticProvider implementation |
-| `kagenti/client/KagentiApiClient.ts` | REST + SSE client |
-| `kagenti/client/KagentiSandboxClient.ts` | Sandbox operations |
-| `kagenti/client/KagentiAdminClient.ts` | Admin API |
-| `kagenti/client/KeycloakTokenManager.ts` | OAuth2 token management |
-| `kagenti/stream/KagentiStreamNormalizer.ts` | A2A event normalization |
-| `kagenti/KagentiAgentCardCache.ts` | Agent card caching |
-| `kagenti/kagentiApprovalHandler.ts` | HITL tool approval |
-| `kagenti/kagentiConversationCapability.ts` | Conversation stubs |
-| `kagenti/kagentiNamespaceUtils.ts` | Namespace resolution |
-| `kagenti/config/KagentiConfigLoader.ts` | Config loading + validation |
+| File                                        | Purpose                        |
+| ------------------------------------------- | ------------------------------ |
+| `kagenti/KagentiProvider.ts`                | AgenticProvider implementation |
+| `kagenti/client/KagentiApiClient.ts`        | REST + SSE client              |
+| `kagenti/client/KagentiSandboxClient.ts`    | Sandbox operations             |
+| `kagenti/client/KagentiAdminClient.ts`      | Admin API                      |
+| `kagenti/client/KeycloakTokenManager.ts`    | OAuth2 token management        |
+| `kagenti/stream/KagentiStreamNormalizer.ts` | A2A event normalization        |
+| `kagenti/KagentiAgentCardCache.ts`          | Agent card caching             |
+| `kagenti/kagentiApprovalHandler.ts`         | HITL tool approval             |
+| `kagenti/kagentiConversationCapability.ts`  | Conversation stubs             |
+| `kagenti/kagentiNamespaceUtils.ts`          | Namespace resolution           |
+| `kagenti/config/KagentiConfigLoader.ts`     | Config loading + validation    |
 
 ### 4.3 Session Mapping
 
 In-memory bounded LRU maps:
+
 - `kagentiSessionMap`: backstageSessionId -> kagentiContextId
 - `sessionAgentMap`: kagentiContextId -> agentId (namespace/name)
 - Max entries: 10,000 per map
@@ -195,17 +201,17 @@ In-memory bounded LRU maps:
 
 **File:** `kagenti/stream/KagentiStreamNormalizer.ts`
 
-| A2A Status | NormalizedStreamEvent |
-|-----------|----------------------|
-| WORKING | stream.reasoning.delta |
-| COMPLETED | stream.text.delta + stream.text.done + stream.completed |
-| FAILED | stream.error (from ERROR_EXTENSION_URI) |
-| CANCELED | stream.completed |
-| REJECTED | stream.error (kagenti_rejected) |
-| INPUT_REQUIRED | stream.form.request or stream.tool.approval |
-| AUTH_REQUIRED | stream.auth.required |
-| Artifact update | stream.artifact + stream.text.delta |
-| JSON-RPC error | stream.error (-32603 triggers streaming fallback) |
+| A2A Status      | NormalizedStreamEvent                                   |
+| --------------- | ------------------------------------------------------- |
+| WORKING         | stream.reasoning.delta                                  |
+| COMPLETED       | stream.text.delta + stream.text.done + stream.completed |
+| FAILED          | stream.error (from ERROR_EXTENSION_URI)                 |
+| CANCELED        | stream.completed                                        |
+| REJECTED        | stream.error (kagenti_rejected)                         |
+| INPUT_REQUIRED  | stream.form.request or stream.tool.approval             |
+| AUTH_REQUIRED   | stream.auth.required                                    |
+| Artifact update | stream.artifact + stream.text.delta                     |
+| JSON-RPC error  | stream.error (-32603 triggers streaming fallback)       |
 
 Also handles: TRAJECTORY_EXTENSION_URI (reasoning), CITATION_EXTENSION_URI (citations), agent handoff detection.
 
@@ -225,6 +231,7 @@ Also handles: TRAJECTORY_EXTENSION_URI (reasoning), CITATION_EXTENSION_URI (cita
 **File:** `kagenti/kagentiApprovalHandler.ts`
 
 Three approval types:
+
 1. **Generic:** approval metadata with callId, approved, toolName, reason, toolArguments
 2. **secrets_response:** parses JSON map -> ADK auth/secrets extension URI
 3. **oauth_confirm:** sends OAuth redirect confirmed extension
@@ -236,6 +243,7 @@ All approvals resume via `apiClient.chatStream` with contextId + metadata in A2A
 **Unprefixed:** GET /health, GET /ready
 
 **Under /api/v1:**
+
 - Auth: /auth/config, /auth/status, /auth/userinfo, /auth/me
 - Config: /config/features, /config/dashboards
 - Namespaces: /namespaces
@@ -272,11 +280,13 @@ All approvals resume via `apiClient.chatStream` with contextId + metadata in A2A
 **File:** `plugins/augment-backend/src/routes/chatRoutes.ts`
 
 Key functions:
+
 - `setupSseStream(res, logger)` -- sets headers, creates AbortController, links to res.close
 - `createStreamEventForwarder(res, logger, ...)` -- writes `data: JSON\n\n`, handles backpressure
 - `handleStreamErrorAndCleanup(res, error, ...)` -- sends stream.error event, ends response
 
 Headers:
+
 ```
 Content-Type: text/event-stream
 Cache-Control: no-cache
@@ -305,6 +315,7 @@ Completion: `data: [DONE]\n\n` + `res.end()`
 **File:** `plugins/augment/src/components/AugmentPage/AugmentPage.tsx`
 
 Two modes controlled by useAdminView (localStorage):
+
 - Chat mode: ChatContainer + RightPane
 - Admin mode: provider-specific sidebar + panels
 
@@ -313,6 +324,7 @@ Provider-conditional rendering: `liveStatus?.providerId === 'kagenti'` switches 
 ### 6.3 Component Directory
 
 **Shared (both providers):**
+
 - ChatContainer/ -- main chat shell, virtualized message list
 - ChatMessage/ -- message rendering (markdown, math, tools, RAG)
 - StreamingMessage/ -- live streaming with reducer state machine
@@ -323,11 +335,13 @@ Provider-conditional rendering: `liveStatus?.providerId === 'kagenti'` switches 
 - ToolApprovalDialog/ -- HITL approval UI
 
 **LlamaStack admin:**
+
 - AdminPanels/ModelToolsPanel/ -- model, tools, MCP, RAG, safety
 - AdminPanels/AgentsPanel/ -- multi-agent editor
 - AdminPanels/BrandingPanel/ -- branding customization
 
 **Kagenti admin:**
+
 - AdminPanels/KagentiPanels/ -- 7 panels + wizards (agents, tools, builds, sandbox, dashboard links, admin, home)
 
 ### 6.4 Hook Inventory
@@ -346,14 +360,14 @@ Provider-conditional rendering: `liveStatus?.providerId === 'kagenti'` switches 
 
 **File:** `plugins/augment/src/api/`
 
-| Module | Endpoints |
-|--------|-----------|
-| chatEndpoints | POST /chat, /chat/stream, /chat/approve |
-| sessionEndpoints | CRUD /sessions, admin listing |
-| conversationEndpoints | /conversations (by response, by conversation, chain) |
-| documentEndpoints | RAG admin: vector stores, documents, rag-test |
-| adminEndpoints | Providers, models, config CRUD, safety/eval status |
-| kagentiEndpoints/ | All /kagenti/* endpoints (health, agents, tools, sandbox, admin) |
+| Module                | Endpoints                                                         |
+| --------------------- | ----------------------------------------------------------------- |
+| chatEndpoints         | POST /chat, /chat/stream, /chat/approve                           |
+| sessionEndpoints      | CRUD /sessions, admin listing                                     |
+| conversationEndpoints | /conversations (by response, by conversation, chain)              |
+| documentEndpoints     | RAG admin: vector stores, documents, rag-test                     |
+| adminEndpoints        | Providers, models, config CRUD, safety/eval status                |
+| kagentiEndpoints/     | All /kagenti/\* endpoints (health, agents, tools, sandbox, admin) |
 
 ---
 
@@ -365,11 +379,11 @@ Provider-conditional rendering: `liveStatus?.providerId === 'kagenti'` switches 
 
 **File:** `plugins/augment-backend/src/middleware/security.ts`
 
-| Mode | Plugin Access | Admin Access | User Identity |
-|------|--------------|-------------|---------------|
-| none | Skipped | Everyone | user:default/guest |
-| plugin-only | augment.access permission | adminUsers allow-list | Real user principal |
-| full | augment.access permission | augment.admin permission | Real user principal |
+| Mode        | Plugin Access             | Admin Access             | User Identity       |
+| ----------- | ------------------------- | ------------------------ | ------------------- |
+| none        | Skipped                   | Everyone                 | user:default/guest  |
+| plugin-only | augment.access permission | adminUsers allow-list    | Real user principal |
+| full        | augment.access permission | augment.admin permission | Real user principal |
 
 ### 7.2 Permissions
 
@@ -393,6 +407,7 @@ Provider-conditional rendering: `liveStatus?.providerId === 'kagenti'` switches 
 **File:** `plugins/augment-backend/config.d.ts`
 
 Key blocks:
+
 - `augment.provider` -- 'llamastack' | 'kagenti'
 - `augment.security.*` -- mode, adminUsers, mcpOAuth
 - `augment.llamaStack.*` -- baseUrl, model, token, TLS, toolChoice, RAG, etc.
@@ -409,10 +424,10 @@ YAML baseline -> DB admin overrides (AdminConfigService) -> RuntimeConfigResolve
 
 ### 8.3 DB Tables
 
-| Table | Service | Purpose |
-|-------|---------|---------|
+| Table                | Service            | Purpose                            |
+| -------------------- | ------------------ | ---------------------------------- |
 | augment_admin_config | AdminConfigService | JSON key-value for admin overrides |
-| augment_sessions | ChatSessionService | Chat sessions per user |
+| augment_sessions     | ChatSessionService | Chat sessions per user             |
 
 ---
 

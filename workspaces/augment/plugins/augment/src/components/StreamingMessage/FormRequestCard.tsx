@@ -30,7 +30,10 @@ import { useTheme, alpha } from '@mui/material/styles';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
-import type { StreamFormDescriptor, StreamFormField } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  StreamFormDescriptor,
+  StreamFormField,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { useTranslation } from '../../hooks/useTranslation';
 
 interface FormRequestCardProps {
@@ -61,11 +64,17 @@ function renderField(
           }
           label={
             <Box>
-              <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: 500 }}>
+              <Typography
+                variant="body2"
+                sx={{ fontSize: '0.8rem', fontWeight: 500 }}
+              >
                 {label}
               </Typography>
               {field.description && (
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: 'text.secondary', display: 'block' }}
+                >
                   {field.description}
                 </Typography>
               )}
@@ -91,7 +100,10 @@ function renderField(
             ))}
           </Select>
           {field.description && (
-            <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.25 }}>
+            <Typography
+              variant="caption"
+              sx={{ color: 'text.secondary', mt: 0.25 }}
+            >
               {field.description}
             </Typography>
           )}
@@ -127,7 +139,11 @@ function renderField(
             const num = Number(e.target.value);
             onChange(
               field.name,
-              e.target.value ? (Number.isNaN(num) ? undefined : num) : undefined,
+              e.target.value
+                ? Number.isNaN(num)
+                  ? undefined
+                  : num
+                : undefined,
             );
           }}
           required={field.required}
@@ -180,79 +196,97 @@ export const FormRequestCard: React.FC<FormRequestCardProps> = ({
 
   return (
     <Fade in timeout={300}>
-    <Box
-      sx={{
-        mt: 1.5,
-        mb: 1,
-        borderRadius: 2,
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-        borderLeft: `3px solid ${theme.palette.primary.main}`,
-        bgcolor: alpha(theme.palette.primary.main, isDark ? 0.06 : 0.02),
-        overflow: 'hidden',
-      }}
-    >
-      {/* Header */}
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          px: 2,
-          py: 1.25,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+          mt: 1.5,
+          mb: 1,
+          borderRadius: 2,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+          borderLeft: `3px solid ${theme.palette.primary.main}`,
+          bgcolor: alpha(theme.palette.primary.main, isDark ? 0.06 : 0.02),
+          overflow: 'hidden',
         }}
       >
-        <AssignmentIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
-            {form.title || t('formRequestCard.inputRequired')}
-          </Typography>
-          {form.description && (
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-              {form.description}
+        {/* Header */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 2,
+            py: 1.25,
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+          }}
+        >
+          <AssignmentIcon
+            sx={{ fontSize: 18, color: theme.palette.primary.main }}
+          />
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 600, fontSize: '0.85rem' }}
+            >
+              {form.title || t('formRequestCard.inputRequired')}
             </Typography>
+            {form.description && (
+              <Typography
+                variant="caption"
+                sx={{ color: 'text.secondary', display: 'block' }}
+              >
+                {form.description}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+
+        {/* Fields */}
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+          }}
+        >
+          {fields.map(field =>
+            renderField(field, values[field.name], handleChange),
           )}
         </Box>
-      </Box>
 
-      {/* Fields */}
-      <Box sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {fields.map(field => renderField(field, values[field.name], handleChange))}
-      </Box>
-
-      {/* Actions */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          gap: 1,
-          px: 2,
-          py: 1.25,
-          borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-        }}
-      >
-        {onCancel && (
+        {/* Actions */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 1,
+            px: 2,
+            py: 1.25,
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+          }}
+        >
+          {onCancel && (
+            <Button
+              size="small"
+              startIcon={<CloseIcon sx={{ fontSize: 14 }} />}
+              onClick={onCancel}
+              sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+            >
+              {t('formRequestCard.cancel')}
+            </Button>
+          )}
           <Button
             size="small"
-            startIcon={<CloseIcon sx={{ fontSize: 14 }} />}
-            onClick={onCancel}
+            variant="contained"
+            startIcon={<SendIcon sx={{ fontSize: 14 }} />}
+            disabled={hasRequiredMissing}
+            onClick={() => onSubmit?.(values)}
             sx={{ textTransform: 'none', fontSize: '0.8rem' }}
           >
-            {t('formRequestCard.cancel')}
+            {t('formRequestCard.submit')}
           </Button>
-        )}
-        <Button
-          size="small"
-          variant="contained"
-          startIcon={<SendIcon sx={{ fontSize: 14 }} />}
-          disabled={hasRequiredMissing}
-          onClick={() => onSubmit?.(values)}
-          sx={{ textTransform: 'none', fontSize: '0.8rem' }}
-        >
-          {t('formRequestCard.submit')}
-        </Button>
+        </Box>
       </Box>
-    </Box>
     </Fade>
   );
 };

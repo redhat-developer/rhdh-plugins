@@ -59,8 +59,7 @@ export function useKagentiToolDetail(
     } catch (err) {
       setBuildInfo(null);
       setBuildFetchFailed(true);
-      const is404 =
-        err instanceof Error && /not found|404/i.test(err.message);
+      const is404 = err instanceof Error && /not found|404/i.test(err.message);
       if (is404) setHasBuild(false);
     } finally {
       setBuildLoading(false);

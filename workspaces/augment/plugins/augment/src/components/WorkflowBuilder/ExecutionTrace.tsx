@@ -41,7 +41,11 @@ const statusIcons: Record<string, typeof CheckCircleIcon> = {
   skipped: SkipNextIcon,
 };
 
-export function ExecutionTrace({ records, title, onNodeClick }: ExecutionTraceProps) {
+export function ExecutionTrace({
+  records,
+  title,
+  onNodeClick,
+}: ExecutionTraceProps) {
   const theme = useTheme();
 
   const statusColors: Record<string, string> = {
@@ -116,9 +120,19 @@ export function ExecutionTrace({ records, title, onNodeClick }: ExecutionTracePr
           >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
-              sx={{ minHeight: 36, '& .MuiAccordionSummary-content': { my: 0.5 } }}
+              sx={{
+                minHeight: 36,
+                '& .MuiAccordionSummary-content': { my: 0.5 },
+              }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  width: '100%',
+                }}
+              >
                 <StatusIcon sx={{ fontSize: 16, color }} />
                 <Typography variant="body2" fontWeight={500} sx={{ flex: 1 }}>
                   {record.nodeName}
@@ -137,8 +151,13 @@ export function ExecutionTrace({ records, title, onNodeClick }: ExecutionTracePr
             </AccordionSummary>
             <AccordionDetails sx={{ pt: 0, pb: 1 }}>
               {record.tokenUsage && (
-                <Typography variant="caption" color="text.secondary" display="block">
-                  Tokens: {record.tokenUsage.inputTokens} in / {record.tokenUsage.outputTokens} out
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                >
+                  Tokens: {record.tokenUsage.inputTokens} in /{' '}
+                  {record.tokenUsage.outputTokens} out
                 </Typography>
               )}
               {record.error && (

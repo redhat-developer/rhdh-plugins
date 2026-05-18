@@ -20,7 +20,12 @@ import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme, alpha } from '@mui/material/styles';
-import { glassSurface, borderRadius, transitions, typeScale } from '../../theme/tokens';
+import {
+  glassSurface,
+  borderRadius,
+  transitions,
+  typeScale,
+} from '../../theme/tokens';
 
 interface StatCardProps {
   label: string;
@@ -55,7 +60,13 @@ export function StatCard({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
-      onKeyDown={onClick ? (e => { if (e.key === 'Enter') onClick(); }) : undefined}
+      onKeyDown={
+        onClick
+          ? e => {
+              if (e.key === 'Enter') onClick();
+            }
+          : undefined
+      }
       sx={{
         ...glass,
         p: 2,
@@ -74,7 +85,13 @@ export function StatCard({
           : undefined,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         <Typography
           variant="caption"
           sx={{
@@ -87,7 +104,9 @@ export function StatCard({
         >
           {label}
         </Typography>
-        <Box sx={{ color: alpha(accentColor, 0.7), display: 'flex' }}>{icon}</Box>
+        <Box sx={{ color: alpha(accentColor, 0.7), display: 'flex' }}>
+          {icon}
+        </Box>
       </Box>
       {loading ? (
         <Skeleton variant="text" width={60} height={32} />

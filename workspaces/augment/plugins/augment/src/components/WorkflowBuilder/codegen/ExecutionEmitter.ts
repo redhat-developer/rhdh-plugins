@@ -1,4 +1,7 @@
-import type { WorkflowNode, WorkflowEdge } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  WorkflowNode,
+  WorkflowEdge,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { toVarName, toCamelCase, escapeStr, getOutgoingEdges } from './utils';
 
 /**
@@ -47,7 +50,9 @@ export function generateRunnerExecution(
       const d = node.data as Record<string, unknown>;
       const prompt = (d.prompt as string) || 'Please confirm.';
       lines.push(`${indent}// Human approval gate`);
-      lines.push(`${indent}const _approved = await requestApproval(\`${escapeStr(prompt)}\`);`);
+      lines.push(
+        `${indent}const _approved = await requestApproval(\`${escapeStr(prompt)}\`);`,
+      );
       lines.push(`${indent}if (!_approved) {`);
       lines.push(`${indent}  throw new Error("User rejected the action");`);
       lines.push(`${indent}}`);
@@ -107,16 +112,22 @@ function emitAgentCode(
   lines.push(`${indent}  ${varName},`);
   lines.push(`${indent}  [...conversationHistory]`);
   lines.push(`${indent});`);
-  lines.push(`${indent}conversationHistory.push(...${resultVar}Temp.newItems.map((item) => item.rawItem));`);
+  lines.push(
+    `${indent}conversationHistory.push(...${resultVar}Temp.newItems.map((item) => item.rawItem));`,
+  );
   lines.push('');
   lines.push(`${indent}if (!${resultVar}Temp.finalOutput) {`);
-  lines.push(`${indent}  throw new Error("Agent '${agentName}' returned no output");`);
+  lines.push(
+    `${indent}  throw new Error("Agent '${agentName}' returned no output");`,
+  );
   lines.push(`${indent}}`);
   lines.push('');
 
   if (hasOutput) {
     lines.push(`${indent}const ${resultVar} = {`);
-    lines.push(`${indent}  output_text: JSON.stringify(${resultVar}Temp.finalOutput),`);
+    lines.push(
+      `${indent}  output_text: JSON.stringify(${resultVar}Temp.finalOutput),`,
+    );
     lines.push(`${indent}  output_parsed: ${resultVar}Temp.finalOutput`);
     lines.push(`${indent}};`);
   } else {
@@ -139,15 +150,23 @@ function emitClassifyCode(
   const varName = toVarName(node.id);
   const resultVar = `${varName}Result`;
 
-  lines.push(`${indent}// Classify via direct /v1/responses call with json_schema format`);
-  lines.push(`${indent}const ${resultVar}_input = conversationHistory.map(m => {`);
+  lines.push(
+    `${indent}// Classify via direct /v1/responses call with json_schema format`,
+  );
+  lines.push(
+    `${indent}const ${resultVar}_input = conversationHistory.map(m => {`,
+  );
   lines.push(`${indent}  if (typeof m === 'string') return m;`);
   lines.push(`${indent}  if ('content' in m && Array.isArray(m.content)) {`);
-  lines.push(`${indent}    return m.content.map((c: any) => c.text || '').join('');`);
+  lines.push(
+    `${indent}    return m.content.map((c: any) => c.text || '').join('');`,
+  );
   lines.push(`${indent}  }`);
   lines.push(`${indent}  return String(m);`);
   lines.push(`${indent}}).join('\\n');`);
-  lines.push(`${indent}const ${resultVar} = await run_${varName}(${resultVar}_input);`);
+  lines.push(
+    `${indent}const ${resultVar} = await run_${varName}(${resultVar}_input);`,
+  );
   lines.push('');
 
   if (outEdges.length > 0) {
@@ -157,7 +176,9 @@ function emitClassifyCode(
     if (conditionalEdges.length > 0) {
       conditionalEdges.forEach((edge, i) => {
         const prefix = i === 0 ? 'if' : '} else if';
-        lines.push(`${indent}${prefix} (${resultVar}.classification === "${edge.condition}") {`);
+        lines.push(
+          `${indent}${prefix} (${resultVar}.classification === "${edge.condition}") {`,
+        );
         visit(edge.target, indent + '  ');
       });
       if (fallbackEdge) {

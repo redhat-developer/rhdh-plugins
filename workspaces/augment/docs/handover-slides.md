@@ -1,4 +1,5 @@
 # Augment Plugin -- Engineering Handover
+
 ## Slide Deck Content + Speaker Notes
 
 **Branch:** feat/kagenti-provider
@@ -10,12 +11,14 @@
 ## SLIDE 1 -- Title
 
 ### On Slide:
+
 **Augment Plugin -- Engineering Handover**
 
 Branch: feat/kagenti-provider
 Red Hat Developer Hub Plugins
 
 ### Speaker Notes:
+
 This session covers the full architecture of the Augment plugin -- an AI chat assistant plugin for Red Hat Developer Hub (Backstage). We will walk through both provider implementations (LlamaStack and Kagenti), the streaming pipeline, the frontend, security, and the admin Command Center. The goal is that by the end of this session, you can independently develop, debug, and extend any part of this plugin. All code is on the feat/kagenti-provider branch of redhat-developer/rhdh-plugins.
 
 ---
@@ -23,6 +26,7 @@ This session covers the full architecture of the Augment plugin -- an AI chat as
 ## SLIDE 2 -- Why This Plugin Exists (5 min)
 
 ### On Slide:
+
 - **Augment** = AI chat assistant embedded in RHDH (Backstage)
 - Two provider backends:
   - **LlamaStack** -- full AI stack (chat, RAG, safety, evaluation, multi-agent)
@@ -31,6 +35,7 @@ This session covers the full architecture of the Augment plugin -- an AI chat as
 - One line to switch: `augment.provider: 'llamastack'` or `augment.provider: 'kagenti'`
 
 ### Speaker Notes:
+
 The Augment plugin gives RHDH users an AI chat experience directly inside the developer portal. It is designed to be provider-agnostic -- you configure which AI backend to use in app-config.yaml and the entire plugin adapts. LlamaStack is the original, full-featured provider that owns the entire AI runtime. Kagenti was added on this branch as a second first-class provider targeting Kubernetes-native agent operations -- it manages agent lifecycle, builds, and execution on K8s instead of owning the inference pipeline. The key architectural insight is that both providers normalize to the same streaming contract, so the frontend works identically regardless of which backend is active.
 
 ---
@@ -38,49 +43,58 @@ The Augment plugin gives RHDH users an AI chat experience directly inside the de
 ## SLIDE 3 -- Package Topology (5 min)
 
 ### On Slide:
+
 **[SCREENSHOT: augment-package-topology.canvas.tsx]**
 
 Three packages in `workspaces/augment/plugins/`:
+
 1. `augment-common` -- Types, Permissions, Constants (common-library)
 2. `augment` -- Frontend UI, Hooks, API Client (frontend-plugin)
 3. `augment-backend` -- Express Routes, Providers, Services (backend-plugin)
 
 External dependencies:
+
 - `@augment-adk/augment-adk` -- ADK orchestration for LlamaStack
 - `@kagenti/adk` -- A2A protocol handling for Kagenti
 - `@modelcontextprotocol/sdk` -- MCP client
 
 ### Speaker Notes:
+
 Three packages in the workspace, following standard Backstage plugin conventions. Common holds the shared contract -- types, permissions, and streaming event definitions. It is the bridge that keeps frontend and backend in sync. Frontend is a single Backstage frontend-plugin with one routable extension -- the entire chat and admin UI is behind a single mount point. Backend is where the complexity lives: Express routes, two full provider implementations, database services, and security middleware. Both providers live inside augment-backend as subdirectories, not as separate packages. Call out the two external SDKs: @augment-adk/augment-adk is Google's ADK used as the orchestration layer inside LlamaStack, and @kagenti/adk provides A2A protocol handling for the Kagenti provider.
 
-**Live code:** Show `workspaces/augment/package.json` -- the workspace definition with packages/* and plugins/*.
+**Live code:** Show `workspaces/augment/package.json` -- the workspace definition with packages/_ and plugins/_.
 
 ---
 
 ## SLIDE 4 -- Provider Abstraction: The Core Design Decision (10 min)
 
 ### On Slide:
+
 **The `AgenticProvider` interface** (providers/types.ts, lines 252-367):
 
 Required methods:
+
 - `initialize()` / `postInitialize()`
 - `getStatus()` -- health and connectivity
 - `chat(request)` -- synchronous chat
 - `chatStream(request, onEvent, signal)` -- SSE streaming
 
 Optional capabilities (interfaces):
+
 - `conversations` -- history persistence
 - `rag` -- vector stores, documents, search
 - `safety` -- input/output shields
 - `evaluation` -- quality scoring
 
 Supporting infrastructure:
+
 - `ProviderManager` -- hot-swap with mutex lock
 - `factory.ts` -- switch on `augment.provider` config
 - `registry.ts` -- built-in descriptors + dynamic registration
 - `extensions.ts` -- `augment.providers` extension point for third-party
 
 ### Speaker Notes:
+
 This is the most important architectural decision in the plugin. The AgenticProvider interface is the boundary between the HTTP layer and any AI runtime. The router never calls LLM APIs directly -- it always goes through the provider. This means you can swap the entire AI backend without changing any route handler.
 
 Walk the team through providers/types.ts lines 252-367. Point out that chat and chatStream are the only required methods -- everything else is optional. This lets providers declare what they support: LlamaStack supports everything; Kagenti supports chat and tools but not RAG or safety.
@@ -96,9 +110,11 @@ The extension point at extensions.ts is important for the team to know: any back
 ## SLIDE 5 -- Provider Capability Comparison (part of slide 4)
 
 ### On Slide:
+
 **[SCREENSHOT: augment-provider-comparison.canvas.tsx]**
 
 ### Speaker Notes:
+
 Walk through each row of the capability matrix. Key takeaways: LlamaStack owns the full AI runtime -- models, RAG, safety, evaluation. Kagenti delegates to a K8s platform that manages agent lifecycle. They have complementary strengths. Note that Kagenti listModels actually calls the LlamaStack endpoint -- this is a design choice for model management reuse, but it means the Kagenti config still needs a valid augment.llamaStack.baseUrl if you want model listing. Also note that Kagenti has agent and tool lifecycle management (create, build, deploy, delete) which LlamaStack does not have -- LlamaStack's agents are configured in YAML/admin config, not dynamically built on K8s.
 
 ---
@@ -106,9 +122,11 @@ Walk through each row of the capability matrix. Key takeaways: LlamaStack owns t
 ## SLIDE 6 -- LlamaStack Provider Deep Dive (10 min)
 
 ### On Slide:
+
 **[SCREENSHOT: augment-llamastack-architecture.canvas.tsx]**
 
 Key classes:
+
 - `ResponsesApiProvider` -- the AgenticProvider implementation
 - `ResponsesApiCoordinator` -- central wiring, delegates to AdkOrchestrator
 - `AdkOrchestrator` -- uses @augment-adk/augment-adk for orchestration
@@ -119,6 +137,7 @@ Key classes:
 - `McpAuthService` -- OAuth client_credentials, K8s SA tokens
 
 ### Speaker Notes:
+
 Walk through ResponsesApiProvider.ts. The key insight is that chat and chatStream both go through AdkOrchestrator, which uses Google's ADK library. This is NOT a separate Google ADK provider -- it is the orchestration runtime used inside the LlamaStack provider for single-agent and multi-agent workflows.
 
 Show the ResponsesApiCoordinator -- it is the central wiring class that creates and connects all the services. During initialization, OrchestratorInitializer validates config, loads security settings, sets up the API client, and optionally creates RuntimeConfigResolver for admin DB overrides.
@@ -136,9 +155,11 @@ McpAuthService handles MCP server authentication: OAuth client_credentials, Kube
 ## SLIDE 7 -- Kagenti Provider Deep Dive (15 min)
 
 ### On Slide:
+
 **[SCREENSHOT: augment-kagenti-architecture.canvas.tsx]**
 
 Key classes:
+
 - `KagentiProvider` -- the AgenticProvider implementation
 - `KagentiApiClient` -- REST + SSE client (~50 endpoints)
 - `KagentiSandboxClient` -- sandbox operations
@@ -149,6 +170,7 @@ Key classes:
 - `kagentiApprovalHandler` -- HITL resume via chatStream + A2A metadata
 
 ### Speaker Notes:
+
 Walk through KagentiProvider.ts. Key design decisions to call out:
 
 1. SESSION MAPPING: Two bounded LRU maps (10k entries each, 10% eviction batch): `kagentiSessionMap` maps backstageSessionId to kagentiContextId, and `sessionAgentMap` maps contextId to agentId. These are in-memory, but NOT lost on restart -- chatRoutes.ts hydrates from the DB's conversationId field on first access after a miss. The key nuance: sessions are recoverable but not pre-loaded, so the first request after restart has a small DB lookup overhead.
@@ -168,10 +190,11 @@ Walk through KagentiProvider.ts. Key design decisions to call out:
 ## SLIDE 8 -- Kagenti API Surface (part of slide 7)
 
 ### On Slide:
+
 53+ backend routes for Kagenti, conditionally registered:
 
 - Config/Health: 4 endpoints
-- Agents CRUD + builds: 15+ endpoints  
+- Agents CRUD + builds: 15+ endpoints
 - Tools CRUD + builds: 12+ endpoints
 - Sandbox (sessions, chat, files, sidecars, deploy): 25+ endpoints
 - Admin (models, LLM, integrations, triggers): 10+ endpoints
@@ -181,6 +204,7 @@ All namespaced routes go through `validateNamespaceParam` -> 403 if unauthorized
 Routes registered only when `providerManager.provider.id === 'kagenti'`.
 
 ### Speaker Notes:
+
 Walk through kagentiRoutes.ts to show the registration pattern. The key architectural decision is that these routes are conditionally registered -- if you switch to LlamaStack, none of these routes exist. Show the namespace middleware: validateNamespaceParam reads the namespace from params or query, then calls kagenti.validateNamespace(ns). If the namespace is not in the configured allow-list, it returns 403. Also show the user context propagation: router.use('/kagenti', ...) resolves the Backstage user and calls kagenti.setUserContext(userRef) so the Kagenti API knows who is making the request.
 
 **Live code:** Open kagentiRoutes.ts, kagentiAgentRoutes.ts (to show the agent CRUD pattern).
@@ -190,9 +214,11 @@ Walk through kagentiRoutes.ts to show the registration pattern. The key architec
 ## SLIDE 9 -- Streaming Pipeline End-to-End (10 min)
 
 ### On Slide:
+
 **[SCREENSHOT: augment-streaming-pipeline.canvas.tsx]**
 
 ### Speaker Notes:
+
 Walk through two parallel paths side by side.
 
 BACKEND: In chatRoutes.ts, POST /chat/stream is the entry point. parseChatRequest validates the body. setupSseStream sets the SSE headers (Content-Type: text/event-stream, X-Accel-Buffering: no, Content-Encoding: identity) and creates an AbortController. createStreamEventForwarder builds a callback that handles backpressure: if res.write() returns false, events queue in a pending array until the socket emits 'drain'. Then provider.chatStream(request, forwarder, signal) is called.
@@ -210,7 +236,9 @@ KEY DETAIL: On client disconnect, the AbortController fires, which propagates th
 ## SLIDE 10 -- HITL Tool Approval Flow (part of slide 9)
 
 ### On Slide:
+
 **Tool Approval Flow:**
+
 1. Backend emits `stream.tool.approval` event
 2. Frontend `useToolApproval` hook detects it, pauses streaming
 3. `ToolApprovalDialog` shows tool name, arguments (JSON-editable)
@@ -219,11 +247,13 @@ KEY DETAIL: On client disconnect, the AbortController fires, which propagates th
 6. Backend resumes streaming
 
 **Kagenti-specific approval types:**
+
 - Generic tool approval (callId, approved, toolName, reason)
 - `secrets_response` -- ADK auth/secrets extension (JSON map of secrets)
 - `oauth_confirm` -- OAuth redirect confirmation
 
 ### Speaker Notes:
+
 The HITL flow is the same from the frontend perspective regardless of provider. The difference is how the backend resumes.
 
 For LlamaStack: submitToolApproval resumes via the Responses API conversation -- it is a continuation of the existing response.
@@ -237,9 +267,11 @@ For Kagenti: kagentiApprovalHandler.ts resumes via a NEW chatStream call with th
 ## SLIDE 11 -- Frontend Architecture (10 min)
 
 ### On Slide:
+
 **[SCREENSHOT: augment-frontend-architecture.canvas.tsx]**
 
 ### Speaker Notes:
+
 Show plugin.ts (frontend) -- single createPlugin with id 'augment', one rootRouteRef. No sub-routes. The AugmentPage component is lazy-loaded via createRoutableExtension. This is a deliberate design decision: chat and admin are toggled via React state (useAdminView hook), not Backstage route refs. This avoids navigation complexity.
 
 Open AugmentPage.tsx -- show the two modes. When viewMode is 'chat', it renders ChatContainer + RightPane. When viewMode is 'admin', it checks liveStatus?.providerId: if 'kagenti', it renders KagentiSidebar + the Kagenti panel component; otherwise it renders CommandCenterHeader + the LlamaStack panel component.
@@ -257,9 +289,11 @@ The API client (AugmentApiClient) composes endpoint modules: chatEndpoints, sess
 ## SLIDE 12 -- Security Model (5 min)
 
 ### On Slide:
+
 **[SCREENSHOT: augment-security-model.canvas.tsx]**
 
 ### Speaker Notes:
+
 Walk through middleware/security.ts. Key points:
 
 1. Route registration ORDER matters: statusRoutes (health, status, branding) are mounted BEFORE requirePluginAccess middleware. This means /status and /branding are accessible without augment.access permission -- intentionally public so the frontend SecurityGate can check backend readiness.
@@ -281,23 +315,28 @@ Walk through middleware/security.ts. Key points:
 ## SLIDE 13 -- Configuration and Persistence (5 min)
 
 ### On Slide:
+
 **Configuration layers:**
+
 1. `config.d.ts` -- declarative schema with @visibility annotations
 2. `app-config.yaml` -- YAML baseline
 3. `AdminConfigService` -- DB overrides (Knex, augment_admin_config table)
 4. `RuntimeConfigResolver` -- merges YAML + DB with TTL cache
 
 **Key config blocks:**
+
 - `augment.provider` -- 'llamastack' or 'kagenti'
 - `augment.llamaStack.*` -- baseUrl, model, token, toolChoice, RAG, etc.
 - `augment.kagenti.*` -- baseUrl, namespace, auth, sandbox, builds, etc. (~250 lines)
 - `augment.security.*` -- mode, adminUsers, mcpOAuth
 
 **DB tables:**
+
 - `augment_admin_config` -- JSON key-value for admin overrides
 - `augment_sessions` -- chat sessions per user
 
 ### Speaker Notes:
+
 Show config.d.ts -- it is the definitive schema. The Kagenti block is about 250 lines covering baseUrl, auth (Keycloak), namespaces, timeouts, sandbox settings, migration, pagination, feature overrides, and dashboards. Point out the @visibility annotations: backend means the value is only available server-side; frontend means it is sent to the browser; secret means it is never logged.
 
 Explain the config precedence: YAML baseline is the starting point. Admin panel writes go through AdminConfigService to the augment_admin_config DB table. RuntimeConfigResolver merges both with a TTL cache and invalidates when admin writes happen. This lets admins change settings without restarting the backend.
@@ -311,9 +350,11 @@ Note the Kagenti-specific gotcha: session-to-contextId mapping is in-memory only
 ## SLIDE 14 -- Backend Route Architecture (part of slides 4-8)
 
 ### On Slide:
+
 **[SCREENSHOT: augment-route-architecture.canvas.tsx]**
 
 ### Speaker Notes:
+
 This is the complete route inventory. Walk through the four auth layers: public (before middleware), plugin access, admin access, and Kagenti-only (conditionally registered). Point out the handler wrapper: most handlers use createWithRoute from routeWrapper.ts for logging + try/catch -> sendRouteError. The /chat/stream endpoint is special -- it has its own SSE lifecycle and does not use the standard wrapper.
 
 For Kagenti: the routes tree is large -- 53+ endpoints covering config, agents, tools, builds, sandbox (sessions, chat, files, sidecars, deploy, token usage), and admin (models, LLM teams/keys, integrations, triggers). All namespaced routes go through validateNamespaceParam.
@@ -323,9 +364,11 @@ For Kagenti: the routes tree is large -- 53+ endpoints covering config, agents, 
 ## SLIDE 15 -- Known Gaps, Gotchas, and Future Work (5 min)
 
 ### On Slide:
+
 **[SCREENSHOT: augment-gaps-and-gotchas.canvas.tsx]**
 
 ### Speaker Notes:
+
 Be honest about these with the team. The session maps (kagentiSessionMap and sessionAgentMap) are in-memory LRU caches, but they are NOT lost on restart. chatRoutes.ts has a hydration path: when the in-memory map has no entry for a session, it checks the DB's conversationId field via sessions.getSession() and calls kagenti.hydrateSessionContext() to repopulate the map. So sessions are recoverable -- the first request after restart just has a small DB lookup overhead. The real gap is that the sessionAgentMap (contextId -> agentId) is only in-memory with no DB backing, so the agent association may be lost.
 
 The listModels cross-dependency means Kagenti config still needs a valid augment.llamaStack.baseUrl. The streaming fallback on JSON-RPC -32603 is a workaround -- as Kagenti agents gain streaming support, it becomes less relevant.
@@ -337,7 +380,9 @@ The augment-common kagenti.ts types file is large and growing. Consider splittin
 ## SLIDE 16 -- Developer Onboarding Quickstart (part of slide 15)
 
 ### On Slide:
+
 **Getting started:**
+
 ```
 git checkout feat/kagenti-provider
 cd workspaces/augment
@@ -348,6 +393,7 @@ yarn dev
 ```
 
 **Start reading here:**
+
 1. `plugin.ts` (backend) -- bootstrap flow
 2. `router.ts` -- full route tree
 3. `providers/types.ts` -- the AgenticProvider contract
@@ -356,6 +402,7 @@ yarn dev
 6. `augment-common/types/streaming.ts` -- streaming contract
 
 ### Speaker Notes:
+
 Give the team these entry points in order. Start with plugin.ts for the backend bootstrap -- it shows how everything is wired together. Then router.ts for the complete route tree and middleware order. Then providers/types.ts for the AgenticProvider contract. From there, branch into either KagentiProvider.ts or ResponsesApiProvider.ts depending on which provider they are working on. For the frontend, start at AugmentPage.tsx and work down through the component tree. For the shared contract, streaming.ts in augment-common defines the NormalizedStreamEvent union that both providers must produce.
 
 ---
@@ -363,6 +410,7 @@ Give the team these entry points in order. Start with plugin.ts for the backend 
 ## SLIDE 17 -- Q&A (10 min)
 
 ### On Slide:
+
 **Questions?**
 
 ### Speaker Notes (anticipated questions):

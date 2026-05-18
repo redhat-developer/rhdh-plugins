@@ -1,7 +1,10 @@
 import type { WorkflowNode } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { toVarName, escapeStr } from './utils';
 
-export function generateAgentDeclaration(node: WorkflowNode, defaultModel: string): string {
+export function generateAgentDeclaration(
+  node: WorkflowNode,
+  defaultModel: string,
+): string {
   const d = node.data as Record<string, unknown>;
   const varName = toVarName(node.id);
   const name = (d.name as string) || node.label || 'Agent';
@@ -12,7 +15,9 @@ export function generateAgentDeclaration(node: WorkflowNode, defaultModel: strin
   const lines: string[] = [];
 
   if (outputSchema) {
-    lines.push(`const ${varName}Schema = z.object(${JSON.stringify(outputSchema, null, 2)});`);
+    lines.push(
+      `const ${varName}Schema = z.object(${JSON.stringify(outputSchema, null, 2)});`,
+    );
     lines.push('');
   }
 

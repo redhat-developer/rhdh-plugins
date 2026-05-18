@@ -158,7 +158,14 @@ export const AppearanceSection = ({
       >
         {/* Identity */}
         <FieldGroup title="Identity">
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, pt: 1 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+              gap: 2,
+              pt: 1,
+            }}
+          >
             <TextField
               label="App Name"
               size="small"
@@ -231,7 +238,6 @@ export const AppearanceSection = ({
             />
           </Box>
         </FieldGroup>
-
       </AdminSection>
 
       <Snackbar

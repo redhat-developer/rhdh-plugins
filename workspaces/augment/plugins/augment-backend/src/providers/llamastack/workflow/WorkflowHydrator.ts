@@ -16,7 +16,10 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { Agent, Runner } from '@openai/agents-core';
-import type { FunctionTool as AgentsFunctionTool, Tool } from '@openai/agents-core';
+import type {
+  FunctionTool as AgentsFunctionTool,
+  Tool,
+} from '@openai/agents-core';
 import type {
   WorkflowDefinition,
   WorkflowNode,
@@ -48,9 +51,25 @@ export interface WorkflowExecutionPlan {
 
 export type ExecutionStep =
   | { type: 'agent'; nodeId: string; agentId: string }
-  | { type: 'classify'; nodeId: string; agentId: string; routes: Record<string, string> }
-  | { type: 'logic'; nodeId: string; condition: string; trueTarget: string; falseTarget?: string }
-  | { type: 'transform'; nodeId: string; expression: string; outputVariable: string }
+  | {
+      type: 'classify';
+      nodeId: string;
+      agentId: string;
+      routes: Record<string, string>;
+    }
+  | {
+      type: 'logic';
+      nodeId: string;
+      condition: string;
+      trueTarget: string;
+      falseTarget?: string;
+    }
+  | {
+      type: 'transform';
+      nodeId: string;
+      expression: string;
+      outputVariable: string;
+    }
   | { type: 'set_state'; nodeId: string; assignments: Record<string, string> }
   | { type: 'user_interaction'; nodeId: string; prompt: string }
   | { type: 'end'; nodeId: string };
@@ -67,9 +86,7 @@ export type ExecutionStep =
  * 5. Return a configured Runner with the entry agent and execution plan
  */
 export class WorkflowHydrator {
-  constructor(
-    private readonly logger: LoggerService,
-  ) {}
+  constructor(private readonly logger: LoggerService) {}
 
   hydrate(
     definition: WorkflowDefinition,
@@ -87,7 +104,9 @@ export class WorkflowHydrator {
     const classifyNodes = nodes.filter(n => n.type === 'classify');
 
     if (agentNodes.length === 0 && classifyNodes.length === 0) {
-      throw new Error('Workflow must contain at least one agent or classify node');
+      throw new Error(
+        'Workflow must contain at least one agent or classify node',
+      );
     }
 
     const agents = new Map<string, Agent>();
@@ -99,7 +118,10 @@ export class WorkflowHydrator {
       agentNodeDataMap.set(node.id, data);
 
       const nodeTools = this.resolveToolsForAgent(
-        node.id, edges, nodeMap, backendTools,
+        node.id,
+        edges,
+        nodeMap,
+        backendTools,
       );
 
       agents.set(
@@ -112,13 +134,18 @@ export class WorkflowHydrator {
           modelSettings: {
             temperature: data.temperature,
             maxTokens: data.maxOutputTokens,
-            toolChoice: data.toolChoice as 'auto' | 'required' | 'none' | undefined,
+            toolChoice: data.toolChoice as
+              | 'auto'
+              | 'required'
+              | 'none'
+              | undefined,
           },
           handoffDescription: data.handoffDescription,
           resetToolChoice: data.resetToolChoice,
-          toolUseBehavior: data.toolUseBehavior === 'stop_on_first_tool'
-            ? 'stop_on_first_tool'
-            : undefined,
+          toolUseBehavior:
+            data.toolUseBehavior === 'stop_on_first_tool'
+              ? 'stop_on_first_tool'
+              : undefined,
         }),
       );
     }
@@ -126,14 +153,19 @@ export class WorkflowHydrator {
     // Pass 1b: create agents for classify nodes (agents with outputType)
     for (const node of classifyNodes) {
       const data = node.data as Record<string, unknown>;
-      const classifications = (data.classifications as Array<{ label: string; description: string }>) || [];
+      const classifications =
+        (data.classifications as Array<{
+          label: string;
+          description: string;
+        }>) || [];
       const model = (data.model as string) || settings.defaultModel;
 
       const classDescriptions = classifications
         .map(c => `- "${c.label}": ${c.description}`)
         .join('\n');
 
-      const instructions = (data.instructions as string) ||
+      const instructions =
+        (data.instructions as string) ||
         `Classify the input into exactly one of these categories:\n${classDescriptions}\n\nRespond with only the classification label in JSON format.`;
 
       agents.set(
@@ -169,7 +201,8 @@ export class WorkflowHydrator {
           asToolTargets.push(
             target.asTool({
               toolName: `delegate_to_${edge.target.replace(/[^a-zA-Z0-9_]/g, '_')}`,
-              toolDescription: target.handoffDescription || `Delegate to ${target.name}`,
+              toolDescription:
+                target.handoffDescription || `Delegate to ${target.name}`,
             }),
           );
         } else {
@@ -179,7 +212,12 @@ export class WorkflowHydrator {
 
       if (handoffTargets.length > 0 || asToolTargets.length > 0) {
         const data = agentNodeDataMap.get(node.id)!;
-        const nodeTools = this.resolveToolsForAgent(node.id, edges, nodeMap, backendTools);
+        const nodeTools = this.resolveToolsForAgent(
+          node.id,
+          edges,
+          nodeMap,
+          backendTools,
+        );
 
         agents.set(
           node.id,
@@ -192,13 +230,18 @@ export class WorkflowHydrator {
             modelSettings: {
               temperature: data.temperature,
               maxTokens: data.maxOutputTokens,
-              toolChoice: data.toolChoice as 'auto' | 'required' | 'none' | undefined,
+              toolChoice: data.toolChoice as
+                | 'auto'
+                | 'required'
+                | 'none'
+                | undefined,
             },
             handoffDescription: data.handoffDescription,
             resetToolChoice: data.resetToolChoice,
-            toolUseBehavior: data.toolUseBehavior === 'stop_on_first_tool'
-              ? 'stop_on_first_tool'
-              : undefined,
+            toolUseBehavior:
+              data.toolUseBehavior === 'stop_on_first_tool'
+                ? 'stop_on_first_tool'
+                : undefined,
           }),
         );
       }
@@ -249,7 +292,9 @@ export class WorkflowHydrator {
 
         case 'agent':
           steps.push({ type: 'agent', nodeId: node.id, agentId: node.id });
-          for (const edge of outEdges.filter(e => e.type !== 'tool_binding' && e.type !== 'guardrail_binding')) {
+          for (const edge of outEdges.filter(
+            e => e.type !== 'tool_binding' && e.type !== 'guardrail_binding',
+          )) {
             traverse(edge.target);
           }
           break;
@@ -263,7 +308,12 @@ export class WorkflowHydrator {
               routes['__default__'] = edge.target;
             }
           }
-          steps.push({ type: 'classify', nodeId: node.id, agentId: node.id, routes });
+          steps.push({
+            type: 'classify',
+            nodeId: node.id,
+            agentId: node.id,
+            routes,
+          });
           for (const edge of outEdges) traverse(edge.target);
           break;
         }
@@ -273,7 +323,13 @@ export class WorkflowHydrator {
           const condition = (d.condition as string) || 'true';
           const trueTarget = outEdges[0]?.target || '';
           const falseTarget = outEdges[1]?.target;
-          steps.push({ type: 'logic', nodeId: node.id, condition, trueTarget, falseTarget });
+          steps.push({
+            type: 'logic',
+            nodeId: node.id,
+            condition,
+            trueTarget,
+            falseTarget,
+          });
           for (const edge of outEdges) traverse(edge.target);
           break;
         }
@@ -369,7 +425,11 @@ export class WorkflowHydrator {
             if (data.mcpServerId) {
               const filtered = data.mcpToolFilter;
               for (const bt of backendTools) {
-                if (!filtered || filtered.length === 0 || filtered.includes(bt.name)) {
+                if (
+                  !filtered ||
+                  filtered.length === 0 ||
+                  filtered.includes(bt.name)
+                ) {
                   tools.push(bt);
                 }
               }
@@ -384,7 +444,8 @@ export class WorkflowHydrator {
                 description: data.functionDef.description,
                 parameters: data.functionDef.parameters,
                 strict: false,
-                execute: async () => JSON.stringify({ result: 'custom function placeholder' }),
+                execute: async () =>
+                  JSON.stringify({ result: 'custom function placeholder' }),
               } as unknown as AgentsFunctionTool);
             }
             break;
@@ -411,8 +472,13 @@ export class WorkflowHydrator {
           },
           strict: false,
           execute: async (args: Record<string, unknown>) => {
-            this.logger.info(`File search: query="${args.query}", stores=${vectorStoreIds}, max=${maxResults}`);
-            return JSON.stringify({ results: [], message: 'File search executed via LlamaStack vector_stores API' });
+            this.logger.info(
+              `File search: query="${args.query}", stores=${vectorStoreIds}, max=${maxResults}`,
+            );
+            return JSON.stringify({
+              results: [],
+              message: 'File search executed via LlamaStack vector_stores API',
+            });
           },
         } as unknown as AgentsFunctionTool);
       } else if (toolNode.type === 'mcp') {
@@ -429,18 +495,35 @@ export class WorkflowHydrator {
           parameters: {
             type: 'object',
             properties: {
-              tool_name: { type: 'string', description: 'Name of the MCP tool to invoke' },
-              arguments: { type: 'object', description: 'Arguments to pass to the tool' },
+              tool_name: {
+                type: 'string',
+                description: 'Name of the MCP tool to invoke',
+              },
+              arguments: {
+                type: 'object',
+                description: 'Arguments to pass to the tool',
+              },
             },
             required: ['tool_name'],
           },
           strict: false,
           execute: async (args: Record<string, unknown>) => {
-            this.logger.info(`MCP call: server=${serverUrl}, tool=${args.tool_name}, approval=${requireApproval}`);
+            this.logger.info(
+              `MCP call: server=${serverUrl}, tool=${args.tool_name}, approval=${requireApproval}`,
+            );
             if (requireApproval === 'always') {
-              return JSON.stringify({ status: 'pending_approval', tool: args.tool_name, server: serverLabel });
+              return JSON.stringify({
+                status: 'pending_approval',
+                tool: args.tool_name,
+                server: serverLabel,
+              });
             }
-            return JSON.stringify({ status: 'executed', tool: args.tool_name, server: serverLabel, result: 'MCP tool placeholder' });
+            return JSON.stringify({
+              status: 'executed',
+              tool: args.tool_name,
+              server: serverLabel,
+              result: 'MCP tool placeholder',
+            });
           },
         } as unknown as AgentsFunctionTool);
       }

@@ -15,7 +15,12 @@ interface Variable {
   type: 'string' | 'number' | 'boolean' | 'object';
 }
 
-function VariableRow({ variable, index, onChange, onRemove }: {
+function VariableRow({
+  variable,
+  index,
+  onChange,
+  onRemove,
+}: {
   variable: Variable;
   index: number;
   onChange: (index: number, field: keyof Variable, value: string) => void;
@@ -23,7 +28,15 @@ function VariableRow({ variable, index, onChange, onRemove }: {
 }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1 }}>
-      <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'success.main', flexShrink: 0 }} />
+      <Box
+        sx={{
+          width: 10,
+          height: 10,
+          borderRadius: '50%',
+          bgcolor: 'success.main',
+          flexShrink: 0,
+        }}
+      />
       <TextField
         variant="standard"
         size="small"
@@ -60,25 +73,43 @@ export function StartNodeConfig({ nodeData, update }: NodeConfigProps) {
     ? (nodeData.stateVariables as Variable[])
     : [];
 
-  const handleInputChange = useCallback((index: number, field: keyof Variable, value: string) => {
-    const updated = [...inputVars];
-    updated[index] = { ...updated[index], [field]: value };
-    update('inputVariables', updated);
-  }, [inputVars, update]);
+  const handleInputChange = useCallback(
+    (index: number, field: keyof Variable, value: string) => {
+      const updated = [...inputVars];
+      updated[index] = { ...updated[index], [field]: value };
+      update('inputVariables', updated);
+    },
+    [inputVars, update],
+  );
 
-  const handleInputRemove = useCallback((index: number) => {
-    update('inputVariables', inputVars.filter((_, i) => i !== index));
-  }, [inputVars, update]);
+  const handleInputRemove = useCallback(
+    (index: number) => {
+      update(
+        'inputVariables',
+        inputVars.filter((_, i) => i !== index),
+      );
+    },
+    [inputVars, update],
+  );
 
-  const handleStateChange = useCallback((index: number, field: keyof Variable, value: string) => {
-    const updated = [...stateVars];
-    updated[index] = { ...updated[index], [field]: value };
-    update('stateVariables', updated);
-  }, [stateVars, update]);
+  const handleStateChange = useCallback(
+    (index: number, field: keyof Variable, value: string) => {
+      const updated = [...stateVars];
+      updated[index] = { ...updated[index], [field]: value };
+      update('stateVariables', updated);
+    },
+    [stateVars, update],
+  );
 
-  const handleStateRemove = useCallback((index: number) => {
-    update('stateVariables', stateVars.filter((_, i) => i !== index));
-  }, [stateVars, update]);
+  const handleStateRemove = useCallback(
+    (index: number) => {
+      update(
+        'stateVariables',
+        stateVars.filter((_, i) => i !== index),
+      );
+    },
+    [stateVars, update],
+  );
 
   return (
     <>
@@ -86,11 +117,19 @@ export function StartNodeConfig({ nodeData, update }: NodeConfigProps) {
         Input variables
       </Typography>
       {inputVars.map((v, i) => (
-        <VariableRow key={i} variable={v} index={i} onChange={handleInputChange} onRemove={handleInputRemove} />
+        <VariableRow
+          key={i}
+          variable={v}
+          index={i}
+          onChange={handleInputChange}
+          onRemove={handleInputRemove}
+        />
       ))}
       <Button
         size="small"
-        onClick={() => update('inputVariables', [...inputVars, { name: '', type: 'string' }])}
+        onClick={() =>
+          update('inputVariables', [...inputVars, { name: '', type: 'string' }])
+        }
         sx={{ textTransform: 'none', fontSize: '0.8rem', mb: 3 }}
       >
         + Add
@@ -100,11 +139,19 @@ export function StartNodeConfig({ nodeData, update }: NodeConfigProps) {
         State variables
       </Typography>
       {stateVars.map((v, i) => (
-        <VariableRow key={i} variable={v} index={i} onChange={handleStateChange} onRemove={handleStateRemove} />
+        <VariableRow
+          key={i}
+          variable={v}
+          index={i}
+          onChange={handleStateChange}
+          onRemove={handleStateRemove}
+        />
       ))}
       <Button
         size="small"
-        onClick={() => update('stateVariables', [...stateVars, { name: '', type: 'string' }])}
+        onClick={() =>
+          update('stateVariables', [...stateVars, { name: '', type: 'string' }])
+        }
         sx={{ textTransform: 'none', fontSize: '0.8rem' }}
       >
         + Add

@@ -70,20 +70,30 @@ export class WorkflowExecutor {
     const state: Record<string, unknown> = { input: userInput };
     let previousResponseId: string | undefined;
     let finalOutput = '';
-    let currentNodeId = getFirstSequenceTarget(this.edgesBySource.get(startNode.id) || []);
+    let currentNodeId = getFirstSequenceTarget(
+      this.edgesBySource.get(startNode.id) || [],
+    );
     let steps = 0;
 
     while (currentNodeId && steps < MAX_STEPS) {
       steps++;
       const node = this.nodeMap.get(currentNodeId);
-      if (!node) { this.logger.warn(`Node ${currentNodeId} not found, stopping`); break; }
+      if (!node) {
+        this.logger.warn(`Node ${currentNodeId} not found, stopping`);
+        break;
+      }
 
       if (node.type === 'end') {
         trace.push(makeEndTrace(node, finalOutput));
         break;
       }
 
-      const result = await this.runNode(node, userInput, state, previousResponseId);
+      const result = await this.runNode(
+        node,
+        userInput,
+        state,
+        previousResponseId,
+      );
       trace.push(result.trace);
 
       if (result.trace.status === 'failed') {
@@ -94,13 +104,25 @@ export class WorkflowExecutor {
       if (result.trace.responseId) previousResponseId = result.trace.responseId;
       if (result.output !== undefined) {
         state[`${node.id}_output`] = result.output;
-        finalOutput = typeof result.output === 'string' ? result.output : JSON.stringify(result.output);
+        finalOutput =
+          typeof result.output === 'string'
+            ? result.output
+            : JSON.stringify(result.output);
       }
 
-      currentNodeId = resolveNextNode(node, result, this.edgesBySource.get(node.id) || []);
+      currentNodeId = resolveNextNode(
+        node,
+        result,
+        this.edgesBySource.get(node.id) || [],
+      );
     }
 
-    return { finalOutput, trace, state, totalDurationMs: Date.now() - startTime };
+    return {
+      finalOutput,
+      trace,
+      state,
+      totalDurationMs: Date.now() - startTime,
+    };
   }
 
   async executeStream(
@@ -115,13 +137,18 @@ export class WorkflowExecutor {
     const startNode = definition.nodes.find(n => n.type === 'start');
     if (!startNode) throw new Error('Workflow has no start node');
 
-    onEvent({ type: 'workflow.started', data: { workflowId: definition.id, input: userInput } });
+    onEvent({
+      type: 'workflow.started',
+      data: { workflowId: definition.id, input: userInput },
+    });
 
     const trace: ExecutionTraceRecord[] = [];
     const state: Record<string, unknown> = { input: userInput };
     let previousResponseId: string | undefined;
     let finalOutput = '';
-    let currentNodeId = getFirstSequenceTarget(this.edgesBySource.get(startNode.id) || []);
+    let currentNodeId = getFirstSequenceTarget(
+      this.edgesBySource.get(startNode.id) || [],
+    );
     let steps = 0;
 
     while (currentNodeId && steps < MAX_STEPS) {
@@ -134,17 +161,34 @@ export class WorkflowExecutor {
       if (node.type === 'end') {
         const endTrace = makeEndTrace(node, finalOutput);
         trace.push(endTrace);
-        onEvent({ type: 'node.completed', data: { nodeId: node.id, trace: endTrace } });
+        onEvent({
+          type: 'node.completed',
+          data: { nodeId: node.id, trace: endTrace },
+        });
         break;
       }
 
-      onEvent({ type: 'node.started', data: { nodeId: node.id, nodeType: node.type, nodeName: node.label || node.id } });
+      onEvent({
+        type: 'node.started',
+        data: {
+          nodeId: node.id,
+          nodeType: node.type,
+          nodeName: node.label || node.id,
+        },
+      });
 
       let result: NodeExecutionResult;
       if (node.type === 'agent') {
         result = await executeAgentNodeStreaming(
-          node, userInput, state, previousResponseId,
-          this.defaultModel, this.client, this.logger, onEvent, signal,
+          node,
+          userInput,
+          state,
+          previousResponseId,
+          this.defaultModel,
+          this.client,
+          this.logger,
+          onEvent,
+          signal,
         );
       } else {
         result = await this.runNode(node, userInput, state, previousResponseId);
@@ -153,24 +197,40 @@ export class WorkflowExecutor {
       trace.push(result.trace);
 
       if (result.trace.status === 'failed') {
-        onEvent({ type: 'node.failed', data: { nodeId: node.id, error: result.trace.error } });
+        onEvent({
+          type: 'node.failed',
+          data: { nodeId: node.id, error: result.trace.error },
+        });
         finalOutput = result.trace.error || 'Execution failed';
         break;
       }
 
-      onEvent({ type: 'node.completed', data: { nodeId: node.id, trace: result.trace } });
+      onEvent({
+        type: 'node.completed',
+        data: { nodeId: node.id, trace: result.trace },
+      });
 
       if (result.trace.responseId) previousResponseId = result.trace.responseId;
       if (result.output !== undefined) {
         state[`${node.id}_output`] = result.output;
-        finalOutput = typeof result.output === 'string' ? result.output : JSON.stringify(result.output);
+        finalOutput =
+          typeof result.output === 'string'
+            ? result.output
+            : JSON.stringify(result.output);
       }
 
-      currentNodeId = resolveNextNode(node, result, this.edgesBySource.get(node.id) || []);
+      currentNodeId = resolveNextNode(
+        node,
+        result,
+        this.edgesBySource.get(node.id) || [],
+      );
     }
 
     const totalDurationMs = Date.now() - startTime;
-    onEvent({ type: 'workflow.completed', data: { finalOutput, totalDurationMs } });
+    onEvent({
+      type: 'workflow.completed',
+      data: { finalOutput, totalDurationMs },
+    });
     return { finalOutput, trace, state, totalDurationMs };
   }
 
@@ -182,9 +242,25 @@ export class WorkflowExecutor {
   ): Promise<NodeExecutionResult> {
     switch (node.type) {
       case 'agent':
-        return executeAgentNode(node, userInput, state, previousResponseId, this.defaultModel, this.client, this.logger);
+        return executeAgentNode(
+          node,
+          userInput,
+          state,
+          previousResponseId,
+          this.defaultModel,
+          this.client,
+          this.logger,
+        );
       case 'classify':
-        return executeClassifyNode(node, userInput, state, previousResponseId, this.defaultModel, this.client, this.logger);
+        return executeClassifyNode(
+          node,
+          userInput,
+          state,
+          previousResponseId,
+          this.defaultModel,
+          this.client,
+          this.logger,
+        );
       case 'logic':
         return executeLogicNode(node, state);
       case 'transform':
@@ -219,12 +295,20 @@ export class WorkflowExecutor {
   }
 }
 
-function makeEndTrace(node: WorkflowNode, finalOutput: string): ExecutionTraceRecord {
+function makeEndTrace(
+  node: WorkflowNode,
+  finalOutput: string,
+): ExecutionTraceRecord {
   const now = new Date().toISOString();
   return {
-    nodeId: node.id, nodeType: 'end', nodeName: node.label || 'End',
-    input: '', output: finalOutput,
-    startedAt: now, completedAt: now,
-    status: 'completed', durationMs: 0,
+    nodeId: node.id,
+    nodeType: 'end',
+    nodeName: node.label || 'End',
+    input: '',
+    output: finalOutput,
+    startedAt: now,
+    completedAt: now,
+    status: 'completed',
+    durationMs: 0,
   };
 }

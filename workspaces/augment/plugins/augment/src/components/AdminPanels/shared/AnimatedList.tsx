@@ -39,7 +39,13 @@ export function AnimatedList({
     variant === 'fadeInUp'
       ? animations.fadeInUp
       : variant === 'scaleIn'
-        ? { '@keyframes augmentScaleIn': { from: { opacity: 0, transform: 'scale(0.95)' }, to: { opacity: 1, transform: 'scale(1)' } }, animation: 'augmentScaleIn 0.25s ease-out' }
+        ? {
+            '@keyframes augmentScaleIn': {
+              from: { opacity: 0, transform: 'scale(0.95)' },
+              to: { opacity: 1, transform: 'scale(1)' },
+            },
+            animation: 'augmentScaleIn 0.25s ease-out',
+          }
         : animations.fadeSlideIn;
 
   return (

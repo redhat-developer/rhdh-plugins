@@ -79,9 +79,7 @@ function validateModel(data: AgentWizardFormData): ValidationError[] {
   return errors;
 }
 
-export function validateAll(
-  data: AgentWizardFormData,
-): ValidationError[] {
+export function validateAll(data: AgentWizardFormData): ValidationError[] {
   return [
     ...validateIdentity(data),
     ...validateInstructions(data),

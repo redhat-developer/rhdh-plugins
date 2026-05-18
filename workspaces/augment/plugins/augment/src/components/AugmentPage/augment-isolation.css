@@ -23,10 +23,12 @@
  *   }
  */
 .augment-plugin-root {
-  --augment-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-    "SF Pro Display", "Helvetica Neue", "Segoe UI", "Roboto", sans-serif;
-  --augment-font-family-mono: "SF Mono", "JetBrains Mono", "Fira Code",
-    "Cascadia Code", "Monaco", monospace;
+  --augment-font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+    'Helvetica Neue', 'Segoe UI', 'Roboto', sans-serif;
+  --augment-font-family-mono:
+    'SF Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Monaco',
+    monospace;
   --augment-radius-xs: 4px;
   --augment-radius-sm: 8px;
   --augment-radius-md: 12px;
@@ -95,10 +97,10 @@
  * Without PF, MUI styles work fine on their own — no overrides needed. */
 
 /* PF overrides <label> font-weight/display which breaks MUI floating labels */
-.pf-v5-c-page .augment-plugin-root label[class*="MuiInputLabel"],
-.pf-v5-c-page .augment-plugin-root label[class*="MuiFormLabel"],
-.pf-v6-c-page .augment-plugin-root label[class*="MuiInputLabel"],
-.pf-v6-c-page .augment-plugin-root label[class*="MuiFormLabel"] {
+.pf-v5-c-page .augment-plugin-root label[class*='MuiInputLabel'],
+.pf-v5-c-page .augment-plugin-root label[class*='MuiFormLabel'],
+.pf-v6-c-page .augment-plugin-root label[class*='MuiInputLabel'],
+.pf-v6-c-page .augment-plugin-root label[class*='MuiFormLabel'] {
   font-weight: 400;
   line-height: 1.4375em;
   display: block;
@@ -106,8 +108,8 @@
 }
 
 /* PF overrides <fieldset> border/padding/margin, breaking MUI's notched outline */
-.pf-v5-c-page .augment-plugin-root fieldset[class*="MuiOutlinedInput"],
-.pf-v6-c-page .augment-plugin-root fieldset[class*="MuiOutlinedInput"] {
+.pf-v5-c-page .augment-plugin-root fieldset[class*='MuiOutlinedInput'],
+.pf-v6-c-page .augment-plugin-root fieldset[class*='MuiOutlinedInput'] {
   border-style: solid;
   border-width: 1px;
   padding: 0 8px;
@@ -118,8 +120,8 @@
 }
 
 /* PF overrides <legend> float/width/padding, breaking the notch gap */
-.pf-v5-c-page .augment-plugin-root fieldset[class*="MuiOutlinedInput"] legend,
-.pf-v6-c-page .augment-plugin-root fieldset[class*="MuiOutlinedInput"] legend {
+.pf-v5-c-page .augment-plugin-root fieldset[class*='MuiOutlinedInput'] legend,
+.pf-v6-c-page .augment-plugin-root fieldset[class*='MuiOutlinedInput'] legend {
   float: unset;
   width: auto;
   overflow: hidden;
@@ -132,10 +134,10 @@
 }
 
 /* PF resets list styles; restore for MUI menus */
-.pf-v5-c-page .augment-plugin-root [class*="MuiMenu-list"],
-.pf-v5-c-page .augment-plugin-root [class*="MuiList-root"],
-.pf-v6-c-page .augment-plugin-root [class*="MuiMenu-list"],
-.pf-v6-c-page .augment-plugin-root [class*="MuiList-root"] {
+.pf-v5-c-page .augment-plugin-root [class*='MuiMenu-list'],
+.pf-v5-c-page .augment-plugin-root [class*='MuiList-root'],
+.pf-v6-c-page .augment-plugin-root [class*='MuiMenu-list'],
+.pf-v6-c-page .augment-plugin-root [class*='MuiList-root'] {
   list-style: none;
   padding: 0;
   margin: 0;

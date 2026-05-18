@@ -26,14 +26,12 @@ function createMockApi(overrides: Record<string, unknown> = {}) {
     listKagentiNamespaces: jest.fn().mockResolvedValue({
       namespaces: ['team-a', 'team-b'],
     }),
-    createKagentiAgent: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        name: 'test-agent',
-        namespace: 'team-a',
-        message: 'Agent created',
-      }),
+    createKagentiAgent: jest.fn().mockResolvedValue({
+      success: true,
+      name: 'test-agent',
+      namespace: 'team-a',
+      message: 'Agent created',
+    }),
     ...overrides,
   };
 }

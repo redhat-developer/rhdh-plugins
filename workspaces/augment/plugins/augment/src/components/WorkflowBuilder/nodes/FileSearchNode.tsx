@@ -3,7 +3,10 @@ import type { NodeProps } from '@xyflow/react';
 import SearchIcon from '@mui/icons-material/Search';
 import { BaseNode } from './BaseNode';
 
-export const FileSearchNode = memo(function FileSearchNode({ data, selected }: NodeProps) {
+export const FileSearchNode = memo(function FileSearchNode({
+  data,
+  selected,
+}: NodeProps) {
   const d = data as Record<string, unknown>;
   const label = (d.label as string) || 'File search';
 

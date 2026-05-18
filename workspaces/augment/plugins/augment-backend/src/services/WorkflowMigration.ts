@@ -199,7 +199,8 @@ export function migrateAgentConfigsToWorkflow(
 
   return {
     id: workflowId,
-    name: workflowName || `Migrated: ${agentsConfig[entryKey]?.name ?? entryKey}`,
+    name:
+      workflowName || `Migrated: ${agentsConfig[entryKey]?.name ?? entryKey}`,
     description: `Auto-migrated from ${keys.length} agent configuration(s)`,
     version: 0,
     createdAt: now,
@@ -234,7 +235,9 @@ function computeLevels(
   entryKey: string,
 ): Map<string, number> {
   const levels = new Map<string, number>();
-  const queue: Array<{ key: string; level: number }> = [{ key: entryKey, level: 0 }];
+  const queue: Array<{ key: string; level: number }> = [
+    { key: entryKey, level: 0 },
+  ];
   levels.set(entryKey, 0);
 
   while (queue.length > 0) {
@@ -242,10 +245,7 @@ function computeLevels(
     const config = agentsConfig[key];
     if (!config) continue;
 
-    const targets = [
-      ...(config.handoffs ?? []),
-      ...(config.asTools ?? []),
-    ];
+    const targets = [...(config.handoffs ?? []), ...(config.asTools ?? [])];
 
     for (const target of targets) {
       if (!levels.has(target) && agentsConfig[target]) {

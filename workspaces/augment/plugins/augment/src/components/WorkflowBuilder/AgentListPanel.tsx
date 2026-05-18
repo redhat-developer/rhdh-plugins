@@ -28,33 +28,93 @@ const CATEGORIES: { title: string; items: PaletteItem[] }[] = [
   {
     title: 'Core',
     items: [
-      { type: 'agent', label: 'Agent', icon: <SmartToyIcon />, tooltip: 'Call an LLM with instructions and tools' },
-      { type: 'classify', label: 'Classify', icon: <CategoryIcon />, tooltip: 'Route input based on classification' },
-      { type: 'end', label: 'End', icon: <StopIcon />, tooltip: 'End the workflow' },
-      { type: 'note', label: 'Note', icon: <StickyNote2Icon />, tooltip: 'Add a comment (not executed)' },
+      {
+        type: 'agent',
+        label: 'Agent',
+        icon: <SmartToyIcon />,
+        tooltip: 'Call an LLM with instructions and tools',
+      },
+      {
+        type: 'classify',
+        label: 'Classify',
+        icon: <CategoryIcon />,
+        tooltip: 'Route input based on classification',
+      },
+      {
+        type: 'end',
+        label: 'End',
+        icon: <StopIcon />,
+        tooltip: 'End the workflow',
+      },
+      {
+        type: 'note',
+        label: 'Note',
+        icon: <StickyNote2Icon />,
+        tooltip: 'Add a comment (not executed)',
+      },
     ],
   },
   {
     title: 'Tools',
     items: [
-      { type: 'file_search', label: 'File search', icon: <SearchIcon />, tooltip: 'Search files in a vector store' },
-      { type: 'guardrail', label: 'Guardrails', icon: <ShieldIcon />, tooltip: 'Validate input or output' },
-      { type: 'mcp', label: 'MCP', icon: <HubIcon />, tooltip: 'Connect to an MCP server' },
+      {
+        type: 'file_search',
+        label: 'File search',
+        icon: <SearchIcon />,
+        tooltip: 'Search files in a vector store',
+      },
+      {
+        type: 'guardrail',
+        label: 'Guardrails',
+        icon: <ShieldIcon />,
+        tooltip: 'Validate input or output',
+      },
+      {
+        type: 'mcp',
+        label: 'MCP',
+        icon: <HubIcon />,
+        tooltip: 'Connect to an MCP server',
+      },
     ],
   },
   {
     title: 'Logic',
     items: [
-      { type: 'logic', label: 'If / else', icon: <AccountTreeIcon />, tooltip: 'Branch on a condition' },
-      { type: 'while', label: 'While', icon: <LoopIcon />, tooltip: 'Loop while condition is true' },
-      { type: 'user_interaction', label: 'User approval', icon: <PersonIcon />, tooltip: 'Pause for user approval' },
+      {
+        type: 'logic',
+        label: 'If / else',
+        icon: <AccountTreeIcon />,
+        tooltip: 'Branch on a condition',
+      },
+      {
+        type: 'while',
+        label: 'While',
+        icon: <LoopIcon />,
+        tooltip: 'Loop while condition is true',
+      },
+      {
+        type: 'user_interaction',
+        label: 'User approval',
+        icon: <PersonIcon />,
+        tooltip: 'Pause for user approval',
+      },
     ],
   },
   {
     title: 'Data',
     items: [
-      { type: 'transform', label: 'Transform', icon: <TransformIcon />, tooltip: 'Transform data with an expression' },
-      { type: 'set_state', label: 'Set state', icon: <DataObjectIcon />, tooltip: 'Set a workflow state variable' },
+      {
+        type: 'transform',
+        label: 'Transform',
+        icon: <TransformIcon />,
+        tooltip: 'Transform data with an expression',
+      },
+      {
+        type: 'set_state',
+        label: 'Set state',
+        icon: <DataObjectIcon />,
+        tooltip: 'Set a workflow state variable',
+      },
     ],
   },
 ];
@@ -100,13 +160,24 @@ export function AgentListPanel({ onAddNode }: AgentListPanelProps) {
             {cat.title}
           </Typography>
           {cat.items.map(item => (
-            <Tooltip key={item.type} title={item.tooltip} placement="right" arrow enterDelay={400}>
+            <Tooltip
+              key={item.type}
+              title={item.tooltip}
+              placement="right"
+              arrow
+              enterDelay={400}
+            >
               <Box
                 role="button"
                 tabIndex={0}
                 aria-label={`Add ${item.label} node`}
                 onClick={() => onAddNode(item.type)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onAddNode(item.type); } }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onAddNode(item.type);
+                  }
+                }}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -125,10 +196,19 @@ export function AgentListPanel({ onAddNode }: AgentListPanelProps) {
                   },
                 }}
               >
-                <Box sx={{ color: nodeColor(item.type, mode), display: 'flex', '& svg': { fontSize: 16 } }}>
+                <Box
+                  sx={{
+                    color: nodeColor(item.type, mode),
+                    display: 'flex',
+                    '& svg': { fontSize: 16 },
+                  }}
+                >
                   {item.icon}
                 </Box>
-                <Typography variant="body2" sx={{ fontSize: '0.78rem', color: 'text.primary' }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontSize: '0.78rem', color: 'text.primary' }}
+                >
                   {item.label}
                 </Typography>
               </Box>

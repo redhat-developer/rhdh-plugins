@@ -21,7 +21,11 @@ import IconButton from '@mui/material/IconButton';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import { getAvatarColor, getFrameworkColor, LIFECYCLE_STAGE_CONFIG } from './marketplace.constants';
+import {
+  getAvatarColor,
+  getFrameworkColor,
+  LIFECYCLE_STAGE_CONFIG,
+} from './marketplace.constants';
 import { cardSx, cardAccentSx, avatarSx } from './marketplace.styles';
 
 interface CompactAgentCardProps {
@@ -46,14 +50,27 @@ export function CompactAgentCard({ agent, onClick }: CompactAgentCardProps) {
       role="button"
       tabIndex={0}
       onClick={onClick}
-      onKeyDown={e => { if (e.key === 'Enter') onClick(); }}
+      onKeyDown={e => {
+        if (e.key === 'Enter') onClick();
+      }}
       sx={cardSx(theme, isDark, avatarColor)}
     >
       {/* Left accent */}
       <Box sx={cardAccentSx(avatarColor, isReady)} />
 
       {/* Content */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1, px: 3, py: 2.5, minWidth: 0 }}>
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 1,
+          px: 3,
+          py: 2.5,
+          minWidth: 0,
+        }}
+      >
         {/* Top row: Avatar + Name + Status */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={avatarSx(isDark, avatarColor)}>
@@ -64,11 +81,18 @@ export function CompactAgentCard({ agent, onClick }: CompactAgentCardProps) {
               variant="body1"
               noWrap
               title={agent.name}
-              sx={{ fontWeight: 700, fontSize: '0.9rem', color: theme.palette.text.primary, lineHeight: 1.3 }}
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                color: theme.palette.text.primary,
+                lineHeight: 1.3,
+              }}
             >
               {agent.name}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}
+            >
               {stageConfig && (
                 <Typography
                   variant="caption"
@@ -87,22 +111,45 @@ export function CompactAgentCard({ agent, onClick }: CompactAgentCardProps) {
               )}
               {agent.framework && (
                 <Tooltip title={agent.framework} placement="top">
-                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: fwColor, flexShrink: 0 }} />
+                  <Box
+                    sx={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      bgcolor: fwColor,
+                      flexShrink: 0,
+                    }}
+                  />
                 </Tooltip>
               )}
               {isReady && (
-                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: theme.palette.success.main, flexShrink: 0, boxShadow: `0 0 5px ${alpha(theme.palette.success.main, 0.5)}` }} />
+                <Box
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    bgcolor: theme.palette.success.main,
+                    flexShrink: 0,
+                    boxShadow: `0 0 5px ${alpha(theme.palette.success.main, 0.5)}`,
+                  }}
+                />
               )}
             </Box>
           </Box>
           <Tooltip title="Start Chat" placement="left">
             <IconButton
               size="small"
-              onClick={e => { e.stopPropagation(); onClick(); }}
+              onClick={e => {
+                e.stopPropagation();
+                onClick();
+              }}
               sx={{
                 color: theme.palette.text.disabled,
                 transition: 'all 0.15s',
-                '&:hover': { color: theme.palette.primary.main, bgcolor: alpha(theme.palette.primary.main, 0.08) },
+                '&:hover': {
+                  color: theme.palette.primary.main,
+                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                },
               }}
             >
               <ChatBubbleOutlineIcon sx={{ fontSize: 18 }} />
@@ -124,7 +171,8 @@ export function CompactAgentCard({ agent, onClick }: CompactAgentCardProps) {
             pl: 7,
           }}
         >
-          {agent.description || `${agent.name} — an AI agent ready to assist you.`}
+          {agent.description ||
+            `${agent.name} — an AI agent ready to assist you.`}
         </Typography>
       </Box>
     </Box>

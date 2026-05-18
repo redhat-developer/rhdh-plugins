@@ -63,7 +63,8 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
   const { status } = useStatus();
-  const hasAgentCards = status?.capabilities?.agentCards ?? (status?.providerId === 'kagenti');
+  const hasAgentCards =
+    status?.capabilities?.agentCards ?? status?.providerId === 'kagenti';
   const { isDev, toggleMode } = useChatViewMode();
 
   const [agentCard, setAgentCard] = useState<KagentiAgentCard | null>(null);
@@ -230,7 +231,11 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
                 tabIndex={0}
                 role="img"
                 aria-label={`Warning: ${healthWarning}`}
-                sx={{ fontSize: 16, color: theme.palette.warning.main, cursor: 'help' }}
+                sx={{
+                  fontSize: 16,
+                  color: theme.palette.warning.main,
+                  cursor: 'help',
+                }}
               />
             </Tooltip>
           )}

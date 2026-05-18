@@ -57,10 +57,7 @@ export function createRateLimiter(opts: {
       'X-RateLimit-Remaining',
       String(Math.max(0, maxRequests - entry.count)),
     );
-    res.setHeader(
-      'X-RateLimit-Reset',
-      String(Math.ceil(entry.resetAt / 1000)),
-    );
+    res.setHeader('X-RateLimit-Reset', String(Math.ceil(entry.resetAt / 1000)));
 
     if (entry.count > maxRequests) {
       res.status(429).json({

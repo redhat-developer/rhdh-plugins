@@ -51,10 +51,19 @@ interface AgentCatalogCardProps {
   onDelete?: () => void;
 }
 
-function statusDot(status: string, palette: { success: { main: string }; warning: { main: string }; error: { main: string }; text: { disabled: string } }) {
+function statusDot(
+  status: string,
+  palette: {
+    success: { main: string };
+    warning: { main: string };
+    error: { main: string };
+    text: { disabled: string };
+  },
+) {
   const s = status?.toLowerCase() ?? '';
   if (s === 'ready' || s === 'running') return palette.success.main;
-  if (s === 'pending' || s === 'building' || s === 'not ready') return palette.warning.main;
+  if (s === 'pending' || s === 'building' || s === 'not ready')
+    return palette.warning.main;
   if (s === 'failed' || s === 'error') return palette.error.main;
   return palette.text.disabled;
 }
@@ -102,7 +111,9 @@ export function AgentCatalogCard({
       role="button"
       tabIndex={0}
       onClick={onClick}
-      onKeyDown={e => { if (e.key === 'Enter') onClick(); }}
+      onKeyDown={e => {
+        if (e.key === 'Enter') onClick();
+      }}
       sx={{
         ...glass,
         ...animations.fadeSlideIn,
@@ -166,7 +177,10 @@ export function AgentCatalogCard({
             <Typography
               variant="caption"
               noWrap
-              sx={{ color: theme.palette.text.secondary, fontSize: typeScale.caption.fontSize }}
+              sx={{
+                color: theme.palette.text.secondary,
+                fontSize: typeScale.caption.fontSize,
+              }}
             >
               {namespace}
             </Typography>
@@ -268,17 +282,29 @@ export function AgentCatalogCard({
       </Box>
 
       {/* Footer: source + time */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <Typography
           variant="caption"
-          sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.68rem' }}
+          sx={{
+            color: alpha(theme.palette.text.secondary, 0.7),
+            fontSize: '0.68rem',
+          }}
         >
           {source === 'orchestration' ? 'Responses API' : 'Platform Agent'}
         </Typography>
         {createdAt && (
           <Typography
             variant="caption"
-            sx={{ color: alpha(theme.palette.text.secondary, 0.6), fontSize: '0.68rem' }}
+            sx={{
+              color: alpha(theme.palette.text.secondary, 0.6),
+              fontSize: '0.68rem',
+            }}
           >
             {timeAgo(createdAt)}
           </Typography>

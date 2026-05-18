@@ -30,13 +30,24 @@ interface StatusBarProps {
  * Live system status strip -- 36px horizontal bar showing overall health.
  * Color-coded: green when all healthy, amber when warnings, red when critical.
  */
-export function StatusBar({ ready, total, pendingReview, lastDeploy }: StatusBarProps) {
+export function StatusBar({
+  ready,
+  total,
+  pendingReview,
+  lastDeploy,
+}: StatusBarProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
   const ratio = total > 0 ? ready / total : 1;
-  const statusColor = ratio >= 0.9 ? STATUS_COLORS.healthy : ratio >= 0.5 ? STATUS_COLORS.warning : STATUS_COLORS.critical;
-  const statusLabel = ratio >= 0.9 ? 'Operational' : ratio >= 0.5 ? 'Degraded' : 'Critical';
+  const statusColor =
+    ratio >= 0.9
+      ? STATUS_COLORS.healthy
+      : ratio >= 0.5
+        ? STATUS_COLORS.warning
+        : STATUS_COLORS.critical;
+  const statusLabel =
+    ratio >= 0.9 ? 'Operational' : ratio >= 0.5 ? 'Degraded' : 'Critical';
 
   return (
     <Box
@@ -69,23 +80,42 @@ export function StatusBar({ ready, total, pendingReview, lastDeploy }: StatusBar
         />
         <Typography
           variant="caption"
-          sx={{ fontWeight: 700, fontSize: '0.72rem', color: statusColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+          sx={{
+            fontWeight: 700,
+            fontSize: '0.72rem',
+            color: statusColor,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}
         >
           {statusLabel}
         </Typography>
       </Box>
 
       {/* Metrics */}
-      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem' }}>
+      <Typography
+        variant="caption"
+        sx={{ color: 'text.secondary', fontSize: '0.72rem' }}
+      >
         Agents: {ready}/{total} ready
       </Typography>
       {pendingReview > 0 && (
-        <Typography variant="caption" sx={{ color: STATUS_COLORS.warning, fontSize: '0.72rem', fontWeight: 600 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: STATUS_COLORS.warning,
+            fontSize: '0.72rem',
+            fontWeight: 600,
+          }}
+        >
           Queue: {pendingReview}
         </Typography>
       )}
       {lastDeploy && (
-        <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.72rem', ml: 'auto' }}>
+        <Typography
+          variant="caption"
+          sx={{ color: 'text.disabled', fontSize: '0.72rem', ml: 'auto' }}
+        >
           Last deploy: {lastDeploy}
         </Typography>
       )}

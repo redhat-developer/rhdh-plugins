@@ -506,11 +506,9 @@ export function registerAgentRoutes(
           published: boolean;
         };
         if (!Array.isArray(agentIds) || typeof published !== 'boolean') {
-          res
-            .status(400)
-            .json({
-              error: 'agentIds (string[]) and published (boolean) required',
-            });
+          res.status(400).json({
+            error: 'agentIds (string[]) and published (boolean) required',
+          });
           return;
         }
 

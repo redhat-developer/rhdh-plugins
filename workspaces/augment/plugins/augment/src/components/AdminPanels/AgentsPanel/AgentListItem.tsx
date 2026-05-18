@@ -38,7 +38,10 @@ interface AgentListItemProps {
   onSelect: (key: string) => void;
 }
 
-const ROLE_CHIP_CONFIG: Record<PublishAsRole, { label: string; color: 'primary' | 'default' | 'secondary' }> = {
+const ROLE_CHIP_CONFIG: Record<
+  PublishAsRole,
+  { label: string; color: 'primary' | 'default' | 'secondary' }
+> = {
   router: { label: 'Router', color: 'primary' },
   specialist: { label: 'Specialist', color: 'secondary' },
   standalone: { label: 'Standalone', color: 'default' },

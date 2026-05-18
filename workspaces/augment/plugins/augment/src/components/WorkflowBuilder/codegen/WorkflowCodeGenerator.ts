@@ -34,8 +34,12 @@ export function generateWorkflowCode(
 
   const agentNodes = getAgentNodes(workflow.nodes);
   const classifyNodes = workflow.nodes.filter(n => n.type === 'classify');
-  const hasOutputSchema = agentNodes.some(n => (n.data as Record<string, unknown>).outputSchema != null);
-  const hasUserInteraction = workflow.nodes.some(n => n.type === 'user_interaction');
+  const hasOutputSchema = agentNodes.some(
+    n => (n.data as Record<string, unknown>).outputSchema != null,
+  );
+  const hasUserInteraction = workflow.nodes.some(
+    n => n.type === 'user_interaction',
+  );
   const hasSetState = workflow.nodes.some(n => n.type === 'set_state');
 
   const imports: string[] = [];
@@ -50,8 +54,12 @@ export function generateWorkflowCode(
   imports.push(`  type AgentInputItem,`);
   imports.push(`} from "@openai/agents";`);
 
-  const agentDeclarations = agentNodes.map(n => generateAgentDeclaration(n, defaultModel)).join('\n\n');
-  const classifyDeclarations = classifyNodes.map(n => generateClassifyDeclaration(n, defaultModel)).join('\n\n');
+  const agentDeclarations = agentNodes
+    .map(n => generateAgentDeclaration(n, defaultModel))
+    .join('\n\n');
+  const classifyDeclarations = classifyNodes
+    .map(n => generateClassifyDeclaration(n, defaultModel))
+    .join('\n\n');
   const execution = generateRunnerExecution(workflow.nodes, workflow.edges);
 
   let approvalHelper = '';
@@ -67,7 +75,9 @@ async function requestApproval(message: string): Promise<boolean> {
 `;
   }
 
-  const stateDecl = hasSetState ? `\n    const state: Record<string, unknown> = {};\n` : '';
+  const stateDecl = hasSetState
+    ? `\n    const state: Record<string, unknown> = {};\n`
+    : '';
 
   return `${imports.join('\n')}
 

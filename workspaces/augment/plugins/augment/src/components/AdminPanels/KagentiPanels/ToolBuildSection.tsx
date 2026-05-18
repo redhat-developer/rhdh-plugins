@@ -69,8 +69,7 @@ export function ToolBuildSection({
     phaseLower === 'workqueue';
   const canTriggerBuild =
     buildInfo.buildRegistered && !buildIsRunning && !triggeringBuild;
-  const showFinalize =
-    buildInfo.hasBuildRun && phaseLower === 'succeeded';
+  const showFinalize = buildInfo.hasBuildRun && phaseLower === 'succeeded';
 
   return (
     <>

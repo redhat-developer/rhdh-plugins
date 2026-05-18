@@ -60,9 +60,7 @@ export function GuardrailsStep({
           renderTags={(value, getTagProps) =>
             value.map((option, index) => {
               const { key, ...rest } = getTagProps({ index });
-              return (
-                <Chip key={key} label={option} size="small" {...rest} />
-              );
+              return <Chip key={key} label={option} size="small" {...rest} />;
             })
           }
           renderInput={params => (
@@ -82,9 +80,7 @@ export function GuardrailsStep({
           control={
             <Switch
               checked={formData.resetToolChoice}
-              onChange={e =>
-                updateField('resetToolChoice', e.target.checked)
-              }
+              onChange={e => updateField('resetToolChoice', e.target.checked)}
             />
           }
           label={
@@ -110,7 +106,8 @@ export function GuardrailsStep({
             <Box>
               <Typography variant="body2">Nest Handoff History</Typography>
               <Typography variant="caption" color="text.secondary">
-                Include conversation history from previous agents in handoff context
+                Include conversation history from previous agents in handoff
+                context
               </Typography>
             </Box>
           }

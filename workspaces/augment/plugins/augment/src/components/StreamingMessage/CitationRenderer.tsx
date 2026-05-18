@@ -27,7 +27,9 @@ interface CitationRendererProps {
   citations: StreamCitationReference[];
 }
 
-export const CitationRenderer: React.FC<CitationRendererProps> = ({ citations }) => {
+export const CitationRenderer: React.FC<CitationRendererProps> = ({
+  citations,
+}) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -54,10 +56,16 @@ export const CitationRenderer: React.FC<CitationRendererProps> = ({ citations })
             citation.title || t('citation.unnamedSource', { n: idx + 1 });
           const tooltipContent = citation.snippet ? (
             <Box sx={{ maxWidth: 300 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem', mb: 0.5 }}>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, fontSize: '0.75rem', mb: 0.5 }}
+              >
                 {label}
               </Typography>
-              <Typography variant="caption" sx={{ display: 'block', lineHeight: 1.4 }}>
+              <Typography
+                variant="caption"
+                sx={{ display: 'block', lineHeight: 1.4 }}
+              >
                 {citation.snippet.length > 200
                   ? `${citation.snippet.substring(0, 200)}...`
                   : citation.snippet}
@@ -92,7 +100,10 @@ export const CitationRenderer: React.FC<CitationRendererProps> = ({ citations })
                         width: 16,
                         height: 16,
                         borderRadius: '50%',
-                        bgcolor: alpha(theme.palette.primary.main, isDark ? 0.2 : 0.1),
+                        bgcolor: alpha(
+                          theme.palette.primary.main,
+                          isDark ? 0.2 : 0.1,
+                        ),
                         color: theme.palette.primary.main,
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -105,7 +116,9 @@ export const CitationRenderer: React.FC<CitationRendererProps> = ({ citations })
                       {idx + 1}
                     </Box>
                     <span>{label}</span>
-                    {citation.url && <OpenInNewIcon sx={{ fontSize: 10, ml: 0.25 }} />}
+                    {citation.url && (
+                      <OpenInNewIcon sx={{ fontSize: 10, ml: 0.25 }} />
+                    )}
                   </Box>
                 }
                 size="small"
@@ -113,7 +126,12 @@ export const CitationRenderer: React.FC<CitationRendererProps> = ({ citations })
                 clickable={!!citation.url}
                 onClick={
                   citation.url
-                    ? () => window.open(citation.url, '_blank', 'noopener,noreferrer')
+                    ? () =>
+                        window.open(
+                          citation.url,
+                          '_blank',
+                          'noopener,noreferrer',
+                        )
                     : undefined
                 }
                 sx={{

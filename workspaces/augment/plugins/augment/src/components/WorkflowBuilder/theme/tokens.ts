@@ -22,20 +22,20 @@ export { sharedSpacing as spacing, sharedBorderRadius as borderRadius };
 // Node type colors — each pair is tuned for WCAG AA contrast with white text
 // ---------------------------------------------------------------------------
 export const NODE_COLORS: Record<string, { light: string; dark: string }> = {
-  start:            { light: '#27ae60', dark: '#2ecc71' },
-  end:              { light: '#636e72', dark: '#7f8c8d' },
-  agent:            { light: '#b8960f', dark: '#d4ad12' },
-  classify:         { light: '#6c3ce0', dark: '#8b5cf6' },
-  logic:            { light: '#d35400', dark: '#e67e22' },
-  tool:             { light: '#1976d2', dark: '#42a5f5' },
-  guardrail:        { light: '#00796b', dark: '#26a69a' },
-  user_interaction:  { light: '#7b2d8e', dark: '#ab47bc' },
-  note:             { light: '#607d8b', dark: '#78909c' },
-  transform:        { light: '#455a64', dark: '#607d8b' },
-  set_state:        { light: '#37474f', dark: '#546e7a' },
-  file_search:      { light: '#1565c0', dark: '#42a5f5' },
-  mcp:              { light: '#0d47a1', dark: '#1e88e5' },
-  while:            { light: '#27ae60', dark: '#2ecc71' },
+  start: { light: '#27ae60', dark: '#2ecc71' },
+  end: { light: '#636e72', dark: '#7f8c8d' },
+  agent: { light: '#b8960f', dark: '#d4ad12' },
+  classify: { light: '#6c3ce0', dark: '#8b5cf6' },
+  logic: { light: '#d35400', dark: '#e67e22' },
+  tool: { light: '#1976d2', dark: '#42a5f5' },
+  guardrail: { light: '#00796b', dark: '#26a69a' },
+  user_interaction: { light: '#7b2d8e', dark: '#ab47bc' },
+  note: { light: '#607d8b', dark: '#78909c' },
+  transform: { light: '#455a64', dark: '#607d8b' },
+  set_state: { light: '#37474f', dark: '#546e7a' },
+  file_search: { light: '#1565c0', dark: '#42a5f5' },
+  mcp: { light: '#0d47a1', dark: '#1e88e5' },
+  while: { light: '#27ae60', dark: '#2ecc71' },
 };
 
 export function nodeColor(type: string, mode: 'light' | 'dark'): string {
@@ -46,15 +46,25 @@ export function nodeColor(type: string, mode: 'light' | 'dark'): string {
 // Typography scale — uses shared type scale as base, adds workflow-specific
 // ---------------------------------------------------------------------------
 export const TYPE_SCALE = {
-  pageTitle:    { ...sharedTypeScale.pageTitle, variant: 'h4' as const },
-  sectionTitle: { ...sharedTypeScale.sectionTitle, variant: 'subtitle1' as const },
-  cardTitle:    { variant: 'subtitle2' as const, weight: sharedTypeScale.sectionTitle.fontWeight },
-  body:         { variant: 'body2' as const, weight: sharedTypeScale.body.fontWeight },
-  caption:      { variant: 'caption' as const, weight: sharedTypeScale.caption.fontWeight, size: sharedTypeScale.caption.fontSize },
-  microLabel:   { weight: 600, size: sharedTypeScale.micro.fontSize },
-  nodeTitle:    { weight: 700, size: '0.82rem' },
+  pageTitle: { ...sharedTypeScale.pageTitle, variant: 'h4' as const },
+  sectionTitle: {
+    ...sharedTypeScale.sectionTitle,
+    variant: 'subtitle1' as const,
+  },
+  cardTitle: {
+    variant: 'subtitle2' as const,
+    weight: sharedTypeScale.sectionTitle.fontWeight,
+  },
+  body: { variant: 'body2' as const, weight: sharedTypeScale.body.fontWeight },
+  caption: {
+    variant: 'caption' as const,
+    weight: sharedTypeScale.caption.fontWeight,
+    size: sharedTypeScale.caption.fontSize,
+  },
+  microLabel: { weight: 600, size: sharedTypeScale.micro.fontSize },
+  nodeTitle: { weight: 700, size: '0.82rem' },
   nodeSubtitle: { weight: 400, size: sharedTypeScale.micro.fontSize },
-  nodeDesc:     { weight: 400, size: '0.72rem' },
+  nodeDesc: { weight: 400, size: '0.72rem' },
 } as const;
 
 // ---------------------------------------------------------------------------

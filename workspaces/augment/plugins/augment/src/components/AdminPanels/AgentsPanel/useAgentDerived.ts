@@ -37,7 +37,9 @@ export function useAgentDerived(
 
   const selectedAgentRole: PublishAsRole = useMemo(
     () =>
-      selectedAgentKey ? deriveAgentRole(selectedAgentKey, agents) : 'standalone',
+      selectedAgentKey
+        ? deriveAgentRole(selectedAgentKey, agents)
+        : 'standalone',
     [selectedAgentKey, agents],
   );
 

@@ -15,7 +15,10 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { WorkflowNode, McpNodeData } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  WorkflowNode,
+  McpNodeData,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { NodeExecutionResult } from './types';
 
 /**
@@ -37,30 +40,45 @@ export async function executeMcpNode(
     return {
       output: undefined,
       trace: {
-        nodeId: node.id, nodeType: 'mcp',
+        nodeId: node.id,
+        nodeType: 'mcp',
         nodeName: serverLabel || 'MCP',
-        input: '', output: '',
-        startedAt, completedAt: new Date().toISOString(),
-        status: 'failed', error: 'MCP server URL is required',
+        input: '',
+        output: '',
+        startedAt,
+        completedAt: new Date().toISOString(),
+        status: 'failed',
+        error: 'MCP server URL is required',
         durationMs: Date.now() - startMs,
       },
     };
   }
 
-  const existing = (state._mcpServers as Array<{ serverUrl: string; serverLabel: string }> | undefined) || [];
-  state._mcpServers = [...existing, { serverUrl, serverLabel: serverLabel || 'MCP' }];
+  const existing =
+    (state._mcpServers as
+      | Array<{ serverUrl: string; serverLabel: string }>
+      | undefined) || [];
+  state._mcpServers = [
+    ...existing,
+    { serverUrl, serverLabel: serverLabel || 'MCP' },
+  ];
 
-  logger.info(`MCP node ${node.id}: registered server ${serverLabel} at ${serverUrl}`);
+  logger.info(
+    `MCP node ${node.id}: registered server ${serverLabel} at ${serverUrl}`,
+  );
 
   return {
     output: { serverUrl, serverLabel },
     trace: {
-      nodeId: node.id, nodeType: 'mcp',
+      nodeId: node.id,
+      nodeType: 'mcp',
       nodeName: serverLabel || 'MCP',
       input: serverUrl,
       output: `Registered MCP server: ${serverLabel} (${serverUrl})`,
-      startedAt, completedAt: new Date().toISOString(),
-      status: 'completed', durationMs: Date.now() - startMs,
+      startedAt,
+      completedAt: new Date().toISOString(),
+      status: 'completed',
+      durationMs: Date.now() - startMs,
     },
   };
 }

@@ -38,43 +38,46 @@ interface DeveloperHomeProps {
 export function DeveloperHome({ onNavigate }: DeveloperHomeProps) {
   const theme = useTheme();
 
-  const actions = useCallback(() => [
-    {
-      id: 'agents',
-      label: 'Agent Catalog',
-      description: 'Deploy, manage, and chat with AI agents',
-      icon: <SmartToyIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-agents' as AdminPanel),
-    },
-    {
-      id: 'tools',
-      label: 'Tool Registry',
-      description: 'Register and configure MCP tool servers',
-      icon: <BuildIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-tools' as AdminPanel),
-    },
-    {
-      id: 'sandbox',
-      label: 'Sandbox',
-      description: 'Test agents in an interactive session',
-      icon: <ScienceIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-sandbox' as AdminPanel),
-    },
-    {
-      id: 'builds',
-      label: 'Build Pipelines',
-      description: 'Trigger and monitor container image builds',
-      icon: <AccountTreeOutlinedIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-builds' as AdminPanel),
-    },
-    {
-      id: 'docs',
-      label: 'Documentation',
-      description: 'Guides, API reference, and how-to articles',
-      icon: <MenuBookIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-docs' as AdminPanel),
-    },
-  ], [onNavigate]);
+  const actions = useCallback(
+    () => [
+      {
+        id: 'agents',
+        label: 'Agent Catalog',
+        description: 'Deploy, manage, and chat with AI agents',
+        icon: <SmartToyIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-agents' as AdminPanel),
+      },
+      {
+        id: 'tools',
+        label: 'Tool Registry',
+        description: 'Register and configure MCP tool servers',
+        icon: <BuildIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-tools' as AdminPanel),
+      },
+      {
+        id: 'sandbox',
+        label: 'Sandbox',
+        description: 'Test agents in an interactive session',
+        icon: <ScienceIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-sandbox' as AdminPanel),
+      },
+      {
+        id: 'builds',
+        label: 'Build Pipelines',
+        description: 'Trigger and monitor container image builds',
+        icon: <AccountTreeOutlinedIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-builds' as AdminPanel),
+      },
+      {
+        id: 'docs',
+        label: 'Documentation',
+        description: 'Guides, API reference, and how-to articles',
+        icon: <MenuBookIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-docs' as AdminPanel),
+      },
+    ],
+    [onNavigate],
+  );
 
   return (
     <Box sx={{ maxWidth: 900 }}>

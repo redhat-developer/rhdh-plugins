@@ -73,21 +73,29 @@ export function WorkflowPreview({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const defaultOnRun = useCallback(async (text: string) => {
-    const resp = await authFetch(`${backendUrl}/api/augment/workflows/${workflowId}/run`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: text }),
-    });
-    if (!resp.ok) {
-      throw new Error(`Backend returned ${resp.status}: ${await resp.text()}`);
-    }
-    const data = await resp.json();
-    return {
-      response: data.response || data.output || 'No response',
-      trace: data.trace || [],
-    };
-  }, [backendUrl, workflowId]);
+  const defaultOnRun = useCallback(
+    async (text: string) => {
+      const resp = await authFetch(
+        `${backendUrl}/api/augment/workflows/${workflowId}/run`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input: text }),
+        },
+      );
+      if (!resp.ok) {
+        throw new Error(
+          `Backend returned ${resp.status}: ${await resp.text()}`,
+        );
+      }
+      const data = await resp.json();
+      return {
+        response: data.response || data.output || 'No response',
+        trace: data.trace || [],
+      };
+    },
+    [backendUrl, workflowId],
+  );
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
@@ -179,7 +187,11 @@ export function WorkflowPreview({
             <Typography variant="body2" color="text.secondary">
               Send a message to test this workflow
             </Typography>
-            <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, display: 'block' }}>
+            <Typography
+              variant="caption"
+              color="text.disabled"
+              sx={{ mt: 0.5, display: 'block' }}
+            >
               {workflowId}
             </Typography>
           </Box>
@@ -199,15 +211,20 @@ export function WorkflowPreview({
                 px: 1.5,
                 py: 1,
                 borderRadius: 2,
-                bgcolor: msg.role === 'user'
-                  ? theme.palette.primary.main
-                  : alpha(theme.palette.action.hover, 0.5),
-                color: msg.role === 'user'
-                  ? theme.palette.primary.contrastText
-                  : theme.palette.text.primary,
+                bgcolor:
+                  msg.role === 'user'
+                    ? theme.palette.primary.main
+                    : alpha(theme.palette.action.hover, 0.5),
+                color:
+                  msg.role === 'user'
+                    ? theme.palette.primary.contrastText
+                    : theme.palette.text.primary,
               }}
             >
-              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem' }}>
+              <Typography
+                variant="body2"
+                sx={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem' }}
+              >
                 {msg.content}
               </Typography>
             </Box>
@@ -216,7 +233,9 @@ export function WorkflowPreview({
         {loading && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
             <CircularProgress size={16} />
-            <Typography variant="caption" color="text.secondary">Processing...</Typography>
+            <Typography variant="caption" color="text.secondary">
+              Processing...
+            </Typography>
           </Box>
         )}
         <div ref={messagesEndRef} />
@@ -228,7 +247,7 @@ export function WorkflowPreview({
           <Box sx={{ maxHeight: 180, overflow: 'auto' }}>
             <ExecutionTrace
               records={currentTrace}
-              onNodeClick={(nodeId) => {
+              onNodeClick={nodeId => {
                 setActiveNodeId(nodeId);
               }}
             />

@@ -49,7 +49,11 @@ interface CapabilitiesTabProps {
   modelsLoading: boolean;
   availableMcpServers: { id: string; name: string }[];
   vectorStores: VectorStore[];
-  onUpdateAgent: (key: string, field: keyof AgentFormData, value: unknown) => void;
+  onUpdateAgent: (
+    key: string,
+    field: keyof AgentFormData,
+    value: unknown,
+  ) => void;
   onRefreshModels: () => void;
 }
 
@@ -72,20 +76,34 @@ export const CapabilitiesTab = React.memo(function CapabilitiesTab({
 
   const cleanMcpSelection = () => {
     const availableIds = new Set(availableMcpServers.map(s => s.id));
-    onUpdateAgent(agentKey, 'mcpServers', agent.mcpServers.filter(id => availableIds.has(id)));
+    onUpdateAgent(
+      agentKey,
+      'mcpServers',
+      agent.mcpServers.filter(id => availableIds.has(id)),
+    );
   };
 
   return (
     <Box data-tour="orch-capabilities">
       {/* Model Override */}
       <Typography sx={SECTION_LABEL_SX}>Model</Typography>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, mt: 1, mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 0.5,
+          mt: 1,
+          mb: 3,
+        }}
+      >
         <Autocomplete
           freeSolo
           options={modelOptions}
           value={agent.model || ''}
-          onInputChange={(_e, newValue) => onUpdateAgent(agentKey, 'model', newValue)}
-          getOptionLabel={opt => typeof opt === 'string' ? opt : ''}
+          onInputChange={(_e, newValue) =>
+            onUpdateAgent(agentKey, 'model', newValue)
+          }
+          getOptionLabel={opt => (typeof opt === 'string' ? opt : '')}
           loading={modelsLoading}
           renderInput={params => (
             <TextField
@@ -108,7 +126,12 @@ export const CapabilitiesTab = React.memo(function CapabilitiesTab({
           sx={{ flex: 1, maxWidth: 480 }}
         />
         <Tooltip title="Refresh model list">
-          <IconButton size="small" onClick={onRefreshModels} disabled={modelsLoading} sx={{ mt: 0.5 }}>
+          <IconButton
+            size="small"
+            onClick={onRefreshModels}
+            disabled={modelsLoading}
+            sx={{ mt: 0.5 }}
+          >
             <RefreshIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -119,8 +142,16 @@ export const CapabilitiesTab = React.memo(function CapabilitiesTab({
         <DnsIcon sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
         <Typography sx={SECTION_LABEL_SX}>MCP Servers</Typography>
       </Box>
-      <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.75rem', mb: 1.5 }}>
-        Select which MCP tool servers this agent can access. Servers are configured in Platform Config.
+      <Typography
+        variant="body2"
+        sx={{
+          color: theme.palette.text.secondary,
+          fontSize: '0.75rem',
+          mb: 1.5,
+        }}
+      >
+        Select which MCP tool servers this agent can access. Servers are
+        configured in Platform Config.
       </Typography>
 
       {availableMcpServers.length > 0 ? (
@@ -129,16 +160,26 @@ export const CapabilitiesTab = React.memo(function CapabilitiesTab({
             <InputLabel>MCP Servers</InputLabel>
             <Select
               multiple
-              value={agent.mcpServers.filter(id => availableMcpServers.some(s => s.id === id))}
+              value={agent.mcpServers.filter(id =>
+                availableMcpServers.some(s => s.id === id),
+              )}
               label="MCP Servers"
-              onChange={e => onUpdateAgent(agentKey, 'mcpServers', e.target.value as string[])}
+              onChange={e =>
+                onUpdateAgent(
+                  agentKey,
+                  'mcpServers',
+                  e.target.value as string[],
+                )
+              }
               MenuProps={SELECT_MENU_PROPS}
               renderValue={vals => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {(vals as string[]).map(v => (
                     <Chip
                       key={v}
-                      label={availableMcpServers.find(s => s.id === v)?.name || v}
+                      label={
+                        availableMcpServers.find(s => s.id === v)?.name || v
+                      }
                       size="small"
                       sx={{ height: 22, fontSize: '0.75rem' }}
                     />
@@ -149,9 +190,17 @@ export const CapabilitiesTab = React.memo(function CapabilitiesTab({
               {availableMcpServers.map(s => (
                 <MenuItem key={s.id} value={s.id}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography sx={{ fontSize: '0.85rem' }}>{s.name}</Typography>
+                    <Typography sx={{ fontSize: '0.85rem' }}>
+                      {s.name}
+                    </Typography>
                     {s.name !== s.id && (
-                      <Typography sx={{ fontSize: '0.7rem', color: theme.palette.text.disabled, fontFamily: 'monospace' }}>
+                      <Typography
+                        sx={{
+                          fontSize: '0.7rem',
+                          color: theme.palette.text.disabled,
+                          fontFamily: 'monospace',
+                        }}
+                      >
                         {s.id}
                       </Typography>
                     )}
@@ -161,8 +210,16 @@ export const CapabilitiesTab = React.memo(function CapabilitiesTab({
             </Select>
           </FormControl>
           {agent.mcpServers.length === 0 && (
-            <Typography sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary, mt: 0.5, ml: 0.5 }}>
-              No servers selected — agent will not have access to external MCP tools
+            <Typography
+              sx={{
+                fontSize: '0.7rem',
+                color: theme.palette.text.secondary,
+                mt: 0.5,
+                ml: 0.5,
+              }}
+            >
+              No servers selected — agent will not have access to external MCP
+              tools
             </Typography>
           )}
           {staleMcpIds.length > 0 && (
@@ -191,61 +248,131 @@ export const CapabilitiesTab = React.memo(function CapabilitiesTab({
           variant="outlined"
           sx={{ mb: 2, fontSize: '0.8rem' }}
         >
-          No MCP servers configured yet. Add servers in <strong>Platform Config → Model & Tools</strong> to
-          enable external tool access for this agent.
+          No MCP servers configured yet. Add servers in{' '}
+          <strong>Platform Config → Model & Tools</strong> to enable external
+          tool access for this agent.
         </Alert>
       )}
 
       {/* Built-in Tools */}
-      <Typography sx={{ ...SECTION_LABEL_SX, mt: 2.5 }}>Built-in Tools</Typography>
+      <Typography sx={{ ...SECTION_LABEL_SX, mt: 2.5 }}>
+        Built-in Tools
+      </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1.5 }}>
         <FormControlLabel
-          control={<ToggleSwitch checked={agent.enableRAG} onChange={e => onUpdateAgent(agentKey, 'enableRAG', e.target.checked)} />}
+          control={
+            <ToggleSwitch
+              checked={agent.enableRAG}
+              onChange={e =>
+                onUpdateAgent(agentKey, 'enableRAG', e.target.checked)
+              }
+            />
+          }
           label={
             <Box>
-              <Typography sx={{ fontSize: '0.8rem' }}>Knowledge Base</Typography>
-              <Typography sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}>Search uploaded documents for context</Typography>
+              <Typography sx={{ fontSize: '0.8rem' }}>
+                Knowledge Base
+              </Typography>
+              <Typography
+                sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}
+              >
+                Search uploaded documents for context
+              </Typography>
             </Box>
           }
         />
         {agent.enableRAG && vectorStores.length > 0 && (
           <FormControl size="small" sx={{ ml: 4, mt: 0.5, mb: 0.5 }}>
-            <InputLabel sx={{ fontSize: '0.8rem' }} id={`vs-label-${agentKey}`}>Vector Stores</InputLabel>
+            <InputLabel sx={{ fontSize: '0.8rem' }} id={`vs-label-${agentKey}`}>
+              Vector Stores
+            </InputLabel>
             <Select
               multiple
               labelId={`vs-label-${agentKey}`}
               value={agent.vectorStoreIds}
               label="Vector Stores"
-              onChange={e => onUpdateAgent(agentKey, 'vectorStoreIds', e.target.value as string[])}
+              onChange={e =>
+                onUpdateAgent(
+                  agentKey,
+                  'vectorStoreIds',
+                  e.target.value as string[],
+                )
+              }
               MenuProps={SELECT_MENU_PROPS}
               renderValue={vals => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {(vals as string[]).map(v => (<Chip key={v} label={vectorStores.find(s => s.id === v)?.name || v} size="small" sx={{ height: 22, fontSize: '0.75rem' }} />))}
+                  {(vals as string[]).map(v => (
+                    <Chip
+                      key={v}
+                      label={vectorStores.find(s => s.id === v)?.name || v}
+                      size="small"
+                      sx={{ height: 22, fontSize: '0.75rem' }}
+                    />
+                  ))}
                 </Box>
               )}
             >
-              {vectorStores.map(s => (<MenuItem key={s.id} value={s.id}>{s.name || s.id}</MenuItem>))}
+              {vectorStores.map(s => (
+                <MenuItem key={s.id} value={s.id}>
+                  {s.name || s.id}
+                </MenuItem>
+              ))}
             </Select>
-            <Typography sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary, mt: 0.5, ml: 0.5 }}>
+            <Typography
+              sx={{
+                fontSize: '0.65rem',
+                color: theme.palette.text.secondary,
+                mt: 0.5,
+                ml: 0.5,
+              }}
+            >
               Leave empty to use global vector stores
             </Typography>
           </FormControl>
         )}
         <FormControlLabel
-          control={<ToggleSwitch checked={agent.enableWebSearch} onChange={e => onUpdateAgent(agentKey, 'enableWebSearch', e.target.checked)} />}
+          control={
+            <ToggleSwitch
+              checked={agent.enableWebSearch}
+              onChange={e =>
+                onUpdateAgent(agentKey, 'enableWebSearch', e.target.checked)
+              }
+            />
+          }
           label={
             <Box>
               <Typography sx={{ fontSize: '0.8rem' }}>Web Search</Typography>
-              <Typography sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}>Search the web for current information</Typography>
+              <Typography
+                sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}
+              >
+                Search the web for current information
+              </Typography>
             </Box>
           }
         />
         <FormControlLabel
-          control={<ToggleSwitch checked={agent.enableCodeInterpreter} onChange={e => onUpdateAgent(agentKey, 'enableCodeInterpreter', e.target.checked)} />}
+          control={
+            <ToggleSwitch
+              checked={agent.enableCodeInterpreter}
+              onChange={e =>
+                onUpdateAgent(
+                  agentKey,
+                  'enableCodeInterpreter',
+                  e.target.checked,
+                )
+              }
+            />
+          }
           label={
             <Box>
-              <Typography sx={{ fontSize: '0.8rem' }}>Code Interpreter</Typography>
-              <Typography sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}>Execute code to answer questions</Typography>
+              <Typography sx={{ fontSize: '0.8rem' }}>
+                Code Interpreter
+              </Typography>
+              <Typography
+                sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}
+              >
+                Execute code to answer questions
+              </Typography>
             </Box>
           }
         />

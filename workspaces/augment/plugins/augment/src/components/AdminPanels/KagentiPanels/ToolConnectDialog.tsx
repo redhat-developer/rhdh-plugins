@@ -113,7 +113,10 @@ export function ToolConnectDialog({
           <ExtensionOutlinedIcon
             sx={{ fontSize: 22, color: theme.palette.primary.main }}
           />
-          <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', color: 'text.primary' }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, fontSize: '1.1rem', color: 'text.primary' }}
+          >
             MCP Tool Discovery
           </Typography>
           {tool && (
@@ -227,7 +230,9 @@ export function ToolConnectDialog({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+      <DialogActions
+        sx={{ px: 3, pb: 2, borderTop: `1px solid ${theme.palette.divider}` }}
+      >
         <Button
           onClick={onClose}
           variant="outlined"

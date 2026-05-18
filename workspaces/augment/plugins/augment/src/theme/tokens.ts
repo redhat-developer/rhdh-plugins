@@ -475,7 +475,10 @@ export const scaleIn = {
  * @param theme - MUI theme
  * @param level - Elevation level 0-4
  */
-export function surfaceElevation(theme: Theme, level: 0 | 1 | 2 | 3 | 4): string {
+export function surfaceElevation(
+  theme: Theme,
+  level: 0 | 1 | 2 | 3 | 4,
+): string {
   const isDark = theme.palette.mode === 'dark';
   if (!isDark) {
     return theme.palette.background[level === 0 ? 'default' : 'paper'];

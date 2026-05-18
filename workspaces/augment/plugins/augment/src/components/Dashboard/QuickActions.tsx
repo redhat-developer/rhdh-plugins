@@ -36,7 +36,10 @@ interface QuickActionsProps {
 /**
  * A grid of quick-action cards for the home dashboard.
  */
-export function QuickActions({ actions, title = 'Quick Actions' }: QuickActionsProps) {
+export function QuickActions({
+  actions,
+  title = 'Quick Actions',
+}: QuickActionsProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
@@ -66,12 +69,17 @@ export function QuickActions({ actions, title = 'Quick Actions' }: QuickActionsP
             role="button"
             tabIndex={0}
             onClick={action.onClick}
-            onKeyDown={e => { if (e.key === 'Enter') action.onClick(); }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') action.onClick();
+            }}
             sx={{
               p: 2,
               borderRadius: borderRadius.md,
               border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.2 : 0.12)}`,
-              bgcolor: alpha(theme.palette.background.paper, isDark ? 0.5 : 0.8),
+              bgcolor: alpha(
+                theme.palette.background.paper,
+                isDark ? 0.5 : 0.8,
+              ),
               cursor: 'pointer',
               transition: transitions.fast,
               display: 'flex',
@@ -79,7 +87,10 @@ export function QuickActions({ actions, title = 'Quick Actions' }: QuickActionsP
               gap: 1.5,
               '&:hover': {
                 borderColor: alpha(theme.palette.primary.main, 0.3),
-                bgcolor: alpha(theme.palette.primary.main, isDark ? 0.06 : 0.03),
+                bgcolor: alpha(
+                  theme.palette.primary.main,
+                  isDark ? 0.06 : 0.03,
+                ),
                 transform: 'translateY(-1px)',
               },
               '&:focus-visible': {

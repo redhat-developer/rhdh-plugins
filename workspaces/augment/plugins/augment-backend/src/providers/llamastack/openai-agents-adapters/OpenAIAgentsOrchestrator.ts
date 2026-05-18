@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import {
-  Runner,
-  tool as createTool,
-} from '@openai/agents-core';
-import type {
-  FunctionTool as AgentsFunctionTool,
-} from '@openai/agents-core';
+import { Runner, tool as createTool } from '@openai/agents-core';
+import type { FunctionTool as AgentsFunctionTool } from '@openai/agents-core';
 import type { ChatRequest, ChatResponse } from '../../../types';
 import type { ResponsesApiService } from '../../responses-api/chat/ResponsesApiService';
 import type { ChatDeps } from '../../responses-api/chat/ResponsesApiService';
@@ -95,12 +90,19 @@ export class OpenAIAgentsOrchestrator {
     deps: ChatDeps,
   ): Promise<ChatResponse> {
     try {
-      const userInput = requireLastUserMessage(request, '[OpenAIAgentsOrchestrator] ');
+      const userInput = requireLastUserMessage(
+        request,
+        '[OpenAIAgentsOrchestrator] ',
+      );
       const backendTools = await this.discoverBackendTools(deps);
       const toolFilter = this.buildAgentToolFilter(agentsConfig, deps);
       const { defaultAgent } = buildAgentGraph(
         agentsConfig as Record<string, any>,
-        this.resolveStartAgent(request.conversationId, defaultAgentKey, request.model),
+        this.resolveStartAgent(
+          request.conversationId,
+          defaultAgentKey,
+          request.model,
+        ),
         backendTools,
         toolFilter,
       );
@@ -116,12 +118,17 @@ export class OpenAIAgentsOrchestrator {
         maxTurns: maxTurns ?? 10,
       });
 
-      this.saveConversationAgent(request.conversationId, result.lastAgent?.name);
+      this.saveConversationAgent(
+        request.conversationId,
+        result.lastAgent?.name,
+      );
 
       return toChatResponse(result);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error('[OpenAIAgentsOrchestrator] chat() failed', { error: message });
+      this.logger.error('[OpenAIAgentsOrchestrator] chat() failed', {
+        error: message,
+      });
       throw error;
     }
   }
@@ -136,12 +143,19 @@ export class OpenAIAgentsOrchestrator {
     signal?: AbortSignal,
   ): Promise<void> {
     try {
-      const userInput = requireLastUserMessage(request, '[OpenAIAgentsOrchestrator] ');
+      const userInput = requireLastUserMessage(
+        request,
+        '[OpenAIAgentsOrchestrator] ',
+      );
       const backendTools = await this.discoverBackendTools(deps);
       const toolFilter = this.buildAgentToolFilter(agentsConfig, deps);
       const { defaultAgent } = buildAgentGraph(
         agentsConfig as Record<string, any>,
-        this.resolveStartAgent(request.conversationId, defaultAgentKey, request.model),
+        this.resolveStartAgent(
+          request.conversationId,
+          defaultAgentKey,
+          request.model,
+        ),
         backendTools,
         toolFilter,
       );
@@ -165,10 +179,17 @@ export class OpenAIAgentsOrchestrator {
         }
       }
 
-      this.saveConversationAgent(request.conversationId, streamed.lastAgent?.name);
+      this.saveConversationAgent(
+        request.conversationId,
+        streamed.lastAgent?.name,
+      );
 
       const resultData = streamed as unknown as {
-        usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number };
+        usage?: {
+          inputTokens?: number;
+          outputTokens?: number;
+          totalTokens?: number;
+        };
         lastAgent?: { name?: string };
         lastResponseId?: string;
       };
@@ -193,7 +214,9 @@ export class OpenAIAgentsOrchestrator {
         return;
       }
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error('[OpenAIAgentsOrchestrator] Stream error', { error: message });
+      this.logger.error('[OpenAIAgentsOrchestrator] Stream error', {
+        error: message,
+      });
       onEvent(
         JSON.stringify({
           type: 'stream.error',
@@ -232,7 +255,10 @@ export class OpenAIAgentsOrchestrator {
 
     this.conversationAgents.set(conversationId, agentName);
 
-    if (this.conversationAgents.size > OpenAIAgentsOrchestrator.MAX_CONVERSATION_STATES) {
+    if (
+      this.conversationAgents.size >
+      OpenAIAgentsOrchestrator.MAX_CONVERSATION_STATES
+    ) {
       const oldest = this.conversationAgents.keys().next().value;
       if (oldest) {
         this.conversationAgents.delete(oldest);
@@ -248,7 +274,9 @@ export class OpenAIAgentsOrchestrator {
   private buildAgentToolFilter(
     agentsConfig: Record<string, Record<string, unknown>>,
     deps: ChatDeps,
-  ): ((agentKey: string, tools: AgentsFunctionTool[]) => AgentsFunctionTool[]) | undefined {
+  ):
+    | ((agentKey: string, tools: AgentsFunctionTool[]) => AgentsFunctionTool[])
+    | undefined {
     const hasScoping = Object.values(agentsConfig).some(
       c => Array.isArray(c.mcpServers) && (c.mcpServers as string[]).length > 0,
     );
@@ -283,25 +311,33 @@ export class OpenAIAgentsOrchestrator {
 
     const meta = await this.ensureToolMetaCached(deps);
 
-    return meta.map(t =>
-      createTool({
-        name: t.name,
-        description: t.description,
-        parameters: t.parameters as any,
-        execute: async (input: unknown) => {
-          const args = typeof input === 'string' ? input : JSON.stringify(input ?? {});
-          try {
-            return await toolExecutor.executeTool(t.name, args);
-          } catch (execError) {
-            const msg = execError instanceof Error ? execError.message : String(execError);
-            this.logger.error('[OpenAIAgentsOrchestrator] Tool execution failed', {
-              tool: t.name,
-              error: msg,
-            });
-            return JSON.stringify({ error: msg });
-          }
-        },
-      }) as unknown as AgentsFunctionTool,
+    return meta.map(
+      t =>
+        createTool({
+          name: t.name,
+          description: t.description,
+          parameters: t.parameters as any,
+          execute: async (input: unknown) => {
+            const args =
+              typeof input === 'string' ? input : JSON.stringify(input ?? {});
+            try {
+              return await toolExecutor.executeTool(t.name, args);
+            } catch (execError) {
+              const msg =
+                execError instanceof Error
+                  ? execError.message
+                  : String(execError);
+              this.logger.error(
+                '[OpenAIAgentsOrchestrator] Tool execution failed',
+                {
+                  tool: t.name,
+                  error: msg,
+                },
+              );
+              return JSON.stringify({ error: msg });
+            }
+          },
+        }) as unknown as AgentsFunctionTool,
     );
   }
 
@@ -352,10 +388,13 @@ export class OpenAIAgentsOrchestrator {
       return [];
     }
 
-    this.logger.info('[OpenAIAgentsOrchestrator] Discovered backend MCP tools', {
-      count: discovered.length,
-      servers: deps.mcpServers.map(s => s.id),
-    });
+    this.logger.info(
+      '[OpenAIAgentsOrchestrator] Discovered backend MCP tools',
+      {
+        count: discovered.length,
+        servers: deps.mcpServers.map(s => s.id),
+      },
+    );
 
     const meta: CachedToolMeta[] = discovered.map(apiTool => ({
       name: apiTool.name,

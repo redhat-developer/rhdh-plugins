@@ -117,9 +117,7 @@ export interface AugmentApi {
   /**
    * List tools with lifecycle overlay in a provider-agnostic format.
    */
-  listToolsWithLifecycle(options?: {
-    published?: boolean;
-  }): Promise<
+  listToolsWithLifecycle(options?: { published?: boolean }): Promise<
     (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & {
       published?: boolean;
       lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
@@ -809,9 +807,7 @@ export class AugmentApiClient implements AugmentApi {
     });
   }
 
-  async listToolsWithLifecycle(options?: {
-    published?: boolean;
-  }): Promise<
+  async listToolsWithLifecycle(options?: { published?: boolean }): Promise<
     (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & {
       published?: boolean;
       lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;

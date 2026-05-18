@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type {
-  RunResult,
-  RunItem,
-} from '@openai/agents-core';
+import type { RunResult, RunItem } from '@openai/agents-core';
 import type { ChatResponse } from '../../../types';
 import type { ToolCallInfo } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 
@@ -42,17 +39,15 @@ export function toChatResponse(result: RunResult<any, any>): ChatResponse {
         : JSON.stringify(result.finalOutput)
       : textOutput,
     agentName: result.lastAgent?.name,
-    toolCalls: toolCallsArr && toolCallsArr.length > 0 ? toolCallsArr : undefined,
+    toolCalls:
+      toolCallsArr && toolCallsArr.length > 0 ? toolCallsArr : undefined,
     reasoning: reasoning.length > 0 ? reasoning : undefined,
     usage,
-    pendingApprovals:
-      approvalItems.length > 0 ? approvalItems : undefined,
+    pendingApprovals: approvalItems.length > 0 ? approvalItems : undefined,
   };
 }
 
-function extractUsage(
-  result: RunResult<any, any>,
-): ChatResponse['usage'] {
+function extractUsage(result: RunResult<any, any>): ChatResponse['usage'] {
   let inputTokens = 0;
   let outputTokens = 0;
   for (const resp of result.rawResponses) {
@@ -76,7 +71,9 @@ function extractTextFromItems(items: RunItem[]): string {
       const raw = item.rawItem as Record<string, unknown> | undefined;
       if (Array.isArray(raw?.content)) {
         const parts = raw.content as Array<Record<string, unknown>>;
-        texts.push(parts.map(c => (typeof c.text === 'string' ? c.text : '')).join(''));
+        texts.push(
+          parts.map(c => (typeof c.text === 'string' ? c.text : '')).join(''),
+        );
       } else if (typeof raw?.text === 'string') {
         texts.push(raw.text);
       }
@@ -85,15 +82,16 @@ function extractTextFromItems(items: RunItem[]): string {
   return texts.join('');
 }
 
-function extractToolCalls(
-  items: RunItem[],
-): ToolCallInfo[] {
+function extractToolCalls(items: RunItem[]): ToolCallInfo[] {
   const calls: ToolCallInfo[] = [];
   for (const item of items) {
     if (item.type === 'tool_call_item') {
       const rawItem = item.rawItem as Record<string, unknown> | undefined;
       calls.push({
-        id: (rawItem?.id as string) ?? (rawItem?.call_id as string) ?? `tc-${calls.length}`,
+        id:
+          (rawItem?.id as string) ??
+          (rawItem?.call_id as string) ??
+          `tc-${calls.length}`,
         name: (rawItem?.name as string) ?? 'unknown',
         serverLabel: 'function',
         arguments: (rawItem?.arguments as string) ?? '',

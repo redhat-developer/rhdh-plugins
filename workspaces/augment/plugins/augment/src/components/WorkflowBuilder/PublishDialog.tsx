@@ -54,12 +54,18 @@ function validateForPublish(workflow: WorkflowDefinition): ValidationIssue[] {
 
   const hasStart = workflow.nodes.some(n => n.type === 'start');
   if (!hasStart) {
-    issues.push({ severity: 'error', message: 'Workflow must have a Start node' });
+    issues.push({
+      severity: 'error',
+      message: 'Workflow must have a Start node',
+    });
   }
 
   const hasAgent = workflow.nodes.some(n => n.type === 'agent');
   if (!hasAgent) {
-    issues.push({ severity: 'error', message: 'Workflow must have at least one Agent node' });
+    issues.push({
+      severity: 'error',
+      message: 'Workflow must have at least one Agent node',
+    });
   }
 
   const agentNodes = workflow.nodes.filter(n => n.type === 'agent');
@@ -77,7 +83,10 @@ function validateForPublish(workflow: WorkflowDefinition): ValidationIssue[] {
     const startNode = workflow.nodes.find(n => n.type === 'start')!;
     const startEdge = workflow.edges.find(e => e.source === startNode.id);
     if (!startEdge) {
-      issues.push({ severity: 'error', message: 'Start node is not connected to any agent' });
+      issues.push({
+        severity: 'error',
+        message: 'Start node is not connected to any agent',
+      });
     }
   }
 
@@ -113,13 +122,18 @@ export function PublishDialog({
       <DialogContent>
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Publishing creates an immutable version snapshot that can be used in production.
+            Publishing creates an immutable version snapshot that can be used in
+            production.
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <Typography variant="body2">
               Current version: <strong>v{workflow.version}</strong>
             </Typography>
-            <Chip label={`Next: v${workflow.version + 1}`} size="small" color="primary" />
+            <Chip
+              label={`Next: v${workflow.version + 1}`}
+              size="small"
+              color="primary"
+            />
           </Box>
         </Box>
 
@@ -132,7 +146,13 @@ export function PublishDialog({
               <Alert
                 key={i}
                 severity={issue.severity}
-                icon={issue.severity === 'error' ? <ErrorIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
+                icon={
+                  issue.severity === 'error' ? (
+                    <ErrorIcon fontSize="small" />
+                  ) : (
+                    <CheckCircleIcon fontSize="small" />
+                  )
+                }
                 sx={{ mb: 0.5, py: 0 }}
               >
                 {issue.message}

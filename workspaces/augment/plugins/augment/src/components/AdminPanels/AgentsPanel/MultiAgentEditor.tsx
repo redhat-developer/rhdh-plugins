@@ -94,25 +94,48 @@ export const MultiAgentEditor = React.memo(function MultiAgentEditor({
     return false;
   };
 
-  const renderTabLabel = (label: string, tabIndex: number, completionKey?: keyof NonNullable<typeof tabCompletion>) => {
+  const renderTabLabel = (
+    label: string,
+    tabIndex: number,
+    completionKey?: keyof NonNullable<typeof tabCompletion>,
+  ) => {
     const hasError = tabHasError(tabIndex);
-    const isComplete = completionKey && tabCompletion ? tabCompletion[completionKey] : false;
+    const isComplete =
+      completionKey && tabCompletion ? tabCompletion[completionKey] : false;
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
         {label}
         {hasError && (
-          <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: theme.palette.error.main, flexShrink: 0 }} />
+          <Box
+            sx={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              bgcolor: theme.palette.error.main,
+              flexShrink: 0,
+            }}
+          />
         )}
         {!hasError && isComplete && (
-          <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: theme.palette.success.main, flexShrink: 0 }} />
+          <Box
+            sx={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              bgcolor: theme.palette.success.main,
+              flexShrink: 0,
+            }}
+          />
         )}
       </Box>
     );
   };
 
   const roleDescription = useMemo(() => {
-    if (selectedAgentRole === 'router') return 'Visible in gallery \u2014 routes to other agents';
-    if (selectedAgentRole === 'specialist') return 'Hidden \u2014 only reachable via handoffs';
+    if (selectedAgentRole === 'router')
+      return 'Visible in gallery \u2014 routes to other agents';
+    if (selectedAgentRole === 'specialist')
+      return 'Hidden \u2014 only reachable via handoffs';
     return 'Visible in gallery \u2014 independent agent';
   }, [selectedAgentRole]);
 
@@ -150,54 +173,119 @@ export const MultiAgentEditor = React.memo(function MultiAgentEditor({
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
           {selectedAgentKey && selectedAgent ? (
-            <Box sx={{ maxWidth: RIGHT_MAX_WIDTH, display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <Box
+              sx={{
+                maxWidth: RIGHT_MAX_WIDTH,
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+              }}
+            >
               {/* Identity */}
               <Box data-tour="orch-identity" sx={{ flexShrink: 0, mb: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    mb: 0.5,
+                  }}
+                >
                   <TextField
                     value={selectedAgent.name}
-                    onChange={e => updateAgent(selectedAgentKey, 'name', e.target.value)}
+                    onChange={e =>
+                      updateAgent(selectedAgentKey, 'name', e.target.value)
+                    }
                     variant="standard"
                     placeholder="Agent name"
                     error={!selectedAgent.name.trim() && isDirty}
-                    helperText={!selectedAgent.name.trim() && isDirty ? 'Name is required' : undefined}
-                    InputProps={{ sx: { fontSize: '1.1rem', fontWeight: 600 }, disableUnderline: true }}
+                    helperText={
+                      !selectedAgent.name.trim() && isDirty
+                        ? 'Name is required'
+                        : undefined
+                    }
+                    InputProps={{
+                      sx: { fontSize: '1.1rem', fontWeight: 600 },
+                      disableUnderline: true,
+                    }}
                     sx={{ flex: 1 }}
                   />
-                  <Chip label={selectedAgentKey} size="small" variant="outlined" sx={{ fontFamily: 'monospace', fontSize: '0.65rem' }} />
-                  {agentsSource === 'database' && <Chip label="Modified" size="small" color="info" />}
+                  <Chip
+                    label={selectedAgentKey}
+                    size="small"
+                    variant="outlined"
+                    sx={{ fontFamily: 'monospace', fontSize: '0.65rem' }}
+                  />
+                  {agentsSource === 'database' && (
+                    <Chip label="Modified" size="small" color="info" />
+                  )}
                   <Tooltip title="Delete agent">
                     <IconButton
                       size="small"
                       aria-label="Delete agent"
                       onClick={() => handleRemoveAgent(selectedAgentKey)}
-                      sx={{ color: theme.palette.error.main, opacity: 0.35, '&:hover': { opacity: 1 } }}
+                      sx={{
+                        color: theme.palette.error.main,
+                        opacity: 0.35,
+                        '&:hover': { opacity: 1 },
+                      }}
                     >
                       <DeleteIcon sx={{ fontSize: 16 }} />
                     </IconButton>
                   </Tooltip>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 0.5,
+                  }}
+                >
                   <Chip
                     size="small"
                     icon={
-                      selectedAgentRole === 'router' ? <HubIcon sx={{ fontSize: 14 }} /> :
-                      selectedAgentRole === 'specialist' ? <BuildIcon sx={{ fontSize: 14 }} /> :
-                      <RocketLaunchIcon sx={{ fontSize: 14 }} />
+                      selectedAgentRole === 'router' ? (
+                        <HubIcon sx={{ fontSize: 14 }} />
+                      ) : selectedAgentRole === 'specialist' ? (
+                        <BuildIcon sx={{ fontSize: 14 }} />
+                      ) : (
+                        <RocketLaunchIcon sx={{ fontSize: 14 }} />
+                      )
                     }
-                    label={selectedAgentRole.charAt(0).toUpperCase() + selectedAgentRole.slice(1)}
-                    color={selectedAgentRole === 'router' ? 'primary' : selectedAgentRole === 'specialist' ? 'default' : 'success'}
+                    label={
+                      selectedAgentRole.charAt(0).toUpperCase() +
+                      selectedAgentRole.slice(1)
+                    }
+                    color={
+                      selectedAgentRole === 'router'
+                        ? 'primary'
+                        : selectedAgentRole === 'specialist'
+                          ? 'default'
+                          : 'success'
+                    }
                     variant="outlined"
                     sx={{ fontWeight: 600, fontSize: '0.75rem' }}
                   />
-                  <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.75rem',
+                      color: theme.palette.text.secondary,
+                    }}
+                  >
                     {roleDescription}
                   </Typography>
                 </Box>
                 {showConnections && (
                   <TextField
                     value={selectedAgent.handoffDescription}
-                    onChange={e => updateAgent(selectedAgentKey, 'handoffDescription', e.target.value)}
+                    onChange={e =>
+                      updateAgent(
+                        selectedAgentKey,
+                        'handoffDescription',
+                        e.target.value,
+                      )
+                    }
                     variant="standard"
                     fullWidth
                     placeholder="Add a description \u2014 other agents read this when deciding to route here"
@@ -206,8 +294,12 @@ export const MultiAgentEditor = React.memo(function MultiAgentEditor({
                         fontSize: '0.8rem',
                         color: theme.palette.text.secondary,
                         borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.25)}`,
-                        '&:hover': { borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.5)}` },
-                        '&.Mui-focused': { borderBottom: `1px solid ${theme.palette.primary.main}` },
+                        '&:hover': {
+                          borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.5)}`,
+                        },
+                        '&.Mui-focused': {
+                          borderBottom: `1px solid ${theme.palette.primary.main}`,
+                        },
                       },
                       disableUnderline: true,
                     }}
@@ -217,35 +309,82 @@ export const MultiAgentEditor = React.memo(function MultiAgentEditor({
 
               {/* Validation */}
               {validation.errors.length > 0 && (
-                <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 1, py: 0.25, flexShrink: 0 }}>
+                <Alert
+                  severity="warning"
+                  icon={<WarningAmberIcon />}
+                  sx={{ mb: 1, py: 0.25, flexShrink: 0 }}
+                >
                   {validation.errors.map(err => (
-                    <Typography key={err} variant="body2" sx={{ fontSize: '0.75rem' }}>&bull; {err}</Typography>
+                    <Typography
+                      key={err}
+                      variant="body2"
+                      sx={{ fontSize: '0.75rem' }}
+                    >
+                      &bull; {err}
+                    </Typography>
                   ))}
                 </Alert>
               )}
               {validation.warnings.length > 0 && (
                 <Alert severity="info" sx={{ mb: 1, py: 0.25, flexShrink: 0 }}>
                   {validation.warnings.map(w => (
-                    <Typography key={w} variant="body2" sx={{ fontSize: '0.75rem' }}>&bull; {w}</Typography>
+                    <Typography
+                      key={w}
+                      variant="body2"
+                      sx={{ fontSize: '0.75rem' }}
+                    >
+                      &bull; {w}
+                    </Typography>
                   ))}
                 </Alert>
               )}
 
               {/* Tabs */}
-              <Box data-tour="orch-tabs" sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
+              <Box
+                data-tour="orch-tabs"
+                sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
+              >
                 <Tabs
                   value={activeTab}
                   onChange={(_, v) => setActiveTab(v)}
                   aria-label="Agent configuration tabs"
                   sx={{
                     minHeight: 36,
-                    '& .MuiTab-root': { textTransform: 'none', fontWeight: 500, fontSize: '0.8125rem', minHeight: 36, px: 2 },
+                    '& .MuiTab-root': {
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.8125rem',
+                      minHeight: 36,
+                      px: 2,
+                    },
                   }}
                 >
-                  <Tab label={renderTabLabel('Capabilities', 0, 'capabilities')} data-tour="orch-tab-capabilities" />
-                  {showConnections && <Tab label={renderTabLabel('Connections', connectionsTab, 'connections')} data-tour="orch-tab-connections" />}
-                  <Tab label={renderTabLabel('Advanced', advancedTab, 'advanced')} data-tour="orch-tab-advanced" />
-                  <Tab label={renderTabLabel('Instructions', instructionsTab, 'instructions')} data-tour="orch-tab-instructions" />
+                  <Tab
+                    label={renderTabLabel('Capabilities', 0, 'capabilities')}
+                    data-tour="orch-tab-capabilities"
+                  />
+                  {showConnections && (
+                    <Tab
+                      label={renderTabLabel(
+                        'Connections',
+                        connectionsTab,
+                        'connections',
+                      )}
+                      data-tour="orch-tab-connections"
+                    />
+                  )}
+                  <Tab
+                    label={renderTabLabel('Advanced', advancedTab, 'advanced')}
+                    data-tour="orch-tab-advanced"
+                  />
+                  <Tab
+                    label={renderTabLabel(
+                      'Instructions',
+                      instructionsTab,
+                      'instructions',
+                    )}
+                    data-tour="orch-tab-instructions"
+                  />
                 </Tabs>
               </Box>
 
@@ -302,13 +441,23 @@ export const MultiAgentEditor = React.memo(function MultiAgentEditor({
               </Box>
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: theme.palette.text.disabled }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                color: theme.palette.text.disabled,
+              }}
+            >
               <Typography>Select an agent from the list</Typography>
             </Box>
           )}
         </Box>
 
-        {showPreview && selectedAgent && <AgentPreviewCard agent={selectedAgent} />}
+        {showPreview && selectedAgent && (
+          <AgentPreviewCard agent={selectedAgent} />
+        )}
       </Box>
     </Box>
   );

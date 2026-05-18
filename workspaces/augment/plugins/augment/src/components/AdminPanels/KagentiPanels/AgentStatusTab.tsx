@@ -156,7 +156,10 @@ export function AgentStatusTab({
             mb: 2,
           }}
         >
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontWeight: 700, color: 'text.primary' }}
+          >
             Agent Status
           </Typography>
           <Typography
@@ -253,7 +256,10 @@ export function AgentStatusTab({
               mb: 2,
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 700, color: 'text.primary' }}
+            >
               Shipwright Build Status
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>

@@ -63,25 +63,59 @@ export function ConfigPanel({
   onDelete,
   availableModels = [],
 }: ConfigPanelProps) {
-  const update = (field: string, value: unknown) => onChange(nodeId, field, value);
+  const update = (field: string, value: unknown) =>
+    onChange(nodeId, field, value);
 
   const renderConfig = () => {
     const props = { nodeData, update, availableModels };
     switch (nodeType) {
-      case 'start': return <StartNodeConfig {...props} />;
-      case 'agent': return <AgentNodeConfig {...props} />;
-      case 'classify': return <ClassifyNodeConfig {...props} />;
-      case 'logic': return <LogicNodeConfig {...props} />;
-      case 'tool': return <ToolNodeConfig {...props} />;
-      case 'guardrail': return <GuardrailNodeConfig {...props} />;
-      case 'file_search': return <FileSearchNodeConfig {...props} />;
-      case 'mcp': return <McpNodeConfig {...props} />;
+      case 'start':
+        return <StartNodeConfig {...props} />;
+      case 'agent':
+        return <AgentNodeConfig {...props} />;
+      case 'classify':
+        return <ClassifyNodeConfig {...props} />;
+      case 'logic':
+        return <LogicNodeConfig {...props} />;
+      case 'tool':
+        return <ToolNodeConfig {...props} />;
+      case 'guardrail':
+        return <GuardrailNodeConfig {...props} />;
+      case 'file_search':
+        return <FileSearchNodeConfig {...props} />;
+      case 'mcp':
+        return <McpNodeConfig {...props} />;
       case 'note':
-        return <TextField variant="standard" label="Text" fullWidth multiline minRows={3} value={(nodeData.text as string) || ''} onChange={e => update('text', e.target.value)} />;
+        return (
+          <TextField
+            variant="standard"
+            label="Text"
+            fullWidth
+            multiline
+            minRows={3}
+            value={(nodeData.text as string) || ''}
+            onChange={e => update('text', e.target.value)}
+          />
+        );
       case 'transform':
-        return <TextField variant="standard" label="Expression" fullWidth multiline minRows={2} value={(nodeData.expression as string) || ''} onChange={e => update('expression', e.target.value)} helperText="JavaScript expression" />;
+        return (
+          <TextField
+            variant="standard"
+            label="Expression"
+            fullWidth
+            multiline
+            minRows={2}
+            value={(nodeData.expression as string) || ''}
+            onChange={e => update('expression', e.target.value)}
+            helperText="JavaScript expression"
+          />
+        );
       default:
-        return <Typography variant="body2" color="text.secondary">No configuration available.</Typography>;
+        return (
+          <Typography variant="body2" color="text.secondary">
+            No configuration available.
+          </Typography>
+        );
     }
   };
 
@@ -100,14 +134,42 @@ export function ConfigPanel({
         transition: 'width 0.2s ease',
       }}
     >
-      <Box sx={{ px: 2, pt: 1.5, pb: 1, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <Box
+        sx={{
+          px: 2,
+          pt: 1.5,
+          pb: 1,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          flexShrink: 0,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+          }}
+        >
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ color: 'text.primary' }}>
+            <Typography
+              variant="subtitle1"
+              fontWeight={700}
+              noWrap
+              sx={{ color: 'text.primary' }}
+            >
               {TYPE_LABELS[nodeType] || nodeType}
             </Typography>
             {TYPE_SUBTITLES[nodeType] && (
-              <Typography variant="caption" sx={{ display: 'block', mt: 0.25, lineHeight: 1.3, color: 'text.secondary' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  mt: 0.25,
+                  lineHeight: 1.3,
+                  color: 'text.secondary',
+                }}
+              >
                 {TYPE_SUBTITLES[nodeType]}
               </Typography>
             )}
@@ -115,13 +177,24 @@ export function ConfigPanel({
           <Box sx={{ display: 'flex', gap: 0.25, ml: 1 }}>
             {onDelete && nodeType !== 'start' && (
               <Tooltip title="Delete node">
-                <IconButton size="small" onClick={() => onDelete(nodeId)} color="error" aria-label="Delete node" sx={{ p: 0.5 }}>
+                <IconButton
+                  size="small"
+                  onClick={() => onDelete(nodeId)}
+                  color="error"
+                  aria-label="Delete node"
+                  sx={{ p: 0.5 }}
+                >
                   <DeleteIcon sx={{ fontSize: 16 }} />
                 </IconButton>
               </Tooltip>
             )}
             <Tooltip title="Close panel">
-              <IconButton size="small" onClick={onClose} aria-label="Close configuration" sx={{ p: 0.5 }}>
+              <IconButton
+                size="small"
+                onClick={onClose}
+                aria-label="Close configuration"
+                sx={{ p: 0.5 }}
+              >
                 <CloseIcon sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>

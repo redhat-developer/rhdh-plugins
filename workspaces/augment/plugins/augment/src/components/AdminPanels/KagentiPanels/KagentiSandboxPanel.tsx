@@ -72,10 +72,7 @@ import * as kagentiEndpoints from '../../../api/kagentiEndpoints';
 import type { KagentiApiDeps } from '../../../api/kagentiEndpoints';
 import { getErrorMessage } from '../../../utils';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
-import {
-  sectionCardSx,
-  tableContainerSx,
-} from '../shared/commandCenterStyles';
+import { sectionCardSx, tableContainerSx } from '../shared/commandCenterStyles';
 import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
 import { PanelIntroBanner } from '../shared/PanelIntroBanner';
 
@@ -1610,7 +1607,10 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
           promoting them to production. Create sessions, inspect conversations,
           and validate behavior.
         </PanelIntroBanner>
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: 'text.primary' }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 700, mb: 1, color: 'text.primary' }}
+        >
           Sandbox Management
         </Typography>
 
@@ -1692,7 +1692,9 @@ export function KagentiSandboxPanel({ namespace }: KagentiSandboxPanelProps) {
                   (sessionChain ? (
                     jsonBlock(sessionChain)
                   ) : (
-                    <Typography color="text.secondary">No chain data</Typography>
+                    <Typography color="text.secondary">
+                      No chain data
+                    </Typography>
                   ))}
                 {detailTab === 2 &&
                   (sessionHistory ? (

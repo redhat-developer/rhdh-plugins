@@ -34,7 +34,13 @@ interface AgentGridProps {
   emptyAction?: { label: string; onClick: () => void };
 }
 
-export function AgentGrid({ agents, loading, onAgentClick, emptyMessage, emptyAction }: AgentGridProps) {
+export function AgentGrid({
+  agents,
+  loading,
+  onAgentClick,
+  emptyMessage,
+  emptyAction,
+}: AgentGridProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
@@ -42,7 +48,12 @@ export function AgentGrid({ agents, loading, onAgentClick, emptyMessage, emptyAc
     return (
       <Box sx={gridContainerSx(isDark)}>
         {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} variant="rounded" height={CARD_HEIGHT} sx={{ borderRadius: 2 }} />
+          <Skeleton
+            key={i}
+            variant="rounded"
+            height={CARD_HEIGHT}
+            sx={{ borderRadius: 2 }}
+          />
         ))}
       </Box>
     );
@@ -60,8 +71,17 @@ export function AgentGrid({ agents, loading, onAgentClick, emptyMessage, emptyAc
           gap: 1.5,
         }}
       >
-        <SmartToyOutlinedIcon sx={{ fontSize: 40, color: theme.palette.text.disabled }} />
-        <Typography variant="body2" sx={{ color: theme.palette.text.secondary, textAlign: 'center', maxWidth: 320 }}>
+        <SmartToyOutlinedIcon
+          sx={{ fontSize: 40, color: theme.palette.text.disabled }}
+        />
+        <Typography
+          variant="body2"
+          sx={{
+            color: theme.palette.text.secondary,
+            textAlign: 'center',
+            maxWidth: 320,
+          }}
+        >
           {emptyMessage || 'No agents found.'}
         </Typography>
         {emptyAction && (
@@ -69,7 +89,12 @@ export function AgentGrid({ agents, loading, onAgentClick, emptyMessage, emptyAc
             variant="outlined"
             size="small"
             onClick={emptyAction.onClick}
-            sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2, mt: 1 }}
+            sx={{
+              textTransform: 'none',
+              fontWeight: 600,
+              borderRadius: 2,
+              mt: 1,
+            }}
           >
             {emptyAction.label}
           </Button>
@@ -94,7 +119,15 @@ export function AgentGrid({ agents, loading, onAgentClick, emptyMessage, emptyAc
         ))}
       </Box>
       {totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5, mt: 3 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 1.5,
+            mt: 3,
+          }}
+        >
           <Button
             size="small"
             disabled={page === 0}

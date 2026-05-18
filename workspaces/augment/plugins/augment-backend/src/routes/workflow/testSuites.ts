@@ -23,36 +23,65 @@ export function registerTestSuiteRoutes(
   ctx: RouteContext,
   workflowService: WorkflowConfigService,
 ): void {
-  const { router, logger, sendRouteError, requireAdminAccess, getUserRef } = ctx;
+  const { router, logger, sendRouteError, requireAdminAccess, getUserRef } =
+    ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
-  router.get('/workflows/:id/test-suites', requireAdminAccess,
-    withRoute(req => `List test suites for workflow ${req.params.id}`, 'Failed to list test suites', async (req, res) => {
-      res.json({ testSuites: await workflowService.getTestSuites(req.params.id) });
-    }),
+  router.get(
+    '/workflows/:id/test-suites',
+    requireAdminAccess,
+    withRoute(
+      req => `List test suites for workflow ${req.params.id}`,
+      'Failed to list test suites',
+      async (req, res) => {
+        res.json({
+          testSuites: await workflowService.getTestSuites(req.params.id),
+        });
+      },
+    ),
   );
 
-  router.put('/workflows/:id/test-suites/:suiteId', requireAdminAccess,
-    withRoute(req => `Save test suite ${req.params.suiteId}`, 'Failed to save test suite', async (req, res) => {
-      const user = await getUserRef(req);
-      const suite = req.body as WorkflowTestSuite;
-      suite.id = req.params.suiteId;
-      suite.workflowId = req.params.id;
-      res.json(await workflowService.saveTestSuite(suite, user));
-    }),
+  router.put(
+    '/workflows/:id/test-suites/:suiteId',
+    requireAdminAccess,
+    withRoute(
+      req => `Save test suite ${req.params.suiteId}`,
+      'Failed to save test suite',
+      async (req, res) => {
+        const user = await getUserRef(req);
+        const suite = req.body as WorkflowTestSuite;
+        suite.id = req.params.suiteId;
+        suite.workflowId = req.params.id;
+        res.json(await workflowService.saveTestSuite(suite, user));
+      },
+    ),
   );
 
-  router.delete('/workflows/:id/test-suites/:suiteId', requireAdminAccess,
-    withRoute(req => `Delete test suite ${req.params.suiteId}`, 'Failed to delete test suite', async (req, res) => {
-      const user = await getUserRef(req);
-      await workflowService.deleteTestSuite(req.params.suiteId, user);
-      res.json({ success: true });
-    }),
+  router.delete(
+    '/workflows/:id/test-suites/:suiteId',
+    requireAdminAccess,
+    withRoute(
+      req => `Delete test suite ${req.params.suiteId}`,
+      'Failed to delete test suite',
+      async (req, res) => {
+        const user = await getUserRef(req);
+        await workflowService.deleteTestSuite(req.params.suiteId, user);
+        res.json({ success: true });
+      },
+    ),
   );
 
-  router.get('/workflows/:id/evaluations', requireAdminAccess,
-    withRoute(req => `List evaluations for workflow ${req.params.id}`, 'Failed to list evaluations', async (req, res) => {
-      res.json({ evaluations: await workflowService.getEvaluations(req.params.id) });
-    }),
+  router.get(
+    '/workflows/:id/evaluations',
+    requireAdminAccess,
+    withRoute(
+      req => `List evaluations for workflow ${req.params.id}`,
+      'Failed to list evaluations',
+      async (req, res) => {
+        res.json({
+          evaluations: await workflowService.getEvaluations(req.params.id),
+        });
+      },
+    ),
   );
 }

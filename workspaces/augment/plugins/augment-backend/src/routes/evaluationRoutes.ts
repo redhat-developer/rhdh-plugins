@@ -33,7 +33,10 @@ import { resolveLlamaStackConfig } from './resolveWorkflowConfig';
 export interface EvaluationDeps {
   workflowService: WorkflowConfigService;
   adminConfig: AdminConfigService;
-  runWorkflow: (workflowId: string, input: string) => Promise<{
+  runWorkflow: (
+    workflowId: string,
+    input: string,
+  ) => Promise<{
     response: string;
     agentName?: string;
     trace: NodeExecutionRecord[];
@@ -81,7 +84,9 @@ function extractScore(
   if (!fnResult?.score_rows?.length) return 0;
   const row = fnResult.score_rows[0];
   if (row.scores && Object.keys(row.scores).length > 0) {
-    const vals = Object.values(row.scores).map(s => s.value).filter(v => typeof v === 'number');
+    const vals = Object.values(row.scores)
+      .map(s => s.value)
+      .filter(v => typeof v === 'number');
     return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
   }
   if (typeof row.score === 'number') return row.score;
@@ -99,30 +104,59 @@ async function gradeCriteriaAsync(
   expectedOutput: string | undefined,
   client: ResponsesApiClient,
   _actualAgent?: string,
-): Promise<Array<{ criterionId: string; passed: boolean; score: number; details?: string }>> {
-  const results: Array<{ criterionId: string; passed: boolean; score: number; details?: string }> = [];
+): Promise<
+  Array<{
+    criterionId: string;
+    passed: boolean;
+    score: number;
+    details?: string;
+  }>
+> {
+  const results: Array<{
+    criterionId: string;
+    passed: boolean;
+    score: number;
+    details?: string;
+  }> = [];
 
   for (const criterion of criteria) {
     switch (criterion.type) {
       case 'exact_match': {
         const match = actualOutput === criterion.pattern;
-        results.push({ criterionId: criterion.id, passed: match, score: match ? 1 : 0 });
+        results.push({
+          criterionId: criterion.id,
+          passed: match,
+          score: match ? 1 : 0,
+        });
         break;
       }
       case 'contains': {
         const contains = criterion.pattern
           ? actualOutput.toLowerCase().includes(criterion.pattern.toLowerCase())
           : false;
-        results.push({ criterionId: criterion.id, passed: contains, score: contains ? 1 : 0 });
+        results.push({
+          criterionId: criterion.id,
+          passed: contains,
+          score: contains ? 1 : 0,
+        });
         break;
       }
       case 'regex': {
         try {
           const regex = new RegExp(criterion.pattern || '', 'i');
           const matches = regex.test(actualOutput);
-          results.push({ criterionId: criterion.id, passed: matches, score: matches ? 1 : 0 });
+          results.push({
+            criterionId: criterion.id,
+            passed: matches,
+            score: matches ? 1 : 0,
+          });
         } catch {
-          results.push({ criterionId: criterion.id, passed: false, score: 0, details: 'Invalid regex pattern' });
+          results.push({
+            criterionId: criterion.id,
+            passed: false,
+            score: 0,
+            details: 'Invalid regex pattern',
+          });
         }
         break;
       }
@@ -130,27 +164,32 @@ async function gradeCriteriaAsync(
         try {
           const fn = criterion.scoringFunction || 'basic::subset_of';
           const threshold = criterion.threshold ?? 0.7;
-          const resp = await client.request<{ results?: Record<string, ScoringFnResult> }>(
-            '/v1/scoring/score',
-            {
-              method: 'POST',
-              body: {
-                input_rows: [{
+          const resp = await client.request<{
+            results?: Record<string, ScoringFnResult>;
+          }>('/v1/scoring/score', {
+            method: 'POST',
+            body: {
+              input_rows: [
+                {
                   input_query: testCaseInput,
                   generated_answer: actualOutput,
-                  ...(expectedOutput ? { expected_answer: expectedOutput } : {}),
-                }],
-                scoring_functions: { [fn]: null },
-              },
+                  ...(expectedOutput
+                    ? { expected_answer: expectedOutput }
+                    : {}),
+                },
+              ],
+              scoring_functions: { [fn]: null },
             },
-          );
+          });
           const score = extractScore(resp, fn);
           const feedback = resp.results?.[fn]?.score_rows?.[0]?.judge_feedback;
           results.push({
             criterionId: criterion.id,
             passed: score >= threshold,
             score,
-            details: feedback ? `${fn}: ${feedback.substring(0, 200)}` : `Scored by ${fn}`,
+            details: feedback
+              ? `${fn}: ${feedback.substring(0, 200)}`
+              : `Scored by ${fn}`,
           });
         } catch (err) {
           results.push({
@@ -163,7 +202,12 @@ async function gradeCriteriaAsync(
         break;
       }
       default:
-        results.push({ criterionId: criterion.id, passed: true, score: 1, details: 'Custom criterion -- auto-pass' });
+        results.push({
+          criterionId: criterion.id,
+          passed: true,
+          score: 1,
+          details: 'Custom criterion -- auto-pass',
+        });
     }
   }
 
@@ -178,13 +222,17 @@ export function registerEvaluationRoutes(
   ctx: RouteContext,
   deps: EvaluationDeps,
 ): void {
-  const { router, logger, sendRouteError, requireAdminAccess, getUserRef } = ctx;
+  const { router, logger, sendRouteError, requireAdminAccess, getUserRef } =
+    ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
   const { workflowService, runWorkflow, adminConfig } = deps;
 
   async function getLlamaStackClient(): Promise<ResponsesApiClient> {
     const { url, skipTls } = await resolveLlamaStackConfig(ctx, adminConfig);
-    return new ResponsesApiClient({ baseUrl: url, skipTlsVerify: skipTls }, logger);
+    return new ResponsesApiClient(
+      { baseUrl: url, skipTlsVerify: skipTls },
+      logger,
+    );
   }
 
   // -----------------------------------------------------------------------
@@ -198,7 +246,11 @@ export function registerEvaluationRoutes(
       'Failed to run evaluation',
       async (req, res) => {
         const user = await getUserRef(req);
-        const { testCases, suiteId, scoringFunctions: globalScoringFns } = req.body as {
+        const {
+          testCases,
+          suiteId,
+          scoringFunctions: globalScoringFns,
+        } = req.body as {
           testCases?: WorkflowTestCase[];
           suiteId?: string;
           scoringFunctions?: string[];
@@ -226,7 +278,11 @@ export function registerEvaluationRoutes(
             const runResult = await runWorkflow(req.params.id, testCase.input);
 
             let criteria = testCase.criteria ?? [];
-            if (criteria.length === 0 && globalScoringFns && globalScoringFns.length > 0) {
+            if (
+              criteria.length === 0 &&
+              globalScoringFns &&
+              globalScoringFns.length > 0
+            ) {
               criteria = globalScoringFns.map((fn, i) => ({
                 id: `auto-${i}`,
                 name: fn.split('::').pop() || fn,
@@ -237,13 +293,15 @@ export function registerEvaluationRoutes(
               }));
             }
             if (criteria.length === 0 && testCase.expectedOutput) {
-              criteria = [{
-                id: 'auto-contains',
-                name: 'Contains expected',
-                type: 'contains',
-                weight: 1,
-                pattern: testCase.expectedOutput,
-              }];
+              criteria = [
+                {
+                  id: 'auto-contains',
+                  name: 'Contains expected',
+                  type: 'contains',
+                  weight: 1,
+                  pattern: testCase.expectedOutput,
+                },
+              ];
             }
 
             const criterionResults = await gradeCriteriaAsync(
@@ -254,12 +312,15 @@ export function registerEvaluationRoutes(
               await getLlamaStackClient(),
               runResult.agentName,
             );
-            const passed = criterionResults.length > 0
-              ? criterionResults.every(c => c.passed)
-              : true;
-            const score = criterionResults.length > 0
-              ? criterionResults.reduce((s, c) => s + c.score, 0) / criterionResults.length
-              : 1;
+            const passed =
+              criterionResults.length > 0
+                ? criterionResults.every(c => c.passed)
+                : true;
+            const score =
+              criterionResults.length > 0
+                ? criterionResults.reduce((s, c) => s + c.score, 0) /
+                  criterionResults.length
+                : 1;
 
             results.push({
               testCaseId: testCase.id,
@@ -304,12 +365,14 @@ export function registerEvaluationRoutes(
           }
         }
 
-        const passRate = results.length > 0
-          ? results.filter(r => r.passed).length / results.length
-          : 0;
-        const overallScore = results.length > 0
-          ? results.reduce((s, r) => s + r.score, 0) / results.length
-          : 0;
+        const passRate =
+          results.length > 0
+            ? results.filter(r => r.passed).length / results.length
+            : 0;
+        const overallScore =
+          results.length > 0
+            ? results.reduce((s, r) => s + r.score, 0) / results.length
+            : 0;
 
         const evaluation: WorkflowEvaluationResult = {
           evaluationId: uuid(),
@@ -340,8 +403,13 @@ export function registerEvaluationRoutes(
       'Failed to get evaluation',
       async (req, res) => {
         const evaluations = await workflowService.getEvaluations(req.params.id);
-        const found = evaluations.find(e => e.evaluationId === req.params.evalId);
-        if (!found) { res.status(404).json({ error: 'Evaluation not found' }); return; }
+        const found = evaluations.find(
+          e => e.evaluationId === req.params.evalId,
+        );
+        if (!found) {
+          res.status(404).json({ error: 'Evaluation not found' });
+          return;
+        }
         res.json(found);
       },
     ),
@@ -357,11 +425,13 @@ export function registerEvaluationRoutes(
       () => 'List scoring functions',
       'Failed to list scoring functions',
       async (_req, res) => {
-        const resp = await (await getLlamaStackClient()).request<{ data?: Array<Record<string, unknown>> }>(
+        const resp = await (
+          await getLlamaStackClient()
+        ).request<{ data?: Array<Record<string, unknown>> }>(
           '/v1/scoring-functions',
           { method: 'GET' },
         );
-        const functions = Array.isArray(resp) ? resp : (resp.data || []);
+        const functions = Array.isArray(resp) ? resp : resp.data || [];
         res.json({ data: functions });
       },
     ),
@@ -377,10 +447,12 @@ export function registerEvaluationRoutes(
       () => 'Score rows',
       'Failed to score',
       async (req, res) => {
-        const resp = await (await getLlamaStackClient()).request<Record<string, unknown>>(
-          '/v1/scoring/score',
-          { method: 'POST', body: req.body },
-        );
+        const resp = await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>('/v1/scoring/score', {
+          method: 'POST',
+          body: req.body,
+        });
         res.json(resp);
       },
     ),
@@ -397,10 +469,11 @@ export function registerEvaluationRoutes(
       () => 'List benchmarks',
       'Failed to list benchmarks',
       async (_req, res) => {
-        const resp = await (await getLlamaStackClient()).request<Record<string, unknown>>(
-          '/v1alpha/eval/benchmarks',
-          { method: 'GET' },
-        );
+        const resp = await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>('/v1alpha/eval/benchmarks', {
+          method: 'GET',
+        });
         res.json(resp);
       },
     ),
@@ -413,7 +486,9 @@ export function registerEvaluationRoutes(
       req => `Get benchmark ${req.params.id}`,
       'Failed to get benchmark',
       async (req, res) => {
-        const resp = await (await getLlamaStackClient()).request<Record<string, unknown>>(
+        const resp = await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>(
           `/v1alpha/eval/benchmarks/${encodeURIComponent(req.params.id)}`,
           { method: 'GET' },
         );
@@ -429,51 +504,57 @@ export function registerEvaluationRoutes(
       () => 'Create benchmark',
       'Failed to create benchmark',
       async (req, res) => {
-        const { name, testCases, scoringFunctions: scoringFns } = req.body as {
+        const {
+          name,
+          testCases,
+          scoringFunctions: scoringFns,
+        } = req.body as {
           name: string;
           testCases: Array<{ input: string; expectedOutput?: string }>;
           scoringFunctions: string[];
         };
 
         if (!name || !testCases?.length || !scoringFns?.length) {
-          throw new InputError('name, testCases, and scoringFunctions are required');
+          throw new InputError(
+            'name, testCases, and scoringFunctions are required',
+          );
         }
 
         const datasetId = `eval-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
 
-        await (await getLlamaStackClient()).request<Record<string, unknown>>(
-          '/v1beta/datasets',
-          {
-            method: 'POST',
-            body: {
-              dataset_id: datasetId,
-              provider_id: 'localfs',
-              purpose: 'eval/messages-answer',
-              source: {
-                type: 'rows',
-                rows: testCases.map(tc => ({
-                  input_query: tc.input,
-                  expected_answer: tc.expectedOutput || '',
-                  chat_completion_input: JSON.stringify([{ role: 'user', content: tc.input }]),
-                })),
-              },
+        await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>('/v1beta/datasets', {
+          method: 'POST',
+          body: {
+            dataset_id: datasetId,
+            provider_id: 'localfs',
+            purpose: 'eval/messages-answer',
+            source: {
+              type: 'rows',
+              rows: testCases.map(tc => ({
+                input_query: tc.input,
+                expected_answer: tc.expectedOutput || '',
+                chat_completion_input: JSON.stringify([
+                  { role: 'user', content: tc.input },
+                ]),
+              })),
             },
           },
-        );
+        });
 
         const benchmarkId = `bench-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
-        const benchResp = await (await getLlamaStackClient()).request<Record<string, unknown>>(
-          '/v1alpha/eval/benchmarks',
-          {
-            method: 'POST',
-            body: {
-              benchmark_id: benchmarkId,
-              dataset_id: datasetId,
-              scoring_functions: scoringFns,
-              provider_id: 'meta-reference',
-            },
+        const benchResp = await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>('/v1alpha/eval/benchmarks', {
+          method: 'POST',
+          body: {
+            benchmark_id: benchmarkId,
+            dataset_id: datasetId,
+            scoring_functions: scoringFns,
+            provider_id: 'meta-reference',
           },
-        );
+        });
 
         res.json({ benchmarkId, datasetId, ...benchResp });
       },
@@ -487,7 +568,9 @@ export function registerEvaluationRoutes(
       req => `Delete benchmark ${req.params.id}`,
       'Failed to delete benchmark',
       async (req, res) => {
-        await (await getLlamaStackClient()).request<Record<string, unknown>>(
+        await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>(
           `/v1alpha/eval/benchmarks/${encodeURIComponent(req.params.id)}`,
           { method: 'DELETE' },
         );
@@ -508,8 +591,13 @@ export function registerEvaluationRoutes(
           systemMessage?: string;
         };
 
-        const { model: resolvedModel } = await resolveLlamaStackConfig(ctx, adminConfig);
-        const resp = await (await getLlamaStackClient()).request<Record<string, unknown>>(
+        const { model: resolvedModel } = await resolveLlamaStackConfig(
+          ctx,
+          adminConfig,
+        );
+        const resp = await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>(
           `/v1alpha/eval/benchmarks/${encodeURIComponent(req.params.id)}/jobs`,
           {
             method: 'POST',
@@ -537,7 +625,9 @@ export function registerEvaluationRoutes(
       req => `Benchmark job status ${req.params.jobId}`,
       'Failed to get job status',
       async (req, res) => {
-        const resp = await (await getLlamaStackClient()).request<Record<string, unknown>>(
+        const resp = await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>(
           `/v1alpha/eval/benchmarks/${encodeURIComponent(req.params.id)}/jobs/${encodeURIComponent(req.params.jobId)}`,
           { method: 'GET' },
         );
@@ -553,7 +643,9 @@ export function registerEvaluationRoutes(
       req => `Benchmark job result ${req.params.jobId}`,
       'Failed to get job result',
       async (req, res) => {
-        const resp = await (await getLlamaStackClient()).request<Record<string, unknown>>(
+        const resp = await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>(
           `/v1alpha/eval/benchmarks/${encodeURIComponent(req.params.id)}/jobs/${encodeURIComponent(req.params.jobId)}/result`,
           { method: 'GET' },
         );
@@ -572,7 +664,9 @@ export function registerEvaluationRoutes(
       req => `Evaluate rows for benchmark ${req.params.id}`,
       'Failed to evaluate rows',
       async (req, res) => {
-        const resp = await (await getLlamaStackClient()).request<Record<string, unknown>>(
+        const resp = await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>(
           `/v1alpha/eval/benchmarks/${encodeURIComponent(req.params.id)}/evaluations`,
           { method: 'POST', body: req.body },
         );
@@ -592,10 +686,11 @@ export function registerEvaluationRoutes(
       () => 'List datasets',
       'Failed to list datasets',
       async (_req, res) => {
-        const resp = await (await getLlamaStackClient()).request<Record<string, unknown>>(
-          '/v1beta/datasets',
-          { method: 'GET' },
-        );
+        const resp = await (
+          await getLlamaStackClient()
+        ).request<Record<string, unknown>>('/v1beta/datasets', {
+          method: 'GET',
+        });
         res.json(resp);
       },
     ),

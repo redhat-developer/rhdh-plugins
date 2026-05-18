@@ -72,7 +72,10 @@ const dotAnimation = keyframes`
   75% { content: '...'; }
 `;
 
-function parseSSELines(chunk: string, buffer: string): { events: string[]; remaining: string } {
+function parseSSELines(
+  chunk: string,
+  buffer: string,
+): { events: string[]; remaining: string } {
   const text = buffer + chunk;
   const lines = text.split('\n');
   const remaining = lines.pop() || '';
@@ -89,7 +92,10 @@ function parseSSELines(chunk: string, buffer: string): { events: string[]; remai
   return { events, remaining };
 }
 
-export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps) {
+export function PreviewChatPanel({
+  workflowId,
+  onClose,
+}: PreviewChatPanelProps) {
   const configApi = useApi(configApiRef);
   const { fetch: authFetch } = useApi(fetchApiRef);
   const theme = useTheme();
@@ -135,20 +141,29 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
     setClearConfirm(false);
   }, []);
 
-  const handleCopyMessage = useCallback(async (idx: number) => {
-    try {
-      await navigator.clipboard.writeText(messages[idx].content);
-      setCopiedIdx(idx);
-      setTimeout(() => setCopiedIdx(null), 1500);
-    } catch { /* ignore */ }
-  }, [messages]);
+  const handleCopyMessage = useCallback(
+    async (idx: number) => {
+      try {
+        await navigator.clipboard.writeText(messages[idx].content);
+        setCopiedIdx(idx);
+        setTimeout(() => setCopiedIdx(null), 1500);
+      } catch {
+        /* ignore */
+      }
+    },
+    [messages],
+  );
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || loading) return;
     setInput('');
 
-    const userMsg: Message = { role: 'user', content: text, timestamp: Date.now() };
+    const userMsg: Message = {
+      role: 'user',
+      content: text,
+      timestamp: Date.now(),
+    };
     setMessages(prev => [...prev, userMsg]);
     setLoading(true);
     setStreamingText('');
@@ -159,12 +174,15 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
 
     try {
       const backendUrl = configApi.getString('backend.baseUrl');
-      const res = await authFetch(`${backendUrl}/api/augment/workflows/${workflowId}/run/stream`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: text }),
-        signal: controller.signal,
-      });
+      const res = await authFetch(
+        `${backendUrl}/api/augment/workflows/${workflowId}/run/stream`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input: text }),
+          signal: controller.signal,
+        },
+      );
 
       if (!res.ok) {
         const errBody = await res.text().catch(() => '');
@@ -255,12 +273,18 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
 
       const finalContent = accumulatedText || streamingText;
       if (finalContent) {
-        setMessages(prev => [...prev, { role: 'assistant', content: finalContent, timestamp: Date.now() }]);
+        setMessages(prev => [
+          ...prev,
+          { role: 'assistant', content: finalContent, timestamp: Date.now() },
+        ]);
       }
     } catch (err) {
       if ((err as Error).name === 'AbortError') return;
       const errorMsg = `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
-      setMessages(prev => [...prev, { role: 'assistant', content: errorMsg, timestamp: Date.now() }]);
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: errorMsg, timestamp: Date.now() },
+      ]);
     } finally {
       setLoading(false);
       setStreamStatus(null);
@@ -269,18 +293,27 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
     }
   }, [input, loading, workflowId, configApi, streamingText]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  }, [sendMessage]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    },
+    [sendMessage],
+  );
 
   const renderStatusIndicator = () => {
     if (!streamStatus || streamStatus.phase === 'done') return null;
 
     let statusText = '';
-    let icon = <CircularProgress size={12} thickness={5} sx={{ color: theme.palette.primary.main }} />;
+    let icon = (
+      <CircularProgress
+        size={12}
+        thickness={5}
+        sx={{ color: theme.palette.primary.main }}
+      />
+    );
 
     switch (streamStatus.phase) {
       case 'connecting':
@@ -295,11 +328,23 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
         statusText = streamStatus.toolName
           ? `Calling ${streamStatus.toolName}`
           : 'Calling tool';
-        icon = <BuildCircleOutlinedIcon sx={{ fontSize: 14, color: theme.palette.warning.main, animation: `${pulseAnimation} 1.5s ease-in-out infinite` }} />;
+        icon = (
+          <BuildCircleOutlinedIcon
+            sx={{
+              fontSize: 14,
+              color: theme.palette.warning.main,
+              animation: `${pulseAnimation} 1.5s ease-in-out infinite`,
+            }}
+          />
+        );
         break;
       case 'streaming':
         statusText = 'Generating response';
-        icon = <CheckCircleOutlineIcon sx={{ fontSize: 14, color: theme.palette.success.main }} />;
+        icon = (
+          <CheckCircleOutlineIcon
+            sx={{ fontSize: 14, color: theme.palette.success.main }}
+          />
+        );
         break;
     }
 
@@ -326,10 +371,13 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
               fontSize: '0.72rem',
               color: theme.palette.text.secondary,
               fontWeight: 500,
-              '&::after': streamStatus.phase !== 'streaming' ? {
-                content: '""',
-                animation: `${dotAnimation} 1.2s steps(4, end) infinite`,
-              } : undefined,
+              '&::after':
+                streamStatus.phase !== 'streaming'
+                  ? {
+                      content: '""',
+                      animation: `${dotAnimation} 1.2s steps(4, end) infinite`,
+                    }
+                  : undefined,
             }}
           >
             {statusText}
@@ -411,7 +459,9 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
         flexShrink: 0,
         borderLeft: '1px solid',
         borderColor: 'divider',
-        bgcolor: isDark ? alpha(theme.palette.background.paper, 0.6) : 'background.paper',
+        bgcolor: isDark
+          ? alpha(theme.palette.background.paper, 0.6)
+          : 'background.paper',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -419,8 +469,20 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
       }}
     >
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.5, pt: 1 }}>
-        <Typography variant="subtitle2" fontWeight={600} sx={{ color: 'text.primary', fontSize: '0.85rem' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 1.5,
+          pt: 1,
+        }}
+      >
+        <Typography
+          variant="subtitle2"
+          fontWeight={600}
+          sx={{ color: 'text.primary', fontSize: '0.85rem' }}
+        >
           Preview
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -440,7 +502,12 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
             New chat <EditIcon sx={{ fontSize: 14 }} />
           </Typography>
           {onClose && (
-            <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', p: 0.5 }} aria-label="Close preview">
+            <IconButton
+              size="small"
+              onClick={onClose}
+              sx={{ color: 'text.secondary', p: 0.5 }}
+              aria-label="Close preview"
+            >
               <CloseIcon sx={{ fontSize: 16 }} />
             </IconButton>
           )}
@@ -448,23 +515,54 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
       </Box>
 
       {/* Messages or empty state */}
-      <Box ref={scrollRef} sx={{ flex: 1, overflowY: 'auto', px: 2, py: 2, scrollbarWidth: 'thin' }}>
+      <Box
+        ref={scrollRef}
+        sx={{
+          flex: 1,
+          overflowY: 'auto',
+          px: 2,
+          py: 2,
+          scrollbarWidth: 'thin',
+        }}
+      >
         {messages.length === 0 && !loading ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              gap: 1.5,
+            }}
+          >
             <AutoFixHighIcon sx={{ fontSize: 40, color: 'text.disabled' }} />
-            <Typography variant="subtitle1" fontWeight={600} color="text.primary">
+            <Typography
+              variant="subtitle1"
+              fontWeight={600}
+              color="text.primary"
+            >
               Preview your agent
             </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ maxWidth: 220 }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
+              sx={{ maxWidth: 220 }}
+            >
               Prompt the agent as if you're the user.
             </Typography>
           </Box>
         ) : (
           <>
             {messages.map((msg, i) => {
-              const isError = msg.role === 'assistant' && msg.content.startsWith('Error:');
+              const isError =
+                msg.role === 'assistant' && msg.content.startsWith('Error:');
               const isHovered = hoveredMsg === i;
-              const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              const timeStr = new Date(msg.timestamp).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              });
 
               return (
                 <Box
@@ -479,18 +577,36 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
                   }}
                 >
                   {/* Role label with icon */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5, px: 0.5 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      mb: 0.5,
+                      px: 0.5,
+                    }}
+                  >
                     {msg.role === 'user' ? (
-                      <PersonOutlineIcon sx={{ fontSize: 14, color: theme.palette.text.secondary }} />
+                      <PersonOutlineIcon
+                        sx={{
+                          fontSize: 14,
+                          color: theme.palette.text.secondary,
+                        }}
+                      />
                     ) : (
-                      <SmartToyOutlinedIcon sx={{ fontSize: 14, color: theme.palette.primary.main }} />
+                      <SmartToyOutlinedIcon
+                        sx={{ fontSize: 14, color: theme.palette.primary.main }}
+                      />
                     )}
                     <Typography
                       variant="caption"
                       sx={{
                         fontWeight: 600,
                         fontSize: '0.75rem',
-                        color: msg.role === 'user' ? theme.palette.text.secondary : theme.palette.primary.main,
+                        color:
+                          msg.role === 'user'
+                            ? theme.palette.text.secondary
+                            : theme.palette.primary.main,
                         textTransform: 'capitalize',
                       }}
                     >
@@ -498,7 +614,14 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
                     </Typography>
                     {/* Timestamp on hover */}
                     <Fade in={isHovered}>
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled', ml: 0.5 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.65rem',
+                          color: 'text.disabled',
+                          ml: 0.5,
+                        }}
+                      >
                         {timeStr}
                       </Typography>
                     </Fade>
@@ -509,26 +632,47 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
                     sx={{
                       maxWidth: '95%',
                       p: 1.5,
-                      borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                      bgcolor: msg.role === 'user'
-                        ? (isDark ? alpha(theme.palette.primary.main, 0.15) : alpha(theme.palette.primary.main, 0.08))
-                        : (isDark ? alpha(theme.palette.common.white, 0.05) : alpha(theme.palette.common.black, 0.03)),
+                      borderRadius:
+                        msg.role === 'user'
+                          ? '12px 12px 2px 12px'
+                          : '12px 12px 12px 2px',
+                      bgcolor:
+                        msg.role === 'user'
+                          ? isDark
+                            ? alpha(theme.palette.primary.main, 0.15)
+                            : alpha(theme.palette.primary.main, 0.08)
+                          : isDark
+                            ? alpha(theme.palette.common.white, 0.05)
+                            : alpha(theme.palette.common.black, 0.03),
                       border: '1px solid',
-                      borderColor: msg.role === 'user'
-                        ? (isDark ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.primary.main, 0.2))
-                        : (isDark ? alpha(theme.palette.common.white, 0.1) : alpha(theme.palette.common.black, 0.08)),
+                      borderColor:
+                        msg.role === 'user'
+                          ? isDark
+                            ? alpha(theme.palette.primary.main, 0.3)
+                            : alpha(theme.palette.primary.main, 0.2)
+                          : isDark
+                            ? alpha(theme.palette.common.white, 0.1)
+                            : alpha(theme.palette.common.black, 0.08),
                     }}
                   >
                     {msg.role === 'assistant' ? (
                       <Box sx={markdownSx}>
-                        <ReactMarkdown remarkPlugins={REMARK_PLUGINS} components={MARKDOWN_COMPONENTS}>
+                        <ReactMarkdown
+                          remarkPlugins={REMARK_PLUGINS}
+                          components={MARKDOWN_COMPONENTS}
+                        >
                           {msg.content}
                         </ReactMarkdown>
                       </Box>
                     ) : (
                       <Typography
                         variant="body2"
-                        sx={{ whiteSpace: 'pre-wrap', fontSize: '0.875rem', lineHeight: 1.6, color: 'text.primary' }}
+                        sx={{
+                          whiteSpace: 'pre-wrap',
+                          fontSize: '0.875rem',
+                          lineHeight: 1.6,
+                          color: 'text.primary',
+                        }}
                       >
                         {msg.content}
                       </Typography>
@@ -539,8 +683,14 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
                   {isHovered && msg.role === 'assistant' && (
                     <Box sx={{ display: 'flex', gap: 0.25, mt: 0.25, px: 0.5 }}>
                       <Tooltip title={copiedIdx === i ? 'Copied!' : 'Copy'}>
-                        <IconButton size="small" onClick={() => handleCopyMessage(i)} sx={{ p: 0.25 }}>
-                          <ContentCopyIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
+                        <IconButton
+                          size="small"
+                          onClick={() => handleCopyMessage(i)}
+                          sx={{ p: 0.25 }}
+                        >
+                          <ContentCopyIcon
+                            sx={{ fontSize: 13, color: 'text.secondary' }}
+                          />
                         </IconButton>
                       </Tooltip>
                       {isError && (
@@ -548,7 +698,10 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
                           <IconButton
                             size="small"
                             onClick={() => {
-                              const lastUserMsg = [...messages].slice(0, i).reverse().find(m => m.role === 'user');
+                              const lastUserMsg = [...messages]
+                                .slice(0, i)
+                                .reverse()
+                                .find(m => m.role === 'user');
                               if (lastUserMsg) {
                                 setMessages(prev => prev.slice(0, i));
                                 setInput(lastUserMsg.content);
@@ -556,7 +709,9 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
                             }}
                             sx={{ p: 0.25 }}
                           >
-                            <ReplayIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
+                            <ReplayIcon
+                              sx={{ fontSize: 13, color: 'text.secondary' }}
+                            />
                           </IconButton>
                         </Tooltip>
                       )}
@@ -576,11 +731,25 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
                   alignItems: 'flex-start',
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5, px: 0.5 }}>
-                  <SmartToyOutlinedIcon sx={{ fontSize: 14, color: theme.palette.primary.main }} />
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    mb: 0.5,
+                    px: 0.5,
+                  }}
+                >
+                  <SmartToyOutlinedIcon
+                    sx={{ fontSize: 14, color: theme.palette.primary.main }}
+                  />
                   <Typography
                     variant="caption"
-                    sx={{ fontWeight: 600, fontSize: '0.75rem', color: theme.palette.primary.main }}
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      color: theme.palette.primary.main,
+                    }}
                   >
                     Assistant
                   </Typography>
@@ -657,7 +826,11 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
         >
           <Tooltip title="Attach file (coming soon)">
             <span>
-              <IconButton size="small" disabled sx={{ p: 0.5, color: theme.palette.text.secondary }}>
+              <IconButton
+                size="small"
+                disabled
+                sx={{ p: 0.5, color: theme.palette.text.secondary }}
+              >
                 <AttachFileIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </span>
@@ -676,7 +849,10 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
               '& .MuiInputBase-input': {
                 fontSize: '0.875rem',
                 color: theme.palette.text.primary,
-                '&::placeholder': { color: theme.palette.text.secondary, opacity: 0.8 },
+                '&::placeholder': {
+                  color: theme.palette.text.secondary,
+                  opacity: 0.8,
+                },
               },
             }}
           />
@@ -686,12 +862,14 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
             disabled={!input.trim() || loading}
             sx={{
               p: 0.5,
-              color: input.trim() && !loading
-                ? theme.palette.primary.main
-                : theme.palette.text.disabled,
-              bgcolor: input.trim() && !loading
-                ? alpha(theme.palette.primary.main, 0.1)
-                : 'transparent',
+              color:
+                input.trim() && !loading
+                  ? theme.palette.primary.main
+                  : theme.palette.text.disabled,
+              bgcolor:
+                input.trim() && !loading
+                  ? alpha(theme.palette.primary.main, 0.1)
+                  : 'transparent',
               borderRadius: 1.5,
               '&:hover': {
                 bgcolor: alpha(theme.palette.primary.main, 0.2),
@@ -704,16 +882,23 @@ export function PreviewChatPanel({ workflowId, onClose }: PreviewChatPanelProps)
       </Box>
 
       {/* Clear chat confirmation */}
-      <Dialog open={clearConfirm} onClose={() => setClearConfirm(false)} maxWidth="xs">
+      <Dialog
+        open={clearConfirm}
+        onClose={() => setClearConfirm(false)}
+        maxWidth="xs"
+      >
         <DialogTitle>Clear conversation?</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            This will remove all messages from the preview. This cannot be undone.
+            This will remove all messages from the preview. This cannot be
+            undone.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setClearConfirm(false)}>Cancel</Button>
-          <Button variant="contained" color="error" onClick={confirmClear}>Clear</Button>
+          <Button variant="contained" color="error" onClick={confirmClear}>
+            Clear
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

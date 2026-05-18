@@ -64,7 +64,10 @@ export function AgentStudioPage({
         >
           Agent Studio
         </Typography>
-        <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+        <Typography
+          variant="body2"
+          sx={{ color: theme.palette.text.secondary }}
+        >
           Build, test, and deploy AI agents.
         </Typography>
       </Box>
@@ -95,12 +98,8 @@ export function AgentStudioPage({
           tourControlRef={agentTourRef}
         />
       )}
-      {activeTab === 'sandbox' && (
-        <SandboxLazy namespace={kagentiNamespace} />
-      )}
-      {activeTab === 'builds' && (
-        <BuildsLazy namespace={kagentiNamespace} />
-      )}
+      {activeTab === 'sandbox' && <SandboxLazy namespace={kagentiNamespace} />}
+      {activeTab === 'builds' && <BuildsLazy namespace={kagentiNamespace} />}
     </Box>
   );
 }

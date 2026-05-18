@@ -96,8 +96,8 @@ describe('ChatInput - Kagenti agent features', () => {
       isKagenti: true,
     });
     const chips = screen.queryAllByRole('button');
-    const agentChips = chips.filter(
-      el => el.classList.contains('MuiChip-root'),
+    const agentChips = chips.filter(el =>
+      el.classList.contains('MuiChip-root'),
     );
     expect(agentChips).toHaveLength(0);
   });

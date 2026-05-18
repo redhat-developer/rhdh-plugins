@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { useState, useCallback, useMemo, Fragment, type ReactNode } from 'react';
+import {
+  useState,
+  useCallback,
+  useMemo,
+  Fragment,
+  type ReactNode,
+} from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -27,7 +33,12 @@ import { useTheme, alpha } from '@mui/material/styles';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { typeScale, iconSize, glassSurface, transitions } from '../../theme/tokens';
+import {
+  typeScale,
+  iconSize,
+  glassSurface,
+  transitions,
+} from '../../theme/tokens';
 import type { AdminPanel } from '../../hooks';
 
 const SIDEBAR_WIDTH = 220;
@@ -86,7 +97,10 @@ export function PrimarySidebar({
     [onNavigate, isMobile],
   );
 
-  const glass = useMemo(() => glassSurface(theme, 8, isDark ? 0.65 : 0.85), [theme, isDark]);
+  const glass = useMemo(
+    () => glassSurface(theme, 8, isDark ? 0.65 : 0.85),
+    [theme, isDark],
+  );
 
   const sidebarContent = (
     <Box
@@ -97,7 +111,9 @@ export function PrimarySidebar({
         minWidth: isMobile ? SIDEBAR_WIDTH : width,
         display: 'flex',
         flexDirection: 'column',
-        borderRight: isMobile ? 'none' : `1px solid ${alpha(theme.palette.divider, isDark ? 0.2 : 0.12)}`,
+        borderRight: isMobile
+          ? 'none'
+          : `1px solid ${alpha(theme.palette.divider, isDark ? 0.2 : 0.12)}`,
         ...glass,
         transition: `width 0.2s ease, min-width 0.2s ease`,
         overflow: 'hidden',
@@ -133,12 +149,19 @@ export function PrimarySidebar({
             {title}
           </Typography>
         )}
-        <Tooltip title={effectiveCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+        <Tooltip
+          title={effectiveCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
           <IconButton
             size="small"
             onClick={() => setCollapsed(c => !c)}
-            aria-label={effectiveCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            sx={{ ml: effectiveCollapsed ? 'auto' : 0, mr: effectiveCollapsed ? 'auto' : 0 }}
+            aria-label={
+              effectiveCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
+            }
+            sx={{
+              ml: effectiveCollapsed ? 'auto' : 0,
+              mr: effectiveCollapsed ? 'auto' : 0,
+            }}
           >
             {effectiveCollapsed ? (
               <ChevronRightIcon sx={{ fontSize: iconSize.md }} />
@@ -230,7 +253,9 @@ export function PrimarySidebar({
                     mx: effectiveCollapsed ? 0.5 : 0.75,
                     borderRadius: 1.5,
                     cursor: 'pointer',
-                    justifyContent: effectiveCollapsed ? 'center' : 'flex-start',
+                    justifyContent: effectiveCollapsed
+                      ? 'center'
+                      : 'flex-start',
                     color: isActive
                       ? theme.palette.primary.main
                       : theme.palette.text.secondary,
@@ -281,7 +306,12 @@ export function PrimarySidebar({
 
               if (effectiveCollapsed) {
                 return (
-                  <Tooltip key={item.id} title={item.label} placement="right" arrow>
+                  <Tooltip
+                    key={item.id}
+                    title={item.label}
+                    placement="right"
+                    arrow
+                  >
                     {btn}
                   </Tooltip>
                 );
@@ -341,7 +371,10 @@ export function PrimarySidebar({
               '&:hover': {
                 color: theme.palette.primary.main,
                 borderColor: alpha(theme.palette.primary.main, 0.4),
-                bgcolor: alpha(theme.palette.primary.main, isDark ? 0.08 : 0.04),
+                bgcolor: alpha(
+                  theme.palette.primary.main,
+                  isDark ? 0.08 : 0.04,
+                ),
               },
             }}
           >

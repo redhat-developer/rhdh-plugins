@@ -46,9 +46,7 @@ describe('provider registry', () => {
   });
 
   it('getProviderDescriptor("unknown") returns undefined', () => {
-    expect(
-      getProviderDescriptor('unknown'),
-    ).toBeUndefined();
+    expect(getProviderDescriptor('unknown')).toBeUndefined();
   });
 
   it('getAllProviderDescriptors returns all providers sorted by displayName', () => {

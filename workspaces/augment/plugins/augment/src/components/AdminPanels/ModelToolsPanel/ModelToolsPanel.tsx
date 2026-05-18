@@ -30,7 +30,11 @@ import { McpServersSection } from './McpServersSection';
 import { SafetyEvalPanel } from '../SafetyEvalPanel/SafetyEvalPanel';
 import { EvaluationSection } from '../SafetyEvalPanel/EvaluationSection';
 import { KnowledgeBasePanel } from '../KnowledgeBasePanel';
-import { CONTENT_MAX_WIDTH, PAGE_TITLE_SX, PAGE_SUBTITLE_SX } from '../shared/commandCenterStyles';
+import {
+  CONTENT_MAX_WIDTH,
+  PAGE_TITLE_SX,
+  PAGE_SUBTITLE_SX,
+} from '../shared/commandCenterStyles';
 import { PanelIntroBanner } from '../shared/PanelIntroBanner';
 
 type SubTab =
@@ -56,9 +60,19 @@ const ALL_TABS: readonly TabDef[] = [
   { label: 'Evaluation', value: 'evaluation', capability: 'evaluation' },
 ] as const;
 
-const CONTENT_SX = { px: 3, py: 2, maxWidth: CONTENT_MAX_WIDTH, mx: 'auto' } as const;
+const CONTENT_SX = {
+  px: 3,
+  py: 2,
+  maxWidth: CONTENT_MAX_WIDTH,
+  mx: 'auto',
+} as const;
 
-const HEADER_OUTER_SX = { px: 3, pt: 3, maxWidth: CONTENT_MAX_WIDTH, mx: 'auto' } as const;
+const HEADER_OUTER_SX = {
+  px: 3,
+  pt: 3,
+  maxWidth: CONTENT_MAX_WIDTH,
+  mx: 'auto',
+} as const;
 
 const HEADER_ROW_SX = {
   display: 'flex',
@@ -133,7 +147,9 @@ export const AgentConfigPanel = () => {
       <Box sx={{ width: '100%' }}>
         <Box sx={HEADER_OUTER_SX}>
           <Box sx={HEADER_ROW_SX}>
-            <Typography variant="h5" sx={PAGE_TITLE_SX}>Platform</Typography>
+            <Typography variant="h5" sx={PAGE_TITLE_SX}>
+              Platform
+            </Typography>
             <ProviderSelector
               providers={providers}
               activeProviderId={activeProviderId}

@@ -39,14 +39,21 @@ export async function executeAgentNode(
   const startedAt = new Date().toISOString();
   const startMs = Date.now();
 
-  const stateMcpServers = (state._mcpServers as Array<{ serverUrl: string; serverLabel: string }> | undefined) || [];
-  const directMcpUrls = Array.isArray(data.mcpServers) ? (data.mcpServers as string[]) : [];
+  const stateMcpServers =
+    (state._mcpServers as
+      | Array<{ serverUrl: string; serverLabel: string }>
+      | undefined) || [];
+  const directMcpUrls = Array.isArray(data.mcpServers)
+    ? (data.mcpServers as string[])
+    : [];
 
   const tools: Array<Record<string, unknown>> = [
     ...stateMcpServers.map(s => ({
       type: 'mcp',
       server_label: s.serverLabel,
-      server_url: s.serverUrl.endsWith('/sse') ? s.serverUrl : `${s.serverUrl}/sse`,
+      server_url: s.serverUrl.endsWith('/sse')
+        ? s.serverUrl
+        : `${s.serverUrl}/sse`,
       require_approval: 'never',
     })),
     ...directMcpUrls.map((url, i) => ({
@@ -78,11 +85,17 @@ export async function executeAgentNode(
     return {
       output: outputText,
       trace: {
-        nodeId: node.id, nodeType: 'agent',
-        nodeName: data.name || node.label || node.id, model,
-        input: inputText, output: outputText, responseId: response.id,
-        startedAt, completedAt: new Date().toISOString(),
-        status: 'completed', durationMs: Date.now() - startMs,
+        nodeId: node.id,
+        nodeType: 'agent',
+        nodeName: data.name || node.label || node.id,
+        model,
+        input: inputText,
+        output: outputText,
+        responseId: response.id,
+        startedAt,
+        completedAt: new Date().toISOString(),
+        status: 'completed',
+        durationMs: Date.now() - startMs,
       },
     };
   } catch (err: unknown) {
@@ -91,11 +104,17 @@ export async function executeAgentNode(
     return {
       output: undefined,
       trace: {
-        nodeId: node.id, nodeType: 'agent',
-        nodeName: data.name || node.label || node.id, model,
-        input: inputText, output: '',
-        startedAt, completedAt: new Date().toISOString(),
-        status: 'failed', error: errMsg, durationMs: Date.now() - startMs,
+        nodeId: node.id,
+        nodeType: 'agent',
+        nodeName: data.name || node.label || node.id,
+        model,
+        input: inputText,
+        output: '',
+        startedAt,
+        completedAt: new Date().toISOString(),
+        status: 'failed',
+        error: errMsg,
+        durationMs: Date.now() - startMs,
       },
     };
   }
@@ -111,7 +130,9 @@ export async function executeClassifyNode(
   logger: LoggerService,
 ): Promise<NodeExecutionResult> {
   const data = node.data as Record<string, unknown>;
-  const classifications = (data.classifications as Array<{ label: string; description: string }>) || [];
+  const classifications =
+    (data.classifications as Array<{ label: string; description: string }>) ||
+    [];
   const model = (data.model as string) || defaultModel;
 
   const enumValues = classifications.map(c => c.label);
@@ -119,7 +140,8 @@ export async function executeClassifyNode(
     .map(c => `- "${c.label}": ${c.description}`)
     .join('\n');
 
-  const instructions = (data.instructions as string) ||
+  const instructions =
+    (data.instructions as string) ||
     `Classify the input into exactly one of these categories:\n${classDescriptions}\n\nRespond with the classification in the required JSON format.`;
 
   const inputText = buildInputForNode(node, userInput, state);
@@ -128,10 +150,14 @@ export async function executeClassifyNode(
 
   try {
     const body: Record<string, unknown> = {
-      model, input: inputText, instructions, store: true,
+      model,
+      input: inputText,
+      instructions,
+      store: true,
       text: {
         format: {
-          type: 'json_schema', name: 'classification',
+          type: 'json_schema',
+          name: 'classification',
           schema: {
             type: 'object',
             properties: {
@@ -154,17 +180,27 @@ export async function executeClassifyNode(
 
     const rawText = extractTextFromResponse(response);
     let parsed: { classification: string } | null = null;
-    try { parsed = JSON.parse(rawText); } catch { parsed = { classification: rawText.trim().toLowerCase() }; }
+    try {
+      parsed = JSON.parse(rawText);
+    } catch {
+      parsed = { classification: rawText.trim().toLowerCase() };
+    }
 
     return {
       output: parsed,
       trace: {
-        nodeId: node.id, nodeType: 'classify',
-        nodeName: node.label || 'Classify', model,
-        input: inputText, output: rawText, parsedOutput: parsed,
-        responseId: response.id, startedAt,
+        nodeId: node.id,
+        nodeType: 'classify',
+        nodeName: node.label || 'Classify',
+        model,
+        input: inputText,
+        output: rawText,
+        parsedOutput: parsed,
+        responseId: response.id,
+        startedAt,
         completedAt: new Date().toISOString(),
-        status: 'completed', durationMs: Date.now() - startMs,
+        status: 'completed',
+        durationMs: Date.now() - startMs,
       },
     };
   } catch (err: unknown) {
@@ -173,11 +209,17 @@ export async function executeClassifyNode(
     return {
       output: undefined,
       trace: {
-        nodeId: node.id, nodeType: 'classify',
-        nodeName: node.label || 'Classify', model,
-        input: inputText, output: '', startedAt,
+        nodeId: node.id,
+        nodeType: 'classify',
+        nodeName: node.label || 'Classify',
+        model,
+        input: inputText,
+        output: '',
+        startedAt,
         completedAt: new Date().toISOString(),
-        status: 'failed', error: errMsg, durationMs: Date.now() - startMs,
+        status: 'failed',
+        error: errMsg,
+        durationMs: Date.now() - startMs,
       },
     };
   }
@@ -204,12 +246,16 @@ export function executeLogicNode(
   return {
     output: result,
     trace: {
-      nodeId: node.id, nodeType: 'logic',
+      nodeId: node.id,
+      nodeType: 'logic',
       nodeName: node.label || 'If/Else',
-      input: condition, output: String(result), parsedOutput: result,
+      input: condition,
+      output: String(result),
+      parsedOutput: result,
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),
-      status: 'completed', durationMs: Date.now() - startMs,
+      status: 'completed',
+      durationMs: Date.now() - startMs,
     },
   };
 }
@@ -238,12 +284,16 @@ export function executeTransformNode(
   return {
     output: result,
     trace: {
-      nodeId: node.id, nodeType: 'transform',
+      nodeId: node.id,
+      nodeType: 'transform',
       nodeName: node.label || 'Transform',
-      input: expression, output: String(result), parsedOutput: result,
+      input: expression,
+      output: String(result),
+      parsedOutput: result,
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),
-      status: 'completed', durationMs: Date.now() - startMs,
+      status: 'completed',
+      durationMs: Date.now() - startMs,
     },
   };
 }
@@ -270,12 +320,15 @@ export function executeSetStateNode(
   return {
     output: assignments,
     trace: {
-      nodeId: node.id, nodeType: 'set_state',
+      nodeId: node.id,
+      nodeType: 'set_state',
       nodeName: node.label || 'Set State',
-      input: JSON.stringify(assignments), output: JSON.stringify(assignments),
+      input: JSON.stringify(assignments),
+      output: JSON.stringify(assignments),
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),
-      status: 'completed', durationMs: Date.now() - startMs,
+      status: 'completed',
+      durationMs: Date.now() - startMs,
     },
   };
 }
@@ -289,12 +342,15 @@ export function executeUserInteractionNode(
   return {
     output: { approved: true, prompt },
     trace: {
-      nodeId: node.id, nodeType: 'user_interaction',
+      nodeId: node.id,
+      nodeType: 'user_interaction',
       nodeName: node.label || 'Approval',
-      input: prompt, output: 'Auto-approved (preview mode)',
+      input: prompt,
+      output: 'Auto-approved (preview mode)',
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),
-      status: 'completed', durationMs: 0,
+      status: 'completed',
+      durationMs: 0,
     },
   };
 }
@@ -303,12 +359,15 @@ export function makeSkippedTrace(node: WorkflowNode): NodeExecutionResult {
   return {
     output: undefined,
     trace: {
-      nodeId: node.id, nodeType: node.type,
+      nodeId: node.id,
+      nodeType: node.type,
       nodeName: node.label || node.id,
-      input: '', output: '',
+      input: '',
+      output: '',
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),
-      status: 'skipped', durationMs: 0,
+      status: 'skipped',
+      durationMs: 0,
     },
   };
 }

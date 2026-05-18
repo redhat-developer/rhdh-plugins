@@ -22,14 +22,20 @@
 import type { Theme, SxProps } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 
-function scrollbarThumbGradient(isDark: boolean, intensity: 'normal' | 'hover' = 'normal') {
-  const o = intensity === 'hover' ? (isDark ? 0.7 : 0.6) : (isDark ? 0.5 : 0.45);
+function scrollbarThumbGradient(
+  isDark: boolean,
+  intensity: 'normal' | 'hover' = 'normal',
+) {
+  const o = intensity === 'hover' ? (isDark ? 0.7 : 0.6) : isDark ? 0.5 : 0.45;
   return isDark
     ? `linear-gradient(180deg, rgba(99,102,241,${o}) 0%, rgba(168,85,247,${o - 0.1}) 30%, rgba(236,72,153,${o - 0.1}) 60%, rgba(6,182,212,${o}) 100%)`
     : `linear-gradient(180deg, rgba(79,70,229,${o}) 0%, rgba(139,92,246,${o - 0.05}) 30%, rgba(219,39,119,${o - 0.1}) 60%, rgba(14,165,233,${o}) 100%)`;
 }
 
-function scrollbarGlow(isDark: boolean, intensity: 'normal' | 'hover' = 'normal') {
+function scrollbarGlow(
+  isDark: boolean,
+  intensity: 'normal' | 'hover' = 'normal',
+) {
   if (intensity === 'hover') {
     return isDark
       ? '0 0 16px rgba(139,92,246,0.5), 0 0 4px rgba(236,72,153,0.3), inset 0 1px 3px rgba(255,255,255,0.4), inset 0 -1px 2px rgba(0,0,0,0.15)'
@@ -40,11 +46,22 @@ function scrollbarGlow(isDark: boolean, intensity: 'normal' | 'hover' = 'normal'
     : '0 0 8px rgba(79,70,229,0.25), inset 0 1px 2px rgba(255,255,255,0.8), inset 0 -1px 2px rgba(0,0,0,0.05)';
 }
 
-function scrollbarBorder(isDark: boolean, intensity: 'normal' | 'hover' = 'normal') {
-  const o = intensity === 'hover' ? (isDark ? 0.35 : 0.4) : (isDark ? 0.2 : 0.3);
+function scrollbarBorder(
+  isDark: boolean,
+  intensity: 'normal' | 'hover' = 'normal',
+) {
+  const o = intensity === 'hover' ? (isDark ? 0.35 : 0.4) : isDark ? 0.2 : 0.3;
   return `1px solid rgba(255,255,255,${o})`;
 }
-import { GRID_COLUMNS, GRID_GAP, HERO_PADDING, SEARCH_PADDING, MAX_WIDTH, CARD_HEIGHT, AVATAR_SIZE } from './marketplace.constants';
+import {
+  GRID_COLUMNS,
+  GRID_GAP,
+  HERO_PADDING,
+  SEARCH_PADDING,
+  MAX_WIDTH,
+  CARD_HEIGHT,
+  AVATAR_SIZE,
+} from './marketplace.constants';
 
 export function heroSx(theme: Theme, isDark: boolean): SxProps<Theme> {
   return {
@@ -89,7 +106,9 @@ export function gridContainerSx(isDark: boolean): SxProps<Theme> {
     scrollbarWidth: 'thin',
     scrollbarColor: 'transparent transparent',
     '&:hover': {
-      scrollbarColor: isDark ? 'rgba(140,130,220,0.4) transparent' : 'rgba(99,102,241,0.35) transparent',
+      scrollbarColor: isDark
+        ? 'rgba(140,130,220,0.4) transparent'
+        : 'rgba(99,102,241,0.35) transparent',
     },
     '&::-webkit-scrollbar': {
       width: 8,
@@ -126,7 +145,11 @@ export function gridContainerSx(isDark: boolean): SxProps<Theme> {
   };
 }
 
-export function cardSx(theme: Theme, isDark: boolean, accentColor: string): SxProps<Theme> {
+export function cardSx(
+  theme: Theme,
+  isDark: boolean,
+  accentColor: string,
+): SxProps<Theme> {
   return {
     minHeight: CARD_HEIGHT,
     display: 'flex',
@@ -135,9 +158,13 @@ export function cardSx(theme: Theme, isDark: boolean, accentColor: string): SxPr
     overflow: 'hidden',
     cursor: 'pointer',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    bgcolor: isDark ? alpha(theme.palette.background.paper, 0.5) : theme.palette.background.paper,
+    bgcolor: isDark
+      ? alpha(theme.palette.background.paper, 0.5)
+      : theme.palette.background.paper,
     border: `1px solid ${alpha(isDark ? theme.palette.common.white : theme.palette.common.black, isDark ? 0.07 : 0.05)}`,
-    boxShadow: isDark ? `0 1px 4px ${alpha('#000', 0.15)}` : `0 1px 4px ${alpha('#000', 0.03)}`,
+    boxShadow: isDark
+      ? `0 1px 4px ${alpha('#000', 0.15)}`
+      : `0 1px 4px ${alpha('#000', 0.03)}`,
     '&:hover': {
       transform: 'translateY(-2px)',
       borderColor: alpha(accentColor, isDark ? 0.35 : 0.25),
@@ -148,7 +175,10 @@ export function cardSx(theme: Theme, isDark: boolean, accentColor: string): SxPr
   };
 }
 
-export function cardAccentSx(accentColor: string, isReady: boolean): SxProps<Theme> {
+export function cardAccentSx(
+  accentColor: string,
+  isReady: boolean,
+): SxProps<Theme> {
   return {
     width: 3,
     flexShrink: 0,

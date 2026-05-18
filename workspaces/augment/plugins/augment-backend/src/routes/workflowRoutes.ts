@@ -45,13 +45,22 @@ export function registerWorkflowRoutes(
     workflowService,
     adminConfig,
     runWorkflow: async (workflowId: string, input: string) => {
-      const { url, model, skipTls } = await resolveLlamaStackConfig(ctx, adminConfig);
-      const client = new ResponsesApiClient({ baseUrl: url, skipTlsVerify: skipTls }, ctx.logger);
+      const { url, model, skipTls } = await resolveLlamaStackConfig(
+        ctx,
+        adminConfig,
+      );
+      const client = new ResponsesApiClient(
+        { baseUrl: url, skipTlsVerify: skipTls },
+        ctx.logger,
+      );
       const workflow = await workflowService.getWorkflow(workflowId);
       const executor = new WorkflowExecutor(ctx.logger, client, model);
       const result = await executor.execute(workflow, input);
       return {
-        response: typeof result.finalOutput === 'string' ? result.finalOutput : JSON.stringify(result.finalOutput),
+        response:
+          typeof result.finalOutput === 'string'
+            ? result.finalOutput
+            : JSON.stringify(result.finalOutput),
         trace: result.trace as unknown as NodeExecutionRecord[],
         durationMs: result.totalDurationMs,
       };

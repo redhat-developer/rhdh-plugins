@@ -86,7 +86,9 @@ export function IdentityStep({
         value={formData.name}
         onChange={handleNameChange}
         error={!!getFieldError('name')}
-        helperText={getFieldError('name') || 'A human-readable name for the agent'}
+        helperText={
+          getFieldError('name') || 'A human-readable name for the agent'
+        }
         placeholder="e.g. Billing Support Agent"
       />
 

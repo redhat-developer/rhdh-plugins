@@ -42,9 +42,15 @@ interface AgentActionDeps {
   effectiveConfig: Record<string, unknown> | null;
   validationErrors: string[];
   saveDeps: SaveDeps;
-  generate: (prompt: string, model?: string, caps?: Record<string, boolean>) => Promise<string>;
+  generate: (
+    prompt: string,
+    model?: string,
+    caps?: Record<string, boolean>,
+  ) => Promise<string>;
   onSaved?: () => void;
-  setAgents: React.Dispatch<React.SetStateAction<Record<string, AgentFormData>>>;
+  setAgents: React.Dispatch<
+    React.SetStateAction<Record<string, AgentFormData>>
+  >;
   setSelectedAgentKey: React.Dispatch<React.SetStateAction<string | null>>;
   setDefaultAgentKey: React.Dispatch<React.SetStateAction<string>>;
   setActiveTab: React.Dispatch<React.SetStateAction<number>>;
@@ -103,10 +109,13 @@ export function useAgentActions(deps: AgentActionDeps) {
     confirmRemoveKey,
   } = deps;
 
-  const handleSelectAgent = useCallback((key: string) => {
-    setSelectedAgentKey(key);
-    setActiveTab(0);
-  }, [setSelectedAgentKey, setActiveTab]);
+  const handleSelectAgent = useCallback(
+    (key: string) => {
+      setSelectedAgentKey(key);
+      setActiveTab(0);
+    },
+    [setSelectedAgentKey, setActiveTab],
+  );
 
   const handleCreateFromModal = useCallback(
     (name: string, key: string) => {
@@ -118,30 +127,43 @@ export function useAgentActions(deps: AgentActionDeps) {
       setSelectedAgentKey(key);
       setCreateModalOpen(false);
     },
-    [agents, agentKeys.length, setAgents, setDefaultAgentKey, setSelectedAgentKey, setCreateModalOpen],
+    [
+      agents,
+      agentKeys.length,
+      setAgents,
+      setDefaultAgentKey,
+      setSelectedAgentKey,
+      setCreateModalOpen,
+    ],
   );
 
-  const executeRemoveAgent = useCallback((key: string) => {
-    setAgents(prev => {
-      const next: Record<string, AgentFormData> = {};
-      for (const [k, a] of Object.entries(prev)) {
-        if (k === key) continue;
-        next[k] = {
-          ...a,
-          handoffs: a.handoffs.filter(h => h !== key),
-          asTools: a.asTools.filter(t => t !== key),
-        };
-      }
-      const remaining = Object.keys(next);
-      setSelectedAgentKey(sel => (sel === key ? remaining[0] || null : sel));
-      setDefaultAgentKey(def => (def === key ? '' : def));
-      return next;
-    });
-  }, [setAgents, setSelectedAgentKey, setDefaultAgentKey]);
+  const executeRemoveAgent = useCallback(
+    (key: string) => {
+      setAgents(prev => {
+        const next: Record<string, AgentFormData> = {};
+        for (const [k, a] of Object.entries(prev)) {
+          if (k === key) continue;
+          next[k] = {
+            ...a,
+            handoffs: a.handoffs.filter(h => h !== key),
+            asTools: a.asTools.filter(t => t !== key),
+          };
+        }
+        const remaining = Object.keys(next);
+        setSelectedAgentKey(sel => (sel === key ? remaining[0] || null : sel));
+        setDefaultAgentKey(def => (def === key ? '' : def));
+        return next;
+      });
+    },
+    [setAgents, setSelectedAgentKey, setDefaultAgentKey],
+  );
 
-  const handleRemoveAgent = useCallback((key: string) => {
-    setConfirmRemoveKey(key);
-  }, [setConfirmRemoveKey]);
+  const handleRemoveAgent = useCallback(
+    (key: string) => {
+      setConfirmRemoveKey(key);
+    },
+    [setConfirmRemoveKey],
+  );
 
   const handleConfirmRemove = useCallback(() => {
     if (confirmRemoveKey) {
@@ -170,12 +192,16 @@ export function useAgentActions(deps: AgentActionDeps) {
       let payload = newAgents;
       if (isSingleAgentMode && effectiveConfig) {
         const existing =
-          (effectiveConfig.agents as Record<string, Record<string, unknown>>) || {};
+          (effectiveConfig.agents as Record<string, Record<string, unknown>>) ||
+          {};
         payload = { ...existing, ...newAgents };
       }
       for (const step of [
         { label: 'agents', fn: () => saveDeps.saveAgents(payload) },
-        { label: 'defaultAgent', fn: () => saveDeps.saveDefaultAgent(defaultAgentKey) },
+        {
+          label: 'defaultAgent',
+          fn: () => saveDeps.saveDefaultAgent(defaultAgentKey),
+        },
         { label: 'maxAgentTurns', fn: () => saveDeps.saveMaxTurns(maxTurns) },
       ]) {
         try {
@@ -239,7 +265,14 @@ export function useAgentActions(deps: AgentActionDeps) {
     } finally {
       setResetting(false);
     }
-  }, [resetAgents, refreshConfig, setResetting, setInitialized, setSelectedAgentKey, setSaveError]);
+  }, [
+    resetAgents,
+    refreshConfig,
+    setResetting,
+    setInitialized,
+    setSelectedAgentKey,
+    setSaveError,
+  ]);
 
   const handleConfirmReset = useCallback(async () => {
     try {
@@ -307,7 +340,13 @@ export function useAgentActions(deps: AgentActionDeps) {
         setStepperStep(1);
       }
     },
-    [selectedAgentKey, isSingleAgentMode, setSelectedTemplate, setAgents, setStepperStep],
+    [
+      selectedAgentKey,
+      isSingleAgentMode,
+      setSelectedTemplate,
+      setAgents,
+      setStepperStep,
+    ],
   );
 
   return {

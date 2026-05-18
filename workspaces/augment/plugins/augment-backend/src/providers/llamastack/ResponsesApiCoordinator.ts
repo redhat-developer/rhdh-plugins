@@ -362,10 +362,14 @@ export class ResponsesApiCoordinator {
    */
   async chat(request: ChatRequest): Promise<ChatResponse> {
     const { WorkflowHydrator } = await import('./workflow/WorkflowHydrator');
-    const { LlamaStackProvider } = await import('./openai-agents-adapters/LlamaStackProvider');
-    const { toChatResponse } = await import('./openai-agents-adapters/responseMapper');
-    const { requireLastUserMessage } = await import('../responses-api/chat/chatUtils');
-    const { migrateAgentConfigsToWorkflow } = await import('../../services/WorkflowMigration');
+    const { LlamaStackProvider } =
+      await import('./openai-agents-adapters/LlamaStackProvider');
+    const { toChatResponse } =
+      await import('./openai-agents-adapters/responseMapper');
+    const { requireLastUserMessage } =
+      await import('../responses-api/chat/chatUtils');
+    const { migrateAgentConfigsToWorkflow } =
+      await import('../../services/WorkflowMigration');
 
     const snapshot = await this.requireAgentGraphManager().getSnapshot();
     const deps = await this.chatDepsBuilder.buildChatDeps();
@@ -412,10 +416,14 @@ export class ResponsesApiCoordinator {
     signal?: AbortSignal,
   ): Promise<void> {
     const { WorkflowHydrator } = await import('./workflow/WorkflowHydrator');
-    const { LlamaStackProvider } = await import('./openai-agents-adapters/LlamaStackProvider');
-    const { mapRunStreamEventToFrontend } = await import('./openai-agents-adapters/streamMapper');
-    const { requireLastUserMessage } = await import('../responses-api/chat/chatUtils');
-    const { migrateAgentConfigsToWorkflow } = await import('../../services/WorkflowMigration');
+    const { LlamaStackProvider } =
+      await import('./openai-agents-adapters/LlamaStackProvider');
+    const { mapRunStreamEventToFrontend } =
+      await import('./openai-agents-adapters/streamMapper');
+    const { requireLastUserMessage } =
+      await import('../responses-api/chat/chatUtils');
+    const { migrateAgentConfigsToWorkflow } =
+      await import('../../services/WorkflowMigration');
 
     const snapshot = await this.requireAgentGraphManager().getSnapshot();
     const deps = await this.chatDepsBuilder.buildChatDeps();

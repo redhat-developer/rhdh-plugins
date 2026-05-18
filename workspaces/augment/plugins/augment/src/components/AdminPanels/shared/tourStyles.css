@@ -115,7 +115,9 @@
   padding: 0;
   margin-left: 6px;
   vertical-align: middle;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .tour-voice-btn:hover {

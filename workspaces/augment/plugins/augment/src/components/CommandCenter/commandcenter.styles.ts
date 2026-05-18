@@ -21,7 +21,11 @@
 
 import type { Theme, SxProps } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { CONTENT_MAX_WIDTH, SECTION_GAP, CARD_GAP } from './commandcenter.constants';
+import {
+  CONTENT_MAX_WIDTH,
+  SECTION_GAP,
+  CARD_GAP,
+} from './commandcenter.constants';
 
 export function pageSx(): SxProps<Theme> {
   return {
@@ -38,9 +42,13 @@ export function sectionCardSx(theme: Theme, isDark: boolean): SxProps<Theme> {
   return {
     p: 3,
     borderRadius: 2.5,
-    bgcolor: isDark ? alpha(theme.palette.background.paper, 0.5) : theme.palette.background.paper,
+    bgcolor: isDark
+      ? alpha(theme.palette.background.paper, 0.5)
+      : theme.palette.background.paper,
     border: `1px solid ${alpha(isDark ? theme.palette.common.white : theme.palette.common.black, isDark ? 0.07 : 0.05)}`,
-    boxShadow: isDark ? `0 1px 4px ${alpha('#000', 0.15)}` : `0 1px 4px ${alpha('#000', 0.03)}`,
+    boxShadow: isDark
+      ? `0 1px 4px ${alpha('#000', 0.15)}`
+      : `0 1px 4px ${alpha('#000', 0.03)}`,
   };
 }
 
@@ -63,7 +71,11 @@ export function twoColumnSx(): SxProps<Theme> {
   };
 }
 
-export function actionBadgeSx(_theme: Theme, color: string, isDark: boolean): SxProps<Theme> {
+export function actionBadgeSx(
+  _theme: Theme,
+  color: string,
+  isDark: boolean,
+): SxProps<Theme> {
   return {
     display: 'inline-flex',
     alignItems: 'center',
@@ -88,7 +100,9 @@ export function reviewCardSx(theme: Theme, isDark: boolean): SxProps<Theme> {
     p: 2.5,
     borderRadius: 2,
     border: `1px solid ${alpha(isDark ? theme.palette.common.white : theme.palette.common.black, isDark ? 0.08 : 0.06)}`,
-    bgcolor: isDark ? alpha(theme.palette.background.paper, 0.4) : theme.palette.background.paper,
+    bgcolor: isDark
+      ? alpha(theme.palette.background.paper, 0.4)
+      : theme.palette.background.paper,
     display: 'flex',
     alignItems: 'center',
     gap: 2,

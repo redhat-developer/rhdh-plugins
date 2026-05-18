@@ -274,11 +274,9 @@ export function registerSessionRoutes(ctx: RouteContext): void {
         !messageId ||
         (direction !== 'positive' && direction !== 'negative')
       ) {
-        res
-          .status(400)
-          .json({
-            error: 'messageId and direction (positive|negative) are required',
-          });
+        res.status(400).json({
+          error: 'messageId and direction (positive|negative) are required',
+        });
         return;
       }
       const reasons = Array.isArray(body.reasons)
@@ -348,9 +346,7 @@ export function registerSessionRoutes(ctx: RouteContext): void {
               : {}),
             ...(m.usage ? { usage: safeJsonParse(m.usage) } : {}),
             ...(m.reasoning ? { reasoning: m.reasoning } : {}),
-            ...(m.citations
-              ? { citations: safeJsonParse(m.citations) }
-              : {}),
+            ...(m.citations ? { citations: safeJsonParse(m.citations) } : {}),
             createdAt: m.createdAt,
           }));
           res.json({

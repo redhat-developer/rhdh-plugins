@@ -58,11 +58,111 @@ export const AuthRequiredCard: React.FC<AuthRequiredCardProps> = ({
     setSecretValues(prev => ({ ...prev, [name]: val }));
   }, []);
 
-  const allSecretsFilled = secrets.every(s => (secretValues[s.name] || '').trim().length > 0);
+  const allSecretsFilled = secrets.every(
+    s => (secretValues[s.name] || '').trim().length > 0,
+  );
 
   if (authType === 'oauth') {
     return (
       <Fade in timeout={300}>
+        <Box
+          sx={{
+            mt: 1.5,
+            mb: 1,
+            borderRadius: 2,
+            border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+            borderLeft: `3px solid ${theme.palette.warning.main}`,
+            bgcolor: alpha(theme.palette.warning.main, isDark ? 0.06 : 0.02),
+            overflow: 'hidden',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              px: 2,
+              py: 1.25,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+            }}
+          >
+            <LockIcon
+              sx={{ fontSize: 18, color: theme.palette.warning.main }}
+            />
+            <Box sx={{ flex: 1 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ fontWeight: 600, fontSize: '0.85rem' }}
+              >
+                {t('authRequiredCard.oauthTitle')}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ color: 'text.secondary', display: 'block' }}
+              >
+                {t('authRequiredCard.oauthSubtitle')}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              px: 2,
+              py: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.5,
+              alignItems: 'flex-start',
+            }}
+          >
+            {url && !oauthOpened && (
+              <Button
+                variant="contained"
+                startIcon={<OpenInNewIcon sx={{ fontSize: 16 }} />}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOauthOpened(true)}
+                sx={{ textTransform: 'none', fontWeight: 500 }}
+              >
+                {t('authRequiredCard.signIn')}
+              </Button>
+            )}
+            {oauthOpened && (
+              <>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'text.secondary', fontSize: '0.8rem' }}
+                >
+                  {t('authRequiredCard.afterSignInHint')}
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
+                  onClick={onOAuthConfirm}
+                  sx={{ textTransform: 'none', fontWeight: 500 }}
+                >
+                  {t('authRequiredCard.signedIn')}
+                </Button>
+              </>
+            )}
+            {!url && (
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', fontSize: '0.8rem' }}
+              >
+                {t('authRequiredCard.noUrlHint')}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      </Fade>
+    );
+  }
+
+  return (
+    <Fade in timeout={300}>
       <Box
         sx={{
           mt: 1.5,
@@ -84,129 +184,70 @@ export const AuthRequiredCard: React.FC<AuthRequiredCardProps> = ({
             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
           }}
         >
-          <LockIcon sx={{ fontSize: 18, color: theme.palette.warning.main }} />
+          <VpnKeyIcon
+            sx={{ fontSize: 18, color: theme.palette.warning.main }}
+          />
           <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
-              {t('authRequiredCard.oauthTitle')}
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 600, fontSize: '0.85rem' }}
+            >
+              {t('authRequiredCard.credentialsTitle')}
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-              {t('authRequiredCard.oauthSubtitle')}
+            <Typography
+              variant="caption"
+              sx={{ color: 'text.secondary', display: 'block' }}
+            >
+              {t('authRequiredCard.credentialsSubtitle')}
             </Typography>
           </Box>
         </Box>
 
-        <Box sx={{ px: 2, py: 2, display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'flex-start' }}>
-          {url && !oauthOpened && (
-            <Button
-              variant="contained"
-              startIcon={<OpenInNewIcon sx={{ fontSize: 16 }} />}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setOauthOpened(true)}
-              sx={{ textTransform: 'none', fontWeight: 500 }}
-            >
-              {t('authRequiredCard.signIn')}
-            </Button>
-          )}
-          {oauthOpened && (
-            <>
-              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
-                {t('authRequiredCard.afterSignInHint')}
-              </Typography>
-              <Button
-                variant="contained"
-                color="success"
-                startIcon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
-                onClick={onOAuthConfirm}
-                sx={{ textTransform: 'none', fontWeight: 500 }}
-              >
-                {t('authRequiredCard.signedIn')}
-              </Button>
-            </>
-          )}
-          {!url && (
-            <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
-              {t('authRequiredCard.noUrlHint')}
-            </Typography>
-          )}
-        </Box>
-      </Box>
-      </Fade>
-    );
-  }
-
-  return (
-    <Fade in timeout={300}>
-    <Box
-      sx={{
-        mt: 1.5,
-        mb: 1,
-        borderRadius: 2,
-        border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
-        borderLeft: `3px solid ${theme.palette.warning.main}`,
-        bgcolor: alpha(theme.palette.warning.main, isDark ? 0.06 : 0.02),
-        overflow: 'hidden',
-      }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          px: 2,
-          py: 1.25,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-        }}
-      >
-        <VpnKeyIcon sx={{ fontSize: 18, color: theme.palette.warning.main }} />
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
-            {t('authRequiredCard.credentialsTitle')}
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-            {t('authRequiredCard.credentialsSubtitle')}
-          </Typography>
-        </Box>
-      </Box>
-
-      <Box sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {secrets.map(secret => (
-          <TextField
-            key={secret.name}
-            label={secret.name}
-            helperText={secret.description}
-            type="password"
-            value={secretValues[secret.name] || ''}
-            onChange={e => handleSecretChange(secret.name, e.target.value)}
-            size="small"
-            fullWidth
-            required
-          />
-        ))}
-      </Box>
-
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          px: 2,
-          py: 1.25,
-          borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-        }}
-      >
-        <Button
-          size="small"
-          variant="contained"
-          startIcon={<SendIcon sx={{ fontSize: 14 }} />}
-          disabled={!allSecretsFilled}
-          onClick={() => onSecretsSubmit?.(secretValues)}
-          sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+          }}
         >
-          {t('authRequiredCard.submitCredentials')}
-        </Button>
+          {secrets.map(secret => (
+            <TextField
+              key={secret.name}
+              label={secret.name}
+              helperText={secret.description}
+              type="password"
+              value={secretValues[secret.name] || ''}
+              onChange={e => handleSecretChange(secret.name, e.target.value)}
+              size="small"
+              fullWidth
+              required
+            />
+          ))}
+        </Box>
+
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            px: 2,
+            py: 1.25,
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+          }}
+        >
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<SendIcon sx={{ fontSize: 14 }} />}
+            disabled={!allSecretsFilled}
+            onClick={() => onSecretsSubmit?.(secretValues)}
+            sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+          >
+            {t('authRequiredCard.submitCredentials')}
+          </Button>
+        </Box>
       </Box>
-    </Box>
     </Fade>
   );
 };
