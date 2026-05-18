@@ -424,7 +424,8 @@ describe('locale-specific compositions', () => {
       extractTimeKeys(x2aPluginTranslationEs),
     ) as unknown as TFuncX2A;
     const result = formatRelativeTime(tEs, startedAt, finishedAt);
-    expect(result).toBe('Finalizado hace Hace 2d (tardó 2h 30m)');
+    expect(result).toBe('Finalizado hace 2d (duró 2h 30min)');
+    expect(result).not.toMatch(/hace.*hace/);
   });
 
   it('German: correct finished message', () => {
@@ -432,7 +433,8 @@ describe('locale-specific compositions', () => {
       extractTimeKeys(x2aPluginTranslationDe),
     ) as unknown as TFuncX2A;
     const result = formatRelativeTime(tDe, startedAt, finishedAt);
-    expect(result).toBe('Fertiggestellt vor 2d vor (dauerte 2h 30m)');
+    expect(result).toBe('Beendet vor 2T (2Std 30Min gedauert)');
+    expect(result).not.toMatch(/vor.*vor/);
   });
 
   it('French: correct finished message', () => {
@@ -440,7 +442,7 @@ describe('locale-specific compositions', () => {
       extractTimeKeys(x2aPluginTranslationFr),
     ) as unknown as TFuncX2A;
     const result = formatRelativeTime(tFr, startedAt, finishedAt);
-    expect(result).toBe('Terminé il y a {{jours}} (a pris {{heures}}h 30m)');
+    expect(result).toBe('Terminé il y a 2j (durée 2h 30min)');
     expect(result).not.toMatch(/il y a.*il y a/);
   });
 
@@ -449,7 +451,7 @@ describe('locale-specific compositions', () => {
       extractTimeKeys(x2aPluginTranslationIt),
     ) as unknown as TFuncX2A;
     const result = formatRelativeTime(tIt, startedAt, finishedAt);
-    expect(result).toBe('Completato 2g fa (tempo impiegato 2h 30m)');
+    expect(result).toBe('Terminato 2g fa (durata 2h 30min)');
     expect(result).not.toMatch(/fa.*fa/);
   });
 
@@ -458,6 +460,6 @@ describe('locale-specific compositions', () => {
       extractTimeKeys(x2aPluginTranslationEs),
     ) as unknown as TFuncX2A;
     const result = formatRelativeTime(tEs, startedAt, undefined);
-    expect(result).toBe('Ejecutándose durante 2d 3h');
+    expect(result).toBe('En ejecución desde hace 2d 3h');
   });
 });

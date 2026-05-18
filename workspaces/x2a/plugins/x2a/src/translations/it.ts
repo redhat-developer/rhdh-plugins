@@ -18,296 +18,296 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { x2aPluginTranslationRef } from './ref';
 
 /**
- * Italian translation for plugin.x2a.
+ * Italian translation for the x2a plugin.
  * @public
  */
 const x2aPluginTranslationIt = createTranslationMessages({
   ref: x2aPluginTranslationRef,
   messages: {
-    'artifact.types.ansible_project': 'Progetto AAP',
-    'artifact.types.migrated_sources': 'Sorgenti migrate',
-    'artifact.types.migration_plan': 'Piano di migrazione dei progetti',
-    'artifact.types.module_migration_plan': 'Piano di migrazione dei moduli',
-    'artifact.types.project_metadata': 'Metadati progetto',
-    'bulkRun.cancel': 'Annulla',
-    'bulkRun.confirm': 'Esegui tutto',
-    'bulkRun.errorGlobal': "Impossibile eseguire l'operazione in blocco",
-    'bulkRun.errorModuleStart':
-      'Impossibile avviare la fase "{{phase}}" per il modulo "{{moduleName}}"',
-    'bulkRun.errorProject':
-      'Impossibile eseguire i moduli nel progetto "{{name}}"',
-    'bulkRun.globalAction': 'Esegui tutto',
-    'bulkRun.globalConfirm.message':
-      'Questo avvierà la fase di migrazione successiva per tutti i moduli idonei in ogni progetto a cui hai accesso in scrittura, inclusi i progetti non visibili nella pagina corrente. Assicurati di aver rivisto tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione.',
-    'bulkRun.globalConfirm.messageInitRetrigger':
-      'Alcuni progetti possono ripetere la fase di inizializzazione. Anche la loro fase di discovery verrà riavviata.',
-    'bulkRun.globalConfirm.noInitEligible':
-      'Al momento nessun progetto è idoneo a ripetere la fase di inizializzazione.',
-    'bulkRun.globalConfirm.title':
-      'Eseguire tutti i progetti e i moduli idonei?',
-    'bulkRun.globalConfirm.userPromptLabel':
-      'Prompt utente per il riavvio iniziale (opzionale)',
-    'bulkRun.globalConfirm.userPromptPlaceholder':
-      'Se è necessario riavviare la fase di inizializzazione di un progetto, questo messaggio verrà utilizzato per personalizzare la conversione...',
-    'bulkRun.projectAction': 'Esegui tutti i moduli',
-    'bulkRun.projectConfirm.message':
-      'Ciò avvierà la fase di migrazione successiva per ogni modulo di questo progetto il cui stato attuale lo consenta. Assicurati di aver rivisto tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione. I moduli non idonei verranno saltati.',
-    'bulkRun.projectConfirm.title':
-      'Eseguire tutti i moduli del progetto "{{name}}"?',
-    'bulkRun.projectPageAction': 'Esegui tutto',
-    'bulkRun.projectPageConfirm.message':
-      'Ciò avvierà la fase di migrazione successiva per ogni modulo di questo progetto il cui stato attuale lo consenta. Assicurati di aver rivisto tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione. I moduli non idonei verranno saltati.',
-    'bulkRun.projectPageConfirm.title':
-      'Eseguire tutti i moduli in "{{name}}"?',
-    'common.newProject': 'Nuovo progetto',
-    'editProjectDialog.cancel': 'Annulla',
-    'editProjectDialog.nameRequired': 'Il nome è obbligatorio',
-    'editProjectDialog.ownerChangeConfirm': 'Trasferisci proprietà',
-    'editProjectDialog.ownerChangeWarning':
-      "La modifica del proprietario potrebbe causare la perdita dell'accesso a questo progetto se i propri permessi non coprono il nuovo proprietario. Un amministratore può ripristinare l'accesso se necessario.",
-    'editProjectDialog.ownerChangeWarningTitle':
-      'Conferma trasferimento di proprietà',
-    'editProjectDialog.ownerFormatHint':
-      'Deve essere un riferimento di entità Backstage, ad es. user:default/nome o group:default/team',
+    'sidebar.x2a.title': 'Hub di conversione',
+    'page.title': 'Hub di conversione',
+    'page.subtitle':
+      'Avvia e monitora la conversione asincrona di automazione esistente in playbook Ansible pronti per la produzione.',
+    'table.columns.name': 'Nome',
+    'table.columns.status': 'Stato',
+    'table.columns.statusSortDisabledTooltip':
+      "L'ordinamento per stato non è disponibile quando il numero di progetti supera {{threshold}}",
+    'table.columns.sourceRepo': 'Repository sorgente',
+    'table.columns.targetRepo': 'Repository di destinazione',
+    'table.columns.createdAt': 'Creato il',
+    'table.actions.deleteProject': 'Elimina progetto',
+    'table.actions.retriggerInit':
+      'Riavvia la fase di inizializzazione del progetto',
+    'table.actions.expandAll': 'Espandi tutte le righe',
+    'table.actions.collapseAll': 'Comprimi tutte le righe',
+    'table.actions.expandRow': 'Espandi riga',
+    'table.actions.collapseRow': 'Comprimi riga',
+    'table.projectsCount': 'Progetti ({{count}})',
+    empty: '-',
+    'initPhaseCard.title': 'Fase di scoperta',
+    'projectDetailsCard.title': 'Dettagli del progetto',
+    'projectDetailsCard.name': 'Nome',
+    'projectDetailsCard.status': 'Stato',
+    'projectDetailsCard.ownedBy': 'Proprietario',
+    'projectDetailsCard.dirName': 'Nome della directory',
+    'projectDetailsCard.description': 'Descrizione',
+    'projectDetailsCard.sourceRepo': 'Repository sorgente',
+    'projectDetailsCard.targetRepo': 'Repository di destinazione',
+    'projectDetailsCard.edit': 'Modifica',
     'editProjectDialog.title': 'Modifica progetto',
+    'editProjectDialog.cancel': 'Annulla',
     'editProjectDialog.update': 'Aggiorna',
     'editProjectDialog.updateError': 'Aggiornamento del progetto non riuscito',
-    empty: '-',
-    'emptyPage.noConversionInitiatedYet':
-      'Nessuna conversione è stata ancora avviata',
+    'editProjectDialog.ownerChangeWarningTitle':
+      'Conferma trasferimento di proprietà',
+    'editProjectDialog.ownerChangeWarning':
+      "La modifica del proprietario potrebbe causare la perdita dell'accesso a questo progetto se i propri permessi non coprono il nuovo proprietario. Un amministratore può ripristinare l'accesso se necessario.",
+    'editProjectDialog.ownerChangeConfirm': 'Trasferisci proprietà',
+    'editProjectDialog.nameRequired': 'Il nome è obbligatorio',
+    'editProjectDialog.ownerFormatHint':
+      'Deve essere un riferimento di entità Backstage, ad es. user:default/nome o group:default/team',
+    'projectModulesCard.title': 'Moduli ({{count}})',
+    'projectModulesCard.noModules': 'Nessun modulo trovato finora...',
+    'projectModulesCard.toReview': 'rivedere',
+    'projectModulesCard.published': 'pubblicato',
+    'projectPage.title': 'Progetto',
+    'projectPage.actionsTooltip':
+      'Clicca per aprire il menu per le azioni del progetto',
+    'projectPage.deleteError': "Errore nell'eliminazione del progetto",
+    'projectPage.deleteProject': 'Elimina',
+    'projectPage.deleteConfirm.title': 'Eliminare il progetto "{{name}}"?',
+    'projectPage.deleteConfirm.message':
+      'Questo progetto, tutti i suoi moduli e job saranno eliminati permanentemente. Questa azione non può essere annullata. Gli artefatti persistiti nel repository di destinazione saranno preservati.',
+    'projectPage.deleteConfirm.cancel': 'Annulla',
+    'projectPage.deleteConfirm.confirm': 'Elimina',
+    'projectTable.deleteError': "Errore nell'eliminazione del progetto",
+    'project.description': 'Descrizione',
+    'project.id': 'ID',
+    'project.ownedBy': 'Proprietario',
+    'project.dirName': 'Nome della directory',
+    'project.statuses.none': '-',
+    'project.statuses.created': 'Creato',
+    'project.statuses.initializing': 'In inizializzazione',
+    'project.statuses.initialized': 'Inizializzato',
+    'project.statuses.inProgress': 'In corso',
+    'project.statuses.completed': 'Completato',
+    'project.statuses.failed': 'Fallito',
+    'project.noModules': 'Nessun modulo trovato finora...',
+    'common.newProject': 'Nuovo progetto',
+    'emptyPage.noConversionInitiatedYet': 'Nessuna conversione avviata ancora',
     'emptyPage.noConversionInitiatedYetDescription':
-      'Avvia e monitora la conversione delle automazioni esistenti in Ansible production-ready',
+      'Avvia e monitora la conversione di automazione esistente in Ansible pronto per la produzione',
+    'emptyPage.startFirstConversion': 'Avvia prima conversione',
+    'emptyPage.notAllowedTitle': 'Accesso negato',
     'emptyPage.notAllowedDescription':
       'Non sei autorizzato ad accedere ai progetti di conversione.',
-    'emptyPage.notAllowedTitle': 'Accesso negato',
-    'emptyPage.startFirstConversion': 'Avvia la prima conversione',
-    'initPhaseCard.title': 'Fase di discovery',
-    'module.actions.cancelPhase': 'Annulla la fase {{phase}}',
-    'module.actions.cancelPhaseError':
-      'Impossibile annullare la fase per il modulo',
-    'module.actions.runNextPhase': 'Esegui la fase successiva {{phase}}',
-    'module.actions.runNextPhaseError':
-      'Impossibile eseguire la fase successiva per il modulo',
-    'module.artifacts': 'Artefatti',
-    'module.currentPhase': 'Fase attuale',
-    'module.lastUpdate': 'Ultimo aggiornamento',
-    'module.name': 'Nome',
-    'module.notStarted': 'Non avviato',
-    'module.phases.analyze': 'Analizza',
-    'module.phases.init': 'Inizializzazione',
-    'module.phases.migrate': 'Migra',
+    'module.phases.init': 'Init',
     'module.phases.none': '-',
-    'module.phases.publish': 'Pubblica',
-    'module.sourcePath': 'Percorso sorgente',
-    'module.status': 'Stato',
-    'module.statuses.cancelled': 'Annullato',
-    'module.statuses.error': 'Errore',
-    'module.statuses.none': '-',
-    'module.statuses.pending': 'In sospeso',
-    'module.statuses.running': 'In esecuzione',
-    'module.statuses.success': 'Successo',
-    'module.summary.cancelled': 'Annullato',
-    'module.summary.error': 'Errore',
-    'module.summary.finished': 'Finito',
-    'module.summary.pending': 'In sospeso',
+    'module.phases.analyze': 'Analizzare',
+    'module.phases.migrate': 'Migrare',
+    'module.phases.publish': 'Pubblicare',
+    'module.summary.total': 'Totale',
+    'module.summary.finished': 'Completato',
+    'module.summary.waiting': 'In attesa',
+    'module.summary.pending': 'In attesa',
     'module.summary.running': 'In esecuzione',
+    'module.summary.error': 'Errore',
+    'module.summary.cancelled': 'Annullato',
     'module.summary.toReview_one': '{{count}} modulo con artefatti da rivedere',
     'module.summary.toReview_other':
       '{{count}} moduli con artefatti da rivedere',
-    'module.summary.total': 'Totale',
-    'module.summary.waiting': 'In attesa',
+    'module.actions.runNextPhase': 'Esegui la prossima fase {{phase}}',
+    'module.actions.cancelPhase': 'Annulla la fase {{phase}}',
+    'module.actions.cancelPhaseError':
+      "Errore nell'annullamento della fase per il modulo",
+    'module.actions.runNextPhaseError':
+      "Errore nell'esecuzione della prossima fase per il modulo",
+    'module.currentPhase': 'Fase corrente',
+    'module.lastUpdate': 'Ultimo aggiornamento',
+    'module.notStarted': 'Non avviato',
+    'module.name': 'Nome',
+    'module.status': 'Stato',
+    'module.sourcePath': 'Percorso sorgente',
+    'module.artifacts': 'Artefatti',
+    'artifact.types.migration_plan': 'Piano di migrazione',
+    'artifact.types.module_migration_plan': 'Piano del modulo',
+    'module.statuses.none': '-',
+    'module.statuses.pending': 'In attesa',
+    'module.statuses.running': 'In esecuzione',
+    'module.statuses.success': 'Successo',
+    'module.statuses.error': 'Errore',
+    'module.statuses.cancelled': 'Annullato',
+    'artifact.types.migrated_sources': 'Sorgenti migrate',
+    'artifact.types.project_metadata': 'Metadati del progetto',
+    'artifact.types.ansible_project': 'Progetto AAP',
+    'modulePage.title': 'Dettagli del modulo',
+    'modulePage.artifacts.title': 'Artefatti da rivedere',
+    'modulePage.artifacts.migration_plan':
+      'Piano di migrazione complessivo del progetto',
+    'modulePage.artifacts.module_migration_plan':
+      'Piano del modulo per analisi',
+    'modulePage.artifacts.migrated_sources': 'Sorgenti migrate',
     'modulePage.artifacts.ansible_project': 'Progetto AAP',
     'modulePage.artifacts.description':
       'Questi artefatti sono generati dal processo di conversione e sono disponibili per la revisione.',
-    'modulePage.artifacts.migrated_sources': 'Sorgenti migrate',
-    'modulePage.artifacts.migration_plan':
-      'Piano generale di migrazione del progetto',
-    'modulePage.artifacts.module_migration_plan':
-      "Piano del modulo basato sull'analisi",
-    'modulePage.artifacts.title': 'Artefatti da rivedere',
-    'modulePage.phases.analyzeInstructions':
-      "Prima di eseguire l'analisi, occorre prima rivedere il piano di migrazione complessivo del progetto. Il suo contenuto guiderà l'analisi del modulo.",
-    'modulePage.phases.cancel': 'Annulla',
-    'modulePage.phases.cancelError':
-      'Impossibile annullare la fase per il modulo',
-    'modulePage.phases.commitId': 'ID ultimo commit',
-    'modulePage.phases.duration': 'Durata',
-    'modulePage.phases.errorDetails': "Dettagli dell'errore",
-    'modulePage.phases.hideLog': 'Nascondi log',
+    'modulePage.phases.title': 'Fasi di migrazione',
     'modulePage.phases.id': 'ID',
-    'modulePage.phases.k8sJobName': 'Nome processo Kubernetes',
-    'modulePage.phases.logWaitingForStream':
-      "In attesa dell'output del log dal cluster...",
-    'modulePage.phases.migrateInstructions':
-      'Prima di eseguire la migrazione, rivedere il piano di migrazione dei moduli. Il processo di migrazione convertirà il codice sorgente in Ansible in base al piano.',
-    'modulePage.phases.noLogsAvailable': 'Nessun log ancora disponibile...',
-    'modulePage.phases.publishInstructions':
-      'Prima della pubblicazione, rivedi le sorgenti migrate. Il processo di pubblicazione eseguirà il commit del codice convertito nel repository di destinazione.',
-    'modulePage.phases.reanalyzeInstructions':
-      "Il piano di migrazione dei moduli è già presente. Nel caso in cui il piano di migrazione complessivo del progetto sia stato aggiornato, riavviare l'analisi per riflettere le modifiche.",
-    'modulePage.phases.remigrateInstructions':
-      'Le sorgenti migrate sono già presenti. Riavvia la migrazione per ricreare il codice Ansible convertito.',
-    'modulePage.phases.republishInstructions':
-      'Il modulo è già stato pubblicato. Riavvia la pubblicazione per aggiornare il repository di destinazione.',
-    'modulePage.phases.rerunAnalyze':
-      'Ricrea il piano di migrazione dei moduli',
-    'modulePage.phases.rerunMigrate': 'Ricrea le sorgenti migrate',
-    'modulePage.phases.rerunPublish':
-      'Ripubblica nel repository di destinazione',
-    'modulePage.phases.resyncMigrationPlanInstructions':
-      "Risincronizza l'elenco dei moduli in modo che corrisponda al piano di migrazione.",
-    'modulePage.phases.runAnalyze': 'Crea un piano di migrazione dei moduli',
-    'modulePage.phases.runError': 'Impossibile eseguire la fase per il modulo',
-    'modulePage.phases.runMigrate': 'Migra le sorgenti del modulo',
-    'modulePage.phases.runPublish': 'Pubblica nel repository di destinazione',
-    'modulePage.phases.startedAt': 'Iniziato il',
+    'modulePage.phases.duration': 'Durata',
+    'modulePage.phases.k8sJobName': 'Nome del job Kubernetes',
+    'modulePage.phases.startedAt': 'Avviato il',
     'modulePage.phases.status': 'Stato',
-    'modulePage.phases.statuses.cancelled': 'Annullato',
-    'modulePage.phases.statuses.error': 'Errore',
+    'modulePage.phases.errorDetails': "Dettagli dell'errore",
     'modulePage.phases.statuses.notStarted': 'Non avviato',
-    'modulePage.phases.statuses.pending': 'In sospeso',
+    'modulePage.phases.statuses.pending': 'In attesa',
     'modulePage.phases.statuses.running': 'In esecuzione',
     'modulePage.phases.statuses.success': 'Successo',
-    'modulePage.phases.telemetry.agentName': 'Nome agente',
+    'modulePage.phases.statuses.error': 'Errore',
+    'modulePage.phases.statuses.cancelled': 'Annullato',
+    'modulePage.phases.reanalyzeInstructions':
+      "Il piano di migrazione del modulo è già presente. Se il piano di migrazione complessivo del progetto è stato aggiornato, riavvia l'analisi per riflettere le modifiche.",
+    'modulePage.phases.rerunAnalyze':
+      'Ricrea il piano di migrazione del modulo',
+    'modulePage.phases.analyzeInstructions':
+      "Prima di eseguire l'analisi, esamina il piano di migrazione complessivo del progetto; il suo contenuto guiderà l'analisi del modulo.",
+    'modulePage.phases.runAnalyze': 'Crea il piano di migrazione del modulo',
+    'modulePage.phases.migrateInstructions':
+      'Prima di eseguire la migrazione, esamina il piano di migrazione del modulo. Il processo di migrazione convertirà il codice sorgente in Ansible in base al piano.',
+    'modulePage.phases.runMigrate': 'Migra le sorgenti del modulo',
+    'modulePage.phases.remigrateInstructions':
+      'Le sorgenti migrate sono già presenti. Riavvia la migrazione per ricreare il codice Ansible convertito.',
+    'modulePage.phases.rerunMigrate': 'Ricrea le sorgenti migrate',
+    'modulePage.phases.publishInstructions':
+      'Prima di pubblicare, esamina le sorgenti migrate. Il processo di pubblicazione committa il codice convertito nel repository di destinazione.',
+    'modulePage.phases.runPublish': 'Pubblica nel repository di destinazione',
+    'modulePage.phases.republishInstructions':
+      'Il modulo è già stato pubblicato. Riavvia la pubblicazione per aggiornare il repository di destinazione.',
+    'modulePage.phases.rerunPublish':
+      'Ripubblica nel repository di destinazione',
+    'modulePage.phases.cancel': 'Annulla',
+    'modulePage.phases.runError':
+      "Errore nell'esecuzione della fase per il modulo",
+    'modulePage.phases.cancelError':
+      "Errore nell'annullamento della fase per il modulo",
+    'modulePage.phases.commitId': 'Ultimo ID commit',
+    'modulePage.phases.viewLog': 'Visualizza log',
+    'modulePage.phases.hideLog': 'Nascondi log',
+    'modulePage.phases.noLogsAvailable': 'Nessun log disponibile ancora...',
+    'modulePage.phases.logWaitingForStream':
+      "In attesa dell'output di log dal cluster...",
+    'modulePage.phases.telemetry.title': 'Telemetria',
+    'modulePage.phases.telemetry.noTelemetryAvailable':
+      'Nessuna telemetria disponibile',
+    'modulePage.phases.telemetry.agentName': "Nome dell'agente",
     'modulePage.phases.telemetry.duration': 'Durata',
     'modulePage.phases.telemetry.inputTokens': 'Token di input',
-    'modulePage.phases.telemetry.noTelemetryAvailable':
-      'Nessun dato di telemetria disponibile',
     'modulePage.phases.telemetry.outputTokens': 'Token di output',
-    'modulePage.phases.telemetry.title': 'Telemetria',
     'modulePage.phases.telemetry.toolCalls':
-      'Numero di chiamate agli strumenti',
-    'modulePage.phases.title': 'Fasi migrazione',
-    'modulePage.phases.viewLog': 'Visualizza log',
-    'modulePage.title': 'Dettagli modulo',
-    'page.subtitle':
-      'Avvia e monitora la conversione asincrona delle automazioni esistenti in Ansible Playbook production-ready.',
-    'page.title': 'Conversion Hub',
-    'project.description': 'Descrizione',
-    'project.dirName': 'Nome della directory',
-    'project.id': 'ID',
-    'project.noModules': 'Ancora nessun modulo trovato...',
-    'project.ownedBy': 'Proprietario',
-    'project.statuses.completed': 'Completato',
-    'project.statuses.created': 'Creato',
-    'project.statuses.failed': 'Non riuscito',
-    'project.statuses.inProgress': 'In corso',
-    'project.statuses.initialized': 'Inizializzato',
-    'project.statuses.initializing': 'Inizializzazione',
-    'project.statuses.none': '-',
-    'projectDetailsCard.description': 'Descrizione',
-    'projectDetailsCard.dirName': 'Nome della directory',
-    'projectDetailsCard.edit': 'Modifica',
-    'projectDetailsCard.name': 'Nome',
-    'projectDetailsCard.ownedBy': 'Proprietario',
-    'projectDetailsCard.sourceRepo': 'Repository sorgente',
-    'projectDetailsCard.status': 'Stato',
-    'projectDetailsCard.targetRepo': 'Repository di destinazione',
-    'projectDetailsCard.title': 'Dettagli progetto',
-    'projectModulesCard.noModules': 'Ancora nessun modulo trovato...',
-    'projectModulesCard.published': 'pubblicato',
-    'projectModulesCard.title': 'Moduli ({{count}})',
-    'projectModulesCard.toReview': 'revisione',
-    'projectPage.actionsTooltip':
-      'Fai clic per aprire il menu delle azioni del progetto',
-    'projectPage.deleteConfirm.cancel': 'Annulla',
-    'projectPage.deleteConfirm.confirm': 'Elimina',
-    'projectPage.deleteConfirm.message':
-      'Questo progetto, tutti i suoi moduli e i relativi processi verranno eliminati definitivamente. Impossibile annullare questa azione. Gli artefatti presenti nel repository di destinazione verranno conservati.',
-    'projectPage.deleteConfirm.title': 'Eliminare il progetto "{{name}}"?',
-    'projectPage.deleteError': 'Impossibile eliminare il progetto',
-    'projectPage.deleteProject': 'Elimina',
-    'projectPage.title': 'Progetto',
-    'projectTable.deleteError': 'Impossibile eliminare il progetto',
-    'retriggerInit.confirm.confirmButton': 'Riavvia',
-    'retriggerInit.confirm.message':
-      'Questo riavvierà la fase di discovery del progetto, avviando un nuovo processo di inizializzazione. Tutti i risultati di inizializzazione precedenti verranno sostituiti.',
+      'Conteggio delle chiamate agli strumenti',
+    'modulePage.phases.resyncMigrationPlanInstructions':
+      "Sincronizza l'elenco dei moduli con il piano di migrazione.",
+    'time.duration.daysAndHours': '{{days}}g {{hours}}h',
+    'time.duration.daysOnly': '{{days}}g',
+    'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}min',
+    'time.duration.hoursOnly': '{{hours}}h',
+    'time.duration.minutesAndSeconds': '{{minutes}}min {{seconds}}s',
+    'time.duration.secondsOnly': '{{seconds}}s',
+    'time.ago.daysAndHours': '{{days}}g {{hours}}h fa',
+    'time.ago.daysOnly': '{{days}}g fa',
+    'time.ago.hoursAndMinutes': '{{hours}}h {{minutes}}min fa',
+    'time.ago.hoursOnly': '{{hours}}h fa',
+    'time.ago.minutes': '{{minutes}}min fa',
+    'time.ago.lessThanMinute': '<1min fa',
+    'time.jobTiming.noStartTime': '-',
+    'time.jobTiming.running': 'In esecuzione da {{duration}}',
+    'time.jobTiming.finished': 'Terminato {{timeAgo}} (durata {{duration}})',
+    'bulkRun.projectAction': 'Esegui tutti i moduli',
+    'bulkRun.globalAction': 'Esegui tutto',
+    'bulkRun.projectPageAction': 'Esegui tutto',
+    'bulkRun.projectConfirm.title':
+      'Eseguire tutti i moduli nel progetto "{{name}}"?',
+    'bulkRun.projectConfirm.message':
+      'Questo attiverà la prossima fase di migrazione per ogni modulo di questo progetto il cui stato attuale lo consente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione. I moduli non idonei verranno saltati.',
+    'bulkRun.globalConfirm.title': 'Eseguire tutti i progetti e moduli idonei?',
+    'bulkRun.globalConfirm.message':
+      'Questo attiverà la prossima fase di migrazione per tutti i moduli idonei in tutti i progetti a cui hai accesso in scrittura, inclusi i progetti non visibili nella pagina corrente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione.',
+    'bulkRun.globalConfirm.messageInitRetrigger':
+      "Alcuni progetti sono idonei per rieseguire la fase di inizializzazione. La loro fase di scoperta verrà anch'essa riattivata.",
+    'bulkRun.globalConfirm.noInitEligible':
+      'Attualmente nessun progetto è idoneo per rieseguire la fase di inizializzazione.',
+    'bulkRun.globalConfirm.userPromptLabel':
+      'Istruzioni utente per il riavvio di init (opzionale)',
+    'bulkRun.globalConfirm.userPromptPlaceholder':
+      'Se alcuni progetti necessitano di riavviare la fase di init, queste istruzioni verranno utilizzate per personalizzare la conversione…',
+    'bulkRun.projectPageConfirm.title':
+      'Eseguire tutti i moduli in "{{name}}"?',
+    'bulkRun.projectPageConfirm.message':
+      'Questo attiverà la prossima fase di migrazione per ogni modulo di questo progetto il cui stato attuale lo consente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione. I moduli non idonei verranno saltati.',
+    'bulkRun.confirm': 'Esegui tutto',
+    'bulkRun.cancel': 'Annulla',
+    'bulkRun.errorProject':
+      'Errore nell\'esecuzione dei moduli nel progetto "{{name}}"',
+    'bulkRun.errorModuleStart':
+      'Errore nell\'avvio della fase "{{phase}}" per il modulo "{{moduleName}}"',
+    'bulkRun.errorGlobal': "Errore nell'operazione di massa",
     'retriggerInit.confirm.title':
       'Riavviare la fase di inizializzazione per "{{name}}"?',
-    'retriggerInit.confirm.userPromptLabel': 'Prompt utente (opzionale)',
+    'retriggerInit.confirm.message':
+      'Questo riavvierà la fase di scoperta del progetto, avviando un nuovo lavoro di inizializzazione. I risultati di inizializzazione precedenti saranno sostituiti.',
+    'retriggerInit.confirm.userPromptLabel': 'Istruzioni utente (opzionale)',
     'retriggerInit.confirm.userPromptPlaceholder':
       'Fornire istruzioni aggiuntive per la conversione…',
-    'retriggerInit.error':
-      'Impossibile riavviare l\'inizializzazione per il progetto "{{name}}"',
-    'retriggerInit.errorStart': 'Impossibile avviare inizializzazione progetto',
-    'retriggerInit.firstTrigger.confirmButton':
-      'Avvia fase di inizializzazione',
-    'retriggerInit.firstTrigger.message':
-      'Una volta confermata, avrà inizio la fase di discovery del progetto. Potrebbe esserti richiesto di fornire i token SCM di origine e di destinazione.',
+    'retriggerInit.confirm.confirmButton': 'Riavvia',
     'retriggerInit.firstTrigger.title':
-      'Riavviare la fase di inizializzazione per "{{name}}"?',
-    'retriggerInit.firstTrigger.userPromptLabel': 'Prompt utente (opzionale)',
+      'Avviare la fase di inizializzazione per "{{name}}"?',
+    'retriggerInit.firstTrigger.message':
+      'Dopo la conferma verrà avviata la fase di scoperta per questo progetto. Potrebbero esserti richiesti i token SCM di origine e destinazione.',
+    'retriggerInit.firstTrigger.userPromptLabel':
+      'Istruzioni utente (opzionale)',
     'retriggerInit.firstTrigger.userPromptPlaceholder':
       'Fornire istruzioni aggiuntive per la conversione…',
-    'rulesPage.addRule': 'Aggiungi regola',
-    'rulesPage.deleteConfirm.cancel': 'Annulla',
-    'rulesPage.deleteConfirm.confirm': 'Elimina',
-    'rulesPage.deleteConfirm.deleteError':
-      "Errore nell'eliminazione della regola",
-    'rulesPage.deleteConfirm.message':
-      'Questa regola verrà eliminata permanentemente. I progetti esistenti che hanno già accettato questa regola non saranno interessati.',
-    'rulesPage.deleteConfirm.title': 'Eliminare la regola "{{title}}"?',
-    'rulesPage.dialog.cancel': 'Annulla',
-    'rulesPage.dialog.createError': 'Errore nella creazione della regola',
-    'rulesPage.dialog.createTitle': 'Crea regola',
-    'rulesPage.dialog.descriptionField': 'Descrizione',
-    'rulesPage.dialog.editTitle': 'Modifica regola',
-    'rulesPage.dialog.requiredField': 'Obbligatorio per tutti i progetti',
-    'rulesPage.dialog.save': 'Salva',
-    'rulesPage.dialog.titleField': 'Titolo',
-    'rulesPage.dialog.updateError': "Errore nell'aggiornamento della regola",
-    'rulesPage.manageRules': 'Gestisci regole',
-    'rulesPage.notAllowed': 'Non hai il permesso di gestire le regole.',
-    'rulesPage.subtitle':
-      'Gestisci le regole che i progetti devono accettare al momento della creazione.',
-    'rulesPage.table.createdAt': 'Creato',
-    'rulesPage.table.deleteRule': 'Elimina regola',
-    'rulesPage.table.description': 'Descrizione',
-    'rulesPage.table.editRule': 'Modifica regola',
-    'rulesPage.table.id': 'ID',
-    'rulesPage.table.noRules': 'Nessuna regola definita ancora.',
-    'rulesPage.table.optional': 'Opzionale',
-    'rulesPage.table.required': 'Obbligatorio',
-    'rulesPage.table.title': 'Titolo',
-    'rulesPage.title': 'Regole di conversione',
-    'scaffolder.rulesAcceptance.fetchError':
-      'Errore nel caricamento delle regole',
+    'retriggerInit.firstTrigger.confirmButton':
+      'Avvia fase di inizializzazione',
+    'retriggerInit.error':
+      'Errore nel riavvio della fase di inizializzazione del progetto "{{name}}"',
+    'retriggerInit.errorStart':
+      "Errore nell'avvio dell'inizializzazione del progetto",
     'scaffolder.rulesAcceptance.loadingRules': 'Caricamento regole...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'Nessuna regola configurata.',
     'scaffolder.rulesAcceptance.required': 'obbligatorio',
-    'sidebar.x2a.title': 'Conversion Hub',
-    'table.actions.collapseAll': 'Comprimi tutte le righe',
-    'table.actions.collapseRow': 'Comprimi riga',
-    'table.actions.deleteProject': 'Elimina progetto',
-    'table.actions.expandAll': 'Espandi tutte le righe',
-    'table.actions.expandRow': 'Espandi riga',
-    'table.actions.retriggerInit':
-      'Riavvia la fase di inizializzazione del progetto',
-    'table.columns.createdAt': 'Creato il',
-    'table.columns.name': 'Nome',
-    'table.columns.sourceRepo': 'Repository sorgente',
-    'table.columns.status': 'Stato',
-    'table.columns.statusSortDisabledTooltip':
-      "L'ordinamento per stato non è disponibile quando il numero di progetti supera {{threshold}}",
-    'table.columns.targetRepo': 'Repository di destinazione',
-    'table.projectsCount': 'Progetti ({{count}})',
-    'time.ago.daysAndHours': '{{days}}g {{hours}}h fa',
-    'time.ago.daysOnly': '{{days}}g fa',
-    'time.ago.hoursAndMinutes': '{{hours}}h {{minutes}}m fa',
-    'time.ago.hoursOnly': '{{hours}}h fa',
-    'time.ago.lessThanMinute': '&lt;1m fa',
-    'time.ago.minutes': '{{minutes}}m fa',
-    'time.duration.daysAndHours': '{{days}}g {{hours}}h',
-    'time.duration.daysOnly': '{{days}}g',
-    'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}m',
-    'time.duration.hoursOnly': '{{hours}}h',
-    'time.duration.minutesAndSeconds': '{{minutes}}m {{seconds}}s',
-    'time.duration.secondsOnly': '{{seconds}}s',
-    'time.jobTiming.finished':
-      'Completato {{timeAgo}} (tempo impiegato {{duration}})',
-    'time.jobTiming.noStartTime': '-',
-    'time.jobTiming.running': 'In esecuzione per {{durata}}',
+    'scaffolder.rulesAcceptance.fetchError':
+      'Errore nel caricamento delle regole',
+    'rulesPage.title': 'Regole di conversione',
+    'rulesPage.subtitle':
+      'Gestisci le regole che i progetti devono accettare al momento della creazione.',
+    'rulesPage.addRule': 'Aggiungi regola',
+    'rulesPage.manageRules': 'Gestisci regole',
+    'rulesPage.notAllowed': 'Non hai il permesso di gestire le regole.',
+    'rulesPage.table.id': 'ID',
+    'rulesPage.table.title': 'Titolo',
+    'rulesPage.table.description': 'Descrizione',
+    'rulesPage.table.required': 'Obbligatorio',
+    'rulesPage.table.optional': 'Opzionale',
+    'rulesPage.table.createdAt': 'Creato',
+    'rulesPage.table.editRule': 'Modifica regola',
+    'rulesPage.table.deleteRule': 'Elimina regola',
+    'rulesPage.table.noRules': 'Nessuna regola definita ancora.',
+    'rulesPage.deleteConfirm.title': 'Eliminare la regola "{{title}}"?',
+    'rulesPage.deleteConfirm.message':
+      'Questa regola verrà eliminata permanentemente. I progetti esistenti che hanno già accettato questa regola non saranno interessati.',
+    'rulesPage.deleteConfirm.confirm': 'Elimina',
+    'rulesPage.deleteConfirm.cancel': 'Annulla',
+    'rulesPage.deleteConfirm.deleteError':
+      "Errore nell'eliminazione della regola",
+    'rulesPage.dialog.createTitle': 'Crea regola',
+    'rulesPage.dialog.editTitle': 'Modifica regola',
+    'rulesPage.dialog.titleField': 'Titolo',
+    'rulesPage.dialog.descriptionField': 'Descrizione',
+    'rulesPage.dialog.requiredField': 'Obbligatorio per tutti i progetti',
+    'rulesPage.dialog.save': 'Salva',
+    'rulesPage.dialog.cancel': 'Annulla',
+    'rulesPage.dialog.createError': 'Errore nella creazione della regola',
+    'rulesPage.dialog.updateError': "Errore nell'aggiornamento della regola",
   },
 });
 
