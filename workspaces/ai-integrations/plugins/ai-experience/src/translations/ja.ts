@@ -27,17 +27,21 @@ const aiExperienceTranslationJa = createTranslationMessages({
     'page.title': 'AI エクスペリエンス',
     'page.subtitle': 'AI モデル、サーバー、ニュース、学習リソースの探索',
     'learn.getStarted.title': 'スタート',
-    'learn.getStarted.description': 'Red Hat Developer Hub について学習しましょう。',
+    'learn.getStarted.description':
+      'Red Hat Developer Hub について学習しましょう。',
     'learn.getStarted.cta': 'Tech Docs に移動',
     'learn.explore.title': '探索',
-    'learn.explore.description': 'AI モデル、サーバー、テンプレートを探索しましょう。',
+    'learn.explore.description':
+      'AI モデル、サーバー、テンプレートを探索しましょう。',
     'learn.learn.title': '学習',
-    'learn.learn.description': 'AI 分野の新しいスキルを探索して習得しましょう。',
+    'learn.learn.description':
+      'AI 分野の新しいスキルを探索して習得しましょう。',
     'learn.learn.cta': 'ラーニングパスに移動',
     'news.pageTitle': 'AI ニュース',
     'news.fetchingRssFeed': 'RSS フィードを取得しています',
     'news.noContentAvailable': '利用可能なコンテンツがありません',
-    'news.noContentDescription': '該当する RSS フィードからコンテンツを取得できなかったようです。URL を再確認してください。プラグインの設定ファイルを更新して別のソースに切り替えることもできます。',
+    'news.noContentDescription':
+      '該当する RSS フィードからコンテンツを取得できなかったようです。URL を再確認してください。プラグインの設定ファイルを更新して別のソースに切り替えることもできます。',
     'news.noRssContent': 'RSS コンテンツなし',
     'modal.title.preview': '添付ファイルのプレビュー',
     'modal.title.edit': '添付ファイルの編集',
@@ -55,7 +59,8 @@ const aiExperienceTranslationJa = createTranslationMessages({
     'greeting.goodEvening': 'こんばんは',
     'sections.exploreAiModels': 'AI モデルの探索',
     'sections.exploreAiTemplates': 'AI テンプレートの探索',
-    'sections.discoverModels': '組織内で利用可能な AI モデルおよびサービスを探す',
+    'sections.discoverModels':
+      '組織内で利用可能な AI モデルおよびサービスを探す',
     'sections.viewAllModels': '{{count}} 個のモデルをすべて表示する',
     'sections.viewAllTemplates': '{{count}} 個のテンプレートをすべて表示する',
     'accessibility.close': '閉じる',

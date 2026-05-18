@@ -168,7 +168,6 @@ const lightspeedTranslationFr = createTranslationMessages({
     'notebook.upload.modal.selectedFiles': '{{count}} sur {{max}} fichiers sélectionnés',
     'notebook.upload.modal.separator': 'ou',
     'notebook.upload.modal.title': 'Ajouter un document au carnet',
-    'notebook.upload.success': '{{fileName}} Téléversé avec succès.',
     'notebook.view.close': 'Fermer le carnet',
     'notebook.view.documents.add': 'Ajouter',
     'notebook.view.documents.count': '{{count}} Documents',

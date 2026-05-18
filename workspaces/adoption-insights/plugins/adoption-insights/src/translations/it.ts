@@ -39,7 +39,8 @@ const adoptionInsightsTranslationIt = createTranslationMessages({
     'header.dateRange.startDate': 'Data di inizio',
     'header.dateRange.endDate': 'Data di fine',
     'activeUsers.title': 'Utenti attivi',
-    'activeUsers.averagePrefix': 'Il numero medio di utenti attivi al picco è stato',
+    'activeUsers.averagePrefix':
+      'Il numero medio di utenti attivi al picco è stato',
     'activeUsers.averageText': '{{count}} per {{period}}',
     'activeUsers.day': 'giorno',
     'activeUsers.week': 'settimana',
@@ -66,7 +67,7 @@ const adoptionInsightsTranslationIt = createTranslationMessages({
     'searches.week': 'settimana',
     'searches.month': 'mese',
     'users.title': 'Numero totale di utenti',
-    'users.haveLoggedIn': 'che hanno effettuato l\'accesso',
+    'users.haveLoggedIn': "che hanno effettuato l'accesso",
     'users.loggedInUsers': 'Utenti loggati',
     'users.licensed': 'Con licenza',
     'users.licensedNotLoggedIn': 'Con licenza (non loggati)',
@@ -90,7 +91,8 @@ const adoptionInsightsTranslationIt = createTranslationMessages({
     'common.invalidDateFormat': 'Formato data non valido',
     'common.csvFilename': 'utenti_attivi',
     'permission.title': 'Autorizzazioni mancanti',
-    'permission.description': 'Per visualizzare il plugin "Insights adozione", contatta il tuo amministratore per concedere le autorizzazioni adoption-insights.events.read.',
+    'permission.description':
+      'Per visualizzare il plugin "Insights adozione", contatta il tuo amministratore per concedere le autorizzazioni adoption-insights.events.read.',
   },
 });
 

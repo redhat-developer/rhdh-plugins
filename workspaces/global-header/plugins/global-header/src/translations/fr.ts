@@ -25,8 +25,9 @@ const globalHeaderTranslationFr = createTranslationMessages({
   ref: globalHeaderTranslationRef,
   messages: {
     'help.tooltip': 'Aide',
-    'help.noSupportLinks': 'Aucun lien d\'assistance',
-    'help.noSupportLinksSubtitle': 'Votre administrateur doit configurer les liens d\'assistance.',
+    'help.noSupportLinks': "Aucun lien d'assistance",
+    'help.noSupportLinksSubtitle':
+      "Votre administrateur doit configurer les liens d'assistance.",
     'help.quickStart': 'Démarrage rapide',
     'help.supportTitle': 'Assistance',
     'profile.picture': 'Photo de profil',
@@ -39,18 +40,21 @@ const globalHeaderTranslationFr = createTranslationMessages({
     'search.allResults': 'Tous les résultats',
     'search.clear': 'Effacer',
     'applicationLauncher.tooltip': 'Lanceur d’applications',
-    'applicationLauncher.noLinksTitle': 'Aucun lien d\'application configuré',
-    'applicationLauncher.noLinksSubtitle': 'Configurez les liens de l\'application dans la configuration dynamique du plugin pour un accès rapide depuis ici.',
+    'applicationLauncher.noLinksTitle': "Aucun lien d'application configuré",
+    'applicationLauncher.noLinksSubtitle':
+      "Configurez les liens de l'application dans la configuration dynamique du plugin pour un accès rapide depuis ici.",
     'applicationLauncher.developerHub': 'Espace développeurs',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
     'applicationLauncher.sections.documentation': 'Documentation',
     'applicationLauncher.sections.developerTools': 'Outils de développement',
     'starred.title': 'Vos articles favoris',
     'starred.removeTooltip': 'Supprimer de la liste',
-    'starred.noItemsTitle': 'Aucun article marqué d\'une étoile pour le moment',
-    'starred.noItemsSubtitle': 'Cliquez sur l\'icône en forme d\'étoile à côté du nom d\'une entité pour l\'enregistrer ici et y accéder rapidement.',
+    'starred.noItemsTitle': "Aucun article marqué d'une étoile pour le moment",
+    'starred.noItemsSubtitle':
+      "Cliquez sur l'icône en forme d'étoile à côté du nom d'une entité pour l'enregistrer ici et y accéder rapidement.",
     'notifications.title': 'Notifications',
-    'notifications.unsupportedDismissOption': 'Option de fermeture non prise en charge « {{option}} », actuellement prise en charge « none », « session » ou « localstorage » !',
+    'notifications.unsupportedDismissOption':
+      'Option de fermeture non prise en charge « {{option}} », actuellement prise en charge « none », « session » ou « localstorage » !',
   },
 });
 

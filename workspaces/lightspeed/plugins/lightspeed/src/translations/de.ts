@@ -168,7 +168,6 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.upload.modal.selectedFiles': '{{count}} von {{max}} Dateien ausgewählt',
     'notebook.upload.modal.separator': 'oder',
     'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
-    'notebook.upload.success': '{{fileName}} erfolgreich hochgeladen.',
     'notebook.view.close': 'Notizbuch schließen',
     'notebook.view.documents.add': 'Hinzufügen',
     'notebook.view.documents.count': '{{count}} Dokumente',

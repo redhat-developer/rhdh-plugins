@@ -29,7 +29,7 @@ const globalFloatingActionButtonTranslationFr = createTranslationMessages({
     'fab.docs.label': 'Docs',
     'fab.docs.tooltip': 'Documentation',
     'fab.apis.label': 'APIs',
-    'fab.apis.tooltip': 'Documentation de l\'API',
+    'fab.apis.tooltip': "Documentation de l'API",
     'fab.github.label': 'GitHub',
     'fab.github.tooltip': 'Référentiel GitHub',
     'fab.bulkImport.label': 'Importation en vrac',

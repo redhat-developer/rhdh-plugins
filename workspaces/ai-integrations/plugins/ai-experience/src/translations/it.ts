@@ -25,19 +25,22 @@ const aiExperienceTranslationIt = createTranslationMessages({
   ref: aiExperienceTranslationRef,
   messages: {
     'page.title': 'Esperienza IA',
-    'page.subtitle': 'Esplora modelli, server, notizie e risorse di apprendimento IA',
+    'page.subtitle':
+      'Esplora modelli, server, notizie e risorse di apprendimento IA',
     'learn.getStarted.title': 'Inizia subito',
     'learn.getStarted.description': 'Scopri Red Hat Developer Hub.',
     'learn.getStarted.cta': 'Vai ai TechDocs',
     'learn.explore.title': 'Esplora',
     'learn.explore.description': 'Esplora modelli, server e template IA.',
     'learn.learn.title': 'Impara',
-    'learn.learn.description': 'Esplora e sviluppa nuove competenze nel campo dell\'intelligenza artificiale.',
+    'learn.learn.description':
+      "Esplora e sviluppa nuove competenze nel campo dell'intelligenza artificiale.",
     'learn.learn.cta': 'Vai ai Learning Path',
-    'news.pageTitle': 'Notizie sull\'IA',
+    'news.pageTitle': "Notizie sull'IA",
     'news.fetchingRssFeed': 'Estrazione feed RSS',
     'news.noContentAvailable': 'Nessun contenuto disponibile',
-    'news.noContentDescription': 'Sembra che non sia stato possibile recuperare contenuti da quel feed RSS. È possibile ricontrollare l\'URL o passare a una sorgente diversa aggiornando il file di configurazione del plugin.',
+    'news.noContentDescription':
+      "Sembra che non sia stato possibile recuperare contenuti da quel feed RSS. È possibile ricontrollare l'URL o passare a una sorgente diversa aggiornando il file di configurazione del plugin.",
     'news.noRssContent': 'Nessun contenuto RSS',
     'modal.title.preview': 'Anteprima appendice',
     'modal.title.edit': 'Modifica appendice',
@@ -55,7 +58,8 @@ const aiExperienceTranslationIt = createTranslationMessages({
     'greeting.goodEvening': 'Buonasera',
     'sections.exploreAiModels': 'Esplora i modelli IA',
     'sections.exploreAiTemplates': 'Esplora i template IA',
-    'sections.discoverModels': 'Scopri i modelli e i servizi IA disponibili nella tua organizzazione',
+    'sections.discoverModels':
+      'Scopri i modelli e i servizi IA disponibili nella tua organizzazione',
     'sections.viewAllModels': 'Visualizza tutti i {{count}} modelli',
     'sections.viewAllTemplates': 'Visualizza tutti i {{count}} template',
     'accessibility.close': 'chiudi',

@@ -26,7 +26,8 @@ const globalHeaderTranslationEs = createTranslationMessages({
   messages: {
     'help.tooltip': 'Ayuda',
     'help.noSupportLinks': 'No hay enlaces de soporte',
-    'help.noSupportLinksSubtitle': 'Su administrador debe configurar enlaces de soporte.',
+    'help.noSupportLinksSubtitle':
+      'Su administrador debe configurar enlaces de soporte.',
     'help.quickStart': 'Inicio rápido',
     'help.supportTitle': 'Soporte',
     'profile.picture': 'Foto de perfil',
@@ -39,18 +40,23 @@ const globalHeaderTranslationEs = createTranslationMessages({
     'search.allResults': 'Todos los resultados',
     'search.clear': 'Borrar',
     'applicationLauncher.tooltip': 'Iniciador de aplicaciones',
-    'applicationLauncher.noLinksTitle': 'No hay enlaces de aplicación configurados',
-    'applicationLauncher.noLinksSubtitle': 'Configure los enlaces de aplicación en la configuración del complemento dinámico para obtener acceso rápido desde aquí.',
+    'applicationLauncher.noLinksTitle':
+      'No hay enlaces de aplicación configurados',
+    'applicationLauncher.noLinksSubtitle':
+      'Configure los enlaces de aplicación en la configuración del complemento dinámico para obtener acceso rápido desde aquí.',
     'applicationLauncher.developerHub': 'Developer Hub',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
     'applicationLauncher.sections.documentation': 'Documentación',
-    'applicationLauncher.sections.developerTools': 'Herramientas para desarrolladores',
+    'applicationLauncher.sections.developerTools':
+      'Herramientas para desarrolladores',
     'starred.title': 'Sus artículos destacados',
     'starred.removeTooltip': 'Eliminar de la lista',
     'starred.noItemsTitle': 'Aún no hay elementos destacados',
-    'starred.noItemsSubtitle': 'Haga clic en el icono de la estrella junto al nombre de una entidad para guardarla aquí y acceder a ella rápidamente.',
+    'starred.noItemsSubtitle':
+      'Haga clic en el icono de la estrella junto al nombre de una entidad para guardarla aquí y acceder a ella rápidamente.',
     'notifications.title': 'Notificaciones',
-    'notifications.unsupportedDismissOption': 'Opción para desestimar "{{option}}" no admitida. Opciones admitidas actualmente: "none", "session" o "localstorage".',
+    'notifications.unsupportedDismissOption':
+      'Opción para desestimar "{{option}}" no admitida. Opciones admitidas actualmente: "none", "session" o "localstorage".',
   },
 });
 

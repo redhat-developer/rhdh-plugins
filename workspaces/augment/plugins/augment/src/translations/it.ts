@@ -25,17 +25,21 @@ const augmentTranslationIt = createTranslationMessages({
   ref: augmentTranslationRef,
   messages: {
     'securityGate.configurationRequired': 'Configurazione necessaria',
-    'securityGate.configurationErrors': 'La configurazione di {{appName}} non è corretta. Si prega di correggere i seguenti problemi:',
+    'securityGate.configurationErrors':
+      'La configurazione di {{appName}} non è corretta. Si prega di correggere i seguenti problemi:',
     'securityGate.configurationErrorLabel': 'Problema di configurazione',
-    'securityGate.configurationHint': 'Dopo aver aggiornato la configurazione, riavvia il server backend.',
-    'securityGate.accessDeniedMessage': 'Non si dispone dell\'autorizzazione per accedere a {{appName}}. Contatta il tuo amministratore per richiedere l\'accesso.',
+    'securityGate.configurationHint':
+      'Dopo aver aggiornato la configurazione, riavvia il server backend.',
+    'securityGate.accessDeniedMessage':
+      "Non si dispone dell'autorizzazione per accedere a {{appName}}. Contatta il tuo amministratore per richiedere l'accesso.",
     'commandCenter.title': 'Centro comandi',
     'commandCenter.backToChat': 'Torna alla chat',
     'commandCenter.platform': 'Modello e strumenti',
     'commandCenter.agents': 'Agenti',
     'commandCenter.branding': 'Branding',
     'providerOffline.title': 'Assistente non disponibile',
-    'providerOffline.backendUnreachable': '{{appName}} non è temporaneamente disponibile. Continueremo a riprovare.',
+    'providerOffline.backendUnreachable':
+      '{{appName}} non è temporaneamente disponibile. Continueremo a riprovare.',
     'chatInput.newConversation': 'Nuova conversazione',
     'chatInput.newConversationShortcut': 'Nuova conversazione (⌘⇧O)',
     'chatInput.startNewConversation': 'Inizia una nuova conversazione',
@@ -45,13 +49,20 @@ const augmentTranslationIt = createTranslationMessages({
     'chatInput.stopMessageGeneration': 'Interrompi generazione messaggi',
     'chatInput.sendMessage': 'Invia messaggio',
     'welcomeScreen.logoAlt': 'Logo applicazione',
-    'welcomeScreen.emptyPromptHint': 'Per iniziare, inserisci una domanda qui sotto',
-    'welcomeScreen.logoError': 'Impossibile caricare il logo. Controlla l\'URL nelle impostazioni di branding',
-    'conversationHistory.title': '{{count}} conversazione{{suffix}} • {{appName}}',
-    'conversationHistory.refreshAriaLabel': 'Aggiorna la cronologia delle conversazioni',
-    'conversationHistory.noConversationsYet': 'Le tue conversazioni appariranno qui',
-    'conversationHistory.startChatting': 'Inizia una conversazione per cominciare',
-    'conversationHistory.noMatchingConversations': 'Nessuna conversazione corrispondente a "{{query}}"',
+    'welcomeScreen.emptyPromptHint':
+      'Per iniziare, inserisci una domanda qui sotto',
+    'welcomeScreen.logoError':
+      "Impossibile caricare il logo. Controlla l'URL nelle impostazioni di branding",
+    'conversationHistory.title':
+      '{{count}} conversazione{{suffix}} • {{appName}}',
+    'conversationHistory.refreshAriaLabel':
+      'Aggiorna la cronologia delle conversazioni',
+    'conversationHistory.noConversationsYet':
+      'Le tue conversazioni appariranno qui',
+    'conversationHistory.startChatting':
+      'Inizia una conversazione per cominciare',
+    'conversationHistory.noMatchingConversations':
+      'Nessuna conversazione corrispondente a "{{query}}"',
     'toolApproval.destructiveOperation': 'Operazione distruttiva',
     'toolApproval.requiresApproval': 'Richiede approvazione',
     'toolApproval.toolExecution': 'Esecuzione strumenti',
@@ -84,10 +95,13 @@ const augmentTranslationIt = createTranslationMessages({
     'toolCalls.copyOutput': 'Copia output',
     'toolCalls.copiedToClipboard': 'Copiato negli appunti',
     'toolCalls.copy': 'Copia',
-    'ragSources.sourcesFromVectorRag': '{{count}} sorgente/i dalla Knowledge Base',
+    'ragSources.sourcesFromVectorRag':
+      '{{count}} sorgente/i dalla Knowledge Base',
     'ragSources.unknownSource': 'Sorgente sconosciuta',
-    'ragSources.collapseKnowledgeSources': 'Comprimi sorgenti della knowledge base',
-    'ragSources.expandKnowledgeSources': 'Espandi sorgenti della knowledge base',
+    'ragSources.collapseKnowledgeSources':
+      'Comprimi sorgenti della knowledge base',
+    'ragSources.expandKnowledgeSources':
+      'Espandi sorgenti della knowledge base',
     'tokenUsage.inputTokens': 'Token input: {{count}}',
     'agentsPanel.startingAgent': 'Avvio agente',
     'agentsPanel.maxTurns': 'Turni massimi',
@@ -98,9 +112,10 @@ const augmentTranslationIt = createTranslationMessages({
     'agentsPanel.saveSuccess': 'Configurazione salvata.',
     'agentsPanel.reset': 'Reset',
     'agentsPanel.noAgentsTitle': 'Nessun agente configurato',
-    'agentsPanel.noAgentsSubtitle': 'Crea il tuo primo agente per iniziare subito con l\'orchestrazione multi agente.',
+    'agentsPanel.noAgentsSubtitle':
+      "Crea il tuo primo agente per iniziare subito con l'orchestrazione multi agente.",
     'agentsPanel.createFirstAgent': 'Crea il tuo primo agente',
-    'agentsPanel.selectAgent': 'Seleziona un agente dall\'elenco',
+    'agentsPanel.selectAgent': "Seleziona un agente dall'elenco",
     'agentsPanel.topology': 'Topologia',
     'agentsPanel.transfers': 'trasferimenti',
     'agentsPanel.delegates': 'delegati',
@@ -124,13 +139,17 @@ const augmentTranslationIt = createTranslationMessages({
     'agentsPanel.adminModified': 'Modificato',
     'agentsPanel.deleteAgent': 'Elimina agente',
     'agentsPanel.confirmRemoveTitle': 'Rimuovere {{name}}?',
-    'agentsPanel.confirmResetTitle': 'Ripristinare le impostazioni predefinite?',
-    'agentsPanel.confirmResetMessage': 'Questa operazione annullerà tutte le personalizzazioni dell\'amministratore e ripristinerà le impostazioni predefinite. Impossibile annullare l\'operazione.',
+    'agentsPanel.confirmResetTitle':
+      'Ripristinare le impostazioni predefinite?',
+    'agentsPanel.confirmResetMessage':
+      "Questa operazione annullerà tutte le personalizzazioni dell'amministratore e ripristinerà le impostazioni predefinite. Impossibile annullare l'operazione.",
     'agentsPanel.confirmResetButton': 'Reset',
     'agentsPanel.createModal.title': 'Crea un nuovo agente',
-    'agentsPanel.createModal.subtitle': 'Assegna un nome al tuo agente e scegli un modello per precompilare le impostazioni (opzionale).',
+    'agentsPanel.createModal.subtitle':
+      'Assegna un nome al tuo agente e scegli un modello per precompilare le impostazioni (opzionale).',
     'agentsPanel.createModal.displayName': 'Nome visualizzato',
-    'agentsPanel.createModal.displayNamePlaceholder': 'ad esempio, Agente di supporto',
+    'agentsPanel.createModal.displayNamePlaceholder':
+      'ad esempio, Agente di supporto',
     'agentsPanel.createModal.agentId': 'ID agente',
     'agentsPanel.createModal.agentIdHint': 'Generato automaticamente dal nome.',
     'agentsPanel.createModal.agentIdExists': 'Questo ID esiste già.',

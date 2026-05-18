@@ -26,7 +26,8 @@ const x2aPluginTranslationJa = createTranslationMessages({
   messages: {
     'sidebar.x2a.title': 'Conversion Hub',
     'page.title': 'Conversion Hub',
-    'page.subtitle': '既存の自動化を実稼働環境に対応した Ansible Playbook に非同期で変換する作業を開始し、その進捗を追跡します。',
+    'page.subtitle':
+      '既存の自動化を実稼働環境に対応した Ansible Playbook に非同期で変換する作業を開始し、その進捗を追跡します。',
     'projectPage.title': 'プロジェクト',
     'projectPage.deleteProject': '削除',
     'projectPage.actionsTooltip': 'クリックしてプロジェクト操作メニューを開く',
@@ -41,7 +42,8 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'modulePage.artifacts.module_migration_plan': '分析に基づくモジュール計画',
     'modulePage.artifacts.migrated_sources': '移行済みソース',
     'modulePage.artifacts.ansible_project': 'AAP プロジェクト',
-    'modulePage.artifacts.description': 'これらのアーティファクトは変換プロセスによって生成されたものであり、レビューに使用できます。',
+    'modulePage.artifacts.description':
+      'これらのアーティファクトは変換プロセスによって生成されたものであり、レビューに使用できます。',
     'modulePage.phases.title': '移行フェーズ',
     'modulePage.phases.id': 'ID',
     'modulePage.phases.duration': '期間',
@@ -55,25 +57,35 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'modulePage.phases.statuses.success': '成功',
     'modulePage.phases.statuses.error': 'エラー',
     'modulePage.phases.statuses.cancelled': 'キャンセル済み',
-    'modulePage.phases.resyncMigrationPlanInstructions': '移行計画と一致するようにモジュールリストを再同期してください。',
-    'modulePage.phases.reanalyzeInstructions': 'モジュール移行計画はすでに存在します。プロジェクト全体の移行計画が更新された場合は、変更を反映するために分析を再トリガーしてください。',
-    'modulePage.phases.analyzeInstructions': '分析を実行する前に、まずプロジェクト全体の移行計画を確認してください。その内容に基づいてモジュールの分析が実行されます。',
-    'modulePage.phases.migrateInstructions': '移行を実行する前に、モジュール移行計画を確認してください。移行プロセスでは、計画に基づいてソースコードを Ansible に変換します。',
-    'modulePage.phases.remigrateInstructions': '移行済みソースはすでに存在しています。移行を再トリガーして、変換済みの Ansible コードを再作成してください。',
+    'modulePage.phases.resyncMigrationPlanInstructions':
+      '移行計画と一致するようにモジュールリストを再同期してください。',
+    'modulePage.phases.reanalyzeInstructions':
+      'モジュール移行計画はすでに存在します。プロジェクト全体の移行計画が更新された場合は、変更を反映するために分析を再トリガーしてください。',
+    'modulePage.phases.analyzeInstructions':
+      '分析を実行する前に、まずプロジェクト全体の移行計画を確認してください。その内容に基づいてモジュールの分析が実行されます。',
+    'modulePage.phases.migrateInstructions':
+      '移行を実行する前に、モジュール移行計画を確認してください。移行プロセスでは、計画に基づいてソースコードを Ansible に変換します。',
+    'modulePage.phases.remigrateInstructions':
+      '移行済みソースはすでに存在しています。移行を再トリガーして、変換済みの Ansible コードを再作成してください。',
     'modulePage.phases.rerunMigrate': '移行済みソースの再作成',
-    'modulePage.phases.publishInstructions': '公開する前に、移行済みソースを確認してください。公開プロセスを実行すると、変換済みのコードがターゲットリポジトリーにコミットされます。',
-    'modulePage.phases.republishInstructions': 'このモジュールはすでに公開されています。ターゲットリポジトリーを更新するために、公開を再トリガーしてください。',
+    'modulePage.phases.publishInstructions':
+      '公開する前に、移行済みソースを確認してください。公開プロセスを実行すると、変換済みのコードがターゲットリポジトリーにコミットされます。',
+    'modulePage.phases.republishInstructions':
+      'このモジュールはすでに公開されています。ターゲットリポジトリーを更新するために、公開を再トリガーしてください。',
     'modulePage.phases.rerunPublish': 'ターゲットリポジトリーへの再公開',
     'modulePage.phases.cancel': 'キャンセル',
     'modulePage.phases.runError': 'モジュールのフェーズを実行できませんでした',
-    'modulePage.phases.cancelError': 'モジュールのフェーズをキャンセルできませんでした',
+    'modulePage.phases.cancelError':
+      'モジュールのフェーズをキャンセルできませんでした',
     'modulePage.phases.commitId': '最終コミット ID',
     'modulePage.phases.viewLog': 'ログを表示する',
     'modulePage.phases.hideLog': 'ログを非表示にする',
     'modulePage.phases.noLogsAvailable': 'ログはまだ利用できません...',
-    'modulePage.phases.logWaitingForStream': 'クラスターからのログ出力を待っています...',
+    'modulePage.phases.logWaitingForStream':
+      'クラスターからのログ出力を待っています...',
     'modulePage.phases.telemetry.title': 'テレメトリー',
-    'modulePage.phases.telemetry.noTelemetryAvailable': 'テレメトリーデータは利用できません',
+    'modulePage.phases.telemetry.noTelemetryAvailable':
+      'テレメトリーデータは利用できません',
     'modulePage.phases.telemetry.agentName': 'エージェント名',
     'modulePage.phases.telemetry.duration': '期間',
     'modulePage.phases.telemetry.inputTokens': '入力トークン',
@@ -81,7 +93,8 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'modulePage.phases.telemetry.toolCalls': 'ツール呼び出し回数',
     'table.columns.name': '名前',
     'table.columns.status': 'ステータス',
-    'table.columns.statusSortDisabledTooltip': 'プロジェクト数が {{threshold}} を超えている場合、ステータスによる並べ替えは利用できません',
+    'table.columns.statusSortDisabledTooltip':
+      'プロジェクト数が {{threshold}} を超えている場合、ステータスによる並べ替えは利用できません',
     'table.columns.targetRepo': 'ターゲットリポジトリー',
     'table.columns.createdAt': '作成日時',
     'table.actions.deleteProject': 'プロジェクトの削除',
@@ -93,16 +106,20 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'table.projectsCount': 'プロジェクト ({{count}})',
     'common.newProject': '新しいプロジェクト',
     'emptyPage.noConversionInitiatedYet': '変換はまだ開始されていません',
-    'emptyPage.noConversionInitiatedYetDescription': '既存の自動化を実稼働環境対応の Ansible に変換する作業を開始し、その進捗を追跡します',
+    'emptyPage.noConversionInitiatedYetDescription':
+      '既存の自動化を実稼働環境対応の Ansible に変換する作業を開始し、その進捗を追跡します',
     'emptyPage.startFirstConversion': '最初の変換の開始',
     'emptyPage.notAllowedTitle': 'アクセス拒否',
-    'emptyPage.notAllowedDescription': '変換プロジェクトへのアクセスが許可されていません。',
+    'emptyPage.notAllowedDescription':
+      '変換プロジェクトへのアクセスが許可されていません。',
     'bulkRun.projectAction': 'すべてのモジュールの実行',
     'bulkRun.globalAction': 'すべて実行',
     'bulkRun.projectPageAction': 'すべて実行',
-    'bulkRun.projectConfirm.title': '"{{name}}" プロジェクト内のすべてのモジュールを実行しますか?',
+    'bulkRun.projectConfirm.title':
+      '"{{name}}" プロジェクト内のすべてのモジュールを実行しますか?',
     'bulkRun.cancel': 'キャンセル',
-    'bulkRun.errorProject': 'プロジェクト "{{name}}" のモジュールの実行に失敗しました',
+    'bulkRun.errorProject':
+      'プロジェクト "{{name}}" のモジュールの実行に失敗しました',
     'artifact.types.migration_plan': 'プロジェクト移行計画',
     'artifact.types.module_migration_plan': 'モジュール移行計画',
     'artifact.types.migrated_sources': '移行済みソース',
@@ -122,7 +139,7 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'time.ago.lessThanMinute': '1 分未満前',
     'time.jobTiming.noStartTime': '-',
     'time.jobTiming.running': '{{duration}} の間実行中',
-    'empty': '-',
+    empty: '-',
   },
 });
 

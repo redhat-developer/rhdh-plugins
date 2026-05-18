@@ -25,17 +25,21 @@ const augmentTranslationEs = createTranslationMessages({
   ref: augmentTranslationRef,
   messages: {
     'securityGate.configurationRequired': 'Se requiere configuración',
-    'securityGate.configurationErrors': '{{appName}} no está configurada correctamente. Solucione los siguientes problemas:',
+    'securityGate.configurationErrors':
+      '{{appName}} no está configurada correctamente. Solucione los siguientes problemas:',
     'securityGate.configurationErrorLabel': 'Problema de configuración',
-    'securityGate.configurationHint': 'Tras actualizar la configuración, reinicie el servidor backend.',
-    'securityGate.accessDeniedMessage': 'No tienes permiso para acceder a {{appName}}. Comuníquese con su administrador para solicitar acceso.',
+    'securityGate.configurationHint':
+      'Tras actualizar la configuración, reinicie el servidor backend.',
+    'securityGate.accessDeniedMessage':
+      'No tienes permiso para acceder a {{appName}}. Comuníquese con su administrador para solicitar acceso.',
     'commandCenter.title': 'Centro de comandos',
     'commandCenter.backToChat': 'Volver al chat',
     'commandCenter.platform': 'Modelo y herramientas',
     'commandCenter.agents': 'Agentes',
     'commandCenter.branding': 'Marca',
     'providerOffline.title': 'Asistente no disponible',
-    'providerOffline.backendUnreachable': '{{appName}} temporalmente no está disponible. Seguiremos intentándolo.',
+    'providerOffline.backendUnreachable':
+      '{{appName}} temporalmente no está disponible. Seguiremos intentándolo.',
     'chatInput.newConversation': 'Nueva conversación',
     'chatInput.newConversationShortcut': 'Nueva conversación (⌘⇧O)',
     'chatInput.startNewConversation': 'Iniciar una nueva conversación',
@@ -45,13 +49,19 @@ const augmentTranslationEs = createTranslationMessages({
     'chatInput.stopMessageGeneration': 'Detener generación de mensajes',
     'chatInput.sendMessage': 'Enviar mensaje',
     'welcomeScreen.logoAlt': 'Logotipo de la aplicación',
-    'welcomeScreen.emptyPromptHint': 'Escriba una pregunta a continuación para comenzar',
-    'welcomeScreen.logoError': 'No se pudo cargar el logotipo, compruebe el URL en la configuración de marca',
-    'conversationHistory.title': '{{count}} conversación{{suffix}} • {{appName}}',
-    'conversationHistory.refreshAriaLabel': 'Actualizar el historial de conversaciones',
-    'conversationHistory.noConversationsYet': 'Sus conversaciones aparecerán aquí',
+    'welcomeScreen.emptyPromptHint':
+      'Escriba una pregunta a continuación para comenzar',
+    'welcomeScreen.logoError':
+      'No se pudo cargar el logotipo, compruebe el URL en la configuración de marca',
+    'conversationHistory.title':
+      '{{count}} conversación{{suffix}} • {{appName}}',
+    'conversationHistory.refreshAriaLabel':
+      'Actualizar el historial de conversaciones',
+    'conversationHistory.noConversationsYet':
+      'Sus conversaciones aparecerán aquí',
     'conversationHistory.startChatting': 'Inicie una conversación para empezar',
-    'conversationHistory.noMatchingConversations': 'No se encontraron conversaciones que coincidieran con “{{query}}”',
+    'conversationHistory.noMatchingConversations':
+      'No se encontraron conversaciones que coincidieran con “{{query}}”',
     'toolApproval.destructiveOperation': 'Operación destructiva',
     'toolApproval.requiresApproval': 'Requiere aprobación',
     'toolApproval.toolExecution': 'Ejecución de herramientas',
@@ -84,10 +94,13 @@ const augmentTranslationEs = createTranslationMessages({
     'toolCalls.copyOutput': 'Copiar resultado',
     'toolCalls.copiedToClipboard': 'Copiado en el portapapeles',
     'toolCalls.copy': 'Copiar',
-    'ragSources.sourcesFromVectorRag': '{{count}} fuente(s) de la base de conocimientos',
+    'ragSources.sourcesFromVectorRag':
+      '{{count}} fuente(s) de la base de conocimientos',
     'ragSources.unknownSource': 'Fuente desconocida',
-    'ragSources.collapseKnowledgeSources': 'Contraer fuentes de la base de conocimientos',
-    'ragSources.expandKnowledgeSources': 'Expandir fuentes de la base de conocimientos',
+    'ragSources.collapseKnowledgeSources':
+      'Contraer fuentes de la base de conocimientos',
+    'ragSources.expandKnowledgeSources':
+      'Expandir fuentes de la base de conocimientos',
     'tokenUsage.inputTokens': 'Tokens de entrada: {{count}}',
     'agentsPanel.startingAgent': 'Agente inicial',
     'agentsPanel.maxTurns': 'Máximo de turnos',
@@ -98,7 +111,8 @@ const augmentTranslationEs = createTranslationMessages({
     'agentsPanel.saveSuccess': 'Se guardó la configuración.',
     'agentsPanel.reset': 'Reiniciar',
     'agentsPanel.noAgentsTitle': 'No hay agentes configurados',
-    'agentsPanel.noAgentsSubtitle': 'Cree su primer agente para comenzar con la orquestación multiagente.',
+    'agentsPanel.noAgentsSubtitle':
+      'Cree su primer agente para comenzar con la orquestación multiagente.',
     'agentsPanel.createFirstAgent': 'Cree su primer agente',
     'agentsPanel.selectAgent': 'Seleccione un agente de la lista',
     'agentsPanel.topology': 'Topología',
@@ -124,17 +138,23 @@ const augmentTranslationEs = createTranslationMessages({
     'agentsPanel.adminModified': 'Modificado',
     'agentsPanel.deleteAgent': 'Eliminar agente',
     'agentsPanel.confirmRemoveTitle': '¿Desea quitar {{name}}?',
-    'agentsPanel.confirmResetTitle': '¿Desea restablecer los valores predeterminados?',
-    'agentsPanel.confirmResetMessage': 'Esto descartará todas las personalizaciones de administrador y restaurará los valores predeterminados. Esto no se puede deshacer.',
+    'agentsPanel.confirmResetTitle':
+      '¿Desea restablecer los valores predeterminados?',
+    'agentsPanel.confirmResetMessage':
+      'Esto descartará todas las personalizaciones de administrador y restaurará los valores predeterminados. Esto no se puede deshacer.',
     'agentsPanel.confirmResetButton': 'Reiniciar',
     'agentsPanel.createModal.title': 'Crear nuevo agente',
-    'agentsPanel.createModal.subtitle': 'Asigne un nombre a su agente y, de manera opcional, seleccione una plantilla para completar previamente la configuración.',
+    'agentsPanel.createModal.subtitle':
+      'Asigne un nombre a su agente y, de manera opcional, seleccione una plantilla para completar previamente la configuración.',
     'agentsPanel.createModal.displayName': 'Nombre para mostrar',
-    'agentsPanel.createModal.displayNamePlaceholder': 'p. ej., agente de soporte',
+    'agentsPanel.createModal.displayNamePlaceholder':
+      'p. ej., agente de soporte',
     'agentsPanel.createModal.agentId': 'ID de agente',
-    'agentsPanel.createModal.agentIdHint': 'Generado automáticamente a partir del nombre.',
+    'agentsPanel.createModal.agentIdHint':
+      'Generado automáticamente a partir del nombre.',
     'agentsPanel.createModal.agentIdExists': 'Este ID ya existe.',
-    'agentsPanel.createModal.templateTitle': 'Comenzar a partir de una plantilla',
+    'agentsPanel.createModal.templateTitle':
+      'Comenzar a partir de una plantilla',
     'agentsPanel.createModal.createButton': 'Crear agente',
     'agentsPanel.createModal.cancel': 'Cancelar',
     'keyboardShortcuts.title': 'Combinaciones de teclas',

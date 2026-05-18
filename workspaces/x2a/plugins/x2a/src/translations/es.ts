@@ -26,22 +26,28 @@ const x2aPluginTranslationEs = createTranslationMessages({
   messages: {
     'sidebar.x2a.title': 'Conversion Hub',
     'page.title': 'Conversion Hub',
-    'page.subtitle': 'Inicie y realice el seguimiento de la conversión asíncrona de la automatización existente en Ansible Playbooks listos para producción.',
+    'page.subtitle':
+      'Inicie y realice el seguimiento de la conversión asíncrona de la automatización existente en Ansible Playbooks listos para producción.',
     'projectPage.title': 'Proyecto',
     'projectPage.deleteProject': 'Eliminar',
-    'projectPage.actionsTooltip': 'Haga clic para abrir el menú de acciones del proyecto',
+    'projectPage.actionsTooltip':
+      'Haga clic para abrir el menú de acciones del proyecto',
     'projectPage.deleteError': 'No se pudo eliminar el proyecto',
-    'projectPage.deleteConfirm.title': '¿Desea eliminar el proyecto “{{name}}”?',
+    'projectPage.deleteConfirm.title':
+      '¿Desea eliminar el proyecto “{{name}}”?',
     'projectModulesCard.title': 'Módulos ({{count}})',
     'projectModulesCard.published': 'publicados',
     'initPhaseCard.title': 'Fase de detección',
     'modulePage.title': 'Detalles del módulo',
     'modulePage.artifacts.title': 'Artefactos para revisar',
-    'modulePage.artifacts.migration_plan': 'Plan general de migración de proyectos',
-    'modulePage.artifacts.module_migration_plan': 'Plan de módulos por análisis',
+    'modulePage.artifacts.migration_plan':
+      'Plan general de migración de proyectos',
+    'modulePage.artifacts.module_migration_plan':
+      'Plan de módulos por análisis',
     'modulePage.artifacts.migrated_sources': 'Fuentes migradas',
     'modulePage.artifacts.ansible_project': 'Proyecto AAP',
-    'modulePage.artifacts.description': 'Estos artefactos se generan en el proceso de conversión y están disponibles para su revisión.',
+    'modulePage.artifacts.description':
+      'Estos artefactos se generan en el proceso de conversión y están disponibles para su revisión.',
     'modulePage.phases.title': 'Fases de migración',
     'modulePage.phases.id': 'ID',
     'modulePage.phases.duration': 'Duración',
@@ -55,15 +61,23 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.statuses.success': 'Éxito',
     'modulePage.phases.statuses.error': 'Error',
     'modulePage.phases.statuses.cancelled': 'Cancelada',
-    'modulePage.phases.resyncMigrationPlanInstructions': 'Vuelva a sincronizar la lista de módulos para que coincida con el plan de migración.',
-    'modulePage.phases.reanalyzeInstructions': 'El plan de migración del módulo ya está disponible. Si se ha actualizado el plan general de migración del proyecto, vuelva a activar el análisis para reflejar los cambios.',
-    'modulePage.phases.analyzeInstructions': 'Antes de ejecutar el análisis, revise el plan general de migración del proyecto. Su contenido guiará el análisis del módulo.',
-    'modulePage.phases.migrateInstructions': 'Antes de ejecutar la migración, revise el plan de migración del módulo. El proceso de migración convertirá el código fuente a Ansible en función del plan.',
-    'modulePage.phases.remigrateInstructions': 'Las fuentes migradas ya están presentes. Vuelva a activar la migración para recrear el código Ansible convertido.',
+    'modulePage.phases.resyncMigrationPlanInstructions':
+      'Vuelva a sincronizar la lista de módulos para que coincida con el plan de migración.',
+    'modulePage.phases.reanalyzeInstructions':
+      'El plan de migración del módulo ya está disponible. Si se ha actualizado el plan general de migración del proyecto, vuelva a activar el análisis para reflejar los cambios.',
+    'modulePage.phases.analyzeInstructions':
+      'Antes de ejecutar el análisis, revise el plan general de migración del proyecto. Su contenido guiará el análisis del módulo.',
+    'modulePage.phases.migrateInstructions':
+      'Antes de ejecutar la migración, revise el plan de migración del módulo. El proceso de migración convertirá el código fuente a Ansible en función del plan.',
+    'modulePage.phases.remigrateInstructions':
+      'Las fuentes migradas ya están presentes. Vuelva a activar la migración para recrear el código Ansible convertido.',
     'modulePage.phases.rerunMigrate': 'Recrear fuentes migradas',
-    'modulePage.phases.publishInstructions': 'Antes de publicar, revise las fuentes migradas. El proceso de publicación confirmará el código convertido en el repositorio de destino.',
-    'modulePage.phases.republishInstructions': 'El módulo ya se ha publicado. Vuelva a activar la publicación para actualizar el repositorio de destino.',
-    'modulePage.phases.rerunPublish': 'Vuelva a publicar en el repositorio de destino',
+    'modulePage.phases.publishInstructions':
+      'Antes de publicar, revise las fuentes migradas. El proceso de publicación confirmará el código convertido en el repositorio de destino.',
+    'modulePage.phases.republishInstructions':
+      'El módulo ya se ha publicado. Vuelva a activar la publicación para actualizar el repositorio de destino.',
+    'modulePage.phases.rerunPublish':
+      'Vuelva a publicar en el repositorio de destino',
     'modulePage.phases.cancel': 'Cancelar',
     'modulePage.phases.runError': 'No se pudo ejecutar la fase del módulo',
     'modulePage.phases.cancelError': 'No se pudo cancelar la fase del módulo',
@@ -71,38 +85,48 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.viewLog': 'Ver registro',
     'modulePage.phases.hideLog': 'Ocultar registro',
     'modulePage.phases.noLogsAvailable': 'Aún no hay registros disponibles…',
-    'modulePage.phases.logWaitingForStream': 'Esperando la salida de registro del clúster…',
+    'modulePage.phases.logWaitingForStream':
+      'Esperando la salida de registro del clúster…',
     'modulePage.phases.telemetry.title': 'Telemetría',
-    'modulePage.phases.telemetry.noTelemetryAvailable': 'No hay telemetría disponible',
+    'modulePage.phases.telemetry.noTelemetryAvailable':
+      'No hay telemetría disponible',
     'modulePage.phases.telemetry.agentName': 'Nombre del agente',
     'modulePage.phases.telemetry.duration': 'Duración',
     'modulePage.phases.telemetry.inputTokens': 'Tokens de entrada',
     'modulePage.phases.telemetry.outputTokens': 'Tokens de salida',
-    'modulePage.phases.telemetry.toolCalls': 'Cantidad de llamadas a herramientas',
+    'modulePage.phases.telemetry.toolCalls':
+      'Cantidad de llamadas a herramientas',
     'table.columns.name': 'Nombre',
     'table.columns.status': 'Estado',
-    'table.columns.statusSortDisabledTooltip': 'La ordenación por estado no está disponible cuando la cantidad de proyectos supera {{threshold}}',
+    'table.columns.statusSortDisabledTooltip':
+      'La ordenación por estado no está disponible cuando la cantidad de proyectos supera {{threshold}}',
     'table.columns.targetRepo': 'Repositorio de destino',
     'table.columns.createdAt': 'Creado a',
     'table.actions.deleteProject': 'Eliminar proyecto',
-    'table.actions.retriggerInit': 'Volver a activar la fase de inicialización del proyecto',
+    'table.actions.retriggerInit':
+      'Volver a activar la fase de inicialización del proyecto',
     'table.actions.expandAll': 'Expandir todas las filas',
     'table.actions.collapseAll': 'Contraer todas las filas',
     'table.actions.expandRow': 'Expandir fila',
     'table.actions.collapseRow': 'Contraer fila',
     'table.projectsCount': 'Proyectos ({{count}})',
     'common.newProject': 'Nuevo proyecto',
-    'emptyPage.noConversionInitiatedYet': 'Aún no se ha iniciado ninguna conversión',
-    'emptyPage.noConversionInitiatedYetDescription': 'Inicie y realice el seguimiento de la conversión de la automatización existente en Ansible listo para la producción',
+    'emptyPage.noConversionInitiatedYet':
+      'Aún no se ha iniciado ninguna conversión',
+    'emptyPage.noConversionInitiatedYetDescription':
+      'Inicie y realice el seguimiento de la conversión de la automatización existente en Ansible listo para la producción',
     'emptyPage.startFirstConversion': 'Iniciar la primera conversión',
     'emptyPage.notAllowedTitle': 'Acceso denegado',
-    'emptyPage.notAllowedDescription': 'No tiene permiso para acceder a los proyectos de conversión.',
+    'emptyPage.notAllowedDescription':
+      'No tiene permiso para acceder a los proyectos de conversión.',
     'bulkRun.projectAction': 'Ejecutar todos los módulos',
     'bulkRun.globalAction': 'Ejecutar todo',
     'bulkRun.projectPageAction': 'Ejecutar todo',
-    'bulkRun.projectConfirm.title': '¿Desea ejecutar todos los módulos en el proyecto “{{name}}”?',
+    'bulkRun.projectConfirm.title':
+      '¿Desea ejecutar todos los módulos en el proyecto “{{name}}”?',
     'bulkRun.cancel': 'Cancelar',
-    'bulkRun.errorProject': 'No se pudieron ejecutar los módulos en el proyecto “{{name}}”',
+    'bulkRun.errorProject':
+      'No se pudieron ejecutar los módulos en el proyecto “{{name}}”',
     'artifact.types.migration_plan': 'Plan de migración de proyectos',
     'artifact.types.module_migration_plan': 'Plan de migración de módulos',
     'artifact.types.migrated_sources': 'Fuentes migradas',
@@ -122,7 +146,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'time.ago.lessThanMinute': 'Hace menos de 1 minuto',
     'time.jobTiming.noStartTime': '-',
     'time.jobTiming.running': 'Ejecutándose durante {{duration}}',
-    'empty': '-',
+    empty: '-',
   },
 });
 

@@ -25,19 +25,23 @@ const aiExperienceTranslationFr = createTranslationMessages({
   ref: aiExperienceTranslationRef,
   messages: {
     'page.title': 'Expérience IA',
-    'page.subtitle': 'Explorez les modèles d\'IA, les serveurs, les actualités et les ressources d\'apprentissage',
+    'page.subtitle':
+      "Explorez les modèles d'IA, les serveurs, les actualités et les ressources d'apprentissage",
     'learn.getStarted.title': 'Commencer',
     'learn.getStarted.description': 'Découvrez Red Hat Developer Hub.',
     'learn.getStarted.cta': 'Accédez à la documentation technique',
     'learn.explore.title': 'Explorer',
-    'learn.explore.description': 'Explorez les modèles, serveurs et modèles d\'IA.',
+    'learn.explore.description':
+      "Explorez les modèles, serveurs et modèles d'IA.",
     'learn.learn.title': 'Apprendre',
-    'learn.learn.description': 'Explorez et développez de nouvelles compétences en IA.',
-    'learn.learn.cta': 'Accéder aux parcours d\'apprentissage',
+    'learn.learn.description':
+      'Explorez et développez de nouvelles compétences en IA.',
+    'learn.learn.cta': "Accéder aux parcours d'apprentissage",
     'news.pageTitle': 'Actualités IA',
     'news.fetchingRssFeed': 'Récupération du flux RSS',
     'news.noContentAvailable': 'Aucun contenu disponible',
-    'news.noContentDescription': 'Il semblerait que nous n\'ayons pas pu récupérer le contenu de ce flux RSS. Vous pouvez revérifier l\'URL ou passer à une autre source en mettant à jour le fichier de configuration du plugin.',
+    'news.noContentDescription':
+      "Il semblerait que nous n'ayons pas pu récupérer le contenu de ce flux RSS. Vous pouvez revérifier l'URL ou passer à une autre source en mettant à jour le fichier de configuration du plugin.",
     'news.noRssContent': 'Aucun contenu RSS',
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'modal.title.edit': 'Modifier la pièce jointe',
@@ -53,14 +57,15 @@ const aiExperienceTranslationFr = createTranslationMessages({
     'greeting.goodMorning': 'Bonjour',
     'greeting.goodAfternoon': 'Bon après-midi',
     'greeting.goodEvening': 'Bonne soirée',
-    'sections.exploreAiModels': 'Explorez les modèles d\'IA',
-    'sections.exploreAiTemplates': 'Explorez les modèles d\'IA',
-    'sections.discoverModels': 'Découvrez les modèles et services d\'IA disponibles dans votre organisation',
+    'sections.exploreAiModels': "Explorez les modèles d'IA",
+    'sections.exploreAiTemplates': "Explorez les modèles d'IA",
+    'sections.discoverModels':
+      "Découvrez les modèles et services d'IA disponibles dans votre organisation",
     'sections.viewAllModels': 'Afficher tous les modèles {{count}}',
     'sections.viewAllTemplates': 'Afficher tous les modèles {{count}}',
     'accessibility.close': 'fermer',
     'accessibility.aiIllustration': 'Illustration IA',
-    'accessibility.aiModelsIllustration': 'Illustration de modèles d\'IA',
+    'accessibility.aiModelsIllustration': "Illustration de modèles d'IA",
   },
 });
 

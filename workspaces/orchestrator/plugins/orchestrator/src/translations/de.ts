@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { orchestratorTranslationRef } from './ref';
 
 /**
@@ -61,8 +62,10 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.fields.workflowId': 'Lauf-ID',
     'workflow.fields.workflowIdCopied': 'Lauf-ID in die Zwischenablage kopiert',
     'workflow.fields.version': 'Version',
-    'workflow.errors.retriggerFailed': 'Erneuter Auslöser fehlgeschlagen: {{reason}}',
-    'workflow.errors.abortFailedWithReason': 'Abbruch fehlgeschlagen: {{reason}}',
+    'workflow.errors.retriggerFailed':
+      'Erneuter Auslöser fehlgeschlagen: {{reason}}',
+    'workflow.errors.abortFailedWithReason':
+      'Abbruch fehlgeschlagen: {{reason}}',
     'run.title': 'Workflow ausführen',
     'run.pageTitle': '{{processName}} ausführen',
     'run.variables': 'Laufzeitvariablen',
@@ -70,15 +73,19 @@ const orchestratorTranslationDe = createTranslationMessages({
     'run.results': 'Ergebnisse',
     'run.logs.viewLogs': 'Protokolle anzeigen',
     'run.logs.title': 'Laufzeitprotokolle',
-    'run.logs.noLogsAvailable': 'Für diesen Workflow-Lauf sind keine Protokolle verfügbar.',
+    'run.logs.noLogsAvailable':
+      'Für diesen Workflow-Lauf sind keine Protokolle verfügbar.',
     'run.abort.title': 'Workflow-Ausführung abbrechen?',
     'run.abort.button': 'Abbrechen',
-    'run.abort.warning': 'Durch einen Abbruch werden alle laufenden und ausstehenden Schritte sofort gestoppt. Sämtliche laufenden Arbeiten gehen verloren.',
+    'run.abort.warning':
+      'Durch einen Abbruch werden alle laufenden und ausstehenden Schritte sofort gestoppt. Sämtliche laufenden Arbeiten gehen verloren.',
     'run.abort.completed.title': 'Lauf abgeschlossen',
-    'run.abort.completed.message': 'Ein Abbruch des Laufs ist nicht möglich, da er bereits abgeschlossen wurde.',
+    'run.abort.completed.message':
+      'Ein Abbruch des Laufs ist nicht möglich, da er bereits abgeschlossen wurde.',
     'run.status.completed': 'Lauf abgeschlossen',
     'run.status.failed': 'Der Lauf ist fehlgeschlagen {{time}}',
-    'run.status.completedWithMessage': 'Lauf abgeschlossen {{time}} mit folgender Nachricht',
+    'run.status.completedWithMessage':
+      'Lauf abgeschlossen {{time}} mit folgender Nachricht',
     'run.status.failedAt': 'Der Lauf ist fehlgeschlagen {{time}}',
     'run.viewVariables': 'Variablen anzeigen',
     'run.suggestedNextWorkflow': 'Vorgeschlagener nächster Arbeitsablauf',
@@ -88,16 +95,25 @@ const orchestratorTranslationDe = createTranslationMessages({
     'tooltips.aborted': 'Abgebrochen',
     'tooltips.suspended': 'Ausgesetzt',
     'tooltips.pending': 'Ausstehend',
-    'tooltips.workflowDown': 'Der Workflow ist momentan nicht verfügbar oder befindet sich in einem Fehlerzustand.',
-    'tooltips.userNotAuthorizedAbort': 'Benutzer nicht berechtigt, den Workflow abzubrechen',
-    'tooltips.userNotAuthorizedExecute': 'Benutzer nicht berechtigt, Workflow auszuführen',
+    'tooltips.workflowDown':
+      'Der Workflow ist momentan nicht verfügbar oder befindet sich in einem Fehlerzustand.',
+    'tooltips.userNotAuthorizedAbort':
+      'Benutzer nicht berechtigt, den Workflow abzubrechen',
+    'tooltips.userNotAuthorizedExecute':
+      'Benutzer nicht berechtigt, Workflow auszuführen',
     'messages.noDataAvailable': 'Keine Daten verfügbar',
-    'messages.noVariablesFound': 'Für diesen Durchlauf wurden keine Variablen gefunden.',
-    'messages.noInputSchemaWorkflow': 'Für diesen Workflow ist kein Eingabeschema definiert.',
-    'messages.workflowInstanceNoInputs': 'Die Workflow-Instanz hat keine Eingaben.',
-    'messages.missingJsonSchema.title': 'Fehlendes JSON-Schema für das Eingabeformular',
-    'messages.missingJsonSchema.message': 'Für diesen Workflow ist kein JSON-Schema zur Eingabevalidierung definiert. Der Workflow kann weiterhin ausgeführt werden, die Eingabevalidierung ist jedoch eingeschränkt.',
-    'reviewStep.hiddenFieldsNote': 'Einige Parameter sind auf dieser Seite ausgeblendet.',
+    'messages.noVariablesFound':
+      'Für diesen Durchlauf wurden keine Variablen gefunden.',
+    'messages.noInputSchemaWorkflow':
+      'Für diesen Workflow ist kein Eingabeschema definiert.',
+    'messages.workflowInstanceNoInputs':
+      'Die Workflow-Instanz hat keine Eingaben.',
+    'messages.missingJsonSchema.title':
+      'Fehlendes JSON-Schema für das Eingabeformular',
+    'messages.missingJsonSchema.message':
+      'Für diesen Workflow ist kein JSON-Schema zur Eingabevalidierung definiert. Der Workflow kann weiterhin ausgeführt werden, die Eingabevalidierung ist jedoch eingeschränkt.',
+    'reviewStep.hiddenFieldsNote':
+      'Einige Parameter sind auf dieser Seite ausgeblendet.',
     'reviewStep.showHiddenParameters': 'Versteckte Parameter anzeigen',
     'common.close': 'Schließen',
     'common.cancel': 'Abbrechen',
@@ -112,11 +128,15 @@ const orchestratorTranslationDe = createTranslationMessages({
     'common.unavailable': '---',
     'common.goBack': 'Zurück',
     'permissions.accessDenied': 'Zugriff verweigert',
-    'permissions.accessDeniedDescription': 'Sie haben keine Berechtigung, diesen Workflow-Lauf anzuzeigen.',
+    'permissions.accessDeniedDescription':
+      'Sie haben keine Berechtigung, diesen Workflow-Lauf anzuzeigen.',
     'permissions.requiredPermission': 'Erforderliche Genehmigung',
-    'permissions.contactAdmin': 'Bitte wenden Sie sich an Ihren Administrator, um die erforderlichen Berechtigungen anzufordern.',
-    'permissions.missingOwnership': 'Bei diesem Workflow-Lauf wurden keine Eigentümerinformationen protokolliert.',
-    'permissions.notYourRun': 'Dieser Workflow-Lauf wurde von einem anderen Benutzer initiiert.',
+    'permissions.contactAdmin':
+      'Bitte wenden Sie sich an Ihren Administrator, um die erforderlichen Berechtigungen anzufordern.',
+    'permissions.missingOwnership':
+      'Bei diesem Workflow-Lauf wurden keine Eigentümerinformationen protokolliert.',
+    'permissions.notYourRun':
+      'Dieser Workflow-Lauf wurde von einem anderen Benutzer initiiert.',
     'duration.aFewSeconds': 'ein paar Sekunden',
     'duration.aSecond': 'eine Sekunde',
     'duration.seconds': '{{count}} Sekunden',
@@ -130,10 +150,13 @@ const orchestratorTranslationDe = createTranslationMessages({
     'duration.months': '{{count}} Monate',
     'duration.aYear': 'pro Jahr',
     'duration.years': '{{count}} Jahre',
-    'alerts.duplicateWorkflowIds.message': 'Es wurden mehrere Workflows mit derselben ID erkannt. Bitte stellen Sie sicher, dass in allen Versionen eindeutige IDs verwendet werden.',
+    'alerts.duplicateWorkflowIds.message':
+      'Es wurden mehrere Workflows mit derselben ID erkannt. Bitte stellen Sie sicher, dass in allen Versionen eindeutige IDs verwendet werden.',
     'alerts.duplicateWorkflowIds.learnMore': 'Weitere Informationen',
-    'stepperObjectField.error': 'Das Stepper-Objektfeld wird für Schemata, die keine Eigenschaften enthalten, nicht unterstützt.',
-    'formDecorator.error': 'Der Formulardekorator muss Kontextdaten bereitstellen.',
+    'stepperObjectField.error':
+      'Das Stepper-Objektfeld wird für Schemata, die keine Eigenschaften enthalten, nicht unterstützt.',
+    'formDecorator.error':
+      'Der Formulardekorator muss Kontextdaten bereitstellen.',
     'aria.close': 'Schließen',
   },
 });

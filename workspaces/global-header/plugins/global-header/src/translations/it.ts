@@ -26,7 +26,8 @@ const globalHeaderTranslationIt = createTranslationMessages({
   messages: {
     'help.tooltip': 'Assistenza',
     'help.noSupportLinks': 'Nessun link di supporto',
-    'help.noSupportLinksSubtitle': 'Il tuo amministratore deve configurare i link di supporto.',
+    'help.noSupportLinksSubtitle':
+      'Il tuo amministratore deve configurare i link di supporto.',
     'help.quickStart': 'Avvio rapido',
     'help.supportTitle': 'Supporto',
     'profile.picture': 'Immagine del profilo',
@@ -35,12 +36,14 @@ const globalHeaderTranslationIt = createTranslationMessages({
     'profile.signOut': 'Disconnessione',
     'search.placeholder': 'Ricerca...',
     'search.noResults': 'Nessun risultato trovato',
-    'search.errorFetching': 'Errore durante l\'estrazione dei risultati',
+    'search.errorFetching': "Errore durante l'estrazione dei risultati",
     'search.allResults': 'Tutti i risultati',
     'search.clear': 'Cancella',
     'applicationLauncher.tooltip': 'Avvio applicazioni',
-    'applicationLauncher.noLinksTitle': 'Nessun link dell\'applicazione configurato',
-    'applicationLauncher.noLinksSubtitle': 'Configura i link dell\'applicazione nella configurazione dinamica del plugin per un accesso rapido da qui.',
+    'applicationLauncher.noLinksTitle':
+      "Nessun link dell'applicazione configurato",
+    'applicationLauncher.noLinksSubtitle':
+      "Configura i link dell'applicazione nella configurazione dinamica del plugin per un accesso rapido da qui.",
     'applicationLauncher.developerHub': 'Developer Hub',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
     'applicationLauncher.sections.documentation': 'Documentazione',
@@ -48,9 +51,11 @@ const globalHeaderTranslationIt = createTranslationMessages({
     'starred.title': 'I tuoi elementi preferiti',
     'starred.removeTooltip': 'Rimuovi dalla lista',
     'starred.noItemsTitle': 'Ancora nessun elemento preferito',
-    'starred.noItemsSubtitle': 'Fai clic sull\'icona a forma di stella accanto al nome di un\'entità per salvarla qui e accedervi rapidamente.',
+    'starred.noItemsSubtitle':
+      "Fai clic sull'icona a forma di stella accanto al nome di un'entità per salvarla qui e accedervi rapidamente.",
     'notifications.title': 'Notifiche',
-    'notifications.unsupportedDismissOption': 'Opzione di chiusura non supportata "{{option}}", attualmente supportate "none", "session" o "localstorage"!',
+    'notifications.unsupportedDismissOption':
+      'Opzione di chiusura non supportata "{{option}}", attualmente supportate "none", "session" o "localstorage"!',
   },
 });
 

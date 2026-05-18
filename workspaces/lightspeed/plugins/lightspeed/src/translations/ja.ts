@@ -168,7 +168,6 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebook.upload.modal.selectedFiles': '{{max}} 件中 {{count}} 件のファイルを選択',
     'notebook.upload.modal.separator': 'または',
     'notebook.upload.modal.title': 'ノートブックにドキュメントを追加',
-    'notebook.upload.success': '{{fileName}} のアップロードに成功しました。',
     'notebook.view.close': 'ノートブックを閉じる',
     'notebook.view.documents.add': '追加',
     'notebook.view.documents.count': '{{count}} 件のドキュメント',

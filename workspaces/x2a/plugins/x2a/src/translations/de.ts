@@ -26,10 +26,12 @@ const x2aPluginTranslationDe = createTranslationMessages({
   messages: {
     'sidebar.x2a.title': 'Konvertierungszentrum',
     'page.title': 'Konvertierungszentrum',
-    'page.subtitle': 'Initiieren und verfolgen Sie die asynchrone Umwandlung bestehender Automatisierungen in produktionsreife Ansible Playbooks.',
+    'page.subtitle':
+      'Initiieren und verfolgen Sie die asynchrone Umwandlung bestehender Automatisierungen in produktionsreife Ansible Playbooks.',
     'projectPage.title': 'Projekt',
     'projectPage.deleteProject': 'Löschen',
-    'projectPage.actionsTooltip': 'Klicken Sie hier, um das Menü für Projektaktionen zu öffnen.',
+    'projectPage.actionsTooltip':
+      'Klicken Sie hier, um das Menü für Projektaktionen zu öffnen.',
     'projectPage.deleteError': 'Projekt konnte nicht gelöscht werden',
     'projectPage.deleteConfirm.title': 'Projekt "{{name}}" löschen?',
     'projectModulesCard.title': 'Module ({{count}})',
@@ -41,7 +43,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.artifacts.module_migration_plan': 'Modulplan nach Analyse',
     'modulePage.artifacts.migrated_sources': 'Migrierte Quellen',
     'modulePage.artifacts.ansible_project': 'AAP-Projekt',
-    'modulePage.artifacts.description': 'Diese Artefakte entstehen im Rahmen des Konvertierungsprozesses und stehen zur Überprüfung bereit.',
+    'modulePage.artifacts.description':
+      'Diese Artefakte entstehen im Rahmen des Konvertierungsprozesses und stehen zur Überprüfung bereit.',
     'modulePage.phases.title': 'Migrationsphasen',
     'modulePage.phases.id': 'ID',
     'modulePage.phases.duration': 'Dauer',
@@ -55,25 +58,37 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.statuses.success': 'Erfolg',
     'modulePage.phases.statuses.error': 'Fehler',
     'modulePage.phases.statuses.cancelled': 'Storniert',
-    'modulePage.phases.resyncMigrationPlanInstructions': 'Die Modulliste muss nun mit dem Migrationsplan übereinstimmen.',
-    'modulePage.phases.reanalyzeInstructions': 'Der Modulmigrationsplan ist bereits vorhanden. Falls der Gesamtplan für die Projektmigration aktualisiert wurde, sollte die Analyse erneut ausgelöst werden, um die Änderungen widerzuspiegeln.',
-    'modulePage.phases.analyzeInstructions': 'Bevor Sie die Analyse durchführen, überprüfen Sie zunächst den gesamten Projektmigrationsplan. Der Inhalt dieses Moduls bildet die Grundlage für dessen Analyse.',
-    'modulePage.phases.migrateInstructions': 'Vor der Durchführung der Migration sollte der Modulmigrationsplan überprüft werden. Der Migrationsprozess wird den Quellcode gemäß dem Plan in Ansible konvertieren.',
-    'modulePage.phases.remigrateInstructions': 'Die migrierten Quellen sind bereits vorhanden. Starten Sie die Migration erneut, um den konvertierten Ansible-Code neu zu erstellen.',
+    'modulePage.phases.resyncMigrationPlanInstructions':
+      'Die Modulliste muss nun mit dem Migrationsplan übereinstimmen.',
+    'modulePage.phases.reanalyzeInstructions':
+      'Der Modulmigrationsplan ist bereits vorhanden. Falls der Gesamtplan für die Projektmigration aktualisiert wurde, sollte die Analyse erneut ausgelöst werden, um die Änderungen widerzuspiegeln.',
+    'modulePage.phases.analyzeInstructions':
+      'Bevor Sie die Analyse durchführen, überprüfen Sie zunächst den gesamten Projektmigrationsplan. Der Inhalt dieses Moduls bildet die Grundlage für dessen Analyse.',
+    'modulePage.phases.migrateInstructions':
+      'Vor der Durchführung der Migration sollte der Modulmigrationsplan überprüft werden. Der Migrationsprozess wird den Quellcode gemäß dem Plan in Ansible konvertieren.',
+    'modulePage.phases.remigrateInstructions':
+      'Die migrierten Quellen sind bereits vorhanden. Starten Sie die Migration erneut, um den konvertierten Ansible-Code neu zu erstellen.',
     'modulePage.phases.rerunMigrate': 'Migrierte Quellen neu erstellen',
-    'modulePage.phases.publishInstructions': 'Vor der Veröffentlichung sollten die migrierten Quellen überprüft werden. Der Veröffentlichungsprozess überträgt den konvertierten Code in das Ziel-Repository.',
-    'modulePage.phases.republishInstructions': 'Das Modul wurde bereits veröffentlicht. Um das Ziel-Repository zu aktualisieren, muss der Veröffentlichungsvorgang erneut ausgelöst werden.',
-    'modulePage.phases.rerunPublish': 'Im Ziel-Repository erneut veröffentlichen',
+    'modulePage.phases.publishInstructions':
+      'Vor der Veröffentlichung sollten die migrierten Quellen überprüft werden. Der Veröffentlichungsprozess überträgt den konvertierten Code in das Ziel-Repository.',
+    'modulePage.phases.republishInstructions':
+      'Das Modul wurde bereits veröffentlicht. Um das Ziel-Repository zu aktualisieren, muss der Veröffentlichungsvorgang erneut ausgelöst werden.',
+    'modulePage.phases.rerunPublish':
+      'Im Ziel-Repository erneut veröffentlichen',
     'modulePage.phases.cancel': 'Abbrechen',
-    'modulePage.phases.runError': 'Phase für Modul konnte nicht ausgeführt werden',
-    'modulePage.phases.cancelError': 'Phase für Modul konnte nicht abgebrochen werden',
+    'modulePage.phases.runError':
+      'Phase für Modul konnte nicht ausgeführt werden',
+    'modulePage.phases.cancelError':
+      'Phase für Modul konnte nicht abgebrochen werden',
     'modulePage.phases.commitId': 'Letzte Commit-ID',
     'modulePage.phases.viewLog': 'Protokoll anzeigen',
     'modulePage.phases.hideLog': 'Protokoll ausblenden',
     'modulePage.phases.noLogsAvailable': 'Noch keine Protokolle verfügbar...',
-    'modulePage.phases.logWaitingForStream': 'Warte auf die Protokollausgabe des Clusters...',
+    'modulePage.phases.logWaitingForStream':
+      'Warte auf die Protokollausgabe des Clusters...',
     'modulePage.phases.telemetry.title': 'Telemetrie',
-    'modulePage.phases.telemetry.noTelemetryAvailable': 'Keine Telemetriedaten verfügbar',
+    'modulePage.phases.telemetry.noTelemetryAvailable':
+      'Keine Telemetriedaten verfügbar',
     'modulePage.phases.telemetry.agentName': 'Name des Agenten',
     'modulePage.phases.telemetry.duration': 'Dauer',
     'modulePage.phases.telemetry.inputTokens': 'Eingabe-Tokens',
@@ -81,28 +96,35 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.telemetry.toolCalls': 'Anzahl der Werkzeugaufrufe',
     'table.columns.name': 'Name',
     'table.columns.status': 'Status',
-    'table.columns.statusSortDisabledTooltip': 'Die Sortierung nach Status ist nicht verfügbar, wenn die Anzahl der Projekte {{threshold}} überschreitet.',
+    'table.columns.statusSortDisabledTooltip':
+      'Die Sortierung nach Status ist nicht verfügbar, wenn die Anzahl der Projekte {{threshold}} überschreitet.',
     'table.columns.targetRepo': 'Ziel-Repository',
     'table.columns.createdAt': 'Erstellt am',
     'table.actions.deleteProject': 'Projekt löschen',
-    'table.actions.retriggerInit': 'Projektinitialisierungsphase erneut auslösen',
+    'table.actions.retriggerInit':
+      'Projektinitialisierungsphase erneut auslösen',
     'table.actions.expandAll': 'Alle Zeilen erweitern',
     'table.actions.collapseAll': 'Alle Zeilen ausblenden',
     'table.actions.expandRow': 'Zeile erweitern',
     'table.actions.collapseRow': 'Zeile ausblenden',
     'table.projectsCount': 'Projekte ({{count}})',
     'common.newProject': 'Neues Projekt',
-    'emptyPage.noConversionInitiatedYet': 'Es wurde noch keine Konvertierung eingeleitet.',
-    'emptyPage.noConversionInitiatedYetDescription': 'Initiieren und verfolgen Sie die Umwandlung bestehender Automatisierungen in produktionsreife Ansible-Lösungen.',
+    'emptyPage.noConversionInitiatedYet':
+      'Es wurde noch keine Konvertierung eingeleitet.',
+    'emptyPage.noConversionInitiatedYetDescription':
+      'Initiieren und verfolgen Sie die Umwandlung bestehender Automatisierungen in produktionsreife Ansible-Lösungen.',
     'emptyPage.startFirstConversion': 'Starten Sie die erste Konvertierung.',
     'emptyPage.notAllowedTitle': 'Zugriff verweigert',
-    'emptyPage.notAllowedDescription': 'Sie haben keinen Zugriff auf Konvertierungsprojekte.',
+    'emptyPage.notAllowedDescription':
+      'Sie haben keinen Zugriff auf Konvertierungsprojekte.',
     'bulkRun.projectAction': 'Alle Module ausführen',
     'bulkRun.globalAction': 'Alle ausführen',
     'bulkRun.projectPageAction': 'Alle ausführen',
-    'bulkRun.projectConfirm.title': 'Alle Module im Projekt "{{name}}" ausführen?',
+    'bulkRun.projectConfirm.title':
+      'Alle Module im Projekt "{{name}}" ausführen?',
     'bulkRun.cancel': 'Abbrechen',
-    'bulkRun.errorProject': 'Die Module im Projekt "{{name}}" konnten nicht ausgeführt werden.',
+    'bulkRun.errorProject':
+      'Die Module im Projekt "{{name}}" konnten nicht ausgeführt werden.',
     'artifact.types.migration_plan': 'Projektmigrationsplan',
     'artifact.types.module_migration_plan': 'Modulmigrationsplan',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
@@ -122,7 +144,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'time.ago.lessThanMinute': 'vor weniger als einer Minute',
     'time.jobTiming.noStartTime': '-',
     'time.jobTiming.running': 'Laufzeit für {{duration}}',
-    'empty': '-',
+    empty: '-',
   },
 });
 

@@ -25,17 +25,21 @@ const augmentTranslationJa = createTranslationMessages({
   ref: augmentTranslationRef,
   messages: {
     'securityGate.configurationRequired': 'セットアップが必要です',
-    'securityGate.configurationErrors': '{{appName}} が正しく設定されていません。次の問題を修正してください:',
+    'securityGate.configurationErrors':
+      '{{appName}} が正しく設定されていません。次の問題を修正してください:',
     'securityGate.configurationErrorLabel': 'セットアップの問題',
-    'securityGate.configurationHint': '設定を更新したら、バックエンドサーバーを再起動してください。',
-    'securityGate.accessDeniedMessage': '{{appName}} へのアクセス権限がありません。管理者に連絡してアクセス権限を要求してください。',
+    'securityGate.configurationHint':
+      '設定を更新したら、バックエンドサーバーを再起動してください。',
+    'securityGate.accessDeniedMessage':
+      '{{appName}} へのアクセス権限がありません。管理者に連絡してアクセス権限を要求してください。',
     'commandCenter.title': 'コマンドセンター',
     'commandCenter.backToChat': 'チャットに戻る',
     'commandCenter.platform': 'モデルとツール',
     'commandCenter.agents': 'エージェント',
     'commandCenter.branding': 'ブランディング',
     'providerOffline.title': 'アシスタント利用不可',
-    'providerOffline.backendUnreachable': '{{appName}} は一時的に利用できません。引き続き接続を試みます。',
+    'providerOffline.backendUnreachable':
+      '{{appName}} は一時的に利用できません。引き続き接続を試みます。',
     'chatInput.newConversation': '新しい会話',
     'chatInput.newConversationShortcut': '新しい会話 (⌘⇧O)',
     'chatInput.startNewConversation': '新しい会話の開始',
@@ -46,12 +50,14 @@ const augmentTranslationJa = createTranslationMessages({
     'chatInput.sendMessage': 'メッセージの送信',
     'welcomeScreen.logoAlt': 'アプリケーションロゴ',
     'welcomeScreen.emptyPromptHint': 'まず以下に質問を入力してください',
-    'welcomeScreen.logoError': 'ロゴの読み込みに失敗しました。ブランディング設定で URL を確認してください',
+    'welcomeScreen.logoError':
+      'ロゴの読み込みに失敗しました。ブランディング設定で URL を確認してください',
     'conversationHistory.title': '{{count}} 件の会話{{suffix}} • {{appName}}',
     'conversationHistory.refreshAriaLabel': '会話履歴の更新',
     'conversationHistory.noConversationsYet': 'ここに会話が表示されます',
     'conversationHistory.startChatting': 'まずは会話を始めてみましょう',
-    'conversationHistory.noMatchingConversations': '"{{query}}" に一致する会話はありません',
+    'conversationHistory.noMatchingConversations':
+      '"{{query}}" に一致する会話はありません',
     'toolApproval.destructiveOperation': '破壊的操作',
     'toolApproval.requiresApproval': '承認が必要',
     'toolApproval.toolExecution': 'ツール実行',
@@ -98,7 +104,8 @@ const augmentTranslationJa = createTranslationMessages({
     'agentsPanel.saveSuccess': '設定が保存されました。',
     'agentsPanel.reset': 'リセット',
     'agentsPanel.noAgentsTitle': 'エージェントが設定されていません',
-    'agentsPanel.noAgentsSubtitle': 'マルチエージェントオーケストレーションを始めるには、最初のエージェントを作成してください。',
+    'agentsPanel.noAgentsSubtitle':
+      'マルチエージェントオーケストレーションを始めるには、最初のエージェントを作成してください。',
     'agentsPanel.createFirstAgent': '最初のエージェントの作成',
     'agentsPanel.selectAgent': 'リストからエージェントを選択',
     'agentsPanel.topology': 'トポロジー',
@@ -112,7 +119,8 @@ const augmentTranslationJa = createTranslationMessages({
     'agentsPanel.applyTemplate': 'テンプレートを適用:',
     'agentsPanel.capabilities': '機能',
     'agentsPanel.modelOverride': 'モデルのオーバーライド',
-    'agentsPanel.modelOverrideHint': 'グローバルモデルを使用する場合は空欄にしてください',
+    'agentsPanel.modelOverrideHint':
+      'グローバルモデルを使用する場合は空欄にしてください',
     'agentsPanel.mcpServers': 'MCP サーバー',
     'agentsPanel.rag': 'ナレッジベース',
     'agentsPanel.webSearch': 'Web 検索',
@@ -125,12 +133,15 @@ const augmentTranslationJa = createTranslationMessages({
     'agentsPanel.deleteAgent': 'エージェントの削除',
     'agentsPanel.confirmRemoveTitle': '{{name}} を削除しますか?',
     'agentsPanel.confirmResetTitle': 'デフォルト設定に戻しますか?',
-    'agentsPanel.confirmResetMessage': 'これにより、管理者によるすべてのカスタマイズが破棄され、デフォルト設定に戻ります。これは元に戻せません。',
+    'agentsPanel.confirmResetMessage':
+      'これにより、管理者によるすべてのカスタマイズが破棄され、デフォルト設定に戻ります。これは元に戻せません。',
     'agentsPanel.confirmResetButton': 'リセット',
     'agentsPanel.createModal.title': '新しいエージェントの作成',
-    'agentsPanel.createModal.subtitle': 'エージェントに名前を付け、設定を事前入力するためのテンプレートを必要に応じて選択してください。',
+    'agentsPanel.createModal.subtitle':
+      'エージェントに名前を付け、設定を事前入力するためのテンプレートを必要に応じて選択してください。',
     'agentsPanel.createModal.displayName': '表示名',
-    'agentsPanel.createModal.displayNamePlaceholder': '例: サポートエージェント',
+    'agentsPanel.createModal.displayNamePlaceholder':
+      '例: サポートエージェント',
     'agentsPanel.createModal.agentId': 'エージェント ID',
     'agentsPanel.createModal.agentIdHint': '名前から自動生成されました。',
     'agentsPanel.createModal.agentIdExists': 'この ID はすでに存在します。',

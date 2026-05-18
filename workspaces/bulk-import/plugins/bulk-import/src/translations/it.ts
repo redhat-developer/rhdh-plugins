@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { bulkImportTranslationRef } from './ref';
 
 /**
@@ -28,23 +29,28 @@ const bulkImportTranslationIt = createTranslationMessages({
     'page.subtitle': 'Importa entità in Red Hat Developer Hub',
     'page.addRepositoriesTitle': 'Aggiungi repository',
     'page.importEntitiesTitle': 'Importa entità',
-    'page.addRepositoriesSubtitle': 'Aggiungi repository in Red Hat Developer Hub in 4 step',
+    'page.addRepositoriesSubtitle':
+      'Aggiungi repository in Red Hat Developer Hub in 4 step',
     'page.importEntitiesSubtitle': 'Importa in Red Hat Developer Hub',
     'page.typeLink': 'Importazione in blocco',
     'sidebar.bulkImport': 'Importazione in blocco',
     'permissions.title': 'Autorizzazione obbligatoria',
-    'permissions.addRepositoriesMessage': 'Per aggiungere repository, contatta il tuo amministratore per ottenere l\'autorizzazione `bulk.import`.',
+    'permissions.addRepositoriesMessage':
+      "Per aggiungere repository, contatta il tuo amministratore per ottenere l'autorizzazione `bulk.import`.",
     'status.alreadyImported': 'Già importata',
     'status.added': 'Aggiunta',
     'status.waitingForApproval': 'In attesa di approvazione',
     'status.imported': 'Importata',
-    'status.readyToImport': 'Pronta per l\'importazione',
-    'status.waitingForPullRequestToStart': 'In attesa che la richiesta pull inizi',
+    'status.readyToImport': "Pronta per l'importazione",
+    'status.waitingForPullRequestToStart':
+      'In attesa che la richiesta pull inizi',
     'status.missingConfigurations': 'Configurazioni mancanti',
     'status.failedCreatingPR': 'Impossibile creare la RP',
     'status.pullRequestRejected': 'richiesta pull rifiutata',
-    'errors.prErrorPermissions': 'Impossibile creare una nuova RP a causa di autorizzazioni insufficienti. Contatta il tuo amministratore.',
-    'errors.catalogInfoExists': 'Poiché catalog-info.yaml esiste già nel repository, non verrà creata una nuova RP. Tuttavia, l\'entità sarà comunque registrata nella pagina del catalogo.',
+    'errors.prErrorPermissions':
+      'Impossibile creare una nuova RP a causa di autorizzazioni insufficienti. Contatta il tuo amministratore.',
+    'errors.catalogInfoExists':
+      "Poiché catalog-info.yaml esiste già nel repository, non verrà creata una nuova RP. Tuttavia, l'entità sarà comunque registrata nella pagina del catalogo.",
     'table.headers.name': 'Nome',
     'table.headers.url': 'URL',
     'table.headers.repoUrl': 'URL repository',
@@ -52,7 +58,7 @@ const bulkImportTranslationIt = createTranslationMessages({
     'table.headers.organizationGroup': 'Organizzazione/gruppo',
     'table.headers.group': 'Gruppo',
     'table.headers.status': 'Stato',
-    'table.headers.taskStatus': 'Stato dell\'attività',
+    'table.headers.taskStatus': "Stato dell'attività",
     'table.headers.lastUpdated': 'Ultimo aggiornamento',
     'table.headers.actions': 'Azioni',
     'table.headers.catalogInfoYaml': 'catalog-info.yaml',
@@ -61,16 +67,22 @@ const bulkImportTranslationIt = createTranslationMessages({
     'table.pagination.rows20': '20 righe',
     'table.pagination.rows50': '50 righe',
     'table.pagination.rows100': '100 righe',
-    'steps.chooseApprovalTool': 'Scegli uno strumento di controllo della sorgente per la creazione delle richiesta pull',
+    'steps.chooseApprovalTool':
+      'Scegli uno strumento di controllo della sorgente per la creazione delle richiesta pull',
     'steps.chooseRepositories': 'Scegli gli elementi che desideri importare',
     'steps.chooseItems': 'Scegli gli elementi che desideri importare',
-    'steps.generateCatalogInfo': 'Genera un file catalog-info.yaml per ogni elemento selezionato',
-    'steps.generateCatalogInfoItems': 'Genera un file catalog-info.yaml per ogni elemento selezionato',
+    'steps.generateCatalogInfo':
+      'Genera un file catalog-info.yaml per ogni elemento selezionato',
+    'steps.generateCatalogInfoItems':
+      'Genera un file catalog-info.yaml per ogni elemento selezionato',
     'steps.editPullRequest': 'Visualizza i dettagli della pull/merge request',
     'steps.trackStatus': 'Monitora lo stato di approvazione',
-    'addRepositories.approvalTool.title': 'Strumento di controllo della sorgente',
-    'addRepositories.approvalTool.description': 'Scegli lo strumento di controllo della sorgente per la creazione della pull request',
-    'addRepositories.approvalTool.tooltip': 'L\'importazione richiede un\'autorizzazione. Una volta approvata la richiesta pull, i repository verranno importati nella pagina del Catalogo.',
+    'addRepositories.approvalTool.title':
+      'Strumento di controllo della sorgente',
+    'addRepositories.approvalTool.description':
+      'Scegli lo strumento di controllo della sorgente per la creazione della pull request',
+    'addRepositories.approvalTool.tooltip':
+      "L'importazione richiede un'autorizzazione. Una volta approvata la richiesta pull, i repository verranno importati nella pagina del Catalogo.",
     'addRepositories.approvalTool.gitlab': 'GitLab',
     'addRepositories.repositoryType.title': 'Tipo di repository',
     'addRepositories.repositoryType.repository': 'Repository',
@@ -80,7 +92,8 @@ const bulkImportTranslationIt = createTranslationMessages({
     'addRepositories.searchPlaceholder': 'Ricerca',
     'addRepositories.clearSearch': 'cancella ricerca',
     'addRepositories.noRepositoriesFound': 'Nessun repository trovato',
-    'addRepositories.allRepositoriesAdded': 'Tutti i repository sono stati aggiunti',
+    'addRepositories.allRepositoriesAdded':
+      'Tutti i repository sono stati aggiunti',
     'addRepositories.noSelection': 'Nessuno',
     'addRepositories.selectRepositories': 'Seleziona repository',
     'addRepositories.selectedRepositories': 'repository',
@@ -112,43 +125,56 @@ const bulkImportTranslationIt = createTranslationMessages({
     'previewFile.previewFile': 'Anteprima file',
     'previewFile.previewFiles': 'Anteprima file',
     'previewFile.failedToCreatePR': 'Impossibile creare la RP',
-    'previewFile.prCreationUnsuccessful': 'La creazione della pull request non è andata a buon fine per alcuni repository. Fai clic su "Modifica" per visualizzare il motivo.',
-    'previewFile.failedToFetchPR': 'Impossibile estrarre la richiesta pull. Un nuovo YAML è stato generato di seguito.',
-    'previewFile.invalidEntityYaml': 'L\'entità YAML nella tua richiesta pull non è valida (file vuoto oppure mancano apiVersion, kind o metadata.name). Un nuovo YAML è stato generato di seguito.',
+    'previewFile.prCreationUnsuccessful':
+      'La creazione della pull request non è andata a buon fine per alcuni repository. Fai clic su "Modifica" per visualizzare il motivo.',
+    'previewFile.failedToFetchPR':
+      'Impossibile estrarre la richiesta pull. Un nuovo YAML è stato generato di seguito.',
+    'previewFile.invalidEntityYaml':
+      "L'entità YAML nella tua richiesta pull non è valida (file vuoto oppure mancano apiVersion, kind o metadata.name). Un nuovo YAML è stato generato di seguito.",
     'previewFile.pullRequestText': 'richiesta pull',
     'previewFile.viewRepository': 'Visualizza repository',
     'previewFile.closeDrawer': 'Chiudi il cassetto',
     'previewFile.keyValuePlaceholder': 'key1: value2; key2: value2',
-    'previewFile.useSemicolonSeparator': 'Utilizzare il punto e virgola per separare {{label}}',
+    'previewFile.useSemicolonSeparator':
+      'Utilizzare il punto e virgola per separare {{label}}',
     'previewFile.pullRequest.title': 'richiesta pull',
     'previewFile.pullRequest.mergeRequest': 'Merge request',
     'previewFile.pullRequest.serviceNowTicket': 'Ticket ServiceNow',
     'previewFile.pullRequest.details': 'Dettagli {{tool}}',
     'previewFile.pullRequest.titleLabel': 'Titolo {{tool}}',
     'previewFile.pullRequest.bodyLabel': 'Corpo {{tool}}',
-    'previewFile.pullRequest.titlePlaceholder': 'Aggiungi i file descrittori delle entità del catalogo Backstage',
-    'previewFile.pullRequest.bodyPlaceholder': 'Un testo descrittivo con supporto Markdown',
+    'previewFile.pullRequest.titlePlaceholder':
+      'Aggiungi i file descrittori delle entità del catalogo Backstage',
+    'previewFile.pullRequest.bodyPlaceholder':
+      'Un testo descrittivo con supporto Markdown',
     'previewFile.pullRequest.entityConfiguration': 'Configurazione entità',
     'previewFile.pullRequest.componentNameLabel': 'Nome del componente creato',
     'previewFile.pullRequest.componentNamePlaceholder': 'Nome componente',
     'previewFile.pullRequest.entityOwnerLabel': 'Proprietario entità',
     'previewFile.pullRequest.entityOwnerPlaceholder': 'gruppi e utenti',
-    'previewFile.pullRequest.entityOwnerHelper': 'Seleziona un proprietario dall\'elenco oppure inserisci un riferimento a un Gruppo o a un Utente',
+    'previewFile.pullRequest.entityOwnerHelper':
+      "Seleziona un proprietario dall'elenco oppure inserisci un riferimento a un Gruppo o a un Utente",
     'previewFile.pullRequest.loadingText': 'Caricamento gruppi e utenti',
     'previewFile.pullRequest.previewEntities': 'Anteprima entità',
     'previewFile.pullRequest.annotations': 'Annotazioni',
     'previewFile.pullRequest.labels': 'Etichette',
     'previewFile.pullRequest.spec': 'Specifiche',
-    'previewFile.pullRequest.useCodeOwnersFile': 'Utilizzare il file *CODEOWNERS* come Proprietario entità',
-    'previewFile.pullRequest.codeOwnersWarning': 'AVVISO: l\'operazione potrebbe non riuscire se non viene trovato alcun file CODEOWNERS nella posizione di destinazione.',
+    'previewFile.pullRequest.useCodeOwnersFile':
+      'Utilizzare il file *CODEOWNERS* come Proprietario entità',
+    'previewFile.pullRequest.codeOwnersWarning':
+      "AVVISO: l'operazione potrebbe non riuscire se non viene trovato alcun file CODEOWNERS nella posizione di destinazione.",
     'forms.footer.createServiceNowTicket': 'Crea ticket ServiceNow',
     'forms.footer.createServiceNowTickets': 'Crea ticket ServiceNow',
     'forms.footer.createPullRequest': 'Crea richiesta pull',
     'forms.footer.createPullRequests': 'Crea richiesta pull',
-    'forms.footer.selectRepositoryTooltip': 'Seleziona un repository da importare.',
-    'forms.footer.serviceNowTooltip': 'I file Catalog-info.yaml devono essere generati prima di creare un ticket ServiceNow',
-    'forms.footer.importTooltip': 'È necessario generare i file Catalog-info.yaml per poterli importare.',
-    'forms.footer.pullRequestTooltip': 'I file Catalog-info.yaml devono essere generati prima di creare una richiesta pull',
+    'forms.footer.selectRepositoryTooltip':
+      'Seleziona un repository da importare.',
+    'forms.footer.serviceNowTooltip':
+      'I file Catalog-info.yaml devono essere generati prima di creare un ticket ServiceNow',
+    'forms.footer.importTooltip':
+      'È necessario generare i file Catalog-info.yaml per poterli importare.',
+    'forms.footer.pullRequestTooltip':
+      'I file Catalog-info.yaml devono essere generati prima di creare una richiesta pull',
     'tasks.tasksFor': 'Attività per {{importJobStatusId}}',
     'tasks.taskLink': 'Link attività',
     'tasks.viewTask': 'Visualizza attività',
@@ -169,8 +195,9 @@ const bulkImportTranslationIt = createTranslationMessages({
     'workflows.workflowFetchError': 'Errore estrazione flusso di lavoro',
     'workflows.workflowSuspended': 'Sospeso',
     'importActions.loading': 'Caricamento...',
-    'importActions.errorFetchingData': 'Errore nell\'estrazione dei dati',
-    'importActions.noActions': 'Nessuna azione di importazione trovata per questo repository.',
+    'importActions.errorFetchingData': "Errore nell'estrazione dei dati",
+    'importActions.noActions':
+      'Nessuna azione di importazione trovata per questo repository.',
   },
 });
 

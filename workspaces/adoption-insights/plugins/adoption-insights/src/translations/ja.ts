@@ -90,7 +90,8 @@ const adoptionInsightsTranslationJa = createTranslationMessages({
     'common.invalidDateFormat': '無効な日付形式',
     'common.csvFilename': 'active_users',
     'permission.title': '権限の不足',
-    'permission.description': '"Adoption Insights" プラグインを表示するには、管理者に連絡して adoption-insights.events.read 権限を付与してもらうよう依頼してください。',
+    'permission.description':
+      '"Adoption Insights" プラグインを表示するには、管理者に連絡して adoption-insights.events.read 権限を付与してもらうよう依頼してください。',
   },
 });
 

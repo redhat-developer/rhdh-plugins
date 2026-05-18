@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { orchestratorTranslationRef } from './ref';
 
 /**
@@ -59,7 +60,8 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.fields.description': '説明',
     'workflow.fields.started': '開始済み',
     'workflow.fields.workflowId': '実行 ID',
-    'workflow.fields.workflowIdCopied': '実行 ID がクリップボードにコピーされました',
+    'workflow.fields.workflowIdCopied':
+      '実行 ID がクリップボードにコピーされました',
     'workflow.fields.version': 'バージョン',
     'workflow.errors.retriggerFailed': '再トリガーに失敗しました: {{reason}}',
     'workflow.errors.abortFailedWithReason': '中止に失敗しました: {{reason}}',
@@ -70,15 +72,19 @@ const orchestratorTranslationJa = createTranslationMessages({
     'run.results': '結果',
     'run.logs.viewLogs': 'ログの表示',
     'run.logs.title': '実行ログ',
-    'run.logs.noLogsAvailable': 'このワークフロー実行に関するログは利用できません。',
+    'run.logs.noLogsAvailable':
+      'このワークフロー実行に関するログは利用できません。',
     'run.abort.title': 'ワークフローの実行を中止しますか?',
     'run.abort.button': '中止',
-    'run.abort.warning': '中止すると、進行中および保留中のすべてのステップが直ちに停止されます。進行中の作業がすべて失われます。',
+    'run.abort.warning':
+      '中止すると、進行中および保留中のすべてのステップが直ちに停止されます。進行中の作業がすべて失われます。',
     'run.abort.completed.title': '実行完了',
-    'run.abort.completed.message': '実行はすでに完了しているため、中止することはできません。',
+    'run.abort.completed.message':
+      '実行はすでに完了しているため、中止することはできません。',
     'run.status.completed': '実行完了',
     'run.status.failed': '実行は {{time}} に失敗しました',
-    'run.status.completedWithMessage': '実行は {{time}} に完了しました。メッセージ:',
+    'run.status.completedWithMessage':
+      '実行は {{time}} に完了しました。メッセージ:',
     'run.status.failedAt': '実行は {{time}} に失敗しました',
     'run.viewVariables': '変数の表示',
     'run.suggestedNextWorkflow': '推奨される次のワークフロー',
@@ -89,15 +95,22 @@ const orchestratorTranslationJa = createTranslationMessages({
     'tooltips.suspended': '一時停止中',
     'tooltips.pending': '保留中',
     'tooltips.workflowDown': 'ワークフローは現在停止しているかエラー状態です',
-    'tooltips.userNotAuthorizedAbort': 'ユーザーにワークフローの中止権限がありません',
-    'tooltips.userNotAuthorizedExecute': 'ユーザーにワークフローの実行権限がありません',
+    'tooltips.userNotAuthorizedAbort':
+      'ユーザーにワークフローの中止権限がありません',
+    'tooltips.userNotAuthorizedExecute':
+      'ユーザーにワークフローの実行権限がありません',
     'messages.noDataAvailable': '利用可能なデータはありません',
     'messages.noVariablesFound': 'この実行の変数が見つかりません。',
-    'messages.noInputSchemaWorkflow': 'このワークフローには入力スキーマが定義されていません。',
-    'messages.workflowInstanceNoInputs': 'このワークフローインスタンスには入力がありません',
-    'messages.missingJsonSchema.title': '入力フォームの JSON スキーマがありません',
-    'messages.missingJsonSchema.message': 'このワークフローには、入力検証用に定義された JSON スキーマがありません。ワークフローの実行は可能ですが、入力の検証は限定的になります。',
-    'reviewStep.hiddenFieldsNote': 'このページでは一部のパラメーターが非表示になっています。',
+    'messages.noInputSchemaWorkflow':
+      'このワークフローには入力スキーマが定義されていません。',
+    'messages.workflowInstanceNoInputs':
+      'このワークフローインスタンスには入力がありません',
+    'messages.missingJsonSchema.title':
+      '入力フォームの JSON スキーマがありません',
+    'messages.missingJsonSchema.message':
+      'このワークフローには、入力検証用に定義された JSON スキーマがありません。ワークフローの実行は可能ですが、入力の検証は限定的になります。',
+    'reviewStep.hiddenFieldsNote':
+      'このページでは一部のパラメーターが非表示になっています。',
     'reviewStep.showHiddenParameters': '非表示のパラメーターの表示',
     'common.close': '閉じる',
     'common.cancel': 'キャンセル',
@@ -112,11 +125,15 @@ const orchestratorTranslationJa = createTranslationMessages({
     'common.unavailable': '---',
     'common.goBack': '戻る',
     'permissions.accessDenied': 'アクセス拒否',
-    'permissions.accessDeniedDescription': 'このワークフローの実行結果を表示する権限がありません。',
+    'permissions.accessDeniedDescription':
+      'このワークフローの実行結果を表示する権限がありません。',
     'permissions.requiredPermission': '必要な権限',
-    'permissions.contactAdmin': '管理者に連絡して必要な権限を要求してください。',
-    'permissions.missingOwnership': 'このワークフロー実行には、所有者情報が記録されていません。',
-    'permissions.notYourRun': 'このワークフロー実行は、別のユーザーによって開始されました。',
+    'permissions.contactAdmin':
+      '管理者に連絡して必要な権限を要求してください。',
+    'permissions.missingOwnership':
+      'このワークフロー実行には、所有者情報が記録されていません。',
+    'permissions.notYourRun':
+      'このワークフロー実行は、別のユーザーによって開始されました。',
     'duration.aFewSeconds': '数秒',
     'duration.aSecond': '1 秒',
     'duration.seconds': '{{count}} 秒',
@@ -130,10 +147,13 @@ const orchestratorTranslationJa = createTranslationMessages({
     'duration.months': '{{count}} カ月',
     'duration.aYear': '1 年',
     'duration.years': '{{count}} 年',
-    'alerts.duplicateWorkflowIds.message': '同じ ID を持つ複数のワークフローが検出されました。各バージョンに必ず一意の ID を使用してください。',
+    'alerts.duplicateWorkflowIds.message':
+      '同じ ID を持つ複数のワークフローが検出されました。各バージョンに必ず一意の ID を使用してください。',
     'alerts.duplicateWorkflowIds.learnMore': '詳細',
-    'stepperObjectField.error': 'ステッパーオブジェクトフィールドは、プロパティーを含まないスキーマではサポートされていません',
-    'formDecorator.error': 'フォームデコレーターはコンテキストデータを提供する必要があります。',
+    'stepperObjectField.error':
+      'ステッパーオブジェクトフィールドは、プロパティーを含まないスキーマではサポートされていません',
+    'formDecorator.error':
+      'フォームデコレーターはコンテキストデータを提供する必要があります。',
     'aria.close': '閉じる',
   },
 });

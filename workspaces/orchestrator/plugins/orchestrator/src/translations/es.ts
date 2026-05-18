@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { orchestratorTranslationRef } from './ref';
 
 /**
@@ -59,7 +60,8 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.fields.description': 'Descripción',
     'workflow.fields.started': 'Iniciado',
     'workflow.fields.workflowId': 'ID de ejecución',
-    'workflow.fields.workflowIdCopied': 'ID de ejecución copiado en el portapapeles',
+    'workflow.fields.workflowIdCopied':
+      'ID de ejecución copiado en el portapapeles',
     'workflow.fields.version': 'Versión',
     'workflow.errors.retriggerFailed': 'Error al reactivar: {{reason}}',
     'workflow.errors.abortFailedWithReason': 'Error al cancelar: {{reason}}',
@@ -70,15 +72,19 @@ const orchestratorTranslationEs = createTranslationMessages({
     'run.results': 'Resultados',
     'run.logs.viewLogs': 'Ver registros',
     'run.logs.title': 'Registros de ejecución',
-    'run.logs.noLogsAvailable': 'No hay registros disponibles para la ejecución de este flujo de trabajo.',
+    'run.logs.noLogsAvailable':
+      'No hay registros disponibles para la ejecución de este flujo de trabajo.',
     'run.abort.title': '¿Cancelar ejecución de flujo de trabajo?',
     'run.abort.button': 'Cancelar',
-    'run.abort.warning': 'Si cancela la ejecución, detendrá de inmediato todos los pasos en curso y pendientes. Todo trabajo en curso se perderá.',
+    'run.abort.warning':
+      'Si cancela la ejecución, detendrá de inmediato todos los pasos en curso y pendientes. Todo trabajo en curso se perderá.',
     'run.abort.completed.title': 'Ejecución completada',
-    'run.abort.completed.message': 'No es posible cancelar la ejecución porque ya se completó.',
+    'run.abort.completed.message':
+      'No es posible cancelar la ejecución porque ya se completó.',
     'run.status.completed': 'Ejecución completada',
     'run.status.failed': 'La ejecución falló {{time}}',
-    'run.status.completedWithMessage': 'Ejecución completada {{time}} con mensaje',
+    'run.status.completedWithMessage':
+      'Ejecución completada {{time}} con mensaje',
     'run.status.failedAt': 'La ejecución falló {{time}}',
     'run.viewVariables': 'Ver variables',
     'run.suggestedNextWorkflow': 'Próximo flujo de trabajo sugerido',
@@ -88,16 +94,25 @@ const orchestratorTranslationEs = createTranslationMessages({
     'tooltips.aborted': 'Cancelado',
     'tooltips.suspended': 'Suspendido',
     'tooltips.pending': 'Pendiente',
-    'tooltips.workflowDown': 'El flujo de trabajo está actualmente inactivo o en estado de error',
-    'tooltips.userNotAuthorizedAbort': 'Usuario no autorizado para cancelar el flujo de trabajo',
-    'tooltips.userNotAuthorizedExecute': 'Usuario no autorizado para ejecutar el flujo de trabajo',
+    'tooltips.workflowDown':
+      'El flujo de trabajo está actualmente inactivo o en estado de error',
+    'tooltips.userNotAuthorizedAbort':
+      'Usuario no autorizado para cancelar el flujo de trabajo',
+    'tooltips.userNotAuthorizedExecute':
+      'Usuario no autorizado para ejecutar el flujo de trabajo',
     'messages.noDataAvailable': 'No hay datos disponibles',
-    'messages.noVariablesFound': 'No se encontraron variables para esta ejecución.',
-    'messages.noInputSchemaWorkflow': 'No se definió ningún esquema de entrada para este flujo de trabajo.',
-    'messages.workflowInstanceNoInputs': 'La instancia de flujo de trabajo no tiene entradas',
-    'messages.missingJsonSchema.title': 'Falta un esquema JSON en el formulario de entrada',
-    'messages.missingJsonSchema.message': 'Este flujo de trabajo no tiene un esquema JSON definido para la validación de entrada. Puede ejecutar el flujo de trabajo, pero la validación de entrada será limitada.',
-    'reviewStep.hiddenFieldsNote': 'Algunos parámetros están ocultos en esta página.',
+    'messages.noVariablesFound':
+      'No se encontraron variables para esta ejecución.',
+    'messages.noInputSchemaWorkflow':
+      'No se definió ningún esquema de entrada para este flujo de trabajo.',
+    'messages.workflowInstanceNoInputs':
+      'La instancia de flujo de trabajo no tiene entradas',
+    'messages.missingJsonSchema.title':
+      'Falta un esquema JSON en el formulario de entrada',
+    'messages.missingJsonSchema.message':
+      'Este flujo de trabajo no tiene un esquema JSON definido para la validación de entrada. Puede ejecutar el flujo de trabajo, pero la validación de entrada será limitada.',
+    'reviewStep.hiddenFieldsNote':
+      'Algunos parámetros están ocultos en esta página.',
     'reviewStep.showHiddenParameters': 'Mostrar parámetros ocultos',
     'common.close': 'Cerrar',
     'common.cancel': 'Cancelar',
@@ -112,11 +127,15 @@ const orchestratorTranslationEs = createTranslationMessages({
     'common.unavailable': '---',
     'common.goBack': 'Volver',
     'permissions.accessDenied': 'Acceso denegado',
-    'permissions.accessDeniedDescription': 'No tiene permiso para ver la ejecución de este flujo de trabajo.',
+    'permissions.accessDeniedDescription':
+      'No tiene permiso para ver la ejecución de este flujo de trabajo.',
     'permissions.requiredPermission': 'Permiso requerido',
-    'permissions.contactAdmin': 'Comuníquese con su administrador para solicitar los permisos necesarios.',
-    'permissions.missingOwnership': 'La ejecución de este flujo de trabajo no tiene información de propiedad registrada.',
-    'permissions.notYourRun': 'Otro usuario inició la ejecución de este flujo de trabajo.',
+    'permissions.contactAdmin':
+      'Comuníquese con su administrador para solicitar los permisos necesarios.',
+    'permissions.missingOwnership':
+      'La ejecución de este flujo de trabajo no tiene información de propiedad registrada.',
+    'permissions.notYourRun':
+      'Otro usuario inició la ejecución de este flujo de trabajo.',
     'duration.aFewSeconds': 'unos segundos',
     'duration.aSecond': 'un segundo',
     'duration.seconds': '{{count}} segundos',
@@ -130,10 +149,13 @@ const orchestratorTranslationEs = createTranslationMessages({
     'duration.months': '{{count}} meses',
     'duration.aYear': 'un año',
     'duration.years': '{{count}} años',
-    'alerts.duplicateWorkflowIds.message': 'Se detectaron varios flujos de trabajo con el mismo ID. Asegúrese de utilizar ID únicos en las diferentes versiones.',
+    'alerts.duplicateWorkflowIds.message':
+      'Se detectaron varios flujos de trabajo con el mismo ID. Asegúrese de utilizar ID únicos en las diferentes versiones.',
     'alerts.duplicateWorkflowIds.learnMore': 'Aprenda más',
-    'stepperObjectField.error': 'El campo de objeto paso a paso no es compatible con esquemas que no contienen propiedades',
-    'formDecorator.error': 'El decorador de formulario debe proporcionar datos de contexto.',
+    'stepperObjectField.error':
+      'El campo de objeto paso a paso no es compatible con esquemas que no contienen propiedades',
+    'formDecorator.error':
+      'El decorador de formulario debe proporcionar datos de contexto.',
     'aria.close': 'cerrar',
   },
 });

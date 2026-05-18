@@ -39,7 +39,8 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'header.dateRange.startDate': 'Fecha de inicio',
     'header.dateRange.endDate': 'Fecha de finalización',
     'activeUsers.title': 'Usuarios activos',
-    'activeUsers.averagePrefix': 'El promedio del número máximo de usuarios activos fue de',
+    'activeUsers.averagePrefix':
+      'El promedio del número máximo de usuarios activos fue de',
     'activeUsers.averageText': '{{count}} por {{period}}',
     'activeUsers.day': 'día',
     'activeUsers.week': 'semana',
@@ -90,7 +91,8 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'common.invalidDateFormat': 'Formato de fecha no válido',
     'common.csvFilename': 'active_users',
     'permission.title': 'Permisos faltantes',
-    'permission.description': 'Para ver el complemento "Adoption Insights", comuníquese con su administrador para que le otorgue permisos a adoption-insights.events.read.',
+    'permission.description':
+      'Para ver el complemento "Adoption Insights", comuníquese con su administrador para que le otorgue permisos a adoption-insights.events.read.',
   },
 });
 

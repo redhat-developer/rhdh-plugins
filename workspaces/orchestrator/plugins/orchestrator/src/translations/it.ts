@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { orchestratorTranslationRef } from './ref';
 
 /**
@@ -62,7 +63,8 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.fields.workflowIdCopied': 'ID esecuzione copiato negli appunti',
     'workflow.fields.version': 'Versione',
     'workflow.errors.retriggerFailed': 'Riavvio non riuscito: {{reason}}',
-    'workflow.errors.abortFailedWithReason': 'Interruzione non riuscita: {{reason}}',
+    'workflow.errors.abortFailedWithReason':
+      'Interruzione non riuscita: {{reason}}',
     'run.title': 'Esegui flusso di lavoro',
     'run.pageTitle': 'Esecuzione {{processName}}',
     'run.variables': 'Variabili di esecuzione',
@@ -70,16 +72,20 @@ const orchestratorTranslationIt = createTranslationMessages({
     'run.results': 'Risultati',
     'run.logs.viewLogs': 'Visualizza log',
     'run.logs.title': 'Esegui log',
-    'run.logs.noLogsAvailable': 'Nessun log disponibile per l\'esecuzione di questo flusso di lavoro.',
-    'run.abort.title': 'Interrompere l\'esecuzione del flusso di lavoro?',
+    'run.logs.noLogsAvailable':
+      "Nessun log disponibile per l'esecuzione di questo flusso di lavoro.",
+    'run.abort.title': "Interrompere l'esecuzione del flusso di lavoro?",
     'run.abort.button': 'Interrompi',
-    'run.abort.warning': 'L\'interruzione fermerà immediatamente tutti gli step in corso e in sospeso. Eventuale lavoro in corso andrà perso.',
+    'run.abort.warning':
+      "L'interruzione fermerà immediatamente tutti gli step in corso e in sospeso. Eventuale lavoro in corso andrà perso.",
     'run.abort.completed.title': 'Esecuzione completata',
-    'run.abort.completed.message': 'Non è possibile interrompere l\'esecuzione poiché è già stata completata.',
+    'run.abort.completed.message':
+      "Non è possibile interrompere l'esecuzione poiché è già stata completata.",
     'run.status.completed': 'Esecuzione completata',
-    'run.status.failed': 'L\'esecuzione non è riuscita {{time}}',
-    'run.status.completedWithMessage': 'Esecuzione completata {{time}} con messaggio',
-    'run.status.failedAt': 'L\'esecuzione non è riuscita {{time}}',
+    'run.status.failed': "L'esecuzione non è riuscita {{time}}",
+    'run.status.completedWithMessage':
+      'Esecuzione completata {{time}} con messaggio',
+    'run.status.failedAt': "L'esecuzione non è riuscita {{time}}",
     'run.viewVariables': 'Visualizza variabili',
     'run.suggestedNextWorkflow': 'Flusso di lavoro successivo suggerito',
     'run.suggestedNextWorkflows': 'Flussi di lavoro successivi suggeriti',
@@ -88,16 +94,25 @@ const orchestratorTranslationIt = createTranslationMessages({
     'tooltips.aborted': 'Interrotto',
     'tooltips.suspended': 'Sospeso',
     'tooltips.pending': 'In sospeso',
-    'tooltips.workflowDown': 'Il flusso di lavoro è attualmente inattivo o in stato di errore',
-    'tooltips.userNotAuthorizedAbort': 'utente non autorizzato a interrompere il flusso di lavoro',
-    'tooltips.userNotAuthorizedExecute': 'utente non autorizzato a eseguire il flusso di lavoro',
+    'tooltips.workflowDown':
+      'Il flusso di lavoro è attualmente inattivo o in stato di errore',
+    'tooltips.userNotAuthorizedAbort':
+      'utente non autorizzato a interrompere il flusso di lavoro',
+    'tooltips.userNotAuthorizedExecute':
+      'utente non autorizzato a eseguire il flusso di lavoro',
     'messages.noDataAvailable': 'Nessun dato disponibile',
-    'messages.noVariablesFound': 'Nessuna variabile trovata per questa esecuzione.',
-    'messages.noInputSchemaWorkflow': 'Per questo flusso di lavoro non è definito alcuno schema di input.',
-    'messages.workflowInstanceNoInputs': 'L\'istanza del flusso di lavoro non ha input',
-    'messages.missingJsonSchema.title': 'Schema JSON mancante per il modulo di input',
-    'messages.missingJsonSchema.message': 'Questo flusso di lavoro non prevede uno schema JSON definito per la convalida dell\'input. È comunque possibile eseguire il flusso di lavoro, ma la convalida dell\'input sarà limitata.',
-    'reviewStep.hiddenFieldsNote': 'Alcuni parametri sono nascosti in questa pagina.',
+    'messages.noVariablesFound':
+      'Nessuna variabile trovata per questa esecuzione.',
+    'messages.noInputSchemaWorkflow':
+      'Per questo flusso di lavoro non è definito alcuno schema di input.',
+    'messages.workflowInstanceNoInputs':
+      "L'istanza del flusso di lavoro non ha input",
+    'messages.missingJsonSchema.title':
+      'Schema JSON mancante per il modulo di input',
+    'messages.missingJsonSchema.message':
+      "Questo flusso di lavoro non prevede uno schema JSON definito per la convalida dell'input. È comunque possibile eseguire il flusso di lavoro, ma la convalida dell'input sarà limitata.",
+    'reviewStep.hiddenFieldsNote':
+      'Alcuni parametri sono nascosti in questa pagina.',
     'reviewStep.showHiddenParameters': 'Mostra i parametri nascosti',
     'common.close': 'Chiudi',
     'common.cancel': 'Annulla',
@@ -112,17 +127,21 @@ const orchestratorTranslationIt = createTranslationMessages({
     'common.unavailable': '---',
     'common.goBack': 'Torna indietro',
     'permissions.accessDenied': 'Accesso negato',
-    'permissions.accessDeniedDescription': 'Non si dispone dell\'autorizzazione per visualizzare l\'esecuzione di questo flusso di lavoro.',
+    'permissions.accessDeniedDescription':
+      "Non si dispone dell'autorizzazione per visualizzare l'esecuzione di questo flusso di lavoro.",
     'permissions.requiredPermission': 'Autorizzazione obbligatoria',
-    'permissions.contactAdmin': 'Contatta il tuo amministratore per richiedere le autorizzazioni necessarie.',
-    'permissions.missingOwnership': 'L\'esecuzione di questo flusso di lavoro non ha registrate le informazioni di proprietà.',
-    'permissions.notYourRun': 'L\'esecuzione di questo flusso di lavoro è stata avviata da un altro utente.',
+    'permissions.contactAdmin':
+      'Contatta il tuo amministratore per richiedere le autorizzazioni necessarie.',
+    'permissions.missingOwnership':
+      "L'esecuzione di questo flusso di lavoro non ha registrate le informazioni di proprietà.",
+    'permissions.notYourRun':
+      "L'esecuzione di questo flusso di lavoro è stata avviata da un altro utente.",
     'duration.aFewSeconds': 'pochi secondi',
     'duration.aSecond': 'un secondo',
     'duration.seconds': '{{count}} secondi',
     'duration.aMinute': 'un minuto',
     'duration.minutes': '{{count}} minuti',
-    'duration.anHour': 'un\'ora',
+    'duration.anHour': "un'ora",
     'duration.hours': '{{count}} ore',
     'duration.aDay': 'un giorno',
     'duration.days': '{{count}} giorni',
@@ -130,10 +149,13 @@ const orchestratorTranslationIt = createTranslationMessages({
     'duration.months': '{{count}} mesi',
     'duration.aYear': 'anno',
     'duration.years': '{{count}} anni',
-    'alerts.duplicateWorkflowIds.message': 'Rilevati più flussi di lavoro con lo stesso ID. Assicurati che vengano utilizzati ID univoci per le diverse versioni.',
+    'alerts.duplicateWorkflowIds.message':
+      'Rilevati più flussi di lavoro con lo stesso ID. Assicurati che vengano utilizzati ID univoci per le diverse versioni.',
     'alerts.duplicateWorkflowIds.learnMore': 'Scopri di più',
-    'stepperObjectField.error': 'Il campo oggetto Stepper non è supportato per gli schemi che non contengono proprietà',
-    'formDecorator.error': 'Il decoratore del modulo deve fornire dati di contesto.',
+    'stepperObjectField.error':
+      'Il campo oggetto Stepper non è supportato per gli schemi che non contengono proprietà',
+    'formDecorator.error':
+      'Il decoratore del modulo deve fornire dati di contesto.',
     'aria.close': 'chiudi',
   },
 });

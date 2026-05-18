@@ -168,7 +168,6 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebook.upload.modal.selectedFiles': '{{count}} de {{max}} archivos seleccionados',
     'notebook.upload.modal.separator': 'o',
     'notebook.upload.modal.title': 'Agregar un documento al cuaderno',
-    'notebook.upload.success': '{{fileName}} se cargó correctamente.',
     'notebook.view.close': 'Cerrar cuaderno',
     'notebook.view.documents.add': 'Agregar',
     'notebook.view.documents.count': '{{count}} Documentos',
