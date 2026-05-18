@@ -59,3 +59,20 @@ export function getLifecycleTransition(
     LIFECYCLE_TRANSITION_MAP[stage ?? 'draft'] ?? LIFECYCLE_TRANSITION_MAP.draft
   );
 }
+
+export function getLifecycleStep(lifecycleStage?: string | null): number {
+  if (lifecycleStage === 'retired') return 4;
+  if (lifecycleStage === 'production' || lifecycleStage === 'deployed')
+    return 3;
+  if (lifecycleStage === 'staging') return 2;
+  if (lifecycleStage === 'review' || lifecycleStage === 'registered') return 1;
+  return 0;
+}
+
+export const LIFECYCLE_STEP_LABELS = [
+  'Draft',
+  'Review',
+  'Staging',
+  'Production',
+  'Retired',
+] as const;

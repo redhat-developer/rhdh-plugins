@@ -35,7 +35,10 @@ import ChatIcon from '@mui/icons-material/Chat';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { getLifecycleTransition } from './lifecycleTransitions';
+import {
+  getLifecycleTransition,
+  getLifecycleStep,
+} from './lifecycleTransitions';
 import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import type {
   ChatAgent,
@@ -61,15 +64,6 @@ const LIFECYCLE_STAGES = [
   'Production',
   'Retired',
 ];
-
-function getLifecycleStep(lifecycleStage?: string | null): number {
-  if (lifecycleStage === 'retired') return 4;
-  if (lifecycleStage === 'production' || lifecycleStage === 'deployed')
-    return 3;
-  if (lifecycleStage === 'staging') return 2;
-  if (lifecycleStage === 'review' || lifecycleStage === 'registered') return 1;
-  return 0;
-}
 
 export interface WorkflowAgentDetailProps {
   agentId: string;
