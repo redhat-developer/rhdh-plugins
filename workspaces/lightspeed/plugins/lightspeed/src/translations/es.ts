@@ -42,12 +42,15 @@ const lightspeedTranslationEs = createTranslationMessages({
     'button.newChat': 'Nuevo chat',
     'chatbox.emptyState.noPinnedChats': 'No hay chats fijados',
     'chatbox.emptyState.noRecentChats': 'No hay chats recientes',
-    'chatbox.emptyState.noResults.body': 'Ajuste su solicitud de búsqueda y vuelva a intentarlo. Revise la ortografía o pruebe con un término más general.',
+    'chatbox.emptyState.noResults.body':
+      'Ajuste su solicitud de búsqueda y vuelva a intentarlo. Revise la ortografía o pruebe con un término más general.',
     'chatbox.emptyState.noResults.title': 'No se encontraron resultados',
     'chatbox.fileUpload.failed': 'Error al cargar el archivo',
-    'chatbox.fileUpload.infoText': 'Los tipos de archivo admitidos son .txt, .yaml y .json. El tamaño máximo del archivo es de 25 MB.',
+    'chatbox.fileUpload.infoText':
+      'Los tipos de archivo admitidos son .txt, .yaml y .json. El tamaño máximo del archivo es de 25 MB.',
     'chatbox.header.title': 'Developer Lightspeed',
-    'chatbox.message.placeholder': 'Envíe un mensaje y, de forma opcional, cargue un archivo JSON, YAML o TXT...',
+    'chatbox.message.placeholder':
+      'Envíe un mensaje y, de forma opcional, cargue un archivo JSON, YAML o TXT...',
     'chatbox.provider.other': 'Otro',
     'chatbox.search.placeholder': 'Buscar',
     'chatbox.welcome.description': '¿Cómo puedo ayudarte hoy?',
@@ -60,25 +63,32 @@ const lightspeedTranslationEs = createTranslationMessages({
     'common.retry': 'Volver a intentar',
     'conversation.addToPinnedChats': 'Fijar',
     'conversation.announcement.responseStopped': 'Respuesta detenida.',
-    'conversation.announcement.userMessage': 'Mensaje del usuario: {{prompt}}. El mensaje del bot se está cargando.',
+    'conversation.announcement.userMessage':
+      'Mensaje del usuario: {{prompt}}. El mensaje del bot se está cargando.',
     'conversation.category.pinnedChats': 'Chats fijados',
     'conversation.category.recent': 'Chats',
     'conversation.delete': 'Eliminar',
     'conversation.delete.confirm.action': 'Eliminar',
-    'conversation.delete.confirm.message': 'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada, como indicaciones, respuestas y comentarios de la actividad de Lightspeed.',
+    'conversation.delete.confirm.message':
+      'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada, como indicaciones, respuestas y comentarios de la actividad de Lightspeed.',
     'conversation.delete.confirm.title': '¿Eliminar chat?',
     'conversation.removeFromPinnedChats': 'Quitar fijación',
     'conversation.rename': 'Cambiar el nombre',
     'conversation.rename.confirm.action': 'Cambiar el nombre',
     'conversation.rename.confirm.title': '¿Cambiar el nombre del chat?',
     'conversation.rename.placeholder': 'Nombre del chat',
-    'disclaimer.withValidation': 'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
-    'disclaimer.withoutValidation': 'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
-    'error.context.fileAttachment': 'useFileAttachmentContext debe estar dentro de un FileAttachmentContextProvider',
-    'feedback.completion.body': 'Recibimos su respuesta. ¡Gracias por compartir sus comentarios!',
+    'disclaimer.withValidation':
+      'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
+    'disclaimer.withoutValidation':
+      'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
+    'error.context.fileAttachment':
+      'useFileAttachmentContext debe estar dentro de un FileAttachmentContextProvider',
+    'feedback.completion.body':
+      'Recibimos su respuesta. ¡Gracias por compartir sus comentarios!',
     'feedback.completion.title': 'Comentarios enviados',
     'feedback.form.submitWord': 'Enviar',
-    'feedback.form.textAreaPlaceholder': 'Proporcionar comentarios adicionales opcionales',
+    'feedback.form.textAreaPlaceholder':
+      'Proporcionar comentarios adicionales opcionales',
     'feedback.form.title': '¿Por qué eligió esta calificación?',
     'feedback.quickResponses.negative.didntAnswer': 'No respondió mi pregunta',
     'feedback.quickResponses.negative.hardToUnderstand': 'Difícil de entender',
@@ -93,35 +103,47 @@ const lightspeedTranslationEs = createTranslationMessages({
     'feedback.tooltips.listen': 'Escuchar',
     'feedback.tooltips.listening': 'Escuchando',
     'file.upload.error.alreadyExists': 'El archivo ya existe.',
-    'file.upload.error.fileTooLarge': 'El tamaño del archivo es demasiado grande. Asegúrate de que el archivo sea menor de 25 MB.',
+    'file.upload.error.fileTooLarge':
+      'El tamaño del archivo es demasiado grande. Asegúrate de que el archivo sea menor de 25 MB.',
     'file.upload.error.multipleFiles': 'Subió más de un archivo.',
-    'file.upload.error.readFailed': 'No se pudo leer el archivo: {{errorMessage}}',
-    'file.upload.error.unsupportedType': 'Tipo de archivo no compatible. Los tipos de archivo admitidos son .txt, .yaml y .json.',
-    'footer.accuracy.label': 'Revise siempre el contenido generado con IA antes de usarlo.',
+    'file.upload.error.readFailed':
+      'No se pudo leer el archivo: {{errorMessage}}',
+    'file.upload.error.unsupportedType':
+      'Tipo de archivo no compatible. Los tipos de archivo admitidos son .txt, .yaml y .json.',
+    'footer.accuracy.label':
+      'Revise siempre el contenido generado con IA antes de usarlo.',
     'icon.lightspeed.alt': 'icono de Lightspeed',
     'icon.permissionRequired.alt': 'icono de permiso requerido',
-    'lcore.loadError.description': 'El backend de Lightspeed no devolvió una lista de modelos. Compruebe que el servicio está en ejecución y es accesible, e inténtelo de nuevo.',
+    'lcore.loadError.description':
+      'El backend de Lightspeed no devolvió una lista de modelos. Compruebe que el servicio está en ejecución y es accesible, e inténtelo de nuevo.',
     'lcore.loadError.title': 'No se pudieron cargar los modelos',
-    'lcore.notConfigured.backendDocs': 'Configuración del backend de Lightspeed',
-    'lcore.notConfigured.description': 'Lightspeed requiere un LLM registrado. Póngase en contacto con el administrador de la plataforma de su organización para completar la configuración.',
-    'lcore.notConfigured.developerLightspeedDocs': 'Configurando Developer Lightspeed',
+    'lcore.notConfigured.backendDocs':
+      'Configuración del backend de Lightspeed',
+    'lcore.notConfigured.description':
+      'Lightspeed requiere un LLM registrado. Póngase en contacto con el administrador de la plataforma de su organización para completar la configuración.',
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Configurando Developer Lightspeed',
     'lcore.notConfigured.title': 'Conecte un LLM para empezar',
     'mcp.settings.closeAriaLabel': 'Cerrar configuración de MCP',
-    'mcp.settings.closeConfigureModalAriaLabel': 'Cerrar modal de configuración',
+    'mcp.settings.closeConfigureModalAriaLabel':
+      'Cerrar modal de configuración',
     'mcp.settings.configureServerTitle': 'Configurar servidor {{serverName}}',
     'mcp.settings.edit': 'Editar',
     'mcp.settings.editServerAriaLabel': 'Editar {{serverName}}',
     'mcp.settings.enabled': 'Habilitado',
     'mcp.settings.enterToken': 'Introduce tu token',
     'mcp.settings.loading': 'Cargando servidores MCP...',
-    'mcp.settings.modalDescription': 'Las credenciales se almacenan cifradas y se limitan a tu perfil. Lightspeed funcionará con exactamente tus permisos.',
+    'mcp.settings.modalDescription':
+      'Las credenciales se almacenan cifradas y se limitan a tu perfil. Lightspeed funcionará con exactamente tus permisos.',
     'mcp.settings.name': 'Nombre',
     'mcp.settings.noneAvailable': 'No hay servidores MCP disponibles.',
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
-    'mcp.settings.readOnlyAccess': 'Tienes acceso de solo lectura a los servidores MCP.',
+    'mcp.settings.readOnlyAccess':
+      'Tienes acceso de solo lectura a los servidores MCP.',
     'mcp.settings.removePersonalToken': 'Eliminar token personal',
     'mcp.settings.savedToken': 'Token guardado',
-    'mcp.settings.selectedCount': '{{selectedCount}} de {{totalCount}} seleccionados',
+    'mcp.settings.selectedCount':
+      '{{selectedCount}} de {{totalCount}} seleccionados',
     'mcp.settings.status': 'Estado',
     'mcp.settings.status.disabled': 'Deshabilitado',
     'mcp.settings.status.failed': 'Falló',
@@ -134,12 +156,16 @@ const lightspeedTranslationEs = createTranslationMessages({
     'mcp.settings.toggleServerAriaLabel': 'Alternar {{serverName}}',
     'mcp.settings.token.clearAriaLabel': 'Borrar entrada de token',
     'mcp.settings.token.connectionSuccessful': 'Conexión correcta',
-    'mcp.settings.token.invalidCredentials': 'Credenciales no válidas. Revisa la URL del servidor y el token.',
+    'mcp.settings.token.invalidCredentials':
+      'Credenciales no válidas. Revisa la URL del servidor y el token.',
     'mcp.settings.token.savingAndValidating': 'Guardando y validando token...',
-    'mcp.settings.token.urlUnavailableForValidation': 'No se puede validar el token porque la URL del servidor no está disponible.',
+    'mcp.settings.token.urlUnavailableForValidation':
+      'No se puede validar el token porque la URL del servidor no está disponible.',
     'mcp.settings.token.validating': 'Validando token...',
-    'mcp.settings.token.validationFailed': 'La validación falló. Revisa la URL del servidor y el token.',
-    'mcp.settings.usingAdminCredential': 'Se están usando credenciales proporcionadas por el administrador. Introduce un token personal para reemplazarlas en tu cuenta.',
+    'mcp.settings.token.validationFailed':
+      'La validación falló. Revisa la URL del servidor y el token.',
+    'mcp.settings.usingAdminCredential':
+      'Se están usando credenciales proporcionadas por el administrador. Introduce un token personal para reemplazarlas en tu cuenta.',
     'menu.newConversation': 'Nuevo chat',
     'message.options.label': 'Opciones',
     'modal.cancel': 'Cancelar',
@@ -150,30 +176,41 @@ const lightspeedTranslationEs = createTranslationMessages({
     'modal.title.preview': 'Previsualizar archivo adjunto',
     'notebook.document.delete': 'Eliminar',
     'notebook.document.delete.action': 'Eliminar',
-    'notebook.document.delete.description': '¿Está seguro de que desea eliminar <documentName/> de este cuaderno? Esta acción no se puede deshacer.',
-    'notebook.document.delete.success': '«{{documentName}}» se eliminó correctamente.',
+    'notebook.document.delete.description':
+      '¿Está seguro de que desea eliminar <documentName/> de este cuaderno? Esta acción no se puede deshacer.',
+    'notebook.document.delete.success':
+      '«{{documentName}}» se eliminó correctamente.',
     'notebook.document.delete.title': '¿Eliminar recurso?',
     'notebook.overwrite.modal.action': 'Sobrescribir',
-    'notebook.overwrite.modal.description': 'Los siguientes archivos ya existen en este cuaderno. ¿Desea sobrescribirlos con las nuevas versiones?',
+    'notebook.overwrite.modal.description':
+      'Los siguientes archivos ya existen en este cuaderno. ¿Desea sobrescribirlos con las nuevas versiones?',
     'notebook.overwrite.modal.title': '¿Sobrescribir archivos?',
-    'notebook.upload.error.fileTooLarge': 'Error de carga: el tamaño del archivo supera el límite de 25 MB.',
-    'notebook.upload.error.tooManyFiles': 'Error de carga: se permiten un máximo de {{max}} archivos.',
-    'notebook.upload.error.unsupportedType': 'Error de carga: se encontraron tipos de archivo no compatibles. Suba solo tipos de archivo compatibles.',
+    'notebook.upload.error.fileTooLarge':
+      'Error de carga: el tamaño del archivo supera el límite de 25 MB.',
+    'notebook.upload.error.tooManyFiles':
+      'Error de carga: se permiten un máximo de {{max}} archivos.',
+    'notebook.upload.error.unsupportedType':
+      'Error de carga: se encontraron tipos de archivo no compatibles. Suba solo tipos de archivo compatibles.',
     'notebook.upload.failed': 'Error al subir "{{fileName}}".',
     'notebook.upload.modal.addButton': 'Agregar ({{count}})',
     'notebook.upload.modal.browseButton': 'Subir',
-    'notebook.upload.modal.dragDropTitle': 'Arrastra y suelta los archivos aquí',
-    'notebook.upload.modal.infoText': 'Tipos de archivo aceptados: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.dragDropTitle':
+      'Arrastra y suelta los archivos aquí',
+    'notebook.upload.modal.infoText':
+      'Tipos de archivo aceptados: .md, .txt, .pdf, .json, .yaml, .log',
     'notebook.upload.modal.removeFile': 'Eliminar {{fileName}}',
-    'notebook.upload.modal.selectedFiles': '{{count}} de {{max}} archivos seleccionados',
+    'notebook.upload.modal.selectedFiles':
+      '{{count}} de {{max}} archivos seleccionados',
     'notebook.upload.modal.separator': 'o',
     'notebook.upload.modal.title': 'Agregar un documento al cuaderno',
     'notebook.view.close': 'Cerrar cuaderno',
     'notebook.view.documents.add': 'Agregar',
     'notebook.view.documents.count': '{{count}} Documentos',
-    'notebook.view.documents.maxReached': 'Se permiten un máximo de 10 documentos. Elimina un documento para subir uno nuevo.',
+    'notebook.view.documents.maxReached':
+      'Se permiten un máximo de 10 documentos. Elimina un documento para subir uno nuevo.',
     'notebook.view.documents.uploading': 'Subiendo documento',
-    'notebook.view.input.disabledTooltip': 'Selecciona al menos un recurso cargado para comenzar a chatear',
+    'notebook.view.input.disabledTooltip':
+      'Selecciona al menos un recurso cargado para comenzar a chatear',
     'notebook.view.input.placeholder': 'Pregunta sobre tus documentos...',
     'notebook.view.sidebar.collapse': 'Contraer barra lateral',
     'notebook.view.sidebar.expand': 'Expandir barra lateral',
@@ -185,18 +222,22 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebooks.actions.rename': 'Renombrar',
     'notebooks.card.openAria': 'Abrir el cuaderno {{name}}',
     'notebooks.delete.action': 'Eliminar',
-    'notebooks.delete.message': 'Ya no verás este cuaderno aquí. Esto también eliminará actividad relacionada como solicitudes, respuestas y comentarios de tu actividad de Lightspeed.',
+    'notebooks.delete.message':
+      'Ya no verás este cuaderno aquí. Esto también eliminará actividad relacionada como solicitudes, respuestas y comentarios de tu actividad de Lightspeed.',
     'notebooks.delete.title': '¿Eliminar {{name}}?',
     'notebooks.delete.toast': '¡Cuaderno eliminado!',
     'notebooks.documents': 'Documentos',
     'notebooks.empty.action': 'Crear un cuaderno nuevo',
-    'notebooks.empty.description': 'Crea un nuevo cuaderno para organizar tus fuentes y generar información con IA.',
+    'notebooks.empty.description':
+      'Crea un nuevo cuaderno para organizar tus fuentes y generar información con IA.',
     'notebooks.empty.title': 'No hay cuadernos creados',
     'notebooks.prompts.accessIssue.title': 'Ayúdame con un problema de acceso',
     'notebooks.prompts.coreConcepts.title': '¿Cuáles son los conceptos clave?',
-    'notebooks.prompts.vulnerabilities.title': 'Mostrar mis vulnerabilidades críticas',
+    'notebooks.prompts.vulnerabilities.title':
+      'Mostrar mis vulnerabilidades críticas',
     'notebooks.rename.action': 'Enviar',
-    'notebooks.rename.description': 'Introduce el nuevo nombre para este cuaderno y haz clic en Enviar para continuar.',
+    'notebooks.rename.description':
+      'Introduce el nuevo nombre para este cuaderno y haz clic en Enviar para continuar.',
     'notebooks.rename.label': 'Nuevo nombre',
     'notebooks.rename.placeholder': 'Nuevo nombre',
     'notebooks.rename.title': '¿Renombrar {{name}}?',
@@ -208,33 +249,48 @@ const lightspeedTranslationEs = createTranslationMessages({
     'page.subtitle': 'Asistente de desarrollo con tecnología de IA',
     'page.title': 'Lightspeed',
     'permission.notebooks.goBack': 'Volver',
-    'permission.required.description': 'Para ver <subject/>, contacta a tu administrador para que te otorgue el permiso <permissions/>.',
+    'permission.required.description':
+      'Para ver <subject/>, contacta a tu administrador para que te otorgue el permiso <permissions/>.',
     'permission.required.title': 'Permisos faltantes',
     'permission.subject.notebooks': 'los cuadernos de Lightspeed',
     'permission.subject.plugin': 'el plugin de Lightspeed',
-    'prompts.codeOptimization.message': '¿Puedes sugerir formas comunes de optimizar el código para lograr un mejor rendimiento?',
+    'prompts.codeOptimization.message':
+      '¿Puedes sugerir formas comunes de optimizar el código para lograr un mejor rendimiento?',
     'prompts.codeOptimization.title': 'Sugerir optimizaciones de código',
-    'prompts.codeReadability.message': '¿Puedes sugerir técnicas que pueda utilizar para hacer que mi código sea más fácil de leer y mantener?',
-    'prompts.codeReadability.title': 'Obtener ayuda sobre la legibilidad del código',
-    'prompts.debugging.message': 'Mi aplicación genera un error al intentar conectarse a la base de datos. ¿Puedes ayudarme a identificar el problema?',
+    'prompts.codeReadability.message':
+      '¿Puedes sugerir técnicas que pueda utilizar para hacer que mi código sea más fácil de leer y mantener?',
+    'prompts.codeReadability.title':
+      'Obtener ayuda sobre la legibilidad del código',
+    'prompts.debugging.message':
+      'Mi aplicación genera un error al intentar conectarse a la base de datos. ¿Puedes ayudarme a identificar el problema?',
     'prompts.debugging.title': 'Obtener ayuda con la depuración',
-    'prompts.developmentConcept.message': '¿Puedes explicar cómo funciona la arquitectura de microservicios y sus ventajas frente a un diseño monolítico?',
+    'prompts.developmentConcept.message':
+      '¿Puedes explicar cómo funciona la arquitectura de microservicios y sus ventajas frente a un diseño monolítico?',
     'prompts.developmentConcept.title': 'Explicar un concepto de desarrollo',
-    'prompts.documentation.message': '¿Puedes resumir la documentación para implementar la autenticación OAuth 2.0 en una aplicación web?',
+    'prompts.documentation.message':
+      '¿Puedes resumir la documentación para implementar la autenticación OAuth 2.0 en una aplicación web?',
     'prompts.documentation.title': 'Resumir la documentación',
-    'prompts.eventDriven.message': '¿Puedes explicar qué es la arquitectura basada en eventos y cuándo es beneficioso usarla en el desarrollo de software?',
+    'prompts.eventDriven.message':
+      '¿Puedes explicar qué es la arquitectura basada en eventos y cuándo es beneficioso usarla en el desarrollo de software?',
     'prompts.eventDriven.title': 'Comprender la arquitectura basada en eventos',
-    'prompts.gitWorkflows.message': 'Quiero realizar cambios en el código en otra rama sin perder mi trabajo existente. ¿Cuál es el procedimiento para hacerlo con Git?',
+    'prompts.gitWorkflows.message':
+      'Quiero realizar cambios en el código en otra rama sin perder mi trabajo existente. ¿Cuál es el procedimiento para hacerlo con Git?',
     'prompts.gitWorkflows.title': 'Flujos de trabajo con Git',
-    'prompts.openshift.message': '¿Puedes guiarme en la creación de una nueva implementación en OpenShift para una aplicación contenerizada?',
+    'prompts.openshift.message':
+      '¿Puedes guiarme en la creación de una nueva implementación en OpenShift para una aplicación contenerizada?',
     'prompts.openshift.title': 'Crear una implementación de OpenShift',
-    'prompts.rhdh.message': '¿Puedes explicarme los primeros pasos para usar Developer Hub como desarrollador, por ejemplo, cómo explorar el catálogo de software y agregar mi servicio?',
+    'prompts.rhdh.message':
+      '¿Puedes explicarme los primeros pasos para usar Developer Hub como desarrollador, por ejemplo, cómo explorar el catálogo de software y agregar mi servicio?',
     'prompts.rhdh.title': 'Empezar a usar Red Hat Developer Hub',
-    'prompts.sortingAlgorithms.message': '¿Puedes explicar la diferencia entre un algoritmo de clasificación rápido y un algoritmo de clasificación por combinación, y cuándo utilizar cada uno?',
-    'prompts.sortingAlgorithms.title': 'Desmitificar los algoritmos de clasificación',
-    'prompts.tekton.message': '¿Puedes ayudarme a automatizar la implementación de mi aplicación con pipelines de Tekton?',
+    'prompts.sortingAlgorithms.message':
+      '¿Puedes explicar la diferencia entre un algoritmo de clasificación rápido y un algoritmo de clasificación por combinación, y cuándo utilizar cada uno?',
+    'prompts.sortingAlgorithms.title':
+      'Desmitificar los algoritmos de clasificación',
+    'prompts.tekton.message':
+      '¿Puedes ayudarme a automatizar la implementación de mi aplicación con pipelines de Tekton?',
     'prompts.tekton.title': 'Implementar con Tekton',
-    'prompts.testingStrategies.message': '¿Puedes recomendarme algunas estrategias de prueba comunes para lograr una aplicación sólida y libre de errores?',
+    'prompts.testingStrategies.message':
+      '¿Puedes recomendarme algunas estrategias de prueba comunes para lograr una aplicación sólida y libre de errores?',
     'prompts.testingStrategies.title': 'Sugerir estrategias de prueba',
     'reasoning.thinking': 'Mostrar pensamiento',
     'settings.displayMode.docked': 'Anclar a la ventana',
@@ -244,9 +300,11 @@ const lightspeedTranslationEs = createTranslationMessages({
     'settings.mcp.badge': 'Nuevo',
     'settings.mcp.label': 'Configuración de MCP',
     'settings.pinned.disable': 'Deshabilitar chats fijados',
-    'settings.pinned.disabled.description': 'Los chats fijados están deshabilitados actualmente',
+    'settings.pinned.disabled.description':
+      'Los chats fijados están deshabilitados actualmente',
     'settings.pinned.enable': 'Habilitar chats fijados',
-    'settings.pinned.enabled.description': 'Los chats fijados están habilitados actualmente',
+    'settings.pinned.enabled.description':
+      'Los chats fijados están habilitados actualmente',
     'sort.alphabeticalAsc': 'Nombre (A-Z)',
     'sort.alphabeticalDesc': 'Nombre (Z-A)',
     'sort.label': 'Ordenar conversaciones',
