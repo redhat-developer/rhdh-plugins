@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { StylesProvider } from '@mui/styles';
+
 import { FloatingActionButton } from '../types';
 import { evaluateFloatingButtonsWithPositions } from '../utils';
+import { generateClassName } from '../utils/generateClassName';
 import { FloatingButton } from './FloatingButton';
 
-export const GlobalFloatingActionButton = ({
+const GlobalFloatingActionButtonInner = ({
   floatingButtons,
 }: {
   floatingButtons: FloatingActionButton[];
@@ -37,3 +40,13 @@ export const GlobalFloatingActionButton = ({
     </>
   );
 };
+
+export const GlobalFloatingActionButton = ({
+  floatingButtons,
+}: {
+  floatingButtons: FloatingActionButton[];
+}) => (
+  <StylesProvider generateClassName={generateClassName}>
+    <GlobalFloatingActionButtonInner floatingButtons={floatingButtons} />
+  </StylesProvider>
+);
