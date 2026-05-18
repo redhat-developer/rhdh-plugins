@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 7.3.5
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.5
+
 ## 7.3.4
 
 ### Patch Changes
