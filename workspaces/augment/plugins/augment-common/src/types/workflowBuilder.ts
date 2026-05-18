@@ -100,7 +100,11 @@ export interface AgentNodeData {
   handoffInputSchema?: Record<string, unknown>;
   nestHandoffHistory?: boolean;
   truncation?: string;
-  promptRef?: { id: string; version?: number; variables?: Record<string, string> };
+  promptRef?: {
+    id: string;
+    version?: number;
+    variables?: Record<string, string>;
+  };
   enabled?: boolean;
 }
 
@@ -594,7 +598,9 @@ export function isToolNodeData(data: WorkflowNodeData): data is ToolNodeData {
 /**
  * Type guard for GuardrailNodeData.
  */
-export function isGuardrailNodeData(data: WorkflowNodeData): data is GuardrailNodeData {
+export function isGuardrailNodeData(
+  data: WorkflowNodeData,
+): data is GuardrailNodeData {
   return 'guardType' in data && 'onFailure' in data;
 }
 

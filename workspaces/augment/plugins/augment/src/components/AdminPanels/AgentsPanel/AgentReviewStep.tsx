@@ -23,10 +23,7 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import SaveIcon from '@mui/icons-material/Save';
 import { useTheme, alpha } from '@mui/material/styles';
-import {
-  SECTION_LABEL_SX,
-  sectionCardSx,
-} from '../shared/commandCenterStyles';
+import { SECTION_LABEL_SX, sectionCardSx } from '../shared/commandCenterStyles';
 import type { AgentFormData } from './agentValidation';
 
 interface AgentReviewStepProps {
@@ -81,11 +78,7 @@ export const AgentReviewStep = React.memo(function AgentReviewStep({
       {validationErrors.length > 0 && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {validationErrors.map(err => (
-            <Typography
-              key={err}
-              variant="body2"
-              sx={{ fontSize: '0.8rem' }}
-            >
+            <Typography key={err} variant="body2" sx={{ fontSize: '0.8rem' }}>
               &bull; {err}
             </Typography>
           ))}
@@ -93,9 +86,7 @@ export const AgentReviewStep = React.memo(function AgentReviewStep({
       )}
 
       <Box sx={{ ...sectionCardSx(theme), mb: 2, p: 2.5, borderRadius: 2 }}>
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}
-        >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <Avatar
             sx={{
               width: 48,
@@ -124,9 +115,7 @@ export const AgentReviewStep = React.memo(function AgentReviewStep({
           </Box>
         </Box>
 
-        <Box
-          sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
             <Typography sx={{ ...SECTION_LABEL_SX, minWidth: 100, pt: 0.25 }}>
               Model
@@ -201,20 +190,14 @@ export const AgentReviewStep = React.memo(function AgentReviewStep({
 
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
         {onBack && (
-          <Button
-            size="large"
-            onClick={onBack}
-            sx={{ textTransform: 'none' }}
-          >
+          <Button size="large" onClick={onBack} sx={{ textTransform: 'none' }}>
             Back
           </Button>
         )}
         <Button
           variant="contained"
           size="large"
-          startIcon={
-            saving ? <CircularProgress size={18} /> : <SaveIcon />
-          }
+          startIcon={saving ? <CircularProgress size={18} /> : <SaveIcon />}
           onClick={onSave}
           disabled={saving || validationErrors.length > 0}
           sx={{ textTransform: 'none', fontWeight: 600, px: 4 }}

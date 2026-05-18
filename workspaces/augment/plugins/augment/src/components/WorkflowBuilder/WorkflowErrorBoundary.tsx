@@ -42,7 +42,11 @@ export class WorkflowErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[WorkflowBuilder] Error caught by boundary:', error, errorInfo);
+    console.error(
+      '[WorkflowBuilder] Error caught by boundary:',
+      error,
+      errorInfo,
+    );
   }
 
   handleReset = () => {
@@ -69,7 +73,8 @@ export class WorkflowErrorBoundary extends Component<Props, State> {
               {this.props.fallbackTitle || 'Something went wrong'}
             </Typography>
             <Typography variant="body2" sx={{ mt: 0.5 }}>
-              {this.state.error?.message || 'An unexpected error occurred in the workflow builder.'}
+              {this.state.error?.message ||
+                'An unexpected error occurred in the workflow builder.'}
             </Typography>
           </Alert>
           <Button

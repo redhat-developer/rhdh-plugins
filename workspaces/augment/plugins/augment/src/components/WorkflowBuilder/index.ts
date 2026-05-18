@@ -26,6 +26,9 @@ export { PublishDialog } from './PublishDialog';
 export { WorkflowErrorBoundary } from './WorkflowErrorBoundary';
 export { WorkflowSettingsDialog } from './WorkflowSettingsDialog';
 export { PreviewChatPanel } from './PreviewChatPanel';
-export { generateWorkflowCode, type CodeGenOptions } from './codegen/WorkflowCodeGenerator';
+export {
+  generateWorkflowCode,
+  type CodeGenOptions,
+} from './codegen/WorkflowCodeGenerator';
 export { generatePythonCode } from './codegen/PythonCodeGenerator';
 export { withRetry, isRetryableError } from './utils/retry';

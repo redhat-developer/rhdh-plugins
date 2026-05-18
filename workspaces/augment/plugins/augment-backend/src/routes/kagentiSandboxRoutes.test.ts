@@ -41,13 +41,11 @@ function createMockRouteContext() {
     getAgentPodStatus: jest.fn().mockResolvedValue({ running: true }),
     getPodMetrics: jest.fn().mockResolvedValue({ cpu: '0.1' }),
     getPodEvents: jest.fn().mockResolvedValue({ events: [] }),
-    sandboxChat: jest
-      .fn()
-      .mockResolvedValue({
-        content: 'reply',
-        context_id: 'c1',
-        status: 'completed',
-      }),
+    sandboxChat: jest.fn().mockResolvedValue({
+      content: 'reply',
+      context_id: 'c1',
+      status: 'completed',
+    }),
     getSandboxDefaults: jest.fn().mockResolvedValue({}),
     createSandbox: jest.fn().mockResolvedValue({ success: true }),
     deleteSandbox: jest.fn().mockResolvedValue({ success: true }),
@@ -260,9 +258,7 @@ describe('kagentiSandboxRoutes', () => {
 
   it('POST /kagenti/sandbox/:ns/chat rejects empty body', async () => {
     const { app } = createMockRouteContext();
-    const res = await request(app)
-      .post('/kagenti/sandbox/ns1/chat')
-      .send({});
+    const res = await request(app).post('/kagenti/sandbox/ns1/chat').send({});
     expect(res.status).toBe(500);
   });
 

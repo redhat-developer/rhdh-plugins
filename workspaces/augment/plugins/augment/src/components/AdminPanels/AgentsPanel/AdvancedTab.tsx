@@ -31,7 +31,11 @@ import type { AgentFormData } from './agentValidation';
 interface AdvancedTabProps {
   agent: AgentFormData;
   agentKey: string;
-  onUpdateAgent: (key: string, field: keyof AgentFormData, value: unknown) => void;
+  onUpdateAgent: (
+    key: string,
+    field: keyof AgentFormData,
+    value: unknown,
+  ) => void;
 }
 
 export const AdvancedTab = React.memo(function AdvancedTab({
@@ -43,7 +47,13 @@ export const AdvancedTab = React.memo(function AdvancedTab({
 
   return (
     <Box data-tour="orch-advanced">
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' },
+          gap: 2,
+        }}
+      >
         <FormControl fullWidth size="small">
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <InputLabel>Tool Choice</InputLabel>
@@ -52,13 +62,55 @@ export const AdvancedTab = React.memo(function AdvancedTab({
           <Select
             value={agent.toolChoice ?? ''}
             label="Tool Choice"
-            onChange={e => onUpdateAgent(agentKey, 'toolChoice', (e.target.value as string) || undefined)}
+            onChange={e =>
+              onUpdateAgent(
+                agentKey,
+                'toolChoice',
+                (e.target.value as string) || undefined,
+              )
+            }
             MenuProps={SELECT_MENU_PROPS}
           >
-            <MenuItem value=""><Box><Typography variant="body2" sx={{ fontWeight: 500 }}><em>Default</em></Typography><Typography variant="caption" color="text.secondary">Inherit from platform settings</Typography></Box></MenuItem>
-            <MenuItem value="auto"><Box><Typography variant="body2" sx={{ fontWeight: 500 }}>auto</Typography><Typography variant="caption" color="text.secondary">Model decides when to call tools</Typography></Box></MenuItem>
-            <MenuItem value="required"><Box><Typography variant="body2" sx={{ fontWeight: 500 }}>required</Typography><Typography variant="caption" color="text.secondary">Always call tools</Typography></Box></MenuItem>
-            <MenuItem value="none"><Box><Typography variant="body2" sx={{ fontWeight: 500 }}>none</Typography><Typography variant="caption" color="text.secondary">Never call tools</Typography></Box></MenuItem>
+            <MenuItem value="">
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  <em>Default</em>
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Inherit from platform settings
+                </Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem value="auto">
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  auto
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Model decides when to call tools
+                </Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem value="required">
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  required
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Always call tools
+                </Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem value="none">
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  none
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Never call tools
+                </Typography>
+              </Box>
+            </MenuItem>
           </Select>
         </FormControl>
         <FormControl fullWidth size="small">
@@ -71,11 +123,17 @@ export const AdvancedTab = React.memo(function AdvancedTab({
             label="Reasoning"
             onChange={e => {
               const v = e.target.value as string;
-              onUpdateAgent(agentKey, 'reasoning', v ? { effort: v as 'low' | 'medium' | 'high' } : undefined);
+              onUpdateAgent(
+                agentKey,
+                'reasoning',
+                v ? { effort: v as 'low' | 'medium' | 'high' } : undefined,
+              );
             }}
             MenuProps={SELECT_MENU_PROPS}
           >
-            <MenuItem value=""><em>Default</em></MenuItem>
+            <MenuItem value="">
+              <em>Default</em>
+            </MenuItem>
             <MenuItem value="low">Low</MenuItem>
             <MenuItem value="medium">Medium</MenuItem>
             <MenuItem value="high">High</MenuItem>
@@ -93,7 +151,11 @@ export const AdvancedTab = React.memo(function AdvancedTab({
             fullWidth
             onChange={e => {
               const v = parseFloat(e.target.value);
-              onUpdateAgent(agentKey, 'temperature', e.target.value === '' || isNaN(v) ? undefined : v);
+              onUpdateAgent(
+                agentKey,
+                'temperature',
+                e.target.value === '' || isNaN(v) ? undefined : v,
+              );
             }}
             inputProps={{ min: 0, max: 2, step: 0.1 }}
           />
@@ -110,7 +172,11 @@ export const AdvancedTab = React.memo(function AdvancedTab({
             fullWidth
             onChange={e => {
               const v = parseInt(e.target.value, 10);
-              onUpdateAgent(agentKey, 'maxOutputTokens', e.target.value === '' || isNaN(v) ? undefined : v);
+              onUpdateAgent(
+                agentKey,
+                'maxOutputTokens',
+                e.target.value === '' || isNaN(v) ? undefined : v,
+              );
             }}
             inputProps={{ min: 1 }}
           />
@@ -127,7 +193,11 @@ export const AdvancedTab = React.memo(function AdvancedTab({
             fullWidth
             onChange={e => {
               const v = parseInt(e.target.value, 10);
-              onUpdateAgent(agentKey, 'maxToolCalls', e.target.value === '' || isNaN(v) ? undefined : v);
+              onUpdateAgent(
+                agentKey,
+                'maxToolCalls',
+                e.target.value === '' || isNaN(v) ? undefined : v,
+              );
             }}
             inputProps={{ min: 1 }}
           />
@@ -143,7 +213,16 @@ export const AdvancedTab = React.memo(function AdvancedTab({
             fullWidth
             onChange={e => {
               const v = e.target.value;
-              onUpdateAgent(agentKey, 'guardrails', v ? v.split(',').map(s => s.trim()).filter(Boolean) : undefined);
+              onUpdateAgent(
+                agentKey,
+                'guardrails',
+                v
+                  ? v
+                      .split(',')
+                      .map(s => s.trim())
+                      .filter(Boolean)
+                  : undefined,
+              );
             }}
             placeholder="shield-id-1, shield-id-2"
           />
@@ -151,20 +230,54 @@ export const AdvancedTab = React.memo(function AdvancedTab({
       </Box>
       <Box sx={{ display: 'flex', gap: 3, mt: 2.5 }}>
         <FormControlLabel
-          control={<ToggleSwitch checked={agent.resetToolChoice ?? false} onChange={e => onUpdateAgent(agentKey, 'resetToolChoice', e.target.checked || undefined)} />}
+          control={
+            <ToggleSwitch
+              checked={agent.resetToolChoice ?? false}
+              onChange={e =>
+                onUpdateAgent(
+                  agentKey,
+                  'resetToolChoice',
+                  e.target.checked || undefined,
+                )
+              }
+            />
+          }
           label={
             <Box>
-              <Typography sx={{ fontSize: '0.8rem' }}>Reset Tool Choice After Use</Typography>
-              <Typography sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}>After a tool call, reset to &quot;auto&quot;</Typography>
+              <Typography sx={{ fontSize: '0.8rem' }}>
+                Reset Tool Choice After Use
+              </Typography>
+              <Typography
+                sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}
+              >
+                After a tool call, reset to &quot;auto&quot;
+              </Typography>
             </Box>
           }
         />
         <FormControlLabel
-          control={<ToggleSwitch checked={agent.nestHandoffHistory ?? false} onChange={e => onUpdateAgent(agentKey, 'nestHandoffHistory', e.target.checked || undefined)} />}
+          control={
+            <ToggleSwitch
+              checked={agent.nestHandoffHistory ?? false}
+              onChange={e =>
+                onUpdateAgent(
+                  agentKey,
+                  'nestHandoffHistory',
+                  e.target.checked || undefined,
+                )
+              }
+            />
+          }
           label={
             <Box>
-              <Typography sx={{ fontSize: '0.8rem' }}>Summarize History on Handoff</Typography>
-              <Typography sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}>Compress conversation on transfer</Typography>
+              <Typography sx={{ fontSize: '0.8rem' }}>
+                Summarize History on Handoff
+              </Typography>
+              <Typography
+                sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}
+              >
+                Compress conversation on transfer
+              </Typography>
             </Box>
           }
         />

@@ -33,7 +33,11 @@ interface ConnectionsTabProps {
   selectedAgent: AgentFormData;
   topologyEdges: TopologyEdge[];
   agentRoles: Record<string, PublishAsRole>;
-  onUpdateAgent: (key: string, field: keyof AgentFormData, value: unknown) => void;
+  onUpdateAgent: (
+    key: string,
+    field: keyof AgentFormData,
+    value: unknown,
+  ) => void;
   onSelectAgent: (key: string) => void;
 }
 
@@ -52,11 +56,18 @@ export const ConnectionsTab = React.memo(function ConnectionsTab({
   if (agentKeys.length <= 1) {
     return (
       <Box data-tour="orch-connections" sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1 }}>
+        <Typography
+          variant="body2"
+          sx={{ color: theme.palette.text.secondary, mb: 1 }}
+        >
           No other agents to connect to yet.
         </Typography>
-        <Typography variant="caption" sx={{ color: theme.palette.text.disabled, lineHeight: 1.6 }}>
-          Create additional agents to enable handoffs (transfer conversation control) and delegation (run as sub-tasks).
+        <Typography
+          variant="caption"
+          sx={{ color: theme.palette.text.disabled, lineHeight: 1.6 }}
+        >
+          Create additional agents to enable handoffs (transfer conversation
+          control) and delegation (run as sub-tasks).
         </Typography>
       </Box>
     );
@@ -70,18 +81,45 @@ export const ConnectionsTab = React.memo(function ConnectionsTab({
           multiple
           value={selectedAgent.handoffs}
           label="Can Transfer To"
-          onChange={e => onUpdateAgent(selectedAgentKey, 'handoffs', e.target.value as string[])}
+          onChange={e =>
+            onUpdateAgent(
+              selectedAgentKey,
+              'handoffs',
+              e.target.value as string[],
+            )
+          }
           MenuProps={SELECT_MENU_PROPS}
           renderValue={vals => (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {(vals as string[]).map(v => (<Chip key={v} label={agents[v]?.name || v} size="small" sx={{ height: 22, fontSize: '0.75rem' }} />))}
+              {(vals as string[]).map(v => (
+                <Chip
+                  key={v}
+                  label={agents[v]?.name || v}
+                  size="small"
+                  sx={{ height: 22, fontSize: '0.75rem' }}
+                />
+              ))}
             </Box>
           )}
         >
-          {agentKeys.filter(k => k !== selectedAgentKey).map(k => (<MenuItem key={k} value={k}>{agents[k].name || k}</MenuItem>))}
+          {agentKeys
+            .filter(k => k !== selectedAgentKey)
+            .map(k => (
+              <MenuItem key={k} value={k}>
+                {agents[k].name || k}
+              </MenuItem>
+            ))}
         </Select>
       </FormControl>
-      <Typography variant="caption" sx={{ display: 'block', mb: 2.5, color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
+      <Typography
+        variant="caption"
+        sx={{
+          display: 'block',
+          mb: 2.5,
+          color: theme.palette.text.secondary,
+          fontSize: '0.7rem',
+        }}
+      >
         Target agent takes over the conversation. This agent stops responding.
       </Typography>
 
@@ -91,19 +129,47 @@ export const ConnectionsTab = React.memo(function ConnectionsTab({
           multiple
           value={selectedAgent.asTools}
           label="Can Delegate To"
-          onChange={e => onUpdateAgent(selectedAgentKey, 'asTools', e.target.value as string[])}
+          onChange={e =>
+            onUpdateAgent(
+              selectedAgentKey,
+              'asTools',
+              e.target.value as string[],
+            )
+          }
           MenuProps={SELECT_MENU_PROPS}
           renderValue={vals => (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {(vals as string[]).map(v => (<Chip key={v} label={agents[v]?.name || v} size="small" sx={{ height: 22, fontSize: '0.75rem' }} />))}
+              {(vals as string[]).map(v => (
+                <Chip
+                  key={v}
+                  label={agents[v]?.name || v}
+                  size="small"
+                  sx={{ height: 22, fontSize: '0.75rem' }}
+                />
+              ))}
             </Box>
           )}
         >
-          {agentKeys.filter(k => k !== selectedAgentKey).map(k => (<MenuItem key={k} value={k}>{agents[k].name || k}</MenuItem>))}
+          {agentKeys
+            .filter(k => k !== selectedAgentKey)
+            .map(k => (
+              <MenuItem key={k} value={k}>
+                {agents[k].name || k}
+              </MenuItem>
+            ))}
         </Select>
       </FormControl>
-      <Typography variant="caption" sx={{ display: 'block', mb: 2.5, color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
-        Sub-agent runs in the background and returns results. This agent stays in control.
+      <Typography
+        variant="caption"
+        sx={{
+          display: 'block',
+          mb: 2.5,
+          color: theme.palette.text.secondary,
+          fontSize: '0.7rem',
+        }}
+      >
+        Sub-agent runs in the background and returns results. This agent stays
+        in control.
       </Typography>
 
       <TopologyGraph

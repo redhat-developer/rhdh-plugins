@@ -234,9 +234,13 @@ export async function createRouter({
         adminConfig,
       });
       await orchestrationProvider.initialize();
-      logger.info('Orchestration fallback provider created and initialized for hybrid routing');
+      logger.info(
+        'Orchestration fallback provider created and initialized for hybrid routing',
+      );
     } catch (err) {
-      logger.warn(`Could not create orchestration fallback provider: ${toErrorMessage(err)}`);
+      logger.warn(
+        `Could not create orchestration fallback provider: ${toErrorMessage(err)}`,
+      );
     }
   }
 
@@ -279,13 +283,34 @@ export async function createRouter({
             title: step.getString('title'),
             description: step.getOptionalString('description'),
             side: step.getOptionalString('side'),
-            action: actionCfg ? { type: actionCfg.getString('type'), panel: actionCfg.getOptionalString('panel'), selector: actionCfg.getOptionalString('selector'), step: actionCfg.getOptionalNumber('step'), method: actionCfg.getOptionalString('method'), cardId: actionCfg.getOptionalString('cardId') } : undefined,
+            action: actionCfg
+              ? {
+                  type: actionCfg.getString('type'),
+                  panel: actionCfg.getOptionalString('panel'),
+                  selector: actionCfg.getOptionalString('selector'),
+                  step: actionCfg.getOptionalNumber('step'),
+                  method: actionCfg.getOptionalString('method'),
+                  cardId: actionCfg.getOptionalString('cardId'),
+                }
+              : undefined,
             waitFor: step.getOptionalString('waitFor'),
           };
         });
-        return { id: tour.getString('id'), title: tour.getString('title'), description: tour.getOptionalString('description'), category: tour.getOptionalString('category'), estimatedMinutes: tour.getOptionalNumber('estimatedMinutes'), persona: tour.getOptionalString('persona'), steps };
+        return {
+          id: tour.getString('id'),
+          title: tour.getString('title'),
+          description: tour.getOptionalString('description'),
+          category: tour.getOptionalString('category'),
+          estimatedMinutes: tour.getOptionalNumber('estimatedMinutes'),
+          persona: tour.getOptionalString('persona'),
+          steps,
+        };
       });
-      res.json({ success: true, tours, source: tours.length > 0 ? 'yaml' : 'defaults' });
+      res.json({
+        success: true,
+        tours,
+        source: tours.length > 0 ? 'yaml' : 'defaults',
+      });
     } catch {
       res.json({ success: true, tours: [], source: 'defaults' });
     }
@@ -306,9 +331,10 @@ export async function createRouter({
 
   // Tool lifecycle routes -- unified tool listing with lifecycle overlay
   {
-    const kagentiProvider = providerManager.provider.id === 'kagenti'
-      ? providerManager.provider as import('./providers/kagenti').KagentiProvider
-      : undefined;
+    const kagentiProvider =
+      providerManager.provider.id === 'kagenti'
+        ? (providerManager.provider as import('./providers/kagenti').KagentiProvider)
+        : undefined;
 
     registerToolLifecycleRoutes(ctx, adminConfig, {
       async listProviderTools() {
@@ -316,14 +342,21 @@ export async function createRouter({
         try {
           const apiClient = kagentiProvider.getApiClient();
           const kagentiConfig = kagentiProvider.getConfig();
-          const { getVisibleNamespaces } = await import('./providers/kagenti/kagentiNamespaceUtils');
-          const namespaces = await getVisibleNamespaces(apiClient, kagentiConfig, logger);
-          const allTools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary[] = [];
+          const { getVisibleNamespaces } =
+            await import('./providers/kagenti/kagentiNamespaceUtils');
+          const namespaces = await getVisibleNamespaces(
+            apiClient,
+            kagentiConfig,
+            logger,
+          );
+          const allTools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary[] =
+            [];
           const toolResults = await Promise.allSettled(
             namespaces.map(ns => apiClient.listTools(ns)),
           );
           for (const r of toolResults) {
-            if (r.status === 'fulfilled') allTools.push(...(r.value.items ?? []));
+            if (r.status === 'fulfilled')
+              allTools.push(...(r.value.items ?? []));
           }
           return allTools;
         } catch {

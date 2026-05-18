@@ -29,7 +29,8 @@ interface HealthMosaicProps {
 function getAgentColor(status?: string): string {
   const s = status?.toLowerCase() ?? '';
   if (s === 'ready' || s === 'running') return STATUS_COLORS.healthy;
-  if (s === 'pending' || s === 'building' || s === 'not ready') return STATUS_COLORS.warning;
+  if (s === 'pending' || s === 'building' || s === 'not ready')
+    return STATUS_COLORS.warning;
   if (s === 'failed' || s === 'error') return STATUS_COLORS.critical;
   return STATUS_COLORS.neutral;
 }
@@ -39,7 +40,11 @@ function getAgentColor(status?: string): string {
  * Each tile is a small square showing the first letter + status color.
  * Gives instant visual overview of entire fleet health at a glance.
  */
-export function HealthMosaic({ agents, title = 'Fleet Health', onAgentClick }: HealthMosaicProps & { onAgentClick?: (id: string) => void }) {
+export function HealthMosaic({
+  agents,
+  title = 'Fleet Health',
+  onAgentClick,
+}: HealthMosaicProps & { onAgentClick?: (id: string) => void }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
@@ -53,14 +58,29 @@ export function HealthMosaic({ agents, title = 'Fleet Health', onAgentClick }: H
     return order(a.status) - order(b.status);
   });
 
-  const readyCount = agents.filter(a => ['ready', 'running'].includes(a.status?.toLowerCase() ?? '')).length;
-  const warningCount = agents.filter(a => ['pending', 'building', 'not ready'].includes(a.status?.toLowerCase() ?? '')).length;
+  const readyCount = agents.filter(a =>
+    ['ready', 'running'].includes(a.status?.toLowerCase() ?? ''),
+  ).length;
+  const warningCount = agents.filter(a =>
+    ['pending', 'building', 'not ready'].includes(
+      a.status?.toLowerCase() ?? '',
+    ),
+  ).length;
   const errorCount = agents.length - readyCount - warningCount;
 
   return (
     <Box>
       {/* Title + Legend */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 1.5,
+          flexWrap: 'wrap',
+          gap: 1,
+        }}
+      >
         <Typography
           variant="subtitle2"
           sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
@@ -70,20 +90,47 @@ export function HealthMosaic({ agents, title = 'Fleet Health', onAgentClick }: H
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           {readyCount > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: STATUS_COLORS.healthy }} />
-              <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>Ready ({readyCount})</Typography>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: STATUS_COLORS.healthy,
+                }}
+              />
+              <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                Ready ({readyCount})
+              </Typography>
             </Box>
           )}
           {warningCount > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: STATUS_COLORS.warning }} />
-              <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>Building ({warningCount})</Typography>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: STATUS_COLORS.warning,
+                }}
+              />
+              <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                Building ({warningCount})
+              </Typography>
             </Box>
           )}
           {errorCount > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: STATUS_COLORS.critical }} />
-              <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>Error ({errorCount})</Typography>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: STATUS_COLORS.critical,
+                }}
+              />
+              <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                Error ({errorCount})
+              </Typography>
             </Box>
           )}
         </Box>
@@ -121,7 +168,9 @@ export function HealthMosaic({ agents, title = 'Fleet Health', onAgentClick }: H
                   justifyContent: 'center',
                   cursor: onAgentClick ? 'pointer' : 'default',
                   transition: 'all 0.15s ease',
-                  boxShadow: isHealthy ? `0 0 6px ${alpha(color, 0.3)}` : undefined,
+                  boxShadow: isHealthy
+                    ? `0 0 6px ${alpha(color, 0.3)}`
+                    : undefined,
                   '&:hover': {
                     transform: 'scale(1.12)',
                     boxShadow: `0 0 12px ${alpha(color, 0.5)}`,

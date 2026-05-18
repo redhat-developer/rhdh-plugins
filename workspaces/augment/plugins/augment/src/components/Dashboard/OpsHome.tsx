@@ -38,43 +38,46 @@ interface OpsHomeProps {
 export function OpsHome({ onNavigate }: OpsHomeProps) {
   const theme = useTheme();
 
-  const actions = useCallback(() => [
-    {
-      id: 'registry',
-      label: 'Agent Registry',
-      description: 'Agent lifecycle — promote from draft to deployment',
-      icon: <StorefrontIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-registry' as AdminPanel),
-    },
-    {
-      id: 'observability',
-      label: 'Observability',
-      description: 'Dashboards for traces, metrics, and monitoring',
-      icon: <MonitorHeartIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-dashboards' as AdminPanel),
-    },
-    {
-      id: 'platform',
-      label: 'Platform Config',
-      description: 'Model, tools, RAG, and safety settings',
-      icon: <TuneIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-platform' as AdminPanel),
-    },
-    {
-      id: 'branding',
-      label: 'Branding',
-      description: 'Appearance, prompt groups, and chat experience',
-      icon: <PaletteIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-branding' as AdminPanel),
-    },
-    {
-      id: 'admin',
-      label: 'Administration',
-      description: 'Users, namespaces, and system configuration',
-      icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: iconSize.xl }} />,
-      onClick: () => onNavigate('kagenti-admin' as AdminPanel),
-    },
-  ], [onNavigate]);
+  const actions = useCallback(
+    () => [
+      {
+        id: 'registry',
+        label: 'Agent Registry',
+        description: 'Agent lifecycle — promote from draft to deployment',
+        icon: <StorefrontIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-registry' as AdminPanel),
+      },
+      {
+        id: 'observability',
+        label: 'Observability',
+        description: 'Dashboards for traces, metrics, and monitoring',
+        icon: <MonitorHeartIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-dashboards' as AdminPanel),
+      },
+      {
+        id: 'platform',
+        label: 'Platform Config',
+        description: 'Model, tools, RAG, and safety settings',
+        icon: <TuneIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-platform' as AdminPanel),
+      },
+      {
+        id: 'branding',
+        label: 'Branding',
+        description: 'Appearance, prompt groups, and chat experience',
+        icon: <PaletteIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-branding' as AdminPanel),
+      },
+      {
+        id: 'admin',
+        label: 'Administration',
+        description: 'Users, namespaces, and system configuration',
+        icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: iconSize.xl }} />,
+        onClick: () => onNavigate('kagenti-admin' as AdminPanel),
+      },
+    ],
+    [onNavigate],
+  );
 
   return (
     <Box sx={{ maxWidth: 900 }}>

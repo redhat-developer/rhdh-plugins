@@ -164,7 +164,9 @@ export function KagentiSidebar({
           {
             id: 'kagenti-admin' as AdminPanel,
             label: t('commandCenter.administration'),
-            icon: <AdminPanelSettingsOutlinedIcon sx={{ fontSize: iconSize.lg }} />,
+            icon: (
+              <AdminPanelSettingsOutlinedIcon sx={{ fontSize: iconSize.lg }} />
+            ),
             description: 'Users, namespaces, and build config',
             tourId: 'nav-admin',
           },

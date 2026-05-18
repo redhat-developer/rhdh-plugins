@@ -21,17 +21,24 @@ import type { NodeConfigProps } from './types';
 
 const V = 'standard' as const;
 
-export function AgentNodeConfig({ nodeData, update, availableModels }: NodeConfigProps) {
+export function AgentNodeConfig({
+  nodeData,
+  update,
+  availableModels,
+}: NodeConfigProps) {
   const [mcpInput, setMcpInput] = useState('');
   const [schemaError, setSchemaError] = useState<string | null>(null);
-  const mcpServers = Array.isArray(nodeData.mcpServers) ? (nodeData.mcpServers as string[]) : [];
+  const mcpServers = Array.isArray(nodeData.mcpServers)
+    ? (nodeData.mcpServers as string[])
+    : [];
 
   const agentKey = (nodeData.agentKey as string) || '';
   const instructions = (nodeData.instructions as string) || '';
 
   const handleAddMcpServer = () => {
     const trimmed = mcpInput.trim();
-    if (trimmed && !mcpServers.includes(trimmed)) update('mcpServers', [...mcpServers, trimmed]);
+    if (trimmed && !mcpServers.includes(trimmed))
+      update('mcpServers', [...mcpServers, trimmed]);
     setMcpInput('');
   };
 
@@ -49,9 +56,23 @@ export function AgentNodeConfig({ nodeData, update, availableModels }: NodeConfi
     }
   };
 
-  const sectionSx = { '&:before': { display: 'none' }, '&.MuiAccordion-root': { mb: 0 }, borderBottom: '1px solid', borderColor: 'divider' };
-  const summarySx = { px: 0, minHeight: 36, '& .MuiAccordionSummary-content': { my: 0.75 } };
-  const headerSx = { fontSize: '0.8rem', letterSpacing: '0.02em', textTransform: 'uppercase' as const, color: 'text.primary' };
+  const sectionSx = {
+    '&:before': { display: 'none' },
+    '&.MuiAccordion-root': { mb: 0 },
+    borderBottom: '1px solid',
+    borderColor: 'divider',
+  };
+  const summarySx = {
+    px: 0,
+    minHeight: 36,
+    '& .MuiAccordionSummary-content': { my: 0.75 },
+  };
+  const headerSx = {
+    fontSize: '0.8rem',
+    letterSpacing: '0.02em',
+    textTransform: 'uppercase' as const,
+    color: 'text.primary',
+  };
   const detailsSx = { px: 0, pt: 1, pb: 1.5 };
   const f = { mb: 2 };
 
@@ -66,39 +87,76 @@ export function AgentNodeConfig({ nodeData, update, availableModels }: NodeConfi
   return (
     <>
       <Accordion defaultExpanded disableGutters elevation={0} sx={sectionSx}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />} sx={summarySx}>
-          <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>Identity</Typography>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />}
+          sx={summarySx}
+        >
+          <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>
+            Identity
+          </Typography>
         </AccordionSummary>
         <AccordionDetails sx={detailsSx}>
           <TextField
-            variant={V} label="Agent Key" fullWidth
+            variant={V}
+            label="Agent Key"
+            fullWidth
             value={agentKey}
             onChange={e => update('agentKey', e.target.value)}
             error={!agentKey}
-            helperText={!agentKey ? 'Required — unique identifier for this agent' : 'Unique identifier'}
+            helperText={
+              !agentKey
+                ? 'Required — unique identifier for this agent'
+                : 'Unique identifier'
+            }
             placeholder="support-agent"
             sx={f}
           />
-          <TextField variant={V} label="Name" fullWidth value={(nodeData.name as string) || ''} placeholder="Support Agent" onChange={e => { update('name', e.target.value); update('label', e.target.value); }} />
+          <TextField
+            variant={V}
+            label="Name"
+            fullWidth
+            value={(nodeData.name as string) || ''}
+            placeholder="Support Agent"
+            onChange={e => {
+              update('name', e.target.value);
+              update('label', e.target.value);
+            }}
+          />
         </AccordionDetails>
       </Accordion>
 
       <Accordion defaultExpanded disableGutters elevation={0} sx={sectionSx}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />} sx={summarySx}>
-          <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>Instructions</Typography>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />}
+          sx={summarySx}
+        >
+          <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>
+            Instructions
+          </Typography>
         </AccordionSummary>
         <AccordionDetails sx={detailsSx}>
           <TextField
-            variant={V} label="Instructions" fullWidth multiline minRows={3} maxRows={8}
+            variant={V}
+            label="Instructions"
+            fullWidth
+            multiline
+            minRows={3}
+            maxRows={8}
             value={instructions}
             onChange={e => update('instructions', e.target.value)}
             error={!instructions}
-            helperText={!instructions ? 'Required — tell the agent how to behave' : 'System behavior prompt'}
+            helperText={
+              !instructions
+                ? 'Required — tell the agent how to behave'
+                : 'System behavior prompt'
+            }
             placeholder="You are a helpful assistant that..."
             sx={f}
           />
           <TextField
-            variant={V} label="Handoff Description" fullWidth
+            variant={V}
+            label="Handoff Description"
+            fullWidth
             value={(nodeData.handoffDescription as string) || ''}
             onChange={e => update('handoffDescription', e.target.value)}
             helperText="Describes when to hand off to this agent"
@@ -108,38 +166,115 @@ export function AgentNodeConfig({ nodeData, update, availableModels }: NodeConfi
       </Accordion>
 
       <Accordion defaultExpanded disableGutters elevation={0} sx={sectionSx}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />} sx={summarySx}>
-          <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>Model</Typography>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />}
+          sx={summarySx}
+        >
+          <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>
+            Model
+          </Typography>
         </AccordionSummary>
         <AccordionDetails sx={detailsSx}>
           {availableModels.length > 0 ? (
             <FormControl variant={V} fullWidth sx={f}>
               <InputLabel>Model</InputLabel>
-              <Select value={(nodeData.model as string) || ''} label="Model" onChange={e => update('model', e.target.value)}>
-                <MenuItem value=""><em>Default</em></MenuItem>
-                {availableModels.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+              <Select
+                value={(nodeData.model as string) || ''}
+                label="Model"
+                onChange={e => update('model', e.target.value)}
+              >
+                <MenuItem value="">
+                  <em>Default</em>
+                </MenuItem>
+                {availableModels.map(m => (
+                  <MenuItem key={m} value={m}>
+                    {m}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           ) : (
-            <TextField variant={V} label="Model" fullWidth value={(nodeData.model as string) || ''} onChange={e => update('model', e.target.value)} sx={f} helperText="Leave empty to use default model" />
+            <TextField
+              variant={V}
+              label="Model"
+              fullWidth
+              value={(nodeData.model as string) || ''}
+              onChange={e => update('model', e.target.value)}
+              sx={f}
+              helperText="Leave empty to use default model"
+            />
           )}
-          <TextField variant={V} label="Temperature" type="number" fullWidth value={(nodeData.temperature as number) ?? ''} onChange={e => update('temperature', e.target.value ? parseFloat(e.target.value) : undefined)} sx={f} inputProps={{ min: 0, max: 2, step: 0.1 }} helperText="0 = deterministic, 2 = creative" />
-          <TextField variant={V} label="Max Tokens" type="number" fullWidth value={(nodeData.maxOutputTokens as number) ?? ''} onChange={e => update('maxOutputTokens', e.target.value ? parseInt(e.target.value, 10) : undefined)} helperText="Maximum output length" />
+          <TextField
+            variant={V}
+            label="Temperature"
+            type="number"
+            fullWidth
+            value={(nodeData.temperature as number) ?? ''}
+            onChange={e =>
+              update(
+                'temperature',
+                e.target.value ? parseFloat(e.target.value) : undefined,
+              )
+            }
+            sx={f}
+            inputProps={{ min: 0, max: 2, step: 0.1 }}
+            helperText="0 = deterministic, 2 = creative"
+          />
+          <TextField
+            variant={V}
+            label="Max Tokens"
+            type="number"
+            fullWidth
+            value={(nodeData.maxOutputTokens as number) ?? ''}
+            onChange={e =>
+              update(
+                'maxOutputTokens',
+                e.target.value ? parseInt(e.target.value, 10) : undefined,
+              )
+            }
+            helperText="Maximum output length"
+          />
         </AccordionDetails>
       </Accordion>
 
       <Accordion disableGutters elevation={0} sx={sectionSx}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />} sx={summarySx}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />}
+          sx={summarySx}
+        >
           <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>
             Behavior
             <InfoTip text="Control how the agent processes requests and generates responses" />
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={detailsSx}>
-          <FormControlLabel control={<Switch size="small" checked={Boolean(nodeData.chatHistory !== false)} onChange={e => update('chatHistory', e.target.checked)} />} label={<Typography variant="body2" sx={{ fontSize: '0.8rem' }}>Chat history</Typography>} sx={{ mb: 1.5, ml: -0.5 }} />
+          <FormControlLabel
+            control={
+              <Switch
+                size="small"
+                checked={Boolean(nodeData.chatHistory !== false)}
+                onChange={e => update('chatHistory', e.target.checked)}
+              />
+            }
+            label={
+              <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                Chat history
+              </Typography>
+            }
+            sx={{ mb: 1.5, ml: -0.5 }}
+          />
           <FormControl variant={V} fullWidth sx={f}>
             <InputLabel>Reasoning Effort</InputLabel>
-            <Select value={(nodeData.reasoningEffort as string) || 'default'} label="Reasoning Effort" onChange={e => update('reasoningEffort', e.target.value === 'default' ? undefined : e.target.value)}>
+            <Select
+              value={(nodeData.reasoningEffort as string) || 'default'}
+              label="Reasoning Effort"
+              onChange={e =>
+                update(
+                  'reasoningEffort',
+                  e.target.value === 'default' ? undefined : e.target.value,
+                )
+              }
+            >
               <MenuItem value="default">Default</MenuItem>
               <MenuItem value="minimal">Minimal</MenuItem>
               <MenuItem value="low">Low</MenuItem>
@@ -149,7 +284,11 @@ export function AgentNodeConfig({ nodeData, update, availableModels }: NodeConfi
           </FormControl>
           <FormControl variant={V} fullWidth>
             <InputLabel>Output Format</InputLabel>
-            <Select value={(nodeData.outputFormat as string) || 'text'} label="Output Format" onChange={e => update('outputFormat', e.target.value)}>
+            <Select
+              value={(nodeData.outputFormat as string) || 'text'}
+              label="Output Format"
+              onChange={e => update('outputFormat', e.target.value)}
+            >
               <MenuItem value="text">Text</MenuItem>
               <MenuItem value="json_object">JSON Object</MenuItem>
               <MenuItem value="json_schema">JSON Schema</MenuItem>
@@ -159,7 +298,10 @@ export function AgentNodeConfig({ nodeData, update, availableModels }: NodeConfi
       </Accordion>
 
       <Accordion disableGutters elevation={0} sx={sectionSx}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />} sx={summarySx}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />}
+          sx={summarySx}
+        >
           <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>
             Structured Output
             <InfoTip text="Define a JSON schema for typed agent output. Uses Zod-compatible format." />
@@ -167,31 +309,93 @@ export function AgentNodeConfig({ nodeData, update, availableModels }: NodeConfi
         </AccordionSummary>
         <AccordionDetails sx={detailsSx}>
           <TextField
-            variant={V} label="Schema (JSON)" fullWidth multiline minRows={3} maxRows={8}
-            value={nodeData.outputSchema ? JSON.stringify(nodeData.outputSchema, null, 2) : ''}
+            variant={V}
+            label="Schema (JSON)"
+            fullWidth
+            multiline
+            minRows={3}
+            maxRows={8}
+            value={
+              nodeData.outputSchema
+                ? JSON.stringify(nodeData.outputSchema, null, 2)
+                : ''
+            }
             onChange={e => handleSchemaChange(e.target.value)}
             error={!!schemaError}
             helperText={schemaError || 'Zod-compatible typed output'}
-            placeholder={'{"classification": "z.enum([\\"billing\\", \\"support\\"])"}'}
+            placeholder={
+              '{"classification": "z.enum([\\"billing\\", \\"support\\"])"}'
+            }
           />
         </AccordionDetails>
       </Accordion>
 
       <Accordion disableGutters elevation={0} sx={sectionSx}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />} sx={summarySx}>
-          <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>Tools</Typography>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />}
+          sx={summarySx}
+        >
+          <Typography variant="subtitle2" fontWeight={600} sx={headerSx}>
+            Tools
+          </Typography>
         </AccordionSummary>
         <AccordionDetails sx={detailsSx}>
-          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: mcpServers.length ? 1.5 : 0 }}>
-            {mcpServers.map(s => <Chip key={s} label={s} size="small" onDelete={() => update('mcpServers', mcpServers.filter(x => x !== s))} />)}
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 0.5,
+              flexWrap: 'wrap',
+              mb: mcpServers.length ? 1.5 : 0,
+            }}
+          >
+            {mcpServers.map(s => (
+              <Chip
+                key={s}
+                label={s}
+                size="small"
+                onDelete={() =>
+                  update(
+                    'mcpServers',
+                    mcpServers.filter(x => x !== s),
+                  )
+                }
+              />
+            ))}
           </Box>
-          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-end', mb: 2 }}>
-            <TextField variant={V} label="MCP Server URL" fullWidth value={mcpInput} onChange={e => setMcpInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddMcpServer(); } }} placeholder="https://mcp-server.example.com/sse" helperText="SSE or stdio endpoint URL" />
-            <Button variant="text" size="small" onClick={handleAddMcpServer} sx={{ minWidth: 32, px: 0.5 }}>+</Button>
+          <Box
+            sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-end', mb: 2 }}
+          >
+            <TextField
+              variant={V}
+              label="MCP Server URL"
+              fullWidth
+              value={mcpInput}
+              onChange={e => setMcpInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddMcpServer();
+                }
+              }}
+              placeholder="https://mcp-server.example.com/sse"
+              helperText="SSE or stdio endpoint URL"
+            />
+            <Button
+              variant="text"
+              size="small"
+              onClick={handleAddMcpServer}
+              sx={{ minWidth: 32, px: 0.5 }}
+            >
+              +
+            </Button>
           </Box>
           <FormControl variant={V} fullWidth>
             <InputLabel>Tool Behavior</InputLabel>
-            <Select value={(nodeData.toolUseBehavior as string) || 'run_llm_again'} label="Tool Behavior" onChange={e => update('toolUseBehavior', e.target.value)}>
+            <Select
+              value={(nodeData.toolUseBehavior as string) || 'run_llm_again'}
+              label="Tool Behavior"
+              onChange={e => update('toolUseBehavior', e.target.value)}
+            >
               <MenuItem value="run_llm_again">Run LLM Again</MenuItem>
               <MenuItem value="stop_on_first_tool">Stop on First</MenuItem>
             </Select>

@@ -323,7 +323,10 @@ export const AgentWizardBuildStep: FC<AgentWizardBuildStepProps> = ({
             sx={{ color: theme.palette.success.main, fontSize: 28 }}
           />
           <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 700, color: 'text.primary' }}
+            >
               {resourceLabel.charAt(0).toUpperCase() + resourceLabel.slice(1)}{' '}
               deployed successfully
             </Typography>

@@ -80,7 +80,11 @@ export interface UseChatSessionsReturn {
     adminView?: boolean,
     sessionModel?: string,
   ) => Promise<void>;
-  guardedSelectSession: (sessionId: string, adminView?: boolean, sessionModel?: string) => void;
+  guardedSelectSession: (
+    sessionId: string,
+    adminView?: boolean,
+    sessionModel?: string,
+  ) => void;
   handleSwitchConfirm: () => void;
   handleSwitchCancel: () => void;
 }

@@ -61,7 +61,13 @@ import {
   subtleBorder,
   tableContainerSx,
 } from '../shared/commandCenterStyles';
-import { typeScale, iconSize, glassSurface, borderRadius, transitions } from '../../../theme/tokens';
+import {
+  typeScale,
+  iconSize,
+  glassSurface,
+  borderRadius,
+  transitions,
+} from '../../../theme/tokens';
 import { InfoTip } from '../shared/InfoTip';
 import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
 
@@ -157,7 +163,9 @@ export function KagentiHomeDashboard({
         api
           .listKagentiShipwrightBuilds(namespace ? { namespace } : undefined)
           .catch((e: unknown) => {
-            setBuildError(e instanceof Error ? e.message : 'Failed to load builds');
+            setBuildError(
+              e instanceof Error ? e.message : 'Failed to load builds',
+            );
             return { builds: [] as KagentiBuildListItem[] };
           }),
       ]);
@@ -380,7 +388,13 @@ export function KagentiHomeDashboard({
                     )
                   }
                 >
-                  <TableCell sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     <Typography
                       variant="body2"
                       noWrap
@@ -450,7 +464,9 @@ export function KagentiHomeDashboard({
     if (buildError) {
       return (
         <Box sx={{ p: 4, textAlign: 'center' }}>
-          <WarningAmberIcon sx={{ fontSize: 32, color: theme.palette.warning.main, mb: 1 }} />
+          <WarningAmberIcon
+            sx={{ fontSize: 32, color: theme.palette.warning.main, mb: 1 }}
+          />
           <Typography variant="body2" color="error" sx={{ mb: 0.5 }}>
             Failed to load builds
           </Typography>
@@ -655,7 +671,10 @@ export function KagentiHomeDashboard({
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <RocketLaunchIcon
-                sx={{ fontSize: iconSize.lg, color: theme.palette.text.secondary }}
+                sx={{
+                  fontSize: iconSize.lg,
+                  color: theme.palette.text.secondary,
+                }}
               />
               <Typography
                 variant="h6"
@@ -722,10 +741,7 @@ export function KagentiHomeDashboard({
                     justifyContent: 'center',
                     bgcolor: step.done
                       ? alpha(theme.palette.success.main, isDark ? 0.15 : 0.1)
-                      : alpha(
-                          theme.palette.text.primary,
-                          isDark ? 0.1 : 0.06,
-                        ),
+                      : alpha(theme.palette.text.primary, isDark ? 0.1 : 0.06),
                     color: step.done
                       ? theme.palette.success.main
                       : theme.palette.text.secondary,
@@ -788,80 +804,84 @@ export function KagentiHomeDashboard({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(3, 1fr)',
+            },
             gap: 1.5,
             mb: 2,
           }}
         >
           {createActions.map(action => (
-          <Card
-            key={action.label}
-            variant="outlined"
-            sx={{
-              transition: HOVER_TRANSITION,
-              border: subtleBorder(theme),
-              '&:hover': {
-                borderColor: theme.palette.text.disabled,
-              },
-            }}
-          >
-            <CardActionArea
-              onClick={() =>
-                action.action ? action.action() : onNavigate(action.panel)
-              }
+            <Card
+              key={action.label}
+              variant="outlined"
               sx={{
-                p: 1.5,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
+                transition: HOVER_TRANSITION,
+                border: subtleBorder(theme),
+                '&:hover': {
+                  borderColor: theme.palette.text.disabled,
+                },
               }}
             >
-              <Box
+              <CardActionArea
+                onClick={() =>
+                  action.action ? action.action() : onNavigate(action.panel)
+                }
                 sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 1.5,
+                  p: 1.5,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: alpha(
-                    theme.palette.text.primary,
-                    isDark ? 0.08 : 0.05,
-                  ),
-                  color: theme.palette.text.secondary,
-                  flexShrink: 0,
+                  gap: 1.5,
                 }}
               >
-                {action.icon}
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  variant="subtitle2"
+                <Box
                   sx={{
-                    fontWeight: 600,
-                    fontSize: typeScale.body.fontSize,
-                    color: 'text.primary',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 1.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: alpha(
+                      theme.palette.text.primary,
+                      isDark ? 0.08 : 0.05,
+                    ),
+                    color: theme.palette.text.secondary,
+                    flexShrink: 0,
                   }}
                 >
-                  {action.label}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: theme.palette.text.secondary }}
-                >
-                  {action.description}
-                </Typography>
-              </Box>
-              <ArrowForwardIcon
-                sx={{
-                  fontSize: iconSize.sm,
-                  color: theme.palette.text.disabled,
-                  flexShrink: 0,
-                }}
-              />
-            </CardActionArea>
-          </Card>
-        ))}
+                  {action.icon}
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: typeScale.body.fontSize,
+                      color: 'text.primary',
+                    }}
+                  >
+                    {action.label}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.text.secondary }}
+                  >
+                    {action.description}
+                  </Typography>
+                </Box>
+                <ArrowForwardIcon
+                  sx={{
+                    fontSize: iconSize.sm,
+                    color: theme.palette.text.disabled,
+                    flexShrink: 0,
+                  }}
+                />
+              </CardActionArea>
+            </Card>
+          ))}
         </Box>
       </Box>
 

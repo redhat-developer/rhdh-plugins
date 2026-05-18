@@ -106,7 +106,7 @@ export function NamespacePicker({
         displayEmpty
         MenuProps={SELECT_MENU_PROPS}
         renderValue={sel =>
-          sel ? String(sel) : (required ? 'Select a namespace' : 'All namespaces')
+          sel ? String(sel) : required ? 'Select a namespace' : 'All namespaces'
         }
       >
         {!required && (

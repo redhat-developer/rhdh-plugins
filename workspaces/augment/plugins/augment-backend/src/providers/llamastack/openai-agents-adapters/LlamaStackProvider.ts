@@ -37,16 +37,11 @@ export class LlamaStackProvider implements ModelProvider {
   getModel(modelName?: string): Model {
     const config = this.getEffectiveConfig();
     if (modelName && modelName !== config.model) {
-      return new LlamaStackModel(
-        this.chatService,
-        this.client,
-        { ...config, model: modelName },
-      );
+      return new LlamaStackModel(this.chatService, this.client, {
+        ...config,
+        model: modelName,
+      });
     }
-    return new LlamaStackModel(
-      this.chatService,
-      this.client,
-      config,
-    );
+    return new LlamaStackModel(this.chatService, this.client, config);
   }
 }

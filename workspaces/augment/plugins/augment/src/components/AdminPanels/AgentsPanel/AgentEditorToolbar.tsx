@@ -94,7 +94,9 @@ export const AgentEditorToolbar = React.memo(function AgentEditorToolbar({
               MenuProps={SELECT_MENU_PROPS}
             >
               {agentKeys.map(k => (
-                <MenuItem key={k} value={k} sx={{ fontSize: '0.8rem' }}>{agents[k].name || k}</MenuItem>
+                <MenuItem key={k} value={k} sx={{ fontSize: '0.8rem' }}>
+                  {agents[k].name || k}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -104,7 +106,9 @@ export const AgentEditorToolbar = React.memo(function AgentEditorToolbar({
             label="Max Turns"
             value={maxTurns}
             onChange={e =>
-              onSetMaxTurns(Math.max(MIN_TURNS, parseInt(e.target.value, 10) || MIN_TURNS))
+              onSetMaxTurns(
+                Math.max(MIN_TURNS, parseInt(e.target.value, 10) || MIN_TURNS),
+              )
             }
             inputProps={{ min: MIN_TURNS, max: MAX_TURNS }}
             sx={{ width: 85, '& input': { fontSize: '0.8rem' } }}
@@ -155,7 +159,9 @@ export const AgentEditorToolbar = React.memo(function AgentEditorToolbar({
               )
             }
             onClick={onSave}
-            disabled={saving || validationErrors.length > 0 || agentKeys.length === 0}
+            disabled={
+              saving || validationErrors.length > 0 || agentKeys.length === 0
+            }
             color={saveSuccess ? 'success' : 'primary'}
             sx={{ textTransform: 'none', minWidth: 68, fontWeight: 600 }}
           >

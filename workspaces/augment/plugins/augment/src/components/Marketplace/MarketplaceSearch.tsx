@@ -57,13 +57,18 @@ export function MarketplaceSearch({
             borderRadius: 1.5,
             height: 34,
             fontSize: '0.82rem',
-            bgcolor: alpha(theme.palette.background.default, isDark ? 0.3 : 0.7),
+            bgcolor: alpha(
+              theme.palette.background.default,
+              isDark ? 0.3 : 0.7,
+            ),
           },
         }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <SearchIcon sx={{ fontSize: 16, color: theme.palette.text.disabled }} />
+              <SearchIcon
+                sx={{ fontSize: 16, color: theme.palette.text.disabled }}
+              />
             </InputAdornment>
           ),
         }}
@@ -75,7 +80,12 @@ export function MarketplaceSearch({
           variant={selectedFramework === null ? 'filled' : 'outlined'}
           color={selectedFramework === null ? 'primary' : 'default'}
           onClick={() => onFrameworkChange(null)}
-          sx={{ cursor: 'pointer', height: 26, borderRadius: 1.5, fontSize: '0.75rem' }}
+          sx={{
+            cursor: 'pointer',
+            height: 26,
+            borderRadius: 1.5,
+            fontSize: '0.75rem',
+          }}
         />
         {frameworks.map(fw => (
           <Chip
@@ -84,12 +94,26 @@ export function MarketplaceSearch({
             size="small"
             variant={selectedFramework === fw ? 'filled' : 'outlined'}
             color={selectedFramework === fw ? 'primary' : 'default'}
-            onClick={() => onFrameworkChange(fw === selectedFramework ? null : fw)}
-            sx={{ cursor: 'pointer', height: 26, borderRadius: 1.5, fontSize: '0.75rem' }}
+            onClick={() =>
+              onFrameworkChange(fw === selectedFramework ? null : fw)
+            }
+            sx={{
+              cursor: 'pointer',
+              height: 26,
+              borderRadius: 1.5,
+              fontSize: '0.75rem',
+            }}
           />
         ))}
       </Box>
-      <Typography variant="caption" sx={{ color: theme.palette.text.disabled, whiteSpace: 'nowrap', fontSize: '0.72rem' }}>
+      <Typography
+        variant="caption"
+        sx={{
+          color: theme.palette.text.disabled,
+          whiteSpace: 'nowrap',
+          fontSize: '0.72rem',
+        }}
+      >
         {resultCount} agent{resultCount !== 1 ? 's' : ''}
       </Typography>
     </Box>

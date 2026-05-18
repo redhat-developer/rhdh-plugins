@@ -71,8 +71,12 @@ export function SettingsPage({ initialTab = 'platform' }: SettingsPageProps) {
         >
           Settings
         </Typography>
-        <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-          Configure the platform, customize branding, and manage system settings.
+        <Typography
+          variant="body2"
+          sx={{ color: theme.palette.text.secondary }}
+        >
+          Configure the platform, customize branding, and manage system
+          settings.
         </Typography>
       </Box>
 

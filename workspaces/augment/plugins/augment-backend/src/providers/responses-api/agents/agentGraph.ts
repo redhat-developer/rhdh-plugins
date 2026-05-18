@@ -34,8 +34,20 @@ export interface ResolvedAgent {
   key: string;
   functionName: string;
   config: AgentConfig;
-  handoffTools: Array<{ type: string; name: string; description?: string; parameters?: unknown; strict?: boolean }>;
-  agentAsToolTools: Array<{ type: string; name: string; description?: string; parameters?: unknown; strict?: boolean }>;
+  handoffTools: Array<{
+    type: string;
+    name: string;
+    description?: string;
+    parameters?: unknown;
+    strict?: boolean;
+  }>;
+  agentAsToolTools: Array<{
+    type: string;
+    name: string;
+    description?: string;
+    parameters?: unknown;
+    strict?: boolean;
+  }>;
   handoffTargetKeys: Set<string>;
   asToolTargetKeys: Set<string>;
 }

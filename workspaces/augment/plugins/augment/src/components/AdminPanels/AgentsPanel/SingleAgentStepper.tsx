@@ -92,11 +92,14 @@ export const SingleAgentStepper = React.memo(function SingleAgentStepper({
               Name Your Agent
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Give your agent a clear, descriptive name so users know what it does.
+              Give your agent a clear, descriptive name so users know what it
+              does.
             </Typography>
             <TextField
               value={selectedAgent.name}
-              onChange={e => updateAgent(selectedAgentKey, 'name', e.target.value)}
+              onChange={e =>
+                updateAgent(selectedAgentKey, 'name', e.target.value)
+              }
               onKeyDown={e => {
                 if (e.key === 'Enter' && selectedAgent.name.trim()) {
                   e.preventDefault();
@@ -109,7 +112,11 @@ export const SingleAgentStepper = React.memo(function SingleAgentStepper({
               autoFocus
               size="small"
               error={selectedAgent.name.trim() === '' && isDirty}
-              helperText={selectedAgent.name.trim() === '' && isDirty ? 'Name is required' : undefined}
+              helperText={
+                selectedAgent.name.trim() === '' && isDirty
+                  ? 'Name is required'
+                  : undefined
+              }
               sx={{ mb: 3, maxWidth: 480 }}
             />
             <Typography sx={{ ...SECTION_LABEL_SX, mb: 1.5 }}>
@@ -122,16 +129,23 @@ export const SingleAgentStepper = React.memo(function SingleAgentStepper({
                   role="button"
                   tabIndex={0}
                   onClick={() => applyTemplate(tpl.id)}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyTemplate(tpl.id); } }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      applyTemplate(tpl.id);
+                    }
+                  }}
                   sx={{
                     p: 2,
                     borderRadius: 2,
-                    border: selectedTemplate === tpl.id
-                      ? `2px solid ${theme.palette.primary.main}`
-                      : `1px solid ${theme.palette.divider}`,
-                    bgcolor: selectedTemplate === tpl.id
-                      ? alpha(theme.palette.primary.main, 0.04)
-                      : 'transparent',
+                    border:
+                      selectedTemplate === tpl.id
+                        ? `2px solid ${theme.palette.primary.main}`
+                        : `1px solid ${theme.palette.divider}`,
+                    bgcolor:
+                      selectedTemplate === tpl.id
+                        ? alpha(theme.palette.primary.main, 0.04)
+                        : 'transparent',
                     cursor: 'pointer',
                     width: 180,
                     transition: HOVER_TRANSITION,
@@ -144,10 +158,18 @@ export const SingleAgentStepper = React.memo(function SingleAgentStepper({
                   <Box sx={{ color: theme.palette.primary.main, mb: 1 }}>
                     {tpl.icon}
                   </Box>
-                  <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', mb: 0.5 }}>
+                  <Typography
+                    sx={{ fontWeight: 600, fontSize: '0.85rem', mb: 0.5 }}
+                  >
                     {tpl.name}
                   </Typography>
-                  <Typography sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary, lineHeight: 1.4 }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.7rem',
+                      color: theme.palette.text.secondary,
+                      lineHeight: 1.4,
+                    }}
+                  >
                     {tpl.description}
                   </Typography>
                 </Box>
@@ -162,7 +184,8 @@ export const SingleAgentStepper = React.memo(function SingleAgentStepper({
               Write Instructions
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Define exactly what your agent should do. This is the system prompt sent to the model.
+              Define exactly what your agent should do. This is the system
+              prompt sent to the model.
             </Typography>
             <InstructionsTab
               agent={selectedAgent}

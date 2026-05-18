@@ -96,7 +96,8 @@ export function WorkflowVersions({
             textAlign="center"
             sx={{ mt: 4, px: 2 }}
           >
-            No published versions yet. Publish the workflow to create version snapshots.
+            No published versions yet. Publish the workflow to create version
+            snapshots.
           </Typography>
         ) : (
           <List dense disablePadding>
@@ -106,7 +107,10 @@ export function WorkflowVersions({
                 sx={{
                   borderBottom: '1px solid',
                   borderColor: 'divider',
-                  bgcolor: v.version === currentVersion ? 'action.selected' : undefined,
+                  bgcolor:
+                    v.version === currentVersion
+                      ? 'action.selected'
+                      : undefined,
                 }}
               >
                 <ListItemText
@@ -116,7 +120,12 @@ export function WorkflowVersions({
                         v{v.version}
                       </Typography>
                       {v.version === currentVersion && (
-                        <Chip label="current" size="small" color="primary" sx={{ height: 18, fontSize: '0.65rem' }} />
+                        <Chip
+                          label="current"
+                          size="small"
+                          color="primary"
+                          sx={{ height: 18, fontSize: '0.65rem' }}
+                        />
                       )}
                     </Box>
                   }
@@ -129,7 +138,11 @@ export function WorkflowVersions({
                         by {v.publishedBy}
                       </Typography>
                       {v.changelog && (
-                        <Typography variant="caption" display="block" sx={{ mt: 0.5, fontStyle: 'italic' }}>
+                        <Typography
+                          variant="caption"
+                          display="block"
+                          sx={{ mt: 0.5, fontStyle: 'italic' }}
+                        >
                           {v.changelog}
                         </Typography>
                       )}
@@ -144,7 +157,10 @@ export function WorkflowVersions({
                   </Tooltip>
                   {v.version !== currentVersion && (
                     <Tooltip title="Restore this version">
-                      <IconButton size="small" onClick={() => handleRestore(v.version)}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRestore(v.version)}
+                      >
                         <RestoreIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -156,7 +172,10 @@ export function WorkflowVersions({
         )}
       </Box>
 
-      <Dialog open={confirmRestore !== null} onClose={() => setConfirmRestore(null)}>
+      <Dialog
+        open={confirmRestore !== null}
+        onClose={() => setConfirmRestore(null)}
+      >
         <DialogTitle>Restore Version?</DialogTitle>
         <DialogContent>
           <Typography>
@@ -166,7 +185,11 @@ export function WorkflowVersions({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmRestore(null)}>Cancel</Button>
-          <Button onClick={handleConfirmRestore} variant="contained" color="primary">
+          <Button
+            onClick={handleConfirmRestore}
+            variant="contained"
+            color="primary"
+          >
             Restore
           </Button>
         </DialogActions>

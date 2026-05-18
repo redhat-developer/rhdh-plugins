@@ -124,7 +124,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { t } = useTranslation();
   const [logoError, setLogoError] = useState(false);
   const [agentSearch, setAgentSearch] = useState('');
-  const { agents: allAgents, loading: agentsLoading, error: agentsError, fetchAgents: retryFetchAgents } = useAgentGalleryData(api);
+  const {
+    agents: allAgents,
+    loading: agentsLoading,
+    error: agentsError,
+    fetchAgents: retryFetchAgents,
+  } = useAgentGalleryData(api);
 
   const safeLogoUrl = useMemo(
     () => sanitizeBrandingUrl(branding.logoUrl),
@@ -173,7 +178,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     const hiddenIds = new Set(
       chatAgentConfigs.filter(c => !c.visible).map(c => c.agentId),
     );
-    return allAgents.filter((a: AgentWithCard) => !hiddenIds.has(`${a.namespace}/${a.name}`));
+    return allAgents.filter(
+      (a: AgentWithCard) => !hiddenIds.has(`${a.namespace}/${a.name}`),
+    );
   }, [allAgents, chatAgentConfigs]);
 
   // Search-filtered and sorted agents
@@ -183,7 +190,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       const q = agentSearch.toLowerCase();
       list = list.filter((a: AgentWithCard) => {
         const name = (a.agentCard?.name || a.name).toLowerCase();
-        const desc = (a.agentCard?.description || a.description || '').toLowerCase();
+        const desc = (
+          a.agentCard?.description ||
+          a.description ||
+          ''
+        ).toLowerCase();
         return name.includes(q) || desc.includes(q);
       });
     }
@@ -400,7 +411,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: alpha(branding.primaryColor || theme.palette.primary.main, isDark ? 0.15 : 0.08),
+              bgcolor: alpha(
+                branding.primaryColor || theme.palette.primary.main,
+                isDark ? 0.15 : 0.08,
+              ),
               mx: 'auto',
               mb: 1.5,
             }}
@@ -412,7 +426,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               }}
             />
           </Box>
-          <Typography variant="h5" sx={{ ...titleSx, fontSize: typeScale.pageTitle.fontSize, mb: 0.5 }}>
+          <Typography
+            variant="h5"
+            sx={{ ...titleSx, fontSize: typeScale.pageTitle.fontSize, mb: 0.5 }}
+          >
             Agent Playground
           </Typography>
           <Typography variant="body2" sx={TAGLINE_SX}>
@@ -427,7 +444,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               display: 'block',
             }}
           >
-            {visibleAgents.length} {visibleAgents.length === 1 ? 'agent' : 'agents'} available
+            {visibleAgents.length}{' '}
+            {visibleAgents.length === 1 ? 'agent' : 'agents'} available
           </Typography>
         </Box>
 
@@ -437,12 +455,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             size="small"
             placeholder="Search agents..."
             value={agentSearch}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgentSearch(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setAgentSearch(e.target.value)
+            }
             fullWidth
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ fontSize: iconSize.md, color: theme.palette.text.disabled }} />
+                  <SearchIcon
+                    sx={{
+                      fontSize: iconSize.md,
+                      color: theme.palette.text.disabled,
+                    }}
+                  />
                 </InputAdornment>
               ),
               endAdornment: agentSearch ? (
@@ -472,12 +497,27 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               ))}
             </Box>
           ) : agentsError ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2, px: 3 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 8,
+                gap: 2,
+                px: 3,
+              }}
+            >
               <Alert
                 severity="warning"
                 sx={{ maxWidth: 480, width: '100%' }}
                 action={
-                  <Button color="inherit" size="small" startIcon={<RefreshIcon />} onClick={retryFetchAgents}>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    startIcon={<RefreshIcon />}
+                    onClick={retryFetchAgents}
+                  >
                     Retry
                   </Button>
                 }
@@ -506,11 +546,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      bgcolor: alpha(theme.palette.primary.main, isDark ? 0.1 : 0.06),
+                      bgcolor: alpha(
+                        theme.palette.primary.main,
+                        isDark ? 0.1 : 0.06,
+                      ),
                     }}
                   >
                     <HubOutlinedIcon
-                      sx={{ fontSize: 40, color: theme.palette.primary.main, opacity: 0.6 }}
+                      sx={{
+                        fontSize: 40,
+                        color: theme.palette.primary.main,
+                        opacity: 0.6,
+                      }}
                     />
                   </Box>
                   <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -518,22 +565,37 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                   </Typography>
                   <Typography
                     variant="body2"
-                    sx={{ color: theme.palette.text.secondary, textAlign: 'center', maxWidth: 360 }}
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      textAlign: 'center',
+                      maxWidth: 360,
+                    }}
                   >
-                    Deploy agents via the Command Center to get started. They will appear here automatically.
+                    Deploy agents via the Command Center to get started. They
+                    will appear here automatically.
                   </Typography>
                 </>
               ) : (
                 <>
-                  <SearchIcon sx={{ fontSize: 40, color: alpha(theme.palette.text.disabled, 0.4) }} />
+                  <SearchIcon
+                    sx={{
+                      fontSize: 40,
+                      color: alpha(theme.palette.text.disabled, 0.4),
+                    }}
+                  />
                   <Typography variant="body1" sx={{ fontWeight: 600 }}>
                     No matching agents
                   </Typography>
                   <Typography
                     variant="body2"
-                    sx={{ color: theme.palette.text.secondary, maxWidth: 300, textAlign: 'center' }}
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      maxWidth: 300,
+                      textAlign: 'center',
+                    }}
                   >
-                    No agents match &ldquo;{agentSearch}&rdquo;. Try a different search term.
+                    No agents match &ldquo;{agentSearch}&rdquo;. Try a different
+                    search term.
                   </Typography>
                 </>
               )}
@@ -541,19 +603,30 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           ) : (
             <Box sx={getAgentGridSx(theme)}>
               {filteredAgents.map((agent: AgentWithCard, idx: number) => {
-                const displayName = chatAgentConfigs.find(
-                  c => c.agentId === `${agent.namespace}/${agent.name}`,
-                )?.displayName || agent.agentCard?.name || agent.name;
+                const displayName =
+                  chatAgentConfigs.find(
+                    c => c.agentId === `${agent.namespace}/${agent.name}`,
+                  )?.displayName ||
+                  agent.agentCard?.name ||
+                  agent.name;
                 const config = chatAgentConfigs.find(
                   c => c.agentId === `${agent.namespace}/${agent.name}`,
                 );
-                const description = config?.description || agent.agentCard?.description || agent.description;
-                const avatarColor = config?.accentColor || getAgentAvatarColor(displayName);
+                const description =
+                  config?.description ||
+                  agent.agentCard?.description ||
+                  agent.description;
+                const avatarColor =
+                  config?.accentColor || getAgentAvatarColor(displayName);
                 const avatarUrl = config?.avatarUrl;
                 const ready = isAgentReady(agent.status);
 
                 return (
-                  <Fade in timeout={80 + idx * 30} key={`${agent.namespace}/${agent.name}`}>
+                  <Fade
+                    in
+                    timeout={80 + idx * 30}
+                    key={`${agent.namespace}/${agent.name}`}
+                  >
                     <Card
                       variant="outlined"
                       sx={{
@@ -562,8 +635,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                         display: 'flex',
                         flexDirection: 'column',
                         opacity: ready ? 1 : 0.55,
-                        borderColor: alpha(theme.palette.divider, isDark ? 0.15 : 0.18),
-                        bgcolor: alpha(theme.palette.background.paper, isDark ? 0.6 : 0.9),
+                        borderColor: alpha(
+                          theme.palette.divider,
+                          isDark ? 0.15 : 0.18,
+                        ),
+                        bgcolor: alpha(
+                          theme.palette.background.paper,
+                          isDark ? 0.6 : 0.9,
+                        ),
                         boxShadow: isDark
                           ? `0 1px 4px ${alpha('#000', 0.2)}`
                           : `0 1px 4px ${alpha('#000', 0.06)}`,
@@ -595,7 +674,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                             flexDirection: 'column',
                           }}
                         >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1.25,
+                              mb: 1,
+                            }}
+                          >
                             {avatarUrl ? (
                               <Box
                                 component="img"
@@ -620,7 +706,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                   justifyContent: 'center',
                                   fontWeight: 700,
                                   fontSize: '1rem',
-                                  bgcolor: alpha(avatarColor, isDark ? 0.2 : 0.12),
+                                  bgcolor: alpha(
+                                    avatarColor,
+                                    isDark ? 0.2 : 0.12,
+                                  ),
                                   color: avatarColor,
                                   flexShrink: 0,
                                 }}
@@ -629,7 +718,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                               </Box>
                             )}
                             <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 0.75,
+                                }}
+                              >
                                 <Box
                                   sx={{
                                     width: 7,
@@ -644,7 +739,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                 <Typography
                                   variant="subtitle2"
                                   noWrap
-                                  sx={{ fontWeight: 700, fontSize: typeScale.body.fontSize, lineHeight: 1.3 }}
+                                  sx={{
+                                    fontWeight: 700,
+                                    fontSize: typeScale.body.fontSize,
+                                    lineHeight: 1.3,
+                                  }}
                                 >
                                   {displayName}
                                 </Typography>
@@ -677,11 +776,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                               mb: 1,
                             }}
                           >
-                            {description ? sanitizeDescription(description, 120) : '\u00A0'}
+                            {description
+                              ? sanitizeDescription(description, 120)
+                              : '\u00A0'}
                           </Typography>
 
                           {/* Chips row */}
-                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                          <Box
+                            sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}
+                          >
                             {agent.labels?.framework && (
                               <Chip
                                 label={agent.labels.framework}
@@ -691,7 +794,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                   height: 20,
                                   fontSize: typeScale.micro.fontSize,
                                   borderRadius: 1.5,
-                                  borderColor: alpha(theme.palette.divider, 0.3),
+                                  borderColor: alpha(
+                                    theme.palette.divider,
+                                    0.3,
+                                  ),
                                   color: theme.palette.text.secondary,
                                 }}
                               />
@@ -705,7 +811,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                   height: 20,
                                   fontSize: typeScale.micro.fontSize,
                                   borderRadius: 1.5,
-                                  borderColor: alpha(theme.palette.divider, 0.3),
+                                  borderColor: alpha(
+                                    theme.palette.divider,
+                                    0.3,
+                                  ),
                                   color: theme.palette.text.secondary,
                                 }}
                               />
@@ -719,7 +828,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                   height: 20,
                                   fontSize: typeScale.micro.fontSize,
                                   borderRadius: 1.5,
-                                  borderColor: alpha(theme.palette.divider, 0.3),
+                                  borderColor: alpha(
+                                    theme.palette.divider,
+                                    0.3,
+                                  ),
                                   color: theme.palette.text.secondary,
                                 }}
                               />

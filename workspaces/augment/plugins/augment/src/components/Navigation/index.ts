@@ -14,4 +14,9 @@
  * limitations under the License.
  */
 
-export { PrimarySidebar, type NavItem, type NavGroup, type PrimarySidebarProps } from './PrimarySidebar';
+export {
+  PrimarySidebar,
+  type NavItem,
+  type NavGroup,
+  type PrimarySidebarProps,
+} from './PrimarySidebar';

@@ -151,20 +151,11 @@ export function ReviewStep({ formData }: ReviewStepProps) {
         </Typography>
         <Table size="small">
           <TableBody>
-            <ReviewRow
-              label="Model"
-              value={formData.model || '(default)'}
-            />
+            <ReviewRow label="Model" value={formData.model || '(default)'} />
             <ReviewRow label="Temperature" value={formData.temperature} />
-            <ReviewRow
-              label="Max Tokens"
-              value={formData.maxOutputTokens}
-            />
+            <ReviewRow label="Max Tokens" value={formData.maxOutputTokens} />
             <ReviewRow label="Tool Choice" value={formData.toolChoice} />
-            <ReviewRow
-              label="Reasoning"
-              value={formData.reasoningEffort}
-            />
+            <ReviewRow label="Reasoning" value={formData.reasoningEffort} />
           </TableBody>
         </Table>
       </Box>
@@ -201,9 +192,7 @@ export function ReviewStep({ formData }: ReviewStepProps) {
             />
             <ReviewRow
               label="Code Interpreter"
-              value={
-                formData.enableCodeInterpreter ? 'Enabled' : 'Disabled'
-              }
+              value={formData.enableCodeInterpreter ? 'Enabled' : 'Disabled'}
             />
           </TableBody>
         </Table>

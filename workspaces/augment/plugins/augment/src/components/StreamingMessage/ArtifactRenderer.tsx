@@ -56,8 +56,10 @@ interface ArtifactRendererProps {
 
 function detectContentType(content: string): 'json' | 'code' | 'text' {
   const trimmed = content.trim();
-  if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-      (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+  if (
+    (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+    (trimmed.startsWith('[') && trimmed.endsWith(']'))
+  ) {
     try {
       JSON.parse(trimmed);
       return 'json';
@@ -65,13 +67,20 @@ function detectContentType(content: string): 'json' | 'code' | 'text' {
       /* not json */
     }
   }
-  if (/^(import |export |function |const |let |var |class |def |package |#include)/.test(trimmed)) {
+  if (
+    /^(import |export |function |const |let |var |class |def |package |#include)/.test(
+      trimmed,
+    )
+  ) {
     return 'code';
   }
   return 'text';
 }
 
-function formatContent(content: string, type: 'json' | 'code' | 'text'): string {
+function formatContent(
+  content: string,
+  type: 'json' | 'code' | 'text',
+): string {
   if (type === 'json') {
     try {
       return JSON.stringify(JSON.parse(content), null, 2);
@@ -162,7 +171,9 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
           }
         }}
       >
-        <DescriptionIcon sx={{ fontSize: 16, color: theme.palette.info.main }} />
+        <DescriptionIcon
+          sx={{ fontSize: 16, color: theme.palette.info.main }}
+        />
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             variant="body2"
@@ -199,11 +210,16 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
           <IconButton
             size="small"
             aria-label={t('artifact.copyContent')}
-            onClick={e => { e.stopPropagation(); handleCopy(); }}
+            onClick={e => {
+              e.stopPropagation();
+              handleCopy();
+            }}
             sx={{ p: 0.5 }}
           >
             {copied ? (
-              <CheckIcon sx={{ fontSize: 14, color: theme.palette.success.main }} />
+              <CheckIcon
+                sx={{ fontSize: 14, color: theme.palette.success.main }}
+              />
             ) : (
               <ContentCopyIcon sx={{ fontSize: 14 }} />
             )}
@@ -213,7 +229,10 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
           <IconButton
             size="small"
             aria-label={t('artifact.downloadAriaLabel')}
-            onClick={e => { e.stopPropagation(); handleDownload(); }}
+            onClick={e => {
+              e.stopPropagation();
+              handleDownload();
+            }}
             sx={{ p: 0.5 }}
           >
             <DownloadIcon sx={{ fontSize: 14 }} />
@@ -229,7 +248,9 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
         />
       </Box>
 
-      {isStreaming && <LinearProgress variant="indeterminate" sx={{ height: 2 }} />}
+      {isStreaming && (
+        <LinearProgress variant="indeterminate" sx={{ height: 2 }} />
+      )}
 
       {/* Content */}
       <Collapse in={expanded}>
@@ -259,7 +280,9 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
   );
 }
 
-export const ArtifactRenderer: React.FC<ArtifactRendererProps> = ({ artifacts }) => {
+export const ArtifactRenderer: React.FC<ArtifactRendererProps> = ({
+  artifacts,
+}) => {
   if (artifacts.length === 0) return null;
 
   return (

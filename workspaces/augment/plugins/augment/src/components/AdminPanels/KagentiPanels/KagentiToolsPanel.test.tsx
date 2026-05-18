@@ -54,14 +54,12 @@ function createMockApi(overrides: Partial<Record<string, jest.Mock>> = {}) {
     invokeKagentiTool: jest.fn().mockResolvedValue({ result: 'ok' }),
     listKagentiBuildStrategies: jest.fn().mockResolvedValue({ strategies: [] }),
     listKagentiNamespaces: jest.fn().mockResolvedValue({ namespaces: [] }),
-    createKagentiTool: jest
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        name: 'new',
-        namespace: 'ns',
-        message: 'ok',
-      }),
+    createKagentiTool: jest.fn().mockResolvedValue({
+      success: true,
+      name: 'new',
+      namespace: 'ns',
+      message: 'ok',
+    }),
     getKagentiTool: jest
       .fn()
       .mockResolvedValue({ metadata: {}, spec: {}, status: {} }),

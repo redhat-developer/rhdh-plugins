@@ -43,11 +43,12 @@ interface EditorToolbarProps {
   saveStatus?: 'saved' | 'saving' | 'unsaved';
 }
 
-const statusColors: Record<WorkflowStatus, 'default' | 'success' | 'warning'> = {
-  draft: 'default',
-  published: 'success',
-  archived: 'warning',
-};
+const statusColors: Record<WorkflowStatus, 'default' | 'success' | 'warning'> =
+  {
+    draft: 'default',
+    published: 'success',
+    archived: 'warning',
+  };
 
 export function EditorToolbar({
   workflowName,
@@ -97,7 +98,15 @@ export function EditorToolbar({
         }}
       >
         {/* Left: breadcrumb-style back + name + status */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flexShrink: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            minWidth: 0,
+            flexShrink: 1,
+          }}
+        >
           {onBack && (
             <Tooltip title="Back to dashboard">
               <IconButton
@@ -122,31 +131,76 @@ export function EditorToolbar({
             <Typography
               variant="caption"
               noWrap
-              sx={{ color: 'text.secondary', cursor: 'pointer', fontSize: TYPE_SCALE.microLabel.size, flexShrink: 0, '&:hover': { textDecoration: 'underline' } }}
+              sx={{
+                color: 'text.secondary',
+                cursor: 'pointer',
+                fontSize: TYPE_SCALE.microLabel.size,
+                flexShrink: 0,
+                '&:hover': { textDecoration: 'underline' },
+              }}
               onClick={onBack}
             >
               Agent Builder
             </Typography>
           )}
           {onBack && (
-            <Typography variant="caption" sx={{ color: 'text.disabled', mx: -0.5, fontSize: TYPE_SCALE.microLabel.size, flexShrink: 0 }}>/</Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.disabled',
+                mx: -0.5,
+                fontSize: TYPE_SCALE.microLabel.size,
+                flexShrink: 0,
+              }}
+            >
+              /
+            </Typography>
           )}
-          <Typography variant="subtitle2" fontWeight={700} noWrap sx={{ minWidth: 0, color: 'text.primary' }}>
+          <Typography
+            variant="subtitle2"
+            fontWeight={700}
+            noWrap
+            sx={{ minWidth: 0, color: 'text.primary' }}
+          >
             {workflowName}
           </Typography>
           <Tooltip title={`Status: ${status}`}>
-            <Chip label={status} size="small" color={statusColors[status]} variant="outlined" sx={{ fontSize: TYPE_SCALE.microLabel.size, height: 20, flexShrink: 0 }} />
+            <Chip
+              label={status}
+              size="small"
+              color={statusColors[status]}
+              variant="outlined"
+              sx={{
+                fontSize: TYPE_SCALE.microLabel.size,
+                height: 20,
+                flexShrink: 0,
+              }}
+            />
           </Tooltip>
           {version > 1 && (
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: TYPE_SCALE.microLabel.size, flexShrink: 0 }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              sx={{ fontSize: TYPE_SCALE.microLabel.size, flexShrink: 0 }}
+            >
               v{version}
             </Typography>
           )}
           {saveStatus === 'saving' && (
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: TYPE_SCALE.microLabel.size, flexShrink: 0 }}>Saving...</Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              sx={{ fontSize: TYPE_SCALE.microLabel.size, flexShrink: 0 }}
+            >
+              Saving...
+            </Typography>
           )}
           {saveStatus === 'saved' && (
-            <CheckCircleIcon sx={{ fontSize: 14, color: 'success.main', flexShrink: 0 }} />
+            <CheckCircleIcon
+              sx={{ fontSize: 14, color: 'success.main', flexShrink: 0 }}
+            />
           )}
         </Box>
 
@@ -194,7 +248,8 @@ export function EditorToolbar({
                 p: 0.5,
                 borderRadius: 1,
                 color: 'text.primary',
-                bgcolor: mode === 'preview' ? 'background.paper' : 'transparent',
+                bgcolor:
+                  mode === 'preview' ? 'background.paper' : 'transparent',
                 boxShadow: mode === 'preview' ? activeToggleShadow : 'none',
               }}
             >
@@ -207,28 +262,55 @@ export function EditorToolbar({
         <Box sx={{ flex: 1 }} />
 
         {/* Right actions — icon-only to stay compact */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.25,
+            flexShrink: 0,
+          }}
+        >
           <Tooltip title="More actions">
-            <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)} aria-label="More actions" sx={{ color: 'text.primary' }}>
+            <IconButton
+              size="small"
+              onClick={e => setMenuAnchor(e.currentTarget)}
+              aria-label="More actions"
+              sx={{ color: 'text.primary' }}
+            >
               <MoreHorizIcon sx={{ fontSize: 18 }} />
             </IconButton>
           </Tooltip>
           {onSettings && (
             <Tooltip title="Workflow settings">
-              <IconButton size="small" onClick={onSettings} aria-label="Workflow settings" sx={{ color: 'text.primary' }}>
+              <IconButton
+                size="small"
+                onClick={onSettings}
+                aria-label="Workflow settings"
+                sx={{ color: 'text.primary' }}
+              >
                 <SettingsIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
           )}
           {onEvaluate && (
             <Tooltip title="Run evaluations (Cmd+E)">
-              <IconButton size="small" onClick={onEvaluate} aria-label="Evaluate workflow" sx={{ color: 'text.secondary' }}>
+              <IconButton
+                size="small"
+                onClick={onEvaluate}
+                aria-label="Evaluate workflow"
+                sx={{ color: 'text.secondary' }}
+              >
                 <ScienceIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
           )}
           <Tooltip title="Export as code">
-            <IconButton size="small" onClick={onCodeExport} aria-label="Export code" sx={{ color: 'text.primary' }}>
+            <IconButton
+              size="small"
+              onClick={onCodeExport}
+              aria-label="Export code"
+              sx={{ color: 'text.primary' }}
+            >
               <CodeIcon sx={{ fontSize: 18 }} />
             </IconButton>
           </Tooltip>
@@ -238,7 +320,12 @@ export function EditorToolbar({
               variant="contained"
               disableElevation
               onClick={onPublish}
-              sx={{ textTransform: 'none', fontSize: '0.78rem', borderRadius: 1.5, ml: 0.5 }}
+              sx={{
+                textTransform: 'none',
+                fontSize: '0.78rem',
+                borderRadius: 1.5,
+                ml: 0.5,
+              }}
             >
               Publish
             </Button>
@@ -247,14 +334,49 @@ export function EditorToolbar({
       </Box>
 
       {/* More menu */}
-      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
-        <MenuItem onClick={() => { handleMenuClose(); setRenameOpen(true); setRenameValue(workflowName); }}>Rename</MenuItem>
-        {onDuplicate && <MenuItem onClick={() => { handleMenuClose(); onDuplicate(); }}>Duplicate</MenuItem>}
-        {onDelete && <MenuItem onClick={() => { handleMenuClose(); onDelete(); }}>Delete</MenuItem>}
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem
+          onClick={() => {
+            handleMenuClose();
+            setRenameOpen(true);
+            setRenameValue(workflowName);
+          }}
+        >
+          Rename
+        </MenuItem>
+        {onDuplicate && (
+          <MenuItem
+            onClick={() => {
+              handleMenuClose();
+              onDuplicate();
+            }}
+          >
+            Duplicate
+          </MenuItem>
+        )}
+        {onDelete && (
+          <MenuItem
+            onClick={() => {
+              handleMenuClose();
+              onDelete();
+            }}
+          >
+            Delete
+          </MenuItem>
+        )}
       </Menu>
 
       {/* Rename dialog */}
-      <Dialog open={renameOpen} onClose={() => setRenameOpen(false)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={renameOpen}
+        onClose={() => setRenameOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle>Rename workflow</DialogTitle>
         <DialogContent>
           <TextField
@@ -263,13 +385,17 @@ export function EditorToolbar({
             size="small"
             value={renameValue}
             onChange={e => setRenameValue(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleRenameSubmit(); }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') handleRenameSubmit();
+            }}
             sx={{ mt: 1 }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRenameOpen(false)}>Cancel</Button>
-          <Button onClick={handleRenameSubmit} variant="contained">Save</Button>
+          <Button onClick={handleRenameSubmit} variant="contained">
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
     </>

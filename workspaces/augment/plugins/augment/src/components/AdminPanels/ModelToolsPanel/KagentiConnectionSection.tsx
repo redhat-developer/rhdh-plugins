@@ -49,7 +49,12 @@ export const KagentiConnectionSection = ({
       setKagentiUrl(dbValue ?? effectiveKagentiUrl);
       setInitialized(true);
     }
-  }, [initialized, kagentiUrlConfig.loading, kagentiUrlConfig.entry, effectiveKagentiUrl]);
+  }, [
+    initialized,
+    kagentiUrlConfig.loading,
+    kagentiUrlConfig.entry,
+    effectiveKagentiUrl,
+  ]);
 
   const handleSave = useCallback(async () => {
     if (kagentiUrl.trim() && !URL_RE.test(kagentiUrl.trim())) {
@@ -92,7 +97,9 @@ export const KagentiConnectionSection = ({
         onSave={handleSave}
         onReset={handleReset}
       >
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2.5, pt: 1 }}>
+        <Box
+          sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2.5, pt: 1 }}
+        >
           <TextField
             label="Kagenti API URL"
             size="small"

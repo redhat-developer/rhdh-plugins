@@ -121,11 +121,14 @@ describe('KagentiToolDetailDrawer utility logic', () => {
 
 describe('CreateToolWizard service port logic', () => {
   function buildServicePorts(
-    rows: Array<{ name: string; port: string; targetPort: string; protocol: string }>,
+    rows: Array<{
+      name: string;
+      port: string;
+      targetPort: string;
+      protocol: string;
+    }>,
   ) {
-    return rows.filter(
-      r => r.name && r.port && !Number.isNaN(Number(r.port)),
-    );
+    return rows.filter(r => r.name && r.port && !Number.isNaN(Number(r.port)));
   }
 
   it('filters out rows with empty name', () => {

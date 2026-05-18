@@ -24,8 +24,14 @@ import { WorkflowExecutor } from '../../providers/llamastack/workflow/WorkflowEx
 import { resolveLlamaStackConfig } from '../resolveWorkflowConfig';
 
 async function buildClient(ctx: RouteContext, adminConfig: AdminConfigService) {
-  const { url, model, skipTls } = await resolveLlamaStackConfig(ctx, adminConfig);
-  const client = new ResponsesApiClient({ baseUrl: url, skipTlsVerify: skipTls }, ctx.logger);
+  const { url, model, skipTls } = await resolveLlamaStackConfig(
+    ctx,
+    adminConfig,
+  );
+  const client = new ResponsesApiClient(
+    { baseUrl: url, skipTlsVerify: skipTls },
+    ctx.logger,
+  );
   return { client, defaultModel: model };
 }
 
@@ -37,62 +43,93 @@ export function registerExecutionRoutes(
   const { router, logger, sendRouteError, requireAdminAccess } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
-  router.post('/workflows/:id/run', requireAdminAccess,
-    withRoute(req => `Run workflow ${req.params.id}`, 'Failed to run workflow', async (req, res) => {
+  router.post(
+    '/workflows/:id/run',
+    requireAdminAccess,
+    withRoute(
+      req => `Run workflow ${req.params.id}`,
+      'Failed to run workflow',
+      async (req, res) => {
+        const { input } = req.body as { input: string };
+        if (!input) throw new InputError('Input is required');
+
+        try {
+          const workflow = await workflowService.getWorkflow(req.params.id);
+          const { client, defaultModel } = await buildClient(ctx, adminConfig);
+          const executor = new WorkflowExecutor(logger, client, defaultModel);
+          const result = await executor.execute(workflow, input);
+          res.json({
+            response: result.finalOutput,
+            trace: result.trace,
+            state: result.state,
+            totalDurationMs: result.totalDurationMs,
+          });
+        } catch (err) {
+          if (err instanceof NotFoundError) {
+            notFound(res, 'Workflow');
+            return;
+          }
+          throw err;
+        }
+      },
+    ),
+  );
+
+  router.post(
+    '/workflows/:id/run/stream',
+    requireAdminAccess,
+    async (req, res) => {
       const { input } = req.body as { input: string };
-      if (!input) throw new InputError('Input is required');
+      if (!input) {
+        res.status(400).json({ error: 'Input is required' });
+        return;
+      }
 
       try {
         const workflow = await workflowService.getWorkflow(req.params.id);
         const { client, defaultModel } = await buildClient(ctx, adminConfig);
-        const executor = new WorkflowExecutor(logger, client, defaultModel);
-        const result = await executor.execute(workflow, input);
-        res.json({
-          response: result.finalOutput,
-          trace: result.trace,
-          state: result.state,
-          totalDurationMs: result.totalDurationMs,
+
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+          'X-Accel-Buffering': 'no',
         });
+
+        const abortController = new AbortController();
+        req.on('close', () => abortController.abort());
+
+        const executor = new WorkflowExecutor(logger, client, defaultModel);
+        await executor.executeStream(
+          workflow,
+          input,
+          event => {
+            if (!res.writableEnded)
+              res.write(`data: ${JSON.stringify(event)}\n\n`);
+          },
+          abortController.signal,
+        );
+
+        if (!res.writableEnded) {
+          res.write('data: [DONE]\n\n');
+          res.end();
+        }
       } catch (err) {
-        if (err instanceof NotFoundError) { notFound(res, 'Workflow'); return; }
-        throw err;
+        if (!res.headersSent) {
+          if (err instanceof NotFoundError) {
+            notFound(res, 'Workflow');
+          } else {
+            res.status(500).json({
+              error: err instanceof Error ? err.message : 'Unknown error',
+            });
+          }
+        } else if (!res.writableEnded) {
+          res.write(
+            `data: ${JSON.stringify({ type: 'error', data: { message: err instanceof Error ? err.message : 'Unknown error' } })}\n\n`,
+          );
+          res.end();
+        }
       }
-    }),
+    },
   );
-
-  router.post('/workflows/:id/run/stream', requireAdminAccess, async (req, res) => {
-    const { input } = req.body as { input: string };
-    if (!input) { res.status(400).json({ error: 'Input is required' }); return; }
-
-    try {
-      const workflow = await workflowService.getWorkflow(req.params.id);
-      const { client, defaultModel } = await buildClient(ctx, adminConfig);
-
-      res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'X-Accel-Buffering': 'no',
-      });
-
-      const abortController = new AbortController();
-      req.on('close', () => abortController.abort());
-
-      const executor = new WorkflowExecutor(logger, client, defaultModel);
-      await executor.executeStream(workflow, input,
-        event => { if (!res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`); },
-        abortController.signal,
-      );
-
-      if (!res.writableEnded) { res.write('data: [DONE]\n\n'); res.end(); }
-    } catch (err) {
-      if (!res.headersSent) {
-        if (err instanceof NotFoundError) { notFound(res, 'Workflow'); }
-        else { res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' }); }
-      } else if (!res.writableEnded) {
-        res.write(`data: ${JSON.stringify({ type: 'error', data: { message: err instanceof Error ? err.message : 'Unknown error' } })}\n\n`);
-        res.end();
-      }
-    }
-  });
 }

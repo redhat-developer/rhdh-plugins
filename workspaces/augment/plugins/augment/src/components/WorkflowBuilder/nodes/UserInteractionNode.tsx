@@ -3,7 +3,10 @@ import type { NodeProps } from '@xyflow/react';
 import PersonIcon from '@mui/icons-material/Person';
 import { BaseNode } from './BaseNode';
 
-export const UserInteractionNode = memo(function UserInteractionNode({ data, selected }: NodeProps) {
+export const UserInteractionNode = memo(function UserInteractionNode({
+  data,
+  selected,
+}: NodeProps) {
   const d = data as Record<string, unknown>;
   const label = (d.label as string) || 'User approval';
 

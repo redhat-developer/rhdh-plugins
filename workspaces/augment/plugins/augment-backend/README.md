@@ -227,6 +227,7 @@ Kagenti supports several layers of agent security that are integrated with the A
 **SPIRE (Workload Identity)**: The "SPIRE enabled" flag enables SPIFFE-based workload identity with mutual TLS. When enabled, the tool receives a cryptographic workload identity and communicates with other services using mTLS.
 
 **A2A Interactive Security**: During agent conversations, Kagenti agents can request:
+
 - **User Approval**: Human-in-the-loop confirmation before executing tools
 - **OAuth Authentication**: Redirect the user to an identity provider for authentication
 - **Secrets**: Prompt the user for credentials or API keys
@@ -238,26 +239,26 @@ The following 9 capabilities have full backend routes and client support but are
 
 #### Sandbox (requires `sandbox` feature flag)
 
-| Feature | Endpoints | Notes |
-|---------|-----------|-------|
-| Sandbox Chat | `POST /kagenti/sandbox/:ns/chat` | Non-streaming chat within a sandbox session |
-| Sandbox Streaming Chat | `POST /kagenti/sandbox/:ns/chat/stream` | SSE streaming chat within a sandbox session |
-| Session Subscribe (SSE) | `GET /kagenti/sandbox/:ns/sessions/:id/subscribe` | Real-time session event stream |
-| Create / Delete Sandbox | `POST /DELETE /kagenti/sandbox/:ns/...` | Sandbox lifecycle management |
-| Browse Sandbox Files | `GET /kagenti/sandbox/:ns/files/...` | File browsing, directory listing, file content retrieval |
-| Sidecar Management | `POST /kagenti/sandbox/:ns/.../sidecars/...` | Enable, disable, configure, approve, deny sidecars |
-| Session Chain / History | `GET .../chain`, `GET .../history` | Detailed session execution chain and conversation history |
+| Feature                 | Endpoints                                         | Notes                                                     |
+| ----------------------- | ------------------------------------------------- | --------------------------------------------------------- |
+| Sandbox Chat            | `POST /kagenti/sandbox/:ns/chat`                  | Non-streaming chat within a sandbox session               |
+| Sandbox Streaming Chat  | `POST /kagenti/sandbox/:ns/chat/stream`           | SSE streaming chat within a sandbox session               |
+| Session Subscribe (SSE) | `GET /kagenti/sandbox/:ns/sessions/:id/subscribe` | Real-time session event stream                            |
+| Create / Delete Sandbox | `POST /DELETE /kagenti/sandbox/:ns/...`           | Sandbox lifecycle management                              |
+| Browse Sandbox Files    | `GET /kagenti/sandbox/:ns/files/...`              | File browsing, directory listing, file content retrieval  |
+| Sidecar Management      | `POST /kagenti/sandbox/:ns/.../sidecars/...`      | Enable, disable, configure, approve, deny sidecars        |
+| Session Chain / History | `GET .../chain`, `GET .../history`                | Detailed session execution chain and conversation history |
 
 #### Agent Management
 
-| Feature | Endpoints | Notes |
-|---------|-----------|-------|
+| Feature         | Endpoints                                                        | Notes                                                            |
+| --------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------- |
 | Agent Migration | `POST /kagenti/agents/:ns/:name/migrate`, `POST .../migrate-all` | Migrate agents from legacy CRD format to deployment-based format |
 
 #### Integrations (requires `integrations` feature flag)
 
-| Feature | Endpoints | Notes |
-|---------|-----------|-------|
+| Feature            | Endpoints                             | Notes                                          |
+| ------------------ | ------------------------------------- | ---------------------------------------------- |
 | Update Integration | `PUT /kagenti/integrations/:ns/:name` | Modify an existing integration's configuration |
 
 These are tracked as planned enhancements. The core agent chat flow uses the main `chatStream` endpoint and is fully functional in the UI.

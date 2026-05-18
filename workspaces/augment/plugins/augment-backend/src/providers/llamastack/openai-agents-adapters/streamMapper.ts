@@ -26,15 +26,15 @@ import type { NormalizedStreamEvent } from '@red-hat-developer-hub/backstage-plu
  * RunAgentUpdatedStreamEvent) and we translate them to the `stream.*`
  * event taxonomy already understood by the frontend.
  */
-export function mapRunStreamEventToFrontend(
-  event: RunStreamEvent,
-): string[] {
+export function mapRunStreamEventToFrontend(event: RunStreamEvent): string[] {
   switch (event.type) {
     case 'raw_model_stream_event':
       return mapRawModelEvent(event.data as unknown);
 
     case 'run_item_stream_event':
-      return mapItemEvent(event as Extract<RunStreamEvent, { type: 'run_item_stream_event' }>);
+      return mapItemEvent(
+        event as Extract<RunStreamEvent, { type: 'run_item_stream_event' }>,
+      );
 
     case 'agent_updated_stream_event':
       return [
@@ -49,9 +49,7 @@ export function mapRunStreamEventToFrontend(
   }
 }
 
-function mapRawModelEvent(
-  data: unknown,
-): string[] {
+function mapRawModelEvent(data: unknown): string[] {
   if (!data || typeof data !== 'object') return [];
 
   const eventType = (data as { type?: string }).type;
@@ -100,9 +98,7 @@ function mapRawModelEvent(
  * Handle raw LlamaStack SSE events that come through as `model`-type
  * StreamEvents. These are the native Responses API event shapes.
  */
-function mapLlamaStackRawEvent(
-  event: Record<string, unknown>,
-): string[] {
+function mapLlamaStackRawEvent(event: Record<string, unknown>): string[] {
   const eventType = event.type as string | undefined;
 
   switch (eventType) {
@@ -190,7 +186,8 @@ function mapLlamaStackRawEvent(
       return [
         JSON.stringify({
           type: 'stream.started',
-          responseId: (event.response as Record<string, unknown>)?.id as string ?? '',
+          responseId:
+            ((event.response as Record<string, unknown>)?.id as string) ?? '',
           model: (event.response as Record<string, unknown>)?.model as string,
         } satisfies NormalizedStreamEvent),
       ];
@@ -233,7 +230,8 @@ function mapItemEvent(
         return [
           JSON.stringify({
             type: 'stream.tool.failed',
-            callId: (rawItem2?.id as string) ?? (rawItem2?.callId as string) ?? '',
+            callId:
+              (rawItem2?.id as string) ?? (rawItem2?.callId as string) ?? '',
             name: (rawItem2?.name as string) ?? '',
             serverLabel: 'function',
             error: outputStr,
@@ -243,7 +241,8 @@ function mapItemEvent(
       return [
         JSON.stringify({
           type: 'stream.tool.completed',
-          callId: (rawItem2?.id as string) ?? (rawItem2?.callId as string) ?? '',
+          callId:
+            (rawItem2?.id as string) ?? (rawItem2?.callId as string) ?? '',
           name: (rawItem2?.name as string) ?? '',
           serverLabel: 'function',
           output: outputStr,

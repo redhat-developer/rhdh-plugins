@@ -92,7 +92,8 @@ export function useAgentCreationForm() {
       instructions: formData.instructions,
       handoffDescription: formData.handoffDescription || undefined,
       model: formData.model || undefined,
-      mcpServers: formData.mcpServers.length > 0 ? formData.mcpServers : undefined,
+      mcpServers:
+        formData.mcpServers.length > 0 ? formData.mcpServers : undefined,
       handoffs: formData.handoffs.length > 0 ? formData.handoffs : undefined,
       asTools: formData.asTools.length > 0 ? formData.asTools : undefined,
       enableRAG: formData.enableRAG || undefined,

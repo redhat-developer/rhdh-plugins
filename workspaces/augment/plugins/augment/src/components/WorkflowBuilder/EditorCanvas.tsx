@@ -25,8 +25,16 @@ import NearMeIcon from '@mui/icons-material/NearMe';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import { alpha, useTheme } from '@mui/material/styles';
-import type { WorkflowNode, WorkflowEdge as WfEdge } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import { canvasBg, handleColor, handleBorder, elevationShadow } from './theme/tokens';
+import type {
+  WorkflowNode,
+  WorkflowEdge as WfEdge,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import {
+  canvasBg,
+  handleColor,
+  handleBorder,
+  elevationShadow,
+} from './theme/tokens';
 import { AgentNode } from './nodes/AgentNode';
 import { ClassifyNode } from './nodes/ClassifyNode';
 import { LogicNode } from './nodes/LogicNode';
@@ -100,9 +108,15 @@ export function fromFlowEdges(edges: Edge[]): WfEdge[] {
     id: e.id,
     source: e.source,
     target: e.target,
-    type: (e.data as Record<string, unknown>)?.edgeType as WfEdge['type'] || 'sequence',
-    label: (e.data as Record<string, unknown>)?.branchLabel as string | undefined,
-    condition: (e.data as Record<string, unknown>)?.condition as string | undefined,
+    type:
+      ((e.data as Record<string, unknown>)?.edgeType as WfEdge['type']) ||
+      'sequence',
+    label: (e.data as Record<string, unknown>)?.branchLabel as
+      | string
+      | undefined,
+    condition: (e.data as Record<string, unknown>)?.condition as
+      | string
+      | undefined,
   }));
 }
 
@@ -142,76 +156,107 @@ export function EditorCanvas({
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges);
 
-  useEffect(() => { setNodes(flowNodes); }, [flowNodes, setNodes]);
-  useEffect(() => { setEdges(flowEdges); }, [flowEdges, setEdges]);
+  useEffect(() => {
+    setNodes(flowNodes);
+  }, [flowNodes, setNodes]);
+  useEffect(() => {
+    setEdges(flowEdges);
+  }, [flowEdges, setEdges]);
 
-  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
-  useEffect(() => { edgesRef.current = edges; }, [edges]);
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+  useEffect(() => {
+    edgesRef.current = edges;
+  }, [edges]);
 
   const scheduleSync = useCallback(() => {
     if (!onGraphChange || readOnly) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      onGraphChange(fromFlowNodes(nodesRef.current), fromFlowEdges(edgesRef.current));
+      onGraphChange(
+        fromFlowNodes(nodesRef.current),
+        fromFlowEdges(edgesRef.current),
+      );
     }, 400);
   }, [onGraphChange, readOnly]);
 
-  const handleNodesChange = useCallback((changes: NodeChange[]) => {
-    onNodesChange(changes);
-    const hasMoves = changes.some(c => c.type === 'position' && c.dragging === false);
-    const hasRemoves = changes.some(c => c.type === 'remove');
-    if (hasMoves || hasRemoves) scheduleSync();
-  }, [onNodesChange, scheduleSync]);
+  const handleNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      onNodesChange(changes);
+      const hasMoves = changes.some(
+        c => c.type === 'position' && c.dragging === false,
+      );
+      const hasRemoves = changes.some(c => c.type === 'remove');
+      if (hasMoves || hasRemoves) scheduleSync();
+    },
+    [onNodesChange, scheduleSync],
+  );
 
-  const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
-    onEdgesChange(changes);
-    const hasRemoves = changes.some(c => c.type === 'remove');
-    if (hasRemoves) scheduleSync();
-  }, [onEdgesChange, scheduleSync]);
+  const handleEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      onEdgesChange(changes);
+      const hasRemoves = changes.some(c => c.type === 'remove');
+      if (hasRemoves) scheduleSync();
+    },
+    [onEdgesChange, scheduleSync],
+  );
 
-  const onConnect = useCallback((connection: Connection) => {
-    if (readOnly) return;
-    const sourceNode = nodes.find(n => n.id === connection.source);
-    let edgeLabel: string | undefined;
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      if (readOnly) return;
+      const sourceNode = nodes.find(n => n.id === connection.source);
+      let edgeLabel: string | undefined;
 
-    if (sourceNode?.type === 'logic') {
-      const existing = edges.filter(e => e.source === sourceNode.id);
-      const hasTrueEdge = existing.some(e => (e.data as Record<string, unknown>)?.branchLabel === 'true');
-      const hasFalseEdge = existing.some(e => (e.data as Record<string, unknown>)?.branchLabel === 'false');
-      if (!hasTrueEdge) edgeLabel = 'true';
-      else if (!hasFalseEdge) edgeLabel = 'false';
-      else return;
-    }
+      if (sourceNode?.type === 'logic') {
+        const existing = edges.filter(e => e.source === sourceNode.id);
+        const hasTrueEdge = existing.some(
+          e => (e.data as Record<string, unknown>)?.branchLabel === 'true',
+        );
+        const hasFalseEdge = existing.some(
+          e => (e.data as Record<string, unknown>)?.branchLabel === 'false',
+        );
+        if (!hasTrueEdge) edgeLabel = 'true';
+        else if (!hasFalseEdge) edgeLabel = 'false';
+        else return;
+      }
 
-    const newEdge: Edge = {
-      ...connection,
-      id: `edge-${Date.now()}`,
-      type: 'default',
-      label: edgeLabel,
-      data: { branchLabel: edgeLabel },
-    } as Edge;
-    setEdges(eds => addEdge(newEdge, eds));
-    setTimeout(scheduleSync, 50);
-  }, [nodes, edges, setEdges, readOnly, scheduleSync]);
+      const newEdge: Edge = {
+        ...connection,
+        id: `edge-${Date.now()}`,
+        type: 'default',
+        label: edgeLabel,
+        data: { branchLabel: edgeLabel },
+      } as Edge;
+      setEdges(eds => addEdge(newEdge, eds));
+      setTimeout(scheduleSync, 50);
+    },
+    [nodes, edges, setEdges, readOnly, scheduleSync],
+  );
 
-  const handleNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    onNodeClick?.(node.id);
-  }, [onNodeClick]);
+  const handleNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      onNodeClick?.(node.id);
+    },
+    [onNodeClick],
+  );
 
   const dotColor = alpha(theme.palette.text.primary, 0.06);
   const showMinimap = nodes.length > 5;
 
   return (
     <Box
-      sx={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        overflow: 'hidden',
-        bgcolor: canvasBg(theme),
-        '--wf-handle-bg': handleColor(theme),
-        '--wf-handle-border': handleBorder(theme),
-      } as React.CSSProperties & Record<string, string>}
+      sx={
+        {
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          overflow: 'hidden',
+          bgcolor: canvasBg(theme),
+          '--wf-handle-bg': handleColor(theme),
+          '--wf-handle-border': handleBorder(theme),
+        } as React.CSSProperties & Record<string, string>
+      }
     >
       <ReactFlow
         nodes={nodes}
@@ -226,7 +271,11 @@ export function EditorCanvas({
           ...defaultEdgeOptions,
           style: { ...defaultEdgeOptions.style, stroke: theme.palette.divider },
         }}
-        connectionLineStyle={{ stroke: theme.palette.primary.main, strokeDasharray: '5 3', strokeWidth: 1.5 }}
+        connectionLineStyle={{
+          stroke: theme.palette.primary.main,
+          strokeDasharray: '5 3',
+          strokeWidth: 1.5,
+        }}
         fitView
         snapToGrid
         snapGrid={[16, 16]}
@@ -267,7 +316,13 @@ export function EditorCanvas({
           }}
         >
           <Tooltip title="Fit view">
-            <span><CanvasControl icon={<FitScreenIcon />} label="Fit view" action="fitView" /></span>
+            <span>
+              <CanvasControl
+                icon={<FitScreenIcon />}
+                label="Fit view"
+                action="fitView"
+              />
+            </span>
           </Tooltip>
           <Tooltip title="Select tool">
             <IconButton size="small" aria-label="Select" sx={{ p: 0.5 }}>
@@ -276,14 +331,26 @@ export function EditorCanvas({
           </Tooltip>
           <Tooltip title="Undo (Ctrl+Z)">
             <span>
-              <IconButton size="small" aria-label="Undo" onClick={onUndo} disabled={!canUndo} sx={{ p: 0.5 }}>
+              <IconButton
+                size="small"
+                aria-label="Undo"
+                onClick={onUndo}
+                disabled={!canUndo}
+                sx={{ p: 0.5 }}
+              >
                 <UndoIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </span>
           </Tooltip>
           <Tooltip title="Redo (Ctrl+Shift+Z)">
             <span>
-              <IconButton size="small" aria-label="Redo" onClick={onRedo} disabled={!canRedo} sx={{ p: 0.5 }}>
+              <IconButton
+                size="small"
+                aria-label="Redo"
+                onClick={onRedo}
+                disabled={!canRedo}
+                sx={{ p: 0.5 }}
+              >
                 <RedoIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </span>
@@ -294,11 +361,24 @@ export function EditorCanvas({
   );
 }
 
-function CanvasControl({ icon, label, action }: { icon: React.ReactNode; label: string; action: string }) {
+function CanvasControl({
+  icon,
+  label,
+  action,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  action: string;
+}) {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
   const handlers: Record<string, () => void> = { zoomIn, zoomOut, fitView };
   return (
-    <IconButton size="small" onClick={handlers[action]} aria-label={label} sx={{ p: 0.5 }}>
+    <IconButton
+      size="small"
+      onClick={handlers[action]}
+      aria-label={label}
+      sx={{ p: 0.5 }}
+    >
       {icon}
     </IconButton>
   );

@@ -50,7 +50,8 @@ const STEP_ICONS: Record<string, React.ReactElement> = {
 };
 
 const STEP_DESCRIPTIONS: Record<string, string> = {
-  Basics: 'Name your agent and choose its communication protocol and framework.',
+  Basics:
+    'Name your agent and choose its communication protocol and framework.',
   Deployment:
     'Choose how to deploy — from a pre-built container image or built from source code.',
   Runtime:

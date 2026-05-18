@@ -32,12 +32,16 @@ export function registerAdminModelRoutes(
       'GET /admin/models',
       'Failed to list available models',
       async (_req, res) => {
-        const modelSources: Array<Promise<Array<{ id: string; owned_by?: string; model_type?: string }>>> = [];
+        const modelSources: Array<
+          Promise<Array<{ id: string; owned_by?: string; model_type?: string }>>
+        > = [];
 
         if (deps.provider.listModels) {
           modelSources.push(
             deps.provider.listModels().catch(err => {
-              logger.warn(`Primary provider model listing failed: ${err instanceof Error ? err.message : err}`);
+              logger.warn(
+                `Primary provider model listing failed: ${err instanceof Error ? err.message : err}`,
+              );
               return [];
             }),
           );
@@ -46,7 +50,9 @@ export function registerAdminModelRoutes(
         if (deps.orchestrationProvider?.listModels) {
           modelSources.push(
             deps.orchestrationProvider.listModels().catch(err => {
-              logger.warn(`Orchestration provider model listing failed: ${err instanceof Error ? err.message : err}`);
+              logger.warn(
+                `Orchestration provider model listing failed: ${err instanceof Error ? err.message : err}`,
+              );
               return [];
             }),
           );
@@ -62,7 +68,11 @@ export function registerAdminModelRoutes(
 
         const results = await Promise.all(modelSources);
         const seen = new Set<string>();
-        const models: Array<{ id: string; owned_by?: string; model_type?: string }> = [];
+        const models: Array<{
+          id: string;
+          owned_by?: string;
+          model_type?: string;
+        }> = [];
         for (const batch of results) {
           for (const model of batch) {
             if (!seen.has(model.id)) {

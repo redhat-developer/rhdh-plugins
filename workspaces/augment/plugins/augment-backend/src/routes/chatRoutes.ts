@@ -375,12 +375,14 @@ let kagentiAgentIds: Set<string> | null = null;
 let kagentiCacheExpiry = 0;
 const KAGENTI_CACHE_TTL_MS = 30_000;
 
-async function refreshKagentiCache(primary: AgenticProvider): Promise<Set<string>> {
+async function refreshKagentiCache(
+  primary: AgenticProvider,
+): Promise<Set<string>> {
   if (kagentiAgentIds && Date.now() < kagentiCacheExpiry) {
     return kagentiAgentIds;
   }
   try {
-    const agents = await primary.listAgents?.() ?? [];
+    const agents = (await primary.listAgents?.()) ?? [];
     kagentiAgentIds = new Set(agents.map(a => a.id));
     kagentiCacheExpiry = Date.now() + KAGENTI_CACHE_TTL_MS;
   } catch {
@@ -426,7 +428,11 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'Failed to process chat message',
       async (req, res) => {
         const parsed = parseChatRequest(req.body);
-        const provider = await resolveProvider(ctx.provider, ctx.orchestrationProvider, parsed.model);
+        const provider = await resolveProvider(
+          ctx.provider,
+          ctx.orchestrationProvider,
+          parsed.model,
+        );
         const {
           messages,
           enableRAG,
@@ -585,7 +591,11 @@ export function registerChatRoutes(ctx: RouteContext): void {
       );
       return;
     }
-    const provider = await resolveProvider(ctx.provider, ctx.orchestrationProvider, parsedRequest.model);
+    const provider = await resolveProvider(
+      ctx.provider,
+      ctx.orchestrationProvider,
+      parsedRequest.model,
+    );
     const {
       messages,
       enableRAG,

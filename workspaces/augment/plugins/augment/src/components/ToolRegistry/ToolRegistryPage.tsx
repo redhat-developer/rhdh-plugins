@@ -52,7 +52,10 @@ export function ToolRegistryPage() {
         >
           Tool Registry
         </Typography>
-        <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+        <Typography
+          variant="body2"
+          sx={{ color: theme.palette.text.secondary }}
+        >
           Register, configure, and manage MCP tool servers for your agents.
         </Typography>
       </Box>

@@ -43,7 +43,10 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import type { WorkflowDefinition } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import { createDefaultWorkflow, WORKFLOW_TEMPLATES } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import {
+  createDefaultWorkflow,
+  WORKFLOW_TEMPLATES,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { elevationShadow, TYPE_SCALE } from './theme/tokens';
 
 interface WorkflowDashboardProps {
@@ -79,18 +82,30 @@ const TEMPLATES: TemplateItem[] = WORKFLOW_TEMPLATES.map(wf => ({
   workflow: wf,
 }));
 
-function sortWorkflows(list: WorkflowDefinition[], sortBy: SortBy): WorkflowDefinition[] {
+function sortWorkflows(
+  list: WorkflowDefinition[],
+  sortBy: SortBy,
+): WorkflowDefinition[] {
   return [...list].sort((a, b) => {
     switch (sortBy) {
-      case 'name': return a.name.localeCompare(b.name);
-      case 'nodes': return (b.nodes?.length || 0) - (a.nodes?.length || 0);
+      case 'name':
+        return a.name.localeCompare(b.name);
+      case 'nodes':
+        return (b.nodes?.length || 0) - (a.nodes?.length || 0);
       case 'updated':
-      default: return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
+      default:
+        return (
+          new Date(b.updatedAt || 0).getTime() -
+          new Date(a.updatedAt || 0).getTime()
+        );
     }
   });
 }
 
-export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: WorkflowDashboardProps) {
+export function WorkflowDashboard({
+  onOpenWorkflow,
+  onCreateWorkflow,
+}: WorkflowDashboardProps) {
   const theme = useTheme();
   const configApi = useApi(configApiRef);
   const { fetch: authFetch } = useApi(fetchApiRef);
@@ -98,10 +113,16 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [menuWorkflow, setMenuWorkflow] = useState<WorkflowDefinition | null>(null);
-  const [renameDialog, setRenameDialog] = useState<WorkflowDefinition | null>(null);
+  const [menuWorkflow, setMenuWorkflow] = useState<WorkflowDefinition | null>(
+    null,
+  );
+  const [renameDialog, setRenameDialog] = useState<WorkflowDefinition | null>(
+    null,
+  );
   const [renameName, setRenameName] = useState('');
-  const [deleteDialog, setDeleteDialog] = useState<WorkflowDefinition | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<WorkflowDefinition | null>(
+    null,
+  );
   const [dashTab, setDashTab] = useState<'drafts' | 'templates'>('drafts');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortBy>('updated');
@@ -123,7 +144,9 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
     }
   }, [backendUrl, authFetch]);
 
-  useEffect(() => { loadWorkflows(); }, [loadWorkflows]);
+  useEffect(() => {
+    loadWorkflows();
+  }, [loadWorkflows]);
 
   const handleCreate = () => {
     const wf = createDefaultWorkflow(`wf-${Date.now()}`, 'New Agent Workflow');
@@ -146,7 +169,10 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
     }
   };
 
-  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>, wf: WorkflowDefinition) => {
+  const handleMenuOpen = (
+    e: React.MouseEvent<HTMLElement>,
+    wf: WorkflowDefinition,
+  ) => {
     e.stopPropagation();
     setMenuAnchor(e.currentTarget);
     setMenuWorkflow(wf);
@@ -160,11 +186,14 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
   const handleRename = async () => {
     if (!renameDialog || !renameName.trim()) return;
     try {
-      await authFetch(`${backendUrl}/api/augment/workflows/${renameDialog.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...renameDialog, name: renameName.trim() }),
-      });
+      await authFetch(
+        `${backendUrl}/api/augment/workflows/${renameDialog.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...renameDialog, name: renameName.trim() }),
+        },
+      );
       setRenameDialog(null);
       loadWorkflows();
     } catch {
@@ -175,7 +204,10 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
   const handleDelete = async () => {
     if (!deleteDialog) return;
     try {
-      await authFetch(`${backendUrl}/api/augment/workflows/${deleteDialog.id}`, { method: 'DELETE' });
+      await authFetch(
+        `${backendUrl}/api/augment/workflows/${deleteDialog.id}`,
+        { method: 'DELETE' },
+      );
       setDeleteDialog(null);
       loadWorkflows();
     } catch {
@@ -210,26 +242,51 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
 
   const filteredDrafts = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    const list = q ? allDrafts.filter(w => w.name.toLowerCase().includes(q) || w.description?.toLowerCase().includes(q)) : allDrafts;
+    const list = q
+      ? allDrafts.filter(
+          w =>
+            w.name.toLowerCase().includes(q) ||
+            w.description?.toLowerCase().includes(q),
+        )
+      : allDrafts;
     return sortWorkflows(list, sortBy);
   }, [allDrafts, searchQuery, sortBy]);
 
   const filteredPublished = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    const list = q ? allPublished.filter(w => w.name.toLowerCase().includes(q) || w.description?.toLowerCase().includes(q)) : allPublished;
+    const list = q
+      ? allPublished.filter(
+          w =>
+            w.name.toLowerCase().includes(q) ||
+            w.description?.toLowerCase().includes(q),
+        )
+      : allPublished;
     return sortWorkflows(list, sortBy);
   }, [allPublished, searchQuery, sortBy]);
 
-  const hasNoWorkflows = !loading && allDrafts.length === 0 && allPublished.length === 0;
+  const hasNoWorkflows =
+    !loading && allDrafts.length === 0 && allPublished.length === 0;
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    try { return localStorage.getItem('wf-onboarding-dismissed') !== 'true'; } catch { return true; }
+    try {
+      return localStorage.getItem('wf-onboarding-dismissed') !== 'true';
+    } catch {
+      return true;
+    }
   });
   const dismissOnboarding = () => {
     setShowOnboarding(false);
-    try { localStorage.setItem('wf-onboarding-dismissed', 'true'); } catch { /* */ }
+    try {
+      localStorage.setItem('wf-onboarding-dismissed', 'true');
+    } catch {
+      /* */
+    }
   };
 
-  const renderWorkflowCard = (wf: WorkflowDefinition, statusLabel: string, accentColor: string) => (
+  const renderWorkflowCard = (
+    wf: WorkflowDefinition,
+    statusLabel: string,
+    accentColor: string,
+  ) => (
     <Card
       key={wf.id}
       variant="outlined"
@@ -248,9 +305,17 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
       <CardActionArea onClick={() => onOpenWorkflow(wf)}>
         <CardContent sx={{ pb: '12px !important', pr: 5 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ color: 'text.primary' }}>{wf.name}</Typography>
+            <Typography
+              variant="subtitle2"
+              fontWeight={600}
+              noWrap
+              sx={{ color: 'text.primary' }}
+            >
+              {wf.name}
+            </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              {wf.nodes?.length || 0} nodes &middot; v{wf.version} &middot; {formatRelativeTime(wf.updatedAt)}
+              {wf.nodes?.length || 0} nodes &middot; v{wf.version} &middot;{' '}
+              {formatRelativeTime(wf.updatedAt)}
             </Typography>
           </Box>
           <Box sx={{ mt: 1 }}>
@@ -289,8 +354,19 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
   );
 
   return (
-    <Box sx={{ maxWidth: 1200, py: 3, px: { xs: 2, sm: 3, md: 4 }, overflowX: 'hidden' }}>
-      <Typography variant="h4" fontWeight={700} sx={{ mb: 0.5, color: 'text.primary' }}>
+    <Box
+      sx={{
+        maxWidth: 1200,
+        py: 3,
+        px: { xs: 2, sm: 3, md: 4 },
+        overflowX: 'hidden',
+      }}
+    >
+      <Typography
+        variant="h4"
+        fontWeight={700}
+        sx={{ mb: 0.5, color: 'text.primary' }}
+      >
         Agent Builder
       </Typography>
 
@@ -302,21 +378,33 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
           onClose={dismissOnboarding}
           sx={{ mb: 2, borderRadius: 2, '& .MuiAlert-message': { flex: 1 } }}
         >
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Getting started</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Getting started
+          </Typography>
           <Typography variant="caption" color="text.secondary" component="div">
-            1. Create a workflow from scratch or pick a template &middot;
-            2. Add nodes from the left palette &middot;
-            3. Configure each node in the right panel &middot;
-            4. Preview with sample input &middot;
-            5. Publish when ready
+            1. Create a workflow from scratch or pick a template &middot; 2. Add
+            nodes from the left palette &middot; 3. Configure each node in the
+            right panel &middot; 4. Preview with sample input &middot; 5.
+            Publish when ready
           </Typography>
         </Alert>
       )}
 
-
       {/* Tabs + search + sort */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-        <Box role="tablist" aria-label="Dashboard tabs" sx={{ display: 'flex', gap: 0.5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          mb: 3,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Box
+          role="tablist"
+          aria-label="Dashboard tabs"
+          sx={{ display: 'flex', gap: 0.5 }}
+        >
           <Chip
             label="Drafts"
             role="tab"
@@ -359,11 +447,16 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                    <SearchIcon
+                      sx={{ fontSize: 18, color: 'text.secondary' }}
+                    />
                   </InputAdornment>
                 ),
               }}
-              sx={{ width: 220, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              sx={{
+                width: 220,
+                '& .MuiOutlinedInput-root': { borderRadius: 2 },
+              }}
             />
             <FormControl size="small" sx={{ minWidth: 130 }}>
               <Select
@@ -383,18 +476,22 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
       {/* Templates tab */}
       {dashTab === 'templates' && (
         <Box sx={{ mb: 4 }}>
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(min(240px, 100%), 1fr))',
-            gap: 2,
-          }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fill, minmax(min(240px, 100%), 1fr))',
+              gap: 2,
+            }}
+          >
             {TEMPLATES.map(t => (
               <Card
                 key={t.id}
                 variant="outlined"
                 sx={{
                   borderRadius: 2,
-                  transition: 'border-color 0.2s, transform 0.15s, box-shadow 0.15s',
+                  transition:
+                    'border-color 0.2s, transform 0.15s, box-shadow 0.15s',
                   '&:hover': {
                     borderColor: theme.palette.primary.main,
                     transform: 'translateY(-2px)',
@@ -402,14 +499,41 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
                   },
                 }}
               >
-                <CardActionArea onClick={() => handleTemplateClick(t)} sx={{ height: '100%' }}>
+                <CardActionArea
+                  onClick={() => handleTemplateClick(t)}
+                  sx={{ height: '100%' }}
+                >
                   <CardContent>
-                    <SmartToyIcon sx={{ color: 'warning.main', mb: 1, fontSize: 28 }} />
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ color: 'text.primary' }}>{t.name}</Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
+                    <SmartToyIcon
+                      sx={{ color: 'warning.main', mb: 1, fontSize: 28 }}
+                    />
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight={600}
+                      sx={{ color: 'text.primary' }}
+                    >
+                      {t.name}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        display: 'block',
+                        mt: 0.5,
+                        color: 'text.secondary',
+                      }}
+                    >
                       {t.description}
                     </Typography>
-                    <Chip label="Template" size="small" sx={{ mt: 1.5, height: 20, fontSize: TYPE_SCALE.microLabel.size, color: 'text.secondary' }} />
+                    <Chip
+                      label="Template"
+                      size="small"
+                      sx={{
+                        mt: 1.5,
+                        height: 20,
+                        fontSize: TYPE_SCALE.microLabel.size,
+                        color: 'text.secondary',
+                      }}
+                    />
                   </CardContent>
                 </CardActionArea>
               </Card>
@@ -418,36 +542,72 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
         </Box>
       )}
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       {/* Skeleton loading */}
       {loading && (
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: 2,
-        }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gap: 2,
+          }}
+        >
           {[1, 2, 3, 4].map(i => (
-            <Skeleton key={i} variant="rounded" height={100} sx={{ borderRadius: 2 }} />
+            <Skeleton
+              key={i}
+              variant="rounded"
+              height={100}
+              sx={{ borderRadius: 2 }}
+            />
           ))}
         </Box>
       )}
 
       {/* Empty state */}
       {dashTab === 'drafts' && hasNoWorkflows && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 2 }}>
-          <AccountTreeOutlinedIcon sx={{ fontSize: 64, color: 'text.disabled' }} />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            py: 6,
+            gap: 2,
+          }}
+        >
+          <AccountTreeOutlinedIcon
+            sx={{ fontSize: 64, color: 'text.disabled' }}
+          />
           <Typography variant="h6" fontWeight={600} color="text.primary">
             No workflows yet
           </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ maxWidth: 360 }}>
-            Create your first agent workflow from scratch, or pick a template to get started quickly.
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            textAlign="center"
+            sx={{ maxWidth: 360 }}
+          >
+            Create your first agent workflow from scratch, or pick a template to
+            get started quickly.
           </Typography>
           <Box sx={{ display: 'flex', gap: 1.5, mt: 1 }}>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate} sx={{ textTransform: 'none', borderRadius: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreate}
+              sx={{ textTransform: 'none', borderRadius: 2 }}
+            >
               Create blank
             </Button>
-            <Button variant="outlined" onClick={() => setDashTab('templates')} sx={{ textTransform: 'none', borderRadius: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setDashTab('templates')}
+              sx={{ textTransform: 'none', borderRadius: 2 }}
+            >
               Browse templates
             </Button>
           </Box>
@@ -457,15 +617,23 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
       {/* Drafts */}
       {dashTab === 'drafts' && !loading && filteredDrafts.length > 0 && (
         <Box sx={{ mb: 4 }}>
-          <Typography variant="overline" sx={{ mb: 1, display: 'block', color: 'text.secondary' }}>
+          <Typography
+            variant="overline"
+            sx={{ mb: 1, display: 'block', color: 'text.secondary' }}
+          >
             Drafts ({filteredDrafts.length})
           </Typography>
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(min(240px, 100%), 1fr))',
-            gap: 2,
-          }}>
-            {filteredDrafts.map(wf => renderWorkflowCard(wf, 'Draft', theme.palette.warning.main))}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fill, minmax(min(240px, 100%), 1fr))',
+              gap: 2,
+            }}
+          >
+            {filteredDrafts.map(wf =>
+              renderWorkflowCard(wf, 'Draft', theme.palette.warning.main),
+            )}
           </Box>
         </Box>
       )}
@@ -473,46 +641,84 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
       {/* Published */}
       {dashTab === 'drafts' && !loading && filteredPublished.length > 0 && (
         <Box sx={{ mb: 4 }}>
-          <Typography variant="overline" sx={{ mb: 1, display: 'block', color: 'text.secondary' }}>
+          <Typography
+            variant="overline"
+            sx={{ mb: 1, display: 'block', color: 'text.secondary' }}
+          >
             Published ({filteredPublished.length})
           </Typography>
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(min(240px, 100%), 1fr))',
-            gap: 2,
-          }}>
-            {filteredPublished.map(wf => renderWorkflowCard(wf, 'Published', theme.palette.success.main))}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fill, minmax(min(240px, 100%), 1fr))',
+              gap: 2,
+            }}
+          >
+            {filteredPublished.map(wf =>
+              renderWorkflowCard(wf, 'Published', theme.palette.success.main),
+            )}
           </Box>
         </Box>
       )}
 
       {/* No search results */}
-      {dashTab === 'drafts' && !loading && !hasNoWorkflows && searchQuery && filteredDrafts.length === 0 && filteredPublished.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="body2" color="text.secondary">
-            No workflows matching "{searchQuery}"
-          </Typography>
-        </Box>
-      )}
+      {dashTab === 'drafts' &&
+        !loading &&
+        !hasNoWorkflows &&
+        searchQuery &&
+        filteredDrafts.length === 0 &&
+        filteredPublished.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="body2" color="text.secondary">
+              No workflows matching "{searchQuery}"
+            </Typography>
+          </Box>
+        )}
 
       {/* Context menu */}
-      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
-        <MenuItem onClick={() => {
-          if (menuWorkflow) { setRenameName(menuWorkflow.name); setRenameDialog(menuWorkflow); }
-          handleMenuClose();
-        }}>Rename</MenuItem>
-        <MenuItem onClick={() => {
-          if (menuWorkflow) handleDuplicate(menuWorkflow);
-          handleMenuClose();
-        }}>Duplicate</MenuItem>
-        <MenuItem onClick={() => {
-          if (menuWorkflow) setDeleteDialog(menuWorkflow);
-          handleMenuClose();
-        }} sx={{ color: 'error.main' }}>Delete</MenuItem>
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem
+          onClick={() => {
+            if (menuWorkflow) {
+              setRenameName(menuWorkflow.name);
+              setRenameDialog(menuWorkflow);
+            }
+            handleMenuClose();
+          }}
+        >
+          Rename
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuWorkflow) handleDuplicate(menuWorkflow);
+            handleMenuClose();
+          }}
+        >
+          Duplicate
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuWorkflow) setDeleteDialog(menuWorkflow);
+            handleMenuClose();
+          }}
+          sx={{ color: 'error.main' }}
+        >
+          Delete
+        </MenuItem>
       </Menu>
 
       {/* Rename dialog */}
-      <Dialog open={Boolean(renameDialog)} onClose={() => setRenameDialog(null)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={Boolean(renameDialog)}
+        onClose={() => setRenameDialog(null)}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle>Rename workflow</DialogTitle>
         <DialogContent>
           <TextField
@@ -521,25 +727,38 @@ export function WorkflowDashboard({ onOpenWorkflow, onCreateWorkflow }: Workflow
             size="small"
             value={renameName}
             onChange={e => setRenameName(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleRename(); }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') handleRename();
+            }}
             sx={{ mt: 1 }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRenameDialog(null)}>Cancel</Button>
-          <Button variant="contained" onClick={handleRename}>Save</Button>
+          <Button variant="contained" onClick={handleRename}>
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Delete confirm dialog */}
-      <Dialog open={Boolean(deleteDialog)} onClose={() => setDeleteDialog(null)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={Boolean(deleteDialog)}
+        onClose={() => setDeleteDialog(null)}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle>Delete workflow</DialogTitle>
         <DialogContent>
-          <Typography>Delete &quot;{deleteDialog?.name}&quot;? This cannot be undone.</Typography>
+          <Typography>
+            Delete &quot;{deleteDialog?.name}&quot;? This cannot be undone.
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialog(null)}>Cancel</Button>
-          <Button variant="contained" color="error" onClick={handleDelete}>Delete</Button>
+          <Button variant="contained" color="error" onClick={handleDelete}>
+            Delete
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

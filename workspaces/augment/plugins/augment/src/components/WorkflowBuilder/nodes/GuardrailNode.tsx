@@ -3,7 +3,10 @@ import type { NodeProps } from '@xyflow/react';
 import ShieldIcon from '@mui/icons-material/Shield';
 import { BaseNode } from './BaseNode';
 
-export const GuardrailNode = memo(function GuardrailNode({ data, selected }: NodeProps) {
+export const GuardrailNode = memo(function GuardrailNode({
+  data,
+  selected,
+}: NodeProps) {
   const d = data as Record<string, unknown>;
   const label = (d.label as string) || 'Guardrail';
 

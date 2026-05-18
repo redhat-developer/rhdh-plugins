@@ -181,7 +181,10 @@ export class ResponsesApiProvider implements AgenticProvider {
     return models;
   }
 
-  async testModel(modelOverride?: string, _baseUrl?: string): Promise<{
+  async testModel(
+    modelOverride?: string,
+    _baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -387,7 +390,10 @@ export class ResponsesApiProvider implements AgenticProvider {
     }
 
     // Build topology map from the snapshot for deriveRoleFromTopology
-    const topologyMap: Record<string, { handoffs?: string[]; asTools?: string[] }> = {};
+    const topologyMap: Record<
+      string,
+      { handoffs?: string[]; asTools?: string[] }
+    > = {};
     for (const [key, resolved] of snapshot.agents) {
       topologyMap[key] = {
         handoffs: resolved.config.handoffs,

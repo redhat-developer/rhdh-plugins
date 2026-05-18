@@ -57,7 +57,8 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
     {
       id: 'kagenti',
       displayName: 'Red Hat AI',
-      description: 'Red Hat AI -- Kubernetes-native AI agent operations platform',
+      description:
+        'Red Hat AI -- Kubernetes-native AI agent operations platform',
       implemented: true,
       capabilities: {
         chat: true,

@@ -41,7 +41,11 @@ interface ChatDrawerProps {
  * A persistent slide-out chat drawer accessible from any admin view.
  * Uses the shared ChatContainer in a compact layout.
  */
-export function ChatDrawer({ open, onClose, onExpandFullPage }: ChatDrawerProps) {
+export function ChatDrawer({
+  open,
+  onClose,
+  onExpandFullPage,
+}: ChatDrawerProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const {
@@ -109,7 +113,9 @@ export function ChatDrawer({ open, onClose, onExpandFullPage }: ChatDrawerProps)
       </Box>
 
       {/* Chat Content */}
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <Box
+        sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+      >
         <ErrorBoundary>
           <ChatViewModeProvider>
             <ChatContainer

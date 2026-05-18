@@ -59,7 +59,9 @@ export function ToolRouteSection({
   }
 
   const hasRoute =
-    'hasRoute' in routeStatus ? (routeStatus as Record<string, unknown>).hasRoute : undefined;
+    'hasRoute' in routeStatus
+      ? (routeStatus as Record<string, unknown>).hasRoute
+      : undefined;
 
   if (hasRoute === false && Object.keys(routeStatus).length === 1) {
     return (

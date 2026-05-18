@@ -226,8 +226,7 @@ export const augmentMessages = {
     saveSuccess: 'Configuration saved.',
     reset: 'Reset',
     noAgentsTitle: 'No agents configured',
-    noAgentsSubtitle:
-      'Create your first agent to get started.',
+    noAgentsSubtitle: 'Create your first agent to get started.',
     createFirstAgent: 'Create Your First Agent',
     selectAgent: 'Select an agent from the list',
     topology: 'Topology',

@@ -27,16 +27,23 @@ export async function resolveLlamaStackConfig(
   adminConfig: AdminConfigService,
 ): Promise<{ url: string; model: string; skipTls: boolean }> {
   const providerId: ProviderType = 'llamastack';
-  const dbUrl = await adminConfig.getScopedValue('baseUrl', providerId).catch(() => undefined);
-  const dbModel = await adminConfig.getScopedValue('model', providerId).catch(() => undefined);
+  const dbUrl = await adminConfig
+    .getScopedValue('baseUrl', providerId)
+    .catch(() => undefined);
+  const dbModel = await adminConfig
+    .getScopedValue('model', providerId)
+    .catch(() => undefined);
 
-  const url = (typeof dbUrl === 'string' && dbUrl)
-    || ctx.config.getOptionalString('augment.llamaStack.baseUrl')
-    || 'http://localhost:8321';
-  const model = (typeof dbModel === 'string' && dbModel)
-    || ctx.config.getOptionalString('augment.llamaStack.model')
-    || 'meta-llama/Llama-3.1-8B-Instruct';
-  const skipTls = ctx.config.getOptionalBoolean('augment.llamaStack.skipTlsVerify') ?? false;
+  const url =
+    (typeof dbUrl === 'string' && dbUrl) ||
+    ctx.config.getOptionalString('augment.llamaStack.baseUrl') ||
+    'http://localhost:8321';
+  const model =
+    (typeof dbModel === 'string' && dbModel) ||
+    ctx.config.getOptionalString('augment.llamaStack.model') ||
+    'meta-llama/Llama-3.1-8B-Instruct';
+  const skipTls =
+    ctx.config.getOptionalBoolean('augment.llamaStack.skipTlsVerify') ?? false;
 
   return { url, model, skipTls };
 }

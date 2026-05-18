@@ -72,7 +72,6 @@ export function CommandBar({
         flexShrink: 0,
       }}
     >
-
       {/* Section Pills */}
       <Box
         sx={{
@@ -94,7 +93,9 @@ export function CommandBar({
               aria-selected={isActive}
               data-tour={`nav-${item.label.toLowerCase()}`}
               onClick={() => onNavigate(item.id)}
-              onKeyDown={e => { if (e.key === 'Enter') onNavigate(item.id); }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') onNavigate(item.id);
+              }}
               sx={{
                 px: 2,
                 py: 0.75,
@@ -102,8 +103,12 @@ export function CommandBar({
                 cursor: 'pointer',
                 fontSize: '0.875rem',
                 fontWeight: isActive ? 700 : 500,
-                color: isActive ? theme.palette.primary.main : theme.palette.text.secondary,
-                bgcolor: isActive ? alpha(theme.palette.primary.main, isDark ? 0.12 : 0.06) : 'transparent',
+                color: isActive
+                  ? theme.palette.primary.main
+                  : theme.palette.text.secondary,
+                bgcolor: isActive
+                  ? alpha(theme.palette.primary.main, isDark ? 0.12 : 0.06)
+                  : 'transparent',
                 position: 'relative',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.15s ease',
@@ -111,20 +116,24 @@ export function CommandBar({
                   bgcolor: isActive
                     ? alpha(theme.palette.primary.main, isDark ? 0.15 : 0.08)
                     : alpha(theme.palette.action.hover, 0.5),
-                  color: isActive ? theme.palette.primary.main : theme.palette.text.primary,
+                  color: isActive
+                    ? theme.palette.primary.main
+                    : theme.palette.text.primary,
                 },
                 // Glowing underline for active
-                '&::after': isActive ? {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: -1,
-                  left: '20%',
-                  right: '20%',
-                  height: 2,
-                  borderRadius: 1,
-                  bgcolor: theme.palette.primary.main,
-                  boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.6)}`,
-                } : {},
+                '&::after': isActive
+                  ? {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: -1,
+                      left: '20%',
+                      right: '20%',
+                      height: 2,
+                      borderRadius: 1,
+                      bgcolor: theme.palette.primary.main,
+                      boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.6)}`,
+                    }
+                  : {},
               }}
             >
               {item.label}
@@ -138,7 +147,10 @@ export function CommandBar({
                     borderRadius: 1,
                     fontSize: '0.6rem',
                     fontWeight: 700,
-                    bgcolor: alpha(item.badgeColor || theme.palette.warning.main, isDark ? 0.2 : 0.12),
+                    bgcolor: alpha(
+                      item.badgeColor || theme.palette.warning.main,
+                      isDark ? 0.2 : 0.12,
+                    ),
                     color: item.badgeColor || theme.palette.warning.main,
                     lineHeight: 1.3,
                   }}
@@ -152,12 +164,16 @@ export function CommandBar({
       </Box>
 
       {/* Right: context picker + actions */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2, flexShrink: 0 }}>
-        {contextPicker && (
-          <Box sx={{ maxWidth: 160 }}>
-            {contextPicker}
-          </Box>
-        )}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          ml: 2,
+          flexShrink: 0,
+        }}
+      >
+        {contextPicker && <Box sx={{ maxWidth: 160 }}>{contextPicker}</Box>}
         {onOpenGuidedTours && (
           <Button
             size="small"

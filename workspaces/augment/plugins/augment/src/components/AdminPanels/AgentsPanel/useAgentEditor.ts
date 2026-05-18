@@ -69,7 +69,11 @@ export function useAgentEditor({
   } = useAdminConfig('agents');
   const { save: saveDefaultAgent } = useAdminConfig('defaultAgent');
   const { save: saveMaxTurns } = useAdminConfig('maxAgentTurns');
-  const { models, loading: modelsLoading, refresh: refreshModels } = useModels();
+  const {
+    models,
+    loading: modelsLoading,
+    refresh: refreshModels,
+  } = useModels();
   const modelOptions = useMemo(
     () => models.map(m => m.id).filter(Boolean) as string[],
     [models],
@@ -106,7 +110,9 @@ export function useAgentEditor({
   // ── Effects ───────────────────────────────────────────────────────────
 
   useEffect(
-    () => () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); },
+    () => () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    },
     [],
   );
 
@@ -117,7 +123,8 @@ export function useAgentEditor({
       setDefaultAgentKey('');
     } else {
       const rawAgents =
-        (effectiveConfig.agents as Record<string, Record<string, unknown>>) || {};
+        (effectiveConfig.agents as Record<string, Record<string, unknown>>) ||
+        {};
       const parsed: Record<string, AgentFormData> = {};
       for (const [key, cfg] of Object.entries(rawAgents))
         parsed[key] = agentFromConfig(cfg);
@@ -129,11 +136,16 @@ export function useAgentEditor({
   }, [effectiveConfig, initialized, isSingleAgentMode]);
 
   const focusAppliedRef = useRef(false);
-  useEffect(() => { focusAppliedRef.current = false; }, [focusAgentKey]);
+  useEffect(() => {
+    focusAppliedRef.current = false;
+  }, [focusAgentKey]);
   useEffect(() => {
     if (!initialized) return;
     const keys = Object.keys(agents);
-    if (keys.length === 0) { setSelectedAgentKey(null); return; }
+    if (keys.length === 0) {
+      setSelectedAgentKey(null);
+      return;
+    }
     if (focusAgentKey && agents[focusAgentKey] && !focusAppliedRef.current) {
       focusAppliedRef.current = true;
       setSelectedAgentKey(focusAgentKey);
@@ -148,7 +160,9 @@ export function useAgentEditor({
       autoCreateAppliedRef.current = true;
       if (isSingleAgentMode) {
         const existingKeys = effectiveConfig
-          ? Object.keys((effectiveConfig.agents as Record<string, unknown>) || {})
+          ? Object.keys(
+              (effectiveConfig.agents as Record<string, unknown>) || {},
+            )
           : [];
         const key = generateUniqueAgentKey(existingKeys);
         const agent = createDefaultAgent();
@@ -175,13 +189,16 @@ export function useAgentEditor({
     return JSON.stringify(agents) !== initialSnapshotRef.current;
   }, [agents, initialized]);
 
-  useEffect(() => { onDirtyChange?.(isDirty); }, [isDirty, onDirtyChange]);
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   // ── Derived ───────────────────────────────────────────────────────────
 
   const availableMcpServers = useMemo(() => {
     if (!effectiveConfig) return [];
-    const servers = (effectiveConfig.mcpServers as Array<{ id: string; name: string }>) || [];
+    const servers =
+      (effectiveConfig.mcpServers as Array<{ id: string; name: string }>) || [];
     return servers.map(s => ({ id: s.id, name: s.name || s.id }));
   }, [effectiveConfig]);
 
@@ -190,9 +207,15 @@ export function useAgentEditor({
     [availableMcpServers],
   );
 
-  const derived = useAgentDerived(agents, selectedAgentKey, defaultAgentKey, availableMcpServerIds);
+  const derived = useAgentDerived(
+    agents,
+    selectedAgentKey,
+    defaultAgentKey,
+    availableMcpServerIds,
+  );
 
-  const effectiveModel = derived.selectedAgent?.model || (effectiveConfig?.model as string) || '';
+  const effectiveModel =
+    derived.selectedAgent?.model || (effectiveConfig?.model as string) || '';
 
   // ── Actions ───────────────────────────────────────────────────────────
 

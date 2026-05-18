@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 import { Agent } from '@openai/agents-core';
-import type { FunctionTool as AgentsFunctionTool, Tool } from '@openai/agents-core';
+import type {
+  FunctionTool as AgentsFunctionTool,
+  Tool,
+} from '@openai/agents-core';
 import type { AgentConfig } from '../../../types/config';
 
 /**
@@ -32,7 +35,10 @@ export function buildAgentGraph(
   agentsConfig: Record<string, AgentConfig>,
   defaultAgentKey: string,
   backendTools: AgentsFunctionTool[],
-  agentToolFilter?: (agentKey: string, tools: AgentsFunctionTool[]) => AgentsFunctionTool[],
+  agentToolFilter?: (
+    agentKey: string,
+    tools: AgentsFunctionTool[],
+  ) => AgentsFunctionTool[],
 ): {
   agents: Map<string, Agent>;
   defaultAgent: Agent;
@@ -64,9 +70,10 @@ export function buildAgentGraph(
         },
         handoffDescription: config.handoffDescription,
         resetToolChoice: config.resetToolChoice,
-        toolUseBehavior: config.toolUseBehavior === 'stop_on_first_tool'
-          ? 'stop_on_first_tool'
-          : undefined,
+        toolUseBehavior:
+          config.toolUseBehavior === 'stop_on_first_tool'
+            ? 'stop_on_first_tool'
+            : undefined,
       }),
     );
   }
@@ -104,7 +111,8 @@ export function buildAgentGraph(
     }
 
     if (handoffs.length > 0 || asToolInstances.length > 0) {
-      const existingTools = (agent as unknown as { _tools?: Tool[] })._tools ?? [];
+      const existingTools =
+        (agent as unknown as { _tools?: Tool[] })._tools ?? [];
       const merged = new Agent({
         name: agent.name,
         instructions: config.instructions ?? '',
@@ -122,9 +130,10 @@ export function buildAgentGraph(
         },
         handoffDescription: config.handoffDescription,
         resetToolChoice: config.resetToolChoice,
-        toolUseBehavior: config.toolUseBehavior === 'stop_on_first_tool'
-          ? 'stop_on_first_tool'
-          : undefined,
+        toolUseBehavior:
+          config.toolUseBehavior === 'stop_on_first_tool'
+            ? 'stop_on_first_tool'
+            : undefined,
       });
       agents.set(key, merged);
     }

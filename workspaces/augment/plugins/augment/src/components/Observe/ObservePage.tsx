@@ -64,7 +64,10 @@ export function ObservePage() {
         >
           Observe
         </Typography>
-        <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+        <Typography
+          variant="body2"
+          sx={{ color: theme.palette.text.secondary }}
+        >
           Monitor agent health, view traces, and manage deployment lifecycle.
         </Typography>
       </Box>
@@ -95,7 +98,9 @@ export function ObservePage() {
         }
       >
         {activeTab === 'dashboards' && (
-          <KagentiDashboardLinksLazy namespace={kagentiNamespace || undefined} />
+          <KagentiDashboardLinksLazy
+            namespace={kagentiNamespace || undefined}
+          />
         )}
         {activeTab === 'registry' && <AgentRegistryPanelLazy />}
       </Suspense>

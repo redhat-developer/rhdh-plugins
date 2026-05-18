@@ -39,7 +39,10 @@ export const AgentPreviewCard = React.memo(function AgentPreviewCard({
   const caps = useMemo(() => {
     const items: Array<{ icon: React.ReactElement; label: string }> = [];
     if (agent.enableRAG)
-      items.push({ icon: <MenuBookIcon sx={{ fontSize: 14 }} />, label: 'RAG' });
+      items.push({
+        icon: <MenuBookIcon sx={{ fontSize: 14 }} />,
+        label: 'RAG',
+      });
     if (agent.enableWebSearch)
       items.push({ icon: <PublicIcon sx={{ fontSize: 14 }} />, label: 'Web' });
     if (agent.enableCodeInterpreter)

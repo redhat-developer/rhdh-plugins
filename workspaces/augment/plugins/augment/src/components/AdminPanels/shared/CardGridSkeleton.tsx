@@ -26,7 +26,10 @@ interface CardGridSkeletonProps {
 /**
  * Skeleton placeholder mimicking a grid of cards.
  */
-export function CardGridSkeleton({ cards = 4, cardHeight = 120 }: CardGridSkeletonProps) {
+export function CardGridSkeleton({
+  cards = 4,
+  cardHeight = 120,
+}: CardGridSkeletonProps) {
   return (
     <Box
       sx={{

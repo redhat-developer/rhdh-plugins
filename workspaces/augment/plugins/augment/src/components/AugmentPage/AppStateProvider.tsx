@@ -157,9 +157,12 @@ export function AppStateProvider({ children }: Props) {
     return 'super-admin';
   }, [isAdmin]);
 
-  const switchToAdmin = useCallback((targetPanel?: AdminPanel) => {
-    adminView.switchToAdmin(liveStatus?.providerId, targetPanel);
-  }, [adminView, liveStatus?.providerId]);
+  const switchToAdmin = useCallback(
+    (targetPanel?: AdminPanel) => {
+      adminView.switchToAdmin(liveStatus?.providerId, targetPanel);
+    },
+    [adminView, liveStatus?.providerId],
+  );
 
   const value: AppState = useMemo(
     () => ({

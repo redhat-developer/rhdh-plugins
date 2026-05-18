@@ -48,7 +48,10 @@ export async function withRetry<T>(
         break;
       }
 
-      const delay = Math.min(baseDelayMs * Math.pow(2, attempt - 1), maxDelayMs);
+      const delay = Math.min(
+        baseDelayMs * Math.pow(2, attempt - 1),
+        maxDelayMs,
+      );
       const jitter = delay * (0.5 + Math.random() * 0.5);
       await new Promise(resolve => setTimeout(resolve, jitter));
     }
@@ -72,7 +75,11 @@ export function isRetryableError(error: unknown): boolean {
 
   if (error && typeof error === 'object' && 'message' in error) {
     const msg = (error as { message: string }).message.toLowerCase();
-    return msg.includes('network') || msg.includes('timeout') || msg.includes('econnrefused');
+    return (
+      msg.includes('network') ||
+      msg.includes('timeout') ||
+      msg.includes('econnrefused')
+    );
   }
 
   return false;

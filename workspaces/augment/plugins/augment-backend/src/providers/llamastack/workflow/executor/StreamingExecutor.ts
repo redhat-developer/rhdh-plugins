@@ -41,14 +41,21 @@ export async function executeAgentNodeStreaming(
   const startedAt = new Date().toISOString();
   const startMs = Date.now();
 
-  const stateMcpServers = (state._mcpServers as Array<{ serverUrl: string; serverLabel: string }> | undefined) || [];
-  const directMcpUrls = Array.isArray(data.mcpServers) ? (data.mcpServers as string[]) : [];
+  const stateMcpServers =
+    (state._mcpServers as
+      | Array<{ serverUrl: string; serverLabel: string }>
+      | undefined) || [];
+  const directMcpUrls = Array.isArray(data.mcpServers)
+    ? (data.mcpServers as string[])
+    : [];
 
   const tools: Array<Record<string, unknown>> = [
     ...stateMcpServers.map(s => ({
       type: 'mcp',
       server_label: s.serverLabel,
-      server_url: s.serverUrl.endsWith('/sse') ? s.serverUrl : `${s.serverUrl}/sse`,
+      server_url: s.serverUrl.endsWith('/sse')
+        ? s.serverUrl
+        : `${s.serverUrl}/sse`,
       require_approval: 'never',
     })),
     ...directMcpUrls.map((url, i) => ({
@@ -61,9 +68,11 @@ export async function executeAgentNodeStreaming(
 
   try {
     const body: Record<string, unknown> = {
-      model, input: inputText,
+      model,
+      input: inputText,
       instructions: instructions || undefined,
-      store: true, stream: true,
+      store: true,
+      stream: true,
     };
     if (previousResponseId) body.previous_response_id = previousResponseId;
     if (data.temperature !== undefined) body.temperature = data.temperature;
@@ -82,10 +91,16 @@ export async function executeAgentNodeStreaming(
 
           if (evt.type === 'response.output_text.delta' && evt.delta) {
             fullText += evt.delta;
-            onEvent({ type: 'node.delta', data: { nodeId: node.id, delta: evt.delta } });
+            onEvent({
+              type: 'node.delta',
+              data: { nodeId: node.id, delta: evt.delta },
+            });
           } else if (evt.type === 'response.completed' && evt.response?.id) {
             responseId = evt.response.id;
-          } else if (evt.type === 'response.mcp_call.in_progress' || evt.type === 'response.mcp_call_in_progress') {
+          } else if (
+            evt.type === 'response.mcp_call.in_progress' ||
+            evt.type === 'response.mcp_call_in_progress'
+          ) {
             onEvent({
               type: 'node.tool_call.started',
               data: {
@@ -94,7 +109,10 @@ export async function executeAgentNodeStreaming(
                 serverLabel: evt.server_label || evt.item?.server_label,
               },
             });
-          } else if (evt.type === 'response.mcp_call.completed' || evt.type === 'response.mcp_call_completed') {
+          } else if (
+            evt.type === 'response.mcp_call.completed' ||
+            evt.type === 'response.mcp_call_completed'
+          ) {
             onEvent({
               type: 'node.tool_call.completed',
               data: {
@@ -103,12 +121,18 @@ export async function executeAgentNodeStreaming(
                 output: evt.output || evt.item?.output,
               },
             });
-          } else if (evt.type === 'response.function_call_arguments.delta' && evt.delta) {
+          } else if (
+            evt.type === 'response.function_call_arguments.delta' &&
+            evt.delta
+          ) {
             onEvent({
               type: 'node.tool_call.arguments_delta',
               data: { nodeId: node.id, delta: evt.delta },
             });
-          } else if (evt.type === 'response.output_item.added' && evt.item?.type === 'mcp_call') {
+          } else if (
+            evt.type === 'response.output_item.added' &&
+            evt.item?.type === 'mcp_call'
+          ) {
             onEvent({
               type: 'node.tool_call.started',
               data: {
@@ -117,7 +141,10 @@ export async function executeAgentNodeStreaming(
                 serverLabel: evt.item.server_label,
               },
             });
-          } else if (evt.type === 'response.output_item.done' && evt.item?.type === 'mcp_call') {
+          } else if (
+            evt.type === 'response.output_item.done' &&
+            evt.item?.type === 'mcp_call'
+          ) {
             onEvent({
               type: 'node.tool_call.completed',
               data: {
@@ -127,7 +154,9 @@ export async function executeAgentNodeStreaming(
               },
             });
           }
-        } catch { /* skip unparseable SSE frames */ }
+        } catch {
+          /* skip unparseable SSE frames */
+        }
       },
       signal,
     );
@@ -135,11 +164,17 @@ export async function executeAgentNodeStreaming(
     return {
       output: fullText,
       trace: {
-        nodeId: node.id, nodeType: 'agent',
-        nodeName: data.name || node.label || node.id, model,
-        input: inputText, output: fullText, responseId,
-        startedAt, completedAt: new Date().toISOString(),
-        status: 'completed', durationMs: Date.now() - startMs,
+        nodeId: node.id,
+        nodeType: 'agent',
+        nodeName: data.name || node.label || node.id,
+        model,
+        input: inputText,
+        output: fullText,
+        responseId,
+        startedAt,
+        completedAt: new Date().toISOString(),
+        status: 'completed',
+        durationMs: Date.now() - startMs,
       },
     };
   } catch (err: unknown) {
@@ -148,11 +183,17 @@ export async function executeAgentNodeStreaming(
     return {
       output: undefined,
       trace: {
-        nodeId: node.id, nodeType: 'agent',
-        nodeName: data.name || node.label || node.id, model,
-        input: inputText, output: '', startedAt,
+        nodeId: node.id,
+        nodeType: 'agent',
+        nodeName: data.name || node.label || node.id,
+        model,
+        input: inputText,
+        output: '',
+        startedAt,
         completedAt: new Date().toISOString(),
-        status: 'failed', error: errMsg, durationMs: Date.now() - startMs,
+        status: 'failed',
+        error: errMsg,
+        durationMs: Date.now() - startMs,
       },
     };
   }

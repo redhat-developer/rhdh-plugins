@@ -71,15 +71,23 @@ export const AgentEditorHeader = React.memo(function AgentEditorHeader({
         }}
       >
         {isSingleAgentMode ? (
-          <SmartToyOutlinedIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+          <SmartToyOutlinedIcon
+            sx={{ fontSize: 18, color: theme.palette.primary.main }}
+          />
         ) : autoCreate ? (
-          <GroupsOutlinedIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+          <GroupsOutlinedIcon
+            sx={{ fontSize: 18, color: theme.palette.primary.main }}
+          />
         ) : (
-          <EditOutlinedIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+          <EditOutlinedIcon
+            sx={{ fontSize: 18, color: theme.palette.primary.main }}
+          />
         )}
       </Box>
       <Box sx={{ flex: 1 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.3 }}>
+        <Typography
+          sx={{ fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.3 }}
+        >
           {isSingleAgentMode
             ? 'Create Agent'
             : autoCreate
@@ -88,7 +96,9 @@ export const AgentEditorHeader = React.memo(function AgentEditorHeader({
                 ? `Editing ${agentName}`
                 : 'Agent Configuration'}
         </Typography>
-        <Typography sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}>
+        <Typography
+          sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}
+        >
           {isSingleAgentMode
             ? "Define your agent's capabilities and instructions"
             : autoCreate
@@ -99,7 +109,12 @@ export const AgentEditorHeader = React.memo(function AgentEditorHeader({
       {!isSingleAgentMode && (
         <Tooltip title="Toggle agent preview">
           <IconButton size="small" onClick={onTogglePreview}>
-            <VisibilityOutlinedIcon fontSize="small" sx={{ color: showPreview ? theme.palette.primary.main : undefined }} />
+            <VisibilityOutlinedIcon
+              fontSize="small"
+              sx={{
+                color: showPreview ? theme.palette.primary.main : undefined,
+              }}
+            />
           </IconButton>
         </Tooltip>
       )}

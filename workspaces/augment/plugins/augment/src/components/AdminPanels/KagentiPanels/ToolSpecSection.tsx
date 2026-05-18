@@ -39,7 +39,9 @@ function dig(obj: unknown, ...path: string[]): unknown {
   return cur;
 }
 
-function extractContainerImage(spec: Record<string, unknown>): string | undefined {
+function extractContainerImage(
+  spec: Record<string, unknown>,
+): string | undefined {
   const image = dig(spec, 'template', 'spec', 'containers', '0', 'image') as
     | string
     | undefined;
@@ -66,7 +68,9 @@ function extractEnvVars(
   const env = (containers[0] as Record<string, unknown>)?.env;
   return Array.isArray(env)
     ? env.map(e =>
-        typeof e === 'object' && e !== null ? (e as Record<string, unknown>) : {},
+        typeof e === 'object' && e !== null
+          ? (e as Record<string, unknown>)
+          : {},
       )
     : [];
 }
@@ -81,7 +85,9 @@ function extractPorts(
   const ports = (containers[0] as Record<string, unknown>)?.ports;
   return Array.isArray(ports)
     ? ports.map(p =>
-        typeof p === 'object' && p !== null ? (p as Record<string, unknown>) : {},
+        typeof p === 'object' && p !== null
+          ? (p as Record<string, unknown>)
+          : {},
       )
     : [];
 }
@@ -119,9 +125,7 @@ export function ToolSpecSection({
     { label: 'Protocol', value: protocol },
     { label: 'Framework', value: framework },
     { label: 'Image', value: image },
-  ].filter(
-    f => f.value !== undefined && f.value !== null && f.value !== '',
-  );
+  ].filter(f => f.value !== undefined && f.value !== null && f.value !== '');
 
   return (
     <>

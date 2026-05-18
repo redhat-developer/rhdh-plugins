@@ -111,7 +111,10 @@ export const getSearchBarSx = (theme: Theme): SxProps<Theme> => ({
     borderRadius: 5,
     fontSize: '0.85rem',
     height: 42,
-    bgcolor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.5 : 0.8),
+    bgcolor: alpha(
+      theme.palette.background.paper,
+      theme.palette.mode === 'dark' ? 0.5 : 0.8,
+    ),
     '&.Mui-focused': {
       boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.15)}`,
     },

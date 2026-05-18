@@ -35,10 +35,7 @@ import { GuardrailsStep } from './steps/GuardrailsStep';
 import { ReviewStep } from './steps/ReviewStep';
 
 interface AgentCreationWizardProps {
-  onSave: (
-    key: string,
-    config: Record<string, unknown>,
-  ) => Promise<void>;
+  onSave: (key: string, config: Record<string, unknown>) => Promise<void>;
   onCancel: () => void;
   fetchModels?: () => Promise<Array<{ id: string; owned_by?: string }>>;
   fetchShields?: () => Promise<
@@ -249,10 +246,7 @@ export function AgentCreationWizard({
           Cancel
         </Button>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            onClick={handleBack}
-            disabled={activeStep === 0}
-          >
+          <Button onClick={handleBack} disabled={activeStep === 0}>
             Back
           </Button>
           {isLastStep ? (

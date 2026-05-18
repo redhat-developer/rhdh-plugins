@@ -63,7 +63,8 @@ function resolveClassifyBranch(
     if (matchingEdge) return matchingEdge.target;
   }
 
-  const defaultEdge = outEdges.find(e => !e.condition && !e.label) || outEdges[0];
+  const defaultEdge =
+    outEdges.find(e => !e.condition && !e.label) || outEdges[0];
   return defaultEdge?.target ?? null;
 }
 

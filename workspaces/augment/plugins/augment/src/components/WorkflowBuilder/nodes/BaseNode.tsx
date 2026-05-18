@@ -3,7 +3,13 @@ import { Handle, Position } from '@xyflow/react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
-import { nodeColor, selectionRing, elevationShadow, TYPE_SCALE, TRANSITIONS } from '../theme/tokens';
+import {
+  nodeColor,
+  selectionRing,
+  elevationShadow,
+  TYPE_SCALE,
+  TRANSITIONS,
+} from '../theme/tokens';
 
 interface BaseNodeProps {
   title: string;
@@ -51,28 +57,64 @@ export function BaseNode({
       }}
     >
       {hasTarget && (
-        <Handle type="target" position={Position.Left} style={{ opacity: 0, width: 10, height: 10 }} />
+        <Handle
+          type="target"
+          position={Position.Left}
+          style={{ opacity: 0, width: 10, height: 10 }}
+        />
       )}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
         {icon}
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="body2" fontWeight={TYPE_SCALE.nodeTitle.weight} noWrap sx={{ fontSize: TYPE_SCALE.nodeTitle.size, color: '#fff' }}>
+          <Typography
+            variant="body2"
+            fontWeight={TYPE_SCALE.nodeTitle.weight}
+            noWrap
+            sx={{ fontSize: TYPE_SCALE.nodeTitle.size, color: '#fff' }}
+          >
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="caption" noWrap sx={{ color: '#fff', opacity: 0.7, fontSize: TYPE_SCALE.nodeSubtitle.size, display: 'block', lineHeight: 1.2 }}>
+            <Typography
+              variant="caption"
+              noWrap
+              sx={{
+                color: '#fff',
+                opacity: 0.7,
+                fontSize: TYPE_SCALE.nodeSubtitle.size,
+                display: 'block',
+                lineHeight: 1.2,
+              }}
+            >
               {subtitle}
             </Typography>
           )}
         </Box>
       </Box>
       {description && (
-        <Typography variant="caption" sx={{ color: '#fff', opacity: 0.85, fontSize: TYPE_SCALE.nodeDesc.size, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mt: 0.25 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: '#fff',
+            opacity: 0.85,
+            fontSize: TYPE_SCALE.nodeDesc.size,
+            lineHeight: 1.3,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            mt: 0.25,
+          }}
+        >
           {description}
         </Typography>
       )}
       {hasSource && (
-        <Handle type="source" position={Position.Right} style={{ opacity: 0, width: 10, height: 10 }} />
+        <Handle
+          type="source"
+          position={Position.Right}
+          style={{ opacity: 0, width: 10, height: 10 }}
+        />
       )}
     </Box>
   );

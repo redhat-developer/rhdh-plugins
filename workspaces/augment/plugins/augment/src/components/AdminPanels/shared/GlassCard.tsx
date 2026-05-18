@@ -17,7 +17,12 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { glassSurface, glassHoverGlow, transitions, borderRadius } from '../../../theme/tokens';
+import {
+  glassSurface,
+  glassHoverGlow,
+  transitions,
+  borderRadius,
+} from '../../../theme/tokens';
 
 interface GlassCardProps {
   children: ReactNode;

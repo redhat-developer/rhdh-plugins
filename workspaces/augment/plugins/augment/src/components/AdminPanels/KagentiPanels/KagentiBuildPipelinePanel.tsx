@@ -349,9 +349,9 @@ export function KagentiBuildPipelinePanel({
       <Card variant="outlined">
         <CardContent>
           <PanelIntroBanner storageKey="builds-panel">
-            Build Pipelines show Shipwright builds created when agents or tools are
-            imported via Source from Git. You can also manually trigger rebuilds
-            here.
+            Build Pipelines show Shipwright builds created when agents or tools
+            are imported via Source from Git. You can also manually trigger
+            rebuilds here.
           </PanelIntroBanner>
           <Box
             sx={{
@@ -364,7 +364,10 @@ export function KagentiBuildPipelinePanel({
             }}
           >
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 700, color: 'text.primary' }}
+              >
                 Build Pipelines
               </Typography>
               <Typography
@@ -402,7 +405,9 @@ export function KagentiBuildPipelinePanel({
             </Box>
           ) : (
             <>
-              <TableContainer sx={{ ...tableContainerSx(theme), overflowX: 'auto' }}>
+              <TableContainer
+                sx={{ ...tableContainerSx(theme), overflowX: 'auto' }}
+              >
                 <Table size="small">
                   <TableHead>
                     <TableRow>

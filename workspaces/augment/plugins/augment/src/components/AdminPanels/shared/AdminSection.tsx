@@ -94,7 +94,14 @@ export const AdminSection = ({
       {/* Saving progress indicator */}
       {saving && (
         <LinearProgress
-          sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 1 }}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 2,
+            zIndex: 1,
+          }}
         />
       )}
 
@@ -113,7 +120,10 @@ export const AdminSection = ({
             )}`,
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600, color: 'text.primary' }}>
+          <Typography
+            variant="h6"
+            sx={{ fontSize: '1rem', fontWeight: 600, color: 'text.primary' }}
+          >
             {title}
           </Typography>
           {actionCluster}

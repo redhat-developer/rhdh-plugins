@@ -42,7 +42,10 @@ export function useAgentGalleryData(api: AugmentApi) {
         const chatAgents: ChatAgent[] = await Promise.race([
           api.listAgents({ published: true }),
           new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS),
+            setTimeout(
+              () => reject(new Error('Request timed out')),
+              TIMEOUT_MS,
+            ),
           ),
         ]);
 

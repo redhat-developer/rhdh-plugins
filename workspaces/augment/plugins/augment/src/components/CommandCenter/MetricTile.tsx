@@ -35,7 +35,16 @@ interface MetricTileProps {
  * A cockpit-style metric tile with optional animated glow border.
  * Dark glass background, large centered value, contextual subtitle.
  */
-export function MetricTile({ label, value, subtitle, icon, color, loading, glow, onClick }: MetricTileProps) {
+export function MetricTile({
+  label,
+  value,
+  subtitle,
+  icon,
+  color,
+  loading,
+  glow,
+  onClick,
+}: MetricTileProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
@@ -44,11 +53,19 @@ export function MetricTile({ label, value, subtitle, icon, color, loading, glow,
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
-      onKeyDown={onClick ? (e => { if (e.key === 'Enter') onClick(); }) : undefined}
+      onKeyDown={
+        onClick
+          ? e => {
+              if (e.key === 'Enter') onClick();
+            }
+          : undefined
+      }
       sx={{
         p: 2,
         borderRadius: 2,
-        bgcolor: isDark ? alpha(theme.palette.background.paper, 0.4) : theme.palette.background.paper,
+        bgcolor: isDark
+          ? alpha(theme.palette.background.paper, 0.4)
+          : theme.palette.background.paper,
         border: `1px solid ${alpha(color, isDark ? 0.2 : 0.1)}`,
         cursor: onClick ? 'pointer' : undefined,
         transition: 'all 0.2s ease',
@@ -56,25 +73,43 @@ export function MetricTile({ label, value, subtitle, icon, color, loading, glow,
         overflow: 'hidden',
         minWidth: 0,
         // Glow effect
-        ...(glow ? {
-          boxShadow: `0 0 16px ${alpha(color, isDark ? 0.2 : 0.1)}, inset 0 0 12px ${alpha(color, isDark ? 0.05 : 0.02)}`,
-          animation: 'tileGlow 3s ease-in-out infinite alternate',
-          '@keyframes tileGlow': {
-            '0%': { boxShadow: `0 0 12px ${alpha(color, isDark ? 0.15 : 0.08)}` },
-            '100%': { boxShadow: `0 0 20px ${alpha(color, isDark ? 0.25 : 0.12)}` },
-          },
-        } : {
-          boxShadow: isDark ? `0 1px 4px ${alpha('#000', 0.2)}` : `0 1px 4px ${alpha('#000', 0.04)}`,
-        }),
-        '&:hover': onClick ? {
-          borderColor: alpha(color, 0.4),
-          transform: 'translateY(-1px)',
-        } : {},
+        ...(glow
+          ? {
+              boxShadow: `0 0 16px ${alpha(color, isDark ? 0.2 : 0.1)}, inset 0 0 12px ${alpha(color, isDark ? 0.05 : 0.02)}`,
+              animation: 'tileGlow 3s ease-in-out infinite alternate',
+              '@keyframes tileGlow': {
+                '0%': {
+                  boxShadow: `0 0 12px ${alpha(color, isDark ? 0.15 : 0.08)}`,
+                },
+                '100%': {
+                  boxShadow: `0 0 20px ${alpha(color, isDark ? 0.25 : 0.12)}`,
+                },
+              },
+            }
+          : {
+              boxShadow: isDark
+                ? `0 1px 4px ${alpha('#000', 0.2)}`
+                : `0 1px 4px ${alpha('#000', 0.04)}`,
+            }),
+        '&:hover': onClick
+          ? {
+              borderColor: alpha(color, 0.4),
+              transform: 'translateY(-1px)',
+            }
+          : {},
       }}
     >
       {/* Icon top-right */}
       {icon && (
-        <Box sx={{ position: 'absolute', top: 12, right: 12, color: alpha(color, 0.5), opacity: 0.7 }}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            color: alpha(color, 0.5),
+            opacity: 0.7,
+          }}
+        >
           {icon}
         </Box>
       )}

@@ -76,7 +76,11 @@ export function ConnectionsStep({
         <Typography variant="subtitle2" gutterBottom>
           Can Transfer To (Handoffs)
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ mb: 1, display: 'block' }}
+        >
           Agents this agent can hand off conversations to
         </Typography>
         <Autocomplete
@@ -88,12 +92,23 @@ export function ConnectionsStep({
             value.map((option, index) => {
               const { key, ...rest } = getTagProps({ index });
               return (
-                <Chip key={key} label={option} size="small" color="primary" variant="outlined" {...rest} />
+                <Chip
+                  key={key}
+                  label={option}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  {...rest}
+                />
               );
             })
           }
           renderInput={params => (
-            <TextField {...params} placeholder="Select agents..." size="small" />
+            <TextField
+              {...params}
+              placeholder="Select agents..."
+              size="small"
+            />
           )}
         />
       </Box>
@@ -102,7 +117,11 @@ export function ConnectionsStep({
         <Typography variant="subtitle2" gutterBottom>
           Can Delegate To (Agent-as-Tool)
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ mb: 1, display: 'block' }}
+        >
           Agents this agent can call as sub-agents for specific tasks
         </Typography>
         <Autocomplete
@@ -114,12 +133,23 @@ export function ConnectionsStep({
             value.map((option, index) => {
               const { key, ...rest } = getTagProps({ index });
               return (
-                <Chip key={key} label={option} size="small" color="secondary" variant="outlined" {...rest} />
+                <Chip
+                  key={key}
+                  label={option}
+                  size="small"
+                  color="secondary"
+                  variant="outlined"
+                  {...rest}
+                />
               );
             })
           }
           renderInput={params => (
-            <TextField {...params} placeholder="Select agents..." size="small" />
+            <TextField
+              {...params}
+              placeholder="Select agents..."
+              size="small"
+            />
           )}
         />
       </Box>

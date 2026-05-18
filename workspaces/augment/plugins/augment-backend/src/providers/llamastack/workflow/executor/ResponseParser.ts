@@ -17,7 +17,9 @@
 import type { WorkflowNode } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ResponsesApiResponse } from './types';
 
-export function extractTextFromResponse(response: ResponsesApiResponse): string {
+export function extractTextFromResponse(
+  response: ResponsesApiResponse,
+): string {
   if (!response.output || response.output.length === 0) return '';
 
   for (const item of response.output) {
@@ -42,9 +44,10 @@ export function buildInputForNode(
     .pop();
 
   if (lastOutput && state[lastOutput]) {
-    const prev = typeof state[lastOutput] === 'string'
-      ? state[lastOutput] as string
-      : JSON.stringify(state[lastOutput]);
+    const prev =
+      typeof state[lastOutput] === 'string'
+        ? (state[lastOutput] as string)
+        : JSON.stringify(state[lastOutput]);
     return `Original request: ${userInput}\n\nPrevious step output: ${prev}`;
   }
   return userInput;

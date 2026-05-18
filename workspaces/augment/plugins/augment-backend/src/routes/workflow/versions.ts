@@ -23,36 +23,102 @@ export function registerVersionRoutes(
   ctx: RouteContext,
   workflowService: WorkflowConfigService,
 ): void {
-  const { router, logger, sendRouteError, requireAdminAccess, getUserRef } = ctx;
+  const { router, logger, sendRouteError, requireAdminAccess, getUserRef } =
+    ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
-  router.get('/workflows/:id/versions', requireAdminAccess,
-    withRoute(req => `List versions for workflow ${req.params.id}`, 'Failed to list workflow versions', async (req, res) => {
-      res.json({ versions: await workflowService.getWorkflowVersions(req.params.id) });
-    }),
+  router.get(
+    '/workflows/:id/versions',
+    requireAdminAccess,
+    withRoute(
+      req => `List versions for workflow ${req.params.id}`,
+      'Failed to list workflow versions',
+      async (req, res) => {
+        res.json({
+          versions: await workflowService.getWorkflowVersions(req.params.id),
+        });
+      },
+    ),
   );
 
-  router.get('/workflows/:id/versions/:version', requireAdminAccess,
-    withRoute(req => `Get version ${req.params.version} of workflow ${req.params.id}`, 'Failed to get workflow version', async (req, res) => {
-      try { res.json(await workflowService.getWorkflowVersion(req.params.id, parseInt(req.params.version, 10))); }
-      catch (err) { if (err instanceof NotFoundError) { notFound(res, 'Workflow version'); return; } throw err; }
-    }),
+  router.get(
+    '/workflows/:id/versions/:version',
+    requireAdminAccess,
+    withRoute(
+      req => `Get version ${req.params.version} of workflow ${req.params.id}`,
+      'Failed to get workflow version',
+      async (req, res) => {
+        try {
+          res.json(
+            await workflowService.getWorkflowVersion(
+              req.params.id,
+              parseInt(req.params.version, 10),
+            ),
+          );
+        } catch (err) {
+          if (err instanceof NotFoundError) {
+            notFound(res, 'Workflow version');
+            return;
+          }
+          throw err;
+        }
+      },
+    ),
   );
 
-  router.post('/workflows/:id/publish', requireAdminAccess,
-    withRoute(req => `Publish workflow ${req.params.id}`, 'Failed to publish workflow', async (req, res) => {
-      const user = await getUserRef(req);
-      const { changelog } = req.body as { changelog?: string };
-      try { res.json(await workflowService.publishWorkflow(req.params.id, user, changelog)); }
-      catch (err) { if (err instanceof NotFoundError) { notFound(res, 'Workflow'); return; } throw err; }
-    }),
+  router.post(
+    '/workflows/:id/publish',
+    requireAdminAccess,
+    withRoute(
+      req => `Publish workflow ${req.params.id}`,
+      'Failed to publish workflow',
+      async (req, res) => {
+        const user = await getUserRef(req);
+        const { changelog } = req.body as { changelog?: string };
+        try {
+          res.json(
+            await workflowService.publishWorkflow(
+              req.params.id,
+              user,
+              changelog,
+            ),
+          );
+        } catch (err) {
+          if (err instanceof NotFoundError) {
+            notFound(res, 'Workflow');
+            return;
+          }
+          throw err;
+        }
+      },
+    ),
   );
 
-  router.post('/workflows/:id/restore/:version', requireAdminAccess,
-    withRoute(req => `Restore workflow ${req.params.id} to version ${req.params.version}`, 'Failed to restore workflow version', async (req, res) => {
-      const user = await getUserRef(req);
-      try { res.json(await workflowService.restoreVersion(req.params.id, parseInt(req.params.version, 10), user)); }
-      catch (err) { if (err instanceof NotFoundError) { notFound(res, 'Workflow version'); return; } throw err; }
-    }),
+  router.post(
+    '/workflows/:id/restore/:version',
+    requireAdminAccess,
+    withRoute(
+      req =>
+        `Restore workflow ${req.params.id} to version ${req.params.version}`,
+      'Failed to restore workflow version',
+      async (req, res) => {
+        const user = await getUserRef(req);
+        try {
+          res.json(
+            await workflowService.restoreVersion(
+              req.params.id,
+              parseInt(req.params.version, 10),
+              user,
+            ),
+          );
+        } catch (err) {
+          if (err instanceof NotFoundError) {
+            notFound(res, 'Workflow version');
+            return;
+          }
+          throw err;
+        }
+      },
+    ),
   );
 }

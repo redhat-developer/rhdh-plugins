@@ -30,13 +30,24 @@ interface OverviewHeroProps {
  * Hero section with animated SVG health ring and system status.
  * Replaces the flat title + status bar with a visually rich summary.
  */
-export function OverviewHero({ ready, total, pendingReview, loading }: OverviewHeroProps) {
+export function OverviewHero({
+  ready,
+  total,
+  pendingReview,
+  loading,
+}: OverviewHeroProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
   const ratio = total > 0 ? ready / total : 1;
-  const statusColor = ratio >= 1 ? STATUS_COLORS.healthy : ratio >= 0.7 ? STATUS_COLORS.warning : STATUS_COLORS.critical;
-  const statusLabel = ratio >= 1 ? 'Healthy' : ratio >= 0.7 ? 'Degraded' : 'Critical';
+  const statusColor =
+    ratio >= 1
+      ? STATUS_COLORS.healthy
+      : ratio >= 0.7
+        ? STATUS_COLORS.warning
+        : STATUS_COLORS.critical;
+  const statusLabel =
+    ratio >= 1 ? 'Healthy' : ratio >= 0.7 ? 'Degraded' : 'Critical';
 
   const ringSize = 100;
   const strokeWidth = 8;
@@ -53,7 +64,9 @@ export function OverviewHero({ ready, total, pendingReview, loading }: OverviewH
         gap: 3,
         p: 3,
         borderRadius: 3,
-        bgcolor: isDark ? alpha(theme.palette.background.paper, 0.4) : theme.palette.background.paper,
+        bgcolor: isDark
+          ? alpha(theme.palette.background.paper, 0.4)
+          : theme.palette.background.paper,
         border: `1px solid ${alpha(statusColor, isDark ? 0.15 : 0.08)}`,
         boxShadow: isDark
           ? `0 2px 12px ${alpha('#000', 0.2)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.03)}`
@@ -63,15 +76,29 @@ export function OverviewHero({ ready, total, pendingReview, loading }: OverviewH
       }}
     >
       {/* Animated SVG Ring */}
-      <Box sx={{ flexShrink: 0, position: 'relative', width: ringSize, height: ringSize }}>
-        <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
+      <Box
+        sx={{
+          flexShrink: 0,
+          position: 'relative',
+          width: ringSize,
+          height: ringSize,
+        }}
+      >
+        <svg
+          width={ringSize}
+          height={ringSize}
+          style={{ transform: 'rotate(-90deg)' }}
+        >
           {/* Background track */}
           <circle
             cx={ringSize / 2}
             cy={ringSize / 2}
             r={radius}
             fill="none"
-            stroke={alpha(isDark ? theme.palette.common.white : theme.palette.common.black, 0.06)}
+            stroke={alpha(
+              isDark ? theme.palette.common.white : theme.palette.common.black,
+              0.06,
+            )}
             strokeWidth={strokeWidth}
           />
           {/* Progress arc */}
@@ -113,7 +140,9 @@ export function OverviewHero({ ready, total, pendingReview, loading }: OverviewH
           >
             {loading ? '...' : ready}
           </Typography>
-          <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', mt: 0.25 }}>
+          <Typography
+            sx={{ fontSize: '0.6rem', color: 'text.secondary', mt: 0.25 }}
+          >
             / {total}
           </Typography>
         </Box>
@@ -148,10 +177,19 @@ export function OverviewHero({ ready, total, pendingReview, loading }: OverviewH
             {statusLabel}
           </Typography>
         </Box>
-        <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: 'text.primary', lineHeight: 1.3 }}>
+        <Typography
+          sx={{
+            fontWeight: 700,
+            fontSize: '1.1rem',
+            color: 'text.primary',
+            lineHeight: 1.3,
+          }}
+        >
           {loading ? 'Loading...' : `${ready} of ${total} agents ready`}
         </Typography>
-        <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}>
+        <Typography
+          sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}
+        >
           {pendingReview > 0
             ? `${pendingReview} agent${pendingReview > 1 ? 's' : ''} awaiting review`
             : 'No agents pending review'}

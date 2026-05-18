@@ -203,7 +203,9 @@ function validateAgents(value: unknown): void {
 
 function validateWorkflows(value: unknown): void {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new InputError('workflows must be a non-null object (Record<string, WorkflowDefinition>)');
+    throw new InputError(
+      'workflows must be a non-null object (Record<string, WorkflowDefinition>)',
+    );
   }
   const workflows = value as Record<string, unknown>;
   for (const [key, wfVal] of Object.entries(workflows)) {
@@ -215,7 +217,9 @@ function validateWorkflows(value: unknown): void {
       throw new InputError(`Workflow "${key}" must have a non-empty id`);
     }
     if (wf.id !== key) {
-      throw new InputError(`Workflow key "${key}" must match its id field "${wf.id}"`);
+      throw new InputError(
+        `Workflow key "${key}" must match its id field "${wf.id}"`,
+      );
     }
     if (typeof wf.name !== 'string' || wf.name.trim().length === 0) {
       throw new InputError(`Workflow "${key}" must have a non-empty name`);

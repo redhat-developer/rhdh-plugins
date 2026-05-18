@@ -118,18 +118,22 @@ export function useAdminView({
     }
   }, [isAdmin]);
 
-  const switchToAdmin = useCallback((providerId?: string, targetPanel?: AdminPanel) => {
-    setViewMode('admin');
-    const panel = targetPanel ?? (providerId === 'kagenti' ? 'ops-home' : 'platform');
-    setAdminPanel(panel);
-    setShowAdminBanner(false);
-    try {
-      localStorage.setItem(STORAGE_KEY_MODE, 'admin');
-      localStorage.setItem(STORAGE_KEY_BANNER, '1');
-    } catch {
-      // localStorage unavailable
-    }
-  }, [setAdminPanel]);
+  const switchToAdmin = useCallback(
+    (providerId?: string, targetPanel?: AdminPanel) => {
+      setViewMode('admin');
+      const panel =
+        targetPanel ?? (providerId === 'kagenti' ? 'ops-home' : 'platform');
+      setAdminPanel(panel);
+      setShowAdminBanner(false);
+      try {
+        localStorage.setItem(STORAGE_KEY_MODE, 'admin');
+        localStorage.setItem(STORAGE_KEY_BANNER, '1');
+      } catch {
+        // localStorage unavailable
+      }
+    },
+    [setAdminPanel],
+  );
 
   const switchToChat = useCallback(() => {
     setViewMode('chat');

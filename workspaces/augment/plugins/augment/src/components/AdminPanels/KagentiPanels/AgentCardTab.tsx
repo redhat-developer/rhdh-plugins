@@ -47,10 +47,7 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
   if (!agentCard) {
     return (
       <Card variant="outlined" sx={{ p: 4, textAlign: 'center' }}>
-        <Typography
-          variant="body2"
-          sx={{ color: theme.palette.text.disabled }}
-        >
+        <Typography variant="body2" sx={{ color: theme.palette.text.disabled }}>
           No agent card available. The agent may not expose an A2A agent card
           endpoint, or it has not been fetched yet.
         </Typography>
@@ -67,7 +64,10 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
       }}
     >
       <Card variant="outlined" sx={{ p: 2.5 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}>
+        <Typography
+          variant="subtitle2"
+          sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}
+        >
           Basic Information
         </Typography>
         <Table size="small">
@@ -85,7 +85,9 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
               <TableCell sx={{ fontWeight: 600 }}>{agentCard.name}</TableCell>
             </TableRow>
             <TableRow sx={{ '& td': { border: 'none', py: 0.75 } }}>
-              <TableCell sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
+              <TableCell
+                sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}
+              >
                 Version
               </TableCell>
               <TableCell>
@@ -98,7 +100,9 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
               </TableCell>
             </TableRow>
             <TableRow sx={{ '& td': { border: 'none', py: 0.75 } }}>
-              <TableCell sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
+              <TableCell
+                sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}
+              >
                 URL
               </TableCell>
               <TableCell
@@ -116,7 +120,10 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
       </Card>
 
       <Card variant="outlined" sx={{ p: 2.5 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}>
+        <Typography
+          variant="subtitle2"
+          sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}
+        >
           Capabilities
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
@@ -134,32 +141,36 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
             sx={{ height: 24 }}
           />
         </Box>
-        {agentCard.defaultInputModes && agentCard.defaultInputModes.length > 0 && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography
-              variant="body2"
-              sx={{ color: theme.palette.text.secondary }}
-            >
-              Input modes
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-              {agentCard.defaultInputModes.map((mode: string) => (
-                <Chip
-                  key={mode}
-                  label={mode}
-                  size="small"
-                  variant="outlined"
-                  sx={{ height: 24 }}
-                />
-              ))}
+        {agentCard.defaultInputModes &&
+          agentCard.defaultInputModes.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.text.secondary }}
+              >
+                Input modes
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                {agentCard.defaultInputModes.map((mode: string) => (
+                  <Chip
+                    key={mode}
+                    label={mode}
+                    size="small"
+                    variant="outlined"
+                    sx={{ height: 24 }}
+                  />
+                ))}
+              </Box>
             </Box>
-          </Box>
-        )}
+          )}
       </Card>
 
       {agentCard.description && (
         <Card variant="outlined" sx={{ p: 2.5, gridColumn: { md: '1 / -1' } }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: 'text.primary' }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontWeight: 700, mb: 1, color: 'text.primary' }}
+          >
             Description
           </Typography>
           <Typography
@@ -173,7 +184,10 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
 
       {agentCard.skills && agentCard.skills.length > 0 && (
         <Card variant="outlined" sx={{ p: 2.5, gridColumn: { md: '1 / -1' } }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}
+          >
             Skills ({agentCard.skills.length})
           </Typography>
           <Box
@@ -220,7 +234,14 @@ export function AgentCardTab({ agentCard, loading }: AgentCardTabProps) {
                     </Typography>
                   )}
                   {skill.tags && skill.tags.length > 0 && (
-                    <Box sx={{ display: 'flex', gap: 0.5, mt: 1, flexWrap: 'wrap' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 0.5,
+                        mt: 1,
+                        flexWrap: 'wrap',
+                      }}
+                    >
                       {skill.tags.map((tag: string) => (
                         <Chip
                           key={tag}

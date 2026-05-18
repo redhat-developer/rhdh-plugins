@@ -32,12 +32,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": [
-              "category",
-              "description",
-              "prompt",
-              "title"
-            ],
+            "required": ["category", "description", "prompt", "title"],
             "properties": {
               "title": {
                 "description": "Title of the quick prompt",
