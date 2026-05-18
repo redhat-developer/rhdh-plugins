@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.12
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+
 ## 5.7.11
 
 ### Patch Changes
