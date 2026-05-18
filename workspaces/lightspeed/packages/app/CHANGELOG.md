@@ -1,5 +1,13 @@
 # app
 
+## 0.0.22
+
+### Patch Changes
+
+- Updated dependencies [326f2cb]
+- Updated dependencies [326f2cb]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed@2.8.2
+
 ## 0.0.21
 
 ### Patch Changes
