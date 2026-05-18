@@ -337,7 +337,9 @@ async function resolveConversationId(
       resolvedConversationId = newConvId;
       logger.info(`Created conversation ${newConvId} for session ${sessionId}`);
     } else {
-      await provider.conversations.deleteContainer?.(newConvId).catch(() => {});
+      await provider.conversations
+        .deleteContainer?.(newConvId)
+        .catch(e => logger.debug(`cleanup of ${newConvId} failed: ${e}`));
       const refreshed = await sessions.getSession(sessionId, userRef);
       resolvedConversationId = refreshed?.conversationId ?? undefined;
       logger.info(
@@ -346,7 +348,9 @@ async function resolveConversationId(
     }
   } catch (convErr) {
     if (newConvId) {
-      await provider.conversations.deleteContainer?.(newConvId).catch(() => {});
+      await provider.conversations
+        .deleteContainer?.(newConvId)
+        .catch(e => logger.debug(`cleanup of ${newConvId} failed: ${e}`));
     }
     logger.warn(
       `Could not create LlamaStack conversation for session ${sessionId}, continuing without: ${convErr}`,

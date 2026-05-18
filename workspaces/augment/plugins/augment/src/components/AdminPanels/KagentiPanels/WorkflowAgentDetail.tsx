@@ -35,6 +35,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { getLifecycleTransition } from './lifecycleTransitions';
 import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import type {
   ChatAgent,
@@ -127,61 +128,11 @@ export function WorkflowAgentDetail({
   const lifecycleStage = normalizeLifecycleStage(agent?.lifecycleStage);
 
   const nextTransition = useMemo(() => {
-    const promoteIcon = <PublishIcon />;
-    const demoteIcon = <CloudOffIcon />;
-    const map: Record<
-      string,
-      {
-        target: AgentLifecycleStage;
-        label: string;
-        action: 'promote' | 'demote';
-        variant: 'outlined' | 'contained';
-        color: 'inherit' | 'primary' | 'success';
-        icon: React.ReactNode;
-      }
-    > = {
-      draft: {
-        target: 'review',
-        label: 'Submit for Review',
-        action: 'promote',
-        variant: 'contained',
-        color: 'primary',
-        icon: promoteIcon,
-      },
-      review: {
-        target: 'staging',
-        label: 'Approve to Staging',
-        action: 'promote',
-        variant: 'contained',
-        color: 'primary',
-        icon: promoteIcon,
-      },
-      staging: {
-        target: 'production',
-        label: 'Promote to Production',
-        action: 'promote',
-        variant: 'contained',
-        color: 'success',
-        icon: promoteIcon,
-      },
-      production: {
-        target: 'staging',
-        label: 'Rollback to Staging',
-        action: 'demote',
-        variant: 'outlined',
-        color: 'inherit',
-        icon: demoteIcon,
-      },
-      retired: {
-        target: 'draft',
-        label: 'Reactivate',
-        action: 'demote',
-        variant: 'outlined',
-        color: 'inherit',
-        icon: demoteIcon,
-      },
+    const t = getLifecycleTransition(lifecycleStage);
+    return {
+      ...t,
+      icon: t.iconType === 'promote' ? <PublishIcon /> : <CloudOffIcon />,
     };
-    return map[lifecycleStage] ?? map.draft;
   }, [lifecycleStage]);
 
   const handleLifecycleAction = useCallback(async () => {

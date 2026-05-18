@@ -33,6 +33,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
+import { getLifecycleTransition } from './lifecycleTransitions';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -127,69 +128,18 @@ export function AgentLifecycleDetail({
         const match = agents.find(a => a.id === agentId);
         setLifecycleStage(normalizeLifecycleStage(match?.lifecycleStage));
       })
-      .catch(() => {});
+      .catch(() => setLifecycleStage('draft'));
     return () => {
       cancelled = true;
     };
   }, [api, agentId]);
 
   const nextTransition = useMemo(() => {
-    const stage = lifecycleStage;
-    const promoteIcon = <PublishIcon />;
-    const demoteIcon = <CloudOffIcon />;
-    const map: Record<
-      string,
-      {
-        target: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
-        label: string;
-        action: 'promote' | 'demote';
-        variant: 'outlined' | 'contained';
-        color: 'inherit' | 'primary' | 'success';
-        icon: React.ReactNode;
-      }
-    > = {
-      draft: {
-        target: 'review',
-        label: 'Submit for Review',
-        action: 'promote',
-        variant: 'contained',
-        color: 'primary',
-        icon: promoteIcon,
-      },
-      review: {
-        target: 'staging',
-        label: 'Approve to Staging',
-        action: 'promote',
-        variant: 'contained',
-        color: 'primary',
-        icon: promoteIcon,
-      },
-      staging: {
-        target: 'production',
-        label: 'Promote to Production',
-        action: 'promote',
-        variant: 'contained',
-        color: 'success',
-        icon: promoteIcon,
-      },
-      production: {
-        target: 'staging',
-        label: 'Rollback to Staging',
-        action: 'demote',
-        variant: 'outlined',
-        color: 'inherit',
-        icon: demoteIcon,
-      },
-      retired: {
-        target: 'draft',
-        label: 'Reactivate',
-        action: 'demote',
-        variant: 'outlined',
-        color: 'inherit',
-        icon: demoteIcon,
-      },
+    const t = getLifecycleTransition(lifecycleStage);
+    return {
+      ...t,
+      icon: t.iconType === 'promote' ? <PublishIcon /> : <CloudOffIcon />,
     };
-    return map[stage] ?? map.draft;
   }, [lifecycleStage]);
 
   const handleLifecycleAction = useCallback(async () => {
