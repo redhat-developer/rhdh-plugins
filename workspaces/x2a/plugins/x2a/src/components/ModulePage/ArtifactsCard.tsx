@@ -16,6 +16,7 @@
 
 import {
   Artifact,
+  ArtifactKind,
   Module,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Grid } from '@material-ui/core';
@@ -38,13 +39,13 @@ export const ArtifactsCard = ({
 }) => {
   const { t } = useTranslation();
   const moduleMigrationPlanArtifact = module?.analyze?.artifacts?.find(
-    artifact => artifact.type === 'module_migration_plan',
+    artifact => artifact.type === ArtifactKind.MODULE_MIGRATION_PLAN.toString(),
   );
   const migratedSourcesArtifact = module?.migrate?.artifacts?.find(
-    artifact => artifact.type === 'migrated_sources',
+    artifact => artifact.type === ArtifactKind.MIGRATED_SOURCES.toString(),
   );
   const ansibleProjectArtifact = module?.publish?.artifacts?.find(
-    artifact => artifact.type === 'ansible_project',
+    artifact => artifact.type === ArtifactKind.ANSIBLE_PROJECT.toString(),
   );
 
   return (

@@ -27,14 +27,16 @@ export class ArtifactKind {
   static readonly PROJECT_METADATA = new ArtifactKind('project_metadata');
   static readonly ANSIBLE_PROJECT = new ArtifactKind('ansible_project');
 
+  private static readonly ALL = Object.freeze([
+    ArtifactKind.MIGRATION_PLAN,
+    ArtifactKind.MODULE_MIGRATION_PLAN,
+    ArtifactKind.MIGRATED_SOURCES,
+    ArtifactKind.PROJECT_METADATA,
+    ArtifactKind.ANSIBLE_PROJECT,
+  ]);
+
   private static readonly BY_VALUE = new Map<string, ArtifactKind>(
-    [
-      ArtifactKind.MIGRATION_PLAN,
-      ArtifactKind.MODULE_MIGRATION_PLAN,
-      ArtifactKind.MIGRATED_SOURCES,
-      ArtifactKind.PROJECT_METADATA,
-      ArtifactKind.ANSIBLE_PROJECT,
-    ].map(k => [k.value, k]),
+    ArtifactKind.ALL.map(k => [k.value, k]),
   );
 
   private constructor(readonly value: ArtifactType) {}
@@ -48,15 +50,8 @@ export class ArtifactKind {
     }
     return kind;
   }
-
   static all(): readonly ArtifactKind[] {
-    return [
-      ArtifactKind.MIGRATION_PLAN,
-      ArtifactKind.MODULE_MIGRATION_PLAN,
-      ArtifactKind.MIGRATED_SOURCES,
-      ArtifactKind.PROJECT_METADATA,
-      ArtifactKind.ANSIBLE_PROJECT,
-    ];
+    return ArtifactKind.ALL;
   }
 
   static values(): readonly ArtifactType[] {
