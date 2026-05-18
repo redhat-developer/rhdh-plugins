@@ -25,12 +25,16 @@ import { useTheme, alpha } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
 import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../api';
-import { pageTitleSx, pageSubtitleSx, reviewCardSx } from './commandcenter.styles';
+import {
+  pageTitleSx,
+  pageSubtitleSx,
+  reviewCardSx,
+} from './commandcenter.styles';
 import { LIFECYCLE_COLORS, STATUS_COLORS } from './commandcenter.constants';
 
 /**
- * Dedicated Review Queue -- shows only agents pending approval.
- * Approve promotes to 'deployed', Reject demotes to 'draft'.
+ * Dedicated Review Queue -- shows agents in 'review' stage pending approval.
+ * Approve promotes to 'staging', Fast-track promotes to 'production', Reject demotes to 'draft'.
  */
 export function ReviewQueue() {
   const theme = useTheme();
@@ -44,46 +48,77 @@ export function ReviewQueue() {
 
   const loadAgents = useCallback(() => {
     setLoading(true);
-    api.listAgents()
-      .then(result => setAgents(result.filter(a => a.lifecycleStage === 'registered')))
+    api
+      .listAgents()
+      .then(result =>
+        setAgents(result.filter(a => a.lifecycleStage === 'review')),
+      )
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [api]);
 
-  useEffect(() => { loadAgents(); }, [loadAgents]);
+  useEffect(() => {
+    loadAgents();
+  }, [loadAgents]);
 
-  const handleApprove = useCallback(async (agentId: string) => {
-    setActing(agentId);
-    try {
-      await api.promoteAgent(agentId, 'deployed');
-      setToast(`Approved and published: ${agentId}`);
-      loadAgents();
-    } catch (err) {
-      setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
-    } finally {
-      setActing(null);
-    }
-  }, [api, loadAgents]);
+  const handleApprove = useCallback(
+    async (agentId: string) => {
+      setActing(agentId);
+      try {
+        await api.promoteAgent(agentId, 'staging');
+        setToast(`Approved to staging: ${agentId}`);
+        loadAgents();
+      } catch (err) {
+        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
+      } finally {
+        setActing(null);
+      }
+    },
+    [api, loadAgents],
+  );
 
-  const handleReject = useCallback(async (agentId: string) => {
-    setActing(agentId);
-    try {
-      await api.demoteAgent(agentId, 'draft');
-      setToast(`Rejected: ${agentId} returned to draft`);
-      loadAgents();
-    } catch (err) {
-      setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
-    } finally {
-      setActing(null);
-    }
-  }, [api, loadAgents]);
+  const handleFastTrack = useCallback(
+    async (agentId: string) => {
+      setActing(agentId);
+      try {
+        await api.promoteAgent(agentId, 'staging');
+        await api.promoteAgent(agentId, 'production');
+        setToast(`Fast-tracked to production: ${agentId}`);
+        loadAgents();
+      } catch (err) {
+        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
+      } finally {
+        setActing(null);
+      }
+    },
+    [api, loadAgents],
+  );
+
+  const handleReject = useCallback(
+    async (agentId: string) => {
+      setActing(agentId);
+      try {
+        await api.demoteAgent(agentId, 'draft');
+        setToast(`Rejected: ${agentId} returned to draft`);
+        loadAgents();
+      } catch (err) {
+        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
+      } finally {
+        setActing(null);
+      }
+    },
+    [api, loadAgents],
+  );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}
+    >
       <Box>
         <Typography sx={pageTitleSx(theme)}>Review Queue</Typography>
         <Typography sx={pageSubtitleSx(theme)}>
-          Agents submitted for approval. Approve to publish to the marketplace.
+          Agents submitted for review. Approve to move to staging, or fast-track
+          to production.
         </Typography>
       </Box>
 
@@ -106,7 +141,10 @@ export function ReviewQueue() {
               filter: `drop-shadow(0 0 12px ${alpha(STATUS_COLORS.healthy, 0.5)})`,
             }}
           />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, color: 'text.primary' }}
+          >
             All Clear
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -126,8 +164,8 @@ export function ReviewQueue() {
                   width: 40,
                   height: 40,
                   borderRadius: '50%',
-                  bgcolor: alpha(LIFECYCLE_COLORS.registered, isDark ? 0.2 : 0.1),
-                  color: LIFECYCLE_COLORS.registered,
+                  bgcolor: alpha(LIFECYCLE_COLORS.review, isDark ? 0.2 : 0.1),
+                  color: LIFECYCLE_COLORS.review,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -139,12 +177,25 @@ export function ReviewQueue() {
                 {agent.name.charAt(0).toUpperCase()}
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '0.9rem', color: 'text.primary' }}>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: '0.9rem',
+                    color: 'text.primary',
+                  }}
+                >
                   {agent.name}
                 </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                  {agent.namespace} {agent.framework ? `• ${agent.framework}` : ''}
-                  {agent.promotedAt ? ` • Submitted ${new Date(agent.promotedAt).toLocaleDateString()}` : ''}
+                <Typography
+                  variant="caption"
+                  sx={{ color: 'text.secondary', fontSize: '0.75rem' }}
+                >
+                  {agent.namespace}{' '}
+                  {agent.framework ? `• ${agent.framework}` : ''}
+                  {agent.promotedAt
+                    ? ` • Submitted ${new Date(agent.promotedAt).toLocaleDateString()}`
+                    : ''}
                 </Typography>
               </Box>
 
@@ -166,7 +217,24 @@ export function ReviewQueue() {
                     },
                   }}
                 >
-                  Approve
+                  Approve to Staging
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="warning"
+                  disabled={acting === agent.id}
+                  onClick={() => handleFastTrack(agent.id)}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderRadius: 1.5,
+                    '&:hover': {
+                      boxShadow: `0 0 12px ${alpha(STATUS_COLORS.warning, 0.3)}`,
+                    },
+                  }}
+                >
+                  Fast-track to Production
                 </Button>
                 <Button
                   size="small"
@@ -197,7 +265,12 @@ export function ReviewQueue() {
         onClose={() => setToast(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={() => setToast(null)} severity="info" variant="filled" sx={{ width: '100%' }}>
+        <Alert
+          onClose={() => setToast(null)}
+          severity="info"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
           {toast}
         </Alert>
       </Snackbar>

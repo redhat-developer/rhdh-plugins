@@ -55,27 +55,41 @@ export function ActivityFeed({ agents }: ActivityFeedProps) {
   const items = useMemo<ActivityItem[]>(() => {
     const feed: ActivityItem[] = [];
 
-    const deployed = agents.filter(a => a.lifecycleStage === 'deployed');
-    const registered = agents.filter(a => a.lifecycleStage === 'registered');
-    const drafts = agents.filter(a => !a.lifecycleStage || a.lifecycleStage === 'draft');
+    const deployed = agents.filter(
+      a =>
+        a.lifecycleStage === 'production' ||
+        (a.lifecycleStage as string) === 'deployed',
+    );
+    const inReview = agents.filter(
+      a =>
+        a.lifecycleStage === 'review' ||
+        (a.lifecycleStage as string) === 'registered',
+    );
+    const drafts = agents.filter(
+      a => !a.lifecycleStage || a.lifecycleStage === 'draft',
+    );
     const ready = agents.filter(a => a.status?.toLowerCase() === 'ready');
-    const notReady = agents.filter(a => a.status && a.status.toLowerCase() !== 'ready');
+    const notReady = agents.filter(
+      a => a.status && a.status.toLowerCase() !== 'ready',
+    );
 
-    if (registered.length > 0) {
+    if (inReview.length > 0) {
       feed.push({
         id: 'review',
-        text: `${registered.length} agent${registered.length > 1 ? 's' : ''} awaiting review`,
-        color: LIFECYCLE_COLORS.registered,
+        text: `${inReview.length} agent${inReview.length > 1 ? 's' : ''} awaiting review`,
+        color: LIFECYCLE_COLORS.review,
       });
     }
 
     if (deployed.length > 0) {
-      const recent = deployed.sort((a, b) => (b.promotedAt ?? '').localeCompare(a.promotedAt ?? '')).slice(0, 2);
+      const recent = deployed
+        .sort((a, b) => (b.promotedAt ?? '').localeCompare(a.promotedAt ?? ''))
+        .slice(0, 2);
       for (const a of recent) {
         feed.push({
           id: `deployed-${a.id}`,
           text: `${a.name} published to catalog`,
-          color: LIFECYCLE_COLORS.deployed,
+          color: LIFECYCLE_COLORS.production,
           time: relativeTime(a.promotedAt),
         });
       }
@@ -98,7 +112,9 @@ export function ActivityFeed({ agents }: ActivityFeedProps) {
     }
 
     if (drafts.length > 0) {
-      const recent = drafts.sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')).slice(0, 2);
+      const recent = drafts
+        .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''))
+        .slice(0, 2);
       for (const a of recent) {
         feed.push({
           id: `draft-${a.id}`,
@@ -118,7 +134,12 @@ export function ActivityFeed({ agents }: ActivityFeedProps) {
     <Box>
       <Typography
         variant="subtitle2"
-        sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem', mb: 1.5 }}
+        sx={{
+          fontWeight: 700,
+          color: 'text.primary',
+          fontSize: '0.85rem',
+          mb: 1.5,
+        }}
       >
         Recent Activity
       </Typography>
@@ -150,11 +171,19 @@ export function ActivityFeed({ agents }: ActivityFeedProps) {
                 flexShrink: 0,
               }}
             />
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.primary', flex: 1 }}>
+            <Typography
+              sx={{ fontSize: '0.75rem', color: 'text.primary', flex: 1 }}
+            >
               {item.text}
             </Typography>
             {item.time && (
-              <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', flexShrink: 0 }}>
+              <Typography
+                sx={{
+                  fontSize: '0.65rem',
+                  color: 'text.disabled',
+                  flexShrink: 0,
+                }}
+              >
                 {item.time}
               </Typography>
             )}

@@ -46,6 +46,7 @@ site
 
 # Sensitive credentials
 *-credentials.yaml
+deploy/secrets.yaml
 
 # vscode database functionality support files
 *.session.sql

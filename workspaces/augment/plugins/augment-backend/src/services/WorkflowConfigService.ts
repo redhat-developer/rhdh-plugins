@@ -130,9 +130,8 @@ export class WorkflowConfigService {
 
     const versions = await this.getVersionsRecord();
     const existing = versions[id] ?? [];
-    const nextVersion = existing.length > 0
-      ? Math.max(...existing.map(v => v.version)) + 1
-      : 1;
+    const nextVersion =
+      existing.length > 0 ? Math.max(...existing.map(v => v.version)) + 1 : 1;
 
     const published: WorkflowVersion = {
       version: nextVersion,
@@ -265,7 +264,7 @@ export class WorkflowConfigService {
    *
    * Lifecycle mapping:
    *   draft -> 'draft' (ChatAgentConfig lifecycle)
-   *   published -> 'deployed'
+   *   published -> 'production'
    *   archived -> 'draft' (hidden from gallery)
    */
   async syncWorkflowToChatAgents(
@@ -277,7 +276,9 @@ export class WorkflowConfigService {
     if (agentNodes.length === 0) return;
 
     const existingAgents =
-      ((await this.adminConfig.get('chatAgents')) as Array<Record<string, unknown>>) ?? [];
+      ((await this.adminConfig.get('chatAgents')) as Array<
+        Record<string, unknown>
+      >) ?? [];
 
     const workflowAgentIds = new Set<string>();
 
@@ -287,11 +288,7 @@ export class WorkflowConfigService {
       workflowAgentIds.add(agentId);
 
       const lifecycleStage =
-        workflow.status === 'published'
-          ? 'deployed'
-          : workflow.status === 'archived'
-            ? 'draft'
-            : 'draft';
+        workflow.status === 'published' ? 'production' : 'draft';
 
       const chatAgent = {
         id: agentId,

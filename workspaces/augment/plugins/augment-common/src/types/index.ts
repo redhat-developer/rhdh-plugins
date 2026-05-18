@@ -48,9 +48,17 @@ export {
   type PromptCapabilities,
   type ChatAgent,
   type AgentLifecycleStage,
+  type AgentLifecycleAction,
+  type AgentLifecycleTransition,
   type AgentRole,
   type AgentTopologyNode,
   deriveRoleFromTopology,
+  LIFECYCLE_STAGE_ORDER,
+  LIFECYCLE_TRANSITIONS,
+  LEGACY_STAGE_MAP,
+  getAvailableTransitions,
+  isValidTransition,
+  normalizeLifecycleStage,
 } from './shared';
 
 export type {
@@ -144,6 +152,11 @@ export type {
   KagentiTriggerRequest,
   DevSpacesCreateWorkspaceRequest,
   DevSpacesCreateWorkspaceResponse,
+  DevSpacesHealthResponse,
+  DevSpacesWorkspace,
+  DevSpacesListWorkspacesResponse,
+  DevSpacesStopWorkspaceRequest,
+  DevSpacesDeleteWorkspaceRequest,
 } from './kagenti';
 
 export {

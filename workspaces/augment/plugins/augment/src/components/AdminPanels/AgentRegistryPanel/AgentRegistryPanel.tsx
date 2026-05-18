@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable @typescript-eslint/no-use-before-define, no-nested-ternary, react/forbid-elements */
 
 import {
   useState,
@@ -83,13 +84,19 @@ import type {
   KagentiAgentDetail,
   KagentiRouteStatus,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import {
+  LIFECYCLE_STAGE_ORDER,
+  getAvailableTransitions,
+  normalizeLifecycleStage,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { useChatAgentConfig } from '../../../hooks/useChatAgentConfig';
 
 const MAX_FEATURED = 4;
 const MAX_STARTERS = 6;
+const PAGE_SIZE = 20;
 
 type SourceFilter = 'all' | 'kagenti' | 'orchestration';
-type StageFilter = 'all' | 'draft' | 'registered' | 'deployed';
+type StageFilter = 'all' | AgentLifecycleStage;
 
 interface RegistryRow {
   agent: ChatAgent;
@@ -104,16 +111,36 @@ interface EnrichmentData {
   error?: string;
 }
 
-function parseKagentiId(agentId: string): { namespace: string; name: string } | null {
+function parseKagentiId(
+  agentId: string,
+): { namespace: string; name: string } | null {
   const slash = agentId.indexOf('/');
   if (slash <= 0 || slash === agentId.length - 1) return null;
   return { namespace: agentId.slice(0, slash), name: agentId.slice(slash + 1) };
 }
 
-const LIFECYCLE_STAGES: { key: AgentLifecycleStage; label: string; description: string }[] = [
-  { key: 'draft', label: 'Draft', description: 'Discovered, not yet reviewed' },
-  { key: 'registered', label: 'Registered', description: 'Vetted as enterprise asset' },
-  { key: 'deployed', label: 'Deployed', description: 'Live in end-user catalog' },
+const LIFECYCLE_STAGES: {
+  key: AgentLifecycleStage;
+  label: string;
+  description: string;
+}[] = [
+  { key: 'draft', label: 'Draft', description: 'Under development' },
+  {
+    key: 'review',
+    label: 'In Review',
+    description: 'Submitted for admin review',
+  },
+  {
+    key: 'staging',
+    label: 'Staging',
+    description: 'Approved, internal testing',
+  },
+  {
+    key: 'production',
+    label: 'Production',
+    description: 'Live in end-user catalog',
+  },
+  { key: 'retired', label: 'Retired', description: 'Archived from production' },
 ];
 
 function getStatusColor(status: string): string {
@@ -126,21 +153,48 @@ function getStatusColor(status: string): string {
 }
 
 function getStageColor(stage: AgentLifecycleStage, isDark: boolean): string {
-  if (stage === 'deployed') return isDark ? '#86efac' : '#15803d';
-  if (stage === 'registered') return isDark ? '#93c5fd' : '#1d4ed8';
-  return isDark ? '#94a3b8' : '#64748b';
+  switch (stage) {
+    case 'production':
+      return isDark ? '#86efac' : '#15803d';
+    case 'staging':
+      return isDark ? '#fbbf24' : '#b45309';
+    case 'review':
+      return isDark ? '#93c5fd' : '#1d4ed8';
+    case 'retired':
+      return isDark ? '#f87171' : '#b91c1c';
+    default:
+      return isDark ? '#94a3b8' : '#64748b';
+  }
 }
 
 function getStageIcon(stage: AgentLifecycleStage) {
-  if (stage === 'deployed') return <RocketLaunchIcon sx={{ fontSize: 14 }} />;
-  if (stage === 'registered') return <VerifiedIcon sx={{ fontSize: 14 }} />;
-  return <EditNoteIcon sx={{ fontSize: 14 }} />;
+  switch (stage) {
+    case 'production':
+      return <RocketLaunchIcon sx={{ fontSize: 14 }} />;
+    case 'staging':
+      return <VerifiedIcon sx={{ fontSize: 14 }} />;
+    case 'review':
+      return <SearchIcon sx={{ fontSize: 14 }} />;
+    case 'retired':
+      return <HistoryIcon sx={{ fontSize: 14 }} />;
+    default:
+      return <EditNoteIcon sx={{ fontSize: 14 }} />;
+  }
 }
 
 function getStageBg(stage: AgentLifecycleStage, isDark: boolean): string {
-  if (stage === 'deployed') return isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)';
-  if (stage === 'registered') return isDark ? 'rgba(37,99,235,0.12)' : 'rgba(37,99,235,0.08)';
-  return isDark ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.07)';
+  switch (stage) {
+    case 'production':
+      return isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)';
+    case 'staging':
+      return isDark ? 'rgba(251,191,36,0.12)' : 'rgba(251,191,36,0.08)';
+    case 'review':
+      return isDark ? 'rgba(37,99,235,0.12)' : 'rgba(37,99,235,0.08)';
+    case 'retired':
+      return isDark ? 'rgba(248,113,113,0.12)' : 'rgba(248,113,113,0.08)';
+    default:
+      return isDark ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.07)';
+  }
 }
 
 function getSourceLabel(source?: string): string {
@@ -155,8 +209,14 @@ function getSourceColor(source?: string, isDark = false): string {
 
 function getAvatarColor(name: string): string {
   const colors = [
-    '#2563eb', '#7c3aed', '#059669', '#d97706',
-    '#dc2626', '#0891b2', '#4f46e5', '#b91c1c',
+    '#2563eb',
+    '#7c3aed',
+    '#059669',
+    '#d97706',
+    '#dc2626',
+    '#0891b2',
+    '#4f46e5',
+    '#b91c1c',
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -182,7 +242,9 @@ interface AgentRegistryPanelProps {
   initialStageFilter?: StageFilter;
 }
 
-export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFilter }) => {
+export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
+  initialStageFilter,
+}) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
@@ -202,12 +264,25 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
   const [dirty, setDirty] = useState(false);
   const [search, setSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
-  const [stageFilter, setStageFilter] = useState<StageFilter>(initialStageFilter ?? 'all');
+  const [stageFilter, setStageFilter] = useState<StageFilter>(
+    initialStageFilter ?? 'all',
+  );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [promoting, setPromoting] = useState<string | null>(null);
-  const [promoteDialog, setPromoteDialog] = useState<{ agentId: string; action: 'promote' | 'demote'; fromStage: AgentLifecycleStage; toStage: AgentLifecycleStage } | null>(null);
+  const [promoteDialog, setPromoteDialog] = useState<{
+    agentId: string;
+    action: 'promote' | 'demote';
+    fromStage: AgentLifecycleStage;
+    toStage: AgentLifecycleStage;
+  } | null>(null);
+  const [page, setPage] = useState(0);
+  useEffect(() => {
+    setPage(0);
+  }, [search, stageFilter, sourceFilter]);
   const enrichmentCacheRef = useRef<Map<string, EnrichmentData>>(new Map());
-  const [enrichmentLoading, setEnrichmentLoading] = useState<Set<string>>(new Set());
+  const [enrichmentLoading, setEnrichmentLoading] = useState<Set<string>>(
+    new Set(),
+  );
   const [, setEnrichmentVersion] = useState(0);
 
   const fetchEnrichment = useCallback(
@@ -225,19 +300,27 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
 
         const data: EnrichmentData = {};
         if (detailResult.status === 'fulfilled') {
-          const { agentCard, ...detail } = detailResult.value as (KagentiAgentDetail & { agentCard?: KagentiAgentCard });
+          const { agentCard, ...detail } =
+            detailResult.value as KagentiAgentDetail & {
+              agentCard?: KagentiAgentCard;
+            };
           data.detail = detail;
           data.agentCard = agentCard;
         }
         if (routeResult.status === 'fulfilled') {
           data.routeStatus = routeResult.value;
         }
-        if (detailResult.status === 'rejected' && routeResult.status === 'rejected') {
+        if (
+          detailResult.status === 'rejected' &&
+          routeResult.status === 'rejected'
+        ) {
           data.error = 'Failed to fetch runtime info';
         }
         enrichmentCacheRef.current.set(agentId, data);
       } catch {
-        enrichmentCacheRef.current.set(agentId, { error: 'Failed to fetch runtime info' });
+        enrichmentCacheRef.current.set(agentId, {
+          error: 'Failed to fetch runtime info',
+        });
       } finally {
         setEnrichmentLoading(prev => {
           const next = new Set(prev);
@@ -262,12 +345,20 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
     try {
       setAgentsLoading(true);
       const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Request timed out — the backend may be unreachable')), 15_000),
+        setTimeout(
+          () =>
+            reject(
+              new Error('Request timed out — the backend may be unreachable'),
+            ),
+          15_000,
+        ),
       );
       const result = await Promise.race([api.listAgents(), timeout]);
       setAgents(result);
     } catch (err) {
-      setToast(`Failed to load agents: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setToast(
+        `Failed to load agents: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
     } finally {
       setAgentsLoading(false);
     }
@@ -283,30 +374,42 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
     const configMap = new Map(configs.map(c => [c.agentId, c]));
     const newRows: RegistryRow[] = agents.map(agent => {
       const existing = configMap.get(agent.id);
-      const stage = existing?.lifecycleStage ?? agent.lifecycleStage ?? 'draft';
+      const stage = normalizeLifecycleStage(
+        existing?.lifecycleStage ?? agent.lifecycleStage,
+      );
       return {
         agent: { ...agent, lifecycleStage: stage },
-        config: existing ?? {
-          agentId: agent.id,
-          published: false,
-          visible: false,
-          featured: false,
-          lifecycleStage: stage,
-        },
+        config: existing
+          ? { ...existing, lifecycleStage: stage }
+          : {
+              agentId: agent.id,
+              published: false,
+              visible: false,
+              featured: false,
+              lifecycleStage: stage,
+            },
         dirty: false,
       };
     });
 
-    const stageOrder: Record<string, number> = { deployed: 0, registered: 1, draft: 2 };
+    const stageRank: Record<string, number> = {
+      production: 0,
+      staging: 1,
+      review: 2,
+      draft: 3,
+      retired: 4,
+    };
     newRows.sort((a, b) => {
-      const sa = stageOrder[a.config.lifecycleStage ?? 'draft'] ?? 3;
-      const sb = stageOrder[b.config.lifecycleStage ?? 'draft'] ?? 3;
+      const sa = stageRank[a.config.lifecycleStage ?? 'draft'] ?? 5;
+      const sb = stageRank[b.config.lifecycleStage ?? 'draft'] ?? 5;
       if (sa !== sb) return sa - sb;
-      if (a.config.featured !== b.config.featured) return a.config.featured ? -1 : 1;
+      if (a.config.featured !== b.config.featured)
+        return a.config.featured ? -1 : 1;
       return (a.agent.name || '').localeCompare(b.agent.name || '');
     });
 
     setRows(newRows);
+    setPage(0);
   }, [agents, configs, agentsLoading, configLoading]);
 
   const filteredRows = useMemo(() => {
@@ -331,13 +434,39 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
   }, [rows, search, sourceFilter, stageFilter]);
 
   const stats = useMemo(() => {
-    const draft = rows.filter(r => (r.config.lifecycleStage ?? 'draft') === 'draft').length;
-    const registered = rows.filter(r => r.config.lifecycleStage === 'registered').length;
-    const deployed = rows.filter(r => r.config.lifecycleStage === 'deployed').length;
-    const kagenti = rows.filter(r => (r.agent.source || 'kagenti') === 'kagenti').length;
-    const orchestration = rows.filter(r => r.agent.source === 'orchestration').length;
+    const draft = rows.filter(
+      r => (r.config.lifecycleStage ?? 'draft') === 'draft',
+    ).length;
+    const review = rows.filter(
+      r => r.config.lifecycleStage === 'review',
+    ).length;
+    const staging = rows.filter(
+      r => r.config.lifecycleStage === 'staging',
+    ).length;
+    const production = rows.filter(
+      r => r.config.lifecycleStage === 'production',
+    ).length;
+    const retired = rows.filter(
+      r => r.config.lifecycleStage === 'retired',
+    ).length;
+    const kagenti = rows.filter(
+      r => (r.agent.source || 'kagenti') === 'kagenti',
+    ).length;
+    const orchestration = rows.filter(
+      r => r.agent.source === 'orchestration',
+    ).length;
     const featured = rows.filter(r => r.config.featured).length;
-    return { total: rows.length, draft, registered, deployed, kagenti, orchestration, featured };
+    return {
+      total: rows.length,
+      draft,
+      review,
+      staging,
+      production,
+      retired,
+      kagenti,
+      orchestration,
+      featured,
+    };
   }, [rows]);
 
   const updateRowConfig = useCallback(
@@ -361,16 +490,20 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
         const result = await api.promoteAgent(agentId, targetStage);
         updateRowConfig(agentId, {
           lifecycleStage: result.lifecycleStage as AgentLifecycleStage,
-          published: result.lifecycleStage === 'deployed',
-          visible: result.lifecycleStage === 'deployed',
+          published: result.lifecycleStage === 'production',
+          visible: result.lifecycleStage === 'production',
           version: result.version,
           promotedAt: new Date().toISOString(),
         });
         await refreshConfigs();
         await fetchAgents();
-        setToast(`Agent promoted to ${result.lifecycleStage} (v${result.version})`);
+        setToast(
+          `Agent promoted to ${result.lifecycleStage} (v${result.version})`,
+        );
       } catch (err) {
-        setToast(`Promotion failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setToast(
+          `Promotion failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        );
       } finally {
         setPromoting(null);
         setPromoteDialog(null);
@@ -386,15 +519,17 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
         const result = await api.demoteAgent(agentId, targetStage);
         updateRowConfig(agentId, {
           lifecycleStage: result.lifecycleStage as AgentLifecycleStage,
-          published: result.lifecycleStage === 'deployed',
-          visible: result.lifecycleStage === 'deployed',
-          featured: result.lifecycleStage === 'deployed' ? undefined : false,
+          published: result.lifecycleStage === 'production',
+          visible: result.lifecycleStage === 'production',
+          featured: result.lifecycleStage === 'production' ? undefined : false,
         });
         await refreshConfigs();
         await fetchAgents();
         setToast(`Agent moved to ${result.lifecycleStage}`);
       } catch (err) {
-        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setToast(
+          `Failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        );
       } finally {
         setPromoting(null);
         setPromoteDialog(null);
@@ -412,7 +547,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
         await api.bulkPublishAgents(ids, publish);
         for (const id of ids) {
           updateRowConfig(id, {
-            lifecycleStage: publish ? 'deployed' : 'registered',
+            lifecycleStage: publish ? 'production' : 'staging',
             published: publish,
             visible: publish,
           });
@@ -420,9 +555,13 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
         await refreshConfigs();
         await fetchAgents();
         setSelectedIds(new Set());
-        setToast(`${ids.length} agents ${publish ? 'deployed' : 'withdrawn'}`);
+        setToast(
+          `${ids.length} agents ${publish ? 'promoted to production' : 'rolled back to staging'}`,
+        );
       } catch (err) {
-        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setToast(
+          `Failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        );
       } finally {
         setPromoting(null);
       }
@@ -453,7 +592,8 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
           r.config.avatarUrl ||
           r.config.accentColor ||
           r.config.greeting ||
-          (r.config.conversationStarters && r.config.conversationStarters.length > 0),
+          (r.config.conversationStarters &&
+            r.config.conversationStarters.length > 0),
       )
       .map(r => ({
         ...r.config,
@@ -490,7 +630,15 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
 
   if (agentsLoading || configLoading) {
     return (
-      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
+      <Box
+        sx={{
+          p: 4,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 2,
+        }}
+      >
         <CircularProgress size={24} />
         <Typography variant="body2" color="text.secondary">
           Loading agents...
@@ -504,7 +652,8 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
+        height: 'calc(100vh - 64px)',
+        maxHeight: '100%',
         maxWidth: 1080,
         mx: 'auto',
         overflow: 'hidden',
@@ -512,7 +661,14 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
     >
       {/* ── Header (fixed) ── */}
       <Box sx={{ flexShrink: 0, px: 3, pt: 2.5, pb: 1.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 0.5,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
             <Box
               sx={{
@@ -527,18 +683,30 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
                   : 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.08))',
               }}
             >
-              <StorefrontIcon sx={{ fontSize: 18, color: isDark ? '#a5b4fc' : '#6366f1' }} />
+              <StorefrontIcon
+                sx={{ fontSize: 18, color: isDark ? '#a5b4fc' : '#6366f1' }}
+              />
             </Box>
             <Box>
               <Typography
                 variant="h6"
-                sx={{ fontWeight: 700, fontSize: '1rem', color: 'text.primary', letterSpacing: '-0.02em', lineHeight: 1.2 }}
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  color: 'text.primary',
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.2,
+                }}
               >
                 Agent Registry
               </Typography>
               <Typography
                 variant="caption"
-                sx={{ color: 'text.secondary', fontSize: '0.7rem', lineHeight: 1.3 }}
+                sx={{
+                  color: 'text.secondary',
+                  fontSize: '0.7rem',
+                  lineHeight: 1.3,
+                }}
               >
                 Lifecycle management from draft to production
               </Typography>
@@ -548,7 +716,10 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
             <Tooltip title="Refresh agents">
               <IconButton
                 size="small"
-                onClick={() => { fetchAgents(); refreshConfigs(); }}
+                onClick={() => {
+                  fetchAgents();
+                  refreshConfigs();
+                }}
                 sx={{
                   width: 32,
                   height: 32,
@@ -562,7 +733,13 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
             <Button
               variant="contained"
               size="small"
-              startIcon={saving ? <CircularProgress size={14} /> : <SaveIcon sx={{ fontSize: 15 }} />}
+              startIcon={
+                saving ? (
+                  <CircularProgress size={14} />
+                ) : (
+                  <SaveIcon sx={{ fontSize: 15 }} />
+                )
+              }
               disabled={!dirty || saving}
               onClick={handleSaveAll}
               sx={{
@@ -584,7 +761,12 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
 
       {/* ── Lifecycle Pipeline (fixed) ── */}
       <Box sx={{ flexShrink: 0, px: 3, pb: 1.5 }}>
-        <LifecyclePipeline stats={stats} isDark={isDark} onFilterStage={setStageFilter} activeFilter={stageFilter} />
+        <LifecyclePipeline
+          stats={stats}
+          isDark={isDark}
+          onFilterStage={setStageFilter}
+          activeFilter={stageFilter}
+        />
       </Box>
 
       {/* ── Filters + Count (sticky) ── */}
@@ -633,7 +815,9 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
         </FormControl>
 
         {selectedIds.size > 0 && (
-          <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto', alignItems: 'center' }}>
+          <Box
+            sx={{ display: 'flex', gap: 0.5, ml: 'auto', alignItems: 'center' }}
+          >
             <Chip
               size="small"
               label={`${selectedIds.size} selected`}
@@ -645,9 +829,14 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
               startIcon={<RocketLaunchIcon sx={{ fontSize: 13 }} />}
               onClick={() => handleBulkPublish(true)}
               disabled={promoting === 'bulk'}
-              sx={{ textTransform: 'none', fontSize: '0.7rem', borderRadius: 1.5, height: 28 }}
+              sx={{
+                textTransform: 'none',
+                fontSize: '0.7rem',
+                borderRadius: 1.5,
+                height: 28,
+              }}
             >
-              Deploy All
+              Promote to Production
             </Button>
             <Button
               size="small"
@@ -655,9 +844,14 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
               startIcon={<CloudOffIcon sx={{ fontSize: 13 }} />}
               onClick={() => handleBulkPublish(false)}
               disabled={promoting === 'bulk'}
-              sx={{ textTransform: 'none', fontSize: '0.7rem', borderRadius: 1.5, height: 28 }}
+              sx={{
+                textTransform: 'none',
+                fontSize: '0.7rem',
+                borderRadius: 1.5,
+                height: 28,
+              }}
             >
-              Withdraw All
+              Rollback to Staging
             </Button>
           </Box>
         )}
@@ -677,8 +871,13 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
         >
           <Checkbox
             size="small"
-            checked={selectedIds.size === filteredRows.length && filteredRows.length > 0}
-            indeterminate={selectedIds.size > 0 && selectedIds.size < filteredRows.length}
+            checked={
+              selectedIds.size === filteredRows.length &&
+              filteredRows.length > 0
+            }
+            indeterminate={
+              selectedIds.size > 0 && selectedIds.size < filteredRows.length
+            }
             onChange={handleSelectAll}
             sx={{ p: 0.25 }}
           />
@@ -697,10 +896,11 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
         </Box>
       )}
 
-      {/* ── Agent List (scrollable) ── */}
+      {/* ── Agent List (scrollable with pagination) ── */}
       <Box
         sx={{
           flex: 1,
+          minHeight: 0,
           overflow: 'auto',
           px: 3,
           pb: 2,
@@ -723,24 +923,90 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
           </Alert>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            {filteredRows.map(row => (
-              <AgentRow
-                key={row.agent.id}
-                row={row}
-                isDark={isDark}
-                isExpanded={expandedId === row.agent.id}
-                isSelected={selectedIds.has(row.agent.id)}
-                isPromoting={promoting === row.agent.id}
-                featuredCount={stats.featured}
-                enrichment={enrichmentCacheRef.current.get(row.agent.id)}
-                enrichmentLoading={enrichmentLoading.has(row.agent.id)}
-                onToggleExpand={() => setExpandedId(expandedId === row.agent.id ? null : row.agent.id)}
-                onToggleSelect={() => handleSelectToggle(row.agent.id)}
-                onRequestPromote={(action, from, to) => setPromoteDialog({ agentId: row.agent.id, action, fromStage: from, toStage: to })}
-                onToggleFeatured={handleToggleFeatured}
-                onUpdateConfig={updateRowConfig}
-              />
-            ))}
+            {filteredRows
+              .slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+              .map(row => (
+                <AgentRow
+                  key={row.agent.id}
+                  row={row}
+                  isDark={isDark}
+                  isExpanded={expandedId === row.agent.id}
+                  isSelected={selectedIds.has(row.agent.id)}
+                  isPromoting={promoting === row.agent.id}
+                  featuredCount={stats.featured}
+                  enrichment={enrichmentCacheRef.current.get(row.agent.id)}
+                  enrichmentLoading={enrichmentLoading.has(row.agent.id)}
+                  onToggleExpand={() =>
+                    setExpandedId(
+                      expandedId === row.agent.id ? null : row.agent.id,
+                    )
+                  }
+                  onToggleSelect={() => handleSelectToggle(row.agent.id)}
+                  onRequestPromote={(action, from, to) =>
+                    setPromoteDialog({
+                      agentId: row.agent.id,
+                      action,
+                      fromStage: from,
+                      toStage: to,
+                    })
+                  }
+                  onToggleFeatured={handleToggleFeatured}
+                  onUpdateConfig={updateRowConfig}
+                />
+              ))}
+          </Box>
+        )}
+
+        {/* Pagination */}
+        {filteredRows.length > PAGE_SIZE && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 1,
+              mt: 1.5,
+              pb: 1,
+            }}
+          >
+            <Button
+              size="small"
+              disabled={page === 0}
+              onClick={() => setPage(p => p - 1)}
+              sx={{
+                textTransform: 'none',
+                fontSize: '0.75rem',
+                minWidth: 0,
+                px: 1.5,
+              }}
+            >
+              Previous
+            </Button>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                fontSize: '0.7rem',
+                fontWeight: 600,
+              }}
+            >
+              {page * PAGE_SIZE + 1}–
+              {Math.min((page + 1) * PAGE_SIZE, filteredRows.length)} of{' '}
+              {filteredRows.length}
+            </Typography>
+            <Button
+              size="small"
+              disabled={(page + 1) * PAGE_SIZE >= filteredRows.length}
+              onClick={() => setPage(p => p + 1)}
+              sx={{
+                textTransform: 'none',
+                fontSize: '0.75rem',
+                minWidth: 0,
+                px: 1.5,
+              }}
+            >
+              Next
+            </Button>
           </Box>
         )}
       </Box>
@@ -758,7 +1024,12 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
           }
         }}
         onCancel={() => setPromoteDialog(null)}
-        agentName={promoteDialog ? (rows.find(r => r.agent.id === promoteDialog.agentId)?.agent.name ?? promoteDialog.agentId) : ''}
+        agentName={
+          promoteDialog
+            ? (rows.find(r => r.agent.id === promoteDialog.agentId)?.agent
+                .name ?? promoteDialog.agentId)
+            : ''
+        }
         isDark={isDark}
       />
 
@@ -778,19 +1049,64 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({ initialStageFi
 // ---------------------------------------------------------------------------
 
 interface LifecyclePipelineProps {
-  stats: { total: number; draft: number; registered: number; deployed: number; featured: number };
+  stats: {
+    total: number;
+    draft: number;
+    review: number;
+    staging: number;
+    production: number;
+    retired: number;
+    featured: number;
+  };
   isDark: boolean;
   onFilterStage: (stage: StageFilter) => void;
   activeFilter: StageFilter;
 }
 
-const LifecyclePipeline: FC<LifecyclePipelineProps> = ({ stats, isDark, onFilterStage, activeFilter }) => {
+const LifecyclePipeline: FC<LifecyclePipelineProps> = ({
+  stats,
+  isDark,
+  onFilterStage,
+  activeFilter,
+}) => {
   const theme = useTheme();
 
   const stages = [
-    { key: 'draft' as StageFilter, label: 'Draft', count: stats.draft, icon: <EditNoteIcon sx={{ fontSize: 16 }} />, color: isDark ? '#94a3b8' : '#64748b' },
-    { key: 'registered' as StageFilter, label: 'Registered', count: stats.registered, icon: <VerifiedIcon sx={{ fontSize: 16 }} />, color: isDark ? '#93c5fd' : '#2563eb' },
-    { key: 'deployed' as StageFilter, label: 'Deployed', count: stats.deployed, icon: <RocketLaunchIcon sx={{ fontSize: 16 }} />, color: isDark ? '#86efac' : '#15803d' },
+    {
+      key: 'draft' as StageFilter,
+      label: 'Draft',
+      count: stats.draft,
+      icon: <EditNoteIcon sx={{ fontSize: 16 }} />,
+      color: isDark ? '#94a3b8' : '#64748b',
+    },
+    {
+      key: 'review' as StageFilter,
+      label: 'Review',
+      count: stats.review,
+      icon: <SearchIcon sx={{ fontSize: 16 }} />,
+      color: isDark ? '#93c5fd' : '#2563eb',
+    },
+    {
+      key: 'staging' as StageFilter,
+      label: 'Staging',
+      count: stats.staging,
+      icon: <VerifiedIcon sx={{ fontSize: 16 }} />,
+      color: isDark ? '#fbbf24' : '#b45309',
+    },
+    {
+      key: 'production' as StageFilter,
+      label: 'Production',
+      count: stats.production,
+      icon: <RocketLaunchIcon sx={{ fontSize: 16 }} />,
+      color: isDark ? '#86efac' : '#15803d',
+    },
+    {
+      key: 'retired' as StageFilter,
+      label: 'Retired',
+      count: stats.retired,
+      icon: <HistoryIcon sx={{ fontSize: 16 }} />,
+      color: isDark ? '#f87171' : '#b91c1c',
+    },
   ];
 
   return (
@@ -799,12 +1115,20 @@ const LifecyclePipeline: FC<LifecyclePipelineProps> = ({ stats, isDark, onFilter
         {stages.map((stage, i) => {
           const isActive = activeFilter === stage.key;
           return (
-            <Box key={stage.key} sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            <Box
+              key={stage.key}
+              sx={{ display: 'flex', alignItems: 'center', flex: 1 }}
+            >
               <Box
                 role="button"
                 tabIndex={0}
                 onClick={() => onFilterStage(isActive ? 'all' : stage.key)}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onFilterStage(isActive ? 'all' : stage.key); } }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onFilterStage(isActive ? 'all' : stage.key);
+                  }
+                }}
                 sx={{
                   flex: 1,
                   display: 'flex',
@@ -819,10 +1143,14 @@ const LifecyclePipeline: FC<LifecyclePipelineProps> = ({ stats, isDark, onFilter
                   border: `1px solid ${isActive ? alpha(stage.color, 0.5) : theme.palette.divider}`,
                   bgcolor: isActive
                     ? alpha(stage.color, isDark ? 0.12 : 0.06)
-                    : isDark ? alpha(theme.palette.background.paper, 0.4) : theme.palette.background.paper,
+                    : isDark
+                      ? alpha(theme.palette.background.paper, 0.4)
+                      : theme.palette.background.paper,
                   boxShadow: isActive
                     ? `0 0 0 1px ${alpha(stage.color, 0.15)}`
-                    : isDark ? 'none' : '0 1px 2px rgba(0,0,0,0.04)',
+                    : isDark
+                      ? 'none'
+                      : '0 1px 2px rgba(0,0,0,0.04)',
                   transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
                   '&:hover': {
                     bgcolor: alpha(stage.color, isDark ? 0.1 : 0.05),
@@ -830,16 +1158,18 @@ const LifecyclePipeline: FC<LifecyclePipelineProps> = ({ stats, isDark, onFilter
                     transform: 'translateY(-1px)',
                     boxShadow: `0 2px 8px ${alpha(stage.color, 0.12)}`,
                   },
-                  '&::before': isActive ? {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 2,
-                    background: `linear-gradient(90deg, ${stage.color}, ${alpha(stage.color, 0.3)})`,
-                    borderRadius: '2px 2px 0 0',
-                  } : {},
+                  '&::before': isActive
+                    ? {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 2,
+                        background: `linear-gradient(90deg, ${stage.color}, ${alpha(stage.color, 0.3)})`,
+                        borderRadius: '2px 2px 0 0',
+                      }
+                    : {},
                 }}
               >
                 <Box
@@ -887,13 +1217,28 @@ const LifecyclePipeline: FC<LifecyclePipelineProps> = ({ stats, isDark, onFilter
                 </Box>
               </Box>
               {i < stages.length - 1 && (
-                <ArrowForwardIcon sx={{ fontSize: 14, color: alpha(theme.palette.text.disabled, 0.5), mx: 0.5, flexShrink: 0 }} />
+                <ArrowForwardIcon
+                  sx={{
+                    fontSize: 14,
+                    color: alpha(theme.palette.text.disabled, 0.5),
+                    mx: 0.5,
+                    flexShrink: 0,
+                  }}
+                />
               )}
             </Box>
           );
         })}
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+          mt: 1,
+          flexWrap: 'wrap',
+        }}
+      >
         <Chip
           size="small"
           label={`${stats.total} Total`}
@@ -935,7 +1280,12 @@ const LifecyclePipeline: FC<LifecyclePipelineProps> = ({ stats, isDark, onFilter
 // ---------------------------------------------------------------------------
 
 interface PromoteConfirmDialogProps {
-  dialog: { agentId: string; action: 'promote' | 'demote'; fromStage: AgentLifecycleStage; toStage: AgentLifecycleStage } | null;
+  dialog: {
+    agentId: string;
+    action: 'promote' | 'demote';
+    fromStage: AgentLifecycleStage;
+    toStage: AgentLifecycleStage;
+  } | null;
   isPromoting: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -943,12 +1293,23 @@ interface PromoteConfirmDialogProps {
   isDark: boolean;
 }
 
-const PromoteConfirmDialog: FC<PromoteConfirmDialogProps> = ({ dialog, isPromoting, onConfirm, onCancel, agentName, isDark }) => {
+const PromoteConfirmDialog: FC<PromoteConfirmDialogProps> = ({
+  dialog,
+  isPromoting,
+  onConfirm,
+  onCancel,
+  agentName,
+  isDark,
+}) => {
   if (!dialog) return null;
 
   const isPromoteAction = dialog.action === 'promote';
-  const fromLabel = LIFECYCLE_STAGES.find(s => s.key === dialog.fromStage)?.label ?? dialog.fromStage;
-  const toLabel = LIFECYCLE_STAGES.find(s => s.key === dialog.toStage)?.label ?? dialog.toStage;
+  const fromLabel =
+    LIFECYCLE_STAGES.find(s => s.key === dialog.fromStage)?.label ??
+    dialog.fromStage;
+  const toLabel =
+    LIFECYCLE_STAGES.find(s => s.key === dialog.toStage)?.label ??
+    dialog.toStage;
   const toColor = getStageColor(dialog.toStage, isDark);
 
   return (
@@ -969,21 +1330,53 @@ const PromoteConfirmDialog: FC<PromoteConfirmDialogProps> = ({ dialog, isPromoti
             size="small"
             label={toLabel}
             icon={getStageIcon(dialog.toStage)}
-            sx={{ fontWeight: 600, fontSize: '0.75rem', color: toColor, bgcolor: getStageBg(dialog.toStage, isDark) }}
+            sx={{
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              color: toColor,
+              bgcolor: getStageBg(dialog.toStage, isDark),
+            }}
           />
         </Box>
-        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8125rem' }}>
-          {isPromoteAction && dialog.toStage === 'registered' && (
-            <>Register <strong>{agentName}</strong> as a vetted enterprise asset. It will not be visible to end users until deployed.</>
+        <Typography
+          variant="body2"
+          sx={{ color: 'text.secondary', fontSize: '0.8125rem' }}
+        >
+          {dialog.toStage === 'review' && (
+            <>
+              Submit <strong>{agentName}</strong> for admin review. It will
+              appear in the Review Queue.
+            </>
           )}
-          {isPromoteAction && dialog.toStage === 'deployed' && (
-            <>Deploy <strong>{agentName}</strong> to the end-user catalog. Users will be able to discover and chat with this agent.</>
+          {dialog.toStage === 'staging' && isPromoteAction && (
+            <>
+              Approve <strong>{agentName}</strong> and move to staging for
+              internal testing. Not visible to end users.
+            </>
           )}
-          {!isPromoteAction && dialog.toStage === 'registered' && (
-            <>Withdraw <strong>{agentName}</strong> from the end-user catalog. It will remain registered but no longer visible to users.</>
+          {dialog.toStage === 'staging' && !isPromoteAction && (
+            <>
+              Roll back <strong>{agentName}</strong> from production to staging.
+              It will no longer be visible to end users.
+            </>
           )}
-          {!isPromoteAction && dialog.toStage === 'draft' && (
-            <>Move <strong>{agentName}</strong> back to draft status. This removes its registered status.</>
+          {dialog.toStage === 'production' && (
+            <>
+              Promote <strong>{agentName}</strong> to production. Users will be
+              able to discover and chat with this agent.
+            </>
+          )}
+          {dialog.toStage === 'retired' && (
+            <>
+              Retire <strong>{agentName}</strong> from production. It will be
+              archived and no longer available to users.
+            </>
+          )}
+          {dialog.toStage === 'draft' && (
+            <>
+              Move <strong>{agentName}</strong> back to draft. This resets its
+              lifecycle for further development.
+            </>
           )}
         </Typography>
       </DialogContent>
@@ -997,7 +1390,15 @@ const PromoteConfirmDialog: FC<PromoteConfirmDialogProps> = ({ dialog, isPromoti
           size="small"
           disabled={isPromoting}
           color={isPromoteAction ? 'primary' : 'inherit'}
-          startIcon={isPromoting ? <CircularProgress size={14} /> : (isPromoteAction ? <ArrowForwardIcon /> : <ArrowBackIcon />)}
+          startIcon={
+            isPromoting ? (
+              <CircularProgress size={14} />
+            ) : isPromoteAction ? (
+              <ArrowForwardIcon />
+            ) : (
+              <ArrowBackIcon />
+            )
+          }
           sx={{ textTransform: 'none', fontWeight: 600 }}
         >
           {isPromoteAction ? `Promote to ${toLabel}` : `Move to ${toLabel}`}
@@ -1022,7 +1423,11 @@ interface AgentRowProps {
   enrichmentLoading?: boolean;
   onToggleExpand: () => void;
   onToggleSelect: () => void;
-  onRequestPromote: (action: 'promote' | 'demote', from: AgentLifecycleStage, to: AgentLifecycleStage) => void;
+  onRequestPromote: (
+    action: 'promote' | 'demote',
+    from: AgentLifecycleStage,
+    to: AgentLifecycleStage,
+  ) => void;
   onToggleFeatured: (agentId: string, featured: boolean) => void;
   onUpdateConfig: (agentId: string, patch: Partial<ChatAgentConfig>) => void;
 }
@@ -1043,29 +1448,40 @@ const AgentRow: FC<AgentRowProps> = ({
 }) => {
   const theme = useTheme();
   const { agent, config } = row;
-  const stage = config.lifecycleStage ?? 'draft';
+  const stage = normalizeLifecycleStage(config.lifecycleStage);
   const displayName = config.displayName || agent.name || agent.id;
   const avatarColor = config.accentColor || getAvatarColor(displayName);
   const sourceColor = getSourceColor(agent.source, isDark);
   const statusColor = getStatusColor(agent.status);
   const stageColor = getStageColor(stage, isDark);
-  const nextStage = stage === 'draft' ? 'registered' : stage === 'registered' ? 'deployed' : undefined;
-  const prevStage = stage === 'deployed' ? 'registered' : stage === 'registered' ? 'draft' : undefined;
+  const transitions = getAvailableTransitions(stage);
+  const forwardTransitions = transitions.filter(
+    t =>
+      LIFECYCLE_STAGE_ORDER.indexOf(t.to) >
+      LIFECYCLE_STAGE_ORDER.indexOf(t.from),
+  );
+  const backwardTransitions = transitions.filter(
+    t =>
+      LIFECYCLE_STAGE_ORDER.indexOf(t.to) <
+      LIFECYCLE_STAGE_ORDER.indexOf(t.from),
+  );
 
   return (
     <Card
       variant="outlined"
       sx={{
         borderRadius: 2,
-        opacity: stage === 'draft' ? 0.75 : 1,
+        opacity: stage === 'draft' || stage === 'retired' ? 0.75 : 1,
         transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
         borderColor: isSelected
           ? theme.palette.primary.main
-          : stage === 'deployed'
+          : stage === 'production'
             ? alpha(theme.palette.success.main, 0.25)
-            : stage === 'registered'
-              ? alpha(theme.palette.info.main, 0.15)
-              : theme.palette.divider,
+            : stage === 'staging'
+              ? alpha(theme.palette.warning.main, 0.2)
+              : stage === 'review'
+                ? alpha(theme.palette.info.main, 0.15)
+                : theme.palette.divider,
         borderLeft: `3px solid ${stageColor}`,
         '&:hover': {
           borderColor: isSelected
@@ -1075,8 +1491,20 @@ const AgentRow: FC<AgentRowProps> = ({
         },
       }}
     >
-      <CardContent sx={{ p: '10px 12px !important', display: 'flex', alignItems: 'center', gap: 0.75 }}>
-        <Checkbox size="small" checked={isSelected} onChange={onToggleSelect} sx={{ p: 0.25, flexShrink: 0 }} />
+      <CardContent
+        sx={{
+          p: '10px 12px !important',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+        }}
+      >
+        <Checkbox
+          size="small"
+          checked={isSelected}
+          onChange={onToggleSelect}
+          sx={{ p: 0.25, flexShrink: 0 }}
+        />
 
         {/* Avatar */}
         <Box
@@ -1100,13 +1528,31 @@ const AgentRow: FC<AgentRowProps> = ({
 
         {/* Name + meta */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-            <Typography variant="body2" noWrap sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', letterSpacing: '-0.01em' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Typography
+              variant="body2"
+              noWrap
+              sx={{
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                color: 'text.primary',
+                letterSpacing: '-0.01em',
+              }}
+            >
               {displayName}
             </Typography>
             <Chip
               size="small"
-              label={LIFECYCLE_STAGES.find(s => s.key === stage)?.label ?? stage}
+              label={
+                LIFECYCLE_STAGES.find(s => s.key === stage)?.label ?? stage
+              }
               icon={getStageIcon(stage)}
               sx={{
                 height: 18,
@@ -1121,7 +1567,13 @@ const AgentRow: FC<AgentRowProps> = ({
             <Chip
               size="small"
               label={getSourceLabel(agent.source)}
-              icon={agent.source === 'orchestration' ? <HubIcon sx={{ fontSize: '10px !important' }} /> : <SmartToyIcon sx={{ fontSize: '10px !important' }} />}
+              icon={
+                agent.source === 'orchestration' ? (
+                  <HubIcon sx={{ fontSize: '10px !important' }} />
+                ) : (
+                  <SmartToyIcon sx={{ fontSize: '10px !important' }} />
+                )
+              }
               sx={{
                 height: 18,
                 fontSize: '0.6rem',
@@ -1136,31 +1588,72 @@ const AgentRow: FC<AgentRowProps> = ({
               <FiberManualRecordIcon sx={{ fontSize: 8, color: statusColor }} />
             </Tooltip>
             {enrichment?.routeStatus && (
-              <Tooltip title={enrichment.routeStatus.hasRoute ? `Routable${enrichment.routeStatus.url ? ` — ${enrichment.routeStatus.url}` : ''}` : 'No route'}>
-                {enrichment.routeStatus.hasRoute
-                  ? <LinkIcon sx={{ fontSize: 12, color: isDark ? '#86efac' : '#15803d' }} />
-                  : <LinkOffIcon sx={{ fontSize: 12, color: 'text.disabled' }} />}
+              <Tooltip
+                title={
+                  enrichment.routeStatus.hasRoute
+                    ? `Routable${enrichment.routeStatus.url ? ` — ${enrichment.routeStatus.url}` : ''}`
+                    : 'No route'
+                }
+              >
+                {enrichment.routeStatus.hasRoute ? (
+                  <LinkIcon
+                    sx={{ fontSize: 12, color: isDark ? '#86efac' : '#15803d' }}
+                  />
+                ) : (
+                  <LinkOffIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
+                )}
               </Tooltip>
             )}
             {(agent.version ?? 0) > 0 && (
-              <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600, color: 'text.disabled' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  color: 'text.disabled',
+                }}
+              >
                 v{agent.version}
               </Typography>
             )}
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.125 }}>
-            <Typography variant="caption" noWrap sx={{ color: 'text.disabled', fontSize: '0.65rem' }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.125 }}
+          >
+            <Typography
+              variant="caption"
+              noWrap
+              sx={{ color: 'text.disabled', fontSize: '0.65rem' }}
+            >
               {agent.id}
               {agent.framework ? ` · ${agent.framework}` : ''}
             </Typography>
             {agent.promotedAt && (
-              <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.575rem', display: 'flex', alignItems: 'center', gap: 0.25 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.disabled',
+                  fontSize: '0.575rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.25,
+                }}
+              >
                 <HistoryIcon sx={{ fontSize: 9 }} />
                 {timeAgo(agent.promotedAt)}
               </Typography>
             )}
             {agent.promotedBy && (
-              <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.575rem', display: 'flex', alignItems: 'center', gap: 0.25 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.disabled',
+                  fontSize: '0.575rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.25,
+                }}
+              >
                 <PersonIcon sx={{ fontSize: 9 }} />
                 {agent.promotedBy.replace(/^user:default\//, '')}
               </Typography>
@@ -1169,16 +1662,29 @@ const AgentRow: FC<AgentRowProps> = ({
         </Box>
 
         {/* Promotion Actions */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            flexShrink: 0,
+          }}
+        >
           {isPromoting ? (
             <CircularProgress size={18} />
           ) : (
             <>
-              {prevStage && (
-                <Tooltip title={`Withdraw to ${LIFECYCLE_STAGES.find(s => s.key === prevStage)?.label}`}>
+              {backwardTransitions.length > 0 && (
+                <Tooltip title={backwardTransitions[0].label}>
                   <IconButton
                     size="small"
-                    onClick={() => onRequestPromote('demote', stage, prevStage as AgentLifecycleStage)}
+                    onClick={() =>
+                      onRequestPromote(
+                        'demote',
+                        stage,
+                        backwardTransitions[0].to,
+                      )
+                    }
                     sx={{
                       color: 'text.disabled',
                       width: 26,
@@ -1190,14 +1696,28 @@ const AgentRow: FC<AgentRowProps> = ({
                   </IconButton>
                 </Tooltip>
               )}
-              {nextStage && (
-                <Tooltip title={`Promote to ${LIFECYCLE_STAGES.find(s => s.key === nextStage)?.label}`}>
+              {forwardTransitions.length > 0 && (
+                <Tooltip title={forwardTransitions[0].label}>
                   <Button
                     size="small"
-                    variant={nextStage === 'deployed' ? 'contained' : 'outlined'}
-                    color={nextStage === 'deployed' ? 'success' : 'primary'}
-                    onClick={() => onRequestPromote('promote', stage, nextStage as AgentLifecycleStage)}
-                    startIcon={nextStage === 'deployed' ? <RocketLaunchIcon sx={{ fontSize: 13 }} /> : <VerifiedIcon sx={{ fontSize: 13 }} />}
+                    variant={
+                      forwardTransitions[0].to === 'production'
+                        ? 'contained'
+                        : 'outlined'
+                    }
+                    color={
+                      forwardTransitions[0].to === 'production'
+                        ? 'success'
+                        : 'primary'
+                    }
+                    onClick={() =>
+                      onRequestPromote(
+                        'promote',
+                        stage,
+                        forwardTransitions[0].to,
+                      )
+                    }
+                    startIcon={getStageIcon(forwardTransitions[0].to)}
                     sx={{
                       textTransform: 'none',
                       fontWeight: 600,
@@ -1207,17 +1727,22 @@ const AgentRow: FC<AgentRowProps> = ({
                       px: 1,
                       borderRadius: 1.25,
                       height: 26,
-                      boxShadow: nextStage === 'deployed' ? `0 1px 4px ${alpha('#22c55e', 0.25)}` : 'none',
+                      boxShadow:
+                        forwardTransitions[0].to === 'production'
+                          ? `0 1px 4px ${alpha('#22c55e', 0.25)}`
+                          : 'none',
                     }}
                   >
-                    {nextStage === 'deployed' ? 'Deploy' : 'Register'}
+                    {forwardTransitions[0].label}
                   </Button>
                 </Tooltip>
               )}
-              {stage === 'deployed' && (
+              {stage === 'production' && (
                 <Chip
                   size="small"
-                  icon={<CheckCircleIcon sx={{ fontSize: '12px !important' }} />}
+                  icon={
+                    <CheckCircleIcon sx={{ fontSize: '12px !important' }} />
+                  }
                   label="Live"
                   sx={{
                     height: 22,
@@ -1225,7 +1750,9 @@ const AgentRow: FC<AgentRowProps> = ({
                     fontSize: '0.65rem',
                     bgcolor: alpha('#22c55e', isDark ? 0.15 : 0.1),
                     color: isDark ? '#86efac' : '#15803d',
-                    '& .MuiChip-icon': { color: isDark ? '#86efac' : '#15803d' },
+                    '& .MuiChip-icon': {
+                      color: isDark ? '#86efac' : '#15803d',
+                    },
                     border: `1px solid ${alpha('#22c55e', isDark ? 0.2 : 0.15)}`,
                   }}
                 />
@@ -1235,11 +1762,15 @@ const AgentRow: FC<AgentRowProps> = ({
         </Box>
 
         {/* Featured star */}
-        <Tooltip title={config.featured ? 'Remove from featured' : 'Feature on welcome'}>
+        <Tooltip
+          title={
+            config.featured ? 'Remove from featured' : 'Feature on welcome'
+          }
+        >
           <span>
             <IconButton
               size="small"
-              disabled={stage !== 'deployed'}
+              disabled={stage !== 'production'}
               onClick={() => onToggleFeatured(agent.id, !config.featured)}
               sx={{
                 width: 26,
@@ -1248,7 +1779,11 @@ const AgentRow: FC<AgentRowProps> = ({
                 transition: 'color 0.15s ease',
               }}
             >
-              {config.featured ? <StarIcon sx={{ fontSize: 16 }} /> : <StarBorderIcon sx={{ fontSize: 16 }} />}
+              {config.featured ? (
+                <StarIcon sx={{ fontSize: 16 }} />
+              ) : (
+                <StarBorderIcon sx={{ fontSize: 16 }} />
+              )}
             </IconButton>
           </span>
         </Tooltip>
@@ -1272,36 +1807,91 @@ const AgentRow: FC<AgentRowProps> = ({
       <Collapse in={isExpanded} unmountOnExit>
         <Box sx={{ px: 2, pb: 2 }}>
           {/* Lifecycle Pipeline (mini for this agent) */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, py: 1, px: 1.5, bgcolor: alpha(theme.palette.text.primary, isDark ? 0.03 : 0.02), borderRadius: 1.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.25,
+              mb: 2,
+              py: 1,
+              px: 1.5,
+              bgcolor: alpha(theme.palette.text.primary, isDark ? 0.03 : 0.02),
+              borderRadius: 1.5,
+              overflow: 'auto',
+            }}
+          >
             {LIFECYCLE_STAGES.map((s, i) => {
               const isActive = s.key === stage;
-              const isPast = LIFECYCLE_STAGES.findIndex(ls => ls.key === stage) > i;
+              const stageIdx = LIFECYCLE_STAGES.findIndex(
+                ls => ls.key === stage,
+              );
+              const isPast = stageIdx > i && stage !== 'retired';
               const sc = getStageColor(s.key, isDark);
               return (
-                <Box key={s.key} sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Box
+                  key={s.key}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Box
                       sx={{
-                        width: 24, height: 24, borderRadius: '50%',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        bgcolor: (isActive || isPast) ? alpha(sc, isDark ? 0.2 : 0.15) : alpha(theme.palette.text.disabled, 0.1),
-                        color: (isActive || isPast) ? sc : 'text.disabled',
-                        border: isActive ? `2px solid ${sc}` : '2px solid transparent',
+                        width: 22,
+                        height: 22,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor:
+                          isActive || isPast
+                            ? alpha(sc, isDark ? 0.2 : 0.15)
+                            : alpha(theme.palette.text.disabled, 0.1),
+                        color: isActive || isPast ? sc : 'text.disabled',
+                        border: isActive
+                          ? `2px solid ${sc}`
+                          : '2px solid transparent',
+                        flexShrink: 0,
                       }}
                     >
-                      {isPast ? <CheckCircleIcon sx={{ fontSize: 14 }} /> : getStageIcon(s.key)}
+                      {isPast ? (
+                        <CheckCircleIcon sx={{ fontSize: 12 }} />
+                      ) : (
+                        getStageIcon(s.key)
+                      )}
                     </Box>
-                    <Box>
-                      <Typography variant="caption" sx={{ fontWeight: isActive ? 700 : 500, fontSize: '0.6875rem', color: (isActive || isPast) ? sc : 'text.disabled', display: 'block', lineHeight: 1.2 }}>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography
+                        variant="caption"
+                        noWrap
+                        sx={{
+                          fontWeight: isActive ? 700 : 500,
+                          fontSize: '0.625rem',
+                          color: isActive || isPast ? sc : 'text.disabled',
+                          display: 'block',
+                          lineHeight: 1.2,
+                        }}
+                      >
                         {s.label}
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled', display: 'block', lineHeight: 1.2 }}>
-                        {s.description}
                       </Typography>
                     </Box>
                   </Box>
                   {i < LIFECYCLE_STAGES.length - 1 && (
-                    <Box sx={{ flex: 1, height: 2, mx: 1, bgcolor: isPast ? alpha(sc, 0.3) : alpha(theme.palette.divider, 0.5), borderRadius: 1 }} />
+                    <Box
+                      sx={{
+                        flex: 1,
+                        height: 2,
+                        mx: 0.5,
+                        minWidth: 8,
+                        bgcolor: isPast
+                          ? alpha(sc, 0.3)
+                          : alpha(theme.palette.divider, 0.5),
+                        borderRadius: 1,
+                      }}
+                    />
                   )}
                 </Box>
               );
@@ -1318,34 +1908,102 @@ const AgentRow: FC<AgentRowProps> = ({
           )}
 
           {/* Two-Column: Dev Info | Ops Info */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 2,
+              mb: 2,
+            }}
+          >
             {/* Development Info */}
             <Box>
-              <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.6875rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em', mb: 1, display: 'block' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '0.6875rem',
+                  color: 'text.secondary',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  mb: 1,
+                  display: 'block',
+                }}
+              >
                 Development
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <DetailRow label="Source" value={getSourceLabel(agent.source)} />
+                <DetailRow
+                  label="Source"
+                  value={getSourceLabel(agent.source)}
+                />
                 <DetailRow label="Framework" value={agent.framework || '—'} />
-                <DetailRow label="Protocols" value={agent.protocols?.join(', ') || '—'} />
+                <DetailRow
+                  label="Protocols"
+                  value={agent.protocols?.join(', ') || '—'}
+                />
                 <DetailRow label="Agent ID" value={agent.id} />
-                {agent.namespace && <DetailRow label="Namespace" value={agent.namespace} />}
-                <DetailRow label="Created" value={agent.createdAt ? new Date(agent.createdAt).toLocaleDateString() : '—'} />
+                {agent.namespace && (
+                  <DetailRow label="Namespace" value={agent.namespace} />
+                )}
+                <DetailRow
+                  label="Created"
+                  value={
+                    agent.createdAt
+                      ? new Date(agent.createdAt).toLocaleDateString()
+                      : '—'
+                  }
+                />
               </Box>
             </Box>
 
             {/* Operations Info */}
             <Box>
-              <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.6875rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em', mb: 1, display: 'block' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '0.6875rem',
+                  color: 'text.secondary',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  mb: 1,
+                  display: 'block',
+                }}
+              >
                 Operations
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <DetailRow label="Runtime Status" value={agent.status} chipColor={getStatusColor(agent.status)} />
-                <DetailRow label="Lifecycle" value={LIFECYCLE_STAGES.find(s => s.key === stage)?.label ?? stage} chipColor={stageColor} />
+                <DetailRow
+                  label="Runtime Status"
+                  value={agent.status}
+                  chipColor={getStatusColor(agent.status)}
+                />
+                <DetailRow
+                  label="Lifecycle"
+                  value={
+                    LIFECYCLE_STAGES.find(s => s.key === stage)?.label ??
+                    String(stage)
+                  }
+                  chipColor={stageColor}
+                />
                 <DetailRow label="Version" value={`v${agent.version ?? 0}`} />
-                <DetailRow label="Last Promoted" value={agent.promotedAt ? timeAgo(agent.promotedAt) : 'Never'} />
-                <DetailRow label="Promoted By" value={agent.promotedBy ? agent.promotedBy.replace(/^user:default\//, '') : '—'} />
-                <DetailRow label="Default Agent" value={agent.isDefault ? 'Yes' : 'No'} />
+                <DetailRow
+                  label="Last Promoted"
+                  value={agent.promotedAt ? timeAgo(agent.promotedAt) : 'Never'}
+                />
+                <DetailRow
+                  label="Promoted By"
+                  value={
+                    agent.promotedBy
+                      ? agent.promotedBy.replace(/^user:default\//, '')
+                      : '—'
+                  }
+                />
+                <DetailRow
+                  label="Default Agent"
+                  value={agent.isDefault ? 'Yes' : 'No'}
+                />
               </Box>
             </Box>
           </Box>
@@ -1354,7 +2012,17 @@ const AgentRow: FC<AgentRowProps> = ({
           {agent.description && (
             <>
               <Divider sx={{ my: 1.5 }} />
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem', fontStyle: 'italic', lineHeight: 1.5, display: 'block', mb: 1.5 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  fontSize: '0.75rem',
+                  fontStyle: 'italic',
+                  lineHeight: 1.5,
+                  display: 'block',
+                  mb: 1.5,
+                }}
+              >
                 {agent.description}
               </Typography>
             </>
@@ -1363,41 +2031,95 @@ const AgentRow: FC<AgentRowProps> = ({
           <Divider sx={{ my: 1.5 }} />
 
           {/* Display Overrides */}
-          <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.6875rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em', mb: 1, display: 'block' }}>
+          <Typography
+            variant="caption"
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.6875rem',
+              color: 'text.secondary',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              mb: 1,
+              display: 'block',
+            }}
+          >
             Display Overrides
           </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 1.5 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 1.5,
+              mb: 1.5,
+            }}
+          >
             <TextField
-              label="Display Name" size="small"
+              label="Display Name"
+              size="small"
               value={config.displayName || ''}
-              onChange={e => onUpdateConfig(agent.id, { displayName: e.target.value || undefined })}
-              placeholder={agent.name || ''} InputLabelProps={{ shrink: true }}
+              onChange={e =>
+                onUpdateConfig(agent.id, {
+                  displayName: e.target.value || undefined,
+                })
+              }
+              placeholder={agent.name || ''}
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
-              label="Accent Color" size="small"
+              label="Accent Color"
+              size="small"
               value={config.accentColor || ''}
-              onChange={e => onUpdateConfig(agent.id, { accentColor: e.target.value || undefined })}
-              placeholder="#1e40af" InputLabelProps={{ shrink: true }}
+              onChange={e =>
+                onUpdateConfig(agent.id, {
+                  accentColor: e.target.value || undefined,
+                })
+              }
+              placeholder="#1e40af"
+              InputLabelProps={{ shrink: true }}
             />
           </Box>
           <TextField
-            label="Description Override" size="small" multiline minRows={2} fullWidth
+            label="Description Override"
+            size="small"
+            multiline
+            minRows={2}
+            fullWidth
             value={config.description || ''}
-            onChange={e => onUpdateConfig(agent.id, { description: e.target.value || undefined })}
-            placeholder={agent.description || ''} InputLabelProps={{ shrink: true }}
+            onChange={e =>
+              onUpdateConfig(agent.id, {
+                description: e.target.value || undefined,
+              })
+            }
+            placeholder={agent.description || ''}
+            InputLabelProps={{ shrink: true }}
             sx={{ mb: 1.5 }}
           />
           <TextField
-            label="Avatar URL" size="small" fullWidth
+            label="Avatar URL"
+            size="small"
+            fullWidth
             value={config.avatarUrl || ''}
-            onChange={e => onUpdateConfig(agent.id, { avatarUrl: e.target.value || undefined })}
-            placeholder="https://example.com/avatar.png" InputLabelProps={{ shrink: true }}
+            onChange={e =>
+              onUpdateConfig(agent.id, {
+                avatarUrl: e.target.value || undefined,
+              })
+            }
+            placeholder="https://example.com/avatar.png"
+            InputLabelProps={{ shrink: true }}
             sx={{ mb: 1.5 }}
           />
           <TextField
-            label="Greeting Message" size="small" multiline minRows={2} fullWidth
+            label="Greeting Message"
+            size="small"
+            multiline
+            minRows={2}
+            fullWidth
             value={config.greeting || ''}
-            onChange={e => onUpdateConfig(agent.id, { greeting: e.target.value || undefined })}
+            onChange={e =>
+              onUpdateConfig(agent.id, {
+                greeting: e.target.value || undefined,
+              })
+            }
             placeholder="Hi! I'm here to help."
             helperText="First bot message when a user starts a new conversation"
             InputLabelProps={{ shrink: true }}
@@ -1406,21 +2128,54 @@ const AgentRow: FC<AgentRowProps> = ({
 
           {/* Conversation starters */}
           <Box>
-            <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem', mb: 0.5, display: 'block', color: 'text.primary' }}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 600,
+                fontSize: '0.75rem',
+                mb: 0.5,
+                display: 'block',
+                color: 'text.primary',
+              }}
+            >
               Conversation Starters
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem', mb: 1, display: 'block' }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.disabled',
+                fontSize: '0.6875rem',
+                mb: 1,
+                display: 'block',
+              }}
+            >
               Suggested prompts shown on the welcome screen for this agent
             </Typography>
             {(config.conversationStarters || []).map((starter, si) => (
-              <Box key={si} sx={{ display: 'flex', gap: 0.5, mb: 0.75, alignItems: 'center' }}>
-                <Chip label={si + 1} size="small" sx={{ height: 20, fontSize: '0.65rem', minWidth: 24 }} />
+              <Box
+                key={si}
+                sx={{
+                  display: 'flex',
+                  gap: 0.5,
+                  mb: 0.75,
+                  alignItems: 'center',
+                }}
+              >
+                <Chip
+                  label={si + 1}
+                  size="small"
+                  sx={{ height: 20, fontSize: '0.65rem', minWidth: 24 }}
+                />
                 <TextField
-                  size="small" fullWidth value={starter}
+                  size="small"
+                  fullWidth
+                  value={starter}
                   onChange={e => {
                     const starters = [...(config.conversationStarters || [])];
                     starters[si] = e.target.value;
-                    onUpdateConfig(agent.id, { conversationStarters: starters });
+                    onUpdateConfig(agent.id, {
+                      conversationStarters: starters,
+                    });
                   }}
                   placeholder="Ask me about..."
                   sx={{ '& .MuiOutlinedInput-root': { fontSize: '0.8rem' } }}
@@ -1430,7 +2185,9 @@ const AgentRow: FC<AgentRowProps> = ({
                   onClick={() => {
                     const starters = [...(config.conversationStarters || [])];
                     starters.splice(si, 1);
-                    onUpdateConfig(agent.id, { conversationStarters: starters });
+                    onUpdateConfig(agent.id, {
+                      conversationStarters: starters,
+                    });
                   }}
                   sx={{ color: 'text.disabled' }}
                 >
@@ -1447,7 +2204,9 @@ const AgentRow: FC<AgentRowProps> = ({
                 starters.push('');
                 onUpdateConfig(agent.id, { conversationStarters: starters });
               }}
-              disabled={(config.conversationStarters || []).length >= MAX_STARTERS}
+              disabled={
+                (config.conversationStarters || []).length >= MAX_STARTERS
+              }
               sx={{ textTransform: 'none', fontSize: '0.75rem', mt: 0.5 }}
             >
               Add starter
@@ -1469,7 +2228,11 @@ interface KagentiRuntimeInfoProps {
   isDark: boolean;
 }
 
-const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, isDark }) => {
+const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({
+  enrichment,
+  loading,
+  isDark,
+}) => {
   const theme = useTheme();
 
   if (loading) {
@@ -1488,7 +2251,10 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
         }}
       >
         <CircularProgress size={14} />
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+        <Typography
+          variant="caption"
+          sx={{ color: 'text.secondary', fontSize: '0.7rem' }}
+        >
           Loading runtime info from Kagenti...
         </Typography>
       </Box>
@@ -1497,7 +2263,12 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
 
   if (!enrichment) return null;
 
-  if (enrichment.error && !enrichment.agentCard && !enrichment.routeStatus && !enrichment.detail) {
+  if (
+    enrichment.error &&
+    !enrichment.agentCard &&
+    !enrichment.routeStatus &&
+    !enrichment.detail
+  ) {
     return (
       <Box
         sx={{
@@ -1509,7 +2280,10 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
           border: `1px solid ${alpha(theme.palette.warning.main, 0.12)}`,
         }}
       >
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+        <Typography
+          variant="caption"
+          sx={{ color: 'text.secondary', fontSize: '0.7rem' }}
+        >
           {enrichment.error}
         </Typography>
       </Box>
@@ -1521,9 +2295,15 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
   const readyStatus = detail?.readyStatus || 'Unknown';
   const replicas = (detail?.spec as Record<string, unknown>)?.replicas;
   const containers = (
-    (detail?.spec as Record<string, unknown>)?.template as Record<string, unknown>
+    (detail?.spec as Record<string, unknown>)?.template as Record<
+      string,
+      unknown
+    >
   )?.spec as Record<string, unknown> | undefined;
-  const containerList = (containers?.containers ?? []) as Array<{ image?: string; name?: string }>;
+  const containerList = (containers?.containers ?? []) as Array<{
+    image?: string;
+    name?: string;
+  }>;
   const containerImage = containerList[0]?.image;
 
   return (
@@ -1553,14 +2333,26 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
       </Typography>
 
       {/* Status badges row */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', mb: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+          flexWrap: 'wrap',
+          mb: 1,
+        }}
+      >
         {/* Route status */}
         {routeStatus && (
           <Chip
             size="small"
-            icon={routeStatus.hasRoute
-              ? <LinkIcon sx={{ fontSize: '12px !important' }} />
-              : <LinkOffIcon sx={{ fontSize: '12px !important' }} />}
+            icon={
+              routeStatus.hasRoute ? (
+                <LinkIcon sx={{ fontSize: '12px !important' }} />
+              ) : (
+                <LinkOffIcon sx={{ fontSize: '12px !important' }} />
+              )
+            }
             label={routeStatus.hasRoute ? 'Routable' : 'No Route'}
             sx={{
               height: 20,
@@ -1570,11 +2362,15 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
                 ? alpha('#22c55e', isDark ? 0.15 : 0.1)
                 : alpha(theme.palette.text.disabled, 0.08),
               color: routeStatus.hasRoute
-                ? (isDark ? '#86efac' : '#15803d')
+                ? isDark
+                  ? '#86efac'
+                  : '#15803d'
                 : 'text.disabled',
               '& .MuiChip-icon': {
                 color: routeStatus.hasRoute
-                  ? (isDark ? '#86efac' : '#15803d')
+                  ? isDark
+                    ? '#86efac'
+                    : '#15803d'
                   : 'text.disabled',
               },
             }}
@@ -1595,11 +2391,15 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
                 ? alpha('#3b82f6', isDark ? 0.15 : 0.1)
                 : alpha(theme.palette.text.disabled, 0.08),
               color: agentCard.streaming
-                ? (isDark ? '#93c5fd' : '#1d4ed8')
+                ? isDark
+                  ? '#93c5fd'
+                  : '#1d4ed8'
                 : 'text.disabled',
               '& .MuiChip-icon': {
                 color: agentCard.streaming
-                  ? (isDark ? '#93c5fd' : '#1d4ed8')
+                  ? isDark
+                    ? '#93c5fd'
+                    : '#1d4ed8'
                   : 'text.disabled',
               },
             }}
@@ -1640,7 +2440,10 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
 
         {/* Replicas */}
         {replicas !== undefined && (
-          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6rem', fontWeight: 600 }}>
+          <Typography
+            variant="caption"
+            sx={{ color: 'text.disabled', fontSize: '0.6rem', fontWeight: 600 }}
+          >
             {String(replicas)} replica{Number(replicas) !== 1 ? 's' : ''}
           </Typography>
         )}
@@ -1650,13 +2453,25 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.375 }}>
         {agentCard?.url && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.625rem', minWidth: 70, flexShrink: 0 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.disabled',
+                fontSize: '0.625rem',
+                minWidth: 70,
+                flexShrink: 0,
+              }}
+            >
               A2A URL
             </Typography>
             <Typography
               variant="caption"
               noWrap
-              sx={{ fontSize: '0.625rem', fontFamily: 'monospace', color: 'text.secondary' }}
+              sx={{
+                fontSize: '0.625rem',
+                fontFamily: 'monospace',
+                color: 'text.secondary',
+              }}
             >
               {agentCard.url}
             </Typography>
@@ -1665,7 +2480,15 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
 
         {routeStatus?.hasRoute && routeStatus.url && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.625rem', minWidth: 70, flexShrink: 0 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.disabled',
+                fontSize: '0.625rem',
+                minWidth: 70,
+                flexShrink: 0,
+              }}
+            >
               Route URL
             </Typography>
             <Typography
@@ -1694,13 +2517,25 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
 
         {containerImage && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.625rem', minWidth: 70, flexShrink: 0 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.disabled',
+                fontSize: '0.625rem',
+                minWidth: 70,
+                flexShrink: 0,
+              }}
+            >
               Image
             </Typography>
             <Typography
               variant="caption"
               noWrap
-              sx={{ fontSize: '0.625rem', fontFamily: 'monospace', color: 'text.secondary' }}
+              sx={{
+                fontSize: '0.625rem',
+                fontFamily: 'monospace',
+                color: 'text.secondary',
+              }}
             >
               {containerImage}
             </Typography>
@@ -1709,10 +2544,21 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
 
         {agentCard?.version && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.625rem', minWidth: 70, flexShrink: 0 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.disabled',
+                fontSize: '0.625rem',
+                minWidth: 70,
+                flexShrink: 0,
+              }}
+            >
               Card Version
             </Typography>
-            <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>
+            <Typography
+              variant="caption"
+              sx={{ fontSize: '0.625rem', color: 'text.secondary' }}
+            >
               {agentCard.version}
             </Typography>
           </Box>
@@ -1740,7 +2586,11 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
             {agentCard.skills.map((skill, i) => (
               <Tooltip
                 key={skill.id ?? i}
-                title={skill.examples?.[0] ? `e.g. "${skill.examples[0]}"` : skill.description || ''}
+                title={
+                  skill.examples?.[0]
+                    ? `e.g. "${skill.examples[0]}"`
+                    : skill.description || ''
+                }
                 arrow
               >
                 <Chip
@@ -1753,7 +2603,9 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
                     fontWeight: 600,
                     bgcolor: alpha('#8b5cf6', isDark ? 0.12 : 0.08),
                     color: isDark ? '#c4b5fd' : '#6d28d9',
-                    '& .MuiChip-icon': { color: isDark ? '#c4b5fd' : '#6d28d9' },
+                    '& .MuiChip-icon': {
+                      color: isDark ? '#c4b5fd' : '#6d28d9',
+                    },
                   }}
                 />
               </Tooltip>
@@ -1769,20 +2621,39 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({ enrichment, loading, 
 // DetailRow helper
 // ---------------------------------------------------------------------------
 
-const DetailRow: FC<{ label: string; value: string; chipColor?: string }> = ({ label, value, chipColor }) => (
+const DetailRow: FC<{ label: string; value: string; chipColor?: string }> = ({
+  label,
+  value,
+  chipColor,
+}) => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem', minWidth: 90, flexShrink: 0 }}>
+    <Typography
+      variant="caption"
+      sx={{
+        color: 'text.disabled',
+        fontSize: '0.6875rem',
+        minWidth: 90,
+        flexShrink: 0,
+      }}
+    >
       {label}
     </Typography>
     {chipColor ? (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <FiberManualRecordIcon sx={{ fontSize: 8, color: chipColor }} />
-        <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.6875rem', color: 'text.primary' }}>
+        <Typography
+          variant="caption"
+          sx={{ fontWeight: 500, fontSize: '0.6875rem', color: 'text.primary' }}
+        >
           {value}
         </Typography>
       </Box>
     ) : (
-      <Typography variant="caption" noWrap sx={{ fontWeight: 500, fontSize: '0.6875rem', color: 'text.primary' }}>
+      <Typography
+        variant="caption"
+        noWrap
+        sx={{ fontWeight: 500, fontSize: '0.6875rem', color: 'text.primary' }}
+      >
         {value}
       </Typography>
     )}

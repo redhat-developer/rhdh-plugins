@@ -29,7 +29,16 @@ export const HERO_PADDING = { xs: 2.5, sm: 3 } as const;
 export const SEARCH_PADDING = { py: 1, px: 1.5 } as const;
 
 export const AVATAR_SIZE = 40;
-export const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#ef4444'];
+export const AVATAR_COLORS = [
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+  '#f59e0b',
+  '#10b981',
+  '#06b6d4',
+  '#6366f1',
+  '#ef4444',
+];
 
 export const FRAMEWORK_COLORS: Record<string, string> = {
   ADK: '#0d9488',
@@ -41,7 +50,8 @@ export const FRAMEWORK_COLORS: Record<string, string> = {
 
 export function getAvatarColor(name: string): string {
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < name.length; i++)
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
@@ -50,8 +60,15 @@ export function getFrameworkColor(framework?: string): string {
   return FRAMEWORK_COLORS[framework] ?? '#6b7280';
 }
 
-export const LIFECYCLE_STAGE_CONFIG: Record<string, { label: string; color: string }> = {
+export const LIFECYCLE_STAGE_CONFIG: Record<
+  string,
+  { label: string; color: string }
+> = {
   draft: { label: 'Draft', color: '#6b7280' },
-  registered: { label: 'In Review', color: '#f59e0b' },
-  deployed: { label: 'Published', color: '#10b981' },
+  review: { label: 'In Review', color: '#3b82f6' },
+  staging: { label: 'Staging', color: '#f59e0b' },
+  production: { label: 'Production', color: '#10b981' },
+  retired: { label: 'Retired', color: '#ef4444' },
+  registered: { label: 'In Review', color: '#3b82f6' },
+  deployed: { label: 'Production', color: '#10b981' },
 };

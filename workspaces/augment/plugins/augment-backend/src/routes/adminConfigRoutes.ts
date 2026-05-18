@@ -167,15 +167,22 @@ export function registerAdminConfigRoutes(
         onConfigChanged?.();
 
         // Auto-register chatAgents entries for agents that can be published
-        // (router or standalone). New agents start as 'registered' so they're
-        // one click away from being published. Specialists are hidden.
+        // (router or standalone). New agents start as 'review' so they go
+        // through the review queue. Specialists are hidden.
         if (validKey === 'agents' && value && typeof value === 'object') {
           try {
-            const agentMap = value as Record<string, { handoffs?: string[]; asTools?: string[] }>;
+            const agentMap = value as Record<
+              string,
+              { handoffs?: string[]; asTools?: string[] }
+            >;
 
             const existing = await adminConfig.get('chatAgents');
             const configs: import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig[] =
-              Array.isArray(existing) ? [...(existing as import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig[])] : [];
+              Array.isArray(existing)
+                ? [
+                    ...(existing as import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig[]),
+                  ]
+                : [];
             const existingIds = new Set(configs.map(c => c.agentId));
             let added = 0;
 
@@ -191,7 +198,7 @@ export function registerAdminConfigRoutes(
                 published: false,
                 visible: false,
                 featured: false,
-                lifecycleStage: 'registered',
+                lifecycleStage: 'review',
                 version: 1,
                 promotedAt: new Date().toISOString(),
                 promotedBy: userRef,
@@ -207,7 +214,9 @@ export function registerAdminConfigRoutes(
               if (!agentKeys.has(c.agentId)) return false;
               const cfg = agentMap[c.agentId];
               if (!cfg || typeof cfg !== 'object') return false;
-              return deriveRoleFromTopology(c.agentId, agentMap) !== 'specialist';
+              return (
+                deriveRoleFromTopology(c.agentId, agentMap) !== 'specialist'
+              );
             });
             const removed = before - cleaned.length;
 
@@ -216,7 +225,8 @@ export function registerAdminConfigRoutes(
               await adminConfig.set('chatAgents', final, userRef);
               const parts: string[] = [];
               if (added > 0) parts.push(`registered ${added} new`);
-              if (removed > 0) parts.push(`removed ${removed} chatAgent entries`);
+              if (removed > 0)
+                parts.push(`removed ${removed} chatAgent entries`);
               logger.info(
                 `[AdminConfig] chatAgent entries: ${parts.join(', ')}`,
               );
