@@ -257,8 +257,12 @@ export function KagentiToolDetailDrawer({
               detailLoading={detailState.detailLoading}
               detailError={detailState.detailError}
               spec={spec}
-              protocol={tool.labels?.protocol}
-              framework={tool.labels?.framework}
+              protocol={
+                Array.isArray(tool.labels?.protocol)
+                  ? tool.labels.protocol[0]
+                  : (tool.labels?.protocol ?? null)
+              }
+              framework={tool.labels?.framework ?? null}
             />
           </CardContent>
         </Card>

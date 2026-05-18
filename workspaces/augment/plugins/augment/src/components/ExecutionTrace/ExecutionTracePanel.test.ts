@@ -15,7 +15,7 @@
  */
 
 import type { StreamingState } from '../StreamingMessage/StreamingMessage.types';
-import { buildTraceSpans, type TraceSpan } from './ExecutionTracePanel';
+import { buildTraceSpans } from './ExecutionTracePanel';
 
 function createBaseState(
   overrides: Partial<StreamingState> = {},

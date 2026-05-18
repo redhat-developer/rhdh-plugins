@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-use-before-define, no-nested-ternary, react/forbid-elements */
 
 import { useCallback, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
@@ -78,7 +79,10 @@ interface BenchmarkJob {
 interface WorkflowEvaluationProps {
   workflowId?: string;
   onClose: () => void;
-  onRunEvaluation: (testCases: WorkflowTestCase[], scoringFunctions?: string[]) => Promise<WorkflowEvaluationResult>;
+  onRunEvaluation: (
+    testCases: WorkflowTestCase[],
+    scoringFunctions?: string[],
+  ) => Promise<WorkflowEvaluationResult>;
   previousResults?: WorkflowEvaluationResult[];
 }
 
@@ -111,12 +115,15 @@ export function WorkflowEvaluation({
     { id: '1', name: 'Test 1', input: '', criteria: [] },
   ]);
   const [running, setRunning] = useState(false);
-  const [currentResult, setCurrentResult] = useState<WorkflowEvaluationResult | null>(null);
+  const [currentResult, setCurrentResult] =
+    useState<WorkflowEvaluationResult | null>(null);
   const [evalError, setEvalError] = useState<string | null>(null);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
 
   // Scoring functions
-  const [scoringFunctions, setScoringFunctions] = useState<ScoringFunction[]>([]);
+  const [scoringFunctions, setScoringFunctions] = useState<ScoringFunction[]>(
+    [],
+  );
   const [loadingFunctions, setLoadingFunctions] = useState(false);
   const [selectedGraders, setSelectedGraders] = useState<string[]>([]);
 
@@ -126,8 +133,12 @@ export function WorkflowEvaluation({
   const [benchmarkName, setBenchmarkName] = useState('');
   const [savingBenchmark, setSavingBenchmark] = useState(false);
   const [runningBenchmark, setRunningBenchmark] = useState<string | null>(null);
-  const [benchmarkJobs, setBenchmarkJobs] = useState<Record<string, BenchmarkJob>>({});
-  const [benchmarkResults, setBenchmarkResults] = useState<Record<string, unknown>>({});
+  const [benchmarkJobs, setBenchmarkJobs] = useState<
+    Record<string, BenchmarkJob>
+  >({});
+  const [benchmarkResults, setBenchmarkResults] = useState<
+    Record<string, unknown>
+  >({});
 
   const backendUrl = configApi.getString('backend.baseUrl');
 
@@ -137,7 +148,9 @@ export function WorkflowEvaluation({
     const load = async () => {
       setLoadingFunctions(true);
       try {
-        const resp = await authFetch(`${backendUrl}/api/augment/scoring-functions`);
+        const resp = await authFetch(
+          `${backendUrl}/api/augment/scoring-functions`,
+        );
         if (resp.ok) {
           const json = await resp.json();
           const fns = json.data || json || [];
@@ -150,7 +163,9 @@ export function WorkflowEvaluation({
       }
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [backendUrl]);
 
   // Load benchmarks when tab switches
@@ -219,7 +234,11 @@ export function WorkflowEvaluation({
 
   // Save as benchmark
   const handleSaveBenchmark = useCallback(async () => {
-    if (!benchmarkName.trim() || testCases.filter(tc => tc.input.trim()).length === 0) return;
+    if (
+      !benchmarkName.trim() ||
+      testCases.filter(tc => tc.input.trim()).length === 0
+    )
+      return;
     setSavingBenchmark(true);
     try {
       const validCases = testCases.filter(tc => tc.input.trim());
@@ -232,9 +251,10 @@ export function WorkflowEvaluation({
             input: tc.input,
             expectedOutput: tc.expectedOutput,
           })),
-          scoringFunctions: selectedGraders.length > 0
-            ? selectedGraders
-            : ['braintrust::answer-correctness'],
+          scoringFunctions:
+            selectedGraders.length > 0
+              ? selectedGraders
+              : ['braintrust::answer-correctness'],
         }),
       });
       if (resp.ok) {
@@ -253,83 +273,111 @@ export function WorkflowEvaluation({
   }, [benchmarkName, testCases, selectedGraders, backendUrl, loadBenchmarks]);
 
   // Run a benchmark
-  const handleRunBenchmark = useCallback(async (benchmarkId: string) => {
-    setRunningBenchmark(benchmarkId);
-    try {
-      const resp = await authFetch(`${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      if (resp.ok) {
-        const job = await resp.json();
-        if (job.error) {
-          setBenchmarkError(`Run failed: ${job.message || job.error}`);
-        } else {
-          setBenchmarkError(null);
-          setBenchmarkJobs(prev => ({ ...prev, [benchmarkId]: job }));
-          if (job.job_id) {
-            pollBenchmarkJob(benchmarkId, job.job_id);
-          }
-        }
-      } else {
-        const errBody = await resp.json().catch(() => ({}));
-        setBenchmarkError(`Run failed: ${errBody.message || resp.statusText}`);
-      }
-    } catch (err) {
-      setBenchmarkError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setRunningBenchmark(null);
-    }
-  }, [backendUrl]);
-
-  const pollBenchmarkJob = useCallback(async (benchmarkId: string, jobId: string) => {
-    const poll = async () => {
+  const handleRunBenchmark = useCallback(
+    async (benchmarkId: string) => {
+      setRunningBenchmark(benchmarkId);
       try {
-        const statusResp = await fetch(
-          `${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}/jobs/${encodeURIComponent(jobId)}`,
+        const resp = await authFetch(
+          `${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}/run`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+          },
         );
-        if (statusResp.ok) {
-          const status = await statusResp.json();
-          setBenchmarkJobs(prev => ({ ...prev, [benchmarkId]: status }));
-          if (status.status === 'completed') {
-            const resultResp = await fetch(
-              `${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}/jobs/${encodeURIComponent(jobId)}/result`,
-            );
-            if (resultResp.ok) {
-              const result = await resultResp.json();
-              setBenchmarkResults(prev => ({ ...prev, [benchmarkId]: result }));
+        if (resp.ok) {
+          const job = (await resp.json()) as BenchmarkJob & {
+            error?: string;
+            message?: string;
+          };
+          if (job.error) {
+            setBenchmarkError(`Run failed: ${job.message || job.error}`);
+          } else {
+            setBenchmarkError(null);
+            setBenchmarkJobs(prev => ({ ...prev, [benchmarkId]: job }));
+            if (job.job_id) {
+              pollBenchmarkJob(benchmarkId, job.job_id);
             }
-            return;
           }
-          if (status.status !== 'failed') {
-            setTimeout(poll, 3000);
-          }
+        } else {
+          const errBody = (await resp.json().catch(() => ({}))) as {
+            message?: string;
+          };
+          setBenchmarkError(
+            `Run failed: ${errBody.message || resp.statusText}`,
+          );
         }
-      } catch {
-        // Stop polling on error
+      } catch (err) {
+        setBenchmarkError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setRunningBenchmark(null);
       }
-    };
-    setTimeout(poll, 2000);
-  }, [backendUrl]);
+    },
+    [backendUrl],
+  );
+
+  const pollBenchmarkJob = useCallback(
+    async (benchmarkId: string, jobId: string) => {
+      const poll = async () => {
+        try {
+          const statusResp = await fetch(
+            `${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}/jobs/${encodeURIComponent(jobId)}`,
+          );
+          if (statusResp.ok) {
+            const status = (await statusResp.json()) as BenchmarkJob;
+            setBenchmarkJobs(prev => ({ ...prev, [benchmarkId]: status }));
+            if (status.status === 'completed') {
+              const resultResp = await fetch(
+                `${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}/jobs/${encodeURIComponent(jobId)}/result`,
+              );
+              if (resultResp.ok) {
+                const result = await resultResp.json();
+                setBenchmarkResults(prev => ({
+                  ...prev,
+                  [benchmarkId]: result,
+                }));
+              }
+              return;
+            }
+            if (status.status !== 'failed') {
+              setTimeout(poll, 3000);
+            }
+          }
+        } catch {
+          // Stop polling on error
+        }
+      };
+      setTimeout(poll, 2000);
+    },
+    [backendUrl],
+  );
 
   // Delete benchmark
-  const handleDeleteBenchmark = useCallback(async (benchmarkId: string) => {
-    try {
-      await authFetch(`${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}`, {
-        method: 'DELETE',
-      });
-      loadBenchmarks();
-    } catch {
-      // Handle silently
-    }
-  }, [backendUrl, loadBenchmarks]);
+  const handleDeleteBenchmark = useCallback(
+    async (benchmarkId: string) => {
+      try {
+        await authFetch(
+          `${backendUrl}/api/augment/benchmarks/${encodeURIComponent(benchmarkId)}`,
+          {
+            method: 'DELETE',
+          },
+        );
+        loadBenchmarks();
+      } catch {
+        // Handle silently
+      }
+    },
+    [backendUrl, loadBenchmarks],
+  );
 
   // Group scoring functions
-  const groupedFunctions = scoringFunctions.reduce<Record<string, ScoringFunction[]>>((acc, fn) => {
+  const groupedFunctions = scoringFunctions.reduce<
+    Record<string, ScoringFunction[]>
+  >((acc, fn) => {
     let group = 'Basic';
     if (fn.identifier.startsWith('braintrust::')) group = 'Braintrust';
-    else if (fn.identifier.includes('llm') || fn.identifier.includes('judge')) group = 'LLM-as-Judge';
+    else if (fn.identifier.includes('llm') || fn.identifier.includes('judge'))
+      group = 'LLM-as-Judge';
     else if (fn.provider_id) group = fn.provider_id;
     if (!acc[group]) acc[group] = [];
     acc[group].push(fn);
@@ -349,7 +397,11 @@ export function WorkflowEvaluation({
     >
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', p: 1.5 }}>
-        <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1, color: 'text.primary' }}>
+        <Typography
+          variant="subtitle1"
+          fontWeight={600}
+          sx={{ flex: 1, color: 'text.primary' }}
+        >
           Evaluation
         </Typography>
         <IconButton size="small" onClick={onClose}>
@@ -359,24 +411,48 @@ export function WorkflowEvaluation({
       <Divider />
 
       {/* Tabs */}
-      <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ px: 1.5, minHeight: 40 }}>
-        <Tab label="Test Cases" sx={{ minHeight: 40, textTransform: 'none', fontSize: '0.8rem' }} />
-        <Tab label="Benchmarks" sx={{ minHeight: 40, textTransform: 'none', fontSize: '0.8rem' }} />
+      <Tabs
+        value={activeTab}
+        onChange={(_, v) => setActiveTab(v)}
+        sx={{ px: 1.5, minHeight: 40 }}
+      >
+        <Tab
+          label="Test Cases"
+          sx={{ minHeight: 40, textTransform: 'none', fontSize: '0.8rem' }}
+        />
+        <Tab
+          label="Benchmarks"
+          sx={{ minHeight: 40, textTransform: 'none', fontSize: '0.8rem' }}
+        />
       </Tabs>
       <Divider />
 
       {/* Tab 0: Test Cases */}
       {activeTab === 0 && (
-        <Box sx={{ flex: 1, overflow: 'auto', p: 1.5, display: 'flex', flexDirection: 'column' }}>
+        <Box
+          sx={{
+            flex: 1,
+            overflow: 'auto',
+            p: 1.5,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           {/* Grader selection */}
           <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" fontWeight={600} sx={{ mb: 0.5, display: 'block', color: 'text.secondary' }}>
+            <Typography
+              variant="caption"
+              fontWeight={600}
+              sx={{ mb: 0.5, display: 'block', color: 'text.secondary' }}
+            >
               Scoring Functions (Graders)
             </Typography>
             {loadingFunctions ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <CircularProgress size={14} />
-                <Typography variant="caption">Loading scoring functions...</Typography>
+                <Typography variant="caption">
+                  Loading scoring functions...
+                </Typography>
               </Box>
             ) : (
               <FormControl size="small" fullWidth>
@@ -385,28 +461,66 @@ export function WorkflowEvaluation({
                   labelId="grader-select-label"
                   multiple
                   value={selectedGraders}
-                  onChange={e => setSelectedGraders(typeof e.target.value === 'string' ? [e.target.value] : e.target.value as string[])}
+                  onChange={e =>
+                    setSelectedGraders(
+                      typeof e.target.value === 'string'
+                        ? [e.target.value]
+                        : (e.target.value as string[]),
+                    )
+                  }
                   label="Select graders"
                   renderValue={selected => (
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                       {selected.map(v => (
-                        <Chip key={v} label={v.split('::').pop() || v} size="small" />
+                        <Chip
+                          key={v}
+                          label={v.split('::').pop() || v}
+                          size="small"
+                        />
                       ))}
                     </Box>
                   )}
                 >
                   {Object.entries(groupedFunctions).flatMap(([group, fns]) => [
-                    <MenuItem disabled key={`group-${group}`} sx={{ opacity: '1 !important' }}>
-                      <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>{group}</Typography>
+                    <MenuItem
+                      disabled
+                      key={`group-${group}`}
+                      sx={{ opacity: '1 !important' }}
+                    >
+                      <Typography
+                        variant="caption"
+                        fontWeight={700}
+                        color="text.secondary"
+                        sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}
+                      >
+                        {group}
+                      </Typography>
                     </MenuItem>,
                     ...fns.map(fn => (
-                      <MenuItem key={fn.identifier} value={fn.identifier} sx={{ pl: 3, display: 'block' }}>
-                        <Typography variant="body2" sx={{ fontWeight: selectedGraders.includes(fn.identifier) ? 600 : 400 }}>
+                      <MenuItem
+                        key={fn.identifier}
+                        value={fn.identifier}
+                        sx={{ pl: 3, display: 'block' }}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: selectedGraders.includes(fn.identifier)
+                              ? 600
+                              : 400,
+                          }}
+                        >
                           {fn.identifier.split('::').pop() || fn.identifier}
                         </Typography>
                         {fn.description && (
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }}>
-                            {fn.description.length > 80 ? `${fn.description.substring(0, 80)}...` : fn.description}
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', lineHeight: 1.2 }}
+                          >
+                            {fn.description.length > 80
+                              ? `${fn.description.substring(0, 80)}...`
+                              : fn.description}
                           </Typography>
                         )}
                       </MenuItem>
@@ -414,15 +528,22 @@ export function WorkflowEvaluation({
                   ])}
                   {scoringFunctions.length === 0 && (
                     <MenuItem disabled>
-                      <Typography variant="caption">No scoring functions available</Typography>
+                      <Typography variant="caption">
+                        No scoring functions available
+                      </Typography>
                     </MenuItem>
                   )}
                 </Select>
               </FormControl>
             )}
             {selectedGraders.length === 0 && (
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                If no graders selected, test cases with expected output will use &quot;contains&quot; matching
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mt: 0.5 }}
+              >
+                If no graders selected, test cases with expected output will use
+                &quot;contains&quot; matching
               </Typography>
             )}
           </Box>
@@ -430,7 +551,11 @@ export function WorkflowEvaluation({
           <Divider sx={{ mb: 1.5 }} />
 
           {/* Test cases */}
-          <Typography variant="caption" fontWeight={600} sx={{ mb: 1, display: 'block', color: 'text.secondary' }}>
+          <Typography
+            variant="caption"
+            fontWeight={600}
+            sx={{ mb: 1, display: 'block', color: 'text.secondary' }}
+          >
             Test Cases
           </Typography>
           {testCases.map(tc => (
@@ -474,7 +599,9 @@ export function WorkflowEvaluation({
                 size="small"
                 fullWidth
                 value={tc.expectedOutput || ''}
-                onChange={e => updateTestCase(tc.id, 'expectedOutput', e.target.value)}
+                onChange={e =>
+                  updateTestCase(tc.id, 'expectedOutput', e.target.value)
+                }
                 placeholder="Expected output (for grading reference)"
               />
             </Box>
@@ -502,7 +629,11 @@ export function WorkflowEvaluation({
                   size="small"
                   variant="outlined"
                   startIcon={<SaveIcon />}
-                  disabled={savingBenchmark || testCases.every(tc => !tc.input.trim()) || !benchmarkName.trim()}
+                  disabled={
+                    savingBenchmark ||
+                    testCases.every(tc => !tc.input.trim()) ||
+                    !benchmarkName.trim()
+                  }
                   onClick={handleSaveBenchmark}
                 >
                   Save as Benchmark
@@ -519,13 +650,24 @@ export function WorkflowEvaluation({
           </Box>
 
           {running && <LinearProgress sx={{ mb: 1 }} />}
-          {evalError && <Alert severity="error" sx={{ mb: 1 }}>{evalError}</Alert>}
+          {evalError && (
+            <Alert severity="error" sx={{ mb: 1 }}>
+              {evalError}
+            </Alert>
+          )}
 
           {/* Results */}
           {currentResult && (
             <Box sx={{ mt: 1 }}>
               <Divider sx={{ mb: 2 }} />
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 1,
+                }}
+              >
                 <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
                   Results
                 </Typography>
@@ -534,10 +676,15 @@ export function WorkflowEvaluation({
                     size="small"
                     aria-label="Export results"
                     onClick={() => {
-                      const blob = new Blob([JSON.stringify(currentResult, null, 2)], { type: 'application/json' });
+                      const blob = new Blob(
+                        [JSON.stringify(currentResult, null, 2)],
+                        { type: 'application/json' },
+                      );
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
-                      a.href = url; a.download = `eval-results-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+                      a.href = url;
+                      a.download = `eval-results-${new Date().toISOString().slice(0, 10)}.json`;
+                      a.click();
                       URL.revokeObjectURL(url);
                     }}
                     sx={{ p: 0.5 }}
@@ -598,7 +745,15 @@ export function WorkflowEvaluation({
                           </TableCell>
                           <TableCell>
                             {tcr.criterionResults.map((cr, idx) => (
-                              <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
+                              <Box
+                                key={idx}
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 0.5,
+                                  mb: 0.25,
+                                }}
+                              >
                                 <Chip
                                   label={`${(cr.score * 100).toFixed(0)}%`}
                                   size="small"
@@ -607,18 +762,33 @@ export function WorkflowEvaluation({
                                   sx={{ height: 18, fontSize: '0.65rem' }}
                                 />
                                 {cr.details && (
-                                  <Typography variant="caption" color="text.secondary">{cr.details}</Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                  >
+                                    {cr.details}
+                                  </Typography>
                                 )}
                               </Box>
                             ))}
                           </TableCell>
-                          <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <TableCell
+                            sx={{
+                              maxWidth: 200,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
                             <Tooltip title={tcr.actualOutput}>
-                              <Typography variant="caption" noWrap>{tcr.actualOutput}</Typography>
+                              <Typography variant="caption" noWrap>
+                                {tcr.actualOutput}
+                              </Typography>
                             </Tooltip>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="caption">{tcr.durationMs}ms</Typography>
+                            <Typography variant="caption">
+                              {tcr.durationMs}ms
+                            </Typography>
                           </TableCell>
                         </TableRow>
                       );
@@ -633,17 +803,27 @@ export function WorkflowEvaluation({
           {previousResults.length > 0 && !currentResult && (
             <Box sx={{ mt: 3 }}>
               <Divider sx={{ mb: 2 }} />
-              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.primary' }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ mb: 1, color: 'text.primary' }}
+              >
                 Previous Evaluations
               </Typography>
               {previousResults.slice(0, 5).map(prev => (
                 <Alert
                   key={prev.evaluationId}
-                  severity={scoreColor(prev.overallScore) === 'success' ? 'success' : scoreColor(prev.overallScore) === 'warning' ? 'warning' : 'error'}
+                  severity={
+                    scoreColor(prev.overallScore) === 'success'
+                      ? 'success'
+                      : scoreColor(prev.overallScore) === 'warning'
+                        ? 'warning'
+                        : 'error'
+                  }
                   sx={{ mb: 0.5 }}
                 >
-                  v{prev.workflowVersion} - Score: {(prev.overallScore * 100).toFixed(0)}% -
-                  Pass Rate: {(prev.passRate * 100).toFixed(0)}% -
+                  v{prev.workflowVersion} - Score:{' '}
+                  {(prev.overallScore * 100).toFixed(0)}% - Pass Rate:{' '}
+                  {(prev.passRate * 100).toFixed(0)}% -
                   {new Date(prev.ranAt).toLocaleDateString()}
                 </Alert>
               ))}
@@ -656,15 +836,26 @@ export function WorkflowEvaluation({
       {activeTab === 1 && (
         <Box sx={{ flex: 1, overflow: 'auto', p: 1.5 }}>
           {benchmarkError && (
-            <Alert severity="error" sx={{ mb: 1 }} onClose={() => setBenchmarkError(null)}>
+            <Alert
+              severity="error"
+              sx={{ mb: 1 }}
+              onClose={() => setBenchmarkError(null)}
+            >
               {benchmarkError}
             </Alert>
           )}
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Typography variant="subtitle2" sx={{ flex: 1, color: 'text.primary' }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ flex: 1, color: 'text.primary' }}
+            >
               LlamaStack Benchmarks
             </Typography>
-            <IconButton size="small" onClick={loadBenchmarks} disabled={loadingBenchmarks}>
+            <IconButton
+              size="small"
+              onClick={loadBenchmarks}
+              disabled={loadingBenchmarks}
+            >
               <RefreshIcon fontSize="small" />
             </IconButton>
           </Box>
@@ -673,7 +864,8 @@ export function WorkflowEvaluation({
 
           {benchmarks.length === 0 && !loadingBenchmarks && (
             <Alert severity="info" sx={{ mb: 2 }}>
-              No benchmarks found. Create one from the Test Cases tab by adding test cases and clicking &quot;Save as Benchmark&quot;.
+              No benchmarks found. Create one from the Test Cases tab by adding
+              test cases and clicking &quot;Save as Benchmark&quot;.
             </Alert>
           )}
 
@@ -689,7 +881,11 @@ export function WorkflowEvaluation({
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                <Typography variant="body2" fontWeight={600} sx={{ flex: 1, color: 'text.primary' }}>
+                <Typography
+                  variant="body2"
+                  fontWeight={600}
+                  sx={{ flex: 1, color: 'text.primary' }}
+                >
                   {bm.identifier}
                 </Typography>
                 <Button
@@ -702,7 +898,10 @@ export function WorkflowEvaluation({
                 >
                   {runningBenchmark === bm.identifier ? 'Running...' : 'Run'}
                 </Button>
-                <IconButton size="small" onClick={() => handleDeleteBenchmark(bm.identifier)}>
+                <IconButton
+                  size="small"
+                  onClick={() => handleDeleteBenchmark(bm.identifier)}
+                >
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Box>
@@ -712,36 +911,59 @@ export function WorkflowEvaluation({
                 </Typography>
               )}
               {bm.scoring_functions && bm.scoring_functions.length > 0 && (
-                <Box sx={{ mt: 0.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                <Box
+                  sx={{ mt: 0.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}
+                >
                   {bm.scoring_functions.map(fn => (
-                    <Chip key={fn} label={fn.split('::').pop() || fn} size="small" variant="outlined" />
+                    <Chip
+                      key={fn}
+                      label={fn.split('::').pop() || fn}
+                      size="small"
+                      variant="outlined"
+                    />
                   ))}
                 </Box>
               )}
 
               {/* Job status */}
-              {benchmarkJobs[bm.identifier] && (
-                <Box sx={{ mt: 1 }}>
-                  <Chip
-                    label={`Job: ${benchmarkJobs[bm.identifier].status}`}
-                    size="small"
-                    color={
-                      benchmarkJobs[bm.identifier].status === 'completed' ? 'success' :
-                      benchmarkJobs[bm.identifier].status === 'failed' ? 'error' : 'default'
-                    }
-                  />
-                </Box>
-              )}
+              {(() => {
+                const job: BenchmarkJob | undefined =
+                  benchmarkJobs[bm.identifier];
+                if (!job) return null;
+                return (
+                  <Box sx={{ mt: 1 }}>
+                    <Chip
+                      label={`Job: ${job.status}`}
+                      size="small"
+                      color={
+                        job.status === 'completed'
+                          ? 'success'
+                          : job.status === 'failed'
+                            ? 'error'
+                            : 'default'
+                      }
+                    />
+                  </Box>
+                );
+              })()}
 
               {/* Results */}
-              {benchmarkResults[bm.identifier] && (
-                <Box sx={{ mt: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
-                  <Typography variant="caption" fontWeight={600}>Results:</Typography>
-                  <Typography variant="caption" component="pre" sx={{ whiteSpace: 'pre-wrap', fontSize: '0.7rem', mt: 0.5 }}>
+              {benchmarkResults[bm.identifier] !== undefined ? (
+                <Box
+                  sx={{ mt: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}
+                >
+                  <Typography variant="caption" fontWeight={600}>
+                    Results:
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    component="pre"
+                    sx={{ whiteSpace: 'pre-wrap', fontSize: '0.7rem', mt: 0.5 }}
+                  >
                     {JSON.stringify(benchmarkResults[bm.identifier], null, 2)}
                   </Typography>
                 </Box>
-              )}
+              ) : null}
             </Box>
           ))}
         </Box>

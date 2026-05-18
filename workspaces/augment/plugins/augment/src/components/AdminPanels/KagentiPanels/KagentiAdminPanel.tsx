@@ -24,7 +24,6 @@ import { useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';

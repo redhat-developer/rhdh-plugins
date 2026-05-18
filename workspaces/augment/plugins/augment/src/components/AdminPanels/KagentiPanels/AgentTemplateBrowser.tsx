@@ -34,7 +34,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { alpha, useTheme } from '@mui/material/styles';
+import { type Theme, alpha, useTheme } from '@mui/material/styles';
 import type { Entity } from '@backstage/catalog-model';
 import { useAgentTemplates } from './useAgentTemplates';
 
@@ -103,7 +103,7 @@ function buildScaffolderUrl(entity: Entity): string {
 function defaultEmptyDescription(
   specType: string | undefined,
   tag: string | undefined,
-  theme: ReturnType<typeof useTheme>,
+  theme: Theme,
 ): React.ReactNode {
   if (specType) {
     return (

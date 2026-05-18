@@ -195,6 +195,10 @@ export interface RAGCapability {
   deleteVectorStore?(
     vectorStoreId: string,
   ): Promise<{ success: boolean; filesDeleted: number }>;
+  updateVectorStore?(
+    vectorStoreId: string,
+    updates: Record<string, unknown>,
+  ): Promise<VectorStoreInfo>;
   generateAnswer?(
     query: string,
     maxResults?: number,

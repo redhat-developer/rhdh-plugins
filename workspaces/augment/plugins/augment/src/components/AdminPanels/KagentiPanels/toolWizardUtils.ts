@@ -21,12 +21,7 @@ import type {
   KagentiServicePort,
   KagentiShipwrightConfig,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import type {
-  BuildArgRow,
-  EnvRow,
-  ToolFormState,
-  ServicePortRow,
-} from './toolWizardTypes';
+import type { EnvRow, ToolFormState, ServicePortRow } from './toolWizardTypes';
 import type { MutableRefObject } from 'react';
 
 export function nextRowId(ref: MutableRefObject<number>): number {

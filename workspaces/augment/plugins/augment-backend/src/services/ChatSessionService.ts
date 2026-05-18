@@ -218,7 +218,10 @@ export class ChatSessionService {
 
     const hasTable = await this.db.schema.hasTable(MESSAGES_TABLE);
     if (hasTable) {
-      const hasCitations = await this.db.schema.hasColumn(MESSAGES_TABLE, 'citations');
+      const hasCitations = await this.db.schema.hasColumn(
+        MESSAGES_TABLE,
+        'citations',
+      );
       if (!hasCitations) {
         try {
           await this.db.schema.alterTable(MESSAGES_TABLE, table => {
@@ -226,9 +229,14 @@ export class ChatSessionService {
           });
           this.logger.info(`Added citations column to ${MESSAGES_TABLE} table`);
         } catch (alterError) {
-          const hasCitationsNow = await this.db.schema.hasColumn(MESSAGES_TABLE, 'citations');
+          const hasCitationsNow = await this.db.schema.hasColumn(
+            MESSAGES_TABLE,
+            'citations',
+          );
           if (!hasCitationsNow) throw alterError;
-          this.logger.info(`citations column in ${MESSAGES_TABLE} was added by another instance`);
+          this.logger.info(
+            `citations column in ${MESSAGES_TABLE} was added by another instance`,
+          );
         }
       }
       this.logger.info(`Using existing ${MESSAGES_TABLE} table`);
@@ -286,7 +294,7 @@ export class ChatSessionService {
         table.text('comment').nullable();
         table
           .timestamp('created_at')
-          .defaultTo(table.client.raw('CURRENT_TIMESTAMP'));
+          .defaultTo(this.db!.raw('CURRENT_TIMESTAMP'));
       });
       this.logger.info(`Created ${FEEDBACK_TABLE} table`);
     } catch (createError) {

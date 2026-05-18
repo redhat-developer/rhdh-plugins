@@ -66,6 +66,7 @@ function mergeAgentsWithConfigs(
     const existing = configMap.get(agentId);
     rows.push({
       agentId,
+      published: existing?.published ?? false,
       visible: existing?.visible ?? true,
       featured: existing?.featured ?? false,
       order: existing?.order,
@@ -229,7 +230,10 @@ export const ChatExperiencePanel = () => {
         }}
       >
         <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: 600, color: 'text.primary' }}
+          >
             Chat Experience
           </Typography>
           <Typography
