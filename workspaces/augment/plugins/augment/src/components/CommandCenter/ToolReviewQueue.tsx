@@ -24,16 +24,27 @@ import ExtensionOutlinedIcon from '@mui/icons-material/ExtensionOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
-import type { KagentiToolSummary, AgentLifecycleStage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  KagentiToolSummary,
+  AgentLifecycleStage,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../api';
-import { pageTitleSx, pageSubtitleSx, reviewCardSx } from './commandcenter.styles';
+import {
+  pageTitleSx,
+  pageSubtitleSx,
+  reviewCardSx,
+} from './commandcenter.styles';
 import { LIFECYCLE_COLORS, STATUS_COLORS } from './commandcenter.constants';
 
-type ToolWithLifecycle = KagentiToolSummary & { published?: boolean; lifecycleStage?: AgentLifecycleStage; version?: number };
+type ToolWithLifecycle = KagentiToolSummary & {
+  published?: boolean;
+  lifecycleStage?: AgentLifecycleStage;
+  version?: number;
+};
 
 /**
- * Tool Review Queue -- shows tools pending approval (lifecycleStage === 'registered').
- * Approve promotes to 'deployed' (published), Reject demotes to 'draft'.
+ * Tool Review Queue -- shows tools pending approval (lifecycleStage === 'review').
+ * Approve promotes to 'staging', Reject demotes to 'draft'.
  */
 export function ToolReviewQueue() {
   const theme = useTheme();
@@ -47,42 +58,55 @@ export function ToolReviewQueue() {
 
   const loadTools = useCallback(() => {
     setLoading(true);
-    api.listToolsWithLifecycle()
-      .then(result => setTools(result.filter(t => t.lifecycleStage === 'registered')))
+    api
+      .listToolsWithLifecycle()
+      .then(result =>
+        setTools(result.filter(t => t.lifecycleStage === 'review')),
+      )
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [api]);
 
-  useEffect(() => { loadTools(); }, [loadTools]);
+  useEffect(() => {
+    loadTools();
+  }, [loadTools]);
 
-  const handleApprove = useCallback(async (toolId: string) => {
-    setActing(toolId);
-    try {
-      await api.promoteToolLifecycle(toolId, 'deployed');
-      setToast(`Approved and published: ${toolId}`);
-      loadTools();
-    } catch (err) {
-      setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
-    } finally {
-      setActing(null);
-    }
-  }, [api, loadTools]);
+  const handleApprove = useCallback(
+    async (toolId: string) => {
+      setActing(toolId);
+      try {
+        await api.promoteToolLifecycle(toolId, 'staging');
+        setToast(`Approved to staging: ${toolId}`);
+        loadTools();
+      } catch (err) {
+        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
+      } finally {
+        setActing(null);
+      }
+    },
+    [api, loadTools],
+  );
 
-  const handleReject = useCallback(async (toolId: string) => {
-    setActing(toolId);
-    try {
-      await api.demoteToolLifecycle(toolId, 'draft');
-      setToast(`Rejected: ${toolId} returned to draft`);
-      loadTools();
-    } catch (err) {
-      setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
-    } finally {
-      setActing(null);
-    }
-  }, [api, loadTools]);
+  const handleReject = useCallback(
+    async (toolId: string) => {
+      setActing(toolId);
+      try {
+        await api.demoteToolLifecycle(toolId, 'draft');
+        setToast(`Rejected: ${toolId} returned to draft`);
+        loadTools();
+      } catch (err) {
+        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
+      } finally {
+        setActing(null);
+      }
+    },
+    [api, loadTools],
+  );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}
+    >
       <Box>
         <Typography sx={pageTitleSx(theme)}>Tool Review Queue</Typography>
         <Typography sx={pageSubtitleSx(theme)}>
@@ -108,7 +132,10 @@ export function ToolReviewQueue() {
               filter: `drop-shadow(0 0 12px ${alpha(STATUS_COLORS.healthy, 0.5)})`,
             }}
           />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, color: 'text.primary' }}
+          >
             All Clear
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -128,8 +155,8 @@ export function ToolReviewQueue() {
                     width: 40,
                     height: 40,
                     borderRadius: '50%',
-                    bgcolor: alpha(LIFECYCLE_COLORS.registered, isDark ? 0.2 : 0.1),
-                    color: LIFECYCLE_COLORS.registered,
+                    bgcolor: alpha(LIFECYCLE_COLORS.review, isDark ? 0.2 : 0.1),
+                    color: LIFECYCLE_COLORS.review,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -139,11 +166,22 @@ export function ToolReviewQueue() {
                   <ExtensionOutlinedIcon sx={{ fontSize: 20 }} />
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '0.9rem', color: 'text.primary' }}>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                      color: 'text.primary',
+                    }}
+                  >
                     {tool.name}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                    {tool.namespace} {tool.labels?.framework ? `• ${tool.labels.framework}` : ''}
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary', fontSize: '0.75rem' }}
+                  >
+                    {tool.namespace}{' '}
+                    {tool.labels?.framework ? `• ${tool.labels.framework}` : ''}
                     {tool.description ? ` • ${tool.description}` : ''}
                   </Typography>
                 </Box>
@@ -197,7 +235,12 @@ export function ToolReviewQueue() {
         onClose={() => setToast(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={() => setToast(null)} severity="info" variant="filled" sx={{ width: '100%' }}>
+        <Alert
+          onClose={() => setToast(null)}
+          severity="info"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
           {toast}
         </Alert>
       </Snackbar>

@@ -131,7 +131,12 @@ export function MarketplacePage({
   const exploreAgents = useMemo(() => {
     const lc = search.toLowerCase();
     return agents.filter(a => {
-      if (a.lifecycleStage !== 'deployed' && a.published !== true) return false;
+      if (
+        a.lifecycleStage !== 'production' &&
+        (a.lifecycleStage as string) !== 'deployed' &&
+        a.published !== true
+      )
+        return false;
       if (
         lc &&
         !a.name.toLowerCase().includes(lc) &&
@@ -150,7 +155,10 @@ export function MarketplacePage({
   const exploreTools = useMemo(
     () =>
       tools.filter(
-        t => t.lifecycleStage === 'deployed' || t.published === true,
+        t =>
+          t.lifecycleStage === 'production' ||
+          t.lifecycleStage === 'deployed' ||
+          t.published === true,
       ),
     [tools],
   );

@@ -28,22 +28,20 @@ import Tooltip from '@mui/material/Tooltip';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
+import Skeleton from '@mui/material/Skeleton';
 import { useTheme, alpha } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
-import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  ChatAgent,
+  AgentLifecycleStage,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { normalizeLifecycleStage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
-import { statusChipColor as statusColor } from './kagentiDisplayUtils';
-import { AgentDetailsTab } from './AgentDetailsTab';
-import { AgentStatusTab } from './AgentStatusTab';
-import { AgentResourceTab } from './AgentResourceTab';
-import { AgentCardTab } from './AgentCardTab';
-import { useKagentiAgentDetail } from './useKagentiAgentDetail';
 import {
   glassSurface,
   borderRadius,
@@ -53,7 +51,7 @@ import {
 } from '../../../theme/tokens';
 import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
 
-type LifecycleTab = 'overview' | 'design' | 'test' | 'build' | 'card';
+type DetailTab = 'overview' | 'test';
 
 const LIFECYCLE_STAGES = [
   'Draft',
@@ -63,10 +61,7 @@ const LIFECYCLE_STAGES = [
   'Retired',
 ];
 
-function getLifecycleStep(
-  _status: string,
-  lifecycleStage?: string | null,
-): number {
+function getLifecycleStep(lifecycleStage?: string | null): number {
   if (lifecycleStage === 'retired') return 4;
   if (lifecycleStage === 'production' || lifecycleStage === 'deployed')
     return 3;
@@ -75,72 +70,69 @@ function getLifecycleStep(
   return 0;
 }
 
-export interface AgentLifecycleDetailProps {
-  agent: KagentiAgentSummary;
+export interface WorkflowAgentDetailProps {
+  agentId: string;
   onBack: () => void;
   onChatWithAgent?: (agentId: string) => void;
 }
 
 /**
- * Agent Detail view structured around the development lifecycle.
- * Tabs: Overview | Design | Test | Build | Agent Card
+ * Detail view for workflow-builder agents (created via the no-code UI
+ * with the Responses API). Mirrors the structure and styling of
+ * AgentLifecycleDetail but without Kagenti-specific tabs (Build,
+ * Design, Agent Card) since those are for Kagenti-managed agents.
  */
-export function AgentLifecycleDetail({
-  agent,
+export function WorkflowAgentDetail({
+  agentId,
   onBack,
   onChatWithAgent,
-}: AgentLifecycleDetailProps) {
+}: WorkflowAgentDetailProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
-  const [activeTab, setActiveTab] = useState<LifecycleTab>('overview');
+  const [activeTab, setActiveTab] = useState<DetailTab>('overview');
 
-  const {
-    agentCard,
-    agentDetail,
-    buildInfo,
-    routeStatus,
-    loading,
-    error,
-    setError,
-    buildTriggering,
-    copied,
-    hasBuild,
-    loadBuildInfo,
-    handleTriggerBuild,
-    handleCopy,
-  } = useKagentiAgentDetail(api, agent);
-
-  const agentId = `${agent.namespace}/${agent.name}`;
-  const displayName = agentCard?.name || agent.name;
-
-  const [lifecycleStage, setLifecycleStage] = useState<string>('draft');
+  const [agent, setAgent] = useState<ChatAgent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishToast, setPublishToast] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     api
       .listAgents()
       .then(agents => {
         if (cancelled) return;
         const match = agents.find(a => a.id === agentId);
-        setLifecycleStage(normalizeLifecycleStage(match?.lifecycleStage));
+        if (match) {
+          setAgent(match);
+        } else {
+          setError(`Agent "${agentId}" not found`);
+        }
       })
-      .catch(() => {});
+      .catch(err => {
+        if (!cancelled)
+          setError(err instanceof Error ? err.message : 'Failed to load agent');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => {
       cancelled = true;
     };
   }, [api, agentId]);
 
+  const lifecycleStage = normalizeLifecycleStage(agent?.lifecycleStage);
+
   const nextTransition = useMemo(() => {
-    const stage = lifecycleStage;
     const promoteIcon = <PublishIcon />;
     const demoteIcon = <CloudOffIcon />;
     const map: Record<
       string,
       {
-        target: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
+        target: AgentLifecycleStage;
         label: string;
         action: 'promote' | 'demote';
         variant: 'outlined' | 'contained';
@@ -189,7 +181,7 @@ export function AgentLifecycleDetail({
         icon: demoteIcon,
       },
     };
-    return map[stage] ?? map.draft;
+    return map[lifecycleStage] ?? map.draft;
   }, [lifecycleStage]);
 
   const handleLifecycleAction = useCallback(async () => {
@@ -197,11 +189,25 @@ export function AgentLifecycleDetail({
     try {
       if (nextTransition.action === 'demote') {
         const result = await api.demoteAgent(agentId, nextTransition.target);
-        setLifecycleStage(result.lifecycleStage);
+        setAgent(prev =>
+          prev
+            ? {
+                ...prev,
+                lifecycleStage: result.lifecycleStage as AgentLifecycleStage,
+              }
+            : prev,
+        );
         setPublishToast(`Agent moved to ${result.lifecycleStage}`);
       } else {
         const result = await api.promoteAgent(agentId, nextTransition.target);
-        setLifecycleStage(result.lifecycleStage);
+        setAgent(prev =>
+          prev
+            ? {
+                ...prev,
+                lifecycleStage: result.lifecycleStage as AgentLifecycleStage,
+              }
+            : prev,
+        );
         setPublishToast(
           `Agent moved to ${result.lifecycleStage} (v${result.version})`,
         );
@@ -215,8 +221,72 @@ export function AgentLifecycleDetail({
     }
   }, [api, agentId, nextTransition]);
 
-  const currentStep = getLifecycleStep(agent.status, lifecycleStage);
+  const currentStep = getLifecycleStep(lifecycleStage);
   const glass = glassSurface(theme, 6);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          maxWidth: CONTENT_MAX_WIDTH,
+          width: '100%',
+          ...animations.fadeSlideIn,
+        }}
+      >
+        <Button
+          size="small"
+          startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
+          onClick={onBack}
+          sx={{
+            textTransform: 'none',
+            mb: 1.5,
+            color: theme.palette.primary.main,
+            fontWeight: 500,
+          }}
+        >
+          Agents
+        </Button>
+        <Box sx={{ ...glass, borderRadius: borderRadius.lg, p: 3, mb: 3 }}>
+          <Skeleton variant="text" width={200} height={32} />
+          <Skeleton variant="text" width={300} height={20} sx={{ mt: 1 }} />
+          <Skeleton
+            variant="rectangular"
+            height={60}
+            sx={{ mt: 2, borderRadius: 1 }}
+          />
+        </Box>
+      </Box>
+    );
+  }
+
+  if (error || !agent) {
+    return (
+      <Box
+        sx={{
+          maxWidth: CONTENT_MAX_WIDTH,
+          width: '100%',
+          ...animations.fadeSlideIn,
+        }}
+      >
+        <Button
+          size="small"
+          startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
+          onClick={onBack}
+          sx={{
+            textTransform: 'none',
+            mb: 1.5,
+            color: theme.palette.primary.main,
+            fontWeight: 500,
+          }}
+        >
+          Agents
+        </Button>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error || 'Agent not found'}
+        </Alert>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -228,7 +298,6 @@ export function AgentLifecycleDetail({
         '@media (prefers-reduced-motion: reduce)': reducedMotion,
       }}
     >
-      {/* Breadcrumb back */}
       <Button
         size="small"
         startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
@@ -255,7 +324,6 @@ export function AgentLifecycleDetail({
           gap: 2,
         }}
       >
-        {/* Top: Name + Status + Actions */}
         <Box
           sx={{
             display: 'flex',
@@ -276,25 +344,29 @@ export function AgentLifecycleDetail({
                   color: 'text.primary',
                 }}
               >
-                {displayName}
+                {agent.name}
               </Typography>
-              <Chip
-                label={agent.status}
-                size="small"
-                color={statusColor(agent.status)}
-              />
-              {lifecycleStage && (
+              {agent.status && (
                 <Chip
-                  label={lifecycleStage}
+                  label={agent.status}
                   size="small"
-                  variant="outlined"
-                  sx={{
-                    height: 22,
-                    fontSize: '0.7rem',
-                    textTransform: 'capitalize',
-                  }}
+                  color={
+                    agent.status.toLowerCase() === 'ready'
+                      ? 'success'
+                      : 'default'
+                  }
                 />
               )}
+              <Chip
+                label={lifecycleStage}
+                size="small"
+                variant="outlined"
+                sx={{
+                  height: 22,
+                  fontSize: '0.7rem',
+                  textTransform: 'capitalize',
+                }}
+              />
             </Box>
             <Box
               sx={{
@@ -304,26 +376,22 @@ export function AgentLifecycleDetail({
                 flexWrap: 'wrap',
               }}
             >
-              <Typography variant="caption" color="text.secondary">
-                {agent.namespace}
-              </Typography>
-              {agent.labels?.framework && (
+              <Chip
+                label={
+                  agent.framework === 'workflow-builder'
+                    ? 'Workflow Agent'
+                    : 'Responses API'
+                }
+                size="small"
+                variant="outlined"
+                sx={{ height: 22, fontSize: '0.7rem' }}
+              />
+              {agent.framework && (
                 <Chip
-                  label={agent.labels.framework}
+                  label={agent.framework}
                   size="small"
                   variant="outlined"
                   color="info"
-                  sx={{ height: 22, fontSize: '0.7rem' }}
-                />
-              )}
-              {agent.labels?.protocol && (
-                <Chip
-                  label={[agent.labels.protocol]
-                    .flat()
-                    .join(', ')
-                    .toUpperCase()}
-                  size="small"
-                  variant="outlined"
                   sx={{ height: 22, fontSize: '0.7rem' }}
                 />
               )}
@@ -391,20 +459,6 @@ export function AgentLifecycleDetail({
                 </Button>
               </Tooltip>
             )}
-            {hasBuild && (
-              <Tooltip title="Trigger a new container image build">
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<PlayArrowIcon />}
-                  disabled={buildTriggering}
-                  onClick={() => void handleTriggerBuild()}
-                  sx={{ textTransform: 'none', borderRadius: borderRadius.sm }}
-                >
-                  {buildTriggering ? 'Building...' : 'Rebuild'}
-                </Button>
-              </Tooltip>
-            )}
             {onChatWithAgent && (
               <Button
                 size="small"
@@ -443,13 +497,7 @@ export function AgentLifecycleDetail({
         </Box>
       </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Lifecycle Tabs */}
+      {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs
           value={activeTab}
@@ -467,53 +515,151 @@ export function AgentLifecycleDetail({
           }}
         >
           <Tab label="Overview" value="overview" />
-          <Tab label="Design" value="design" />
           <Tab label="Test" value="test" />
-          <Tab label="Build" value="build" />
-          <Tab label="Agent Card" value="card" />
         </Tabs>
       </Box>
 
       {/* Tab Content */}
       {activeTab === 'overview' && (
-        <AgentDetailsTab
-          agent={agent}
-          agentDetail={agentDetail}
-          loading={loading}
-          routeStatus={routeStatus}
-          copied={copied}
-          onCopy={handleCopy}
-        />
-      )}
+        <Box sx={{ ...glass, borderRadius: borderRadius.lg, p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <InfoOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              Agent Information
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '140px 1fr',
+              gap: 1.5,
+              rowGap: 1,
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontWeight: 600 }}
+            >
+              ID
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+            >
+              {agent.id}
+            </Typography>
 
-      {activeTab === 'design' && (
-        <AgentResourceTab
-          agentDetail={agentDetail}
-          loading={loading}
-          copied={copied}
-          onCopy={handleCopy}
-        />
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontWeight: 600 }}
+            >
+              Name
+            </Typography>
+            <Typography variant="body2">{agent.name}</Typography>
+
+            {agent.description && (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600 }}
+                >
+                  Description
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {agent.description}
+                </Typography>
+              </>
+            )}
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontWeight: 600 }}
+            >
+              Type
+            </Typography>
+            <Typography variant="body2">
+              {agent.framework === 'workflow-builder'
+                ? 'Workflow Agent (No-Code Builder)'
+                : 'Responses API Agent'}
+            </Typography>
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontWeight: 600 }}
+            >
+              Lifecycle Stage
+            </Typography>
+            <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+              {lifecycleStage}
+            </Typography>
+
+            {agent.promotedAt && (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600 }}
+                >
+                  Last Promoted
+                </Typography>
+                <Typography variant="body2">
+                  {new Date(agent.promotedAt).toLocaleString()}
+                </Typography>
+              </>
+            )}
+
+            {agent.promotedBy && (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600 }}
+                >
+                  Promoted By
+                </Typography>
+                <Typography variant="body2">{agent.promotedBy}</Typography>
+              </>
+            )}
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontWeight: 600 }}
+            >
+              Default Agent
+            </Typography>
+            <Typography variant="body2">
+              {agent.isDefault ? 'Yes' : 'No'}
+            </Typography>
+
+            {agent.agentRole && (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600 }}
+                >
+                  Role
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ textTransform: 'capitalize' }}
+                >
+                  {agent.agentRole}
+                </Typography>
+              </>
+            )}
+          </Box>
+        </Box>
       )}
 
       {activeTab === 'test' && (
-        <InlineAgentChat agentId={agentId} agentName={displayName} />
-      )}
-
-      {activeTab === 'build' && (
-        <AgentStatusTab
-          agent={agent}
-          agentDetail={agentDetail}
-          buildInfo={buildInfo}
-          loading={loading}
-          buildTriggering={buildTriggering}
-          hasBuild={hasBuild}
-          onRefreshBuild={() => void loadBuildInfo()}
-          onTriggerBuild={() => void handleTriggerBuild()}
-        />
-      )}
-
-      {activeTab === 'card' && (
-        <AgentCardTab agentCard={agentCard} loading={loading} />
+        <InlineAgentChat agentId={agentId} agentName={agent.name} />
       )}
 
       <Snackbar
@@ -526,10 +672,6 @@ export function AgentLifecycleDetail({
     </Box>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Inline chat for the Test tab
-// ---------------------------------------------------------------------------
 
 function InlineAgentChat({
   agentId,
@@ -595,7 +737,7 @@ function InlineAgentChat({
     <Box
       sx={{
         height: 420,
-        border: `1px solid`,
+        border: '1px solid',
         borderColor: 'divider',
         borderRadius: 2,
         overflow: 'hidden',
@@ -606,7 +748,6 @@ function InlineAgentChat({
           : theme.palette.background.paper,
       }}
     >
-      {/* Messages area */}
       <Box
         sx={{
           flex: 1,
@@ -674,14 +815,12 @@ function InlineAgentChat({
           </Box>
         )}
       </Box>
-
-      {/* Input area */}
       <Box
         sx={{
           display: 'flex',
           gap: 1,
           p: 1.5,
-          borderTop: `1px solid`,
+          borderTop: '1px solid',
           borderColor: 'divider',
         }}
       >

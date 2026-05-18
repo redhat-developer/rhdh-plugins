@@ -364,13 +364,13 @@ export interface PromptCard {
 export interface ChatAgentConfig {
   /** Agent identifier: "namespace/name" */
   agentId: string;
-  /** Whether this agent is published to the end-user catalog (derived from lifecycleStage === 'deployed') */
+  /** Whether this agent is published to the end-user catalog (derived from lifecycleStage === 'production') */
   published: boolean;
   /** Whether this agent appears in end-user chat (only applies when published) */
   visible: boolean;
   /** Whether this agent is featured prominently on the welcome screen */
   featured: boolean;
-  /** Lifecycle stage: draft → registered → deployed */
+  /** Lifecycle stage: draft → review → staging → production → retired */
   lifecycleStage?: AgentLifecycleStage;
   /** Promotion version — incremented each time the agent is promoted forward */
   version?: number;
@@ -402,11 +402,11 @@ export interface ChatAgentConfig {
 export interface ChatToolConfig {
   /** Tool identifier: "namespace/name" */
   toolId: string;
-  /** Whether this tool is published to the end-user catalog (derived from lifecycleStage === 'deployed') */
+  /** Whether this tool is published to the end-user catalog (derived from lifecycleStage === 'production') */
   published: boolean;
   /** Whether this tool appears in end-user listings (only applies when published) */
   visible: boolean;
-  /** Lifecycle stage: draft → registered → deployed */
+  /** Lifecycle stage: draft → review → staging → production → retired */
   lifecycleStage?: AgentLifecycleStage;
   /** Promotion version — incremented each time the tool is promoted forward */
   version?: number;
@@ -448,15 +448,114 @@ export interface PromptGroup {
 /**
  * Lifecycle stage of an agent in the promotion pipeline.
  *
- * Inspired by the AgentOps Lifecycle:
- *   draft → registered → deployed
+ *   draft → review → staging → production → retired
  *
- * - **draft**: Agent exists but has not been reviewed by an admin.
- * - **registered**: Admin has vetted and registered the agent as an enterprise asset.
- * - **deployed**: Agent is promoted to the end-user catalog and available for use.
+ * - **draft**: Under development. Visible only to creator/admin.
+ * - **review**: Submitted for admin review. Appears in the Review Queue.
+ * - **staging**: Approved, available for internal testing. Not visible to end users.
+ * - **production**: Live in the end-user marketplace/catalog.
+ * - **retired**: Removed from production, preserved for audit/history.
  * @public
  */
-export type AgentLifecycleStage = 'draft' | 'registered' | 'deployed';
+export type AgentLifecycleStage =
+  | 'draft'
+  | 'review'
+  | 'staging'
+  | 'production'
+  | 'retired';
+
+/** Human-readable action name for a lifecycle transition. @public */
+export type AgentLifecycleAction =
+  | 'submit'
+  | 'approve'
+  | 'reject'
+  | 'promote'
+  | 'rollback'
+  | 'retire'
+  | 'reactivate';
+
+/** A single allowed lifecycle transition. @public */
+export interface AgentLifecycleTransition {
+  from: AgentLifecycleStage;
+  to: AgentLifecycleStage;
+  action: AgentLifecycleAction;
+  label: string;
+}
+
+/** Ordered list of lifecycle stages for pipeline display. @public */
+export const LIFECYCLE_STAGE_ORDER: readonly AgentLifecycleStage[] = [
+  'draft',
+  'review',
+  'staging',
+  'production',
+  'retired',
+] as const;
+
+/** All valid lifecycle transitions with human-readable labels. @public */
+export const LIFECYCLE_TRANSITIONS: readonly AgentLifecycleTransition[] = [
+  { from: 'draft', to: 'review', action: 'submit', label: 'Submit for Review' },
+  { from: 'review', to: 'staging', action: 'approve', label: 'Approve' },
+  { from: 'review', to: 'draft', action: 'reject', label: 'Reject' },
+  {
+    from: 'staging',
+    to: 'production',
+    action: 'promote',
+    label: 'Promote to Production',
+  },
+  {
+    from: 'staging',
+    to: 'draft',
+    action: 'rollback',
+    label: 'Rollback to Draft',
+  },
+  {
+    from: 'production',
+    to: 'staging',
+    action: 'rollback',
+    label: 'Rollback to Staging',
+  },
+  { from: 'production', to: 'retired', action: 'retire', label: 'Retire' },
+  { from: 'retired', to: 'draft', action: 'reactivate', label: 'Reactivate' },
+] as const;
+
+/**
+ * Maps old 3-stage names to new 5-stage names for backward compatibility.
+ * @public
+ */
+export const LEGACY_STAGE_MAP: Record<string, AgentLifecycleStage> = {
+  registered: 'review',
+  deployed: 'production',
+};
+
+/** Returns the valid forward transitions from a given stage. @public */
+export function getAvailableTransitions(
+  stage: AgentLifecycleStage,
+): AgentLifecycleTransition[] {
+  return LIFECYCLE_TRANSITIONS.filter(t => t.from === stage);
+}
+
+/** Checks whether a transition from one stage to another is valid. @public */
+export function isValidTransition(
+  from: AgentLifecycleStage,
+  to: AgentLifecycleStage,
+): boolean {
+  return LIFECYCLE_TRANSITIONS.some(t => t.from === from && t.to === to);
+}
+
+/** Normalizes a legacy stage name to the current stage name. @public */
+export function normalizeLifecycleStage(
+  stage: string | undefined,
+): AgentLifecycleStage {
+  if (!stage) return 'draft';
+  const trimmed = stage.trim().toLocaleLowerCase('en-US');
+  if (!trimmed) return 'draft';
+  if (Object.hasOwn(LEGACY_STAGE_MAP, trimmed))
+    return LEGACY_STAGE_MAP[trimmed];
+  if ((LIFECYCLE_STAGE_ORDER as readonly string[]).includes(trimmed)) {
+    return stage as AgentLifecycleStage;
+  }
+  return 'draft';
+}
 
 /**
  * Provider-agnostic representation of a chat agent.
@@ -487,7 +586,7 @@ export interface ChatAgent {
   framework?: string;
   /** Protocol labels (e.g. "A2A", "MCP") */
   protocols?: string[];
-  /** Whether this agent is published to the end-user catalog (derived: lifecycleStage === 'deployed') */
+  /** Whether this agent is published to the end-user catalog (derived: lifecycleStage === 'production') */
   published?: boolean;
   /** Origin of this agent: 'kagenti' | 'orchestration' | 'external' */
   source?: string;
@@ -550,7 +649,8 @@ export function deriveRoleFromTopology(
   const isTarget = Object.entries(allAgents).some(
     ([k, a]) =>
       k !== agentKey &&
-      a !== null && a !== undefined &&
+      a !== null &&
+      a !== undefined &&
       ((a.handoffs ?? []).includes(agentKey) ||
         (a.asTools ?? []).includes(agentKey)),
   );

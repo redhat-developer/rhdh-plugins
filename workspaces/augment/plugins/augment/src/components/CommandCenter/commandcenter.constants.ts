@@ -37,6 +37,10 @@ export const STATUS_COLORS = {
 
 export const LIFECYCLE_COLORS = {
   draft: '#6b7280',
-  registered: '#f59e0b',
+  review: '#3b82f6',
+  staging: '#f59e0b',
+  production: '#10b981',
+  retired: '#ef4444',
+  registered: '#3b82f6',
   deployed: '#10b981',
 } as const;

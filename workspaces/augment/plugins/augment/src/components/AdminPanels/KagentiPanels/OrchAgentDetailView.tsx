@@ -32,12 +32,16 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useApi } from '@backstage/core-plugin-api';
 import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { normalizeLifecycleStage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
 import { useAdminConfig } from '../../../hooks';
 import { useEffectiveConfig } from '../../../hooks/useEffectiveConfig';
 import { agentFromConfig } from '../AgentsPanel/agentValidation';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
-import { CONTENT_MAX_WIDTH, PAGE_TITLE_SX } from '../shared/commandCenterStyles';
+import {
+  CONTENT_MAX_WIDTH,
+  PAGE_TITLE_SX,
+} from '../shared/commandCenterStyles';
 
 export interface OrchAgentDetailViewProps {
   agent: ChatAgent;
@@ -59,10 +63,16 @@ function roleChipColor(role?: string) {
 
 function lifecycleColor(stage?: string) {
   switch (stage) {
+    case 'production':
     case 'deployed':
       return 'success' as const;
+    case 'staging':
+      return 'warning' as const;
+    case 'review':
     case 'registered':
       return 'info' as const;
+    case 'retired':
+      return 'error' as const;
     default:
       return 'default' as const;
   }
@@ -81,11 +91,13 @@ export function OrchAgentDetailView({
   const { config: effectiveConfig } = useEffectiveConfig();
 
   const [lifecycleStage, setLifecycleStage] = useState<string>(
-    agent.lifecycleStage ?? 'draft',
+    normalizeLifecycleStage(agent.lifecycleStage),
   );
-  const isPublished = lifecycleStage === 'deployed';
   const [publishLoading, setPublishLoading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' | 'warning' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    severity: 'success' | 'error' | 'warning';
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -96,19 +108,79 @@ export function OrchAgentDetailView({
       .then(agents => {
         if (cancelled) return;
         const match = agents.find(a => a.id === agent.id);
-        if (match?.lifecycleStage) {
-          setLifecycleStage(match.lifecycleStage);
-        }
+        setLifecycleStage(normalizeLifecycleStage(match?.lifecycleStage));
       })
       .catch(() => {
         if (!cancelled) {
-          setToast({ message: 'Could not refresh lifecycle status — showing last known state', severity: 'warning' });
+          setToast({
+            message:
+              'Could not refresh lifecycle status — showing last known state',
+            severity: 'warning',
+          });
         }
       });
     return () => {
       cancelled = true;
     };
   }, [api, agent.id]);
+
+  const nextTransition = useMemo(() => {
+    const promoteIcon = <PublishIcon />;
+    const demoteIcon = <CloudOffIcon />;
+    const map: Record<
+      string,
+      {
+        target: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
+        label: string;
+        action: 'promote' | 'demote';
+        variant: 'outlined' | 'contained';
+        color: 'inherit' | 'primary' | 'success';
+        icon: React.ReactNode;
+      }
+    > = {
+      draft: {
+        target: 'review',
+        label: 'Submit for Review',
+        action: 'promote',
+        variant: 'contained',
+        color: 'primary',
+        icon: promoteIcon,
+      },
+      review: {
+        target: 'staging',
+        label: 'Approve to Staging',
+        action: 'promote',
+        variant: 'contained',
+        color: 'primary',
+        icon: promoteIcon,
+      },
+      staging: {
+        target: 'production',
+        label: 'Promote to Production',
+        action: 'promote',
+        variant: 'contained',
+        color: 'success',
+        icon: promoteIcon,
+      },
+      production: {
+        target: 'staging',
+        label: 'Rollback to Staging',
+        action: 'demote',
+        variant: 'outlined',
+        color: 'inherit',
+        icon: demoteIcon,
+      },
+      retired: {
+        target: 'draft',
+        label: 'Reactivate',
+        action: 'demote',
+        variant: 'outlined',
+        color: 'inherit',
+        icon: demoteIcon,
+      },
+    };
+    return map[lifecycleStage] ?? map.draft;
+  }, [lifecycleStage]);
 
   const agentConfig = useMemo(() => {
     if (!effectiveConfig) return null;
@@ -126,17 +198,23 @@ export function OrchAgentDetailView({
     return servers.map(s => ({ id: s.id, name: s.name || s.id }));
   }, [effectiveConfig]);
 
-  const handleTogglePublish = useCallback(async () => {
+  const handleLifecycleAction = useCallback(async () => {
     setPublishLoading(true);
     try {
-      if (isPublished) {
-        const result = await api.demoteAgent(agent.id, 'registered');
+      if (nextTransition.action === 'demote') {
+        const result = await api.demoteAgent(agent.id, nextTransition.target);
         setLifecycleStage(result.lifecycleStage);
-        setToast({ message: 'Agent withdrawn from catalog', severity: 'success' });
+        setToast({
+          message: `Agent moved to ${result.lifecycleStage}`,
+          severity: 'success',
+        });
       } else {
-        const result = await api.promoteAgent(agent.id, 'deployed');
+        const result = await api.promoteAgent(agent.id, nextTransition.target);
         setLifecycleStage(result.lifecycleStage);
-        setToast({ message: `Agent deployed to catalog (v${result.version})`, severity: 'success' });
+        setToast({
+          message: `Agent moved to ${result.lifecycleStage} (v${result.version})`,
+          severity: 'success',
+        });
       }
     } catch (err) {
       setToast({
@@ -146,12 +224,15 @@ export function OrchAgentDetailView({
     } finally {
       setPublishLoading(false);
     }
-  }, [api, agent.id, isPublished]);
+  }, [api, agent.id, nextTransition]);
 
   const handleDelete = useCallback(async () => {
     setError(null);
     try {
-      if (!agentsEntry?.configValue || typeof agentsEntry.configValue !== 'object') {
+      if (
+        !agentsEntry?.configValue ||
+        typeof agentsEntry.configValue !== 'object'
+      ) {
         throw new Error('Unable to load current agent configuration');
       }
       const existing = {
@@ -162,9 +243,7 @@ export function OrchAgentDetailView({
       setToast({ message: 'Agent deleted', severity: 'success' });
       onBack();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to delete agent',
-      );
+      setError(err instanceof Error ? err.message : 'Failed to delete agent');
     } finally {
       setDeleteOpen(false);
     }
@@ -204,10 +283,7 @@ export function OrchAgentDetailView({
           <Box
             sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}
           >
-            <Typography
-              variant="h5"
-              sx={PAGE_TITLE_SX}
-            >
+            <Typography variant="h5" sx={PAGE_TITLE_SX}>
               {agent.name}
             </Typography>
             <Chip
@@ -254,22 +330,20 @@ export function OrchAgentDetailView({
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', pt: 0.5 }}>
           <Button
             size="small"
-            variant={isPublished ? 'outlined' : 'contained'}
-            color={isPublished ? 'inherit' : 'success'}
+            variant={nextTransition.variant}
+            color={nextTransition.color}
             startIcon={
               publishLoading ? (
                 <CircularProgress size={14} />
-              ) : isPublished ? (
-                <CloudOffIcon />
               ) : (
-                <PublishIcon />
+                nextTransition.icon
               )
             }
             disabled={publishLoading}
-            onClick={handleTogglePublish}
+            onClick={handleLifecycleAction}
             sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
           >
-            {isPublished ? 'Withdraw' : 'Deploy to Catalog'}
+            {nextTransition.label}
           </Button>
           <Button
             size="small"
@@ -372,9 +446,7 @@ export function OrchAgentDetailView({
               agentConfig.mcpServers.map(id => (
                 <Chip
                   key={id}
-                  label={
-                    availableMcpServers.find(s => s.id === id)?.name || id
-                  }
+                  label={availableMcpServers.find(s => s.id === id)?.name || id}
                   size="small"
                   color="info"
                 />
@@ -415,8 +487,8 @@ export function OrchAgentDetailView({
 
       {!agentConfig && !error && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Agent configuration not found. It may have been deleted or the
-          config is still loading.
+          Agent configuration not found. It may have been deleted or the config
+          is still loading.
         </Alert>
       )}
 
