@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.3.5
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.5
+
 ## 7.3.4
 
 ### Patch Changes
