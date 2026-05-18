@@ -414,43 +414,43 @@ describe('getCategorizeMessages', () => {
     },
   ];
 
-  it('categorizes messages into Pinned and Recent correctly', () => {
+  it('categorizes messages into Pinned chats and Chats correctly', () => {
     const pinnedChats: string[] = ['1', '3'];
     const result = getCategorizeMessages(messages, pinnedChats, addProps);
 
-    expect(result.Pinned).toHaveLength(2);
-    expect(result.Pinned[0].text).toBe('First message');
-    expect(result.Pinned[0].id).toBe('1');
-    expect(result.Pinned[1].text).toBe('Third message');
-    expect(result.Pinned[1].id).toBe('3');
+    expect(result['Pinned chats']).toHaveLength(2);
+    expect(result['Pinned chats'][0].text).toBe('First message');
+    expect(result['Pinned chats'][0].id).toBe('1');
+    expect(result['Pinned chats'][1].text).toBe('Third message');
+    expect(result['Pinned chats'][1].id).toBe('3');
 
-    expect(result.Recent).toHaveLength(3);
-    expect(result.Recent[0].text).toBe('Second message');
-    expect(result.Recent[0].id).toBe('2');
-    expect(result.Recent[1].text).toBe('Fourth message');
-    expect(result.Recent[1].id).toBe('4');
-    expect(result.Recent[2].text).toBe('Fifth message');
-    expect(result.Recent[2].id).toBe('5');
+    expect(result.Chats).toHaveLength(3);
+    expect(result.Chats[0].text).toBe('Second message');
+    expect(result.Chats[0].id).toBe('2');
+    expect(result.Chats[1].text).toBe('Fourth message');
+    expect(result.Chats[1].id).toBe('4');
+    expect(result.Chats[2].text).toBe('Fifth message');
+    expect(result.Chats[2].id).toBe('5');
   });
 
-  it('categorizes all messages as Recent when no pinned chats', () => {
+  it('categorizes all messages as Chats when no pinned chats', () => {
     const pinnedChats: string[] = [];
     const result = getCategorizeMessages(messages, pinnedChats, addProps);
 
-    expect(result.Pinned).toHaveLength(0);
-    expect(result.Recent).toHaveLength(5);
-    expect(result.Recent[0].text).toBe('First message');
-    expect(result.Recent[4].text).toBe('Fifth message');
+    expect(result['Pinned chats']).toHaveLength(0);
+    expect(result.Chats).toHaveLength(5);
+    expect(result.Chats[0].text).toBe('First message');
+    expect(result.Chats[4].text).toBe('Fifth message');
   });
 
-  it('categorizes all messages as Pinned when all are pinned', () => {
+  it('categorizes all messages as Pinned chats when all are pinned', () => {
     const pinnedChats: string[] = ['1', '2', '3', '4', '5'];
     const result = getCategorizeMessages(messages, pinnedChats, addProps);
 
-    expect(result.Pinned).toHaveLength(5);
-    expect(result.Recent).toHaveLength(0);
-    expect(result.Pinned[0].text).toBe('First message');
-    expect(result.Pinned[4].text).toBe('Fifth message');
+    expect(result['Pinned chats']).toHaveLength(5);
+    expect(result.Chats).toHaveLength(0);
+    expect(result['Pinned chats'][0].text).toBe('First message');
+    expect(result['Pinned chats'][4].text).toBe('Fifth message');
   });
 
   it('sorts messages by last_message_timestamp in descending order', () => {
@@ -458,11 +458,11 @@ describe('getCategorizeMessages', () => {
     const result = getCategorizeMessages(messages, pinnedChats, addProps);
 
     // Messages should be sorted by timestamp descending (newest first)
-    expect(result.Recent[0].id).toBe('1'); // Most recent
-    expect(result.Recent[1].id).toBe('2');
-    expect(result.Recent[2].id).toBe('3');
-    expect(result.Recent[3].id).toBe('4');
-    expect(result.Recent[4].id).toBe('5'); // Oldest
+    expect(result.Chats[0].id).toBe('1'); // Most recent
+    expect(result.Chats[1].id).toBe('2');
+    expect(result.Chats[2].id).toBe('3');
+    expect(result.Chats[3].id).toBe('4');
+    expect(result.Chats[4].id).toBe('5'); // Oldest
   });
 
   it('uses translation function when provided', () => {
@@ -517,9 +517,9 @@ describe('getCategorizeMessages', () => {
         'newest',
       );
 
-      expect(result.Recent[0].id).toBe('b'); // timestamp 3000
-      expect(result.Recent[1].id).toBe('c'); // timestamp 2000
-      expect(result.Recent[2].id).toBe('a'); // timestamp 1000
+      expect(result.Chats[0].id).toBe('b'); // timestamp 3000
+      expect(result.Chats[1].id).toBe('c'); // timestamp 2000
+      expect(result.Chats[2].id).toBe('a'); // timestamp 1000
     });
 
     it('sorts messages by oldest first', () => {
@@ -531,9 +531,9 @@ describe('getCategorizeMessages', () => {
         'oldest',
       );
 
-      expect(result.Recent[0].id).toBe('a'); // timestamp 1000
-      expect(result.Recent[1].id).toBe('c'); // timestamp 2000
-      expect(result.Recent[2].id).toBe('b'); // timestamp 3000
+      expect(result.Chats[0].id).toBe('a'); // timestamp 1000
+      expect(result.Chats[1].id).toBe('c'); // timestamp 2000
+      expect(result.Chats[2].id).toBe('b'); // timestamp 3000
     });
 
     it('sorts messages alphabetically ascending (A-Z)', () => {
@@ -545,9 +545,9 @@ describe('getCategorizeMessages', () => {
         'alphabeticalAsc',
       );
 
-      expect(result.Recent[0].text).toBe('Alpha Chat');
-      expect(result.Recent[1].text).toBe('Beta Chat');
-      expect(result.Recent[2].text).toBe('Zeta Chat');
+      expect(result.Chats[0].text).toBe('Alpha Chat');
+      expect(result.Chats[1].text).toBe('Beta Chat');
+      expect(result.Chats[2].text).toBe('Zeta Chat');
     });
 
     it('sorts messages alphabetically descending (Z-A)', () => {
@@ -559,9 +559,9 @@ describe('getCategorizeMessages', () => {
         'alphabeticalDesc',
       );
 
-      expect(result.Recent[0].text).toBe('Zeta Chat');
-      expect(result.Recent[1].text).toBe('Beta Chat');
-      expect(result.Recent[2].text).toBe('Alpha Chat');
+      expect(result.Chats[0].text).toBe('Zeta Chat');
+      expect(result.Chats[1].text).toBe('Beta Chat');
+      expect(result.Chats[2].text).toBe('Alpha Chat');
     });
 
     it('applies sorting to both pinned and recent sections', () => {
@@ -573,19 +573,19 @@ describe('getCategorizeMessages', () => {
         'alphabeticalAsc',
       );
 
-      // Pinned section should be sorted alphabetically
-      expect(result.Pinned[0].text).toBe('Beta Chat'); // 'c'
-      expect(result.Pinned[1].text).toBe('Zeta Chat'); // 'a'
+      // Pinned chats section should be sorted alphabetically
+      expect(result['Pinned chats'][0].text).toBe('Beta Chat'); // 'c'
+      expect(result['Pinned chats'][1].text).toBe('Zeta Chat'); // 'a'
 
-      // Recent section should also be sorted
-      expect(result.Recent[0].text).toBe('Alpha Chat'); // 'b'
+      // Chats section should also be sorted
+      expect(result.Chats[0].text).toBe('Alpha Chat'); // 'b'
     });
 
     it('uses newest as default when sort option is not provided', () => {
       const result = getCategorizeMessages(sortTestMessages, [], addProps);
 
-      expect(result.Recent[0].id).toBe('b'); // timestamp 3000 (newest)
-      expect(result.Recent[2].id).toBe('a'); // timestamp 1000 (oldest)
+      expect(result.Chats[0].id).toBe('b'); // timestamp 3000 (newest)
+      expect(result.Chats[2].id).toBe('a'); // timestamp 1000 (oldest)
     });
 
     it('handles case-insensitive alphabetical sorting', () => {
@@ -615,9 +615,9 @@ describe('getCategorizeMessages', () => {
         'alphabeticalAsc',
       );
 
-      expect(result.Recent[0].text).toBe('apple');
-      expect(result.Recent[1].text).toBe('Banana');
-      expect(result.Recent[2].text).toBe('CHERRY');
+      expect(result.Chats[0].text).toBe('apple');
+      expect(result.Chats[1].text).toBe('Banana');
+      expect(result.Chats[2].text).toBe('CHERRY');
     });
 
     it('handles empty messages array', () => {
@@ -629,8 +629,8 @@ describe('getCategorizeMessages', () => {
         'newest',
       );
 
-      expect(result.Pinned).toEqual([]);
-      expect(result.Recent).toEqual([]);
+      expect(result['Pinned chats']).toEqual([]);
+      expect(result.Chats).toEqual([]);
     });
 
     it('handles single message', () => {
@@ -650,8 +650,8 @@ describe('getCategorizeMessages', () => {
         'newest',
       );
 
-      expect(result.Recent).toHaveLength(1);
-      expect(result.Recent[0].text).toBe('Single Chat');
+      expect(result.Chats).toHaveLength(1);
+      expect(result.Chats[0].text).toBe('Single Chat');
     });
 
     it('maintains sort order with same timestamps', () => {
@@ -676,8 +676,8 @@ describe('getCategorizeMessages', () => {
         'alphabeticalAsc',
       );
 
-      expect(result.Recent[0].text).toBe('First Chat');
-      expect(result.Recent[1].text).toBe('Second Chat');
+      expect(result.Chats[0].text).toBe('First Chat');
+      expect(result.Chats[1].text).toBe('Second Chat');
     });
   });
 });

@@ -1,5 +1,13 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.2
+
+### Patch Changes
+
+- 326f2cb: Scope all JSS class names with a `lightspeed-` prefix via seeded `StylesProvider` to prevent CSS collisions with other dynamically loaded plugins in RHDH.
+- 326f2cb: UI improvements and bug fixes: unify MessageBar across display modes, fix message content overflow, rename chat section titles, update chat history panel icons, remove redundant success upload alerts, add delete resource confirmation modal, replace MCP settings icon with gear and add New badge.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.2
+
 ## 2.8.1
 
 ### Patch Changes

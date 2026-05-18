@@ -79,8 +79,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebook.view.documents.uploading': 'ドキュメントをアップロード中',
     'notebook.view.documents.maxReached':
       '最大10個のドキュメントが許可されています。新しいドキュメントをアップロードするには、ドキュメントを削除してください。',
-    'notebook.upload.success': '{{fileName}} のアップロードに成功しました。',
-    'notebook.upload.failed': '{{fileName}} のアップロードに失敗しました。',
+    'notebook.upload.failed': '「{{fileName}}」のアップロードに失敗しました。',
 
     // Notebook upload modal
     'notebook.upload.modal.title': 'ノートブックにドキュメントを追加',
@@ -106,6 +105,12 @@ const lightspeedTranslationJa = createTranslationMessages({
       '以下のファイルはこのノートブックに既に存在します。新しいバージョンで上書きしますか？',
     'notebook.overwrite.modal.action': '上書き',
     'notebook.document.delete': '削除',
+    'notebook.document.delete.title': 'リソースを削除しますか？',
+    'notebook.document.delete.description':
+      'このノートブックから <documentName/> を削除してもよろしいですか？この操作は元に戻せません。',
+    'notebook.document.delete.action': '削除',
+    'notebook.document.delete.success':
+      '「{{documentName}}」が正常に削除されました。',
 
     'prompts.codeReadability.title': 'コードの可読性に関するヘルプを利用する',
     'prompts.codeReadability.message':
@@ -271,13 +276,14 @@ const lightspeedTranslationJa = createTranslationMessages({
     'feedback.completion.title': 'フィードバックを送信しました',
     'feedback.completion.body':
       'ご回答を受け取りました。ご意見をお聞かせいただきありがとうございました!',
-    'conversation.category.pinnedChats': '固定',
-    'conversation.category.recent': '最近',
+    'conversation.category.pinnedChats': '固定チャット',
+    'conversation.category.recent': 'チャット',
     'settings.pinned.enable': 'チャットの固定の有効化',
     'settings.pinned.disable': 'チャットの固定の無効化',
     'settings.pinned.enabled.description': 'チャットの固定は現在有効です',
     'settings.pinned.disabled.description': 'チャットの固定は現在無効です',
     'settings.mcp.label': 'MCP 設定',
+    'settings.mcp.badge': '新規',
     'mcp.settings.title': 'MCP サーバー',
     'mcp.settings.selectedCount':
       '{{totalCount}} 件中 {{selectedCount}} 件を選択',

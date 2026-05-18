@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
+import { StylesProvider as StylesProviderV4 } from '@material-ui/core/styles';
 import Close from '@mui/icons-material/Close';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles } from '@mui/styles';
+import { makeStyles, StylesProvider } from '@mui/styles';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { LightspeedFABIcon } from '../components/LightspeedIcon';
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  generateClassName,
+  generateClassNameV4,
+} from '../utils/generateClassName';
 
 const useStyles = makeStyles(theme => ({
   fab: {
@@ -51,12 +56,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-/**
- * @alpha
- * Lightspeed Floating action button to open/close the lightspeed chatbot
- */
-
-export const LightspeedFAB = () => {
+const LightspeedFABInner = () => {
   const { t } = useTranslation();
   const { isChatbotActive, toggleChatbot, displayMode } =
     useLightspeedDrawerContext();
@@ -93,3 +93,15 @@ export const LightspeedFAB = () => {
     </div>
   );
 };
+
+/**
+ * @alpha
+ * Lightspeed Floating action button to open/close the lightspeed chatbot
+ */
+export const LightspeedFAB = () => (
+  <StylesProvider generateClassName={generateClassName}>
+    <StylesProviderV4 generateClassName={generateClassNameV4}>
+      <LightspeedFABInner />
+    </StylesProviderV4>
+  </StylesProvider>
+);

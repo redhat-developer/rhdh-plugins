@@ -79,8 +79,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebook.view.documents.uploading': 'Subiendo documento',
     'notebook.view.documents.maxReached':
       'Se permiten un máximo de 10 documentos. Elimina un documento para subir uno nuevo.',
-    'notebook.upload.success': '{{fileName}} subido correctamente.',
-    'notebook.upload.failed': 'Error al subir {{fileName}}.',
+    'notebook.upload.failed': 'Error al subir "{{fileName}}".',
 
     // Notebook upload modal
     'notebook.upload.modal.title': 'Agregar un documento al cuaderno',
@@ -107,6 +106,12 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Los siguientes archivos ya existen en este cuaderno. ¿Desea sobrescribirlos con las nuevas versiones?',
     'notebook.overwrite.modal.action': 'Sobrescribir',
     'notebook.document.delete': 'Eliminar',
+    'notebook.document.delete.title': '¿Eliminar recurso?',
+    'notebook.document.delete.description':
+      '¿Está seguro de que desea eliminar <documentName/> de este cuaderno? Esta acción no se puede deshacer.',
+    'notebook.document.delete.action': 'Eliminar',
+    'notebook.document.delete.success':
+      '«{{documentName}}» se eliminó correctamente.',
 
     'prompts.codeReadability.title':
       'Obtener ayuda sobre la legibilidad del código',
@@ -238,8 +243,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'tooltip.close': 'Cerrar',
     'attach.menu.title': 'Adjuntar',
     'attach.menu.description': 'Adjuntar un archivo JSON, YAML o TXT',
-    'history.section.pinned': 'Fijados',
-    'history.section.recent': 'Recientes',
+
     'tooltip.fab.open': 'Abrir Lightspeed',
     'tooltip.fab.close': 'Cerrar Lightspeed',
     'modal.title.preview': 'Previsualizar archivo adjunto',
@@ -276,8 +280,8 @@ const lightspeedTranslationEs = createTranslationMessages({
     'feedback.completion.title': 'Comentarios enviados',
     'feedback.completion.body':
       'Recibimos su respuesta. ¡Gracias por compartir sus comentarios!',
-    'conversation.category.pinnedChats': 'Fijado',
-    'conversation.category.recent': 'Reciente',
+    'conversation.category.pinnedChats': 'Chats fijados',
+    'conversation.category.recent': 'Chats',
     'settings.pinned.enable': 'Habilitar chats fijados',
     'settings.pinned.disable': 'Deshabilitar chats fijados',
     'settings.pinned.enabled.description':
@@ -285,6 +289,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'settings.pinned.disabled.description':
       'Los chats fijados están deshabilitados actualmente',
     'settings.mcp.label': 'Configuración de MCP',
+    'settings.mcp.badge': 'Nuevo',
     'mcp.settings.title': 'Servidores MCP',
     'mcp.settings.selectedCount':
       '{{selectedCount}} de {{totalCount}} seleccionados',

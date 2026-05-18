@@ -297,8 +297,9 @@ export const getCategorizeMessages = (
   t?: (key: string, params?: any) => string,
   sortOption: SortOption = 'newest',
 ): { [k: string]: Conversation[] } => {
-  const pinnedChatsKey = t?.('conversation.category.pinnedChats') || 'Pinned';
-  const recentKey = t?.('conversation.category.recent') || 'Recent';
+  const pinnedChatsKey =
+    t?.('conversation.category.pinnedChats') || 'Pinned chats';
+  const recentKey = t?.('conversation.category.recent') || 'Chats';
   const categorizedMessages: { [k: string]: Conversation[] } = {
     [pinnedChatsKey]: [],
     [recentKey]: [],

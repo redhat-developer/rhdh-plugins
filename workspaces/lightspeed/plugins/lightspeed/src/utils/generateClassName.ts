@@ -14,40 +14,13 @@
  * limitations under the License.
  */
 
-/**
- * @public
- */
-export interface DefaultWidgetVisibility {
-  users?: string[];
-  groups?: string[];
-  permissions?: string[];
-}
+import { createGenerateClassName as createGenerateClassNameV4 } from '@material-ui/core/styles';
+import { createGenerateClassName } from '@mui/styles';
 
-/**
- * @public
- */
-export interface DefaultWidgetNode {
-  id?: string;
-  ref?: string;
-  props?: Record<string, unknown>;
-  layout?: unknown;
-  if?: DefaultWidgetVisibility;
-  children?: DefaultWidgetNode[];
-}
+export const generateClassName = createGenerateClassName({
+  seed: 'lightspeed',
+});
 
-/**
- * @public
- */
-export interface VisibleDefaultWidget {
-  id: string;
-  ref: string;
-  props?: Record<string, unknown>;
-  layout?: unknown;
-}
-
-/**
- * @public
- */
-export interface DefaultWidgetsResponse {
-  items?: VisibleDefaultWidget[];
-}
+export const generateClassNameV4 = createGenerateClassNameV4({
+  seed: 'lightspeed',
+});
